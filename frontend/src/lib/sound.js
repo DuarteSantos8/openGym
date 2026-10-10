@@ -167,10 +167,18 @@ export function setPlayOnSilent(on) {
 let buzz = true
 export function setVibrate(on) { buzz = on !== false }
 // Offered where the browser can buzz at all: iOS has no navigator.vibrate. The Android app needs
-// android.permission.VIBRATE in its manifest, without which the WebView drops every call.
-export const vibrateSupported = () => typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function'
+// android.permission.VIBRATE in its manifest, without which the WebView drops every call. The
+// iPhone app buzzes through its native side instead (RestAlertPlugin.swift buzz), which App.jsx
+// hands in here as the native buzzer.
+let nativeBuzzer = null
+export function setNativeBuzzer(fn) { nativeBuzzer = typeof fn === 'function' ? fn : null }
+export const vibrateSupported = () => !!nativeBuzzer || (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function')
 export function vibrate(p) {
   if (!buzz) return
+  if (nativeBuzzer) {
+    try { Promise.resolve(nativeBuzzer(p)).catch(() => {}) } catch (e) { /* */ }
+    return
+  }
   try { navigator.vibrate && navigator.vibrate(p) } catch (e) { /* */ }
 }
 

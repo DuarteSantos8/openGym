@@ -16,8 +16,8 @@ import UserNotifications
  * hold() calls the notification off; resuming schedules it again.
  *
  * tone() plays the end tone with the app in front through the audio session, which turns music
- * down for it and back up after (a page's Web Audio cannot). buzz() is the phone's one vibration:
- * iOS has no patterns.
+ * down for it and back up after (a page's Web Audio cannot). buzz() stands in for the page's
+ * navigator.vibrate, which iOS does not have.
  */
 @objc(RestAlertPlugin)
 public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin {
@@ -94,9 +94,30 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin {
         call.resolve()
     }
 
+    /**
+     * The page's vibration pattern (on, off, on, … in milliseconds). iOS has one vibration of its
+     * own length and no patterns, so each pulse of 100 ms or more is that vibration at its moment
+     * in the pattern, and a shorter one (a set tick) is a tap of the haptic engine.
+     */
     @objc func buzz(_ call: CAPPluginCall) {
-        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
-        call.resolve()
+        let pattern = (call.getArray("pattern") as? [NSNumber])?.map { $0.doubleValue } ?? [400]
+        DispatchQueue.main.async {
+            var at = 0.0
+            for (i, ms) in pattern.enumerated() {
+                if i % 2 == 0 && ms > 0 {
+                    let long = ms >= 100
+                    DispatchQueue.main.asyncAfter(deadline: .now() + at / 1000) {
+                        if long {
+                            AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+                        } else {
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        }
+                    }
+                }
+                at += ms
+            }
+            call.resolve()
+        }
     }
 
     @objc func tone(_ call: CAPPluginCall) {

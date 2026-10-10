@@ -81,6 +81,53 @@ jobs:
             frontend/ios/App/build/first-screen.png
           retention-days: 7
 
+  # A walk through the app in the simulator (ios/App/AppUITests): a rest that ends while the app
+  # is in the background must arrive as a notification, a sheet must stay above the keyboard.
+  # The exercise media are left out of this build; the screenshots show placeholders.
+  ui-tests:
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run build:mobile && rm -rf ios/App/App/public/exercise-media
+        working-directory: frontend
+      - run: ruby ios/ci/add-ui-tests.rb
+        working-directory: frontend
+      - name: Run the UI tests
+        working-directory: frontend/ios/App
+        run: |
+          UDID=$(xcrun simctl list devices available -j | node -e '
+            const d = JSON.parse(require("fs").readFileSync(0)).devices
+            const all = Object.entries(d).filter(([k]) => k.includes("iOS")).flatMap(([, v]) => v)
+            process.stdout.write(all.filter(x => /^iPhone/.test(x.name)).pop().udid)')
+          xcrun simctl boot "$UDID" && xcrun simctl bootstatus "$UDID" -b
+          set -o pipefail
+          xcodebuild test -workspace App.xcworkspace -scheme AppUITests -destination "id=$UDID" \
+            -resultBundlePath build/ui.xcresult CODE_SIGNING_ALLOWED=NO \
+            | tee build/ui-tests.log | grep -E "error:|Test Case|passed|failed|TEST" || exit 1
+      - name: Keep the screenshots
+        if: always()
+        working-directory: frontend/ios/App
+        run: |
+          mkdir -p build/shots
+          xcrun xcresulttool export attachments --path build/ui.xcresult --output-path build/shots || true
+          ls build/shots
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: ios-ui-tests
+          path: |
+            frontend/ios/App/build/ui-tests.log
+            frontend/ios/App/build/shots
+          retention-days: 7
+
   # The App Store build without its signature, for the release machine to put the full-quality
   # animations in and sign (scripts/ios/finish-ipa.sh). Built for devices; its media are the
   # repo's 180 px ones.

@@ -436,6 +436,22 @@ describe('vibrate switch', () => {
     expect(sound.vibrateSupported()).toBe(false)
     expect(() => sound.vibrate(30)).not.toThrow()
   })
+
+  it('the iPhone app, without navigator.vibrate, buzzes through its native side', () => {
+    Object.defineProperty(navigator, 'vibrate', { value: undefined, configurable: true, writable: true })
+    const native = []
+    sound.setNativeBuzzer(p => { native.push(p); return Promise.resolve(true) })
+    try {
+      expect(sound.vibrateSupported()).toBe(true)
+      sound.vibrate([200, 100, 200])
+      sound.setVibrate(false)
+      sound.vibrate(30)
+      expect(native).toEqual([[200, 100, 200]])
+    } finally {
+      sound.setNativeBuzzer(null)
+      sound.setVibrate(true)
+    }
+  })
 })
 
 // #375: the end of a rest or a hold, with "Vibrate when the phone is on silent" on in the Android
