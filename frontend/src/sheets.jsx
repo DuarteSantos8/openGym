@@ -15,6 +15,7 @@ import { buildStarterPlan, starterPlanDays, starterPlanOptions } from './lib/sta
 import Media, { Thumb } from './components/Media.jsx'
 import CustomMediaField from './components/CustomMediaField.jsx'
 import WorkoutMediaSection, { workoutMediaCount } from './components/WorkoutMedia.jsx'
+import { StravaUploadButton } from './components/Strava.jsx'
 import { mediaOf, normalizeMediaRef, cleanUrl, workoutMediaOf } from './lib/media-refs.js'
 import { syncMedia } from './lib/media-sync.js'
 import LineChart from './components/LineChart.jsx'
@@ -2581,6 +2582,7 @@ function WorkoutDetail({ w, close }) {
       }
     })}>{t('Save as routine')}</Button>
     <div style={{ height: 8 }} />
+    <StravaUploadButton w={w} />
     <Button icon="copy" onClick={copyAsText}>{t('Copy as text')}</Button>
     <div style={{ height: 8 }} />
     <Button icon="share" onClick={shareAsImage}>{t('Share as image')}</Button>
