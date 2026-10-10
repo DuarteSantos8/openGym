@@ -1,19 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://opengym.ch/</loc>
-    <lastmod>2026-10-09</lastmod>
+    <loc>https://opengym.ch/</loc><lastmod>2026-10-10</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opengym.ch/"/><xhtml:link rel="alternate" hreflang="it" href="https://opengym.ch/it/"/><xhtml:link rel="alternate" hreflang="x-default" href="https://opengym.ch/"/>
   </url>
   <url>
-    <loc>https://opengym.ch/docs.html</loc>
-    <lastmod>2026-10-09</lastmod>
+    <loc>https://opengym.ch/it/</loc><lastmod>2026-10-10</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opengym.ch/"/><xhtml:link rel="alternate" hreflang="it" href="https://opengym.ch/it/"/><xhtml:link rel="alternate" hreflang="x-default" href="https://opengym.ch/"/>
   </url>
   <url>
-    <loc>https://opengym.ch/about.html</loc>
-    <lastmod>2026-10-09</lastmod>
+    <loc>https://opengym.ch/docs.html</loc><lastmod>2026-10-10</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opengym.ch/docs.html"/><xhtml:link rel="alternate" hreflang="it" href="https://opengym.ch/it/docs.html"/><xhtml:link rel="alternate" hreflang="x-default" href="https://opengym.ch/docs.html"/>
   </url>
   <url>
-    <loc>https://opengym.ch/api.html</loc>
-    <lastmod>2026-10-09</lastmod>
+    <loc>https://opengym.ch/it/docs.html</loc><lastmod>2026-10-10</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opengym.ch/docs.html"/><xhtml:link rel="alternate" hreflang="it" href="https://opengym.ch/it/docs.html"/><xhtml:link rel="alternate" hreflang="x-default" href="https://opengym.ch/docs.html"/>
   </url>
+  <url>
+    <loc>https://opengym.ch/about.html</loc><lastmod>2026-10-10</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opengym.ch/about.html"/><xhtml:link rel="alternate" hreflang="it" href="https://opengym.ch/it/about.html"/><xhtml:link rel="alternate" hreflang="x-default" href="https://opengym.ch/about.html"/>
+  </url>
+  <url>
+    <loc>https://opengym.ch/it/about.html</loc><lastmod>2026-10-10</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opengym.ch/about.html"/><xhtml:link rel="alternate" hreflang="it" href="https://opengym.ch/it/about.html"/><xhtml:link rel="alternate" hreflang="x-default" href="https://opengym.ch/about.html"/>
+  </url>
+  <url><loc>https://opengym.ch/api.html</loc><lastmod>2026-10-09</lastmod></url>
 </urlset>
