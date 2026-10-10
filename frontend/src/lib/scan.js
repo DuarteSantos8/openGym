@@ -1,4 +1,5 @@
-// Capturing a gym check-in code (see views/CheckIn.jsx). Three ways in:
+// Capturing a gym check-in code (see views/CheckIn.jsx), and the QR code on a machine that stands
+// for an exercise (lib/exercise-qr.js, through components/CameraScan.jsx scanOnce). Three ways in:
 //   1. type it            — no plugin, handled entirely in the view
 //   2. import a photo      — importCodeFromImage(file): decode a picture the user already has
 //   3. scan with camera    — scanCode(): live camera via ML Kit's own scanner UI (app build);
