@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>openGym: About</title>
-<meta name="description" content="The story behind openGym: a gym tracker that started as a tiny personal app on a homelab server and grew into an open-source project.">
+<title>openGym: Privacy</title>
+<meta name="description" content="What the openGym apps and this website do with your data: nothing leaves your phone unless you send it somewhere yourself.">
 <meta name="theme-color" content="#000000">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="preconnect" href="https://stats.duarte-santos.ch">
-<meta property="og:title" content="About openGym">
-<meta property="og:description" content="How openGym came to be: a tracker built for one user, open-sourced under the AGPL, with every release documented.">
+<meta property="og:title" content="openGym privacy policy">
+<meta property="og:description" content="No account, no analytics, no ads in the app. Your training log stays on your phone.">
 <meta property="og:image" content="https://opengym.ch/img/social.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="openGym: your training, your data, your server. Two phones showing the home and workout screens.">
-<meta property="og:url" content="https://opengym.ch/about.html">
+<meta property="og:url" content="https://opengym.ch/privacy.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="openGym">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="About openGym">
+<meta name="twitter:title" content="openGym privacy policy">
 <meta name="twitter:image" content="https://opengym.ch/img/social.jpg">
-<link rel="canonical" href="https://opengym.ch/about.html">
+<link rel="canonical" href="https://opengym.ch/privacy.html">
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="icon" type="image/png" sizes="96x96" href="/icon-96.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
@@ -88,8 +88,11 @@
     <button class="rail-close" aria-label="Close contents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
   </div>
   <p class="side-label">On this page</p>
-  <a class="side-link" href="#milestones-h"><b>Milestones</b><span>Every release, straight from GitHub</span></a>
-  <a class="side-link" href="#principles"><b>Principles</b><span>The rules that don't move</span></a>
+  <a class="side-link" href="#short"><b>The short version</b><span>Nothing leaves your phone on its own</span></a>
+  <a class="side-link" href="#online"><b>When the app goes online</b><span>Only for what you set up</span></a>
+  <a class="side-link" href="#stores"><b>App stores</b><span>Google Play and the App Store</span></a>
+  <a class="side-link" href="#website"><b>This website</b><span>Cookieless page counts</span></a>
+  <a class="side-link" href="#contact"><b>Questions</b><span>Who to ask</span></a>
   <p class="side-label">More</p>
   <a class="side-link" href="/"><b>Home</b><span>The tour, the demo, the download</span></a>
   <a class="side-link" href="docs.html"><b>Docs</b><span>Install, self-host, import</span></a>
@@ -97,75 +100,67 @@
 </aside>
 
 <main id="main" class="wrap prose">
-  <h1>About openGym</h1>
-  <p class="lead">openGym was not planned as a product. It started as a tiny app built for
-     exactly one user: me.</p>
+  <h1>Privacy</h1>
+  <p class="lead">This page covers the openGym apps for Android and iPhone (the APK from this
+     site and GitHub, the Google Play and App Store versions) and this website.
+     Last changed: 11 October 2026.</p>
 
-  <p>I wanted three things at the gym: log my workouts, track my body weight, and see whether
-     any of it was going anywhere. Every app I tried wanted a subscription, an account, or my
-     training data on someone else's servers, and usually all three. So I did the homelab
-     thing: built a small mobile web page, put it on my own server, and started logging.</p>
-
-  <p>It turns out a tracker you build for yourself gets sharpened in a way products don't.
-     Every awkward tap at the squat rack became that evening's fix. The guided workout flow,
-     the weight pre-fills, the rest timer, the ritual of asking for body weight before the
-     first set: none of that came off a feature list. It came from standing in the gym with
-     the thing in my hand.</p>
-
-  <p>Then friends wanted in. That brought passkey profiles, so everyone signs in with a
-     fingerprint and keeps their own data, and sync, so the log survives any phone. Somewhere
-     along the way the little page was rewritten into a proper React app, learned 19 languages,
-     grew a muscle map that reads three ways (where the volume went, what is still recovering,
-     and what each muscle is actually strong at), picked up importers for FitNotes, Strong,
-     Hevy and Apple Health, and finally became a native Android app you can install from
-     this site.</p>
-
-  <p>In July 2026 I open-sourced the whole thing under the <b>AGPL</b>. The license is the
-     point, not a footnote: your training data should be yours, the software that holds it
-     should be inspectable, and nobody, me included, should be able to take a closed, paid
-     version of it away from the community.</p>
-
-  <p>openGym still runs on the same homelab server it started on, and I still log every
-     session with it. That is the quality bar: I am the first user of every release.</p>
-  <p>Since people ask: I build openGym with <a href="https://claude.com/claude-code" rel="noopener">Claude Code</a>,
-     Anthropic's coding agent. A lot of the code, the tests and the documentation start as
-     Claude Code drafts. Deciding what goes in, reviewing it, testing every release on a staging
-     server and on my own phone, and shipping it stays with me &mdash; and pull requests from the
-     community go through the same review. The app itself needs no AI: the coach and the MCP
-     server are optional and off by default.</p>
-
-  <p class="who"><a href="https://duarte-santos.ch" rel="noopener">Duarte Santos</a></p>
-
-  <h2 id="milestones-h">Milestones</h2>
-  <!-- The releases below are a static fallback: site.js replaces them with the live list
-       of published GitHub releases, so this page never needs manual updating. Only the
-       first entry (pre-open-source) is permanent. -->
-  <ul class="tl" id="milestones">
-    <li><b>The personal app</b><span class="when">early summer 2026</span>
-      <p>A hand-written vanilla-JS page on my own server. One user, zero ambitions.</p></li>
-    <li data-fallback><b>v1.0.0: open-sourced</b><span class="when">July 20, 2026</span>
-      <p>Docker Compose self-hosting, passkey profiles, guided workouts, a 1,324-exercise
-         library. AGPL from day one.</p></li>
-    <li data-fallback><b>Every release since</b><span class="when">ongoing</span>
-      <p>See the full list on <a href="https://github.com/DuarteSantos8/openGym/releases" rel="noopener">GitHub → Releases</a>.</p></li>
-  </ul>
-
-  <h2 id="principles">Principles</h2>
+  <h2 id="short">The short version</h2>
   <ul>
-    <li><b>Your data is yours.</b> Local-first, one-file backups, no lock-in. Leaving openGym
-        must always be one export away.</li>
-    <li><b>No telemetry, ever.</b> If a feature needs analytics to justify itself, it does
-        not ship.</li>
-    <li><b>Dependency-light.</b> The backend is plain Node with two dependencies; the
-        frontend is React, a router and a store. Small enough to actually audit.</li>
-    <li><b>Open source that stays open.</b> AGPL-3.0, so every fork and every hosted version
-        owes its code back to everyone.</li>
+    <li><b>No account.</b> The app works without signing up anywhere.</li>
+    <li><b>No analytics, no ads, no crash reporting, no tracking.</b> Not in the app, not by us,
+        not by anyone we work with. There is nobody we work with.</li>
+    <li><b>Your training log stays on your phone.</b> Workouts, plans, body weight, photos and
+        settings are stored in the app's own storage on your device. We never receive them.</li>
+    <li><b>You decide what leaves the phone</b>, and only these things can: a backup you export,
+        a server you connect, the AI coach if you set it up, and Health Connect if you switch it on.</li>
   </ul>
 
-  <div class="actions" style="margin:38px 0 0">
-    <a class="btn" href="/#download">Get openGym</a>
-    <a class="link" href="https://github.com/DuarteSantos8/openGym" rel="noopener">Star it on GitHub</a>
-  </div>
+  <h2 id="online">When the app goes online</h2>
+  <p>Only for these, and only once you set them up:</p>
+  <ul>
+    <li><b>Your own server.</b> "Connect to my server" syncs your log with an openGym server you
+        run or picked yourself. That server's operator, not us, is responsible for it; on your
+        own server, that's you.</li>
+    <li><b>The AI coach.</b> Optional and off until you set it up with an API key from an AI
+        provider of your choice (for example Anthropic, OpenAI or Google). Before the first
+        request it shows which data it sends (your training history, plan, goals and the
+        answers you gave it) and to which provider, and asks you. The request goes straight from
+        your phone to that provider, under your key and that provider's privacy policy. Your
+        name and other account details are never part of it.</li>
+    <li><b>Health Connect</b> (Android). If you switch it on, the app writes finished workouts and
+        weigh-ins to Health Connect on your phone. It reads nothing from it.</li>
+    <li><b>Update check</b> (only the APK from this site and GitHub). When you open Settings →
+        About, the app asks GitHub's public release list whether there is a newer version, and
+        downloads it from GitHub if you tap update. The store versions are updated by their store
+        and never do this.</li>
+  </ul>
+  <p>The exercise animations are inside the app, so browsing exercises needs no connection.
+     The camera is used only when you scan your gym membership code or take a photo or video of
+     an exercise you add yourself; scanned images are read on the phone and never stored or
+     sent. Notifications (workout reminder, end of a rest) are scheduled on the phone itself.</p>
+  <p><b>Deleting your data:</b> it's on your phone, so Settings → Reset or uninstalling the app
+     removes it. A backup file you exported is yours to keep or delete. On a server you
+     connected, delete your profile there.</p>
+  <p>openGym is not directed at children under 13.</p>
+
+  <h2 id="stores">App stores</h2>
+  <p>If you install openGym from Google Play or the App Store, Google or Apple handle the
+     download and may collect data about it under their own privacy policies (for example
+     install counts or crash statistics you allowed them to share). We can see the aggregated
+     numbers they show developers; nothing that identifies you.</p>
+
+  <h2 id="website">This website</h2>
+  <p>opengym.ch counts page views with a self-hosted, cookieless
+     <a href="https://umami.is" rel="noopener">Umami</a>: no cookies, no cross-site tracking, no
+     personal profile. The demo runs entirely in your browser and is never counted.</p>
+
+  <h2 id="contact">Questions</h2>
+  <p>openGym is made by <a href="https://duarte-santos.ch" rel="noopener">Duarte Santos</a>,
+     Switzerland. Ask in <a href="https://github.com/DuarteSantos8/openGym/discussions" rel="noopener">GitHub Discussions</a>
+     or on <a href="https://discord.gg/e62jY6fwVb" rel="noopener">Discord</a>. The app is open
+     source, so everything on this page can be checked in
+     <a href="https://github.com/DuarteSantos8/openGym" rel="noopener">its code</a>.</p>
 </main>
 
 <footer><div class="wrap foot">
