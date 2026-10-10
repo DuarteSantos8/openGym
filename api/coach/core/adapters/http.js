@@ -45,10 +45,11 @@ const trim = (s, n = 300) => String(s == null ? '' : s).slice(0, n);
 // …/v1beta/openai) is the whole prefix, so the spec's own leading version is dropped instead of
 // doubled into …/v4/v1/chat/completions (#437). A bare host still gets the spec's version.
 const VERSION_SEGMENT = /\/v\d+(?:(?:alpha|beta)\d*)?(?=\/|$)/i;
+const LEADING_VERSION = new RegExp('^' + VERSION_SEGMENT.source, 'i');
 export function endpointUrl(base, path) {
   const basePath = base.replace(/^[a-z][a-z0-9+.-]*:\/\/[^/]*/i, '');
   if (!VERSION_SEGMENT.test(basePath)) return base + path;
-  return base + path.replace(new RegExp('^' + VERSION_SEGMENT.source, 'i'), '');
+  return base + path.replace(LEADING_VERSION, '');
 }
 
 /** A fetch, bounded by AbortController. Never throws for HTTP status; throws for transport. */
@@ -78,6 +79,13 @@ export function httpAdapter(spec) {
   if (!meta) throw new Error(`httpAdapter: unknown provider "${id}"`);
 
   const keyOf = env => (env && env[meta.apiKeyEnv]) || null;
+  // A compatible gateway may expose /models and /chat/completions without /v1 (#508).
+  // Only remove a version we appended, never one the owner configured in the base.
+  const versionlessUrl = (base, path) => {
+    if (id !== 'compatible') return null;
+    const url = base + path.replace(LEADING_VERSION, '');
+    return url !== endpointUrl(base, path) ? url : null;
+  };
 
   const adapter = {
     id,
@@ -109,9 +117,15 @@ export function httpAdapter(spec) {
       if (!base) return { ok: false, error: 'no endpoint configured', models: [] };
       const key = keyOf(env);
       if (!key && !meta.keyOptional) return { ok: false, error: 'no API key configured', models: [] };
+      const fallback = versionlessUrl(base, spec.modelsPath);
+      const init = { method: 'GET', headers: { ...extraHeadersFor(id, cfg), ...spec.headers(key) } };
       let res;
       try {
-        res = await call(fetchImpl, endpointUrl(base, spec.modelsPath), { method: 'GET', headers: { ...extraHeadersFor(id, cfg), ...spec.headers(key) } }, timeoutMs, signal);
+        res = await call(fetchImpl, endpointUrl(base, spec.modelsPath), init, timeoutMs, signal);
+        if (res.status === 404 && fallback) {
+          await res.text();
+          res = await call(fetchImpl, fallback, init, timeoutMs, signal);
+        }
       } catch (e) {
         return { ok: false, error: e.name === 'AbortError' ? 'timed out' : `could not reach ${hostOf(base)}: ${trim(e.message, 120)}`, models: [] };
       }
@@ -137,13 +151,16 @@ export function httpAdapter(spec) {
       const chosen = model || meta.defaultModel;
       if (!chosen) return { code: 1, text: '', stderr: `no model chosen for ${id} (pick one from the list the endpoint serves)` };
 
+      const path = spec.path(chosen);
+      let url = endpointUrl(base, path);
+      const fallback = versionlessUrl(base, path);
       let body = spec.body({ model: chosen, prompt, system: system || null, schema: schema || null, maxTokens });
       let retriedWithoutJsonMode = false;
       let transientRetries = 0;
       for (;;) {
         let res;
         try {
-          res = await call(fetchImpl, endpointUrl(base, spec.path(chosen)), {
+          res = await call(fetchImpl, url, {
             method: 'POST',
             headers: { ...extraHeadersFor(id, cfg), 'content-type': 'application/json', ...spec.headers(key) },
             body: JSON.stringify(body)
@@ -155,6 +172,10 @@ export function httpAdapter(spec) {
         const { data, text } = await readJson(res);
         if (!res.ok) {
           const msg = spec.errorMessage(data) || trim(text, 200);
+          if (res.status === 404 && fallback && url !== fallback) {
+            url = fallback;
+            continue;
+          }
           if (RETRY_STATUSES.has(res.status) && transientRetries < RETRY_DELAYS_MS.length && !(signal && signal.aborted)) {
             await sleep(opts.retryDelayMs != null ? opts.retryDelayMs : RETRY_DELAYS_MS[transientRetries], signal);
             transientRetries++;
