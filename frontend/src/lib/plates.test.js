@@ -26,6 +26,19 @@ describe('inventoryFor', () => {
     expect(pairsOf({ unit: 'lb' }, 45)).toBe(DEFAULT_PAIRS)
   })
 
+  // #510: a gym with 0.5, 1, 1.5, 2 and 2.5 kg change plates had no way to say so, and was told
+  // to load a 1.25 it does not have.
+  test('the kg editor lists the 2, 1.5 and 1 kg change plates; the standard set stays without them', () => {
+    expect(PLATE_SIZES.kg).toEqual([25, 20, 15, 10, 5, 2.5, 2, 1.5, 1.25, 1, 0.5])
+    expect([...PLATE_SIZES.kg].sort((a, b) => b - a)).toEqual(PLATE_SIZES.kg)
+    expect(inventoryFor({ unit: 'kg' }).map(p => p.w)).toEqual([25, 20, 15, 10, 5, 2.5, 1.25])
+    for (const w of [2, 1.5, 1]) expect(pairsOf({ unit: 'kg' }, w)).toBe(0)
+    // Counting one copies the standard set in and adds it, in its place by weight.
+    const S = { unit: 'kg', plates: withPlatePairs({ unit: 'kg' }, 2, 1, 1000) }
+    expect(inventoryFor(S).map(p => p.w)).toEqual([25, 20, 15, 10, 5, 2.5, 2, 1.25])
+    expect(pairsOf(S, 2)).toBe(1)
+  })
+
   test('zero and junk counts drop out; the other unit\'s inventory is ignored', () => {
     const S = { unit: 'kg', plates: { kg: { 20: 2, 10: 0, 5: 'x', 2.5: 1.9 }, lb: { 45: 9 } } }
     expect(inventoryFor(S)).toEqual([{ w: 20, n: 2 }, { w: 2.5, n: 1 }])
@@ -94,6 +107,19 @@ describe('plateStack', () => {
     expect(plateStack(50, [{ w: 35, n: 1 }, { w: 25, n: 2 }])).toEqual({ plates: [25, 25], missing: 0 })
     // 100 with one pair each: 45 + 35 leaves 20 → 15 + 5
     expect(plateStack(100, homeInv)).toEqual({ plates: [45, 35, 15, 5], missing: 0 })
+  })
+
+  // #510: the change plates of the gym in the issue, one pair of each.
+  test('whole and half kilo change plates load like any other size', () => {
+    const inv = inventoryFor({ unit: 'kg', plates: { kg: { 20: 2, 10: 1, 5: 1, 2.5: 1, 2: 1, 1.5: 1, 1: 1, 0.5: 1 } } })
+    expect(plateStack(4.5, inv)).toEqual({ plates: [2.5, 2], missing: 0 })
+    expect(plateStack(3.5, inv)).toEqual({ plates: [2.5, 1], missing: 0 })
+    expect(plateStack(3, inv)).toEqual({ plates: [2.5, 0.5], missing: 0 })
+    expect(plateStack(1.5, inv)).toEqual({ plates: [1.5], missing: 0 })
+    // Without the 0.5, greedy takes the 2.5 and is stuck half a kilo short; 2 + 1 does it.
+    expect(plateStack(3, inv.filter(p => p.w !== 0.5))).toEqual({ plates: [2, 1], missing: 0 })
+    // A bar row: 27 kg on a 20 kg bar is 3.5 a side.
+    expect(rowLoad('pairs', 27, 20, inv)).toMatchObject({ perSide: 3.5, plates: [2.5, 1], missing: 0 })
   })
 
   test('what cannot be loaded says how much is missing, from the closest load below', () => {
