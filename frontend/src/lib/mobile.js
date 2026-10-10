@@ -33,6 +33,19 @@ export async function isAndroid() {
   }
 }
 
+// Which native shell this is: 'android', 'ios', or null on the web build (and if Capacitor
+// cannot say). For what both apps have, each in its own way (the rest alert, the health store).
+export async function nativePlatform() {
+  if (!MOBILE) return null
+  try {
+    const { Capacitor } = await import('@capacitor/core')
+    const p = Capacitor.getPlatform()
+    return p === 'android' || p === 'ios' ? p : null
+  } catch (e) {
+    return null
+  }
+}
+
 const FILE = 'opengym-state.json'
 
 export async function nativeLoad() {

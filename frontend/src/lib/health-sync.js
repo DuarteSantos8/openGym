@@ -1,28 +1,34 @@
-// Health Connect on the Android app (#200): turning it on, and keeping it in step with the log.
-// What gets written is worked out in lib/health-connect.js; this file owns the native plugin
-// (HealthConnectPlugin.java) and the phone's own record of what it wrote.
+// The phone's health store, turned on and kept in step with the log: Health Connect on the Android
+// app (#200), Apple Health on the iOS app. What gets written is worked out in lib/health-connect.js,
+// the same for both; this file owns the native plugin (HealthConnectPlugin.java on Android,
+// AppleHealthPlugin.swift on iOS, with one interface) and the phone's own record of what it wrote.
 //
 // It is a fact about this phone, not about the training log: kept in its own file in the app's
 // data directory, never in S, so it does not sync to a server, ride in a backup, or switch on a
 // second phone. Off until the user turns it on; nothing is asked of Health Connect before that.
 //
-// The web build never gets here (MOBILE is a build-time flag), and iOS answers 'unsupported'.
-import { MOBILE, isAndroid, readJsonFile, writeJsonFile } from './mobile.js'
-import { healthRecords, planSync, writtenIds } from './health-connect.js'
+// The web build never gets here (MOBILE is a build-time flag). An iOS app signed without the
+// HealthKit entitlement (a free Apple ID) answers 'unsupported', and the Settings card stays away.
+import { MOBILE, nativePlatform, readJsonFile, writeJsonFile } from './mobile.js'
+import { healthRecords, healthWeightsToBodyweight, planSync, writtenIds } from './health-connect.js'
 import { exerciseNameFor } from './i18n-core.js'
 import { EXIDX } from './exercises.js'
 import { speedUnitOf } from './speed.js'
 
 export const HEALTH_FILE = 'opengym-health.json'
-const OFF = { on: false, written: {}, at: 0, error: null }
+// `read`, `anchor`, `readAt`: weigh-ins taken from Apple Health (iOS), apart from the writing.
+const OFF = { on: false, written: {}, at: 0, error: null, read: false, anchor: null, readAt: 0 }
 
 // Wrapped in an object, as in rest-alert.js: a Capacitor plugin proxy answers `then`, so a
 // promise resolved with the bare proxy never settles.
 let pluginP = null
 const plugin = () => pluginP || (pluginP = (async () => {
-  if (!(await isAndroid())) return null
+  const platform = await nativePlatform()
+  if (!platform) return null
   const { registerPlugin } = await import('@capacitor/core')
-  return { HC: registerPlugin('HealthConnect') }
+  return platform === 'ios'
+    ? { HC: registerPlugin('AppleHealth'), store: 'apple-health' }
+    : { HC: registerPlugin('HealthConnect'), store: 'health-connect' }
 })().catch(() => null))
 
 // The file's content, read once and then kept here: a save while it is off (the usual case) must
@@ -36,17 +42,25 @@ export async function loadHealth() {
 }
 const saveHealth = h => { cached = h; return writeJsonFile(HEALTH_FILE, h) }
 
-/** { status: 'available' | 'update' | 'missing' | 'unsupported', granted } */
+/**
+ * { status: 'available' | 'update' | 'missing' | 'unsupported', granted, store } — `store` is
+ * 'health-connect' or 'apple-health', which the Settings card names. Only Health Connect is ever
+ * 'update' or 'missing'.
+ */
 export async function healthStatus() {
-  if (!MOBILE) return { status: 'unsupported', granted: false }
+  if (!MOBILE) return { status: 'unsupported', granted: false, store: null }
+  let p = null
   try {
-    const p = await plugin()
-    if (!p) return { status: 'unsupported', granted: false }
-    return await p.HC.status()
-  } catch { return { status: 'unsupported', granted: false } }
+    p = await plugin()
+    if (!p) return { status: 'unsupported', granted: false, store: null }
+    return { ...(await p.HC.status()), store: p.store }
+  } catch { return { status: 'unsupported', granted: false, store: p?.store || null } }
 }
 
-/** Health Connect's own screen for what apps wrote, or its store page where it is missing. */
+/**
+ * Health Connect's own screen for what apps wrote, or its store page where it is missing; on
+ * iOS, the Health app.
+ */
 export async function openHealthConnect() {
   const p = await plugin()
   if (p) await p.HC.openSettings()
@@ -163,16 +177,83 @@ export async function disableHealth({ removeWritten = false } = {}) {
   return out
 }
 
+/* ---- weigh-ins from Apple Health (iOS) ---- */
+
+// Set by initHealthSync: the state, and how weigh-ins get into it (useStore, through mergeImport).
+let getS = null
+let addWeights = null
+
+/**
+ * Takes the weigh-ins other apps and scales wrote to Apple Health since the last read into the
+ * body-weight log, where a day openGym has keeps its own. A no-op unless switched on. The anchor
+ * HealthKit hands back is kept in the file, so each weigh-in is taken once: one deleted in openGym
+ * is not brought back. Resolves with { added, health }, or null when nothing was read.
+ */
+let reading = null
+export function readHealth() {
+  if (!MOBILE || !cached?.read || !getS || !addWeights) return Promise.resolve(null)
+  if (reading) return reading
+  reading = (async () => {
+    const p = await plugin()
+    if (!p || p.store !== 'apple-health') return null
+    const before = await loadHealth()
+    let out
+    let added = 0
+    try {
+      const r = await p.HC.readWeights({ anchor: before.anchor || null })
+      const list = healthWeightsToBodyweight(r?.samples, getS()?.unit === 'lb' ? 'lb' : 'kg')
+      if (list.length) added = addWeights(list) || 0
+      out = { ...(await loadHealth()), anchor: r?.anchor || before.anchor || null, readAt: Date.now(), readError: null }
+    } catch (e) {
+      out = { ...(await loadHealth()), readError: e?.code === 'permission' ? 'permission' : 'failed' }
+    }
+    await saveHealth(out)
+    told(out)
+    return { added, health: out }
+  })().finally(() => { reading = null })
+  return reading
+}
+
+/**
+ * Turning the reading on: asks HealthKit to read body weight (it never says whether that was
+ * allowed; a refusal reads as nothing at all), then takes everything it has once.
+ */
+export async function enableHealthRead() {
+  const p = await plugin()
+  if (!p || p.store !== 'apple-health') return { ok: false, reason: 'unsupported' }
+  await p.HC.requestPermissions({ read: true }).catch(() => null)
+  const h = await loadHealth()
+  await saveHealth({ ...h, read: true, anchor: null, readError: null })
+  const r = await readHealth()
+  return { ok: !r?.health?.readError, added: r?.added || 0, health: r?.health || cached }
+}
+
+/** Turning it off keeps what was taken; turned on again, it reads everything again. */
+export async function disableHealthRead() {
+  if (reading) await reading.catch(() => {})
+  const out = { ...(await loadHealth()), read: false, anchor: null, readError: null }
+  await saveHealth(out)
+  told(out)
+  return out
+}
+
 // Back in the foreground: a change synced from another device while the phone was away, or a
-// permission the user granted again in Health Connect's own settings, is picked up then.
+// permission the user granted again in Health Connect's own settings, is picked up then — and in
+// the iOS app, weigh-ins a scale wrote to Apple Health meanwhile.
 let started = false
-export function initHealthSync(getState) {
+export function initHealthSync(getState, { addWeights: add } = {}) {
   if (!MOBILE || started) return
   started = true
+  getS = getState
+  addWeights = add || null
   import('@capacitor/app').then(({ App }) => {
-    App.addListener('appStateChange', ({ isActive }) => { if (isActive) syncHealth(getState()).catch(() => {}) })
+    App.addListener('appStateChange', ({ isActive }) => {
+      if (!isActive) return
+      syncHealth(getState()).catch(() => {})
+      readHealth().catch(() => {})
+    })
   }).catch(() => {})
   // Once at launch, for a workout finished just before the app was closed. Reading the file here
   // also settles whether it is on, which the saves wait for (syncHealth).
-  setTimeout(() => loadHealth().then(() => syncHealth(getState())).catch(() => {}), 3000)
+  setTimeout(() => loadHealth().then(() => { readHealth().catch(() => {}); return syncHealth(getState()) }).catch(() => {}), 3000)
 }

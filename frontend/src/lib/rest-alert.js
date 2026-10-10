@@ -7,11 +7,17 @@
 // a shrinking bar. The lock screen shows it only when notifications are allowed and the
 // system is set to show them there.
 //
+// The iOS app has no RestAlert plugin and needs none: iOS delivers a scheduled local notification
+// on time with the screen locked, and mirrors it to a paired Apple Watch when the phone is locked.
+// So there the end of a rest is one notification from @capacitor/local-notifications, booked at
+// startRest() and called off like the alarm. `silent` keeps it off the screen while the app is in
+// front, where the page beeps itself.
+//
 // The web build keeps Web Push (useUI). This file no-ops there; MOBILE is a build-time flag.
 import { t } from './i18n-core.js'
 import { argb } from './format.js'
 import { accentPair } from './accent.js'
-import { MOBILE, isAndroid } from './mobile.js'
+import { MOBILE, isAndroid, nativePlatform } from './mobile.js'
 import { REST_SOUNDS } from './rest-sounds.js'
 
 export const REST_ALERT_ID = 42
@@ -90,8 +96,8 @@ const restPlugin = () => pluginP || (pluginP = (async () => {
   return { RestAlert: registerPlugin('RestAlert') }
 })().catch(() => null))
 
-// Resolves true only when an Android alarm was scheduled. Callers use false as
-// "fall back to the server push" — web, iOS, and a failed schedule.
+// Resolves true only when an Android alarm or an iOS notification was scheduled. Callers use
+// false as "fall back to the server push" — the web, and a failed schedule.
 export function armRestAlert(at, opts = {}) {
   if (!MOBILE) return Promise.resolve(false)
   const mine = ++token
@@ -105,7 +111,7 @@ export function armRestAlert(at, opts = {}) {
     let kind = 'failed'
     try { kind = await deliver(alert) } catch { kind = 'failed' }
     if (mine !== token) return false
-    return kind === 'android'
+    return kind === 'android' || kind === 'ios'
   })
 }
 
@@ -120,12 +126,14 @@ export function disarmRestAlert() {
 // The rest was paused in the app (#193): the notification stops its clock at the time held and
 // offers Resume, and the alarm for the old end is called off. Resuming arms it again for the new
 // end like any other rest; time added or taken while paused holds it again at the new figure.
+// On iOS a held rest has no end to announce: its notification is called off.
 export function holdRestAlert(leftSec, totalSec) {
   token++
   if (!MOBILE) return
   enqueue(async () => {
     const p = await restPlugin()
     if (p) await p.RestAlert.hold({ id: REST_ALERT_ID, leftMs: Math.max(1, leftSec) * 1000, totalMs: Math.max(1, totalSec) * 1000 })
+    else if ((await nativePlatform()) === 'ios') await cancelIos().catch(() => {})
   })
 }
 
@@ -175,7 +183,7 @@ export function askNotifPermissionOnce() {
   if (askP) return askP
   askP = (async () => {
     try {
-      if (!(await isAndroid())) return false
+      if (!(await nativePlatform())) return false
       const { LocalNotifications } = await import('@capacitor/local-notifications')
       const perm = await LocalNotifications.checkPermissions()
       if (perm.display === 'granted') return true
@@ -202,7 +210,7 @@ async function deliver(alert) {
   // ring any more, and the plugin would refuse it ("at must be in the future").
   if (!(alert.at > Date.now())) return 'expired'
   const p = await restPlugin()
-  if (!p) return 'skipped'
+  if (!p) return (await nativePlatform()) === 'ios' ? deliverIos(alert) : 'skipped'
   const { RestAlert } = p
   if (!(alert.at > Date.now())) return 'expired'
   // Sound, the alarm buzz and the alarm itself need no notification permission; only the
@@ -238,4 +246,32 @@ async function deliver(alert) {
 async function cancelDelivered() {
   const p = await restPlugin()
   if (p) await p.RestAlert.cancel({ id: REST_ALERT_ID })
+  else if ((await nativePlatform()) === 'ios') await cancelIos()
+}
+
+// The iOS end of a rest: one local notification at the end. Without the notification permission
+// iOS drops it, so a phone that said no gets false and the server push, where there is one.
+// `sound: ''` is the system's notification sound (the plugin's word for "no such file"); left out
+// it is silent, which is Settings → Sound off.
+async function deliverIos(alert) {
+  const { LocalNotifications } = await import('@capacitor/local-notifications')
+  const perm = await LocalNotifications.checkPermissions()
+  if (perm.display !== 'granted') return 'skipped'
+  if (!(alert.at > Date.now())) return 'expired'
+  await LocalNotifications.cancel({ notifications: [{ id: alert.id }] }).catch(() => {})
+  await LocalNotifications.schedule({ notifications: [{
+    id: alert.id,
+    title: alert.title,
+    body: '',
+    schedule: { at: new Date(alert.at), allowWhileIdle: true },
+    ...(alert.sound ? { sound: '' } : {}),
+    silent: true,
+    threadIdentifier: 'rest',
+  }] })
+  return 'ios'
+}
+
+async function cancelIos() {
+  const { LocalNotifications } = await import('@capacitor/local-notifications')
+  await LocalNotifications.cancel({ notifications: [{ id: REST_ALERT_ID }] })
 }

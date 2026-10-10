@@ -40,6 +40,8 @@ import { sessionNoProg, setSessionNoProg, setEntryNoProg, joinSessionNoProg } fr
 import { glyphOf } from '../lib/glyphs.js'
 import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
 import { bestSetFor } from '../lib/exercise-history.js'
+import { bindWatchDone } from '../lib/watch-sync.js'
+import { readWatchAction } from '../lib/watch-model.js'
 import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry } from '../lib/active-workout-order.js'
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
@@ -1740,6 +1742,20 @@ function ActiveWorkout() {
       onFocusProgress?.({ unitDone: freshUnitDone })
     }
   }
+
+  // A set done on the Apple Watch (lib/watch-sync.js): checked again against the workout as it is
+  // now, its reps and weight go on the row as typed here would (the weight cascades the same way),
+  // and the row is ticked through toggle, so the rest, the superset step and the finish follow.
+  const watchTick = useRef(null)
+  watchTick.current = ev => {
+    const a = readWatchAction(useStore.getState().S.active, ev)
+    if (!a) return
+    const row = useStore.getState().S.active.entries[a.entryIdx].sets[a.setIdx]
+    if (Number(row.r) !== a.reps) setField(a.entryIdx, a.setIdx, 'r', a.reps)
+    if (Number(row.w || 0) !== a.weight) setField(a.entryIdx, a.setIdx, 'w', a.weight)
+    toggle(a.entryIdx, a.setIdx)
+  }
+  useEffect(() => bindWatchDone(ev => watchTick.current?.(ev)), [])
 
   // After the finished exercise folded away (toggle, above): the new current one is the next thing
   // to do, so if it now sits under the header or low on the screen with little more than its title

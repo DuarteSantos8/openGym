@@ -11,6 +11,10 @@ Not in this folder (added at deploy time):
 - `icon-180.png` / `icon-512.png` — copied from `../frontend/public/` (the same
   icons the PWA uses, so the browser tab, home screen and app all match)
 - `openGym.apk` — the signed release build (see `../docs/MOBILE.md`)
+- `altstore.json` — the AltStore source for the iPhone app, served at `opengym.ch/altstore.json`:
+  the one the `build:ios` job uploads with each tagged build (`opengym-ios/<version>/altstore.json`
+  in the package registry; see `../docs/MOBILE.md`, "iPhone — AltStore"). Its download URLs point
+  at the package registry, so the `.ipa` itself need not be copied here.
 - `demo/` — the browser-only demo build of the app, embedded in the `#demo` section and
   reachable on its own at `/demo/`. Built from `../frontend` with `VITE_DEMO=1`, with the
   180 px exercise media from `../catalogue/media` staged into `demo/exercise-media/` by

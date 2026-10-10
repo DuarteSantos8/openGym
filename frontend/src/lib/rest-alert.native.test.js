@@ -1,5 +1,6 @@
 // The Capacitor side of the rest alert (#296). The iOS app has no RestAlert plugin, and the
-// listener this file adds at startup used to reject there with nothing to catch it. On Android
+// listener this file adds at startup used to reject there with nothing to catch it; it books one
+// local notification instead. On Android
 // the plugin is a Capacitor proxy that answers `then` with a native call that never settles, so
 // it must never become the value of a promise (the Coach hang, #42): here that would hang every
 // rest alert call.
@@ -10,7 +11,7 @@ const h = vi.hoisted(() => {
   vi.stubEnv('VITE_MOBILE', '1')   // lib/mobile.js: MOBILE = import.meta.env.VITE_MOBILE === '1'
   const store = new Map()
   vi.stubGlobal('localStorage', { getItem: k => (store.has(k) ? store.get(k) : null), setItem: (k, v) => store.set(k, String(v)), clear: () => store.clear() })
-  return { platform: 'android', calls: [], registerPlugin: null, perm: 'granted', request: null }
+  return { platform: 'android', calls: [], registerPlugin: null, perm: 'granted', request: null, ln: [] }
 })
 
 // Shaped like the proxy registerPlugin() returns: every property is a native method, `then`
@@ -35,6 +36,8 @@ vi.mock('@capacitor/local-notifications', () => ({
   LocalNotifications: {
     checkPermissions: async () => ({ display: h.perm }),
     requestPermissions: (...args) => (h.request ? h.request(...args) : Promise.resolve({ display: 'granted' })),
+    schedule: async arg => { h.ln.push(['schedule', arg]) },
+    cancel: async arg => { h.ln.push(['cancel', arg]) },
   },
 }))
 
@@ -49,6 +52,7 @@ beforeEach(() => {
   h.registerPlugin = vi.fn(() => pluginProxy())
   h.perm = 'granted'
   h.request = null
+  h.ln = []
   localStorage.clear()
   unhandled.length = 0
   process.on('unhandledRejection', onUnhandled)
@@ -59,10 +63,13 @@ afterAll(() => {
 })
 
 describe('the rest alert in the iOS app', () => {
-  it('registers nothing, rejects nothing and leaves the end to the server push', async () => {
+  const scheduled = () => h.ln.filter(([k]) => k === 'schedule').map(([, a]) => a.notifications[0])
+  const cancels = () => h.ln.filter(([k]) => k === 'cancel').length
+
+  it('registers no plugin and rejects nothing', async () => {
     h.platform = 'ios'
     const alert = await import('./rest-alert.js')
-    await expect(alert.armRestAlert(Date.now() + 90_000, { totalSec: 90 })).resolves.toBe(false)
+    await alert.armRestAlert(Date.now() + 90_000, { totalSec: 90 })
     alert.holdRestAlert(60, 90)
     alert.setRestAccent('red')
     alert.disarmRestAlert()
@@ -70,6 +77,54 @@ describe('the rest alert in the iOS app', () => {
     expect(h.registerPlugin).not.toHaveBeenCalled()
     expect(h.calls).toEqual([])
     expect(unhandled).toEqual([])
+  })
+
+  it('books one local notification at the end, kept off the screen while the app is in front', async () => {
+    h.platform = 'ios'
+    const alert = await import('./rest-alert.js')
+    const at = Date.now() + 90_000
+    await expect(alert.armRestAlert(at, { totalSec: 90, title: 'Next set', sound: true })).resolves.toBe(true)
+    const [n] = scheduled()
+    expect(n).toMatchObject({ id: alert.REST_ALERT_ID, title: 'Next set', silent: true, sound: '' })
+    expect(n.schedule.at.getTime()).toBe(at)
+  })
+
+  it('rings without sound with Settings → Sound off', async () => {
+    h.platform = 'ios'
+    const alert = await import('./rest-alert.js')
+    await alert.armRestAlert(Date.now() + 90_000, { totalSec: 90, sound: false })
+    expect(scheduled()[0]).not.toHaveProperty('sound')
+  })
+
+  it('calls the notification off on skip and on pause', async () => {
+    h.platform = 'ios'
+    const alert = await import('./rest-alert.js')
+    await alert.armRestAlert(Date.now() + 90_000, { totalSec: 90 })
+    const before = cancels()
+    alert.holdRestAlert(60, 90)
+    alert.disarmRestAlert()
+    await settle()
+    expect(cancels()).toBe(before + 2)
+    expect(h.ln.filter(([k]) => k === 'cancel').every(([, a]) => a.notifications[0].id === alert.REST_ALERT_ID)).toBe(true)
+  })
+
+  it('leaves the end to the server push when notifications are not allowed', async () => {
+    h.platform = 'ios'
+    h.perm = 'denied'
+    const alert = await import('./rest-alert.js')
+    await expect(alert.armRestAlert(Date.now() + 90_000, { totalSec: 90 })).resolves.toBe(false)
+    expect(scheduled()).toEqual([])
+  })
+
+  it('asks for the notification permission once, as on Android', async () => {
+    h.platform = 'ios'
+    h.perm = 'prompt'
+    h.request = vi.fn(async () => { h.perm = 'granted'; return { display: 'granted' } })
+    const alert = await import('./rest-alert.js')
+    await alert.armRestAlert(Date.now() + 90_000, { totalSec: 90 })
+    await alert.armRestAlert(Date.now() + 90_000, { totalSec: 90 })
+    await settle()
+    expect(h.request).toHaveBeenCalledTimes(1)
   })
 })
 

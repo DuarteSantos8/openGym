@@ -1,0 +1,14 @@
+{
+  "images": [
+    {
+      "idiom": "universal",
+      "size": "1024x1024",
+      "filename": "AppIcon-1024.png",
+      "platform": "watchos"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  }
+}

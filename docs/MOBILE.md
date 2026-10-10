@@ -3,9 +3,9 @@
 **Just want the app?** Download the APK from the
 [latest release](https://github.com/DuarteSantos8/openGym/releases/latest) and read
 [how the phone app works](#how-the-phone-app-works) and
-[connecting it to your server](#connecting-the-app-to-your-own-server). On an iPhone, see
-[what's possible](#iphone--whats-actually-possible). Everything from [Prerequisites](#prerequisites)
-on is for building the app yourself.
+[connecting it to your server](#connecting-the-app-to-your-own-server). On an iPhone, install it
+with AltStore: see [iPhone — AltStore](#iphone--altstore). Everything from
+[Prerequisites](#prerequisites) on is for building the app yourself.
 
 ## How the phone app works
 
@@ -218,13 +218,106 @@ Worth checking on a real device after changes here: turning it on shows Health C
 permission screen; a finished workout appears in Health Connect within a few seconds; deleting it
 in openGym removes it there; turning it off with "remove" leaves no openGym record behind.
 
+### Apple Health (iOS)
+
+The same card on the iPhone writes to Apple Health instead: Settings → **Apple Health**. Everything
+said above about Health Connect holds — what is written (`src/lib/health-connect.js`, one piece of
+JS for both phones), when, no duplicates, this phone only (`opengym-health.json`), and turning it
+off asking whether to keep or remove what was written. The differences:
+
+- **The native side** is `ios/App/App/AppleHealthPlugin.swift`. A workout is written with
+  `HKWorkoutBuilder` (strength training, walking, running, indoor cycling, elliptical or stair
+  climbing, "other" otherwise; indoor), its name and its exercises and sets in openGym's own metadata
+  keys `OpenGymTitle` / `OpenGymNotes` — HealthKit has no title or notes of its own. A weigh-in is a
+  body-mass sample in kilograms. Each carries openGym's id as `HKMetadataKeySyncIdentifier` and the
+  time of the write as `HKMetadataKeySyncVersion`, so writing it again replaces it, and removing
+  finds exactly what openGym wrote.
+- **Reading weigh-ins back** — a second switch, **Take weigh-ins from Apple Health**, which Health
+  Connect does not have. It takes the weigh-ins a scale or another app wrote into the body-weight
+  log, where a day openGym already has keeps its own (like an import). An anchored query hands each
+  one over once (the anchor is kept in `opengym-health.json`), so one deleted in openGym does not
+  come back; what openGym wrote itself is left out. Taken entries carry `src: 'apple-health'` and are
+  not written back as openGym's own — that would put every scale reading in Health twice — until one
+  is edited in openGym. It reads when switched on, at launch and back in the foreground.
+- **It needs the HealthKit entitlement**, and Apple gives that only to an app signed by a paid
+  Apple Developer Program account. An app signed with a free Apple ID (Xcode, AltStore, SideStore,
+  Sideloadly) does not have it. So:
+  - the Xcode project asks for it only with the build setting **`OPENGYM_HEALTHKIT=YES`** (target
+    App → Build Settings → User-Defined, or on the `xcodebuild` command line). It sets the
+    entitlements file (`App/App.healthkit.entitlements`) and the `OpenGymHealthKit` key in
+    Info.plist together. Off by default, so a free Apple ID can still build and run the app from
+    Xcode;
+  - the AltStore `.ipa` (`scripts/build-ipa.sh`) always asks for it; AltStore drops it when the
+    Apple ID cannot have it;
+  - the plugin answers "unsupported" unless the provisioning profile the app was finally signed
+    with (`embedded.mobileprovision`) grants HealthKit, and the card is then not shown at all.
+- **Permissions:** `NSHealthUpdateUsageDescription` (writing) and `NSHealthShareUsageDescription`
+  (reading weigh-ins) in Info.plist. HealthKit never tells an app whether reading was allowed: a
+  refusal simply reads as no weigh-ins.
+
+Worth checking on a real device (paid Apple ID, `OPENGYM_HEALTHKIT=YES`): turning it on shows the
+Health permission sheet; a finished workout appears in Health → Browse → Activity → Workouts with
+openGym as its source; editing it replaces it; deleting it in openGym removes it; a weigh-in from a
+scale app shows up in the body-weight log after switching on reading; with a free Apple ID the card
+is not there.
+
+### Rest timer on the iPhone
+
+The iOS app announces the end of a rest with a local notification booked when the rest starts
+(`src/lib/rest-alert.js`): it arrives on time with the screen locked, is called off by Skip, Pause
+or a new rest, and is kept off the screen while the app is in front, where the page beeps itself.
+With **Sound** off in Settings it arrives silently. It needs the notification permission, asked at
+the first rest. With the iPhone locked, iOS shows it on a paired Apple Watch too — a tap on the
+wrist at the end of every rest, with or without the watch app below. There is no countdown in the
+notification as on Android: iOS has nothing like Android's ongoing notification without a Live
+Activity, which would need a widget extension.
+
+### Apple Watch
+
+The iOS app comes with a watch app (`ios/App/OpenGymWatch`, SwiftUI, watchOS 9 or later), installed
+on the paired watch with the phone app. It keeps no log of its own; while a workout runs on the
+phone it shows:
+
+- **the set to do next** — the exercise, "Set 2 / 4", the reps (turn the Digital Crown), the
+  weight (− and +, in steps of 2.5 kg or 5 lb) and **Done**, which ticks the set on the phone
+  exactly as a tap there would: the reps and weight go on the row, the rest starts, a superset
+  moves on, the last set opens the finish sheet. A timed, cardio or per-side set is shown with
+  "Log this set on your iPhone";
+- **the rest** — counting down on the watch, with **+15**, **Pause** / **Resume** and **Skip**, and a
+  tap on the wrist at the end while the watch app is in front.
+
+How it works: the phone sends one small JSON snapshot whenever the workout or the rest changes
+(`src/lib/watch-model.js` builds it, `src/lib/watch-sync.js` sends it through
+`ios/App/App/WatchPlugin.swift` and WatchConnectivity), with every word the watch prints in the
+app's language. The watch answers with an action. A set done is checked again on the phone against
+the workout as it is then: one the phone has moved past meanwhile (ticked there, the exercise
+swapped) is dropped rather than ticking the wrong row. With the workout screen not open on the
+phone, it waits there (at most 10 minutes) until it is.
+
+Things to know:
+
+- The phone app does the work. A tap on the watch wakes it in the background long enough to tick
+  the set and answer; if iOS has closed the app entirely, the action waits until it is opened.
+- watchOS goes back to the watch face after a while (Settings → General → Return to Clock on the
+  watch can keep the app up longer). The end-of-rest notification still arrives either way.
+- The watch app is a second app with a bundle id of its own
+  (`ch.duartesantos.opengym.watchkitapp`). With a free Apple ID that is a second App ID out of the
+  ten a week; `scripts/build-ipa.sh --no-watch` builds an `.ipa` without it. Building it yourself
+  under another bundle id, change both targets and `WKCompanionAppBundleIdentifier` (target
+  OpenGymWatch → Build Settings) to match.
+
+Worth checking on a real device after changes here: the watch app installs with the phone app;
+starting a workout on the phone shows its first set on the watch within a second or two; Done on the
+watch ticks the row on the phone and starts the rest on both; Skip on the watch ends it on the
+phone; with the phone locked, Done still ticks the set and the rest notification reaches the watch.
+
 ## Prerequisites
 
 - Node 20+
 - **Android:** Android Studio (bundles the SDK). Java 21 for Gradle.
-- **iOS:** a Mac with Xcode 15+ and CocoaPods (`brew install cocoapods`). A free Apple ID
-  is enough to run the app on your own iPhone (see below); paid membership is only needed
-  for App Store distribution, which openGym doesn't do.
+- **iOS:** a Mac with Xcode 15+ (with the watchOS SDK, for the watch app) and CocoaPods
+  (`brew install cocoapods`). A free Apple ID is enough to run the app on your own iPhone (see
+  below); Apple Health needs a paid Apple Developer Program membership ([Apple Health](#apple-health-ios)).
 
 ## Build & run
 
@@ -308,29 +401,81 @@ zipalign -f -p 4 app-release-unsigned.apk aligned.apk
 apksigner sign --ks my.keystore --ks-key-alias opengym --out openGym.apk aligned.apk
 ```
 
-### iPhone — what's actually possible
+### iPhone — AltStore
 
-Apple does not allow installing apps outside the App Store, so there is no `.ipa` download
-that would simply install. Your free options:
+Apple does not allow installing apps outside the App Store, but it does let anyone sign an app for
+their own iPhone with their Apple ID. [AltStore](https://altstore.io) (or SideStore) does that for
+you, and renews the signature before it runs out:
 
-- **Self-host + PWA** (recommended): open your instance in Safari → Share → *Add to Home
-  Screen*. Full-screen app, no expiry, plus sync and passkeys.
-- **Xcode free signing:** open `ios/` in Xcode with a free Apple ID as the team and run it
-  onto your own iPhone. Apple expires the signature after 7 days; re-run from Xcode to renew.
-- **AltStore:** automates that 7-day re-signing over Wi-Fi via a Mac companion app.
+1. Install AltStore on the iPhone (AltServer on a Mac or PC does it once; on iOS 16 and later
+   switch on Developer Mode when asked).
+2. In AltStore → Sources → **+**, add **`https://opengym.ch/altstore.json`**.
+3. Install openGym from that source. AltStore offers new versions there as updates.
 
-There is a `build:ios` job in [`.gitlab-ci.yml`](../.gitlab-ci.yml) for exactly that path: the
-same mobile bundle, `xcodebuild archive` without a signing identity, and an *unsigned* `.ipa`
-(plus `.sha256`) as job artifact — on a tag also under `opengym-ios/<version>/` in the package
-registry — for AltStore/Sideloadly users to sign with their own Apple ID. It needs a Mac: Xcode
-does not run on the Linux project runner, and gitlab.com's hosted macOS runners are not on the
-free tier. To switch it on, register a Mac as a project runner (shell executor; Xcode, CocoaPods
-and Node installed; give it a tag such as `macos`) and set the CI/CD variable `IOS_RUNNER_TAG`
-to that tag — the job then appears in every `main` and tag pipeline. Until that variable exists
-the job is not part of any pipeline, and it has not run yet, so expect a first round of fixes.
-A signed build (TestFlight, App Store) would additionally need an Apple Developer Program
-membership, the distribution certificate and profile as protected file variables, and an
-`-exportArchive` step — none of that is set up.
+That source is published by CI once a Mac runner builds the app (below). Until then — or for your
+own fork — build the `.ipa` and the source yourself with `scripts/build-ipa.sh`, host both over
+https, and add your `altstore.json` instead; or install the `.ipa` file directly in AltStore
+(**+** on the My Apps tab).
+
+What to know about the Apple ID AltStore signs with:
+
+- **A free Apple ID:** the app runs, with sync, the rest notification and the Apple Watch app.
+  The signature lasts 7 days; AltStore renews it in the background while AltServer is reachable on
+  your network (or with SideStore, on the phone itself). At most 3 sideloaded apps at a time
+  (AltStore is one) and 10 App IDs a week — openGym takes two with its watch app. **Apple Health is
+  not available**: Apple gives HealthKit only to paid accounts, and the app then shows no Apple
+  Health card.
+- **A paid Apple Developer account:** everything, Apple Health included, and a signature that lasts
+  a year.
+
+The other ways stay open:
+
+- **Self-hosted PWA:** open your instance in Safari → Share → *Add to Home Screen*. No expiry, sync
+  and passkeys — but no watch app, no Apple Health and no notification at the end of a rest unless
+  your server sends Web Push.
+- **Sideloadly:** take `openGym-<version>.ipa` from the package registry
+  (`opengym-ios/<version>/`) and sign it with your Apple ID, as AltStore would.
+- **Xcode:** open `ios/App/App.xcworkspace`, set your team on both targets (App and OpenGymWatch),
+  run. Add `OPENGYM_HEALTHKIT=YES` to the App target's build settings only with a paid account.
+
+#### Building the .ipa and the source
+
+`frontend/scripts/build-ipa.sh` (on a Mac: Xcode, CocoaPods, Node) does all of it:
+`npm run build:mobile`, an unsigned `xcodebuild archive` with `OPENGYM_HEALTHKIT=YES`, then an
+*ad hoc* signature with the entitlements the app asks for — the watch app and the frameworks first,
+the app last. AltStore and Sideloadly read the entitlements from that signature to know what to ask
+Apple for; a completely unsigned `.ipa` would never get HealthKit. Then it zips
+`openGym-<version>.ipa` (+ `.sha256`) and writes `altstore.json` with
+`scripts/altstore-source.mjs`: the app, its versions newest first (an `altstore.json` already in the
+output folder keeps its versions, at most 10), each with its download URL, size and SHA-256, and the
+entitlements and privacy texts AltStore shows before installing.
+
+```sh
+cd frontend
+scripts/build-ipa.sh --out ../ipa                                    # → ../ipa/openGym-X.Y.Z.ipa, altstore.json
+scripts/build-ipa.sh --out ../ipa --url 'https://example.org/ios/%v/%f'   # your own download URL
+scripts/build-ipa.sh --out ../ipa --no-watch                         # without the watch app (altstore-nowatch.json)
+```
+
+`--url` says where the `.ipa` will be downloaded from (`%v` the version, `%f` the file name); without
+it, the upstream package registry. For your own fork, host the `.ipa` and `altstore.json` anywhere
+reachable over https and add that `altstore.json` URL as the source.
+
+The `build:ios` job in [`.gitlab-ci.yml`](../.gitlab-ci.yml) runs the same script. It needs a Mac:
+Xcode does not run on the Linux project runner, and gitlab.com's hosted macOS runners are not on the
+free tier. To switch it on, register a Mac as a project runner (shell executor; Xcode, CocoaPods and
+Node installed; give it a tag such as `macos`) and set the CI/CD variable `IOS_RUNNER_TAG` to that
+tag — the job then appears in every `main` and tag pipeline, and on a tag uploads the `.ipa`, its
+`.sha256` and `altstore.json` under `opengym-ios/<version>/` in the package registry; the website
+deploy puts that `altstore.json` at `opengym.ch/altstore.json` (`website/README.md`). Until that
+variable exists the job is not part of any pipeline, and it has not run yet, so expect a first round
+of fixes. A TestFlight or App Store build would additionally need an Apple Developer Program
+membership, the distribution certificate and profile, and an `-exportArchive` step — none of that is
+set up.
+
+Local plugins of the iOS app (`PrintPlugin`, `AppleHealthPlugin`, `WatchPlugin`) are registered by
+hand in `ios/App/App/OpenGymViewController.swift`: Capacitor only loads the npm plugins `cap sync`
+lists. A new one goes there, or JS gets "not implemented on ios".
 
 ### Release notes for maintainers
 

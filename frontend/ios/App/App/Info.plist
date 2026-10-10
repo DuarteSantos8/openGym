@@ -66,5 +66,11 @@
 	<string>Used to scan your gym membership QR code, and to take a photo or video of an exercise you add yourself.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Used to record the sound of a video you take of an exercise you add yourself.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Writes your finished workouts and weigh-ins to Apple Health, when you turn it on in Settings.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Reads your weigh-ins from Apple Health into your body-weight log, when you turn it on in Settings.</string>
+	<key>OpenGymHealthKit</key>
+	<string>$(OPENGYM_HEALTHKIT)</string>
 </dict>
 </plist>
