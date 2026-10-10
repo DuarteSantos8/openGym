@@ -120,3 +120,45 @@ describe('the "which profile?" error is a config message, not a roster', () => {
     })
   }
 })
+
+describe('unsafe config details stay on stderr', () => {
+  test('an invalid uid is sanitized in the thrown MCP-facing error', async () => {
+    const uid = 'private/uid-value'
+    vi.stubEnv('OPENGYM_LOCALE', 'it')
+    const logs = []
+    const spy = vi.spyOn(console, 'error').mockImplementation((...a) => logs.push(a.join(' ')))
+    const { getState } = await load(mk({ 'db.json': DB }), uid)
+    let err = null
+    try { getState() } catch (e) { err = e }
+    spy.mockRestore()
+    expect(err.code).toBe('EINVAL')
+    expect(err.message).toBe('OPENGYM_UID non valido. Controlla la configurazione del server.')
+    expect(err.message).not.toContain(uid)
+    expect(logs.join('\n')).toContain(uid)
+  })
+
+  test('English config errors remain English and do not expose server details', async () => {
+    const uid = 'private/uid-value'
+    vi.stubEnv('OPENGYM_LOCALE', 'en')
+    const { getState } = await load(mk({ 'db.json': DB }), uid)
+    let err = null
+    try { getState() } catch (e) { err = e }
+    expect(err.message).toBe('OPENGYM_UID is invalid. Check the server configuration.')
+    expect(err.message).not.toContain(uid)
+  })
+
+  test('a missing data directory is sanitized in the thrown MCP-facing error', async () => {
+    const dir = path.join(os.tmpdir(), 'private-openGym-data-path')
+    vi.stubEnv('OPENGYM_LOCALE', 'it')
+    const logs = []
+    const spy = vi.spyOn(console, 'error').mockImplementation((...a) => logs.push(a.join(' ')))
+    const { getState } = await load(dir)
+    let err = null
+    try { getState() } catch (e) { err = e }
+    spy.mockRestore()
+    expect(err.code).toBe('ENOENT')
+    expect(err.message).toBe('La directory dei dati openGym non è disponibile. Controlla OPENGYM_DATA e la configurazione del server.')
+    expect(err.message).not.toContain(dir)
+    expect(logs.join('\n')).toContain(dir)
+  })
+})
