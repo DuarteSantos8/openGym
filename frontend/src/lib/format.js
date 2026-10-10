@@ -18,6 +18,12 @@ export function fmtDate(iso, long, withYear = false) {
   if (withYear) options.year = 'numeric'
   return d.toLocaleDateString(dateLocale(), options)
 }
+export function fmtChatTimestamp(at, now = Date.now()) {
+  const d = new Date(at)
+  const day = isoOf(d)
+  const time = d.toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' })
+  return day === isoOf(new Date(now)) ? time : fmtDate(day) + ' · ' + time
+}
 // A span of days, e.g. an import's first and last workout. The year is shown when the span
 // crosses one or lies outside the current year: "3 Feb – 21 Dec" over two years read as one.
 export function fmtDateRange(from, to, long, now = new Date()) {
