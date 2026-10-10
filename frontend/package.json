@@ -8,9 +8,10 @@
     "build": "vite build",
     "build:mobile": "VITE_MOBILE=1 vite build && node ../scripts/catalogue/stage-media.mjs dist && cap sync && node scripts/check-mobile-bundle.mjs",
     "preview": "vite preview",
-    "test": "vitest run",
+    "test": "vitest run && npm run check:native-localizations",
     "test:watch": "vitest",
-    "test:fatigue-probe": "node scripts/fatigue-monotonic-probe.mjs"
+    "test:fatigue-probe": "node scripts/fatigue-monotonic-probe.mjs",
+    "check:native-localizations": "node scripts/check-native-localizations.mjs"
   },
   "license": "AGPL-3.0-or-later",
   "dependencies": {
