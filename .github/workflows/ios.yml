@@ -1,0 +1,121 @@
+# Builds the iPhone app on a Mac and starts it in the simulator: nobody working on openGym has a
+# Mac to hand, so this is where a change to the iOS shell (ios/, a Capacitor plugin, the mobile
+# build) is first compiled. It uses the repo's own 180 px media like every other CI build; the
+# App Store build gets its animations on the release machine (docs/APP_STORES.md).
+name: iOS
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/ios/**'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
+      - 'frontend/capacitor.config.json'
+      - '.github/workflows/ios.yml'
+  push:
+    branches: [main, stores]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/ios.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  simulator:
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      # The phone build, copied into ios/App/App/public; cap sync runs pod install.
+      - run: npm run build:mobile
+        working-directory: frontend
+      - name: Build for the simulator
+        working-directory: frontend/ios/App
+        run: |
+          set -o pipefail
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Debug \
+            -sdk iphonesimulator -derivedDataPath build/dd \
+            CODE_SIGNING_ALLOWED=NO build | tee build/xcodebuild.log | grep -E "error:|warning: .*(App/|Swift)|BUILD" || true
+          test -d build/dd/Build/Products/Debug-iphonesimulator/App.app
+      # Starts the app and keeps what it prints: Capacitor logs every bridge call and every
+      # console message of the page in a debug build. A plugin the page calls but the app never
+      # registered shows up as "not implemented on ios".
+      - name: Start it in the simulator
+        working-directory: frontend/ios/App
+        run: |
+          UDID=$(xcrun simctl list devices available -j | node -e '
+            const d = JSON.parse(require("fs").readFileSync(0)).devices
+            const all = Object.entries(d).filter(([k]) => k.includes("iOS")).flatMap(([, v]) => v)
+            const phone = all.filter(x => /^iPhone/.test(x.name)).pop()
+            process.stdout.write(phone.udid)')
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" build/dd/Build/Products/Debug-iphonesimulator/App.app
+          xcrun simctl launch --console-pty "$UDID" ch.duartesantos.opengym > build/console.log 2>&1 &
+          sleep 45
+          xcrun simctl io "$UDID" screenshot build/first-screen.png || true
+          kill %1 || true
+          cat build/console.log | grep -v "^\s*$" | head -200
+          if grep -q "not implemented on ios" build/console.log; then echo "::error::a plugin the page uses is missing on iOS"; exit 1; fi
+          grep -q "RestAlert" build/console.log || { echo "::error::the page never reached the RestAlert plugin"; exit 1; }
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: ios-simulator
+          path: |
+            frontend/ios/App/build/xcodebuild.log
+            frontend/ios/App/build/console.log
+            frontend/ios/App/build/first-screen.png
+          retention-days: 7
+
+  # The App Store build without its signature, for the release machine to put the full-quality
+  # animations in and sign (scripts/ios/finish-ipa.sh). Built for devices; its media are the
+  # repo's 180 px ones.
+  device-archive:
+    runs-on: macos-26
+    timeout-minutes: 60
+    if: github.event_name != 'pull_request'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run build:mobile
+        working-directory: frontend
+      - name: Archive, unsigned
+        working-directory: frontend/ios/App
+        run: |
+          set -o pipefail
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath build/App.xcarchive \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" archive \
+            | tee build/archive.log | grep -E "error:|BUILD|ARCHIVE" || true
+          test -d build/App.xcarchive/Products/Applications/App.app
+          cd build/App.xcarchive/Products/Applications
+          # The web assets are put back on the release machine; leave the repo's out of the zip.
+          rm -rf App.app/public/exercise-media
+          mkdir -p ../../../Payload && cp -R App.app ../../../Payload/
+          cd ../../.. && zip -qry App-unsigned.ipa Payload
+          ls -la App-unsigned.ipa
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ios-unsigned-ipa
+          path: frontend/ios/App/build/App-unsigned.ipa
+          retention-days: 14

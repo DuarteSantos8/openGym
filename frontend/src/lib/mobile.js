@@ -33,6 +33,19 @@ export async function isAndroid() {
   }
 }
 
+// 'android' or 'ios' inside the phone app, null anywhere else: for what both native shells do,
+// each its own way (the rest alert: RestAlertPlugin.java and RestAlertPlugin.swift).
+export async function nativePlatform() {
+  if (!MOBILE) return null
+  try {
+    const { Capacitor } = await import('@capacitor/core')
+    const p = Capacitor.getPlatform()
+    return p === 'android' || p === 'ios' ? p : null
+  } catch (e) {
+    return null
+  }
+}
+
 const FILE = 'opengym-state.json'
 
 export async function nativeLoad() {
