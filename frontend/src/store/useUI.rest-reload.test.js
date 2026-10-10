@@ -52,6 +52,36 @@ describe('the rest timer across a reload', () => {
     expect(saved()).toBeNull()
   })
 
+  // The push booked before the reload survives it, so whether the server took it comes back too:
+  // a rest that then runs out on a hidden page leaves the alert to that push, or, when the server
+  // never took it, shows the local one in its place.
+  it('keeps whether the server took the push, and a hidden end after the reload alerts only when it did not', async () => {
+    const shown = vi.fn()
+    globalThis.Notification = { permission: 'granted' }
+    Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: { getRegistration: async () => ({ showNotification: shown, pushManager: { getSubscription: async () => ({ endpoint: 'https://push.example/x' }) } }) } })
+    const hide = hidden => { Object.defineProperty(document, 'hidden', { configurable: true, value: hidden }); document.dispatchEvent(new Event('visibilitychange')) }
+    const flush = async () => { for (let i = 0; i < 5; i++) await Promise.resolve() }
+    try {
+      useUI.getState().startRest(90, 2)
+      expect(saved().pushed).toBe(false)             // asked, not answered yet
+      await flush()
+      expect(saved().pushed).toBe(true)              // the server took it
+      for (const [pushed, alerts] of [[true, 0], [false, 1]]) {
+        useUI.getState().stopRest(); hide(false); shown.mockClear()
+        localStorage.setItem(REST_KEY, JSON.stringify({ endsAt: Date.now() + 40_000, total: 90, forIdx: 1, kind: null, paused: false, left: 50, pushed }))
+        expect(restoreRest()).toBe(true)
+        hide(true)
+        vi.advanceTimersByTime(41_000)
+        await flush()
+        expect(shown).toHaveBeenCalledTimes(alerts)
+      }
+    } finally {
+      hide(false)
+      delete globalThis.Notification
+      delete navigator.serviceWorker
+    }
+  })
+
   it('queues the count-in again for the time that is left, and none for a paused one', () => {
     localStorage.setItem(REST_KEY, JSON.stringify({ endsAt: Date.now() + 40_000, total: 90, forIdx: 1, kind: null, paused: false, left: 50 }))
     countdown.mockClear()
