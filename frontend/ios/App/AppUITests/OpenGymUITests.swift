@@ -36,6 +36,7 @@ final class OpenGymUITests: XCTestCase {
      * page is still starting and go nowhere.
      */
     private func chooseLocal() {
+        if app.buttons["Log"].waitForExistence(timeout: 20) { return }   // chosen in an earlier test
         let local = app.buttons["Use on this device"]
         XCTAssertTrue(local.waitForExistence(timeout: 60), "the onboarding choice did not show up")
         for _ in 0..<5 {
@@ -51,7 +52,9 @@ final class OpenGymUITests: XCTestCase {
         if allow.waitForExistence(timeout: 6) { allow.tap() }
     }
 
-    func testRestEndsWithANotificationInTheBackground() {
+    // XCTest runs a class's tests in name order: the keyboard check wants a plain home screen, and
+    // this one leaves a workout running.
+    func test2RestEndsWithANotificationInTheBackground() {
         app.launch()
         chooseLocal()
         shot("1-home")
@@ -74,7 +77,7 @@ final class OpenGymUITests: XCTestCase {
         XCTAssertTrue(arrived, "the end of the rest never arrived as a notification")
     }
 
-    func testWeighInSheetStaysAboveTheKeyboard() {
+    func test1WeighInSheetStaysAboveTheKeyboard() {
         app.launch()
         chooseLocal()
         tap(app.buttons["Log"], "Log (body weight)")
