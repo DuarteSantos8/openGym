@@ -64,6 +64,16 @@
 	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<!-- "Connect to my server" and the Coach's own endpoint may be plain http:// on the
+		     home network (#428), like on Android. Local addresses only; everything on the
+		     internet stays HTTPS. -->
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Used to reach your own openGym server or AI model on your home network, when you connect one.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Used to scan your gym membership QR code, and to take a photo or video of an exercise you add yourself.</string>
 	<key>NSMicrophoneUsageDescription</key>
