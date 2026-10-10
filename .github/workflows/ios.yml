@@ -108,6 +108,7 @@ jobs:
             const all = Object.entries(d).filter(([k]) => k.includes("iOS")).flatMap(([, v]) => v)
             process.stdout.write(all.filter(x => /^iPhone/.test(x.name)).pop().udid)')
           xcrun simctl boot "$UDID" && xcrun simctl bootstatus "$UDID" -b
+          mkdir -p build
           set -o pipefail
           xcodebuild test -workspace App.xcworkspace -scheme AppUITests -destination "id=$UDID" \
             -resultBundlePath build/ui.xcresult CODE_SIGNING_ALLOWED=NO \
