@@ -85,6 +85,14 @@
   padding: 6px;
   touch-action: pan-y;
   transition: transform var(--dur-slow) var(--ease-spring), opacity var(--dur-base) var(--ease-out);
+  /* index.css's #tabbar rules outrank the bare .glass class (id beats class): the pill keeps
+     the glass surface and loses the full-bleed hairline, in both themes. */
+  background: var(--glass-bg);
+  border-top: 1px solid var(--glass-border);
+}
+:root[data-theme="light"] #tabbar {
+  background: var(--glass-bg);
+  border-top: 1px solid var(--glass-border);
 }
 #tabbar.tabbar-hidden-1 {
   transform: translateX(-50%) translateY(calc(100% + var(--tabbar-offset) + env(safe-area-inset-bottom)));

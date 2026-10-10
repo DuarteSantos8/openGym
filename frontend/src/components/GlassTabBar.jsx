@@ -8,14 +8,14 @@ import Icon from './Icon.jsx'
 import Elapsed from './Elapsed.jsx'
 import { useConnectionTrouble } from './SyncBanner.jsx'
 
-function Tab({ active, icon, label, onClick, dot }) {
+function Tab({ active, icon, label, onClick, dot, btnRef }) {
   return (
-    <button className={active ? 'on' : ''} onClick={onClick} aria-label={dot ? label + ', ' + t('Connection problem') : undefined}>
+    <button ref={btnRef} className={active ? 'on' : ''} onClick={onClick} aria-label={dot ? label + ', ' + t('Connection problem') : undefined}>
       <span className="tab-ic">
         <Icon name={icon} />
         {dot && <span className="tab-dot" aria-hidden="true" />}
-        <span>{label}</span>
       </span>
+      <span>{label}</span>
     </button>
   )
 }
@@ -152,8 +152,8 @@ export default function GlassTabBar({ onStart }) {
     >
       <div ref={indicatorRef} className="tab-indicator" aria-hidden="true" />
       <div className="tab-list">
-        <span ref={el => tabsRef.current[0] = el}><Tab active={on('home')} icon="house" label={t('Home')} dot={trouble} onClick={() => nav('/home')} /></span>
-        <span ref={el => tabsRef.current[1] = el}><Tab active={on('plan')} icon="calendar" label={t('Plan')} onClick={() => nav('/plan')} /></span>
+        <Tab btnRef={el => tabsRef.current[0] = el} active={on('home')} icon="house" label={t('Home')} dot={trouble} onClick={() => nav('/home')} />
+        <Tab btnRef={el => tabsRef.current[1] = el} active={on('plan')} icon="calendar" label={t('Plan')} onClick={() => nav('/plan')} />
         <button
           ref={el => tabsRef.current[2] = el}
           className={'start' + (S.active ? ' rec' : '') + (S.active && isWorkoutScreen ? ' on' : '')}
@@ -164,8 +164,8 @@ export default function GlassTabBar({ onStart }) {
           {running ? <span className="tab-time"><Elapsed start={S.active.start} /></span>
             : <span>{S.active ? (isWorkoutScreen ? t('Workout') : S.active.editingWorkoutId ? t('Edit workout') : t('Resume')) : t('Start')}</span>}
         </button>
-        <span ref={el => tabsRef.current[3] = el}><Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => nav('/stats')} /></span>
-        <span ref={el => tabsRef.current[4] = el}><Tab active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => nav('/library')} /></span>
+        <Tab btnRef={el => tabsRef.current[3] = el} active={on('stats')} icon="chart" label={t('Stats')} onClick={() => nav('/stats')} />
+        <Tab btnRef={el => tabsRef.current[4] = el} active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => nav('/library')} />
       </div>
     </nav>
   )

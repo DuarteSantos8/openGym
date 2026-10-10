@@ -6,8 +6,10 @@ import { useStore } from './store/useStore.js'
 import { startMediaSync } from './lib/media-sync.js'
 import { startNativeKeyboard } from './lib/native-keyboard.js'
 import './styles/tokens.css'
-import './styles/glass.css'
 import './index.css'
+// The redesign layer last: glass.css owns the tab bar's floating-pill geometry and the glass
+// surfaces, which have to win over index.css's original full-bleed rules.
+import './styles/glass.css'
 
 // App.jsx restores per-route scroll itself; the browser's own attempt races it.
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual'

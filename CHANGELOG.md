@@ -1,5 +1,27 @@
 # Changelog
 
+## Unreleased
+
+**Liquid Glass redesign** (feature branch `feature/liquid-glass-ai`, plan in `docs/REDESIGN_PLAN.md`)
+
+- **Design tokens** (`frontend/src/styles/tokens.css`): one black-and-white palette, the eight
+  accents kept, and a new **Monochrome** accent as the default for new profiles (existing
+  profiles keep the accent they picked). No hard-coded colour left outside the token file.
+- **Liquid Glass surfaces**: a glass primitive (`styles/glass.css`) with blur, saturation and a
+  light edge, an ambient background of two slowly drifting orbs (pure CSS), and an optional SVG
+  refraction filter for hero elements. Fallbacks for no backdrop-filter, reduced transparency,
+  reduced motion and forced colours — the app never looks broken without them.
+- **Floating pill tab bar** with a sliding indicator; on screens 900 px and wider it becomes a
+  sidebar. The Coach chat, onboarding and plan cards ride the same glass surfaces.
+- **Fluid structure**: page transitions through the View Transitions API where supported,
+  large titles, optional haptics on supported devices.
+- **Coach hardening**: the model's prompt now wraps all user data in explicit `<user_data>`
+  boundaries (losslessly escaped), and the system prompt treats everything inside as data to
+  read, never instructions to obey.
+- **Coach screens load on demand**: they moved into their own lazy chunk (~55 KB), keeping the
+  first paint of the main bundle smaller.
+- Login, home and settings screens captured before/after in `docs/screenshots/`.
+
 ## v1.4.0 (2026-10-09)
 
 The biggest update openGym has had: a new exercise database with 5,632 exercises and new

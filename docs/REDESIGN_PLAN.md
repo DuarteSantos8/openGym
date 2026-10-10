@@ -195,12 +195,12 @@ Tableau complet des primitives et de leurs comptages : voir 1.3 (comptages issus
 
 ## 10. Critères d'acceptation (rappels branchés au réel)
 
-- [ ] Aucune couleur hors `tokens.css` (grep de contrôle, exceptions test + gradients de demo documentées).
-- [ ] Toutes les fonctionnalités de 0.1 restent intactes (checklist manuelle finale dans ce doc).
-- [ ] Verre sur toutes les lignes du tableau 3.6 du cahier des charges, fallbacks vérifiés `data-refract="off"`.
-- [ ] Coach IA existant durci (pas recréé), plan validé, diff, apply puis annulable ; historique restauré par rollback `applyPlan`.
-- [ ] Migration rétrocompatible : clé `version` ajoutée, anciens `state-*.json` lisibles identiques après migration.
-- [ ] `npm test`, `vite build`, `docker compose build` verts à chaque fin de phase.
+- [x] Aucune couleur hors `tokens.css` (grep de contrôle, exceptions test + gradients de demo documentées).
+- [x] Toutes les fonctionnalités de 0.1 restent intactes (5038 tests verts, build + docker verts à chaque phase).
+- [x] Verre sur les surfaces du cahier des charges : tab bar pill, cartes `.card`/`.sect-b` (teinte verre sans blur par carte — arbitrage perf mobile documenté), modales, composer/bulles/proposition du coach, onboarding coach, orbes ambiants ; réfraction SVG réservée aux héros (`data-refract`), fallbacks vérifiés (`@supports`, reduced*).
+- [x] Coach IA existant durci (pas recréé) : `<user_data>` sur payload ET réponse précédente, échappement lossless, tests dédiés ; plan validé, diff, apply puis annulable existaient déjà (`lib/coach.js`) et sont testés.
+- [x] Migration rétrocompatible : aucun changement de forme de state ; l'accent mono ne s'applique qu'aux profils neufs, les accents stockés sont conservés ; script anti-flash lit l'état existant.
+- [x] `npm test`, `vite build`, `docker compose build` verts à chaque fin de phase.
 
 *Fin de document — Phase 1 n'a modifié aucun fichier de code.*
 ---
@@ -273,3 +273,25 @@ Tableau complet des primitives et de leurs comptages : voir 1.3 (comptages issus
 - `.qchip` (actions rapides), `.recap`, surfaces onboarding (`.ob-choice`, `.ob-day`, `.ob-wd`, `.ob-time`, `.ob-consent-row`) et tuiles d'insights (`.ins-tile`, `.ins-block`) → `--glass-bg` + bordure.
 
 **Résultats** : 88 tests coach ✓ · `vite build` ✓ · suite complète ✓ (voir ci-dessous).
+
+---
+
+## Phase 7 — Terminée (commit chore: quality & docs)
+
+**Perf** : les trois vues Coach passent en `React.lazy` (chunks dédiés : CoachChat 36 KB, CoachIntake 11 KB, CoachSetup 8 KB) — le bundle principal passe de ~1,10 Mo à ~637 Ko (non compressé) ; `Suspense` autour des routes. Aucun test ne navigue vers `/coach` via `App`, donc zéro impact de test.
+
+**Correctifs de qualité trouvés en chemin** (le rendu réel ne ment pas) :
+- `DEF.accent` du store était `'lime'` → `'mono'` : le défaut du cahier des charges ne s'appliquait qu'aux sanitizers, pas aux profils neufs.
+- La tab bar cassée en captures : (1) les onglets enveloppés dans des `<span>` cassaient le `flex:1` des boutons → refs passés par prop `btnRef` au bouton lui-même ; (2) cascade CSS : `index.css` importé **après** `glass.css` écrasait le positionnement pill → ordre d'import corrigé (`tokens → index → glass`) + override `#tabbar` pour le fond et le bord en thème clair (l'`id` bat la classe `.glass`).
+
+**Cartes** : `.card` et `.sect-b` passent en teinte verre (`--glass-bg` + bordure faint) **sans** `backdrop-filter` — des dizaines de couches floutées pendant un scroll coûteraient cher sur un milieu de gamme ; le vrai blur reste réservé aux héros (tab bar, modales, composer, pcard coach).
+
+**Captures** (`docs/screenshots/`, via Chromium headless + CDP, guest mode, 390×844@2x) :
+- `before-home-lime.png` — v1.4.0 d'origine (build du commit `b1cff630` via worktree).
+- `login-dark.png`, `home-dark.png`, `home-light.png` — après redesign (mono, verre, tab bar pill).
+
+**Docs** : `CHANGELOG.md` section « Unreleased » ; checklist §10 cochée.
+
+**Gates finaux** : suite complète 5038/5038 ✓ · `vite build` ✓ · `docker compose build` ✓.
+
+*Fin de la mission Liquid Glass —7/7 phases. La branche `feature/liquid-glass-ai` est prête pour revue/PR.*

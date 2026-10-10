@@ -197,7 +197,11 @@ h4.sec{
 
 /* ----------------------------------------------------------------- card -- */
 .card{
-  background:var(--surface);border-radius:var(--r-card);
+  /* Liquid glass tint without a per-card backdrop-filter: dozens of blurred layers during a
+     scroll are the one thing this design must not cost a mid-range phone. The translucency
+     lets the ambient orbs read through; the hero surfaces (tab bar, modals, composer) keep
+     the real blur. */
+  background:var(--glass-bg);border:1px solid var(--glass-border-faint);border-radius:var(--r-card);
   padding:16px;margin-bottom:12px;
 }
 .card .big{font-size:30px;font-weight:600;letter-spacing:-.026em;line-height:1.1}
@@ -208,7 +212,7 @@ h4.sec{
   font-size:13px;font-weight:400;color:var(--label-2);
   letter-spacing:-.004em;padding:0 4px 7px;display:block;
 }
-.sect-b{background:var(--surface);border-radius:var(--r-card);overflow:hidden}
+.sect-b{background:var(--glass-bg);border:1px solid var(--glass-border-faint);border-radius:var(--r-card);overflow:hidden}
 .sect-f{font-size:13px;color:var(--label-2);padding:7px 4px 0;line-height:1.38}
 
 .lrow{
