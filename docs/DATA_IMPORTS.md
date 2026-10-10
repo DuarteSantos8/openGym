@@ -128,3 +128,55 @@ resolve exercises through the same generated lookup, `frontend/src/lib/hevy-id-m
 for the API, English title for the CSV). To regenerate it, set `HEVY_API_KEY` in the environment or
 `.env` and run `node scripts/build-hevy-id-map.mjs`. Localised (non-English) Hevy titles fall back
 to name matching.
+
+## JSON plan import API
+
+`GET /api/plans` and `POST /api/plans/import` offer the plan file flow to tools.
+They accept normal sessions or a dedicated `Authorization: Bearer opg_plan_…`
+credential. A plan credential can only read prescriptions and import plans; it
+cannot access `/api/data`, log workout results or weigh-ins, change settings,
+administer an account, or issue more credentials.
+
+### Credentials
+
+From a signed-in profile, `POST /api/account/plan-keys` takes a descriptive
+`name`, optional `days` (1–365, default 30), and the same fresh owner proof as
+adding a passkey: `cid` + `credential` from a passkey ceremony, or `current`
+while password sign-in is enabled. A stolen session alone cannot mint a key.
+The response includes `id`, `expires`, `scope: "plans:write"` and `token`.
+Store the token securely: it is returned once and only its SHA-256 hash is
+stored by openGym. No phone pairing is involved. There is currently no Settings
+UI for key management; these are API operations for integrations.
+
+`GET /api/account/plan-keys` returns metadata only.
+`POST /api/account/plan-keys/revoke` with `{ "id": "…" }` revokes a key.
+These operations require a normal account session. Expiry, account disable or
+delete, and **sign out everywhere** invalidate the credential too.
+
+### Import
+
+1. Read `GET /api/plans`; keep its `rev` and `wid`.
+2. Send `POST /api/plans/import` with the existing plan-file JSON under `plan`,
+   `baseRev: rev`, and `baseWid: wid` when a write id exists. Optional
+   `schedule: true` replaces the weekly schedule; by default it stays intact.
+3. A successful response contains the new `rev`, `wid` and number of added
+   `routines`. Existing routines stay; imported routines get fresh ids. Custom
+   exercises are reused by name/body part or added, and prescribed loads are
+   converted to the profile's unit with the existing browser importer.
+
+Workout history, bodyweight records, date assignments and settings are never
+accepted in the payload or changed by the import. Unknown exercise ids and
+extra fields are rejected. The file must use `opengym_plan: 1`, contain at most
+100 routines (100 exercises each) and 100 custom exercises, and fit the 5 MiB
+request limit. Exercise ids must resolve to the catalogue or custom exercises
+carried in the file. No Coach/provider call is made.
+
+A missing revision or invalid file returns 400. A concurrent edit or restored
+state with a different write id returns 409 with only current `rev`/`wid`,
+never full profile state. Review the current plan before retrying. Repeating
+the original revision cannot import twice; resending after fetching a fresh
+revision intentionally adds another copy, like importing the file again in
+the UI. A missing state starts an empty plan; an unreadable state returns 503
+and is never replaced.
+
+The [OpenAPI specification](../api/openapi.yaml) documents the complete contract.
