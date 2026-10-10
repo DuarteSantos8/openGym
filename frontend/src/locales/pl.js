@@ -598,6 +598,7 @@ export default {
   'Not trained in this period': 'Nietrenowane w tym okresie',
   'Every muscle group got some work in this period.': 'Każda grupa mięśniowa była trenowana w tym okresie.',
   'No workouts in this period yet.': 'Brak treningów w tym okresie.',
+  'Fewer than two workouts in this period. Pick a longer one.': 'Mniej niż dwa treningi w tym okresie. Wybierz dłuższy.',
   'What this session hits': 'Co trenuje ta sesja',
   'What you just trained': 'Co obejmował ten trening',
   'Body diagram': 'Diagram ciała',

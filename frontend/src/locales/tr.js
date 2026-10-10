@@ -598,6 +598,7 @@ export default {
   'Not trained in this period': 'Bu dönemde çalışılmadı',
   'Every muscle group got some work in this period.': 'Bu dönemde her kas grubu çalıştı.',
   'No workouts in this period yet.': 'Bu dönemde henüz antrenman yok.',
+  'Fewer than two workouts in this period. Pick a longer one.': 'Bu dönemde ikiden az antrenman var. Daha uzun bir dönem seç.',
   'What this session hits': 'Bu antrenman neyi çalıştırıyor',
   'What you just trained': 'Az önce ne çalıştın',
   'Body diagram': 'Vücut diyagramı',

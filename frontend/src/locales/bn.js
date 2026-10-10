@@ -681,6 +681,7 @@ export default {
   'Not trained in this period': 'এই সময়ে ট্রেন করা হয়নি',
   'Every muscle group got some work in this period.': 'এই সময়ে প্রতিটি পেশি গ্রুপ কিছুটা কাজ পেয়েছে।',
   'No workouts in this period yet.': 'এই সময়ে এখনও কোনো ওয়ার্কআউট নেই।',
+  'Fewer than two workouts in this period. Pick a longer one.': 'এই সময়ে দুটির কম ওয়ার্কআউট। আরও লম্বা সময় বেছে নিন।',
   'What this session hits': 'এই সেশন যেসব পেশিতে কাজ করে',
   'What you just trained': 'এইমাত্র যা ট্রেন করলেন',
   'Body diagram': 'শরীরের ডায়াগ্রাম',

@@ -587,6 +587,7 @@ export default {
   'Not trained in this period': '此期間未訓練',
   'Every muscle group got some work in this period.': '在此期間內，所有肌群皆已獲得適度刺激。',
   'No workouts in this period yet.': '此期間尚無任何訓練紀錄。',
+  'Fewer than two workouts in this period. Pick a longer one.': '此期間的訓練少於兩次，請選擇更長的期間。',
   'What this session hits': '本次訓練主要刺激肌群',
   'What you just trained': '剛才完成的鍛鍊肌群',
   'Body diagram': '身體肌群分佈圖',

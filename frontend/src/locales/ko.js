@@ -598,6 +598,7 @@ export default {
   'Not trained in this period': '이 기간에 훈련하지 않음',
   'Every muscle group got some work in this period.': '이 기간에 모든 근육군을 훈련했습니다.',
   'No workouts in this period yet.': '이 기간에 아직 운동이 없습니다.',
+  'Fewer than two workouts in this period. Pick a longer one.': '이 기간에는 운동이 두 번 미만입니다. 더 긴 기간을 선택하세요.',
   'What this session hits': '이 세션이 자극하는 부위',
   'What you just trained': '방금 훈련한 부위',
   'Body diagram': '신체 도해',

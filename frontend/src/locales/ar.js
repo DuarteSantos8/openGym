@@ -488,6 +488,7 @@ export default {
   'Not trained in this period': 'غير مدربة في هذه الفترة',
   'Every muscle group got some work in this period.': 'حصلت كل مجموعة عضلية على نصيبها من العمل في هذه الفترة.',
   'No workouts in this period yet.': 'لا توجد تمارين في هذه الفترة بعد.',
+  'Fewer than two workouts in this period. Pick a longer one.': 'أقل من تمرينين في هذه الفترة. اختر فترة أطول.',
   'What this session hits': 'ما الذي تستهدفه هذه الجلسة',
   'What you just trained': 'العضلات التي درّبتها',
   'Body diagram': 'خريطة الجسم',

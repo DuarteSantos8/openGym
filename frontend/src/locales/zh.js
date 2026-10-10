@@ -598,6 +598,7 @@ export default {
   'Not trained in this period': '此期间未训练',
   'Every muscle group got some work in this period.': '此期间每个肌群都得到了训练。',
   'No workouts in this period yet.': '此期间还没有训练。',
+  'Fewer than two workouts in this period. Pick a longer one.': '此期间的训练少于两次，请选择更长的期间。',
   'What this session hits': '这次训练练到哪里',
   'What you just trained': '你刚刚练了什么',
   'Body diagram': '身体图示',

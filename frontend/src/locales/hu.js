@@ -599,6 +599,7 @@ export default {
   'Not trained in this period': 'Ebben az időszakban nincs edzve',
   'Every muscle group got some work in this period.': 'Minden izomcsoport kapott valamennyi munkát ebben az időszakban.',
   'No workouts in this period yet.': 'Ebben az időszakban még nincs edzés.',
+  'Fewer than two workouts in this period. Pick a longer one.': 'Ebben az időszakban kevesebb mint két edzés van. Válassz hosszabbat.',
   'What this session hits': 'Mit érint ez az edzés',
   'What you just trained': 'Mit edzettél az imént',
   'Body diagram': 'Testábra',

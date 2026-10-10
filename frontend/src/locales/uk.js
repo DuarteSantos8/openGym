@@ -424,6 +424,7 @@ export default {
   'Not trained in this period': 'Не тренувалися за цей період',
   'Every muscle group got some work in this period.': 'За цей період попрацювали всі групи м’язів.',
   'No workouts in this period yet.': 'У цьому періоді ще немає тренувань.',
+  'Fewer than two workouts in this period. Pick a longer one.': 'У цьому періоді менше двох тренувань. Обери довший.',
   'What this session hits': 'Що задіює це тренування',
   'What you just trained': 'Що ти щойно тренував',
   'Body diagram': 'Схема тіла',

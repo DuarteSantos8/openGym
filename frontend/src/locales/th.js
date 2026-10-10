@@ -599,6 +599,7 @@ export default {
   'Not trained in this period': 'ยังไม่ได้ฝึกในช่วงนี้',
   'Every muscle group got some work in this period.': 'ทุกกลุ่มกล้ามเนื้อได้รับการฝึกในช่วงนี้แล้ว',
   'No workouts in this period yet.': 'ยังไม่มีการออกกำลังกายในช่วงนี้',
+  'Fewer than two workouts in this period. Pick a longer one.': 'ช่วงนี้มีการออกกำลังกายน้อยกว่าสองครั้ง ลองเลือกช่วงที่ยาวขึ้น',
   'What this session hits': 'ท่านี้ฝึกกล้ามเนื้อส่วนไหนบ้าง',
   'What you just trained': 'สิ่งที่เพิ่งฝึกไป',
   'Body diagram': 'แผนภาพร่างกาย',
