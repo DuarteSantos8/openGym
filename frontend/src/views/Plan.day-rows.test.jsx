@@ -92,19 +92,20 @@ describe('Plan — the menu', () => {
     return menuSheet.mock.calls.at(-1)[0]
   }
 
-  it('has no Coach banner on the page; the Coach is the menu’s last entry when it is available', () => {
+  const coachButton = () => [...host.querySelectorAll('.hdr button')].find(b => b.textContent === 'Coach')
+
+  it('has its own Coach button in the header when the Coach is available, not a menu entry', () => {
     mocks.coach = true
     mount()
     expect(host.textContent).not.toContain('Plan design and reviews')
-    const menu = openMenu()
-    const coach = menu.items.filter(Boolean).at(-1)
-    expect(coach.label).toBe('Coach')
-    act(() => coach.onClick())
+    expect(openMenu().items.filter(Boolean).map(i => i.label)).not.toContain('Coach')
+    act(() => coachButton().click())
     expect(mocks.nav).toHaveBeenCalledWith('/coach')
   })
 
   it('leaves the Coach out where it is not available', () => {
     mount()
+    expect(coachButton()).toBeUndefined()
     expect(openMenu().items.filter(Boolean).map(i => i.label)).not.toContain('Coach')
   })
 
