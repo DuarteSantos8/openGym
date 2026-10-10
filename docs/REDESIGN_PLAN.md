@@ -255,3 +255,21 @@ Tableau complet des primitives et de leurs comptages : voir 1.3 (comptages issus
 - `.env.example` vérifié : aucune clé secrète non vide (seulement des exemples commentés).
 
 **Résultats** : API 598/598 ✓ · suite frontend complète ✓ · `vite build` ✓ · `docker compose build` ✓ (images web + api).
+
+---
+
+## Phase 6 — Terminée (commit feat(ui) coach glass)
+
+**Audit d'abord — ce qui existait déjà** (ne pas recréer, conforme à la décision de la phase 1) :
+- **Diff plan + apply/revert** : `lib/coach.js` — snapshots (`pushSnapshot`/`revertLast`/`canRevert`), `applyChangeSet`, `applyCreatedPlan`, log, staleness, gate de consentement `CONSENT_VERSION 2` — le tout couvert par `lib/coach.test.js` (describe « applying changes », « snapshots and revert », « created plans », « the gate has something real to read »).
+- **Consentement explicite** : `CoachIntake.jsx` (`.ob-consent` + `.ob-consent-row`, versionné) et le gate côté `lib/coach.js`.
+- **i18n** : `CoachChat.jsx` passe tout par `t()` ; le seul tableau anglais (`BP_LABEL`) est une map de clés traduites, présente dans les 18 locales.
+- **Streaming** : les jobs restent en **polling polycyclé** (`coach-api.js`, POLL_MS 3000). Décision : pas de SSE dans cette phase — le polling est robuste, offline-friendly, et déjà testé ; le streaming resterait un renfort optionnel, pas une dépendance.
+
+**Travail réel livré : restyle verre de `coach.css`** (0 couleur dure avant/après, tout est en tokens ; les tests ne dépendent que des noms de classes, inchangés) :
+- `.chat-hdr` (barre épinglée) et `.composer` (fixed) → `--glass-bg` + blur tokens + hairline `--glass-border-faint`.
+- `.composer textarea` → `--glass-bg-strong` + bordure glass.
+- `.pcard` (carte proposition) et `.bub` (bulle coach) → glass fort avec blur fin.
+- `.qchip` (actions rapides), `.recap`, surfaces onboarding (`.ob-choice`, `.ob-day`, `.ob-wd`, `.ob-time`, `.ob-consent-row`) et tuiles d'insights (`.ins-tile`, `.ins-block`) → `--glass-bg` + bordure.
+
+**Résultats** : 88 tests coach ✓ · `vite build` ✓ · suite complète ✓ (voir ci-dessous).
