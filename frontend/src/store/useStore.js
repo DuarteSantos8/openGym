@@ -116,6 +116,10 @@ export const DEF = {
   // List and Compact fold a finished exercise into one line (Settings → Workout; #241). The
   // workout's Layout menu can flip it for the running session (s.active.collapseCompleted).
   collapseCompleted: false,
+  // Cards and Focus show one exercise at a time: on, Prev and Next (and a swipe, and the arrow
+  // keys) pass the exercises already finished (Settings → Workout; #523). The workout's Layout
+  // menu can flip it for the running session (s.active.skipCompleted), as with the fold above.
+  skipCompleted: false,
   // How the Library, the exercise picker and the muscle explorer show exercises — 'list' (rows
   // with a small thumbnail) or 'cards' (a grid of pictures with the name underneath). Switched
   // by the button in those headers (ExerciseViewToggle); older profiles overlay onto the list.

@@ -17,7 +17,7 @@ import { pinState } from '../lib/queue.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { api, beacon } from '../lib/api.js'
 import { pyramidRestFor, maxRecordAt, isPyramid, pyramidLabel } from '../lib/pyramid.js'
-import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor } from '../lib/supersetFlow.js'
+import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, stepUnitIndex, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor } from '../lib/supersetFlow.js'
 import Media from '../components/Media.jsx'
 import WorkoutScrollAnchor from '../components/WorkoutScrollAnchor.jsx'
 import WorkoutChips from '../components/WorkoutChips.jsx'
@@ -958,6 +958,9 @@ function ActiveWorkout() {
   // The session's own choice (the Layout menu) wins over the saved one (Settings → Workout), the
   // way the layout itself does, so someone who always wants it switches it on once.
   const collapseOn = listMode && !!(A.collapseCompleted ?? S.collapseCompleted)
+  // Its counterpart where one exercise shows at a time (#523): Prev and Next pass the finished
+  // ones. The session's own choice wins over the saved one here too.
+  const skipOn = !listMode && !!(A.skipCompleted ?? S.skipCompleted)
   // A finished unit you tapped open again to look at or fix (Discord: "minimize completed exercises
   // so I view only what I have yet to do"). This screen's own memory: a reload folds it back.
   // Keyed by index like the units, so a different number of exercises starts over.
@@ -1310,10 +1313,13 @@ function ActiveWorkout() {
       if (!active || !Array.isArray(active.entries) || !Number.isInteger(active.cur)) return null
       if (active.cur < 0 || active.cur >= active.entries.length) return null
       const freshUnits = supersetUnits(active.entries)
-      const freshUnitIdx = freshUnits.findIndex(candidate => candidate.includes(active.cur))
-      return freshUnitIdx < 0 ? null : freshUnits[freshUnitIdx + direction]?.[0] ?? null
+      return freshUnits[stepUnitIndex(active.entries, freshUnits, active.cur, direction, skip)]?.[0] ?? null
     }
-    if (targetFor(useStore.getState().S.active) == null) return
+    // Read from the session as it is now, not from this render: the key listener calls the
+    // latest handler, and a swipe can land after the Layout menu flipped the setting.
+    const now = useStore.getState().S
+    const skip = !listMode && !!(now.active?.skipCompleted ?? now.skipCompleted)
+    if (targetFor(now.active) == null) return
     update(s => {
       const target = targetFor(s.active)
       if (target != null) s.active.cur = target
@@ -1353,6 +1359,8 @@ function ActiveWorkout() {
       listMode && { icon: 'minimize', label: t('Collapse completed exercises'),
         sub: t('Keep the current exercise open'), on: collapseOn,
         onClick: () => update(s => { if (s.active) s.active.collapseCompleted = !collapseOn }) },
+      !listMode && { icon: 'chevronRight', label: t('Skip completed exercises'), on: skipOn,
+        onClick: () => update(s => { if (s.active) s.active.skipCompleted = !skipOn }) },
     ],
   })
   // Logging a past workout (#284): the sets were done days ago, so one tap ticks them all and
@@ -1994,7 +2002,8 @@ function ActiveWorkout() {
           // so none of it can be pressed. That includes a superset's header with its Unpair, and a
           // lone exercise's "Make superset" buttons when Settings shows them: without them the
           // header's words moved over, or the card grew by a row, as it landed.
-          const adjacent = units[unitIdx + direction] || []
+          // The one Prev/Next lands on, which "Skip completed exercises" can make a later one.
+          const adjacent = units[stepUnitIndex(A.entries, units, cur, direction, skipOn)] || []
           if (!adjacent.length) return null
           return adjacent.length > 1 ? (
             <div className="ss-card">

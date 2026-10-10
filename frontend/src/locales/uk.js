@@ -2013,6 +2013,8 @@ export default {
   'Deletes your plan, workouts, body weight and measurements on this device. This cannot be undone.': 'Видаляє ваш план, тренування, вагу тіла та виміри на цьому пристрої. Скасувати не вийде.',
   'Collapse completed exercises': 'Згортати виконані вправи',
   'Keep the current exercise open': 'Тримати поточну вправу відкритою',
+  'Skip completed exercises': 'Пропускати виконані вправи',
+  'In Cards and Focus, Prev and Next jump past finished exercises.': 'У режимах «Картки» і «Фокус» кнопки «Назад» і «Далі» пропускають виконані вправи.',
   'Body measurements': 'Виміри тіла',
   'Circumference & composition': 'Обхвати та склад тіла',
   'Measurement': 'Вимір',

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor } from './supersetFlow.js'
+import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, stepUnitIndex, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor } from './supersetFlow.js'
 
 const entry = done => ({ sets: done.map(value => ({ done: value })) })
 
@@ -69,6 +69,56 @@ describe('active workout unit ordering', () => {
   it('returns null only when every unit is complete', () => {
     const entries = [entry([true]), entry([true])]
     expect(nextUnfinishedUnit(entries, [[0], [1]], 1)).toBeNull()
+  })
+})
+
+// "Skip completed exercises" (#523): in Cards and Focus, Prev and Next pass the exercises that
+// are already done.
+describe('stepUnitIndex', () => {
+  const units = [[0], [1], [2, 3], [4]]
+
+  it('without the setting it is the neighbour, done or not', () => {
+    const entries = [entry([false]), entry([true]), entry([true]), entry([true]), entry([false])]
+    expect(stepUnitIndex(entries, units, 0, 1)).toBe(1)
+    expect(stepUnitIndex(entries, units, 4, -1)).toBe(2)
+    expect(stepUnitIndex(entries, units, 1, -1, false)).toBe(0)
+  })
+
+  it('with it, Next and Prev pass finished units to the nearest one with work left', () => {
+    const entries = [entry([false]), entry([true]), entry([true]), entry([true]), entry([false])]
+    expect(stepUnitIndex(entries, units, 0, 1, true)).toBe(3)
+    expect(stepUnitIndex(entries, units, 4, -1, true)).toBe(0)
+  })
+
+  it('a superset is finished only when every member is', () => {
+    const entries = [entry([false]), entry([true]), entry([true]), entry([true, false]), entry([false])]
+    expect(stepUnitIndex(entries, units, 0, 1, true)).toBe(2)
+    // From inside the superset, either member steps from the superset's own place.
+    expect(stepUnitIndex(entries, units, 3, 1, true)).toBe(3)
+    expect(stepUnitIndex(entries, units, 2, -1, true)).toBe(0)
+  })
+
+  it('an exercise with no sets yet has not been done, so it is not passed', () => {
+    const entries = [entry([false]), entry([]), entry([true]), entry([true]), entry([false])]
+    expect(stepUnitIndex(entries, units, 0, 1, true)).toBe(1)
+  })
+
+  it('when everything that way is finished it steps to the neighbour, so nothing is out of reach', () => {
+    const entries = [entry([false]), entry([true]), entry([true]), entry([true]), entry([true])]
+    expect(stepUnitIndex(entries, units, 0, 1, true)).toBe(1)
+    expect(stepUnitIndex(entries, units, 4, -1, true)).toBe(0)
+    const allDone = entries.map(() => entry([true]))
+    expect(stepUnitIndex(allDone, units, 1, 1, true)).toBe(2)
+    expect(stepUnitIndex(allDone, units, 1, -1, true)).toBe(0)
+  })
+
+  it('answers -1 at either end and for state it cannot read', () => {
+    const entries = [entry([false]), entry([false]), entry([false]), entry([false]), entry([false])]
+    expect(stepUnitIndex(entries, units, 0, -1, true)).toBe(-1)
+    expect(stepUnitIndex(entries, units, 4, 1, true)).toBe(-1)
+    expect(stepUnitIndex(entries, units, 9, 1, true)).toBe(-1)
+    expect(stepUnitIndex(null, units, 0, 1, true)).toBe(-1)
+    expect(stepUnitIndex(entries, null, 0, 1, true)).toBe(-1)
   })
 })
 

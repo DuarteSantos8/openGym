@@ -275,7 +275,7 @@ describe('the pages', () => {
     mount('workout')
     expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Rest', 'Logging', 'Before and during'])
     expect(titles()).toEqual(['Rest timer', 'Rest-pause rest', 'Effort per set', 'Shown under each exercise', 'Layout',
-      'Collapse completed exercises', 'Weigh in before workouts', 'Keep screen awake', 'Exercise animations', 'Fine-tuning'])
+      'Collapse completed exercises', 'Skip completed exercises', 'Weigh in before workouts', 'Keep screen awake', 'Exercise animations', 'Fine-tuning'])
     // QA 10-05: the "screen stays on" line is the awake row's own subtitle, not a section footer
     // that read as if it explained the animations above it.
     expect(rowTitled('Keep screen awake').querySelector('.lrow-s').textContent).toMatch(/^The screen stays on/)
@@ -294,6 +294,19 @@ describe('the pages', () => {
     act(() => sw.click())
     expect(mocks.S.collapseCompleted).toBe(true)
     expect('collapseCompleted' in mocks.S.active).toBe(false)
+  })
+
+  // #523: the same switch for the two layouts that show one exercise at a time.
+  it('Skip completed exercises is saved for every session and drops a running session\'s own choice', () => {
+    mount('workout')
+    mocks.S.active = { skipCompleted: false, entries: [] }
+    const row = rowTitled('Skip completed exercises')
+    expect(row.querySelector('.lrow-s').textContent).toBe('In Cards and Focus, Prev and Next jump past finished exercises.')
+    const sw = row.querySelector('[role="switch"]')
+    expect(sw.getAttribute('aria-checked')).toBe('false')
+    act(() => sw.click())
+    expect(mocks.S.skipCompleted).toBe(true)
+    expect('skipCompleted' in mocks.S.active).toBe(false)
   })
 
   it('the Fine-tuning switches write S.wc as the old Workout controls sheet did', () => {

@@ -1251,6 +1251,8 @@ export const PT_BR_OVERRIDES = {
   'and {0} more': 'e mais {0}',
   'Collapse completed exercises': 'Recolher exercícios concluídos',
   'Keep the current exercise open': 'Manter o exercício atual aberto',
+  'Skip completed exercises': 'Pular exercícios concluídos',
+  'In Cards and Focus, Prev and Next jump past finished exercises.': 'Em Cartões e Foco, Anterior e Próximo pulam os exercícios concluídos.',
   'Enter how long it took — at least 1 minute.': 'Informe quanto tempo levou — pelo menos 1 minuto.',
   'Health Connect': 'Conexão Saúde',
   'Write to Health Connect': 'Gravar no Conexão Saúde',
