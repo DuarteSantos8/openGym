@@ -10,6 +10,7 @@ import { MOBILE } from '../lib/mobile.js'
 import Icon from '../components/Icon.jsx'
 import QrCanvas from '../components/QrCanvas.jsx'
 import CameraScan from '../components/CameraScan.jsx'
+import { scanErrorMessage } from '../lib/scan-errors.js'
 import { Button, TextField } from '../components/ui.jsx'
 import { confirmSheet } from '../sheets.jsx'
 
@@ -250,12 +251,4 @@ function CardSheet({ close, card }) {
 
     <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
   </>
-}
-
-// Map the thrown reasons from lib/scan.js to something a person can act on.
-function scanErrorMessage(e) {
-  const m = String(e && e.message)
-  if (m === 'permission-denied') return t('Camera permission is needed to scan. Enable it in Settings.')
-  if (m === 'unsupported') return t('Scanning is not available on this device.')
-  return t('Could not start the scanner')
 }

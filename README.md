@@ -41,6 +41,48 @@ on your phone, synced across your devices, behind your own passkey login.
 </tr>
 </table>
 
+<details>
+<summary><b>What this fork adds</b> (<code>videejay/openGym</code>, compared with <a href="https://github.com/DuarteSantos8/openGym">DuarteSantos8/openGym</a>)</summary>
+
+This fork follows the upstream project and adds the features below. None of them is on upstream
+`main` yet, and they are not part of an upstream release.
+
+**QR codes on the machines** (branch `claude/exercise-qr-codes`)
+
+- An exercise's page has a **QR codes** section. You can scan the code your gym put on the machine,
+  or print a new code. The new code belongs to the exercise straight away and prints on an A4 page
+  with the exercise's name, picture, tags, description and steps, at 3 × 3 cm to cut out.
+- A running workout has a **QR button** in its header (also under ⋯ → Add):
+  - If the exercise is in the workout, scanning its code opens it. When it appears more than once,
+    the copy with sets left to do opens.
+  - If it isn't in the workout, the app asks whether to add it to the routine *and* this workout,
+    or to this workout only.
+  - A code that belongs to no exercise yet can be given to one right there.
+- One code can stand for several exercises, such as a cable tower; scanning it then asks which one
+  you mean. **Unassociate** takes a code off one exercise only: the other exercises keep it, and the
+  code is deleted when the last one lets it go.
+- Works in the browser/PWA (`BarcodeDetector`, falling back to jsQR), on Android (ML Kit) and on
+  iPhone. It uses the scanner the gym check-in already has, so there is no new dependency and no new
+  native plugin.
+- Codes are stored in `S.exQr` (`{ [exerciseId]: [code, …] }`) and sync per exercise, the same way
+  exercise notes do (`lib/sync-merge.js`, `api/sync-stamps.js`). The logic lives in
+  `frontend/src/lib/exercise-qr.js` and has unit tests.
+
+**iPhone and Apple Watch** (branch `claude/stoic-euler-poomda`)
+
+- Apple Health: workouts and weigh-ins are written to Apple Health, and weigh-ins from a scale or
+  another app are read into the body-weight log. This needs a build with
+  `OPENGYM_HEALTHKIT=YES`.
+- When a rest ends, the iOS app sends a local notification, which is mirrored to a paired Apple
+  Watch while the iPhone is locked.
+- **Apple Watch app** (SwiftUI, watchOS 9): shows the next set with reps on the Digital Crown,
+  weight − / +, and the rest countdown with +15 s, pause and skip. A set ticked on the watch goes
+  through the phone's own tick.
+- iPhone install through **AltStore**: `scripts/build-ipa.sh` builds the `.ipa` and an AltStore
+  source on a Mac.
+
+</details>
+
 ## Why openGym
 
 Most workout apps keep your data on their servers, push you towards a subscription, or vanish

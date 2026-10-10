@@ -47,6 +47,8 @@ import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEn
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import FocusView from './FocusView.jsx'
+import { scanOnce } from '../components/CameraScan.jsx'
+import { normalizeQr, resolveScan, scanTargetRoutineId, withExQr } from '../lib/exercise-qr.js'
 import { withMeaning, historyAs, dbLoadFor, entryDbLoad, bellsIn, ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
@@ -1369,7 +1371,11 @@ function ActiveWorkout() {
     workoutCompleteSheet()
   }
   // Adds an exercise after the current unit: the button under the session and the ⋯ menu's Add.
-  const addExercise = () => exercisePicker((ex, quick) => {
+  const addExercise = () => exercisePicker((ex, quick) => addExerciseToSession(ex, { quick }))
+  // The picker's add, and a scanned code's (scanExercise). `routine` names the routine whose block
+  // it joins when that is not the current exercise's; `routineToo` also puts it into that routine
+  // itself — the one add here that changes the plan, and only when you said so.
+  const addExerciseToSession = (ex, { quick = false, routine: target, routineToo = false } = {}) => {
     // A freehand add inherits the current unit's routine (its `rid`) so it lands in that
     // routine's block in a combined session and gets a real prescription; a routine-less
     // freestyle session has no `rid` to inherit. It inherits the block's `noProg` too: an
@@ -1379,17 +1385,23 @@ function ActiveWorkout() {
     // hand (its ⋯ menu) is that exercise's own choice for today and is not passed on; a session
     // kept out as a whole (the header ⋮) takes the new one with it (joinSessionNoProg).
     const curEntry = A.entries[A.cur]
-    const curRid = curEntry?.rid
+    const curRid = target !== undefined ? target?.id : curEntry?.rid
     const routine = curRid ? S.routines.find(r => r.id === curRid) : null
     const freestyle = !routine
-    const noProg = !freestyle && builtOutOfProgression(curEntry, routine)
+    const blockEntry = curEntry?.rid === curRid ? curEntry : A.entries.find(e => e.rid === curRid)
+    const noProg = !freestyle && builtOutOfProgression(blockEntry, routine)
+    const intoRoutine = routineToo && !!routine
+    const activeId = A.id
     // Freestyle has no routine prescription to apply: show the last target in the config
     // sheet and carry its completed rows forward. A planned session uses its configured
     // target when progression is off, while progression-enabled sessions keep their path.
     const seed = freestyle ? freestyleConfig(sessionHistory(S), { id: ex.id, ...defaultConfig(ex.id) }) : null
     const commit = cfg => {
       if (focusMode) focusPointerEpoch.current++
+      let added = false
       update(s => {
+        // The sheet can outlive the workout: fail closed.
+        if (!s.active || s.active.id !== activeId) return
         const full = { ...cfg, id: ex.id }
         // A planned session builds the exercise the way its routine would (prescription, reps
         // source, target); freestyle reproduces what you did last time.
@@ -1406,7 +1418,11 @@ function ActiveWorkout() {
         s.active.entries.splice(insertAt, 0, joinSessionNoProg(s.active, { id: ex.id, ...built, ...(curRid ? { rid: curRid } : {}), ...(noProg ? { noProg: true } : {}) }))
         s.active.cur = insertAt
         useUI.getState().shiftRestOwner(insertAt, 1)
+        // Into the routine as AddToRoutine puts it there (sheets.jsx): its own slot, at the end.
+        if (intoRoutine) s.routines.find(r => r.id === routine.id)?.ex.push({ id: ex.id, ...cfg })
+        added = true
       })
+      if (added && intoRoutine) useUI.getState().toast(t('“{0}” added to {1}', exerciseNameText(ex), routine.name))
     }
     // The "+" on a picker row reads as "add this now" — routed through the same detail
     // sheet before, so it added nothing until you'd scrolled past it and found the real
@@ -1414,9 +1430,65 @@ function ActiveWorkout() {
     // the sheet would have opened with; tapping the row still opens that sheet for anyone
     // who wants to set sets/reps first.
     if (quick) { commit(seed || defaultConfig(ex.id)); useUI.getState().toast(t('“{0}” added to {1}', exerciseNameText(ex), routine ? routine.name : t('Freestyle'))) }
-    // The confirm names what it changes: this workout, never the routine behind it.
-    else exConfigSheet(ex, null, commit, null, routine, seed, null, t('Add to this workout'))
-  })
+    // The confirm names what it changes: this workout, and the routine only when asked to.
+    else exConfigSheet(ex, null, commit, null, routine, seed, null, intoRoutine ? t('Add to workout and routine') : t('Add to this workout'))
+  }
+  // A QR code on a machine (lib/exercise-qr.js, set on the exercise's detail page): scanned here,
+  // it shows that exercise. One the session does not hold is offered for the routine and this
+  // workout, or this workout alone; a code no exercise has yet can be given to one on the spot.
+  const scanExercise = async () => {
+    const code = normalizeQr((await scanOnce())?.value)
+    if (code) goToScanned(code)
+  }
+  const goToScanned = code => {
+    const st = useStore.getState().S
+    if (!st.active) return
+    const hit = resolveScan(st.active, st.exQr, code)
+    if (hit.kind === 'inWorkout') {
+      if (focusMode) focusPointerEpoch.current++
+      update(s => { if (s.active) s.active.cur = hit.idx })
+      showCurrent()
+      useUI.getState().toast(exerciseNameText(exOr(hit.exId)))
+      return
+    }
+    if (hit.kind === 'notInWorkout') {
+      if (hit.exIds.length === 1) offerScannedExercise(hit.exIds[0])
+      else menuSheet({
+        title: t('Which exercise?'), subtitle: t('This code is on several exercises'),
+        items: hit.exIds.map(id => ({ icon: 'dumbbell', label: exerciseNameText(exOr(id)), onClick: () => offerScannedExercise(id) })),
+      })
+      return
+    }
+    confirmSheet({
+      title: t('Unknown code'),
+      message: t('No exercise has this code yet. Pick the one it stands for, and scanning it finds that exercise from now on.'),
+      confirmText: t('Pick exercise'),
+      onConfirm: () => {
+        const picker = exercisePicker(ex => {
+          picker?.close()
+          update(s => { s.exQr = withExQr(s.exQr, ex.id, code) })
+          goToScanned(code)
+        }, { title: t('Which exercise is this code for?') })
+      },
+    })
+  }
+  const offerScannedExercise = exId => {
+    const st = useStore.getState().S
+    const ex = exOr(exId)
+    if (ex.missing || !st.active) return
+    const rid = scanTargetRoutineId(st.active, st.routines)
+    const routine = rid ? st.routines.find(r => r.id === rid) : null
+    menuSheet({
+      title: t('“{0}” isn’t in this workout', exerciseNameText(ex)),
+      subtitle: routine ? t('Add it to the routine as well?') : null,
+      items: [
+        routine && { icon: 'clipboard', accent: true, label: t('Add to “{0}” and this workout', routine.name), sub: t('The routine has it from now on'),
+          onClick: () => addExerciseToSession(ex, { routine, routineToo: true }) },
+        { icon: 'plusCircle', label: t('Only this workout'), sub: routine ? t('The routine stays as it is') : null,
+          onClick: () => addExerciseToSession(ex, { routine }) },
+      ],
+    })
+  }
   // Ending the session without saving it. The ⋯ menu's last item since the header's ✕ became the
   // ⌄ that only leaves the screen (v1.3.11).
   const discardWorkout = () => confirmSheet({
@@ -1436,6 +1508,7 @@ function ActiveWorkout() {
       ] },
       { title: t('Add'), items: [
         { icon: 'plusCircle', label: t('Add exercise'), onClick: addExercise },
+        !editing && !A.backfill && { icon: 'qr', label: t('Scan exercise code'), sub: t('Jump to the exercise on this machine'), onClick: scanExercise },
         !editing && { icon: 'clipboard', label: t('Add routine'), sub: t('Bring another routine into this session'), onClick: addRoutineToSessionSheet },
       ] },
       { title: t('This workout'), items: [
@@ -1932,6 +2005,7 @@ function ActiveWorkout() {
         ? <button className="iconbtn" aria-label={t('Close editor')} title={t('Close editor')} onClick={() => exitWorkoutEdit()}><Icon name="xmark" /></button>
         : <button className="iconbtn" aria-label={t('Minimize')} title={t('Minimize')} onClick={() => nav('/home')}><Icon name="chevronDown" /></button>}
       <div className="whdr-mid"><div className="whdr-name">{A.name}</div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <Elapsed start={A.start} />} · {t('{0} sets', done + '/' + total)}</div></div>
+      {!editing && !A.backfill && <button className="iconbtn" aria-label={t('Scan exercise code')} title={t('Scan exercise code')} onClick={scanExercise}><Icon name="qr" /></button>}
       <button className="iconbtn" aria-label={t('Workout options')} title={t('Workout options')} onClick={openViewMenu}><Icon name="more" /></button>
       <button className="btn primary pill whdr-finish" aria-label={editing ? t('Save changes') : undefined}
         onClick={() => (editing ? finishWorkout() : finishWorkoutSheet({ onDiscard: discardWorkout }))}>{editing ? t('Save') : t('Finish')}</button>

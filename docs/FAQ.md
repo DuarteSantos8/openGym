@@ -94,6 +94,17 @@ phone has seen. One case it gets wrong on purpose: if the old phone sets somethi
 what it was before, after another device changed it, the other device's change wins. Once every
 device is updated, nobody has to guess.
 
+### Can I scan a code on the machine to get to the exercise?
+
+Yes. On an exercise's page in the library, under **QR codes**, either scan the code the gym already
+put on the machine or tap **Print new code**: openGym prints a page about the exercise with a
+3 × 3 cm code to cut out, and the exercise has that code at once. In a running workout, the QR
+button in the header scans it: an exercise of the workout opens straight away, one that isn't in
+it is offered for the routine and this workout (or this workout alone), and a code no exercise has
+yet can be given to one on the spot. One code may stand for several exercises (a cable tower), and
+**Unassociate** takes it off one exercise only: the others keep it, and it is deleted with the
+last one. It works in the browser (camera access needs HTTPS) and in the Android and iPhone apps.
+
 ### I'm moving from another app. Can I bring my history?
 
 FitNotes, Strong and Hevy work out of the box, Apple Health for body weight, and any CSV with a date,
