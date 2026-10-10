@@ -1689,6 +1689,7 @@ export default {
   'Clear': 'Cancella',
   'QR code': 'Codice QR',
   'Delete weigh-in': 'Elimina pesata',
+  'Monochrome': 'Monocromo',
   'Green': 'Verde',
   'Blue': 'Blu',
   'Orange': 'Arancione',

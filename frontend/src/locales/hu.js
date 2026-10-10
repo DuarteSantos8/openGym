@@ -1689,6 +1689,7 @@ export default {
   'Clear': 'Törlés',
   'QR code': 'QR-kód',
   'Delete weigh-in': 'Mérés törlése',
+  'Monochrome': 'Monokróm',
   'Green': 'Zöld',
   'Blue': 'Kék',
   'Orange': 'Narancs',

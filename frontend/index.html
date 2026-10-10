@@ -14,6 +14,20 @@
     document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
   } catch (e) {}
 </script>
+<script>
+  // Apply the theme before first paint so there is no light/dark flash.
+  // resolveTheme mirrors App.jsx: explicit 'light'/'dark' wins, 'system'
+  // (or a missing value) follows prefers-color-scheme. theme-color is set
+  // to the dark/light values the app later uses (App.jsx applyPrefs).
+  try {
+    var s = JSON.parse(localStorage.getItem('gym_state_v1') || '{}');
+    var t = s.theme;
+    var dark = t === 'light' ? false : (t === 'dark' ? true : window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', dark ? '#000000' : '#F5F5F7');
+  } catch (e) {}
+</script>
 <title>openGym</title>
 <meta name="description" content="Personal gym & body weight tracker">
 <meta name="theme-color" content="#0c0e12">

@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 
 const css = readFileSync(new URL('../index.css', import.meta.url), 'utf8')
+  + '\n' + readFileSync(new URL('../styles/tokens.css', import.meta.url), 'utf8')
 const rule = css.match(/\n#toast\{([^}]*)\}/)[1]
 const px = v => {
   const token = v.match(/^var\((--[\w-]+)\)$/)

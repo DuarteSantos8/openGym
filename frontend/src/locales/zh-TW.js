@@ -1670,6 +1670,7 @@ export default {
   'Clear': '清除',
   'QR code': 'QR Code',
   'Delete weigh-in': '刪除體重紀錄',
+  'Monochrome': '單色',
   'Green': '綠色',
   'Blue': '藍色',
   'Orange': '橘色',

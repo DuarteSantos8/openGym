@@ -5,6 +5,7 @@ import { MOBILE } from './lib/mobile.js'
 import { useStore } from './store/useStore.js'
 import { startMediaSync } from './lib/media-sync.js'
 import { startNativeKeyboard } from './lib/native-keyboard.js'
+import './styles/tokens.css'
 import './index.css'
 
 // App.jsx restores per-route scroll itself; the browser's own attempt races it.

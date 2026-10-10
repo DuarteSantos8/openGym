@@ -1689,6 +1689,7 @@ export default {
   'Clear': 'साफ़ करें',
   'QR code': 'QR कोड',
   'Delete weigh-in': 'वज़न प्रविष्टि हटाएँ',
+  'Monochrome': 'मोनोक्रोम',
   'Green': 'हरा',
   'Blue': 'नीला',
   'Orange': 'नारंगी',

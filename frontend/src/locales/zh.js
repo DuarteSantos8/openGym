@@ -1689,6 +1689,7 @@ export default {
   'Clear': '清除',
   'QR code': '二维码',
   'Delete weigh-in': '删除称重记录',
+  'Monochrome': '单色',
   'Green': '绿色',
   'Blue': '蓝色',
   'Orange': '橙色',

@@ -16,7 +16,7 @@
 // A grey goes further, so it never looks like a switched-off button (THEMES below, accent.test.js).
 import { ACCENTS, ACCENT_INK } from './format.js'
 
-export const DEFAULT_ACCENT = 'lime'
+export const DEFAULT_ACCENT = 'mono'
 export const CUSTOM = 'custom'
 
 const HEX = /^#[0-9a-f]{6}$/i

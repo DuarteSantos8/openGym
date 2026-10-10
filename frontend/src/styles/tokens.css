@@ -1,0 +1,277 @@
+/* ============================================================================
+   openGym — design tokens
+   ----------------------------------------------------------------------------
+   Phase 2 of the Liquid Glass redesign. Single source of truth for colour,
+   theme, accent, typography, geometry, shadow and motion. Imported FIRST by
+   the app entry point (src/main.jsx) so every other stylesheet reads from it.
+
+   Naming:
+   - New semantic tokens use the Liquid Glass vocabulary (--bg-base,
+     --text-primary, --accent, --radius-*, --space-*, --dur-*, --ease-*).
+   - Legacy tokens (--bg, --label, --acc, --r, --fast, …) are kept as aliases
+     so the existing index.css and components keep resolving with zero change.
+
+   Only the "system palette" (Apple iOS colours) and the muscle-map ramp live
+   here as concrete values; everything else derives from them via color-mix.
+   ========================================================================== */
+
+:root {
+  /* ------------------------------------------------------------------ theme
+     data-theme="dark" is the default; [data-theme="light"] overrides below.
+     color-scheme tells the UA how to draw scrollbars/inputs/form controls. */
+  color-scheme: dark;
+}
+
+:root, [data-theme="dark"] {
+  /* --- surfaces --- */
+  --bg-base:       #000000;   /* pure black — OLED optimal */
+  --bg-elevated:   #0A0A0B;
+  --bg-elevated-2: #121214;
+
+  /* --- text --- */
+  --text-primary:   #FFFFFF;
+  --text-secondary: rgba(255,255,255,.64);
+  --text-tertiary:  rgba(255,255,255,.40);
+  --text-disabled:  rgba(255,255,255,.24);
+
+  /* --- lines & fills --- */
+  --separator: rgba(255,255,255,.08);
+  --fill-1:    rgba(255,255,255,.06);
+  --fill-2:    rgba(255,255,255,.10);
+  --fill-3:    rgba(255,255,255,.16);
+
+  /* --- opaque helpers (media & controls that never go translucent) --- */
+  --white:   #FFFFFF;
+  --black:   #000000;
+  --media-bg: #FFFFFF;              /* exercise thumbnails sit on white glass */
+  --media-bg-dark: #000000;         /* video backing fills black */
+  --bar-bg: color-mix(in srgb, var(--bg-el) 94%, transparent);          /* fixed bottom bars */
+  --scrim: rgba(0,0,0,.45);         /* sheet backdrop */
+  --scrim-strong: rgba(0,0,0,.55);  /* media overlays / viewer scrim */
+  --thumb: var(--white);            /* switch knob / stepper thumb */
+  --viewer-icon-bg: rgba(255,255,255,.12);
+  --viewer-dim: rgba(255,255,255,.50);        /* secondary viewer text */
+  --viewer-soft: rgba(255,255,255,.08);       /* viewer footer plate */
+  --cam-frame: rgba(255,255,255,.75);         /* dashed scanner frame */
+
+  /* light-theme "iOS grey fill" (rgba(118,118,128,.12)) and tab bar — kept exact */
+  --field-bg: var(--surface-2);
+  --tabbar-bg: var(--bar-bg);
+  --seg-track: var(--surface-3);
+  --seg-sel-bg: var(--surface);
+
+  /* --- status --- */
+  --success: #30D158;
+  --warning: #FF9F0A;
+  --danger:  #FF453A;
+  --info:    #64D2FF;
+
+  /* --- system palette (Apple iOS dark values) --- */
+  --blue:#0a84ff; --green:#30d158; --red:#ff453a; --orange:#ff9f0a;
+  --yellow:#ffd60a; --teal:#40c8e0; --indigo:#5e5ce6; --pink:#ff375f;
+  --purple:#bf5af2; --mint:#63e6e2; --brown:#ac8e68; --grey:#8e8e93;
+
+  /* --- accent (per-account, synced). Monochrome by default: white ink. --- */
+  --accent:      var(--text-primary);
+  --accent-2:    var(--text-secondary);   /* pressed/link derivative */
+  --on-accent:   var(--bg-base);
+  --accent-soft: color-mix(in srgb, var(--accent) 16%, transparent);
+  --accent-line: color-mix(in srgb, var(--accent) 38%, transparent);
+  /* Preset accents redefine --acc/--acc-2/--on-acc per [data-accent] below;
+     --acc-soft/--acc-line derive from --acc via the alias mapping. */
+
+  /* --- geometry --- */
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 28px;
+  --radius-xl: 36px;
+  --radius-pill: 999px;
+
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px;
+
+  --page-gutter: 20px;
+  --tabbar-height: 64px;
+  --tabbar-offset: 12px;
+  --content-max: 720px;
+
+  /* --- type scale --- */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter,
+               "Segoe UI", Roboto, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --fs-caption: clamp(0.72rem, 0.70rem + 0.1vw, 0.78rem);
+  --fs-footnote: clamp(0.80rem, 0.78rem + 0.1vw, 0.86rem);
+  --fs-body: clamp(0.95rem, 0.92rem + 0.15vw, 1.0625rem);
+  --fs-headline: clamp(1.0625rem, 1.0rem + 0.2vw, 1.1875rem);
+  --fs-title-3: clamp(1.25rem, 1.15rem + 0.4vw, 1.4rem);
+  --fs-title-2: clamp(1.5rem, 1.35rem + 0.6vw, 1.75rem);
+  --fs-title-1: clamp(1.9rem, 1.6rem + 1.2vw, 2.25rem);
+  --fs-large-title: clamp(2.25rem, 1.9rem + 1.6vw, 2.75rem);
+  --fs-display: clamp(3.5rem, 2.5rem + 5vw, 6rem);
+
+  /* --- shadow ramps (theme-dependent, see below) --- */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.16);
+  --shadow-sm: 0 3px 8px rgba(0,0,0,.15), 0 1px 1px rgba(0,0,0,.16);
+  --shadow-knob: 0 3px 8px rgba(0,0,0,.12), 0 1px 1px rgba(0,0,0,.06);
+  --shadow-knob-lg: 0 4px 10px rgba(0,0,0,.22), 0 1px 2px rgba(0,0,0,.16);
+  --shadow-md: 0 6px 18px -4px rgba(0,0,0,.40);
+  --shadow-lift: 0 10px 28px rgba(0,0,0,.22);
+  --shadow-panel: 0 10px 30px -6px rgba(0,0,0,.5);
+  --shadow-share: 0 6px 24px rgba(0,0,0,.28);
+  --shadow-lg: 0 12px 34px -8px rgba(0,0,0,.55);
+  --shadow-timer: 0 12px 40px -10px rgba(0,0,0,.5);
+  --shadow-up: 0 -10px 30px -14px rgba(0,0,0,.55);
+  --shadow-xl: 0 20px 60px -12px rgba(0,0,0,.55);
+  --shadow-ring: 0 0 0 1px rgba(0,0,0,.3);
+  --shadow-grip: 0 1px 6px rgba(0,0,0,.4);
+
+  /* --- motion --- */
+  --dur-fast: 150ms;
+  --dur-base: 250ms;
+  --dur-slow: 400ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring-bouncy: linear(0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.723 12.9%, 0.938 16.7%,
+                               1.017 19.2%, 1.067 22.1%, 1.08 24.2%, 1.068 26.6%, 1.02 31.3%,
+                               0.99 36.4%, 0.985 42.5%, 1.002 56%, 1);
+
+  /* --- muscle map ramp (five steps, same meaning as .hm-c l0..l4) --- */
+  --muscle-base: color-mix(in srgb, var(--text-primary) 11%, var(--bg-elevated-2));
+  --muscle-l1: color-mix(in srgb, var(--accent) 32%, var(--muscle-base));
+  --muscle-l2: color-mix(in srgb, var(--accent) 56%, var(--muscle-base));
+  --muscle-l3: color-mix(in srgb, var(--accent) 78%, var(--muscle-base));
+  --muscle-l4: var(--accent);
+
+  /* ============================================================== aliases
+     Legacy names the rest of the app already resolves. Mapping them here
+     keeps every existing rule reading the new tokens with no edits. */
+  --bg:      var(--bg-base);
+  --bg-el:   var(--bg-elevated);
+  --surface: var(--bg-elevated-2);
+  --surface-2: var(--bg-elevated);
+  --surface-3: var(--bg-elevated-2);
+
+  --label:   var(--text-primary);
+  --label-2: var(--text-secondary);
+  --label-3: var(--text-tertiary);
+  --label-4: var(--text-disabled);
+
+  --sep:    var(--separator);
+  --sep-op: color-mix(in srgb, var(--separator) 70%, transparent);
+
+  --acc:      var(--accent);
+  --acc-2:    var(--accent-2);
+  --on-acc:   var(--on-accent);
+  --acc-soft: color-mix(in srgb, var(--acc) 16%, transparent);
+  --acc-line: color-mix(in srgb, var(--acc) 38%, transparent);
+  --knob-ring: transparent;
+
+  --r-sm: var(--radius-xs);
+  --r:    var(--radius-sm);
+  --r-lg: var(--radius-md);
+  --r-xl: 22px;
+  --r-card: var(--radius-sm);
+
+  --ease: var(--ease-spring);
+  --fast: var(--dur-fast);
+  --med:  var(--dur-base);
+
+  --hair: .5px;
+  --pad:  var(--space-4);
+  --icon-stroke: 1.7;
+}
+
+/* ---------------------------------------------------------------- light -- */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg-base:       #F5F5F7;
+  --bg-elevated:   #FFFFFF;
+  --bg-elevated-2: #FAFAFC;
+
+  --text-primary:   #0A0A0B;
+  --text-secondary: rgba(10,10,11,.62);
+  --text-tertiary:  rgba(10,10,11,.38);
+  --text-disabled:  rgba(10,10,11,.22);
+
+  --separator: rgba(0,0,0,.08);
+  --fill-1:    rgba(0,0,0,.04);
+  --fill-2:    rgba(0,0,0,.07);
+  --fill-3:    rgba(0,0,0,.12);
+
+  --success: #1FA84A;
+  --warning: #D97F00;
+  --danger:  #E0352B;
+  --info:    #0A84C8;
+
+  /* opaque helpers — light theme keeps true white surfaces for media */
+  --media-bg: #FFFFFF;
+  --media-bg-dark: #000000;
+  --bar-bg: color-mix(in srgb, var(--bg-el) 94%, transparent);
+  --scrim: rgba(0,0,0,.32);
+  --scrim-strong: rgba(0,0,0,.45);
+  --thumb: var(--white);
+  --viewer-icon-bg: rgba(255,255,255,.12);
+
+  /* light-theme "iOS grey fill" and tab bar — the exact legacy values */
+  --field-bg: rgba(118,118,128,.12);
+  --tabbar-bg: rgba(249,249,251,.94);
+  --seg-track: rgba(118,118,128,.12);
+  --seg-sel-bg: #FFFFFF;
+
+  /* system palette (Apple iOS light values) */
+  --blue:#007aff; --green:#34c759; --red:#ff3b30; --orange:#ff9500;
+  --yellow:#ffcc00; --teal:#30b0c7; --indigo:#5856d6; --pink:#ff2d55;
+  --purple:#af52de; --mint:#00c7be; --brown:#a2845e; --grey:#8e8e93;
+
+  /* accent — monochrome default: black ink on the light page */
+  --accent:    var(--text-primary);
+  --accent-2:  var(--text-secondary);
+  --on-accent: var(--bg-base);
+
+  --shadow-sm: 0 3px 8px rgba(0,0,0,.08), 0 1px 1px rgba(0,0,0,.06);
+  --shadow-md: 0 6px 18px -6px rgba(0,0,0,.18);
+  --shadow-lg: 0 12px 34px -10px rgba(0,0,0,.22);
+  --shadow-xl: 0 20px 60px -16px rgba(0,0,0,.24);
+
+  --muscle-base: color-mix(in srgb, var(--text-primary) 11%, var(--bg-elevated));
+
+  /* aliases (same mapping; --acc/--surface etc. derive from the base set) */
+  --surface-3: color-mix(in srgb, var(--text-primary) 8%, var(--bg-base));
+  --sep-op: color-mix(in srgb, var(--separator) 75%, transparent);
+}
+
+/* -------------------------------------------------------------- accents --
+   The eight Apple presets (kept) + the new default "mono". Each sets the
+   accent ramp and an on-ink chosen for >= 4.5:1 (text) / 3:1 (large) contrast.
+   label-on-accent for filled buttons is decided by measured contrast
+   (see the notes in the original index.css). */
+[data-accent="mono"] {
+  --acc: var(--text-primary);
+  --acc-2: var(--text-secondary);
+  --on-acc: var(--bg-base);
+  --knob-ring: color-mix(in srgb, var(--text-secondary) 40%, transparent);
+}
+[data-accent="lime"]  { --acc:var(--green);  --acc-2:#248a3d; --on-acc:#000 }
+[data-accent="sky"]   { --acc:var(--blue);   --acc-2:#0060df; --on-acc:#fff }
+[data-accent="orange"]{ --acc:var(--orange); --acc-2:#c76b00; --on-acc:#000 }
+[data-accent="violet"]{ --acc:var(--purple); --acc-2:#8944ab; --on-acc:#fff }
+[data-accent="pink"]  { --acc:var(--pink);   --acc-2:#d70036; --on-acc:#fff }
+[data-accent="red"]   { --acc:var(--red);    --acc-2:#d70015; --on-acc:#fff }
+[data-accent="teal"]  { --acc:var(--teal);   --acc-2:#0071a4; --on-acc:#000 }
+[data-accent="gold"]  { --acc:var(--yellow); --acc-2:#b25000; --on-acc:#000; --knob-ring:rgba(0,0,0,.28) }
+/* Light-theme label ink per accent (measured contrast — see original notes). */
+:root[data-theme="light"][data-accent="lime"],
+:root[data-theme="light"][data-accent="teal"]  { --on-acc:#000 }
+:root[data-theme="light"][data-accent="sky"],
+:root[data-theme="light"][data-accent="violet"],
+:root[data-theme="light"][data-accent="pink"],
+:root[data-theme="light"][data-accent="red"]   { --on-acc:#fff }
+
+/* ----------------------------------------------------------- accessibility
+   Reduced motion & reduced transparency honour the design system's motion and
+   translucency tokens so later glass phases degrade cleanly. */
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 100ms; --dur-base: 100ms; --dur-slow: 100ms; }
+}

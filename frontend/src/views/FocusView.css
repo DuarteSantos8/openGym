@@ -12,7 +12,7 @@
 .focus-card-header h2{flex:1;font-size:20px;line-height:1.2;text-transform:capitalize}
 .focus-warmup{font-size:16px}
 /* The set on screen is taken to failure: the same purple "F" the set rows wear. */
-.focus-failure{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 4px;border-radius:10px;background:var(--purple);color:#fff;font-size:12px;font-weight:700}
+.focus-failure{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 4px;border-radius:10px;background:var(--purple);color:var(--white);font-size:12px;font-weight:700}
 .focus-context{display:grid;gap:5px;margin-top:10px}
 .focus-tags{display:flex;flex-wrap:wrap;gap:5px}
 .focus-note,.focus-last,.focus-guidance{color:var(--label-2);font-size:12px;line-height:1.35}

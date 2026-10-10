@@ -1689,6 +1689,7 @@ export default {
   'Clear': '지우기',
   'QR code': 'QR 코드',
   'Delete weigh-in': '체중 기록 삭제',
+  'Monochrome': '모노크롬',
   'Green': '초록',
   'Blue': '파랑',
   'Orange': '주황',

@@ -1697,6 +1697,7 @@ export default {
   'Clear': 'ล้าง',
   'QR code': 'คิวอาร์โค้ด',
   'Delete weigh-in': 'ลบการชั่งน้ำหนัก',
+  'Monochrome': 'โมโนโครม',
   'Green': 'เขียว',
   'Blue': 'น้ำเงิน',
   'Orange': 'ส้ม',

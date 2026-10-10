@@ -17,101 +17,17 @@
    ========================================================================== */
 
 /* ---------------------------------------------------------------- tokens -- */
-:root {
-  /* surfaces — dark is the default */
-  --bg:        #000000;
-  --bg-el:     #0e0e10;   /* elevated backdrop (sheets, bars) */
-  --surface:   #1c1c1e;   /* card / grouped-list fill */
-  --surface-2: #2c2c2e;   /* pressed + nested fill */
-  --surface-3: #3a3a3c;   /* controls (segmented track, switch off) */
-
-  /* text */
-  --label:     #ffffff;
-  --label-2:   rgba(235,235,245,.60);
-  --label-3:   rgba(235,235,245,.32);
-  --label-4:   rgba(235,235,245,.18);
-
-  /* lines */
-  --sep:       rgba(84,84,88,.60);
-  --sep-op:    rgba(84,84,88,.34);   /* for edges sitting over blur */
-  --hair:      .5px;
-
-  /* system palette (iOS dark values) */
-  --blue:#0a84ff; --green:#30d158; --red:#ff453a; --orange:#ff9f0a;
-  --yellow:#ffd60a; --teal:#40c8e0; --indigo:#5e5ce6; --pink:#ff375f;
-  --purple:#bf5af2; --mint:#63e6e2; --brown:#ac8e68; --grey:#8e8e93;
-
-  /* accent (per-account, synced) */
-  --acc:  var(--green);
-  --acc-2:#248a3d;
-  --on-acc:#000000;
-  --acc-soft: color-mix(in srgb, var(--acc) 16%, transparent);
-  --acc-line: color-mix(in srgb, var(--acc) 38%, transparent);
-
-  /* geometry */
-  --r-sm:8px; --r:12px; --r-lg:16px; --r-xl:22px; --r-card:14px;
-  --pad:16px;
-  --icon-stroke:1.7;
-
-  /* motion */
-  --ease:cubic-bezier(.32,.72,0,1);
-  --fast:140ms; --med:220ms;
-
-  /* The system bars the page is drawn under. env() is all a browser and the iOS app give; the
-     Android WebView reports only the camera cutout there, and on Android 15, which draws the app
-     under the status and navigation bars, the app passes the bars themselves as --native-sat and
-     --native-sab (MainActivity.java). The larger one wins, so a WebView that learns to report
-     the bars does not count them twice. */
+/* Design tokens (colour, theme, accent, type, geometry, shadow, motion) live
+   in styles/tokens.css, imported before this file. Only the runtime values the
+   JS/renderer depends on stay here (safe areas are max()'d against what the
+   native shell reports). */
+:root{
   --sab:max(env(safe-area-inset-bottom,0px),var(--native-sab,0px));
   --sat:max(env(safe-area-inset-top,0px),var(--native-sat,0px));
   /* height of the connection indicator under the status bar, 0 while there is none — set by
      components/SyncBanner.jsx. Whatever starts at the top of the screen starts below it. */
   --conn:0px;
 }
-
-:root[data-theme="light"] {
-  --bg:        #f2f2f7;
-  --bg-el:     #f7f7fa;
-  --surface:   #ffffff;
-  --surface-2: #ececef;
-  --surface-3: #e3e3e8;
-
-  --label:     #000000;
-  --label-2:   rgba(60,60,67,.60);
-  --label-3:   rgba(60,60,67,.30);
-  --label-4:   rgba(60,60,67,.16);
-
-  --sep:       rgba(60,60,67,.29);
-  --sep-op:    rgba(60,60,67,.20);
-
-  --blue:#007aff; --green:#34c759; --red:#ff3b30; --orange:#ff9500;
-  --yellow:#ffcc00; --teal:#30b0c7; --indigo:#5856d6; --pink:#ff2d55;
-  --purple:#af52de; --mint:#00c7be; --brown:#a2845e; --grey:#8e8e93;
-  --acc-2:#248a3d;
-  --on-acc:#ffffff;
-}
-
-/* accents — Apple's system colours, so a recolour never looks off-system */
-:root[data-accent="lime"]  { --acc:var(--green);  --acc-2:#248a3d; --on-acc:#000 }
-:root[data-accent="sky"]   { --acc:var(--blue);   --acc-2:#0060df; --on-acc:#fff }
-:root[data-accent="orange"]{ --acc:var(--orange); --acc-2:#c76b00; --on-acc:#000 }
-:root[data-accent="violet"]{ --acc:var(--purple); --acc-2:#8944ab; --on-acc:#fff }
-:root[data-accent="pink"]  { --acc:var(--pink);   --acc-2:#d70036; --on-acc:#fff }
-:root[data-accent="red"]   { --acc:var(--red);    --acc-2:#d70015; --on-acc:#fff }
-:root[data-accent="teal"]  { --acc:var(--teal);   --acc-2:#0071a4; --on-acc:#000 }
-:root[data-accent="gold"]  { --acc:var(--yellow); --acc-2:#b25000; --on-acc:#000; --knob-ring:rgba(0,0,0,.28) }
-/* Label colour on a filled accent button is picked per accent by measured contrast,
-   not by taste. Button text is 17px/600, so the AA bar is 3:1 (large text). White on
-   the light-theme green is 2.22:1 and on teal 2.57:1 — both fail, and green is the
-   DEFAULT accent, so every primary button in light mode was failing. Black scores
-   9.46 / 8.16 there. Blue, purple, pink and red keep white (3.5–4.1:1), which both
-   passes and matches the platform convention. */
-:root[data-theme="light"][data-accent="lime"],
-:root[data-theme="light"][data-accent="teal"]  { --on-acc:#000 }
-:root[data-theme="light"][data-accent="sky"],
-:root[data-theme="light"][data-accent="violet"],
-:root[data-theme="light"][data-accent="pink"],
-:root[data-theme="light"][data-accent="red"]   { --on-acc:#fff }
 
 /* ---------------------------------------------------------------- reset -- */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -309,7 +225,7 @@ h4.sec{
 .lrow-i{
   width:29px;height:29px;border-radius:7px;flex:none;font-size:18px;
   display:flex;align-items:center;justify-content:center;
-  background:var(--tint,var(--acc));color:#fff;
+  background:var(--tint,var(--acc));color:var(--on-acc);
 }
 /* The title column never shrinks below its own longest word. With a basis of 0 and min-width:0 it
    only got what a capped value left over, and on a 320px phone "Progression" (96px) was painted over
@@ -399,7 +315,7 @@ h4.sec{
   -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);
   border-top:var(--hair) solid var(--sep-op);
 }
-:root[data-theme="light"] #tabbar{background:rgba(249,249,251,.94)}
+:root[data-theme="light"] #tabbar{background:var(--tabbar-bg)}
 #tabbar button{
   flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
   color:var(--label-3);font-size:10px;font-weight:500;letter-spacing:.005em;padding-top:3px;
@@ -437,7 +353,7 @@ h4.sec{
    orange play glyph onto an orange disc. Both states restate their own colour.
    The disc is orange in either theme, so its glyph is black, not `--on-acc`. */
 #tabbar button.start .cir{color:var(--on-acc)}
-#tabbar button.start.rec .cir{background:var(--orange);color:#000;box-shadow:0 6px 18px -4px color-mix(in srgb,var(--orange) 55%,transparent)}
+#tabbar button.start.rec .cir{background:var(--orange);color:var(--black);box-shadow:var(--shadow-md)}
 #tabbar button.start.rec span{color:var(--orange)}
 #tabbar button.start.rec .cir::after{
   content:'';position:absolute;inset:0;border-radius:50%;
@@ -455,7 +371,7 @@ h4.sec{
    fully opaque instead. Keep this in sync with the rules above. */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   #tabbar{background:var(--bg-el)}
-  :root[data-theme="light"] #tabbar{background:#f9f9fb}
+  :root[data-theme="light"] #tabbar{background:var(--tabbar-bg)}
   #timer{background:var(--surface)}
   #toast{background:var(--surface-2)}
 }
@@ -500,7 +416,7 @@ h4.sec{
 .routine-list.is-reordering{user-select:none;-webkit-user-select:none}
 .routine-list.is-reordering .routine-drag-row{transition:none}
 .routine-drag-row.is-dragging{z-index:2;pointer-events:none}
-.routine-drag-row.is-dragging .item{box-shadow:0 10px 28px rgba(0,0,0,.22);background:var(--surface-2)}
+.routine-drag-row.is-dragging .item{box-shadow:var(--shadow-lift);background:var(--surface-2)}
 .routine-drop-indicator{
   position:absolute;left:6px;right:6px;height:3px;border-radius:99px;
   background:var(--acc);transform:translateY(-50%);pointer-events:none;z-index:3;
@@ -518,7 +434,7 @@ h4.sec{
   .routine-grip:hover{color:var(--label-2)}
 }
 .routine-list.is-reordering,.routine-list.is-reordering *{cursor:grabbing}
-.thumb{width:50px;height:50px;border-radius:9px;object-fit:cover;background:#fff;flex:none}
+.thumb{width:50px;height:50px;border-radius:9px;object-fit:cover;background:var(--media-bg);flex:none}
 /* exercise pictures are decoration inside tappable rows/cards: no save-image callout on
    a long press and no drag ghost when a scroll starts on the picture */
 .thumb,.exmedia img,.exmedia video{-webkit-touch-callout:none;-webkit-user-drag:none;user-select:none;-webkit-user-select:none}
@@ -578,7 +494,7 @@ h4.sec{
 .search-row{display:flex;gap:8px}
 .search-row>.search{flex:1;min-width:0}
 .search-row>.ex-view-btn{width:46px;height:auto;border-radius:10px;background:var(--surface-2);font-size:20px}
-:root[data-theme="light"] .search-row>.ex-view-btn{background:rgba(118,118,128,.12)}
+:root[data-theme="light"] .search-row>.ex-view-btn{background:var(--field-bg)}
 .search-row>.ex-view-btn.on,:root[data-theme="light"] .search-row>.ex-view-btn.on{background:var(--acc-soft);color:var(--acc)}
 
 /* ---------------------------------------------------------------- chips -- */
@@ -662,7 +578,7 @@ body.chips-dragging *{cursor:inherit}
   pointer-events:none;--icon-stroke:2.1;z-index:1;
 }
 .searchf .field{padding-inline-start:35px;padding-inline-end:36px;background:var(--surface-2);border-radius:10px}
-:root[data-theme="light"] .searchf .field{background:rgba(118,118,128,.12)}
+:root[data-theme="light"] .searchf .field{background:var(--field-bg)}
 .searchf .clear{
   position:absolute;inset-inline-end:8px;width:22px;height:22px;border-radius:50%;
   background:var(--label-3);color:var(--bg);display:flex;align-items:center;
@@ -671,7 +587,7 @@ body.chips-dragging *{cursor:inherit}
 /* legacy .search wrapper */
 .search{position:relative}
 .search .input{padding-inline-start:35px;background:var(--surface-2);border-radius:10px}
-:root[data-theme="light"] .search .input{background:rgba(118,118,128,.12)}
+:root[data-theme="light"] .search .input{background:var(--field-bg)}
 .search>svg{
   position:absolute;inset-inline-start:11px;top:50%;transform:translateY(-50%);z-index:1;
   width:16px;height:16px;stroke:var(--label-3);fill:none;stroke-width:2.1;stroke-linecap:round;
@@ -705,15 +621,15 @@ body.chips-dragging *{cursor:inherit}
   transition:background var(--med) var(--ease);
 }
 .sw .knob{
-  width:27px;height:27px;border-radius:50%;background:#fff;
-  box-shadow:0 3px 8px rgba(0,0,0,.15),0 1px 1px rgba(0,0,0,.16);
+  width:27px;height:27px;border-radius:50%;background:var(--thumb);
+  box-shadow:var(--shadow-sm);
   transition:transform var(--med) var(--ease),width var(--fast) var(--ease);
 }
 .sw.on{background:var(--acc)}
 /* On an accent nearly as light as the knob (an own white or pale yellow, the gold preset) the
    knob gets a hairline ring so it does not vanish into the track. lib/accent.js sets --knob-ring
    for an own colour; it is transparent everywhere else. */
-.sw.on .knob{box-shadow:0 0 0 1px var(--knob-ring,transparent),0 3px 8px rgba(0,0,0,.15),0 1px 1px rgba(0,0,0,.16)}
+.sw.on .knob{box-shadow:0 0 0 1px var(--knob-ring,transparent),var(--shadow-sm)}
 .sw.on .knob{transform:translateX(20px)}
 .sw:active .knob{width:31px}
 .sw.on:active .knob{transform:translateX(16px)}
@@ -729,16 +645,16 @@ body.chips-dragging *{cursor:inherit}
   background:var(--surface-3);border-radius:9px;padding:2px;isolation:isolate;
 }
 .seg>button{flex:1 1 0;min-width:0}
-:root[data-theme="light"] .seg{background:rgba(118,118,128,.12)}
+:root[data-theme="light"] .seg{background:var(--seg-track)}
 .seg-sel{
   position:absolute;z-index:0;top:2px;bottom:2px;inset-inline-start:2px;
   width:calc((100% - 4px)/var(--n));
   transform:translateX(calc(100% * var(--i)));
   background:var(--surface);border-radius:7px;
-  box-shadow:0 3px 8px rgba(0,0,0,.12),0 1px 1px rgba(0,0,0,.06);
+  box-shadow:var(--shadow-knob);
   transition:transform var(--med) var(--ease);
 }
-:root[data-theme="light"] .seg-sel{background:#fff}
+:root[data-theme="light"] .seg-sel{background:var(--seg-sel-bg)}
 .seg button{
   position:relative;z-index:1;padding:6px 8px;font-size:14px;font-weight:500;
   letter-spacing:-.006em;color:var(--label);display:flex;align-items:center;
@@ -817,9 +733,9 @@ body.chips-dragging *{cursor:inherit}
 }
 .sld-fill{display:block;height:100%;background:var(--acc);border-radius:99px}
 .sld-knob{
-  position:absolute;width:26px;height:26px;border-radius:50%;background:#fff;
+  position:absolute;width:26px;height:26px;border-radius:50%;background:var(--thumb);
   transform:translateX(-50%);
-  box-shadow:0 4px 10px rgba(0,0,0,.22),0 1px 2px rgba(0,0,0,.16);
+  box-shadow:var(--shadow-knob-lg);
   transition:transform var(--fast) var(--ease);
 }
 .sld.dragging .sld-knob{transform:translateX(-50%) scale(1.14)}
@@ -878,16 +794,16 @@ body.chips-dragging *{cursor:inherit}
 .wthumb-x{
   position:absolute;inset-inline-end:3px;bottom:3px;width:16px;height:16px;border-radius:5px;
   display:flex;align-items:center;justify-content:center;font-size:10px;
-  background:rgba(0,0,0,.55);color:#fff;--icon-stroke:2.4;
+  background:var(--scrim-strong);color:var(--white);--icon-stroke:2.4;
 }
 .exhd{align-items:center}
 .wprog{height:4px;background:var(--surface-2);border-radius:99px;overflow:hidden;margin-bottom:16px}
 .wprog i{display:block;height:100%;background:var(--acc);border-radius:99px;transition:width var(--med) var(--ease)}
-.exmedia{position:relative;border-radius:var(--r-lg);overflow:hidden;background:#fff;margin-bottom:12px}
+.exmedia{position:relative;border-radius:var(--r-lg);overflow:hidden;background:var(--media-bg);margin-bottom:12px}
 .exmedia img{width:100%;height:320px;object-fit:contain;display:block}
 .exmedia .gifhint,.exmedia .giftoggle{
   position:absolute;bottom:9px;display:inline-flex;align-items:center;gap:4px;
-  background:rgba(0,0,0,.45);color:#fff;border-radius:99px;padding:5px 11px;
+  background:var(--scrim);color:var(--white);border-radius:99px;padding:5px 11px;
   font-size:12px;font-weight:500;
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
 }
@@ -906,12 +822,12 @@ body.chips-dragging *{cursor:inherit}
 .exmedia.mini .exmedia-x{height:84px}
 /* a custom exercise's own video (components/CustomMedia.jsx): the same box as a picture, on black
    so a clip that does not fill it is letterboxed like any player */
-.exmedia video{width:100%;height:320px;object-fit:contain;display:block;background:#000}
+.exmedia video{width:100%;height:320px;object-fit:contain;display:block;background:var(--media-bg-dark)}
 .exmedia.compact video{height:120px}
 .exmedia.mini video{height:84px}
-.exmedia:has(> video){background:#000}
+.exmedia:has(> video){background:var(--media-bg-dark)}
 /* a catalogue animation: drawn on white, like the stills next to it */
-.exmedia video.catvid,.exmedia:has(> video.catvid){background:#fff}
+.exmedia video.catvid,.exmedia:has(> video.catvid){background:var(--media-bg)}
 
 /* the link to a video or a guide (#246): a quiet action tile under the picture, or in its place.
    A <button>, so the reset of the browser's button look comes first. */
@@ -968,7 +884,7 @@ body.chips-dragging *{cursor:inherit}
 .wmedia-item .thumb-x{font-size:22px}
 .wmedia-kind{
   position:absolute;inset-inline-end:5px;bottom:5px;width:22px;height:22px;border-radius:99px;
-  display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);color:#fff;font-size:12px;
+  display:flex;align-items:center;justify-content:center;background:var(--scrim-strong);color:var(--white);font-size:12px;
 }
 .wmedia-add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
   color:var(--acc);font-size:11px;line-height:1.2;text-align:center;padding:6px;
@@ -981,42 +897,42 @@ body.chips-dragging *{cursor:inherit}
 .pp-selected{outline:3px solid var(--acc);outline-offset:-3px}
 .pp-check{
   position:absolute;inset-inline-end:5px;top:5px;width:20px;height:20px;border-radius:99px;
-  display:flex;align-items:center;justify-content:center;background:var(--acc);color:#fff;font-size:11px;
+  display:flex;align-items:center;justify-content:center;background:var(--acc);color:var(--on-acc);font-size:11px;
 }
 .pp-cta{position:sticky;bottom:calc(var(--sab) + 10px);display:flex;justify-content:center;margin-top:14px}
-.pp-compare{position:relative;flex:1;min-height:0;overflow:hidden;background:#000;touch-action:none}
+.pp-compare{position:relative;flex:1;min-height:0;overflow:hidden;background:var(--media-bg-dark);touch-action:none}
 .pp-img{
-  position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;
+  position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--media-bg-dark);
   -webkit-user-select:none;user-select:none;
 }
 .pp-handle{
   position:absolute;inset-block:0;transform:translateX(-50%);width:0;
   display:flex;align-items:center;justify-content:center;pointer-events:none;
 }
-.pp-handle::before{content:'';position:absolute;inset-block:0;width:2px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.3)}
-.pp-grip{width:36px;height:36px;border-radius:99px;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.4)}
+.pp-handle::before{content:'';position:absolute;inset-block:0;width:2px;background:var(--white);box-shadow:var(--shadow-ring)}
+.pp-grip{width:36px;height:36px;border-radius:99px;background:var(--thumb);box-shadow:var(--shadow-grip)}
 .pp-label{
-  position:absolute;bottom:14px;font-size:12px;font-weight:600;color:#fff;
-  background:rgba(0,0,0,.55);padding:4px 9px;border-radius:99px;pointer-events:none;
+  position:absolute;bottom:14px;font-size:12px;font-weight:600;color:var(--white);
+  background:var(--scrim-strong);padding:4px 9px;border-radius:99px;pointer-events:none;
 }
 .pp-label-before{inset-inline-start:10px}
 .pp-label-after{inset-inline-end:10px}
 .wrow-media .icn{font-size:13px}
 .mviewer{
-  position:absolute;inset:0;background:#000;color:#fff;display:flex;flex-direction:column;
+  position:absolute;inset:0;background:var(--media-bg-dark);color:var(--white);display:flex;flex-direction:column;
   padding:var(--sat) 0 var(--sab);animation:pop-fade .2s var(--ease);
 }
 @keyframes pop-fade{from{opacity:0}to{opacity:1}}
 .mviewer-bar{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;flex:none}
-.mviewer .iconbtn{color:#fff;background:rgba(255,255,255,.12)}
+.mviewer .iconbtn{color:var(--white);background:var(--viewer-icon-bg)}
 .mviewer-count{font-size:14px;font-variant-numeric:tabular-nums;opacity:.85}
 .mviewer-stage{flex:1;min-height:0;display:flex}
-.exmedia.viewer{flex:1;min-width:0;margin:0;border-radius:0;background:#000;display:flex;align-items:center;justify-content:center}
-.exmedia.viewer img,.exmedia.viewer video{width:100%;height:100%;max-height:100%;object-fit:contain;background:#000}
-.exmedia.viewer .exmedia-x{height:100%;color:rgba(255,255,255,.5)}
+.exmedia.viewer{flex:1;min-width:0;margin:0;border-radius:0;background:var(--media-bg-dark);display:flex;align-items:center;justify-content:center}
+.exmedia.viewer img,.exmedia.viewer video{width:100%;height:100%;max-height:100%;object-fit:contain;background:var(--media-bg-dark)}
+.exmedia.viewer .exmedia-x{height:100%;color:var(--viewer-dim)}
 .mviewer-nav{display:flex;justify-content:space-between;padding:8px 12px;flex:none}
 [dir="rtl"] .mviewer-nav .icn{transform:scaleX(-1)}
-.mviewer-ask{flex:none;padding:12px 16px;background:rgba(255,255,255,.08)}
+.mviewer-ask{flex:none;padding:12px 16px;background:var(--viewer-soft)}
 .mviewer-ask-t{font-weight:600;margin-bottom:10px}
 .mviewer-ask-b{display:flex;gap:8px;justify-content:flex-end}
 
@@ -1135,7 +1051,7 @@ body.chips-dragging *{cursor:inherit}
 /* effort picker: the ⋯-menu list with the value in the icon square, tinted per band; the
    exact-value row carries the same stepper as the logged cell in the set row. */
 .effpick.menu-list .menu-item .effpick-n{
-  background:var(--bc);color:#fff;font-size:13px;font-weight:700;letter-spacing:-.02em;
+  background:var(--bc);color:var(--white);font-size:13px;font-weight:700;letter-spacing:-.02em;
   font-variant-numeric:tabular-nums;
 }
 .effpick .menu-item.on{background:color-mix(in srgb,var(--bc) 14%,var(--surface))}
@@ -1160,7 +1076,7 @@ body.chips-dragging *{cursor:inherit}
 .swpane{position:absolute;top:0;bottom:0;width:0;overflow:hidden;z-index:0}
 .swpane.del{inset-inline-end:0;background:color-mix(in srgb,var(--red) 22%,var(--surface))}
 .swpane.cp{inset-inline-start:0;background:var(--acc-soft)}
-.swpane button{position:absolute;top:0;bottom:0;width:76px;padding:0;color:#fff;transition:width .16s var(--ease)}
+.swpane button{position:absolute;top:0;bottom:0;width:76px;padding:0;color:var(--white);transition:width .16s var(--ease)}
 .swpane.del button{inset-inline-end:0;background:var(--red)}
 .swpane.cp button{inset-inline-start:0;background:var(--acc);color:var(--on-acc)}
 .swpane.armed button{width:100%}
@@ -1331,7 +1247,7 @@ body.chips-dragging *{cursor:inherit}
 .setrow .n::before{content:'';position:absolute;inset:-10px}
 /* A set taken to failure: a small "F" on the number's corner, in the colour the effort scale
    gives "nothing left" (effort.js EFFORT_BANDS). */
-.setrow .n .failmark,.setrow-side>.n .failmark{position:absolute;top:-5px;inset-inline-end:-6px;min-width:13px;height:13px;padding:0 2px;border-radius:7px;background:var(--purple);color:#fff;font-size:9px;font-weight:700;line-height:13px;text-align:center;pointer-events:none}
+.setrow .n .failmark,.setrow-side>.n .failmark{position:absolute;top:-5px;inset-inline-end:-6px;min-width:13px;height:13px;padding:0 2px;border-radius:7px;background:var(--purple);color:var(--white);font-size:9px;font-weight:700;line-height:13px;text-align:center;pointer-events:none}
 /* No +/- buttons: the number field takes the whole cell and is the tap target. */
 .stp.plain{grid-template-columns:1fr}
 .stp.plain .val{width:100%}
@@ -1412,7 +1328,7 @@ body.chips-dragging *{cursor:inherit}
   -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);
   border-radius:var(--r-lg);padding:12px 12px 10px;overflow:hidden;
   display:flex;align-items:center;gap:10px;
-  box-shadow:0 12px 34px -8px rgba(0,0,0,.55);
+  box-shadow:var(--shadow-timer);
   animation:slideup var(--med) var(--ease);
 }
 @keyframes slideup{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
@@ -1455,7 +1371,7 @@ body.chips-dragging *{cursor:inherit}
 #timer.rest.paused .t,#timer.rest.paused .bar{opacity:.5}
 /* work timer (issue #16): the same bar doing the opposite job — outlined and tinted so a
    glance tells "you are holding this" apart from "you are recovering". */
-#timer.working{box-shadow:inset 0 0 0 var(--hair) var(--acc),0 12px 34px -8px rgba(0,0,0,.55)}
+#timer.working{box-shadow:inset 0 0 0 var(--hair) var(--acc),var(--shadow-lg)}
 #timer.working .t{color:var(--acc)}
 /* The label is the exercise name, handed in already cased (exerciseNameText): a capitalize here
    would title-case German's own casing too. */
@@ -1469,9 +1385,9 @@ body.chips-dragging *{cursor:inherit}
 body.no-tabbar #timer{
   inset-inline-start:0;inset-inline-end:0;bottom:0;
   border-radius:var(--r-xl) var(--r-xl) 0 0;padding:14px 14px calc(10px + var(--sab));
-  box-shadow:0 -10px 30px -14px rgba(0,0,0,.55);
+  box-shadow:var(--shadow-up);
 }
-body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10px 30px -14px rgba(0,0,0,.55)}
+body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),var(--shadow-up)}
 @media (max-width:399px){
   #timer .acts{gap:4px}
   #timer .acts .adj{padding-inline:6px;gap:1px}
@@ -1488,7 +1404,7 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 #modal-root{position:fixed;inset:0;z-index:100;display:none}
 #modal-root.open{display:block}
 .mback{
-  position:absolute;inset:0;background:rgba(0,0,0,.4);
+  position:absolute;inset:0;background:var(--scrim);
   -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
   touch-action:none;overscroll-behavior:none;
 }
@@ -1530,10 +1446,10 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
   width:min(84vw,300px);background:var(--bg-el);border-radius:var(--r-lg);padding:20px;
   max-height:calc(100dvh - 2*var(--sat) - 24px);overflow-y:auto;
-  box-shadow:0 20px 60px -12px rgba(0,0,0,.5);
+  box-shadow:var(--shadow-xl);
   animation:pop .28s var(--ease);
 }
-:root[data-theme="light"] .center{background:#fff}
+:root[data-theme="light"] .center{background:var(--bg-elevated)}
 /* a dialog with a field centres in what the Android 15 keyboard leaves */
 :root[data-native-kb] .center{
   top:calc((100% - var(--native-kb)) / 2);
@@ -1607,7 +1523,7 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
   position:absolute;left:0;top:0;background:var(--surface-2);
   border-radius:8px;padding:4px 10px;font-size:12px;font-weight:500;white-space:nowrap;
   max-width:calc(100% - 8px);overflow:hidden;text-overflow:ellipsis;
-  pointer-events:none;box-shadow:0 6px 18px -4px rgba(0,0,0,.4);
+  pointer-events:none;box-shadow:var(--shadow-md);
 }
 
 /* --- activity heatmap --- */
@@ -1637,7 +1553,7 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 /* "Share as image" (#453): the card as it will be sent, at the sheet's width. The placeholder
    holds a portrait card's shape so nothing below it jumps when the picture lands. */
 .share-card{margin:0 auto 14px;max-width:420px}
-.share-card img{display:block;width:100%;max-height:56vh;object-fit:contain;border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,.28)}
+.share-card img{display:block;width:100%;max-height:56vh;object-fit:contain;border-radius:16px;box-shadow:var(--shadow-share)}
 .share-card-ph{aspect-ratio:4/5;max-height:56vh;margin:0 auto;border-radius:16px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;text-align:center;padding:16px}
 /* --- muscle map --- */
 /* Reuses the .hm-c level ramp above, so one accent scale means one thing app-wide. */
@@ -1646,21 +1562,21 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
    but invisible on a white card. */
 .bodymap{
   display:flex;gap:6px;justify-content:center;align-items:flex-start;
-  --bm-base:color-mix(in srgb,var(--label) 11%,var(--surface));
+  --bm-base:var(--muscle-base);
 }
 .bm-v{flex:1;min-width:0;height:auto;max-height:min(46vh,340px)}
 .bm-ph{height:200px}                       /* holds the space while the geometry loads */
 .bm-sil{fill:color-mix(in srgb,var(--label) 18%,var(--surface))}
-.bm-m{fill:var(--bm-base);transition:fill var(--med) var(--ease)}
-.bm-m.l1{fill:color-mix(in srgb,var(--acc) 32%,var(--bm-base))}
-.bm-m.l2{fill:color-mix(in srgb,var(--acc) 56%,var(--bm-base))}
-.bm-m.l3{fill:color-mix(in srgb,var(--acc) 78%,var(--bm-base))}
-.bm-m.l4{fill:var(--acc)}
+.bm-m{fill:var(--muscle-base);transition:fill var(--med) var(--ease)}
+.bm-m.l1{fill:var(--muscle-l1)}
+.bm-m.l2{fill:var(--muscle-l2)}
+.bm-m.l3{fill:var(--muscle-l3)}
+.bm-m.l4{fill:var(--muscle-l4)}
 /* Fatigue view: attention ramp - fatigued muscles highlighted (owner tweak 2026-08-06) */
 .hm-fatigue .bm-m.l4{fill:var(--red)}
 .hm-fatigue .bm-m.l3{fill:var(--orange)}
 .hm-fatigue .bm-m.l2{fill:var(--yellow)}
-.hm-fatigue .bm-m.l1{fill:color-mix(in srgb,var(--yellow) 32%,var(--bm-base))}
+.hm-fatigue .bm-m.l1{fill:color-mix(in srgb,var(--yellow) 32%,var(--muscle-base))}
 .hm-fatigue .hm-c.l4{background:var(--red)}
 .hm-fatigue .hm-c.l3{background:var(--orange)}
 .hm-fatigue .hm-c.l2{background:var(--yellow)}
@@ -1715,7 +1631,7 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
   /* 22px, not a pill radius: one line (about 41px high) still reads as a pill, and a toast that
      wraps to four lines is a rounded box instead of a circle over the page. */
   border-radius:var(--r-xl);padding:11px 20px;font-size:15px;font-weight:500;
-  box-shadow:0 10px 30px -6px rgba(0,0,0,.5);
+  box-shadow:var(--shadow-panel);
   opacity:0;pointer-events:none;transition:opacity var(--med),transform var(--med) var(--ease);
   /* As wide as its text up to 88vw. Without a width, left:50% left it half the screen to wrap
      in, so a long message stood as a narrow column. */
@@ -1770,7 +1686,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 .swatch-own{display:inline-flex;align-items:center;justify-content:center;font-size:15px;--icon-stroke:2.4}
 .swatch-own.unset{
   background:radial-gradient(circle,var(--surface) 0 52%,transparent 54%),
-    conic-gradient(#ff453a,#ff9f0a,#ffd60a,#30d158,#40c8e0,#0a84ff,#bf5af2,#ff375f,#ff453a);
+    conic-gradient(var(--red),var(--orange),var(--yellow),var(--green),var(--teal),var(--blue),var(--purple),var(--pink),var(--red));
   color:var(--label-2);
 }
 .swatch-input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0;margin:0;border-radius:50%;cursor:pointer;-webkit-appearance:none;appearance:none}
@@ -1925,13 +1841,13 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   #tabbar{
     left:50%;right:auto;bottom:16px;transform:translateX(-50%);width:520px;
     border:var(--hair) solid var(--sep-op);border-radius:var(--r-xl);
-    padding:7px 10px 9px;box-shadow:0 12px 40px -10px rgba(0,0,0,.5);
+    padding:7px 10px 9px;box-shadow:var(--shadow-timer);
   }
   #tabbar button.start{margin-top:-26px}
   .sheet{left:50%;right:auto;margin-left:-320px;width:640px;border-radius:var(--r-xl) var(--r-xl) 0 0}
   .center{width:340px}
   #timer{left:50%;right:auto;margin-left:-260px;width:520px;bottom:112px}
-  body.no-tabbar #timer{left:50%;right:auto;bottom:16px;border-radius:var(--r-xl);padding-bottom:10px;box-shadow:0 12px 40px -10px rgba(0,0,0,.5)}
+  body.no-tabbar #timer{left:50%;right:auto;bottom:16px;border-radius:var(--r-xl);padding-bottom:10px;box-shadow:var(--shadow-timer)}
   .exmedia img,.exmedia video{height:380px}
   .hm-wrap{display:flex;flex-direction:column;align-items:center}
 }
@@ -1966,7 +1882,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* The QR itself: lean-qr paints 1 module per pixel, so scale it up with the browser's
    nearest-neighbour so every module stays a crisp square instead of a blurred blob. White
    quiet-zone padding is baked in by the renderer; the plate underneath just frames it. */
-.ci-qr-plate{background:#fff;border-radius:var(--r-lg);padding:16px}
+.ci-qr-plate{background:var(--thumb);border-radius:var(--r-lg);padding:16px}
 .qr-canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;transition:opacity var(--fast)}
 /* the trailing add card — a big + on a dashed outline, same footprint as a real card */
 .ci-add{
@@ -1984,9 +1900,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .ci-dot.on{background:var(--acc);transform:scale(1.15)}
 /* browser camera sheet (components/CameraScan.jsx): the video fills a portrait plate, a dashed
    square in the middle says "put the code here" — decoding reads the whole frame regardless. */
-.cam-wrap{position:relative;width:100%;aspect-ratio:3/4;max-height:58vh;border-radius:var(--r-lg);overflow:hidden;background:#000}
+.cam-wrap{position:relative;width:100%;aspect-ratio:3/4;max-height:58vh;border-radius:var(--r-lg);overflow:hidden;background:var(--media-bg-dark)}
 .cam-wrap video{width:100%;height:100%;object-fit:cover;display:block}
-.cam-frame{position:absolute;inset:0;margin:auto;width:62%;aspect-ratio:1;border:2px dashed rgba(255,255,255,.75);border-radius:14px;pointer-events:none}
+.cam-frame{position:absolute;inset:0;margin:auto;width:62%;aspect-ratio:1;border:2px dashed var(--cam-frame);border-radius:14px;pointer-events:none}
 /* ---------------------------------------------------------------- Plan -- */
 /* Schedule | Routines (views/Plan.jsx). A settings-like page, one column at every width. */
 .plan-views{margin-bottom:18px}
@@ -2023,7 +1939,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* Edit mode, as on an iPhone: a red minus at the start, a handle at the end */
 .plan-minus{
   width:24px;height:24px;border-radius:50%;flex:none;display:grid;place-items:center;
-  background:var(--red);color:#fff;font-size:14px;--icon-stroke:2.6;position:relative;
+  background:var(--red);color:var(--white);font-size:14px;--icon-stroke:2.6;position:relative;
 }
 .plan-minus::before{content:'';position:absolute;inset:-10px}
 .plan-handle{

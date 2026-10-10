@@ -171,7 +171,7 @@ describe('Settings: your own accent colour', () => {
   it('ignores a value that is not a colour', () => {
     mocks.S.accent = 'custom'; mocks.S.accentCustom = 'red;}'
     mount()
-    expect(host.querySelector('.lrow-v').textContent).toBe('Green')
+    expect(host.querySelector('.lrow-v').textContent).toBe('Monochrome')
     expect(own().classList.contains('unset')).toBe(true)
   })
 
