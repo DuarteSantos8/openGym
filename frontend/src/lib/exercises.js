@@ -69,6 +69,14 @@ export function categoriesOf(list) {
   const have = new Set(list.map(e => e.cat).filter(Boolean))
   return CATEGORIES.filter(c => have.has(c))
 }
+// The Type chip row's filter, shared by the Library and the exercise picker (issue #521): the
+// options left in `list`, the choice still in effect, and the list narrowed to it. A choice the
+// search or body part has narrowed away is ignored for now, never a dead end.
+export function byCategory(list, cat) {
+  const opts = categoriesOf(list)
+  const on = opts.includes(cat) ? cat : ''
+  return { opts, on, list: on ? list.filter(e => e.cat === on) : list }
+}
 
 // Custom (user-created) exercises live in synced state S.customEx (issue #11) and are
 // merged into the id index here so every EXIDX[id] lookup keeps working unchanged.
