@@ -105,7 +105,8 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-    <!-- Gym check-in: scanning a membership QR/barcode with the camera. -->
+    <!-- Gym check-in, and the QR codes on the machines (an exercise's detail page, a running
+         workout): scanning a QR code or barcode with the camera. -->
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- Health Connect (#200): write-only, asked for only when the user turns it on in Settings.
          openGym writes finished workouts and weigh-ins and reads nothing back. -->

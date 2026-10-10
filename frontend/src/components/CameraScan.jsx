@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { t } from '../lib/i18n.js'
 import { decodeSource } from '../lib/scan-web.js'
+import { scanCode } from '../lib/scan.js'
+import { scanErrorMessage } from '../lib/scan-errors.js'
+import { MOBILE } from '../lib/mobile.js'
+import { useUI } from '../store/useUI.js'
 import { Button } from '../components/ui.jsx'
 
 // Live camera scanner for the browser/PWA (the app build uses ML Kit's own UI instead — see
@@ -10,7 +14,9 @@ import { Button } from '../components/ui.jsx'
 // Errors are shown in place rather than thrown: a denied permission or a browser without
 // getUserMedia leaves the sheet up with a message, and the add-card form underneath still offers
 // photo import and typing.
-export default function CameraScan({ onFound, onCancel }) {
+// `noCamera` replaces the message for a browser without a camera, for callers with no photo
+// import or text field to fall back on.
+export default function CameraScan({ onFound, onCancel, noCamera }) {
   const videoRef = useRef(null)
   const [error, setError] = useState(null)
 
@@ -54,7 +60,7 @@ export default function CameraScan({ onFound, onCancel }) {
       ? <div className="muted small" style={{ marginBottom: 16, lineHeight: 1.5 }}>
           {error === 'denied'
             ? t('Camera access was denied. Allow it in your browser and try again.')
-            : t('No camera available here. Import a photo or type the code instead.')}
+            : noCamera || t('No camera available here. Import a photo or type the code instead.')}
         </div>
       : <>
           <div className="cam-wrap">
@@ -66,4 +72,38 @@ export default function CameraScan({ onFound, onCancel }) {
         </>}
     <Button variant="tinted" onClick={onCancel}>{t('Cancel')}</Button>
   </>
+}
+
+// The browser sheet for scanOnce: settles the promise once, with null when the sheet goes away
+// some other way than a scan (Cancel, a tap outside, the back gesture).
+function ScanOnceSheet({ settle, close }) {
+  // Settled on the way out only once the sheet has really gone: StrictMode unmounts and mounts
+  // every effect once more on the way in, and settling there answered null before any scan.
+  const live = useRef(false)
+  useEffect(() => {
+    live.current = true
+    return () => {
+      live.current = false
+      setTimeout(() => { if (!live.current) settle(null) }, 0)
+    }
+  }, [settle])
+  return <CameraScan noCamera={t('No camera available here.')}
+    onCancel={() => { settle(null); close() }}
+    onFound={code => { settle(code); close() }} />
+}
+
+/**
+ * One scan, on every platform: ML Kit's own scanner in the app, our camera sheet in a browser.
+ * Resolves to { value, fmt }, or null when nothing was scanned; a scanner that cannot start is
+ * reported as a toast and resolves to null as well.
+ */
+export function scanOnce() {
+  if (MOBILE) {
+    return scanCode().catch(e => { useUI.getState().toast(scanErrorMessage(e)); return null })
+  }
+  return new Promise(resolve => {
+    let done = false
+    const settle = code => { if (!done) { done = true; resolve(code || null) } }
+    useUI.getState().openSheet(close => <ScanOnceSheet settle={settle} close={close} />)
+  })
 }
