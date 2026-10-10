@@ -4,6 +4,7 @@ import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 import { useUI } from './useUI.js'
 import { useStore } from './useStore.js'
 import { beep, chime, countdown, holdSession, hush } from '../lib/sound.js'
+import { api } from '../lib/api.js'
 
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn(), countdown: vi.fn(), hush: vi.fn(), holdSession: vi.fn() }))
 // A signed-in rest books the server push; nothing here should reach a network.
@@ -678,6 +679,7 @@ describe('a timer that runs while the page is hidden', () => {
   it('signed in, a hidden rest leaves the alert to the server push: no local notification', async () => {
     useStore.setState({ user: { id: 'u1' } })
     useUI.getState().startRest(2, 0, { kind: 'set' })
+    await flush()                                    // the server took the push
     goHidden()
     vi.advanceTimersByTime(6000)
     await flush()
@@ -685,6 +687,23 @@ describe('a timer that runs while the page is hidden', () => {
     goVisible()
     await flush()
     expect(shown).not.toHaveBeenCalled()             // back on screen there is nothing to notify
+  })
+
+  // Offline in the gym, or the server down: no push is coming, so the local notification stands
+  // in, as it does for a guest. Only the latest booking counts: +15 s books the end again.
+  it('signed in, a hidden rest whose push the server never took still notifies, once', async () => {
+    useStore.setState({ user: { id: 'u1' } })
+    useUI.getState().startRest(2, 0, { kind: 'set' })
+    await flush()                                    // this one was taken...
+    api.mockImplementationOnce(() => Promise.reject(Object.assign(new Error('Failed to fetch'), { status: undefined })))
+    useUI.getState().addRest(15)                     // ...but the end it booked is gone, and the new one failed
+    await flush()
+    expect(api).toHaveBeenLastCalledWith('/api/push/rest-timer', expect.objectContaining({ method: 'POST' }))
+    goHidden()
+    vi.advanceTimersByTime(20_000)
+    await flush()
+    expect(shown).toHaveBeenCalledTimes(1)
+    expect(shown).toHaveBeenCalledWith('Rest’s over. Next set!', expect.objectContaining({ tag: 'rest-timer' }))
   })
 
   it('a hidden rest that runs out notifies once, not once per tick', async () => {
