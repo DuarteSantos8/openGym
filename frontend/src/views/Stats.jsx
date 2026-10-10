@@ -410,7 +410,8 @@ export default function Stats() {
     return () => window.cancelAnimationFrame(frame)
   }, [])
   const [exId, setExId] = useState(null)
-  const [exMetric, setExMetric] = useState('top')
+  // null until the user picks one: Per set is the default whenever the exercise offers it
+  const [pickedMetric, setExMetric] = useState(null)
   const now = Date.now()
   const kind = displayScale(S)
   const hd = scaleName(kind)
@@ -586,7 +587,7 @@ export default function Stats() {
       series: lines.map(l => ({ points: l.points, color: SET_COLORS[l.n - 1] })),
       anchors: sessions.map(s => ({
         t: s.t, d: s.d, y: Math.max(...s.sets.map(x => x.y)),
-        note: s.sets.filter(x => shown.has(x.n)).map(x => x.n + ': ' + (repsOnly ? x.r : fmtNum(x.w) + '×' + x.r)).join(' · '),
+        note: s.sets.filter(x => shown.has(x.n)).map(x => x.n + ': ' + (repsOnly ? x.r : fmtNum(x.w) + S.unit + '×' + x.r)).join(' · '),
       })),
       ns: lines.map(l => l.n),
       hidden,
@@ -594,6 +595,7 @@ export default function Stats() {
       drop: dropOffSet(sessions),
     }
   }, [workouts, curEx, curMode, repsOnly, oneRmFormula])
+  const exMetric = pickedMetric ?? (perSet ? 'sets' : 'top')
   const onSets = !!perSet && exMetric === 'sets'
   const onE1 = showE1 && exMetric === 'e1rm'
   const onEff = showEff && exMetric === 'effort'
