@@ -39,7 +39,7 @@ Notes:
   Coach with an API key works on that same API image; the Claude and Codex sign-in providers
   need the `coach` build target, which is not published — build it yourself (see
   [AI_COACH.md](AI_COACH.md)).
-- The images are pinned to a release (`1.4.0`), the API and the web image always to the same
+- The images are pinned to a release (`1.4.1`), the API and the web image always to the same
   one. To update, read the release notes, set the new version on both and apply again; pinning
   to `latest` instead means a restarted pod can come back on a version you never chose.
 - Coming from a version before 1.4.0: the `media-download` initContainer and the `opengym-media`

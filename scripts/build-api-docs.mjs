@@ -495,7 +495,7 @@ const html = `<!DOCTYPE html>
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=24">
+<link rel="stylesheet" href="styles.css?v=26">
 <script>document.documentElement.className += ' js'</script>
 <!-- Umami web analytics for opengym.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
@@ -625,7 +625,7 @@ ${schemaCards}
   </div>
 </div></footer>
 
-<script src="site.js?v=24" defer></script>
+<script src="site.js?v=26" defer></script>
 <script>${js}</script>
 </body>
 </html>
