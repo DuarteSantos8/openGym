@@ -46,7 +46,7 @@ final class OpenGymUITests: XCTestCase {
         tap(app.buttons["Choose a different workout"], "Choose a different workout")
         tap(app.staticTexts["Full Body A"], "Full Body A")
         shot("2-workout")
-        tap(app.buttons["Set 1 done"], "Set 1 done")
+        tap(app.switches["Set 1 done"], "Set 1 done")
         allowNotificationsIfAsked()
         XCTAssertTrue(button(startingWith: "1:").waitForExistence(timeout: 10), "no rest countdown after a set")
         shot("3-rest")
