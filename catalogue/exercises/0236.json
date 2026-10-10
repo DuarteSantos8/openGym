@@ -33,7 +33,16 @@
       "trapezius",
       "chest",
       "triceps"
-    ]
+    ],
+    "weights": {
+      "upper-back": 1,
+      "biceps": 0.4,
+      "deltoids": 0.4,
+      "forearm": 0.4,
+      "trapezius": 0.4,
+      "chest": 0,
+      "triceps": 0
+    }
   },
   "textSource": "exercisedb"
 }
