@@ -31,6 +31,8 @@ concurrency:
 
 jobs:
   build:
+    # The demo is the upstream project's; a fork has no Pages site set up for it.
+    if: github.repository == 'DuarteSantos8/openGym'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
