@@ -7,9 +7,10 @@
 import { httpAdapter } from './http.js';
 import { SYSTEM_PROMPT } from '../system-prompt.js';
 
-export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_tokens', temperature = null } = {}) {
+export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_tokens', temperature = null, versionlessFallback = false } = {}) {
   return {
     id,
+    versionlessFallback,
     path: () => '/v1/chat/completions',
     modelsPath: '/v1/models',
     headers: key => (key ? { authorization: 'Bearer ' + key } : {}),
