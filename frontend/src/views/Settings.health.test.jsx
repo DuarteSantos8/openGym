@@ -6,9 +6,9 @@ import Settings from './Settings.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
-// #200: the Health Connect card. Only on the Android app, only where Health Connect is there or
+// #200: the Health Connect card. Only in the phone app, only where Health Connect is there or
 // can be installed, off until switched on, and turning it off asks what happens to what was
-// already written. lib/health-sync.js is mocked; its own tests cover the writing.
+// already written. In the iOS app the same card writes to Apple Health, where HealthKit was granted. lib/health-sync.js is mocked; its own tests cover the writing.
 const mocks = vi.hoisted(() => {
   const state = { S: null, MOBILE: true, android: true, status: { status: 'available', granted: false }, health: { on: false, written: {}, error: null } }
   state.snapshot = () => ({
@@ -85,18 +85,13 @@ const row = text => [...host.querySelectorAll('.lrow')].find(r => r.textContent.
 const writeSwitch = () => row('Write to Health Connect')?.querySelector('[role="switch"]')
 
 describe('Settings — Health Connect', () => {
-  it('is not there on the web build, on iOS, or on a phone without Health Connect', async () => {
+  it('is not there on the web build, or on a phone without Health Connect', async () => {
     mocks.MOBILE = false
     await mount()
     expect(row('Health Connect')).toBeUndefined()
 
     mocks.MOBILE = true
-    mocks.android = false
-    await mount()
-    expect(row('Health Connect')).toBeUndefined()
-
-    mocks.android = true
-    mocks.status = { status: 'unsupported', granted: false }
+    mocks.status = { status: 'unsupported', granted: false, store: null }
     await mount()
     expect(row('Health Connect')).toBeUndefined()
   })
@@ -135,5 +130,36 @@ describe('Settings — Health Connect', () => {
     expect(writeSwitch()).toBeUndefined()
     await act(async () => { row('Install Health Connect').click() })
     expect(mocks.openHealthConnect).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('Settings — Apple Health (iOS app)', () => {
+  beforeEach(() => {
+    mocks.android = false
+    mocks.status = { status: 'available', granted: false, store: 'apple-health' }
+  })
+  const appleSwitch = () => row('Write to Apple Health')?.querySelector('[role="switch"]')
+
+  it('is not there in an app signed without HealthKit', async () => {
+    mocks.status = { status: 'unsupported', granted: false, store: 'apple-health' }
+    await mount()
+    expect(row('Write to Apple Health')).toBeUndefined()
+  })
+
+  it('names Apple Health, and turning it on goes through enableHealth', async () => {
+    await mount()
+    expect(row('Health Connect')).toBeUndefined()
+    expect(appleSwitch().getAttribute('aria-checked')).toBe('false')
+    await act(async () => { appleSwitch().click() })
+    expect(mocks.enableHealth).toHaveBeenCalledTimes(1)
+    expect(mocks.toast).toHaveBeenCalledWith('Writing to Apple Health')
+    expect(row('Open Apple Health')).toBeTruthy()
+  })
+
+  it('asks what to do with what it wrote when turned off', async () => {
+    mocks.health = { on: true, written: {}, error: null }
+    await mount()
+    act(() => { appleSwitch().click() })
+    expect(mocks.menuSheet.mock.calls[0][0].title).toBe('Stop writing to Apple Health?')
   })
 })

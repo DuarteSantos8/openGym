@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-// #200: the Android app keeping Health Connect in step with the log. The native plugin
-// (HealthConnectPlugin.java) and the app's data directory are played in memory.
+// #200: the Android app keeping Health Connect in step with the log, and the iOS app Apple Health
+// the same way. The native plugin (HealthConnectPlugin.java / AppleHealthPlugin.swift) and the
+// app's data directory are played in memory.
 const h = vi.hoisted(() => {
   vi.stubEnv('VITE_MOBILE', '1')
-  return { files: new Map(), calls: [], status: { status: 'available', granted: false }, grant: true, fail: null }
+  return { files: new Map(), calls: [], status: { status: 'available', granted: false }, grant: true, fail: null, platform: 'android', registered: [] }
 })
 
 vi.mock('@capacitor/filesystem', () => ({
@@ -20,8 +21,8 @@ vi.mock('@capacitor/filesystem', () => ({
 }))
 vi.mock('@capacitor/app', () => ({ App: { addListener: () => ({ remove() {} }) } }))
 vi.mock('@capacitor/core', () => ({
-  Capacitor: { getPlatform: () => 'android' },
-  registerPlugin: () => ({
+  Capacitor: { getPlatform: () => h.platform },
+  registerPlugin: name => (h.registered.push(name), {
     status: async () => ({ ...h.status }),
     requestPermissions: async () => { h.calls.push(['request']); h.status.granted = h.grant; return { granted: h.grant } },
     write: async arg => {
@@ -44,7 +45,7 @@ const file = () => JSON.parse(h.files.get('opengym-health.json') || 'null')
 let hs
 beforeEach(async () => {
   vi.resetModules()
-  h.files.clear(); h.calls = []; h.status = { status: 'available', granted: false }; h.grant = true; h.fail = null
+  h.files.clear(); h.calls = []; h.status = { status: 'available', granted: false }; h.grant = true; h.fail = null; h.platform = 'android'; h.registered = []
   hs = await import('./health-sync.js')
 })
 
@@ -141,5 +142,25 @@ describe('turning it off', () => {
     await hs.disableHealth({ removeWritten: true })
     expect(removes()).toEqual([{ sessions: ['opengym-w-w1'], weights: ['opengym-bw-2026-09-17'] }])
     expect(file()).toMatchObject({ on: false, written: {} })
+  })
+})
+
+describe('which store', () => {
+  it('is Health Connect in the Android app', async () => {
+    expect(await hs.healthStatus()).toEqual({ status: 'available', granted: false, store: 'health-connect' })
+    expect(h.registered).toEqual(['HealthConnect'])
+  })
+  it('is Apple Health in the iOS app, written the same way', async () => {
+    h.platform = 'ios'
+    expect((await hs.healthStatus()).store).toBe('apple-health')
+    expect(h.registered).toEqual(['AppleHealth'])
+    const r = await hs.enableHealth(state([workout('w1', 17)]))
+    expect(r.ok).toBe(true)
+    expect(writes()[0].sessions.map(s => s.id)).toEqual(['opengym-w-w1'])
+  })
+  it('says unsupported, naming no store, off the phone app', async () => {
+    h.platform = 'web'
+    expect(await hs.healthStatus()).toEqual({ status: 'unsupported', granted: false, store: null })
+    expect(h.registered).toEqual([])
   })
 })

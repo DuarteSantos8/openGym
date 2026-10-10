@@ -18,6 +18,9 @@
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
 		AA0100000000000000000002 /* PrintPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0100000000000000000001 /* PrintPlugin.swift */; };
 		AA0100000000000000000004 /* PrintPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = AA0100000000000000000003 /* PrintPlugin.m */; };
+		AA0200000000000000000002 /* AppleHealthPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0200000000000000000001 /* AppleHealthPlugin.swift */; };
+		AA0200000000000000000004 /* AppleHealthPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = AA0200000000000000000003 /* AppleHealthPlugin.m */; };
+		AA0200000000000000000006 /* OpenGymViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0200000000000000000005 /* OpenGymViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +31,10 @@
 		AA0000000000000000000001 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		AA0100000000000000000001 /* PrintPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintPlugin.swift; sourceTree = "<group>"; };
 		AA0100000000000000000003 /* PrintPlugin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PrintPlugin.m; sourceTree = "<group>"; };
+		AA0200000000000000000001 /* AppleHealthPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleHealthPlugin.swift; sourceTree = "<group>"; };
+		AA0200000000000000000003 /* AppleHealthPlugin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppleHealthPlugin.m; sourceTree = "<group>"; };
+		AA0200000000000000000005 /* OpenGymViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenGymViewController.swift; sourceTree = "<group>"; };
+		AA0200000000000000000007 /* App.healthkit.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.healthkit.entitlements; sourceTree = "<group>"; };
 		504EC30C1FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		504EC30E1FED79650016851F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -84,6 +91,10 @@
 				AA0000000000000000000001 /* SceneDelegate.swift */,
 				AA0100000000000000000001 /* PrintPlugin.swift */,
 				AA0100000000000000000003 /* PrintPlugin.m */,
+				AA0200000000000000000001 /* AppleHealthPlugin.swift */,
+				AA0200000000000000000003 /* AppleHealthPlugin.m */,
+				AA0200000000000000000005 /* OpenGymViewController.swift */,
+				AA0200000000000000000007 /* App.healthkit.entitlements */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
 				504EC3101FED79650016851F /* LaunchScreen.storyboard */,
@@ -222,6 +233,9 @@
 				AA0000000000000000000002 /* SceneDelegate.swift in Sources */,
 				AA0100000000000000000002 /* PrintPlugin.swift in Sources */,
 				AA0100000000000000000004 /* PrintPlugin.m in Sources */,
+				AA0200000000000000000002 /* AppleHealthPlugin.swift in Sources */,
+				AA0200000000000000000004 /* AppleHealthPlugin.m in Sources */,
+				AA0200000000000000000006 /* OpenGymViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -359,12 +373,16 @@
 			baseConfigurationReference = FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "$(OPENGYM_ENTITLEMENTS_$(OPENGYM_HEALTHKIT))";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 1.0;
+				OPENGYM_ENTITLEMENTS_NO = "";
+				OPENGYM_ENTITLEMENTS_YES = App/App.healthkit.entitlements;
+				OPENGYM_HEALTHKIT = NO;
 				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" \"-DDEBUG\"";
 				PRODUCT_BUNDLE_IDENTIFIER = ch.duartesantos.opengym;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -379,12 +397,16 @@
 			baseConfigurationReference = AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "$(OPENGYM_ENTITLEMENTS_$(OPENGYM_HEALTHKIT))";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 1.0;
+				OPENGYM_ENTITLEMENTS_NO = "";
+				OPENGYM_ENTITLEMENTS_YES = App/App.healthkit.entitlements;
+				OPENGYM_HEALTHKIT = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = ch.duartesantos.opengym;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
