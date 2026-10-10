@@ -527,7 +527,10 @@ function tokenScore(entry, tok, ctx) {
 const CLASSIC = new Set(V13_IDS)
 const EQ_PRIOR = { barbell: 4, dumbbell: 4, cable: 3, 'leverage machine': 3, 'body weight': 3, 'smith machine': 2, kettlebell: 2, 'ez barbell': 2, 'sled machine': 2 }
 const CAT_PRIOR = { strength: 3, calisthenics: 3, olympic: 2, plyometrics: 1, isometric: 1, stretching: -3, mobility: -3, rehab: -4, yoga: -2, pilates: -2 }
-const priorOf = e => (CLASSIC.has(e.id) ? 3 : 0) + (EQ_PRIOR[e.eq] || 0) + (CAT_PRIOR[e.cat] || 0)
+// The one version every gym has, where the catalogue's name hides it: "leg press" means the 45°
+// sled, not the Smith machine or a one-leg variant (Discord, 2026-10-09).
+const EVERYDAY = { '0739': 6 }
+const priorOf = e => (CLASSIC.has(e.id) ? 3 : 0) + (EQ_PRIOR[e.eq] || 0) + (CAT_PRIOR[e.cat] || 0) + (EVERYDAY[e.id] || 0)
 
 // A name that is the query itself wins outright: as typed or in the singular 50, with the typos
 // the search allows for its length 40 ("sqat" is the exercise called "squat", not "dumbbell squat").

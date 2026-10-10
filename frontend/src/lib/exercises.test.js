@@ -136,3 +136,11 @@ describe('the exercise dataset', () => {
     expect(found).toEqual(expect.arrayContaining(['0739', '1464', '0740']))
   })
 })
+
+describe('search: the everyday version first', () => {
+  it('"leg press" finds the 45° sled leg press before the Smith and one-leg versions', async () => {
+    const { EXDB, searchExercises } = await import('./exercises.js')
+    expect(searchExercises(EXDB, 'leg press')[0].id).toBe('0739')
+    expect(searchExercises(EXDB, 'smith leg press')[0].id).toBe('0760')
+  })
+})
