@@ -15,8 +15,21 @@ import { accentValue } from '../lib/accent.js'
 // before the local timer completes. No-ops for guests / offline. The device id keeps the
 // timer this browser's own: a desktop tab finishing its rest on screen used to cancel the
 // alert the phone in the gym was waiting for, because the server held one timer per account.
-const pushRestTimer = sec => { if (useStore.getState().user) api('/api/push/rest-timer', { method: 'POST', body: JSON.stringify({ seconds: sec, deviceId: deviceId() }) }).catch(() => {}) }
-const cancelPushRestTimer = () => { if (useStore.getState().user && !useStore.getState().tourSandbox) api('/api/push/rest-timer/cancel', { method: 'POST', body: JSON.stringify({ deviceId: deviceId() }) }).catch(() => {}) }
+// restPushBooked says the server took the running rest's push: a hidden page that runs out shows
+// the local alert in its place when it did not (runRest), signed in but offline in the gym, or the
+// server down. Every new end (bookRestEnd) or cancel starts it over; an answer to an older booking
+// that lands late is ignored, since it says nothing about the end booked now. It is kept with the
+// rest across a reload (saveRest, restoreRest), as the push itself is.
+let restPushBooked = false
+let restPushSeq = 0
+const forgetRestPush = () => { restPushSeq++; restPushBooked = false }
+const pushRestTimer = sec => {
+  if (!useStore.getState().user) return
+  const seq = restPushSeq
+  api('/api/push/rest-timer', { method: 'POST', body: JSON.stringify({ seconds: sec, deviceId: deviceId() }) })
+    .then(() => { if (seq === restPushSeq) { restPushBooked = true; saveRest(useUI.getState().timer) } }, () => {})
+}
+const cancelPushRestTimer = () => { forgetRestPush(); if (useStore.getState().user && !useStore.getState().tourSandbox) api('/api/push/rest-timer/cancel', { method: 'POST', body: JSON.stringify({ deviceId: deviceId() }) }).catch(() => {}) }
 
 // Books the end of a rest with whatever can announce it while the app is not looking: in the
 // Android app a native alarm and the countdown notification, everywhere else (and wherever that
@@ -29,6 +42,7 @@ const bookRestEnd = (endsAt, totalSec, kind) => {
   // The tour's practice workout (useStore enterTourSandbox) rests on screen only.
   if (useStore.getState().tourSandbox) return
   const switching = kind === 'switch'
+  forgetRestPush()
   if (!MOBILE) { if (!switching) pushRestTimer(Math.max(1, Math.round((endsAt - Date.now()) / 1000))); return }
   const { S } = useStore.getState()
   const tone = restSoundFor(S, kind)
@@ -225,9 +239,10 @@ const runRest = (set, get) => {
     // the page had been, scrolling with it. So a hidden tick leaves everything to the tick that
     // visibilitychange fires when the page is back, exactly what a frozen page did. The one thing a
     // hidden page owes is the alert, and a signed-in device already gets it from the push
-    // pushRestTimer booked. For a guest the local notification stands in, once per rest since the
-    // interval keeps calling, and only where this browser still holds a push subscription
-    // (restAlertsOn). The Android app has its own alarm for this (bookRestEnd).
+    // pushRestTimer booked. For a guest, and for a signed-in device whose push the server never
+    // took (restPushBooked), the local notification stands in, once per rest since the interval
+    // keeps calling, and only where this browser still holds a push subscription (restAlertsOn).
+    // The Android app has its own alarm for this (bookRestEnd).
     // The audio session is not on screen either, and it goes at the end: held on, it kept the
     // volume buttons on a timer with nothing left to count and, under 'playback', the phone's music
     // paused for as long as the phone stayed in the pocket. Once, like the alert.
@@ -236,7 +251,7 @@ const runRest = (set, get) => {
         hiddenOver = true
         hush()
         holdSession(false)
-        if (!MOBILE && !useStore.getState().user) maybeRestNotification()
+        if (!MOBILE && !(useStore.getState().user && restPushBooked)) maybeRestNotification()
       }
       return
     }
@@ -601,7 +616,8 @@ export const useUI = create((set, get) => ({
 // dies with the process, and Android killing the app mid-rest (or iOS dropping the home-screen
 // app) took the bar with it. On the web its end was booked when it started (the server's push,
 // per device, which survives the reload), so it is not booked again: the alert fires once, and
-// the bar's own tick at zero calls the push off as it always does. In the app the countdown
+// the bar's own tick at zero calls the push off as it always does. Whether the server took that
+// push comes back with it (`pushed`), so a hidden end still knows if the local alert stands in. In the app the countdown
 // notification lives in the app's process and may be gone with it, so the end is booked again
 // there: the alarm has a fixed id and the new booking replaces the old one, it never adds a second.
 // A rest that ended meanwhile, or one left with no session running, is dropped.
@@ -616,7 +632,7 @@ const saveRest = tm => {
   if (!ss) return
   try {
     if (!tm || tm.ready) { savedRestKey = null; ss.removeItem(REST_KEY); return }
-    const v = { endsAt: tm.endsAt, total: tm.total, forIdx: tm.forIdx ?? null, forSet: tm.forSet ?? null, kind: tm.kind || null, paused: !!tm.paused, left: tm.left }
+    const v = { endsAt: tm.endsAt, total: tm.total, forIdx: tm.forIdx ?? null, forSet: tm.forSet ?? null, kind: tm.kind || null, paused: !!tm.paused, left: tm.left, pushed: restPushBooked }
     const key = JSON.stringify({ ...v, left: v.paused ? v.left : null })
     if (key === savedRestKey && ss.getItem(REST_KEY) !== null) return
     ss.setItem(REST_KEY, JSON.stringify(v))
@@ -638,6 +654,8 @@ export function restoreRest(now = Date.now()) {
     return true
   }
   pageHiddenAt = typeof document !== 'undefined' && document.hidden ? now : null
+  restPushBooked = saved.pushed === true
+  hiddenOver = false
   const left = Math.max(1, Math.round((saved.endsAt - now) / 1000))
   useUI.setState({ timer: { ...base, left, endsAt: saved.endsAt } })
   // The count-in queued at the start went with the page: queue it again for what is left.
