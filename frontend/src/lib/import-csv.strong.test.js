@@ -132,3 +132,30 @@ describe('two sessions on one day', () => {
     expect(parsed.workouts[0].entries).toHaveLength(2)
   })
 })
+
+// Strong writes what a row is in Set Order: a number for a working set, W for a warm-up, F for a
+// set to failure, and rows of their own for the rest timer and the exercise's note.
+describe('Strong Set Order markers', () => {
+  const csv = [
+    '"Workout #";"Date";"Workout Name";"Duration (sec)";"Exercise Name";"Set Order";"Weight (kg)";"Reps";"RPE";"Distance (meters)";"Seconds";"Notes";"Workout Notes"',
+    '1;"2026-09-01 18:00:00";"Push";3720;"Bench Press (Barbell)";"W";40;10;;;;"";""',
+    '1;"2026-09-01 18:00:00";"Push";3720;"Bench Press (Barbell)";"Rest Timer";;;;;120;"";""',
+    '1;"2026-09-01 18:00:00";"Push";3720;"Bench Press (Barbell)";1;60;10;;;;"";""',
+    '1;"2026-09-01 18:00:00";"Push";3720;"Bench Press (Barbell)";"Rest Timer";;;;;120;"";""',
+    '1;"2026-09-01 18:00:00";"Push";3720;"Bench Press (Barbell)";"F";60;7;;;;"";""',
+  ].join('\n')
+
+  it('reads W as a warm-up and F as a set to failure, and a rest timer row as no set', () => {
+    const parsed = parseWorkoutCSV(csv, { unit: 'kg' })
+    const [bench] = parsed.workouts[0].entries
+    expect(bench.sets).toEqual([
+      { w: 40, r: 10, done: true, phase: 'warmup' },
+      { w: 60, r: 10, done: true },
+      { w: 60, r: 7, done: true, failure: true },
+    ])
+    expect(parsed.warmups).toBe(1)
+    expect(parsed.sets).toBe(3)
+    expect(parsed.skipped).toBe(0)
+    expect(parsed.workouts[0].vol).toBe(60 * 10 + 60 * 7)
+  })
+})
