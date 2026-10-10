@@ -278,15 +278,25 @@
 .ambient-bg::before {
   top: -15%;
   left: -10%;
-  transform: translate3d(var(--orb1-x, 0), var(--orb1-y, 0), 0);
   background: radial-gradient(circle, var(--text-secondary), transparent 70%);
 }
 .ambient-bg::after {
   bottom: -20%;
   right: -15%;
-  transform: translate3d(var(--orb2-x, 0), var(--orb2-y, 0), 0);
   background: radial-gradient(circle, var(--accent), transparent 70%);
   opacity: .10;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ambient-bg::before { animation: orb1-drift 40s ease-in-out infinite alternate; }
+  .ambient-bg::after { animation: orb2-drift 55s ease-in-out infinite alternate; }
+}
+@keyframes orb1-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(8vw, 6vh, 0); }
+}
+@keyframes orb2-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-10vw, -8vh, 0); }
 }
 
 /* Fallbacks so glass never looks broken */

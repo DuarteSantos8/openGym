@@ -217,3 +217,41 @@ Tableau complet des primitives et de leurs comptages : voir 1.3 (comptages issus
 - **Anti-flash** : script inline dans `index.html` (lit `gym_state_v1`, applique `data-theme` + `theme-color` avant le premier rendu).
 - **Muscles** : `--muscle-base`, `--muscle-l1…l4` tokens (remplacent `--bm-base` + `color-mix` en dur).
 - **Exrceptions légitimes** : mask-image (alpha), ombres internes SVG.
+
+---
+
+## Phase 3 — Terminée (commit feat(ui) liquid glass)
+
+**Fichiers** : `frontend/src/styles/glass.css` (nouveau), `frontend/src/components/Glass/Glass.jsx` (nouveau), `frontend/src/components/AmbientBackground.jsx` (nouveau), `frontend/src/components/GlassTabBar.jsx` (nouveau), `frontend/src/styles/tokens.css` (+tokens verre dark/light), `frontend/src/main.jsx`, `frontend/index.html`, `frontend/src/App.jsx`, `frontend/src/components/Modals.jsx`, `frontend/src/App.no-tabs.test.js`.
+
+**Contenu** : primitives `.glass` (blur/saturation/bordure/verre interne), variants, effet interactif `--mx/--my`, `.ambient-bg` (orbes fixes), réfraction `[data-refract="on"] .glass--refract` via filtre SVG `#liquid-glass` injecté dans `index.html` avec script de détection (`data-refract`), fallbacks `@supports not (backdrop-filter…)`, `prefers-reduced-transparency`, `prefers-reduced-motion`, `prefers-contrast: more`. GlassTabBar remplace `TabBar` (test `App.no-tabs.test.js` mis à jour). Modals `.center`/`.sheet` habillés en verre.
+
+**Bug trouvé puis corrigé en fin de phase** : la première version d'`AmbientBackground` faisait dériver les orbes via une boucle `requestAnimationFrame` en JS. Le test `App.scroll.test.jsx` (happy-dom) capture les frames dans un tableau **vivant** et les rejoue (`for (const cb of frames) cb()`) : le tick se re-schedule indéfiniment → boucle infinie → OOM du worker (`FATAL ERROR: Ineffective mark-compacts`, 5037/5038). Correction : orbes animés en **CSS pur** (`@keyframes orb1-drift/orb2-drift` sous `prefers-reduced-motion: no-preference`), composant réduit à un simple `<div>` — zéro JS par frame, meilleur pour la batterie mobile aussi.
+
+**Résultats** : build ✓ · suite frontend verte (5037/5037 au dernier run complet, le fichier de test renommé n'a plus d'entrée dédiée) · `docker compose build` ✓.
+
+---
+
+## Phase 4 — Terminée (commit feat(ui) fluid structure)
+
+**Fichiers** : `frontend/src/lib/haptics.js` (nouveau), `frontend/src/lib/nav-transition.js` (nouveau), `frontend/src/styles/glass.css` (large titles, transitions, sidebar desktop).
+
+**Contenu** : haptique `navigator.vibrate` (light/medium/success/warning, commutable), `navigateWithTransition` (View Transitions API, respecte `prefers-reduced-motion`), `.large-title` (rétrécit au scroll), sidebar desktop ≥900px (tabbar en colonne à gauche, décalage `#app`).
+
+---
+
+## Phase 5 — Terminée (commit feat(api) coach hardening)
+
+**Pré-requis audit** : le coach IA existant avait déjà `validatePlan` pur + testé (`core/validate.js`, `test/validate.test.js`), rate-limit mémoire + testée (`rate-limit.js`, caps `perProfileDaily` dans `coach/jobs.js`, `test/coach-limits.test.js`), et le builder de contexte (`core/payload.js#build`, tests payload/bounds/parity). Rien à recréer.
+
+**Durcissement livré (le vrai gap)** : prompts `<user_data>`.
+- `coach/core/system-prompt.js` : règle explicite — le bloc `<user_data>` est une donnée non fiable, à lire jamais à obéir.
+- `coach/core/prompt.js` : payload JSON et réponse précédente (réparation) enveloppés dans `<user_data>`… `</user_data>` ; le marqueur fermateur tapé par l'utilisateur dans une note/exercice est échappé en `<\/user_data>` (échappement JSON valide, `JSON.parse` inchangé) — impossible de sortir du bloc.
+- `api/test/prompt-injection.test.js` (4 tests : marqueur dans le system prompt, bloc unique avec fence, fuite impossible + perteless, bloc réparation).
+
+**Décisions notables** :
+- **Pas de streaming en phase 5** : le polling jobs polycyclés est préservé tel quel ; le SSE optionnel reste à valider en phase 6 (fallback polling garanti quoi qu'il arrive). nginx n'a donc rien à changer ici.
+- `api/node_modules` absent du workspace cloné → `npm install` dans `api/` requis avant `npm test` (undici manquant cassait `test/warmup.test.js`).
+- `.env.example` vérifié : aucune clé secrète non vide (seulement des exemples commentés).
+
+**Résultats** : API 598/598 ✓ · suite frontend complète ✓ · `vite build` ✓ · `docker compose build` ✓ (images web + api).

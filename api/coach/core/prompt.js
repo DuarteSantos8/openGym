@@ -6,6 +6,14 @@ import { PROMPTS } from './prompts.js';
 export const taskOf = (kind, payload) =>
   kind === 'review' ? 'review' : kind === 'debrief' ? 'debrief' : payload && payload.refine ? 'refine' : 'create';
 
+/** The payload between the markers the system prompt names. The user's own log can contain a
+ *  closing marker (an exercise or note typed as "</user_data>…"), which would let free text step
+ *  outside the block it belongs to — so the marker is escaped inside the block. `<\/` is valid
+ *  JSON for `/`, which keeps `JSON.parse` of the block byte-identical to what went in. */
+const OPEN = '<user_data>';
+const CLOSE = '</user_data>';
+const openBlock = text => OPEN + '\n' + text.split(CLOSE).join('<\\/user_data>') + '\n' + CLOSE;
+
 /**
  * The prompt in two parts: `system` is the rules — byte-identical for every job of the same
  * task, deliberately free of anything user- or day-specific — and `user` is the payload (and,
@@ -25,10 +33,10 @@ export function buildPromptParts(kind, payload, repair) {
   const system = PROMPTS.common + '\n\n---\n\n' + rules;
   // Compact JSON, not pretty-printed: the indentation was ~30% of the payload's tokens and
   // a model reads either just as well.
-  let user = '## Payload\n\n```json\n' + JSON.stringify(payload) + '\n```\n';
+  let user = '## Payload\n\n' + openBlock('```json\n' + JSON.stringify(payload) + '\n```') + '\n';
   if (repair) {
     user += '\n\n---\n\n' + PROMPTS.repair
-      .replace('{{PREVIOUS}}', String(repair.previous || '').slice(0, 4000))
+      .replace('{{PREVIOUS}}', openBlock(String(repair.previous || '').slice(0, 4000)))
       .replace('{{ERRORS}}', repair.errors.map(e => '- ' + e).join('\n'));
   }
   return { system, user, task };
