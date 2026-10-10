@@ -11,6 +11,7 @@ vi.mock('../lib/rest-alert.js', () => ({
   holdRestAlert: vi.fn(),
   disarmRestAlert: vi.fn(),
   bindNativeRest: vi.fn(),
+  toneNative: vi.fn(() => Promise.resolve(true)),
 }))
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ ok: true })) }))
@@ -19,6 +20,7 @@ import { useUI } from './useUI.js'
 import { useStore } from './useStore.js'
 import { armRestAlert } from '../lib/rest-alert.js'
 import { alertBuzz, chime, vibrate } from '../lib/sound.js'
+import { toneNative } from '../lib/rest-alert.js'
 
 let original
 beforeEach(() => {
@@ -69,7 +71,7 @@ describe('vibrate on silent', () => {
     withSettings({ sound: true, restSound: 'soft' })
     useUI.getState().startRest(2)
     await vi.advanceTimersByTimeAsync(3000)
-    expect(chime).toHaveBeenCalledWith(true, 'soft')
+    expect(toneNative).toHaveBeenCalledWith('soft')
   })
 
   it('the end of a rest seen on screen buzzes through alertBuzz', async () => {
