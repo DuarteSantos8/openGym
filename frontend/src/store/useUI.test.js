@@ -4,6 +4,7 @@ import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 import { useUI, bindAuto } from './useUI.js'
 import { useStore } from './useStore.js'
 import { beep, chime, countdown, holdSession, hush } from '../lib/sound.js'
+import { api } from '../lib/api.js'
 
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn(), countdown: vi.fn(), hush: vi.fn(), holdSession: vi.fn() }))
 // A signed-in rest books the server push; nothing here should reach a network.
@@ -788,6 +789,7 @@ describe('a timer that runs while the page is hidden', () => {
   it('signed in, a hidden rest leaves the alert to the server push: no local notification', async () => {
     useStore.setState({ user: { id: 'u1' } })
     useUI.getState().startRest(2, 0, { kind: 'set' })
+    await flush()                                    // the server took the push
     goHidden()
     vi.advanceTimersByTime(6000)
     await flush()
@@ -815,6 +817,37 @@ describe('a timer that runs while the page is hidden', () => {
       await flush()
       expect(shown).not.toHaveBeenCalled()
     } finally { unbind(); goVisible(); useUI.getState().stopCountIn() }
+  })
+
+  // A switch-sides pause books no push (it is not "rest over"), so for a signed-in device none was
+  // taken either: still no local alert, as on screen, where it ends without a Ready.
+  it('signed in, a hidden switch-sides pause notifies nothing, though no push was taken for it', async () => {
+    useStore.setState({ user: { id: 'u1' } })
+    api.mockClear()
+    useUI.getState().startRest(10, 0, { kind: 'switch' })
+    await flush()
+    expect(api).not.toHaveBeenCalledWith('/api/push/rest-timer', expect.anything())
+    goHidden()
+    vi.advanceTimersByTime(11_000)
+    await flush()
+    expect(shown).not.toHaveBeenCalled()
+  })
+
+  // Offline in the gym, or the server down: no push is coming, so the local notification stands
+  // in, as it does for a guest. Only the latest booking counts: +15 s books the end again.
+  it('signed in, a hidden rest whose push the server never took still notifies, once', async () => {
+    useStore.setState({ user: { id: 'u1' } })
+    useUI.getState().startRest(2, 0, { kind: 'set' })
+    await flush()                                    // this one was taken...
+    api.mockImplementationOnce(() => Promise.reject(Object.assign(new Error('Failed to fetch'), { status: undefined })))
+    useUI.getState().addRest(15)                     // ...but the end it booked is gone, and the new one failed
+    await flush()
+    expect(api).toHaveBeenLastCalledWith('/api/push/rest-timer', expect.objectContaining({ method: 'POST' }))
+    goHidden()
+    vi.advanceTimersByTime(20_000)
+    await flush()
+    expect(shown).toHaveBeenCalledTimes(1)
+    expect(shown).toHaveBeenCalledWith('Rest’s over. Next set!', expect.objectContaining({ tag: 'rest-timer' }))
   })
 
   it('a hidden rest that runs out notifies once, not once per tick', async () => {
