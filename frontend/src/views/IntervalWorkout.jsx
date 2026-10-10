@@ -39,6 +39,19 @@ export default function IntervalWorkout() {
   const exercise = entry ? exOr(entry.id) : null
   const exerciseName = entry ? exerciseNameFor(entry.id) : ''
 
+const nextExerciseIndex = flow?.exerciseCount
+  ? (flow.exercise + 1) % flow.exerciseCount
+  : null
+
+const nextEntry = nextExerciseIndex !== null
+  ? active?.entries?.[nextExerciseIndex]
+  : null
+
+const nextExercise = nextEntry ? exOr(nextEntry.id) : null
+const nextExerciseName = nextEntry
+  ? exerciseNameFor(nextEntry.id)
+  : ''
+
   const completed = completedIntervalExercises(flow)
   const total = (flow?.rounds || 0) * (flow?.exerciseCount || 0)
 
@@ -178,14 +191,25 @@ export default function IntervalWorkout() {
   </div>
 )}
 
-        {flow.phase === INTERVAL_PHASE_REST && (
-          <div style={{ marginTop: 10, marginBottom: 18 }}>
-            <div style={{ fontSize: 26, fontWeight: 700 }}>
-              {t('Rest')}
-            </div>
-          </div>
-        )}
+{flow.phase === INTERVAL_PHASE_REST && (
+  <div style={{ marginTop: 10, marginBottom: 18 }}>
+    <div className="small dim">
+      {t('Next exercise')}
+    </div>
 
+    {nextExercise && (
+      <>
+        <div style={{ marginTop: 10 }}>
+          <Media ex={nextExercise} minimizable />
+        </div>
+
+        <div style={{ fontSize: 26, fontWeight: 700, marginTop: 14 }}>
+          {nextExerciseName}
+        </div>
+      </>
+    )}
+  </div>
+)}
         <div style={{ fontSize: 72, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
           {clock(left)}
         </div>

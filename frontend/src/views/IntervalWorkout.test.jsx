@@ -175,29 +175,63 @@ describe('IntervalWorkout', () => {
     })
   })
 
-  it('skips from work to rest', () => {
-    const { container, root } = render()
+it('skips from work to rest', () => {
+  const { container, root } = render()
 
-    const skip = [...container.querySelectorAll('button')]
-      .find(button => button.textContent === 'Skip')
+  const skip = [...container.querySelectorAll('button')]
+    .find(button => button.textContent === 'Skip')
 
-    expect(skip).toBeTruthy()
+  expect(skip).toBeTruthy()
 
-    act(() => {
-      skip.click()
-    })
-
-    expect(mocks.update).toHaveBeenCalled()
-
-    const next = applyLastUpdate()
-
-    expect(next.active.interval.phase).toBe('rest')
-    expect(next.active.interval.exercise).toBe(0)
-
-    act(() => {
-      root.unmount()
-    })
+  act(() => {
+    skip.click()
   })
+
+  expect(mocks.update).toHaveBeenCalled()
+
+  const next = applyLastUpdate()
+
+  expect(next.active.interval.phase).toBe('rest')
+  expect(next.active.interval.exercise).toBe(0)
+
+  act(() => {
+    root.unmount()
+  })
+})
+
+it('shows the next exercise during rest', () => {
+  mocks.state = routineState({
+    phase: 'rest',
+    exercise: 0,
+  })
+
+  const { container, root } = render()
+
+  expect(container.textContent).toContain('Next exercise')
+  expect(container.textContent).toContain('Squats')
+  expect(container.textContent).not.toContain('Burpees')
+
+  act(() => {
+    root.unmount()
+  })
+})
+
+it('shows the first exercise of the next round during the final rest of a round', () => {
+  mocks.state = routineState({
+    phase: 'rest',
+    exercise: 2,
+    round: 0,
+  })
+
+  const { container, root } = render()
+
+  expect(container.textContent).toContain('Next exercise')
+  expect(container.textContent).toContain('Burpees')
+
+  act(() => {
+    root.unmount()
+  })
+})
 
   it('automatically moves from work to rest when the timer expires', () => {
     vi.useFakeTimers()
