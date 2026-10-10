@@ -60,6 +60,20 @@
   --seg-track: var(--surface-3);
   --seg-sel-bg: var(--surface);
 
+/* --- glass (phase 3, phase 2 file) --- */
+  --glass-bg: rgba(255,255,255,.07);
+  --glass-bg-strong: rgba(255,255,255,.12);
+  --glass-bg-thin: rgba(255,255,255,.04);
+  --glass-border: rgba(255,255,255,.16);
+  --glass-border-faint: rgba(255,255,255,.08);
+  --glass-highlight: rgba(255,255,255,.34);
+  --glass-shadow: 0 10px 40px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.30);
+  --glass-blur: 24px;
+  --glass-blur-strong: 36px;
+  --glass-blur-thin: 14px;
+  --glass-saturate: 180%;
+  --glass-tint: transparent;
+
   /* --- status --- */
   --success: #30D158;
   --warning: #FF9F0A;
@@ -234,6 +248,14 @@
   --shadow-md: 0 6px 18px -6px rgba(0,0,0,.18);
   --shadow-lg: 0 12px 34px -10px rgba(0,0,0,.22);
   --shadow-xl: 0 20px 60px -16px rgba(0,0,0,.24);
+
+  --glass-bg: rgba(255,255,255,.55);
+  --glass-bg-strong: rgba(255,255,255,.74);
+  --glass-bg-thin: rgba(255,255,255,.36);
+  --glass-border: rgba(255,255,255,.80);
+  --glass-border-faint: rgba(0,0,0,.06);
+  --glass-highlight: rgba(255,255,255,.95);
+  --glass-shadow: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.06);
 
   --muscle-base: color-mix(in srgb, var(--text-primary) 11%, var(--bg-elevated));
 

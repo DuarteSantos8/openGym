@@ -1,0 +1,239 @@
+/* ============================================================================
+   Liquid Glass — surface classes
+   ----------------------------------------------------------------------------
+   iOS 26-style glass approximation. Progressive: if backdrop-filter is
+   unsupported, @supports rules in index.css give a near-opaque fallback so
+   text stays readable. Refraction (feDisplacementMap) is reserved for hero
+   elements via .glass--refract and only when [data-refract="on"].
+   ========================================================================== */
+
+.glass {
+  position: relative;
+  isolation: isolate;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-border-faint);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    var(--glass-shadow),
+    inset 0 1px 0 var(--glass-highlight),
+    inset 0 -1px 0 rgba(255,255,255,.04),
+    inset 0 0 0 1px var(--glass-border);
+}
+
+.glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.28) 0%, rgba(255,255,255,.06) 28%, transparent 55%),
+    linear-gradient(315deg, rgba(255,255,255,.10) 0%, transparent 35%);
+  mix-blend-mode: soft-light;
+  opacity: .9;
+  z-index: -1;
+}
+
+.glass--strong {
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+}
+.glass--thin {
+  background: var(--glass-bg-thin);
+  -webkit-backdrop-filter: blur(var(--glass-blur-thin)) saturate(140%);
+  backdrop-filter: blur(var(--glass-blur-thin)) saturate(140%);
+}
+.glass--tinted { background: color-mix(in srgb, var(--accent) 22%, var(--glass-bg)); }
+.glass--pill { border-radius: var(--radius-pill); }
+
+.glass--interactive {
+  transition: transform var(--dur-base) var(--ease-spring), background var(--dur-base) var(--ease-out);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.glass--interactive:active { transform: scale(.97); background: var(--glass-bg-strong); }
+@media (hover: hover) { .glass--interactive:hover { background: var(--glass-bg-strong); } }
+
+.glass--interactive::after {
+  content: "";
+  position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(120px circle at var(--mx, 50%) var(--my, 0%), rgba(255,255,255,.22), transparent 60%);
+  opacity: 0; transition: opacity var(--dur-base) var(--ease-out);
+}
+.glass--interactive:active::after, .glass--interactive:hover::after { opacity: 1; }
+
+/* Refraction — only when the browser supports the SVG filter AND the app
+   flagged support via [data-refract="on"]. Reserved for hero elements. */
+[data-refract="on"] .glass--refract {
+  -webkit-backdrop-filter: url(#liquid-glass) blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: url(#liquid-glass) blur(var(--glass-blur)) saturate(var(--glass-saturate));
+}
+
+/* GlassTabBar — floating pill with sliding indicator */
+#tabbar {
+  position: fixed;
+  bottom: calc(var(--tabbar-offset) + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100% - 2 * var(--page-gutter), 480px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  touch-action: pan-y;
+  transition: transform var(--dur-slow) var(--ease-spring), opacity var(--dur-base) var(--ease-out);
+}
+#tabbar.tabbar-hidden-1 {
+  transform: translateX(-50%) translateY(calc(100% + var(--tabbar-offset) + env(safe-area-inset-bottom)));
+  opacity: 0;
+  pointer-events: none;
+}
+#tabbar .tab-list {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  position: relative;
+}
+#tabbar .tab-indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  border-radius: var(--radius-pill);
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  opacity: 0;
+  transition: transform var(--dur-slow) var(--ease-spring-bouncy), width var(--dur-slow) var(--ease-spring-bouncy), opacity var(--dur-base) var(--ease-out);
+  pointer-events: none;
+  z-index: 0;
+}
+#tabbar button {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 4px;
+  min-width: 0;
+  min-height: 48px;
+  border: 0;
+  background: none;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .005em;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+#tabbar button.on {
+  color: var(--text-primary);
+}
+#tabbar button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+#tabbar .tab-ic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+#tabbar button.on .tab-ic {
+  background: var(--glass-bg-strong);
+}
+#tabbar .tab-dot {
+  position: absolute;
+  top: 4px;
+  right: calc(50% - 18px);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--danger);
+}
+#tabbar button.start {
+  flex: 1.2;
+}
+#tabbar button.start .cir {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+  transition: transform var(--dur-fast) var(--ease-spring);
+}
+#tabbar button.start:active .cir { transform: scale(.92); }
+#tabbar button.start.rec .cir {
+  background: var(--orange);
+  color: var(--black);
+}
+#tabbar .tab-time {
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+/* Ambient background — fixed orbs behind everything */
+.ambient-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--bg-base);
+  overflow: hidden;
+}
+.ambient-bg::before,
+.ambient-bg::after {
+  content: "";
+  position: absolute;
+  width: 55vw;
+  height: 55vw;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: .14;
+  background: radial-gradient(circle, var(--accent), transparent 70%);
+}
+.ambient-bg::before {
+  top: -15%;
+  left: -10%;
+  transform: translate3d(var(--orb1-x, 0), var(--orb1-y, 0), 0);
+  background: radial-gradient(circle, var(--text-secondary), transparent 70%);
+}
+.ambient-bg::after {
+  bottom: -20%;
+  right: -15%;
+  transform: translate3d(var(--orb2-x, 0), var(--orb2-y, 0), 0);
+  background: radial-gradient(circle, var(--accent), transparent 70%);
+  opacity: .10;
+}
+
+/* Fallbacks so glass never looks broken */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass { background: var(--bg-elevated); }
+  .glass--strong { background: var(--bg-elevated-2); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass, .glass--strong, .glass--thin { background: var(--bg-elevated-2); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .glass--interactive, .glass--interactive::after { transition: none; }
+}
+@media (prefers-contrast: more) {
+  .glass, .glass--strong, .glass--thin { border-color: var(--separator); background: var(--bg-elevated); }
+}

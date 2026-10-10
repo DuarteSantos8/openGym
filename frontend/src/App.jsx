@@ -19,7 +19,8 @@ import { syncPushSubscription } from './lib/push.js'
 import { MOBILE } from './lib/mobile.js'
 import { exitWorkoutEdit, startFlow } from './sheets.jsx'
 import Icon from './components/Icon.jsx'
-import TabBar from './components/TabBar.jsx'
+import GlassTabBar from './components/GlassTabBar.jsx'
+import AmbientBackground from './components/AmbientBackground.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import Modals from './components/Modals.jsx'
 import Toast from './components/Toast.jsx'
@@ -198,6 +199,7 @@ function Shell() {
 
   return (
     <>
+      <AmbientBackground />
       {/* keyed on the route: a view that throws is contained, and switching tabs
           re-mounts the boundary, so the tab bar is always a way out */}
       <div id="app" className="vfade" key={loc.pathname}>
@@ -237,7 +239,7 @@ function Shell() {
           would ride along with the page for the length of it. Decides for itself when to show —
           including on the sign-in screen, when the server has just ended the session. */}
       <SyncBanner />
-      {!noTabs && <TabBar onStart={startFlow} />}
+      {!noTabs && <GlassTabBar onStart={startFlow} />}
       <RestTimer />
       <Modals />
       <Toast />

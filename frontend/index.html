@@ -28,6 +28,15 @@
     if (meta) meta.setAttribute('content', dark ? '#000000' : '#F5F5F7');
   } catch (e) {}
 </script>
+<script>
+  // Detect backdrop-filter + SVG filter support for glass refraction.
+  try {
+    const el = document.createElement('div');
+    el.style.backdropFilter = 'url(#liquid-glass) blur(1px)';
+    const supported = getComputedStyle(el).backdropFilter.includes('url');
+    document.documentElement.dataset.refract = supported ? 'on' : 'off';
+  } catch (e) { document.documentElement.dataset.refract = 'off'; }
+</script>
 <title>openGym</title>
 <meta name="description" content="Personal gym & body weight tracker">
 <meta name="theme-color" content="#0c0e12">
@@ -43,7 +52,14 @@
 <link rel="icon" type="image/png" href="icon-180.png">
 </head>
 <body>
-<div id="root"></div>
+  <svg width="0" height="0" aria-hidden="true" style="position:absolute">
+    <filter id="liquid-glass">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.018" numOctaves="2" seed="3" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="12" xChannelSelector="R" yChannelSelector="G"/>
+      <feGaussianBlur stdDeviation="1.2"/>
+    </filter>
+  </svg>
+  <div id="root"></div>
 <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>

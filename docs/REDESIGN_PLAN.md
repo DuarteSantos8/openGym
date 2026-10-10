@@ -203,3 +203,17 @@ Tableau complet des primitives et de leurs comptages : voir 1.3 (comptages issus
 - [ ] `npm test`, `vite build`, `docker compose build` verts à chaque fin de phase.
 
 *Fin de document — Phase 1 n'a modifié aucun fichier de code.*
+---
+
+## Phase 2 — Terminée (commit feat/style)
+
+**Fichiers** : `frontend/src/styles/tokens.css` (nouveau), `frontend/src/index.css`, `frontend/src/main.jsx`, `frontend/index.html`, `frontend/src/lib/format.js`, `frontend/src/lib/accent.js`, `frontend/src/views/FocusView.css`, `frontend/src/admin.css`, 18× `locales/`.
+
+**Résultats** : 5038 tests ✓ · build ✓ · zéro couleur hex/rgb hors tokens.css (grep contrôlé — exceptions documentées : mask-image alpha en `#000`, conic-gradient remplacé par les variables système).
+
+**Décisions notables** :
+- **Monochrome par défaut** : `--accent` = blanc (sombre) / noir (clair) ; `DEFAULT_ACCENT='mono'` ; `ACCENTS.mono='#8e8e93'` (neutre pour le swatch Settings, visible dans les 2 thèmes). Les 8 accents Apple restent inchangés.
+- **Alias de compatibilité** : `--bg`, `--surface`, `--label`, `--acc`, `--r`, `--fast`… → tokens sémantiques. Zéro régression sur les composants existants.
+- **Anti-flash** : script inline dans `index.html` (lit `gym_state_v1`, applique `data-theme` + `theme-color` avant le premier rendu).
+- **Muscles** : `--muscle-base`, `--muscle-l1…l4` tokens (remplacent `--bm-base` + `color-mix` en dur).
+- **Exrceptions légitimes** : mask-image (alpha), ombres internes SVG.
