@@ -2000,6 +2000,8 @@ export default {
   'Could not reach {0} over https://. If your server runs on plain http (common at home), type http://{0} instead.': 'Не удалось связаться с {0} по https://. Если ваш сервер работает на обычном http (дома так часто бывает), введите http://{0}.',
   'Collapse completed exercises': 'Сворачивать завершённые упражнения',
   'Keep the current exercise open': 'Оставлять текущее упражнение открытым',
+  'Skip completed exercises': 'Пропускать завершённые упражнения',
+  'In Cards and Focus, Prev and Next jump past finished exercises.': 'В режимах «Карточки» и «Фокус» кнопки «Назад» и «Далее» пропускают завершённые упражнения.',
   'Body measurements': 'Замеры тела',
   'Circumference & composition': 'Обхваты и состав тела',
   'Measurement': 'Замер',

@@ -1996,6 +1996,8 @@ export default {
   'Could not reach {0} over https://. If your server runs on plain http (common at home), type http://{0} instead.': '{0} adresine https:// üzerinden ulaşılamadı. Sunucun düz http ile çalışıyorsa (evde yaygın), bunun yerine http://{0} yaz.',
   'Collapse completed exercises': 'Tamamlanan egzersizleri daralt',
   'Keep the current exercise open': 'Geçerli egzersizi açık tut',
+  'Skip completed exercises': 'Tamamlanan egzersizleri atla',
+  'In Cards and Focus, Prev and Next jump past finished exercises.': 'Kartlar ve Odak görünümünde Önceki ve Sonraki, biten egzersizleri atlar.',
   'Body measurements': 'Vücut ölçüleri',
   'Circumference & composition': 'Çevre ölçüleri ve kompozisyon',
   'Measurement': 'Ölçü',

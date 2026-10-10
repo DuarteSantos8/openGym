@@ -16,6 +16,31 @@ export function nextUnfinishedUnit(entries, units, fromIdx) {
   return ordered.find(unit => unit.some(idx => hasWork(entries, idx))) || null
 }
 
+// A unit with nothing left to do: every member has sets and every one of them is ticked. An
+// exercise with no sets yet is not finished, it has not been started.
+const unitFinished = (entries, unit) => unit.every(idx => {
+  const sets = entries[idx]?.sets
+  return Array.isArray(sets) && sets.length > 0 && sets.every(set => set.done)
+})
+
+// Where Prev (-1) or Next (+1) lands from the current exercise, as an index into `units`, or -1
+// with nothing that way. With `skipDone` ("Skip completed exercises", #523) it is the nearest
+// unit that way with work left. When every unit that way is finished it is the neighbour, as it
+// is without the setting: a finished exercise can still be reached to look at or correct, and
+// the buttons are never dead while there is somewhere to go.
+export function stepUnitIndex(entries, units, fromIdx, direction, skipDone = false) {
+  if (!Array.isArray(entries) || !Array.isArray(units)) return -1
+  const current = units.findIndex(unit => unit.includes(fromIdx))
+  const neighbour = current + direction
+  if (current < 0 || neighbour < 0 || neighbour >= units.length) return -1
+  if (skipDone) {
+    for (let i = neighbour; i >= 0 && i < units.length; i += direction) {
+      if (!unitFinished(entries, units[i])) return i
+    }
+  }
+  return neighbour
+}
+
 // The current exercise may be one member of a contiguous superset. Insert after that complete
 // navigation unit; invalid/empty state safely falls back to the end of the entry list.
 export function insertionIndexAfterCurrentUnit(units, currentIndex, entryCount) {

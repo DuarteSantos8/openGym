@@ -1996,6 +1996,8 @@ export default {
   'Could not reach {0} over https://. If your server runs on plain http (common at home), type http://{0} instead.': 'A(z) {0} nem érhető el https://-en. Ha a szervered sima http-n fut (otthon gyakori), írd be inkább: http://{0}.',
   'Collapse completed exercises': 'Befejezett gyakorlatok összecsukása',
   'Keep the current exercise open': 'Az aktuális gyakorlat maradjon nyitva',
+  'Skip completed exercises': 'Befejezett gyakorlatok kihagyása',
+  'In Cards and Focus, Prev and Next jump past finished exercises.': 'Kártyák és Fókusz nézetben az Előző és a Következő átugorja a befejezett gyakorlatokat.',
   'Enter how long it took — at least 1 minute.': 'Add meg, meddig tartott — legalább 1 perc.',
   'Health Connect': 'Health Connect',
   'Write to Health Connect': 'Írás a Health Connectbe',
