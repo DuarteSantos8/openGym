@@ -97,6 +97,8 @@ const COLUMNS = [
   // Strong's current export: the whole workout's length, in seconds, on every row.
   ['durationSec', ['duration sec', 'duration secs']],
   ['setType', ['set type']],
+  // Strong's: a number, or W (warm-up), D (drop), F (failure); "Rest Timer" and "Note" rows are not sets.
+  ['setOrder', ['set order']],
   // Hevy numbers the supersets of a workout; rows sharing a number were done as one.
   ['superset', ['superset id']],
   // The session's note, before the per-set one: Strong writes both, "Notes" first, and a
@@ -508,6 +510,8 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
     const name = cell(r, 'exercise')
     const when = parseWhen(cell(r, dateCol))
     if (!name || !when) { skipped++; continue }
+    const order = cell(r, 'setOrder').toLowerCase()
+    if (order === 'rest timer' || order === 'note') continue
 
     // explicit kg/lb columns beat a generic column plus a unit column
     let w = 0, rowUnit = ''
@@ -535,7 +539,7 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
     // broken, and kept it would show as an infinite PR or a NaN chart. Skip the row, say so.
     const maxW = rowUnit === 'lb' || (!rowUnit && unit === 'lb') ? MAX_KG / LB_TO_KG : MAX_KG
     if (w < 0 || reps < 0 || secs < 0 || mins < 0 || km < 0 || w > maxW || reps > MAX_REPS || mins > 24 * 60 || km > MAX_KM) { skipped++; continue }
-    const warmup = /warm/i.test(cell(r, 'setType'))
+    const warmup = /warm/i.test(cell(r, 'setType')) || order === 'w'
     if (warmup) warmups++
 
     const key = keyOf(name)
@@ -584,7 +588,7 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
         : { w, r: reps || 0, done: true, u: rowUnit, ...(warmup ? { phase: 'warmup' } : {}) }
     // A "failure" set type (Hevy's CSV writes one) is the app's set taken to failure; not on
     // cardio, which has no effort to read it as.
-    if (!warmup && !isCardio && /^(f|fail|failure)$/i.test(String(cell(r, 'setType') || '').trim())) set.failure = true
+    if (!warmup && !isCardio && (/^(f|fail|failure)$/i.test(String(cell(r, 'setType') || '').trim()) || order === 'f')) set.failure = true
     // Effort rides along only where the app can show it again: a weighted rep set. A treadmill
     // row with an RPE would have nowhere to put it. A set is kept on one scale, so a file
     // carrying both columns is read as RIR — the same precedence setLabel reads them back with.
