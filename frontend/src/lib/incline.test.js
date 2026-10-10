@@ -1,9 +1,10 @@
+import { startMigratedFixture } from './test-fixtures.js'
 // Treadmill incline per cardio set (Discord "Add incline level for treadmill"): optional on the
 // set, offered where a grade means something, and carried everywhere a cardio set is read back.
 import { describe, it, expect } from 'vitest'
 import { INCLINE_MAX, clampIncline, inclineFits, hasIncline, inclineFrom } from './incline.js'
 import { EXIDX } from './exercises.js'
-import { setLabel, buildSets, insertWarmupRow, copyRowAt } from './history.js'
+import { setLabel, insertWarmupRow, copyRowAt } from './history.js'
 import { workoutText } from './workout-text.js'
 import { finishCardio } from './finish-compare.js'
 import { parseWorkoutCSV } from './import-csv.js'
@@ -138,3 +139,5 @@ describe('importing an incline', () => {
     expect(parseWorkoutCSV(csv, { unit: 'kg' }).workouts[0].entries[0].sets[0]).toEqual({ w: 11, r: 11, done: true })
   })
 })
+
+function buildSets(S, cfg) { return startMigratedFixture(S, { ex: [cfg] }).entries[0].sets.map(({ setId, ...row }) => row) }

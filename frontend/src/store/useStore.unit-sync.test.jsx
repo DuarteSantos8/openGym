@@ -7,7 +7,7 @@
    brings a copy in the other unit over before anything is compared (lib/sync-merge.js). */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('../lib/api.js', () => ({ api: vi.fn(), setRemoteAuth: vi.fn() }))
+vi.mock('../lib/api.js', () => ({ setAccessHeaders: vi.fn(), api: vi.fn(), setRemoteAuth: vi.fn() }))
 vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast: vi.fn() }) } }))
 
 import { api } from '../lib/api.js'
@@ -73,13 +73,14 @@ describe('converting the unit while another device logs in the old one', () => {
 
   it('a running workout on the device still in kg comes over in lb with the merge', async () => {
     const active = { id: 'run', d: TODAY, start: 5, entries: [{ id: '0025', sets: [{ w: 100, r: 5 }] }] }
-    signedIn({ ...clone(KG), active }, 1)
+    signedIn(clone(KG), 1)
+    useStore.getState().setActive(active)   // the running workout is its own key, outside the profile
     const serverLb = { ...convertStateUnit(clone(KG), 'lb'), _ts: 200, unitSet: { at: 200, convert: true }, _rev: 2 }
     useStore.getState().update(s => { s.restSec = 75 })
     api.mockRejectedValueOnce(conflict(serverLb, 2))
     api.mockResolvedValueOnce({ ok: true, rev: 3 })
     await useStore.getState().pushState()
-    expect(useStore.getState().S.active.entries[0].sets[0].w).toBe(convertWeight(100, 'kg', 'lb'))
+    expect(useStore.getState().A.entries[0].sets[0].w).toBe(convertWeight(100, 'kg', 'lb'))
   })
 
   it('"Keep the numbers, change the label" relabels the other copy instead of converting it', async () => {
@@ -100,18 +101,39 @@ describe('converting the unit while another device logs in the old one', () => {
     const active = { id: 'run', d: TODAY, start: 5, entries: [{ id: '0025', sets: [{ w: 100, r: 5, done: true }] }] }
     const serverLb = { ...clone(KG), unit: 'lb', _ts: 200, unitSet: { at: 150, convert: false }, _rev: 2 }
     // a pull with nothing changed here: the server's copy is adopted
-    signedIn({ ...clone(KG), active }, 1)
+    signedIn(clone(KG), 1)
+    useStore.getState().setActive(active)
     api.mockResolvedValueOnce({ state: clone(serverLb), rev: 2 })
     await useStore.getState().pullState()
     expect(useStore.getState().S.unit).toBe('lb')
-    expect(useStore.getState().S.active.entries[0].sets[0].w).toBe(100)
+    expect(useStore.getState().A.entries[0].sets[0].w).toBe(100)
     // a merge with a change of this device's own
-    signedIn({ ...clone(KG), active }, 1)
+    signedIn(clone(KG), 1)
+    useStore.getState().setActive(active)
     useStore.getState().update(s => { s.restSec = 75 })
     api.mockRejectedValueOnce(conflict(clone(serverLb), 2))
     api.mockResolvedValueOnce({ ok: true, rev: 3 })
     await useStore.getState().pushState()
     expect(useStore.getState().S.unit).toBe('lb')
-    expect(useStore.getState().S.active.entries[0].sets[0].w).toBe(100)
+    expect(useStore.getState().A.entries[0].sets[0].w).toBe(100)
   })
+})
+
+
+it('A23: relabelling through the store changes canonical load units and keeps their numbers', async () => {
+  const { migrateProfileV1ToV2, validateCanonicalProfile } = await import('../../../api/migration/profile-migration.js')
+  const { LIB_BY_ID } = await import('../../../api/coach/core/library.js')
+  const { profile, activeSession } = migrateProfileV1ToV2({
+    unit: 'kg', routines: [], workouts: [workout('canonical', 60)],
+    active: { id: 'running', entries: [{ id: '0025', target: { sets: 1, reps: 5, weight: 60 }, sets: [{ r: 5, w: 60 }] }] }
+  }, LIB_BY_ID)
+  useStore.setState({ S: { ...clone(DEF), ...profile }, A: activeSession, user: null, ready: true, migration: null })
+  useStore.getState().setUnit('lb', { convert: false })
+  const { S, A } = useStore.getState()
+  const p = S.prescriptions[A.exposures[0].prescriptionId]
+  expect(p.rows[0].load).toEqual({ value: 60, unit: 'lb' })
+  expect(S.workouts[0].exposures[0].performance.sets[0].resistance).toMatchObject({ value: 60, unit: 'lb' })
+  expect(A.entries[0].sets[0].w).toBe(60)
+  expect(validateCanonicalProfile(S).ok).toBe(true)
+  useStore.getState().clearActive()
 })

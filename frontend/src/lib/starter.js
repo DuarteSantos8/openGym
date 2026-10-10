@@ -8,6 +8,7 @@
 import { uid } from './format.js'
 import { EXIDX } from './exercises.js'
 import { eqAvailable, ALL_EQUIPMENT } from './equipment.js'
+import { occurrenceFor } from './session-start.js'
 
 const PPL = [
   ['push', 'Push Day', 'barbell', [['0025', 4, 8], ['0047', 3, 10], ['0426', 3, 10], ['0334', 3, 12], ['0241', 3, 12], ['0251', 3, 10]]],
@@ -43,12 +44,18 @@ const PLANS = {
   '5x5': { routines: FIVE_BY_FIVE, schedule: [[1, '5x5-a'], [3, '5x5-b'], [5, '5x5-c']] }
 }
 
-const build = routines =>
-  routines.map(([, name, emoji, list]) => ({ id: uid(), name, emoji, ex: list.map(([id, sets, reps]) => ({ id, sets, reps, weight: 0 })) }))
+// Each exercise becomes a genuine occurrence: a linear rule from the preset's default start load.
+const build = (routines, unit) =>
+  routines.map(([, name, emoji, list]) => {
+    const routineId = uid()
+    return { id: routineId, name, emoji, ex: list.map(([id, sets, reps]) => occurrenceFor(id, { sets, reps }, { id: uid(), unit, routineId, preset: 'linear' })) }
+  })
 
 // Fresh routine objects (new ids) — [push, pull, legs]. The demo build seeds a history on
-// top of exactly these three, so this entry point keeps its shape.
-export const starterRoutines = () => build(PPL)
+// top of exactly these three in the legacy { id, sets, reps, weight } shape (the demo seed is
+// not migrated to PlanRule yet), so this entry point keeps that shape.
+export const starterRoutines = () =>
+  PPL.map(([, name, emoji, list]) => ({ id: uid(), name, emoji, ex: list.map(([id, sets, reps]) => ({ id, sets, reps, weight: 0 })) }))
 
 // [{ id, days }] for the chooser. The day count is read off the schedule rather than stored
 // beside it, so the two can never disagree.
@@ -121,12 +128,12 @@ const fitRoutines = (routines, equipment) => {
 // Fresh routines plus the weekdays to put them on, or null for an unknown id — a caller that
 // treats null as "change nothing" can never half-apply a plan. With an equipment list the
 // plan is fitted to it first, and `fit` reports how many exercises that swapped or dropped.
-export const buildStarterPlan = (id, equipment) => {
+export const buildStarterPlan = (id, equipment, unit = 'kg') => {
   const plan = PLANS[id]
   if (!plan) return null
   const fit = equipment ? fitRoutines(plan.routines, equipment) : null
   const source = fit ? fit.routines : plan.routines
-  const routines = build(source)
+  const routines = build(source, unit)
   // key → the id just minted for it, so the schedule below names its routine
   const byKey = Object.fromEntries(source.map(([key], i) => [key, routines[i].id]))
   return {

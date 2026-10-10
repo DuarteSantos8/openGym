@@ -6,7 +6,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRoot } from 'react-dom/client'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
-import { logPastWorkoutSheet } from './sheets.jsx'
+import { finishWorkout, logPastWorkoutSheet } from './sheets.jsx'
+import { buildSessionExposures } from './lib/session-start.js'
+import { entriesForExposures } from './lib/session-ui-adapter.js'
+import { ruleOccurrence } from './lib/test-fixtures.js'
 import { todayISO } from './lib/format.js'
 
 const mounted = []
@@ -34,7 +37,7 @@ describe('log a past workout', () => {
     vi.useFakeTimers({ toFake: ['Date'] })
     vi.setSystemTime(new Date(2026, 7, 26, 21, 0))
     useUI.setState({ sheets: [], toasts: [] })
-    useStore.setState(s => ({ S: { ...s.S, active: null, routines: [], workouts: [{ id: 'old', d: todayISO(), start: 1, end: 2, name: 'Old', entries: [], prs: [] }] } }))
+    useStore.setState(s => ({ S: { ...s.S, routines: [], workouts: [{ id: 'old', d: todayISO(), start: 1, end: 2, name: 'Old', entries: [], prs: [] }] }, A: null }))
     document.body.innerHTML = ''
   })
   afterEach(() => { act(() => { mounted.splice(0).forEach(root => root.unmount()) }); vi.useRealTimers() })
@@ -42,7 +45,7 @@ describe('log a past workout', () => {
   it('refuses while a workout is running', () => {
     const toast = vi.fn()
     useUI.setState({ toast })
-    useStore.setState(s => ({ S: { ...s.S, active: { id: 'a', entries: [] } } }))
+    useStore.setState({ A: { id: 'a', entries: [] } })
     logPastWorkoutSheet()
     expect(useUI.getState().sheets).toHaveLength(0)
     expect(toast).toHaveBeenCalledWith('Finish the current workout first.')
@@ -57,7 +60,22 @@ describe('log a past workout', () => {
     const prompt = mountTopSheet()
     expect(prompt.textContent).toContain('There is already a workout on that day.')
     expect(['Replace', 'Add as second workout', 'Cancel'].map(t => !!button(prompt, t))).toEqual([true, true, true])
-    expect(useStore.getState().S.active).toBeNull()
+    expect(useStore.getState().A).toBeNull()
+  })
+
+  it('a workout with photos or videos says Replace moves them to the new one', () => {
+    const ref = n => ({ kind: 'image', hash: String(n).repeat(64), mime: 'image/webp', size: 10, width: 8, height: 6, at: 1 })
+    logPastWorkoutSheet()
+    let host = mountTopSheet()
+    act(() => { type(host.querySelector('input[type=date]'), todayISO()) })
+    act(() => { button(host, 'Continue').click() })
+    expect(mountTopSheet().textContent).not.toContain('new workout.')
+    useStore.setState(s => ({ S: { ...s.S, workouts: [{ ...s.S.workouts[0], media: [ref(1), ref(2)] }] } }))
+    logPastWorkoutSheet()
+    host = mountTopSheet()
+    act(() => { type(host.querySelector('input[type=date]'), todayISO()) })
+    act(() => { button(host, 'Continue').click() })
+    expect(mountTopSheet().textContent).toContain('Its 2 photos or videos move to the new workout.')
   })
 
   it('a workout with photos or videos says Replace moves them to the new one', () => {
@@ -100,7 +118,7 @@ describe('log a past workout', () => {
     const host = mountTopSheet()
     act(() => { type(host.querySelector('input[type=date]'), '2020-01-02') })
     act(() => { button(host, 'Continue').click() })
-    const A = useStore.getState().S.active
+    const A = useStore.getState().A
     expect(A.d).toBe('2020-01-02')
     expect(new Date(A.start).getHours()).toBe(18)
     expect(A.backfill).toEqual({ durationMin: 60, replaceId: null })
@@ -116,7 +134,7 @@ describe('log a past workout', () => {
     expect(field.value).toBe('')
     act(() => { type(field, '45') })
     act(() => { button(host, 'Continue').click() })
-    expect(useStore.getState().S.active.backfill.durationMin).toBe(45)
+    expect(useStore.getState().A.backfill.durationMin).toBe(45)
   })
 
   // An emptied duration is neither the default hour nor a silent minute (QA 1.3.9): nothing
@@ -128,10 +146,41 @@ describe('log a past workout', () => {
     act(() => { type(host.querySelector('input.num'), '') })
     expect(host.textContent).toContain('Enter how long it took (at least 1 minute).')
     act(() => { button(host, 'Continue').click() })
-    expect(useStore.getState().S.active).toBeFalsy()
+    expect(useStore.getState().A).toBeFalsy()
     act(() => { type(host.querySelector('input.num'), '1') })
     act(() => { button(host, 'Continue').click() })
-    expect(useStore.getState().S.active.backfill.durationMin).toBe(1)
+    expect(useStore.getState().A.backfill.durationMin).toBe(1)
+  })
+})
+
+// A backfilled session is older than the live track state: finishing it may add the workout and
+// a 1RM estimate, but it must not rewind the progression a newer session already advanced.
+describe('finishing a session and progression', () => {
+  const later = { trackId: 'occ-0025', status: 'active', planRuleRevision: 1, phaseId: 'plan', values: null, lastPrescriptionId: 'newer' }
+  const start = backfill => {
+    const S = { ...useStore.getState().S, unit: 'kg', workouts: [], prescriptions: {}, oneRepMaxes: {}, progression: { 'occ-0025': later } }
+    const routine = { id: 'r1', name: 'Push', ex: [ruleOccurrence('0025')] }
+    S.routines = [routine]
+    const exposures = buildSessionExposures(S, routine, { now: Date.UTC(2026, 8, 20), newId: seed => seed, unit: 'kg' })
+    const entries = entriesForExposures(exposures, S.prescriptions)
+    entries[0].sets.forEach(row => { row.done = true })
+    useStore.setState({ S, A: { id: 'past', d: '2026-09-20', start: Date.UTC(2026, 8, 20, 18), routineIds: ['r1'], name: 'Push', exposures, entries, ...(backfill ? { backfill: { durationMin: 60 } } : {}) } })
+  }
+
+  beforeEach(() => { useUI.setState({ sheets: [] }) })
+
+  it('leaves the live progression state untouched on a backfill', () => {
+    start(true)
+    act(() => finishWorkout())
+    const S = useStore.getState().S
+    expect(S.workouts.map(w => w.id)).toEqual(['past'])
+    expect(S.progression).toEqual({ 'occ-0025': later })
+  })
+
+  it('advances it on a live finish', () => {
+    start(false)
+    act(() => finishWorkout())
+    expect(useStore.getState().S.progression['occ-0025']).toMatchObject({ values: { load: { value: 22.5 } }, lastPrescriptionId: expect.stringContaining('prescription:r1:occ-0025') })
   })
 
   it('refuses a session that would still be running now, and one longer than a day', () => {
@@ -143,16 +192,16 @@ describe('log a past workout', () => {
       act(() => { type(host.querySelector('input[type=date]'), '2026-08-26') })
       act(() => { type(host.querySelector('input[type=time]'), '23:30') })
       act(() => { button(host, 'Continue').click() })
-      expect(useStore.getState().S.active).toBeFalsy()
+      expect(useStore.getState().A).toBeFalsy()
       expect(useUI.getState().toast).toHaveBeenLastCalledWith('That’s still in the future. Try an earlier start.')
       act(() => { type(host.querySelector('input[type=date]'), '2026-08-20') })
       act(() => { type(host.querySelector('input.num'), '99999') })
       expect(host.textContent).toContain('That’s more than a day. Keep it to 24 hours or less.')
       act(() => { button(host, 'Continue').click() })
-      expect(useStore.getState().S.active).toBeFalsy()
+      expect(useStore.getState().A).toBeFalsy()
       act(() => { type(host.querySelector('input.num'), '90') })
       act(() => { button(host, 'Continue').click() })
-      expect(useStore.getState().S.active.d).toBe('2026-08-20')
+      expect(useStore.getState().A.d).toBe('2026-08-20')
     }
   })
 })

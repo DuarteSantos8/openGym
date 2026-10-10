@@ -12,6 +12,9 @@
  */
 import { glyphStr } from './glyphs.js';
 import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, isStretch, MAX_LIBRARY } from './library.js';
+import { legacyEntriesOf } from '../../engine/index.js';
+import { coachRoutinesOf } from './plan-view.js';
+import { POLICIES } from './vocabulary.js';
 
 export const CONTRACT = 1;
 // Bounds from FR-22. A review reads a training block, not a training career: more history
@@ -77,8 +80,6 @@ const weekday = d => (typeof d === 'number' ? d : typeof d === 'string' && /^\d$
 // The app's own ids are uid() (13 characters) or a four-digit catalogue number; 64 is room for
 // any id an import or an older build ever wrote, and no room for a paragraph.
 export const ID_MAX = 64;
-// The progression engine's policies (frontend/src/lib/progression.js POLICIES, validate.js).
-const POLICIES = ['off', 'linear', 'greyskull', 'double', 'time'];
 const ident = v => (typeof v === 'string' ? v.slice(0, ID_MAX) : typeof v === 'number' && Number.isFinite(v) ? v : null);
 const policy = v => (POLICIES.includes(v) ? v : null);
 // A finite number, or a number written as a short string (the app writes numbers, but a
@@ -146,7 +147,7 @@ export const isBw = (cfg, ex) =>
 export const isPerSide = cfg => !!(cfg && cfg.side);
 // Mirror of frontend/src/lib/workout-model.js isWarmupRow: an explicit phase wins, else the
 // legacy boolean. A warm-up row is prep, not the session: it is filtered out of the stall
-// count exactly as progression.js filters it, it never counts as a done set or a top set,
+// count exactly as the training engine filters it, it never counts as a done set or a top set,
 // and where it does travel (the last few sessions in full) it is flagged so the model reads
 // "0x12 warm-up" as what it is rather than as a failed set.
 export const isWarmupSet = s => {
@@ -154,6 +155,9 @@ export const isWarmupSet = s => {
   if (ph) return ph === 'warmup' || ph === 'warm-up' || ph === 'warm_up';
   return s?.warmup === true;
 };
+// v2 routines hold an occurrence's PlanRule; every reader below wants the v1 exercise fields
+// instead, so this is the one place that runs them through the adapter.
+const planRoutines = S => coachRoutinesOf(S, id => LIB_BY_ID.get(id) || (S.customEx || []).find(c => c.id === id));
 function readSession(entry, fallback) {
   const target = (entry && entry.target) || fallback || {};
   const ex = LIB_BY_ID.get(entry?.id);
@@ -204,6 +208,7 @@ function cleanEx(e) {
   else if (mode === 'time') { put('sec', e.sec); if (e.weight) put('weight', e.weight); }
   else { put('reps', e.reps); if (e.weight) put('weight', e.weight); }
   if (policy(e.prog)) o.prog = e.prog;
+  if (e.preset) o.preset = e.preset;
   if (e.inc > 0) put('inc', e.inc);
   put('repsMin', e.repsMin);
   // repsMax is the ceiling that turns "+1 rep forever" into "add a set and start over"; without
@@ -232,7 +237,7 @@ export function canonicalPlan(S) {
   const custom = new Map((S.customEx || []).map(c => [c.id, c]));
   const exOf = id => LIB_BY_ID.get(id) || custom.get(id);
   return {
-    routines: (S.routines || []).map(r => ({
+    routines: planRoutines(S).map(r => ({
       id: r.id, name: r.name || '', prog: r.prog || '',
       ex: (r.ex || []).map(e => {
         const mode = modeOf(e, exOf(e.id));
@@ -263,7 +268,7 @@ export function cleanPlan(S) {
   // Names are typed by the person, so they are cut like the profile's text. The icon is held to
   // what the validator lets a plan carry (an icon key or a legacy emoji, core/glyphs.js): it is
   // the client's state, and free text in it would ride into every prompt.
-  const routines = list(S.routines).filter(r => r && typeof r === 'object').map(r => ({
+  const routines = list(planRoutines(S)).filter(r => r && typeof r === 'object').map(r => ({
     id: ident(r.id), name: r.name == null ? r.name : text(String(r.name), NAME_MAX),
     emoji: r.emoji == null ? r.emoji : glyphStr(String(r.emoji)),
     ...(policy(r.prog) ? { prog: r.prog } : {}),
@@ -299,8 +304,8 @@ function aggregates(S, workouts) {
   // Per-exercise stall/deload picture, computed over the same sessions the engine would see.
   const byEx = new Map();
   const planCfg = new Map();
-  (S.routines || []).forEach(r => (r.ex || []).forEach(e => planCfg.set(e.id, e)));
-  (S.workouts || []).forEach(w => (w.entries || []).forEach(en => {
+  planRoutines(S).forEach(r => (r.ex || []).forEach(e => planCfg.set(e.id, e)));
+  (S.workouts || []).forEach(w => legacyEntriesOf(w, S.prescriptions).forEach(en => {
     if (!en.sets?.some(s => s.done)) return;
     if (!byEx.has(en.id)) byEx.set(en.id, []);
     byEx.get(en.id).push(readSession(en, planCfg.get(en.id)));
@@ -321,7 +326,7 @@ function aggregates(S, workouts) {
 
   // Muscle coverage in the window, by body part — the "not trained" gap the Stats screen shows.
   const hit = {};
-  workouts.forEach(w => (w.entries || []).forEach(en => {
+  workouts.forEach(w => legacyEntriesOf(w, S.prescriptions).forEach(en => {
     const work = (en.sets || []).filter(s => s.done && !isWarmupSet(s));
     if (!work.length) return;
     const bp = LIB_BY_ID.get(en.id)?.bp;
@@ -343,8 +348,8 @@ function aggregates(S, workouts) {
  *  be able to refer to, so they ride in the library slice whatever the cap or the filter. */
 function trainedIds(S, workouts) {
   const ids = new Set();
-  (S.routines || []).forEach(r => (r.ex || []).forEach(e => ids.add(e.id)));
-  (workouts || []).forEach(w => (w.entries || []).forEach(en => ids.add(en.id)));
+  planRoutines(S).forEach(r => (r.ex || []).forEach(e => ids.add(e.id)));
+  (workouts || []).forEach(w => legacyEntriesOf(w).forEach(en => ids.add(en.id)));
   return [...ids];
 }
 
@@ -377,14 +382,14 @@ const targetOf = en => (en.target && typeof en.target === 'object'
   : null);
 
 /** One older workout as a summary: what was done, the top set, whether targets were hit. */
-function compactWorkout(w) {
+function compactWorkout(w, prescriptions) {
   return {
     d: day(w.d),
     name: word(w.name, NAME_MAX),
     minutes: w.end && w.start ? Math.round((w.end - w.start) / 60000) : null,
     prs: list(w.prs).length,
     compact: true,
-    entries: entriesOf(w).map(en => {
+    entries: legacyEntriesOf(w, prescriptions).map(en => {
       const sets = setsOf(en).filter(s => !isWarmupSet(s)).map(cleanSet);
       const done = sets.filter(s => s.done);
       let top = null;
@@ -404,7 +409,7 @@ function compactWorkout(w) {
 }
 
 /** One workout, reduced to what a coach reads. */
-function cleanWorkout(w) {
+function cleanWorkout(w, prescriptions) {
   return {
     d: day(w.d),
     name: word(w.name, NAME_MAX),
@@ -412,7 +417,7 @@ function cleanWorkout(w) {
     ...(w.rating ? { rating: typeof w.rating === 'number' ? w.rating : text(String(w.rating), 20) } : {}),
     ...(w.note ? { note: String(w.note).slice(0, NOTE_MAX) } : {}),
     prs: list(w.prs).length,
-    entries: entriesOf(w).map(en => ({
+    entries: legacyEntriesOf(w, prescriptions).map(en => ({
       id: ident(en.id),
       name: libraryName(en.id),
       target: targetOf(en),
@@ -455,7 +460,7 @@ export function workoutMeta(S, workoutId) {
   if (!w) return null;
   let vol = 0;
   let sets = 0;
-  (w.entries || []).forEach(en => (en.sets || []).forEach(s => {
+  legacyEntriesOf(w, S.prescriptions).forEach(en => (en.sets || []).forEach(s => {
     if (!s.done || isWarmupSet(s)) return;
     sets++;
     vol += (s.w || 0) * (s.r || 0);
@@ -524,9 +529,9 @@ export function build(S, opts = {}) {
       const all = (S.workouts || []).filter(x => x && x.d);
       const idx = all.indexOf(w);
       const previous = all.slice(0, idx).filter(x => x.name && x.name === w.name).slice(-3);
-      p.session = { id: ident(w.id) || null, ...cleanWorkout(w) };
-      p.previous = previous.map(cleanWorkout);
-      const inSession = new Set(entriesOf(w).map(en => ident(en.id)));
+      p.session = { id: ident(w.id) || null, ...cleanWorkout(w, S.prescriptions) };
+      p.previous = previous.map(x => cleanWorkout(x, S.prescriptions));
+      const inSession = new Set(legacyEntriesOf(w).map(en => ident(en.id)));
       const agg = aggregates(S, [w]);
       p.aggregates = { ...agg, exercises: agg.exercises.filter(e => inSession.has(e.id)) };
       // The four weeks before the session. A session whose date does not parse has no "before",
@@ -547,7 +552,7 @@ export function build(S, opts = {}) {
     p.window = {
       from: day(workouts[0]?.d),
       to: day(workouts[workouts.length - 1]?.d),
-      workouts: workouts.map((w, i) => (i >= detailFrom ? cleanWorkout(w) : compactWorkout(w)))
+      workouts: workouts.map((w, i) => (i >= detailFrom ? cleanWorkout(w, S.prescriptions) : compactWorkout(w, S.prescriptions)))
     };
     p.aggregates = aggregates(S, workouts);
     p.bodyweight = { goal: num(S.targetW) ?? null, series: weighIns(S, p.window.from, null) };
@@ -560,7 +565,7 @@ export function build(S, opts = {}) {
     // Creation for a returning user: what they have actually handled, so proposed baselines
     // start from evidence rather than optimism (B2/FR-20).
     const best = {};
-    (S.workouts || []).forEach(w => (w.entries || []).forEach(en => en.sets?.forEach(s => {
+    (S.workouts || []).forEach(w => legacyEntriesOf(w).forEach(en => en.sets?.forEach(s => {
       if (s.done && s.w > 0 && !isWarmupSet(s)) best[en.id] = Math.max(best[en.id] || 0, s.w);
     })));
     if (Object.keys(best).length) {

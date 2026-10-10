@@ -32,19 +32,19 @@ describe('a drawing id on its way in', () => {
   it('a plan file: parsed and merged as the exercise, the routines already there untouched', () => {
     const s = state()
     const bundle = parsePlan(plan([{ id: ALIAS, sets: 3, reps: 8, mode: 'reps' }]))
-    expect(bundle.routines[0].ex[0].id).toBe(TO)
-    mergePlan(s, { ...bundle, routines: [{ ...bundle.routines[0], ex: [{ id: ALIAS, sets: 3 }] }] })
-    expect(s.routines[1].ex[0].id).toBe(TO)
+    expect(bundle.routines[0].ex[0].exerciseId).toBe(TO)
+    mergePlan(s, { ...bundle, routines: [{ ...bundle.routines[0], ex: [{ ...bundle.routines[0].ex[0], exerciseId: ALIAS, rule: { ...bundle.routines[0].ex[0].rule, exerciseId: ALIAS } }] }] })
+    expect(s.routines[1].ex[0].exerciseId).toBe(TO)
     expect(s.routines[0].ex[0].id).toBe(ALIAS)
   })
 
   it('a plan file whose own custom exercise happens to carry such an id keeps it as a custom one', () => {
     const raw = JSON.stringify({ opengym_plan: 1, unit: 'kg', routines: [{ id: 'p1', name: 'Shared', ex: [{ id: ALIAS, sets: 3 }] }], customEx: [{ id: ALIAS, n: 'my thing', bp: 'chest' }] })
     const bundle = parsePlan(raw)
-    expect(bundle.routines[0].ex[0].id).toBe(ALIAS)
+    expect(bundle.routines[0].ex[0].exerciseId).toBe(ALIAS)
     const s = state()
     mergePlan(s, bundle)
-    const added = s.routines[1].ex[0].id
+    const added = s.routines[1].ex[0].exerciseId
     expect(s.customEx.map(c => c.id)).toEqual([added])
   })
 
@@ -57,8 +57,8 @@ describe('a drawing id on its way in', () => {
         { id: 'c', type: 'add-routine', target: {}, after: { name: 'New', ex: [{ id: ALIAS, sets: 3, reps: 8 }] } },
       ]
     }, ['a', 'b', 'c'])
-    expect(s.routines[0].ex.map(e => e.id)).toEqual([ALIAS, TO, TO])
-    expect(s.routines[1].ex[0].id).toBe(TO)
+    expect(s.routines[0].ex.map(e => e.exerciseId || e.id)).toEqual([ALIAS, TO, TO])
+    expect(s.routines[1].ex[0].exerciseId).toBe(TO)
   })
 
   describe('an import', () => {

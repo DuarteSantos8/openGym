@@ -3,7 +3,7 @@
 // back at boot while its end is ahead, without booking its end a second time.
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 
-vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ ok: true })) }))
+vi.mock('../lib/api.js', () => ({ setAccessHeaders: vi.fn(), api: vi.fn(() => Promise.resolve({ ok: true })) }))
 const { chime } = vi.hoisted(() => ({ chime: vi.fn() }))
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime, vibrate: vi.fn(), alertBuzz: vi.fn() }))
 
@@ -19,7 +19,7 @@ describe('the rest timer across a reload', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     original = { S: useStore.getState().S, user: useStore.getState().user }
-    useStore.setState({ S: { ...original.S, sound: true, active: { id: 'a', entries: [] } }, user: { id: 'u1' } })
+    useStore.setState({ S: { ...original.S, sound: true }, A: { id: 'a', entries: [] }, user: { id: 'u1' } })
     useUI.setState({ timer: null, work: null, toastMsg: '' })
     localStorage.clear()
     api.mockClear(); chime.mockClear()
@@ -65,7 +65,7 @@ describe('the rest timer across a reload', () => {
     expect(restoreRest()).toBe(false)
     expect(useUI.getState().timer).toBeNull()
     expect(saved()).toBeNull()
-    useStore.setState({ S: { ...useStore.getState().S, active: null } })
+    useStore.setState({ A: null })
     localStorage.setItem(REST_KEY, JSON.stringify({ endsAt: Date.now() + 30_000, total: 90, forIdx: 0, paused: false, left: 30 }))
     expect(restoreRest()).toBe(false)
     expect(useUI.getState().timer).toBeNull()

@@ -245,7 +245,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.0</span>
-    <span>69 endpoints</span>
+    <span>71 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -281,7 +281,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="ov">
     <h3>Conventions</h3>
-<ul><li>Every response body is JSON with <code>Cache-Control: no-store</code>. The one exception is <code>GET /api/media/{hash}</code>, which answers with the stored file itself (<code>Cache-Control: private, no-store</code>).</li><li>Errors are always <code>{&quot;error&quot;: &quot;&lt;human-readable message&gt;&quot;}</code>. The <code>password</code>, throttle and <code>media</code> routes add a stable <code>code</code> for the client to word in its own language.</li><li>Unknown method+path pairs return <code>404 {&quot;error&quot;:&quot;not found&quot;}</code>; an unhandled exception returns <code>500 {&quot;error&quot;:&quot;server error&quot;}</code>.</li><li>Request bodies are parsed as JSON regardless of Content-Type. A body that does not parse, or parses to anything but an object (<code>null</code>, a string, an array), is <code>400 {&quot;error&quot;:&quot;invalid json&quot;}</code> on every route that reads one; an empty body counts as <code>{}</code>. A body over 5 MiB is <code>413 {&quot;error&quot;:&quot;body too large&quot;}</code>; the rest of the upload is discarded so the answer reaches the client.</li><li>CORS: the request's <code>Origin</code> is reflected in <code>Access-Control-Allow-Origin</code> <b>without</b> <code>Allow-Credentials</code>, so cross-origin callers can only ever authenticate with a Bearer token, never with the cookie.</li></ul>
+<ul><li>Every response body is JSON with <code>Cache-Control: no-store</code>. The one exception is <code>GET /api/media/{hash}</code>, which answers with the stored file itself (<code>Cache-Control: private, no-store</code>).</li><li>Errors are always <code>{&quot;error&quot;: &quot;&lt;human-readable message&gt;&quot;}</code>. The <code>password</code>, throttle and <code>media</code> routes add a stable <code>code</code> for the client to word in its own language.</li><li>Unknown method+path pairs return <code>404 {&quot;error&quot;:&quot;not found&quot;}</code>; an unhandled exception returns <code>500 {&quot;error&quot;:&quot;server error&quot;}</code>.</li><li>Request bodies are parsed as JSON regardless of Content-Type. A body that does not parse, or parses to anything but an object (<code>null</code>, a string, an array), is <code>400 {&quot;error&quot;:&quot;invalid json&quot;}</code> on every route that reads one; an empty body counts as <code>{}</code>. A body over 16 MiB is <code>413 {&quot;error&quot;:&quot;body too large&quot;}</code>; the rest of the upload is discarded so the answer reaches the client.</li><li>CORS: the request's <code>Origin</code> is reflected in <code>Access-Control-Allow-Origin</code> <b>without</b> <code>Allow-Credentials</code>, so cross-origin callers can only ever authenticate with a Bearer token, never with the cookie.</li></ul>
   </div>
     </div>
   </section>
@@ -779,20 +779,16 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-desc">The password breaks the policy with <code>too-short</code> (under 10 characters), <code>too-long</code> (over 256) or <code>too-common</code>; a field is <code>missing</code>; or <code>email-invalid</code>: the <code>email</code> given is not an e-mail address.<span class="r-sig"><code>{&quot;error&quot;:&quot;this password is too easy to guess&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;that is not an e-mail address&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
     <span class="r-code s4">403</span>
     <span class="p-desc">Invite-only and the code is missing, used or revoked.<span class="r-sig"><code>{&quot;error&quot;:&quot;a valid invite code is required&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">409</span>
-    <span class="p-desc"><code>name-taken</code> (see NameTaken) or <code>email-taken</code>: the e-mail is in use by another profile.<span class="r-sig"><code>{&quot;error&quot;:&quot;another profile already uses this e-mail address&quot;}</code></span></span>
-  </div>
-  <div class="prow rrow">
-    <span class="r-code s4">429</span>
-    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts, try again later&quot;}</code></span></span>
-  </div>
-  <div class="prow rrow">
-    <span class="r-code s5">503</span>
-    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy, try again in a moment&quot;}</code></span></span>
+    <span class="p-desc"><code>name-taken</code> (see NameTaken) or <code>email-taken</code>: the e-mail is in use by another profile. schema: type: object properties: rev: { type: integer }</span>
   </div>
     </div>
   </div>
@@ -1457,6 +1453,74 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="sub">Per-user state sync (the whole app state as one JSON blob)</p>
   <div class="eps">
 
+<details class="ep" id="op-undefined">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/data/migration-status</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Whether the caller's profile still needs the v2 engine migration</span>
+  </summary>
+  <div class="ep-body">
+<p>Not gated by <code>X-OpenGym-Engine-Schema</code>. <code>revision</code> is the <code>_rev</code> of the exact file examined; send it back as <code>baseRev</code> to <code>POST /api/data/migrate-engine-v2</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Migration status (no profile yet reads as not required, revision 0).<span class="r-sig">{ required: boolean, schemaVersion: integer, revision: integer, summary: object }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc"><code>unsupported-schema</code> or <code>profile-unreadable</code>.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-undefined">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/data/migrate-engine-v2</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Convert the caller's v1 profile to the v2 engine</span>
+  </summary>
+  <div class="ep-body">
+<p>Body must be exactly <code>{ &quot;confirmed&quot;: true, &quot;baseRev&quot;: &lt;revision from migration-status&gt; }</code>. Writes <code>state-&lt;uid&gt;.pre-engine-v1.json</code> once (never replaced), validates the converted profile, then atomically replaces the state file with <code>_rev</code> + 1. A v2 profile answers <code>{ migrated: false }</code> and changes nothing.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc"><code>{ migrated, revision, summary? }</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>invalid-migration-request</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc"><code>migration-state-changed</code> (stale baseRev), <code>unsupported-schema</code> or <code>profile-unreadable</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">500</span>
+    <span class="p-desc"><code>migration-failed</code>; the original file is untouched.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
 <details class="ep" id="op-getData">
   <summary>
     <span class="m get">GET</span>
@@ -1491,7 +1555,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Push the account's app state</span>
   </summary>
   <div class="ep-body">
-<p>Replaces the stored state wholesale (atomic write; there is no merge on the server). The <code>active</code> field (an in-progress workout) is stripped before saving: a running session belongs to the device running it. Body limit 5 MiB.</p>
+<p>Replaces the stored state wholesale (atomic write; there is no merge on the server). The <code>active</code> field (an in-progress workout) is stripped before saving: a running session belongs to the device running it. Body limit 16 MiB.</p>
 <p>With <code>baseRev</code> the write is conditional: it goes through only when <code>baseRev</code> equals the document's current revision, and answers 409 with the current document otherwise; the client merges the two and pushes again with the revision it was given. Without <code>baseRev</code> the write is unconditional (clients from before revisions, and deliberate replaces such as a backup import). The server stamps the new revision into the document as <code>_rev</code>; a <code>_rev</code> sent by the client is ignored.</p>
 <p>The records of removals (<code>deleted</code>) and of edits (<code>edited</code>) never shrink: the stored ones are joined into the write (a reset keeps its own). A writer that does not stamp its own changes (no <code>stamped: true</code>; an API script, an older app) and sends the current <code>baseRev</code> gets them stamped by the server, at the server's time: every entry it removed (a workout, routine, custom exercise, weigh-in, card, profile or favourite), every setting and plan day it changed (<code>queue</code>, <code>week.&lt;day&gt;</code>, …), and every entry it edited (<code>_ts</code>, per field <code>_f</code>). That keeps a planner's new week, or a routine it removed, from being undone by a phone that reconnects later with an older change. A setting, plan day or entry field whose stored stamp (<code>edited</code>, <code>_f</code>) is later than the one the writer sends back keeps the stored value: the writer never saw that change, so send back the <code>edited</code> and <code>_f</code> you read. A writer that sends no <code>edited</code> at all is not held to it. An entry the document holds while a removal on record says it was deleted after its last edit is kept and marked as added back.</p>
 <p>Such a writer also cannot delete what it does not know: a field of the stored document, of a stored routine, workout, custom exercise, card or profile, of a routine's exercise, or of a logged exercise or set that its copy leaves out comes back from the stored copy (an older app rebuilds an exercise from the fields it knows, which dropped pyramid sets made on an updated device). Only the fields v1.3.9 itself removes (a superset link, a note, a cleared set value, …) can be removed this way. Send <code>stamped: true</code> to remove anything else.</p>

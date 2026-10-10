@@ -10,6 +10,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const sheets = vi.hoisted(() => ({
   exConfigSheet: vi.fn(), exercisePicker: vi.fn(), glyphPicker: vi.fn(), confirmSheet: vi.fn(),
+  occurrenceSummary: vi.fn(() => ''), quickOccurrence: vi.fn(),
 }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})) }))
 vi.mock('../sheets.jsx', () => sheets)
@@ -18,10 +19,12 @@ vi.mock('../components/BodyMap.jsx', () => ({ default: () => null }))
 
 import RoutineEdit, { ROUTINE_LONG_PRESS_MS } from './RoutineEdit.jsx'
 import { DEF, useStore } from '../store/useStore.js'
+import { ruleOccurrence } from '../lib/test-fixtures.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const clone = value => JSON.parse(JSON.stringify(value))
-const configured = (id, extra = {}) => ({ id, mode: 'reps', sets: 3, reps: 5, weight: 0, ...extra })
+// A routine slot is an occurrence with a rule; `id` mirrors `exerciseId` so the assertions read as before.
+const configured = (id, extra = {}) => ({ ...ruleOccurrence(id), id, ...extra })
 let root
 let host
 

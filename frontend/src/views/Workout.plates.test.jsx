@@ -45,8 +45,8 @@ function mount(entries, patch = {}) {
   S.plates = { lb: HOME }
   S.workoutView = 'list'
   Object.assign(S, patch)
-  S.active = { id: 'plates-test', d: '2026-09-14', start: Date.now(), routineId: null, name: 'Plates', bw: null, cur: 0, entries, workoutView: S.workoutView }
-  useStore.setState({ S, user: null })
+  const A = { id: 'plates-test', d: '2026-09-14', start: Date.now(), routineId: null, name: 'Plates', bw: null, cur: 0, entries, workoutView: S.workoutView }
+  useStore.setState({ S, A, user: null })
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
@@ -197,7 +197,7 @@ describe('plate line under set rows', () => {
   it('a saved workout being corrected (#203) has no plate line and no Plate loading in its menu', () => {
     mount([entry(SQUAT, [warm(95), work(145)], { w: 145 })])
     expect(lines().length).toBe(2)
-    act(() => useStore.setState(s => ({ S: { ...s.S, active: { ...s.S.active, editingWorkoutId: 'saved' } } })))
+    act(() => useStore.setState(s => ({ A: { ...s.A, editingWorkoutId: 'saved' } })))
     expect(container.textContent).toContain('Editing a saved workout')
     expect(lines()).toEqual([])
     const more = [...container.querySelectorAll('button')].find(b => (b.getAttribute('aria-label') || b.title || '') === 'More' && !b.classList.contains('n'))

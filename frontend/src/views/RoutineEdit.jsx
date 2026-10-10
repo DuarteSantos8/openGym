@@ -6,9 +6,9 @@ import { exOr } from '../lib/exercises.js'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { uid, exerciseNameText } from '../lib/format.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
-import { supersetUnits, moveRoutineEntry, cleanupSg, exLine, defaultConfig } from '../lib/history.js'
+import { supersetUnits, moveRoutineEntry, cleanupSg } from '../lib/history.js'
 import { Thumb } from '../components/Media.jsx'
-import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet, supersetSheet } from '../sheets.jsx'
+import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet, occurrenceSummary, quickOccurrence, supersetSheet } from '../sheets.jsx'
 import { supersetMeta, setSupersetMeta } from '../lib/superset-meta.js'
 import { fmtRest } from '../lib/duration.js'
 import Icon from '../components/Icon.jsx'
@@ -20,10 +20,12 @@ import { copyRoutine, deleteRoutine, replaceSlotExercise } from '../lib/routines
 import { planPrintHTML, printPlan } from '../lib/plan-share.js'
 import { markEntryUndone } from '../lib/sync-merge.js'
 import { MOBILE, printHtml } from '../lib/mobile.js'
-import { speedUnitOf } from '../lib/speed.js'
-import { POLICIES_FOR, POLICY_NAME, POLICY_DESC } from '../lib/progression.js'
 import BodyMap from '../components/BodyMap.jsx'
 import { loadOfRoutine, rankOf, MUSCLE_NAME } from '../lib/muscles.js'
+
+// The exercise a v2 occurrence points at. `exerciseId` is the canonical field (A57); `id` is
+// kept only as a fallback for pre-migration fixtures that never go through the sheet.
+const exIdOf = e => e.exerciseId ?? e.id
 
 export const ROUTINE_LONG_PRESS_MS = 380
 export const ROUTINE_DRAG_SLOP = 8
@@ -342,7 +344,7 @@ export function removeRoutineExercise(routineId, i) {
   const now = useStore.getState().S.routines.find(x => x.id === routineId)
   const after = JSON.stringify(now?.ex)
   const del = Number(now?._f?.ex) || 0
-  useUI.getState().toast(t('“{0}” left the routine.', exerciseNameText(exOr(slot.id))),
+  useUI.getState().toast(t('“{0}” left the routine.', exerciseNameText(exOr(exIdOf(slot)))),
     { action: t('Undo'), onAction: () => undoRemoveRoutineExercise({ routineId, i, before, after, base, del }) })
   return true
 }
@@ -397,11 +399,11 @@ export default function RoutineEdit() {
   // add flow does. One pick and the picker closes — it is a chooser here, not a stack you keep
   // adding from. A slot that is no longer the exercise the sheet was opened on is left alone.
   const replace = i => {
-    const openedOn = r.ex[i]?.id
+    const openedOn = r.ex[i]?.exerciseId
     const commit = (ex, fn) => {
       picker.close()
       let done = false
-      edit(x => { if (x[i] && x[i].id === openedOn) { x[i] = fn(x[i]); done = true } })
+      edit(x => { if (x[i] && x[i].exerciseId === openedOn) { x[i] = fn(x[i]); done = true } })
       if (done) toast(t('Replaced with “{0}”', exerciseNameText(ex)))
     }
     const picker = exercisePicker((ex, quick) => {
@@ -409,13 +411,13 @@ export default function RoutineEdit() {
       // while the picker is open, and the new exercise's weight comes from its own sessions.
       const live = useStore.getState().S
       const slot = live.routines.find(x => x.id === id)?.ex[i]
-      if (!slot || slot.id !== openedOn) { picker.close(); return }
+      if (!slot || slot.exerciseId !== openedOn) { picker.close(); return }
       // "+" on the exercise that is already in the slot: nothing to replace, and no toast that
       // says something was.
       if (quick && ex.id === openedOn) { picker.close(); return }
       if (quick) { commit(ex, current => replaceSlotExercise(current, ex.id, live, id)); return }
       const next = replaceSlotExercise(slot, ex.id, live, id)
-      exConfigSheet(ex, next, cfg => commit(ex, current => ({ id: ex.id, sg: current.sg, ...cfg })), null, r, null, null, t('Replace'))
+      exConfigSheet(ex, next, cfg => commit(ex, current => ({ ...cfg, ...(current.sg ? { sg: current.sg } : {}) })), null, r, null, null, t('Replace'))
     }, { title: t('Replace exercise'), like: openedOn })
   }
   // This routine on paper (#282): the weekly printout's page for one session, through the same
@@ -438,10 +440,10 @@ export default function RoutineEdit() {
 
   const addExercise = () => exercisePicker((ex, quick) => {
     if (quick) {
-      edit(x => x.push({ id: ex.id, ...defaultConfig(ex.id) }))
+      edit(x => x.push(quickOccurrence(ex, r)))
       toast(t('“{0}” added to {1}', exerciseNameText(ex), r.name))
     } else {
-      exConfigSheet(ex, null, cfg => edit(x => { x.push({ id: ex.id, ...cfg }) }), null, r)
+      exConfigSheet(ex, null, cfg => edit(x => { x.push({ ...cfg }) }), null, r)
     }
   })
 
@@ -459,7 +461,7 @@ export default function RoutineEdit() {
   }
   const inSS = new Set(units.filter(u => u.length > 1).flat())
   const profile = activeProfile(S)
-  const missingCount = profile ? r.ex.filter(e => !exAvailable(S, exOr(e.id))).length : 0
+  const missingCount = profile ? r.ex.filter(e => !exAvailable(S, exOr(exIdOf(e)))).length : 0
   const swipe = workoutControls(S).swipeSets
 
   return <div className="narrow">
@@ -473,14 +475,9 @@ export default function RoutineEdit() {
     </div>
 
     <div className="sect-b" style={{ marginBottom: 16 }}>
-      <SelectRow icon="chartLine" title={t('Progression')} sheetTitle={t('Progression')}
-        value={r.prog || 'linear'} onChange={v => update(s => { s.routines.find(x => x.id === id).prog = v })}
-        options={POLICIES_FOR.reps.map(p => ({ value: p, label: t(POLICY_NAME[p]), subtitle: t(POLICY_DESC[p]) }))} />
-      {/* Two controls that read alike and are not (issue #294). Progression picks how this
-          routine's own targets move, and "No automatic progression" keeps them where they are.
-          This switch decides whether the routine's workouts count at all: a deload routine's
+      {/* This switch decides whether the routine's workouts count at all: a deload routine's
           sessions open at its own numbers and are never the baseline the next regular session
-          progresses from (session-start.js, history.js entryExcluded). */}
+          progresses from (issue #294). */}
       <Row icon="chartLineSlash" iconTint="var(--orange)" title={t('Deload routine')}
         subtitle={t('Its workouts do not count toward progression. They still show in history and statistics.')}>
         <Switch checked={r.excludeFromProgression === true} onChange={v => update(s => {
@@ -490,11 +487,9 @@ export default function RoutineEdit() {
         })} />
       </Row>
     </div>
-    <div className="small dim" style={{ margin: '-10px 2px 16px' }}>
-      {r.excludeFromProgression
-        ? t('A deload routine opens at the numbers set here, so the progression above does not apply to it.') + ' ' + t('The next regular target continues from the last included workout.')
-        : t(POLICY_DESC[r.prog || 'linear'] || POLICY_DESC.linear) + ' ' + t('Applies to every exercise in this routine that does not set its own rule.')}
-    </div>
+    {r.excludeFromProgression && <div className="small dim" style={{ margin: '-10px 2px 16px' }}>
+      {t('The next regular target continues from the last included workout.')}
+    </div>}
 
     {missingCount > 0 && <div className="card" style={{ marginBottom: 16, borderColor: 'var(--orange)' }}>
       <div className="row" style={{ gap: 8, alignItems: 'center' }}>
@@ -513,7 +508,7 @@ export default function RoutineEdit() {
       className={'list routine-list' + (reorder.drag ? ' is-reordering' : '')}>{r.ex.map((e, i) => {
       // An unresolvable id is shown rather than skipped — hiding it left an entry you
       // could neither see nor delete, but that still turned up in the workout.
-      const ex = exOr(e.id)
+      const ex = exOr(exIdOf(e))
       const noEquip = profile && !exAvailable(S, ex)
       const linkedPrev = i > 0 && e.sg && r.ex[i - 1].sg === e.sg
       // At a superset's edge an arrow takes the exercise out of it rather than past a neighbour.
@@ -526,14 +521,14 @@ export default function RoutineEdit() {
       // screen reader would lose inside one): the name is, a real <button> a click bubbles up
       // from. The long press treats it as the row (data-row-open, useRoutineReorder).
       const item = <div className={'item' + (inSS.has(i) ? ' in-ss' : '')} onClick={() => {
-          exConfigSheet(ex, e, cfg => edit(x => { x[i] = { id: x[i].id, sg: x[i].sg, ...(x[i].sg ? { sgName: x[i].sgName, sgRest: x[i].sgRest } : {}), ...cfg }; cleanupSg(x) }), removeHere, r, null, () => replace(i))
+          exConfigSheet(ex, e, cfg => edit(x => { x[i] = { sg: x[i].sg, ...(x[i].sg ? { sgName: x[i].sgName, sgRest: x[i].sgRest } : {}), ...cfg }; cleanupSg(x) }), removeHere, r, null, () => replace(i))
         }}>
           {/* Shown on pointer devices only (index.css .routine-grip); the Move buttons and the
               long press stay the way in for a keyboard and a finger. */}
           <span className="routine-grip" data-drag-handle aria-hidden="true" title={t('Reorder exercises')}><Icon name="grip" /></span>
           {ssPos.has(i) && <span className="ss-pos" aria-label={t('Superset position {0}', ssPos.get(i))}>{ssPos.get(i)}</span>}
           <Thumb ex={ex} />
-          <button type="button" className="grow item-open" data-row-open><span className={`tt ${exerciseNameClass(ex)}`}>{exerciseNameFor(ex)}</span><span className="ss">{exLine(e, S.unit, speedUnitOf(S))}</span>
+          <button type="button" className="grow item-open" data-row-open><span className={`tt ${exerciseNameClass(ex)}`}>{exerciseNameFor(ex)}</span><span className="ss">{occurrenceSummary(e)}</span>
             {e.note && <span className="small dim" style={{ marginTop: 2 }}>{e.note}</span>}</button>
           {noEquip && <span className="tag" style={{ color: 'var(--orange)', borderColor: 'var(--orange)' }} title={t('Needs {0}, which isn’t in your active profile', t(ex.eq))}><Icon name="warning" /></span>}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 'none', alignItems: 'center' }}>

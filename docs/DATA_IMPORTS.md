@@ -71,7 +71,10 @@ demo keeps everything in your browser; nothing is uploaded. The same trick works
 on a computer and then importing it into the phone app.
 
 Writing a plan file by hand is possible but fiddly, because the exercise ids have to match the
-library.
+library. Every exercise also carries its full progression rule (`rule`), checked on import
+exactly as the exercise editor checks it — an invalid rule rejects the whole file. Plan files
+exported before the v2 training engine are refused: import them into an older version or
+rebuild the plan.
 
 ## Backups
 

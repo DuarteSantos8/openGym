@@ -348,7 +348,7 @@ function Schedule({ S, update, nav, mode }) {
         {/* Throws the current round away and starts the saved loop again today; nothing logged
             before this moment counts for it (startNewPass, the strict pass). */}
         {!!liveQ && !external && <Button size="sm" icon="reset" aria-label={t('Start the loop over')}
-          onClick={() => update(s => startNewPass(s))}>{t('Start the loop over')}</Button>}
+          onClick={() => update(s => startNewPass(s, undefined, undefined, useStore.getState().A))}>{t('Start the loop over')}</Button>}
         {/* Rotation chosen and a loop saved, but no round running (it was stopped elsewhere). */}
         {!liveQ && !recovery && seq.length > 0 && <Button size="sm" variant="tinted" icon="play" aria-label={t('Start the loop')}
           onClick={() => update(s => startPass(s))}>{t('Start the loop')}</Button>}

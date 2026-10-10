@@ -25,9 +25,21 @@ function mountTopSheet() {
 }
 const button = (host, text) => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === text)
 
+// A saved workout of the generic engine, written from v1-style entries: rows with a drop chain keep it
+// as segments (each drop at its own load).
+const perfRow = (s, over = {}) => ({
+  role: s.phase === 'warmup' ? 'warmup' : 'work', status: s.done ? 'completed' : 'skipped',
+  observations: [{ metric: 'repetitions', value: s.r }], resistance: { kind: 'external-load', value: s.w },
+  segments: s.type === 'dropset' ? s.drops.map(d => perfRow({ ...d, done: true })) : [],
+  ...(s.type === 'restpause' ? { clusters: s.clusters } : {}), ...over,
+})
+const exposureOf = (e, i) => ({
+  exposureId: 'x' + i, exerciseId: e.id, mode: 'reps', ...(e.rid ? { routineId: e.rid } : {}), ...(e.sg ? { sg: e.sg } : {}),
+  performance: { sets: e.sets.map(s => perfRow(s)) },
+})
 const workout = (entries, extra = {}) => ({
   id: 'w1', d: '2026-09-15', start: Date.UTC(2026, 8, 15, 17), end: Date.UTC(2026, 8, 15, 18), name: 'Push',
-  vol: 0, prs: [], routineIds: [], entries, ...extra,
+  vol: 0, prs: [], routineIds: [], exposures: entries.map(exposureOf), ...extra,
 })
 const done = (w, r, more = {}) => ({ w, r, done: true, ...more })
 
@@ -38,7 +50,7 @@ beforeEach(() => {
   useUI.setState({ sheets: [], toast })
   const S = clone(DEF)
   Object.assign(S, { unit: 'kg', routines: [], workouts: [], active: null })
-  useStore.setState({ S, user: null })
+  useStore.setState({ S, A: null, user: null })
   document.body.innerHTML = ''
 })
 afterEach(() => {
@@ -50,7 +62,7 @@ describe('workout detail', () => {
   it('lists a drop-set\'s drops and a rest-pause set\'s bursts', () => {
     workoutDetailSheet(workout([
       { id: lifts[0], target: { mode: 'reps' }, sets: [done(100, 8, { type: 'dropset', drops: [{ w: 80, r: 6 }, { w: 60, r: 5 }] })] },
-      { id: lifts[1], target: { mode: 'reps' }, sets: [done(60, 16, { type: 'restpause', clusters: [{ r: 4, restSec: 15 }, { r: 2, restSec: 15 }] })] },
+      { id: lifts[1], target: { mode: 'reps' }, sets: [done(60, 16, { type: 'restpause', clusters: [{ r: 10, restSec: 15 }, { r: 4, restSec: 15 }, { r: 2, restSec: 15 }] })] },
     ]))
     const rows = [...mountTopSheet().querySelectorAll('.wd-ex .ss')].map(el => el.textContent)
     expect(rows).toEqual(['100×8 ↘ 80×6 ↘ 60×5', '60×10+4+2'])
@@ -177,5 +189,33 @@ describe('export as .fit', () => {
     const host = mountTopSheet()
     await act(async () => { button(host, 'Export as .fit file').click() })
     expect(toast).toHaveBeenCalledWith('Could not create the file')
+  })
+})
+
+// #143: the detail sheet is the door to the editor, which opens a draft of this workout in A.
+describe('editing a saved workout from its detail sheet', () => {
+  it('opens the editor on the workout\'s own rows, and not while a session runs', () => {
+    const w = workout([{ id: lifts[0], target: { mode: 'reps' }, sets: [done(60, 5)] }])
+    useStore.setState(s => ({ S: { ...s.S, workouts: [w] }, A: null }))
+    workoutDetailSheet(w)
+    const host = mountTopSheet()   // mounted before the click's own act(), or it renders only after
+    act(() => { button(host, 'Edit workout').click() })
+    const A = useStore.getState().A
+    expect(A).toMatchObject({ editingWorkoutId: 'w1', entries: [{ id: lifts[0], sets: [{ w: 60, r: 5, done: true }] }] })
+    expect(useStore.getState().S.workouts).toEqual([w])
+
+    useUI.setState({ sheets: [] })
+    workoutDetailSheet(w)
+    expect(button(mountTopSheet(), 'Edit workout').disabled).toBe(true)
+  })
+})
+
+describe('an exercise note on a saved workout', () => {
+  it('is shown under its exercise, flagged when pinned', () => {
+    const w = workout([{ id: lifts[0], target: { mode: 'reps' }, sets: [done(60, 5)] }])
+    w.exposures[0].performance = { ...w.exposures[0].performance, note: 'go narrower', notePin: true }
+    workoutDetailSheet(w)
+    const row = mountTopSheet().querySelector('.wd-ex')
+    expect(row.textContent).toContain('go narrower')
   })
 })

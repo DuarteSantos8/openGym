@@ -7,7 +7,7 @@
    plan as if the account had been reset. (QA 2026-10-06.) */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('../lib/api.js', () => ({ api: vi.fn(), setRemoteAuth: vi.fn() }))
+vi.mock('../lib/api.js', () => ({ setAccessHeaders: vi.fn(), api: vi.fn(), setRemoteAuth: vi.fn() }))
 vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast: vi.fn() }) } }))
 
 import { api } from '../lib/api.js'

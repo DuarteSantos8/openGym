@@ -1,6 +1,25 @@
 import { describe, it, expect } from 'vitest'
-import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, completedRepsOf, metricRowsForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, sessionSections, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded, entryRoutineId, setsRepsOf } from './history.js'
-import { makeSideSet, setSideField, toggleSide, WEIGHT_ORIGIN_MANUAL } from './workout-model.js'
+import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, freestyleConfig as canonicalFreestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, makeWarmupAt, canBeWarmup, makeWorkAt, removeLastSet, setSpanAt, removeRowAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor as canonicalLastEntryFor, entryExcluded, volumeOf, rerampAutoWarmups, setsRepsOf, sessionSections } from './history.js'
+import { WEIGHT_ORIGIN_MANUAL } from './workout-model.js'
+import { exposuresWithPerformance } from './session-ui-adapter.js'
+import { metricRowsForEntry } from './history.js'
+const canonical = S => {
+  if (S.prescriptions) return S
+  const prescriptions = {}
+  const workouts = (S.workouts || []).map((workout, wi) => {
+    const exposures = (workout.entries || []).map((entry, ei) => {
+    const prescriptionId = `${wi}:${ei}`
+    prescriptions[prescriptionId] = { rows: (entry.sets || []).map(row => ({ load: row.w > 0 ? { value: row.w } : null })), prefill: { reps: entry.target?.reps ?? entry.sets?.[0]?.r, ...(entry.target?.mode === 'time' ? { durationSeconds: entry.target.sec } : {}) } }
+    return { exerciseId: entry.id, routineId: entry.rid ?? ((workout.entries || []).some(e => e && e.rid) ? null : ([].concat(workout.routineIds ?? [])[0] ?? workout.routineId ?? null)), mode: entry.target?.mode ?? (entry.target?.min != null ? 'cardio' : undefined), prescriptionId, excludedFromProgression: entry.noProg || workout.excludeFromProgression || false, performance: { sets: (entry.sets || []).map(row => ({ role: row.phase === 'warmup' ? 'warmup' : 'work', status: row.done ? 'completed' : 'skipped', observations: [row.r != null && { metric: 'repetitions', value: row.r }, row.sec != null && { metric: 'duration', value: row.sec }, row.min != null && { metric: 'duration', value: row.min * 60 }, row.speed != null && { metric: 'speed', value: row.speed }].filter(Boolean), resistance: row.w > 0 ? { kind: 'external-load', value: row.w } : { kind: 'bodyweight' }, segments: [] })) } }
+    })
+    return { ...workout, exposures }
+  })
+  return { ...S, workouts, prescriptions }
+}
+const lastEntryFor = (S, ...args) => canonicalLastEntryFor(canonical(S), ...args)
+const freestyleConfig = (S, ...args) => canonicalFreestyleConfig(canonical(S), ...args)
+import { bestSetOf } from './onerm.js'
+import { makeSideSet, setSideField, toggleSide } from './workout-model.js'
 import { EXDB } from './exercises.js'
 import { todayISO, isoOf } from './format.js'
 
@@ -442,72 +461,7 @@ describe('freestyleConfig', () => {
     }
     const cfg = freestyleConfig(S, { id: LIFT, mode: 'reps', sets: 3, reps: 10, weight: 0 })
 
-    expect(cfg).toEqual({ id: LIFT, mode: 'reps', sets: 4, reps: 8, weight: 60, prog: 'linear' })
-    expect(buildSets(S, cfg)).toEqual([
-      { w: 60, r: 8, done: false },
-      { w: 62.5, r: 7, done: false },
-      { w: 62.5, r: 6, done: false },
-      { w: 62.5, r: 5, done: false }
-    ])
-  })
-
-  // Planned warm-ups: the routine says how many, buildSets stacks them onto the work sets with
-  // the same ramp the in-session button uses. A plan without the field must not change shape.
-  it('adds no rows when the config asks for no warm-ups', () => {
-    const S = { exWeights: {}, workouts: [] }
-    const cfg = { id: '0025', mode: 'reps', sets: 2, reps: 5, weight: 100 }
-    expect(buildSets(S, cfg)).toEqual([
-      { w: 100, r: 5, done: false },
-      { w: 100, r: 5, done: false },
-    ])
-  })
-
-  it('prepends the planned warm-ups as a ramp toward the work weight', () => {
-    const S = { exWeights: {}, workouts: [] }
-    const cfg = { id: '0025', mode: 'reps', sets: 2, reps: 5, weight: 100, warmupSets: 3 }
-    const rows = buildSets(S, cfg, { step: 2.5 })
-    expect(rows.map(r => r.w)).toEqual([50, 75, 87.5, 100, 100])
-    expect(rows.slice(0, 3).every(r => r.phase === 'warmup')).toBe(true)
-    expect(rows.slice(3).every(r => r.phase === undefined)).toBe(true)
-  })
-
-  // A 55 lb bench used to get warm-ups at 25 and 40 lb, lighter than the 45 lb bar it is done
-  // with. A barbell rung never goes under the bar; everything without a bar ramps as before.
-  it('never ramps a barbell warm-up below the bar it is done with', () => {
-    const S = { unit: 'lb', exWeights: {}, workouts: [] }
-    const bench = { id: '0025', mode: 'reps', sets: 3, reps: 10, weight: 55, warmupSets: 1 }
-    expect(buildSets(S, bench, { step: 5 }).map(r => r.w)).toEqual([45, 55, 55, 55])
-    // two rungs from the bar: 45, then half the gap left
-    expect(buildSets(S, { ...bench, warmupSets: 2 }, { step: 5 }).map(r => r.w).slice(0, 2)).toEqual([45, 50])
-    // heavy lifts ramp exactly as before: every rung is above the bar anyway
-    expect(buildSets(S, { ...bench, weight: 135, warmupSets: 3 }, { step: 5 }).map(r => r.w).slice(0, 3)).toEqual([65, 100, 115])
-    // the athlete's own bar weight wins, and "no bar" (0) floors nothing
-    expect(buildSets({ ...S, barWeights: { '0025': 35 } }, bench, { step: 5 })[0].w).toBe(35)
-    expect(buildSets({ ...S, barWeights: { '0025': 0 } }, bench, { step: 5 })[0].w).toBe(25)
-    // a bar heavier than the work weight still never makes a warm-up heavier than the work set
-    expect(buildSets({ ...S, barWeights: { '0025': 65 } }, bench, { step: 5 })[0].w).toBe(55)
-    // a dumbbell lift has no bar: half, as always
-    expect(buildSets(S, { id: '0289', mode: 'reps', sets: 1, reps: 10, weight: 50, warmupSets: 1 }, { step: 5 })[0].w).toBe(25)
-    // the in-session button takes the same floor
-    const rows = [{ w: 55, r: 10, done: false }]
-    expect(insertWarmupRow(rows, 'reps', bench, 5, 45)[0].w).toBe(45)
-    expect(insertWarmupRow(rows, 'reps', bench, 5)[0].w).toBe(25)
-  })
-
-  it('caps the planned warm-ups and ignores nonsense values', () => {
-    const S = { exWeights: {}, workouts: [] }
-    const base = { id: '0025', mode: 'reps', sets: 1, reps: 5, weight: 100 }
-    expect(buildSets(S, { ...base, warmupSets: 99 }, { step: 2.5 }).filter(r => r.phase === 'warmup')).toHaveLength(5)
-    expect(buildSets(S, { ...base, warmupSets: -2 }, { step: 2.5 })).toHaveLength(1)
-    expect(buildSets(S, { ...base, warmupSets: 'x' }, { step: 2.5 })).toHaveLength(1)
-  })
-
-  it('keeps planned warm-ups out of the work-set count', () => {
-    const S = { exWeights: {}, workouts: [] }
-    const rows = buildSets(S, { id: '0025', mode: 'reps', sets: 3, reps: 5, weight: 100, warmupSets: 2 }, { step: 2.5 })
-    const logged = { entries: [{ id: '0025', sets: rows.map(r => ({ ...r, done: true })) }] }
-    expect(logged.entries[0].sets).toHaveLength(5)
-    expect(workSetsDone(logged)).toBe(3)
+    expect(cfg).toEqual({ id: LIFT, mode: 'reps', sets: 4, reps: 8, weight: 60 })
   })
 
   it('inherits the target for timed and cardio exercises too', () => {
@@ -536,194 +490,16 @@ describe('freestyleConfig', () => {
 
     const timedCfg = freestyleConfig(timed, { id: LIFT, mode: 'time', sets: 3, sec: 45, weight: 0 })
     expect(timedCfg).toEqual({ id: LIFT, mode: 'time', sets: 2, sec: 60, weight: 15 })
-    expect(buildSets(timed, timedCfg)).toEqual([
-      { sec: 55, w: 15, done: false },
-      { sec: 60, w: 17.5, done: false }
-    ])
 
     const cardioCfg = freestyleConfig(cardio, { id: CARDIO, sets: 1, min: 20, speed: 8 })
-    expect(cardioCfg).toEqual({ id: CARDIO, sets: 2, min: 30, speed: 7 })
-    expect(buildSets(cardio, cardioCfg)).toEqual([
-      { min: 28, speed: 7, done: false },
-      { min: 30, speed: 7.5, done: false }
-    ])
+    // The row count is inherited; min/speed live on the copied rows now, not on a stored target.
+    expect(cardioCfg).toEqual({ id: CARDIO, mode: 'cardio', sets: 2, min: 20, speed: 8 })
   })
 
   it('keeps the supplied defaults when there is no completed matching workout', () => {
     const cfg = freestyleConfig(emptyS, { id: LIFT, mode: 'reps', sets: 3, reps: 10, weight: 50 })
     expect(cfg).toEqual({ id: LIFT, mode: 'reps', sets: 3, reps: 10, weight: 50 })
   })
-})
-
-describe('buildSets', () => {
-  it('builds reps sets from the plan when there is no history', () => {
-    expect(buildSets(emptyS, { id: LIFT, sets: 3, reps: 8, weight: 50 }))
-      .toEqual([{ w: 50, r: 8, done: false }, { w: 50, r: 8, done: false }, { w: 50, r: 8, done: false }])
-  })
-
-  it('builds timed sets, carrying the planned duration and load', () => {
-    expect(buildSets(emptyS, { id: LIFT, mode: 'time', sets: 2, sec: 60, weight: 20 }))
-      .toEqual([{ sec: 60, w: 20, done: false }, { sec: 60, w: 20, done: false }])
-  })
-
-  it('doubles a per-side timed hold — once on each side, full duration both times', () => {
-    expect(buildSets(emptyS, { id: LIFT, mode: 'time', sets: 2, sec: 30, weight: 0, side: true }))
-      .toEqual([
-        { sec: 30, w: 0, done: false, side: 'L' }, { sec: 30, w: 0, done: false, side: 'R' },
-        { sec: 30, w: 0, done: false, side: 'L' }, { sec: 30, w: 0, done: false, side: 'R' },
-      ])
-  })
-
-  it('carries a per-side timed hold forward by row, L and R each keeping their own history', () => {
-    const S = { exWeights: {}, workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, target: { mode: 'time', side: true }, sets: [
-      { sec: 40, w: 5, done: true, side: 'L' }, { sec: 35, w: 5, done: true, side: 'R' },
-    ] }] }] }
-    expect(buildSets(S, { id: LIFT, mode: 'time', sets: 1, sec: 30, weight: 0, side: true }))
-      .toEqual([{ sec: 40, w: 5, done: false, side: 'L' }, { sec: 35, w: 5, done: false, side: 'R' }])
-  })
-
-  it('builds cardio sets unchanged', () => {
-    expect(buildSets(emptyS, { id: CARDIO, sets: 1, min: 25, speed: 9 }))
-      .toEqual([{ min: 25, speed: 9, done: false }])
-  })
-
-  it('carries last time\'s numbers forward within the same mode', () => {
-    const S = { exWeights: {}, workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, target: { mode: 'time' }, sets: [{ sec: 70, w: 10, done: true }] }] }] }
-    expect(buildSets(S, { id: LIFT, mode: 'time', sets: 2, sec: 45, weight: 0 }))
-      .toEqual([{ sec: 70, w: 10, done: false }, { sec: 70, w: 10, done: false }])
-  })
-
-  it('does not seed a duration from a rep count when an exercise switches to time', () => {
-    const S = { exWeights: {}, workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, sets: [{ w: 60, r: 10, done: true }] }] }] }
-    expect(buildSets(S, { id: LIFT, mode: 'time', sets: 1, sec: 45, weight: 0 }))
-      .toEqual([{ sec: 45, w: 0, done: false }])
-  })
-
-  it('does not seed reps from a timed set when an exercise switches back', () => {
-    const S = { exWeights: {}, workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, target: { mode: 'time' }, sets: [{ sec: 70, w: 10, done: true }] }] }] }
-    expect(buildSets(S, { id: LIFT, mode: 'reps', sets: 1, reps: 8, weight: 40 }))
-      .toEqual([{ w: 40, r: 8, done: false }])
-  })
-
-  it('seeds the weight from the last session, and the confirmed working weight only when there is none', () => {
-    // The confirmed weight is keyed by exercise alone — a heavy day's number — so it no longer
-    // beats the session the rows are read from (#216). It still fills in without history.
-    const S = { exWeights: { [LIFT]: { w: 75 } }, workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, sets: [{ w: 60, r: 10, done: true }] }] }] }
-    expect(buildSets(S, { id: LIFT, sets: 1, reps: 8, weight: 50 })).toEqual([{ w: 60, r: 10, done: false }])
-    expect(buildSets({ ...S, workouts: [] }, { id: LIFT, sets: 1, reps: 8, weight: 50 })).toEqual([{ w: 75, r: 8, done: false }])
-  })
-
-  it('opens at the plan\'s reps with planReps, taking only the weight from the last session', () => {
-    const S = { exWeights: {}, workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, sets: [{ w: 60, r: 15, done: true }, { w: 62.5, r: 12, done: true }] }] }] }
-    expect(buildSets(S, { id: LIFT, sets: 2, reps: 10, weight: 50 }, { planReps: true }))
-      .toEqual([{ w: 60, r: 10, done: false }, { w: 62.5, r: 10, done: false }])
-    // Planned warm-ups copy the work row, so they follow the plan too.
-    expect(buildSets(S, { id: LIFT, sets: 1, reps: 10, weight: 50, warmupSets: 1 }, { planReps: true, step: 2.5 }).map(s => s.r))
-      .toEqual([10, 10])
-  })
-
-  it('keeps each side\'s carried weight and splits the plan\'s reps evenly with planReps', () => {
-    const side = (w, r) => ({ w, r, done: true })
-    const S = { exWeights: {}, workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, target: { side: true }, sets: [
-      { w: 22.5, r: 13, done: true, sides: { L: side(22.5, 7), R: side(20, 6) } },
-    ] }] }] }
-    const [row] = buildSets(S, { id: LIFT, sets: 1, reps: 16, weight: 20, side: true }, { planReps: true })
-    expect(row.sides.L).toMatchObject({ w: 22.5, r: 8 })
-    expect(row.sides.R).toMatchObject({ w: 20, r: 8 })
-    expect(row.r).toBe(16)
-    // Without it the logged asymmetry carries over, reps included.
-    const [carried] = buildSets(S, { id: LIFT, sets: 1, reps: 16, weight: 20, side: true })
-    expect([carried.sides.L.r, carried.sides.R.r]).toEqual([7, 6])
-  })
-
-  it('ignores planReps for freestyle, which reproduces what you did', () => {
-    const S = { exWeights: {}, workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, sets: [{ w: 60, r: 15, done: true }] }] }] }
-    expect(buildSets(S, { id: LIFT, sets: 1, reps: 10, weight: 50 }, { planReps: true, preferLast: true }))
-      .toEqual([{ w: 60, r: 15, done: false }])
-  })
-
-  it('can preserve each last set weight for freestyle instead of using the working-weight hint', () => {
-    const S = { exWeights: { [LIFT]: { w: 75 } }, workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, sets: [
-      { w: 60, r: 10, done: true }, { w: 62.5, r: 8, done: true }
-    ] }] }] }
-    expect(buildSets(S, { id: LIFT, sets: 2, reps: 8, weight: 50 }, { preferLast: true }))
-      .toEqual([{ w: 60, r: 10, done: false }, { w: 62.5, r: 8, done: false }])
-  })
-
-  it('can use a deload target without carrying regular-session values into it', () => {
-    const S = { exWeights: { [LIFT]: { w: 75 } }, workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, sets: [
-      { w: 75, r: 10, done: true }, { w: 75, r: 9, done: true }
-    ] }] }] }
-    expect(buildSets(S, { id: LIFT, sets: 2, reps: 12, weight: 40 }, { useTarget: true }))
-      .toEqual([{ w: 40, r: 12, done: false }, { w: 40, r: 12, done: false }])
-  })
-
-  it('uses the current routine target instead of another routine\'s bodyweight history', () => {
-    const S = {
-      exWeights: {},
-      workouts: [{
-        d: '2026-01-01',
-        routineId: 'routine-a',
-        entries: [{
-          id: BW,
-          target: { sets: 2, reps: 15, weight: 0, bodyweight: true },
-          sets: [{ w: 0, r: 15, done: true }, { w: 0, r: 15, done: true }]
-        }]
-      }]
-    }
-    const cfg = { id: BW, sets: 4, reps: 8, weight: 0, bodyweight: true, prog: 'off' }
-
-    expect(buildSets(S, cfg, { useTarget: true })).toEqual([
-      { w: 0, r: 8, done: false },
-      { w: 0, r: 8, done: false },
-      { w: 0, r: 8, done: false },
-      { w: 0, r: 8, done: false }
-    ])
-
-    const reverseS = {
-      exWeights: {},
-      workouts: [{
-        d: '2026-01-02',
-        routineId: 'routine-b',
-        entries: [{
-          id: BW,
-          target: { sets: 4, reps: 8, weight: 0, bodyweight: true },
-          sets: [
-            { w: 0, r: 8, done: true }, { w: 0, r: 8, done: true },
-            { w: 0, r: 8, done: true }, { w: 0, r: 8, done: true }
-          ]
-        }]
-      }]
-    }
-    expect(buildSets(reverseS, { ...cfg, sets: 2, reps: 15 }, { useTarget: true })).toEqual([
-      { w: 0, r: 15, done: false },
-      { w: 0, r: 15, done: false }
-    ])
-  })
-
-  it('preserves configured load, reps, duration and cardio targets when history is present', () => {
-    const repsS = {
-      exWeights: { [LIFT]: { w: 75 } },
-      workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, sets: [{ w: 75, r: 15, done: true }] }] }]
-    }
-    expect(buildSets(repsS, { id: LIFT, sets: 2, reps: 8, weight: 40 }, { useTarget: true }))
-      .toEqual([{ w: 40, r: 8, done: false }, { w: 40, r: 8, done: false }])
-
-    const timedS = {
-      exWeights: {},
-      workouts: [{ d: '2026-01-02', entries: [{ id: LIFT, target: { mode: 'time' }, sets: [{ sec: 90, w: 20, done: true }] }] }]
-    }
-    expect(buildSets(timedS, { id: LIFT, mode: 'time', sets: 2, sec: 30, weight: 5 }, { useTarget: true }))
-      .toEqual([{ sec: 30, w: 5, done: false }, { sec: 30, w: 5, done: false }])
-
-    const cardioS = {
-      exWeights: {},
-      workouts: [{ d: '2026-01-03', entries: [{ id: CARDIO, sets: [{ min: 45, speed: 10, done: true }] }] }]
-    }
-    expect(buildSets(cardioS, { id: CARDIO, sets: 2, min: 20, speed: 8 }, { useTarget: true }))
-      .toEqual([{ min: 20, speed: 8, done: false }, { min: 20, speed: 8, done: false }])
-  })
-
 })
 
 describe('applyIntensifierPlan', () => {
@@ -774,74 +550,90 @@ describe('applyIntensifierPlan', () => {
   })
 })
 
+const perfRow = (status, metric, value, resistance, segments = []) =>
+  ({ status, observations: [{ metric, value }], resistance, segments })
+
 describe('workoutVolume', () => {
   it('counts reps work and leaves timed/cardio sets out — there is no weight × reps for a hold', () => {
-    const w = { entries: [
-      { id: LIFT, sets: [{ w: 60, r: 10, done: true }, { w: 60, r: 10, done: false }] },
-      { id: LIFT, target: { mode: 'time' }, sets: [{ sec: 60, w: 20, done: true }] },
-      { id: CARDIO, sets: [{ min: 20, speed: 9, done: true }] }
+    const w = { exposures: [
+      { exerciseId: LIFT, performance: { sets: [
+        perfRow('completed', 'repetitions', 10, { kind: 'external-load', value: 60 }),
+        perfRow('skipped', 'repetitions', 10, { kind: 'external-load', value: 60 }),
+      ] } },
+      { exerciseId: LIFT, performance: { sets: [perfRow('completed', 'duration', 60, { kind: 'external-load', value: 20 })] } },
+      { exerciseId: CARDIO, performance: { sets: [{ status: 'completed', observations: [{ metric: 'duration', value: 1200 }, { metric: 'speed', value: 9 }], resistance: { kind: 'bodyweight' }, segments: [] }] } },
     ] }
-    expect(workoutVolume(w)).toBe(600)
-  })
-
-  it('needs no per-side case — the logged reps are already both sides (issue #31)', () => {
-    const w = { entries: [{ id: LIFT, target: { side: true }, sets: [{ w: 20, r: 16, done: true }] }] }
-    expect(workoutVolume(w)).toBe(320)
+    expect(workoutVolume({}, w)).toBe(600)
   })
 
   it('adds drop-set drops on top of the row\'s main set', () => {
-    const dropRow = { type: 'dropset', w: 100, r: 5, done: true, drops: [{ w: 80, r: 5 }, { w: 60, r: 5 }] }
-    expect(workoutVolume({ entries: [{ id: LIFT, sets: [dropRow] }] })).toBe(100 * 5 + 80 * 5 + 60 * 5)
+    const w = { exposures: [{ exerciseId: LIFT, performance: { sets: [
+      perfRow('completed', 'repetitions', 5, { kind: 'external-load', value: 100 }, [
+        perfRow('completed', 'repetitions', 5, { kind: 'external-load', value: 80 }),
+        perfRow('completed', 'repetitions', 5, { kind: 'external-load', value: 60 }),
+      ]),
+    ] } }] }
+    expect(workoutVolume({}, w)).toBe(100 * 5 + 80 * 5 + 60 * 5)
   })
 
-  it('counts a rest-pause row once — its own r is already the total across every burst', () => {
-    const burstRow = { type: 'restpause', w: 60, r: 20, done: true, clusters: [{ r: 10, restSec: 15 }, { r: 5, restSec: 15 }, { r: 3, restSec: 15 }, { r: 1, restSec: 15 }, { r: 1, restSec: 15 }] }
-    expect(workoutVolume({ entries: [{ id: LIFT, sets: [burstRow] }] })).toBe(60 * 20)
+  it('counts a rest-pause row once — its own reps are already the total across every burst', () => {
+    const w = { exposures: [{ exerciseId: LIFT, performance: { sets: [perfRow('completed', 'repetitions', 20, { kind: 'external-load', value: 60 })] } }] }
+    expect(workoutVolume({}, w)).toBe(60 * 20)
   })
 
   it('ignores drops/bursts on a row that was never checked off', () => {
-    const dropRow = { type: 'dropset', w: 100, r: 5, done: false, drops: [{ w: 80, r: 5 }] }
-    expect(workoutVolume({ entries: [{ id: LIFT, sets: [dropRow] }] })).toBe(0)
+    const w = { exposures: [{ exerciseId: LIFT, performance: { sets: [
+      perfRow('skipped', 'repetitions', 5, { kind: 'external-load', value: 100 }, [perfRow('completed', 'repetitions', 5, { kind: 'external-load', value: 80 })]),
+    ] } }] }
+    expect(workoutVolume({}, w)).toBe(0)
   })
 
   it('leaves an unloaded bodyweight set at zero volume rather than inventing a number', () => {
-    const w = { entries: [{ id: BW, target: { bodyweight: true }, sets: [{ w: 0, r: 20, done: true }] }] }
-    expect(workoutVolume(w)).toBe(0)
+    const w = { exposures: [{ exerciseId: BW, performance: { sets: [perfRow('completed', 'repetitions', 20, { kind: 'bodyweight' })] } }] }
+    expect(workoutVolume({}, w)).toBe(0)
   })
 
-  it('recognizes both warm-up schemas in work-set counts', () => {
-    const w = {
-      unit: 'kg',
-      entries: [{
-        id: LIFT,
-        unit: 'kg',
-        sets: [
-          { warmup: true, unit: 'kg', w: 20, r: 5, done: true },
-          { phase: 'warmup', unit: 'kg', w: 30, r: 5, done: true },
-          { phase: 'work', unit: 'kg', w: 60, r: 5, done: true },
-        ],
-      }],
-    }
-    expect(workSetsDone(w)).toBe(1)
+  it('excludes a warm-up row from the work-set count', () => {
+    const S = {}
+    const w = { exposures: [{ exerciseId: LIFT, performance: { sets: [
+      { ...perfRow('completed', 'repetitions', 5, { kind: 'external-load', value: 20 }), setId: 'w1', role: 'warmup' },
+      { ...perfRow('completed', 'repetitions', 5, { kind: 'external-load', value: 60 }), setId: 's1', role: 'work' },
+    ] } }] }
+    expect(workSetsDone(S, w)).toBe(1)
+  })
+
+  it('excludes a warm-up row from volume, even though the row is logged completed', () => {
+    // A warm-up the user actually checks off is status 'completed', identical to a work set —
+    // only the role written at finish tells them apart (the regression this pins: volumeOf alone only
+    // excludes status === 'skipped', which a real completed warm-up never is).
+    const S = {}
+    const w = { exposures: [{ exerciseId: LIFT, performance: { sets: [
+      { ...perfRow('completed', 'repetitions', 5, { kind: 'external-load', value: 20 }), setId: 'w1', role: 'warmup' },
+      { ...perfRow('completed', 'repetitions', 5, { kind: 'external-load', value: 60 }), setId: 's1', role: 'work' },
+    ] } }] }
+    expect(workoutVolume(S, w)).toBe(300)
   })
 
   it('counts work sets the way it counts all sets: each side of a unilateral row (QA 1.3.9)', () => {
     const both = toggleSide(toggleSide(makeSideSet({ w: 20, r: 20 }), 'L'), 'R')
     const one = toggleSide(makeSideSet({ w: 20, r: 20 }), 'L')
-    const w = { entries: [{ id: LIFT, sets: [both, one, { w: 30, r: 5, done: true }] }] }
+    const w = { exposures: exposuresWithPerformance([{ exposureId: 'x', exerciseId: LIFT }], [{ exposureId: 'x', sets: [both, one, { w: 30, r: 5, done: true }] }], 'kg') }
     expect(setsDone(w)).toBe(4)
     // No warm-ups, so every set is a work set — the summary read "4 sets · 2 work".
-    expect(workSetsDone(w)).toBe(4)
+    expect(workSetsDone({}, w)).toBe(4)
+    // The limb left unticked is not volume: 20×10 three times, plus 30×5.
+    expect(workoutVolume({}, w)).toBe(750)
   })
 
   it('does not use a warm-up as the previous best working weight', () => {
-    expect(bestWeightFor({ workouts: [{ entries: [{ id: LIFT, topW: 120, sets: [
-      { phase: 'warmup', done: true, w: 120 },
-      { phase: 'work', done: true, w: 80 },
-    ] }] }] }, LIFT)).toBe(80)
-    expect(bestWeightFor({ workouts: [{ entries: [{ id: LIFT, topW: 120, sets: [
-      { phase: 'warmup', done: true, w: 120 },
-    ] }] }] }, LIFT)).toBe(0)
+    const profile = sets => ({ workouts: [{ exposures: [{ exerciseId: LIFT, performance: { sets } }] }] })
+    expect(bestWeightFor(profile([
+      { setId: 'warmup', role: 'warmup', status: 'completed', observations: [], resistance: { kind: 'external-load', value: 120 }, segments: [] },
+      { setId: 'work', role: 'work', status: 'completed', observations: [], resistance: { kind: 'external-load', value: 80 }, segments: [] },
+    ]), LIFT)).toBe(80)
+    expect(bestWeightFor(profile([
+      { setId: 'warmup', role: 'warmup', status: 'completed', observations: [], resistance: { kind: 'external-load', value: 120 }, segments: [] },
+    ]), LIFT)).toBe(0)
   })
 
   it('uses completed non-warm-up load for timed entries', () => {
@@ -864,7 +656,7 @@ describe('workoutVolume', () => {
       target: { mode: 'time' },
       sets: [{ phase: 'work', sec: 60, w: 20, done: true }],
     }
-    const state = { workouts: [{ entries: [prior] }] }
+    const state = { workouts: [{ exposures: [{ exerciseId: LIFT, kind: 'legacy', performance: { sets: [{ status: 'completed', observations: [{ metric: 'duration', value: 60 }], resistance: { kind: 'external-load', value: 20 }, segments: [] }] } }] }] }
     const repeatedWeight = Math.max(0, ...repeated.sets.filter(set => set.done).map(set => set.w || 0))
 
     expect(bestWeightForEntry(prior)).toBe(20)
@@ -993,7 +785,7 @@ describe('session row helpers', () => {
   // warm-ups, so each one had to be put back by hand. Each rung keeps its own load.
   it('cascadeWeight leaves the later warm-up rungs on their ramp loads', () => {
     const S = { unit: 'lb', exWeights: {}, workouts: [] }
-    const rows = buildSets(S, { id: '0047', mode: 'reps', sets: 4, reps: 8, weight: 125, warmupSets: 3 }, { step: 5 })
+    const rows = [60, 90, 105, 125, 125, 125, 125].map((w, i) => ({ w, r: 8, done: false, ...(i < 3 ? { phase: 'warmup' } : {}) }))
     expect(rows.map(r => r.w)).toEqual([60, 90, 105, 125, 125, 125, 125])
     const next = cascadeWeight(rows, 0, 70)   // the caller writes the edited row itself
     expect(next.map(r => r.w)).toEqual([60, 90, 105, 125, 125, 125, 125])
@@ -1115,11 +907,7 @@ describe('warm-up rows identified by phase alone', () => {
   const imported = { w: 40, r: 10, done: true, phase: 'warmup' }
   const work = { w: 100, r: 5, done: true }
 
-  it('workSetsDone does not count a phase-only warm-up', () => {
-    expect(workSetsDone({ entries: [{ sets: [imported, work] }] })).toBe(1)
-  })
-
-  it('cascadeWeight treats a phase-only warm-up as a warm-up: the edit stays on its row', () => {
+  it('cascadeWeight keeps phase-only warm-ups in their own lane', () => {
     const rows = [
       { w: 40, r: 10, phase: 'warmup' },
       { w: 45, r: 10, phase: 'warmup' },
@@ -1193,12 +981,14 @@ describe('nextTrainingDay', () => {
 })
 
 describe('pinnedNoteFor', () => {
+  // Written by the live finish's own writer: the note sits with what was logged.
+  const noted = (exerciseId, note, notePin) => exposuresWithPerformance([{ exposureId: 'x', exerciseId }], [{ exposureId: 'x', note, ...(notePin ? { notePin } : {}), sets: [] }], 'kg')[0]
   const S = {
     workouts: [
-      { d: '2026-08-01', entries: [{ id: '0025', note: 'felt heavy', notePin: true }] },
-      { d: '2026-08-08', entries: [{ id: '0025', note: 'just a diary line' }] },
-      { d: '2026-08-15', entries: [{ id: '0025', note: 'go narrower', notePin: true }] },
-      { d: '2026-08-22', entries: [{ id: '0293', note: 'other exercise', notePin: true }] },
+      { d: '2026-08-01', exposures: [noted('0025', 'felt heavy', true)] },
+      { d: '2026-08-08', exposures: [noted('0025', 'just a diary line')] },
+      { d: '2026-08-15', exposures: [noted('0025', 'go narrower', true)] },
+      { d: '2026-08-22', exposures: [noted('0293', 'other exercise', true)] },
     ],
   }
 
@@ -1207,18 +997,18 @@ describe('pinnedNoteFor', () => {
   })
 
   it('ignores notes that were not pinned', () => {
-    expect(pinnedNoteFor({ workouts: [{ d: '2026-08-08', entries: [{ id: '0025', note: 'diary' }] }] }, '0025')).toBeNull()
+    expect(pinnedNoteFor({ workouts: [{ d: '2026-08-08', exposures: [noted('0025', 'diary')] }] }, '0025')).toBeNull()
   })
 
   it('skips the workout being edited, whose note the editor already shows', () => {
     const ws = [
-      { id: 'w1', d: '2026-08-01', entries: [{ id: '0025', note: 'older pin', notePin: true }] },
-      { id: 'w2', d: '2026-08-15', entries: [{ id: '0025', note: 'its own pin', notePin: true }] },
+      { id: 'w1', d: '2026-08-01', exposures: [noted('0025', 'older pin', true)] },
+      { id: 'w2', d: '2026-08-15', exposures: [noted('0025', 'its own pin', true)] },
     ]
     expect(pinnedNoteFor({ workouts: ws, active: { editingWorkoutId: 'w2' } }, '0025')).toEqual({ note: 'older pin', d: '2026-08-01' })
     expect(pinnedNoteFor({ workouts: ws, active: { editingWorkoutId: 'w1' } }, '0025')).toEqual({ note: 'its own pin', d: '2026-08-15' })
     // a workout logged before ids is keyed by day and start
-    const legacy = [{ d: '2026-08-15', start: 1000, entries: [{ id: '0025', note: 'its own pin', notePin: true }] }]
+    const legacy = [{ d: '2026-08-15', start: 1000, exposures: [noted('0025', 'its own pin', true)] }]
     expect(pinnedNoteFor({ workouts: legacy, active: { editingWorkoutId: '2026-08-15|1000' } }, '0025')).toBeNull()
   })
 
@@ -1305,15 +1095,15 @@ describe('setLabel — per side', () => {
 })
 
 describe('per-side aggregate stays readable by existing consumers', () => {
-  it('workoutVolume counts both sides via the row total, unchanged from a straight set', () => {
-    // 15×8 per side = 15×16 total = 240, exactly what a straight {w:15,r:16} would score.
-    const side = { ...makeSideSet({ w: 15, r: 16 }), done: true }
-    const synced = toggleSide(toggleSide(makeSideSet({ w: 15, r: 16 }), 'L'), 'R') // both done
-    const w = { entries: [{ id: LIFT, sets: [synced] }] }
-    expect(synced.done).toBe(true)
-    expect(workoutVolume(w)).toBe(240)
+  it('workoutVolume counts both sides via segments, unchanged from a straight set', () => {
+    // 15×8 per side (main row + one segment) = 15×16 total = 240, exactly what a straight {w:15,r:16} would score.
+    const w = { exposures: [{ exerciseId: LIFT, performance: { sets: [
+      perfRow('completed', 'repetitions', 8, { kind: 'external-load', value: 15 }, [perfRow('completed', 'repetitions', 8, { kind: 'external-load', value: 15 })]),
+    ] } }] }
+    expect(workoutVolume({}, w)).toBe(240)
     // and a straight equivalent scores the same
-    expect(workoutVolume({ entries: [{ id: LIFT, sets: [{ w: 15, r: 16, done: true }] }] })).toBe(240)
+    const straight = { exposures: [{ exerciseId: LIFT, performance: { sets: [perfRow('completed', 'repetitions', 16, { kind: 'external-load', value: 15 })] } }] }
+    expect(workoutVolume({}, straight)).toBe(240)
   })
 
   it('bestWeightForEntry reads the aggregate weight of a completed per-side set', () => {
@@ -1329,7 +1119,6 @@ describe('per-side aggregate stays readable by existing consumers', () => {
         sides: { L: { w: 100, r: 5, done: true }, R: { w: 200, r: 5, done: false } } }],
     }
     expect(bestWeightForEntry(partial)).toBe(100)
-    expect(completedRepsOf(metricRowsForEntry(partial, 'reps')[0])).toBe(5)
   })
 })
 
@@ -1354,7 +1143,29 @@ describe('per-side set counters', () => {
     ] }
     expect(setUnitsTotal(A.entries)).toBe(5)
     expect(setsDoneActive(A)).toBe(2)
-    expect(setsDone({ entries: A.entries })).toBe(2)
+  })
+
+  it('setsDone counts completed rows across a canonical workout\'s exposures', () => {
+    const w = { exposures: [{ exerciseId: LIFT, performance: { sets: [
+      perfRow('completed', 'repetitions', 16, { kind: 'external-load', value: 15 }),
+      perfRow('completed', 'repetitions', 8, { kind: 'external-load', value: 60 }),
+    ] } }] }
+    expect(setsDone(w)).toBe(2)
+  })
+
+  it('setsDone counts a canonical per-side row (main + completed segment) as two, a straight row as one', () => {
+    // Mirrors doneUnits/setsDoneActive's old L/R counting: a per-side row is two physical sets,
+    // not one, and the migrated reader must not silently drop that back to one (Critical #2).
+    const perSide = { exposures: [{ exerciseId: LIFT, performance: { sets: [
+      perfRow('completed', 'repetitions', 8, { kind: 'external-load', value: 15 }, [
+        perfRow('completed', 'repetitions', 8, { kind: 'external-load', value: 15 }),
+      ]),
+    ] } }] }
+    expect(setsDone(perSide)).toBe(2)
+    const straight = { exposures: [{ exerciseId: LIFT, performance: { sets: [
+      perfRow('completed', 'repetitions', 16, { kind: 'external-load', value: 15 }),
+    ] } }] }
+    expect(setsDone(straight)).toBe(1)
   })
 })
 
@@ -1488,9 +1299,26 @@ describe('nextTrainingDay on a combined day', () => {
   })
 })
 
-describe('lastEntryFor / buildSets skip a noProg entry', () => {
+describe('lastEntryFor skips a noProg entry', () => {
   const LIFT2 = EXDB.find(e => e.bp !== 'cardio' && e.eq !== 'body weight').id
   const wk = (d, w, r, extra) => ({ d, entries: [{ id: LIFT2, target: { sets: 1, reps: r, weight: w }, sets: [{ w, r, done: true }], ...extra }] })
+
+  it('reads the last counting canonical exposure from its prescription and row roles', () => {
+    const S = {
+      prescriptions: { p: { rows: [{ load: { value: 60 } }], prefill: { reps: 8 } } },
+      workouts: [{ d: '2026-01-01', exposures: [{ exerciseId: LIFT2, mode: 'reps', prescriptionId: 'p', excludedFromProgression: false, performance: { sets: [{ role: 'work', status: 'completed', observations: [{ metric: 'repetitions', value: 8 }], resistance: { kind: 'external-load', value: 60 }, segments: [] }] } }] }],
+    }
+    expect(lastEntryFor(S, LIFT2)).toMatchObject({ d: '2026-01-01', target: { reps: 8, weight: 60 }, sets: [{ w: 60, r: 8, done: true }] })
+  })
+
+  it('an exposure migrated from v1 without a prescription gives back the target v1 recorded for it', () => {
+    const exposure = { exerciseId: LIFT2, mode: 'reps', prescriptionId: null, kind: 'legacy', excludedFromProgression: false, legacyTarget: { sets: 3, reps: 5, weight: 62.5, mode: 'reps' },
+      performance: { sets: [{ role: 'work', status: 'completed', observations: [{ metric: 'repetitions', value: 5 }], resistance: { kind: 'external-load', value: 62.5 }, segments: [] }] } }
+    const S = { prescriptions: {}, workouts: [{ d: '2026-01-01', exposures: [exposure] }] }
+    expect(lastEntryFor(S, LIFT2).target).toEqual({ sets: 3, reps: 5, weight: 62.5, mode: 'reps' })
+    delete exposure.legacyTarget
+    expect(lastEntryFor(S, LIFT2).target).toEqual({ mode: 'reps', sets: 1 })
+  })
 
   it('lastEntryFor returns the prior counting session, not a later noProg one', () => {
     const S = { workouts: [wk('2026-01-01', 60, 8), wk('2026-01-05', 30, 12, { noProg: true })] }
@@ -1500,27 +1328,22 @@ describe('lastEntryFor / buildSets skip a noProg entry', () => {
     const S = { workouts: [wk('2026-01-01', 60, 8), { d: '2026-01-05', excludeFromProgression: true, entries: [{ id: LIFT2, target: { sets: 1, reps: 12, weight: 30 }, sets: [{ w: 30, r: 12, done: true }] }] }] }
     expect(lastEntryFor(S, LIFT2).d).toBe('2026-01-01')
   })
-  it('buildSets seeds opening rows from the last counting session', () => {
-    const S = { exWeights: {}, workouts: [wk('2026-01-01', 60, 8), wk('2026-01-05', 30, 12, { noProg: true })] }
-    expect(buildSets(S, { id: LIFT2, sets: 1, reps: 5, weight: 50 })).toEqual([{ w: 60, r: 8, done: false }])
-  })
-  it('buildSets with only noProg history falls back to the routine target', () => {
-    const S = { exWeights: {}, workouts: [wk('2026-01-05', 30, 12, { noProg: true })] }
-    expect(buildSets(S, { id: LIFT2, sets: 1, reps: 5, weight: 50 })).toEqual([{ w: 50, r: 5, done: false }])
-  })
   it('freestyleConfig ignores a noProg entry', () => {
     const S = { exWeights: {}, workouts: [wk('2026-01-05', 30, 12, { noProg: true })] }
     expect(freestyleConfig(S, { id: LIFT2, mode: 'reps', sets: 3, reps: 10, weight: 0 })).toEqual({ id: LIFT2, mode: 'reps', sets: 3, reps: 10, weight: 0 })
   })
   it('bestWeightFor is unchanged — a heavy noProg set still counts toward Best', () => {
-    const S = { workouts: [wk('2026-01-01', 60, 8), wk('2026-01-05', 140, 3, { noProg: true })] }
+    const S = { workouts: [{ exposures: [
+      { kind: 'legacy', exerciseId: LIFT2, performance: { sets: [{ status: 'completed', observations: [{ metric: 'repetitions', value: 8 }], resistance: { kind: 'external-load', value: 60 }, segments: [] }] } },
+      { kind: 'legacy', exerciseId: LIFT2, performance: { sets: [{ status: 'completed', observations: [{ metric: 'repetitions', value: 3 }], resistance: { kind: 'external-load', value: 140 }, segments: [] }] } },
+    ] }] }
     expect(bestWeightFor(S, LIFT2)).toBe(140)
   })
 })
 
 // Issue #216: the same exercise in two routines — a heavy day and a light day — is two lines of
 // history. Each routine reads its own, and one that has none reads the exercise's.
-describe('routine slots: lastEntryFor / buildSets read the routine\'s own history (#216)', () => {
+describe('routine slots: lastEntryFor reads the routine\'s own history (#216)', () => {
   const LIFT3 = EXDB.find(e => e.bp !== 'cardio' && e.eq !== 'body weight').id
   const session = (d, rid, w, r, extra = {}) => ({ id: LIFT3, ...(rid ? { rid } : {}), target: { sets: 2, reps: r, weight: w }, sets: [{ w, r, done: true }, { w, r, done: true }], ...extra })
   const S = {
@@ -1547,35 +1370,20 @@ describe('routine slots: lastEntryFor / buildSets read the routine\'s own histor
     expect(lastEntryFor(combined, LIFT3, 'A').sets.map(s => [s.w, s.r])).toEqual([[60, 10], [60, 10]])
   })
 
-  it('opens each routine\'s rows from its own line', () => {
-    const cfg = { id: LIFT3, sets: 2, reps: 10, weight: 0 }
-    expect(buildSets(S, cfg, { rid: 'A' }).map(s => s.w)).toEqual([60, 60])
-    expect(buildSets(S, cfg, { rid: 'B' }).map(s => s.w)).toEqual([40, 40])
-  })
-
   it('gives a session saved before per-entry routine ids to the workout\'s routine', () => {
     const legacy = { d: '2026-01-01', routineId: 'A', entries: [session('', null, 60, 10)] }
-    expect(entryRoutineId(legacy, legacy.entries[0])).toBe('A')
-    expect(entryRoutineId({ routineIds: ['B'], entries: [] }, { id: LIFT3 })).toBe('B')
     expect(lastEntryFor({ workouts: [legacy] }, LIFT3, 'A')).toMatchObject({ rid: 'A' })
   })
 
-  it('leaves an exercise added to a freestyle session without a routine', () => {
-    // "Add routine" on a freestyle session: the routine's entries carry its id, the exercise
-    // picked before it does not — it was never part of that routine's plan.
-    const w = { routineIds: ['A'], entries: [{ id: LIFT3 }, { id: 'x', rid: 'A' }] }
-    expect(entryRoutineId(w, w.entries[0])).toBeNull()
-    expect(entryRoutineId({ routineIds: [], entries: [{ id: LIFT3 }] }, { id: LIFT3 })).toBeNull()
-  })
 })
 
 describe('per-side volume and legacy timed sets (QA round 2026-09-12)', () => {
   it('sums each side of a unilateral set on its own instead of max weight × total reps', () => {
-    const w = { entries: [{ id: 'x', sets: [
-      { done: true, sides: { L: { w: 14, r: 10, done: true }, R: { w: 12.5, r: 6, done: true } }, w: 14, r: 16 },
-      { done: true, w: 100, r: 10 }
-    ] }] }
-    expect(workoutVolume(w)).toBe(14 * 10 + 12.5 * 6 + 1000)
+    const w = { exposures: [{ exerciseId: 'x', performance: { sets: [
+      perfRow('completed', 'repetitions', 10, { kind: 'external-load', value: 14 }, [perfRow('completed', 'repetitions', 6, { kind: 'external-load', value: 12.5 })]),
+      perfRow('completed', 'repetitions', 10, { kind: 'external-load', value: 100 }),
+    ] } }] }
+    expect(workoutVolume({}, w)).toBe(14 * 10 + 12.5 * 6 + 1000)
   })
   it('reads a timed or cardio set saved without a target from the set itself', () => {
     expect(setLabel('0001', { sec: 45, done: true })).toBe('0:45')
@@ -1627,10 +1435,9 @@ describe('switching a row between warm-up and work', () => {
     expect([canBeWarmup(drop[1]), canBeWarmup(rp[1]), canBeWarmup(side[1]), canBeWarmup(drop[0])]).toEqual([false, false, false, true])
   })
 
-  it('a warm-up made one is left out of the best weight and the work-set count', () => {
+  it('a warm-up made one is left out of the best weight', () => {
     const e = { id: 'x', sets: makeWarmupAt([{ w: 60, r: 5, done: true }, { w: 120, r: 3, done: true }], 1) }
     expect(bestWeightForEntry(e)).toBe(60)
-    expect(workSetsDone({ entries: [e] })).toBe(1)
   })
 
   it('makeWorkAt makes it the first work set', () => {
@@ -1654,5 +1461,41 @@ describe('timed per-side pairs come off as a pair', () => {
     expect(removeRowAt(pairs(3), 2).map(r => r.side + r.k)).toEqual(['L0', 'R0', 'L2', 'R2'])
     expect(removeRowAt(pairs(3), 3).map(r => r.side + r.k)).toEqual(['L0', 'R0', 'L2', 'R2'])
     expect(setSpanAt([{ sec: 30, side: 'L' }, { sec: 30 }], 0)).toEqual([0, 1])
+  })
+})
+
+describe('readers use the row role written at finish', () => {
+  const row = (role, r, w) => ({ role, status: 'completed', observations: [{ metric: 'repetitions', unit: 'reps', value: r }], resistance: { kind: 'external-load', value: w, unit: 'kg' }, segments: [] })
+  const exposure = { exposureId: 'x', exerciseId: '0025', mode: 'reps', prescriptionId: 'p', performance: { sets: [row('warmup', 10, 40), row('work', 5, 100), row('work', 5, 100)] } }
+  const S = { unit: 'kg', prescriptions: {}, workouts: [{ id: 'w', d: '2026-09-24', start: 1, exposures: [exposure] }] }
+
+  it('excludes warm-ups from volume, "last time" and 1RM estimates', () => {
+    expect(volumeOf({ sets: exposure.performance.sets })).toBe(1400)
+    expect(workoutVolume(S, S.workouts[0])).toBe(1000)
+    expect(canonicalLastEntryFor(S, '0025').sets.map(s => s.r)).toEqual([5, 5])
+    expect(bestSetOf(exposure)).toMatchObject({ w: 100, r: 5 })
+  })
+})
+
+describe('rerampAutoWarmups', () => {
+  const auto = (w, extra = {}) => ({ w, r: 3, done: false, phase: 'warmup', warmup: true, autoWarmup: true, ...extra })
+  const work = w => ({ setId: 'r0', w, r: 5, done: false })
+  it('re-aims only incomplete automatic rows, keeping their share of the work weight', () => {
+    const manual = { w: 30, r: 5, done: false, phase: 'warmup', warmup: true }
+    const done = auto(40, { done: true })
+    const rows = [done, manual, auto(60), auto(80), work(100)]
+    const out = rerampAutoWarmups(rows, 100, 120)
+    expect(out.map(x => x.w)).toEqual([40, 30, 70, 95, 120])   // 72→70, 96→95: floored to 2.5
+    expect(out[0]).toBe(done)
+    expect(out[1]).toBe(manual)
+  })
+  it('drops an automatic row that would reach the new work weight or repeat the previous one', () => {
+    const out = rerampAutoWarmups([auto(50), auto(60), work(100)], 100, 5)
+    expect(out.map(x => x.w)).toEqual([2.5, 5])     // 50 % of 5 = 2.5 kept; 60 % = 3→2.5 duplicate dropped
+  })
+  it('leaves rows alone when either weight is not positive', () => {
+    const rows = [auto(50), work(100)]
+    expect(rerampAutoWarmups(rows, 0, 100)).toBe(rows)
+    expect(rerampAutoWarmups(rows, 100, 0)).toBe(rows)
   })
 })

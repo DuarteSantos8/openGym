@@ -12,14 +12,14 @@ describe('the weigh-in before a workout is a setting', () => {
   beforeEach(() => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = true
     useUI.setState({ sheets: [], toasts: [] })
-    useStore.setState(s => ({ S: { ...s.S, active: null, routines: [], workouts: [], bodyweight: [], weighIn: true } }))
+    useStore.setState(s => ({ S: { ...s.S, routines: [], workouts: [], bodyweight: [], weighIn: true }, A: null }))
   })
 
   it('on (the default): Start opens the weigh-in and the session waits for it', () => {
     act(() => startFlow([]))
     expect(useUI.getState().sheets).toHaveLength(1)
     expect(useUI.getState().sheets[0].locked).toBe(true)   // the required weigh-in, not a plain sheet
-    expect(useStore.getState().S.active).toBeNull()
+    expect(useStore.getState().A).toBeNull()
   })
 
   it('a profile written before the setting existed still asks', () => {
@@ -27,14 +27,14 @@ describe('the weigh-in before a workout is a setting', () => {
     act(() => startFlow([]))
     expect(useUI.getState().sheets).toHaveLength(1)
     expect(useUI.getState().sheets[0].locked).toBe(true)
-    expect(useStore.getState().S.active).toBeNull()
+    expect(useStore.getState().A).toBeNull()
   })
 
   it('off: Start begins the session at once, with no sheet and no body weight', () => {
     useStore.setState(s => ({ S: { ...s.S, weighIn: false } }))
     act(() => startFlow([]))
     expect(useUI.getState().sheets).toHaveLength(0)
-    const { active } = useStore.getState().S
+    const active = useStore.getState().A
     expect(active).not.toBeNull()
     expect(active.bw).toBeNull()
     expect(active.routineIds).toEqual([])

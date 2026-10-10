@@ -9,7 +9,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const h = vi.hoisted(() => ({ api: null }))
-vi.mock('../lib/api.js', () => ({ api: (...a) => h.api(...a), setRemoteAuth: () => {} }))
+vi.mock('../lib/api.js', () => ({ setAccessHeaders: vi.fn(), api: (...a) => h.api(...a), setRemoteAuth: () => {} }))
 vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast: () => {}, stopRest: () => {}, abandonWork: () => {} }) } }))
 
 const clone = v => JSON.parse(JSON.stringify(v))
@@ -33,7 +33,11 @@ async function openTab(user = { id: OWNER }) {
   return m.useStore
 }
 // The browser telling the other tabs that this one saved (it never tells the tab that wrote).
-const announce = () => window.dispatchEvent(new StorageEvent('storage', { key: 'gym_state_wid', newValue: localStorage.getItem('gym_state_wid') }))
+const announce = () => {
+  window.dispatchEvent(new StorageEvent('storage', { key: 'gym_state_wid', newValue: localStorage.getItem('gym_state_wid') }))
+  window.dispatchEvent(new StorageEvent('storage', { key: 'gym_active_v1', newValue: localStorage.getItem('gym_active_v1') }))
+}
+const savedActive = () => JSON.parse(localStorage.getItem('gym_active_v1'))
 
 function server(doc) {
   const s = { doc: doc ? clone(doc) : null, log: [], offline: false }
@@ -73,6 +77,20 @@ beforeEach(async () => {
 afterEach(() => { for (const t of tabs) t.setState({ user: null, ready: false }); localStorage.clear() })
 
 describe('two tabs of one browser keep each other\'s changes', () => {
+  it('does not replace a running v2 session with an unreadable or legacy active copy', async () => {
+    server({ ...clone(DEF), _ts: 100, workouts: [], _rev: 1 })
+    const A = await openTab()
+    A.getState().setActive({ id: 'run', exposures: [], entries: [] })
+    for (const raw of ['{bad', JSON.stringify({ id: 'old', entries: [] })]) {
+      localStorage.setItem('gym_active_v1', raw)
+      announce()
+      expect(A.getState().A.id).toBe('run')
+    }
+    localStorage.removeItem('gym_active_v1')
+    announce()
+    expect(A.getState().A).toBeNull()
+  })
+
   it('offline: a workout finished in a tab that is then closed survives the other tab\'s next change, and reaches the server', async () => {
     const srv = server({ ...clone(DEF), _ts: 100, workouts: [w('w1')], _rev: 1 })
     savedCopy(srv.doc, 1)
@@ -108,12 +126,12 @@ describe('two tabs of one browser keep each other\'s changes', () => {
     savedCopy(srv.doc, 1)
     const A = await openTab()
     const B = await openTab()
-    A.getState().update(s => { s.active = { id: 'run1', start: Date.now(), entries: [{ id: 'bench', sets: [{ w: 60, r: 5, done: true }, { w: 60, r: 5, done: true }] }] } })
+    A.getState().setActive({ id: 'run1', exposures: [], start: Date.now(), entries: [{ id: 'bench', sets: [{ w: 60, r: 5, done: true }, { w: 60, r: 5, done: true }] }] })
     // another device writes; B (no change of its own) pulls and adopts the server's copy
     srv.doc = { ...clone(srv.doc), workouts: [w('w1'), w('wX', '2026-09-04')], _rev: 2, _ts: 300 }
     await B.getState().pullState()
-    expect(saved().active?.id).toBe('run1')
-    expect(saved().active.entries[0].sets).toHaveLength(2)
+    expect(savedActive()?.id).toBe('run1')
+    expect(savedActive().entries[0].sets).toHaveLength(2)
     expect(ids(saved())).toEqual(['w1', 'wX'])
   })
 
@@ -154,14 +172,14 @@ describe('two tabs of one browser keep each other\'s changes', () => {
     srv.offline = true
     B.getState().update(s => {
       s.bodyweight = [{ d: '2026-09-05', w: 66.6, t: Date.now() }]
-      s.active = { id: 'run2', start: Date.now(), entries: [{ id: 'bench', sets: [{ w: 60, r: 5, done: true }] }] }
     })
+    B.getState().setActive({ id: 'run2', exposures: [], start: Date.now(), entries: [{ id: 'bench', sets: [{ w: 60, r: 5, done: true }] }] })
     announce()
     expect(A.getState().S.bodyweight.map(e => e.w)).toEqual([66.6])
-    expect(A.getState().S.active?.id).toBe('run2')
+    expect(A.getState().A?.id).toBe('run2')
     A.getState().update(s => { s.restSec = 135 })
     expect(saved().bodyweight.map(e => e.w)).toEqual([66.6])
-    expect(saved().active?.id).toBe('run2')
+    expect(savedActive()?.id).toBe('run2')
     expect(saved().restSec).toBe(135)
   })
 

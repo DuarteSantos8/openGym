@@ -1,3 +1,4 @@
+import { legacyEntriesOf } from './prescription/index.js'
 import { EXIDX, isAssisted } from './exercises.js'
 import { workoutAt } from './history.js'
 import { MUSCLES, musclesOf } from './muscles.js'
@@ -266,7 +267,7 @@ function sessionEffSets(workout, anchors, opts = {}) {
       if (Object.prototype.hasOwnProperty.call(MUSCLES_BY_SLUG, slug)) sums[slug] += count * weight
     }
   }
-  for (const entry of workout?.entries || []) {
+  for (const entry of legacyEntriesOf(workout, opts.prescriptions)) {
     const ex = exerciseFor(entry)
     const weights = musclesOf(ex)
     for (const set of entry.sets || []) {
@@ -297,7 +298,7 @@ function sessionBests(workout, opts = {}) {
       if (est !== null && (!best.has(exId) || est > best.get(exId))) best.set(exId, est)
     }
   }
-  for (const entry of workout?.entries || []) {
+  for (const entry of legacyEntriesOf(workout, opts.prescriptions)) {
     if (isAssisted(entry?.id ? { id: entry.id } : entry)) continue
     const ex = exerciseFor(entry)
     for (const set of entry.sets || []) consider(ex, set, entry, entry.id)
@@ -317,6 +318,7 @@ function sessionBests(workout, opts = {}) {
  * @returns {Map<object, Map<string, number>>} Workout -> exercise id -> anchor.
  */
 export function anchorsByWorkout(workouts, opts = {}) {
+  if (!Array.isArray(workouts)) { opts = { ...opts, prescriptions: workouts?.prescriptions }; workouts = workouts?.workouts || [] }
   const ordered = (workouts || [])
     .map((workout, index) => ({ workout, index, timestamp: workoutTimestamp(workout) }))
     .filter(item => Number.isFinite(item.timestamp))
@@ -453,6 +455,7 @@ function fatigueValue(events, now, slug) {
  * @returns {Record<string, number>} Fatigue values keyed by every drawable muscle slug.
  */
 export function fatigueOf(workouts, now, opts = {}) {
+  if (!Array.isArray(workouts)) { opts = { ...opts, prescriptions: workouts?.prescriptions }; workouts = workouts?.workouts || [] }
   const current = Number(now)
   const result = emptyMuscleMap(0)
   if (!Number.isFinite(current)) return result
@@ -474,12 +477,13 @@ export function fatigueOf(workouts, now, opts = {}) {
  * @returns {Record<string, number>} Retained-strength values keyed by every drawable muscle slug.
  */
 export function strengthOf(workouts, now, opts = {}) {
+  if (!Array.isArray(workouts)) { opts = { ...opts, prescriptions: workouts?.prescriptions }; workouts = workouts?.workouts || [] }
   const current = Number(now)
   const latest = Object.fromEntries(MUSCLES.map(slug => [slug, -Infinity]))
   for (const workout of workouts || []) {
     const timestamp = workoutTimestamp(workout)
     if (!Number.isFinite(timestamp)) continue
-    for (const entry of workout.entries || []) {
+    for (const entry of legacyEntriesOf(workout, opts.prescriptions)) {
       if (!(entry.sets || []).some(set => set?.done === true && !isWarmupRow(set))) continue
       for (const slug of Object.keys(musclesOf(exerciseFor(entry)))) {
         if (Object.prototype.hasOwnProperty.call(MUSCLES_BY_SLUG, slug) && timestamp > latest[slug]) {

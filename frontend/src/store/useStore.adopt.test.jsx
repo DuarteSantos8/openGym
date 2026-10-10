@@ -5,7 +5,7 @@
    while open and flags offline / unsynced for the banner. */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('../lib/api.js', () => ({ api: vi.fn() }))
+vi.mock('../lib/api.js', () => ({ setAccessHeaders: vi.fn(), api: vi.fn() }))
 const { toast, sheetAsk } = vi.hoisted(() => ({ toast: vi.fn(), sheetAsk: vi.fn() }))
 vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast }) } }))
 // The question an adoption resumed by the store itself asks (resumeAdoption, checkRev, Sync now).
@@ -25,14 +25,15 @@ const netErr = () => new TypeError('Failed to fetch')
 
 const server = { ...clone(DEF), _ts: 100, unit: 'lb', restSec: 60, workouts: [workout('w1')], routines: [routine('r1')], week: { 1: ['r1'] }, _rev: 4 }
 // what a guest tracked after signing out: newer, one workout, its own routine and settings
-const guest = { ...clone(DEF), _ts: 900, unit: 'kg', restSec: 120, workouts: [workout('w9', '2026-09-11')], routines: [routine('rg')], week: { 2: ['rg'] }, active: { id: 'running' } }
+const guest = { ...clone(DEF), _ts: 900, unit: 'kg', restSec: 120, workouts: [workout('w9', '2026-09-11')], routines: [routine('rg')], week: { 2: ['rg'] } }
 
-beforeEach(() => { localStorage.clear(); api.mockReset(); toast.mockReset(); useStore.setState({ S: clone(DEF), user: null, ready: false }) })
-afterEach(() => { vi.useRealTimers(); localStorage.clear(); useStore.setState({ S: clone(DEF), user: null, ready: false }) })
+beforeEach(() => { localStorage.clear(); api.mockReset(); toast.mockReset(); useStore.setState({ S: clone(DEF), A: null, user: null, ready: false }) })
+afterEach(() => { vi.useRealTimers(); localStorage.clear(); useStore.setState({ S: clone(DEF), A: null, user: null, ready: false }) })
 
 describe('adoptProfile — sign-in takes the server profile', () => {
   it('adopts the server copy over newer local data when the user keeps the profile as is', async () => {
     signedIn(clone(guest))
+    useStore.getState().setActive({ id: 'running' })   // the in-progress session lives outside S entirely
     api.mockResolvedValueOnce({ state: clone(server), rev: 4 })
     const ask = vi.fn(async () => false)
     const r = await useStore.getState().adoptProfile(ask)
@@ -41,7 +42,7 @@ describe('adoptProfile — sign-in takes the server profile', () => {
     expect(S.unit).toBe('lb'); expect(S.restSec).toBe(60)
     expect(S.workouts.map(w => w.id)).toEqual(['w1'])
     expect(S.routines.map(x => x.id)).toEqual(['r1'])
-    expect(S.active).toMatchObject({ id: 'running' })   // the in-progress session stays with the device
+    expect(useStore.getState().A).toMatchObject({ id: 'running' })   // adoptProfile keeps the running session (in the profile's unit)
     expect(puts()).toHaveLength(0)
     expect(sync()).toEqual({ rev: 4, ts: 100 })
     expect(r).toEqual({ adopted: true, added: false })
@@ -91,6 +92,7 @@ describe('adoptProfile — sign-in takes the server profile', () => {
   // guest's workouts are not moved into it unasked, even when it has nothing yet.
   it('alwaysAsk: asks before moving the device data into an empty profile, and moves nothing when declined', async () => {
     signedIn(clone(guest))
+    useStore.getState().setActive({ id: 'running' })
     api.mockResolvedValueOnce({ state: null, rev: 0 })
     const ask = vi.fn(async () => false)
     const r = await useStore.getState().adoptProfile(ask, { alwaysAsk: true })
@@ -99,7 +101,7 @@ describe('adoptProfile — sign-in takes the server profile', () => {
     const S = useStore.getState().S
     expect(S.workouts).toEqual([])
     expect(S.routines).toEqual([])
-    expect(S.active).toEqual({ id: 'running' })   // the in-progress session stays with the device
+    expect(useStore.getState().A).toEqual({ id: 'running' })   // the in-progress session stays with the device
     expect(sync().rev).toBe(0)
     expect(r).toEqual({ adopted: true, added: false })
   })
