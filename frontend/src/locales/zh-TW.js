@@ -1456,7 +1456,7 @@ export default {
   'Planned sessions start from': '預排訓練的起始數值依據',
   'The routine’s sets and reps. Your history decides the weight.': '組數與次數依據課表設定；重量則由歷史紀錄決定。',
   'Your last session': '你上次的訓練表現',
-  'The reps you logged last time in that routine, carried over.': '直接沿用上次在此課表中記錄的實際次數。',
+  'The reps you logged last time in that routine, carried over. With progression off, the weight too.': '沿用你上次在該訓練日記錄的次數。關閉進階時，重量也一併沿用。',
   'Plan changed, so starting from your new target.': '課表已變更，所以從你的新目標開始。',
   'First time in this routine, so starting from its own target.': '第一次練這份課表，所以從它自己的目標開始。',
   'No weight logged last time. Enter what you lift and progression takes it from there.': '上次沒有記錄重量。填上你實際舉的重量，漸進就會從那裡接手。',

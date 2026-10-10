@@ -1483,7 +1483,7 @@ export default {
   'Planned sessions start from': 'จุดเริ่มต้นของเซสชันตามแผน',
   'The routine’s sets and reps. Your history decides the weight.': 'จำนวนเซ็ตและครั้งตามรูทีน ส่วนน้ำหนักขึ้นอยู่กับประวัติของคุณ',
   'Your last session': 'เซสชันล่าสุดของคุณ',
-  'The reps you logged last time in that routine, carried over.': 'ใช้จำนวนครั้งที่บันทึกไว้ครั้งก่อนในรูทีนนั้นต่อ',
+  'The reps you logged last time in that routine, carried over. With progression off, the weight too.': 'นำจำนวนครั้งที่บันทึกไว้ครั้งก่อนในรูทีนนั้นมาใช้ และถ้าปิดความก้าวหน้าก็รวมน้ำหนักด้วย',
   'Plan changed, so starting from your new target.': 'แผนเปลี่ยนแล้ว จึงเริ่มจากเป้าหมายใหม่ของคุณ',
   'First time in this routine, so starting from its own target.': 'ครั้งแรกในรูทีนนี้ จึงเริ่มจากเป้าหมายของรูทีนเอง',
   'No weight logged last time. Enter what you lift and progression takes it from there.': 'ครั้งก่อนไม่ได้บันทึกน้ำหนัก กรอกน้ำหนักที่คุณยก แล้วการเพิ่มน้ำหนักจะรับช่วงต่อจากตรงนั้น',

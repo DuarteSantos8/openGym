@@ -215,7 +215,8 @@ export const DEF = {
   connLocal: true,
   // Where a planned session's reps come from (Settings → During a workout, lib/session-start.js):
   // 'plan' opens at the routine's own sets × reps and lets history and progression decide the
-  // weight; 'last' carries the reps over from the last session, the way it always worked before.
+  // weight; 'last' carries the reps over from the last session, the way it always worked before,
+  // and the weight too for an exercise with progression off (nothing else decides it).
   // Absent reads as 'plan' too, which is what the MCP bridge sees on a raw state file.
   startFrom: 'plan',
   // Per-language choice for translated exercise names: whether the original English name is

@@ -16,6 +16,11 @@ import { dbLoadFor, historyAs, ownedWeightsFor } from './dumbbells.js'
  * and a policy that moves reps (double progression, bodyweight, a timed hold) still moving them
  * from there. 'last': the reps you logged last time, the way every planned session opened before
  * this setting existed. A profile saved before it, or one that never chose, reads as 'plan'.
+ *
+ * An exercise whose progression is off has no prescription, so its rows open at the routine's own
+ * weight and reps. 'last' sends those to last time's weight and reps too (the weight as well as
+ * the reps, since no policy is there to decide it). A deload or rehab routine (`noProg`) keeps the
+ * routine's numbers.
  */
 export const startsFromLast = st => st?.startFrom === 'last'
 
@@ -40,12 +45,13 @@ export function buildPlannedEntry(stored, cfg, routine, { noProg = false } = {})
   // default for its optional load.
   const step = modeOf(cfg) === 'reps' ? weightIncrement(cfg, st.unit) : defaultIncrement(cfg.id, st.unit)
   const planReps = !startsFromLast(st)
+  const fromLast = !noProg && plan.kind === 'off' && startsFromLast(st)
   // Warm-ups ramp over the dumbbells you own when the profile lists them (issue #376): a rung
   // lands on the heaviest bell under it, never on a weight in between that no rack holds.
   const ramp = (modeOf(cfg) === 'reps' && ownedWeightsFor(st, cfg)) || step
   // Back-off sets step down from the top set by the exercise's own step (lib/backoff.js).
   const backoffStep = modeOf(cfg) === 'reps' && backoffStepOf(cfg, st.unit) ? step : 0
-  const built = applyPrescription(buildSets(st, cfg, { step: ramp, rid: routine?.id, useTarget: plan.kind === 'off', planReps }), plan, ramp, barFloor(st, cfg.id))
+  const built = applyPrescription(buildSets(st, cfg, { step: ramp, rid: routine?.id, useTarget: plan.kind === 'off' && !fromLast, planReps }), plan, ramp, barFloor(st, cfg.id))
   const rows = backoffStep ? applyBackoff(built, backoffStep) : built
   const sets = applyIntensifierPlan(rows, cfg, dropGrid(st, cfg))
   const target = { ...cfg }

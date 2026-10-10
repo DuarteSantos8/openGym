@@ -1533,7 +1533,7 @@ export default {
   'Planned sessions start from': 'পরিকল্পিত সেশন শুরু হয়',
   'The routine’s sets and reps. Your history decides the weight.': 'রুটিনের সেট ও রেপ। ওজন ঠিক করে আপনার ইতিহাস।',
   'Your last session': 'আপনার শেষ সেশন',
-  'The reps you logged last time in that routine, carried over.': 'ওই রুটিনে গতবার যে রেপ লগ করেছিলেন, সেগুলোই নেওয়া হয়।',
+  'The reps you logged last time in that routine, carried over. With progression off, the weight too.': 'ওই রুটিনে গতবার লগ করা রেপ আনা হয়। অগ্রগতি বন্ধ থাকলে ওজনও।',
   'Plan changed, so starting from your new target.': 'প্ল্যান বদলেছে, তাই আপনার নতুন লক্ষ্য থেকে শুরু।',
   'First time in this routine, so starting from its own target.': 'এই রুটিনে প্রথমবার, তাই এর নিজস্ব লক্ষ্য থেকে শুরু।',
   'No weight logged last time. Enter what you lift and progression takes it from there.': 'গতবার কোনো ওজন লগ হয়নি। আপনি যা তোলেন তা লিখুন, এরপর প্রগ্রেশন সেখান থেকে এগোবে।',

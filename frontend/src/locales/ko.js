@@ -1475,7 +1475,7 @@ export default {
   'Planned sessions start from': '계획된 세션의 시작 기준',
   'The routine’s sets and reps. Your history decides the weight.': '루틴의 세트와 횟수. 무게는 기록에 따라 정해집니다.',
   'Your last session': '지난 세션',
-  'The reps you logged last time in that routine, carried over.': '그 루틴에서 지난번에 기록한 횟수를 그대로 가져옵니다.',
+  'The reps you logged last time in that routine, carried over. With progression off, the weight too.': '그 루틴에서 지난번에 기록한 횟수를 그대로 가져옵니다. 진행이 꺼져 있으면 무게도 가져옵니다.',
   'Plan changed, so starting from your new target.': '계획이 바뀌어서 새 목표부터 시작해요.',
   'First time in this routine, so starting from its own target.': '이 루틴은 처음이라 루틴의 목표부터 시작해요.',
   'No weight logged last time. Enter what you lift and progression takes it from there.': '지난번에 기록된 무게가 없어요. 드는 무게를 입력하면 거기서부터 진행해요.',
