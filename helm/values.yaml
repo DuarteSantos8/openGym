@@ -96,7 +96,7 @@ api:
   image:
     repository: ghcr.io/duartesantos8/opengym-api
     pullPolicy: IfNotPresent
-    tag: 1.4.0               # keep in step with web.image.tag
+    tag: 1.4.1               # keep in step with web.image.tag
   service:
     port: 3000
   resources:
@@ -151,7 +151,7 @@ web:
   image:
     repository: ghcr.io/duartesantos8/opengym-web
     pullPolicy: IfNotPresent
-    tag: 1.4.0
+    tag: 1.4.1
   service:
     # The port nginx listens on inside the pod: NGINX_PORT and the container's `web` port, which
     # the Service and the probes follow by name. Not the image's default 80: the image runs as

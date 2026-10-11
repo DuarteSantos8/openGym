@@ -128,7 +128,7 @@ longer mounted, and since Helm keeps it, delete it by hand once the new pod runs
 
 ### Images
 
-`api.image.tag` and `web.image.tag` default to `1.4.0`. Change them together: an API and a web
+`api.image.tag` and `web.image.tag` default to `1.4.1`. Change them together: an API and a web
 image from different releases aren't meant to run side by side.
 
 ### Other values
