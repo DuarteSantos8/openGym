@@ -2321,4 +2321,10 @@ export default {
   'Your sports watch, calling you back.': 'আপনার স্পোর্টস ঘড়ি আপনাকে ফিরে ডাকছে।',
   'Coach wants you back on the bar.': 'কোচ আপনাকে আবার বারে চান।',
   'Gentle, for headphones or a quiet room.': 'মৃদু, হেডফোন বা শান্ত ঘরের জন্য।',
+  'Apple Health': 'Apple Health',
+  'Manual': 'ম্যানুয়াল',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'Apple Health এখনও ওজন খুঁজছে। শুরু করতে আপনার ওজন লিখুন।',
+  'Apple Health is unavailable on this device. Enter your weight to start.': 'এই ডিভাইসে Apple Health উপলব্ধ নয়। শুরু করতে আপনার ওজন লিখুন।',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'Apple Health-এ পড়ার মতো কোনো ওজন নেই। আপনি সেটিংসে Health-এর অনুমতি দেখে নিতে পারেন, অথবা এখানে আপনার ওজন লিখতে পারেন।',
+  'Apple Health could not load your weight. Enter your weight to start.': 'Apple Health আপনার ওজন লোড করতে পারেনি। শুরু করতে আপনার ওজন লিখুন।',
 }

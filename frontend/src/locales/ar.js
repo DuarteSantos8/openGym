@@ -2297,4 +2297,10 @@ export default {
   'Your sports watch, calling you back.': 'ساعتك الرياضية تناديك للعودة.',
   'Coach wants you back on the bar.': 'المدرب يريدك أن تعود إلى البار.',
   'Gentle, for headphones or a quiet room.': 'هادئ، للسماعات أو لغرفة هادئة.',
+  'Apple Health': 'Apple Health',
+  'Manual': 'يدوي',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'ما زال Apple Health يبحث عن وزن. أدخل وزنك للبدء.',
+  'Apple Health is unavailable on this device. Enter your weight to start.': 'Apple Health غير متاح على هذا الجهاز. أدخل وزنك للبدء.',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'لا يوجد في Apple Health وزن يمكن قراءته. يمكنك التحقق من صلاحية الوصول إلى Health في الإعدادات أو إدخال وزنك هنا.',
+  'Apple Health could not load your weight. Enter your weight to start.': 'تعذّر على Apple Health تحميل وزنك. أدخل وزنك للبدء.',
 }

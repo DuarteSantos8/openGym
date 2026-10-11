@@ -2253,4 +2253,10 @@ export default {
   'Your sports watch, calling you back.': 'นาฬิกาสปอร์ตเรียกคุณกลับมาแล้ว',
   'Coach wants you back on the bar.': 'โค้ชอยากให้คุณกลับมาที่บาร์',
   'Gentle, for headphones or a quiet room.': 'เบา ๆ สำหรับหูฟังหรือห้องที่เงียบ',
+  'Apple Health': 'Apple Health',
+  'Manual': 'ป้อนเอง',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'Apple Health ยังค้นหาน้ำหนักอยู่ กรอกน้ำหนักของคุณเพื่อเริ่ม',
+  'Apple Health is unavailable on this device. Enter your weight to start.': 'Apple Health ใช้งานไม่ได้บนอุปกรณ์นี้ กรอกน้ำหนักของคุณเพื่อเริ่ม',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'Apple Health ไม่มีน้ำหนักที่อ่านได้ คุณสามารถตรวจสอบสิทธิ์การเข้าถึง Health ในการตั้งค่า หรือกรอกน้ำหนักที่นี่',
+  'Apple Health could not load your weight. Enter your weight to start.': 'Apple Health โหลดน้ำหนักของคุณไม่ได้ กรอกน้ำหนักของคุณเพื่อเริ่ม',
 }

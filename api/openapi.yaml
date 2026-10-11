@@ -3510,7 +3510,9 @@ components:
       properties:
         d: { type: string, format: date }
         w: { type: number, description: Weight in `unit`. }
-        t: { type: number, description: Timestamp (ms). }
+        t: { type: number, description: Timestamp (ms) the entry was last saved. }
+        src: { type: string, description: 'Health store the weight was read from, e.g. "apple-health". Absent on a typed weigh-in.' }
+        m: { type: number, description: Timestamp (ms) the health reading was measured. }
       additionalProperties: true
 
     # ------------------------------------------------------------------ push
