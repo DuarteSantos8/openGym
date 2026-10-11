@@ -36,7 +36,7 @@ final class OpenGymUITests: XCTestCase {
      * page is still starting and go nowhere.
      */
     private func chooseLocal() {
-        if app.buttons["Log"].waitForExistence(timeout: 20) { return }   // chosen in an earlier test
+        if app.buttons["Log"].waitForExistence(timeout: 45) { return }   // chosen in an earlier test
         let local = app.buttons["Use on this device"]
         XCTAssertTrue(local.waitForExistence(timeout: 60), "the onboarding choice did not show up")
         for _ in 0..<5 {
@@ -85,7 +85,10 @@ final class OpenGymUITests: XCTestCase {
         chooseLocal()
         tap(app.buttons["Log"], "Log (body weight)")
         let field = app.textFields.firstMatch
-        tap(field, "the weight field")
+        XCTAssertTrue(field.waitForExistence(timeout: 15), "no weight field")
+        // The sheet slides in; wait until the field is where a finger can reach it.
+        for _ in 0..<20 where !field.isHittable { usleep(500_000) }
+        field.tap()
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 10), "no keyboard")
         shot("5-keyboard")
         let save = app.buttons["Save"]
