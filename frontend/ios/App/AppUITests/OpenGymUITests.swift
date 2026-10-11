@@ -46,12 +46,6 @@ final class OpenGymUITests: XCTestCase {
         XCTFail("home never showed after the onboarding choice")
     }
 
-    /** "Allow" on the notification question, whenever iOS asks it. */
-    private func allowNotificationsIfAsked() {
-        let allow = springboard.alerts.buttons["Allow"]
-        if allow.waitForExistence(timeout: 6) { allow.tap() }
-    }
-
     // XCTest runs a class's tests in name order: the keyboard check wants a plain home screen, and
     // this one leaves a workout running.
     func test2RestEndsWithANotificationInTheBackground() {
@@ -64,8 +58,17 @@ final class OpenGymUITests: XCTestCase {
         tap(app.staticTexts["Full Body A"], "Full Body A")
         shot("2-workout")
         tap(app.switches["Set 1 done"], "Set 1 done")
-        allowNotificationsIfAsked()
-        XCTAssertTrue(button(startingWith: "1:").waitForExistence(timeout: 10), "no rest countdown after a set")
+        // The first rest asks for notifications; on a slow simulator the question can take a while.
+        let countdown = button(startingWith: "1:")
+        let allow = springboard.alerts.buttons["Allow"]
+        var counting = false
+        for _ in 0..<40 {
+            if allow.exists { allow.tap() }
+            if countdown.exists { counting = true; break }
+            sleep(1)
+        }
+        if allow.waitForExistence(timeout: 2) { allow.tap() }
+        XCTAssertTrue(counting, "no rest countdown after a set")
         shot("3-rest")
 
         XCUIDevice.shared.press(.home)
