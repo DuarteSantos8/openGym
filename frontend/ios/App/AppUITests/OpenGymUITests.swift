@@ -68,6 +68,13 @@ final class OpenGymUITests: XCTestCase {
             sleep(1)
         }
         if allow.waitForExistence(timeout: 2) { allow.tap() }
+        if !counting {
+            shot("3-no-countdown")
+            let tree = XCTAttachment(string: app.debugDescription)
+            tree.name = "app tree without a countdown"
+            tree.lifetime = .keepAlways
+            add(tree)
+        }
         XCTAssertTrue(counting, "no rest countdown after a set")
         shot("3-rest")
 
