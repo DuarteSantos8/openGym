@@ -46,7 +46,7 @@ import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import FocusView from './FocusView.jsx'
 import { scanOnce } from '../components/CameraScan.jsx'
-import { normalizeQr, resolveScan, scanTargetRoutineId, withExQr } from '../lib/exercise-qr.js'
+import { normalizeQr, resolveScan, scanTargetRoutineId, withExQr, currentExerciseFor, qrCodesFor } from '../lib/exercise-qr.js'
 import { withMeaning, historyAs, dbLoadFor, entryDbLoad, bellsIn, ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
@@ -1457,17 +1457,28 @@ function ActiveWorkout() {
       })
       return
     }
-    confirmSheet({
-      title: t('Unknown code'),
-      message: t('No exercise has this code yet. Pick the one it stands for, and scanning it finds that exercise from now on.'),
-      confirmText: t('Pick exercise'),
-      onConfirm: () => {
-        const picker = exercisePicker(ex => {
-          picker?.close()
-          update(s => { s.exQr = withExQr(s.exQr, ex.id, code) })
-          goToScanned(code)
-        }, { title: t('Which exercise is this code for?') })
-      },
+    // A code no exercise has yet is most likely on the machine in front of you: offered to the
+    // exercise the session is on first, as its first code or one more, else to any other.
+    const pickAnother = () => {
+      const picker = exercisePicker(ex => {
+        picker?.close()
+        update(s => { s.exQr = withExQr(s.exQr, ex.id, code) })
+        goToScanned(code)
+      }, { title: t('Which exercise is this code for?') })
+    }
+    const curId = currentExerciseFor(st.active)
+    const curCodes = curId ? qrCodesFor(st.exQr, curId).length : 0
+    menuSheet({
+      title: t('Unknown code'), subtitle: t('No exercise has this code yet.'),
+      items: [
+        curId && { icon: 'qr', accent: true, label: t('Add to “{0}”', exerciseNameText(exOr(curId))),
+          sub: curCodes ? t('Next to the codes it already has') : t('This exercise has no code yet'),
+          onClick: () => {
+            update(s => { s.exQr = withExQr(s.exQr, curId, code) })
+            useUI.getState().toast(t('Code added to {0}', exerciseNameText(exOr(curId))))
+          } },
+        { icon: 'dumbbell', label: t('Pick another exercise'), onClick: pickAnother },
+      ],
     })
   }
   const offerScannedExercise = exId => {

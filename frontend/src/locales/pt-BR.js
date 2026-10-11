@@ -1404,10 +1404,11 @@ export const PT_BR_OVERRIDES = {
   'Fewer than two workouts in this period. Pick a longer one.': 'Menos de dois treinos neste período. Escolha um mais longo.',
   'Releases are checked on GitHub. The download is verified against its checksum before the installer opens.': 'As versões são verificadas no GitHub. O download é conferido pela soma de verificação antes de abrir o instalador.',
   // --- exercise QR codes ---
+  'Hold the phone about 20 cm from the code.': 'Segure o celular a cerca de 20 cm do código.',
+  'No exercise has this code yet.': 'Nenhum exercício tem este código ainda.',
   'Code deleted': 'Código excluído',
   'It stays on {0} and still finds it when scanned.': 'Continua em {0} e ainda o encontra ao escanear.',
   'No camera available here.': 'Não há câmera disponível aqui.',
-  'No exercise has this code yet. Pick the one it stands for, and scanning it finds that exercise from now on.': 'Nenhum exercício tem este código ainda. Escolha a qual ele corresponde e, a partir de agora, escaneá-lo leva a esse exercício.',
   'No other exercise has it: the code is deleted, and scanning it no longer finds an exercise.': 'Nenhum outro exercício o tem: o código é excluído e escaneá-lo não encontra mais um exercício.',
   'Put a QR code on the machine: scanning it in a running workout jumps straight to this exercise.': 'Coloque um código QR na máquina: escaneado durante um treino, ele leva direto a este exercício.',
   'Scan code': 'Escanear código',

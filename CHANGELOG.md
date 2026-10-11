@@ -10,6 +10,10 @@
   given to an exercise on the spot. A code may stand for several exercises; **Unassociate** takes
   it off one, and the last one deletes it. Codes sync per exercise like notes. Browser, Android
   and iPhone, with the scanner the gym check-in already uses: no new dependency.
+- **Several codes per exercise**, and an unknown code scanned in a workout is offered to the
+  exercise you are on first. Printing (the code page, a plan, a routine) now opens the print
+  dialog in the app installed on an iPhone's home screen too, and the camera on a Pro iPhone
+  stays on one lens instead of zooming between them.
 
 ## v1.4.1 (2026-10-10)
 

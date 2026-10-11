@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   QR_PREFIX, QR_PRINT_MM, normalizeQr, newExerciseQr, isOpenGymQr, shortQrLabel, qrCodesFor,
   withExQr, withoutExQr, moveExQr, withoutExercise, exercisesForCode, othersWithCode, resolveScan,
-  scanTargetRoutineId, exerciseQrPrintHTML,
+  scanTargetRoutineId, currentExerciseFor, exerciseQrPrintHTML,
 } from './exercise-qr.js'
 
 const set = done => ({ w: 50, r: 10, done })
@@ -143,6 +143,18 @@ describe('resolveScan', () => {
     expect(resolveScan({ entries: [], cur: 0 }, map, 'B')).toEqual({ kind: 'notInWorkout', exIds: ['bench'] })
     expect(resolveScan(null, map, 'B')).toEqual({ kind: 'notInWorkout', exIds: ['bench'] })
     expect(resolveScan({ entries: [entry('bench')], cur: 9 }, map, 'B').idx).toBe(0)
+  })
+})
+
+describe('currentExerciseFor', () => {
+  it('is the exercise the session is on', () => {
+    expect(currentExerciseFor({ entries: [entry('a'), entry('b')], cur: 1 })).toBe('b')
+    expect(currentExerciseFor({ entries: [entry('1019')], cur: 0 })).toBe('3841')
+  })
+  it('is null without one', () => {
+    expect(currentExerciseFor({ entries: [], cur: 0 })).toBeNull()
+    expect(currentExerciseFor({ entries: [entry('a')], cur: 3 })).toBeNull()
+    expect(currentExerciseFor(null)).toBeNull()
   })
 })
 

@@ -60,6 +60,24 @@ describe('exercise detail: QR codes', () => {
     expect(qrRows(host)).toEqual(['MACHINE-7'])
   })
 
+  it('takes a second and a third code, and says it can', async () => {
+    exerciseDetailSheet(BENCH)
+    const host = renderTop()
+    for (const value of ['RACK-A', 'RACK-B']) {
+      mocks.scanOnce.mockResolvedValueOnce({ value, fmt: 'qrcode' })
+      await act(async () => { button(host, value === 'RACK-A' ? 'Scan code' : 'Add another code').click() })
+      await flush()
+    }
+    expect(S().exQr).toEqual({ '0025': ['RACK-A', 'RACK-B'] })
+    expect(qrRows(host)).toEqual(['RACK-A', 'RACK-B'])
+    expect([...host.querySelectorAll('h4.sec')].map(h => h.textContent)).toContain('QR codes · 2')
+    expect(button(host, 'Print another code')).toBeTruthy()
+    expect(host.textContent).toContain('An exercise can have several codes')
+    await act(async () => { button(host, 'Print another code').click() })
+    await flush()
+    expect(S().exQr['0025']).toHaveLength(3)
+  })
+
   it('moves a code another exercise has, or shares it, as you choose', async () => {
     setQr({ '0043': ['TOWER'] })
     exerciseDetailSheet(BENCH)
@@ -72,7 +90,7 @@ describe('exercise detail: QR codes', () => {
     act(() => row(menu, 'Move it to this exercise').click())
     expect(S().exQr).toEqual({ '0025': ['TOWER'] })
 
-    setQr({ '0043': ['TOWER'] })
+    act(() => setQr({ '0043': ['TOWER'] }))
     mocks.scanOnce.mockResolvedValueOnce({ value: 'TOWER', fmt: 'qrcode' })
     await act(async () => { button(host, 'Scan code').click() })
     await flush()

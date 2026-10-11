@@ -124,6 +124,16 @@ export function resolveScan(active, map, code) {
 }
 
 /**
+ * The exercise the session is on, which an unknown code is offered to first: whatever was just
+ * scanned is most likely on the machine in front of you. null in an empty session.
+ */
+export function currentExerciseFor(active) {
+  const entries = Array.isArray(active?.entries) ? active.entries : []
+  const id = Number.isInteger(active?.cur) ? entries[active.cur]?.id : null
+  return id == null ? null : canonicalExId(id)
+}
+
+/**
  * The routine an exercise found by a scan would join: the current exercise's routine, otherwise
  * the first of the session's routines that still exists, otherwise none (a freestyle session).
  */

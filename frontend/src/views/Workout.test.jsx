@@ -2419,16 +2419,49 @@ describe('scanning an exercise code', () => {
     expect(lastMenu().title).toBe('“Barbell Full Squat” isn’t in this workout')
   })
 
-  it('gives an unknown code to the exercise you pick, then shows it', async () => {
+  it('offers an unknown code to the exercise the session is on first', async () => {
+    await mount([routineEntry('0025', [false]), routineEntry('0043', [false])], 1, withRoutine({ exQr: {} }))
+    await scan('NEW-ONE')
+    const menu = lastMenu()
+    expect(menu.title).toBe('Unknown code')
+    expect(menu.items.filter(Boolean).map(it => [it.label, it.sub])).toEqual([
+      ['Add to “Barbell Full Squat”', 'This exercise has no code yet'],
+      ['Pick another exercise', undefined],
+    ])
+    await act(async () => { menuItem(menu, 'Add to “Barbell Full Squat”').onClick() })
+    expect(mocks.S.exQr).toEqual({ '0043': ['NEW-ONE'] })
+    expect(mocks.S.active.cur).toBe(1)
+    expect(mocks.toast).toHaveBeenCalledWith('Code added to Barbell Full Squat')
+  })
+
+  it('adds a second code to the current exercise', async () => {
+    await mount([routineEntry('0025', [false])], 0, withRoutine({ exQr: { '0025': ['RACK-A'] } }))
+    await scan('RACK-B')
+    const menu = lastMenu()
+    expect(menuItem(menu, 'Add to “Barbell Bench Press”').sub).toBe('Next to the codes it already has')
+    await act(async () => { menuItem(menu, 'Add to “Barbell Bench Press”').onClick() })
+    expect(mocks.S.exQr).toEqual({ '0025': ['RACK-A', 'RACK-B'] })
+    // From now on either code finds it.
+    mocks.menuSheet.mockReset()
+    await scan('RACK-A')
+    expect(mocks.menuSheet).not.toHaveBeenCalled()
+    expect(mocks.toast).toHaveBeenLastCalledWith('Barbell Bench Press')
+  })
+
+  it('gives an unknown code to another exercise you pick, then shows it', async () => {
     await mount([routineEntry('0025', [false]), routineEntry('0043', [false])], 0, withRoutine({ exQr: {} }))
     await scan('NEW-ONE')
-    const confirm = mocks.confirmSheet.mock.calls.at(-1)[0]
-    expect(confirm.title).toBe('Unknown code')
-    await act(async () => { confirm.onConfirm() })
+    await act(async () => { menuItem(lastMenu(), 'Pick another exercise').onClick() })
     const [onPick] = mocks.exercisePicker.mock.calls.at(-1)
     await act(async () => { onPick({ id: '0043' }) })
     expect(mocks.S.exQr).toEqual({ '0043': ['NEW-ONE'] })
     expect(mocks.S.active.cur).toBe(1)
+  })
+
+  it('offers only the picker for an unknown code in an empty session', async () => {
+    await mount([], 0, { exQr: {}, active: { routineIds: [] } })
+    await scan('NEW-ONE')
+    expect(lastMenu().items.filter(Boolean).map(it => it.label)).toEqual(['Pick another exercise'])
   })
 
   it('has no scan button in the editor of a saved workout or a workout logged afterwards', async () => {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { t } from '../lib/i18n.js'
-import { decodeSource } from '../lib/scan-web.js'
+import { decodeSource, steadyBackCamera } from '../lib/scan-web.js'
 import { scanCode } from '../lib/scan.js'
 import { scanErrorMessage } from '../lib/scan-errors.js'
 import { MOBILE } from '../lib/mobile.js'
@@ -15,8 +15,8 @@ import { Button } from '../components/ui.jsx'
 // getUserMedia leaves the sheet up with a message, and the add-card form underneath still offers
 // photo import and typing.
 // `noCamera` replaces the message for a browser without a camera, for callers with no photo
-// import or text field to fall back on.
-export default function CameraScan({ onFound, onCancel, noCamera }) {
+// import or text field to fall back on; `hint` adds a line under the viewfinder.
+export default function CameraScan({ onFound, onCancel, noCamera, hint }) {
   const videoRef = useRef(null)
   const [error, setError] = useState(null)
 
@@ -35,6 +35,18 @@ export default function CameraScan({ onFound, onCancel, noCamera }) {
         setError(e && (e.name === 'NotAllowedError' || e.name === 'SecurityError') ? 'denied' : 'unavailable')
         return
       }
+      if (done) { stream.getTracks().forEach(tr => tr.stop()); return }
+      // On a Pro iPhone, the plain wide camera instead of the lens-swapping one (lib/scan-web.js).
+      // The first stream stays until the second one is there, so a refusal changes nothing.
+      try {
+        const label = stream.getVideoTracks?.()[0]?.label || ''
+        const id = steadyBackCamera(await navigator.mediaDevices.enumerateDevices?.(), label)
+        if (id && !done) {
+          const steady = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: id }, width: { ideal: 1280 } }, audio: false })
+          stream.getTracks().forEach(tr => tr.stop())
+          stream = steady
+        }
+      } catch (e) { /* keep the camera there is */ }
       if (done) { stream.getTracks().forEach(tr => tr.stop()); return }
       const v = videoRef.current
       if (!v) return
@@ -68,7 +80,7 @@ export default function CameraScan({ onFound, onCancel, noCamera }) {
             <video ref={videoRef} playsInline muted autoPlay />
             <div className="cam-frame" aria-hidden="true" />
           </div>
-          <div className="muted small" style={{ textAlign: 'center', margin: '12px 0 16px' }}>{t('Point the camera at the QR code')}</div>
+          <div className="muted small" style={{ textAlign: 'center', margin: '12px 0 16px' }}>{t('Point the camera at the QR code')}{hint && <><br />{hint}</>}</div>
         </>}
     <Button variant="tinted" onClick={onCancel}>{t('Cancel')}</Button>
   </>
@@ -87,7 +99,7 @@ function ScanOnceSheet({ settle, close }) {
       setTimeout(() => { if (!live.current) settle(null) }, 0)
     }
   }, [settle])
-  return <CameraScan noCamera={t('No camera available here.')}
+  return <CameraScan noCamera={t('No camera available here.')} hint={t('Hold the phone about 20 cm from the code.')}
     onCancel={() => { settle(null); close() }}
     onFound={code => { settle(code); close() }} />
 }

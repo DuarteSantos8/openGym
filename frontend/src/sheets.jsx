@@ -1090,7 +1090,7 @@ function ExerciseQrCodes({ ex }) {
     ],
   })
   return <>
-    <h4 className="sec">{t('QR codes')}</h4>
+    <h4 className="sec">{t('QR codes')}{codes.length > 0 && <span className="dim"> · {codes.length}</span>}</h4>
     {codes.length > 0
       ? <div className="list">
           {codes.map(code => {
@@ -1106,10 +1106,13 @@ function ExerciseQrCodes({ ex }) {
           })}
         </div>
       : <div className="small dim" style={{ lineHeight: 1.5 }}>{t('Put a QR code on the machine: scanning it in a running workout jumps straight to this exercise.')}</div>}
+    {/* More than one is fine: two identical racks each with their own sticker, or the gym's
+        code next to one printed here. The buttons say so once there is a first. */}
     <div className="row" style={{ gap: 8, marginTop: 8 }}>
-      <Button icon="qr" style={{ flex: 1 }} onClick={scan}>{t('Scan code')}</Button>
-      <Button icon="note" style={{ flex: 1 }} onClick={create}>{t('Print new code')}</Button>
+      <Button icon="qr" style={{ flex: 1 }} onClick={scan}>{codes.length ? t('Add another code') : t('Scan code')}</Button>
+      <Button icon="note" style={{ flex: 1 }} onClick={create}>{codes.length ? t('Print another code') : t('Print new code')}</Button>
     </div>
+    {codes.length > 0 && <div className="small dim" style={{ lineHeight: 1.5, marginTop: 6 }}>{t('An exercise can have several codes, and a code can belong to several exercises.')}</div>}
   </>
 }
 
