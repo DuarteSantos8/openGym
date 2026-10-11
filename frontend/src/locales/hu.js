@@ -2246,6 +2246,9 @@ export default {
   'Coach wants you back on the bar.': 'Az edző visszavár a rúdhoz.',
   'Gentle, for headphones or a quiet room.': 'Halk, fülhallgatóhoz vagy csendes helyre.',
   // --- exercise QR codes ---
+  'Your sheet is ready': 'A lap elkészült',
+  'Choose “Print” in the share sheet. The code prints at 3 × 3 cm.': 'Válaszd a „Nyomtatás” lehetőséget a megosztás menüben. A kód 3 × 3 cm-es méretben nyomtatódik.',
+  'Print or share': 'Nyomtatás vagy megosztás',
   'Add another code': 'Újabb kód hozzáadása',
   'Add to “{0}”': 'Hozzáadás ehhez: „{0}”',
   'An exercise can have several codes, and a code can belong to several exercises.': 'Egy gyakorlatnak több kódja is lehet, és egy kód több gyakorlathoz is tartozhat.',

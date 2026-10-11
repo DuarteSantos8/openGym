@@ -2236,6 +2236,9 @@ export default {
   'Coach wants you back on the bar.': '教練等你回到槓鈴前。',
   'Gentle, for headphones or a quiet room.': '輕柔，適合耳機或安靜的房間。',
   // --- exercise QR codes ---
+  'Your sheet is ready': '你的頁面已準備好',
+  'Choose “Print” in the share sheet. The code prints at 3 × 3 cm.': '在分享選單中選擇「列印」。代碼會以 3 × 3 公分列印。',
+  'Print or share': '列印或分享',
   'Add another code': '再新增一個代碼',
   'Add to “{0}”': '新增到「{0}」',
   'An exercise can have several codes, and a code can belong to several exercises.': '一個動作可以有多個代碼，一個代碼也可以屬於多個動作。',

@@ -2254,6 +2254,9 @@ export default {
   'Coach wants you back on the bar.': 'โค้ชอยากให้คุณกลับมาที่บาร์',
   'Gentle, for headphones or a quiet room.': 'เบา ๆ สำหรับหูฟังหรือห้องที่เงียบ',
   // --- exercise QR codes ---
+  'Your sheet is ready': 'แผ่นงานพร้อมแล้ว',
+  'Choose “Print” in the share sheet. The code prints at 3 × 3 cm.': 'เลือก “พิมพ์” ในเมนูแชร์ โค้ดจะพิมพ์ขนาด 3 × 3 ซม.',
+  'Print or share': 'พิมพ์หรือแชร์',
   'Add another code': 'เพิ่มโค้ดอีก',
   'Add to “{0}”': 'เพิ่มเข้า “{0}”',
   'An exercise can have several codes, and a code can belong to several exercises.': 'ท่าหนึ่งมีได้หลายโค้ด และโค้ดหนึ่งเป็นของหลายท่าได้',

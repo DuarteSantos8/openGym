@@ -2247,6 +2247,9 @@ export default {
   'Coach wants you back on the bar.': 'Тренер ждёт вас обратно у штанги.',
   'Gentle, for headphones or a quiet room.': 'Тихий, для наушников или спокойного зала.',
   // --- exercise QR codes ---
+  'Your sheet is ready': 'Лист готов',
+  'Choose “Print” in the share sheet. The code prints at 3 × 3 cm.': 'Выберите «Напечатать» в меню «Поделиться». Код печатается размером 3 × 3 см.',
+  'Print or share': 'Печать или отправка',
   'Add another code': 'Добавить ещё код',
   'Add to “{0}”': 'Добавить к «{0}»',
   'An exercise can have several codes, and a code can belong to several exercises.': 'У упражнения может быть несколько кодов, а один код может относиться к нескольким упражнениям.',

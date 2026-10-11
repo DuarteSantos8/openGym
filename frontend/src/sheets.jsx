@@ -36,6 +36,7 @@ import { importHevyData, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines } fr
 import { buildPlanBundle, parsePlan, mergePlan, printPlan, planPrintHTML, printHtmlInFrame } from './lib/plan-share.js'
 import { normalizeQr, newExerciseQr, shortQrLabel, qrCodesFor, withExQr, withoutExQr, moveExQr, withoutExercise, othersWithCode, exerciseQrPrintHTML } from './lib/exercise-qr.js'
 import { renderQrToCanvas } from './lib/qr.js'
+import { A4_MM, PX_PER_MM, drawExerciseSheet, iosHomeScreenApp, jpegPdf } from './lib/print-sheet.js'
 import { scanOnce } from './components/CameraScan.jsx'
 import { estimate1RM, best1RM, is1RMRecord, REP_CAP, formulaOf, FORMULA_NAMES } from './lib/onerm.js'
 import { exerciseHistory } from './lib/exercise-history.js'
@@ -1152,16 +1153,66 @@ export async function printExerciseQr(ex, code) {
   try {
     const canvas = document.createElement('canvas')
     const [, imageUrl] = await Promise.all([renderQrToCanvas(canvas, code), exercisePictureFor(ex)])
-    const html = exerciseQrPrintHTML({
-      name, qrDataUrl: canvas.toDataURL('image/png'), imageUrl,
-      description: descFor(ex), tags: detailTags(ex).map(tg => tg.label), steps: instrFor(ex),
-    })
+    const sheet = {
+      name, description: descFor(ex), tags: detailTags(ex).map(tg => tg.label), steps: instrFor(ex),
+    }
+    // The app on an iPhone's home screen cannot print a web page at all (lib/print-sheet.js): the
+    // sheet goes out as a PDF through the share sheet instead, whose Print keeps it at size.
+    if (!MOBILE && iosHomeScreenApp()) { await shareExerciseSheet(sheet, canvas, imageUrl); return }
+    const html = exerciseQrPrintHTML({ ...sheet, qrDataUrl: canvas.toDataURL('image/png'), imageUrl })
     // Android's print manager refuses a job without a name.
     if (MOBILE) await printHtml(html, name || t('QR code')).catch(() => { /* dismissed */ })
     else printHtmlInFrame(html)
   } catch {
     toast(t('Could not print the code'))
   }
+}
+
+const loadImage = src => new Promise((resolve, reject) => {
+  const img = new Image()
+  img.onload = () => resolve(img)
+  img.onerror = reject
+  img.src = src
+})
+
+// The sheet drawn at 200 dpi and wrapped as a one-page A4 PDF, then handed to the share sheet.
+// Sharing needs a tap of its own (the one on "Print new code" is spent by the time the picture
+// and the code are ready), so a small sheet asks for it. Without a share sheet the PDF is saved.
+async function shareExerciseSheet(sheet, qrCanvas, imageUrl) {
+  const page = document.createElement('canvas')
+  page.width = Math.round(A4_MM.w * PX_PER_MM)
+  page.height = Math.round(A4_MM.h * PX_PER_MM)
+  // Only a picture read into the page: one drawn from another origin would taint the canvas.
+  const picture = imageUrl && imageUrl.startsWith('data:image/') ? await loadImage(imageUrl).catch(() => null) : null
+  drawExerciseSheet(page.getContext('2d'), {
+    ...sheet, qr: qrCanvas, picture, rtl: document.documentElement.dir === 'rtl',
+    labels: { caption: t('Scan in a running workout to jump to this exercise'), howTo: t('How to') },
+  })
+  const jpeg = await new Promise((resolve, reject) => page.toBlob(b => (b ? resolve(b) : reject(new Error('toBlob'))), 'image/jpeg', 0.95))
+  const pdf = jpegPdf(new Uint8Array(await jpeg.arrayBuffer()), page.width, page.height)
+  const fileName = (sheet.name || 'openGym').replace(/[\\/:*?"<>|]+/g, ' ').trim() + ' – QR.pdf'
+  const file = new File([pdf], fileName, { type: 'application/pdf' })
+  confirmSheet({
+    title: t('Your sheet is ready'),
+    message: t('Choose “Print” in the share sheet. The code prints at 3 × 3 cm.'),
+    confirmText: t('Print or share'),
+    onConfirm: () => {
+      if (navigator.canShare?.({ files: [file] })) {
+        navigator.share({ files: [file], title: sheet.name }).catch(e => { if (e?.name !== 'AbortError') saveFile(file) })
+      } else saveFile(file)
+    },
+  })
+}
+
+function saveFile(file) {
+  const url = URL.createObjectURL(file)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = file.name
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 60000)
 }
 
 /* ============================ exercise history ============================ */

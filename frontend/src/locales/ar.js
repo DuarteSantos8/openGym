@@ -2298,6 +2298,9 @@ export default {
   'Coach wants you back on the bar.': 'المدرب يريدك أن تعود إلى البار.',
   'Gentle, for headphones or a quiet room.': 'هادئ، للسماعات أو لغرفة هادئة.',
   // --- exercise QR codes ---
+  'Your sheet is ready': 'ورقتك جاهزة',
+  'Choose “Print” in the share sheet. The code prints at 3 × 3 cm.': 'اختر «طباعة» في قائمة المشاركة. يُطبع الرمز بحجم 3 × 3 سم.',
+  'Print or share': 'طباعة أو مشاركة',
   'Add another code': 'إضافة رمز آخر',
   'Add to “{0}”': 'إضافة إلى «{0}»',
   'An exercise can have several codes, and a code can belong to several exercises.': 'يمكن أن يكون للتمرين عدة رموز، ويمكن أن ينتمي الرمز إلى عدة تمارين.',

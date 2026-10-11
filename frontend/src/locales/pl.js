@@ -2243,6 +2243,9 @@ export default {
   'Coach wants you back on the bar.': 'Trener czeka przy sztandze.',
   'Gentle, for headphones or a quiet room.': 'Cichy, do słuchawek albo spokojnego pomieszczenia.',
   // --- exercise QR codes ---
+  'Your sheet is ready': 'Arkusz jest gotowy',
+  'Choose “Print” in the share sheet. The code prints at 3 × 3 cm.': 'Wybierz „Drukuj” w menu udostępniania. Kod zostanie wydrukowany w rozmiarze 3 × 3 cm.',
+  'Print or share': 'Drukuj lub udostępnij',
   'Add another code': 'Dodaj kolejny kod',
   'Add to “{0}”': 'Dodaj do „{0}”',
   'An exercise can have several codes, and a code can belong to several exercises.': 'Ćwiczenie może mieć kilka kodów, a kod może należeć do kilku ćwiczeń.',

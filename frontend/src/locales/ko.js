@@ -2243,6 +2243,9 @@ export default {
   'Coach wants you back on the bar.': '코치가 바 앞으로 돌아오래요.',
   'Gentle, for headphones or a quiet room.': '이어폰이나 조용한 곳에 어울려요.',
   // --- exercise QR codes ---
+  'Your sheet is ready': '시트가 준비되었습니다',
+  'Choose “Print” in the share sheet. The code prints at 3 × 3 cm.': '공유 메뉴에서 "프린트"를 선택하세요. 코드는 3 × 3cm로 인쇄됩니다.',
+  'Print or share': '인쇄 또는 공유',
   'Add another code': '다른 코드 추가',
   'Add to “{0}”': '"{0}"에 추가',
   'An exercise can have several codes, and a code can belong to several exercises.': '운동 하나에 여러 코드를 둘 수 있고, 코드 하나가 여러 운동에 속할 수도 있습니다.',

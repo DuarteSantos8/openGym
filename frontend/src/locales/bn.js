@@ -2322,6 +2322,9 @@ export default {
   'Coach wants you back on the bar.': 'কোচ আপনাকে আবার বারে চান।',
   'Gentle, for headphones or a quiet room.': 'মৃদু, হেডফোন বা শান্ত ঘরের জন্য।',
   // --- exercise QR codes ---
+  'Your sheet is ready': 'আপনার শিট প্রস্তুত',
+  'Choose “Print” in the share sheet. The code prints at 3 × 3 cm.': 'শেয়ার মেনুতে “প্রিন্ট” বেছে নিন। কোডটি ৩ × ৩ সেমি আকারে প্রিন্ট হবে।',
+  'Print or share': 'প্রিন্ট বা শেয়ার করুন',
   'Add another code': 'আরেকটি কোড যোগ করুন',
   'Add to “{0}”': '“{0}”-এ যোগ করুন',
   'An exercise can have several codes, and a code can belong to several exercises.': 'একটি ব্যায়ামের একাধিক কোড থাকতে পারে, আর একটি কোড একাধিক ব্যায়ামের হতে পারে।',

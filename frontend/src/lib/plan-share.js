@@ -10,7 +10,6 @@
 
 import { EXIDX, canonicalExId, isBodyweightEq } from './exercises.js'
 import { cleanUrl } from './media-refs.js'
-import { installedApp } from './media-prefetch.js'
 import { modeOf, exLine, MAX_PLANNED_WARMUPS } from './history.js'
 import { deriveSessionName } from './session-merge.js'
 import { isPyramid, normalizePyramid, normalizePyramidRest, normalizePyramidWeight } from './pyramid.js'
@@ -487,14 +486,10 @@ export function printPlan(S, owner, opts) {
 }
 
 /**
- * Open the browser's print dialog for a page of printable HTML (a plan, an exercise's QR sheet).
- * In a browser tab it goes through a hidden iframe, so the page itself never changes. The app
- * installed on an iPhone's home screen drops a print asked for from a frame without a word —
- * there the page is printed from the document itself (printHtmlInPage). Pictures are waited for
- * either way, so none prints as an empty box.
+ * Open the browser's print dialog for a page of printable HTML (a plan, an exercise's QR sheet)
+ * through a hidden iframe. Pictures in it are waited for, so none prints as an empty box.
  */
-export function printHtmlInFrame(html, { installed = installedApp() } = {}) {
-  if (installed) { printHtmlInPage(html); return }
+export function printHtmlInFrame(html) {
   const ifr = document.createElement('iframe')
   ifr.setAttribute('aria-hidden', 'true')
   ifr.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0;'
@@ -511,54 +506,8 @@ export function printHtmlInFrame(html, { installed = installedApp() } = {}) {
   const doc = ifr.contentWindow.document
   doc.open(); doc.write(html); doc.close()
   // Give the iframe a tick to lay out (and its pictures to decode) before printing.
-  const go = () => imagesLoaded(doc.images).then(() => setTimeout(run, 120))
+  const images = () => Promise.all([...(doc.images || [])].map(img => (img.complete ? null : new Promise(r => { img.onload = img.onerror = r }))))
+  const go = () => images().then(() => setTimeout(run, 120))
   if (doc.readyState === 'complete') go()
   else ifr.onload = go
-}
-
-const imagesLoaded = imgs => Promise.all([...(imgs || [])].map(img => (img.complete ? null : new Promise(r => { img.onload = img.onerror = r }))))
-
-export const PRINT_ROOT_ID = 'og-print-root'
-
-/**
- * printHtmlInFrame without the frame: the printable page goes into a shadow root at the end of
- * the document, so neither its styles nor the app's leak into each other, and a print-only rule
- * hides everything else. On screen nothing changes. Its `html`/`body` rules become the shadow
- * host's; `@page` only works at the top, so it is lifted out. Gone again after the print.
- */
-export function printHtmlInPage(html) {
-  document.getElementById(PRINT_ROOT_ID)?.remove()
-  document.getElementById(PRINT_ROOT_ID + '-style')?.remove()
-  const parsed = new DOMParser().parseFromString(html, 'text/html')
-  const css = [...parsed.querySelectorAll('style')].map(el => el.textContent).join('\n')
-  const pageRules = (css.match(/@page[^{]*\{[^}]*\}/g) || []).join('\n')
-  const hostCss = css.replace(/@page[^{]*\{[^}]*\}/g, '').replace(/(^|[\s,}])(html|body)(?=[\s,{])/g, '$1:host')
-  const top = document.createElement('style')
-  top.id = PRINT_ROOT_ID + '-style'
-  top.textContent = `@media screen { #${PRINT_ROOT_ID} { display: none !important; } }
-@media print {
-  ${pageRules}
-  body > *:not(#${PRINT_ROOT_ID}) { display: none !important; }
-  html, body { height: auto !important; min-height: 0 !important; overflow: visible !important; position: static !important; background: #fff !important; margin: 0 !important; padding: 0 !important; }
-  #${PRINT_ROOT_ID} { display: block !important; }
-}`
-  const host = document.createElement('div')
-  host.id = PRINT_ROOT_ID
-  const root = host.attachShadow({ mode: 'open' })
-  root.innerHTML = `<style>:host { display: block; } ${hostCss}</style>${parsed.body.innerHTML}`
-  document.head.appendChild(top)
-  document.body.appendChild(host)
-  let done = false
-  const cleanup = () => {
-    if (done) return
-    done = true
-    window.removeEventListener('afterprint', cleanup)
-    host.remove()
-    top.remove()
-  }
-  imagesLoaded(root.querySelectorAll('img')).then(() => setTimeout(() => {
-    window.addEventListener('afterprint', cleanup)
-    setTimeout(cleanup, 60000)   // safety net if afterprint never fires
-    try { window.print() } catch (e) { cleanup() }
-  }, 120))
 }

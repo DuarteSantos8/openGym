@@ -1404,6 +1404,9 @@ export const PT_BR_OVERRIDES = {
   'Fewer than two workouts in this period. Pick a longer one.': 'Menos de dois treinos neste período. Escolha um mais longo.',
   'Releases are checked on GitHub. The download is verified against its checksum before the installer opens.': 'As versões são verificadas no GitHub. O download é conferido pela soma de verificação antes de abrir o instalador.',
   // --- exercise QR codes ---
+  'Your sheet is ready': 'Sua folha está pronta',
+  'Choose “Print” in the share sheet. The code prints at 3 × 3 cm.': 'Escolha “Imprimir” no menu de compartilhamento. O código é impresso com 3 × 3 cm.',
+  'Print or share': 'Imprimir ou compartilhar',
   'Hold the phone about 20 cm from the code.': 'Segure o celular a cerca de 20 cm do código.',
   'No exercise has this code yet.': 'Nenhum exercício tem este código ainda.',
   'Code deleted': 'Código excluído',

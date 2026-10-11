@@ -45,7 +45,12 @@ beforeEach(() => {
   HTMLCanvasElement.prototype.toDataURL = () => 'data:image/png;base64,UVI='
   globalThis.fetch = vi.fn(() => Promise.reject(new Error('offline')))
 })
-afterEach(() => { act(() => { mounted.splice(0).forEach(root => root.unmount()) }) })
+afterEach(() => {
+  act(() => { mounted.splice(0).forEach(root => root.unmount()) })
+  delete navigator.standalone
+  delete navigator.share
+  delete navigator.canShare
+})
 
 describe('exercise detail: QR codes', () => {
   it('scans a code onto the exercise and lists it', async () => {
@@ -114,6 +119,54 @@ describe('exercise detail: QR codes', () => {
     expect(html).toContain('src="data:image/png;base64,UVI="')
     // The dataset's still could not be read in: its address stands in.
     expect(html).toMatch(/class="pic"><img src="http/)
+  })
+
+  // On an iPhone's home screen window.print() does nothing: the sheet goes out as a PDF.
+  describe('in the home-screen app on an iPhone', () => {
+    const fakeCtx = () => new Proxy({ measureText: s => ({ width: s.length * 20 }) }, {
+      get: (o, k) => (k in o ? o[k] : () => {}), set: () => true,
+    })
+    beforeEach(() => {
+      Object.defineProperty(navigator, 'standalone', { value: true, configurable: true })
+      HTMLCanvasElement.prototype.getContext = function () { return fakeCtx() }
+      HTMLCanvasElement.prototype.toBlob = function (cb) { cb(new Blob([new Uint8Array([0xff, 0xd8, 0xff, 0xd9])], { type: 'image/jpeg' })) }
+    })
+
+    it('shares the sheet as an A4 PDF instead of printing a page', async () => {
+      const share = vi.fn(() => Promise.resolve())
+      Object.defineProperty(navigator, 'canShare', { value: () => true, configurable: true })
+      Object.defineProperty(navigator, 'share', { value: share, configurable: true })
+      exerciseDetailSheet(BENCH)
+      const host = renderTop()
+      await act(async () => { button(host, 'Print new code').click() })
+      await flush()
+      expect(mocks.printHtmlInFrame).not.toHaveBeenCalled()
+      const ready = renderTop()
+      expect(ready.textContent).toContain('Your sheet is ready')
+      await act(async () => { button(ready, 'Print or share').click() })
+      expect(share).toHaveBeenCalledTimes(1)
+      const { files: [file], title } = share.mock.calls[0][0]
+      expect(title).toBe('Barbell Bench Press')
+      expect(file.name).toBe('Barbell Bench Press – QR.pdf')
+      expect(file.type).toBe('application/pdf')
+      const head = new TextDecoder().decode(new Uint8Array(await file.arrayBuffer()).slice(0, 8))
+      expect(head).toBe('%PDF-1.4')
+      expect(S().exQr['0025']).toHaveLength(1)
+    })
+
+    it('saves the PDF where there is no share sheet', async () => {
+      const made = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:x')
+      const clicked = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+      exerciseDetailSheet(BENCH)
+      const host = renderTop()
+      await act(async () => { button(host, 'Print new code').click() })
+      await flush()
+      const ready = renderTop()
+      await act(async () => { button(ready, 'Print or share').click() })
+      expect(made).toHaveBeenCalledTimes(1)
+      expect(clicked).toHaveBeenCalledTimes(1)
+      made.mockRestore(); clicked.mockRestore()
+    })
   })
 
   it('unassociates a shared code from this exercise only: the other one keeps it', async () => {

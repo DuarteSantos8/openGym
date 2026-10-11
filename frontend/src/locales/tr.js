@@ -2243,6 +2243,9 @@ export default {
   'Coach wants you back on the bar.': 'Koç seni bara geri bekliyor.',
   'Gentle, for headphones or a quiet room.': 'Sakin, kulaklık ya da sessiz bir oda için.',
   // --- exercise QR codes ---
+  'Your sheet is ready': 'Sayfan hazır',
+  'Choose “Print” in the share sheet. The code prints at 3 × 3 cm.': 'Paylaş menüsünde “Yazdır”ı seç. Kod 3 × 3 cm boyutunda yazdırılır.',
+  'Print or share': 'Yazdır veya paylaş',
   'Add another code': 'Başka bir kod ekle',
   'Add to “{0}”': '“{0}” egzersizine ekle',
   'An exercise can have several codes, and a code can belong to several exercises.': 'Bir egzersizin birden fazla kodu olabilir ve bir kod birden fazla egzersize ait olabilir.',

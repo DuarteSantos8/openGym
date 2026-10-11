@@ -2240,6 +2240,9 @@ export default {
   'Coach wants you back on the bar.': 'Тренер чекає вас назад біля штанги.',
   'Gentle, for headphones or a quiet room.': 'Тихий, для навушників або спокійної кімнати.',
   // --- exercise QR codes ---
+  'Your sheet is ready': 'Аркуш готовий',
+  'Choose “Print” in the share sheet. The code prints at 3 × 3 cm.': 'Виберіть «Друкувати» в меню «Поділитися». Код друкується розміром 3 × 3 см.',
+  'Print or share': 'Друк або надсилання',
   'Add another code': 'Додати ще код',
   'Add to “{0}”': 'Додати до «{0}»',
   'An exercise can have several codes, and a code can belong to several exercises.': 'Вправа може мати кілька кодів, а один код може належати кільком вправам.',
