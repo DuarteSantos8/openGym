@@ -123,12 +123,16 @@ function profileBodyweightKg(S) {
 }
 
 function MuscleBalance({ S }) {
+  const nav = useNavigate()
   const [view, setView] = useState('balance')
   const [win, setWin] = useState(7)
   const [weekOffset, setWeekOffset] = useState(0)
   const [hard, setHard] = useState(false)
   const [sel, setSel] = useState(null)
   const [weeklyExpanded, setWeeklyExpanded] = useState(false)
+  const [hoveredMuscle, setHoveredMuscle] = useState(null)
+  const [focusedMuscle, setFocusedMuscle] = useState(null)
+  const highlighted = hoveredMuscle || focusedMuscle
   const now = useNow()
   const lang = getLang()
   const workouts = S.workouts
@@ -192,7 +196,12 @@ function MuscleBalance({ S }) {
   const completionSummary = <>
     {missed.length > 0 && <>
       <h4 className="sec" style={{ marginTop: 12 }}>{on ? t('No hard sets in this period') : t('Not trained in this period')}</h4>
-      <div className="mchips">{missed.map(m => <span key={m} className="mchip miss">{t(MUSCLE_NAME[m])}</span>)}</div>
+      <div className="mchips">{missed.map(m => <button key={m} type="button" className="mchip miss muscle-link"
+        onClick={() => nav(`/library?muscle=${m}`)} aria-label={t('Exercises for {0}', t(MUSCLE_NAME[m]))}
+        onMouseEnter={() => setHoveredMuscle(m)} onMouseLeave={() => setHoveredMuscle(null)}
+        onFocus={() => setFocusedMuscle(m)} onBlur={() => setFocusedMuscle(null)}>
+        {t(MUSCLE_NAME[m])}
+      </button>)}</div>
     </>}
     {!missed.length && worked.length > 0 &&
       <div className="muted small" style={{ marginTop: 10 }}>{on
@@ -238,13 +247,13 @@ function MuscleBalance({ S }) {
           <button className="iconbtn sm" aria-label={t('Next week')} disabled={weekOffset === 0}
             onClick={() => { setWeekOffset(offset => Math.min(0, offset + 1)); setSel(null); setWeeklyExpanded(false) }}><Icon name="chevronRight" /></button>
         </div>
-        <BodyMap className="tappable" load={load} body={S.body} selected={sel} onMuscle={toggleSel} />
+        <BodyMap className="tappable" load={load} body={S.body} selected={sel} highlighted={highlighted} onMuscle={toggleSel} />
         <BodyMapLegend />
         {weekOffset === 0
           ? comparisonRows.length ? <>{comparisonRows}{weeklyToggle(comparisonMuscles.length)}{completionSummary}</> : <div className="muted small">{t('No workouts in this period yet.')}</div>
           : inWin.length ? completedRows : <div className="muted small">{t('No workouts in this period yet.')}</div>}
       </div> : inWin.length ? <>
-        <BodyMap className="tappable" load={load} body={S.body} selected={sel}
+        <BodyMap className="tappable" load={load} body={S.body} selected={sel} highlighted={highlighted}
           onMuscle={toggleSel} />
         <BodyMapLegend />
         {completedRows}

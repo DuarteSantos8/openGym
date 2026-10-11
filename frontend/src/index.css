@@ -1670,6 +1670,8 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .hm-strength .hm-c.l4{background:var(--yellow)}
 
 .bm-m.sel{stroke:var(--label);stroke-width:7}
+.bm-m.highlight{fill:var(--orange);stroke:var(--orange);stroke-width:4;animation:muscle-highlight 2s ease-in-out infinite}
+@keyframes muscle-highlight{0%,100%{opacity:1}50%{opacity:.4}}
 .bodymap.tappable .bm-m{cursor:pointer}
 .bodymap.tappable .bm-m:focus-visible{outline:none;stroke:var(--label);stroke-width:7;filter:drop-shadow(0 0 2px var(--surface))}
 /* A hairline in the surface colour separates neighbouring muscles; the artwork has no
@@ -1687,6 +1689,9 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .mchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
 .mchip{font-size:12px;padding:4px 9px;border-radius:99px;background:var(--surface-2);color:var(--label-2)}
 .mchip.miss{background:color-mix(in srgb,var(--orange) 16%,transparent);color:var(--orange)}
+.mchip.muscle-link{text-decoration:none;cursor:pointer}
+.mchip.muscle-link:hover{background:color-mix(in srgb,var(--orange) 28%,transparent)}
+.mchip.muscle-link:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
 
 /* --- stat tiles --- */
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}

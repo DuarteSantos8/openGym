@@ -26,7 +26,7 @@ function useBodyPaths() {
   return paths
 }
 
-function View({ view, levels, onMuscle, selected }) {
+function View({ view, levels, onMuscle, selected, highlighted }) {
   const activate = (event, slug) => {
     if (event.key !== 'Enter' && event.key !== ' ') return
     if (event.key === ' ') event.preventDefault()
@@ -39,7 +39,7 @@ function View({ view, levels, onMuscle, selected }) {
       {MUSCLES.map(slug => (view.p[slug] || []).map((d, i) =>
         <path
           key={slug + i}
-          className={'bm-m l' + (levels[slug] || 0) + (selected === slug ? ' sel' : '')}
+          className={'bm-m l' + (levels[slug] || 0) + (selected === slug ? ' sel' : '') + (highlighted === slug ? ' highlight' : '')}
           d={d}
           onClick={onMuscle ? () => onMuscle(slug) : undefined}
           onKeyDown={onMuscle ? event => activate(event, slug) : undefined}
@@ -61,15 +61,15 @@ function View({ view, levels, onMuscle, selected }) {
  * `{ at, level, exclusive? }` `thresholds` for a fixed absolute scale (recovery views use this
  * to keep their semantic bands stable); omitting it preserves the balance behavior.
  */
-export default function BodyMap({ load = {}, thresholds, body = 'male', onMuscle, selected, className = '' }) {
+export default function BodyMap({ load = {}, thresholds, body = 'male', onMuscle, selected, highlighted, className = '' }) {
   const paths = useBodyPaths()
   const levels = levelsOf(load, thresholds)
   const g = paths && (paths[body] || paths.male)
   return (
     <div className={'bodymap ' + className}>
       {g ? <>
-        <View view={g.front} levels={levels} onMuscle={onMuscle} selected={selected} />
-        <View view={g.back} levels={levels} onMuscle={onMuscle} selected={selected} />
+        <View view={g.front} levels={levels} onMuscle={onMuscle} selected={selected} highlighted={highlighted} />
+        <View view={g.back} levels={levels} onMuscle={onMuscle} selected={selected} highlighted={highlighted} />
       </> : <div className="bm-ph" aria-hidden="true" />}
     </div>
   )

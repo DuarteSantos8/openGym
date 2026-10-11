@@ -1,8 +1,8 @@
-import { useDeferredValue, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { EXDB, BODYPARTS, allExercises, equipmentOf, byCategory, searchExercises, similarExercises } from '../lib/exercises.js'
-import { MUSCLE_NAME } from '../lib/muscles.js'
+import { MUSCLES, MUSCLE_NAME, musclesOf } from '../lib/muscles.js'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { bestWeightFor } from '../lib/history.js'
 import { fmtNum, exCount } from '../lib/format.js'
@@ -18,6 +18,9 @@ import { isFav, sortFavouritesFirst, sortYoursFirst, usageOf } from '../lib/favo
 
 export default function Library() {
   const nav = useNavigate()
+  const [params, setParams] = useSearchParams()
+  const muscleParam = params.get('muscle')
+  const muscle = MUSCLES.includes(muscleParam) ? muscleParam : ''
   const S = useStore(s => s.S)
   const [q, setQ] = useState('')
   const [bp, setBp] = useState('')
@@ -25,13 +28,15 @@ export default function Library() {
   const [cat, setCat] = useState('')
   const [showAll, setShowAll] = useState(false)   // ignore the active equipment profile for this session
   const [shown, setShown] = useState(40)
+  useEffect(() => { setShown(40) }, [muscle])
   const bpStrip = useRef(null), eqStrip = useRef(null), catStrip = useRef(null)
   const moreRef = useAutoMore(() => setShown(s => s + 40))
   const profile = activeProfile(S)
   // Your own exercises, counted the way the list below shows them (allExercises puts every
   // custom entry in front of the catalogue; deleting one removes it from customEx outright).
   const ownCount = (S.customEx || []).filter(c => c && c.id).length
-  const inPart = searchExercises(allExercises(S).filter(e => !bp || e.bp === bp), q)
+  const catalog = allExercises(S).filter(e => !muscle || musclesOf(e)[muscle])
+  const inPart = searchExercises(catalog.filter(e => !bp || e.bp === bp), q)
   // Kind of exercise (strength, stretching, cardio...), the same fallback as equipment below: a
   // choice the search or body part has narrowed away is ignored for now, never a dead end.
   const { opts: catOpts, on: catOn, list: base } = byCategory(inPart, cat)
@@ -49,13 +54,13 @@ export default function Library() {
   useRevealActiveChip(catStrip, catOn)
   // A live count at the end of the search field while a search or filter narrows the list
   // (idea and first version: GitLab !31) — how many are left, before scrolling to find out.
-  const narrowed = !!(q.trim() || bp || eqOn || catOn)
+  const narrowed = !!(q.trim() || bp || eqOn || catOn || muscle)
   // Close but not exact (a typo too many, most of the words, a similar name), under the results
   // once they are all on screen, so a search almost never ends on "No match".
   // Worked out a beat behind the typing (useDeferredValue): the list itself never waits for it.
   const qLate = useDeferredValue(q)
   const similar = q.trim() && qLate === q && f.length <= shown
-    ? similarExercises(allExercises(S).filter(e => (!bp || e.bp === bp) && (!profile || showAll || exAvailable(S, e))), q, f, f.length ? 12 : 30)
+    ? similarExercises(catalog.filter(e => (!bp || e.bp === bp) && (!profile || showAll || exAvailable(S, e))), q, f, f.length ? 12 : 30)
     : []
   const row = e => {
     const best = bestWeightFor(S, e.id)
@@ -74,6 +79,14 @@ export default function Library() {
         ? tn('{1} animated exercises + 1 of your own', '{1} animated exercises + {0} of your own', ownCount, EXDB.length)
         : t('{0} exercises with animations', EXDB.length)}</div>
     </div>
+    {muscle && <div className="row between" style={{ marginBottom: 10 }}>
+      <span>{t('Exercises for {0}', t(MUSCLE_NAME[muscle]))}</span>
+      <Button size="sm" variant="ghost" onClick={() => {
+        const next = new URLSearchParams(params)
+        next.delete('muscle')
+        setParams(next)
+      }}>{t('Clear selection')}</Button>
+    </div>}
     <div className="search-row" style={{ marginBottom: 10 }}><div className={'search' + (narrowed ? ' has-count' : '') + (q ? ' has-clear' : '')}><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
       <input className="input" placeholder={t('Search…')} value={q} onChange={e => { setQ(e.target.value); setShown(40) }} />
       {narrowed && <span className="search-count" role="status" aria-label={exCount(f.length)}>{fmtNum(f.length)}</span>}

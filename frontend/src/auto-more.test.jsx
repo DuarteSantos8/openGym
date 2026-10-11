@@ -13,7 +13,7 @@ import Library from './views/Library.jsx'
 import MuscleExplorer from './components/MuscleExplorer.jsx'
 import { BODYPARTS, EXDB } from './lib/exercises.js'
 
-vi.mock('react-router-dom', () => ({ useNavigate: () => () => {} }))
+vi.mock('react-router-dom', () => ({ useNavigate: () => () => {}, useSearchParams: () => [new URLSearchParams(), () => {}] }))
 
 const observers = []
 class FakeIntersectionObserver {
