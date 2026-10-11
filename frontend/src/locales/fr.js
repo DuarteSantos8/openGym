@@ -2242,4 +2242,10 @@ export default {
   'Your sports watch, calling you back.': 'Ta montre de sport te rappelle.',
   'Coach wants you back on the bar.': 'Le coach te veut de retour à la barre.',
   'Gentle, for headphones or a quiet room.': 'Tout doux, pour un casque ou une pièce calme.',
+  'Apple Health': 'Apple Santé',
+  'Manual': 'Manuel',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'Apple Santé cherche encore un poids. Entre ton poids pour commencer.',
+  'Apple Health is unavailable on this device. Enter your weight to start.': 'Apple Santé n\'est pas disponible sur cet appareil. Entre ton poids pour commencer.',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'Apple Santé n\'a aucun poids lisible. Tu peux vérifier l\'accès à Santé dans Réglages ou entrer ton poids ici.',
+  'Apple Health could not load your weight. Enter your weight to start.': 'Apple Santé n\'a pas pu charger ton poids. Entre ton poids pour commencer.',
 }

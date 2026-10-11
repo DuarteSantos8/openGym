@@ -66,5 +66,7 @@
 	<string>Used to scan your gym membership QR code, and to take a photo or video of an exercise you add yourself.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Used to record the sound of a video you take of an exercise you add yourself.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>openGym reads your latest weight from Apple Health to save a weigh-in and use it when you start a workout. If you connect a server, this weight syncs to that server with your profile.</string>
 </dict>
 </plist>

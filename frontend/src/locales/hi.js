@@ -2242,4 +2242,10 @@ export default {
   'Your sports watch, calling you back.': 'आपकी स्पोर्ट्स घड़ी आपको वापस बुला रही है।',
   'Coach wants you back on the bar.': 'कोच आपको बार पर वापस चाहते हैं।',
   'Gentle, for headphones or a quiet room.': 'धीमी, हेडफ़ोन या शांत कमरे के लिए।',
+  'Apple Health': 'Apple Health',
+  'Manual': 'मैन्युअल',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'Apple Health अभी वज़न खोज रहा है। शुरू करने के लिए अपना वज़न दर्ज करें।',
+  'Apple Health is unavailable on this device. Enter your weight to start.': 'इस डिवाइस पर Apple Health उपलब्ध नहीं है। शुरू करने के लिए अपना वज़न दर्ज करें।',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'Apple Health में पढ़ने लायक कोई वज़न नहीं है। आप सेटिंग्स में Health की अनुमति जाँच सकते हैं या यहाँ अपना वज़न दर्ज कर सकते हैं।',
+  'Apple Health could not load your weight. Enter your weight to start.': 'Apple Health आपका वज़न लोड नहीं कर सका। शुरू करने के लिए अपना वज़न दर्ज करें।',
 }

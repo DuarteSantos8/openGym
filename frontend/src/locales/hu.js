@@ -2245,4 +2245,10 @@ export default {
   'Your sports watch, calling you back.': 'A sportórád visszahív.',
   'Coach wants you back on the bar.': 'Az edző visszavár a rúdhoz.',
   'Gentle, for headphones or a quiet room.': 'Halk, fülhallgatóhoz vagy csendes helyre.',
+  'Apple Health': 'Apple Health',
+  'Manual': 'Kézi',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'Az Apple Health még keresi a testsúlyt. Add meg a súlyodat a kezdéshez.',
+  'Apple Health is unavailable on this device. Enter your weight to start.': 'Az Apple Health ezen az eszközön nem érhető el. Add meg a súlyodat a kezdéshez.',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'Az Apple Healthben nincs olvasható testsúly. A Health-hozzáférést a Beállításokban ellenőrizheted, vagy itt megadhatod a súlyodat.',
+  'Apple Health could not load your weight. Enter your weight to start.': 'Az Apple Health nem tudta betölteni a súlyodat. Add meg a súlyodat a kezdéshez.',
 }

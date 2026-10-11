@@ -2246,4 +2246,10 @@ export default {
   'Your sports watch, calling you back.': 'Ваши спортивные часы зовут вас обратно.',
   'Coach wants you back on the bar.': 'Тренер ждёт вас обратно у штанги.',
   'Gentle, for headphones or a quiet room.': 'Тихий, для наушников или спокойного зала.',
+  'Apple Health': 'Apple Health',
+  'Manual': 'Вручную',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'Apple Health всё ещё ищет вес. Введите свой вес, чтобы начать.',
+  'Apple Health is unavailable on this device. Enter your weight to start.': 'Apple Health недоступно на этом устройстве. Введите свой вес, чтобы начать.',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'В Apple Health нет веса, который можно прочитать. Проверьте доступ к Health в Настройках или введите вес здесь.',
+  'Apple Health could not load your weight. Enter your weight to start.': 'Apple Health не удалось загрузить ваш вес. Введите свой вес, чтобы начать.',
 }
