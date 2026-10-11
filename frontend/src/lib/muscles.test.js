@@ -200,11 +200,11 @@ describe('planned weekly muscle volume', () => {
     expect(load.biceps).toBe(3)
   })
 
-  it('counts a floating week once per session, beside the weekday routines it does not cover', () => {
+  it('counts a floating week once per slot, beside the weekday routines it does not cover', () => {
     const queued = { ...state, queue: { ids: ['push', 'push', 'gone'], since: 0, startsOn: '2026-08-17' } }
-    // weekday 'arms' (3) + the queue's 'push' once (2 chest, 0.8 triceps); the weekday 'push' rows
-    // are the queue's session, not a second plan of their own.
-    expect(loadOfWeeklyPlan(queued)).toEqual({ chest: 2, triceps: 0.8, biceps: 3 })
+    // weekday 'arms' (3) + the queue's 'push' in each of its two slots (2 chest, 0.8 triceps each);
+    // the weekday 'push' rows are the queue's sessions, not a plan of their own.
+    expect(loadOfWeeklyPlan(queued)).toEqual({ chest: 4, triceps: 1.6, biceps: 3 })
   })
 
   it('returns an empty projection for missing or empty plans', () => {

@@ -65,12 +65,11 @@ export function undoDeleteRoutine(snap) {
  *  round over; so while the loop is still what the removal left, Undo puts the loop, the round and
  *  the swept pins back as they were. Once something else changed the loop, it just slots the
  *  routine back in at its old place, through the same save an edit uses. */
-export function takeOutOfLoop(id, setSeq, seq, label) {
-  const at = seq.indexOf(id)
-  if (at < 0) return false
+export function takeOutOfLoop(id, setSeq, seq, label, at = seq.indexOf(id)) {
+  if (at < 0 || seq[at] !== id) return false
   const before = useStore.getState().S
   const snap = structuredClone({ rotation: before.rotation ?? null, queue: before.queue ?? null, dayPlan: before.dayPlan ?? {} })
-  setSeq(seq.filter(x => x !== id))
+  setSeq(seq.filter((x, j) => j !== at))
   const after = useStore.getState().S
   const mark = loopMark(after)
   const marks = undoMarks(before, after)
@@ -78,6 +77,8 @@ export function takeOutOfLoop(id, setSeq, seq, label) {
   useUI.getState().toast(t('“{0}” is out of the loop.', name), { action: t('Undo'), onAction: () => undoTakeOut({ id, at, label, snap, mark, marks }) })
   return true
 }
+// How many slots of the loop a routine fills (it may fill several).
+const countOf = (list, id) => (Array.isArray(list) ? list : []).filter(x => x === id).length
 // What the loop looked like right after a removal: the saved loop, the pass and the mode switch.
 const loopMark = S => JSON.stringify([S.rotation ?? null, S.queue ?? null, S.scheduleMode ?? null])
 export function undoTakeOut({ id, at, label, snap, mark, marks }) {
@@ -102,7 +103,7 @@ export function undoTakeOut({ id, at, label, snap, mark, marks }) {
     const ours = scheduleModeOf(s) === 'rotation' && (!s.queue || (!!q && !!s.rotation && q.rotationId === s.rotation.id))
     if (!ours) {
       const seq = Array.isArray(s.rotation?.sequence) ? s.rotation.sequence : null
-      if (seq && !seq.includes(id)) {
+      if (seq && countOf(seq, id) < countOf(snap.rotation?.sequence, id)) {
         const next = seq.slice()
         next.splice(Math.min(at, next.length), 0, id)
         s.rotation = { ...s.rotation, sequence: next }
@@ -110,7 +111,7 @@ export function undoTakeOut({ id, at, label, snap, mark, marks }) {
       return
     }
     const ids = q?.ids ?? rotationIds(s)
-    if (ids.includes(id)) return
+    if (countOf(ids, id) >= countOf(snap.queue?.ids ?? snap.rotation?.sequence, id)) return
     const next = ids.slice()
     next.splice(Math.min(at, next.length), 0, id)
     saveRotation(s, next, s.queue?.label || s.rotation?.label || label)
@@ -225,11 +226,11 @@ function Schedule({ S, update, nav, mode }) {
     }
   })
   const loopReorder = useListReorder(seq.length, (from, to) => setSeq(moved(seq, from, to)))
-  const takeOut = id => takeOutOfLoop(id, setSeq, seq, seqLabel)
+  const takeOut = (id, i) => takeOutOfLoop(id, setSeq, seq, seqLabel, i)
   const swipe = workoutControls(S).swipeSets && !external
   const addToSeq = () => menuSheet({
     title: t('Add to the rotation'),
-    items: S.routines.filter(r => !seq.includes(r.id)).map(r => ({
+    items: S.routines.map(r => ({
       icon: glyphOf(r.emoji), label: r.name, onClick: () => setSeq([...seq, r.id]),
     })),
   })
@@ -314,19 +315,19 @@ function Schedule({ S, update, nav, mode }) {
         {!external && <div className="row plan-sec-acts" style={{ gap: 6 }}>
           {seq.length > 0 && <button className="plan-textbtn" aria-pressed={editLoop} onClick={() => setEditLoop(e => !e)}>{editLoop ? t('Done') : t('Edit')}</button>}
           <Button size="sm" variant="tinted" icon="plus" aria-label={t('Add routine to the rotation')}
-            disabled={S.routines.every(r => seq.includes(r.id))} onClick={addToSeq}>{t('Add')}</Button>
+            disabled={!S.routines.length} onClick={addToSeq}>{t('Add')}</Button>
         </div>}
       </div>
       {seq.length ? <div className="list plan-loop" ref={loopReorder.listRef}>
         {seq.map((id, i) => {
           const r = routineOf(id)
           const item = qv?.items[i]
-          // The loop's swipe is remove-only (v1.3.11): a routine is in the loop once, so there is
-          // nothing to copy. The row the reorder measures is the swipe's outer element.
+          // The loop's swipe is remove-only (v1.3.11). A routine can fill several slots, so rows are
+          // keyed by slot. The row the reorder measures is the swipe's outer element.
           const reorderProps = { 'data-reorder-row': '', style: loopReorder.rowStyle(i) }
-          const row = <div {...(swipe ? {} : { key: id, ...reorderProps })} className={'item rotation-row' + (item?.state === 'done' ? ' is-done' : '')}>
+          const row = <div {...(swipe ? {} : { key: id + ':' + i, ...reorderProps })} className={'item rotation-row' + (item?.state === 'done' ? ' is-done' : '')}>
             {editing && <button className="plan-minus" aria-label={t('Remove {0}', r?.name ?? id)} title={t('Remove')}
-              onClick={() => takeOut(id)}><Icon name="minus" /></button>}
+              onClick={() => takeOut(id, i)}><Icon name="minus" /></button>}
             <span className={'plan-order' + (item?.state === 'next' ? ' next' : '')}>{item?.state === 'done' ? <Icon name="check" /> : i + 1}</span>
             <span className="lrow-i"><Icon name={glyphOf(r?.emoji)} /></span>
             <div className="grow" style={{ minWidth: 0 }}>
@@ -337,8 +338,8 @@ function Schedule({ S, update, nav, mode }) {
               {...loopReorder.handle(i)}><Icon name="chevronsUpDown" /></button>}
           </div>
           return swipe
-            ? <SwipeRow key={id} {...reorderProps} className="swrow-item" deleteLabel={t('Remove')} deleteIcon="minus"
-              onDelete={() => takeOut(id)}>{row}</SwipeRow>
+            ? <SwipeRow key={id + ':' + i} {...reorderProps} className="swrow-item" deleteLabel={t('Remove')} deleteIcon="minus"
+              onDelete={() => takeOut(id, i)}>{row}</SwipeRow>
             : row
         })}
       </div> : <div className="empty">{t('No rotation yet. Add routines in the order you want to train them. The first one you haven’t logged stays up next.')}</div>}

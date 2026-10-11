@@ -317,9 +317,9 @@ describe('weekTally — the streak card fraction', () => {
 })
 
 describe('queueOf — the shared normalization', () => {
-  it('keeps the first occurrence of a repeated id and drops deleted ones', () => {
+  it('keeps a repeated id as its own slot and drops deleted ones', () => {
     const st = S({ queue: { ids: ['d1', 'd2', 'd1', 'gone'], since: SINCE, startsOn: '2026-09-07', label: 'US W1' } })
-    expect(queueOf(st).ids).toEqual(['d1', 'd2'])
+    expect(queueOf(st).ids).toEqual(['d1', 'd2', 'd1'])
     // the persisted payload is left exactly as it arrived
     expect(st.queue.ids).toEqual(['d1', 'd2', 'd1', 'gone'])
   })
@@ -330,8 +330,34 @@ describe('queueOf — the shared normalization', () => {
     expect(queueOf(S({ queue: { ids: ['gone'], since: SINCE } }))).toBe(null)
   })
 
-  it('a repeated id is one chip, not two', () => {
+  it('a repeated id is a chip per slot', () => {
     const st = S({ queue: { ids: ['d1', 'd1', 'd2'], since: SINCE, startsOn: '2026-09-07', label: 'US W1' } })
-    expect(queueView(st, TODAY).items.map(i => i.id)).toEqual(['d1', 'd2'])
+    expect(queueView(st, TODAY).items.map(i => i.id)).toEqual(['d1', 'd1', 'd2'])
+  })
+})
+
+describe('a routine in several slots', () => {
+  const Q = { ids: ['d1', 'd2', 'd1', 'd3'], since: SINCE, startsOn: '2026-09-07', label: 'Loop' }
+  const on = (id, n) => w({ id: 'w' + n, routineIds: [id], start: SINCE + n * 3600000 })
+  it('each slot needs its own workout: one session ticks the first slot only', () => {
+    const st = S({ queue: Q, workouts: [on('d1', 1)] })
+    expect(queueDone(st)).toEqual(['d1'])
+    expect(queueRemaining(st)).toEqual(['d2', 'd1', 'd3'])
+    expect(queueView(st, TODAY).items.map(i => i.state)).toEqual(['done', 'next', 'later', 'later'])
+  })
+  it('the second workout on it ticks the second slot', () => {
+    const st = S({ queue: Q, workouts: [on('d1', 1), on('d2', 2), on('d1', 3)] })
+    expect(queueRemaining(st)).toEqual(['d3'])
+    expect(queueNext(st, TODAY, TODAY)).toBe('d3')
+    expect(queueView(st, TODAY).items.map(i => i.state)).toEqual(['done', 'done', 'done', 'next'])
+  })
+  it('the tally counts every slot, and a third workout on it is training on top', () => {
+    const st = S({ queue: Q, workouts: [on('d1', 1), on('d1', 2), on('d1', 3)] })
+    expect(weekTally(st, TODAY)).toEqual({ done: 3, planned: 4 })
+  })
+  it('a pin on it stays open while one of its slots is still to do', () => {
+    const st = S({ queue: Q, workouts: [on('d1', 1)] })
+    expect(pinState(st, 'd1')).toBe('open')
+    expect(pinState(S({ queue: Q, workouts: [on('d1', 1), on('d1', 2)] }), 'd1')).toBe('done')
   })
 })

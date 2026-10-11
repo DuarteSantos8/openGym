@@ -167,14 +167,14 @@ describe('Plan — the loop', () => {
     expect(host.textContent).toContain('1 of 2 done this round.')
   })
 
-  it('adding a routine offers only the ones not in the loop, and saves the pass', () => {
+  it('adding a routine offers every routine, one already in the loop included, and saves the pass', () => {
     mount({ queue: live({ rotationId: 'r1' }), rotation: saved })
     click(byLabel('Add routine to the rotation'))
     const items = menuSheet.mock.calls[0][0].items
-    expect(items.map(i => i.label)).toEqual(['C'])
+    expect(items.map(i => i.label)).toEqual(['A', 'B', 'C'])
     act(() => items[0].onClick())
-    expect(mocks.S.queue.ids).toEqual(['a', 'b', 'c'])
-    expect(mocks.S.rotation.sequence).toEqual(['a', 'b', 'c'])
+    expect(mocks.S.queue.ids).toEqual(['a', 'b', 'a'])
+    expect(mocks.S.rotation.sequence).toEqual(['a', 'b', 'a'])
   })
 
   it('Edit reveals the handles; moving one reorders without restarting the pass', () => {

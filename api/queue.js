@@ -32,10 +32,19 @@ function routineIdsOf(w) {
 function nameParts(w) {
   return String(w.name || '').split(' + ');
 }
-function queueDone(S, id, startsOn) {
+function queueCredits(S, id, startsOn) {
   const currentName = (S.routines || []).find(r => r?.id === id)?.name;
-  return (S.workouts || []).some(w => routineIdsOf(w).includes(id)
-    && ((w.start ?? 0) >= S.queue.since || (S.queue.strict !== true && String(w.d || '') >= startsOn && nameParts(w).includes(currentName))));
+  return (S.workouts || []).filter(w => routineIdsOf(w).includes(id)
+    && ((w.start ?? 0) >= S.queue.since || (S.queue.strict !== true && String(w.d || '') >= startsOn && nameParts(w).includes(currentName)))).length;
+}
+// The slots still to do, in slot order: the nth slot of a routine is done once n workouts count.
+function queueRemaining(S, q) {
+  const credits = {}, seen = {};
+  return q.ids.filter(id => {
+    if (credits[id] == null) credits[id] = queueCredits(S, id, q.startsOn);
+    seen[id] = (seen[id] || 0) + 1;
+    return seen[id] > credits[id];
+  });
 }
 // The calendar date of an instant where the USER is. The frontend's fallback for a missing
 // startsOn is the device's local date of the apply; the closest thing here is the zone the
@@ -56,8 +65,8 @@ function queueOf(S) {
   const q = S.queue;
   if (!q || typeof q !== 'object' || !Array.isArray(q.ids)) return null;
   const startsOn = typeof q.startsOn === 'string' ? q.startsOn : dayIn(q.since || 0, S.reminder?.tz);
-  // First valid occurrence of each id — the same normalization as the frontend's queueOf.
-  const ids = q.ids.filter((id, i) => q.ids.indexOf(id) === i && (S.routines || []).some(r => r?.id === id));
+  // Repeats kept: each slot is its own session — the same normalization as the frontend's queueOf.
+  const ids = q.ids.filter(id => (S.routines || []).some(r => r?.id === id));
   if (!ids.length) return null;
   return { ids, startsOn };
 }
@@ -68,7 +77,7 @@ function queueOf(S) {
 function queueNext(S, iso) {
   const q = queueOf(S);
   if (!q || iso < q.startsOn) return null;
-  const remaining = q.ids.filter(id => !queueDone(S, id, q.startsOn));
+  const remaining = queueRemaining(S, q);
   const pins = Object.entries(S.dayPlan || {}).filter(([d, id]) => d >= iso && remaining.includes(id));
   const here = pins.find(([d]) => d === iso);
   if (here) return here[1];
@@ -82,7 +91,7 @@ function queueNext(S, iso) {
 export function pinState(S, id) {
   const q = queueOf(S);
   if (!q || !id || !q.ids.includes(id)) return null;
-  return queueDone(S, id, q.startsOn) ? 'done' : 'open';
+  return queueRemaining(S, q).includes(id) ? 'open' : 'done';
 }
 
 // A weekday can hold a routine-id list (combine routines); the reminder only needs the first.
@@ -111,5 +120,5 @@ export function effectiveRoutineId(S, iso) {
 // "the queue's day" is any day from startsOn on.)
 export function queueLiveOn(S, iso) {
   const q = queueOf(S);
-  return !!q && iso >= q.startsOn && q.ids.some(id => !queueDone(S, id, q.startsOn));
+  return !!q && iso >= q.startsOn && queueRemaining(S, q).length > 0;
 }
