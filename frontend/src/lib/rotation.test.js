@@ -314,6 +314,44 @@ describe('refilling a completed managed pass', () => {
     expect(queueRemaining(s, TODAY)).toEqual(['a', 'b', 'c'])
     expect(queueView(s, TODAY).waiting).toBe(true)
   })
+
+  it('a workout dated years ahead does not park the next pass on that date', () => {
+    // The app refuses a future date, so this came from a device whose calendar is wrong. Read as
+    // the day the pass was last credited, it started the next pass the day after it, and the
+    // rotation had nothing to do until then.
+    const last = w('c', TODAY)
+    const stray = w('a', '2099-01-01', Date.parse('2099-01-01T10:00:00'))
+    const s = managed(['a', 'b', 'c'], [stray, w('b', '2026-09-11'), last])
+    expect(refillAfter(s, last, TODAY, NOW)).toBe(true)
+    expect(s.queue.startsOn).toBe('2026-09-13')   // the day after today's finish, not 2099-01-02
+    // …and it does not arrive credited either (the DONE RULE stops at today)
+    expect(queueRemaining(s, TODAY)).toEqual(['a', 'b', 'c'])
+    // with every crediting workout dated that far ahead, the next pass starts today, as an edit's does
+    const later = ['a', 'b', 'c'].map(id => w(id, '2099-01-01', Date.parse('2099-01-01T10:00:00')))
+    const all = managed(['a', 'b', 'c'], later)
+    expect(refillAfter(all, later[2], TODAY, NOW)).toBe(true)
+    expect(all.queue.startsOn).toBe(TODAY)
+  })
+
+  it('a workout dated tomorrow, from a device in a time zone ahead, still sets the boundary', () => {
+    // A day of slack: the next pass starts after it, so that workout never counts for both passes.
+    const ahead = w('a', '2026-09-13', NOW - 3600000)
+    const s = managed(['a', 'b', 'c'], [ahead, w('b', '2026-09-11'), w('c', TODAY)])
+    expect(refillAfter(s, s.workouts[2], TODAY, NOW)).toBe(true)
+    expect(s.queue.startsOn).toBe('2026-09-14')
+    expect(queueRemaining(s, '2026-09-14')).toEqual(['a', 'b', 'c'])
+  })
+
+  it('nor does the refill after a sync merge (refillIfComplete), or an edit that completes the pass', () => {
+    const stray = w('a', '2099-01-01', Date.parse('2099-01-01T10:00:00'))
+    const merged = managed(['a', 'b', 'c'], [stray, w('b', '2026-09-11'), w('c', TODAY)])
+    expect(refillIfComplete(merged, TODAY, NOW)).toBe(true)
+    expect(merged.queue.startsOn).toBe('2026-09-13')
+    expect(merged.queue.ids).toEqual(['a', 'b', 'c'])   // closed by today's C, not by the stray A
+    const edited = managed(['a', 'b', 'c'], [stray, w('b', '2026-09-11'), w('c', TODAY)])
+    saveRotation(edited, ['a', 'b', 'c'], 'My split', TODAY, NOW)
+    expect(edited.queue.startsOn).toBe('2026-09-13')
+  })
 })
 
 describe('the finished-workout boundary', () => {
