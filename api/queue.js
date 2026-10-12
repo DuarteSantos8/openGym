@@ -29,8 +29,12 @@
 function routineIdsOf(w) {
   return Array.isArray(w.routineIds) ? w.routineIds : (w.routineId ? [w.routineId] : []);
 }
-function nameParts(w) {
-  return String(w.name || '').split(' + ');
+// Does this workout's name name this routine? The frontend's namesRoutine: a routine can itself
+// be named 'Push + Pull', so the name is looked for at a ' + ' boundary, never split out.
+function namesRoutine(w, name) {
+  if (!name) return false;
+  const n = String(w.name || '');
+  return n === name || n.startsWith(name + ' + ') || n.endsWith(' + ' + name) || n.includes(' + ' + name + ' + ');
 }
 // The reminder tick runs everything below every ten seconds for each profile with a reminder on,
 // over whatever its state file holds: a queue, routines and workouts of any length a 5 MB PUT
@@ -51,10 +55,9 @@ function doneIds(S, q) {
     const byClock = (w.start ?? 0) >= S.queue.since;
     const byName = S.queue.strict !== true && String(w.d || '') >= q.startsOn;
     if (!byClock && !byName) continue;
-    let parts;
     for (const id of ids) {
       if (!want.has(id) || done.has(id)) continue;
-      if (byClock || (parts ??= nameParts(w)).includes(names.get(id))) done.add(id);
+      if (byClock || namesRoutine(w, names.get(id))) done.add(id);
     }
   }
   return done;
