@@ -63,7 +63,7 @@ function stateQueue(S) {
   if (hit && hit.routines === routines && hit.routineCount === (routines?.length ?? 0) && hit.ids === q.ids
     && hit.idCount === q.ids.length && hit.rawStartsOn === q.startsOn && hit.since === q.since && hit.tz === tz) return hit;
   const known = new Set((routines || []).map(r => r?.id));
-  const startsOn = typeof q.startsOn === 'string' ? q.startsOn : dayIn(q.since || 0, tz);
+  const startsOn = typeof q.startsOn === 'string' ? q.startsOn : (q.since > 0 ? dayIn(q.since, tz) : null);
   // First valid occurrence of each id — the same normalization as the frontend's queueOf.
   const ids = [...new Set(q.ids)].filter(id => known.has(id));
   const want = new Set(ids), names = new Map();
@@ -71,7 +71,7 @@ function stateQueue(S) {
   const entry = {
     routines, routineCount: routines?.length ?? 0, ids: q.ids, idCount: q.ids.length,
     rawStartsOn: q.startsOn, since: q.since, tz, known,
-    queue: ids.length ? { ids, startsOn, want, names } : null,
+    queue: ids.length && startsOn ? { ids, startsOn, want, names } : null,
   };
   derived.set(q, entry);
   return entry;
@@ -106,9 +106,10 @@ function dayIn(ms, tz) {
   } catch { return new Date(ms).toISOString().slice(0, 10); }
 }
 // Tolerant reader, as in the frontend: a missing or malformed queue reads as none. A missing
-// startsOn means active since the day of the apply (dayIn above); a session whose routine was
-// deleted is dropped from the week (the frontend's queue.js does the same — it could never be
-// started or logged).
+// startsOn means active since the day of the apply (dayIn above), and one with no apply time
+// either is none, as in the frontend: dated from 0 the week began in 1970 and read as finished.
+// A session whose routine was deleted is dropped from the week (the frontend's queue.js does the
+// same — it could never be started or logged).
 function queueOf(S) {
   return stateQueue(S)?.queue ?? null;
 }

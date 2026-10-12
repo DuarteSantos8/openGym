@@ -61,7 +61,9 @@ const namesRoutine = (w, name) => {
 // planner's queue is never rewritten by the app; a rotation-managed one is, by lib/rotation.js)
 // is dropped from the week: it could never be started or logged,
 // and keeping it would pin the whole week on it; a queue left with no session at all reads as
-// no queue. A missing startsOn means active since the day of the apply.
+// no queue. A missing startsOn means active since the day of the apply; with no apply time
+// either there is no week to date, and that reads as no queue too. Dating it from 0 put the week
+// in 1970, where every workout ever logged is inside it, so it read as finished on arrival.
 export const queueOf = S => {
   const q = S?.queue
   if (!q || typeof q !== 'object' || !Array.isArray(q.ids)) return null
@@ -74,7 +76,9 @@ export const queueOf = S => {
   // payload is never rewritten — normalizing is a read, not a migration.
   const ids = q.ids.filter((id, i) => q.ids.indexOf(id) === i && routines.some(r => r.id === id))
   if (!ids.length) return null
-  return { ...q, ids, startsOn: typeof q.startsOn === 'string' ? q.startsOn : isoOf(new Date(q.since || 0)) }
+  const startsOn = typeof q.startsOn === 'string' ? q.startsOn : (q.since > 0 ? isoOf(new Date(q.since)) : null)
+  if (!startsOn) return null
+  return { ...q, ids, startsOn }
 }
 
 // The DONE RULE for one workout and one session — `isDone` asks it across the log.
