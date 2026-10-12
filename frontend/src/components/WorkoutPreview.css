@@ -1,0 +1,9 @@
+.workout-preview { margin-block: 16px; overflow: hidden; }
+.card.workout-preview h2 { margin-block: 6px 10px; overflow-wrap: anywhere; font-size: 20px; }
+.workout-preview .row { gap: 12px; flex-wrap: wrap; }
+.workout-preview .exmedia { margin-block: 12px 0; }
+.workout-preview .exmedia.compact img,
+.workout-preview .exmedia.compact video,
+.workout-preview .exmedia.compact .exmedia-x { height: clamp(180px, 30vh, 280px); }
+.workout-preparation { display: flex; flex-direction: column; gap: 12px; }
+.workout-preparation .workout-preview { margin-block: 0; }

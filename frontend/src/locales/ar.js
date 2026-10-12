@@ -1,5 +1,10 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Get ready": "استعد",
+  "Preview the first exercise and get your equipment ready. Your workout timer starts when you are ready.": "شاهد التمرين الأول وجهّز معداتك. يبدأ حساب وقت التمرين عندما تكون مستعدًا.",
+  "First exercise": "التمرين الأول",
+  "Ready, start workout": "أنا مستعد، ابدأ التمرين",
+  "Up next": "التالي",
   'Confirm': 'تأكيد',
   'Cancel': 'إلغاء',
   'Press back again to exit': 'اضغط زر الرجوع مرة أخرى للخروج',

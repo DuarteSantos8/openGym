@@ -1,5 +1,10 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Get ready": "Підготуйтеся",
+  "Preview the first exercise and get your equipment ready. Your workout timer starts when you are ready.": "Перегляньте першу вправу та підготуйте обладнання. Відлік часу тренування почнеться, коли ви будете готові.",
+  "First exercise": "Перша вправа",
+  "Ready, start workout": "Готово, почати тренування",
+  "Up next": "Далі",
   'Confirm': 'Підтвердити',
   'Cancel': 'Скасувати',
   'Press back again to exit': 'Натисни «Назад» ще раз, щоб вийти',

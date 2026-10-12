@@ -1,5 +1,10 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Get ready": "Készülj fel",
+  "Preview the first exercise and get your equipment ready. Your workout timer starts when you are ready.": "Nézd meg az első gyakorlatot, és készítsd elő a felszerelést. Az edzésidő akkor indul, amikor készen állsz.",
+  "First exercise": "Első gyakorlat",
+  "Ready, start workout": "Készen állok, edzés indítása",
+  "Up next": "Következik",
   // --- generic ---
   'Confirm': 'Megerősítés',
   'Cancel': 'Mégse',

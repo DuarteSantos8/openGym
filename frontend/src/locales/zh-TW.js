@@ -1,4 +1,9 @@
 export default {
+  "Get ready": "準備開始",
+  "Preview the first exercise and get your equipment ready. Your workout timer starts when you are ready.": "查看第一個動作並準備好器材。準備就緒後再開始訓練計時。",
+  "First exercise": "第一個動作",
+  "Ready, start workout": "準備好了，開始訓練",
+  "Up next": "接下來",
   'Confirm': '確認',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回以退出',

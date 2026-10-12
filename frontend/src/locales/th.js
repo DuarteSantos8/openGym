@@ -1,5 +1,10 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Get ready": "เตรียมตัว",
+  "Preview the first exercise and get your equipment ready. Your workout timer starts when you are ready.": "ดูท่าแรกและเตรียมอุปกรณ์ให้พร้อม เวลาออกกำลังกายจะเริ่มเมื่อคุณพร้อม",
+  "First exercise": "ท่าแรก",
+  "Ready, start workout": "พร้อมแล้ว เริ่มออกกำลังกาย",
+  "Up next": "ท่าถัดไป",
   // --- generic ---
   'Confirm': 'ยืนยัน',
   'Cancel': 'ยกเลิก',

@@ -1,5 +1,10 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Get ready": "准备开始",
+  "Preview the first exercise and get your equipment ready. Your workout timer starts when you are ready.": "查看第一个动作并准备好器械。准备就绪后再开始训练计时。",
+  "First exercise": "第一个动作",
+  "Ready, start workout": "准备好了，开始训练",
+  "Up next": "接下来",
   'Confirm': '确认',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回退出',
