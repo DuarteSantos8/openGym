@@ -30,8 +30,12 @@
 // skips it. A pin on a past day is stale (the session floats again), and a pin on a done session
 // is fulfilled (`pinState === 'done'`) and reads as no override at all. Pins change which session
 // is NEXT, never what counts as DONE, so the tally a planner reads is untouched.
+//
+// The `?.` on each workout is this copy's own, like the one on each routine below: a state file
+// written before PUT /api/data dropped null entries can still hold one, and a throw here is
+// caught by the tick and logged, so that profile's day reminders stop with nothing to say why.
 function routineIdsOf(w) {
-  return Array.isArray(w.routineIds) ? w.routineIds : (w.routineId ? [w.routineId] : []);
+  return Array.isArray(w?.routineIds) ? w.routineIds : (w?.routineId ? [w.routineId] : []);
 }
 // Does this workout's name name this routine? The frontend's namesRoutine: a routine can itself
 // be named 'Push + Pull', so the name is looked for at a ' + ' boundary, never split out.
