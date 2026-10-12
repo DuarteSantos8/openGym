@@ -28,6 +28,9 @@ const LABELS = {
   'auth.pair.create': 'Created a pairing code',
   'auth.pair.ok': 'Paired a phone',
   'auth.pair.fail': 'Pairing failed',
+  // PLANNER_TOKENS: a program writing the profile's training plan with its fixed token.
+  'auth.planner.ok': 'A planner token wrote the profile',
+  'auth.planner.fail': 'A planner token was refused',
   // Password sign-in (#118), where the instance offers it.
   'auth.password.ok': 'Signed in with a password',
   'auth.password.fail': 'Password sign-in failed',
@@ -104,6 +107,8 @@ const REASONS = {
   'passkey-limit': 'the profile already has as many passkeys as it can hold',
   // An `admin.denied` for a recovery code: only the owner makes one for an admin (#584).
   'recovery': 'a recovery code for an admin, which only the owner can make',
+  'bad-token': 'the token is not one of PLANNER_TOKENS',
+  'token-user-missing': 'the token names a profile that no longer exists',
   // What an `auth.throttled` pause was for.
   'password': 'wrong passwords or reset codes',
   'signup': 'wrong invite codes on password signup',
