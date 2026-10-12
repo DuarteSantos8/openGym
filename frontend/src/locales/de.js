@@ -2569,4 +2569,12 @@ export default {
   'Options': 'Optionen',
   'Technique and image': 'Technik und Bild',
   'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': 'Cardio nutzt Intervalle, Dauer und Geschwindigkeit. Kraft-Progressionsvorlagen gelten hier nicht.',
+  // --- sets to failure: a choice of sets ---
+  'Sets to failure': 'Sätze bis zum Versagen',
+  'Do the planned reps or time, then go on to failure in the selected sets.': 'Führe die geplanten Wiederholungen oder die Zeit aus und mach in den gewählten Sätzen bis zum Versagen weiter.',
+  'Last': 'Letzter',
+  'Tap set numbers to combine them. “+” marks every set as taken to failure, “(+)” at least one.': 'Tippe auf Satznummern, um sie zu kombinieren. „+“ heißt: jeder Satz bis zum Versagen, „(+)“: mindestens einer.',
+  'Sets marked ? are optional. “Last” follows the number of sets planned.': 'Mit ? markierte Sätze sind optional. „Letzter“ folgt der geplanten Satzzahl.',
+  'All sets to failure': 'Alle Sätze bis zum Versagen',
+  'Sets to failure: {0}': 'Sätze bis zum Versagen: {0}',
 }

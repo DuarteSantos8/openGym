@@ -661,6 +661,15 @@ h4.sec{
 :root[data-native-kb] .xc-foot{bottom:-20px;margin-bottom:-20px;padding-bottom:20px}
 .xc-sum{margin-bottom:9px;font-size:12px;color:var(--label-2);font-variant-numeric:tabular-nums}
 
+/* Sets to failure (components/FailureSets.jsx): the set numbers as buttons, pressed = to failure. */
+.seg.no-sel .seg-sel{display:none}
+.fs{margin-top:8px}
+.fs-sets{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:8px;margin:14px 0}
+.fs-sets button{min-height:44px;border:var(--hair) solid var(--sep);border-radius:10px;background:var(--surface);color:var(--label);font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+.fs-sets button[aria-pressed="true"]{background:var(--acc);color:var(--on-acc);border-color:transparent}
+.fs-sets button span{margin-inline-start:2px;font-size:11px}
+.fs-sets button:active{transform:scale(.96)}
+
 /* ---------------------------------------------------------------- chips -- */
 .chips{
   display:flex;gap:7px;overflow-x:auto;padding:4px 4px 6px;   /* room for a chip's focus outline inside a sheet (#162) */

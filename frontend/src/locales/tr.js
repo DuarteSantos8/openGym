@@ -2549,4 +2549,12 @@ export default {
   'Options': 'Seçenekler',
   'Technique and image': 'Teknik ve görsel',
   'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': 'Kardiyo aralıkları, süreyi ve hızı kullanır. Kuvvet ilerleme şablonları burada geçerli değildir.',
+  // --- sets to failure: a choice of sets ---
+  'Sets to failure': 'Tükenişe kadar setler',
+  'Do the planned reps or time, then go on to failure in the selected sets.': 'Planlanan tekrarları veya süreyi tamamla, sonra seçilen setlerde tükenişe kadar devam et.',
+  'Last': 'Son',
+  'Tap set numbers to combine them. “+” marks every set as taken to failure, “(+)” at least one.': 'Birleştirmek için set numaralarına dokun. “+” her setin tükenişe kadar yapıldığını, “(+)” en az birinin yapıldığını gösterir.',
+  'Sets marked ? are optional. “Last” follows the number of sets planned.': '? ile işaretli setler isteğe bağlıdır. “Son”, planlanan set sayısını izler.',
+  'All sets to failure': 'Tüm setler tükenişe kadar',
+  'Sets to failure: {0}': 'Tükenişe kadar setler: {0}',
 }

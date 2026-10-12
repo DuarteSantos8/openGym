@@ -2560,4 +2560,12 @@ export default {
   'Options': 'ตัวเลือก',
   'Technique and image': 'เทคนิคและภาพ',
   'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': 'คาร์ดิโอใช้อินเทอร์วัล ระยะเวลา และความเร็ว เทมเพลตการเพิ่มระดับของเวทเทรนนิ่งไม่ได้ใช้ที่นี่',
+  // --- sets to failure: a choice of sets ---
+  'Sets to failure': 'เซ็ตที่ทำจนหมดแรง',
+  'Do the planned reps or time, then go on to failure in the selected sets.': 'ทำจำนวนครั้งหรือเวลาตามแผนให้ครบ แล้วทำต่อจนหมดแรงในเซ็ตที่เลือก',
+  'Last': 'สุดท้าย',
+  'Tap set numbers to combine them. “+” marks every set as taken to failure, “(+)” at least one.': 'แตะหมายเลขเซ็ตเพื่อรวมหลายเซ็ตเข้าด้วยกัน “+” คือทุกเซ็ตจนหมดแรง “(+)” คืออย่างน้อยหนึ่งเซ็ต',
+  'Sets marked ? are optional. “Last” follows the number of sets planned.': 'เซ็ตที่มีเครื่องหมาย ? เป็นตัวเลือก “สุดท้าย” จะตามจำนวนเซ็ตที่วางแผนไว้',
+  'All sets to failure': 'ทุกเซ็ตจนหมดแรง',
+  'Sets to failure: {0}': 'เซ็ตที่ทำจนหมดแรง: {0}',
 }

@@ -63,6 +63,8 @@ import { workoutFit, fitFileName } from './lib/fit-export.js'
 import { workoutsOn, backfillStart, backfillEnd, completeBackfill, historyAsOf, sessionHistory } from './lib/backfill.js'
 import { legacyEntriesOf, appendOneRm, canonicalJSON, cardioParameters, defaultPlanRule, editPlan, planOptions, planPhase, planWarmupRows, supports, validatePlanRule, validateWarmup, warmupMaxCount, warmupSteps, withRest } from './lib/prescription/index.js'
 import RuleEditor, { Disclosure, PRESET_LABEL } from './components/RuleEditor.jsx'
+import FailureSets from './components/FailureSets.jsx'
+import { failureFieldsOf, failureSetRange, failureSetsOf } from './lib/failure-selection.js'
 import { occurrenceTargets } from './lib/occurrence-view.js'
 import { auditFields, badgeFor } from './views/history-outcome.js'
 import { findingText } from './lib/progression-copy.js'
@@ -1716,8 +1718,9 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, s
   const [warmupRaw, setWarmup] = useState(() => existing?.warmup || { mode: 'off' })
   const [sideRaw, setSide] = useState(() => existing?.side === true)
   const [dbLoad, setDbLoad] = useState(() => existing?.dbLoad != null && dbLoadOf(existing.dbLoad) !== dbLoadFor(st, ex.id) ? existing.dbLoad : undefined)
-  const [lastToFailure, setLastToFailure] = useState(() => existing?.lastToFailure ?? rule.preset === 'greyskull')
-  const failureDecided = useRef(existing?.lastToFailure != null)
+  // Which sets go to failure: 'last' (the flag), 'all', or the set numbers. Greyskull's last set is an AMRAP, so it starts on.
+  const [failure, setFailure] = useState(() => (existing?.failureSets != null ? failureSetsOf(existing) : (existing?.lastToFailure ?? rule.preset === 'greyskull') ? 'last' : []))
+  const failureDecided = useRef(existing?.lastToFailure != null || existing?.failureSets != null)
   const [backoff, setBackoff] = useState(() => existing?.backoff === true)
   // Bodyweight follows the catalogue unless the occurrence says otherwise (issues #31/#32/#33).
   const [bw, setBw] = useState(() => !cardio && isBw({ ...(existing || {}), id: ex.id }))
@@ -1765,7 +1768,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, s
       ...(!cardio && intensifier?.type ? { intensifier: intensifierToSave(intensifier) } : {}),
       ...(side ? { side: true } : {}),
       ...(isBellEx(ex) && !bw && dbLoad ? { dbLoad } : {}),
-      ...(canFailure && lastToFailure ? { lastToFailure: true } : {}),
+      ...(canFailure ? failureFieldsOf(failure, failureSetRange(rule).max) : {}),
       ...(canBackoff && backoff ? { backoff: true } : {}),
       ...(!cardio && bw !== isBodyweightEq(ex.id) ? { bodyweight: bw } : {}),
       ...(trimmedNote ? { note: trimmedNote } : {}),
@@ -1829,9 +1832,11 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, s
       {panel('progression', <div className="small dim">{t('Cardio uses intervals, duration and speed. Strength progression templates do not apply.')}</div>)}
     </> : <RuleEditor tab={tab} rule={rule} unit={st.unit} effort={effortOf(st) !== 'none'} assisted={assisted} bodyweight={bw} onChange={next => {
       setRule(next)
-      if (next.preset === 'greyskull' && !failureDecided.current) setLastToFailure(true)
+      if (next.preset === 'greyskull' && !failureDecided.current) setFailure('last')
     }}
-      restDefault={restDefault} defaultRest={st.restSec} onRestDefault={on => { setRestDefault(on); if (on) setRule(r => withRest(r, st.restSec)) }} />}
+      restDefault={restDefault} defaultRest={st.restSec} onRestDefault={on => { setRestDefault(on); if (on) setRule(r => withRest(r, st.restSec)) }}
+      // A rest-pause set is the exercise's one work set, taken to failure by what it is.
+      extra={canFailure && intensifier?.type !== 'restpause' ? <FailureSets rule={rule} value={failure} onChange={v => { failureDecided.current = true; setFailure(v) }} /> : null} />}
 
     {panel('options', <>
       {!cardio && <>
@@ -1865,10 +1870,6 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, s
               })
             }} />
           </Row>
-          {canFailure && <Row icon="gauge" iconTint="var(--purple)" title={t('Last set to failure')}
-            subtitle={lastToFailure ? t('The last set goes until nothing is left, and counts as all-out effort unless you rate it.') : t('Plan the final set as an all-out one.')}>
-            <Switch checked={lastToFailure} onChange={v => { failureDecided.current = true; setLastToFailure(v) }} />
-          </Row>}
           {canBackoff && <><Row icon="steps" iconTint="var(--acc)" title={t('Back-off sets')} subtitle={t('Each set one step lighter than the one before. The weight above is the first set.')}>
             <Switch checked={backoff} onChange={setBackoff} />
           </Row>
@@ -1956,7 +1957,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, s
 
     {/* The foot stays in view while the panels scroll: the plan as it reads now, and the way out. */}
     <div className="xc-foot">
-      {!cardio && <div className="xc-sum">{occurrenceTargets({ rule })}</div>}
+      {!cardio && <div className="xc-sum">{occurrenceTargets({ rule, ...(canFailure ? failureFieldsOf(failure) : {}) })}</div>}
       <Button variant="primary" icon="check" disabled={!valid} onClick={save}>{saveLabel || (existing ? t('Save') : t('Add to routine'))}</Button>
     </div>
   </>

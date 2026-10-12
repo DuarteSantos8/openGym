@@ -24,6 +24,20 @@ describe('occurrenceTargets', () => {
     expect(occurrenceTargets(occ)).toMatch(/^3 × 30s/)
   })
 
+  it('marks the reps + when every set goes to failure and (+) when some do', () => {
+    const plan = { sets: { min: 3, max: 3 }, reps: { min: 8, max: 8 } }
+    const line = fields => occurrenceTargets({ ...withPlan('linear', { ...plan, load: { mode: 'absolute', value: 60, unit: 'kg' } }), ...fields })
+    expect(line({ failureSets: 'all' })).toBe('3 × 8+ @ 60 kg')
+    expect(line({ lastToFailure: true })).toBe('3 × 8(+) @ 60 kg')
+    expect(line({ failureSets: [1, 3] })).toBe('3 × 8(+) @ 60 kg')
+    expect(line({})).toBe('3 × 8 @ 60 kg')
+  })
+
+  it('puts the mark before the s of a timed hold', () => {
+    const occ = { ...withPlan('hold_seconds', { sets: { min: 3, max: 3 }, durationSeconds: { min: 30, max: 30 } }), failureSets: 'all' }
+    expect(occurrenceTargets(occ)).toMatch(/^3 × 30\+s/)
+  })
+
   it('says a slot without a rule still needs setup', () => {
     expect(occurrenceTargets({ exerciseId: '0025' })).toBe('Needs setup')
   })
@@ -47,6 +61,11 @@ describe('occurrenceChips', () => {
     const occ = { ...base, side: true, warmup: { mode: 'smart', count: 2 }, intensifier: { type: 'dropset', count: 1, pct: 20 }, lastToFailure: true, backoff: true }
     expect(occurrenceChips(occ, { preset: 'Linear' })).toEqual(['Linear', 'Per side', 'Warm-ups', 'Drop-set', 'Taken to failure', 'Back-off sets'])
     expect(occurrenceChips({ ...base, intensifier: { type: 'restpause', totalReps: 8, restSec: 15 } }, { preset: 'Linear' })).toEqual(['Linear', 'Rest-pause'])
+  })
+
+  it('says a plan takes sets to failure however it was chosen, and nothing when none', () => {
+    for (const fields of [{ lastToFailure: true }, { failureSets: 'all' }, { failureSets: [2] }]) expect(occurrenceChips({ ...base, ...fields }, { preset: 'Linear' })).toEqual(['Linear', 'Taken to failure'])
+    expect(occurrenceChips({ ...base, failureSets: [] }, { preset: 'Linear' })).toEqual(['Linear'])
   })
 
   it('does not call a switched-off warm-up a chip', () => {

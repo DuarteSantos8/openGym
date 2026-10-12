@@ -2538,4 +2538,12 @@ export default {
   'Options': '選項',
   'Technique and image': '動作要領與圖片',
   'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': '有氧使用間歇組數、時間與速度，不適用肌力漸進超負荷規則範本。',
+  // --- sets to failure: a choice of sets ---
+  'Sets to failure': '做到力竭的組數',
+  'Do the planned reps or time, then go on to failure in the selected sets.': '先完成計畫的次數或時間，再在選定的組中做到力竭。',
+  'Last': '最後一組',
+  'Tap set numbers to combine them. “+” marks every set as taken to failure, “(+)” at least one.': '點選組別編號即可組合。「+」代表每一組都做到力竭，「(+)」代表至少一組。',
+  'Sets marked ? are optional. “Last” follows the number of sets planned.': '標有 ? 的組為選擇性。「最後一組」依計畫組數而定。',
+  'All sets to failure': '所有組都做到力竭',
+  'Sets to failure: {0}': '做到力竭的組：{0}',
 }

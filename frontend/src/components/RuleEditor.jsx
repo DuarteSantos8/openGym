@@ -113,8 +113,9 @@ function LoadField({ label, value, upTo, rangeable = false, unit, step, noneMode
 // `restDefault`: the exercise takes the profile's rest (`defaultRest`) instead of its own; the wheel's 0:00 says so.
 // `tab` ('target' | 'progression') lays the form out as the exercise sheet's two tabs: both panels
 // stay mounted and the other one is hidden, so a field keeps what was typed while you switch.
-// Without it the editor is one flat form, Progression then Target.
-export default function RuleEditor({ rule, unit, effort, assisted = false, bodyweight = false, restDefault = false, defaultRest = 90, onRestDefault, onChange, tab }) {
+// Without it the editor is one flat form, Progression then Target. `extra` closes the Target form
+// with what the caller owns beside the rule (the sheet's sets to failure).
+export default function RuleEditor({ rule, unit, effort, assisted = false, bodyweight = false, restDefault = false, defaultRest = 90, onRestDefault, onChange, tab, extra = null }) {
   const def = PRESETS[rule.preset]
   // The template's numbers (planOptions): the plan's sets, reps, load… and its extras (offsets, rungs…).
   const p = planOptions(rule)
@@ -140,10 +141,11 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
       {presetRow}
       <div className="small dim" style={{ marginBottom: 14 }}>{t('This plan was set up outside the editor. Pick a progression to replace it.')}</div>
     </>
-    if (tab) return <>{panel('target', notice)}{panel('progression', notice)}{errorLine}</>
+    if (tab) return <>{panel('target', <>{notice}{extra}</>)}{panel('progression', notice)}{errorLine}</>
     return <>
       <h4 className="sec">{t('Progression')}</h4>
       {notice}
+      {extra}
       {errorLine}
     </>
   }
@@ -372,6 +374,7 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
       </div>
       {p.rir && <div className="small dim" style={{ marginTop: 6 }}>{t('Load only goes up if your hardest set left at least this many reps in reserve.')}</div>}
     </div>}
+    {extra}
   </>
   if (tab) return <>{panel('progression', progressionBody)}{panel('target', <>{presetBlock}{targetBody}</>)}{errorLine}</>
   return <>

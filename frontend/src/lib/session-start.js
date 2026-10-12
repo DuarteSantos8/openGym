@@ -3,6 +3,7 @@
 import { currentOneRm, bestLoad, operatorFor, phaseOf, defaultPlanRule, generatePrescription, needsOneRm, resolveProgressionContext, supports, withRest } from './prescription/index.js'
 import { EXIDX, isAssisted, isBodyweightEq } from './exercises.js'
 import { modeOf, barFloor } from './history.js'
+import { failureSetsOf, hasFailurePlan } from './failure-selection.js'
 import { oneRmForMeaning } from './onerm.js'
 import { dbLoadFor, bellsIn, ownedWeightsFor, historyAs, meaningFactor, entryDbLoad } from './dumbbells.js'
 
@@ -92,6 +93,7 @@ export function buildSessionExposures(profile, routine, ctx) {
       ...(occ.side ? { side: true } : {}),
       ...(meaning !== 'as' ? { dbLoad: meaning, bells: bellsIn({ id: occ.exerciseId, side: occ.side }) } : {}),
       ...(occ.lastToFailure ? { lastToFailure: true } : {}),
+      ...(hasFailurePlan({ failureSets: occ.failureSets }) ? { failureSets: failureSetsOf({ failureSets: occ.failureSets }) } : {}),
       ...(occ.backoff ? { backoff: true } : {}),
       ...(occ.cardio?.incline != null ? { incline: occ.cardio.incline } : {}),
       assisted,

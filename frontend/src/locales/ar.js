@@ -2600,4 +2600,12 @@ export default {
   'Options': 'الخيارات',
   'Technique and image': 'التقنية والصورة',
   'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': 'الكارديو يعتمد على الفواصل والمدة والسرعة. قوالب تدرّج القوة لا تنطبق عليه.',
+  // --- sets to failure: a choice of sets ---
+  'Sets to failure': 'المجموعات حتى الفشل',
+  'Do the planned reps or time, then go on to failure in the selected sets.': 'نفّذ التكرارات أو المدة المخططة، ثم تابع حتى الفشل في المجموعات المحددة.',
+  'Last': 'الأخيرة',
+  'Tap set numbers to combine them. “+” marks every set as taken to failure, “(+)” at least one.': 'اضغط على أرقام المجموعات لدمجها. «+» تعني أن كل المجموعات حتى الفشل، و«(+)» مجموعة واحدة على الأقل.',
+  'Sets marked ? are optional. “Last” follows the number of sets planned.': 'المجموعات المعلّمة بـ ؟ اختيارية. «الأخيرة» تتبع عدد المجموعات المخطط.',
+  'All sets to failure': 'كل المجموعات حتى الفشل',
+  'Sets to failure: {0}': 'المجموعات حتى الفشل: {0}',
 }
