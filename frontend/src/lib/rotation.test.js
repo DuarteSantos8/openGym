@@ -66,7 +66,7 @@ describe('editing the sequence', () => {
     saveRotation(s, ['c', 'b', 'a', 'own'], 'My split', TODAY, NOW)
     expect(s.queue.since).toBe(NOW - 86400000)
     expect(s.queue.startsOn).toBe('2026-09-10')
-    expect(queueRemaining(s)).toEqual(['c', 'b', 'own'])   // 'a' is still done
+    expect(queueRemaining(s, TODAY)).toEqual(['c', 'b', 'own'])   // 'a' is still done
     expect(s.rotation.id).toBe('r1')
   })
 
@@ -90,7 +90,7 @@ describe('editing the sequence', () => {
     // the old one was logged yesterday, not today (the one-day boundary only pushes to tomorrow
     // when today's own workout is what completed the pass).
     expect(s.queue.startsOn).toBe(TODAY)
-    expect(queueRemaining(s)).toEqual(['a'])
+    expect(queueRemaining(s, TODAY)).toEqual(['a'])
   })
 
   it('building the loop one routine at a time keeps a session trained today as done', () => {
@@ -115,7 +115,7 @@ describe('editing the sequence', () => {
     expect(s.queue.strict).toBeUndefined()
     expect(s.queue.startsOn).toBe('2026-09-13')
     expect(queueView(s, TODAY).waiting).toBe(true)
-    expect(queueRemaining(s)).toEqual(['a'])
+    expect(queueRemaining(s, TODAY)).toEqual(['a'])
   })
 
   it('removing a session clears its future pin, but leaves past pins and pins on kept sessions alone', () => {
@@ -169,7 +169,7 @@ describe('editing the sequence', () => {
     startNewPass(s, TODAY, NOW)
     saveRotation(s, ['b', 'a'], 'My split', TODAY, NOW + 5000)
     expect(s.queue).toMatchObject({ strict: true, since: NOW, startsOn: TODAY })
-    expect(queueRemaining(s)).toEqual(['b', 'a'])
+    expect(queueRemaining(s, TODAY)).toEqual(['b', 'a'])
   })
 
   it('Start new pass sweeps the old pass\'s future pins — a stale one would otherwise resurface as open on the new pass', () => {
@@ -311,7 +311,7 @@ describe('refilling a completed managed pass', () => {
     const skewed = w('a', '2026-09-11', NOW + 5 * 60000)   // "logged" five minutes ahead of now
     const s = managed(['a', 'b', 'c'], [skewed, w('b', '2026-09-11'), last])
     expect(refillAfter(s, last, TODAY, NOW)).toBe(true)
-    expect(queueRemaining(s)).toEqual(['a', 'b', 'c'])
+    expect(queueRemaining(s, TODAY)).toEqual(['a', 'b', 'c'])
     expect(queueView(s, TODAY).waiting).toBe(true)
   })
 })
@@ -338,7 +338,7 @@ describe('the finished-workout boundary', () => {
     // Nothing is due until tomorrow — not because both sessions happen to read as already done
     // (the masked bug: `since` landing exactly on a same-day workout's own `start`), but because
     // the pass has not started yet.
-    expect(queueRemaining(s)).toEqual(['a', 'b'])
+    expect(queueRemaining(s, TODAY)).toEqual(['a', 'b'])
     expect(queueView(s, TODAY).waiting).toBe(true)
     expect(s.dayPlan).toEqual({})
   })
