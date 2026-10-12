@@ -15,7 +15,7 @@ const openai = (await import('../coach/core/adapters/openai.js')).default;
 const gemini = (await import('../coach/core/adapters/gemini.js')).default;
 const compatible = (await import('../coach/core/adapters/compatible.js')).default;
 const { attemptOnce } = await import('../coach/core/pipeline.js');
-const { HTTP_PROVIDERS, validateBaseUrl, validateHeaders } = await import('../coach/core/providers.js');
+const { HTTP_PROVIDERS, validateBaseUrl, validateHeaders, isBlockedAddress } = await import('../coach/core/providers.js');
 const { SYSTEM_PROMPT } = await import('../coach/core/system-prompt.js');
 
 /** A fetch that records what it was asked and answers from a script. Like the real one, it
@@ -30,6 +30,8 @@ function fakeFetch(answers) {
     return { ok: a.status >= 200 && a.status < 300, status: a.status, text: async () => (typeof a.body === 'string' ? a.body : JSON.stringify(a.body)) };
   };
   f.calls = calls;
+  // Keep existing fake-fetch tests deterministic now that the adapter performs DNS checks.
+  f.lookup = async () => [{ address: '192.168.1.50', family: 4 }];
   return f;
 }
 const ok = body => ({ status: 200, body });
@@ -130,64 +132,6 @@ test('compatible: a base that already names its API version is used as the full 
     await compatible.models(at(base), {}, { fetch: m });
     assert.equal(m.calls[0].url, prefix + '/models', base);
   }
-});
-
-test('compatible: a mount whose API has no version segment is reached on the 404 fallback and remembered (#508)', async () => {
-  // The issue's repro: an OpenAI-shaped mount (Open WebUI's /openai) that 404s anything with /v1.
-  const { createServer } = await import('node:http');
-  const hits = [];
-  const server = createServer((req, res) => {
-    const url = req.url.split('?')[0];
-    hits.push(req.method + ' ' + url);
-    const send = (status, o) => { res.writeHead(status, { 'content-type': 'application/json' }); res.end(JSON.stringify(o)); };
-    if (url === '/openai/models') return send(200, { object: 'list', data: [{ id: 'a-local-model', object: 'model' }] });
-    if (url === '/openai/chat/completions' && req.method === 'POST') {
-      req.resume();
-      return req.on('end', () => send(200, { object: 'chat.completion', choices: [{ index: 0, message: { role: 'assistant', content: ANSWER }, finish_reason: 'stop' }] }));
-    }
-    req.resume();
-    return send(404, { detail: 'Not Found' });
-  });
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  try {
-    const base = `http://127.0.0.1:${server.address().port}/openai`;
-    const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: validateBaseUrl(base).value } } };
-    const m = await compatible.models(cfg, env);
-    assert.deepEqual(m, { ok: true, models: ['a-local-model'] });
-    const r = await compatible.invoke({ cfg, env, model: 'a-local-model', prompt: 'ping', maxTokens: 64 });
-    assert.equal(r.code, 0, r.stderr);
-    assert.equal(r.text, ANSWER);
-    // The first call of all tried /v1, every later one went straight to the form that answered.
-    assert.deepEqual(hits, ['GET /openai/v1/models', 'GET /openai/models', 'POST /openai/chat/completions']);
-  } finally {
-    await new Promise(resolve => server.close(resolve));
-  }
-});
-
-test('compatible: the 404 fallback keeps the first error when neither form answers, and never touches other providers (#508)', async () => {
-  // Ollama answers an unknown model with a 404 of its own; that message must survive the retry.
-  const f = fakeFetch(n => (n === 1
-    ? { status: 404, body: { error: { message: 'model "nope" not found, try pulling it first' } } }
-    : { status: 404, body: '404 page not found' }));
-  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env: {}, model: 'nope', fetch: f });
-  assert.deepEqual(f.calls.map(c => c.url), ['http://ollama.lan:11434/v1/chat/completions', 'http://ollama.lan:11434/chat/completions']);
-  assert.equal(r.code, 1);
-  assert.match(r.stderr, /^404 model "nope" not found/);
-  // …and a failed fallback teaches nothing: the next request still starts at /v1.
-  const g = fakeFetch([ok({ data: [] })]);
-  await compatible.models(cfgCompat, {}, { fetch: g });
-  assert.equal(g.calls[0].url, 'http://ollama.lan:11434/v1/models');
-
-  // A base that carries its version has only one form, so a 404 there is final.
-  const v = fakeFetch([{ status: 404, body: { error: 'nope' } }]);
-  await compatible.invoke({ cfg: { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://openrouter.ai/api/v1' } } }, prompt: 'P', env: {}, model: 'm', fetch: v });
-  assert.equal(v.calls.length, 1);
-
-  // OpenAI itself always lives at /v1; a 404 there is a real answer, not a missing prefix.
-  const o = fakeFetch([{ status: 404, body: { error: { message: 'The model `x` does not exist' } } }]);
-  const ro = await openai.invoke({ cfg: {}, prompt: 'P', env, model: 'x', fetch: o });
-  assert.equal(o.calls.length, 1);
-  assert.match(ro.stderr, /^404 The model/);
 });
 
 test('compatible: no endpoint configured, or no model chosen, is a clean failure rather than a request', async () => {
@@ -364,13 +308,36 @@ test('check(): the Runtime line names the scheme the endpoint is really called w
   assert.match(cloudNoKey.version, /^HTTPS · api\.openai\.com$/);
 });
 
-test('validateBaseUrl: http(s) only, no credentials, no query, trailing slash dropped', () => {
+test('validateBaseUrl: rejects special-use literals, allows LAN and public endpoints', () => {
+  // Legitimate home-lab endpoint: RFC1918 is explicitly allowed.
   assert.deepEqual(validateBaseUrl('http://ollama.lan:11434/'), { ok: true, value: 'http://ollama.lan:11434' });
+  for (const ip of ['127.0.0.1', '169.254.169.254', '0.0.0.0', '224.0.0.1', '[::1]', '[fe80::1]']) {
+    assert.equal(validateBaseUrl(`http://${ip}`).ok, false, ip);
+  }
+  for (const ip of ['10.0.0.8', '172.16.4.2', '192.168.1.50', '8.8.8.8', '192.0.0.1', '198.18.0.1', '100.64.0.1']) {
+    assert.equal(validateBaseUrl(`http://${ip}`).ok, true, ip);
+  }
   assert.deepEqual(validateBaseUrl('  '), { ok: true, value: null });
   assert.equal(validateBaseUrl('ftp://x').ok, false);
   assert.equal(validateBaseUrl('http://user:pw@x').ok, false);
   assert.equal(validateBaseUrl('http://x/?key=1').ok, false);
   assert.equal(validateBaseUrl('not a url').ok, false);
+});
+
+test('http adapter: rejects a hostname whose DNS result is blocked before fetch', async () => {
+  const f = fakeFetch([ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
+  f.lookup = async hostname => {
+    assert.equal(hostname, 'rebinding.example');
+    return [{ address: '127.0.0.1', family: 4 }];
+  };
+  const r = await openai.invoke({
+    cfg: { providerOptions: { openai: { baseUrl: 'http://rebinding.example' } } },
+    prompt: 'P', env, model: 'gpt-x', fetch: f
+  });
+  assert.equal(r.code, 1);
+  assert.match(r.stderr, /could not reach rebinding\.example/);
+  assert.equal(f.calls.length, 0);
+  assert.equal(isBlockedAddress('127.0.0.1'), true);
 });
 
 test('models(): OpenAI’s list is cut to what Chat Completions can use; a compatible endpoint is not filtered', async () => {

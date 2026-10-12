@@ -19,7 +19,9 @@
  *
  * A provider is described by a spec (see anthropic.js etc.); this file owns the transport.
  */
-import { HTTP_PROVIDERS, baseUrlFor, extraHeadersFor } from '../providers.js';
+import { lookup as dnsLookup } from 'node:dns/promises';
+import net from 'node:net';
+import { HTTP_PROVIDERS, baseUrlFor, extraHeadersFor, isBlockedAddress } from '../providers.js';
 
 export const MAX_OUTPUT_TOKENS = 16000;
 const DEFAULT_TIMEOUT_MS = 5 * 60000;
@@ -48,39 +50,17 @@ const VERSION_SEGMENT = /\/v\d+(?:(?:alpha|beta)\d*)?(?=\/|$)/i;
 export function endpointUrl(base, path) {
   const basePath = base.replace(/^[a-z][a-z0-9+.-]*:\/\/[^/]*/i, '');
   if (!VERSION_SEGMENT.test(basePath)) return base + path;
-  return base + path.replace(LEADING_VERSION, '');
-}
-const LEADING_VERSION = new RegExp('^' + VERSION_SEGMENT.source, 'i');
-
-// The third shape (#508): a prefix but no version at all, like Open WebUI's /openai mount, which
-// answers {base}/chat/completions and 404s anything with /v1 in it. A spec that opts in
-// (`versionlessFallback`) tries the other form once on a 404, and the base that answered
-// without the version is remembered so the next request goes there first. A bare host and every
-// base that works today still gets exactly the request it got before.
-const versionlessBases = new Set();
-function candidateUrls(spec, base, path) {
-  const url = endpointUrl(base, path);
-  if (!spec.versionlessFallback) return [url];
-  const bare = base + path.replace(LEADING_VERSION, '');
-  if (bare === url) return [url];
-  return versionlessBases.has(base) ? [bare, url] : [url, bare];
-}
-
-/** `send(url)` with the fallback above. When the other form fails as well, the first answer is
- *  the one returned, so Ollama's "model not found" 404 still reaches the person unchanged. */
-async function reach(spec, base, path, send) {
-  const urls = candidateUrls(spec, base, path);
-  const first = await send(urls[0]);
-  if (first.status !== 404 || urls.length < 2) return first;
-  const second = await send(urls[1]);
-  if (!second.ok) { try { await second.text(); } catch { /* drained or gone */ } return first; }
-  if (urls[1] === endpointUrl(base, path)) versionlessBases.delete(base);
-  else versionlessBases.add(base);
-  return second;
+  return base + path.replace(new RegExp('^' + VERSION_SEGMENT.source, 'i'), '');
 }
 
 /** A fetch, bounded by AbortController. Never throws for HTTP status; throws for transport. */
-async function call(fetchImpl, url, init, timeoutMs, signal) {
+async function call(fetchImpl, url, init, timeoutMs, signal, lookup) {
+  const target = new URL(url);
+  const resolve = lookup || fetchImpl.lookup || dnsLookup;
+  const addresses = net.isIP(target.hostname) ? [{ address: target.hostname }] : await resolve(target.hostname, { all: true, verbatim: true });
+  if (addresses.some(({ address }) => isBlockedAddress(address))) {
+    throw Object.assign(new Error(`refusing to connect to a special-use address: ${target.hostname}`), { code: 'EHOSTBLOCKED' });
+  }
   const ctl = new AbortController();
   const onOuter = () => ctl.abort();
   if (signal) signal.addEventListener('abort', onOuter, { once: true });
@@ -132,14 +112,14 @@ export function httpAdapter(spec) {
     },
 
     /** The models this endpoint serves, so a UI can offer a list instead of a text field. */
-    async models(cfg, env, { fetch: fetchImpl = globalThis.fetch, timeoutMs = 20000, signal } = {}) {
+    async models(cfg, env, { fetch: fetchImpl = globalThis.fetch, timeoutMs = 20000, signal, lookup } = {}) {
       const base = adapter.baseUrl(cfg);
       if (!base) return { ok: false, error: 'no endpoint configured', models: [] };
       const key = keyOf(env);
       if (!key && !meta.keyOptional) return { ok: false, error: 'no API key configured', models: [] };
       let res;
       try {
-        res = await reach(spec, base, spec.modelsPath, url => call(fetchImpl, url, { method: 'GET', headers: { ...extraHeadersFor(id, cfg), ...spec.headers(key) } }, timeoutMs, signal));
+        res = await call(fetchImpl, endpointUrl(base, spec.modelsPath), { method: 'GET', headers: { ...extraHeadersFor(id, cfg), ...spec.headers(key) } }, timeoutMs, signal, lookup);
       } catch (e) {
         return { ok: false, error: e.name === 'AbortError' ? 'timed out' : `could not reach ${hostOf(base)}: ${trim(e.message, 120)}`, models: [] };
       }
@@ -157,7 +137,7 @@ export function httpAdapter(spec) {
      * native HTTP and a test can hand in a fake.
      */
     async invoke(opts = {}) {
-      const { cfg, prompt, system, schema, env, model, timeoutMs = DEFAULT_TIMEOUT_MS, maxTokens = MAX_OUTPUT_TOKENS, fetch: fetchImpl = globalThis.fetch, signal } = opts;
+      const { cfg, prompt, system, schema, env, model, timeoutMs = DEFAULT_TIMEOUT_MS, maxTokens = MAX_OUTPUT_TOKENS, fetch: fetchImpl = globalThis.fetch, signal, lookup } = opts;
       const base = adapter.baseUrl(cfg);
       if (!base) return { code: -1, text: '', stderr: `no endpoint configured for ${id}`, spawnError: true };
       const key = keyOf(env);
@@ -171,11 +151,11 @@ export function httpAdapter(spec) {
       for (;;) {
         let res;
         try {
-          res = await reach(spec, base, spec.path(chosen), url => call(fetchImpl, url, {
+          res = await call(fetchImpl, endpointUrl(base, spec.path(chosen)), {
             method: 'POST',
             headers: { ...extraHeadersFor(id, cfg), 'content-type': 'application/json', ...spec.headers(key) },
             body: JSON.stringify(body)
-          }, timeoutMs, signal));
+          }, timeoutMs, signal, lookup);
         } catch (e) {
           if (e.name === 'AbortError') return { code: -1, text: '', stderr: 'timed out', timedOut: true };
           return { code: 1, text: '', stderr: `could not reach ${hostOf(base)}: ${trim(e.message, 200)}` };

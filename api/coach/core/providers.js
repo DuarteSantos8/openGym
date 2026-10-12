@@ -1,3 +1,5 @@
+import net from 'node:net';
+
 /* The providers that speak plain HTTPS, described once for both runtimes.
  *
  * The server's config.PROVIDERS spreads these rows in next to the runtime-backed providers
@@ -112,5 +114,32 @@ export function validateBaseUrl(raw) {
   if (u.protocol !== 'http:' && u.protocol !== 'https:') return { ok: false, error: 'only http:// and https:// endpoints are supported' };
   if (u.username || u.password) return { ok: false, error: 'put the key in the credential field, not in the URL' };
   if (u.search || u.hash) return { ok: false, error: 'a base URL has no query string' };
+  if (isBlockedAddress(u.hostname)) return { ok: false, error: 'endpoint must not point at a special-use address' };
   return { ok: true, value: u.toString().replace(/\/+$/, '') };
+}
+
+// Only loopback, link-local, unspecified, and multicast are blocked for SSRF.
+// RFC1918, CGNAT, and other special-use ranges are allowed: home lab.
+export function isBlockedAddress(raw) {
+  const v = String(raw || '').replace(/^\[|\]$/g, '').toLowerCase().replace(/%.*$/, '');
+  if (net.isIPv4(v)) {
+    const [a, b, c] = v.split('.').map(Number);
+    if (a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168)) return false;
+    return a === 0 || a === 127 || (a === 169 && b === 254) || a >= 224;
+  }
+  if (!net.isIPv6(v)) return false;
+  const groups = v.includes('::') ? (() => {
+    const [head, tail = ''] = v.split('::');
+    const left = head ? head.split(':') : [];
+    const right = tail ? tail.split(':') : [];
+    while (left.length + right.length < 8) left.push('0');
+    return left.concat(right).map(x => parseInt(x, 16));
+  })() : v.split(':').map(x => parseInt(x, 16));
+  if (groups.length !== 8 || groups.some(Number.isNaN)) return false;
+  if (groups.slice(0, 5).every(x => x === 0) && groups[5] === 0xffff) {
+    return isBlockedAddress(`${groups[6] >> 8}.${groups[6] & 255}.${groups[7] >> 8}.${groups[7] & 255}`);
+  }
+  return groups.every(x => x === 0) || (groups.slice(0, 7).every(x => x === 0) && groups[7] === 1) ||
+    (groups[0] & 0xffc0) === 0xfe80 ||
+    (groups[0] & 0xff00) === 0xff00;
 }
