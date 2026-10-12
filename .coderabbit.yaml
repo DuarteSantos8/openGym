@@ -1,0 +1,60 @@
+
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+language: "ko-KR"
+
+# 리뷰 문체: 명확하고 근거 중심으로 작성
+tone_instructions: >
+  시니어 개발자처럼 명확하고 건설적으로 리뷰하세요.
+  실제 버그, 보안 취약점, 예외 처리 누락, 데이터 손실 가능성,
+  성능 문제를 우선적으로 지적하세요.
+  문제가 발생하는 이유와 구체적인 수정 방향을 설명하세요.
+  근거가 부족한 추측이나 단순한 취향 차이는 지적하지 마세요.
+
+reviews:
+  # 과도한 사소한 지적을 줄이는 균형 잡힌 리뷰
+  profile: "chill"
+
+  # 리뷰 코멘트는 제안으로만 제공
+  request_changes_workflow: false
+
+  # PR 변경 사항 요약
+  high_level_summary: true
+  review_status: true
+
+  # 불필요한 생성형 문서 작업은 요청하지 않음
+  poem: false
+
+  # 리뷰에서 제외할 파일
+  path_filters:
+    - "!**/node_modules/**"
+    - "!**/dist/**"
+    - "!**/build/**"
+    - "!**/coverage/**"
+    - "!**/*.lock"
+
+  # 자동 리뷰 설정
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    drafts: false
+    ignore_title_keywords:
+      - "wip"
+      - "skip review"
+
+  # 공통 코드 리뷰 지침
+  path_instructions:
+    - path: "**/*"
+      instructions: |
+        다음 항목을 우선적으로 검토하세요.
+
+        1. 실제로 발생 가능한 버그와 잘못된 조건문
+        2. null, undefined, 빈 배열 및 경계값 처리
+        3. 비동기 처리, 경쟁 상태, 중복 요청 및 오류 처리
+        4. 인증, 권한 검사, 민감 정보 노출 및 입력값 검증
+        5. 불필요한 반복 연산, 메모리 누수 및 성능 저하
+        6. 기존 기능의 회귀 가능성과 API 계약 위반
+
+        코멘트에는 문제의 원인, 발생 조건, 영향 및 수정 방향을 포함하세요.
+        단순한 스타일 취향이나 근거 없는 개선 제안은 지적하지 마세요.
+        문제가 없으면 억지로 문제를 만들어내지 마세요.
