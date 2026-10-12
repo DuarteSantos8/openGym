@@ -65,3 +65,23 @@ services:
       # The largest photo or video upload nginx passes to the API. Keep it above
       # MEDIA_VIDEO_MAX_MB (40 by default), which the api service reads from .env.
       - MEDIA_UPLOAD_MAX=${MEDIA_UPLOAD_MAX:-48m}
+
+  # Optional: import a routine from a YouTube follow-along video (docs/DATA_IMPORTS.md).
+  # Nothing of it runs, or is even built, unless you ask for the profile AND point the API at it
+  # with VIDEO_IMPORT_URL in .env:
+  #     docker compose --profile video-import up -d --build
+  # It downloads a small copy of each video into its own temporary directory and deletes it when
+  # the job ends. It has no access to ./data and is never published on a host port: only the
+  # api service talks to it.
+  video-import:
+    profiles: [video-import]
+    build:
+      context: ./video-import
+      # `paddle` reads stylised fonts much better, at about 2 GB instead of 500 MB.
+      target: ${VIDEO_IMPORT_TARGET:-default}
+    restart: unless-stopped
+    environment:
+      - VIDEO_IMPORT_TOKEN=${VIDEO_IMPORT_TOKEN:-}
+      - VIDEO_IMPORT_MAX_MINUTES=${VIDEO_IMPORT_MAX_MINUTES:-90}
+      - VIDEO_IMPORT_CONCURRENCY=${VIDEO_IMPORT_CONCURRENCY:-1}
+      - PADDLE_THREADS=${PADDLE_THREADS:-}

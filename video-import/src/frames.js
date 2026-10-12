@@ -1,0 +1,107 @@
+// Getting pixels out of the video with ffmpeg: a probe, still frames, and the two crops at one
+// frame per second. The crops come out as raw 8-bit gray — no image encoder in between — and are
+// thresholded in Node (image.js), so the only image tool the worker needs is ffmpeg itself.
+
+import fs from 'node:fs'
+import path from 'node:path'
+import crypto from 'node:crypto'
+import { run } from './proc.js'
+import { binarize, pgm, blank, difference } from './image.js'
+
+const even = n => Math.max(2, Math.round(n / 2) * 2)
+export const NEAR = 0.03   // share of differing pixels below which two name crops are one caption
+
+/** { width, height, duration } of the first video stream. */
+export async function probe(file, { signal } = {}) {
+  const { stdout } = await run('ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height:format=duration', '-of', 'json', file], { signal, timeoutMs: 60000 })
+  const j = JSON.parse(stdout)
+  const s = (j.streams || [])[0] || {}
+  return { width: +s.width || 0, height: +s.height || 0, duration: +(j.format?.duration) || 0 }
+}
+
+/** One still at `t` seconds, `width` px wide (0 = as is). Returns the path. */
+export async function still(file, t, out, { width = 0, signal } = {}) {
+  const vf = width ? ['-vf', `scale=${width}:-2`] : []
+  await run('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-nostdin', '-y', '-ss', String(Math.max(0, t)), '-i', file, '-frames:v', '1', ...vf, '-q:v', '4', out], { signal, timeoutMs: 60000 })
+  return out
+}
+
+/** A still as a data: URL — what the result carries for the review table and the ROI screen. */
+export async function stillDataUrl(file, t, workDir, { width = 240, signal } = {}) {
+  const out = path.join(workDir, `still-${Math.round(t * 10)}-${width}.jpg`)
+  await still(file, t, out, { width, signal })
+  const url = 'data:image/jpeg;base64,' + fs.readFileSync(out).toString('base64')
+  fs.rmSync(out, { force: true })
+  return url
+}
+
+/** Pixel crop and output size for a fractional box on a w×h video, sized for the OCR. */
+export function cropGeometry(box, w, h, outH = 72) {
+  const cw = Math.max(8, Math.round(box.w * w)), ch = Math.max(8, Math.round(box.h * h))
+  const cx = Math.min(w - cw, Math.max(0, Math.round(box.x * w))), cy = Math.min(h - ch, Math.max(0, Math.round(box.y * h)))
+  const oh = even(outH)
+  const ow = Math.min(1600, even(cw * oh / ch))
+  return { cw, ch, cx, cy, ow, oh }
+}
+
+/**
+ * The name and timer crops at 1 fps, thresholded and de-duplicated.
+ *
+ * Returns { seconds, name: [...], timer: [...] } where each list has one entry per second:
+ * the path of a PGM to read, or null for a blank crop. Identical crops share a path, so a
+ * caption that sits still for 40 seconds is read once, not forty times.
+ */
+export async function extractCrops(file, roi, { width, height, duration, workDir, signal, onProgress } = {}) {
+  const parts = [], maps = []
+  const kinds = ['name', ...(roi.timer ? ['timer'] : [])]
+  const geo = {}
+  kinds.forEach(k => { geo[k] = cropGeometry(roi[k], width, height, k === 'timer' ? 64 : 72) })
+  const split = kinds.length > 1 ? `split=${kinds.length}${kinds.map(k => `[${k}0]`).join('')}` : 'null[name0]'
+  parts.push(`[0:v]fps=1,${split}`)
+  for (const k of kinds) {
+    const g = geo[k]
+    parts.push(`[${k}0]crop=${g.cw}:${g.ch}:${g.cx}:${g.cy},scale=${g.ow}:${g.oh}:flags=bicubic,format=gray[${k}]`)
+    maps.push('-map', `[${k}]`, '-f', 'rawvideo', path.join(workDir, `${k}.gray`))
+  }
+  await run('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-nostdin', '-y', '-progress', 'pipe:1', '-nostats', '-i', file, '-filter_complex', parts.join(';'), ...maps], {
+    signal, timeoutMs: 60 * 60000,
+    onLine: l => {
+      const m = /^out_time_us=(\d+)/.exec(l)
+      if (m && duration > 0) onProgress?.(Math.min(1, +m[1] / 1e6 / duration))
+    }
+  })
+  const out = {}
+  let seconds = Infinity
+  for (const k of kinds) {
+    const { ow, oh } = geo[k]
+    const size = ow * oh
+    const raw = fs.readFileSync(path.join(workDir, `${k}.gray`))
+    fs.rmSync(path.join(workDir, `${k}.gray`), { force: true })
+    const n = Math.floor(raw.length / size)
+    seconds = Math.min(seconds, n)
+    const seen = new Map()
+    const dir = path.join(workDir, k)
+    fs.mkdirSync(dir, { recursive: true })
+    out[k] = []
+    let last = null   // { px, path } of the crop the previous second used
+    for (let i = 0; i < n; i++) {
+      const b = binarize(raw.subarray(i * size, (i + 1) * size))
+      if (blank(b)) { out[k].push(null); last = null; continue }
+      // A caption over a moving picture is never byte-identical from one second to the next.
+      // Within NEAR of the crop just read it is the same caption, and is not read again. The
+      // timer changes every second by design, so it only shares exact copies.
+      if (k === 'name' && last && difference(b.px, last.px) < NEAR) { out[k].push(last.path); continue }
+      const hash = crypto.createHash('sha1').update(b.px).digest('hex')
+      let p = seen.get(hash)
+      if (!p) {
+        p = path.join(dir, `${String(seen.size).padStart(5, '0')}.pgm`)
+        fs.writeFileSync(p, pgm(b.px, ow, oh))
+        seen.set(hash, p)
+      }
+      last = { px: b.px, path: p }
+      out[k].push(p)
+    }
+  }
+  if (!out.timer) out.timer = new Array(out.name.length).fill(null)
+  return { seconds: Number.isFinite(seconds) ? seconds : 0, name: out.name, timer: out.timer }
+}

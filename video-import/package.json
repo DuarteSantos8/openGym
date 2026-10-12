@@ -1,0 +1,12 @@
+{
+  "name": "opengym-video-import",
+  "version": "1.4.1",
+  "private": true,
+  "type": "module",
+  "main": "src/server.js",
+  "license": "AGPL-3.0-or-later",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test test/*.test.js"
+  }
+}

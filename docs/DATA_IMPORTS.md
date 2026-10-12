@@ -7,6 +7,7 @@ Everything here lives in the app under **Settings → Data & backup**, except pl
 |---|---|
 | Bring your workout history from another app | **Import from another app** (CSV) |
 | Pull workouts, routines and weigh-ins from Hevy Pro | **Import from Hevy** (API key) |
+| Turn a YouTube follow-along workout into a routine | **Plan → Import from a video** (self-hosted, optional) |
 | Bring body weight over from an iPhone | **Import from another app** with the Apple Health export |
 | Give someone your routines | **Plan → Share your plan → Export plan file** |
 | Back up or move everything | **Export backup** / **Import backup** |
@@ -45,6 +46,105 @@ With **Hevy Pro** you can skip the CSV:
 3. Choose workouts, routines, weigh-ins or any mix, then confirm.
 
 Routines always arrive as new plans; nothing you already have is overwritten.
+
+## A routine from a YouTube video
+
+Follow-along workouts usually show the exercise name and a countdown on screen. With the optional
+video-import worker running on your server, openGym can read those and draft a routine for you:
+paste the link under **Plan → share icon → Import from a video**, check the draft, and save it.
+
+### What happens
+
+1. **Chapters first.** If the video's chapters, or a list of timestamps in its description, already
+   name the exercises, the draft is built from those and nothing is downloaded. Tick *Read the video
+   even if it has chapters* to skip this.
+2. **Otherwise the video is read.** The server downloads a small copy (480p at most, no sound) and
+   looks at one frame per second.
+3. **The first time for a channel, you mark two boxes**: one around the exercise name and one
+   around the timer. You get three stills from the video, with a suggestion already drawn. The boxes
+   are saved for that channel, so its next video skips this step. If they turn out wrong, use
+   *Mark the boxes again* on the review screen.
+4. **Reading.** The name and timer are cropped from every frame, thresholded, and read with
+   Tesseract (or PaddleOCR, see below). The timer is read as digits only.
+5. **Blocks and rounds.** Seconds with the same name are one block. When the timer restarts, a new
+   block begins even if the name stays the same. A single misread frame is outvoted by the frames
+   around it. "REST", "PAUSE", "GET READY" and "NEXT: …" screens are rest, and a "NEXT: Burpees"
+   also names the exercise that follows. A repeating sequence of names counts as rounds.
+6. **Sections.** Short work blocks that alternate with short rests form an interval section. Work
+   before the first interval section is the warm-up, and work after the last one is the stretch.
+   A caption or chapter that says "warm up" or "cool down" decides the section instead.
+7. **Review.** Each row shows a thumbnail, its time in the video (which links straight to that
+   moment), the text as read, the exercise it matched, and a confidence score. You can re-pick the
+   exercise, rename or delete a row, merge it into the row above, and change the work time, rest and
+   rounds. A name that matches nothing in the library is never dropped. It becomes one of your own
+   exercises, unless you pick an existing one.
+8. **The routine.** Each interval exercise becomes *rounds × timed sets* with its rest between
+   the sets. For example, three rounds of burpees at 40 s on / 20 s off is **Burpees 3 × 0:40,
+   rest 0:20**. The app has no rest between the members of a superset, so you do A A A, B B B
+   instead of the video's A B C, A B C, with the same work and rest times. The warm-up and the
+   stretch each become a named group of single timed holds, done straight through. A left/right
+   stretch becomes one per-side hold. The routine keeps a link to the video, and importing the same
+   video again replaces the routine instead of adding a second copy.
+
+The video and every frame are deleted as soon as the job ends, however it ends. The server keeps
+only the boxes per channel (`data/video-import/<profile>.json`); the draft lives in memory for an
+hour.
+
+### Setting it up
+
+The worker is a separate container. It is not part of the api or web images, and it is only built
+when you ask for it:
+
+```bash
+# in .env
+VIDEO_IMPORT_URL=http://video-import:3100
+VIDEO_IMPORT_TOKEN=some-long-random-string
+
+docker compose --profile video-import up -d --build
+```
+
+The *Import from a video* entry appears once the API knows the URL. On the phone app it appears
+when the phone is paired with a server that runs the worker, and never in local-only mode. The
+worker has no access to `./data` and no host port; only the api container talks to it.
+
+| Variable | Default | What it does |
+|---|---|---|
+| `VIDEO_IMPORT_URL` | *(unset: feature off)* | Where the API finds the worker |
+| `VIDEO_IMPORT_TOKEN` | *(none)* | Shared secret between API and worker |
+| `VIDEO_IMPORT_MAX_MINUTES` | `90` | Longest video accepted |
+| `VIDEO_IMPORT_CONCURRENCY` | `1` | Videos processed at once (each keeps a core busy) |
+| `VIDEO_IMPORT_TARGET` | `default` | `paddle` builds the PaddleOCR image (~2 GB) instead of Tesseract (~500 MB) |
+| `PADDLE_THREADS` | all cores | CPU threads PaddleOCR may use (paddle image only) |
+
+A 30-minute video takes a few minutes of CPU on one core.
+
+**Keep yt-dlp current.** YouTube changes often, and yt-dlp is what follows it. When imports start
+failing with "could not read the video", rebuild the worker:
+`docker compose --profile video-import build --pull --no-cache video-import`.
+
+### What it can't do
+
+- **No text on screen, no import.** A video that only shows the instructor (and has no chapters)
+  gives nothing to read, and the review screen says so.
+- **Stylised fonts.** Outlined, animated, italic or very thin captions, or text over a busy moving
+  background, are hard for Tesseract. Expect misreads; the PaddleOCR build handles them much
+  better.
+- **Names shown only during the rest.** It works when the rest screen says "NEXT: …". If the name
+  only appears in a corner for a second, draw the name box there anyway and check the rows.
+- **Moving captions.** The boxes are fixed per channel. A creator who moves the caption around
+  between videos needs *Mark the boxes again*.
+- **Chapters that include the rest.** When each chapter is "Burpees" for the whole minute
+  (work and rest together), the draft shows 60 s of work and no rest. Fix it on the review screen,
+  or tick *Read the video even if it has chapters*.
+- **Rest between rounds** has no place in a routine. The review screen shows how long it was, so you
+  can take it after the last exercise of each round.
+- **Reps.** Only times are read. A "20 squats" caption becomes a timed set of however long the
+  video spent on it.
+- **YouTube can refuse the server**: private, age-restricted and members-only videos, live
+  streams, and the bot checks YouTube sometimes puts in front of data-centre addresses. These fail
+  with a clear message.
+- Downloading may be against YouTube's terms of service for some videos; this runs on your own
+  server, on your own say-so.
 
 ## Body weight from Apple Health
 
@@ -128,3 +228,9 @@ resolve exercises through the same generated lookup, `frontend/src/lib/hevy-id-m
 for the API, English title for the CSV). To regenerate it, set `HEVY_API_KEY` in the environment or
 `.env` and run `node scripts/build-hevy-id-map.mjs`. Localised (non-English) Hevy titles fall back
 to name matching.
+
+The video import is split in two. `video-import/` is the worker: metadata and chapters, frames,
+OCR, segmentation, rounds and sections, all of it pure helpers with node:test tests, plus an
+end-to-end test on a video ffmpeg generates. `api/video-import.js` handles access, job ownership
+and the saved boxes. `frontend/src/lib/import-video.js` matches names to the library and builds
+the routine.

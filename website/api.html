@@ -222,6 +222,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <a class="side-link" href="#activity"><b>Activity</b><span>Live presence</span></a>
   <a class="side-link" href="#media"><b>Media</b><span>Photos &amp; videos of your exercises &amp; workouts</span></a>
   <a class="side-link" href="#coach"><b>AI Coach</b><span>Plans, reviews, debriefs</span></a>
+  <a class="side-link" href="#videoImport"><b>Video import</b><span>A routine from a YouTube video</span></a>
   <a class="side-link" href="#admin"><b>Admin</b><span>Users, invites, audit log, Coach</span></a>
   <a class="side-link" href="#schemas"><b>Schemas</b><span>The state blob, the error shape &amp; co.</span></a>
   <p class="side-label">More</p>
@@ -245,7 +246,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.2</span>
-    <span>73 endpoints</span>
+    <span>77 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -343,7 +344,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">Instance flags, plus the Coach block for a signed-in caller.<span class="r-sig">{ invite_only: boolean, allow_guest: boolean, coach: object | null, password_login: always true, default_lang: string, media: <a href="#schema-MediaConfig">MediaConfig</a> }</span></span>
+    <span class="p-desc">Instance flags, plus the Coach block for a signed-in caller.<span class="r-sig">{ invite_only: boolean, allow_guest: boolean, coach: object | null, password_login: always true, default_lang: string, media: <a href="#schema-MediaConfig">MediaConfig</a>, video_import: always true }</span></span>
   </div>
     </div>
   </div>
@@ -2559,6 +2560,206 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
 </section>
 
+<section class="api-sec" id="videoImport">
+  <h2>Video import</h2>
+  <p class="sub">Import a routine from a YouTube follow-along video. The work runs in the optional video-import worker; every route here is a 404 unless the instance sets <code>VIDEO_IMPORT_URL</code>. The answer is a draft that the app matches against the exercise library and shows for review — nothing is saved to the profile here.</p>
+  <div class="eps">
+
+<details class="ep" id="op-postVideoImport">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/video-import</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Start importing a routine from a YouTube video</span>
+  </summary>
+  <div class="ep-body">
+<p>Queues a job and answers at once (202); the job is then polled through <code>GET /api/video-import/job</code>. With <code>mode: auto</code> a video whose chapters (or a timestamped list in its description) already name the exercises is read from that alone; otherwise, and always with <code>mode: video</code>, the worker downloads a ≤480p copy and reads the names and the timer off the frames. One import at a time per profile.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">url<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">A YouTube video link (watch, youtu.be, shorts, live).</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">mode</span>
+    <span class="p-type">&quot;auto&quot; | &quot;video&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">redraw</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">Ignore the boxes saved for this video's channel and ask for new ones.</span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">202</span>
+    <span class="p-desc">Queued.<span class="r-sig"><a href="#schema-VideoImportJob">VideoImportJob</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Not a YouTube video link.<span class="r-sig"><code>{&quot;error&quot;:&quot;not a YouTube video link&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">This profile already has an import running.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Too many imports waiting on this instance.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">The worker is not reachable.<span class="r-sig"><code>{&quot;error&quot;:&quot;the video importer is not reachable&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-getVideoImportJob">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/video-import/job</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">One import's progress, its ROI setup, or its draft</span>
+  </summary>
+  <div class="ep-body">
+<p><code>status</code> is <code>queued</code>, <code>running</code>, <code>needs_roi</code> (waiting for the boxes — <code>roiSetup</code> carries three stills and suggested boxes), <code>done</code> (<code>result</code> carries the draft), <code>error</code> or <code>cancelled</code>. A finished job is kept for an hour. Another profile's job answers 404, the same as one that does not exist.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The job.<span class="r-sig"><a href="#schema-VideoImportJob">VideoImportJob</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Malformed id.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No such import for this profile.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postVideoImportRoi">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/video-import/roi</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The boxes around the exercise name and the timer</span>
+  </summary>
+  <div class="ep-body">
+<p>For a job at <code>needs_roi</code>. Boxes are fractions of the frame. Unless <code>remember</code> is false they are saved for the video's channel, so the next video from the same creator skips this step.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">name<em class="p-req" title="required">required</em></span>
+    <span class="p-type"><a href="#schema-VideoImportBox">VideoImportBox</a></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">timer</span>
+    <span class="p-type"><a href="#schema-VideoImportBox">VideoImportBox</a></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">remember</span>
+    <span class="p-type">boolean <span class="p-hint">(default true)</span></span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The job, running again.<span class="r-sig"><a href="#schema-VideoImportJob">VideoImportJob</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">No usable name box.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No such import for this profile.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">The job is not waiting for boxes.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postVideoImportCancel">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/video-import/cancel</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Stop an import</span>
+  </summary>
+  <div class="ep-body">
+<p>The downloaded video and every frame go with it.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The job, cancelled (or already finished).<span class="r-sig"><a href="#schema-VideoImportJob">VideoImportJob</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No such import for this profile.</span>
+  </div>
+    </div>
+  </div>
+</details>
+  </div>
+</section>
+
 <section class="api-sec" id="admin">
   <h2>Admin</h2>
   <p class="sub">Admin dashboard. Requires an admin session (<code>ADMIN_UIDS</code> or <code>admin:true</code>)</p>
@@ -3344,6 +3545,177 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
        is <b>representative, not enforced</b>: the server stores it opaquely and the app
        grows it over time.</p>
     <div class="eps">
+
+<details class="ep sch" id="schema-VideoImportBox">
+  <summary>
+    <span class="sch-name"><code>VideoImportBox</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">A box as fractions of the video frame (0–1), top-left origin.</span>
+  </summary>
+  <div class="ep-body">
+
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">x<em class="p-req" title="required">required</em></span>
+    <span class="p-type">number</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">y<em class="p-req" title="required">required</em></span>
+    <span class="p-type">number</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">w<em class="p-req" title="required">required</em></span>
+    <span class="p-type">number</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">h<em class="p-req" title="required">required</em></span>
+    <span class="p-type">number</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-VideoImportJob">
+  <summary>
+    <span class="sch-name"><code>VideoImportJob</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum"></span>
+  </summary>
+  <div class="ep-body">
+
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">status</span>
+    <span class="p-type">&quot;queued&quot; | &quot;running&quot; | &quot;needs_roi&quot; | &quot;done&quot; | &quot;error&quot; | &quot;cancelled&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">stage</span>
+    <span class="p-type">&quot;queued&quot; | &quot;metadata&quot; | &quot;download&quot; | &quot;needs_roi&quot; | &quot;frames&quot; | &quot;ocr&quot; | &quot;thumbs&quot; | &quot;done&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">pct</span>
+    <span class="p-type">integer <span class="p-hint">(0&ndash;100)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">source</span>
+    <span class="p-type">object | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">method</span>
+    <span class="p-type">&quot;chapters&quot; | &quot;description&quot; | &quot;video&quot; | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">error</span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">code</span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">roiSetup</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">Only at <code>needs_roi</code>.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">roiSetup.samples</span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">roiSetup.samples[].t</span>
+    <span class="p-type">number</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">roiSetup.samples[].src</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">A data: URL (JPEG, 640 px wide).</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">roiSetup.suggest</span>
+    <span class="p-type">object</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">roiSetup.suggest.name</span>
+    <span class="p-type"><a href="#schema-VideoImportBox">VideoImportBox</a> | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">roiSetup.suggest.timer</span>
+    <span class="p-type"><a href="#schema-VideoImportBox">VideoImportBox</a> | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">roiSetup.width</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">roiSetup.height</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">result</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">Only when <code>done</code>.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">result.method</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">result.roi</span>
+    <span class="p-type">object</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">result.roi.name</span>
+    <span class="p-type"><a href="#schema-VideoImportBox">VideoImportBox</a></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">result.roi.timer</span>
+    <span class="p-type"><a href="#schema-VideoImportBox">VideoImportBox</a> | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">result.roiSaved</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">result.draft</span>
+    <span class="p-type">object</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">result.draft.sections</span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+  </div>
+</details>
 
 <details class="ep sch" id="schema-Error">
   <summary>

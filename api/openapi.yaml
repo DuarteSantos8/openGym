@@ -171,6 +171,12 @@ tags:
     description: >-
       AI Coach: plans, reviews and debriefs. Every route here answers 503 unless the
       instance has the Coach switched on and a provider connected.
+  - name: videoImport
+    description: >-
+      Import a routine from a YouTube follow-along video. The work runs in the optional
+      video-import worker; every route here is a 404 unless the instance sets
+      `VIDEO_IMPORT_URL`. The answer is a draft that the app matches against the exercise
+      library and shows for review — nothing is saved to the profile here.
 
 security:
   - cookieAuth: []
@@ -299,6 +305,12 @@ paths:
                       always wins; a tag the app has no translation for is ignored.
                   media:
                     $ref: '#/components/schemas/MediaConfig'
+                  video_import:
+                    type: boolean
+                    const: true
+                    description: >-
+                      Present (and true) only for a signed-in caller on an instance that runs
+                      the video-import worker (`VIDEO_IMPORT_URL`).
               examples:
                 anonymous: { value: { invite_only: true, allow_guest: false } }
                 signedInNoCoach: { value: { invite_only: true, allow_guest: false, coach: null } }
@@ -3177,6 +3189,162 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  /api/video-import:
+    post:
+      tags: [videoImport]
+      operationId: postVideoImport
+      summary: Start importing a routine from a YouTube video
+      description: |
+        Queues a job and answers at once (202); the job is then polled through
+        `GET /api/video-import/job`. With `mode: auto` a video whose chapters (or a
+        timestamped list in its description) already name the exercises is read from that
+        alone; otherwise, and always with `mode: video`, the worker downloads a ≤480p copy
+        and reads the names and the timer off the frames. One import at a time per profile.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url]
+              properties:
+                url: { type: string, example: 'https://youtu.be/dQw4w9WgXcQ', description: 'A YouTube video link (watch, youtu.be, shorts, live).' }
+                mode: { type: string, enum: [auto, video], default: auto }
+                redraw:
+                  type: boolean
+                  description: Ignore the boxes saved for this video's channel and ask for new ones.
+      responses:
+        '202':
+          description: Queued.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VideoImportJob' }
+        '400':
+          description: Not a YouTube video link.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "not a YouTube video link", code: bad-url }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: This profile already has an import running.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Too many imports waiting on this instance.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '503':
+          description: The worker is not reachable.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "the video importer is not reachable", code: worker-down }
+
+  /api/video-import/job:
+    get:
+      tags: [videoImport]
+      operationId: getVideoImportJob
+      summary: One import's progress, its ROI setup, or its draft
+      description: |
+        `status` is `queued`, `running`, `needs_roi` (waiting for the boxes — `roiSetup`
+        carries three stills and suggested boxes), `done` (`result` carries the draft),
+        `error` or `cancelled`. A finished job is kept for an hour. Another profile's job
+        answers 404, the same as one that does not exist.
+      parameters:
+        - { name: id, in: query, required: true, schema: { type: string, pattern: '^[0-9a-f]{24}$' } }
+      responses:
+        '200':
+          description: The job.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VideoImportJob' }
+        '400':
+          description: Malformed id.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: No such import for this profile.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/video-import/roi:
+    post:
+      tags: [videoImport]
+      operationId: postVideoImportRoi
+      summary: The boxes around the exercise name and the timer
+      description: |
+        For a job at `needs_roi`. Boxes are fractions of the frame. Unless `remember` is
+        false they are saved for the video's channel, so the next video from the same
+        creator skips this step.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, name]
+              properties:
+                id: { type: string }
+                name: { $ref: '#/components/schemas/VideoImportBox' }
+                timer: { $ref: '#/components/schemas/VideoImportBox' }
+                remember: { type: boolean, default: true }
+      responses:
+        '200':
+          description: The job, running again.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VideoImportJob' }
+        '400':
+          description: No usable name box.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: No such import for this profile.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '409':
+          description: The job is not waiting for boxes.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/video-import/cancel:
+    post:
+      tags: [videoImport]
+      operationId: postVideoImportCancel
+      summary: Stop an import
+      description: The downloaded video and every frame go with it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id: { type: string }
+      responses:
+        '200':
+          description: The job, cancelled (or already finished).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VideoImportJob' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: No such import for this profile.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
 components:
   securitySchemes:
     cookieAuth:
@@ -3323,6 +3491,94 @@ components:
           example: { error: "that code is wrong, used or expired", code: "link-invalid" }
 
   schemas:
+    VideoImportBox:
+      type: object
+      description: A box as fractions of the video frame (0–1), top-left origin.
+      required: [x, y, w, h]
+      properties:
+        x: { type: number }
+        y: { type: number }
+        w: { type: number }
+        h: { type: number }
+    VideoImportJob:
+      type: object
+      properties:
+        id: { type: string }
+        status: { type: string, enum: [queued, running, needs_roi, done, error, cancelled] }
+        stage: { type: string, enum: [queued, metadata, download, needs_roi, frames, ocr, thumbs, done] }
+        pct: { type: integer, minimum: 0, maximum: 100 }
+        source:
+          type: ['object', 'null']
+          properties:
+            url: { type: string }
+            id: { type: string }
+            title: { type: string }
+            channel: { type: string }
+            channelId: { type: string }
+            duration: { type: number }
+        method: { type: ['string', 'null'], enum: [chapters, description, video, null] }
+        error: { type: ['string', 'null'] }
+        code: { type: ['string', 'null'] }
+        roiSetup:
+          type: object
+          description: Only at `needs_roi`.
+          properties:
+            samples:
+              type: array
+              items:
+                type: object
+                properties:
+                  t: { type: number }
+                  src: { type: string, description: 'A data: URL (JPEG, 640 px wide).' }
+            suggest:
+              type: object
+              properties:
+                name: { oneOf: [{ $ref: '#/components/schemas/VideoImportBox' }, { type: 'null' }] }
+                timer: { oneOf: [{ $ref: '#/components/schemas/VideoImportBox' }, { type: 'null' }] }
+            width: { type: integer }
+            height: { type: integer }
+        result:
+          type: object
+          description: Only when `done`.
+          properties:
+            method: { type: string }
+            roi:
+              type: object
+              properties:
+                name: { $ref: '#/components/schemas/VideoImportBox' }
+                timer: { oneOf: [{ $ref: '#/components/schemas/VideoImportBox' }, { type: 'null' }] }
+            roiSaved: { type: boolean }
+            draft:
+              type: object
+              properties:
+                sections:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      kind: { type: string, enum: [warmup, interval, stretch, other] }
+                      start: { type: number }
+                      end: { type: number }
+                      rounds: { type: integer }
+                      work: { type: number }
+                      rest: { type: number }
+                      roundRest: { type: number }
+                      rows:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id: { type: string }
+                            name: { type: string, description: As read off the video. }
+                            key: { type: string }
+                            variants: { type: array, items: { type: string } }
+                            conf: { type: number, description: '0–1: how sure the reading is.' }
+                            sec: { type: integer, description: Work time per set. }
+                            rest: { type: integer, description: Rest after each set. }
+                            rounds: { type: integer, description: How many times it is done. }
+                            side: { type: boolean }
+                            occurrences: { type: array, items: { type: object, properties: { start: { type: number }, dur: { type: number } } } }
+                            thumb: { type: string, description: 'A data: URL; absent for a chapters draft.' }
     Error:
       type: object
       required: [error]

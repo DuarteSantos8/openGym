@@ -19,6 +19,7 @@ import { glyphOf, DEFAULT_GLYPH } from '../lib/glyphs.js'
 import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
 import { coachAvailable } from '../lib/coach.js'
+import { videoImportAvailable } from '../lib/video-import-api.js'
 import { queueOf, queueView } from '../lib/queue.js'
 import { deriveSessionName } from '../lib/session-merge.js'
 import { markUndone, undoMarks } from '../lib/sync-merge.js'
@@ -152,6 +153,8 @@ export default function Plan() {
         { icon: 'share', label: t('Export plan file'), sub: t('A small file a friend can import into their own openGym. Routines only, none of your workouts or weigh-ins.'), disabled: !has, onClick: exportPlanFile },
         { icon: 'note', label: t('Print / Save as PDF'), disabled: !has, onClick: printWholePlan },
         { icon: 'download', label: t('Import a plan file'), onClick: () => fileRef.current?.click() },
+        // Only on a server that runs the optional video-import worker (GET /api/config).
+        ...(videoImportAvailable(config, user, { demo: DEMO }) ? [{ icon: 'play', label: t('Import from a video'), sub: t('A YouTube follow-along workout, read into a routine you can review.'), onClick: () => nav('/plan/import-video') }] : []),
         { icon: 'clipboard', label: t('Load starter plan'), onClick: starterPlanSheet },
       ],
     })

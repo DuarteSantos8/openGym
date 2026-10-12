@@ -471,6 +471,10 @@ export default function RoutineEdit() {
       </div>
       <button className="iconbtn" aria-label={t('Pick an icon')} onClick={() => glyphPicker(r.emoji, g => update(s => { s.routines.find(x => x.id === id).emoji = g }))}><Icon name={glyphOf(r.emoji)} /></button>
     </div>
+    {/* A routine imported from a follow-along video (views/VideoImport.jsx) links back to it. */}
+    {/^https?:\/\//i.test(r.sourceUrl || '') && <p className="sect-f" style={{ marginTop: -6, marginBottom: 12 }}>
+      <a href={r.sourceUrl} target="_blank" rel="noopener noreferrer">{t('Imported from a video')} ↗</a>
+    </p>}
 
     <div className="sect-b" style={{ marginBottom: 16 }}>
       <SelectRow icon="chartLine" title={t('Progression')} sheetTitle={t('Progression')}

@@ -16,6 +16,7 @@ import webpush from 'web-push';
 import * as coachConfig from './coach/config.js';
 import * as coachJobs from './coach/jobs.js';
 import { coachRoutes } from './coach/routes.js';
+import { videoImportRoutes, VIDEO_IMPORT_URL } from './video-import.js';
 import { startCadence } from './coach/cadence.js';
 import { startWarmup } from './coach/warmup.js';
 import { dayReminderPush, nudgePush, restTimerPush, testPush } from './push-messages.js';
@@ -2109,7 +2110,10 @@ const routes = {
       // Public like the two flags above: the caps are not a secret, and the absence of the
       // block is how the app knows this server does not take photos and videos at all.
       ...(MEDIA_ON ? { media: mediaConfig(MEDIA_LIMITS) } : {}),
-      ...(readSession(req) ? { coach: coachConfig.publicConfig() } : {})
+      ...(readSession(req) ? { coach: coachConfig.publicConfig() } : {}),
+      // Only to a signed-in caller, and only when the instance runs the optional worker
+      // (VIDEO_IMPORT_URL): the one flag the "Import from a video" entry point hangs off.
+      ...(VIDEO_IMPORT_URL && readSession(req) ? { video_import: true } : {})
     });
   },
 
@@ -2852,7 +2856,11 @@ const routes = {
   /* ---------- photos & videos ---------- */
   // Absent, not refusing, when MEDIA_UPLOADS=0: a 404 is what a server from before the feature
   // answers, and the client already treats that as "this server does not store them".
-  ...(MEDIA_ON ? mediaRoutes : {})
+  ...(MEDIA_ON ? mediaRoutes : {}),
+
+  /* ---------- import a routine from a video ---------- */
+  // Routes live in video-import.js; none exist unless VIDEO_IMPORT_URL points at the worker.
+  ...videoImportRoutes({ json, readBody, readSession, dataDir: DATA, atomicWrite })
 };
 
 /* ---------- Coach: boot recovery, notifications, scheduled reviews ---------- */

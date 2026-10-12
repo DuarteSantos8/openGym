@@ -112,6 +112,29 @@ jobs:
       - run: node scripts/build-api-docs.mjs --check
       - run: node api/scripts/check-core-loadable.mjs
 
+  # The optional video-import worker: its unit tests need nothing but node, and its end-to-end
+  # test needs ffmpeg with drawtext, Tesseract and a font — so it runs inside the worker's own
+  # `test` image, which is the runtime image plus a font. REQUIRE_E2E=1 is set there, so a broken
+  # image fails the job instead of quietly skipping the one test that reads real frames.
+  video-import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: npm test
+        working-directory: video-import
+      - run: docker build --target test -t opengym-video-import:test ./video-import
+      - run: docker run --rm opengym-video-import:test
+      - run: docker build -t opengym-video-import:default ./video-import
+      - name: the default image boots and reports its tools
+        run: |
+          docker run -d --name vi -p 3100:3100 opengym-video-import:default
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:3100/health && break; sleep 1; done
+          curl -sf http://127.0.0.1:3100/health | grep -q '"ok":true'
+          docker rm -f vi
+
   # Builds *and runs* both image targets. Building alone would not have caught the api image
   # shipping without coach/ — that image built perfectly and exited on boot. So each target has
   # to answer for itself: the default one starts and serves, and the coach one additionally

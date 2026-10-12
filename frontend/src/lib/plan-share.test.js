@@ -371,3 +371,20 @@ describe('parsePlan refuses a file that is not a plan in words', () => {
     try { parsePlan('{oops') } catch (e) { expect(e.code).toBe('not-plan') }
   })
 })
+
+describe('the video a routine came from', () => {
+  it('travels in the plan file, cleaned; a hostile link does not', () => {
+    const S = { unit: 'kg', week: {}, customEx: [], routines: [
+      { id: 'r1', name: 'HIIT', emoji: 'timer', sourceUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', videoId: 'dQw4w9WgXcQ', ex: [{ id: '1160', sets: 3, mode: 'time', sec: 40, restSec: 20 }] },
+      { id: 'r2', name: 'Bad', emoji: 'timer', sourceUrl: 'javascript:alert(1)', ex: [{ id: '1160', sets: 1, mode: 'time', sec: 30 }] }
+    ] }
+    const bundle = buildPlanBundle(S, 'x')
+    expect(bundle.routines[0].sourceUrl).toBe('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+    expect(bundle.routines[0].videoId).toBeUndefined()   // re-import matching is the importer's, not the friend's
+    expect(bundle.routines[1].sourceUrl).toBeUndefined()
+    const dest = { unit: 'kg', week: {}, routines: [], customEx: [] }
+    mergePlan(dest, parsePlan(JSON.stringify({ ...bundle, routines: [{ ...bundle.routines[0] }, { ...bundle.routines[1], sourceUrl: 'javascript:alert(1)' }] })))
+    expect(dest.routines[0].sourceUrl).toBe('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+    expect(dest.routines[1].sourceUrl).toBeUndefined()
+  })
+})
