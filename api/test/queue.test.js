@@ -257,6 +257,21 @@ test('queue: a since of zero is no clock, so a workout from years before the wee
   assert.equal(effectiveRoutineId(strict, '2026-09-14'), 'r3');
 });
 
+test('queue: neither startsOn nor an apply time is no queue, not a finished week', () => {
+  // Kept with the frontend's queueOf: dated from `since || 0` the week began in 1970, an old
+  // session under this week's name ticked its slot done, and the reminder skipped it.
+  const week = { 1: 'r3' };
+  const old = { d: '2020-01-06', start: Date.parse('2020-01-06T08:00:00Z'), routineIds: ['r1'], name: 'Push' };
+  const S = { ...base, week, workouts: [old], queue: { ids: ['r1', 'r2'], label: 'W1' } };
+  assert.equal(pinState(S, 'r1'), null);
+  assert.equal(effectiveRoutineId(S, '2026-09-14'), 'r3');   // Monday's own plan: there is no queue
+  assert.equal(effectiveRoutineId({ ...S, queue: { ids: ['r1'], since: 0 } }, '2026-09-14'), 'r3');
+  assert.equal(effectiveRoutineId({ ...S, queue: { ids: ['r1'], since: 'monday' } }, '2026-09-14'), 'r3');
+  // either bound on its own still dates the week
+  assert.equal(effectiveRoutineId({ ...S, queue: { ids: ['r1', 'r2'], startsOn: '2026-09-07' } }, '2026-09-14'), 'r1');
+  assert.equal(effectiveRoutineId({ ...S, queue: { ids: ['r1', 'r2'], since: Date.parse('2026-09-07T08:00:00Z') } }, '2026-09-14'), 'r1');
+});
+
 test('queue: a malformed queue falls back to the weekday plan for the reminder', () => {
   const S = { ...base, week: { 1: 'r1' }, queue: { ids: ['gone'], since: 1000 } };
   assert.equal(effectiveRoutineId(S, '2026-09-14'), 'r1'); // Monday
