@@ -1469,6 +1469,16 @@ describe('effectiveRoutineIds — coach queue', () => {
     expect(effectiveRoutineIds(S({ dayPlan: { '2026-09-11': 'd1', '2026-09-12': 'd2' }, week: { 3: 'd1' } }), TODAY, TODAY)).toEqual([])
   })
 
+  it('a pin is read as of the day asked about: a session logged for a later date has not fulfilled it yet', () => {
+    // The DONE RULE stops at today (queue.js). On Wednesday a D1 dated Thursday, started before
+    // the apply, has not happened, so Friday's pin still holds; asked on Friday, as the reminder
+    // builder asks each date, it is fulfilled and the next session floats in.
+    const thu = { ...done('d1'), d: '2026-09-10', start: SINCE - 1 }
+    const s = S({ dayPlan: { '2026-09-11': 'd1' }, workouts: [thu] })
+    expect(effectiveRoutineIds(s, '2026-09-11', TODAY)).toEqual(['d1'])
+    expect(effectiveRoutineIds(s, '2026-09-11', '2026-09-11')).toEqual(['d2'])
+  })
+
   it('a plain routine override is still single-pick, and \'rest\' still wins over a pin', () => {
     expect(effectiveRoutineIds(S({ dayPlan: { [TODAY]: 'own' }, week: { 3: ['own'] } }), TODAY, TODAY)).toEqual(['own'])
     expect(effectiveRoutineIds(S({ dayPlan: { [TODAY]: 'rest', '2026-09-11': 'd1' } }), TODAY, TODAY)).toEqual([])
