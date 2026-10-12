@@ -99,6 +99,17 @@ test('queue: a routine whose own name contains " + " is matched by its whole nam
   assert.equal(effectiveRoutineId(S('Push + Pulling'), '2026-09-08'), 'pp');
 });
 
+test('queue: a null workout in a state file is skipped, not a throw that silences the reminder', () => {
+  // PUT /api/data drops null entries, but a file written before it did still reaches the tick.
+  const S = {
+    ...base,
+    queue: { ids: ['r1', 'r2'], since: 1000, startsOn: '2026-09-07', label: 'W1' },
+    workouts: [null, { d: '2026-09-07', start: 2000, routineIds: ['r1'], name: 'Push' }],
+  };
+  assert.equal(effectiveRoutineId(S, '2026-09-08'), 'r2');
+  assert.equal(pinState(S, 'r1'), 'done');
+});
+
 test('queue: keeps slot order even when a later session is logged out of order', () => {
   const S = {
     ...base,
