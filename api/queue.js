@@ -29,13 +29,17 @@
 function routineIdsOf(w) {
   return Array.isArray(w.routineIds) ? w.routineIds : (w.routineId ? [w.routineId] : []);
 }
-function nameParts(w) {
-  return String(w.name || '').split(' + ');
+// Does this workout's name name this routine? The frontend's namesRoutine: a routine can itself
+// be named 'Push + Pull', so the name is looked for at a ' + ' boundary, never split out.
+function namesRoutine(w, name) {
+  if (!name) return false;
+  const n = String(w.name || '');
+  return n === name || n.startsWith(name + ' + ') || n.endsWith(' + ' + name) || n.includes(' + ' + name + ' + ');
 }
 function queueDone(S, id, startsOn) {
   const currentName = (S.routines || []).find(r => r?.id === id)?.name;
   return (S.workouts || []).some(w => routineIdsOf(w).includes(id)
-    && ((w.start ?? 0) >= S.queue.since || (S.queue.strict !== true && String(w.d || '') >= startsOn && nameParts(w).includes(currentName))));
+    && ((w.start ?? 0) >= S.queue.since || (S.queue.strict !== true && String(w.d || '') >= startsOn && namesRoutine(w, currentName))));
 }
 // The calendar date of an instant where the USER is. The frontend's fallback for a missing
 // startsOn is the device's local date of the apply; the closest thing here is the zone the
