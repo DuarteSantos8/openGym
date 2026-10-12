@@ -86,6 +86,46 @@ describe('buildSessionEntries', () => {
     expect(entry.sets.map(s => [isWarmupRow(s) ? 'warm' : 'work', s.r])).toEqual([['warm', 10], ['work', 10], ['work', 10]])
   })
 
+  // A routine with automatic progression turned off ("manual progression") still seeds from
+  // history: switching progression off disables the auto-adjustment, not the carry-over. The old
+  // bug built such a session from the routine's own stored target (useTarget), so last session's
+  // weight (50) and — with "start from last" — reps (15) were both thrown away for the plan's
+  // 40 × 10. (Last session here is 50 kg, so the routine's own 40 would be unmistakable.)
+  const offHistory = (reps, extra = {}) => ({
+    unit: 'kg', exWeights: {}, routines: [],
+    workouts: [{ d: '2026-01-01', routineIds: ['r'], entries: [{ id: '0025', target: { sets: 2, reps: 10, weight: 50 }, sets: reps.map(r => ({ w: 50, r, done: true })) }] }],
+    ...extra,
+  })
+
+  it('manual progression (prog off) opens at last session\'s weight, reps from the plan', () => {
+    const cfg = { id: '0025', sets: 2, reps: 10, weight: 40, prog: 'off' }
+    const [entry] = buildSessionEntries(offHistory([15, 15]), { id: 'r', prog: 'off', ex: [cfg] })
+    const work = entry.sets.filter(s => !isWarmupRow(s))
+    expect(entry.plan.kind).toBe('off')
+    expect(work.map(s => [s.w, s.r])).toEqual([[50, 10], [50, 10]])   // not the routine's 40, reps stay the plan's 10
+  })
+
+  it('manual progression (prog off) carries last session\'s weight AND reps when the profile starts from the last session', () => {
+    const cfg = { id: '0025', sets: 2, reps: 10, weight: 40, prog: 'off' }
+    const [entry] = buildSessionEntries(offHistory([15, 15], { startFrom: 'last' }), { id: 'r', prog: 'off', ex: [cfg] })
+    const work = entry.sets.filter(s => !isWarmupRow(s))
+    expect(entry.plan.kind).toBe('off')
+    expect(work.map(s => [s.w, s.r])).toEqual([[50, 15], [50, 15]])   // last session's 50 × 15, not the routine's 40 × 10
+    // The target still reflects what the routine asked for, so an edit is still detectable.
+    expect(entry.target.reps).toBe(10)
+    // …and the entry is marked, so the workout card can say the 15 came from the last session.
+    expect(entry.carried).toBe(true)
+  })
+
+  it('an excluded routine still builds from its own target, even with prog off and start-from-last', () => {
+    const cfg = { id: '0025', sets: 2, reps: 10, weight: 40, prog: 'off' }
+    const r = { id: 'r', prog: 'off', excludeFromProgression: true, ex: [cfg] }
+    const [entry] = buildSessionEntries(offHistory([15, 15], { startFrom: 'last' }), r)
+    const work = entry.sets.filter(s => !isWarmupRow(s))
+    expect(work.map(s => [s.w, s.r])).toEqual([[40, 10], [40, 10]])   // the routine's own numbers, history ignored
+    expect(entry.carried).toBeUndefined()
+  })
+
   it('splits the plan\'s reps evenly per side', () => {
     const cfg = { id: '0025', sets: 1, reps: 16, weight: 20, side: true, prog: 'linear' }
     const side = (w, r) => ({ w, r, done: true })

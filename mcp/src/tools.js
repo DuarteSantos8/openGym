@@ -17,6 +17,7 @@ import {
 } from '../../frontend/src/lib/onerm.js'
 import { loadOfWorkouts, rankOf, levelsOf } from '../../frontend/src/lib/muscles.js'
 import { policyFor } from '../../frontend/src/lib/progression.js'
+import { isPyramid } from '../../frontend/src/lib/pyramid.js'
 import { buildSessionEntries, startsFromLast } from '../../frontend/src/lib/session-start.js'
 
 /* ---------- helpers ---------- */
@@ -506,10 +507,13 @@ export const muscleBalance = {
 // (startFrom 'last'), or a policy that moves reps moved them. Reporting the winner is the whole
 // point of this tool — "the plan says 60" is not an answer to "what will the app show me".
 function sourceOf(S, cfg, plan, field, routine) {
-  // Progression off (or a deload routine): the session is built from the routine's own target,
-  // exactly as session-start.js does with useTarget — history and the confirmed weight are ignored.
-  if (!plan || plan.kind === 'off') return 'routine_plan'
-  const decided = plan.kind !== 'first' && plan[field] != null
+  // A deload/excluded routine and a pyramid are built from the routine's own target
+  // (session-start.js `useTarget`): history and the confirmed weight are ignored. A normal
+  // routine with progression merely turned off still seeds from history, so it is NOT routine_plan
+  // just because the policy is off — it falls through to the same history logic below.
+  const fixedTarget = !plan || (plan.kind === 'off' && (routine?.excludeFromProgression === true || isPyramid(cfg)))
+  if (fixedTarget) return 'routine_plan'
+  const decided = plan.kind !== 'first' && plan.kind !== 'off' && plan[field] != null
   // A policy that settles on the routine's own reps or hold — a restart after the plan was
   // edited, a bodyweight hold at the plan's count — is the plan speaking, not an override.
   if (decided) return field !== 'weight' && plan[field] === cfg[field] ? 'routine_plan' : 'progression'

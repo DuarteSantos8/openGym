@@ -1097,7 +1097,7 @@ describe('preview_session', () => {
     expect(r.exercises).toEqual([])
   })
 
-  test('with progression off the routine\'s own numbers open, whatever history says (matches session-start.js)', () => {
+  test('with progression off the weight carries from the last session, reps stay the plan\'s (manual progression)', () => {
     only({ id: '0025', sets: 3, reps: 8, weight: 50 }, {
       prog: 'off',
       exWeights: { '0025': { w: 72.5, d: '2026-07-20' } },
@@ -1109,11 +1109,31 @@ describe('preview_session', () => {
     const out = call('preview_session')
     const e = out.exercises[0]
     expect(e.prescription.kind).toBe('off')
-    expect(e.opening_sets.map(s => [s.w, s.r])).toEqual([[50, 8], [50, 8], [50, 8]])
-    expect(e.weight_source).toBe('routine_plan')
+    // Weight from last session (60), not the routine's own (50); reps from the plan (8).
+    expect(e.opening_sets.map(s => [s.w, s.r])).toEqual([[60, 8], [60, 8], [60, 8]])
+    expect(e.weight_source).toBe('last_session')
     expect(e.reps_source).toBe('routine_plan')
-    expect(e.differs_from_plan).toBe(false)
-    expect(out.overridden_count).toBe(0)
+    expect(e.differs_from_plan).toBe(true)
+    expect(out.overridden_count).toBe(1)
+  })
+
+  test('with progression off and "start from last session", both weight and reps carry over', () => {
+    only({ id: '0025', sets: 2, reps: 10, weight: 50 }, {
+      prog: 'off',
+      workouts: [{
+        id: 'w1', d: '2026-07-20', routineId: 'r-preview', name: 'Preview',
+        entries: [{ id: '0025', target: { sets: 2, reps: 10, weight: 50 }, sets: [{ w: 60, r: 15, done: true }, { w: 60, r: 15, done: true }] }]
+      }]
+    })
+    S.startFrom = 'last'
+    _seedStateForTests(S)
+    const out = call('preview_session')
+    const e = out.exercises[0]
+    expect(e.prescription.kind).toBe('off')
+    // Both weight (60) and reps (15) from the last session, not the routine's 50 × 10.
+    expect(e.opening_sets.map(s => [s.w, s.r])).toEqual([[60, 15], [60, 15]])
+    expect(e.weight_source).toBe('last_session')
+    expect(e.reps_source).toBe('last_session')
   })
 
   test('a deload routine (excludeFromProgression) opens its own numbers even under a policy', () => {
