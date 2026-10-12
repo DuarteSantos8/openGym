@@ -25,10 +25,10 @@ const state = (over = {}) => ({
     id: 'r1', name: 'Full body A', emoji: '💪', prog: 'linear',
     ex: [
       occ('0001', { sets: 3, reps: 10, weight: 20, mode: 'reps' }, 'linear', 'r1'),
-      occ('0007', { sets: 3, sec: 45, mode: 'time' }, 'autoregulated', 'r1'),
-      occ('0009', { sets: 3, reps: 12, mode: 'reps' }, 'autoregulated', 'r1')
+      occ('0007', { sets: 3, sec: 45, mode: 'time' }, 'manual', 'r1'),
+      occ('0009', { sets: 3, reps: 12, mode: 'reps' }, 'manual', 'r1')
     ]
-  }, { id: 'r2', name: 'Full body B', ex: [occ('0002', { sets: 4, reps: 6, mode: 'reps' }, 'autoregulated', 'r2')] }],
+  }, { id: 'r2', name: 'Full body B', ex: [occ('0002', { sets: 4, reps: 6, mode: 'reps' }, 'manual', 'r2')] }],
   week: { 1: 'r1', 3: 'r2', 5: 'r1' },
   coach: { consent: { agreedAt: '2026-07-01T00:00:00Z', version: CONSENT_VERSION }, log: [], snapshots: [], cadence: 'off' },
   ...over
@@ -44,7 +44,7 @@ it('A6: reverting an old snapshot from an already-upgraded profile restores cano
   const S = state()
   S.coach.snapshots.push({ week: { 1: 'r1' }, routines: [{ id: 'r1', ex: [{ id: '0025', sets: 2, reps: 8, weight: 40, prog: 'wave' }] }] })
   expect(revertLast(S)).toBe(true)
-  expect(S.routines[0].ex[0]).toMatchObject({ occurrenceId: 'r1:o0', exerciseId: '0025', rule: { preset: 'autoregulated' } })
+  expect(S.routines[0].ex[0]).toMatchObject({ occurrenceId: 'r1:o0', exerciseId: '0025', rule: { preset: 'manual' } })
   expect(planPhase(S.routines[0].ex[0].rule).parameters.load.value).toBe(40)
   expect(S.coach.snapshots).toHaveLength(0)
   expect(S.migrationAudit.unsupported[0].value).toBe('wave')
@@ -743,7 +743,7 @@ describe('v2 profiles', () => {
   })
   it('a Coach view of a cardio occurrence carries its speed, and a speed change lands on the rule', () => {
     const view = { id: '3220', mode: 'cardio', sets: 2, min: 25, speed: 9.5 }
-    const rule = ruleFromView(ruleOccurrence('3220', { preset: 'autoregulated' }).rule, view, { unit: 'kg' })
+    const rule = ruleFromView(ruleOccurrence('3220', { preset: 'manual' }).rule, view, { unit: 'kg' })
     expect(planPhase(rule).parameters).toMatchObject({ sets: { min: 2, max: 2 }, durationSeconds: { min: 1500, max: 1500 }, speed: 9.5 })
     expect(validatePlanRule(rule).ok).toBe(true)
     expect(coachExOf({ occurrenceId: 'c', exerciseId: '3220', mode: 'cardio', rule })).toMatchObject({ mode: 'cardio', min: 25, speed: 9.5 })
@@ -754,7 +754,7 @@ describe('v2 profiles', () => {
     const stepped = ruleFromView(hold, { id: '0009', mode: 'time', sets: 3, sec: 20, inc: 10, prog: 'time' }, { unit: 'kg' })
     expect(planOptions(stepped).step).toEqual({ type: 'seconds', value: 10 })
     expect(validatePlanRule(stepped).ok).toBe(true)
-    const fromManual = ruleFromView(ruleOccurrence('0009', { preset: 'autoregulated' }).rule, { id: '0009', mode: 'time', sets: 3, sec: 45, inc: 5, prog: 'time' }, { unit: 'kg' })
+    const fromManual = ruleFromView(ruleOccurrence('0009', { preset: 'manual' }).rule, { id: '0009', mode: 'time', sets: 3, sec: 45, inc: 5, prog: 'time' }, { unit: 'kg' })
     expect(fromManual.preset).toBe('hold_seconds')
     expect(planOptions(fromManual)).toMatchObject({ step: { type: 'seconds', value: 5 }, durationSeconds: { min: 45, max: 45 } })
     expect(validatePlanRule(fromManual).ok).toBe(true)

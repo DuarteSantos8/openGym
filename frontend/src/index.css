@@ -1470,6 +1470,9 @@ body.chips-dragging *{cursor:inherit}
 .cfgrow>div{flex:1;min-width:0}
 .cfgrow .stp button{width:30px}
 .cfgrow .stp-l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+.rule-step{align-items:flex-end}
+.rule-step .stp-l{white-space:normal;overflow:visible}
+.rule-step .unit-btn{width:100%;height:44px;padding:0 12px;border-radius:10px;background:var(--surface-2);font-size:13px}
 /* The double-progression row holds four (Step / Reps from / Reps up to / Deload 1RM). Each stepper
    already spends 64px on its two buttons, so four abreast left the input 1px at 320 and 13px at
    368 — "1.25" showed as "1.2", "90" as "9(". Below 480px the row wraps into two pairs instead;

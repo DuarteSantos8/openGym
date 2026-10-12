@@ -698,7 +698,7 @@ copy written before this change still loads. Exported backups stay in the plain,
 
 The conversion maps each exercise's old progression setting onto its closest rule (linear,
 Greyskull LP, double progression, "Add time" as the timed-hold rule; a linear bodyweight
-exercise becomes the bodyweight ladder, anything else becomes autoregulated) and a warm-up count onto a
+exercise becomes the bodyweight ladder, anything else becomes manual) and a warm-up count onto a
 smart ramp of that length. Deload settings, cardio speed and assistance-machine direction carry
 over. Plan files shared from an older version are refused rather than imported empty — re-export
 them from an upgraded instance.

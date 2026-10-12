@@ -36,7 +36,8 @@ export function verdictOf(p, a) {
   const phase = phaseOf(p)
   // A rule that names a target effort holds when its weakest deciding set left fewer reps in
   // reserve than the floor. No logged effort never blocks.
-  const effort = phase.success.effort === 'ignore' || !p.parameters.rir || a.rir == null || a.rir >= p.parameters.rir.min
+  const rir = Object.hasOwn(a, 'progressionRir') ? a.progressionRir : a.rir
+  const effort = phase.success.effort === 'ignore' || !p.parameters.rir || rir == null || rir >= p.parameters.rir.min
   const hit = minimumHit(p, phase, a)
   const success = hit && effort
   const range = p.parameters.durationSeconds || p.parameters.reps
@@ -55,7 +56,7 @@ const PASSES = {
   max_duration: (p, a, next, c) => a.durationSeconds != null && a.durationSeconds >= (c.target ?? p.parameters.durationSeconds.max),
   cycle_count: (p, a, next, c) => next.cyclesCompleted >= c.target,
   training_max: (p, a, next, c) => (next.values.trainingMax?.value ?? -Infinity) >= c.target,
-  difficulty_rung: p => { const op = operatorFor(phaseOf(p), 'difficulty'); return !!op && p.values.difficulty === op.max },
+  difficulty_rung: (p, a) => { const op = operatorFor(phaseOf(p), 'difficulty'); return !!op && p.values.difficulty === op.max && a.sets >= p.parameters.sets.max && a.reps >= p.parameters.reps.max },
   rest_floor: (p, a, next, c, v) => v.success && p.parameters.restSeconds <= c.target
 }
 
@@ -180,6 +181,8 @@ export function advanceProgression({ state, prescription: p, log, now }) {
     phaseExposures: (samePhase ? base.phaseExposures : 0) + 1,
     phaseSuccesses: (samePhase ? base.phaseSuccesses : 0) + (v.success ? 1 : 0)
   })
+  if (phase.reviewAfter) next.phaseMisses = v.success ? 0 : (samePhase ? base.phaseMisses ?? 0 : 0) + 1
+  else delete next.phaseMisses
   if (!samePhase) Object.assign(next, { stalls: 0, stallAt: null, stallBest: null })
 
   // 2. Whether it ends its phase — and the program's cycle, whose count and training max the
@@ -192,22 +195,23 @@ export function advanceProgression({ state, prescription: p, log, now }) {
           : exit.type === 'load_present' ? bestLoad(log, p.assisted) > 0 : !(bestLoad(log, p.assisted) > 0))
   const index = program.phases.indexOf(phase)
   const following = !reached ? null : exit.to ? phaseById(program, exit.to) : program.phases[index + 1] ?? null
-  const boundary = reached && !following && program.end === 'repeat'
+  const closes = reached && !following && (program.end === 'repeat' || v.success)
+  const boundary = closes && program.end === 'repeat'
   let values = valuesOfPrescription(p)
   // v1 held a session at the weight it was lifted at (readSession.weight), and stepped or backed off
   // from there: the next load starts from what was done, not from what was prescribed.
   const held = operatorFor(phase, 'load')?.basis === 'last_actual' && values.load.mode === 'absolute' ? bestLoad(log, p.assisted) : null
   if (held > 0) values.load = { ...values.load, value: held }
-  if (boundary) {
-    next.cyclesCompleted = base.cyclesCompleted + 1
+  if (closes) {
+    next.cyclesCompleted = boundary ? base.cyclesCompleted + 1 : Math.max(1, base.cyclesCompleted)
     // A cycle boundary: the training max grows once and the program starts over.
-    if (p.trainingMax && program.cycleIncrement) values.trainingMax = { value: roundLoad(p.trainingMax.value + program.cycleIncrement.value, p.ruleSnapshot.rounding), unit: p.trainingMax.unit }
+    if (boundary && p.trainingMax && program.cycleIncrement) values.trainingMax = { value: roundLoad(p.trainingMax.value + program.cycleIncrement.value, p.ruleSnapshot.rounding), unit: p.trainingMax.unit }
   }
 
   // 3. Terminal conditions: the flat AND of the completion list, or the last phase of a program
   // that ends there. A completing session earns no load step and no back-off.
-  const completes = (reached && !following && program.end === 'complete')
-    || (program.completion.length > 0 && program.completion.every(c => PASSES[c.metric](p, a, { ...next, values }, c, v)))
+  const completes = v.success && ((reached && !following && program.end === 'complete') || program.completion.length > 0)
+    && program.completion.every(c => PASSES[c.metric](p, a, { ...next, values }, c, v))
 
   // 4. A stall back-off, or the program's operators. A stall is a session short of even the
   // minimum prescribed (v1's "not ok"), counted where the phase steps load or seconds: a clean
@@ -243,22 +247,23 @@ export function advanceProgression({ state, prescription: p, log, now }) {
     // v1 asked for the weight: the plan's own (0 when it has none), at the plan's reps — a double's top.
     values.load = { ...phase.parameters.load }
     if (operatorFor(phase, 'reps')) values.reps = operatorFor(phase, 'reps').basis === 'last_actual' ? phase.parameters.reps.max : null
-  } else {
+  } else if (!completes) {
     values = runOperators(phase, p, log, v, values, { loads: !completes })
   }
 
   // 5. The next phase is entered with its own values. A regime exit (bodyweight ↔ loaded) also
   // lets the session count for the regime it led to, as v1 did.
-  const to = following ?? (boundary ? program.phases[0] : null)
+  const to = completes ? null : following ?? (boundary ? program.phases[0] : null)
   if (to) {
     values = entryValues(to, values, { load: bestLoadOf(log, p.assisted, p.parameters.load.resolved?.unit), reps: a.reps, previous: p.values?.reps ?? p.prefill?.reps })
     Object.assign(next, { phaseId: to.id, phaseExposures: 0, phaseSuccesses: 0, stalls: 0, stallAt: null, stallBest: null, deload: null })
+    delete next.phaseMisses
     if (exit.type === 'load_present' || exit.type === 'load_absent') {
       const entered = { ...p, parameters: { ...p.parameters, sets: to.parameters.sets, reps: to.parameters.reps } }
       values = runOperators(to, entered, log, verdictIn(to, a, v), values, { loads: !completes })
     }
   }
-  next.values = values
+  next.values = completes ? valuesOfPrescription(p) : values
   if (completes) Object.assign(next, { status: 'completed', terminalTarget: p.target.resolved ? { ...p.target.resolved } : null, completedAt: now, deload: null })
   return next
 }

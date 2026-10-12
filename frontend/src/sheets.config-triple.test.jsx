@@ -54,7 +54,7 @@ describe('exercise settings: triple progression', () => {
     const onSave = vi.fn()
     const host = open({}, onSave)
     expect(pickRule(host, 'Triple progression')).toContain('Triple progression')
-    expect(host.textContent).toContain('Fill sets and reps up to the top of the range, then add weight.')
+    expect(host.textContent).toContain('Build the new set before adding load and restarting at minimum volume.')
     expect(labels(host)).toEqual(expect.arrayContaining(['Sets from', 'Reps from', 'Reps to', 'Sets to']))
     expect(labels(host)).not.toContain('Reps')
     // Room for two more sets to begin with, the usual 3 to 5.

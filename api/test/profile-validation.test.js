@@ -7,6 +7,10 @@ const original = () => migrateProfileV1ToV2({ unit: 'kg', routines: [{ id: 'r', 
 const p = s => Object.values(s.prescriptions)[0];
 const x = s => s.workouts[0].exposures[0];
 const mutations = {
+  'invalid occurrence failure selection': s => s.routines[0].ex[0].failureSets = [0],
+  'invalid exposure failure selection': s => x(s).failureSets = 'first',
+  'invalid prescription failure selection': s => { p(s).failureSets = [1.5]; const { contentHash: hash, ...body } = p(s); p(s).contentHash = contentHash(body); },
+  'non-finite progression effort': s => { x(s).actual.progressionRir = 'zero'; },
   'null prescription row': s => p(s).rows = [null],
   'tampered prescription hash': s => p(s).contentHash = '0000000000000000',
   'null 1RM': s => s.oneRepMaxes.bad = null,

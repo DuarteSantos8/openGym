@@ -61,7 +61,7 @@ describe('buildSessionExposures', () => {
 describe('occurrenceFor', () => {
   it('builds an occurrence from plain numbers', () => {
     const { rule } = occurrenceFor('0025', { sets: 4, reps: 6, weight: 50 }, { id: 'o1', unit: 'kg' })
-    expect(rule.preset).toBe('autoregulated')
+    expect(rule.preset).toBe('manual')
     expect(planPhase(rule).parameters).toMatchObject({ sets: { min: 4, max: 4 }, reps: { min: 6, max: 6 }, load: { mode: 'absolute', value: 50, unit: 'kg' } })
     expect(planPhase(occurrenceFor('0025', { sets: 3, sec: 45 }, { id: 'o2' }).rule).parameters).toMatchObject({ durationSeconds: { min: 45, max: 45 }, reps: { min: 1, max: 1 } })
   })

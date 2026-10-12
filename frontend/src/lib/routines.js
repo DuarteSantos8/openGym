@@ -122,7 +122,7 @@ export function replaceSlotExercise(slot, id, S, rid) {
   if (old.exerciseId === id) return { ...old }
   const occurrenceId = uid()
   const unit = S?.unit === 'lb' ? 'lb' : 'kg'
-  const preset = isCardio(id) ? 'autoregulated' : isBodyweightEq(id) ? 'bodyweight_ladder' : 'linear'
+  const preset = isCardio(id) ? 'manual' : isBodyweightEq(id) ? 'bodyweight_ladder' : 'linear'
   const fresh = defaultPlanRule(preset, { id: occurrenceId, exerciseId: id, routineId: rid ?? null, unit })
   const sameKind = isCardio(old.exerciseId) === isCardio(id) && isBodyweightEq(old.exerciseId) === isBodyweightEq(id) && (typeof old.assisted === 'boolean' ? old.assisted : isAssisted(old.exerciseId)) === isAssisted(id)
   if (!sameKind || !old.rule) {

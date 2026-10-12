@@ -780,11 +780,28 @@ describe('Workout add exercise flow', () => {
 
     const exposure = mocks.A.exposures[1]
     expect(mocks.A.entries[1].exposureId).toBe(exposure.exposureId)
-    expect(mocks.S.prescriptions[exposure.prescriptionId].preset).toBe('autoregulated')
+    expect(mocks.S.prescriptions[exposure.prescriptionId].preset).toBe('manual')
   })
 })
 
 describe('active workout weight controls', () => {
+  it('shows the current exposure phase and a training-max review message', async () => {
+    const rule = defaultPlanRule('undulating', { id: 'rule', exerciseId: 'plain-bench', trainingMax: { mode: 'direct', value: 100, unit: 'kg' } })
+    await mountCanonical([exercise('plain-bench', [false])], 0, [rule])
+    expect(container.textContent).toContain('Phase 1 of 3')
+    const id = mocks.A.exposures[0].prescriptionId
+    const p = mocks.S.prescriptions[id]
+    mocks.S.prescriptions[id] = { ...p, provenance: { ...p.provenance, reviewTrainingMax: true } }
+    await rerender()
+    expect(container.querySelector('[role="status"]').textContent).toContain('review your training max')
+  })
+
+  it('shows the named variation of a bodyweight ladder', async () => {
+    const rule = defaultPlanRule('bodyweight_ladder', { id: 'rule', exerciseId: 'plain-bench', rungs: ['easy', 'hard'] })
+    await mountCanonical([exercise('plain-bench', [false])], 0, [rule])
+    expect(container.textContent).toContain('Variation: easy')
+  })
+
   const press = async (label, selector) => {
     const control = container.querySelector(selector)
     const button = control?.querySelector(`button[aria-label="${label}"]`)

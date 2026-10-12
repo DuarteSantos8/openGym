@@ -68,7 +68,7 @@ describe('active exercise swap sheet flow', () => {
     expect(active.entries.map(value => value.id)).toEqual([ids[0], ids[2], ids[1]])
     expect(active.entries[1].target).toMatchObject({ sets: 2, reps: 8, weight: 30 })
     expect(active.entries.map(value => value.exposureId)).toEqual(active.exposures.map(value => value.exposureId))
-    expect(prescriptionAt(active, 1).preset).toBe('autoregulated')
+    expect(prescriptionAt(active, 1).preset).toBe('manual')
     expect(active.entries[0].sets).toEqual([{ w: 40, r: 5, done: false }])
     expect(active.entries[2].sets).toEqual([{ w: 40, r: 5, done: false }])
     expect(active.cur).toBe(1)

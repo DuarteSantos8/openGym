@@ -113,7 +113,7 @@ test('A17: canonical validation rejects malformed members and mismatched prescri
 
 test('A19: unknown inherited policies are audited as well as exercise overrides', () => {
   const { profile } = migrate(v1({ routines: [{ id: 'r', prog: 'wave', ex: [{ id: BENCH, sets: 1, reps: 5 }] }], workouts: [] }));
-  assert.equal(profile.routines[0].ex[0].rule.preset, 'autoregulated');
+  assert.equal(profile.routines[0].ex[0].rule.preset, 'manual');
   assert.equal(profile.migrationAudit.unsupported[0].value, 'wave');
 });
 
@@ -161,7 +161,7 @@ test('routine entries become occurrences with the mapped preset and warm-up reci
   ];
   const { profile } = migrate(v1({ routines: [{ id: 'r1', name: 'All', ex }], workouts: [] }));
   const occ = profile.routines[0].ex;
-  assert.deepEqual(occ.map(o => o.rule.preset), ['linear', 'bodyweight_ladder', 'greyskull', 'double', 'hold_seconds', 'autoregulated', 'autoregulated', 'autoregulated']);
+  assert.deepEqual(occ.map(o => o.rule.preset), ['linear', 'bodyweight_ladder', 'greyskull', 'double', 'hold_seconds', 'manual', 'manual', 'manual']);
   assert.deepEqual(occ.map(o => o.occurrenceId), ex.map((_, i) => `r1:o${i}`));
   assert.deepEqual(planPhase(occ[0].rule).parameters.load, { mode: 'absolute', value: 60, unit: 'kg' });
   assert.deepEqual([planPhase(occ[0].rule).parameters.sets, planPhase(occ[0].rule).parameters.reps, planPhase(occ[0].rule).parameters.restSeconds], [{ min: 3, max: 3 }, { min: 5, max: 5 }, 90]);
@@ -453,9 +453,9 @@ test('an exercise with no rule of its own keeps the rule v1 applied: its routine
   ];
   const state = v1({ routines: [{ id: 'r1', name: 'Inherit', ex }, { id: 'r2', name: 'Double', prog: 'double', ex: ex.slice(0, 4) }], workouts: [] });
   const { profile } = migrate(state);
-  assert.deepEqual(profile.routines[0].ex.map(o => o.rule.preset), ['linear', 'autoregulated', 'greyskull', 'autoregulated', 'autoregulated']);
+  assert.deepEqual(profile.routines[0].ex.map(o => o.rule.preset), ['linear', 'manual', 'greyskull', 'manual', 'manual']);
   // The routine's default reaches every rep exercise that set none; a hold or cardio row cannot take it.
-  assert.deepEqual(profile.routines[1].ex.map(o => o.rule.preset), ['double', 'autoregulated', 'greyskull', 'autoregulated']);
+  assert.deepEqual(profile.routines[1].ex.map(o => o.rule.preset), ['double', 'manual', 'greyskull', 'manual']);
   assert.deepEqual(validateCanonicalProfile(profile), { ok: true, errors: [] });
   // Nothing the routine's default could not reach is reported as needing review.
   assert.deepEqual(profile.migrationAudit.unsupported, []);
@@ -543,7 +543,7 @@ test('v1\'s "Add time" is a hold that grows by its own seconds step', () => {
   const ex = [{ id: SITUP, sets: 3, sec: 45, mode: 'time', prog: 'time' }, { id: SITUP, sets: 3, sec: 45, mode: 'time', prog: 'time', inc: 10 }, { id: SITUP, sets: 3, sec: 45, mode: 'time' }];
   const { profile } = migrate(v1({ routines: [{ id: 'r1', name: 'Holds', ex }], workouts: [] }));
   const [auto, own, off] = profile.routines[0].ex.map(o => o.rule);
-  assert.deepEqual([auto.preset, planOptions(auto).step, planOptions(own).step, off.preset], ['hold_seconds', { type: 'seconds', value: 5 }, { type: 'seconds', value: 10 }, 'autoregulated']);
+  assert.deepEqual([auto.preset, planOptions(auto).step, planOptions(own).step, off.preset], ['hold_seconds', { type: 'seconds', value: 5 }, { type: 'seconds', value: 10 }, 'manual']);
   assert.deepEqual(planPhase(auto).parameters.durationSeconds, { min: 45, max: 45 });
   assert.deepEqual(validateCanonicalProfile(profile), { ok: true, errors: [] });
 });

@@ -5,7 +5,8 @@
 // when the last session finished (advance.js), so generating twice gives the same prescription.
 import { canonicalJSON, contentHash, deepFreeze } from './canonical.js'
 import { resolveLoad, roundLoad } from './load.js'
-import { needsOneRm, validatePlanRule } from './rules.js'
+import { needsOneRm, supports, validatePlanRule } from './rules.js'
+import { failureSetsOf, failureSetSelected } from './failure.js'
 import { planWarmupRows } from './warmup.js'
 import { planFingerprint } from './context.js'
 import { bestLoad, bestLoadOf, entryValues, frozenValues, initialValues, operatorFor, perRowLoads, phaseById, regimeExit, rowsFor, sameStart, unweightedLog, valueOf } from './program.js'
@@ -42,13 +43,15 @@ function trainingMaxFor(program, snapshot1RM, rounding) {
  * @param {Object|null} [input.at]               { phaseId, values }: the point of the program a session recorded elsewhere was
  *                                               prescribed at (a migrated v1 session), instead of the track's state
  */
-export function generatePrescription({ id, now, trackId, rule, state = null, lastPrescription = null, lastLog = null, oneRm = null, warmup = null, equipment = null, reset = null, heldLoad = null, startFrom = 'plan', fingerprint, perSide = false, restPause = false, restPauseReps = null, bodyweight = false, assisted = undefined, at = null, backoff = false, warmupFloor = 0 }) {
+export function generatePrescription({ id, now, trackId, rule, state = null, lastPrescription = null, lastLog = null, oneRm = null, warmup = null, equipment = null, reset = null, heldLoad = null, startFrom = 'plan', fingerprint, perSide = false, restPause = false, restPauseReps = null, bodyweight = false, assisted = undefined, at = null, backoff = false, warmupFloor = 0, failureSets = undefined, lastToFailure = false }) {
   // A log keeps reps as typed (5.5 from a hand-edited or imported record); a plan only deals in whole ones.
   if (Number.isFinite(lastLog?.actual?.reps) && !Number.isInteger(lastLog.actual.reps)) lastLog = { ...lastLog, actual: { ...lastLog.actual, reps: Math.floor(lastLog.actual.reps) } }
   const check = validatePlanRule(rule)
   if (!check.ok) throw new Error(`invalid plan rule ${rule?.id}: ${check.errors.join('; ')}`)
   // A restarted plan is a fresh track: no earned step, no phase, no completed status.
   if (reset) state = null
+  const selection = failureSetsOf({ failureSets, lastToFailure })
+  const planFailure = !rule.program.phases[0].parameters.speed && (failureSets == null && lastToFailure || supports(rule).failure && !restPause)
   const program = rule.program
   // An edited rule (a new revision) reopens a completed track; nothing else does.
   const reopened = state?.status === 'completed' && state.planRuleRevision !== rule.revision
@@ -127,7 +130,7 @@ export function generatePrescription({ id, now, trackId, rule, state = null, las
     // a bodyweight climb at none. A phase with no progression opens at its own declared load, or at
     // what was lifted when it declares none (v1 'off'); any other at what was done last time.
     load: perRowLoads(phase) || reset || !lastLog || (p.load.mode === 'empty' && phase.progression.length) ? null
-      : owns('load') ? (fresh || operatorFor(phase, 'load').basis === 'last_actual' || !last.load ? null : copy(last.load))
+      : owns('load') ? (fresh || phase.success.load === 'prescribed' || operatorFor(phase, 'load').basis === 'last_actual' || !last.load ? null : copy(last.load))
       : owns('durationSeconds') || !(p.load.mode === 'absolute' && p.load.value > 0) ? bestLoadOf(lastLog, assisted, values.load.unit) : null
   }
   if (duration && p.speed && lastLog?.performance?.sets?.length) {
@@ -153,6 +156,7 @@ export function generatePrescription({ id, now, trackId, rule, state = null, las
     rows.forEach((row, i) => { row.reps = { min: aims[i] ?? reps, max: p.reps.max } })
     prefill.rowReps = rows.map(row => row.reps.min)
   }
+  if (planFailure) rows.forEach((row, i) => { if (failureSetSelected({ failureSets: selection }, i, rows.length)) row.failure = true })
   const backoffStep = backoff && !assisted && !duration && !restPause && !perRowLoads(phase) && phase.groups.length === 1 ? operatorFor(phase, 'load')?.step.value ?? rule.rounding.step : 0
   if (backoffStep > 0 && rows[0]?.load) {
     const top = prefill.load?.value ?? rows[0].load.value
@@ -188,9 +192,10 @@ export function generatePrescription({ id, now, trackId, rule, state = null, las
     },
     target, trainingMax,
     rows,
+    ...(planFailure && (typeof selection === 'string' || selection.length) ? { failureSets: selection } : {}),
     ...(warmupRows.length ? { warmupRows } : {}),
     prefill,
-    provenance: { derivedFromOutOfPlan: !!lastLog?.audit?.some(f => f.code !== 'completed_track'), sourceLogId: lastLog?.id ?? null, ...(deload ? { deload: copy(deload) } : {}) }
+    provenance: { derivedFromOutOfPlan: !!lastLog?.audit?.some(f => f.code !== 'completed_track'), sourceLogId: lastLog?.id ?? null, ...(deload ? { deload: copy(deload) } : {}), ...(carry && phase.reviewAfter && state.phaseMisses >= phase.reviewAfter && status !== 'completed' ? { reviewTrainingMax: true } : {}) }
   }
   return deepFreeze({ ...body, contentHash: contentHash(body) })
 }

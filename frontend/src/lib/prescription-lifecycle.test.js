@@ -102,7 +102,7 @@ describe('deload lifecycle (linear 60 kg, three short sessions in a row)', () =>
 
 describe('a cardio interval, start to finish', () => {
   const cardio = ruleOccurrence('3220', {
-    preset: 'autoregulated', options: { sets: { min: 1, max: 1 }, reps: { min: 1, max: 1 }, durationSeconds: { min: 1500, max: 1500 }, speed: 9.5 }
+    preset: 'manual', options: { sets: { min: 1, max: 1 }, reps: { min: 1, max: 1 }, durationSeconds: { min: 1500, max: 1500 }, speed: 9.5 }
   })
   it('opens as minutes and speed, and is logged and saved as cardio', () => {
     const S = profile()

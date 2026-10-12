@@ -33,7 +33,7 @@ import Elapsed from '../components/Elapsed.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
 import { buildSessionExposures, occurrenceFor } from '../lib/session-start.js'
-import { missingReference, roundLoad, ruleOfPrescription } from '../lib/prescription/index.js'
+import { missingReference, operatorFor, phaseOf, roundLoad, ruleOfPrescription } from '../lib/prescription/index.js'
 import { entriesForExposures, loadStepFor, planSummary, rowFindings } from '../lib/session-ui-adapter.js'
 import { findingText } from '../lib/progression-copy.js'
 import { sessionNoProg, setSessionNoProg, setEntryNoProg, syncExposureExclusion } from '../lib/session-noprog.js'
@@ -664,10 +664,13 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     {prescription && <div className="small" style={{ margin: '6px 0', display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
       <span className="dim">{t('Plan')}: {planSummary(prescription, fmtNum)} · {t('Rest {0} s', prescription.parameters.restSeconds)}{effortText}</span>
       {prescription.statusAtGeneration === 'completed' && <span className="tag acc">{t('Progression completed')}</span>}
+      {prescription.ruleSnapshot.program.trainingMax && <span className="tag">{t('Phase {0} of {1}', prescription.ruleSnapshot.program.phases.findIndex(ph => ph.id === prescription.phaseId) + 1, prescription.ruleSnapshot.program.phases.length)}</span>}
+      {operatorFor(phaseOf(prescription), 'difficulty') && <span className="tag">{t('Variation: {0}', operatorFor(phaseOf(prescription), 'difficulty').rungs[prescription.values.difficulty])}</span>}
       {findings.size > 0 && <span className="tag" style={{ color: 'var(--yellow)' }}>{t('Out of plan')}</span>}
     </div>}
     {prescription && missingReference(prescription) && <div className="small dim" style={{ marginBottom: 6 }}>{t('No 1RM on file — enter the weight you lift.')}</div>}
     {prescription?.provenance.derivedFromOutOfPlan && <div className="small dim" style={{ marginBottom: 6 }}>{t('Suggested from a session logged out of plan.')}</div>}
+    {prescription?.provenance.reviewTrainingMax && <div className="small" role="status" style={{ color: 'var(--yellow)', marginBottom: 6 }}>{t('progression.reviewTrainingMax')}</div>}
     {prescription?.provenance.deload && <div className="small dim" style={{ marginBottom: 6 }}>{t('Backed off after {0} sessions short of the plan: {1} → {2} {3}.',
       prescription.provenance.deload.stalls, fmtNum(prescription.provenance.deload.from), fmtNum(prescription.provenance.deload.to),
       prescription.provenance.deload.method === 'seconds' ? 's' : prescription.parameters.load.expression.mode === 'percent_1rm' ? '%' : S.unit)}</div>}
