@@ -38,7 +38,9 @@
 // `since`, but it is dated inside the week (on or after `startsOn`) and its name — a merged
 // session reads 'US W1 D1 + Core' — says which routines were done. The date bound matters: a
 // planner may reuse its routine ids and names every week (W1 again after a restart), so a
-// workout from a past week that happens to carry this week's name must never count.
+// workout from a past week that happens to carry this week's name must never count. `since` is
+// a clock only while it is positive: 0 is no apply time at all, and every workout ever logged
+// would start after it.
 
 import { isoOf, weekKey, weekStartOf } from './format.js'
 
@@ -63,6 +65,9 @@ const namesRoutine = (w, name) => {
 export const queueOf = S => {
   const q = S?.queue
   if (!q || typeof q !== 'object' || !Array.isArray(q.ids)) return null
+  // A strict pass counts by its clock alone (the name clause is off), so without a positive
+  // `since` it could never count a session: unreadable, not a week stuck on its first one.
+  if (q.strict === true && !(q.since > 0)) return null
   const routines = Array.isArray(S.routines) ? S.routines : []
   // First valid occurrence of each id: a queue is a set of sessions, and a repeated id would
   // otherwise show twice in the progress row and count twice in the week's tally. The persisted
@@ -74,7 +79,7 @@ export const queueOf = S => {
 
 // The DONE RULE for one workout and one session — `isDone` asks it across the log.
 const countsFor = (S, q, w, id) => routineIdsOf(w).includes(id)
-  && ((w.start ?? 0) >= q.since
+  && ((q.since > 0 && (w.start ?? 0) >= q.since)
     || (q.strict !== true && String(w.d || '') >= q.startsOn && namesRoutine(w, S.routines.find(r => r.id === id)?.name)))
 const isDone = (S, q, id) => S.workouts.some(w => countsFor(S, q, w, id))
 
