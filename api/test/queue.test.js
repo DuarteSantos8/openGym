@@ -68,6 +68,24 @@ test('queue: a workout logged before "since" counts only when it is dated inside
   assert.equal(effectiveRoutineId(S2, '2026-09-07'), 'r1');
 });
 
+test('queue: a workout dated after the day asked about has not happened yet, so the name clause skips it', () => {
+  // Kept with the frontend's copy. The start predates `since`, so the name clause is the only one
+  // that could count this workout, and the reminder keeps offering the session until its date.
+  const q = { ids: ['r1', 'r2'], since: 5000, startsOn: '2026-09-07', label: 'W1' };
+  const ahead = { d: '2026-09-10', start: 1000, routineIds: ['r1'], name: 'Push' };
+  const S = { ...base, queue: q, workouts: [ahead] };
+  assert.equal(effectiveRoutineId(S, '2026-09-09'), 'r1');
+  assert.equal(effectiveRoutineId(S, '2026-09-10'), 'r2');   // on its own date it has happened
+  assert.equal(pinState(S, 'r1', '2026-09-09'), 'open');
+  assert.equal(pinState(S, 'r1', '2026-09-10'), 'done');
+  // a one-session week it completes is complete on that date, so the weekday plan shows through
+  const one = { ...S, queue: { ...q, ids: ['r1'] }, week: { 4: 'r1' } };   // Thursday
+  assert.equal(effectiveRoutineId(one, '2026-09-10'), 'r1');
+  // without a `today`, pinState takes the user's date in the reminder's zone: 2099 is still ahead
+  const far = { ...S, reminder: { tz: 'UTC' }, workouts: [{ ...ahead, d: '2099-01-01' }] };
+  assert.equal(pinState(far, 'r1'), 'open');
+});
+
 test('queue: a routine whose own name contains " + " is matched by its whole name', () => {
   // Kept with the frontend's copy: splitting 'Push + Pull' gave ['Push', 'Pull'], neither of
   // which is the routine, so that session's reminder went on firing after it was trained.

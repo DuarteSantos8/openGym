@@ -15,7 +15,9 @@
 // `strict: true` (the app's "Start new pass") drops the dated name clause: only a workout started
 // at/after `since` counts, so a session logged earlier that day stays the old pass's. `since` is
 // a clock only while it is positive: 0 is no apply time at all, and every workout ever logged
-// would start after it.
+// would start after it. The name clause stops at today: a workout dated later has not happened
+// yet (one an API client wrote, or the one that closed the previous rotation pass on a device
+// whose calendar runs ahead). Here today is the date the reminder asks about (`iso`).
 //
 // NEXT RULE (shared with the frontend): once `startsOn` is reached, the day's session is the
 // first not-done one in slot order — unless pins say otherwise.
@@ -38,10 +40,10 @@ function namesRoutine(w, name) {
   const n = String(w.name || '');
   return n === name || n.startsWith(name + ' + ') || n.endsWith(' + ' + name) || n.includes(' + ' + name + ' + ');
 }
-function queueDone(S, id, startsOn) {
+function queueDone(S, id, startsOn, today) {
   const currentName = (S.routines || []).find(r => r?.id === id)?.name;
   return (S.workouts || []).some(w => routineIdsOf(w).includes(id)
-    && ((S.queue.since > 0 && (w.start ?? 0) >= S.queue.since) || (S.queue.strict !== true && String(w.d || '') >= startsOn && namesRoutine(w, currentName))));
+    && ((S.queue.since > 0 && (w.start ?? 0) >= S.queue.since) || (S.queue.strict !== true && String(w.d || '') >= startsOn && String(w.d || '') <= today && namesRoutine(w, currentName))));
 }
 // The calendar date of an instant where the USER is. The frontend's fallback for a missing
 // startsOn is the device's local date of the apply; the closest thing here is the zone the
@@ -73,11 +75,12 @@ function queueOf(S) {
 // The reminder tick only ever asks "what's next right now" — there is no separate "today" to
 // preview a different date against, so `today` in the spec's `next(iso, today)` is just `iso`.
 // That collapses `iso === max(today, startsOn)` to the equivalent, simpler `iso >= startsOn`, and
-// "pins dated today or later" to "pins dated `iso` or later".
+// "pins dated today or later" to "pins dated `iso` or later", and the DONE RULE's "up to today"
+// to "up to `iso`".
 function queueNext(S, iso) {
   const q = queueOf(S);
   if (!q || iso < q.startsOn) return null;
-  const remaining = q.ids.filter(id => !queueDone(S, id, q.startsOn));
+  const remaining = q.ids.filter(id => !queueDone(S, id, q.startsOn, iso));
   const pins = Object.entries(S.dayPlan || {}).filter(([d, id]) => d >= iso && remaining.includes(id));
   const here = pins.find(([d]) => d === iso);
   if (here) return here[1];
@@ -87,11 +90,12 @@ function queueNext(S, iso) {
 // What a per-date override pointing at `id` means for the queue: 'open' — a pin on a session
 // still to do (its day's session, skipped elsewhere); 'done' — a fulfilled pin, to be read as no
 // override; null — not a queue session (no queue, a malformed one, a routine override, 'rest', a
-// deleted routine), so the plain override rules apply.
-export function pinState(S, id) {
+// deleted routine), so the plain override rules apply. As of `today`: by default the user's
+// date in the zone the reminder fires by, as the frontend's copy defaults to the device's.
+export function pinState(S, id, today = dayIn(Date.now(), S.reminder?.tz)) {
   const q = queueOf(S);
   if (!q || !id || !q.ids.includes(id)) return null;
-  return queueDone(S, id, q.startsOn) ? 'done' : 'open';
+  return queueDone(S, id, q.startsOn, today) ? 'done' : 'open';
 }
 
 // A weekday can hold a routine-id list (combine routines); the reminder only needs the first.
@@ -104,7 +108,7 @@ export function pinState(S, id) {
 export function effectiveRoutineId(S, iso) {
   const ov = S.dayPlan?.[iso];
   if (ov === 'rest') return null;
-  const pin = pinState(S, ov);
+  const pin = pinState(S, ov, iso);
   if (pin === 'open') return ov;
   if (!pin && ov && S.routines?.some(r => r?.id === ov)) return ov;
   const q = queueNext(S, iso);
@@ -120,5 +124,5 @@ export function effectiveRoutineId(S, iso) {
 // "the queue's day" is any day from startsOn on.)
 export function queueLiveOn(S, iso) {
   const q = queueOf(S);
-  return !!q && iso >= q.startsOn && q.ids.some(id => !queueDone(S, id, q.startsOn));
+  return !!q && iso >= q.startsOn && q.ids.some(id => !queueDone(S, id, q.startsOn, iso));
 }
