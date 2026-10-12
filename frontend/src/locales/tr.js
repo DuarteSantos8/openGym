@@ -2059,5 +2059,12 @@ export default {
   "{0} exercises · {1} sets": "{0} egzersiz · {1} set",
   "{0} of {1} sessions completed": "{1} seansın {0} tanesi tamamlandı",
   "{0} planned sessions": "{0} planlanmış seans",
-  "{0} weeks": "{0} hafta"
+  "{0} weeks": "{0} hafta",
+  "Export programme file": "Program dosyasını dışa aktar",
+  "Import a programme file": "Program dosyası içe aktar",
+  "Weeks, routines and exercise notes only. No workout history or weigh-ins.": "Yalnızca haftalar, rutinler ve egzersiz notları. Antrenman geçmişi ve tartılmalar dahil değildir.",
+  "Added as a new programme. Choose your own start date.": "Yeni bir program olarak eklenir. Kendi başlangıç tarihinizi seçin.",
+  "Programme file saved. Send it to a friend!": "Program dosyası kaydedildi. Bir arkadaşınıza gönderin!",
+  "this isn’t an openGym programme file": "bu bir openGym program dosyası değil",
+  "Couldn’t export that programme.": "Bu program dışa aktarılamadı."
 }

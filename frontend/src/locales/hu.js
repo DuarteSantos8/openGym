@@ -2062,5 +2062,12 @@ export default {
   "{0} exercises · {1} sets": "{0} gyakorlat · {1} sorozat",
   "{0} of {1} sessions completed": "{1} edzésből {0} befejezve",
   "{0} planned sessions": "{0} tervezett edzés",
-  "{0} weeks": "{0} hét"
+  "{0} weeks": "{0} hét",
+  "Export programme file": "Programfájl exportálása",
+  "Import a programme file": "Programfájl importálása",
+  "Weeks, routines and exercise notes only. No workout history or weigh-ins.": "Csak hetek, rutinok és gyakorlatjegyzetek. Edzéstörténet és testsúlymérések nélkül.",
+  "Added as a new programme. Choose your own start date.": "Új programként kerül hozzáadásra. Válaszd ki a saját kezdődátumodat.",
+  "Programme file saved. Send it to a friend!": "A programfájl mentve. Küldd el egy barátodnak!",
+  "this isn’t an openGym programme file": "ez nem openGym-programfájl",
+  "Couldn’t export that programme.": "Nem sikerült exportálni ezt a programot."
 }

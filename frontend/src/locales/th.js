@@ -2070,5 +2070,12 @@ export default {
   "{0} exercises · {1} sets": "{0} ท่า · {1} เซ็ต",
   "{0} of {1} sessions completed": "เสร็จแล้ว {0} จาก {1} เซสชัน",
   "{0} planned sessions": "{0} เซสชันที่วางแผนไว้",
-  "{0} weeks": "{0} สัปดาห์"
+  "{0} weeks": "{0} สัปดาห์",
+  "Export programme file": "ส่งออกไฟล์โปรแกรม",
+  "Import a programme file": "นำเข้าไฟล์โปรแกรม",
+  "Weeks, routines and exercise notes only. No workout history or weigh-ins.": "มีเฉพาะสัปดาห์ กิจวัตร และบันทึกของท่าออกกำลังกาย ไม่รวมประวัติการฝึกหรือการชั่งน้ำหนัก",
+  "Added as a new programme. Choose your own start date.": "เพิ่มเป็นโปรแกรมใหม่ เลือกวันที่เริ่มของคุณเอง",
+  "Programme file saved. Send it to a friend!": "บันทึกไฟล์โปรแกรมแล้ว ส่งให้เพื่อนได้เลย!",
+  "this isn’t an openGym programme file": "นี่ไม่ใช่ไฟล์โปรแกรมของ openGym",
+  "Couldn’t export that programme.": "ไม่สามารถส่งออกโปรแกรมนี้ได้"
 }
