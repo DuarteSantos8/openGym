@@ -1,0 +1,23 @@
+{
+  "id": "7744",
+  "name": "cable standing supinated face pull (with rope)",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "biceps",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A standing face pull using a rope with an underhand grip. It trains the rear shoulders and upper back, and is gentle on the wrists.",
+  "instructions": [
+    "Set the rope at face height and grip it with your palms facing up.",
+    "Step back and stand tall.",
+    "Pull the rope toward your face, elbows leading.",
+    "Squeeze your shoulder blades at the end.",
+    "Return slowly to the start."
+  ],
+  "textSource": "opengym"
+}

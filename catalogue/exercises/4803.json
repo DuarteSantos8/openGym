@@ -1,0 +1,22 @@
+{
+  "id": "4803",
+  "name": "triceps press (high bar position)",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Lying or seated barbell press where the bar travels from a high position over the head, isolating the triceps through a long range.",
+  "instructions": [
+    "Set up with a barbell held at arm's length above your head, hands about shoulder-width apart.",
+    "Keep your upper arms still and pointing up.",
+    "Bend your elbows to lower the bar toward your forehead or just behind your head.",
+    "Keep your elbows from flaring out.",
+    "Extend your arms to press the bar back to the start."
+  ],
+  "textSource": "opengym"
+}

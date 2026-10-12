@@ -1,0 +1,21 @@
+{
+  "id": "5079",
+  "name": "lying floor fly",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "Lie on the floor and sweep dumbbells out and together in an arc. The floor limits the range, which is gentle on the shoulders.",
+  "instructions": [
+    "Lie on your back holding dumbbells above your chest, palms facing in.",
+    "Keep a slight bend in your elbows.",
+    "Open your arms out until your upper arms touch the floor.",
+    "Squeeze your chest to bring the weights back together.",
+    "Keep your wrists straight and the motion slow."
+  ],
+  "textSource": "opengym"
+}

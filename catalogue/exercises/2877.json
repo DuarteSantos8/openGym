@@ -1,0 +1,22 @@
+{
+  "id": "2877",
+  "name": "seal",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower back",
+    "hip flexors",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A rolling Pilates exercise that massages the spine and builds ab control.",
+  "instructions": [
+    "Sit balanced on your tailbone with knees open and hands inside your ankles.",
+    "Tuck your chin and round your back into a ball.",
+    "Roll back to your shoulders and clap your feet together.",
+    "Roll up to the balance position and clap again.",
+    "Keep the roll smooth and avoid rolling onto your neck."
+  ],
+  "textSource": "opengym"
+}

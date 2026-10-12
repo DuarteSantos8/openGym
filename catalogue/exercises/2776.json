@@ -1,0 +1,21 @@
+{
+  "id": "2776",
+  "name": "shoulder adduction",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "chest",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "Bringing the arm down toward the body from the side, working the lats and chest.",
+  "instructions": [
+    "Stand or sit tall with a relaxed posture and the joint in a neutral starting position.",
+    "Stand tall with one arm raised out to the side at shoulder height.",
+    "Pull the arm down toward your side with control.",
+    "Keep your torso still and finish with the arm next to your body.",
+    "Repeat for 10-15 smooth reps, then switch sides if you are working one side at a time."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4599",
+  "name": "roll iliopsoas",
+  "bodyPart": "upper legs",
+  "equipment": "roller",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A roller or ball release for the deep hip flexor area at the front of the pelvis.",
+  "instructions": [
+    "Lie face down with the roller under the front of one hip, just inside the hip bone.",
+    "Support your weight on your forearms.",
+    "Shift your weight gently over the roller.",
+    "Roll slowly a small distance up and down.",
+    "Pause on tight spots while breathing deeply.",
+    "Roll for 30-60 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

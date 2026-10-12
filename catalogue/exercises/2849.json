@@ -1,0 +1,23 @@
+{
+  "id": "2849",
+  "name": "leg pull",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A plank-based Pilates move where you lift one leg at a time, training core stability.",
+  "instructions": [
+    "Start in a high plank.",
+    "Brace your core.",
+    "Lift one leg a few inches.",
+    "Lower and switch legs.",
+    "Keep your hips level."
+  ],
+  "textSource": "opengym"
+}

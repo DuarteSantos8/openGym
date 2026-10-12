@@ -1,0 +1,25 @@
+{
+  "id": "10096",
+  "name": "dumbbell rear lunge to single arm shoulders press",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "triceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A combo move: a rear lunge followed by a single-arm press as you stand. It works legs and shoulders together.",
+  "instructions": [
+    "Hold a dumbbell at one shoulder and stand tall.",
+    "Step one leg back into a lunge.",
+    "Push through the front foot to stand up.",
+    "As you rise, press the dumbbell overhead.",
+    "Lower it to your shoulder and repeat.",
+    "Switch arms or legs each set."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1125",
+  "name": "suspender one arm leg push up",
+  "bodyPart": "chest",
+  "equipment": "suspension trainer",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with feet in the straps and one hand lifted, building chest strength and total-body stability.",
+  "instructions": [
+    "Put your feet in the straps and set a plank with one hand on the floor.",
+    "Brace your core firmly.",
+    "Lower your chest by bending the supporting elbow.",
+    "Keep your hips level and avoid twisting.",
+    "Press back up.",
+    "Complete your reps, then switch hands."
+  ],
+  "textSource": "opengym"
+}

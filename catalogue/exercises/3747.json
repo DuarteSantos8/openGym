@@ -1,0 +1,23 @@
+{
+  "id": "3747",
+  "name": "assisted pistol squat with bed sheet",
+  "bodyPart": "upper legs",
+  "equipment": "assisted",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "ankles"
+  ],
+  "category": "calisthenics",
+  "description": "A single-leg squat where you hold a bed sheet anchored to something sturdy for assistance.",
+  "instructions": [
+    "Hold the ends of a bed sheet anchored to a door or post.",
+    "Stand on one leg with the other leg extended forward.",
+    "Sit down on your standing leg, using the sheet as support.",
+    "Lower as far as you can control.",
+    "Push up to stand and switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

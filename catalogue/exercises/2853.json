@@ -1,0 +1,22 @@
+{
+  "id": "2853",
+  "name": "lying neck pull",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "sternocleidomastoid",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A roll up from lying with your hands behind your head, training the abs.",
+  "instructions": [
+    "Lie on your back with hands behind your head.",
+    "Curl your head and shoulders up.",
+    "Roll up to sit.",
+    "Reach forward.",
+    "Roll down with control."
+  ],
+  "textSource": "opengym"
+}

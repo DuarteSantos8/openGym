@@ -1,0 +1,24 @@
+{
+  "id": "7590",
+  "name": "dumbbell glute dominant bulgarian split squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A rear-foot-elevated split squat with a forward lean, loading the glutes.",
+  "instructions": [
+    "Hold a dumbbell in each hand and stand with your back foot on a bench.",
+    "Step the front foot out far enough for your shin to stay near vertical.",
+    "Lean your torso forward slightly.",
+    "Lower until the thigh is parallel.",
+    "Drive through your front heel to rise.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

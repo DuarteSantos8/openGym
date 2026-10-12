@@ -1,0 +1,23 @@
+{
+  "id": "1310",
+  "name": "weighted drop push up",
+  "bodyPart": "chest",
+  "equipment": "weighted",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A weighted push-up variation where you drop and shift your hands between push-ups for extra load. It challenges the chest and triceps.",
+  "instructions": [
+    "Start in a high plank position with your hands slightly wider than shoulder-width apart and your feet together.",
+    "Lower your chest towards the ground, keeping your elbows close to your body.",
+    "Once your chest is just above the ground, explosively push yourself up, lifting your hands off the ground.",
+    "As you push up, quickly move your hands out to the sides and slightly forward, allowing your body to drop down towards the ground.",
+    "Catch yourself with your hands in the wider position and immediately lower your chest towards the ground again.",
+    "Repeat the push-up motion, dropping down and catching yourself with your hands in the narrower position.",
+    "Continue alternating between the wider and narrower hand positions for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

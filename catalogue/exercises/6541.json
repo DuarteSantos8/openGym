@@ -1,0 +1,23 @@
+{
+  "id": "6541",
+  "name": "bodyweight bench squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A squat down to a bench and back up. The bench gives you a depth target and builds leg strength with control.",
+  "instructions": [
+    "Stand in front of a bench with feet shoulder-width apart.",
+    "Push your hips back and bend your knees to lower.",
+    "Lightly touch the bench with your glutes without dropping onto it.",
+    "Keep your chest up and knees tracking over your toes.",
+    "Drive through your whole foot to stand back up.",
+    "Squeeze your glutes at the top."
+  ],
+  "textSource": "opengym"
+}

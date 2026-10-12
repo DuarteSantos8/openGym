@@ -1,0 +1,23 @@
+{
+  "id": "1658",
+  "name": "dumbbell lunge with bicep curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A lunge paired with a bicep curl. It trains the biceps, quads and glutes together.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand with your palms facing forward.",
+    "Take a step forward with your right foot, lowering your body into a lunge position. Your right knee should be bent at a 90-degree angle and your left knee should be hovering just above the ground.",
+    "As you lunge forward, simultaneously curl the dumbbells towards your shoulders, keeping your elbows close to your body.",
+    "Pause for a moment at the bottom of the lunge, then push through your right heel to return to the starting position, lowering the dumbbells back down to your sides.",
+    "Repeat the lunge and bicep curl on the opposite side, stepping forward with your left foot.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "femaleVariant": "2549",
+  "textSource": "exercisedb"
+}

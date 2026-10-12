@@ -1,0 +1,23 @@
+{
+  "id": "2710",
+  "name": "strongman truck pull",
+  "bodyPart": "full body",
+  "equipment": "rope",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "grip muscles",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Pulling a heavy truck with a rope over a distance, building leg drive and grip.",
+  "instructions": [
+    "Stand facing away from the truck with the rope held across your body.",
+    "Lean forward and dig your feet in.",
+    "Take short, powerful steps driving through the legs.",
+    "Keep your core braced and the rope close.",
+    "Pull the full distance, then rest."
+  ],
+  "textSource": "opengym"
+}

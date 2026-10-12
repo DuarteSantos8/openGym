@@ -1,0 +1,21 @@
+{
+  "id": "4359",
+  "name": "band overhead triceps extension v. 3",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A triceps extension with a band held overhead. It trains the long head of the triceps.",
+  "instructions": [
+    "Stand holding a band behind your head, one hand low and one hand high.",
+    "Keep your elbows close to your head.",
+    "Extend your top arm straight overhead.",
+    "Pause briefly.",
+    "Lower slowly, then switch sides."
+  ],
+  "textSource": "opengym"
+}

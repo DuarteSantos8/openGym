@@ -1,0 +1,21 @@
+{
+  "id": "5275",
+  "name": "lying toe touch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "Lying with the legs up, reach your hands toward your toes. It trains the upper abs.",
+  "instructions": [
+    "Lie on your back with your legs straight up.",
+    "Reach your arms up toward your toes.",
+    "Lift your shoulders off the floor and touch your toes.",
+    "Lower your shoulders slowly.",
+    "Keep your legs steady."
+  ],
+  "textSource": "opengym"
+}

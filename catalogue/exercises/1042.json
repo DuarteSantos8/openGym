@@ -1,0 +1,22 @@
+{
+  "id": "1042",
+  "name": "weighted lying neck extension",
+  "bodyPart": "neck",
+  "equipment": "weighted",
+  "target": "traps",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius",
+    "sternocleidomastoid"
+  ],
+  "category": "strength",
+  "description": "Lying face down, you lift your head against a light load. It strengthens the muscles at the back of the neck.",
+  "instructions": [
+    "Lie face down on a bench with your head past the edge and a light weight on the back of your head.",
+    "Start with your chin tucked toward your chest.",
+    "Slowly lift your head until your neck is in line with your torso.",
+    "Pause briefly, then lower with control.",
+    "Keep the load light and the motion smooth."
+  ],
+  "textSource": "opengym"
+}

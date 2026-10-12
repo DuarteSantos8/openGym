@@ -1,0 +1,23 @@
+{
+  "id": "10119",
+  "name": "cable lateral step up",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A sideways step up against cable tension that works the glutes and thighs and challenges balance.",
+  "instructions": [
+    "Stand sideways to a box with the cable handle held at your chest.",
+    "Place the near foot on the box and press through that heel.",
+    "Step up until your leg is straight and stand tall on top.",
+    "Lower slowly back to the floor with control.",
+    "Do all reps on one side, then turn around and switch."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4752",
+  "name": "dumbbell side bench squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "hamstrings",
+    "inner thighs"
+  ],
+  "category": "strength",
+  "description": "A side squat where you sit back toward a bench while holding a dumbbell. It works the thighs and glutes one side at a time.",
+  "instructions": [
+    "Stand sideways to a bench holding a dumbbell at your chest, feet wide.",
+    "Shift your weight to the leg nearest the bench.",
+    "Sit back and down until you lightly touch the bench.",
+    "Keep the other leg straight.",
+    "Drive up through your heel and repeat, then switch sides."
+  ],
+  "textSource": "opengym"
+}

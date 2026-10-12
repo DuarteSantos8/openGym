@@ -1,0 +1,22 @@
+{
+  "id": "5897",
+  "name": "puppy pose",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper back",
+    "triceps"
+  ],
+  "category": "yoga",
+  "description": "A half child's pose with arms reaching forward and hips high. Opens the shoulders and the back.",
+  "instructions": [
+    "Start on hands and knees with your hips over your knees.",
+    "Walk your hands forward and lower your chest toward the floor.",
+    "Keep your hips high above your knees.",
+    "Rest your forehead down and hold for 5 slow breaths.",
+    "Walk your hands back to return."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "11277",
+  "name": "cable standing front raise v. 3",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A front raise using a low cable. It builds the front of the shoulders with steady tension.",
+  "instructions": [
+    "Stand facing away from a low pulley, holding the handle between your legs.",
+    "Keep your core tight and arm nearly straight.",
+    "Raise the handle forward to shoulder height.",
+    "Pause briefly.",
+    "Lower slowly, finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

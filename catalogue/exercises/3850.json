@@ -1,0 +1,22 @@
+{
+  "id": "3850",
+  "name": "two legs reverse biceps curl with towel v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A reverse curl using a towel looped around both feet. It trains your biceps and forearms.",
+  "instructions": [
+    "Lie on your back and loop a towel around both feet.",
+    "Hold the ends with an overhand grip.",
+    "Pull the towel toward your chest while your legs resist.",
+    "Pause briefly.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

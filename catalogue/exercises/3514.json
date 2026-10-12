@@ -1,0 +1,23 @@
+{
+  "id": "3514",
+  "name": "single leg sliding floor bridge curl on towel",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A one-leg bridge curl with the heel on a towel. It's a tougher hamstring and glute exercise.",
+  "instructions": [
+    "Lie on your back with one heel on a towel on a smooth floor.",
+    "Lift the other leg straight up.",
+    "Raise your hips into a bridge.",
+    "Slide your heel away until the leg is nearly straight.",
+    "Pull the heel back toward your glutes.",
+    "Complete your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

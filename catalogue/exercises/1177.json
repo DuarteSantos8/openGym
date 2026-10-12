@@ -1,0 +1,21 @@
+{
+  "id": "1177",
+  "name": "dumbbell lying hammer press v. 2",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A bench press with dumbbells held in a neutral grip that is easier on the shoulders.",
+  "instructions": [
+    "Lie on a bench holding dumbbells with palms facing each other.",
+    "Start with the weights above your chest.",
+    "Lower them to the sides of your chest, elbows slightly tucked.",
+    "Press back up until your arms are straight.",
+    "Keep your feet planted and shoulder blades pinched."
+  ],
+  "textSource": "opengym"
+}

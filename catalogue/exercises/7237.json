@@ -1,0 +1,23 @@
+{
+  "id": "7237",
+  "name": "barbell hook grip deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "grip muscles",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Deadlift using a hook grip, where the thumb is trapped under the fingers, for a secure hold on heavy pulls.",
+  "instructions": [
+    "Stand with the bar over mid-foot and grip it with your thumbs under your fingers.",
+    "Hinge down, brace your core and keep your back flat.",
+    "Push the floor away and stand up, keeping the bar close to your legs.",
+    "Lock out with hips and knees extended.",
+    "Lower the bar under control by hinging at the hips first."
+  ],
+  "textSource": "opengym"
+}

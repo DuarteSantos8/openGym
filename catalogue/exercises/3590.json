@@ -1,0 +1,22 @@
+{
+  "id": "3590",
+  "name": "alternate lying floor leg raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Raise one leg at a time while lying on the floor, working the lower abs.",
+  "instructions": [
+    "Lie on your back with legs straight and arms at your sides.",
+    "Press your lower back into the floor.",
+    "Raise one leg to about 90 degrees.",
+    "Lower it slowly and lift the other leg.",
+    "Alternate without arching your back."
+  ],
+  "femaleVariant": "0008",
+  "textSource": "opengym"
+}

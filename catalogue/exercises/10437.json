@@ -1,0 +1,24 @@
+{
+  "id": "10437",
+  "name": "cable single arm low row (with rope)",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "biceps",
+    "rear deltoids",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-armed seated row with a rope handle on a low pulley. It works the lats and upper back one side at a time.",
+  "instructions": [
+    "Attach a rope to a low pulley and sit facing the stack with your feet braced.",
+    "Hold the rope in one hand with your arm extended.",
+    "Pull your elbow back along your side, squeezing your shoulder blade.",
+    "Pause, then let the arm extend slowly.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

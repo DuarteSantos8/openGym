@@ -1,0 +1,22 @@
+{
+  "id": "2844",
+  "name": "floor hyperextension v. 2",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "upper back"
+  ],
+  "category": "pilates",
+  "description": "A face-down back lift that strengthens the spine and glutes.",
+  "instructions": [
+    "Lie face down with arms extended in front.",
+    "Lengthen your neck.",
+    "Lift your arms, chest and legs off the floor.",
+    "Hold briefly.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

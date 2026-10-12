@@ -1,0 +1,22 @@
+{
+  "id": "6221",
+  "name": "dumbbell standing french press",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing overhead extension with a dumbbell held in both hands. It targets the triceps.",
+  "instructions": [
+    "Stand holding one dumbbell overhead with both hands.",
+    "Keep your elbows pointing forward.",
+    "Lower the dumbbell behind your head.",
+    "Extend your arms back up.",
+    "Keep your core braced.",
+    "Avoid arching your back."
+  ],
+  "textSource": "opengym"
+}

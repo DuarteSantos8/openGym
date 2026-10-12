@@ -1,0 +1,22 @@
+{
+  "id": "4625",
+  "name": "dumbbell russian twist close grip shoulder press sit up",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A compound core move that links a sit-up, a Russian twist and an overhead press with a dumbbell.",
+  "instructions": [
+    "Lie on your back with knees bent, holding dumbbells at your shoulders.",
+    "Sit up and rotate your torso to one side.",
+    "Rotate back to center and press the dumbbells overhead.",
+    "Lower them to your shoulders and roll back down.",
+    "Alternate sides each rep."
+  ],
+  "textSource": "opengym"
+}

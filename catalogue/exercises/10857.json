@@ -1,0 +1,23 @@
+{
+  "id": "10857",
+  "name": "barbell jefferson curl",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "spine",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "A slow, loaded forward bend that rolls through the spine. Keep the barbell light and the motion smooth.",
+  "instructions": [
+    "Stand holding a very light barbell in front of your thighs.",
+    "Tuck your chin and roll down one segment at a time.",
+    "Let the bar hang close to your legs.",
+    "Go only as low as feels controlled.",
+    "Roll back up slowly.",
+    "Keep your knees soft."
+  ],
+  "textSource": "opengym"
+}

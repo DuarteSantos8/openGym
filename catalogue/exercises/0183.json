@@ -1,0 +1,22 @@
+{
+  "id": "0183",
+  "name": "cable lying curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A biceps curl lying on your back with a low cable. The position keeps your body steady and your arms isolated.",
+  "instructions": [
+    "Lie on your back on a mat with your head toward a low pulley and take the bar overhead.",
+    "Start with your arms extended.",
+    "Curl the bar toward your forehead or chest.",
+    "Squeeze your biceps at the top.",
+    "Lower with control to full extension.",
+    "Keep your elbows pointing upward and your back flat."
+  ],
+  "textSource": "opengym"
+}

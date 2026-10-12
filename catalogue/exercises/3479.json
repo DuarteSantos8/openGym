@@ -1,0 +1,23 @@
+{
+  "id": "3479",
+  "name": "alternate heel touch side kick squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A squat that adds a side kick and a heel touch for legs and coordination.",
+  "instructions": [
+    "Stand with feet hip-width apart.",
+    "Squat down.",
+    "Stand and kick one leg to the side.",
+    "Touch the heel with your hand.",
+    "Squat again.",
+    "Alternate sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,33 @@
+{
+  "id": "1456",
+  "name": "barbell standing close grip military press",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A standing barbell overhead press with a narrow grip. It hits the front delts and triceps and asks your core to keep you steady.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold the barbell with an overhand grip, hands slightly closer than shoulder-width apart.",
+    "Lift the barbell to shoulder height, keeping your elbows close to your body.",
+    "Press the barbell overhead, extending your arms fully.",
+    "Lower the barbell back to shoulder height.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "deltoids"
+    ],
+    "secondaries": [
+      "chest",
+      "triceps",
+      "trapezius",
+      "serratus"
+    ]
+  },
+  "femaleVariant": "3031",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4972",
+  "name": "decline sit up and russian twist",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A decline sit up followed by a Russian twist at the top. It trains the abs and obliques.",
+  "instructions": [
+    "Lie on a decline bench with your feet secured.",
+    "Sit up toward your knees.",
+    "Twist your torso to one side at the top.",
+    "Twist to the other side.",
+    "Lower slowly to the bench.",
+    "Keep your movements controlled."
+  ],
+  "textSource": "opengym"
+}

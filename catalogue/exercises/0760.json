@@ -1,0 +1,43 @@
+{
+  "id": "0760",
+  "name": "smith leg press",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A leg press done on a smith machine setup, pushing the footplate away with both legs. It builds the thighs and glutes with a guided path.",
+  "instructions": [
+    "Adjust the seat and footplate of the smith machine to a comfortable position.",
+    "Sit on the machine with your back against the backrest and your feet shoulder-width apart on the footplate.",
+    "Grasp the handles or sides of the machine for stability.",
+    "Push the footplate away from you by extending your legs, keeping your back against the backrest.",
+    "Pause for a moment at the fully extended position.",
+    "Slowly bend your knees and lower the footplate back towards you, returning to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves"
+    ],
+    "weights": {
+      "quadriceps": 1,
+      "gluteal": 1,
+      "adductors": 1,
+      "hamstring": 0.4,
+      "calves": 0
+    }
+  },
+  "femaleVariant": "3619",
+  "textSource": "exercisedb"
+}

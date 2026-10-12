@@ -13,6 +13,7 @@ vi.mock('../lib/rest-alert.js', () => ({
   holdRestAlert: vi.fn(),
   disarmRestAlert: vi.fn(),
   bindNativeRest: vi.fn(cb => { h.native = cb }),
+  toneNative: vi.fn(() => Promise.resolve(true)),
 }))
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ ok: true })) }))
@@ -22,6 +23,7 @@ import { useStore } from './useStore.js'
 import { api } from '../lib/api.js'
 import { armRestAlert, disarmRestAlert, holdRestAlert } from '../lib/rest-alert.js'
 import { beep, chime } from '../lib/sound.js'
+import { toneNative } from '../lib/rest-alert.js'
 
 const hide = hidden => {
   Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden })
@@ -39,7 +41,7 @@ beforeEach(() => {
   originalSettings = useStore.getState().S
   useStore.setState({ S: { ...originalSettings, sound: true, timerFlash: false }, user: null })
   useUI.setState({ timer: null, timerFlashId: 0 })
-  for (const f of [armRestAlert, holdRestAlert, disarmRestAlert, beep, chime, api]) f.mockClear()
+  for (const f of [armRestAlert, holdRestAlert, disarmRestAlert, beep, chime, api, toneNative]) f.mockClear()
   hide(false)
 })
 afterEach(() => {
@@ -68,13 +70,13 @@ describe('the rest the app starts, pauses and ends', () => {
     expect(disarmRestAlert.mock.calls.length).toBe(disarms)   // the notification stays, paused
 
     useUI.getState().addRest(15)   // time added while paused: held again at the new figure
-    expect(holdRestAlert).toHaveBeenLastCalledWith(75, 105)
+    expect(holdRestAlert).toHaveBeenLastCalledWith(75, 90)
 
     vi.advanceTimersByTime(5 * 60_000)
     const arms = armRestAlert.mock.calls.length
     useUI.getState().resumeRest()
     expect(armRestAlert.mock.calls.length).toBe(arms + 1)
-    expect(armRestAlert).toHaveBeenLastCalledWith(Date.now() + 75_000, expect.objectContaining({ totalSec: 105 }))
+    expect(armRestAlert).toHaveBeenLastCalledWith(Date.now() + 75_000, expect.objectContaining({ totalSec: 90 }))
   })
 
   it('keeps the alarm when the countdown ends, including while the app is hidden', () => {
@@ -86,16 +88,26 @@ describe('the rest the app starts, pauses and ends', () => {
     expect(disarmRestAlert.mock.calls.length).toBe(armed)
     expect(useUI.getState().timer).toMatchObject({ left: 0, ready: true })
     expect(chime).not.toHaveBeenCalled()
+    expect(toneNative).not.toHaveBeenCalled()
   })
 
-  it('still chimes in the app when the rest finishes on screen, and keeps the alarm', () => {
+  // On screen the native side plays the end tone (it ducks music, the page cannot).
+  it('still sounds in the app when the rest finishes on screen, and keeps the alarm', () => {
     useStore.setState({ S: { ...useStore.getState().S, timerFlash: true } })
     useUI.getState().startRest(1)
     const armed = disarmRestAlert.mock.calls.length
     vi.advanceTimersByTime(1000)
-    expect(chime).toHaveBeenCalledTimes(1)
+    expect(toneNative).toHaveBeenCalledTimes(1)
+    expect(chime).not.toHaveBeenCalled()
     expect(useUI.getState().timerFlashId).toBe(1)
     expect(disarmRestAlert.mock.calls.length).toBe(armed)
+  })
+
+  it('falls back to the page\'s chime when the native tone cannot play', async () => {
+    toneNative.mockResolvedValueOnce(false)
+    useUI.getState().startRest(1)
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(chime).toHaveBeenCalledTimes(1)
   })
 
   it('takes the notification down on Skip, and on Dismiss once it is Ready', () => {

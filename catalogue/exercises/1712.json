@@ -1,0 +1,22 @@
+{
+  "id": "1712",
+  "name": "assisted side lying adductor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "assisted",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "A partner-assisted stretch lying on your side for the inner thigh. It lengthens the adductors.",
+  "instructions": [
+    "Lie on your side with your legs straight and stacked on top of each other.",
+    "Bend your bottom leg slightly for stability.",
+    "Place your top foot on a stable surface, such as a bench or step.",
+    "Keeping your top leg straight, slowly lower it towards the ground, feeling a stretch in your inner thigh.",
+    "Hold the stretch for 20-30 seconds.",
+    "Return to the starting position and repeat on the other side."
+  ],
+  "textSource": "exercisedb"
+}

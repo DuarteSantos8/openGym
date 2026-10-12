@@ -1,0 +1,23 @@
+{
+  "id": "8879",
+  "name": "cable half kneeling external rotation press",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "core",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "From a half kneeling stance you rotate the arm outward and press the cable overhead. It trains shoulder stability along with the press.",
+  "instructions": [
+    "Kneel on one knee side-on to the cable with the handle at chest height.",
+    "Hold the handle near your shoulder with your elbow bent.",
+    "Brace your core and keep your hips square.",
+    "Rotate your forearm outward, then press the handle overhead.",
+    "Return along the same path with control.",
+    "Finish your reps and switch sides."
+  ],
+  "textSource": "opengym"
+}

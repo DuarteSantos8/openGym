@@ -1,0 +1,22 @@
+{
+  "id": "5978",
+  "name": "toy soldier dynamic stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "A walking stretch where you kick straight legs up toward outstretched hands, warming up the hamstrings and hips.",
+  "instructions": [
+    "Stand tall with your arms stretched out in front of you.",
+    "Kick one straight leg up toward your hands.",
+    "Lower it and step forward.",
+    "Kick the other leg up.",
+    "Keep your chest upright and walk for about 10 reps per side."
+  ],
+  "textSource": "opengym"
+}

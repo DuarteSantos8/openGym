@@ -1,0 +1,24 @@
+{
+  "id": "10668",
+  "name": "band kneeling single arm horizontal row",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "biceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-arm band row from a kneeling position. It builds the lats and mid back with simple equipment.",
+  "instructions": [
+    "Anchor a band at chest height and kneel facing it.",
+    "Hold the band with one hand and keep your torso upright.",
+    "Pull the elbow back past your ribs.",
+    "Squeeze your shoulder blade in.",
+    "Return slowly against the tension.",
+    "Switch arms after the set."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5128",
+  "name": "seated back squeeze",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "calisthenics",
+  "description": "Squeezing your shoulder blades together while seated. It strengthens the upper back and improves posture.",
+  "instructions": [
+    "Sit tall with arms at your sides or elbows bent.",
+    "Draw your shoulder blades back and together.",
+    "Hold the squeeze for 2-3 seconds.",
+    "Release slowly.",
+    "Keep your neck relaxed.",
+    "Repeat for your reps."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "4347",
+  "name": "lever standing leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A standing single-leg curl on a lever machine. It targets the hamstrings one side at a time.",
+  "instructions": [
+    "Stand facing the machine and set the pad behind your working ankle.",
+    "Hold the supports for balance.",
+    "Curl your heel toward your glutes.",
+    "Squeeze your hamstring at the top.",
+    "Lower slowly, then switch legs."
+  ],
+  "textSource": "opengym"
+}

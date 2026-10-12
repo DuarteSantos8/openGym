@@ -1,0 +1,23 @@
+{
+  "id": "4209",
+  "name": "1 to 2 jump box",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "Push off with one leg to land on a box with both feet. It trains explosive single-leg power and a stable landing.",
+  "instructions": [
+    "Stand facing a sturdy box on one leg.",
+    "Drive your arms up and push off explosively from that leg.",
+    "Land softly on the box with both feet at once.",
+    "Stand fully upright before stepping down.",
+    "Complete your reps, then switch legs.",
+    "Keep your knees tracking over your toes."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "10554",
+  "name": "plank alternating hit the ball",
+  "bodyPart": "waist",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "obliques"
+  ],
+  "category": "isometric",
+  "description": "From a plank, tap a ball with alternating hands. It challenges your core to stay stable.",
+  "instructions": [
+    "Start in a straight-arm plank with a ball in front of you.",
+    "Tighten your core and glutes.",
+    "Lift one hand and tap the ball.",
+    "Return the hand and tap with the other.",
+    "Keep your hips as still as possible."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "4192",
+  "name": "knuckle push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core",
+    "wrist flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A push up on your knuckles to keep wrists straight. It builds chest and arm strength.",
+  "instructions": [
+    "Make fists and place them under your shoulders.",
+    "Keep your body straight.",
+    "Lower your chest.",
+    "Press up.",
+    "Keep wrists neutral.",
+    "Brace your core."
+  ],
+  "textSource": "opengym"
+}

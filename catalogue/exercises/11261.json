@@ -1,0 +1,21 @@
+{
+  "id": "11261",
+  "name": "cable standing biceps curl (rope attachment) v. 3",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A standing curl with a rope on a low cable. The rope lets you turn your hands at the top for a stronger squeeze.",
+  "instructions": [
+    "Attach a rope to a low pulley and hold it with palms facing each other.",
+    "Stand tall with your elbows at your sides.",
+    "Curl the rope up toward your shoulders.",
+    "Squeeze your biceps at the top.",
+    "Lower slowly without swinging your body."
+  ],
+  "textSource": "opengym"
+}

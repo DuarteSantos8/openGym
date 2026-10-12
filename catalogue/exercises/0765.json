@@ -1,0 +1,35 @@
+{
+  "id": "0765",
+  "name": "smith seated shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "smith machine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A seated overhead press on the smith machine, with the back supported. It builds the shoulders and triceps along a fixed path.",
+  "instructions": [
+    "Adjust the seat height so that the handles are at shoulder level.",
+    "Sit on the machine with your back against the pad and your feet flat on the floor.",
+    "Grasp the handles with an overhand grip and lift them off the supports, extending your arms fully.",
+    "Lower the handles down to shoulder level, keeping your elbows slightly bent.",
+    "Press the handles up overhead until your arms are fully extended.",
+    "Pause for a moment at the top, then slowly lower the handles back down to shoulder level.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "deltoids"
+    ],
+    "secondaries": [
+      "chest",
+      "triceps",
+      "trapezius",
+      "serratus"
+    ]
+  },
+  "femaleVariant": "3620",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4027",
+  "name": "resistance band standing back warming up",
+  "bodyPart": "back",
+  "equipment": "resistance band",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "rotator cuff"
+  ],
+  "category": "mobility",
+  "description": "A band warm-up that pulls the arms behind the body to activate the upper back and rear shoulders.",
+  "instructions": [
+    "Stand tall holding the band with both hands in front of you.",
+    "Keep a slight bend in your elbows.",
+    "Pull the band apart and back, squeezing your shoulder blades together.",
+    "Pause briefly then return slowly.",
+    "Repeat for 10 to 15 easy reps without arching your lower back."
+  ],
+  "textSource": "opengym"
+}

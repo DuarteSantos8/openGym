@@ -1,0 +1,21 @@
+{
+  "id": "2785",
+  "name": "spine (lumbar) extension",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "lower back",
+    "glutes"
+  ],
+  "category": "mobility",
+  "description": "Gently arching the lower back backward, working the muscles along the spine.",
+  "instructions": [
+    "Stand or sit tall with a relaxed posture and the joint in a neutral starting position.",
+    "Stand with feet hip width apart and your hands on your hips.",
+    "Lean back gently, arching your lower back within a comfortable range.",
+    "Pause briefly, then return upright.",
+    "Repeat for 10-15 smooth reps, then switch sides if you are working one side at a time."
+  ],
+  "textSource": "opengym"
+}

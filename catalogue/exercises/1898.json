@@ -1,0 +1,22 @@
+{
+  "id": "1898",
+  "name": "kneeling leg out adductor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "groin",
+    "inner thighs",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "A kneeling stretch with one leg extended to the side to open the inner thigh and groin.",
+  "instructions": [
+    "Kneel on all fours with your knees under your hips.",
+    "Extend one leg out to the side with the foot flat.",
+    "Sit your hips back toward the opposite heel.",
+    "Keep your back straight and your extended leg straight.",
+    "Hold for 20-30 seconds, then switch legs."
+  ],
+  "textSource": "opengym"
+}

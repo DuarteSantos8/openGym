@@ -1,0 +1,23 @@
+{
+  "id": "9516",
+  "name": "barbell elevated heel clean grip squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A squat with your heels raised and a clean-width grip, which keeps the torso upright and loads the quads.",
+  "instructions": [
+    "Place your heels on small plates and hold a bar across your upper back with a clean-width grip.",
+    "Brace your core and keep your chest up.",
+    "Sit down into a deep squat with knees tracking over toes.",
+    "Pause at the bottom.",
+    "Drive up through your feet to stand."
+  ],
+  "textSource": "opengym"
+}

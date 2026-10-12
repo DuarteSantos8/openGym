@@ -1,0 +1,22 @@
+{
+  "id": "4723",
+  "name": "bodyweight standing sissy squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "calves",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A standing squat where your knees travel forward as you lean back, strongly working the quads.",
+  "instructions": [
+    "Stand holding a support, feet hip-width apart.",
+    "Rise onto the balls of your feet.",
+    "Bend your knees forward and lean back.",
+    "Lower as far as you can control.",
+    "Press back up."
+  ],
+  "textSource": "opengym"
+}

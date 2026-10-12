@@ -1,0 +1,23 @@
+{
+  "id": "11272",
+  "name": "cable standing biceps curl to arnold press v. 3",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "biceps",
+    "triceps",
+    "upper chest",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A combo of a biceps curl flowing into an Arnold press with cables. It works arms and shoulders in one fluid move.",
+  "instructions": [
+    "Hold low cable handles, palms forward, arms down.",
+    "Curl the handles up to your shoulders.",
+    "Rotate your palms inward as you start to press.",
+    "Press overhead, turning your palms forward.",
+    "Reverse the move and lower under control."
+  ],
+  "textSource": "opengym"
+}

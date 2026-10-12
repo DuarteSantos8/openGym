@@ -1,0 +1,22 @@
+{
+  "id": "10112",
+  "name": "cable seated single arm lats focused row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A one-arm seated cable row that keeps the pull in the lats. Great for fixing side-to-side strength gaps.",
+  "instructions": [
+    "Sit at the cable station with your feet braced and grab the handle with one hand.",
+    "Sit tall and let the arm extend with a slight stretch in the lat.",
+    "Pull your elbow down and back toward your hip, leading with the elbow.",
+    "Squeeze the lat for a moment, then slowly let the handle return.",
+    "Keep your torso still and shoulders down. Finish all reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

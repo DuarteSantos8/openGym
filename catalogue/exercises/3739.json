@@ -1,0 +1,23 @@
+{
+  "id": "3739",
+  "name": "kettlebell bottom up one arm bench press",
+  "bodyPart": "chest",
+  "equipment": "kettlebell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A bench press holding the kettlebell upside down, which forces tight control of the shoulder and wrist.",
+  "instructions": [
+    "Lie on a bench holding a kettlebell upside down above your chest.",
+    "Squeeze the handle and keep your wrist stacked.",
+    "Lower the bell slowly toward your chest.",
+    "Press it back up while keeping it balanced.",
+    "Use a light weight and switch arms after your reps."
+  ],
+  "textSource": "opengym"
+}

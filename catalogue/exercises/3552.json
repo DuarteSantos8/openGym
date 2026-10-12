@@ -1,0 +1,21 @@
+{
+  "id": "3552",
+  "name": "quick feet v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "calves",
+    "hamstrings"
+  ],
+  "category": "cardio",
+  "description": "A quick on-the-spot footwork drill with fast, light steps. It raises the heart rate and builds foot speed.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your arms by your sides.",
+    "Begin by rapidly moving your feet up and down, as if you were running in place.",
+    "Keep your movements quick and light, focusing on staying on the balls of your feet.",
+    "Continue for the desired duration or number of repetitions."
+  ],
+  "femaleVariant": "5494",
+  "textSource": "exercisedb"
+}

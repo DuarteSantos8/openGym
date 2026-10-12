@@ -1,0 +1,23 @@
+{
+  "id": "5478",
+  "name": "high knee lunge on bosu ball",
+  "bodyPart": "upper legs",
+  "equipment": "bosu ball",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "Explosive lunge-and-drive-knee movement off a bosu ball that trains leg power and balance.",
+  "instructions": [
+    "Stand with one foot on the bosu dome and the other behind you.",
+    "Lower into a lunge with your torso upright.",
+    "Drive through the front foot and bring the back knee up high.",
+    "Land softly and balanced, then repeat.",
+    "Switch legs after your set."
+  ],
+  "textSource": "opengym"
+}

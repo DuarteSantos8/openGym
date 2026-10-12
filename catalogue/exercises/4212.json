@@ -1,0 +1,24 @@
+{
+  "id": "4212",
+  "name": "one leg star balance",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "core",
+    "calves",
+    "ankles",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "Balance on one leg while reaching the other foot toward points of an imaginary star. It builds stability, control and ankle strength.",
+  "instructions": [
+    "Stand on one leg with a soft knee.",
+    "Reach your free foot forward and tap lightly, then return.",
+    "Tap out to the side, then return.",
+    "Tap behind you, then return.",
+    "Keep your hips level and chest tall.",
+    "Switch legs after a set of taps."
+  ],
+  "textSource": "opengym"
+}

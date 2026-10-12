@@ -1,0 +1,21 @@
+{
+  "id": "4620",
+  "name": "twisting crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch with a rotation that adds work for the obliques on top of the abs.",
+  "instructions": [
+    "Lie on your back with knees bent and hands lightly behind your head.",
+    "Curl your shoulders off the floor.",
+    "Rotate your torso to bring one elbow toward the opposite knee.",
+    "Lower with control and repeat on the other side.",
+    "Avoid pulling on your neck."
+  ],
+  "femaleVariant": "0824",
+  "textSource": "opengym"
+}

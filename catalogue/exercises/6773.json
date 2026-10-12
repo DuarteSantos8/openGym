@@ -1,0 +1,23 @@
+{
+  "id": "6773",
+  "name": "standing tibialis anterior stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles",
+    "feet"
+  ],
+  "category": "stretching",
+  "description": "A standing stretch for the muscle at the front of the shin. Useful after running or lots of walking.",
+  "instructions": [
+    "Stand near a wall for balance.",
+    "Place the top of one foot on the floor behind you with toes curled under.",
+    "Gently bend the standing knee to press forward.",
+    "Feel the stretch along the shin.",
+    "Hold for 20-30 seconds, breathing calmly.",
+    "Switch feet."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5044",
+  "name": "lying prone w to y",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "trapezius",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "Lying face down, you move from a W to a Y shape. It works the upper back and lower traps.",
+  "instructions": [
+    "Lie face down in a W with elbows bent.",
+    "Lift your arms slightly off the floor.",
+    "Reach your arms forward and wide into a Y.",
+    "Pull back into the W with your shoulder blades squeezed.",
+    "Keep your neck relaxed and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "0625",
+  "name": "medicine ball sit up (wall)",
+  "bodyPart": "waist",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "shoulders",
+    "chest"
+  ],
+  "category": "strength",
+  "description": "A sit-up that includes a ball throw to a wall. It builds the abs with an explosive finish.",
+  "instructions": [
+    "Sit on the floor facing a wall, knees bent, holding a medicine ball.",
+    "Lean back and lower your back to the floor.",
+    "Sit up and throw the ball at the wall.",
+    "Catch it on the rebound.",
+    "Lower back down with control.",
+    "Repeat for reps."
+  ],
+  "textSource": "opengym"
+}

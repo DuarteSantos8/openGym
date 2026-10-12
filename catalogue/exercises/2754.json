@@ -1,0 +1,22 @@
+{
+  "id": "2754",
+  "name": "weighted hip thrusts",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip thrust with added weight for building strong glutes.",
+  "instructions": [
+    "Sit on the floor with your upper back against a bench and the weight across your hips.",
+    "Plant your feet flat and bend your knees.",
+    "Drive through your heels to lift your hips.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

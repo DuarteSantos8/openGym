@@ -1,0 +1,23 @@
+{
+  "id": "2658",
+  "name": "elliptical machine skiing",
+  "bodyPart": "cardio",
+  "equipment": "elliptical machine",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "A ski-style stride on the elliptical that keeps your heart rate up and works the whole body.",
+  "instructions": [
+    "Step onto the elliptical and hold the handles.",
+    "Start striding in a smooth, ski-like rhythm, swinging your arms with your legs.",
+    "Stay upright and keep your core engaged.",
+    "Hold a steady pace for your chosen time.",
+    "Slow down gradually to finish."
+  ],
+  "textSource": "opengym"
+}

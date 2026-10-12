@@ -1,0 +1,23 @@
+{
+  "id": "10197",
+  "name": "medicine ball horizontal smash",
+  "bodyPart": "chest",
+  "equipment": "medicine ball",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "core",
+    "obliques"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive sideways medicine ball slam that builds rotational power in the chest, core and shoulders.",
+  "instructions": [
+    "Stand sideways to a wall or rebound surface holding a medicine ball at chest height.",
+    "Wind the ball slightly away from the target.",
+    "Rotate and throw the ball hard against the wall with both hands.",
+    "Catch it, reset your stance and go again.",
+    "Use your hips and keep your core tight. Finish the reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

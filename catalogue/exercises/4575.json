@@ -1,0 +1,24 @@
+{
+  "id": "4575",
+  "name": "band standing single arm row",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rhomboids",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing one-arm row with a band to train the lats and mid-back.",
+  "instructions": [
+    "Anchor a band at chest height and stand facing it.",
+    "Hold the band in one hand with your arm extended.",
+    "Step back until there is tension and brace your core.",
+    "Pull your elbow back past your ribs.",
+    "Squeeze your shoulder blade toward your spine.",
+    "Return slowly, then switch arms."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4039",
+  "name": "landmine one arm bent over bench row",
+  "bodyPart": "back",
+  "equipment": "landmine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A supported one arm landmine row with your free hand and knee on a bench. It keeps the lower back relaxed while you pull.",
+  "instructions": [
+    "Set the landmine bar next to a bench and place one hand and knee on the bench.",
+    "Grip the bar end with your free hand and keep your back flat.",
+    "Pull your elbow up toward your hip.",
+    "Pause and squeeze your shoulder blade.",
+    "Lower slowly, finish the reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "10051",
+  "name": "bodyweight narrow squat lunge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "calisthenics",
+  "description": "A lunge done with a narrow stance and no weight. It targets the quads and glutes while challenging balance.",
+  "instructions": [
+    "Stand with feet close together and hands on your hips or in front of you.",
+    "Step one foot back and lower into a lunge, keeping your feet in a narrow line.",
+    "Drop your back knee toward the floor.",
+    "Keep your front knee over your ankle and chest up.",
+    "Push through the front heel to stand back up.",
+    "Switch legs and repeat."
+  ],
+  "textSource": "opengym"
+}

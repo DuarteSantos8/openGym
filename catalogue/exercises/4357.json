@@ -1,0 +1,21 @@
+{
+  "id": "4357",
+  "name": "band biceps curl v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A simple biceps curl with a band underfoot. It trains the front of the arms with elastic resistance.",
+  "instructions": [
+    "Stand on the band with feet shoulder-width apart and hold the ends, palms up.",
+    "Keep your elbows pinned to your sides.",
+    "Curl your hands toward your shoulders.",
+    "Squeeze at the top.",
+    "Lower slowly against the band."
+  ],
+  "textSource": "opengym"
+}

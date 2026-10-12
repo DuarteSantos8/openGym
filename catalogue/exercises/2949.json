@@ -1,0 +1,22 @@
+{
+  "id": "2949",
+  "name": "roll lat foam rolling",
+  "bodyPart": "back",
+  "equipment": "roller",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "shoulders",
+    "triceps"
+  ],
+  "category": "mobility",
+  "description": "Rolling the side of your back on a foam roller. It can loosen tight lats before overhead work.",
+  "instructions": [
+    "Lie on your side with the roller under your armpit area and your arm extended.",
+    "Support yourself with your lower arm and legs.",
+    "Roll slowly along your side toward the ribs.",
+    "Pause on tight spots for a few seconds.",
+    "Switch sides and keep the pressure comfortable."
+  ],
+  "textSource": "opengym"
+}

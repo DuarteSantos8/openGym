@@ -1,0 +1,21 @@
+{
+  "id": "1637",
+  "name": "cable overhead curl on exercise ball",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "An overhead cable curl while sitting on an exercise ball. The ball adds core demand to the biceps work.",
+  "instructions": [
+    "Sit on an exercise ball and hold the cable handle with an underhand grip.",
+    "Extend your arms fully overhead, keeping your elbows close to your ears.",
+    "Slowly curl the cable down towards your forehead, keeping your upper arms stationary.",
+    "Pause for a moment at the bottom of the movement, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

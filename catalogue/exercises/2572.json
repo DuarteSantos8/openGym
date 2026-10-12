@@ -1,0 +1,22 @@
+{
+  "id": "2572",
+  "name": "roll overs into v sits",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "You roll back over your shoulders and then roll forward into a V sit, working the abs and building control.",
+  "instructions": [
+    "Sit with knees bent and arms reaching forward.",
+    "Roll back, lifting your legs up and over toward your head.",
+    "Roll forward with control and extend your legs.",
+    "Land in a balanced V sit, with arms reaching toward your feet.",
+    "Move smoothly and use your abs to drive the motion."
+  ],
+  "textSource": "opengym"
+}

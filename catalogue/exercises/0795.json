@@ -1,0 +1,20 @@
+{
+  "id": "0795",
+  "name": "standing single leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight hamstring curl done standing on one leg, bringing the heel toward the glutes. It trains the hamstrings and balance.",
+  "instructions": [
+    "Stand with your feet hip-width apart and your hands on your hips.",
+    "Shift your weight onto your left leg and lift your right foot off the ground, bending your knee.",
+    "Slowly curl your right heel towards your glutes, squeezing your hamstring.",
+    "Pause for a moment at the top, then slowly lower your right foot back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch legs."
+  ],
+  "textSource": "exercisedb"
+}

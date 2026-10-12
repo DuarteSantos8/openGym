@@ -1,0 +1,23 @@
+{
+  "id": "1081",
+  "name": "suspension jackknife pike",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "From a plank with feet in straps, you pike the hips up. It hits the abs hard and challenges the shoulders.",
+  "instructions": [
+    "Start in a plank with your feet in the straps and hands under shoulders.",
+    "Keep your legs straight.",
+    "Lift your hips high toward the ceiling.",
+    "Roll to an inverted V shape.",
+    "Lower back to plank slowly.",
+    "Keep your arms straight throughout."
+  ],
+  "textSource": "opengym"
+}

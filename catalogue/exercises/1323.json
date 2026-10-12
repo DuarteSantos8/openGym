@@ -1,0 +1,35 @@
+{
+  "id": "1323",
+  "name": "cable rope seated row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated row with a rope attachment on a cable station. The neutral grip works the upper back, lats and biceps.",
+  "instructions": [
+    "Sit on the rowing machine with your feet flat on the footrests and knees slightly bent.",
+    "Grasp the cable ropes with an overhand grip, palms facing each other.",
+    "Keep your back straight and lean slightly forward, maintaining a slight bend in your elbows.",
+    "Pull the cable ropes towards your body, squeezing your shoulder blades together.",
+    "Pause for a moment at the peak of the movement, then slowly release the tension and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm",
+      "trapezius",
+      "chest",
+      "triceps"
+    ]
+  },
+  "textSource": "exercisedb"
+}

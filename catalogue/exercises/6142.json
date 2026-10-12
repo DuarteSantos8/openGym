@@ -1,0 +1,23 @@
+{
+  "id": "6142",
+  "name": "dumbbell seated reverse arnold press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "The Arnold press performed in reverse, rotating the palms inward on the way down. It works all three heads of the shoulder.",
+  "instructions": [
+    "Sit upright holding dumbbells overhead with your palms forward.",
+    "Lower the weights while rotating your palms toward you.",
+    "Stop with the dumbbells in front of your chest.",
+    "Rotate your palms back outward as you press up.",
+    "Lock out the arms overhead.",
+    "Keep your back against the pad."
+  ],
+  "textSource": "opengym"
+}

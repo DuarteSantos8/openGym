@@ -1,0 +1,36 @@
+{
+  "id": "3142",
+  "name": "smith sumo squat",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A sumo squat on a smith machine. Targets the glutes, inner thighs and quads.",
+  "instructions": [
+    "Set up the smith machine with the barbell at hip height.",
+    "Stand with your feet wider than shoulder-width apart, toes pointing outwards.",
+    "Position yourself under the barbell, resting it on your upper back and shoulders.",
+    "Engage your core and keep your chest up as you lower your body down into a squat position, pushing your hips back and bending your knees.",
+    "Lower yourself until your thighs are parallel to the ground, or as low as you can comfortably go.",
+    "Pause for a moment at the bottom, then push through your heels to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves"
+    ]
+  },
+  "femaleVariant": "4005",
+  "textSource": "exercisedb"
+}

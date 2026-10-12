@@ -1,0 +1,23 @@
+{
+  "id": "10561",
+  "name": "kettlebell single leg deadlift pass",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A single-leg deadlift where you pass a kettlebell from hand to hand. It trains balance and the hip hinge.",
+  "instructions": [
+    "Stand on one leg holding a kettlebell in one hand.",
+    "Hinge at the hips and reach the bell toward the floor.",
+    "Pass the bell to the other hand below your knee.",
+    "Stand back up using your glute and hamstring.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "10818",
+  "name": "4 way single leg hop v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core",
+    "ankles"
+  ],
+  "category": "plyometrics",
+  "description": "A balance hop on one leg in four directions. It trains power, balance and ankle stability.",
+  "instructions": [
+    "Stand on one leg with a soft knee.",
+    "Hop forward and land softly.",
+    "Hop back to the start, then out to the side and back.",
+    "Hop in the fourth direction.",
+    "Stick every landing.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "6293",
+  "name": "peacock pose mayurasana",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "forearms",
+    "wrist flexors",
+    "shoulders",
+    "core"
+  ],
+  "category": "yoga",
+  "description": "An advanced arm balance with your torso held horizontally on your elbows. It builds core and wrist strength.",
+  "instructions": [
+    "Kneel and place your hands on the floor with fingers pointing back toward your feet.",
+    "Bring your elbows together under your belly.",
+    "Lean forward and rest your torso on your upper arms.",
+    "Extend your legs back and lift them.",
+    "Hold for a few breaths, then lower."
+  ],
+  "textSource": "opengym"
+}

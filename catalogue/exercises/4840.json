@@ -1,0 +1,22 @@
+{
+  "id": "4840",
+  "name": "straight leg dead bug",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A dead bug with straight legs lowering alternately. It is a tougher core challenge with a long lever.",
+  "instructions": [
+    "Lie on your back with arms and legs straight up toward the ceiling.",
+    "Press your lower back into the floor.",
+    "Lower one arm and the opposite leg toward the floor.",
+    "Return to the start and switch sides.",
+    "Keep your lower back flat the whole time."
+  ],
+  "textSource": "opengym"
+}

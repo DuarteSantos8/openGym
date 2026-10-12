@@ -1,0 +1,23 @@
+{
+  "id": "9318",
+  "name": "lying floor negative dragon flag",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "core",
+    "lats"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on the floor, you lower your straight body slowly for the dragon flag. A tough ab and core strengthener.",
+  "instructions": [
+    "Lie on a mat and hold something fixed behind your head.",
+    "Raise your body into a straight line on your upper back.",
+    "Brace your core.",
+    "Lower your body slowly keeping it straight.",
+    "Stop just above the floor.",
+    "Bring your legs back up and reset."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "10925",
+  "name": "two to one leg jump",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "A jump taking off from two feet and landing on one. It builds power and landing control.",
+  "instructions": [
+    "Stand with feet hip-width apart.",
+    "Dip into a quarter squat and swing your arms back.",
+    "Jump up and land on one foot.",
+    "Absorb the landing with a bent knee and hold steady.",
+    "Reset and alternate landing legs."
+  ],
+  "textSource": "opengym"
+}

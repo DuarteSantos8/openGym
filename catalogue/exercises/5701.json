@@ -1,0 +1,23 @@
+{
+  "id": "5701",
+  "name": "barbell pin squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A squat that starts each rep from a dead stop on safety pins. It removes the bounce and builds strength out of the bottom.",
+  "instructions": [
+    "Set the safety pins at the depth you want and place the bar on them.",
+    "Duck under the bar and lift it onto your upper back.",
+    "Squat down until the bar rests on the pins.",
+    "Pause briefly while staying tight.",
+    "Drive up through your whole foot to stand."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "3927",
+  "name": "squat tip toe",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "calves",
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A squat performed on your tiptoes that challenges balance, the quads and the calves.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and rise onto your toes.",
+    "Hold your arms in front for balance.",
+    "Squat down while staying up on your toes.",
+    "Pause at the bottom.",
+    "Stand back up.",
+    "Keep your chest tall."
+  ],
+  "textSource": "opengym"
+}

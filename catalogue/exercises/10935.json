@@ -1,0 +1,22 @@
+{
+  "id": "10935",
+  "name": "stick shoulder mobilization in abduction behind back",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "chest",
+    "triceps"
+  ],
+  "category": "mobility",
+  "description": "Using a stick to guide the arm out and back behind you. It improves shoulder range.",
+  "instructions": [
+    "Stand tall holding a stick behind your back.",
+    "Hold it with one hand low and the other high.",
+    "Use the low hand to guide the top arm out and up.",
+    "Move only in a comfortable range.",
+    "Return slowly and switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,26 @@
+{
+  "id": "1717",
+  "name": "cable squat row (with rope attachment)",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A squat combined with a cable row, using a rope. It trains the lats and legs together.",
+  "instructions": [
+    "Attach a rope to a cable machine at waist height.",
+    "Stand facing the cable machine with your feet shoulder-width apart.",
+    "Bend your knees and lower your body into a squat position, keeping your back straight and chest up.",
+    "Grasp the rope with an overhand grip, with your hands shoulder-width apart.",
+    "Engage your core and pull the rope towards your body, squeezing your shoulder blades together.",
+    "Keep your elbows close to your body and continue pulling until your hands reach your chest.",
+    "Pause for a moment at the top of the movement, then slowly release the rope and extend your arms back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2550",
+  "textSource": "exercisedb"
+}

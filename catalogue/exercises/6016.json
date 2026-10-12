@@ -1,0 +1,21 @@
+{
+  "id": "6016",
+  "name": "twisting crunch v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch with a rotation to bring each elbow toward the opposite knee. Works the abs and obliques.",
+  "instructions": [
+    "Lie on your back with knees bent and hands behind your head.",
+    "Curl your shoulders off the floor.",
+    "Twist to bring one elbow toward the opposite knee.",
+    "Lower slowly.",
+    "Alternate sides for your reps."
+  ],
+  "textSource": "opengym"
+}

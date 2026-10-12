@@ -1,0 +1,24 @@
+{
+  "id": "6010",
+  "name": "celebratory knee drives",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "Fast alternating knee drives with arms pumping overhead, a fun cardio drill.",
+  "instructions": [
+    "Stand tall with your feet hip-width apart.",
+    "Drive one knee up as you raise your arms in a victory pose.",
+    "Lower and switch.",
+    "Keep a quick, bouncy rhythm.",
+    "Land lightly and work for 30 seconds."
+  ],
+  "femaleVariant": "5956",
+  "textSource": "opengym"
+}

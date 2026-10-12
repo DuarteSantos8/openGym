@@ -1,0 +1,24 @@
+{
+  "id": "3862",
+  "name": "resistance band long jump",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive forward jump against band resistance that builds power in the legs and hips.",
+  "instructions": [
+    "Anchor a band behind you and loop it around your hips.",
+    "Stand tall with feet shoulder-width apart and slightly bend your knees.",
+    "Swing your arms back and load your hips.",
+    "Jump forward as far as you can against the band.",
+    "Land softly on both feet with bent knees.",
+    "Reset and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1450",
+  "name": "dumbbell flat flye hold",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders",
+    "biceps"
+  ],
+  "category": "isometric",
+  "description": "A static hold at the bottom of a flat flye. It builds chest tension and control in the stretched position.",
+  "instructions": [
+    "Lie flat on a bench with a dumbbell in each hand above your chest.",
+    "Open your arms wide with soft elbows until the dumbbells are level with your chest.",
+    "Keep your shoulder blades pinned back and your feet planted.",
+    "Hold the position for 15-30 seconds without letting the weights drop.",
+    "Bring the dumbbells back together over your chest and set them down carefully."
+  ],
+  "textSource": "opengym"
+}

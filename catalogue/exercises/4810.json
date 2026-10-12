@@ -1,0 +1,22 @@
+{
+  "id": "4810",
+  "name": "standing side bend v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A standing bend to the side, a second variation. It works the obliques and loosens the sides of the trunk.",
+  "instructions": [
+    "Stand tall with feet hip width apart and one arm overhead.",
+    "Brace your core lightly.",
+    "Bend sideways at the waist, reaching over with the raised arm.",
+    "Pause when you feel the side muscles work.",
+    "Return to upright with control.",
+    "Complete your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

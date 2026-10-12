@@ -1,0 +1,23 @@
+{
+  "id": "4137",
+  "name": "band squat twist",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "quadriceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A squat paired with a band twist for core and legs.",
+  "instructions": [
+    "Anchor the band at chest height and stand sideways, holding the end.",
+    "Squat down.",
+    "Rise and rotate your arms away from the anchor.",
+    "Return to the center.",
+    "Complete all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "3704",
+  "name": "double jump squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A squat followed by two quick jumps in a row. It builds explosive leg power and stamina.",
+  "instructions": [
+    "Stand with your feet shoulder width apart.",
+    "Lower into a squat and explode into a jump.",
+    "Land softly and immediately jump a second time.",
+    "Land with bent knees and sink back into the squat.",
+    "Keep your chest up and repeat."
+  ],
+  "textSource": "opengym"
+}

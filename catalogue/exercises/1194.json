@@ -1,0 +1,24 @@
+{
+  "id": "1194",
+  "name": "lever lying t bar row",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A chest-supported T-bar row lying on the machine pad.",
+  "instructions": [
+    "Lie chest-down on the pad and grab the handles.",
+    "Start with your arms straight.",
+    "Pull the handles toward your torso.",
+    "Squeeze your shoulder blades.",
+    "Lower under control."
+  ],
+  "femaleVariant": "11307",
+  "textSource": "opengym"
+}

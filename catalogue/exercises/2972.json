@@ -1,0 +1,24 @@
+{
+  "id": "2972",
+  "name": "side lunge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "hamstrings",
+    "inner thighs"
+  ],
+  "category": "calisthenics",
+  "description": "Stepping out to the side into a deep lunge. It works the quads and glutes while opening the inner thighs.",
+  "instructions": [
+    "Stand tall with your feet together and hands in front of your chest.",
+    "Step wide to one side.",
+    "Bend that knee and sit your hips back, keeping the other leg straight.",
+    "Push off the bent leg to return.",
+    "Alternate sides."
+  ],
+  "femaleVariant": "2973",
+  "textSource": "opengym"
+}

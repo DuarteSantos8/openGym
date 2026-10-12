@@ -1,0 +1,20 @@
+{
+  "id": "1710",
+  "name": "assisted lying gluteus and piriformis stretch",
+  "bodyPart": "upper legs",
+  "equipment": "assisted",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "A partner-assisted stretch lying down for the glutes and piriformis. It releases deep hip tension.",
+  "instructions": [
+    "Lie on your back with your legs extended.",
+    "Bend your right knee and place your right ankle on your left thigh, just above the knee.",
+    "Grasp your left thigh with both hands and gently pull it towards your chest.",
+    "Hold the stretch for 20-30 seconds.",
+    "Release the stretch and repeat on the other side."
+  ],
+  "textSource": "exercisedb"
+}

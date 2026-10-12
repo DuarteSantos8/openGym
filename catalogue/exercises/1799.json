@@ -1,0 +1,22 @@
+{
+  "id": "1799",
+  "name": "two handed hang back stretch (with training wall bars)",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper back",
+    "forearms"
+  ],
+  "category": "stretching",
+  "description": "Hanging from wall bars with both hands lets gravity stretch your lats and decompress your back. Great after heavy pulling days.",
+  "instructions": [
+    "Grip a wall bar overhead with both hands and walk your feet out slightly.",
+    "Let your body hang and sink your hips back, relaxing your upper back and shoulders.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

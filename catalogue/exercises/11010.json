@@ -1,0 +1,22 @@
+{
+  "id": "11010",
+  "name": "hip lift low back off floor",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A lying move where you lift the hips so the lower back leaves the floor. It targets the lower abs.",
+  "instructions": [
+    "Lie on your back with legs raised toward the ceiling.",
+    "Press your arms into the floor.",
+    "Lift your hips so your lower back comes off the floor.",
+    "Lower slowly with control.",
+    "Avoid swinging."
+  ],
+  "femaleVariant": "1853",
+  "textSource": "opengym"
+}

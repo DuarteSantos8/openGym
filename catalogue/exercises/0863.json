@@ -1,0 +1,22 @@
+{
+  "id": "0863",
+  "name": "dumbbell lying external shoulder rotation",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "triceps"
+  ],
+  "category": "rehab",
+  "description": "A side-lying rotation with a light dumbbell, turning the forearm upward with the elbow at the side. It strengthens the rotator cuff.",
+  "instructions": [
+    "Lie on your side on a flat bench with your upper arm against your side and your elbow bent 90 degrees.",
+    "Hold a dumbbell in your hand with your palm facing down.",
+    "Keeping your upper arm against your side, slowly rotate your forearm upward as far as possible.",
+    "Pause for a moment at the top, then slowly lower your forearm back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "femaleVariant": "3079",
+  "textSource": "exercisedb"
+}

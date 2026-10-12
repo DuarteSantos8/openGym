@@ -1,0 +1,24 @@
+{
+  "id": "5666",
+  "name": "dumbbell high pull",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "upper back",
+    "glutes",
+    "hamstrings",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "An explosive pull that drives dumbbells up to chest height using the legs and hips. It builds the shoulders and traps and trains power.",
+  "instructions": [
+    "Stand with feet shoulder-width apart, dumbbells hanging in front of your thighs.",
+    "Bend your knees and hips slightly, keeping your chest up.",
+    "Extend your hips and knees powerfully and pull the weights up with elbows leading.",
+    "Stop at about chest height, elbows above your wrists.",
+    "Lower the dumbbells under control and reset."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1103",
+  "name": "suspension triceps dip",
+  "bodyPart": "upper arms",
+  "equipment": "suspension trainer",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A dip with suspension handles. It trains the triceps.",
+  "instructions": [
+    "Hold the handles with arms straight.",
+    "Keep your body upright.",
+    "Lower by bending your elbows.",
+    "Keep your elbows close.",
+    "Press back up.",
+    "Stay controlled."
+  ],
+  "textSource": "opengym"
+}

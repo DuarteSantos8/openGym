@@ -1,0 +1,22 @@
+{
+  "id": "2122",
+  "name": "assisted side bent",
+  "bodyPart": "waist",
+  "equipment": "assisted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lats"
+  ],
+  "category": "stretching",
+  "description": "A partner helps guide a sideways bend of the trunk, making it easier to relax into the stretch along the flank.",
+  "instructions": [
+    "Stand tall with feet shoulder-width apart and one arm overhead.",
+    "Have your partner stand behind you with a hand on your hip and a hand on your raised arm.",
+    "Lean sideways as your partner gently guides the movement.",
+    "Tell your partner to stop at a mild pull.",
+    "Hold for 20-30 seconds.",
+    "Return upright and switch sides."
+  ],
+  "textSource": "opengym"
+}

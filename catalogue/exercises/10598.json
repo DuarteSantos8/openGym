@@ -1,0 +1,23 @@
+{
+  "id": "10598",
+  "name": "medicine ball lying floor close press catch",
+  "bodyPart": "chest",
+  "equipment": "medicine ball",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A floor press throw with narrow hands. It builds explosive pushing power through the chest and triceps.",
+  "instructions": [
+    "Lie on your back with knees bent, holding a medicine ball above your chest.",
+    "Press the ball up quickly with your hands close together.",
+    "Catch it as it comes down with soft elbows.",
+    "Lower it to just above your chest.",
+    "Keep your back flat and ribs down.",
+    "Repeat for controlled, crisp reps."
+  ],
+  "textSource": "opengym"
+}

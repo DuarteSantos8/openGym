@@ -1,0 +1,25 @@
+{
+  "id": "3094",
+  "name": "jumping jack",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "shoulders",
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "cardio",
+  "description": "The classic jump where your arms and legs swing out and back. A simple full-body warm-up that raises your heart rate fast.",
+  "instructions": [
+    "Stand with your feet together and your arms at your sides.",
+    "Jump your feet apart as you swing your arms overhead.",
+    "Jump back to the start position.",
+    "Land softly on the balls of your feet.",
+    "Keep a steady rhythm.",
+    "Continue for 30-60 seconds."
+  ],
+  "femaleVariant": "0516",
+  "textSource": "opengym"
+}

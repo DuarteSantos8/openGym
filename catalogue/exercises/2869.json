@@ -1,0 +1,22 @@
+{
+  "id": "2869",
+  "name": "swan dive",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders"
+  ],
+  "category": "pilates",
+  "description": "A rocking Pilates move on your belly that builds back extensor strength and control.",
+  "instructions": [
+    "Lie face down with your hands under your shoulders and legs together.",
+    "Press up into a swan, lifting your chest off the mat.",
+    "Let your arms float forward as you rock your chest and legs up.",
+    "Rock back and forth in a smooth, controlled rhythm.",
+    "Keep your neck long and your abs gently drawn in."
+  ],
+  "textSource": "opengym"
+}

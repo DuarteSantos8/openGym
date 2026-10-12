@@ -1,0 +1,21 @@
+{
+  "id": "1948",
+  "name": "sitting rotational hip stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A seated rotation that works the hip through a twisting stretch.",
+  "instructions": [
+    "Sit on the floor with your knees bent and both feet flat.",
+    "Let both knees drop to one side and rotate your torso the opposite way until you feel the hip stretch.",
+    "Keep your hands behind you for support.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

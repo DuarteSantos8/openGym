@@ -1,0 +1,22 @@
+{
+  "id": "6750",
+  "name": "standing balance hip rotation",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "core",
+    "ankles"
+  ],
+  "category": "mobility",
+  "description": "A one-leg balance with controlled hip rotation. It works hip mobility and stability together.",
+  "instructions": [
+    "Stand tall on one leg with a soft knee, holding a wall if needed.",
+    "Lift the other knee to hip height.",
+    "Rotate the lifted knee out to the side, then back to the front.",
+    "Keep your torso steady.",
+    "Move slowly and smoothly.",
+    "Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "0231",
+  "name": "cable standing one arm triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A one-arm cable triceps extension from a standing position. You bend and straighten the elbow while keeping the upper arm still.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, facing the cable machine.",
+    "Hold the cable handle with your right hand, palm facing down, and position your arm so that it is fully extended and parallel to the ground.",
+    "Keep your elbow stationary and close to your body.",
+    "Slowly bend your elbow, lowering the cable handle towards the back of your head.",
+    "Pause for a moment at the bottom of the movement, then extend your arm back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides and perform the exercise with your left arm."
+  ],
+  "femaleVariant": "2696",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4706",
+  "name": "jump step jump",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "calves",
+    "glutes"
+  ],
+  "category": "plyometrics",
+  "description": "A jumping combination with a step in the middle to raise your heart rate and train leg power.",
+  "instructions": [
+    "Stand with feet hip-width apart.",
+    "Jump up and land softly with bent knees.",
+    "Step to the side or forward.",
+    "Jump again and land softly.",
+    "Keep a steady rhythm."
+  ],
+  "textSource": "opengym"
+}

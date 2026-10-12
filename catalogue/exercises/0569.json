@@ -1,0 +1,23 @@
+{
+  "id": "0569",
+  "name": "leg curl (on stability ball)",
+  "bodyPart": "upper legs",
+  "equipment": "stability ball",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "Lying on your back with heels on a ball, you curl it toward your hips. It works the hamstrings and core together.",
+  "instructions": [
+    "Lie on your back with your heels on a stability ball and legs straight.",
+    "Press your hips up so your body forms a line.",
+    "Pull the ball toward your glutes by bending your knees.",
+    "Keep your hips lifted throughout.",
+    "Pause at the top.",
+    "Roll the ball back out slowly."
+  ],
+  "textSource": "opengym"
+}

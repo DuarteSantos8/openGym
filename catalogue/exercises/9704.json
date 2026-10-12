@@ -1,0 +1,23 @@
+{
+  "id": "9704",
+  "name": "suspender headstand",
+  "bodyPart": "full body",
+  "equipment": "suspension trainer",
+  "target": "delts",
+  "secondaryMuscles": [
+    "core",
+    "upper back",
+    "triceps"
+  ],
+  "category": "calisthenics",
+  "description": "A headstand variation using suspension straps for support. It builds balance and shoulder strength.",
+  "instructions": [
+    "Set the straps at a low height.",
+    "Place your forearms or hands on the floor.",
+    "Lift your hips and place your feet in the straps.",
+    "Press your body up into a stable position.",
+    "Hold for 10 to 20 seconds.",
+    "Lower slowly and rest."
+  ],
+  "textSource": "opengym"
+}

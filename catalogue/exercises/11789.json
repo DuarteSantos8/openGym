@@ -1,0 +1,23 @@
+{
+  "id": "11789",
+  "name": "barbell staggered stance stiff legged deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A stiff-leg deadlift with a staggered stance that loads the hamstrings and glutes while shifting weight to the front leg.",
+  "instructions": [
+    "Hold a barbell in front of your thighs and place one foot slightly behind the other, mostly on the ball of the back foot.",
+    "Keep most of your weight on the front leg with a soft knee.",
+    "Hinge at the hips, sliding the bar down your legs with a flat back.",
+    "Lower until you feel a strong hamstring stretch, then drive your hips forward to stand.",
+    "Finish all reps, then switch the stance."
+  ],
+  "textSource": "opengym"
+}

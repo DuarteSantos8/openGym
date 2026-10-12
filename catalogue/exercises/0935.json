@@ -1,0 +1,22 @@
+{
+  "id": "0935",
+  "name": "band upright shoulder external rotation",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Rotate your forearm outward against a band while the elbow stays at your side. It strengthens the small rotator cuff muscles that steady the shoulder.",
+  "instructions": [
+    "Anchor a band at elbow height and stand sideways to it, holding the handle with the far hand.",
+    "Tuck your elbow against your side with the elbow bent to 90 degrees.",
+    "Rotate your forearm away from your belly, keeping the elbow pinned in place.",
+    "Pause when your hand points slightly outward, then return slowly.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

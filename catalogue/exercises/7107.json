@@ -1,0 +1,22 @@
+{
+  "id": "7107",
+  "name": "lever seated single leg press v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A machine press done with one leg at a time. It helps fix strength imbalances between legs.",
+  "instructions": [
+    "Sit in the machine and put one foot on the platform.",
+    "Keep your back against the pad.",
+    "Press the platform away until your leg is almost straight.",
+    "Lower slowly until your knee bends to about 90 degrees.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

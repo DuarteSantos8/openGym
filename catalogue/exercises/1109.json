@@ -1,0 +1,23 @@
+{
+  "id": "1109",
+  "name": "suspender biceps clutch",
+  "bodyPart": "upper arms",
+  "equipment": "suspension trainer",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "brachialis",
+    "upper back"
+  ],
+  "category": "calisthenics",
+  "description": "A strap curl where you hold the contraction close to the head, great for biceps peak work and arm control.",
+  "instructions": [
+    "Grab the handles palms up and lean back with arms straight.",
+    "Keep your body rigid.",
+    "Curl yourself up, drawing the hands in beside your head.",
+    "Hold the top position for a second and squeeze.",
+    "Lower slowly to straight arms.",
+    "Walk your feet closer to make it easier."
+  ],
+  "textSource": "opengym"
+}

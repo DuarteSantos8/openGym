@@ -1,0 +1,22 @@
+{
+  "id": "3459",
+  "name": "pulse up",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Small upward pulses with your legs raised, targeting the lower abs.",
+  "instructions": [
+    "Lie on your back with legs pointing to the ceiling.",
+    "Place your hands by your sides.",
+    "Lift your hips slightly with a small pulse.",
+    "Lower and repeat.",
+    "Keep movement small.",
+    "Do 15-20 pulses."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "0926",
+  "name": "band standing leg extension",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A leg extension while standing with a band around the ankle. It works the quads.",
+  "instructions": [
+    "Anchor the band behind you and loop it around one ankle.",
+    "Hold support and lift the knee slightly.",
+    "Straighten your knee forward.",
+    "Squeeze your quad.",
+    "Bend slowly to return, then switch legs."
+  ],
+  "textSource": "opengym"
+}

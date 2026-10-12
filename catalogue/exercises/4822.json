@@ -1,0 +1,24 @@
+{
+  "id": "4822",
+  "name": "dumbbell rdl to jump shrug",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "trapezius",
+    "calves",
+    "quadriceps",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A Romanian deadlift that finishes with an explosive jump and shrug. It trains power through the hips and traps.",
+  "instructions": [
+    "Stand holding dumbbells in front of your thighs.",
+    "Hinge your hips back and lower the weights along your legs with a flat back.",
+    "Drive your hips forward and jump as you shrug your shoulders.",
+    "Land softly with bent knees.",
+    "Reset into the hinge and repeat."
+  ],
+  "textSource": "opengym"
+}

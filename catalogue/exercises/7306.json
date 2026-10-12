@@ -1,0 +1,22 @@
+{
+  "id": "7306",
+  "name": "standing side neck stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "trapezius",
+    "sternocleidomastoid"
+  ],
+  "category": "stretching",
+  "description": "A gentle side stretch for the neck and upper traps, useful after desk work.",
+  "instructions": [
+    "Stand tall with your shoulders relaxed.",
+    "Tilt your head toward one shoulder.",
+    "Rest a hand lightly on your head for slight pressure.",
+    "Keep the opposite shoulder low.",
+    "Hold for 20-30 seconds, breathing calmly.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "2325",
+  "name": "dumbbell pronated to neutral grip row",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A dumbbell row that begins with an overhand grip and turns to a neutral grip, working the back and arms.",
+  "instructions": [
+    "Hinge forward with a flat back, holding dumbbells with an overhand grip.",
+    "Let your arms hang straight below your shoulders.",
+    "Row the weights toward your hips while rotating your palms to face each other.",
+    "Squeeze your shoulder blades together at the top.",
+    "Lower the dumbbells slowly while turning your palms back down.",
+    "Keep your torso still."
+  ],
+  "textSource": "opengym"
+}

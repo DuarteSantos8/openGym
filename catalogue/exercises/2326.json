@@ -1,0 +1,24 @@
+{
+  "id": "2326",
+  "name": "dumbbell pronated grip row",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A bent-over row with an overhand grip, building the muscles of the mid and upper back.",
+  "instructions": [
+    "Hold a dumbbell in each hand and hinge forward with a flat back.",
+    "Let your arms hang with palms facing your legs.",
+    "Pull the dumbbells up toward your lower ribs.",
+    "Keep your elbows close to your body and squeeze your shoulder blades.",
+    "Lower slowly until your arms are straight.",
+    "Avoid jerking with your torso."
+  ],
+  "textSource": "opengym"
+}

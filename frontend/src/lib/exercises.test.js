@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { matchExercise, normalizeStr } from './exercises.js'
+import { matchExercise, normalizeStr, byCategory } from './exercises.js'
 import { _setLangState } from './i18n-core.js'
 
 describe('normalizeStr', () => {
@@ -134,5 +134,25 @@ describe('the exercise dataset', () => {
     const { EXDB } = await import('./exercises-data.js')
     const found = EXDB.filter(e => matchExercise(e, '45° leg press')).map(e => e.id)
     expect(found).toEqual(expect.arrayContaining(['0739', '1464', '0740']))
+  })
+})
+
+describe('search: the everyday version first', () => {
+  it('"leg press" finds the 45° sled leg press before the Smith and one-leg versions', async () => {
+    const { EXDB, searchExercises } = await import('./exercises.js')
+    expect(searchExercises(EXDB, 'leg press')[0].id).toBe('0739')
+    expect(searchExercises(EXDB, 'smith leg press')[0].id).toBe('0760')
+  })
+})
+
+// The Type chip row's filter (issue #521), shared by the Library and the exercise picker.
+describe('byCategory', () => {
+  const list = [{ id: 'a', cat: 'stretching' }, { id: 'b', cat: 'strength' }, { id: 'c' }]
+  it('offers the types present, in the fixed order, and narrows to the chosen one', () => {
+    expect(byCategory(list, '')).toEqual({ opts: ['strength', 'stretching'], on: '', list })
+    expect(byCategory(list, 'stretching')).toEqual({ opts: ['strength', 'stretching'], on: 'stretching', list: [list[0]] })
+  })
+  it('ignores a type the list has none of instead of showing nothing', () => {
+    expect(byCategory(list, 'yoga')).toEqual({ opts: ['strength', 'stretching'], on: '', list })
   })
 })

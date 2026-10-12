@@ -9,8 +9,8 @@
  *
  * What readZip refuses, and why: any compression method but "stored" (this app never writes
  * one — an archiver repacked the file), encryption, more than 2000 entries, a name with '..' or a
- * leading '/', and more than 1 GB in total. ZIP64 is neither written nor read: an export over
- * 4 GB or 65,535 files is refused rather than written broken.
+ * leading '/', and more than 1 GiB of entry data. zipStore uses the same entry and data limits,
+ * so it cannot export a backup this app would refuse to import. ZIP64 is neither written nor read.
  */
 
 export class ZipError extends Error {
@@ -45,7 +45,8 @@ async function crcOfBlob(blob) {
 }
 
 const LIMIT_32 = 0xffffffff
-const MAX_ENTRIES_WRITE = 65535
+export const MAX_ENTRIES = 2000
+export const MAX_TOTAL = 1024 * 1024 * 1024
 
 function dosTime(d) {
   return {
@@ -56,20 +57,23 @@ function dosTime(d) {
 
 /**
  * A store-only zip of `entries` ([{ name, blob }]) as one Blob. Names are written as UTF-8 (flag
- * bit 11), so a name any archiver shows as written. Throws ZipError('too-large') past what a zip
- * without ZIP64 can hold.
+ * bit 11), so a name any archiver shows as written. Refuses more entries or data than readZip
+ * accepts, and anything needing ZIP64.
  */
 export async function zipStore(entries, { now = new Date() } = {}) {
-  if (entries.length > MAX_ENTRIES_WRITE) throw new ZipError('too-large')
+  if (entries.length > MAX_ENTRIES) throw new ZipError('too-many')
   const enc = new TextEncoder()
   const { time, date } = dosTime(now)
   const parts = []
   const central = []
   let offset = 0
+  let total = 0
   for (const { name, blob } of entries) {
     const nameBytes = enc.encode(name)
     const size = blob.size
     if (size > LIMIT_32) throw new ZipError('too-large')
+    total += size
+    if (total > MAX_TOTAL) throw new ZipError('too-large')
     const crc = await crcOfBlob(blob)
     const local = new DataView(new ArrayBuffer(30))
     local.setUint32(0, 0x04034b50, true)
@@ -111,8 +115,6 @@ export async function zipStore(entries, { now = new Date() } = {}) {
   return new Blob([...parts, ...central, end.buffer], { type: 'application/zip' })
 }
 
-export const MAX_ENTRIES = 2000
-export const MAX_TOTAL = 1024 * 1024 * 1024
 const EOCD_SEARCH = 65557   // 22-byte record + the largest possible comment
 
 const readBytes = async (file, start, end) => new Uint8Array(await file.slice(start, end).arrayBuffer())

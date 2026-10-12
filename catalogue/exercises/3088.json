@@ -1,0 +1,25 @@
+{
+  "id": "3088",
+  "name": "frog hops",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "Explosive hops from a deep squat, like a frog. They build leg power and get your heart pumping.",
+  "instructions": [
+    "Stand with your feet wider than your shoulders and sink into a deep squat.",
+    "Place your fingertips on the floor between your feet.",
+    "Jump forward and up, swinging your arms.",
+    "Land softly back in the squat.",
+    "Reset and hop again right away.",
+    "Keep your knees tracking over your toes."
+  ],
+  "femaleVariant": "0460",
+  "textSource": "opengym"
+}

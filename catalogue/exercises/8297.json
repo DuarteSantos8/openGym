@@ -1,0 +1,22 @@
+{
+  "id": "8297",
+  "name": "cable straight arm pulldown (with rope attachment)",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A straight-arm pulldown using a rope. It isolates the lats with no help from the arms.",
+  "instructions": [
+    "Set a rope on a high pulley and stand facing it.",
+    "Hinge forward slightly with arms extended.",
+    "Pull the rope down to your thighs.",
+    "Spread the rope at the bottom.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

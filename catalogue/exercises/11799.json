@@ -1,0 +1,23 @@
+{
+  "id": "11799",
+  "name": "dumbbell bent over back to side to front arms raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A bent-over sweeping raise with light dumbbells that targets the rear and side delts through a long arc.",
+  "instructions": [
+    "Hold light dumbbells and hinge forward at the hips with a flat back.",
+    "Start with your arms back by your hips.",
+    "Sweep the dumbbells out to the sides up to shoulder height.",
+    "Continue forward in an arc, then reverse the path with control.",
+    "Use light weights and avoid swinging your torso."
+  ],
+  "textSource": "opengym"
+}

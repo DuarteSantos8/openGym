@@ -1,0 +1,21 @@
+{
+  "id": "10113",
+  "name": "lever isometric squat hip abduction",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps"
+  ],
+  "category": "isometric",
+  "description": "Hold a squat while pressing out against a machine pad. It trains the outer hips and glutes.",
+  "instructions": [
+    "Set the machine pads against the outsides of your knees.",
+    "Lower into a half squat and keep your chest up.",
+    "Press your knees outward against the pads.",
+    "Hold the position steadily for the target time.",
+    "Release and stand up slowly."
+  ],
+  "textSource": "opengym"
+}

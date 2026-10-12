@@ -1,0 +1,21 @@
+{
+  "id": "3980",
+  "name": "dumbbell incline front raise with chest support",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A front raise done chest down on an incline bench. It isolates the front delts without momentum.",
+  "instructions": [
+    "Lie chest down on an incline bench with dumbbells hanging.",
+    "Keep a soft bend in the elbows.",
+    "Raise the weights forward to shoulder height.",
+    "Lower slowly.",
+    "Keep your chest against the pad."
+  ],
+  "textSource": "opengym"
+}

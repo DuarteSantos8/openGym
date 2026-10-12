@@ -1,0 +1,23 @@
+{
+  "id": "9699",
+  "name": "dumbbell single arm chest supported row",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "rear deltoids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A one-arm row with your chest braced on an incline bench. It lets you focus on each side of the back.",
+  "instructions": [
+    "Lie face down on an incline bench holding a dumbbell in one hand.",
+    "Let your arm hang straight down.",
+    "Row the dumbbell toward your hip.",
+    "Squeeze your back at the top.",
+    "Lower slowly, finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

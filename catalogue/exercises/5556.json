@@ -1,0 +1,22 @@
+{
+  "id": "5556",
+  "name": "negative push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Push-up focusing on the slow lowering phase to build strength for full reps.",
+  "instructions": [
+    "Start at the top of a push-up with straight arms.",
+    "Brace your core and keep a straight line.",
+    "Lower your chest to the floor over 3-5 seconds.",
+    "Drop to your knees or reset at the bottom.",
+    "Return to the top and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1566",
+  "name": "kettlebell one arm overhead squat (thighs)",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "glutes",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A squat while holding a kettlebell locked out overhead with one arm. It trains leg strength together with shoulder stability and core control.",
+  "instructions": [
+    "Press a kettlebell overhead with one arm and lock out your elbow.",
+    "Stand with feet shoulder-width apart and keep your ribs down.",
+    "Squat down with your chest up while keeping the bell stable over your shoulder.",
+    "Go as low as you can with good control.",
+    "Drive up through your heels, then switch arms after your reps."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "6215",
+  "name": "dumbbell rollout",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "lats",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A rollout using dumbbells in place of a wheel. It challenges the abs.",
+  "instructions": [
+    "Kneel holding a dumbbell in each hand on the floor.",
+    "Brace your core.",
+    "Roll the dumbbells forward.",
+    "Go as far as you can keep your back flat.",
+    "Pull back to the start.",
+    "Avoid sagging at the hips."
+  ],
+  "textSource": "opengym"
+}

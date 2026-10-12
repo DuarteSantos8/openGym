@@ -1,0 +1,23 @@
+{
+  "id": "2305",
+  "name": "front snap kick",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors",
+    "core"
+  ],
+  "category": "combat",
+  "description": "A quick forward kick that snaps out from the knee, building leg speed and balance.",
+  "instructions": [
+    "Stand in a fighting stance with your hands up.",
+    "Lift your knee toward your chest.",
+    "Snap your lower leg forward to the target.",
+    "Pull the leg back quickly along the same line.",
+    "Keep your supporting foot grounded.",
+    "Return to stance and repeat, then switch legs."
+  ],
+  "textSource": "opengym"
+}

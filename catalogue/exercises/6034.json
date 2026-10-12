@@ -1,0 +1,24 @@
+{
+  "id": "6034",
+  "name": "barbell deadlift from blocks",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "quadriceps",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A deadlift with the bar raised on blocks, which shortens the range of motion and lets you lift heavier.",
+  "instructions": [
+    "Set the bar on blocks or a raised platform.",
+    "Stand with the bar over your mid-foot.",
+    "Hinge and grip the bar just outside your knees.",
+    "Brace your core and keep your back flat.",
+    "Drive through your feet to stand tall.",
+    "Lower the bar back to the blocks with control."
+  ],
+  "textSource": "opengym"
+}

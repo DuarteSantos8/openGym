@@ -1,0 +1,23 @@
+{
+  "id": "9602",
+  "name": "bodyweight patrick step from stepbox",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A step-down from a box that strengthens the quads and teaches knee control.",
+  "instructions": [
+    "Stand on the edge of a step box on one leg.",
+    "Lower the other foot toward the floor.",
+    "Keep your knee in line with your toes.",
+    "Touch the floor lightly.",
+    "Push up through the standing leg.",
+    "Do your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

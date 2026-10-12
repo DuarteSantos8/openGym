@@ -1,0 +1,23 @@
+{
+  "id": "2715",
+  "name": "strongman timber carry",
+  "bodyPart": "full body",
+  "equipment": "weight plate",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "upper back",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "Carrying a heavy timber on your shoulder, training full-body strength and stability.",
+  "instructions": [
+    "Lift the timber onto your shoulder and balance it.",
+    "Stand tall with your core braced.",
+    "Walk with short, steady steps.",
+    "Keep the load balanced and avoid leaning to one side.",
+    "Set it down under control, then switch shoulders."
+  ],
+  "textSource": "opengym"
+}

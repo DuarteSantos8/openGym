@@ -1,0 +1,24 @@
+{
+  "id": "4059",
+  "name": "kettlebell split squat",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Split squat holding a kettlebell, working the thighs and glutes one leg at a time.",
+  "instructions": [
+    "Hold a kettlebell at your chest and take a long split stance.",
+    "Keep your torso upright.",
+    "Lower your back knee toward the floor.",
+    "Press through the front heel to stand.",
+    "Finish the reps, then switch legs."
+  ],
+  "femaleVariant": "8893",
+  "textSource": "opengym"
+}

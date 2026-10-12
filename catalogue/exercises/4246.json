@@ -1,0 +1,24 @@
+{
+  "id": "4246",
+  "name": "landmine front squat",
+  "bodyPart": "upper legs",
+  "equipment": "landmine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "shoulders",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A squat holding the end of a landmine bar at your chest. The angled bar helps keep you upright and easy on the back.",
+  "instructions": [
+    "Load the landmine bar and hold the end against your chest with both hands.",
+    "Stand with your feet shoulder-width apart.",
+    "Brace and squat down, keeping your chest tall.",
+    "Go as deep as you can with a flat back.",
+    "Drive up through your whole foot.",
+    "Keep your elbows pointing down."
+  ],
+  "textSource": "opengym"
+}

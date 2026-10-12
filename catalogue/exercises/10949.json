@@ -1,0 +1,21 @@
+{
+  "id": "10949",
+  "name": "dumbbell straight arm bicep swing",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Swinging the dumbbells with straight arms to load the biceps. A shoulder and arm builder.",
+  "instructions": [
+    "Stand holding a dumbbell in each hand, palms forward.",
+    "Keep your arms nearly straight.",
+    "Swing the dumbbells forward and up in a controlled arc.",
+    "Lower them back down.",
+    "Keep your torso still and avoid momentum."
+  ],
+  "textSource": "opengym"
+}

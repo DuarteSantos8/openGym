@@ -1,0 +1,23 @@
+{
+  "id": "4957",
+  "name": "lying lat pulldown",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A lat pulldown done lying down. It trains the lats with a different angle.",
+  "instructions": [
+    "Lie on a bench under a high pulley.",
+    "Grab the bar overhand.",
+    "Pull the bar down toward your chest.",
+    "Squeeze your lats.",
+    "Return slowly with straight arms.",
+    "Keep your core braced."
+  ],
+  "textSource": "opengym"
+}

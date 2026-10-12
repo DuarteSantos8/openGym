@@ -1,0 +1,22 @@
+{
+  "id": "3264",
+  "name": "side plank leg raise",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Hold a side plank and lift the top leg to work the outer hips and the side of your trunk.",
+  "instructions": [
+    "Lie on your side and prop yourself up on one forearm with elbow under the shoulder.",
+    "Lift your hips so your body forms a straight line.",
+    "Raise your top leg to about hip height, toes pointing forward.",
+    "Lower it a little without dropping your hips.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

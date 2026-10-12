@@ -1,0 +1,23 @@
+{
+  "id": "1090",
+  "name": "suspension reverse fly",
+  "bodyPart": "shoulders",
+  "equipment": "suspension trainer",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A reverse fly using suspension handles. It trains the rear shoulders and upper back.",
+  "instructions": [
+    "Hold the handles and lean back with arms extended.",
+    "Keep your body straight.",
+    "Open your arms out to the sides.",
+    "Squeeze your shoulder blades.",
+    "Return slowly.",
+    "Do not shrug."
+  ],
+  "textSource": "opengym"
+}

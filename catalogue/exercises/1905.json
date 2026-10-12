@@ -1,0 +1,22 @@
+{
+  "id": "1905",
+  "name": "lying leaning against the wall stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "inner thighs",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "Lie with your legs resting on a wall and let them fall open to stretch the inner thighs.",
+  "instructions": [
+    "Lie on your back with your hips close to a wall.",
+    "Rest your legs straight up the wall.",
+    "Let your legs fall slowly out to the sides.",
+    "Relax and let gravity do the work.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Bring your legs together to finish."
+  ],
+  "textSource": "opengym"
+}

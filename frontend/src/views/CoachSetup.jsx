@@ -23,7 +23,8 @@ import { ConnectSheet } from './MobileOnboarding.jsx'
 import Icon from '../components/Icon.jsx'
 import { Section, Row, Button, TextField } from '../components/ui.jsx'
 
-const STEPS = ['Loading the exercise catalogue…', 'Checking the endpoint…', 'Ready']
+// Literal t() calls, so check-source-strings sees the three lines; t(s) over a list of keys hid them.
+const STEPS = () => [t('Loading the exercise catalogue…'), t('Checking the endpoint…'), t('Ready')]
 
 // The phone calls the provider through CapacitorHttp, native networking that obeys the
 // platform's cleartext rule, and Android refuses unencrypted http:// from apps
@@ -177,8 +178,8 @@ export default function CoachSetup() {
 
       <Section title={t('What leaves this phone')}>
         {DATA_CATEGORIES.map(k => {
-          const [title, sub] = CATEGORY_TEXT[k] || [k, '']
-          return <Row key={k} icon="check" iconTint="var(--acc)" title={t(title)} subtitle={t(sub)} />
+          const [title, sub] = CATEGORY_TEXT[k]?.() || [k, '']
+          return <Row key={k} icon="check" iconTint="var(--acc)" title={title} subtitle={sub} />
         })}
       </Section>
       <p className="sect-f" style={{ marginTop: -18, marginBottom: 22, lineHeight: 1.5 }}>
@@ -186,9 +187,9 @@ export default function CoachSetup() {
       </p>
 
       {step >= 0 && <div className="card">
-        {STEPS.map((s, i) => <div key={s} className="row" style={{ gap: 8, padding: '3px 0', opacity: i > step ? .4 : 1 }}>
+        {STEPS().map((s, i) => <div key={s} className="row" style={{ gap: 8, padding: '3px 0', opacity: i > step ? .4 : 1 }}>
           <span style={{ color: i < step || step === 2 ? 'var(--green)' : i === step ? 'var(--acc)' : 'var(--dim)' }}><Icon name={i < step || step === 2 ? 'check' : 'hourglass'} /></span>
-          <span className="small">{t(s)}</span>
+          <span className="small">{s}</span>
         </div>)}
       </div>}
 

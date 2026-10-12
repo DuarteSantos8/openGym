@@ -1,0 +1,23 @@
+{
+  "id": "1061",
+  "name": "barbell one leg hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A single-leg version of the barbell hip thrust that demands more balance and glute strength on each side.",
+  "instructions": [
+    "Set your upper back on a bench with a padded barbell over your hips.",
+    "Extend one leg or hold it bent in the air.",
+    "Drive through the planted heel to lift your hips level.",
+    "Squeeze your glute at the top without twisting.",
+    "Lower under control.",
+    "Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

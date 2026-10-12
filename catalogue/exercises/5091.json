@@ -1,0 +1,22 @@
+{
+  "id": "5091",
+  "name": "barbell reverse grip bench press",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Bench press with an underhand grip. It shifts more load to the upper chest and also works the triceps.",
+  "instructions": [
+    "Lie on a bench and grip the bar with palms facing you, about shoulder-width.",
+    "Unrack the bar over your chest.",
+    "Lower it to your lower chest with elbows tucked.",
+    "Press it back up until your arms are straight.",
+    "Keep your feet down and shoulder blades pinched."
+  ],
+  "textSource": "opengym"
+}

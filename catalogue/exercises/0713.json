@@ -1,0 +1,22 @@
+{
+  "id": "0713",
+  "name": "side neck stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "trapezius",
+    "sternocleidomastoid"
+  ],
+  "category": "stretching",
+  "description": "A simple side-bend stretch for the muscles along the side of your neck and top of the shoulders.",
+  "instructions": [
+    "Sit or stand tall with your shoulders relaxed.",
+    "Tilt your head so your ear moves toward one shoulder.",
+    "Keep the opposite shoulder pressed down.",
+    "Hold for 20-30 seconds.",
+    "Return to centre and repeat on the other side.",
+    "Don't pull hard on your head, a light weight of the hand is enough."
+  ],
+  "textSource": "opengym"
+}

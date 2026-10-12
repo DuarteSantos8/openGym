@@ -1,0 +1,23 @@
+{
+  "id": "10865",
+  "name": "dumbbell single leg romanian deadlift on bench",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A single-leg Romanian deadlift with the rear foot on a bench. It targets hamstrings and glutes.",
+  "instructions": [
+    "Hold dumbbells with your rear foot resting on a bench.",
+    "Keep your front knee soft.",
+    "Hinge forward at the hips.",
+    "Lower the weights along your leg.",
+    "Squeeze your glutes to stand up.",
+    "Switch legs after the set."
+  ],
+  "textSource": "opengym"
+}

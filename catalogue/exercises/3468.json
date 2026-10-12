@@ -1,0 +1,22 @@
+{
+  "id": "3468",
+  "name": "front hamstring stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A simple stretch for the back of the thigh.",
+  "instructions": [
+    "Place one heel forward on the floor with the toes up.",
+    "Keep that leg straight.",
+    "Hinge at the hips with a flat back.",
+    "Feel the stretch behind your thigh.",
+    "Hold for 20-30 seconds.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "0170",
+  "name": "cable incline fly (on stability ball)",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "deltoids",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "An incline cable fly performed on a stability ball. Trains the chest and core stability.",
+  "instructions": [
+    "Set up a stability ball at an incline angle.",
+    "Attach the cable handles to the high pulleys of a cable machine.",
+    "Sit on the stability ball facing away from the machine, with your feet firmly planted on the ground.",
+    "Grasp the cable handles with an overhand grip, palms facing forward.",
+    "Lean forward slightly, keeping your back straight and core engaged.",
+    "With a controlled motion, bring your arms out to the sides, keeping a slight bend in your elbows.",
+    "Continue the motion until your arms are parallel to the ground.",
+    "Pause for a moment, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

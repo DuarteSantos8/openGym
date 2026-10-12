@@ -1,0 +1,22 @@
+{
+  "id": "8663",
+  "name": "cable incline y raise wrist straps with back support",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rear deltoids",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A cable Y raise using wrist straps to reduce grip demand, supported on an incline bench.",
+  "instructions": [
+    "Fasten the wrist straps to the cables and lie chest-down on an incline bench.",
+    "Keep your neck neutral.",
+    "Raise your arms forward and up into a Y shape.",
+    "Squeeze your shoulders at the top.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

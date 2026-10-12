@@ -1,0 +1,22 @@
+{
+  "id": "2792",
+  "name": "plank jump",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "quadriceps"
+  ],
+  "category": "plyometrics",
+  "description": "A jumping plank drill that raises your heart rate and challenges the core.",
+  "instructions": [
+    "Start in a high plank with hands under shoulders.",
+    "Jump both feet out wide.",
+    "Jump them back together.",
+    "Keep your hips level and core tight.",
+    "Move at a steady pace."
+  ],
+  "textSource": "opengym"
+}

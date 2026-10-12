@@ -1,0 +1,21 @@
+{
+  "id": "0906",
+  "name": "band kneeling rear kick",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A kneeling glute kick against a band. It strengthens the glutes with a stable base.",
+  "instructions": [
+    "Get on all fours with the band around one foot and in your hands.",
+    "Keep your core tight.",
+    "Kick the banded leg back and up.",
+    "Squeeze your glute at the top.",
+    "Lower slowly, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "2207",
+  "name": "roller side lat stretch",
+  "bodyPart": "back",
+  "equipment": "roller",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "stretching",
+  "description": "A roller stretch that reaches forward to lengthen the sides of your back. Helps loosen the lats.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold the roller with both hands in front of your body.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
+    "Extend your arms forward and roll the roller down towards your feet, feeling a stretch in your lats.",
+    "Hold the stretch for a few seconds, then slowly roll the roller back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

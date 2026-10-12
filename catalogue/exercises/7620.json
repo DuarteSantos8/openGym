@@ -1,0 +1,22 @@
+{
+  "id": "7620",
+  "name": "barbell banded bench press",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A bench press with bands attached to the bar, so resistance rises toward lockout. It builds pressing power across the chest and triceps.",
+  "instructions": [
+    "Set bands on the bar and lie on a flat bench with your feet planted.",
+    "Unrack the bar over your chest with a firm grip.",
+    "Lower it to your mid chest under control.",
+    "Press up and out until your arms are straight.",
+    "Keep your shoulder blades pinched and your feet down."
+  ],
+  "textSource": "opengym"
+}

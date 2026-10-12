@@ -1,0 +1,20 @@
+{
+  "id": "2773",
+  "name": "knee extension",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "mobility",
+  "description": "Straightening the knee, which works the front of the thigh.",
+  "instructions": [
+    "Stand or sit tall with a relaxed posture and the joint in a neutral starting position.",
+    "Sit tall on a bench or chair with your feet off the floor.",
+    "Straighten one knee until the leg is almost fully extended.",
+    "Squeeze your thigh at the top, then lower slowly.",
+    "Repeat for 10-15 smooth reps, then switch sides if you are working one side at a time."
+  ],
+  "textSource": "opengym"
+}

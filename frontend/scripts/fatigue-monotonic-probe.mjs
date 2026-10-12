@@ -48,17 +48,20 @@ for (let historyIndex = 0; historyIndex < 100; historyIndex += 1) {
   }
 
   const beforeDeletion = fatigueOf(history, BASE)
-  for (let deleted = 0; deleted < history.length; deleted += 1) {
-    const afterDeletion = fatigueOf(history.filter((_, index) => index !== deleted), BASE)
-    for (const [slug, before] of Object.entries(beforeDeletion)) {
-      if (afterDeletion[slug] > before + Number.EPSILON) {
-        throw new Error(
-          `deleting workout ${deleted} in history ${historyIndex} increased ${slug}: `
-          + `${before} -> ${afterDeletion[slug]}`,
-        )
-      }
-      deletionComparisons += 1
+  // Phase-2 contract: only the chronologically latest session's deletion is monotonic.
+  // Anchors and acute:chronic gains are history-dependent, so removing a mid-history
+  // workout may re-score later sessions (a removed PR lowers their anchors). Deleting
+  // the latest session touches no earlier window and can only remove stimulus.
+  const latestIndex = history.reduce((best, w, i) => (w.start > history[best].start ? i : best), 0)
+  const afterLatestDeletion = fatigueOf(history.filter((_, index) => index !== latestIndex), BASE)
+  for (const [slug, before] of Object.entries(beforeDeletion)) {
+    if (afterLatestDeletion[slug] > before + Number.EPSILON) {
+      throw new Error(
+        `deleting the latest workout in history ${historyIndex} increased ${slug}: `
+        + `${before} -> ${afterLatestDeletion[slug]}`,
+      )
     }
+    deletionComparisons += 1
   }
 }
 
@@ -81,20 +84,16 @@ const deletionHistory = [
   workout(BASE, 120, 10),
 ]
 const beforePinnedDeletion = fatigueOf(deletionHistory, BASE)
-for (let deleted = 0; deleted < deletionHistory.length; deleted += 1) {
-  const afterDeletion = fatigueOf(
-    deletionHistory.filter((_, index) => index !== deleted),
-    BASE,
-  )
-  for (const [slug, before] of Object.entries(beforePinnedDeletion)) {
-    if (afterDeletion[slug] > before + Number.EPSILON) {
-      throw new Error(`deleting workout ${deleted} increased ${slug}: ${before} -> ${afterDeletion[slug]}`)
-    }
+// Pinned latest-deletion case: removing the newest session never increases fatigue.
+const afterPinnedDeletion = fatigueOf(deletionHistory.slice(0, -1), BASE)
+for (const [slug, before] of Object.entries(beforePinnedDeletion)) {
+  if (afterPinnedDeletion[slug] > before + Number.EPSILON) {
+    throw new Error(`deleting the latest workout increased ${slug}: ${before} -> ${afterPinnedDeletion[slug]}`)
   }
 }
 
 console.log(`monotonic probe: ${comparisons} comparisons, largest increase ${largestIncrease}, PASS`)
 console.log(
   `history-edit probe: out-of-scan imports stable; ${deletionComparisons} randomized `
-  + 'single-workout deletion comparisons non-increasing, PASS',
+  + 'latest-workout deletion comparisons non-increasing, PASS',
 )

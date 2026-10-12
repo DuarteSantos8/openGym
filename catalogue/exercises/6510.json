@@ -1,0 +1,22 @@
+{
+  "id": "6510",
+  "name": "cable single arm high row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rear deltoids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A one-arm row from a high cable, pulling toward your torso to train the upper back and lats.",
+  "instructions": [
+    "Set a cable to a high position and hold the handle with one hand.",
+    "Brace your core and stand or kneel tall.",
+    "Pull the handle toward your torso, driving your elbow back.",
+    "Squeeze your shoulder blade at the end.",
+    "Return slowly, then switch arms."
+  ],
+  "textSource": "opengym"
+}

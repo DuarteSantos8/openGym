@@ -1,0 +1,24 @@
+{
+  "id": "1517",
+  "name": "barbell clean pull",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "trapezius",
+    "quadriceps",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "olympic",
+  "description": "The explosive pull of a clean, finished with a shrug and without the catch. It builds power and bar speed.",
+  "instructions": [
+    "Set up over the bar with a flat back and a grip just outside your knees.",
+    "Lift the bar past your knees, keeping it close.",
+    "Extend your hips and knees explosively and shrug.",
+    "Let your elbows rise high, but do not catch the bar.",
+    "Lower the bar with control and reset."
+  ],
+  "textSource": "opengym"
+}

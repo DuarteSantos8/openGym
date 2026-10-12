@@ -1,0 +1,23 @@
+{
+  "id": "7217",
+  "name": "floor t raise v. 2",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "trapezius",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A face-down raise with the arms out to form a T. It strengthens the muscles between the shoulder blades.",
+  "instructions": [
+    "Lie face down with your arms out to the sides in a T.",
+    "Keep your forehead near the floor and neck neutral.",
+    "Lift your arms off the floor by pinching your shoulder blades.",
+    "Hold for a second at the top.",
+    "Lower with control."
+  ],
+  "textSource": "opengym"
+}

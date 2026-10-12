@@ -1,0 +1,22 @@
+{
+  "id": "8424",
+  "name": "seated cross body punch on a chair",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "obliques"
+  ],
+  "category": "cardio",
+  "description": "A seated punching drill that raises your heart rate and works the chest, shoulders and trunk.",
+  "instructions": [
+    "Sit tall near the front of a sturdy chair with your feet flat on the floor.",
+    "Brace your core and keep your shoulders relaxed.",
+    "Raise your fists to guard position.",
+    "Punch one arm across your body, rotating the trunk slightly.",
+    "Pull it back and punch with the other arm.",
+    "Keep a quick, smooth rhythm."
+  ],
+  "textSource": "opengym"
+}

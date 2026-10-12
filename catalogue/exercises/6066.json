@@ -1,0 +1,22 @@
+{
+  "id": "6066",
+  "name": "bottle weighted two arms kickback",
+  "bodyPart": "upper arms",
+  "equipment": "weighted",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "rear deltoids",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A triceps kickback done with both arms together using two bottles.",
+  "instructions": [
+    "Hinge forward with a flat back, a bottle in each hand, upper arms parallel to the floor.",
+    "Keep your elbows tucked.",
+    "Extend both arms straight behind you.",
+    "Squeeze at the top.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

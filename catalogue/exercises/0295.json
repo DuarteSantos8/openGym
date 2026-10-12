@@ -1,0 +1,41 @@
+{
+  "id": "0295",
+  "name": "dumbbell clean",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "calves"
+  ],
+  "category": "olympic",
+  "description": "A dumbbell clean where you explode up and catch the weights at the shoulders. It builds power in the hips, legs and back.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand with an overhand grip.",
+    "Bend your knees and lower your hips into a squat position, keeping your back straight and chest up.",
+    "Explosively extend your hips and knees, driving through your heels to jump off the ground.",
+    "As you jump, shrug your shoulders and pull the dumbbells up towards your shoulders, keeping them close to your body.",
+    "Catch the dumbbells at shoulder height, with your elbows pointing forward and your palms facing up.",
+    "Lower the dumbbells back down to the starting position by reversing the movement.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "bodyPart": "full body",
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "hamstring",
+      "trapezius"
+    ],
+    "secondaries": [
+      "calves",
+      "forearm",
+      "deltoids",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "textSource": "exercisedb"
+}

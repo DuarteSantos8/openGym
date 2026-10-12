@@ -1,0 +1,22 @@
+{
+  "id": "11648",
+  "name": "floor w raise",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "calisthenics",
+  "description": "A prone raise that moves the arms into a W shape to strengthen the muscles between the shoulder blades.",
+  "instructions": [
+    "Lie face down with arms bent and elbows out to the sides.",
+    "Rest your forehead lightly on the floor.",
+    "Squeeze your shoulder blades together and lift your arms and chest slightly.",
+    "Form a W shape with your arms and hold for a second.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

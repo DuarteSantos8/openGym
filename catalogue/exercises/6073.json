@@ -1,0 +1,22 @@
+{
+  "id": "6073",
+  "name": "bottle weighted front raise",
+  "bodyPart": "shoulders",
+  "equipment": "weighted",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "core",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A front raise with bottles for the front of the shoulders.",
+  "instructions": [
+    "Stand tall with a bottle in each hand in front of your thighs.",
+    "Raise both arms straight in front to shoulder height.",
+    "Keep a slight bend in your elbows.",
+    "Pause.",
+    "Lower slowly without swinging."
+  ],
+  "textSource": "opengym"
+}

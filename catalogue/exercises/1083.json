@@ -1,0 +1,22 @@
+{
+  "id": "1083",
+  "name": "suspension leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Hamstring curl with heels in straps while bridging. It works the hamstrings and glutes.",
+  "instructions": [
+    "Lie on your back with your heels in the straps and legs extended.",
+    "Lift your hips off the floor.",
+    "Curl your heels toward your glutes.",
+    "Keep your hips high.",
+    "Extend your legs slowly.",
+    "Repeat for reps."
+  ],
+  "textSource": "opengym"
+}

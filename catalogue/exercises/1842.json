@@ -1,0 +1,20 @@
+{
+  "id": "1842",
+  "name": "lying neck extension stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid"
+  ],
+  "category": "stretching",
+  "description": "Stretches the front of the neck by letting the head drop back from the edge of a bench or bed.",
+  "instructions": [
+    "Lie on your back with your head near the edge of a bench or bed, shoulders supported.",
+    "Slowly let your head relax backward past the edge.",
+    "Support it with your hands if it feels heavy.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Use your hands to lift your head back up carefully."
+  ],
+  "textSource": "opengym"
+}

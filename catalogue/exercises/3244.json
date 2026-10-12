@@ -1,0 +1,21 @@
+{
+  "id": "3244",
+  "name": "abdominal stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "chest"
+  ],
+  "category": "stretching",
+  "description": "A stretch lengthening the front of the trunk and the abs.",
+  "instructions": [
+    "Lie face down with hands under your shoulders.",
+    "Press up, lifting your chest.",
+    "Keep your hips on the floor.",
+    "Look straight ahead and relax.",
+    "Hold for 20-30 seconds."
+  ],
+  "textSource": "opengym"
+}

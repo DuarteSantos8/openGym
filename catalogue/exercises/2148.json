@@ -1,0 +1,22 @@
+{
+  "id": "2148",
+  "name": "lever single leg hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A one sided machine hip thrust that hits each glute on its own and challenges hip stability.",
+  "instructions": [
+    "Sit on the machine with your upper back on the pad and the belt across your hips.",
+    "Plant one foot flat and lift the other leg off the floor.",
+    "Drive through the planted heel and raise your hips until your torso is level.",
+    "Squeeze your glute at the top, keeping your hips level.",
+    "Lower with control, finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

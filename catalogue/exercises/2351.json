@@ -1,0 +1,22 @@
+{
+  "id": "2351",
+  "name": "push up end position (form check)",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A side-by-side form check for the bottom position of a push-up, showing the common mistake next to the correct technique so you can spot it in your own sets.",
+  "instructions": [
+    "Start in a high plank and lower yourself under control.",
+    "Compare the faulty version with the correct one: your chest nearly touches the floor, elbows angled back, and hips stay in line.",
+    "Perform the lift slowly with a light load and keep the correct position throughout.",
+    "Use a mirror or film a set from the side to check your own position.",
+    "Fix the cue before adding weight, and rest between sets so form stays clean."
+  ],
+  "textSource": "opengym"
+}

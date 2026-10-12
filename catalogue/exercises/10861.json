@@ -1,0 +1,22 @@
+{
+  "id": "10861",
+  "name": "weighted ball reverse hyperextension on ghd",
+  "bodyPart": "upper legs",
+  "equipment": "medicine ball",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "Reverse hyper on a GHD, with a ball held between your feet. It trains glutes and hamstrings.",
+  "instructions": [
+    "Lie face down on the GHD with hips at the edge and a ball between your feet.",
+    "Hold the pad.",
+    "Lift your legs until they line up with your torso.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly.",
+    "Do not swing."
+  ],
+  "textSource": "opengym"
+}

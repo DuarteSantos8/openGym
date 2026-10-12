@@ -1,0 +1,21 @@
+{
+  "id": "1906",
+  "name": "abduction of one leg flexion stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "groin",
+    "hip flexors"
+  ],
+  "category": "stretching",
+  "description": "Lying on your back, you open one leg out to the side to stretch the inner thigh and groin.",
+  "instructions": [
+    "Lie on your back with your legs straight.",
+    "Bend one knee, let it fall out to the side and, if needed, ease it down with your hand until the inner thigh stretches.",
+    "Keep your lower back and the opposite hip flat on the floor.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

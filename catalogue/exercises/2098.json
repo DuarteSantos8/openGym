@@ -1,0 +1,22 @@
+{
+  "id": "2098",
+  "name": "adduction hand with elbow extended stretch",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "wrist extensors"
+  ],
+  "category": "stretching",
+  "description": "Tilts the hand sideways at the wrist with a straight elbow to stretch the forearm muscles along the outer edge of the arm.",
+  "instructions": [
+    "Stand tall and extend one arm in front of you with the elbow straight.",
+    "Turn the palm so the thumb points up.",
+    "Grab the hand with your other hand and tilt it gently toward the little finger side.",
+    "Keep the elbow locked and the shoulder down.",
+    "Hold for 20-30 seconds.",
+    "Release and repeat on the other arm."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "4572",
+  "name": "dumbbell half kneeling lift and chop",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A diagonal dumbbell pattern from a half kneeling stance that trains rotational core strength.",
+  "instructions": [
+    "Kneel on one knee with the other foot forward and hold a dumbbell with both hands.",
+    "Start with the weight by your low outside hip.",
+    "Lift the dumbbell diagonally across your body to above the opposite shoulder.",
+    "Rotate your torso and keep your hips square.",
+    "Chop it back down along the same line.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

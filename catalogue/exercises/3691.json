@@ -1,0 +1,23 @@
+{
+  "id": "3691",
+  "name": "dumbbell goblet split squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A split squat holding one dumbbell at your chest. Great for working each leg on its own while the front load keeps you upright.",
+  "instructions": [
+    "Hold one dumbbell vertically against your chest and step into a split stance.",
+    "Keep your torso tall and lower your back knee toward the floor.",
+    "Stop when your front thigh is about parallel to the ground.",
+    "Push through your front foot to stand back up.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

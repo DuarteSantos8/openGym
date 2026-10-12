@@ -1,0 +1,23 @@
+{
+  "id": "2964",
+  "name": "barbell glute bridge (hands on bar)",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A glute bridge with the barbell resting on your hips and your hands on the bar. It builds the glutes and hamstrings with load.",
+  "instructions": [
+    "Sit on the floor with a barbell over your hips, padded if needed.",
+    "Roll back, set your feet, and hold the bar with both hands.",
+    "Drive through your heels to lift your hips.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly and repeat."
+  ],
+  "femaleVariant": "2965",
+  "textSource": "opengym"
+}

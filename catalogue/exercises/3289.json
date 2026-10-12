@@ -1,0 +1,21 @@
+{
+  "id": "3289",
+  "name": "impossible dips",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "An advanced dip on parallel bars with the legs crossed or lifted. It trains the triceps and chest through a tough range.",
+  "instructions": [
+    "Position yourself between two parallel bars with your arms fully extended and your body suspended in the air.",
+    "Bend your knees and cross your ankles.",
+    "Lower your body by bending your elbows until your upper arms are parallel to the ground.",
+    "Pause for a moment, then push yourself back up to the starting position by straightening your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

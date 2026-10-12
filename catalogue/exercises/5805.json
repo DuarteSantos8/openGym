@@ -1,0 +1,21 @@
+{
+  "id": "5805",
+  "name": "wide glute pulse bridge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "calisthenics",
+  "description": "A glute bridge with feet set wide and small pulses at the top. Burns the glutes with constant tension.",
+  "instructions": [
+    "Lie on your back with your knees bent and feet wide apart.",
+    "Lift your hips to the top of a bridge.",
+    "Pulse your hips up and down in small, controlled movements.",
+    "Keep your glutes squeezed throughout.",
+    "Lower fully after your set."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5284",
+  "name": "dumbbell sprinter thrust chest press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Pressing dumbbells from the chest while driving one knee up like a sprinter. It combines upper body strength with a core-driven leg movement.",
+  "instructions": [
+    "Lie on a bench holding dumbbells at your chest.",
+    "Drive one knee up toward your chest.",
+    "Press the dumbbells up until your arms are straight.",
+    "Lower the dumbbells and switch legs.",
+    "Keep a steady rhythm."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "2852",
+  "name": "lying leg lift side",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques"
+  ],
+  "category": "pilates",
+  "description": "A side-lying leg lift that works the outer hip.",
+  "instructions": [
+    "Lie on your side with legs stacked.",
+    "Support your head with your arm.",
+    "Lift your top leg.",
+    "Lower slowly.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

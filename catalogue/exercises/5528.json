@@ -1,0 +1,21 @@
+{
+  "id": "5528",
+  "name": "cable standing crossover overhead tricep extension",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Overhead triceps extension on crossed cables for a strong stretch and squeeze.",
+  "instructions": [
+    "Set two high pulleys with handles and face away from the stack.",
+    "Hold the handles overhead with elbows bent.",
+    "Cross your hands as you straighten your arms.",
+    "Pause, then return slowly.",
+    "Keep your elbows pointing forward."
+  ],
+  "textSource": "opengym"
+}

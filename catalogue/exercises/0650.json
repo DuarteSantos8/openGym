@@ -1,0 +1,21 @@
+{
+  "id": "0650",
+  "name": "pull-in (on stability ball)",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "Hands on the floor and feet on a stability ball, you pull the ball toward your chest. Works the abs and hip flexors while challenging balance.",
+  "instructions": [
+    "Start by sitting on the stability ball with your feet flat on the ground and your knees bent at a 90-degree angle.",
+    "Place your hands on the sides of the stability ball for support.",
+    "Engage your abs and slowly roll your hips forward, bringing your knees towards your chest.",
+    "Pause for a moment at the top of the movement, then slowly extend your legs back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "6030",
+  "textSource": "exercisedb"
+}

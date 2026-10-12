@@ -1,0 +1,22 @@
+{
+  "id": "1005",
+  "name": "band standing crunch",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A standing crunch with a band, curling the torso forward. It trains the abs.",
+  "instructions": [
+    "Attach the band to a sturdy anchor point at waist height.",
+    "Stand facing away from the anchor point with your feet shoulder-width apart.",
+    "Hold the band with both hands and bring it up to your chest, keeping your elbows bent and close to your body.",
+    "Engage your abs and slowly crunch forward, bringing your chest towards your knees.",
+    "Pause for a moment at the top of the crunch, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3839",
+  "textSource": "exercisedb"
+}

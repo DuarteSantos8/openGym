@@ -1,0 +1,23 @@
+{
+  "id": "5632",
+  "name": "barbell shoulder grip upright row",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "biceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Upright row with a shoulder-width grip.",
+  "instructions": [
+    "Stand holding a barbell at your thighs with hands shoulder width.",
+    "Pull the bar up along your body.",
+    "Lead with your elbows up to chest height.",
+    "Lower slowly.",
+    "Keep the bar close."
+  ],
+  "femaleVariant": "2366",
+  "textSource": "opengym"
+}

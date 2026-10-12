@@ -1,0 +1,23 @@
+{
+  "id": "3924",
+  "name": "floor fly with towels",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "triceps"
+  ],
+  "category": "calisthenics",
+  "description": "A floor fly sliding hands on towels for a bodyweight chest isolation move.",
+  "instructions": [
+    "Kneel or get into a plank with your hands on towels.",
+    "Slide your hands out wide to the sides.",
+    "Lower your chest toward the floor.",
+    "Squeeze your chest to slide your hands back together.",
+    "Keep your core tight.",
+    "Do not let your hips sag."
+  ],
+  "textSource": "opengym"
+}

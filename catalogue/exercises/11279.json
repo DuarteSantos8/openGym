@@ -1,0 +1,21 @@
+{
+  "id": "11279",
+  "name": "cable standing single arm overhead triceps extension v. 3",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-arm overhead triceps extension with a cable. The overhead position stretches and works the long head of the triceps.",
+  "instructions": [
+    "Hold a handle from a low pulley overhead, elbow bent, with your upper arm close to your head.",
+    "Brace your core.",
+    "Straighten your arm overhead.",
+    "Squeeze your triceps at the top.",
+    "Lower slowly, finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

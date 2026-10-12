@@ -1,0 +1,22 @@
+{
+  "id": "7593",
+  "name": "sled glute dominant leg press",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A sled leg press with a foot position that puts more load on the glutes. It also works the quads and hamstrings.",
+  "instructions": [
+    "Sit in the sled and place your feet high and wide on the platform.",
+    "Release the safety and lower the sled until your knees reach about 90 degrees.",
+    "Keep your lower back pressed into the seat.",
+    "Push through your heels to extend your legs without locking the knees.",
+    "Lower under control for each rep."
+  ],
+  "textSource": "opengym"
+}

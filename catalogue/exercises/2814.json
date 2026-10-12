@@ -1,0 +1,24 @@
+{
+  "id": "2814",
+  "name": "one arm twisted clean and press",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "glutes",
+    "triceps",
+    "obliques",
+    "quadriceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one arm clean with a body twist followed by a press overhead. Builds power and coordination from hips to shoulder.",
+  "instructions": [
+    "Stand with feet shoulder width apart, holding a weight in one hand low in front of you.",
+    "Pull it up to your shoulder with a hip drive and a slight turn of the body.",
+    "Turn your feet and hips back to face forward as you dip your knees.",
+    "Press the weight overhead until your arm locks.",
+    "Lower with control and repeat, then switch sides."
+  ],
+  "textSource": "opengym"
+}

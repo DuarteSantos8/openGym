@@ -1,0 +1,23 @@
+{
+  "id": "6760",
+  "name": "cable kneeling twist",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A kneeling trunk rotation on a cable. It trains the obliques while the base stays stable.",
+  "instructions": [
+    "Set a cable at chest height and kneel sideways to it.",
+    "Hold the handle with both hands in front of your chest.",
+    "Brace your abs and keep your hips square.",
+    "Rotate your torso away from the machine.",
+    "Return slowly under control.",
+    "Finish the reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "9518",
+  "name": "kettlebell pullover dead bug",
+  "bodyPart": "waist",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "lats",
+    "core",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A dead bug combined with a kettlebell pullover, where arms and legs extend in opposite directions.",
+  "instructions": [
+    "Lie on your back holding a kettlebell above your chest and knees at tabletop.",
+    "Brace your core and keep your lower back down.",
+    "Lower the kettlebell overhead while extending the opposite leg.",
+    "Return to the start under control.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

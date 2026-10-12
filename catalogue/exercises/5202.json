@@ -1,0 +1,21 @@
+{
+  "id": "5202",
+  "name": "resistance band kneeling ab crunch",
+  "bodyPart": "waist",
+  "equipment": "resistance band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A kneeling crunch pulled down against a resistance band. It adds load to the abs.",
+  "instructions": [
+    "Anchor the band overhead and kneel facing it.",
+    "Hold the handles beside your head.",
+    "Crunch your ribs toward your hips, rounding your spine.",
+    "Squeeze your abs at the bottom.",
+    "Return slowly to the start without sitting back on your heels."
+  ],
+  "textSource": "opengym"
+}

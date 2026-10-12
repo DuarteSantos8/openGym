@@ -1,0 +1,21 @@
+{
+  "id": "0452",
+  "name": "ez barbell reverse grip preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "At a preacher bench, you curl an EZ bar with an overhand grip. It strengthens the forearms and upper arm flexors.",
+  "instructions": [
+    "Sit on a preacher bench with your chest against the pad and your feet flat on the floor.",
+    "Grasp the ez barbell with an underhand grip, hands shoulder-width apart.",
+    "Rest your upper arms on the pad, allowing your forearms to hang down.",
+    "Keeping your upper arms stationary, exhale and curl the barbell up towards your shoulders.",
+    "Pause for a moment at the top, then inhale and slowly lower the barbell back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

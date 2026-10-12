@@ -1,0 +1,21 @@
+{
+  "id": "3362",
+  "name": "cable lying close press",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A close grip press lying down with a cable, putting emphasis on the triceps.",
+  "instructions": [
+    "Lie on a bench with the cable behind your head and hold the handle with a narrow grip.",
+    "Start with arms bent over your chest.",
+    "Press up until your arms are straight.",
+    "Keep your elbows close to your body.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

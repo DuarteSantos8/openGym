@@ -1,0 +1,23 @@
+{
+  "id": "9612",
+  "name": "dumbbell step over box",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Stepping across a box with dumbbells in your hands. It builds single-leg strength and balance.",
+  "instructions": [
+    "Hold a dumbbell in each hand and stand beside a box.",
+    "Step one foot up onto the box.",
+    "Press through it and bring your other foot up.",
+    "Step down to the far side one foot at a time.",
+    "Repeat, alternating the leading leg."
+  ],
+  "textSource": "opengym"
+}

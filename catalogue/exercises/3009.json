@@ -1,0 +1,22 @@
+{
+  "id": "3009",
+  "name": "stair up",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "Stepping up stairs at a steady pace to train the legs and raise your heart rate.",
+  "instructions": [
+    "Stand at the bottom of a staircase, standing tall.",
+    "Step up with one foot, placing your whole foot on the step.",
+    "Press through your heel and bring the other foot up.",
+    "Keep your torso upright and swing your arms naturally.",
+    "Continue at a steady pace and alternate the leading leg."
+  ],
+  "textSource": "opengym"
+}

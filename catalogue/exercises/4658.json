@@ -1,0 +1,22 @@
+{
+  "id": "4658",
+  "name": "kneeling shoulder tap push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A kneeling push-up followed by a quick shoulder tap with each hand. It builds the chest and shoulder stability.",
+  "instructions": [
+    "Start in a kneeling push-up position with hands under your shoulders.",
+    "Lower your chest toward the floor.",
+    "Press back up to straight arms.",
+    "Lift one hand and tap the opposite shoulder, then switch.",
+    "Keep your hips steady and repeat."
+  ],
+  "textSource": "opengym"
+}

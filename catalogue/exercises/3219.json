@@ -1,0 +1,22 @@
+{
+  "id": "3219",
+  "name": "scissor jumps (male)",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A quick jumping drill where the legs cross in front of each other in the air. It raises your heart rate and builds light, springy legs.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Jump off the ground and simultaneously cross your right leg in front of your left leg.",
+    "As you land, quickly switch legs, crossing your left leg in front of your right leg.",
+    "Continue alternating legs and jumping as quickly as possible.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

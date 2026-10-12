@@ -1,0 +1,22 @@
+{
+  "id": "9608",
+  "name": "walking backward on a treadmill",
+  "bodyPart": "cardio",
+  "equipment": "leverage machine",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "calves",
+    "glutes"
+  ],
+  "category": "cardio",
+  "description": "Walking backwards at a gentle pace on a treadmill. It works the quads and gets your heart rate up in a joint-friendly way.",
+  "instructions": [
+    "Set the treadmill to a very slow speed and hold the handrails.",
+    "Turn to face away from the direction of the belt.",
+    "Step back gently, landing on the toes first.",
+    "Keep your chest tall and take small steps.",
+    "Continue for several minutes at a comfortable pace."
+  ],
+  "textSource": "opengym"
+}

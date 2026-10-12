@@ -1,0 +1,22 @@
+{
+  "id": "1044",
+  "name": "plate pinch",
+  "bodyPart": "lower arms",
+  "equipment": "weight plate",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "hands",
+    "wrist flexors"
+  ],
+  "category": "isometric",
+  "description": "Pinch a weight plate between your fingers and thumb and hold it. It builds finger and thumb grip strength.",
+  "instructions": [
+    "Pick up two smooth plates and stack them with the smooth sides facing out.",
+    "Pinch them together with your fingertips and thumb.",
+    "Stand tall with your arm hanging by your side.",
+    "Hold for 20-30 seconds without letting the plates slip.",
+    "Switch hands and repeat."
+  ],
+  "textSource": "opengym"
+}

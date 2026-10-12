@@ -1,0 +1,22 @@
+{
+  "id": "5239",
+  "name": "dumbbell biceps curl with overhead extension on stability ball",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Sitting on a stability ball, you curl a dumbbell and then press it overhead into an extension. It works both arms muscles and trunk balance.",
+  "instructions": [
+    "Sit tall on a stability ball holding a dumbbell.",
+    "Curl the dumbbell up with your elbow at your side.",
+    "Raise it overhead, lifting it with both hands.",
+    "Lower it behind your head for a triceps extension.",
+    "Extend, return to the front, and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5881",
+  "name": "crab walk",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core",
+    "quadriceps"
+  ],
+  "category": "plyometrics",
+  "description": "Walk on hands and feet with your belly facing up, a playful drill that fires up the glutes, triceps and core.",
+  "instructions": [
+    "Sit on the floor, place your hands behind you and lift your hips off the ground.",
+    "Keep your hips high and your core braced.",
+    "Step with opposite hand and foot to move forward.",
+    "Walk for several steps, then go backward.",
+    "Keep your head neutral and your arms steady."
+  ],
+  "textSource": "opengym"
+}

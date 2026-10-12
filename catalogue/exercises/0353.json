@@ -1,0 +1,22 @@
+{
+  "id": "0353",
+  "name": "dumbbell one arm concentration curl (on stability ball)",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated concentration curl done while balancing on a stability ball. It isolates the biceps and adds a bit of core work to stay steady.",
+  "instructions": [
+    "Sit on a stability ball with your feet flat on the ground and your knees bent at a 90-degree angle.",
+    "Hold a dumbbell in one hand with your palm facing up and your arm extended down towards the floor.",
+    "Rest your elbow on the inside of your thigh, just above the knee.",
+    "Keeping your upper arm stationary, exhale and curl the dumbbell up towards your shoulder while contracting your biceps.",
+    "Pause for a moment at the top of the movement, then inhale and slowly lower the dumbbell back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms and repeat."
+  ],
+  "femaleVariant": "2590",
+  "textSource": "exercisedb"
+}

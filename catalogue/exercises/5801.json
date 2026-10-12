@@ -1,0 +1,24 @@
+{
+  "id": "5801",
+  "name": "band assisted muscle up",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "triceps",
+    "chest",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A muscle up where a band under your feet or knees takes some of your weight. It lets you learn the pull and transition on the bar.",
+  "instructions": [
+    "Loop a band over the bar and place your foot or knee in it.",
+    "Hang from the bar with a false or overhand grip.",
+    "Pull explosively, bringing your chest to the bar.",
+    "Lean over the bar and press yourself up to straight arms.",
+    "Lower back down slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

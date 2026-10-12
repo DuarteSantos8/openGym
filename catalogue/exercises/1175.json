@@ -1,0 +1,22 @@
+{
+  "id": "1175",
+  "name": "dumbbell forward leaning lunge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lunge with a forward torso lean that shifts more of the load onto the glutes and hamstrings.",
+  "instructions": [
+    "Hold a dumbbell in each hand and stand tall with your feet hip width apart.",
+    "Step forward with one foot and lean your chest slightly forward with a flat back.",
+    "Lower until both knees are bent about 90 degrees.",
+    "Push through the front heel to return to standing.",
+    "Alternate legs or finish all reps on one side before switching."
+  ],
+  "textSource": "opengym"
+}

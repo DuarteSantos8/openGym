@@ -1,0 +1,23 @@
+{
+  "id": "1128",
+  "name": "suspender push up",
+  "bodyPart": "chest",
+  "equipment": "suspension trainer",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with your hands in unstable straps, making the chest, arms and core work harder.",
+  "instructions": [
+    "Hold the handles and get into a plank with hands under shoulders.",
+    "Keep your body in one line.",
+    "Lower your chest between the handles.",
+    "Keep the straps steady and elbows at about 45 degrees.",
+    "Press up to straight arms.",
+    "Do not let the hips sag."
+  ],
+  "textSource": "opengym"
+}

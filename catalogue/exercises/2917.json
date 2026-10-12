@@ -1,0 +1,23 @@
+{
+  "id": "2917",
+  "name": "dumbbell farmers carry",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "trapezius",
+    "core",
+    "glutes",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Walking while holding a heavy dumbbell in each hand. It builds grip strength, traps and overall posture.",
+  "instructions": [
+    "Hold a dumbbell in each hand at your sides and stand tall.",
+    "Pull your shoulders back and down and brace your abs.",
+    "Walk with quick, controlled steps without swinging the weights.",
+    "Cover the set distance, then lower the dumbbells safely."
+  ],
+  "textSource": "opengym"
+}

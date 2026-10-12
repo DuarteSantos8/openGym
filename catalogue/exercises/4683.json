@@ -1,0 +1,23 @@
+{
+  "id": "4683",
+  "name": "band squat v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A squat with band resistance. It builds the thighs and glutes.",
+  "instructions": [
+    "Stand on the band with your feet shoulder-width apart and hold the ends at your shoulders.",
+    "Brace your core and keep your chest up.",
+    "Sit your hips back and down.",
+    "Go to at least parallel without letting your knees cave in.",
+    "Drive up through your heels and repeat."
+  ],
+  "textSource": "opengym"
+}

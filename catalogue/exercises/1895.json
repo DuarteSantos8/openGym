@@ -1,0 +1,22 @@
+{
+  "id": "1895",
+  "name": "standing rotational hip stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "groin"
+  ],
+  "category": "stretching",
+  "description": "Rotates the hip in standing to stretch the glutes and deep hip muscles.",
+  "instructions": [
+    "Stand tall near a support.",
+    "Cross one ankle over the opposite knee.",
+    "Sit your hips back as if sitting into a chair.",
+    "Feel the stretch in the hip of the crossed leg.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

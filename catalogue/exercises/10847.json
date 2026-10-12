@@ -1,0 +1,23 @@
+{
+  "id": "10847",
+  "name": "pilates machine lying frog and leg circle",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "glutes",
+    "inner thighs",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "Reformer leg work: frog press followed by circles. It trains the hips and inner thighs with control.",
+  "instructions": [
+    "Lie on the reformer with your feet in the straps or on the bar.",
+    "Bend your knees and open them out, heels together, in a frog shape.",
+    "Press your legs straight.",
+    "Circle them out, around and back together.",
+    "Reverse the circle direction after a few reps.",
+    "Keep your back steady on the pad."
+  ],
+  "textSource": "opengym"
+}

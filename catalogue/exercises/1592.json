@@ -1,0 +1,22 @@
+{
+  "id": "1592",
+  "name": "single leg stride jump",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "A bounding jump from one leg to the other leg. It develops power and single-leg control.",
+  "instructions": [
+    "Stand on one leg with a slight knee bend.",
+    "Push off and leap forward as far as you can.",
+    "Land on the opposite leg and absorb the impact with a soft knee.",
+    "Hold the landing for a moment to stay balanced.",
+    "Repeat, alternating legs or staying on one side."
+  ],
+  "textSource": "opengym"
+}

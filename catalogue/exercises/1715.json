@@ -1,0 +1,22 @@
+{
+  "id": "1715",
+  "name": "assisted oblique and latissimus dorsi stretch on stability ball",
+  "bodyPart": "back",
+  "equipment": "assisted",
+  "target": "lats",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders"
+  ],
+  "category": "stretching",
+  "description": "Draped over a stability ball with a partner helping, you lengthen the side of your trunk and your lats. It opens up the whole flank.",
+  "instructions": [
+    "Lie sideways over a stability ball with your hips supported and one arm reaching overhead.",
+    "Let your partner gently guide your reaching arm further while you roll slightly over the ball.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

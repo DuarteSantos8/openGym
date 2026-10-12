@@ -1,0 +1,23 @@
+{
+  "id": "5884",
+  "name": "dumbbell curl press extension",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Curl, press and overhead extension chained into one rep with dumbbells, giving the biceps, shoulders and triceps a full workout.",
+  "instructions": [
+    "Stand with a dumbbell in each hand, arms at your sides.",
+    "Curl both dumbbells up to shoulder height.",
+    "Press them overhead until your arms are straight.",
+    "Bend your elbows to lower the weights behind your head.",
+    "Extend your arms, then bring the dumbbells back to your shoulders and down to your sides.",
+    "Keep your torso still and choose a manageable weight."
+  ],
+  "textSource": "opengym"
+}

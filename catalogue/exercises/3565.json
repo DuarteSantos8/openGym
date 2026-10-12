@@ -1,0 +1,22 @@
+{
+  "id": "3565",
+  "name": "bridge pose yoga stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "chest"
+  ],
+  "category": "yoga",
+  "description": "A deep backbend where you press up from the floor, opening the chest and hips and strengthening the back of the body.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat near your hips.",
+    "Place your hands beside your head, palms down, fingers toward your shoulders.",
+    "Press through hands and feet to lift your hips and chest.",
+    "Straighten your arms as far as is comfortable and relax your neck.",
+    "Hold for 15-30 seconds, then lower slowly."
+  ],
+  "textSource": "opengym"
+}

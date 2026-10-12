@@ -1,0 +1,22 @@
+{
+  "id": "6753",
+  "name": "lying scalene muscles activation",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "A gentle lying exercise that wakes up the scalene muscles at the side of the neck. It supports neck control.",
+  "instructions": [
+    "Lie on your back with your head resting on the floor.",
+    "Relax your shoulders away from your ears.",
+    "Gently tilt your head to one side without lifting your shoulder.",
+    "Feel a light engagement along the side of your neck.",
+    "Return to the middle slowly.",
+    "Alternate sides for several reps."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "11250",
+  "name": "cable standing fly v. 3",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A standing cable fly that trains your chest through a wide hugging arc. The constant cable tension keeps the muscle working.",
+  "instructions": [
+    "Set both pulleys at shoulder height and hold a handle in each hand.",
+    "Step forward with a staggered stance and lean slightly.",
+    "With soft elbows, bring your hands together in front of your chest.",
+    "Squeeze your chest for a moment.",
+    "Open your arms slowly until you feel a stretch."
+  ],
+  "textSource": "opengym"
+}

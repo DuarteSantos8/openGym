@@ -1,0 +1,22 @@
+{
+  "id": "4700",
+  "name": "band side bend press",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "obliques",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Combining a side bend and an overhead press with a band. It trains the shoulders and obliques.",
+  "instructions": [
+    "Stand on the band and hold the end in one hand at your shoulder.",
+    "Press the band overhead as you bend gently to the opposite side.",
+    "Keep your hips steady and your chest open.",
+    "Return to upright as you lower your hand.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4697",
+  "name": "band skier v. 2",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "lats",
+    "core",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "Swinging the arms down against a band like a skier. It works the shoulders, lats and core.",
+  "instructions": [
+    "Anchor the band overhead and hold the ends with both hands.",
+    "Stand with a slight bend in your knees.",
+    "Pull your arms down and back past your hips.",
+    "Squeeze your lats and keep your core braced.",
+    "Return slowly overhead and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "4361",
+  "name": "bodyweight shrug",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "traps",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius"
+  ],
+  "category": "calisthenics",
+  "description": "A shoulder shrug without weight for warming up or light trap work.",
+  "instructions": [
+    "Stand tall with arms by your sides.",
+    "Lift your shoulders straight up toward your ears.",
+    "Hold for a second.",
+    "Lower them slowly.",
+    "Avoid rolling your shoulders."
+  ],
+  "textSource": "opengym"
+}

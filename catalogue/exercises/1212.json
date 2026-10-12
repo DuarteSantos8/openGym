@@ -1,0 +1,23 @@
+{
+  "id": "1212",
+  "name": "cable twisting standing row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A standing cable row where you turn your torso as you pull. It works the back with some added core rotation.",
+  "instructions": [
+    "Set a cable at mid height and stand facing it, holding the handle with one hand.",
+    "Stand in a stable stance with a slight lean back.",
+    "Pull the handle to your ribs and rotate your torso open.",
+    "Squeeze your shoulder blade at the end.",
+    "Return slowly, finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

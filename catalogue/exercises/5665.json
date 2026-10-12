@@ -1,0 +1,23 @@
+{
+  "id": "5665",
+  "name": "dumbbell bent over face pull",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rotator cuff",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "Hinge forward and pull two dumbbells toward your face with elbows high. It works the rear delts and upper back and helps shoulder posture.",
+  "instructions": [
+    "Hold a dumbbell in each hand and hinge at the hips with a flat back.",
+    "Let the weights hang below your shoulders, palms facing each other.",
+    "Pull the dumbbells toward your face, flaring your elbows out and up.",
+    "Squeeze your shoulder blades together at the top.",
+    "Lower with control and repeat without swinging."
+  ],
+  "textSource": "opengym"
+}

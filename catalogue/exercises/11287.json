@@ -1,0 +1,22 @@
+{
+  "id": "11287",
+  "name": "kettlebell standing behind back romanian deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A Romanian deadlift holding a kettlebell behind you. It trains the hamstrings and glutes and reinforces a straight back.",
+  "instructions": [
+    "Hold a kettlebell behind your back in both hands, feet hip width.",
+    "Soften your knees and brace your core.",
+    "Push your hips back and hinge forward with a flat back.",
+    "Stop when you feel your hamstrings stretch.",
+    "Drive your hips forward to stand tall."
+  ],
+  "textSource": "opengym"
+}

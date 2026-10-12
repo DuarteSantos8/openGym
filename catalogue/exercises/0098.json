@@ -1,0 +1,23 @@
+{
+  "id": "0098",
+  "name": "barbell side split squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A side-to-side lunge with the bar across the back. Strengthens the quads and adductors.",
+  "instructions": [
+    "Stand with your feet wider than shoulder-width apart, toes pointing slightly outward.",
+    "Hold a barbell across your upper back, resting it on your traps.",
+    "Engage your core and keep your chest up as you lower your body down into a squat position, bending at the knees and hips.",
+    "As you lower, push your knees out to the sides and keep your weight on your heels.",
+    "Lower until your thighs are parallel to the ground, then push through your heels to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

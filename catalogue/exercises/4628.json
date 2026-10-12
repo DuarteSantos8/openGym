@@ -1,0 +1,21 @@
+{
+  "id": "4628",
+  "name": "dumbbell seated tuck twisting crunch on floor",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A seated tuck with a twist, adding oblique work to the dumbbell-loaded crunch.",
+  "instructions": [
+    "Sit on the floor holding a dumbbell at your chest and lean back slightly.",
+    "Lift your feet off the floor.",
+    "Pull your knees in and rotate your torso to one side.",
+    "Extend your legs and rotate back to center.",
+    "Repeat on the other side."
+  ],
+  "textSource": "opengym"
+}

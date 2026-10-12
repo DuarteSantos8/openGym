@@ -1,0 +1,22 @@
+{
+  "id": "2121",
+  "name": "lateral bend lying down",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lats"
+  ],
+  "category": "stretching",
+  "description": "Curves the body sideways while lying down, which stretches the flank without any need to balance.",
+  "instructions": [
+    "Lie on your back with legs together and arms stretched overhead.",
+    "Slide both feet and both hands to the same side so the body forms a gentle arc.",
+    "Keep your hips and shoulders on the floor.",
+    "Breathe slowly and relax into the curve.",
+    "Hold for 20-30 seconds.",
+    "Return to centre and bend to the other side."
+  ],
+  "textSource": "opengym"
+}

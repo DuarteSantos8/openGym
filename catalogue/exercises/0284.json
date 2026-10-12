@@ -1,0 +1,22 @@
+{
+  "id": "0284",
+  "name": "donkey calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "calisthenics",
+  "description": "A donkey calf raise with the toes on a raised surface. You lift and lower the heels through a full range to work the calves.",
+  "instructions": [
+    "Stand with your toes on an elevated surface, such as a step or block.",
+    "Place your hands on a stable support, such as a wall or railing, for balance.",
+    "Raise your heels as high as possible, lifting your body weight onto the balls of your feet.",
+    "Pause for a moment at the top, then slowly lower your heels back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2677",
+  "textSource": "exercisedb"
+}

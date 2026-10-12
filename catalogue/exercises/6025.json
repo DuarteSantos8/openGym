@@ -1,0 +1,23 @@
+{
+  "id": "6025",
+  "name": "lying frog kick",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A prone move where both knees bend outward like a frog and kick up, to work the glutes.",
+  "instructions": [
+    "Lie face down, knees bent and heels together.",
+    "Let your knees fall slightly out.",
+    "Lift both thighs off the floor by squeezing your glutes.",
+    "Pause at the top.",
+    "Lower with control and repeat."
+  ],
+  "femaleVariant": "6023",
+  "textSource": "opengym"
+}

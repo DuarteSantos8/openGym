@@ -1,0 +1,22 @@
+{
+  "id": "7549",
+  "name": "dumbbell goblet bulgarian split squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Rear-foot elevated split squat with a dumbbell held at the chest.",
+  "instructions": [
+    "Place your rear foot on a bench and hold a dumbbell at your chest.",
+    "Step the front foot forward.",
+    "Lower your back knee toward the floor.",
+    "Keep your torso tall.",
+    "Push through the front heel and switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

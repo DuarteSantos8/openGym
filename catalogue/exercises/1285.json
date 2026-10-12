@@ -1,0 +1,22 @@
+{
+  "id": "1285",
+  "name": "dumbbell one arm bench fly",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Flat bench fly with a single dumbbell. Lowering in a wide arc stretches one side of the chest, and bringing it back squeezes it.",
+  "instructions": [
+    "Sit on a flat bench with a dumbbell in one hand, resting it on top of your thigh.",
+    "Lie back on the bench, keeping the dumbbell pressed against your thigh.",
+    "Using your free hand, help lift the dumbbell up to the starting position.",
+    "Hold the dumbbell directly above your shoulder with your arm extended and palm facing inward.",
+    "Lower the dumbbell out to the side in a wide arc, keeping a slight bend in your elbow.",
+    "Pause when your arm is parallel to the ground, then reverse the movement and bring the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms and repeat."
+  ],
+  "textSource": "exercisedb"
+}

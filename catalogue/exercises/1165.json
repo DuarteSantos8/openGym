@@ -1,0 +1,22 @@
+{
+  "id": "1165",
+  "name": "barbell standing military press (without rack)",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A strict overhead press where you clean or lift the bar to your shoulders without a rack.",
+  "instructions": [
+    "Lift the barbell from the floor to your collarbone using a safe clean or deadlift and curl.",
+    "Set your feet hip-width apart with hands just outside your shoulders.",
+    "Brace your core and glutes.",
+    "Press the bar straight overhead to full lockout.",
+    "Lower to your collarbone under control and repeat."
+  ],
+  "textSource": "opengym"
+}

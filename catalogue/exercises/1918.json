@@ -1,0 +1,21 @@
+{
+  "id": "1918",
+  "name": "seated hip external rotator and hip extensor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A seated figure four style stretch for the buttocks and deep hip rotators.",
+  "instructions": [
+    "Sit upright on the floor or a chair and cross one ankle over the opposite knee.",
+    "Gently press the raised knee down and lean your chest forward with a long back until the buttock stretches.",
+    "Keep your spine long instead of collapsing forward.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

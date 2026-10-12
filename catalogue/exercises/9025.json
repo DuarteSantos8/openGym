@@ -1,0 +1,23 @@
+{
+  "id": "9025",
+  "name": "sitting woodchopper on stability ball",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Seated on a ball, you chop diagonally across your body. It trains the obliques and trunk control.",
+  "instructions": [
+    "Sit tall on the ball with your feet wide.",
+    "Hold the weight or handle high on one side.",
+    "Rotate and chop diagonally down to the opposite hip.",
+    "Keep your arms mostly straight and your hips steady.",
+    "Return along the same path.",
+    "Complete your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

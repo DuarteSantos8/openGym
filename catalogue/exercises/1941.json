@@ -1,0 +1,21 @@
+{
+  "id": "1941",
+  "name": "standing hip adduction stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques"
+  ],
+  "category": "stretching",
+  "description": "Crossing one leg behind the other and leaning aside to stretch the outer hip.",
+  "instructions": [
+    "Stand tall and cross one leg behind the other, feet close together.",
+    "Lean your torso away from the back leg and push the hip out slightly until you feel the outer hip stretch.",
+    "Keep both feet flat on the floor.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

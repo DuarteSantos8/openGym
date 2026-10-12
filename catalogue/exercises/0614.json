@@ -1,0 +1,22 @@
+{
+  "id": "0614",
+  "name": "lying alternate hip extension",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "Lying face down, you lift one leg at a time. It strengthens the glutes and the muscles along your lower back.",
+  "instructions": [
+    "Lie face down with arms by your sides or under your forehead.",
+    "Keep your legs straight and your hips pressed down.",
+    "Lift one leg off the floor while squeezing your glute.",
+    "Lower it with control.",
+    "Lift the other leg and alternate.",
+    "Avoid arching your lower back."
+  ],
+  "textSource": "opengym"
+}

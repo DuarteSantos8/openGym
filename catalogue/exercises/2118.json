@@ -1,0 +1,21 @@
+{
+  "id": "2118",
+  "name": "sitting lateral side stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lats"
+  ],
+  "category": "stretching",
+  "description": "A seated side bend that stretches the sides of the waist and the lats.",
+  "instructions": [
+    "Sit tall with your legs crossed or feet flat on the floor.",
+    "Reach one arm overhead and lean sideways away from it, placing the other hand on the floor for support.",
+    "Keep both sit bones grounded.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

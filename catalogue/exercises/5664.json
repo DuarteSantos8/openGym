@@ -1,0 +1,20 @@
+{
+  "id": "5664",
+  "name": "cable seated leg extension",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "Seated leg extension using a cable for the quads.",
+  "instructions": [
+    "Sit on a bench with an ankle strap attached to a low cable.",
+    "Hold the bench.",
+    "Extend your leg until straight.",
+    "Lower slowly.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

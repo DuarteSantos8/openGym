@@ -1,0 +1,24 @@
+{
+  "id": "1634",
+  "name": "cable lying bicep curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A biceps curl lying on your back with a cable. It keeps tension constant through the whole motion.",
+  "instructions": [
+    "Attach a straight bar to a low pulley cable machine.",
+    "Lie face up on a flat bench with your feet flat on the ground.",
+    "Grasp the bar with an underhand grip, hands shoulder-width apart.",
+    "Extend your arms fully, keeping your elbows close to your sides.",
+    "Keeping your upper arms stationary, exhale and curl the bar up towards your shoulders.",
+    "Pause for a moment at the top, squeezing your biceps.",
+    "Inhale and slowly lower the bar back to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3055",
+  "textSource": "exercisedb"
+}

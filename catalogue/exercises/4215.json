@@ -1,0 +1,24 @@
+{
+  "id": "4215",
+  "name": "lever one arm low row (plate loaded)",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A one-arm version of the plate-loaded low row. Working one side at a time helps fix strength differences in your back.",
+  "instructions": [
+    "Sit with your chest on the pad and grab one handle.",
+    "Start with your arm extended and shoulder relaxed forward.",
+    "Pull the handle back, driving your elbow past your torso.",
+    "Squeeze your shoulder blade toward your spine.",
+    "Lower slowly until your arm is straight.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4440",
+  "name": "kettlebell step up v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A step-up with a kettlebell, held in a different position, to train the quads and glutes unilaterally.",
+  "instructions": [
+    "Stand facing a bench or box holding a kettlebell.",
+    "Place one foot flat on the box.",
+    "Press through that heel to stand up.",
+    "Lower back down slowly.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

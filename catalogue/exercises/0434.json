@@ -1,0 +1,33 @@
+{
+  "id": "0434",
+  "name": "dumbbell straight leg deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "You hinge at the hips with nearly straight legs and lower dumbbells down your legs. It builds the hamstrings and glutes.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand with an overhand grip.",
+    "Keeping your back straight and your core engaged, hinge at the hips and lower the dumbbells towards the ground, allowing your torso to lean forward.",
+    "Continue lowering the dumbbells until you feel a stretch in your hamstrings, keeping your knees slightly bent.",
+    "Pause for a moment at the bottom, then engage your glutes and hamstrings to lift your torso back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "gluteal",
+      "hamstring"
+    ],
+    "secondaries": [
+      "lower-back",
+      "quadriceps",
+      "adductors",
+      "calves"
+    ]
+  },
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "0423",
+  "name": "dumbbell standing one arm extension",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Standing, you extend one arm overhead with a dumbbell, bending and straightening the elbow. It works the back of the upper arm.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in one hand.",
+    "Raise the dumbbell overhead, fully extending your arm.",
+    "Keep your upper arm close to your head and perpendicular to the ground.",
+    "Slowly lower the dumbbell behind your head, bending your elbow.",
+    "Pause for a moment, then raise the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "4611",
+  "name": "roll ball deltoid posterior",
+  "bodyPart": "shoulders",
+  "equipment": "roller",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rotator cuff"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a ball on the back of the shoulder to ease tension in the rear delts.",
+  "instructions": [
+    "Place a small ball between the back of your shoulder and a wall.",
+    "Lean in until you feel moderate pressure.",
+    "Roll slowly up, down and sideways over the rear deltoid.",
+    "Pause on tight spots for a few breaths.",
+    "Switch to the other shoulder."
+  ],
+  "textSource": "opengym"
+}

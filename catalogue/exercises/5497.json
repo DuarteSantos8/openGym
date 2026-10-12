@@ -1,0 +1,23 @@
+{
+  "id": "5497",
+  "name": "dumbbell plank pass through",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "Plank variation where you pass a dumbbell under your body from hand to hand, challenging core stability.",
+  "instructions": [
+    "Start in a high plank with a dumbbell beside one hand and feet wide.",
+    "Brace your core and keep hips level.",
+    "Reach the free hand under your body and grab the dumbbell.",
+    "Pass it across to the other side and place it down.",
+    "Repeat, alternating sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1851",
+  "name": "incline push press",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "An incline press with a small leg drive that lets you move heavier loads and trains the upper chest and shoulders.",
+  "instructions": [
+    "Set an incline bench and hold the bar at your upper chest.",
+    "Dip slightly through your legs to start momentum.",
+    "Drive the bar up while pressing with your arms.",
+    "Lock out above your chest, then lower under control.",
+    "Keep your core braced and your lower back from arching."
+  ],
+  "textSource": "opengym"
+}

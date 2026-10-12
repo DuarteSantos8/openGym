@@ -1,0 +1,22 @@
+{
+  "id": "3561",
+  "name": "glute bridge march",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps"
+  ],
+  "category": "calisthenics",
+  "description": "A glute bridge held at the top while you alternate marching the knees. It trains the glutes and core stability.",
+  "instructions": [
+    "Lie flat on your back with your knees bent and feet flat on the ground.",
+    "Engage your glutes and lift your hips off the ground, forming a straight line from your knees to your shoulders.",
+    "While keeping your hips lifted, lift one foot off the ground and bring your knee towards your chest.",
+    "Lower your foot back to the ground and repeat the movement with the other leg.",
+    "Continue alternating legs in a marching motion while maintaining the bridge position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

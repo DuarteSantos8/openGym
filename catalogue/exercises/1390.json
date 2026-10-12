@@ -1,0 +1,21 @@
+{
+  "id": "1390",
+  "name": "seated calf stretch (male)",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "Sit on a chair and reach to pull your toes toward you. It stretches the calf and the back of the lower leg.",
+  "instructions": [
+    "Sit on the edge of a chair or bench with your feet flat on the ground.",
+    "Extend one leg straight out in front of you, keeping your heel on the ground.",
+    "Lean forward slightly, feeling a stretch in your calf muscle.",
+    "Hold the stretch for 20-30 seconds.",
+    "Switch legs and repeat the stretch."
+  ],
+  "femaleVariant": "4304",
+  "textSource": "exercisedb"
+}

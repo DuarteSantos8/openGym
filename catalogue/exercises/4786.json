@@ -1,0 +1,23 @@
+{
+  "id": "4786",
+  "name": "side bench squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "hamstrings",
+    "inner thighs"
+  ],
+  "category": "calisthenics",
+  "description": "A side squat toward a bench with body weight only. It works the thighs and glutes one side at a time.",
+  "instructions": [
+    "Stand sideways to a bench with feet wide.",
+    "Shift your weight to the leg nearest the bench.",
+    "Sit back and down until you lightly touch the bench.",
+    "Keep the other leg straight.",
+    "Drive up through your heel and repeat, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "11879",
+  "name": "smith step up",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A step-up with a Smith machine bar across your back for loaded leg work.",
+  "instructions": [
+    "Set the bar across your upper back and stand in front of a bench.",
+    "Place one foot on the bench.",
+    "Drive through that heel to stand up fully.",
+    "Step back down under control.",
+    "Complete your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "0633",
+  "name": "neck bridge prone",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "trapezius",
+    "upper back",
+    "sternocleidomastoid"
+  ],
+  "category": "calisthenics",
+  "description": "A face-down neck bridge that strengthens the muscles at the back of the neck. Start gently and keep the load light.",
+  "instructions": [
+    "Kneel on a mat and lean forward so the top of your head rests lightly on the floor.",
+    "Place your hands on the floor for support.",
+    "Take some weight through your neck by rocking forward and back slowly.",
+    "Keep your movements small and controlled.",
+    "Return to the start and rest between sets.",
+    "Never bounce and keep most weight on your hands at first."
+  ],
+  "textSource": "opengym"
+}

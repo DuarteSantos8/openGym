@@ -1,0 +1,22 @@
+{
+  "id": "6069",
+  "name": "bottle weighted alternate hammer curl",
+  "bodyPart": "upper arms",
+  "equipment": "weighted",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Alternating curls with palms facing in. It works the biceps, brachialis and forearms.",
+  "instructions": [
+    "Stand tall with a bottle in each hand, palms facing your body.",
+    "Curl one bottle up without rotating your wrist.",
+    "Lower it slowly.",
+    "Curl the other arm.",
+    "Keep your elbows pinned."
+  ],
+  "textSource": "opengym"
+}

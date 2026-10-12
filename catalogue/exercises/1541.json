@@ -1,0 +1,23 @@
+{
+  "id": "1541",
+  "name": "barbell squat to upright row (thighs)",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "trapezius",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Squat down with the bar hanging in front of you, then stand and pull it up to chest height. Works thighs, glutes and upper back in one move.",
+  "instructions": [
+    "Stand with feet shoulder-width apart, holding the barbell in front of your thighs with an overhand grip.",
+    "Push your hips back and squat down, letting the bar slide down to your knees.",
+    "Drive up through your heels to stand tall.",
+    "As you rise, pull the bar up close to your body until your elbows reach shoulder height.",
+    "Lower the bar under control and go straight into the next squat."
+  ],
+  "textSource": "opengym"
+}

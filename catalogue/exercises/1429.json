@@ -1,0 +1,39 @@
+{
+  "id": "1429",
+  "name": "wide grip pull-up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up on a wide overhand grip, pulling your chin above the bar. It targets the lats and upper back.",
+  "instructions": [
+    "Hang from a pull-up bar with your palms facing away from you and your hands wider than shoulder-width apart.",
+    "Engage your core and squeeze your shoulder blades together.",
+    "Pull your body up towards the bar until your chin is above the bar.",
+    "Lower your body back down to the starting position with control.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ],
+    "weights": {
+      "upper-back": 1,
+      "biceps": 0.4,
+      "deltoids": 0.4,
+      "forearm": 0.4,
+      "triceps": 0
+    }
+  },
+  "femaleVariant": "3627",
+  "textSource": "exercisedb"
+}

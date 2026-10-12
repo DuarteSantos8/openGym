@@ -1,0 +1,23 @@
+{
+  "id": "2265",
+  "name": "lever seated row v. 2",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A plate-loaded seated row that trains the upper back and lats through a guided pulling path.",
+  "instructions": [
+    "Adjust the seat and chest pad, then sit with your chest against the pad.",
+    "Grip the handles with arms extended.",
+    "Pull the handles toward your torso by driving the elbows back.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly until your arms are straight again.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

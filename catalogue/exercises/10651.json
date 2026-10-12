@@ -1,0 +1,23 @@
+{
+  "id": "10651",
+  "name": "band standing on bosu ball single leg abduction",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "ankles"
+  ],
+  "category": "strength",
+  "description": "A standing hip abduction on a bosu ball against band tension. It works the outer hip and challenges your balance.",
+  "instructions": [
+    "Place a band around your ankles and stand on the bosu with one foot.",
+    "Hold your core tight and stay tall.",
+    "Lift your free leg out to the side against the band.",
+    "Pause briefly at the top.",
+    "Return slowly without leaning.",
+    "Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

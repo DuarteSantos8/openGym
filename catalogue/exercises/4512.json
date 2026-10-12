@@ -1,0 +1,23 @@
+{
+  "id": "4512",
+  "name": "adductor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "inner thighs",
+    "groin"
+  ],
+  "category": "stretching",
+  "description": "A seated stretch for the inner thighs. Improves hip flexibility.",
+  "instructions": [
+    "Sit on the floor with the soles of your feet together.",
+    "Hold your ankles and sit tall.",
+    "Let your knees fall out to the sides.",
+    "Gently press your elbows on your thighs.",
+    "Hold for 20-30 seconds.",
+    "Release slowly."
+  ],
+  "femaleVariant": "0936",
+  "textSource": "opengym"
+}

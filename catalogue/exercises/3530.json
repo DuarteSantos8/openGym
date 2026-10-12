@@ -1,0 +1,24 @@
+{
+  "id": "3530",
+  "name": "barbell banded squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A barbell squat with bands attached to increase tension at the top.",
+  "instructions": [
+    "Set the bands on the rack and barbell.",
+    "Rest the bar on your upper back.",
+    "Stand with feet shoulder-width apart.",
+    "Squat down with your chest up.",
+    "Drive up through your heels.",
+    "Brace your core throughout."
+  ],
+  "textSource": "opengym"
+}

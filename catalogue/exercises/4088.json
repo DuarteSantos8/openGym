@@ -1,0 +1,22 @@
+{
+  "id": "4088",
+  "name": "band cross chest biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A hammer-style curl that crosses the band toward the opposite shoulder, hitting the biceps and brachialis.",
+  "instructions": [
+    "Stand on the band and hold the ends with palms facing in.",
+    "Keep your elbows near your sides.",
+    "Curl one hand across your chest toward the opposite shoulder.",
+    "Lower under control, then repeat on the other arm.",
+    "Keep your torso still and avoid swinging."
+  ],
+  "textSource": "opengym"
+}

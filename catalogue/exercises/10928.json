@@ -1,0 +1,21 @@
+{
+  "id": "10928",
+  "name": "standing wall serratus slide with towel",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "serratus anterior",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper back"
+  ],
+  "category": "rehab",
+  "description": "A towel slide up the wall that works the muscle along the ribs. It supports healthy shoulder blade motion.",
+  "instructions": [
+    "Stand facing a wall with a towel under your forearm on the wall.",
+    "Keep your elbow bent and your body upright.",
+    "Slide your arm upward along the wall.",
+    "Reach the top without shrugging.",
+    "Slide back down slowly and switch arms."
+  ],
+  "textSource": "opengym"
+}

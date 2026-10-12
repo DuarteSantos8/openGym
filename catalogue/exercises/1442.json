@@ -1,0 +1,22 @@
+{
+  "id": "1442",
+  "name": "dip hold",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "Holding the top of a dip on parallel bars. It builds the triceps and shoulder stability.",
+  "instructions": [
+    "Grip the parallel bars and press yourself up with straight arms.",
+    "Lean slightly forward and lock your shoulders down.",
+    "Hold the position with your body still.",
+    "Keep your elbows near your sides.",
+    "Hold for 15-30 seconds and step down."
+  ],
+  "textSource": "opengym"
+}

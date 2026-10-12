@@ -1,0 +1,23 @@
+{
+  "id": "3865",
+  "name": "sprinter crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A running-style crunch where opposite elbow and knee drive together to work the abs and obliques.",
+  "instructions": [
+    "Lie on your back with your hands lightly behind your head.",
+    "Lift your shoulders off the floor and bring one knee toward the opposite elbow.",
+    "Extend the other leg out low above the floor.",
+    "Switch sides in a smooth running rhythm.",
+    "Keep your lower back pressed down.",
+    "Continue for the set."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "3545",
+  "name": "dumbbell incline alternate press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A dumbbell press on an incline bench, with the arms alternating. It trains the upper chest and shoulders.",
+  "instructions": [
+    "Sit on an incline bench with a dumbbell in each hand, resting on your thighs.",
+    "Lean back on the bench and use your thighs to help raise the dumbbells to shoulder height, palms facing forward.",
+    "Once at shoulder height, rotate your wrists so that the palms of your hands are facing forward.",
+    "Push the dumbbells up with your chest and shoulders, extending your arms fully.",
+    "Lower the dumbbells back down to the starting position, keeping your elbows slightly bent.",
+    "Repeat for the desired number of repetitions, alternating arms."
+  ],
+  "textSource": "exercisedb"
+}

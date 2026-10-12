@@ -1,0 +1,22 @@
+{
+  "id": "4234",
+  "name": "weighted seated one arm reverse wrist curl",
+  "bodyPart": "lower arms",
+  "equipment": "weighted",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist extensors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A one-arm reverse wrist curl, palm down, seated with a weight. It strengthens the top of the forearm.",
+  "instructions": [
+    "Sit and rest one forearm on your thigh, palm down.",
+    "Let your hand hang over your knee with the weight.",
+    "Lower your wrist for a stretch.",
+    "Lift your hand up as high as you can.",
+    "Lower slowly under control.",
+    "Complete your reps and switch arms."
+  ],
+  "textSource": "opengym"
+}

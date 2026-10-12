@@ -1,0 +1,23 @@
+{
+  "id": "7839",
+  "name": "dead bug v. 3",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A back-lying core drill that moves opposite arms and legs while keeping the lower back flat.",
+  "instructions": [
+    "Lie on your back with arms straight above you and knees bent at 90 degrees.",
+    "Press your lower back into the floor.",
+    "Lower one arm and the opposite leg toward the floor.",
+    "Return to the start.",
+    "Alternate sides with a slow tempo.",
+    "Keep your ribs down."
+  ],
+  "textSource": "opengym"
+}

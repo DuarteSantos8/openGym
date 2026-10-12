@@ -1,0 +1,23 @@
+{
+  "id": "1131",
+  "name": "suspender side cross lunge",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "adductors",
+    "quadriceps",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A lunge stepping out to the side and across, with straps for support, training the glutes and inner thighs.",
+  "instructions": [
+    "Hold the handles and stand tall.",
+    "Step one leg out and slightly behind the other, crossing the body.",
+    "Sink back into the hip with a flat back.",
+    "Push through the working foot to return.",
+    "Keep your knee in line with your toes.",
+    "Switch sides after your reps."
+  ],
+  "textSource": "opengym"
+}

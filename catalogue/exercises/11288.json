@@ -1,0 +1,21 @@
+{
+  "id": "11288",
+  "name": "bodyweight standing overhead shrug",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "traps",
+  "secondaryMuscles": [
+    "trapezius",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "A shrug done with your arms overhead. It wakes up the upper traps and builds shoulder awareness.",
+  "instructions": [
+    "Stand tall and raise your arms straight overhead.",
+    "Keep your ribs down and core tight.",
+    "Shrug your shoulders up toward your ears.",
+    "Pause briefly.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1071",
+  "name": "suspender bent knee inverted row",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Row yourself up under straps with knees bent. It builds the back.",
+  "instructions": [
+    "Lie under the straps and grip the handles.",
+    "Bend your knees with feet flat.",
+    "Lift your hips and pull your chest toward the handles.",
+    "Squeeze your shoulder blades.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

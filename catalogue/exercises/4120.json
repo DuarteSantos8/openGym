@@ -1,0 +1,22 @@
+{
+  "id": "4120",
+  "name": "dumbbell seated one arm arnold press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A seated one arm Arnold press for shoulders with rotation through the movement.",
+  "instructions": [
+    "Sit upright with a dumbbell in one hand at chest height, palm facing you.",
+    "Press up while rotating your palm forward.",
+    "Fully extend overhead.",
+    "Lower while rotating back.",
+    "Finish all reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

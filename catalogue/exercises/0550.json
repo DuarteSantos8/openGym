@@ -1,0 +1,24 @@
+{
+  "id": "0550",
+  "name": "kettlebell thruster",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "You squat with a kettlebell at your chest, then stand and press it overhead in one motion. A full body move for legs and shoulders.",
+  "instructions": [
+    "Start by standing with your feet shoulder-width apart, holding a kettlebell in front of your chest with both hands, palms facing each other.",
+    "Lower into a squat position by bending your knees and pushing your hips back, keeping your chest up and your back straight.",
+    "As you reach the bottom of the squat, explosively drive through your heels to stand up, simultaneously pressing the kettlebell overhead.",
+    "Lock out your arms at the top of the movement, fully extending your elbows.",
+    "Lower the kettlebell back to the starting position by reversing the movement, bending your elbows and lowering the weight back to your chest.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "4517",
+  "textSource": "exercisedb"
+}

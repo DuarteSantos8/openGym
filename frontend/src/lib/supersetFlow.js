@@ -1,3 +1,4 @@
+import { supersetMeta } from './superset-meta.js'
 // Pure decisions for the active-workout superset flow. Keeping these independent of React and
 // the stores makes the uneven-round and re-check rules explicit and directly testable.
 import { isWarmupRow } from './workout-model.js'
@@ -85,6 +86,11 @@ export function restSecFor(entries, unit, defaultRestSec, setRest = null) {
   const fallback = defaultRestSec > 0 ? defaultRestSec : 0
   const idxs = Array.isArray(unit) && unit.length ? unit : []
   if (!idxs.length) return fallback
+  // A superset with a rest of its own (#292) rests exactly that after each round.
+  if (idxs.length > 1) {
+    const { rest } = supersetMeta(entries, idxs, { onTarget: true })
+    if (rest > 0) return rest
+  }
   return idxs.reduce((longest, idx) => {
     // `setRest` is the ticked set's own rest ({ idx, sec }, a pyramid set): it stands in for
     // that member's exercise rest, and a superset still takes the longest of the group.

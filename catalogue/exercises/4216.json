@@ -1,0 +1,24 @@
+{
+  "id": "4216",
+  "name": "climbing monkey bars",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "forearms",
+    "grip muscles",
+    "shoulders",
+    "biceps"
+  ],
+  "category": "calisthenics",
+  "description": "Swing from bar to bar along a horizontal ladder. It builds grip, shoulders and back with a playful challenge.",
+  "instructions": [
+    "Grab the first bar with both hands and hang.",
+    "Swing your body slightly and reach for the next bar with one hand.",
+    "Release the back hand and reach for the following bar.",
+    "Keep a steady rhythm using your hips for momentum.",
+    "Continue to the end of the ladder.",
+    "Drop down softly and rest before the next pass."
+  ],
+  "textSource": "opengym"
+}

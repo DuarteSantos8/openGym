@@ -1,0 +1,31 @@
+{
+  "id": "1385",
+  "name": "lever seated squat calf raise on leg press machine",
+  "bodyPart": "lower legs",
+  "equipment": "leverage machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A calf raise performed on a leg press machine by pressing with your toes. It builds the calves with a stable, supported load.",
+  "instructions": [
+    "Adjust the seat of the leg press machine so that your knees are slightly bent when your feet are on the footplate.",
+    "Sit on the machine with your back against the backrest and your feet flat on the footplate, shoulder-width apart.",
+    "Place your toes and the balls of your feet on the footplate, keeping your heels off the edge.",
+    "Release the safety handles and push the footplate away from you by extending your knees.",
+    "Once your knees are fully extended, slowly lower your heels by flexing your calves.",
+    "Pause for a moment at the bottom, then push the footplate back up by extending your calves.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "calves"
+    ],
+    "secondaries": []
+  },
+  "femaleVariant": "2610",
+  "textSource": "exercisedb"
+}

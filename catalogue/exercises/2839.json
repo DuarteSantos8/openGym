@@ -1,0 +1,21 @@
+{
+  "id": "2839",
+  "name": "chest lift with rotation",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A curl up with a twist that trains the abs and obliques.",
+  "instructions": [
+    "Lie on your back with knees bent and hands behind your head.",
+    "Curl your head and shoulders up.",
+    "Rotate your torso to one side.",
+    "Return to centre and lower.",
+    "Alternate sides."
+  ],
+  "textSource": "opengym"
+}

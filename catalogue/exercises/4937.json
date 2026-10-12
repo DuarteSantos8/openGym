@@ -1,0 +1,22 @@
+{
+  "id": "4937",
+  "name": "45 degree hip extension glute focused",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A hip extension on a 45 degree bench with a rounded upper back. This shifts the focus onto the glutes.",
+  "instructions": [
+    "Set up on a 45 degree bench with your ankles locked.",
+    "Cross your arms over your chest and round your upper back slightly.",
+    "Lower your torso by hinging at the hips.",
+    "Squeeze the glutes to raise back up.",
+    "Stop when your body is in a straight line.",
+    "Avoid overarching your lower back."
+  ],
+  "textSource": "opengym"
+}

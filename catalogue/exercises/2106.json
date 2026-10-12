@@ -1,0 +1,23 @@
+{
+  "id": "2106",
+  "name": "cat stretch v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "core",
+    "upper back",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "Rounds the spine upward from all fours to loosen the back and gently engage the abs. A classic mobility move for stiff backs.",
+  "instructions": [
+    "Start on all fours with hands under shoulders and knees under hips.",
+    "Tuck your chin and tilt the pelvis as you push the floor away.",
+    "Round your back up toward the ceiling like a cat.",
+    "Hold the rounded position for a few seconds.",
+    "Return slowly to the neutral starting position.",
+    "Repeat for 8-10 slow reps."
+  ],
+  "textSource": "opengym"
+}

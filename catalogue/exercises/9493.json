@@ -1,0 +1,23 @@
+{
+  "id": "9493",
+  "name": "lever belt sumo squat",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "inner thighs",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A wide-stance squat on a belt squat machine where the load hangs from your hips, sparing your spine. It works the glutes and inner thighs.",
+  "instructions": [
+    "Attach the belt around your hips and stand with a wide stance, toes out.",
+    "Keep your chest tall and brace your core.",
+    "Bend your knees and sit down between your legs.",
+    "Lower until your thighs are about parallel.",
+    "Drive through your feet to stand up."
+  ],
+  "textSource": "opengym"
+}

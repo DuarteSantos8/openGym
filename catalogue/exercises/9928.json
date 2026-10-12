@@ -1,0 +1,23 @@
+{
+  "id": "9928",
+  "name": "cable lying incline single leg kickback",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A single leg kickback lying on an incline with a cable. It focuses on the glutes.",
+  "instructions": [
+    "Lie on an incline surface with the cuff on one ankle.",
+    "Hold the support for stability.",
+    "Kick your leg back and up.",
+    "Squeeze your glute at the top.",
+    "Lower slowly.",
+    "Do your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

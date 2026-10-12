@@ -1,0 +1,22 @@
+{
+  "id": "0873",
+  "name": "cable reverse crunch",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A reverse crunch using a low cable, curling the hips off the mat. It trains the lower abs.",
+  "instructions": [
+    "Attach a cable to a low pulley and lie down facing up on a mat.",
+    "Hold the cable with both hands and extend your arms straight up towards the ceiling.",
+    "Bend your knees and lift your legs up, bringing your thighs towards your chest.",
+    "While keeping your upper body stable, curl your pelvis up towards your chest, lifting your hips off the mat.",
+    "Pause for a moment at the top, then slowly lower your hips back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2650",
+  "textSource": "exercisedb"
+}

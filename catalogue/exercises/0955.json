@@ -1,0 +1,22 @@
+{
+  "id": "0955",
+  "name": "leg to side",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "hamstrings",
+    "groin",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "Bring one leg out to the side to stretch the inner thigh. It improves hip mobility and flexibility.",
+  "instructions": [
+    "Lie on your back with both legs straight.",
+    "Lift one leg and let it open out to the side, keeping the other leg down.",
+    "Keep your hips squared and your lower back relaxed.",
+    "Hold the stretch gently, breathing steadily.",
+    "Return to the middle and repeat with the other leg."
+  ],
+  "textSource": "opengym"
+}

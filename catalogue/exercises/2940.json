@@ -1,0 +1,23 @@
+{
+  "id": "2940",
+  "name": "prone single arm trap raise",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "traps",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "rear deltoids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A raise lying face down on a bench or floor with one arm. It targets the lower and middle traps and shoulder blade control.",
+  "instructions": [
+    "Lie face down with one arm hanging or reaching overhead, thumb up.",
+    "Keep your forehead down and neck relaxed.",
+    "Lift your arm in a Y shape by squeezing your shoulder blade down and back.",
+    "Pause at the top.",
+    "Lower slowly, finish the reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

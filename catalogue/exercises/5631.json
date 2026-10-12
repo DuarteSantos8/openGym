@@ -1,0 +1,22 @@
+{
+  "id": "5631",
+  "name": "dumbbell standing bent arm lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "Lateral raise with elbows bent to isolate the side delts.",
+  "instructions": [
+    "Stand holding dumbbells with elbows bent about 90 degrees.",
+    "Raise your elbows out to the sides to shoulder height.",
+    "Pause briefly.",
+    "Lower slowly.",
+    "Avoid swinging."
+  ],
+  "femaleVariant": "2316",
+  "textSource": "opengym"
+}

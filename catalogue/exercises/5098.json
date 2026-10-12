@@ -1,0 +1,21 @@
+{
+  "id": "5098",
+  "name": "dumbbell single arm alternate fly",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "Perform chest flys with one dumbbell at a time. The alternating pattern challenges stability while working the chest.",
+  "instructions": [
+    "Lie on a bench with a dumbbell in each hand above your chest.",
+    "Keep a soft bend in your elbows.",
+    "Lower one arm out to the side in a wide arc.",
+    "Squeeze your chest to bring it back up.",
+    "Alternate with the other arm."
+  ],
+  "textSource": "opengym"
+}

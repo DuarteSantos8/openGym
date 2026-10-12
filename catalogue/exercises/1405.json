@@ -1,0 +1,23 @@
+{
+  "id": "1405",
+  "name": "back pec stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "chest"
+  ],
+  "category": "stretching",
+  "description": "A stretch for the chest and front of the shoulder with your arms reached behind you. It opens up the pecs and lats.",
+  "instructions": [
+    "Stand tall with your feet shoulder-width apart.",
+    "Extend your arms straight out in front of you, parallel to the ground.",
+    "Cross your arms in front of your body, with your right arm over your left arm.",
+    "Interlock your fingers and rotate your palms away from your body.",
+    "Slowly raise your arms up and away from your body, feeling a stretch in your back and chest.",
+    "Hold the stretch for 15-30 seconds, then release.",
+    "Repeat on the opposite side."
+  ],
+  "textSource": "exercisedb"
+}

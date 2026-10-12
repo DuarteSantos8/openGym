@@ -1,0 +1,24 @@
+{
+  "id": "6094",
+  "name": "front leg lift under knee tap",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "quadriceps",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A standing move where you drive a knee up and tap beneath it with your hands. It warms up the hips and works the abs.",
+  "instructions": [
+    "Stand tall with your feet hip-width apart and your hands out in front.",
+    "Lift one knee up and forward to hip height.",
+    "Reach both hands under that thigh and tap beneath the knee.",
+    "Lower the foot with control and switch legs.",
+    "Keep your chest up and stay light on your feet.",
+    "Alternate sides at a steady, bouncy pace."
+  ],
+  "femaleVariant": "5602",
+  "textSource": "opengym"
+}

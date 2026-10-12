@@ -1,0 +1,21 @@
+{
+  "id": "5299",
+  "name": "lever preacher curl (turned torso)",
+  "bodyPart": "upper arms",
+  "equipment": "leverage machine",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "brachialis"
+  ],
+  "category": "strength",
+  "description": "A machine preacher curl with a slight torso turn. It keeps steady tension on the biceps.",
+  "instructions": [
+    "Sit at the machine and adjust the seat so your arms rest on the pad.",
+    "Turn your torso slightly toward the working arm.",
+    "Curl the handle up toward your shoulder.",
+    "Squeeze at the top.",
+    "Lower slowly, then switch arms."
+  ],
+  "textSource": "opengym"
+}

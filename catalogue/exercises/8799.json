@@ -1,0 +1,23 @@
+{
+  "id": "8799",
+  "name": "leverage single leg deadlift on hack squat machine",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A single leg deadlift performed on a hack squat machine. It trains the glutes and hamstrings with extra stability.",
+  "instructions": [
+    "Step onto the machine platform and set your back against the pad.",
+    "Place one foot on the platform and lift the other slightly.",
+    "Hinge at the hip and lower with control.",
+    "Drive through the standing foot to come back up.",
+    "Squeeze your glute at the top.",
+    "Do your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

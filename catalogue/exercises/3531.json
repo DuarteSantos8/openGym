@@ -1,0 +1,25 @@
+{
+  "id": "3531",
+  "name": "alternate punching",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "core",
+    "obliques"
+  ],
+  "category": "cardio",
+  "description": "Alternating punches at a steady pace to raise the heart rate.",
+  "instructions": [
+    "Stand with a staggered stance and fists up.",
+    "Punch forward with one arm, rotating your torso slightly.",
+    "Pull it back as you punch with the other.",
+    "Keep your core tight.",
+    "Keep a steady rhythm for 30-60 seconds.",
+    "Rest briefly and repeat."
+  ],
+  "femaleVariant": "3802",
+  "textSource": "opengym"
+}

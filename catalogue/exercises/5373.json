@@ -1,0 +1,23 @@
+{
+  "id": "5373",
+  "name": "roll forearms standing against wall",
+  "bodyPart": "lower arms",
+  "equipment": "roller",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "wrist extensors"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a foam roller to ease tightness in the forearm. Good before training or on rest days to loosen up.",
+  "instructions": [
+    "Stand facing a wall with the roller held against it.",
+    "Place the roller under the forearm and let your body weight settle onto it.",
+    "Lean in and roll your forearm up and down the roller.",
+    "Pause on tender spots and breathe slowly for 20-30 seconds.",
+    "Keep your core braced and avoid rolling over joints or bone.",
+    "Roll for 30-60 seconds, then switch sides if needed."
+  ],
+  "femaleVariant": "5412",
+  "textSource": "opengym"
+}

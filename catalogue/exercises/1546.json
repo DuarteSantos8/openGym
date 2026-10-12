@@ -1,0 +1,22 @@
+{
+  "id": "1546",
+  "name": "bodyweight wall squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A squat with your back against a wall, which keeps your torso upright and takes pressure off the lower back. Good for building leg endurance.",
+  "instructions": [
+    "Lean your back against a wall with your feet about a step in front of you.",
+    "Slide down until your thighs are roughly parallel to the floor.",
+    "Keep your knees in line with your toes and your back flat on the wall.",
+    "Press through your heels to slide back up.",
+    "Repeat for the planned number of reps."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4151",
+  "name": "dumbbell lying floor skullcrusher",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A triceps extension lying on the floor, bending only at the elbows. The floor limits the range and keeps tension on the triceps.",
+  "instructions": [
+    "Lie on your back with knees bent, a dumbbell in each hand over your chest.",
+    "Keep your upper arms vertical and still.",
+    "Bend your elbows to lower the weights toward your head.",
+    "Stop when your upper arms touch the floor lightly.",
+    "Extend your elbows to press the weights back up.",
+    "Keep your elbows pointed forward and avoid flaring them."
+  ],
+  "textSource": "opengym"
+}

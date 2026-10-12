@@ -1,0 +1,22 @@
+{
+  "id": "5982",
+  "name": "half sun salutation",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "hamstrings",
+    "shoulders",
+    "core"
+  ],
+  "category": "yoga",
+  "description": "A shortened sun salutation that keeps the upright flow. Gently warms the spine and legs.",
+  "instructions": [
+    "Stand in mountain pose and sweep your arms overhead.",
+    "Fold forward with a long spine.",
+    "Lift halfway up with a flat back.",
+    "Fold again and rise up with your arms overhead.",
+    "Lower your hands to your heart and repeat."
+  ],
+  "textSource": "opengym"
+}

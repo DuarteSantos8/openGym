@@ -1,0 +1,22 @@
+{
+  "id": "0753",
+  "name": "smith decline bench press",
+  "bodyPart": "chest",
+  "equipment": "smith machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "On a decline bench, you press a smith machine bar from your lower chest. Works the lower chest and triceps.",
+  "instructions": [
+    "Adjust the decline bench to the desired angle.",
+    "Lie down on the bench with your feet secured under the foot pads.",
+    "Grasp the barbell with an overhand grip slightly wider than shoulder-width apart.",
+    "Unrack the barbell and lower it slowly towards your chest, keeping your elbows tucked in.",
+    "Pause for a moment at the bottom, then push the barbell back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

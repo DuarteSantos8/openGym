@@ -1,0 +1,21 @@
+{
+  "id": "2352",
+  "name": "biceps curl arms body (form check)",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "brachialis"
+  ],
+  "category": "strength",
+  "description": "A side-by-side form check for arm and body position during a biceps curl, showing the common mistake next to the correct technique so you can spot it in your own sets.",
+  "instructions": [
+    "Stand tall holding dumbbells at your sides with palms forward.",
+    "Compare the faulty version with the correct one: your elbows stay pinned at your sides and your torso does not swing.",
+    "Perform the lift slowly with a light load and keep the correct position throughout.",
+    "Use a mirror or film a set from the side to check your own position.",
+    "Fix the cue before adding weight, and rest between sets so form stays clean."
+  ],
+  "textSource": "opengym"
+}

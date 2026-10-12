@@ -1,0 +1,21 @@
+{
+  "id": "4083",
+  "name": "band upper crunch",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "Crunch lifting just the upper torso against a band for resistance.",
+  "instructions": [
+    "Lie on your back with your knees bent and the band anchored overhead, ends in hand.",
+    "Hold the band near your chest.",
+    "Curl your shoulders off the floor.",
+    "Pause and squeeze your abs.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

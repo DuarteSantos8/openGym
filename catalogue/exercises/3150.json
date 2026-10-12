@@ -1,0 +1,24 @@
+{
+  "id": "3150",
+  "name": "assisted chin tuck",
+  "bodyPart": "neck",
+  "equipment": "assisted",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "upper back",
+    "trapezius"
+  ],
+  "category": "mobility",
+  "description": "A chin tuck with light help from your hand to guide the movement and feel the right position.",
+  "instructions": [
+    "Sit or stand tall with your eyes level.",
+    "Place two fingers on your chin.",
+    "Gently guide your chin straight back.",
+    "Keep your head level and your shoulders relaxed.",
+    "Hold for 3-5 seconds.",
+    "Release and repeat 8-10 times."
+  ],
+  "femaleVariant": "3152",
+  "textSource": "opengym"
+}

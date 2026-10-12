@@ -1,0 +1,21 @@
+{
+  "id": "2090",
+  "name": "palms out forearm stretch",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "hands"
+  ],
+  "category": "stretching",
+  "description": "Clasped hands pressed forward with the palms facing out to stretch the forearms.",
+  "instructions": [
+    "Stand or sit tall and interlace your fingers.",
+    "Turn your palms outward and straighten your arms in front of you.",
+    "Push your hands gently away until you feel the stretch in the forearms.",
+    "Keep your shoulders relaxed.",
+    "Hold for 20-30 seconds, then release."
+  ],
+  "textSource": "opengym"
+}

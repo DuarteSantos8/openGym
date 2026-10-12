@@ -1,0 +1,21 @@
+{
+  "id": "3689",
+  "name": "dumbbell seated one arm front raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A seated single-arm raise that targets the front of the shoulder without leg drive helping out.",
+  "instructions": [
+    "Sit upright on a bench holding a dumbbell in one hand, arm down at your thigh.",
+    "Raise the dumbbell straight in front of you to shoulder height with a soft elbow.",
+    "Pause briefly at the top.",
+    "Lower it slowly back to your thigh.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

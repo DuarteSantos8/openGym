@@ -1,0 +1,23 @@
+{
+  "id": "6761",
+  "name": "half pigeon hip stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "adductors",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A floor stretch with one shin folded in front. It opens the outer hip and glutes.",
+  "instructions": [
+    "Start on all fours and bring one knee forward behind your wrist.",
+    "Slide the other leg straight back.",
+    "Square your hips to the floor.",
+    "Fold forward gently over the front leg.",
+    "Hold for 20-30 seconds, breathing calmly.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

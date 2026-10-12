@@ -1,0 +1,24 @@
+{
+  "id": "1319",
+  "name": "cable palm rotational row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A cable row where your palms rotate from facing down to facing up as you pull. It works the upper back, lats and biceps through a twisting path.",
+  "instructions": [
+    "Attach a handle to a cable machine at waist height.",
+    "Stand facing the machine with your feet shoulder-width apart.",
+    "Grasp the handle with an overhand grip, palms facing down.",
+    "Step back to create tension on the cable, keeping your back straight and knees slightly bent.",
+    "Pull the handle towards your body, rotating your palms to face upwards as you do so.",
+    "Squeeze your shoulder blades together at the end of the movement.",
+    "Slowly release the handle back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

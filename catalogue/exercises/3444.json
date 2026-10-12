@@ -1,0 +1,23 @@
+{
+  "id": "3444",
+  "name": "step up on chair",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A step-up onto a sturdy chair, a simple single-leg exercise.",
+  "instructions": [
+    "Face a sturdy chair.",
+    "Place one foot fully on the seat.",
+    "Drive through that heel to stand up.",
+    "Bring the other foot up.",
+    "Step down with control.",
+    "Do all reps on one leg, then switch."
+  ],
+  "textSource": "opengym"
+}

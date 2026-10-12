@@ -1,0 +1,21 @@
+{
+  "id": "1439",
+  "name": "lever gripless shrug v. 2",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "traps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A shrug on a lever machine without handles to grip, so the lift comes from the traps alone. Version 2 of the machine drawing.",
+  "instructions": [
+    "Adjust the seat height and position yourself on the machine with your back against the pad.",
+    "Grasp the handles or bars with an overhand grip, keeping your arms straight.",
+    "Keeping your back straight, lift your shoulders up towards your ears as high as possible.",
+    "Hold the contraction for a moment, then slowly lower your shoulders back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

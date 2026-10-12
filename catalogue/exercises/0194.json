@@ -1,0 +1,23 @@
+{
+  "id": "0194",
+  "name": "cable overhead triceps extension (rope attachment)",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Overhead triceps extension with a rope on a high pulley. Extending the arms against the cable loads the triceps through a long range.",
+  "instructions": [
+    "Attach a rope to a cable machine at a high position.",
+    "Stand facing away from the machine with your feet shoulder-width apart.",
+    "Grasp the rope with both hands, palms facing each other, and bring your hands above your head.",
+    "Keep your upper arms close to your head and your elbows pointing forward.",
+    "Slowly lower the rope behind your head by bending your elbows.",
+    "Pause for a moment, then extend your arms back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2248",
+  "textSource": "exercisedb"
+}

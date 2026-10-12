@@ -1,0 +1,22 @@
+{
+  "id": "0856",
+  "name": "weighted svend press",
+  "bodyPart": "chest",
+  "equipment": "weighted",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A chest squeeze press holding a plate between the palms and pushing it forward. It trains the inner chest and shoulders.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a weight plate in front of your chest with both hands.",
+    "Keep your elbows slightly bent and your palms facing each other.",
+    "Press the weight plate straight out in front of you, fully extending your arms.",
+    "Pause for a moment at the end of the movement, then slowly bring the weight plate back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3426",
+  "textSource": "exercisedb"
+}

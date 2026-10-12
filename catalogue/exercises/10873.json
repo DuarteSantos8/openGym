@@ -1,0 +1,22 @@
+{
+  "id": "10873",
+  "name": "dumbbell weighted crunch (hands overhead)",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A crunch with a dumbbell held overhead. The extra load and long lever challenge your abs.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat.",
+    "Hold one dumbbell upright with both hands and extend your arms overhead.",
+    "Curl your shoulders off the floor, driving the dumbbell toward the ceiling.",
+    "Pause and squeeze your abs.",
+    "Lower slowly and repeat."
+  ],
+  "femaleVariant": "10874",
+  "textSource": "opengym"
+}

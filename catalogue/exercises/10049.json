@@ -1,0 +1,23 @@
+{
+  "id": "10049",
+  "name": "barbell butterfly z press",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A seated floor press overhead with a barbell and a wide hand position. It builds strong shoulders with a stable trunk.",
+  "instructions": [
+    "Sit on the floor with legs out in front and the bar at upper-chest height.",
+    "Take a wide grip and brace your abs.",
+    "Press the bar overhead until your arms are straight.",
+    "Lower it back to your upper chest under control.",
+    "Keep your back tall and avoid arching.",
+    "Use a light weight at first."
+  ],
+  "textSource": "opengym"
+}

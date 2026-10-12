@@ -1,0 +1,22 @@
+{
+  "id": "1602",
+  "name": "transverse step up",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A step-up performed side-on to the bench. It works the glutes and quads while challenging your balance.",
+  "instructions": [
+    "Stand sideways next to a bench or step.",
+    "Place the inside foot fully on top.",
+    "Drive through that heel and step up until your leg is straight.",
+    "Bring your other foot up to meet it.",
+    "Step back down with control, finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

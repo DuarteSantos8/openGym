@@ -1,0 +1,22 @@
+{
+  "id": "5880",
+  "name": "kettlebell calf raise and front squat",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A combo move that pairs a goblet-style front squat with a calf raise at the top, working the legs from hips to ankles.",
+  "instructions": [
+    "Hold a kettlebell at your chest with both hands.",
+    "Squat down with your chest up and knees tracking over your toes.",
+    "Drive up to standing.",
+    "At the top, rise onto your toes for a calf raise.",
+    "Lower your heels and repeat with control."
+  ],
+  "textSource": "opengym"
+}

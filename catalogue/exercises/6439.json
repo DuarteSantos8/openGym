@@ -1,0 +1,22 @@
+{
+  "id": "6439",
+  "name": "resistance band standing single arm shoulder flexion",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Raising one arm forward against band tension. It trains the front of the shoulder with smooth control.",
+  "instructions": [
+    "Stand on the band with one foot and hold the handle at your thigh, palm down.",
+    "Brace your core and keep your torso upright.",
+    "Raise the arm forward to shoulder height with a slight elbow bend.",
+    "Pause briefly at the top.",
+    "Lower slowly against the band tension.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

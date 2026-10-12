@@ -1,0 +1,21 @@
+{
+  "id": "0604",
+  "name": "lever shrug",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "traps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "On a lever machine, you lift your shoulders straight up and lower with control. Builds the upper traps.",
+  "instructions": [
+    "Adjust the seat height and position yourself on the leverage machine with your back against the pad.",
+    "Grasp the handles with an overhand grip and keep your arms straight.",
+    "Keeping your back straight, lift your shoulders up towards your ears as high as possible.",
+    "Hold the contraction for a moment, then slowly lower your shoulders back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3107",
+  "textSource": "exercisedb"
+}

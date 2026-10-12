@@ -1,0 +1,21 @@
+{
+  "id": "8311",
+  "name": "seated side bend on a chair",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "A gentle seated side bend that works the obliques and loosens the sides of the trunk.",
+  "instructions": [
+    "Sit tall near the front of a sturdy chair with your feet flat on the floor.",
+    "Brace your core and keep your shoulders relaxed.",
+    "Reach one arm overhead and lean slowly to the opposite side without twisting.",
+    "Pause briefly, then return to upright.",
+    "Repeat on the other side and keep alternating."
+  ],
+  "textSource": "opengym"
+}

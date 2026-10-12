@@ -1,0 +1,22 @@
+{
+  "id": "10751",
+  "name": "calf jump",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "plyometrics",
+  "description": "Jump using only your calves. It builds explosive lower legs.",
+  "instructions": [
+    "Stand tall.",
+    "Keep knees nearly straight.",
+    "Jump using your ankles.",
+    "Land softly.",
+    "Repeat quickly."
+  ],
+  "textSource": "opengym"
+}

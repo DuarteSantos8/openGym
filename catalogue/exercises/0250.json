@@ -1,0 +1,22 @@
+{
+  "id": "0250",
+  "name": "ceiling look stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "upper back"
+  ],
+  "category": "stretching",
+  "description": "A gentle neck stretch where you tilt the head back to look at the ceiling. It opens the front of the neck.",
+  "instructions": [
+    "Sit or stand tall with relaxed shoulders.",
+    "Slowly tilt your head back to look at the ceiling.",
+    "Open your mouth slightly to relax the jaw.",
+    "Feel the stretch along the front of your neck.",
+    "Hold for 15-20 seconds.",
+    "Return to neutral slowly."
+  ],
+  "textSource": "opengym"
+}

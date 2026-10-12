@@ -1,0 +1,24 @@
+{
+  "id": "4453",
+  "name": "band one arm standing wide grip low row",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "rhomboids",
+    "biceps",
+    "rear deltoids",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing single-arm row from a low anchor, using a band. Trains the lats and mid back one side at a time.",
+  "instructions": [
+    "Anchor a band low and stand facing it, holding the end in one hand.",
+    "Step back until the band is taut, feet hip width apart.",
+    "Pull your elbow back and out, leading with the elbow.",
+    "Squeeze your shoulder blade toward your spine.",
+    "Return slowly to a straight arm.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

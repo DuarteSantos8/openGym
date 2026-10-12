@@ -1,0 +1,23 @@
+{
+  "id": "1693",
+  "name": "medicine ball single leg deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "medicine ball",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core",
+    "ankles"
+  ],
+  "category": "strength",
+  "description": "A single-leg hip hinge holding a medicine ball that trains the hamstrings, glutes and balance.",
+  "instructions": [
+    "Hold a medicine ball at your chest and stand on one leg with a soft knee.",
+    "Hinge at the hips while your free leg extends behind you.",
+    "Lower the ball toward the floor with a flat back.",
+    "Squeeze your glute to return to standing.",
+    "Finish all reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

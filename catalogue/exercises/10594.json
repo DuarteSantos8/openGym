@@ -1,0 +1,23 @@
+{
+  "id": "10594",
+  "name": "resistance band lateral hit",
+  "bodyPart": "chest",
+  "equipment": "resistance band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing band press that sweeps across the body from the side. It builds chest power and trains the trunk to resist rotation.",
+  "instructions": [
+    "Anchor the band at chest height beside you and hold the handle at your chest.",
+    "Stand tall in a stable stance with your core braced.",
+    "Press the handle forward and across your body in a quick controlled motion.",
+    "Return slowly to your chest without letting the band pull you around.",
+    "Keep your hips square throughout.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

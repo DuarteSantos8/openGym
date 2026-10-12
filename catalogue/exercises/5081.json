@@ -1,0 +1,21 @@
+{
+  "id": "5081",
+  "name": "seated sky look",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid"
+  ],
+  "category": "stretching",
+  "description": "Sit upright and slowly tip your head back to look up. It stretches the front of the neck.",
+  "instructions": [
+    "Sit tall with your shoulders relaxed.",
+    "Slowly tip your head back to look up at the ceiling.",
+    "Keep your mouth closed and move only as far as feels comfortable.",
+    "Hold for 15-20 seconds.",
+    "Return your head to neutral slowly."
+  ],
+  "femaleVariant": "4947",
+  "textSource": "opengym"
+}

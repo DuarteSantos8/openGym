@@ -1,0 +1,24 @@
+{
+  "id": "2961",
+  "name": "plank push up row",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "chest",
+    "triceps",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A plank sequence combining a push-up and a row. It trains the chest, back and core in one flowing move.",
+  "instructions": [
+    "Start in a plank with a dumbbell in each hand and your feet wide.",
+    "Do a push-up, keeping your body straight.",
+    "Row one dumbbell up to your ribs without twisting your hips.",
+    "Lower it and row the other side.",
+    "Repeat the sequence with control."
+  ],
+  "textSource": "opengym"
+}

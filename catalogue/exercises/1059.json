@@ -1,0 +1,22 @@
+{
+  "id": "1059",
+  "name": "standing quadriceps stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "Pull your heel toward your glute while standing to stretch the front of the thigh. It is a classic quad stretch.",
+  "instructions": [
+    "Stand tall and hold something for balance if needed.",
+    "Bend one knee and grab your ankle.",
+    "Pull your heel toward your glute, knees together.",
+    "Hold for 20-30 seconds.",
+    "Switch legs and repeat."
+  ],
+  "femaleVariant": "8372",
+  "textSource": "opengym"
+}

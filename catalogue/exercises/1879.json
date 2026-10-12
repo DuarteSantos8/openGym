@@ -1,0 +1,22 @@
+{
+  "id": "1879",
+  "name": "standing leg resting hip stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "groin"
+  ],
+  "category": "stretching",
+  "description": "Rest one leg on a raised surface and lean in to stretch the hips.",
+  "instructions": [
+    "Stand facing a bench or step.",
+    "Place one heel on it with the knee slightly bent.",
+    "Keep your chest tall and hinge forward at the hips.",
+    "Feel the stretch in the hip and glute.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

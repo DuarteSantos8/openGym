@@ -1,0 +1,22 @@
+{
+  "id": "3123",
+  "name": "resistance band seated biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "resistance band",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated biceps curl using a resistance band. Builds the biceps.",
+  "instructions": [
+    "Sit on a chair or bench with your back straight and feet flat on the ground.",
+    "Hold the resistance band with an underhand grip, palms facing up, and arms extended down by your sides.",
+    "Keeping your upper arms stationary, exhale and curl the resistance band up towards your shoulders.",
+    "Pause for a moment at the top, squeezing your biceps.",
+    "Inhale and slowly lower the resistance band back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3134",
+  "textSource": "exercisedb"
+}

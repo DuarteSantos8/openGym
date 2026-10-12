@@ -1,0 +1,23 @@
+{
+  "id": "4968",
+  "name": "quadruped leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A hamstring curl from hands and knees position. It works the back of the thigh.",
+  "instructions": [
+    "Get on all fours with your hands under your shoulders.",
+    "Brace your core.",
+    "Curl one heel toward your glutes.",
+    "Squeeze the hamstring.",
+    "Lower slowly.",
+    "Finish reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

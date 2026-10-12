@@ -1,0 +1,24 @@
+{
+  "id": "7648",
+  "name": "dumbbell ipsilateral single leg stiff leg deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A one-leg deadlift holding the dumbbell on the same side as the standing leg, for hamstrings and balance.",
+  "instructions": [
+    "Hold a dumbbell in the hand on the same side as your standing leg.",
+    "Shift your weight to that leg with a soft knee.",
+    "Hinge at the hips and reach the weight toward the floor.",
+    "Extend the other leg straight behind you.",
+    "Return to standing by squeezing your glute.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

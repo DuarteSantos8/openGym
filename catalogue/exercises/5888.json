@@ -1,0 +1,22 @@
+{
+  "id": "5888",
+  "name": "chaturanga pose",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders",
+    "core"
+  ],
+  "category": "yoga",
+  "description": "A low plank where the elbows are bent back by your ribs. Builds strength in the arms, chest and core.",
+  "instructions": [
+    "Start in a high plank with your wrists under your shoulders.",
+    "Shift slightly forward on your toes.",
+    "Bend your elbows straight back and lower to elbow height.",
+    "Keep your body in one line and your elbows near your ribs.",
+    "Hold briefly, then press back up."
+  ],
+  "textSource": "opengym"
+}

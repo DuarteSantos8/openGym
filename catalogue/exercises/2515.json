@@ -1,0 +1,23 @@
+{
+  "id": "2515",
+  "name": "cable front raise v. 2",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "trapezius",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A cable raise to the front that works the front of the shoulders.",
+  "instructions": [
+    "Stand facing away from a low pulley, holding the handle in front of your thighs.",
+    "Keep a slight bend in your elbow.",
+    "Raise your arm forward to shoulder height.",
+    "Avoid leaning back.",
+    "Lower slowly.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

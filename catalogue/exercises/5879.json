@@ -1,0 +1,22 @@
+{
+  "id": "5879",
+  "name": "kettlebell side plank",
+  "bodyPart": "waist",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "isometric",
+  "description": "A side plank holding a kettlebell above you. It builds core and shoulder stability.",
+  "instructions": [
+    "Lie on your side with your elbow under your shoulder.",
+    "Lift your hips into a straight line.",
+    "Hold a kettlebell in your top hand pointing up.",
+    "Hold for 20-30 seconds.",
+    "Lower and switch sides."
+  ],
+  "textSource": "opengym"
+}

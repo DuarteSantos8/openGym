@@ -1,0 +1,23 @@
+{
+  "id": "1045",
+  "name": "barbell seated military press (inside squat cage)",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "trapezius",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A seated overhead press performed inside a squat cage so the rack gives you safe bar positions. It builds shoulder and triceps strength.",
+  "instructions": [
+    "Set a bench inside the cage and the bar at shoulder height.",
+    "Sit tall, grip the bar just outside shoulder width and unrack it.",
+    "Press the bar straight overhead until your arms are extended.",
+    "Lower it to your upper chest with control.",
+    "Keep your ribs down and your back against the pad."
+  ],
+  "textSource": "opengym"
+}

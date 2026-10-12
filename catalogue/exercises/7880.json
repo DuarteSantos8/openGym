@@ -1,0 +1,23 @@
+{
+  "id": "7880",
+  "name": "dumbbell kneeling triceps kickback",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "core",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A kickback done in a kneeling position, with one hand on a bench for support.",
+  "instructions": [
+    "Kneel beside a bench with one hand and the same-side knee on it.",
+    "Hold a dumbbell in the free hand with your upper arm against your side.",
+    "Extend your elbow to kick the weight back.",
+    "Squeeze your triceps.",
+    "Lower slowly.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

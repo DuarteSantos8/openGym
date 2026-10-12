@@ -1,0 +1,20 @@
+{
+  "id": "1571",
+  "name": "lever one leg extension",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A machine leg extension done one leg at a time. It isolates the quads and helps even out strength between sides.",
+  "instructions": [
+    "Sit on the machine and adjust the pad so it rests on your lower shin.",
+    "Set one foot under the pad and keep the other foot on the floor or footrest.",
+    "Extend your working leg until it is almost straight.",
+    "Squeeze your quad at the top.",
+    "Lower slowly, finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

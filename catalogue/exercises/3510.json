@@ -1,0 +1,23 @@
+{
+  "id": "3510",
+  "name": "crunchy frog on floor",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A floor ab move where knees and arms come together in a frog-like crunch. It works the abs.",
+  "instructions": [
+    "Lie on your back with arms and legs extended.",
+    "Lift your shoulders and legs slightly off the floor.",
+    "Pull your knees in while reaching your hands toward your shins.",
+    "Squeeze your abs.",
+    "Extend back out without resting on the floor.",
+    "Keep your lower back pressed down."
+  ],
+  "textSource": "opengym"
+}

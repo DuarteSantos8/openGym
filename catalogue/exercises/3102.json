@@ -1,0 +1,22 @@
+{
+  "id": "3102",
+  "name": "lever narrow grip seated row (plate loaded)",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A plate-loaded machine row with a narrow grip for the lats and mid back.",
+  "instructions": [
+    "Sit with your chest against the pad and take the narrow handles.",
+    "Pull both handles toward your torso.",
+    "Squeeze your shoulder blades together at the end.",
+    "Pause briefly.",
+    "Return slowly with control."
+  ],
+  "textSource": "opengym"
+}

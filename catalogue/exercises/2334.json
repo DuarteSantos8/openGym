@@ -1,0 +1,30 @@
+{
+  "id": "2334",
+  "name": "sled lying calf press",
+  "bodyPart": "lower legs",
+  "equipment": "sled machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A calf press on a sled machine while lying back. Builds the calf muscles.",
+  "instructions": [
+    "Adjust the sled machine to a comfortable weight.",
+    "Sit on the sled machine with your back against the pad and your feet on the platform.",
+    "Place your toes and the balls of your feet on the edge of the platform, with your heels hanging off.",
+    "Push the platform away from you by extending your ankles, keeping your knees slightly bent.",
+    "Continue pushing until your calves are fully contracted.",
+    "Hold the contraction for a moment, then slowly lower the platform back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "weights": {
+      "calves": 1,
+      "gluteal": 0.4,
+      "hamstring": 0
+    }
+  },
+  "textSource": "exercisedb"
+}

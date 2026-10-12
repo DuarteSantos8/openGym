@@ -1,0 +1,22 @@
+{
+  "id": "5265",
+  "name": "45 degree bicycle twisting crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A twisting bicycle crunch with the torso leaning back at 45 degrees. It strongly targets the abs and obliques.",
+  "instructions": [
+    "Sit and lean back to about 45 degrees with your feet raised.",
+    "Place your hands behind your head.",
+    "Bring one knee in as you twist the opposite elbow toward it.",
+    "Alternate sides in a pedalling motion.",
+    "Keep your chest lifted and your core tight."
+  ],
+  "femaleVariant": "1185",
+  "textSource": "opengym"
+}

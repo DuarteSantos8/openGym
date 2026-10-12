@@ -1,0 +1,21 @@
+{
+  "id": "0382",
+  "name": "dumbbell revers grip biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "You curl dumbbells with an overhand grip. It trains the biceps, the muscle under them and the forearms.",
+  "instructions": [
+    "Stand up straight with a dumbbell in each hand, palms facing down and arms fully extended.",
+    "Keeping your upper arms stationary, exhale and curl the weights while contracting your biceps.",
+    "Continue to raise the weights until your biceps are fully contracted and the dumbbells are at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale and slowly begin to lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

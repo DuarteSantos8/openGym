@@ -1,0 +1,22 @@
+{
+  "id": "5481",
+  "name": "seated foot slide",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "shins"
+  ],
+  "category": "mobility",
+  "description": "Gentle seated mobility drill sliding the foot along the floor to warm up the ankle and calf.",
+  "instructions": [
+    "Sit tall on a chair with your feet flat on the floor.",
+    "Keep your heel down and slide the foot forward along the floor.",
+    "Pull it back, letting the heel lift slightly toward the end.",
+    "Move smoothly through a comfortable range.",
+    "Repeat, then switch feet."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1553",
+  "name": "dumbbell lateral lunge with bicep curl",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "biceps",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A side lunge combined with a biceps curl. It works the legs and arms together and also loosens the inner thighs.",
+  "instructions": [
+    "Stand tall holding a dumbbell in each hand with your palms facing forward.",
+    "Take a big step to the side and sit back into that hip, keeping the other leg straight.",
+    "Curl both dumbbells up as you lower into the lunge.",
+    "Push off your bent leg to return to the middle while lowering the weights.",
+    "Alternate sides or finish all reps on one side before switching."
+  ],
+  "textSource": "opengym"
+}

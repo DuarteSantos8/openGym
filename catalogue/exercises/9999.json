@@ -1,0 +1,23 @@
+{
+  "id": "9999",
+  "name": "plank knee tap",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A plank with alternating knee taps to the floor. It trains the abs and anti-rotation control.",
+  "instructions": [
+    "Start in a forearm or high plank.",
+    "Brace your core.",
+    "Lower one knee gently toward the floor.",
+    "Return it and switch sides.",
+    "Keep your hips level.",
+    "Breathe steadily."
+  ],
+  "textSource": "opengym"
+}

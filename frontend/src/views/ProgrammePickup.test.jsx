@@ -24,7 +24,7 @@ it('groups repeated exercises by routine and retains each edited target',()=>{
  act(()=>root.render(<MemoryRouter initialEntries={[{pathname:'/programme/pickup',state:{programmeId:'p'}}]}><ProgrammePickup/></MemoryRouter>))
  const groups=host.querySelectorAll('[data-pickup-routine]');expect(groups).toHaveLength(2);expect([...groups].map(g=>g.open)).toEqual([false,false])
  const row=groups[0].querySelector('[data-pickup-key]')
- act(()=>row.querySelector('[aria-label="Increase"]').click())
+ act(()=>row.querySelector('[aria-label="Increase Push · x · Target (kg)"]').click())
  expect(row.querySelector('input').value).toBe('22.5')
  expect(groups[1].querySelector('input').value).toBe('45')
  act(()=>groups[0].querySelector('summary').click());act(()=>groups[0].querySelector('summary').click())

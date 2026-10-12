@@ -1,0 +1,23 @@
+{
+  "id": "6059",
+  "name": "bottle weighted bent over row",
+  "bodyPart": "back",
+  "equipment": "weighted",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A bent-over row with a bottle in each hand. It trains the mid back and lats.",
+  "instructions": [
+    "Hold a bottle in each hand and hinge forward with a flat back.",
+    "Let your arms hang below your shoulders.",
+    "Pull the bottles toward your hips, elbows close to your body.",
+    "Squeeze your shoulder blades together.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

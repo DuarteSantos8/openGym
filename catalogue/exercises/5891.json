@@ -1,0 +1,23 @@
+{
+  "id": "5891",
+  "name": "high lunge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "hip flexors",
+    "shoulders"
+  ],
+  "category": "yoga",
+  "description": "A deep lunge with the back heel lifted and arms overhead. Strengthens the legs and stretches the hips.",
+  "instructions": [
+    "Step one foot back into a long lunge with your back heel lifted.",
+    "Bend your front knee to about 90 degrees over your ankle.",
+    "Sweep your arms overhead and stand tall.",
+    "Hold for 5 slow breaths.",
+    "Step forward and switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "10050",
+  "name": "superman to push up",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "lower back",
+    "glutes",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A combo move where you lift into a superman on the floor, then press into a push-up.",
+  "instructions": [
+    "Lie face down with arms extended in front.",
+    "Lift your arms, chest and legs off the floor and hold briefly.",
+    "Lower and place your hands under your shoulders.",
+    "Press up into a push-up.",
+    "Lower your chest back to the floor.",
+    "Repeat, keeping your body straight."
+  ],
+  "textSource": "opengym"
+}

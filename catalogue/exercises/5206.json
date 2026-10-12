@@ -1,0 +1,21 @@
+{
+  "id": "5206",
+  "name": "resistance band kneeling ab crunch v. 2",
+  "bodyPart": "waist",
+  "equipment": "resistance band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A second variation of the kneeling band crunch. It loads the abs through the full crunch range.",
+  "instructions": [
+    "Anchor the band overhead and kneel facing it.",
+    "Hold the band at your forehead or beside your head.",
+    "Pull your elbows toward your knees as you curl down.",
+    "Hold the squeeze for a second.",
+    "Return slowly while keeping the tension."
+  ],
+  "textSource": "opengym"
+}

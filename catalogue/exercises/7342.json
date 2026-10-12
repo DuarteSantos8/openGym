@@ -1,0 +1,22 @@
+{
+  "id": "7342",
+  "name": "wide plank side tap",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Wide-stance plank with alternating side taps that challenge core stability.",
+  "instructions": [
+    "Start in a high plank with feet wider than your hips.",
+    "Brace your core and keep your hips level.",
+    "Lift one hand and tap your opposite hip or thigh.",
+    "Return the hand and tap with the other side.",
+    "Move slowly without rocking."
+  ],
+  "textSource": "opengym"
+}

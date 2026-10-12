@@ -1,0 +1,21 @@
+{
+  "id": "0058",
+  "name": "barbell lying lifting (on hip)",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A hip thrust style lift with the bar resting on your hips. Strong work for the glutes.",
+  "instructions": [
+    "Lie flat on your back on a bench with your feet flat on the ground and your knees bent.",
+    "Hold the barbell with an overhand grip and position it on your hips.",
+    "Engaging your glutes, lift your hips off the bench until your body forms a straight line from your knees to your shoulders.",
+    "Pause for a moment at the top, then slowly lower your hips back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

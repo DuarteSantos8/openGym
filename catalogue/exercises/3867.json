@@ -1,0 +1,24 @@
+{
+  "id": "3867",
+  "name": "duck walk",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A walk in a deep squat that challenges the quads, hips and balance.",
+  "instructions": [
+    "Lower into a deep squat with your chest up.",
+    "Place your hands on your hips or in front of you for balance.",
+    "Step forward with one foot, keeping the squat low.",
+    "Step with the other foot and continue walking.",
+    "Keep your heels down and your back straight.",
+    "Walk for a set distance or time."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "0799",
+  "name": "step up crossover",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "obliques"
+  ],
+  "category": "cardio",
+  "description": "A step up where you cross a knee or foot over your body. It raises your heart rate and works the legs and trunk.",
+  "instructions": [
+    "Stand facing a sturdy step or box.",
+    "Step up with one foot and bring the other knee across your body.",
+    "Step back down with control.",
+    "Keep your chest tall and core tight.",
+    "Alternate sides at a steady pace."
+  ],
+  "textSource": "opengym"
+}

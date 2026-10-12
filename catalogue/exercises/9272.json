@@ -1,0 +1,22 @@
+{
+  "id": "9272",
+  "name": "sitting floor tibialis raise",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles"
+  ],
+  "category": "mobility",
+  "description": "Sitting on the floor, you pull your toes toward your shins to work the muscles at the front of the lower leg.",
+  "instructions": [
+    "Sit on the floor with your legs straight and your hands behind you.",
+    "Keep your heels on the floor.",
+    "Pull your toes up toward your shins.",
+    "Hold for a moment.",
+    "Lower the toes slowly.",
+    "Repeat for the set."
+  ],
+  "textSource": "opengym"
+}

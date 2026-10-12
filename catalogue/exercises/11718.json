@@ -1,0 +1,23 @@
+{
+  "id": "11718",
+  "name": "lever incline chest supported reverse delt fly (plate loaded)",
+  "bodyPart": "shoulders",
+  "equipment": "leverage machine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "upper back",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A chest-supported reverse fly on a plate-loaded lever machine that isolates the rear delts.",
+  "instructions": [
+    "Sit with your chest against the incline pad and grab the handles.",
+    "Start with arms forward and slightly bent.",
+    "Sweep your arms out and back in a wide arc.",
+    "Squeeze your shoulder blades at the end.",
+    "Return slowly without letting the weight crash."
+  ],
+  "textSource": "opengym"
+}

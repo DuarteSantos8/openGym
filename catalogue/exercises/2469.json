@@ -1,0 +1,23 @@
+{
+  "id": "2469",
+  "name": "exercise ball frog crunch",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A crunch on a stability ball with the legs in a frog position to hit the lower abs.",
+  "instructions": [
+    "Lie back on a stability ball with your lower back supported.",
+    "Place the soles of your feet together with your knees out.",
+    "Place your hands lightly by your head.",
+    "Crunch up while pulling your knees toward your chest.",
+    "Squeeze your abs.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "0201",
+  "name": "cable pushdown",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "The classic triceps pushdown on a high pulley with a straight bar. Elbows stay at your sides while the forearms drive down.",
+  "instructions": [
+    "Attach a straight bar to a high pulley cable machine.",
+    "Stand facing the machine with your feet shoulder-width apart and a slight bend in your knees.",
+    "Grasp the bar with an overhand grip, hands shoulder-width apart.",
+    "Keep your elbows close to your sides and your upper arms stationary.",
+    "Exhale and push the bar down until your elbows are fully extended.",
+    "Pause for a moment, then inhale and slowly return the bar to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "9739",
+  "textSource": "exercisedb"
+}

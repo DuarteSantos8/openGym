@@ -1,0 +1,25 @@
+{
+  "id": "4449",
+  "name": "dumbbell hang clean",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "trapezius",
+    "quadriceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "Explosive lift taking dumbbells from hip level to the shoulders. Builds power through the hips and back.",
+  "instructions": [
+    "Stand holding dumbbells at your thighs, then push your hips back to lower them to the knees.",
+    "Keep your back flat and arms straight.",
+    "Drive your hips forward powerfully and shrug.",
+    "Pull the dumbbells up close to your body and rotate your elbows under them.",
+    "Catch them on your shoulders in a slight quarter squat.",
+    "Stand tall, then lower them back to your thighs and reset."
+  ],
+  "textSource": "opengym"
+}

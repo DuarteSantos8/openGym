@@ -1,0 +1,22 @@
+{
+  "id": "0915",
+  "name": "band push up",
+  "bodyPart": "chest",
+  "equipment": "band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A push up with a band across your back for extra resistance. It strengthens the chest and triceps.",
+  "instructions": [
+    "Loop the band across your upper back, holding the ends under your palms.",
+    "Set up in a high plank.",
+    "Lower your chest toward the floor.",
+    "Press back up against the band.",
+    "Keep your body in a straight line."
+  ],
+  "textSource": "opengym"
+}

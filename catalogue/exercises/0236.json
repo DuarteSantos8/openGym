@@ -1,0 +1,39 @@
+{
+  "id": "0236",
+  "name": "cable standing twist row (v-bar)",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A standing v-bar cable row with a twist. You pull and rotate the torso a little to work the upper back and the core.",
+  "instructions": [
+    "Attach a v-bar attachment to a cable machine at chest height.",
+    "Stand facing the cable machine with your feet shoulder-width apart.",
+    "Grasp the v-bar with an overhand grip, palms facing down.",
+    "Take a step back to create tension in the cable.",
+    "Keep your back straight and core engaged throughout the exercise.",
+    "Pull the v-bar towards your torso by retracting your shoulder blades and bending your elbows.",
+    "As you pull, twist your torso to one side, squeezing your shoulder blades together.",
+    "Pause for a moment at the top of the movement, feeling the contraction in your upper back.",
+    "Slowly release the tension and return to the starting position, untwisting your torso.",
+    "Repeat the movement for the desired number of repetitions, alternating the twisting direction with each rep."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm",
+      "trapezius",
+      "chest",
+      "triceps"
+    ]
+  },
+  "textSource": "exercisedb"
+}

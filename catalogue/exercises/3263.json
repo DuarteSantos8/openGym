@@ -1,0 +1,21 @@
+{
+  "id": "3263",
+  "name": "lying full leg raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "calisthenics",
+  "description": "Raise both straight legs from the floor to work the lower abs and hip flexors.",
+  "instructions": [
+    "Lie on your back with legs straight and hands under your hips or by your sides.",
+    "Press your lower back gently into the floor.",
+    "Lift both legs together until they point at the ceiling.",
+    "Lower them slowly, stopping just above the floor.",
+    "Keep your legs straight and do not let your back arch."
+  ],
+  "textSource": "opengym"
+}

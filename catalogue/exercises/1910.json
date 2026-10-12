@@ -1,0 +1,21 @@
+{
+  "id": "1910",
+  "name": "standing leg up hamstring stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "Rest one heel on a raised surface and lean forward to stretch the back of the thigh.",
+  "instructions": [
+    "Stand facing a low support and place one heel on it with the leg straight.",
+    "Hinge forward from the hips with a long back until you feel the back of the thigh stretch.",
+    "Keep your toes pointing up and your standing knee soft.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "3922",
+  "name": "side push up with towel",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up variation where one hand slides on a towel, shifting load to one side of the chest.",
+  "instructions": [
+    "Start in a push-up position with one hand on a towel on the floor.",
+    "Slide that hand out to the side.",
+    "Lower your chest toward the other hand.",
+    "Push back up.",
+    "Slide the towel hand back in.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

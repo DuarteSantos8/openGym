@@ -1,0 +1,21 @@
+{
+  "id": "1754",
+  "name": "weighted three bench dips",
+  "bodyPart": "upper arms",
+  "equipment": "weighted",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A bench dip with extra weight added for more resistance. Builds triceps and front shoulder strength once bodyweight gets easy.",
+  "instructions": [
+    "Sit on the edge of a bench with your hands gripping the edge, fingers pointing forward.",
+    "Walk your feet forward, sliding your butt off the bench and supporting your weight with your arms.",
+    "Lower your body by bending your elbows, keeping your back close to the bench.",
+    "Pause for a moment at the bottom, then push yourself back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

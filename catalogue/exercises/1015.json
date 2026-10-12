@@ -1,0 +1,23 @@
+{
+  "id": "1015",
+  "name": "band vertical pallof press",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes"
+  ],
+  "category": "isometric",
+  "description": "A vertical Pallof press with a band, pressing at chest height and holding. It trains the core to resist rotation.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and wrap the band around a sturdy object at chest height.",
+    "Hold the band with both hands and step away from the anchor point, creating tension in the band.",
+    "Position yourself perpendicular to the anchor point, with your side facing the band.",
+    "Extend your arms straight out in front of you, keeping your hands at chest height.",
+    "Engage your core and press the band away from your chest, fully extending your arms.",
+    "Hold the position for a few seconds, then slowly bring the band back towards your chest.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "textSource": "exercisedb"
+}

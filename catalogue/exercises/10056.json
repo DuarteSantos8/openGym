@@ -1,0 +1,23 @@
+{
+  "id": "10056",
+  "name": "landmine banded press",
+  "bodyPart": "shoulders",
+  "equipment": "landmine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A landmine press with a band adding extra resistance on the way up.",
+  "instructions": [
+    "Set up a landmine with a band attached and hold the end of the bar at your shoulder.",
+    "Stand with feet staggered and core braced.",
+    "Press the bar up and forward until your arm is straight.",
+    "Lower it to your shoulder under control.",
+    "Finish your reps, then switch arms.",
+    "Keep your ribs down and avoid leaning back."
+  ],
+  "textSource": "opengym"
+}

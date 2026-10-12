@@ -1,0 +1,23 @@
+{
+  "id": "5389",
+  "name": "roll pigeon stretch",
+  "bodyPart": "upper legs",
+  "equipment": "roller",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "hamstrings"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a foam roller to ease tightness in the glutes and hip. Good before training or on rest days to loosen up.",
+  "instructions": [
+    "Sit on the roller and cross one ankle over the opposite knee.",
+    "Place the roller under the glutes and hip and let your body weight settle onto it.",
+    "Lean toward the crossed leg and roll gently.",
+    "Pause on tender spots and breathe slowly for 20-30 seconds.",
+    "Keep your core braced and avoid rolling over joints or bone.",
+    "Roll for 30-60 seconds, then switch sides if needed."
+  ],
+  "femaleVariant": "5427",
+  "textSource": "opengym"
+}

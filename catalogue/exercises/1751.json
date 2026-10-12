@@ -1,0 +1,23 @@
+{
+  "id": "1751",
+  "name": "barbell pin presses",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A barbell press from pins set in a rack, starting from a dead stop. Builds pressing strength through the triceps and chest.",
+  "instructions": [
+    "Set up a barbell on a power rack at chest height.",
+    "Stand facing the barbell and position yourself underneath it, with your feet shoulder-width apart.",
+    "Grip the barbell with an overhand grip, slightly wider than shoulder-width apart.",
+    "Lift the barbell off the rack and hold it directly above your chest, with your arms fully extended.",
+    "Lower the barbell down towards your chest, keeping your elbows tucked in close to your body.",
+    "Pause for a moment when the barbell touches your chest.",
+    "Push the barbell back up to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

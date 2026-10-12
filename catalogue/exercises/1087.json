@@ -1,0 +1,23 @@
+{
+  "id": "1087",
+  "name": "suspension pull through",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A hip hinge with a strap held between your legs. It trains the glutes and hamstrings.",
+  "instructions": [
+    "Face away from the anchor, holding the handles between your legs.",
+    "Step forward to create tension.",
+    "Hinge at the hips and let your hands pass between your legs.",
+    "Drive your hips forward.",
+    "Stand tall and squeeze your glutes.",
+    "Keep your back flat."
+  ],
+  "textSource": "opengym"
+}

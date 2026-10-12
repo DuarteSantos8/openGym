@@ -1,0 +1,21 @@
+{
+  "id": "5274",
+  "name": "lying tuck crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch where your knees pull in as your chest comes up. It trains the abs.",
+  "instructions": [
+    "Lie on your back with your legs extended just off the floor.",
+    "Place your hands behind your head.",
+    "Pull your knees in and crunch your chest toward them.",
+    "Squeeze your abs at the top.",
+    "Extend and lower slowly."
+  ],
+  "textSource": "opengym"
+}

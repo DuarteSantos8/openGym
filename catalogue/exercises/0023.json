@@ -1,0 +1,21 @@
+{
+  "id": "0023",
+  "name": "barbell alternate biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A standing curl where the arms lift the bar alternately, keeping tension on the biceps.",
+  "instructions": [
+    "Stand up straight with your feet shoulder-width apart and hold a barbell in each hand, palms facing forward.",
+    "Keep your upper arms stationary and exhale as you curl the weights while contracting your biceps.",
+    "Continue to raise the barbells until your biceps are fully contracted and the barbells are at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale as you slowly begin to lower the barbells back to the starting position.",
+    "Repeat for the desired number of repetitions, alternating arms."
+  ],
+  "textSource": "exercisedb"
+}

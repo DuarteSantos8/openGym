@@ -1,0 +1,25 @@
+{
+  "id": "0680",
+  "name": "rope climb",
+  "bodyPart": "back",
+  "equipment": "rope",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "forearms",
+    "biceps",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "You climb a rope using your arms and legs. A full body pull that builds the grip, lats and arms.",
+  "instructions": [
+    "Stand facing the rope with your feet shoulder-width apart.",
+    "Grab the rope with both hands, palms facing towards you.",
+    "Bend your knees slightly and engage your core.",
+    "Begin pulling yourself up the rope by alternating hand-over-hand movements.",
+    "Use your legs to assist in the upward movement.",
+    "Continue climbing until you reach the desired height or the top of the rope.",
+    "To descend, reverse the hand-over-hand movement while controlling your descent.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "5515",
+  "name": "decline sit up v. 3",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "Sit-up on a decline bench that increases the range and load on the abs.",
+  "instructions": [
+    "Hook your feet under the pads on a decline bench and lie back.",
+    "Cross your arms over your chest.",
+    "Curl your torso up until you are sitting tall.",
+    "Lower back slowly without dropping.",
+    "Keep your neck relaxed."
+  ],
+  "textSource": "opengym"
+}

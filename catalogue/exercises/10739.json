@@ -1,0 +1,22 @@
+{
+  "id": "10739",
+  "name": "lying single arm triceps stretch",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "lats"
+  ],
+  "category": "stretching",
+  "description": "A floor stretch for the back of your upper arm. Lying down lets you relax into it.",
+  "instructions": [
+    "Lie on your back with knees bent.",
+    "Raise one arm and bend the elbow, hand reaching behind your head.",
+    "Use your other hand to press the elbow gently toward the floor.",
+    "Hold for 20-30 seconds.",
+    "Keep your ribs down.",
+    "Switch arms."
+  ],
+  "textSource": "opengym"
+}

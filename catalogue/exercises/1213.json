@@ -1,0 +1,22 @@
+{
+  "id": "1213",
+  "name": "cable vertical pallof press",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A cable press performed upward or downward in a vertical line while holding the core still. It trains anti-rotation and shoulder stability.",
+  "instructions": [
+    "Set a cable at a high or low position and stand sideways to it.",
+    "Hold the handle at your chest with both hands.",
+    "Press the handle straight up (or down) along a vertical line.",
+    "Hold for a second without letting your torso twist.",
+    "Return to your chest, finish the set, then switch sides."
+  ],
+  "textSource": "opengym"
+}

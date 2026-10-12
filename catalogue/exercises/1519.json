@@ -1,0 +1,22 @@
+{
+  "id": "1519",
+  "name": "smith good morning off pins",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A good morning on the Smith machine starting from the pins. It builds the hamstrings, glutes and lower back.",
+  "instructions": [
+    "Set the bar on the pins at upper-chest height and duck under it.",
+    "Stand tall with the bar on your upper back and knees slightly bent.",
+    "Push your hips back, keeping your back flat.",
+    "Stop when your torso is near parallel with the floor.",
+    "Drive your hips forward to stand, then return the bar to the pins when done."
+  ],
+  "textSource": "opengym"
+}

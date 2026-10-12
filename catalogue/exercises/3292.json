@@ -1,0 +1,21 @@
+{
+  "id": "3292",
+  "name": "elevator",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "shoulders",
+    "trapezius"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight hinge forward and back up again with the hands on the hips. It works the upper back and the muscles along the spine.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your knees slightly bent.",
+    "Place your hands on your hips or cross them in front of your chest.",
+    "Keeping your back straight, slowly bend forward at the waist, lowering your upper body towards the ground.",
+    "Pause for a moment at the bottom, then slowly raise your upper body back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

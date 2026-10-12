@@ -1,0 +1,22 @@
+{
+  "id": "4372",
+  "name": "crocodile yoga pose",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "yoga",
+  "description": "A low plank-like yoga pose held just above the floor. It strengthens the core and arms.",
+  "instructions": [
+    "Lie face down with palms under your shoulders.",
+    "Tuck your toes and lift your body.",
+    "Lower into a low plank with elbows tucked in.",
+    "Keep your body straight and hold for 20-30 seconds.",
+    "Lower to the floor."
+  ],
+  "textSource": "opengym"
+}

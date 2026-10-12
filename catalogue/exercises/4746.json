@@ -1,0 +1,23 @@
+{
+  "id": "4746",
+  "name": "dumbbell low windmill",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hamstrings",
+    "shoulders",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A windmill with a dumbbell held low, bending sideways and down the leg. It trains the obliques and loosens the hips.",
+  "instructions": [
+    "Stand with feet wide and a dumbbell in one hand.",
+    "Turn your back foot out and push your hips toward the dumbbell side.",
+    "Slide the dumbbell down your leg as you bend sideways and hinge.",
+    "Keep both legs mostly straight.",
+    "Return to standing and finish the set, then switch sides."
+  ],
+  "textSource": "opengym"
+}

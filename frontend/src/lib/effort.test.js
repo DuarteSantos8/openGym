@@ -5,6 +5,7 @@ import {
   effortColor, EFFORT_BANDS, EFFORT_PRESETS
 } from './effort.js'
 import { isoOf } from './format.js'
+import { anchorsByWorkout, resolveSetRir } from './recovery.js'
 
 const daysAgo = n => { const d = new Date(); d.setDate(d.getDate() - n); return d }
 // One workout on a day, with the sets given. Everything here is a finished set unless a set
@@ -115,7 +116,7 @@ describe('effortSummary', () => {
   })
 
   it('survives a profile with no training at all', () => {
-    expect(effortSummary({ workouts: [] }, 30)).toEqual({ done: 0, rated: 0, hard: 0, avg: null, hardPct: null })
+    expect(effortSummary({ workouts: [] }, 30)).toEqual({ done: 0, rated: 0, est: 0, covered: 0, hard: 0, avg: null, hardPct: null })
   })
 
   it('uses phase as authoritative while retaining legacy boolean warm-up fallback', () => {
@@ -258,5 +259,54 @@ describe('picker preset labels', () => {
 
   it('labels the same presets as their RPE mirror for an RPE profile', () => {
     expect(EFFORT_PRESETS.map(p => toScale('rpe', p.rir))).toEqual([10, 9.5, 9, 8, 7, 6])
+  })
+})
+
+describe('estimated fallback resolver', () => {
+  // Built the way Stats.jsx builds it: 90-day anchors, logged first, estimate second.
+  const resolving = st => {
+    const anchors = anchorsByWorkout(st.workouts, {})
+    return (s, w, e) => resolveSetRir(s, s, e, w, anchors.get(w), {})
+  }
+
+  it('fills an unrated history with estimates, flagged', () => {
+    const st = S(W(2, [{}, {}, {}, {}, {}]))   // five unrated 60x8 sets, self-anchored at RIR 0
+    const r = effortSummary(st, 0, resolving(st))
+    expect(r.done).toBe(5)
+    expect(r.rated).toBe(0)
+    expect(r.est).toBe(5)
+    expect(r.covered).toBe(5)
+    expect(r.avg).toBe(0)
+    expect(r.hardPct).toBe(1)
+  })
+
+  it('reports zero estimates on the default logged-only path', () => {
+    const st = S(W(2, [{}, {}, {}, {}, {}]))
+    const r = effortSummary(st, 0)
+    expect(r.rated).toBe(0)
+    expect(r.est).toBe(0)
+    expect(r.avg).toBe(null)
+  })
+
+  it('prefers a logged rating over any estimate', () => {
+    // 100x8 anchors at ~127: unrated top sets estimate RIR 0, while the 60x8 sets
+    // keep their logged RIR 8 instead of the estimated ~10.
+    const st = S(W(2, [{ w: 100, r: 8 }, { w: 100, r: 8 }, { w: 100, r: 8 }, { w: 60, r: 8, rir: 8 }, { w: 60, r: 8, rir: 8 }]))
+    const r = effortSummary(st, 0, resolving(st))
+    expect(r.rated).toBe(2)
+    expect(r.est).toBe(3)
+    expect(r.covered).toBe(5)
+    expect(r.avg).toBeCloseTo(16 / 5, 1)   // top sets estimate ~0.01, not exactly 0: e1RM rounds to 1 decimal
+  })
+
+  it('carries estimates through weeks and histogram', () => {
+    const st = S(W(2, [{}, {}, {}, {}, {}]))
+    const resolve = resolving(st)
+    const weeks = effortWeeks(st, 0, resolve)
+    expect(weeks).toHaveLength(1)
+    expect(weeks[0]).toMatchObject({ rir: 0, n: 5, est: 5, sets: 5 })
+    const hist = effortHistogram(st, 0, resolve)
+    expect(hist[0].n).toBe(5)
+    expect(hist.slice(1).every(b => b.n === 0)).toBe(true)
   })
 })

@@ -1,0 +1,21 @@
+{
+  "id": "1925",
+  "name": "single heel drop calf stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "Dropping one heel off a step to stretch the calf through a full range.",
+  "instructions": [
+    "Stand on the edge of a step with the ball of one foot on it and hold a rail for balance.",
+    "Slowly lower that heel below the step until you feel the calf stretch.",
+    "Keep the knee straight to hit the calf, then bend it slightly to reach deeper into the soleus.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

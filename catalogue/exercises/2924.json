@@ -1,0 +1,22 @@
+{
+  "id": "2924",
+  "name": "cable side lying lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "upper back",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A lateral raise performed while lying on your side with a cable. Lying down keeps constant tension on the side delt.",
+  "instructions": [
+    "Lie on your side next to a low cable pulley and grab the handle with your top hand.",
+    "Keep your arm straight with a slight bend in the elbow.",
+    "Raise your arm out to the side until it is near shoulder height.",
+    "Pause briefly at the top.",
+    "Lower slowly, finish the reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

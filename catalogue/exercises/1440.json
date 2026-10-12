@@ -1,0 +1,23 @@
+{
+  "id": "1440",
+  "name": "plank arm lifts",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "glutes",
+    "upper back"
+  ],
+  "category": "isometric",
+  "description": "A plank where you lift one arm at a time, training core stability and anti-rotation strength.",
+  "instructions": [
+    "Get into a forearm or high plank with your body in a straight line.",
+    "Brace your abs and squeeze your glutes.",
+    "Lift one arm forward without letting your hips rotate.",
+    "Place it back down with control and lift the other.",
+    "Keep your neck neutral and alternate arms for the planned reps."
+  ],
+  "textSource": "opengym"
+}

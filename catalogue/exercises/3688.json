@@ -1,0 +1,22 @@
+{
+  "id": "3688",
+  "name": "dumbbell seated reverse grip biceps curl",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "biceps",
+    "brachialis",
+    "wrist extensors"
+  ],
+  "category": "strength",
+  "description": "A seated curl with an overhand grip that hits the forearms and brachialis hard along with the biceps.",
+  "instructions": [
+    "Sit on a bench with a dumbbell in each hand, palms facing down, arms hanging at your sides.",
+    "Keep your elbows pinned to your sides and curl the weights up.",
+    "Stop when your forearms are near vertical and your wrists stay straight.",
+    "Lower the dumbbells slowly until your arms are fully extended.",
+    "Use a lighter weight than a normal curl."
+  ],
+  "textSource": "opengym"
+}

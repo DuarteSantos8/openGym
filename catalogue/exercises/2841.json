@@ -1,0 +1,22 @@
+{
+  "id": "2841",
+  "name": "corkscrew",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "hip flexors"
+  ],
+  "category": "pilates",
+  "description": "A Pilates move where the legs trace circles overhead, training the obliques and lower abs.",
+  "instructions": [
+    "Lie on your back with arms by your sides and legs raised up.",
+    "Lift your hips slightly and swing your legs across to one side.",
+    "Circle them down and around.",
+    "Bring them back up to the start.",
+    "Reverse the direction."
+  ],
+  "textSource": "opengym"
+}

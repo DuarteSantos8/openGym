@@ -1,0 +1,20 @@
+{
+  "id": "0060",
+  "name": "barbell lying triceps extension skull crusher",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "The classic skull crusher: lower the bar to the forehead and extend the arms. Isolates the triceps.",
+  "instructions": [
+    "Lie flat on a bench with your feet flat on the ground and your head at the end of the bench.",
+    "Hold the barbell with an overhand grip, hands shoulder-width apart, and extend your arms straight up over your chest.",
+    "Keeping your upper arms stationary, slowly lower the barbell towards your forehead by bending your elbows.",
+    "Pause for a moment when the barbell is just above your forehead, then extend your arms back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

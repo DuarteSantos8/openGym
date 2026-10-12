@@ -1,0 +1,28 @@
+{
+  "id": "0605",
+  "name": "lever standing calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "leverage machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankle stabilizers"
+  ],
+  "category": "strength",
+  "description": "Standing with pads on your shoulders, you rise onto your toes and lower back down. Isolates the calves.",
+  "instructions": [
+    "Adjust the machine to your height and stand with your feet shoulder-width apart.",
+    "Place your shoulders under the pads and hold onto the handles for stability.",
+    "Raise your heels as high as possible by extending your ankles.",
+    "Pause for a moment at the top, then slowly lower your heels back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "calves"
+    ],
+    "secondaries": []
+  },
+  "femaleVariant": "2211",
+  "textSource": "exercisedb"
+}

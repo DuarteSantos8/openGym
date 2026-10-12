@@ -1,0 +1,21 @@
+{
+  "id": "10933",
+  "name": "side lying external rotation",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids"
+  ],
+  "category": "rehab",
+  "description": "A light side-lying rotation for the back of the shoulder. Often used for shoulder stability.",
+  "instructions": [
+    "Lie on your side with your top elbow bent to 90 degrees against your ribs.",
+    "Hold your forearm across your stomach.",
+    "Rotate your forearm upward without moving your elbow.",
+    "Lower slowly.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

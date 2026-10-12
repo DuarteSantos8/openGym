@@ -1,0 +1,25 @@
+{
+  "id": "3227",
+  "name": "swimmer kicks",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "upper back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Lying face down, you flutter your legs like a swimmer. It works the lower back and glutes.",
+  "instructions": [
+    "Lie face down with your arms extended in front.",
+    "Lift your chest and legs slightly off the floor.",
+    "Kick your legs up and down in small, fast alternations.",
+    "Keep your neck long.",
+    "Breathe steadily.",
+    "Continue for 20-30 seconds."
+  ],
+  "femaleVariant": "3207",
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5261",
+  "name": "dumbbell incline shoulders press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A dumbbell press on an incline bench. It trains the shoulders and upper chest.",
+  "instructions": [
+    "Set a bench to about 60 to 75 degrees and sit back with a dumbbell in each hand.",
+    "Hold the weights at shoulder height.",
+    "Press the dumbbells up until your arms are straight.",
+    "Lower slowly to shoulder level.",
+    "Keep your back against the pad."
+  ],
+  "femaleVariant": "11438",
+  "textSource": "opengym"
+}

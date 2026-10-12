@@ -1,0 +1,24 @@
+{
+  "id": "9695",
+  "name": "landmine half kneeling shoulders press",
+  "bodyPart": "shoulders",
+  "equipment": "landmine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A one-arm landmine press from a half-kneeling position, easy on the shoulder and tough on the core.",
+  "instructions": [
+    "Kneel on one knee and hold the end of the landmine at your shoulder.",
+    "Brace your core and squeeze your glutes.",
+    "Press the end up and forward until your arm is straight.",
+    "Lower slowly to your shoulder.",
+    "Complete your reps, then switch sides."
+  ],
+  "femaleVariant": "10767",
+  "textSource": "opengym"
+}

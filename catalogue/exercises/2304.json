@@ -1,0 +1,23 @@
+{
+  "id": "2304",
+  "name": "rear axe kick",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "hip flexors",
+    "core"
+  ],
+  "category": "combat",
+  "description": "A kick with the back leg that rises high and then drops down like an axe, training flexibility and control.",
+  "instructions": [
+    "Stand in a fighting stance with your hands up.",
+    "Swing your rear leg straight up in front of you.",
+    "Reach the top with the leg extended.",
+    "Bring the heel sharply down.",
+    "Keep your supporting leg slightly bent and balanced.",
+    "Return to stance and repeat, then switch sides."
+  ],
+  "textSource": "opengym"
+}

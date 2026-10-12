@@ -1,0 +1,24 @@
+{
+  "id": "3557",
+  "name": "kneeling wide hand push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A kneeling push-up with the hands wider apart. It puts more emphasis on the chest.",
+  "instructions": [
+    "Kneel on a mat and place your hands wider than your shoulders.",
+    "Keep a straight line from head to knees.",
+    "Lower your chest toward the floor.",
+    "Press back up to straight arms.",
+    "Keep your core tight.",
+    "Do not let your hips sag."
+  ],
+  "textSource": "opengym"
+}

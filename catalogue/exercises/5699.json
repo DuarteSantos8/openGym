@@ -1,0 +1,22 @@
+{
+  "id": "5699",
+  "name": "45 degrees side bend",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A side bend done on a 45 degree bench that trains the obliques through a long range of motion.",
+  "instructions": [
+    "Set up on a 45 degree bench, lying on your side with your feet anchored.",
+    "Cross your arms over your chest.",
+    "Lower your upper body toward the floor.",
+    "Bend up sideways by contracting your oblique.",
+    "Finish all reps, then switch sides."
+  ],
+  "femaleVariant": "2435",
+  "textSource": "opengym"
+}

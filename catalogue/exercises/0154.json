@@ -1,0 +1,32 @@
+{
+  "id": "0154",
+  "name": "cable cross-over revers fly",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A reverse fly using crossed cables. Targets the rear delts and upper back.",
+  "instructions": [
+    "Attach a D-handle to each low pulley cable and stand in the middle of the cable crossover machine.",
+    "Grasp the handles with a pronated grip (palms facing down) and take a step forward, positioning your feet shoulder-width apart.",
+    "Bend your knees slightly and lean forward at the waist, keeping your back straight and your abs engaged.",
+    "With your arms extended out to the sides and slightly bent at the elbows, exhale and squeeze your shoulder blades together as you pull the cables back and upward in a reverse fly motion.",
+    "Pause for a moment at the peak contraction, then inhale and slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "deltoids"
+    ],
+    "secondaries": [
+      "trapezius",
+      "upper-back"
+    ]
+  },
+  "femaleVariant": "2492",
+  "textSource": "exercisedb"
+}

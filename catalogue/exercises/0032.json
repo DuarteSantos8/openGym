@@ -1,0 +1,38 @@
+{
+  "id": "0032",
+  "name": "barbell deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "Lift the bar from the floor by driving the hips and legs until you stand tall. Trains the glutes, hamstrings and back.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and the barbell on the ground in front of you.",
+    "Bend your knees and hinge at the hips to lower your torso and grip the barbell with an overhand grip, hands slightly wider than shoulder-width apart.",
+    "Keep your back straight and chest lifted as you drive through your heels to lift the barbell off the ground, extending your hips and knees.",
+    "As you stand up straight, squeeze your glutes and keep your core engaged.",
+    "Lower the barbell back down to the ground by bending at the hips and knees, keeping your back straight.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "bodyPart": "full body",
+    "primaries": [
+      "gluteal",
+      "hamstring",
+      "lower-back"
+    ],
+    "secondaries": [
+      "quadriceps",
+      "adductors",
+      "calves",
+      "abs",
+      "obliques"
+    ]
+  },
+  "femaleVariant": "2214",
+  "textSource": "exercisedb"
+}

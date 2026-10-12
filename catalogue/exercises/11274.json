@@ -1,0 +1,23 @@
+{
+  "id": "11274",
+  "name": "cable standing alternating diagonal chest press v. 3",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing diagonal cable press done one arm at a time. It trains the chest and challenges your core.",
+  "instructions": [
+    "Stand in a staggered stance holding a high cable handle in each hand.",
+    "Brace your core.",
+    "Press one handle forward and down diagonally.",
+    "Return slowly and press with the other arm.",
+    "Alternate for the set without twisting your hips."
+  ],
+  "textSource": "opengym"
+}

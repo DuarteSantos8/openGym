@@ -1,0 +1,21 @@
+{
+  "id": "5011",
+  "name": "barbell pause incline bench press",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Incline bench press with a stop on your chest. It builds upper chest strength without any bounce.",
+  "instructions": [
+    "Lie on an incline bench and grip the bar slightly wider than shoulders.",
+    "Unrack the bar and lower it to your upper chest.",
+    "Hold the bar still on your chest for a full second.",
+    "Press up until your arms are straight.",
+    "Keep your shoulder blades pulled back."
+  ],
+  "textSource": "opengym"
+}

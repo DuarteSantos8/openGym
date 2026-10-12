@@ -1,0 +1,23 @@
+{
+  "id": "7203",
+  "name": "resistance band squat step out",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A squat that steps sideways against a band, firing up the glutes and hips.",
+  "instructions": [
+    "Place the band around your thighs and stand with feet hip-width.",
+    "Sit into a squat and stay low.",
+    "Step one foot out to the side against the band.",
+    "Bring the other foot in to follow.",
+    "Take several steps, then return the other way.",
+    "Keep your knees pushed out."
+  ],
+  "textSource": "opengym"
+}

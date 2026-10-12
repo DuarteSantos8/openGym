@@ -1,0 +1,25 @@
+{
+  "id": "7175",
+  "name": "inline skating",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "Gliding on inline skates for steady cardio that also works the legs and balance.",
+  "instructions": [
+    "Put on skates, helmet and pads, and stand with your knees slightly bent.",
+    "Push one skate out to the side and glide on the other.",
+    "Alternate pushes with a relaxed arm swing.",
+    "Keep your chest up and your weight over the skates.",
+    "Skate at a steady pace for 10-30 minutes.",
+    "Slow down gradually to stop."
+  ],
+  "textSource": "opengym"
+}

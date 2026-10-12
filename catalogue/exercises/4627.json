@@ -1,0 +1,21 @@
+{
+  "id": "4627",
+  "name": "dumbbell front plank arm leg raise",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A plank where you lift a dumbbell and the opposite leg at once, testing your balance and core control.",
+  "instructions": [
+    "Start in a high plank with a dumbbell in one hand.",
+    "Brace your abs and squeeze your glutes.",
+    "Lift the dumbbell forward and the opposite leg back at the same time.",
+    "Lower both under control.",
+    "Alternate sides each rep."
+  ],
+  "textSource": "opengym"
+}

@@ -27,7 +27,7 @@ const placeholders = value => {
 }
 
 describe('Programme locale parity', () => {
-  it('covers every current non-English pack', () => { expect(Object.keys(packs)).toHaveLength(17) })
+  it('covers every current non-English pack', () => { expect(Object.keys(packs)).toHaveLength(18) })
   it.each(Object.entries(packs))('%s contains every Programme key with matching placeholders', (_path, dictionary) => {
     expect(programmeKeys.filter(key => !dictionary[key])).toEqual([])
     for (const key of programmeKeys) {

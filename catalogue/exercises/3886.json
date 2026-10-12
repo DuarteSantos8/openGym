@@ -1,0 +1,25 @@
+{
+  "id": "3886",
+  "name": "dumbbell complex push up row clean and press",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "chest",
+    "upper back",
+    "shoulders",
+    "triceps",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A flowing combo of push-up, row, clean and press that works the whole body with a pair of dumbbells.",
+  "instructions": [
+    "Start in a push-up position with your hands on two dumbbells.",
+    "Do a push-up, then row one dumbbell to your ribs and switch sides.",
+    "Jump or step your feet toward your hands and stand up, cleaning the dumbbells to your shoulders.",
+    "Press them overhead.",
+    "Lower to the floor and return to the push-up position.",
+    "Move smoothly and keep your core tight."
+  ],
+  "textSource": "opengym"
+}

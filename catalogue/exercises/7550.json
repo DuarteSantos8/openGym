@@ -1,0 +1,22 @@
+{
+  "id": "7550",
+  "name": "dumbbell bulgarian split squat from deficit",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "Rear-foot elevated split squat with the front foot raised for greater depth.",
+  "instructions": [
+    "Stand with your front foot on a low platform and your rear foot on a bench.",
+    "Hold dumbbells at your sides.",
+    "Lower until your back knee is near the floor.",
+    "Keep your front knee steady.",
+    "Drive up and switch legs."
+  ],
+  "textSource": "opengym"
+}

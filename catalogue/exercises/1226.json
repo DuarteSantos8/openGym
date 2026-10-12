@@ -1,0 +1,22 @@
+{
+  "id": "1226",
+  "name": "ez barbell standing overhead press",
+  "bodyPart": "shoulders",
+  "equipment": "ez barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "An overhead press with an EZ bar. The angled grips can feel kinder on the wrists while you train the shoulders.",
+  "instructions": [
+    "Stand holding an EZ bar at your upper chest with a comfortable grip.",
+    "Brace your core and squeeze your glutes.",
+    "Press the bar overhead until your arms are straight.",
+    "Lower it slowly back to your chest.",
+    "Keep your head neutral and avoid leaning back."
+  ],
+  "textSource": "opengym"
+}

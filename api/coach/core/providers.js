@@ -53,6 +53,52 @@ export function baseUrlFor(id, cfg) {
   return raw.replace(/\/+$/, '');
 }
 
+/* Extra static headers a provider is called with (compatible endpoints only in practice):
+ * gateways that demand routing/session headers (opencode Go's `x-opencode-session`,
+ * `X-Title` style attribution headers elsewhere). Stored plaintext next to baseUrl —
+ * routing aids, not credentials. Caps keep a mis-paste from becoming a smuggling vector:
+ * at most 8 entries, token-shaped names, short values, and the names that would
+ * override auth framing or transport are refused outright (re-checked at send time). */
+export const MAX_HEADERS = 8;
+export const MAX_HEADER_VALUE = 500;
+const HEADER_NAME = /^[!#$%&'*+\-.^_`|~0-9a-z]+$/i;
+const RESERVED_HEADERS = new Set([
+  'authorization', 'proxy-authorization', 'content-type', 'content-length',
+  'host', 'connection', 'transfer-encoding', 'upgrade', 'cookie', 'set-cookie'
+]);
+export const isReservedHeader = name => RESERVED_HEADERS.has(String(name || '').toLowerCase());
+
+export function validateHeaders(raw) {
+  if (raw == null || raw === '') return { ok: true, value: null };
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return { ok: false, error: 'headers must be an object of name to value' };
+  const names = Object.keys(raw);
+  if (names.length > MAX_HEADERS) return { ok: false, error: `at most ${MAX_HEADERS} headers` };
+  const out = {};
+  for (const name of names) {
+    const n = String(name).toLowerCase();
+    if (!HEADER_NAME.test(name) || name.length > 64) return { ok: false, error: `bad header name: ${name}` };
+    if (isReservedHeader(n)) return { ok: false, error: `header is reserved: ${name}` };
+    const v = raw[name];
+    if (typeof v !== 'string' || !v.trim()) return { ok: false, error: `header ${name} needs a value` };
+    if (v.length > MAX_HEADER_VALUE) return { ok: false, error: `header ${name} is too long` };
+    out[n] = v.trim();
+  }
+  return { ok: true, value: Object.keys(out).length ? out : null };
+}
+
+/** The extra headers a provider call carries: the configured map minus anything reserved
+ *  (validated at write; this is the belt to that suspenders — a stored map from before a
+ *  name was reserved must not override auth framing). */
+export function extraHeadersFor(id, cfg) {
+  const set = cfg && cfg.providerOptions && cfg.providerOptions[id] && cfg.providerOptions[id].headers;
+  if (!set || typeof set !== 'object') return {};
+  const out = {};
+  for (const [k, v] of Object.entries(set)) {
+    if (!isReservedHeader(k) && typeof v === 'string' && v) out[String(k).toLowerCase()] = v;
+  }
+  return out;
+}
+
 /**
  * Only http(s), only a parseable URL, and never credentials in it — a base URL is admin
  * configuration, but "admin-configured" and "safe to log" are different properties, and the

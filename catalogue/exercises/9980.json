@@ -1,0 +1,23 @@
+{
+  "id": "9980",
+  "name": "stick assisted standing shoulder flexion",
+  "bodyPart": "shoulders",
+  "equipment": "assisted",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "rotator cuff",
+    "triceps"
+  ],
+  "category": "mobility",
+  "description": "A shoulder mobility drill where a stick helps one arm lift forward and overhead. The other hand guides the movement.",
+  "instructions": [
+    "Stand tall holding a stick with both hands at hip level, palms down.",
+    "Keep the working arm relaxed and let the other hand lead.",
+    "Raise the stick forward and overhead as far as is comfortable.",
+    "Pause at the top.",
+    "Lower slowly back to the start.",
+    "Keep your ribs down and avoid arching your back."
+  ],
+  "textSource": "opengym"
+}

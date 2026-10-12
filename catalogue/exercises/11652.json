@@ -1,0 +1,22 @@
+{
+  "id": "11652",
+  "name": "sciatic nerve glide floss",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "lower back",
+    "glutes"
+  ],
+  "category": "mobility",
+  "description": "A seated nerve glide that alternates straightening the leg and moving the head to ease the back of the leg and improve mobility.",
+  "instructions": [
+    "Sit tall at the edge of a chair with your hands on the seat or resting in your lap.",
+    "Slowly straighten one knee while you lower your chin toward your chest.",
+    "Bend the knee back down while you lift your head and look up.",
+    "Keep the motion smooth and gentle, never forcing into a strong stretch or tingling.",
+    "Repeat for 10-15 slow reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

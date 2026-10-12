@@ -1,0 +1,22 @@
+{
+  "id": "4653",
+  "name": "standing single leg high knee to butt kick (with support)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hamstrings",
+    "hip flexors",
+    "glutes"
+  ],
+  "category": "mobility",
+  "description": "A supported single-leg drill that alternates a high knee and a heel kick, working balance and the hips.",
+  "instructions": [
+    "Stand next to a wall or support and hold it with one hand.",
+    "Raise the opposite knee to hip height.",
+    "Lower it and kick that heel up toward your glutes.",
+    "Repeat smoothly for the reps.",
+    "Switch sides and keep your torso upright."
+  ],
+  "textSource": "opengym"
+}

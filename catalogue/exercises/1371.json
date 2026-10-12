@@ -1,0 +1,20 @@
+{
+  "id": "1371",
+  "name": "barbell seated calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "barbell",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Seated calf raise with a barbell resting on your thighs. The bent knee shifts the work to the soleus muscle under the calf.",
+  "instructions": [
+    "Sit on a bench with your feet flat on the floor and a barbell resting on your thighs.",
+    "Place the balls of your feet on a raised platform, such as a block or step.",
+    "Lower your heels as far as possible, feeling a stretch in your calves.",
+    "Raise your heels as high as possible, contracting your calves.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

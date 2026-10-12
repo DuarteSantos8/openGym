@@ -1,0 +1,22 @@
+{
+  "id": "3965",
+  "name": "side bear crawl",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "glutes"
+  ],
+  "category": "plyometrics",
+  "description": "A bear crawl moving sideways on hands and toes. It builds shoulder stability, core control and leg endurance.",
+  "instructions": [
+    "Get on hands and toes with knees just off the floor.",
+    "Keep your back flat.",
+    "Step the hand and foot on one side out, then bring the other pair along.",
+    "Move several steps one way, then return.",
+    "Stay low and keep your hips steady."
+  ],
+  "textSource": "opengym"
+}

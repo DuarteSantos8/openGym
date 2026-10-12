@@ -1,0 +1,24 @@
+{
+  "id": "1460",
+  "name": "walking lunge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "Stepping forward into one lunge after another, moving across the room. It works the quads and glutes and challenges balance.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Take a step forward with your right leg, lowering your body into a lunge position.",
+    "Keep your torso upright and your front knee aligned with your ankle.",
+    "Push off with your right foot and bring your left foot forward, stepping into a lunge position with your left leg.",
+    "Continue alternating legs and walking forward, maintaining a controlled and steady pace.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3811",
+  "textSource": "exercisedb"
+}

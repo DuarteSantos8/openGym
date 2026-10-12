@@ -1,0 +1,22 @@
+{
+  "id": "0418",
+  "name": "dumbbell standing concentration curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Standing and leaning slightly forward, you curl a dumbbell with your elbow against your inner thigh. It isolates the biceps.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a dumbbell in one hand, with your arm fully extended and palm facing inwards.",
+    "Place your opposite hand on your thigh for support.",
+    "Keeping your upper arm stationary, exhale and curl the dumbbell towards your shoulder by contracting your biceps.",
+    "Continue to raise the dumbbell until your biceps are fully contracted and the dumbbell is at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale and slowly lower the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

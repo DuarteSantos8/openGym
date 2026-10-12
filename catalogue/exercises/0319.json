@@ -1,0 +1,22 @@
+{
+  "id": "0319",
+  "name": "dumbbell incline fly",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A dumbbell fly on an incline bench. The arms open in an arc to work the upper chest.",
+  "instructions": [
+    "Set an incline bench to a 45-degree angle.",
+    "Sit on the bench with a dumbbell in each hand, palms facing each other.",
+    "Lie back on the bench and press the dumbbells up to the starting position, directly above your chest.",
+    "Lower the dumbbells out to the sides in a wide arc until you feel a stretch in your chest.",
+    "Pause for a moment, then squeeze your chest muscles to bring the dumbbells back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2514",
+  "textSource": "exercisedb"
+}

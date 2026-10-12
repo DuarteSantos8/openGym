@@ -1,0 +1,21 @@
+{
+  "id": "6787",
+  "name": "hip external rotation test",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "mobility",
+  "description": "A simple check of how far the hip turns outward. You do it gently to see your range.",
+  "instructions": [
+    "Sit or lie with the knee bent 90 degrees.",
+    "Keep the thigh still.",
+    "Swing the lower leg inward so the hip rotates outward.",
+    "Stop where you feel a stretch or end of range.",
+    "Note how far each side goes.",
+    "Repeat on the other leg."
+  ],
+  "textSource": "opengym"
+}

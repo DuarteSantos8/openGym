@@ -1,0 +1,24 @@
+{
+  "id": "3436",
+  "name": "superman",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "rear deltoids"
+  ],
+  "category": "calisthenics",
+  "description": "A floor extension that lifts arms and legs to strengthen the lower back.",
+  "instructions": [
+    "Lie face down with arms extended in front.",
+    "Lift your arms, chest and legs off the floor together.",
+    "Squeeze your glutes and lower back.",
+    "Hold for 1-2 seconds.",
+    "Lower slowly.",
+    "Keep your neck neutral."
+  ],
+  "femaleVariant": "0804",
+  "textSource": "opengym"
+}

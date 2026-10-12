@@ -1,0 +1,23 @@
+{
+  "id": "0357",
+  "name": "dumbbell one arm press (on stability ball)",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A single-arm dumbbell press with your upper back on a stability ball. Staying balanced makes your core work as hard as the chest.",
+  "instructions": [
+    "Sit on a stability ball with a dumbbell and walk your feet out until your upper back rests on the ball.",
+    "Lift your hips so your body is flat like a bench, feet wide for balance.",
+    "Hold the dumbbell at chest height and press it up over your shoulder.",
+    "Lower it slowly back to chest level.",
+    "Finish your reps, then switch arms.",
+    "Keep your hips up and don't let your body twist."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,31 @@
+{
+  "id": "3235",
+  "name": "cable assisted inverse leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A cable-resisted leg curl from a face-down position. It isolates the hamstrings with smooth, constant tension.",
+  "instructions": [
+    "Adjust the cable machine so that the ankle attachment is at the lowest setting.",
+    "Lie face down on the bench with your legs straight and the ankle attachment secured to your ankles.",
+    "Hold onto the handles of the bench for stability.",
+    "Keeping your upper body stationary, exhale and curl your legs up towards your glutes by flexing your knees.",
+    "Pause for a moment at the top of the movement, squeezing your hamstrings.",
+    "Inhale and slowly lower your legs back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "hamstring"
+    ],
+    "secondaries": [
+      "calves"
+    ]
+  },
+  "textSource": "exercisedb"
+}

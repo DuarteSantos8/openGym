@@ -1,0 +1,21 @@
+{
+  "id": "10654",
+  "name": "pilates machine lying knee extension on toes",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "calves",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "Straighten your knees on a reformer with feet on toes. It trains the front thighs.",
+  "instructions": [
+    "Lie on the carriage with feet on the bar, on your toes.",
+    "Bend your knees with a neutral spine.",
+    "Press the carriage away until legs straighten.",
+    "Return under control.",
+    "Keep your hips still."
+  ],
+  "textSource": "opengym"
+}

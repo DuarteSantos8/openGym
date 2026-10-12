@@ -1,0 +1,22 @@
+{
+  "id": "10517",
+  "name": "standing single leg hip swirl with chair support",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "adductors",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "Hold a chair and swirl one leg in circles. It loosens the hip joint and warms up the glutes.",
+  "instructions": [
+    "Stand beside a chair and hold it for balance.",
+    "Lift one leg slightly off the floor.",
+    "Draw slow, controlled circles with your leg.",
+    "Do half of the reps one way, then reverse the direction.",
+    "Switch legs and repeat."
+  ],
+  "textSource": "opengym"
+}

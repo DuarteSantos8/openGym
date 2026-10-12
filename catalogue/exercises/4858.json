@@ -1,0 +1,22 @@
+{
+  "id": "4858",
+  "name": "lateral walk push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up combined with side steps. It trains the chest and shoulders with extra coordination.",
+  "instructions": [
+    "Start in a high plank.",
+    "Do one push-up.",
+    "Step your hands and feet to the side.",
+    "Do another push-up.",
+    "Alternate direction after a set."
+  ],
+  "textSource": "opengym"
+}

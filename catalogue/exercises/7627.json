@@ -1,0 +1,23 @@
+{
+  "id": "7627",
+  "name": "landmine overhead rear lunge",
+  "bodyPart": "upper legs",
+  "equipment": "landmine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A reverse lunge while pressing a landmine bar overhead. It trains the legs, glutes and shoulders together.",
+  "instructions": [
+    "Hold the end of the landmine bar at your shoulder.",
+    "Step one foot back into a lunge.",
+    "As you rise, press the bar overhead.",
+    "Lower the bar to your shoulder while you lunge back again.",
+    "Complete your reps and switch legs."
+  ],
+  "textSource": "opengym"
+}

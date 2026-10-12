@@ -1,0 +1,23 @@
+{
+  "id": "9310",
+  "name": "standing isometric hold calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "isometric",
+  "description": "A standing calf raise held at the top. It builds calf endurance.",
+  "instructions": [
+    "Stand tall with your feet hip width apart.",
+    "Rise onto the balls of your feet.",
+    "Hold the top position for 20 to 30 seconds.",
+    "Keep your ankles straight and stable.",
+    "Lower your heels slowly.",
+    "Rest briefly between holds."
+  ],
+  "textSource": "opengym"
+}

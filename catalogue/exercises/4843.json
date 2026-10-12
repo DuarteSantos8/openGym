@@ -1,0 +1,22 @@
+{
+  "id": "4843",
+  "name": "depth jump to broad jump",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A drop off a box into an immediate broad jump. It trains reactive leg power.",
+  "instructions": [
+    "Stand at the edge of a low box.",
+    "Step off and land on both feet.",
+    "Immediately explode forward into a broad jump.",
+    "Swing your arms for momentum.",
+    "Land softly with bent knees and reset."
+  ],
+  "textSource": "opengym"
+}

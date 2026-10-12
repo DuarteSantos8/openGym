@@ -1,0 +1,23 @@
+{
+  "id": "4703",
+  "name": "bodyweight full squat with overhead press (version 2)",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A deep squat paired with an overhead reach or press, working the legs and shoulders together.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and hands at your shoulders.",
+    "Squat deep, keeping chest up.",
+    "Drive up out of the squat.",
+    "Press your arms overhead as you stand.",
+    "Lower your hands and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "3512",
+  "name": "resistance band upper body dead bug",
+  "bodyPart": "waist",
+  "equipment": "resistance band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "obliques",
+    "lats"
+  ],
+  "category": "strength",
+  "description": "A dead bug with a band held in the hands, pulling it as the arms move. It builds core stability.",
+  "instructions": [
+    "Lie on your back with knees bent over your hips, holding a band in both hands above your chest.",
+    "Press your lower back into the floor.",
+    "Pull one hand overhead while stretching the band.",
+    "Bring it back and alternate.",
+    "Keep your ribs down and core braced.",
+    "Move slowly."
+  ],
+  "textSource": "opengym"
+}

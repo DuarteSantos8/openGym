@@ -1,0 +1,21 @@
+{
+  "id": "2411",
+  "name": "cable seated neck extension (with head harness)",
+  "bodyPart": "neck",
+  "equipment": "cable",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "Seated with a harness attached to a cable, you pull your head back against steady resistance to train the neck extensors.",
+  "instructions": [
+    "Fit the head harness and sit facing the cable with it attached at head height.",
+    "Start with your head tipped slightly forward.",
+    "Pull your head back until it is upright.",
+    "Pause, then return slowly against the cable.",
+    "Keep the load light and your shoulders relaxed."
+  ],
+  "textSource": "opengym"
+}

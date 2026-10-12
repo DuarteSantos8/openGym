@@ -1,0 +1,21 @@
+{
+  "id": "4623",
+  "name": "weighted seated tuck crunch on floor",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "strength",
+  "description": "A seated tuck that brings the knees and chest together while holding a weight, targeting the lower abs.",
+  "instructions": [
+    "Sit on the floor holding a weight at your chest, leaning back slightly with legs extended.",
+    "Lift your feet off the floor.",
+    "Pull your knees in while bringing your chest forward.",
+    "Extend your legs again without touching the floor.",
+    "Keep your back long and breathe steadily."
+  ],
+  "textSource": "opengym"
+}

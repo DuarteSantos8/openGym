@@ -1,0 +1,22 @@
+{
+  "id": "3096",
+  "name": "lever alternating narrow grip seated row (plate loaded)",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A plate-loaded seated row with a narrow grip, one arm at a time for balanced back strength.",
+  "instructions": [
+    "Sit with your chest against the pad and grab the narrow handles.",
+    "Pull one handle back, driving your elbow behind you.",
+    "Squeeze your shoulder blade at the end.",
+    "Return slowly and pull with the other arm.",
+    "Alternate sides and keep your torso still."
+  ],
+  "textSource": "opengym"
+}

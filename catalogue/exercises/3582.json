@@ -1,0 +1,22 @@
+{
+  "id": "3582",
+  "name": "lunge with jump",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A lunge followed by a jump where the legs switch in mid-air. It builds leg power and raises your heart rate.",
+  "instructions": [
+    "Start by standing with your feet shoulder-width apart.",
+    "Take a step forward with your right foot, lowering your body into a lunge position.",
+    "Push off with your right foot and jump into the air, switching the position of your feet mid-air.",
+    "Land softly with your left foot forward and immediately lower your body into a lunge position.",
+    "Continue alternating between lunges and jumps for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

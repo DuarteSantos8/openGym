@@ -1,0 +1,21 @@
+{
+  "id": "1985",
+  "name": "elbow out rotator stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "stretching",
+  "description": "A stretch for the rotator cuff with the elbow lifted out to the side.",
+  "instructions": [
+    "Stand tall and lift one elbow out to the side, hand behind your head.",
+    "Hold the elbow with your other hand.",
+    "Gently press the elbow back and slightly down.",
+    "Feel the stretch in the shoulder.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

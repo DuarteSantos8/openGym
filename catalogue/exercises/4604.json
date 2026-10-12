@@ -1,0 +1,22 @@
+{
+  "id": "4604",
+  "name": "pvc good morning",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A hip hinge drill with a light pipe on your back, teaching you to bend at the hips with a flat spine.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and a PVC pipe across your upper back.",
+    "Soften your knees slightly and push your hips straight back.",
+    "Lower your torso until you feel a stretch in the hamstrings, keeping your back flat.",
+    "Drive your hips forward to stand tall again.",
+    "Keep the pipe in contact with your head, upper back and tailbone if you can."
+  ],
+  "textSource": "opengym"
+}

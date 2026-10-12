@@ -1,0 +1,21 @@
+{
+  "id": "5400",
+  "name": "stick lat stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "stretching",
+  "description": "A standing stretch that uses a stick to pull the arm overhead and open up the side of your back. Good for tight lats and overhead mobility.",
+  "instructions": [
+    "Stand tall and grip the stick with both hands, one end held high.",
+    "Reach the stick overhead and lean gently away from the higher hand.",
+    "Keep your hips square and your ribs from flaring out.",
+    "Hold for 20-30 seconds, feeling the stretch along your side and back.",
+    "Return to upright and switch sides."
+  ],
+  "textSource": "opengym"
+}

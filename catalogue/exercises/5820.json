@@ -1,0 +1,23 @@
+{
+  "id": "5820",
+  "name": "dumbbell prone full can exercise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rotator cuff",
+    "upper back",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "Lying face down, raise light dumbbells out in a Y with thumbs up. It strengthens the rear shoulder and upper back.",
+  "instructions": [
+    "Lie face down on a bench or floor with light dumbbells hanging.",
+    "Turn your thumbs to the ceiling.",
+    "Raise your arms out diagonally into a Y.",
+    "Squeeze your shoulder blades together.",
+    "Lower slowly under control."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1172",
+  "name": "assisted weighted push up",
+  "bodyPart": "chest",
+  "equipment": "weighted",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with extra load and assistance so you can adjust difficulty while keeping good form.",
+  "instructions": [
+    "Get into a plank with hands under your shoulders and load placed on your upper back.",
+    "Brace your core and keep your body in a straight line.",
+    "Lower your chest toward the floor.",
+    "Press back up until your elbows are straight.",
+    "Use the assistance as needed to keep every rep clean."
+  ],
+  "textSource": "opengym"
+}

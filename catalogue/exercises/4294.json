@@ -1,0 +1,23 @@
+{
+  "id": "4294",
+  "name": "bodyweight overhead squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "core",
+    "hamstrings",
+    "upper back"
+  ],
+  "category": "calisthenics",
+  "description": "A deep squat performed with your arms locked out overhead. It trains the legs while testing shoulder and hip mobility.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and raise both arms straight overhead.",
+    "Brace your core and keep your arms in line with your ears.",
+    "Sit your hips back and down into a deep squat, chest tall.",
+    "Drive through your heels to stand, keeping your arms locked overhead."
+  ],
+  "textSource": "opengym"
+}

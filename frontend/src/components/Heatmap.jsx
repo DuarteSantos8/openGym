@@ -4,6 +4,7 @@ import { workoutDay, workoutDuration, workoutVolume } from '../lib/history.js'
 import { t, tn } from '../lib/i18n.js'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { Segmented } from './ui.jsx'
+import { dayNoteOf, dayNoteLine } from '../lib/day-notes.js'
 
 const normalizeMetric = value => value === 'vol' ? 'vol' : 'time'
 
@@ -67,10 +68,13 @@ export default function Heatmap({ S, onDay, metric: selectedMetric, onMetricChan
       const day = new Date(colStart); day.setDate(colStart.getDate() + d)
       const key = isoOf(day)
       const a = agg[key]
-      const cls = 'hm-c l' + level(a) + (key === todayISO() ? ' today' : '') + (day > today ? ' future' : '')
+      // A day off with a note (#261): outlined, its note in the tooltip, and tappable like a
+      // trained day so the note can be read (and changed) on a phone too.
+      const note = !a && dayNoteOf(S, key)
+      const cls = 'hm-c l' + level(a) + (note ? ' noted' : '') + (key === todayISO() ? ' today' : '') + (day > today ? ' future' : '')
       cells.push(<div key={d} className={cls}
-        title={key + (a ? ` · ${tn('{0} workout', '{0} workouts', a.n)} · ${t('{0} min', a.min)} · ${fmtVol(a.vol, S.unit)}` : '')}
-        {...tappable(a ? () => onDay?.(key) : undefined)} />)
+        title={key + (a ? ` · ${tn('{0} workout', '{0} workouts', a.n)} · ${t('{0} min', a.min)} · ${fmtVol(a.vol, S.unit)}` : note ? ` · ${dayNoteLine(note, t)}` : '')}
+        {...tappable(a || note ? () => onDay?.(key) : undefined)} />)
     }
     cols.push(<div key={wk} className="hm-col">{cells}</div>)
   }

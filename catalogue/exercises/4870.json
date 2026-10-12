@@ -1,0 +1,22 @@
+{
+  "id": "4870",
+  "name": "hip clam shell",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A side-lying clamshell opening of the knees. It strengthens the outer hips.",
+  "instructions": [
+    "Lie on your side with knees bent and feet together.",
+    "Keep your feet touching.",
+    "Lift your top knee.",
+    "Lower slowly.",
+    "Switch sides after your reps."
+  ],
+  "textSource": "opengym"
+}

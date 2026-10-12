@@ -1,0 +1,23 @@
+{
+  "id": "6441",
+  "name": "resistance band standing external rotation",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids",
+    "upper back"
+  ],
+  "category": "rehab",
+  "description": "Rotating the forearm outward against a band, elbow at your side. It strengthens the small rotator cuff muscles that steady the shoulder.",
+  "instructions": [
+    "Anchor the band at elbow height and stand sideways to it.",
+    "Hold the handle with the far hand, elbow bent 90 degrees and tucked at your side.",
+    "Rotate the forearm outward, keeping the elbow pinned.",
+    "Pause when your hand points forward or slightly out.",
+    "Return slowly under control.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

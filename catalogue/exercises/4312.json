@@ -1,0 +1,23 @@
+{
+  "id": "4312",
+  "name": "slopes towards stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A standing side-leaning stretch that opens up the lats and the side of the torso.",
+  "instructions": [
+    "Stand tall with feet hip-width apart.",
+    "Raise one arm overhead and keep the other hand resting on your hip.",
+    "Lean slowly toward the opposite side, lengthening along the raised arm.",
+    "Hold for 20-30 seconds while breathing steadily.",
+    "Return to upright and switch sides."
+  ],
+  "femaleVariant": "0745",
+  "textSource": "opengym"
+}

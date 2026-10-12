@@ -1,0 +1,21 @@
+{
+  "id": "0727",
+  "name": "single leg calf raise (on a dumbbell)",
+  "bodyPart": "lower legs",
+  "equipment": "dumbbell",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "Standing on one leg, you rise up onto your toes with the ball of your foot on a dumbbell. Works the calves with extra range.",
+  "instructions": [
+    "Stand with your feet hip-width apart and hold a dumbbell in one hand.",
+    "Lift one foot off the ground and balance on the other foot.",
+    "Slowly raise your heel as high as possible, using your calf muscles.",
+    "Pause for a moment at the top, then slowly lower your heel back down.",
+    "Repeat for the desired number of repetitions, then switch to the other leg."
+  ],
+  "textSource": "exercisedb"
+}

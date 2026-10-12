@@ -1,0 +1,22 @@
+{
+  "id": "8399",
+  "name": "side floor tap plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "calisthenics",
+  "description": "A plank where you tap a hand to the floor at the side, challenging the obliques and anti-rotation control.",
+  "instructions": [
+    "Start in a high plank with hands under shoulders and feet wide.",
+    "Keep your body in a straight line.",
+    "Reach one hand out to tap the floor at the side without twisting your hips.",
+    "Return it and tap with the other hand.",
+    "Keep the pace steady and controlled."
+  ],
+  "textSource": "opengym"
+}

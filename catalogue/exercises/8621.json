@@ -1,0 +1,20 @@
+{
+  "id": "8621",
+  "name": "seated pec dec on a chair",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A seated pec dec motion without a machine, squeezing the chest by bringing the forearms together.",
+  "instructions": [
+    "Sit tall near the front of a sturdy chair with your feet flat on the floor.",
+    "Brace your core and keep your shoulders relaxed.",
+    "Raise your forearms in front of you with elbows bent at shoulder height.",
+    "Squeeze your forearms together.",
+    "Open them back to the sides under control."
+  ],
+  "textSource": "opengym"
+}

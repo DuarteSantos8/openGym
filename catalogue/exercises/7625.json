@@ -1,0 +1,22 @@
+{
+  "id": "7625",
+  "name": "dumbbell bent over curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A biceps curl performed while hinged forward at the hips. The position removes swing and keeps tension on the biceps.",
+  "instructions": [
+    "Hold a dumbbell in each hand and hinge forward with a flat back.",
+    "Let your arms hang straight down.",
+    "Curl the weights up toward your shoulders, elbows fixed.",
+    "Squeeze at the top.",
+    "Lower slowly until your arms are straight."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "3037",
+  "name": "butt kicks",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "quadriceps",
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "cardio",
+  "description": "A running drill where your heels flick up toward your glutes. It warms up the hamstrings and raises your heart rate.",
+  "instructions": [
+    "Stand tall with your arms bent at your sides.",
+    "Jog on the spot or move forward slowly.",
+    "Kick each heel up toward your glute.",
+    "Stay on the balls of your feet and keep your knees pointing down.",
+    "Pump your arms in rhythm.",
+    "Continue for 20-40 seconds."
+  ],
+  "femaleVariant": "0146",
+  "textSource": "opengym"
+}

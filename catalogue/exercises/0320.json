@@ -1,0 +1,23 @@
+{
+  "id": "0320",
+  "name": "dumbbell incline hammer curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A hammer curl performed sitting back on an incline bench. The neutral grip works the brachialis and biceps.",
+  "instructions": [
+    "Sit on an incline bench with a dumbbell in each hand, palms facing your torso and arms fully extended.",
+    "Keep your back against the bench and your feet flat on the floor.",
+    "While keeping your upper arms stationary, exhale and curl the weights while contracting your biceps.",
+    "Continue to raise the weights until your biceps are fully contracted and the dumbbells are at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale and slowly begin to lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2494",
+  "textSource": "exercisedb"
+}

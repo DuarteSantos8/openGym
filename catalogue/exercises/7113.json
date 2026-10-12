@@ -1,0 +1,24 @@
+{
+  "id": "7113",
+  "name": "dumbbell straight arm pullover v. 2",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "lats",
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A pullover variation with straight arms that stretches and works the chest and lats through a long arc.",
+  "instructions": [
+    "Lie on a bench holding one dumbbell above your chest with straight arms.",
+    "Keep a slight softness in your elbows and brace your core.",
+    "Lower the weight in an arc back over your head until you feel a stretch.",
+    "Keep your ribs down and your hips on the bench.",
+    "Pull the dumbbell back over your chest.",
+    "Repeat with a smooth tempo."
+  ],
+  "textSource": "opengym"
+}

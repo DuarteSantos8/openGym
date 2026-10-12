@@ -1,0 +1,22 @@
+{
+  "id": "10930",
+  "name": "standing external rotation slide with towel",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids",
+    "shoulders"
+  ],
+  "category": "rehab",
+  "description": "A towel slide that rotates the shoulder outward. It strengthens the back of the shoulder.",
+  "instructions": [
+    "Stand side-on to a wall with a towel under your forearm.",
+    "Keep your elbow at 90 degrees, tucked at your side.",
+    "Slide your hand outward along the wall.",
+    "Return slowly.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

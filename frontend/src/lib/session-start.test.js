@@ -86,6 +86,16 @@ describe('buildSessionEntries', () => {
     expect(entry.sets.map(s => [isWarmupRow(s) ? 'warm' : 'work', s.r])).toEqual([['warm', 10], ['work', 10], ['work', 10]])
   })
 
+  it('re-ramps a progressed barbell lift\'s warm-up from the bar, not from half the weight', () => {
+    const lb = { unit: 'lb', exWeights: {}, routines: [], workouts: [{ d: '2026-01-01', routineIds: ['r'], entries: [{ id: '0025', target: { sets: 2, reps: 10, weight: 50 }, sets: [10, 10].map(r => ({ w: 50, r, done: true })) }] }] }
+    const cfg = { id: '0025', sets: 2, reps: 10, weight: 50, prog: 'linear', warmupSets: 1 }
+    const [entry] = buildSessionEntries(lb, { id: 'r', prog: 'linear', ex: [cfg] })
+    expect(entry.plan.weight).toBe(55)
+    expect(entry.sets.map(s => s.w)).toEqual([45, 55, 55])
+    const [noBar] = buildSessionEntries({ ...lb, barWeights: { '0025': 0 } }, { id: 'r', prog: 'linear', ex: [cfg] })
+    expect(noBar.sets.map(s => s.w)).toEqual([25, 55, 55])
+  })
+
   it('splits the plan\'s reps evenly per side', () => {
     const cfg = { id: '0025', sets: 1, reps: 16, weight: 20, side: true, prog: 'linear' }
     const side = (w, r) => ({ w, r, done: true })

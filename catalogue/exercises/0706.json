@@ -1,0 +1,24 @@
+{
+  "id": "0706",
+  "name": "side bridge",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A side plank held on one forearm. It strengthens the sides of your trunk.",
+  "instructions": [
+    "Lie on your side with legs stacked.",
+    "Place your elbow under your shoulder.",
+    "Lift your hips until you form a straight line.",
+    "Brace your abs.",
+    "Hold for 20-30 seconds.",
+    "Lower and switch sides."
+  ],
+  "textSource": "opengym"
+}

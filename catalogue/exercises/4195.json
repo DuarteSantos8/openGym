@@ -1,0 +1,23 @@
+{
+  "id": "4195",
+  "name": "resistance band half kneeling face pull",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A face pull in a half kneeling stance with a band.",
+  "instructions": [
+    "Anchor the band at face height.",
+    "Kneel on one knee.",
+    "Pull the handles toward your face.",
+    "Flare your elbows.",
+    "Return slowly.",
+    "Keep your chest up."
+  ],
+  "textSource": "opengym"
+}

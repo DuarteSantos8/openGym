@@ -1,0 +1,21 @@
+{
+  "id": "2414",
+  "name": "barbell standing concentration curl",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm barbell curl while standing, with the other hand resting on your thigh. Isolates the biceps.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a barbell in one hand, palm facing up.",
+    "Rest your opposite hand on your thigh for support.",
+    "Keeping your upper arm stationary, exhale and curl the weight up towards your shoulder.",
+    "Pause for a moment at the top, squeezing your biceps.",
+    "Inhale and slowly lower the weight back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

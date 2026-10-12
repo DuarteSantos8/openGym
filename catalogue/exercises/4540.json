@@ -1,0 +1,24 @@
+{
+  "id": "4540",
+  "name": "dumbbell one arm thruster",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A squat into an overhead press with a single dumbbell, training the legs and shoulders together.",
+  "instructions": [
+    "Hold a dumbbell at your shoulder with one hand and stand with feet shoulder-width apart.",
+    "Squat down with your chest tall and knees tracking over your toes.",
+    "Drive up through your heels.",
+    "Use that momentum to press the dumbbell overhead until your arm is straight.",
+    "Lower it back to your shoulder as you sink into the next squat.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

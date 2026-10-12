@@ -1,0 +1,24 @@
+{
+  "id": "6092",
+  "name": "spider plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "shoulders",
+    "triceps"
+  ],
+  "category": "calisthenics",
+  "description": "A plank with alternating knee drives to the elbow, building core strength.",
+  "instructions": [
+    "Start in a high or forearm plank.",
+    "Keep your body in a straight line.",
+    "Bring one knee toward the same elbow.",
+    "Return to plank.",
+    "Alternate sides without letting your hips sag."
+  ],
+  "femaleVariant": "3953",
+  "textSource": "opengym"
+}

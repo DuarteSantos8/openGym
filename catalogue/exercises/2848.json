@@ -1,0 +1,22 @@
+{
+  "id": "2848",
+  "name": "leg pull side",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "pilates",
+  "description": "A side-plank style Pilates move where one leg lifts, challenging the obliques and shoulders.",
+  "instructions": [
+    "Start in a side plank on one hand.",
+    "Keep your body in a straight line.",
+    "Lift your top leg.",
+    "Hold briefly.",
+    "Lower and switch sides."
+  ],
+  "textSource": "opengym"
+}

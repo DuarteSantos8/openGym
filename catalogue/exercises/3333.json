@@ -1,0 +1,23 @@
+{
+  "id": "3333",
+  "name": "dumbbell one arm wide grip bench press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one arm dumbbell bench press with a wide elbow path, stressing the chest while your core resists rotation.",
+  "instructions": [
+    "Lie on a bench with one dumbbell held over your chest.",
+    "Place your free arm on your stomach or out to the side.",
+    "Lower the dumbbell with elbow flared out until you feel a chest stretch.",
+    "Press it back up over your chest.",
+    "Keep your torso square, then switch arms after the set."
+  ],
+  "textSource": "opengym"
+}

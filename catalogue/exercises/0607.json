@@ -1,0 +1,31 @@
+{
+  "id": "0607",
+  "name": "lever triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "leverage machine",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Seated on a machine, you press the handles down by extending your elbows. Isolates the triceps.",
+  "instructions": [
+    "Adjust the seat height and position yourself on the machine with your back against the pad.",
+    "Grasp the handles with an overhand grip and fully extend your arms in front of you.",
+    "Keeping your upper arms stationary, slowly lower the handles towards your forehead by bending your elbows.",
+    "Pause for a moment at the bottom, then push the handles back up to the starting position by extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "triceps"
+    ],
+    "secondaries": [],
+    "weights": {
+      "triceps": 1,
+      "deltoids": 0
+    }
+  },
+  "femaleVariant": "3614",
+  "textSource": "exercisedb"
+}

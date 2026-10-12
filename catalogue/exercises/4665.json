@@ -1,0 +1,22 @@
+{
+  "id": "4665",
+  "name": "overhead clap",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "core",
+    "triceps"
+  ],
+  "category": "mobility",
+  "description": "Reaching your arms overhead and clapping to warm up the shoulders. It improves shoulder mobility and activation.",
+  "instructions": [
+    "Stand tall with your feet hip-width apart and arms at your sides.",
+    "Raise both arms out to the sides and overhead.",
+    "Clap your hands above your head.",
+    "Lower your arms back to your sides with control.",
+    "Keep your ribs down and move smoothly through your reps."
+  ],
+  "textSource": "opengym"
+}

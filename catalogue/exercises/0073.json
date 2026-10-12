@@ -1,0 +1,21 @@
+{
+  "id": "0073",
+  "name": "barbell pullover",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "chest",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "Lying on a bench, you lower the bar behind your head with straight arms and bring it back over the chest. Works the lats and chest.",
+  "instructions": [
+    "Lie flat on a bench with your head at one end and your feet on the floor.",
+    "Hold a barbell with a shoulder-width grip and extend your arms straight above your chest.",
+    "Keeping your arms straight, lower the barbell behind your head in a controlled manner until you feel a stretch in your lats.",
+    "Pause for a moment, then raise the barbell back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

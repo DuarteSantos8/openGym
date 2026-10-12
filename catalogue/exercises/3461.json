@@ -1,0 +1,23 @@
+{
+  "id": "3461",
+  "name": "warming up in lunge (one)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "hip flexors"
+  ],
+  "category": "mobility",
+  "description": "A dynamic lunge warm-up drill (part 1 of 7) that opens the hips and prepares your legs.",
+  "instructions": [
+    "Stand tall with your feet hip-width apart and your core braced.",
+    "Step into the lunge position described by this variation with control.",
+    "Keep your front knee over your ankle and your torso upright.",
+    "Move smoothly through the full range without bouncing.",
+    "Return to standing and repeat on the other side.",
+    "Do 8-10 slow reps per side as part of a warm-up."
+  ],
+  "textSource": "opengym"
+}

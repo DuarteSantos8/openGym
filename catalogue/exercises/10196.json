@@ -1,0 +1,23 @@
+{
+  "id": "10196",
+  "name": "dumbbell shoulders complex",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "trapezius",
+    "upper back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A chained set of dumbbell shoulder moves done without rest, building shoulder strength and endurance.",
+  "instructions": [
+    "Stand with a light dumbbell in each hand at your sides.",
+    "Do a set of lateral raises, then straight into front raises.",
+    "Move into a set of overhead presses without putting the weights down.",
+    "Lower the dumbbells under control and rest.",
+    "Keep the weights light and your torso still throughout."
+  ],
+  "textSource": "opengym"
+}

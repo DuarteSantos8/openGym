@@ -1,0 +1,22 @@
+{
+  "id": "2417",
+  "name": "resistance band duck walk",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A low squat walk with a band around the legs that fires up the glutes and hips.",
+  "instructions": [
+    "Place a loop band around your thighs or knees.",
+    "Lower into a half squat with your chest up.",
+    "Step sideways or forward with a wide stride.",
+    "Keep tension on the band and your knees out.",
+    "Bring your other foot in, staying low.",
+    "Walk for the planned distance, then return."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "2307",
+  "name": "side kick",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "core"
+  ],
+  "category": "combat",
+  "description": "A kick that thrusts the heel out to the side, using hip strength and balance.",
+  "instructions": [
+    "Stand sideways in a fighting stance with your hands up.",
+    "Lift your knee toward your chest.",
+    "Extend the leg sideways and push the heel to the target.",
+    "Keep your supporting foot turned slightly away.",
+    "Pull the leg back and set it down.",
+    "Repeat, then switch legs."
+  ],
+  "femaleVariant": "2865",
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "0209",
+  "name": "cable reverse preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A preacher curl on a cable with an overhand grip. It targets the brachialis and forearms while the pad keeps you strict.",
+  "instructions": [
+    "Adjust the cable machine so that the preacher curl pad is at chest height.",
+    "Sit on the preacher curl bench and place your upper arms on the pad, with your palms facing down and your elbows fully extended.",
+    "Grab the cable handles with an underhand grip, shoulder-width apart.",
+    "Keeping your upper arms stationary, exhale and curl the handles towards your shoulders, contracting your biceps.",
+    "Pause for a moment at the top of the movement, squeezing your biceps.",
+    "Inhale and slowly lower the handles back to the starting position, fully extending your elbows.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

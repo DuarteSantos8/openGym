@@ -1,0 +1,23 @@
+{
+  "id": "3664",
+  "name": "dumbbell side plank with rear fly",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A dumbbell side plank with a reverse fly. It trains the rear delts, upper back and obliques.",
+  "instructions": [
+    "Start by lying on your side with your legs extended and stacked on top of each other.",
+    "Place your forearm on the ground directly below your shoulder, keeping your elbow bent at a 90-degree angle.",
+    "Hold a dumbbell in your top hand, with your arm extended straight down towards the ground.",
+    "Engage your core and lift your hips off the ground, creating a straight line from your head to your heels.",
+    "While maintaining the side plank position, lift the dumbbell up towards the ceiling, squeezing your shoulder blades together.",
+    "Lower the dumbbell back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "textSource": "exercisedb"
+}

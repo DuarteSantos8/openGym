@@ -1,0 +1,23 @@
+{
+  "id": "2269",
+  "name": "ab roller crunch",
+  "bodyPart": "waist",
+  "equipment": "wheel roller",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A crunch done with an ab wheel that works the abdominal wall through a compact range.",
+  "instructions": [
+    "Kneel on a mat and hold the ab wheel with both hands in front of your knees.",
+    "Round your lower back slightly and brace your abs.",
+    "Roll forward a short distance while keeping your hips stable.",
+    "Pull the wheel back toward your knees by curling your ribs toward your hips.",
+    "Exhale as you crunch and avoid arching your back.",
+    "Repeat with smooth control."
+  ],
+  "textSource": "opengym"
+}

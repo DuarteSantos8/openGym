@@ -1,0 +1,23 @@
+{
+  "id": "6141",
+  "name": "dumbbell standing driver",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A standing dumbbell press that uses a drive from the legs and trunk. It builds shoulder strength and power.",
+  "instructions": [
+    "Stand holding a dumbbell at your shoulder.",
+    "Bend your knees slightly.",
+    "Drive up through your legs and press the dumbbell overhead.",
+    "Lock out without leaning back.",
+    "Lower the weight to your shoulder.",
+    "Switch arms after your set."
+  ],
+  "textSource": "opengym"
+}

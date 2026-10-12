@@ -1,0 +1,21 @@
+{
+  "id": "1302",
+  "name": "medicine ball chest pass",
+  "bodyPart": "chest",
+  "equipment": "medicine ball",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "plyometrics",
+  "description": "Throw a medicine ball forward from your chest with a quick push, then catch it and repeat. It builds explosive pushing power in the chest and arms.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding the medicine ball at chest level.",
+    "Extend your arms forward, pushing the medicine ball away from your chest with force.",
+    "As you release the ball, follow through with your arms and torso, transferring your weight from your back foot to your front foot.",
+    "Catch the ball as it rebounds off the wall or partner, and immediately repeat the movement.",
+    "Continue for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

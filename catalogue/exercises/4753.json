@@ -1,0 +1,24 @@
+{
+  "id": "4753",
+  "name": "dumbbell side lunge with shoulder press",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A side lunge paired with an overhead press. It trains the legs and shoulders together.",
+  "instructions": [
+    "Stand holding dumbbells at your shoulders.",
+    "Step out wide to one side and sit your hips back into a side lunge.",
+    "Keep the other leg straight and your chest up.",
+    "Push back to the middle and press the dumbbells overhead.",
+    "Lower to your shoulders and lunge to the other side."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1180",
+  "name": "lying simultaneous alternating straight leg raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "calisthenics",
+  "description": "A floor core move where both legs work together in an alternating pattern, challenging the lower abs and hip flexors.",
+  "instructions": [
+    "Lie on your back with your legs straight and your hands under your hips or at your sides.",
+    "Press your lower back into the floor and brace your abs.",
+    "Raise one leg while the other lowers toward the floor, keeping both straight.",
+    "Switch legs in a smooth scissor pattern without letting your back arch.",
+    "Continue for the planned reps or time."
+  ],
+  "textSource": "opengym"
+}

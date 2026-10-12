@@ -1,0 +1,23 @@
+{
+  "id": "4189",
+  "name": "ez bar kneeling rollout",
+  "bodyPart": "waist",
+  "equipment": "ez barbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "lats",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Roll the EZ bar forward from a kneeling position and back. It strongly challenges the core.",
+  "instructions": [
+    "Kneel holding the EZ bar on the floor.",
+    "Brace your core.",
+    "Roll forward with a flat back.",
+    "Stop before your back sags.",
+    "Pull the bar back to the start.",
+    "Keep your hips in line."
+  ],
+  "textSource": "opengym"
+}

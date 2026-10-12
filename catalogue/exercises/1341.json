@@ -1,0 +1,22 @@
+{
+  "id": "1341",
+  "name": "exercise ball lower back stretch (pyramid)",
+  "bodyPart": "back",
+  "equipment": "stability ball",
+  "target": "lats",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "Lie back over a stability ball to open up and stretch the lower back. It is a gentle, supported way to ease tightness.",
+  "instructions": [
+    "Sit on the stability ball with your feet flat on the ground and your knees bent at a 90-degree angle.",
+    "Slowly walk your feet forward, rolling the ball down your back until your lower back is resting on the ball.",
+    "Place your hands behind your head or cross them over your chest.",
+    "Engage your core and slowly lower your upper body towards the ground, allowing your lower back to stretch over the ball.",
+    "Hold the stretch for a few seconds, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

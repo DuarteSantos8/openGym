@@ -1,0 +1,23 @@
+{
+  "id": "0182",
+  "name": "cable lying close-grip curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Biceps curl performed lying on a bench with a close grip on a low-pulley bar. Lying down keeps the tension on the biceps through the whole curl.",
+  "instructions": [
+    "Attach a straight bar to a low pulley cable machine.",
+    "Lie face up on a flat bench with your feet flat on the ground.",
+    "Grasp the bar with an underhand grip, hands shoulder-width apart.",
+    "Extend your arms fully, keeping your elbows close to your sides.",
+    "Keeping your upper arms stationary, curl the bar towards your chest by contracting your biceps.",
+    "Pause for a moment at the top, squeezing your biceps.",
+    "Slowly lower the bar back to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

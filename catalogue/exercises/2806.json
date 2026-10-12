@@ -1,0 +1,24 @@
+{
+  "id": "2806",
+  "name": "dumbbell single leg deadlift with stepbox support v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A one leg deadlift with the rear foot resting on a step box for balance. Works hamstrings and glutes with less wobble.",
+  "instructions": [
+    "Hold a dumbbell and rest the toes of one foot on a step box behind you.",
+    "Soften the front knee and hinge at the hips, lowering the dumbbell along your leg.",
+    "Keep your back flat and go as far as your hamstring allows.",
+    "Drive your hips forward to stand tall.",
+    "Complete all reps, then switch legs."
+  ],
+  "textSource": "opengym",
+  "femaleVariant": "2805"
+}

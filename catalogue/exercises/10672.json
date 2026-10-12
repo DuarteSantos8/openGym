@@ -1,0 +1,23 @@
+{
+  "id": "10672",
+  "name": "lever stack seated single arm chest press",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-arm seated press on a lever machine. It builds the chest on each side and trains the core to resist twisting.",
+  "instructions": [
+    "Sit with your back against the pad and grip one handle.",
+    "Brace your core and keep your torso square.",
+    "Press the handle forward in a smooth line.",
+    "Pause, then lower slowly.",
+    "Keep your shoulder down.",
+    "Do the reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

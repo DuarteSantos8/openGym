@@ -1,0 +1,23 @@
+{
+  "id": "0503",
+  "name": "jack knife on ball",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "From a plank with shins on a ball, you pike your hips up high. It hits the abs and challenges balance and shoulder stability.",
+  "instructions": [
+    "Get into a push-up position with your shins or feet resting on a stability ball.",
+    "Keep your hands under your shoulders and your body in a straight line.",
+    "Roll the ball toward your hands as you lift your hips toward the ceiling.",
+    "Keep your legs fairly straight and pull with your abs.",
+    "Pause briefly at the top.",
+    "Roll the ball back out to the plank without sagging your lower back."
+  ],
+  "textSource": "opengym"
+}

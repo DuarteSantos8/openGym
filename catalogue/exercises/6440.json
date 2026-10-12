@@ -1,0 +1,22 @@
+{
+  "id": "6440",
+  "name": "resistance band standing single arm lateral shoulder extension",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A one-arm band move that pulls the arm out and back to the side. It works the shoulder and the muscles behind it.",
+  "instructions": [
+    "Anchor the band at about waist height and stand sideways to it.",
+    "Hold the handle with the far hand, arm across your body.",
+    "Keep your chest tall and core braced.",
+    "Sweep the arm out and slightly back to the side with a soft elbow.",
+    "Return slowly to the start without letting the band snap.",
+    "Complete all reps, then turn around and switch arms."
+  ],
+  "textSource": "opengym"
+}

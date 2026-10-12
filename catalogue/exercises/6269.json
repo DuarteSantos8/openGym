@@ -1,0 +1,23 @@
+{
+  "id": "6269",
+  "name": "cable standing wrist roll",
+  "bodyPart": "lower arms",
+  "equipment": "cable",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "wrist extensors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A standing wrist roll with a cable handle. It builds forearm strength.",
+  "instructions": [
+    "Stand facing the cable machine.",
+    "Hold the handle with straight arms.",
+    "Roll your wrists up.",
+    "Roll them back down.",
+    "Repeat smoothly.",
+    "Keep your arms still."
+  ],
+  "textSource": "opengym"
+}

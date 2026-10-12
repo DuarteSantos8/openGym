@@ -1,0 +1,20 @@
+{
+  "id": "1018",
+  "name": "band shrug",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "traps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A shrug with a band, lifting the shoulders toward the ears. It trains the traps.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and place the band under your feet, holding the ends with your hands.",
+    "Keep your arms straight and relaxed, and let the band hang in front of your thighs.",
+    "Engage your traps by shrugging your shoulders upward, lifting the band as high as possible.",
+    "Hold the contraction for a moment, then slowly lower your shoulders back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

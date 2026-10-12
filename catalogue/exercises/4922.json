@@ -1,0 +1,23 @@
+{
+  "id": "4922",
+  "name": "ring chest fly",
+  "bodyPart": "chest",
+  "equipment": "suspension trainer",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "biceps"
+  ],
+  "category": "calisthenics",
+  "description": "A fly in the rings from a push up position. It stretches and works the chest with a lot of core control.",
+  "instructions": [
+    "Set the rings low and hold them in a plank position.",
+    "Keep your arms nearly straight with a small bend in the elbows.",
+    "Open your arms out to the sides, lowering your chest.",
+    "Pull the rings back together with your chest.",
+    "Keep your body in a straight line.",
+    "Go only as wide as you can control."
+  ],
+  "textSource": "opengym"
+}

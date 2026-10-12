@@ -1,0 +1,22 @@
+{
+  "id": "4524",
+  "name": "kettlebell side squat step",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Stepping sideways into a squat while holding a kettlebell at your chest. It works the thighs and hips.",
+  "instructions": [
+    "Hold a kettlebell at your chest with both hands.",
+    "Step out to the side and sit back into a squat.",
+    "Keep your chest up and knees tracking over your toes.",
+    "Push through your heels and bring your feet together.",
+    "Alternate directions or complete all steps on one side before switching."
+  ],
+  "textSource": "opengym"
+}

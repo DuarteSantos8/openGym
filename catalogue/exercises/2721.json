@@ -1,0 +1,23 @@
+{
+  "id": "2721",
+  "name": "strongman loading",
+  "bodyPart": "full body",
+  "equipment": "weight plate",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Lifting heavy objects onto a platform in sequence, building full-body strength.",
+  "instructions": [
+    "Stand over the first object with feet shoulder width apart.",
+    "Hinge at the hips and grip it with a flat back.",
+    "Lift it by driving through the hips.",
+    "Carry it to the platform and load it.",
+    "Return, repeat with the next object, and keep your core braced."
+  ],
+  "textSource": "opengym"
+}

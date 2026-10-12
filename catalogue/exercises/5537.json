@@ -1,0 +1,23 @@
+{
+  "id": "5537",
+  "name": "high knee tap",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core",
+    "quadriceps"
+  ],
+  "category": "cardio",
+  "description": "Fast knee-drive drill where you tap your knees to your hands, great for warming up and raising the heart rate.",
+  "instructions": [
+    "Stand tall with hands out in front at waist height.",
+    "Drive one knee up to tap your hand.",
+    "Lower it and switch quickly to the other knee.",
+    "Stay light on the balls of your feet.",
+    "Keep a fast, steady pace for time."
+  ],
+  "femaleVariant": "6095",
+  "textSource": "opengym"
+}

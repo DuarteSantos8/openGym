@@ -1,0 +1,25 @@
+{
+  "id": "10106",
+  "name": "barbell high pull",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "traps",
+  "secondaryMuscles": [
+    "shoulders",
+    "biceps",
+    "glutes",
+    "hamstrings",
+    "forearms"
+  ],
+  "category": "olympic",
+  "description": "An explosive pull taking the bar from the thighs to chest height. It builds power in the traps, hips and legs.",
+  "instructions": [
+    "Hold a barbell at mid-thigh with an overhand grip, hips hinged slightly.",
+    "Drive your hips forward and shrug hard.",
+    "Pull the bar up to chest height, elbows high.",
+    "Let the bar settle and lower it to the thighs.",
+    "Reset your stance.",
+    "Keep the bar close to your body."
+  ],
+  "textSource": "opengym"
+}

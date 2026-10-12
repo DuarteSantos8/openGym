@@ -1,0 +1,22 @@
+{
+  "id": "2921",
+  "name": "pike push up",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with hips lifted high so you press more overhead. It builds shoulder strength using only your body weight.",
+  "instructions": [
+    "Start in a push-up position, then walk your feet in and lift your hips into an inverted V.",
+    "Keep your arms and back straight.",
+    "Bend your elbows and lower the top of your head toward the floor.",
+    "Press back up until your arms are straight.",
+    "Keep your core tight throughout."
+  ],
+  "textSource": "opengym"
+}

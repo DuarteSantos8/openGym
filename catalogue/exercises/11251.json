@@ -1,0 +1,22 @@
+{
+  "id": "11251",
+  "name": "cable kneeling woodchop v. 3",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A kneeling cable chop that works your obliques and core with a diagonal pull.",
+  "instructions": [
+    "Set the cable high, kneel side-on to it and hold the handle with both hands.",
+    "Keep your hips square and your core tight.",
+    "Pull the handle diagonally across your body down toward the opposite hip.",
+    "Rotate through your torso, not your arms.",
+    "Return slowly, finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "1644",
+  "name": "cable squatting curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A curl you perform in a squat position with a cable. The legs hold you low while the biceps curl.",
+  "instructions": [
+    "Attach a cable handle to the lowest setting on a cable machine.",
+    "Stand facing the machine with your feet shoulder-width apart.",
+    "Hold the cable handle with an underhand grip, palms facing up, and arms fully extended.",
+    "Lower your body into a squat position, keeping your back straight and knees behind your toes.",
+    "As you squat down, curl the cable handle towards your shoulders, keeping your elbows close to your sides.",
+    "Pause for a moment at the top of the curl, squeezing your biceps.",
+    "Slowly lower the cable handle back to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3067",
+  "textSource": "exercisedb"
+}

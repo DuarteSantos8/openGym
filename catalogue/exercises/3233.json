@@ -1,0 +1,25 @@
+{
+  "id": "3233",
+  "name": "cable seated supine grip row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "upper back",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated cable row with an underhand grip that brings the biceps and lats into play.",
+  "instructions": [
+    "Sit at a cable row with your feet braced.",
+    "Grip the handle with your palms facing up.",
+    "Sit tall with your chest up.",
+    "Pull the handle toward your lower ribs.",
+    "Squeeze your shoulder blades.",
+    "Return slowly without rounding your back."
+  ],
+  "femaleVariant": "0217",
+  "textSource": "opengym"
+}

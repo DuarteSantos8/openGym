@@ -1,0 +1,20 @@
+{
+  "id": "1397",
+  "name": "standing calves",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A standing calf raise where you lift your heels as high as you can. It builds the calf muscles.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, toes pointing forward.",
+    "Raise your heels off the ground as high as possible, standing on your toes.",
+    "Hold the position for a moment, then slowly lower your heels back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

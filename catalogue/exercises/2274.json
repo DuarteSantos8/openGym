@@ -1,0 +1,23 @@
+{
+  "id": "2274",
+  "name": "boxing right uppercut",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "biceps",
+    "core",
+    "chest"
+  ],
+  "category": "combat",
+  "description": "A rising punch with the right hand aimed upward, using leg drive and a hip turn.",
+  "instructions": [
+    "Stand in a boxing stance with hands up.",
+    "Bend your knees slightly and dip your right side.",
+    "Drive up through your legs as you rotate your hips.",
+    "Throw your right fist upward with the palm facing you.",
+    "Keep your left hand guarding your chin.",
+    "Return to stance and repeat."
+  ],
+  "textSource": "opengym"
+}

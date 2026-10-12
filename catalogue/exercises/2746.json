@@ -1,0 +1,22 @@
+{
+  "id": "2746",
+  "name": "lever abduction squat",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A machine squat that adds an outward leg push to work the outer hips and glutes.",
+  "instructions": [
+    "Set the machine and step in with the pads on your shoulders.",
+    "Squat down with control, keeping your chest up.",
+    "Drive up through your feet.",
+    "Push your knees slightly outward as you rise.",
+    "Keep your core braced."
+  ],
+  "textSource": "opengym"
+}

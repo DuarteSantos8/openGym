@@ -1,0 +1,39 @@
+{
+  "id": "1434",
+  "name": "smith low bar squat",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A low bar squat on the smith machine, with the bar sitting lower on the back. It builds the glutes, quads and hamstrings along a fixed bar path.",
+  "instructions": [
+    "Set up the smith machine with the barbell at a height that allows you to comfortably rest it on your upper back.",
+    "Stand with your feet shoulder-width apart, toes slightly turned outwards.",
+    "Step under the bar and position it across your upper back, resting it on your traps.",
+    "Grip the bar with your hands slightly wider than shoulder-width apart.",
+    "Unrack the bar by straightening your legs and stepping back from the rack.",
+    "Take a deep breath and brace your core.",
+    "Initiate the squat by pushing your hips back and bending your knees.",
+    "Lower your body until your thighs are parallel to the ground or slightly below.",
+    "Keep your chest up and your back straight throughout the movement.",
+    "Drive through your heels to stand back up, extending your hips and knees.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves"
+    ]
+  },
+  "textSource": "exercisedb"
+}

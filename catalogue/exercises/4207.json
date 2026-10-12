@@ -1,0 +1,23 @@
+{
+  "id": "4207",
+  "name": "chin up around the bar",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A chin-up variation where you pull your body around the bar rather than straight over it. It challenges lats, biceps and grip.",
+  "instructions": [
+    "Grab the bar with an underhand grip and hang with straight arms.",
+    "Brace your core and pull your elbows down.",
+    "Pull your chest toward the bar, sweeping your head around one side.",
+    "Pause briefly at the top.",
+    "Lower with control back to a full hang.",
+    "Alternate the side you pass on each rep."
+  ],
+  "textSource": "opengym"
+}

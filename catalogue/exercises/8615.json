@@ -1,0 +1,21 @@
+{
+  "id": "8615",
+  "name": "seated alternate dynamic chest stretch on a chair",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "A seated dynamic stretch that opens the chest by alternating arms.",
+  "instructions": [
+    "Sit tall near the front of a sturdy chair with your feet flat on the floor.",
+    "Brace your core and keep your shoulders relaxed.",
+    "Open one arm out to the side and rotate the trunk slightly.",
+    "Feel the stretch across your chest.",
+    "Return and switch arms in a smooth rhythm."
+  ],
+  "textSource": "opengym"
+}

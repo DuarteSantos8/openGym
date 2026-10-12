@@ -1,0 +1,24 @@
+{
+  "id": "1080",
+  "name": "suspension inverted row",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight row hanging under straps. It builds the upper back and biceps.",
+  "instructions": [
+    "Hold the handles and lean back with arms extended and body straight.",
+    "Brace your abs and glutes.",
+    "Pull your chest toward your hands, driving elbows back.",
+    "Squeeze your shoulder blades together.",
+    "Lower with control to full arm extension.",
+    "Walk your feet forward to make it harder."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "0882",
+  "name": "dumbbell one leg squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A single-leg squat holding a dumbbell. It builds leg strength and balance.",
+  "instructions": [
+    "Hold a dumbbell at your chest or by your side.",
+    "Stand on one leg with the other lifted in front.",
+    "Sit your hips back and lower under control.",
+    "Keep your knee in line with your toes.",
+    "Press up to stand, then switch legs."
+  ],
+  "textSource": "opengym"
+}

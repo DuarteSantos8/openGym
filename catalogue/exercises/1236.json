@@ -1,0 +1,22 @@
+{
+  "id": "1236",
+  "name": "dumbbell one arm row (rack support)",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A one-arm row with your free hand braced on a rack for support. It lets you pull heavy while keeping your back steady.",
+  "instructions": [
+    "Place one hand on a rack or sturdy support and hinge forward with a flat back.",
+    "Hold a dumbbell in your other hand with your arm hanging.",
+    "Row the dumbbell toward your hip.",
+    "Squeeze your back at the top, then lower slowly.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

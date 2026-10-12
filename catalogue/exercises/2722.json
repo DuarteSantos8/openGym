@@ -1,0 +1,23 @@
+{
+  "id": "2722",
+  "name": "strongman hood stones",
+  "bodyPart": "full body",
+  "equipment": "weight plate",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Lifting a heavy stone to a platform, building power through the hips and back.",
+  "instructions": [
+    "Straddle the stone and squat down to hug it.",
+    "Lift it to your lap by driving the hips forward.",
+    "Roll the stone up your chest.",
+    "Extend your hips to land it on the platform.",
+    "Lower the stone under control and reset."
+  ],
+  "textSource": "opengym"
+}

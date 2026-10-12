@@ -1,0 +1,22 @@
+{
+  "id": "1174",
+  "name": "diamond push up (on knees)",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "An easier knee version of the diamond push-up that targets the triceps with hands close together.",
+  "instructions": [
+    "Kneel on the floor and place your hands under your chest, thumbs and fingers forming a diamond.",
+    "Keep your body straight from knees to head.",
+    "Lower your chest toward your hands, elbows close.",
+    "Press up until your arms are straight.",
+    "Keep your core tight throughout."
+  ],
+  "textSource": "opengym"
+}

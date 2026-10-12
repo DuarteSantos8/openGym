@@ -1,0 +1,23 @@
+{
+  "id": "5522",
+  "name": "ring pull up",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Pull-up on gymnastic rings, which move freely and demand extra stability from the back and arms.",
+  "instructions": [
+    "Grab the rings and hang with arms straight.",
+    "Brace your core and pull your shoulders down.",
+    "Pull until the rings reach your chest or chin passes them.",
+    "Turn your palms slightly in as you rise if comfortable.",
+    "Lower slowly to a full hang."
+  ],
+  "textSource": "opengym"
+}

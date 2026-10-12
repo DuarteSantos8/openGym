@@ -1,0 +1,24 @@
+{
+  "id": "4574",
+  "name": "dumbbell standing biceps curl to shoulder press",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "forearms",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A compound arm move that links a biceps curl into an overhead press.",
+  "instructions": [
+    "Stand holding dumbbells at your sides, palms forward.",
+    "Curl both dumbbells up to your shoulders.",
+    "Rotate your palms to face forward at the top of the curl.",
+    "Press the dumbbells overhead until your arms are straight.",
+    "Lower them back to your shoulders, then down to your sides.",
+    "Keep your core tight and avoid swinging."
+  ],
+  "textSource": "opengym"
+}

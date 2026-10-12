@@ -1,0 +1,23 @@
+{
+  "id": "4028",
+  "name": "resistance band squatting front warming up",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "quadriceps",
+    "glutes",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A warm-up from a low squat position, moving a band in front of you to loosen the shoulders and hips together.",
+  "instructions": [
+    "Hold the band in front of you and sink into a comfortable deep squat.",
+    "Keep your heels down and chest up.",
+    "Move your hands apart, stretching the band at shoulder height.",
+    "Bring your hands back together under control.",
+    "Repeat for 10 to 15 easy reps, then stand up."
+  ],
+  "textSource": "opengym"
+}

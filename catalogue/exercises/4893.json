@@ -1,0 +1,22 @@
+{
+  "id": "4893",
+  "name": "kneeling half triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A kneeling cable triceps extension done in a short range at the lockout. It isolates the triceps.",
+  "instructions": [
+    "Kneel facing the cable stack and hold the attachment with elbows bent.",
+    "Tuck your elbows close to your sides.",
+    "Press the handle down until your arms are straight.",
+    "Squeeze the triceps at the bottom.",
+    "Let the hands rise only halfway, keeping tension.",
+    "Keep your upper arms still throughout."
+  ],
+  "textSource": "opengym"
+}

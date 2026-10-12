@@ -1,0 +1,22 @@
+{
+  "id": "3996",
+  "name": "circles arm",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "Draw circles with straight arms to warm up the shoulders. It loosens the shoulder joints.",
+  "instructions": [
+    "Stand tall with arms out to the sides.",
+    "Make small circles forward.",
+    "Increase to larger circles.",
+    "Reverse the direction.",
+    "Keep your shoulders relaxed."
+  ],
+  "femaleVariant": "0254",
+  "textSource": "opengym"
+}

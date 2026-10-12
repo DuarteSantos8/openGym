@@ -1,0 +1,23 @@
+{
+  "id": "10551",
+  "name": "squat mobilization",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "adductors",
+    "hip flexors",
+    "calves",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "A deep squat hold with gentle movements. It opens up the hips and ankles.",
+  "instructions": [
+    "Stand with feet slightly wider than your shoulders.",
+    "Squat down as deep as is comfortable.",
+    "Press your elbows against your knees and keep your chest up.",
+    "Rock gently side to side.",
+    "Stay for 20-30 seconds, then stand."
+  ],
+  "textSource": "opengym"
+}

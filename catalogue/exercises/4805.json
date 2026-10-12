@@ -1,0 +1,23 @@
+{
+  "id": "4805",
+  "name": "wide air squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight squat with a wide stance and toes turned out. It puts extra work on the glutes and inner thighs.",
+  "instructions": [
+    "Stand with feet well wider than your shoulders and toes angled out.",
+    "Raise your arms in front for balance.",
+    "Sit your hips down and back, pushing your knees out over your toes.",
+    "Lower until your thighs are about parallel to the floor.",
+    "Drive through your heels to stand back up."
+  ],
+  "textSource": "opengym"
+}

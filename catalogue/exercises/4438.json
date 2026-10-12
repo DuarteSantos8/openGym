@@ -1,0 +1,24 @@
+{
+  "id": "4438",
+  "name": "jack step",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "calves",
+    "shoulders"
+  ],
+  "category": "cardio",
+  "description": "A low-impact version of the jumping jack where you step out instead of jumping.",
+  "instructions": [
+    "Stand with feet together and arms at your sides.",
+    "Step one foot out to the side while raising your arms overhead.",
+    "Step it back as you lower your arms.",
+    "Repeat on the other side.",
+    "Keep a steady pace for 30-60 seconds."
+  ],
+  "femaleVariant": "0506",
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "1959",
+  "name": "raised foot shin stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "A stretch with the foot raised on a support, easing the shin and top of the ankle.",
+  "instructions": [
+    "Stand next to a wall and lift one foot behind you onto a low support with the top of the foot down.",
+    "Keep your torso upright and your standing leg soft.",
+    "Press your hips forward gently until you feel the shin stretch.",
+    "Keep the movement slow and controlled.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "7469",
+  "name": "dumbbell goblet squat with calf raise",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Goblet squat finished with a calf raise as you stand.",
+  "instructions": [
+    "Hold a dumbbell at your chest.",
+    "Squat down with your chest up.",
+    "Drive up to standing.",
+    "Rise onto your toes at the top.",
+    "Lower your heels and go into the next squat."
+  ],
+  "textSource": "opengym"
+}

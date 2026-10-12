@@ -1,0 +1,24 @@
+{
+  "id": "2831",
+  "name": "pike push up (on bench)",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core",
+    "upper back"
+  ],
+  "category": "calisthenics",
+  "description": "A pike push up with your feet raised on a bench, shifting more load to the shoulders. A bodyweight alternative to the overhead press.",
+  "instructions": [
+    "Place your feet on a bench and your hands on the floor, hips raised in an inverted V.",
+    "Keep your legs straight and your core braced.",
+    "Bend your elbows and lower your head toward the floor.",
+    "Press back up until your arms are straight.",
+    "Keep your elbows at about 45 degrees to your body."
+  ],
+  "femaleVariant": "2832",
+  "textSource": "opengym"
+}

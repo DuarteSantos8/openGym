@@ -1,0 +1,22 @@
+{
+  "id": "0893",
+  "name": "band bent over rear lateral raise v. 3",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A bent-over raise to the sides with a band. It focuses on the rear delts.",
+  "instructions": [
+    "Stand on the band and hold the ends in each hand.",
+    "Hinge forward with a flat back.",
+    "Raise your arms out to the sides with slightly bent elbows.",
+    "Squeeze your shoulder blades at the top.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

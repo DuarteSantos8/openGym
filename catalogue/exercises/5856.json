@@ -1,0 +1,21 @@
+{
+  "id": "5856",
+  "name": "kettlebell concentration curl",
+  "bodyPart": "upper arms",
+  "equipment": "kettlebell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated one-arm curl with the elbow braced on your thigh. It isolates the biceps with a strict path.",
+  "instructions": [
+    "Sit with your legs apart and a kettlebell in one hand.",
+    "Rest your elbow against your inner thigh.",
+    "Curl the kettlebell up toward your shoulder.",
+    "Squeeze at the top.",
+    "Lower slowly and switch arms."
+  ],
+  "textSource": "opengym"
+}

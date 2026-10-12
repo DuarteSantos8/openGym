@@ -1,0 +1,22 @@
+{
+  "id": "4763",
+  "name": "glute ham developer sit up and russian twist",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "strength",
+  "description": "A sit-up on the glute ham developer ending with a twist. It trains the abs and the obliques.",
+  "instructions": [
+    "Lock your feet in the GHD and lie back with arms crossed or hands clasped.",
+    "Sit up in a controlled way.",
+    "At the top, rotate your torso to one side.",
+    "Return to the middle and lower back down.",
+    "Alternate the twist side each rep."
+  ],
+  "textSource": "opengym"
+}

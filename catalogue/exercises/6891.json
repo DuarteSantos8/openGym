@@ -1,0 +1,22 @@
+{
+  "id": "6891",
+  "name": "dumbbell alternate z press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A seated floor press that alternates arms, which adds anti-lean trunk work. It trains the shoulders and the core.",
+  "instructions": [
+    "Sit on the floor with legs extended, dumbbells at your shoulders.",
+    "Brace your core and sit tall.",
+    "Press one dumbbell overhead.",
+    "Lower it and press the other arm.",
+    "Keep alternating without tilting your torso."
+  ],
+  "textSource": "opengym"
+}

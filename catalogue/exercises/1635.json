@@ -1,0 +1,24 @@
+{
+  "id": "1635",
+  "name": "cable one arm reverse preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm reverse grip preacher curl on a cable. It works the brachialis and forearms along with the biceps.",
+  "instructions": [
+    "Adjust the cable machine so that the pulley is at the lowest position.",
+    "Stand facing the cable machine with your feet shoulder-width apart.",
+    "Grasp the cable handle with an underhand grip and position your upper arm against the preacher bench pad.",
+    "Keep your back straight and your core engaged throughout the exercise.",
+    "Slowly curl your forearm towards your bicep, keeping your upper arm stationary against the pad.",
+    "Pause for a moment at the top of the movement, squeezing your bicep.",
+    "Slowly lower the cable handle back to the starting position.",
+    "Repeat for the desired number of repetitions.",
+    "Switch arms and repeat the exercise."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1488",
+  "name": "shoulder stretch behind the back",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "triceps",
+    "upper chest"
+  ],
+  "category": "stretching",
+  "description": "A simple stretch that opens the front of the shoulders and chest by clasping the hands behind you.",
+  "instructions": [
+    "Stand tall and clasp your hands behind your back.",
+    "Straighten your arms and squeeze your shoulder blades together.",
+    "Lift your hands gently away from your body until you feel a stretch.",
+    "Keep your chest open and avoid arching your lower back.",
+    "Hold for 20-30 seconds, breathing steadily, then release slowly."
+  ],
+  "textSource": "opengym"
+}

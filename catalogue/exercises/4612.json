@@ -1,0 +1,22 @@
+{
+  "id": "4612",
+  "name": "bodyweight standing around the world (wall supported)",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "chest",
+    "rotator cuff"
+  ],
+  "category": "mobility",
+  "description": "A standing arm circle against a wall that mobilises the shoulders while keeping your back from compensating.",
+  "instructions": [
+    "Stand with your back flat against a wall, feet slightly forward.",
+    "Start with arms straight down at your sides, palms forward.",
+    "Sweep your arms out to the sides and overhead in a wide arc, staying close to the wall.",
+    "Lower them back down the same way.",
+    "Keep your ribs and head against the wall."
+  ],
+  "textSource": "opengym"
+}

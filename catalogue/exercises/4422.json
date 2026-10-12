@@ -1,0 +1,22 @@
+{
+  "id": "4422",
+  "name": "ez bar drag bicep curl",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A curl where the bar drags up your torso with elbows pulled back. It keeps tension on the biceps and reduces shoulder help.",
+  "instructions": [
+    "Stand holding an ez bar with an underhand grip at your thighs.",
+    "Keep the bar close to your body.",
+    "Curl it up while moving your elbows back behind you.",
+    "Let the bar slide up your torso to chest height.",
+    "Lower slowly under control."
+  ],
+  "textSource": "opengym"
+}

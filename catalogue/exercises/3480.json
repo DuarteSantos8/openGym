@@ -1,0 +1,23 @@
+{
+  "id": "3480",
+  "name": "alternate sprinter lunge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A lunge with a sprint-style arm drive and alternating legs.",
+  "instructions": [
+    "Stand tall.",
+    "Step back into a deep lunge.",
+    "Drive your arms like a sprinter.",
+    "Push back to standing.",
+    "Alternate legs.",
+    "Keep your torso upright."
+  ],
+  "textSource": "opengym"
+}

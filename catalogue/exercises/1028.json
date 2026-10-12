@@ -1,0 +1,21 @@
+{
+  "id": "1028",
+  "name": "assisted standing triceps dip",
+  "bodyPart": "upper arms",
+  "equipment": "assisted",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A dip with machine assistance that lets you build triceps strength while handling less of your bodyweight.",
+  "instructions": [
+    "Set the assistance and stand on the pad holding the handles.",
+    "Keep your elbows close and your chest up.",
+    "Lower your body by bending the elbows until they are at 90 degrees.",
+    "Press back up until your arms are straight.",
+    "Avoid shrugging your shoulders and move smoothly."
+  ],
+  "textSource": "opengym"
+}

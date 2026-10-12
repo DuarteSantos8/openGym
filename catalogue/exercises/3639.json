@@ -1,0 +1,23 @@
+{
+  "id": "3639",
+  "name": "bent knee lying twist (male)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "mobility",
+  "description": "A lying twist with the knees bent, lowering them to each side. It loosens the lower back and hips.",
+  "instructions": [
+    "Lie flat on your back with your knees bent and feet flat on the ground.",
+    "Extend your arms out to the sides, perpendicular to your body.",
+    "Keeping your knees together, slowly lower them to one side, aiming to touch the ground with your knees.",
+    "Pause for a moment, then engage your core and slowly lift your knees back to the starting position.",
+    "Repeat the movement to the other side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "femaleVariant": "0132",
+  "textSource": "exercisedb"
+}

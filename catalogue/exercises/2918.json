@@ -1,0 +1,24 @@
+{
+  "id": "2918",
+  "name": "barbell suitcase carry",
+  "bodyPart": "waist",
+  "equipment": "barbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "glutes",
+    "forearms",
+    "grip muscles",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "Carrying a barbell off to one side with a single-handed grip. It trains your trunk to resist leaning and builds grip.",
+  "instructions": [
+    "Stand with the barbell at your side and grip it near its center of balance.",
+    "Lift it while keeping your torso tall and level.",
+    "Walk with steady steps and resist tilting toward the weight.",
+    "Cover the set distance, then lower the bar carefully.",
+    "Switch hands and repeat."
+  ],
+  "textSource": "opengym"
+}

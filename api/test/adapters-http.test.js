@@ -15,7 +15,7 @@ const openai = (await import('../coach/core/adapters/openai.js')).default;
 const gemini = (await import('../coach/core/adapters/gemini.js')).default;
 const compatible = (await import('../coach/core/adapters/compatible.js')).default;
 const { attemptOnce } = await import('../coach/core/pipeline.js');
-const { HTTP_PROVIDERS, validateBaseUrl } = await import('../coach/core/providers.js');
+const { HTTP_PROVIDERS, validateBaseUrl, validateHeaders } = await import('../coach/core/providers.js');
 const { SYSTEM_PROMPT } = await import('../coach/core/system-prompt.js');
 
 /** A fetch that records what it was asked and answers from a script. Like the real one, it
@@ -105,6 +105,89 @@ test('compatible: the configured base URL, max_tokens, and no Authorization head
   const g = fakeFetch([ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
   await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env, model: 'llama3', fetch: g });
   assert.equal(g.calls[0].headers.authorization, 'Bearer compat-1');
+});
+
+test('compatible: a base that already names its API version is used as the full prefix (#437)', async () => {
+  const answer = ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] });
+  const at = baseUrl => ({ provider: 'compatible', providerOptions: { compatible: { baseUrl } } });
+  const cases = [
+    // Zhipu GLM serves Chat Completions only under v4; there is no /v1 alias.
+    ['https://open.bigmodel.cn/api/coding/paas/v4', 'https://open.bigmodel.cn/api/coding/paas/v4'],
+    // OpenRouter, Groq and most gateways document their base with /v1 on it.
+    ['https://openrouter.ai/api/v1', 'https://openrouter.ai/api/v1'],
+    // Gemini's OpenAI-compatible endpoint has its version mid-path.
+    ['https://generativelanguage.googleapis.com/v1beta/openai/', 'https://generativelanguage.googleapis.com/v1beta/openai'],
+    // A bare host keeps getting /v1, as before.
+    ['http://ollama.lan:11434', 'http://ollama.lan:11434/v1'],
+    // A version-looking word that is not a version segment is left alone.
+    ['http://gw.lan/v2ray', 'http://gw.lan/v2ray/v1']
+  ];
+  for (const [base, prefix] of cases) {
+    const f = fakeFetch([answer]);
+    await compatible.invoke({ cfg: at(base), prompt: 'P', env: {}, model: 'm', fetch: f });
+    assert.equal(f.calls[0].url, prefix + '/chat/completions', base);
+    const m = fakeFetch([ok({ data: [] })]);
+    await compatible.models(at(base), {}, { fetch: m });
+    assert.equal(m.calls[0].url, prefix + '/models', base);
+  }
+});
+
+test('compatible: a mount whose API has no version segment is reached on the 404 fallback and remembered (#508)', async () => {
+  // The issue's repro: an OpenAI-shaped mount (Open WebUI's /openai) that 404s anything with /v1.
+  const { createServer } = await import('node:http');
+  const hits = [];
+  const server = createServer((req, res) => {
+    const url = req.url.split('?')[0];
+    hits.push(req.method + ' ' + url);
+    const send = (status, o) => { res.writeHead(status, { 'content-type': 'application/json' }); res.end(JSON.stringify(o)); };
+    if (url === '/openai/models') return send(200, { object: 'list', data: [{ id: 'a-local-model', object: 'model' }] });
+    if (url === '/openai/chat/completions' && req.method === 'POST') {
+      req.resume();
+      return req.on('end', () => send(200, { object: 'chat.completion', choices: [{ index: 0, message: { role: 'assistant', content: ANSWER }, finish_reason: 'stop' }] }));
+    }
+    req.resume();
+    return send(404, { detail: 'Not Found' });
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  try {
+    const base = `http://127.0.0.1:${server.address().port}/openai`;
+    const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: validateBaseUrl(base).value } } };
+    const m = await compatible.models(cfg, env);
+    assert.deepEqual(m, { ok: true, models: ['a-local-model'] });
+    const r = await compatible.invoke({ cfg, env, model: 'a-local-model', prompt: 'ping', maxTokens: 64 });
+    assert.equal(r.code, 0, r.stderr);
+    assert.equal(r.text, ANSWER);
+    // The first call of all tried /v1, every later one went straight to the form that answered.
+    assert.deepEqual(hits, ['GET /openai/v1/models', 'GET /openai/models', 'POST /openai/chat/completions']);
+  } finally {
+    await new Promise(resolve => server.close(resolve));
+  }
+});
+
+test('compatible: the 404 fallback keeps the first error when neither form answers, and never touches other providers (#508)', async () => {
+  // Ollama answers an unknown model with a 404 of its own; that message must survive the retry.
+  const f = fakeFetch(n => (n === 1
+    ? { status: 404, body: { error: { message: 'model "nope" not found, try pulling it first' } } }
+    : { status: 404, body: '404 page not found' }));
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env: {}, model: 'nope', fetch: f });
+  assert.deepEqual(f.calls.map(c => c.url), ['http://ollama.lan:11434/v1/chat/completions', 'http://ollama.lan:11434/chat/completions']);
+  assert.equal(r.code, 1);
+  assert.match(r.stderr, /^404 model "nope" not found/);
+  // …and a failed fallback teaches nothing: the next request still starts at /v1.
+  const g = fakeFetch([ok({ data: [] })]);
+  await compatible.models(cfgCompat, {}, { fetch: g });
+  assert.equal(g.calls[0].url, 'http://ollama.lan:11434/v1/models');
+
+  // A base that carries its version has only one form, so a 404 there is final.
+  const v = fakeFetch([{ status: 404, body: { error: 'nope' } }]);
+  await compatible.invoke({ cfg: { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://openrouter.ai/api/v1' } } }, prompt: 'P', env: {}, model: 'm', fetch: v });
+  assert.equal(v.calls.length, 1);
+
+  // OpenAI itself always lives at /v1; a 404 there is a real answer, not a missing prefix.
+  const o = fakeFetch([{ status: 404, body: { error: { message: 'The model `x` does not exist' } } }]);
+  const ro = await openai.invoke({ cfg: {}, prompt: 'P', env, model: 'x', fetch: o });
+  assert.equal(o.calls.length, 1);
+  assert.match(ro.stderr, /^404 The model/);
 });
 
 test('compatible: no endpoint configured, or no model chosen, is a clean failure rather than a request', async () => {
@@ -304,4 +387,59 @@ test('models(): OpenAI’s list is cut to what Chat Completions can use; a compa
   const { default: compatible } = await import('../coach/core/adapters/compatible.js');
   const co = fakeFetch([ok({ data: [{ id: 'qwen2.5:3b' }, { id: 'llama3.2' }] })]);
   assert.deepEqual((await compatible.models({ providerOptions: { compatible: { baseUrl: 'http://ollama:11434' } } }, {}, { fetch: co })).models, ['llama3.2', 'qwen2.5:3b']);
+});
+
+test('invoke sends the configured maxTokens override, and the adapter default when none is given', async () => {
+  const { MAX_OUTPUT_TOKENS } = await import('../coach/core/adapters/http.js');
+
+  // No override: every caller that configures nothing (the phone, warmup) still gets the default.
+  const d = fakeFetch([ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
+  await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env: {}, model: 'm', fetch: d });
+  assert.equal(d.calls[0].body.max_tokens, MAX_OUTPUT_TOKENS);
+
+  // An override, on each wire shape that carries the ceiling.
+  const o = fakeFetch([ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
+  await openai.invoke({ cfg: {}, prompt: 'P', env, model: 'gpt-x', fetch: o, maxTokens: 48000 });
+  assert.equal(o.calls[0].body.max_completion_tokens, 48000);
+
+  const a = fakeFetch([ok({ content: [{ type: 'text', text: ANSWER }], stop_reason: 'end_turn' })]);
+  await anthropic.invoke({ cfg: {}, prompt: 'P', env, fetch: a, maxTokens: 48000 });
+  assert.equal(a.calls[0].body.max_tokens, 48000);
+
+  const g = fakeFetch([ok({ candidates: [{ content: { parts: [{ text: ANSWER }] }, finishReason: 'STOP' }] })]);
+  await gemini.invoke({ cfg: {}, prompt: 'P', env, model: 'gemini-z', fetch: g, maxTokens: 48000 });
+  assert.equal(g.calls[0].body.generationConfig.maxOutputTokens, 48000);
+});
+
+test('compatible: configured extra headers ride on models, check and jobs — auth framing always wins', async () => {
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'http://ollama.lan:11434', headers: { 'x-opencode-session': 'sess-1' } } } };
+  const m = fakeFetch([ok({ data: [] })]);
+  await compatible.models(cfg, env, { fetch: m });
+  assert.equal(m.calls[0].headers['x-opencode-session'], 'sess-1');
+  assert.equal(m.calls[0].headers.authorization, 'Bearer compat-1');
+  const j = fakeFetch([ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
+  await compatible.invoke({ cfg, prompt: 'P', env, model: 'llama3', fetch: j });
+  assert.equal(j.calls[0].headers['x-opencode-session'], 'sess-1');
+
+  // A stored map from before a name was reserved must not override auth framing.
+  const evil = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'http://x', headers: { authorization: 'Bearer evil', 'content-type': 'text/plain' } } } };
+  const e = fakeFetch([ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
+  await compatible.invoke({ cfg: evil, prompt: 'P', env, model: 'llama3', fetch: e });
+  assert.equal(e.calls[0].headers.authorization, 'Bearer compat-1');
+  assert.equal(e.calls[0].headers['content-type'], 'application/json');
+});
+
+test('validateHeaders: small maps pass, framing names and junk do not', () => {
+  assert.deepEqual(validateHeaders(null).value, null);
+  assert.deepEqual(validateHeaders({}).value, null);
+  assert.deepEqual(validateHeaders({ 'X-Opencode-Session': ' abc ' }).value, { 'x-opencode-session': 'abc' });
+  for (const bad of ['authorization', 'Content-Type', 'content-length', 'Host', 'cookie']) {
+    assert.equal(validateHeaders({ [bad]: 'x' }).ok, false, bad);
+  }
+  assert.equal(validateHeaders({ 'not a name!': 'x' }).ok, false);
+  assert.equal(validateHeaders({ a: '' }).ok, false);
+  assert.equal(validateHeaders('x-opencode-session: abc').ok, false);
+  assert.equal(validateHeaders([['a', 'b']]).ok, false);
+  const many = {}; for (let i = 0; i < 9; i++) many['x-h-' + i] = 'v';
+  assert.equal(validateHeaders(many).ok, false);
 });

@@ -1,0 +1,24 @@
+{
+  "id": "7895",
+  "name": "kneeling rotation torso rear fly to thread through",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "rear deltoids",
+    "obliques",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "A kneeling thoracic mobility move combining a rear fly and a thread-the-needle reach.",
+  "instructions": [
+    "Start on hands and knees.",
+    "Place one hand behind your head and rotate your torso open, elbow to the ceiling.",
+    "Return and thread that arm under your chest.",
+    "Let your shoulder reach toward the floor.",
+    "Keep your hips still.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

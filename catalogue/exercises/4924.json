@@ -1,0 +1,23 @@
+{
+  "id": "4924",
+  "name": "long lever lying back extension",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "rhomboids"
+  ],
+  "category": "calisthenics",
+  "description": "A prone back extension with the arms stretched long overhead. It strengthens the lower back and glutes.",
+  "instructions": [
+    "Lie face down with your arms extended overhead.",
+    "Squeeze your glutes to stabilize.",
+    "Lift your chest and arms off the floor.",
+    "Pause briefly at the top.",
+    "Lower with control.",
+    "Keep your neck neutral by looking down."
+  ],
+  "textSource": "opengym"
+}

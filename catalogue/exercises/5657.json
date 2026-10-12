@@ -1,0 +1,21 @@
+{
+  "id": "5657",
+  "name": "cable side bend v. 2",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Side bend using a cable for the obliques.",
+  "instructions": [
+    "Stand side-on to a low cable holding the handle.",
+    "Keep your hips still.",
+    "Bend sideways away from the cable.",
+    "Return to upright.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

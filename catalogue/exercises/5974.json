@@ -1,0 +1,23 @@
+{
+  "id": "5974",
+  "name": "plyometric agility drill",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "calves",
+    "glutes",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A mix of quick hops and direction changes that builds explosive power and agility.",
+  "instructions": [
+    "Set out a few markers within a small area.",
+    "Stand in an athletic stance on the balls of your feet.",
+    "Hop or step quickly between the markers in changing directions.",
+    "Land softly with bent knees.",
+    "Work for 20-30 seconds, rest, then repeat."
+  ],
+  "textSource": "opengym"
+}

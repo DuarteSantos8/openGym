@@ -1,0 +1,23 @@
+{
+  "id": "4919",
+  "name": "kneeling assisted sliding chin up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A kneeling, assisted chin up where you slide on the floor to reduce the load. It helps you build toward full chin ups.",
+  "instructions": [
+    "Kneel below a bar and grab it with an underhand grip.",
+    "Place a towel or slider under your knees.",
+    "Pull your chest toward the bar.",
+    "Use your legs lightly to help.",
+    "Lower slowly to straight arms.",
+    "Keep your shoulders away from your ears."
+  ],
+  "textSource": "opengym"
+}

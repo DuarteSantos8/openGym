@@ -1,0 +1,43 @@
+{
+  "id": "0743",
+  "name": "sled hack squat",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "On a sled machine, you squat with your back against the pad. Works the quads and glutes.",
+  "instructions": [
+    "Adjust the sled machine to a comfortable position for your height.",
+    "Stand with your feet shoulder-width apart on the platform, toes slightly pointed outwards.",
+    "Hold onto the handles or bars for stability.",
+    "Lower your body by bending your knees and hips, keeping your back straight and chest up.",
+    "Continue lowering until your thighs are parallel to the ground or slightly below.",
+    "Pause for a moment, then push through your heels to raise your body back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves"
+    ],
+    "weights": {
+      "quadriceps": 1,
+      "gluteal": 1,
+      "adductors": 1,
+      "hamstring": 0.4,
+      "calves": 0
+    }
+  },
+  "femaleVariant": "2384",
+  "textSource": "exercisedb"
+}

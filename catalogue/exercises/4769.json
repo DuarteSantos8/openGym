@@ -1,0 +1,23 @@
+{
+  "id": "4769",
+  "name": "inverted row slide",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rhomboids",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight row where your feet slide along the floor as you pull. It builds the lats and mid back.",
+  "instructions": [
+    "Lie under a bar or rings and grab with an overhand grip.",
+    "Keep your body straight with heels on a slick surface.",
+    "Pull your chest toward the bar while your feet slide forward.",
+    "Squeeze your shoulder blades together.",
+    "Lower slowly with control."
+  ],
+  "textSource": "opengym"
+}

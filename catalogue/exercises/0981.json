@@ -1,0 +1,20 @@
+{
+  "id": "0981",
+  "name": "band jack knife sit-up",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A jackknife sit-up with a band, lifting legs and torso together. It trains the abs and hip flexors.",
+  "instructions": [
+    "Lie flat on your back with your legs straight and your arms extended overhead, holding the band.",
+    "Engage your abs and lift your legs and upper body simultaneously, bringing your hands towards your feet.",
+    "Pause for a moment at the top, then slowly lower your legs and upper body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2541",
+  "textSource": "exercisedb"
+}

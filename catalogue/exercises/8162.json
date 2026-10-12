@@ -1,0 +1,23 @@
+{
+  "id": "8162",
+  "name": "deep lunge to hamstring stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes",
+    "calves"
+  ],
+  "category": "stretching",
+  "description": "A flowing stretch from a deep lunge into a straight front leg. It opens the hip flexors and stretches the hamstrings.",
+  "instructions": [
+    "Step into a deep lunge with both hands on the floor.",
+    "Hold for a breath and feel the front of the back hip open.",
+    "Shift your hips back and straighten the front leg.",
+    "Flex your front foot and fold gently over it.",
+    "Hold for 20 to 30 seconds.",
+    "Return to the lunge and switch legs."
+  ],
+  "textSource": "opengym"
+}

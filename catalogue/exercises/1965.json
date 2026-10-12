@@ -1,0 +1,21 @@
+{
+  "id": "1965",
+  "name": "seated toe flexor stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "feet",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "A seated stretch pulling the toes back to lengthen the bottom of the foot.",
+  "instructions": [
+    "Sit and cross one ankle over the opposite knee.",
+    "Hold the toes with your hand.",
+    "Gently pull the toes back toward your shin.",
+    "Feel the stretch along the sole of the foot.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

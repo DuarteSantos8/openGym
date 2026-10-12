@@ -1,0 +1,22 @@
+{
+  "id": "4605",
+  "name": "pvc hip hinge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A simple hinge pattern drill using a pipe along your spine to check posture while you bend at the hips.",
+  "instructions": [
+    "Hold a PVC pipe vertically along your spine, one hand at the neck and one at the lower back.",
+    "Keep the pipe touching head, upper back and tailbone.",
+    "Push your hips back with soft knees and tip forward.",
+    "Stop when you feel the hamstrings stretch, then squeeze your glutes to stand.",
+    "Keep the pipe contact the whole time."
+  ],
+  "textSource": "opengym"
+}

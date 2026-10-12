@@ -1,0 +1,21 @@
+{
+  "id": "1937",
+  "name": "seated bent knee to chest buttock stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "Pulling a bent knee toward your chest to stretch the buttock muscles.",
+  "instructions": [
+    "Sit on the floor with your legs out in front.",
+    "Bend one knee, hold it with both hands and gently pull it toward your chest.",
+    "Keep your back tall and avoid rounding it as you pull.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

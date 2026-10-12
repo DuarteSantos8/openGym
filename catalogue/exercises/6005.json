@@ -1,0 +1,21 @@
+{
+  "id": "6005",
+  "name": "lying crunch (straight legs)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch with straight legs on the floor that trains the upper abs.",
+  "instructions": [
+    "Lie on your back with your legs straight.",
+    "Place your hands behind your head or across your chest.",
+    "Curl your shoulders off the floor.",
+    "Pause and squeeze your abs.",
+    "Lower slowly without pulling on your neck."
+  ],
+  "femaleVariant": "6004",
+  "textSource": "opengym"
+}

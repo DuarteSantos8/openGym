@@ -1,0 +1,22 @@
+{
+  "id": "0942",
+  "name": "cat pose",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "core",
+    "upper back",
+    "shoulders"
+  ],
+  "category": "yoga",
+  "description": "Round your spine upward from hands and knees to stretch the back. A gentle way to loosen the spine and wake up the core.",
+  "instructions": [
+    "Start on all fours with wrists under shoulders and knees under hips.",
+    "Exhale and press the floor away as you round your back toward the ceiling.",
+    "Tuck your chin toward your chest and draw your belly in.",
+    "Hold for 20-30 seconds while breathing slowly.",
+    "Inhale and return to a neutral back."
+  ],
+  "textSource": "opengym"
+}

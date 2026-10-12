@@ -1,0 +1,22 @@
+{
+  "id": "1826",
+  "name": "finger flexor stretch",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "hands",
+    "grip muscles"
+  ],
+  "category": "stretching",
+  "description": "Pulling your fingers back stretches the muscles on the palm side of your forearm. Great after grip-heavy training or typing.",
+  "instructions": [
+    "Extend one arm forward with your palm facing up or out.",
+    "Use your other hand to gently pull your fingers and palm back toward you.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

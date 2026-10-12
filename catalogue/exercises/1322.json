@@ -1,0 +1,23 @@
+{
+  "id": "1322",
+  "name": "cable rope extension incline bench row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A rope cable row done chest down on an incline bench. The support keeps your torso still so the upper back does the pulling.",
+  "instructions": [
+    "Set up an incline bench at a 45-degree angle and attach a cable machine to the low pulley.",
+    "Attach a rope handle to the cable machine and sit on the incline bench facing the machine.",
+    "Grab the rope handle with an overhand grip and lean forward, keeping your back straight.",
+    "Extend your arms fully, pulling the rope towards your upper chest while keeping your elbows close to your body.",
+    "Squeeze your shoulder blades together at the end of the movement.",
+    "Slowly release the tension and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

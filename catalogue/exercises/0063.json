@@ -1,0 +1,38 @@
+{
+  "id": "0063",
+  "name": "barbell narrow stance squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A back squat with a narrower stance, shifting more work to the quads.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and toes pointing slightly outward.",
+    "Hold the barbell across your upper back, resting it on your traps or rear delts.",
+    "Engage your core and keep your chest up as you slowly lower your body by bending your knees and pushing your hips back.",
+    "Continue lowering until your thighs are parallel to the ground or slightly below.",
+    "Pause for a moment, then push through your heels to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "femaleVariant": "2389",
+  "textSource": "exercisedb"
+}

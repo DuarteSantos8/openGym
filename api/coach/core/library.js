@@ -13,6 +13,18 @@ export const LIB_BY_ID = new Map(LIBRARY.map(e => [e.id, e]));
 export const libraryHas = id => LIB_BY_ID.has(id);
 export const libraryName = id => LIB_BY_ID.get(id)?.n || null;
 
+/* Whether the person's equipment covers a catalogue exercise. Body weight is never gated, the
+   same rule the app's own equipment profiles follow (frontend lib/equipment.js), and an id the
+   catalogue does not hold (one of their own exercises) is theirs to judge, not ours. No
+   equipment stated means the whole catalogue. */
+const ALWAYS_AVAILABLE = 'body weight';
+export function equipmentAllows(equipment, id) {
+  const wanted = (equipment || []).map(x => String(x).toLowerCase());
+  if (!wanted.length) return true;
+  const eq = (LIB_BY_ID.get(id)?.eq || '').toLowerCase();
+  return !eq || eq === ALWAYS_AVAILABLE || wanted.includes(eq);
+}
+
 /* ---------- the library slice the model gets to choose from ----------
    Bounded. The whole catalogue is 1,324 rows — 10k+ tokens on every job, which costs real money
    against a cloud API and does not fit a small local model's context at all; and a model does
@@ -68,7 +80,7 @@ export function librarySlice(S, equipment, { keep = [], max = MAX_LIBRARY } = {}
   // No equipment stated (or "everything") ⇒ the whole catalogue. Filtering to nothing would
   // leave the Coach unable to propose anything at all, which is a worse failure than a
   // slightly larger payload.
-  const filtered = wanted.length ? LIBRARY.filter(e => wanted.includes((e.eq || '').toLowerCase())) : LIBRARY;
+  const filtered = wanted.length ? LIBRARY.filter(e => equipmentAllows(wanted, e.id)) : LIBRARY;
   const equipped = filtered.length ? filtered : LIBRARY;
   // Same reasoning as the equipment fallback: a filter that removed everything is not a filter
   // worth honouring. Someone whose only kit reaches nothing but stretches gets the stretches.

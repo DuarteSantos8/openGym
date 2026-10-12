@@ -1,0 +1,24 @@
+{
+  "id": "4914",
+  "name": "dumbbell deadlift (neutral grip)",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "grip muscles",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A deadlift with dumbbells held with palms facing in. It trains the glutes, hamstrings and back.",
+  "instructions": [
+    "Stand with feet hip width and a dumbbell in each hand, palms facing in.",
+    "Hinge at the hips with a flat back and lower the weights.",
+    "Keep the dumbbells close to your legs.",
+    "Push through your heels to stand tall.",
+    "Squeeze your glutes at the top.",
+    "Do not round your lower back."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "0541",
+  "name": "kettlebell one arm row",
+  "bodyPart": "back",
+  "equipment": "kettlebell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Hinge forward and row a kettlebell to your hip with one arm. Targets the lats and upper back while your core keeps you steady.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a kettlebell in one hand with an overhand grip.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight and your core engaged.",
+    "Pull the kettlebell up towards your chest, keeping your elbow close to your body and squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly lower the kettlebell back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides and repeat with the other arm."
+  ],
+  "textSource": "exercisedb"
+}

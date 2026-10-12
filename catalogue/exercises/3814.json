@@ -1,0 +1,24 @@
+{
+  "id": "3814",
+  "name": "front plank toe tap",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes",
+    "shoulders",
+    "core",
+    "obliques"
+  ],
+  "category": "isometric",
+  "description": "A front plank where you tap one foot out to the side at a time. It challenges core stability and hips.",
+  "instructions": [
+    "Start in a high plank with your hands under your shoulders.",
+    "Brace your abs and keep your hips level.",
+    "Tap one toe out to the side and bring it back.",
+    "Repeat with the other foot.",
+    "Keep your body steady and avoid rocking."
+  ],
+  "textSource": "opengym"
+}

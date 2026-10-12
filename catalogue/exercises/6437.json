@@ -1,0 +1,23 @@
+{
+  "id": "6437",
+  "name": "resistance band shoulder adduction",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "rear deltoids",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A band pulldown pulling the arm from out to your side down to your body. It trains the lats and shoulder control.",
+  "instructions": [
+    "Anchor a band overhead and hold the handle with your arm raised.",
+    "Stand tall with your core braced.",
+    "Pull your arm down toward your side.",
+    "Keep your elbow straight or slightly bent.",
+    "Return slowly, then switch arms."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "2708",
+  "name": "strongman mas wrestling",
+  "bodyPart": "full body",
+  "equipment": "weight plate",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "upper back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A grip and pull contest with a stick, building grip strength and total body tension.",
+  "instructions": [
+    "Sit facing a partner with feet against theirs and both hands on a stick.",
+    "Brace your core.",
+    "Pull the stick toward you with a strong grip.",
+    "Resist your partner while keeping your back straight.",
+    "Keep the effort steady and control the end of each pull."
+  ],
+  "textSource": "opengym"
+}

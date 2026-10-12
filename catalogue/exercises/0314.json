@@ -1,0 +1,39 @@
+{
+  "id": "0314",
+  "name": "dumbbell incline bench press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "An incline dumbbell bench press. The raised bench shifts the work toward the upper chest.",
+  "instructions": [
+    "Set up an incline bench at a 45-degree angle.",
+    "Sit on the bench with your feet flat on the ground and your back pressed firmly against the bench.",
+    "Hold a dumbbell in each hand, palms facing forward, and lift them to shoulder height.",
+    "Slowly lower the dumbbells to the sides of your chest, keeping your elbows at a 90-degree angle.",
+    "Push the dumbbells back up to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "chest"
+    ],
+    "secondaries": [
+      "triceps",
+      "deltoids",
+      "biceps"
+    ],
+    "weights": {
+      "chest": 1,
+      "deltoids": 0.4,
+      "triceps": 0.4,
+      "biceps": 0
+    }
+  },
+  "femaleVariant": "2441",
+  "textSource": "exercisedb"
+}

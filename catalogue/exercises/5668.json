@@ -1,0 +1,23 @@
+{
+  "id": "5668",
+  "name": "barbell standing shoulder pin press",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A standing overhead press starting from a dead stop on safety pins. Without the stretch reflex, it builds pressing strength out of the bottom position.",
+  "instructions": [
+    "Set the bar on safety pins at about shoulder height in a rack.",
+    "Step under it and grip just outside shoulder width.",
+    "Brace your core and squeeze your glutes.",
+    "Press the bar overhead, moving your head slightly back then through.",
+    "Lower the bar to rest on the pins, pause, and repeat."
+  ],
+  "textSource": "opengym"
+}

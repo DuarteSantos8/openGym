@@ -1,0 +1,23 @@
+{
+  "id": "3573",
+  "name": "kettlebell sots press",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Press kettlebells overhead from the bottom of a deep squat to challenge shoulder stability and hip mobility.",
+  "instructions": [
+    "Hold kettlebells in the rack position and sink into a deep squat.",
+    "Keep your chest up and heels flat.",
+    "Press the bells overhead while staying in the squat.",
+    "Lower them back to the shoulders with control.",
+    "Stand up and repeat once the set is done."
+  ],
+  "textSource": "opengym"
+}

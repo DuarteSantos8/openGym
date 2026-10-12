@@ -1,0 +1,23 @@
+{
+  "id": "5156",
+  "name": "mountain climber slide with towel",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "hip flexors",
+    "quadriceps",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "From a plank, slide your feet on towels to bring your knees to your chest. A core and cardio move that is easy on the joints.",
+  "instructions": [
+    "Place your feet on towels on a smooth floor and get into a plank.",
+    "Keep your core tight and shoulders over your wrists.",
+    "Slide one knee toward your chest.",
+    "Slide it back and switch legs.",
+    "Keep a steady pace and a flat back."
+  ],
+  "textSource": "opengym"
+}

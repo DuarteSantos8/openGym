@@ -1,0 +1,24 @@
+{
+  "id": "3130",
+  "name": "scapula elevation depression",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "traps",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "trapezius",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "A drill where you shrug your shoulders up and then press them down. It builds control of the shoulder blades.",
+  "instructions": [
+    "Stand or sit tall with your arms at your sides.",
+    "Shrug your shoulders up toward your ears.",
+    "Hold for a second.",
+    "Press your shoulders down away from your ears.",
+    "Move slowly through the full range.",
+    "Keep your arms relaxed and your head still."
+  ],
+  "textSource": "opengym"
+}

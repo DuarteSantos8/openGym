@@ -1,0 +1,22 @@
+{
+  "id": "0123",
+  "name": "barbell wide-grip upright row",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "traps",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A wide-grip upright row, favouring the side delts and traps.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a barbell with an overhand grip, hands wider than shoulder-width apart.",
+    "Let the barbell hang in front of your thighs, arms fully extended.",
+    "Keeping your back straight, exhale and lift the barbell straight up towards your chin, leading with your elbows.",
+    "Pause for a moment at the top, then inhale and slowly lower the barbell back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3595",
+  "textSource": "exercisedb"
+}

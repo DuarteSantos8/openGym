@@ -1,0 +1,24 @@
+{
+  "id": "5705",
+  "name": "barbell clean high pull",
+  "bodyPart": "upper legs",
+  "equipment": "olympic barbell",
+  "target": "traps",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "upper back",
+    "quadriceps"
+  ],
+  "category": "olympic",
+  "description": "A powerful pull from the floor that sends the bar to chest height. It develops explosive hips, traps and shoulders.",
+  "instructions": [
+    "Set up over the bar with feet hip-width apart and a flat back.",
+    "Lift the bar to your knees with your chest up.",
+    "Extend your hips and knees explosively and shrug hard.",
+    "Pull the bar up to chest height with elbows high and outside.",
+    "Lower the bar back to the floor with control."
+  ],
+  "textSource": "opengym"
+}

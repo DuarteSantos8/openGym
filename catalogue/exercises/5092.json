@@ -1,0 +1,21 @@
+{
+  "id": "5092",
+  "name": "dumbbell single arm underhand front raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "Lift one dumbbell to the front with your palm facing up. This variation trains the front delt and upper chest.",
+  "instructions": [
+    "Stand tall with a dumbbell in one hand, palm facing forward.",
+    "Keep your core braced.",
+    "Raise the dumbbell in front of you to shoulder height.",
+    "Lower it slowly to your thigh.",
+    "Complete your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

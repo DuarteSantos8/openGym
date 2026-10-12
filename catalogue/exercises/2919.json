@@ -1,0 +1,22 @@
+{
+  "id": "2919",
+  "name": "smith hex press",
+  "bodyPart": "chest",
+  "equipment": "smith machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A press with the weights squeezed together, done on a Smith machine. The squeeze keeps tension on the chest throughout.",
+  "instructions": [
+    "Lie on a bench under the Smith bar and hold a weight plate between your palms if you like.",
+    "Unrack the bar with a close grip and hold it over your chest.",
+    "Squeeze your hands inward as you lower the bar to your mid chest.",
+    "Press back up while still squeezing.",
+    "Rerack the bar when done."
+  ],
+  "textSource": "opengym"
+}

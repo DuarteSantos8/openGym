@@ -1,0 +1,23 @@
+{
+  "id": "1167",
+  "name": "dynamic chest stretch (male)",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "mobility",
+  "description": "A dynamic chest stretch, swinging the arms out and across the chest. It loosens the chest and shoulders.",
+  "instructions": [
+    "Stand tall with your feet shoulder-width apart.",
+    "Extend your arms straight out to the sides, parallel to the ground.",
+    "Slowly bring your arms forward, crossing them in front of your body.",
+    "Feel the stretch in your chest muscles.",
+    "Hold the stretch for 10-30 seconds.",
+    "Return to the starting position and repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "0441",
+  "textSource": "exercisedb"
+}

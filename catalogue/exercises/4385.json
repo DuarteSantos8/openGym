@@ -1,0 +1,23 @@
+{
+  "id": "4385",
+  "name": "hip roll plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "calisthenics",
+  "description": "A plank with a rolling twist of the hips from side to side. It works the obliques and deep core muscles.",
+  "instructions": [
+    "Start in a forearm plank with feet slightly wider than hip-width.",
+    "Brace your abs and keep your shoulders stable.",
+    "Rotate your hips to one side, lowering them toward the floor.",
+    "Roll back through the middle to the other side.",
+    "Keep the movement controlled and breathe steadily."
+  ],
+  "textSource": "opengym"
+}

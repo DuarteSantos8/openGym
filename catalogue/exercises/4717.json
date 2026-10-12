@@ -1,0 +1,23 @@
+{
+  "id": "4717",
+  "name": "assisted commando pull up",
+  "bodyPart": "back",
+  "equipment": "assisted",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "obliques",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up with a neutral staggered grip and some help, building back and arm strength.",
+  "instructions": [
+    "Grip a bar with one hand in front of the other.",
+    "Use a band or feet for assistance.",
+    "Pull until your head passes the bar to one side.",
+    "Lower with control.",
+    "Switch the head side on the next rep."
+  ],
+  "textSource": "opengym"
+}

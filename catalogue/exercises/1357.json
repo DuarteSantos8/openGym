@@ -1,0 +1,22 @@
+{
+  "id": "1357",
+  "name": "one handed hang",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "lats",
+    "hands"
+  ],
+  "category": "isometric",
+  "description": "Hanging from a bar with just one hand. It builds grip strength and gives the shoulder a stretch.",
+  "instructions": [
+    "Stand under a pull-up bar and grip it with one hand.",
+    "Lift your feet and hang with your arm straight.",
+    "Keep your shoulder active and your body still.",
+    "Hold for 10-20 seconds.",
+    "Lower yourself carefully and switch hands."
+  ],
+  "textSource": "opengym"
+}

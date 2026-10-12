@@ -1,0 +1,21 @@
+{
+  "id": "0121",
+  "name": "barbell upright row v. 3",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "traps",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "An upright row with the barbell pulled toward the chin. Works the delts and traps.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a barbell with an overhand grip, hands slightly wider than shoulder-width apart.",
+    "Let the barbell hang in front of your thighs, arms fully extended.",
+    "Keeping your core engaged and back straight, exhale as you lift the barbell straight up towards your chin, leading with your elbows.",
+    "Pause for a moment at the top, then inhale as you slowly lower the barbell back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

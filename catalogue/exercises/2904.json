@@ -1,0 +1,23 @@
+{
+  "id": "2904",
+  "name": "power sled rear batwing",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "rear deltoids",
+    "upper back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A movement with a power sled where you pull the handles out and back like wings. Works the hamstrings, back and rear shoulders.",
+  "instructions": [
+    "Hold the sled handles and hinge slightly at the hips.",
+    "Keep your back flat and knees soft.",
+    "Pull the handles back and out to the sides like wings.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly to the start."
+  ],
+  "textSource": "opengym"
+}

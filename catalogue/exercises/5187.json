@@ -1,0 +1,23 @@
+{
+  "id": "5187",
+  "name": "burpee long jump with push up",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "chest",
+    "triceps",
+    "quadriceps",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "A burpee with a push-up that finishes in a long forward jump. It is a tough full-body conditioning move.",
+  "instructions": [
+    "Stand tall, then squat and place your hands on the floor.",
+    "Jump your feet back and do one push-up.",
+    "Jump your feet back toward your hands.",
+    "Explode into a long jump forward.",
+    "Land softly with bent knees and go into the next rep."
+  ],
+  "textSource": "opengym"
+}

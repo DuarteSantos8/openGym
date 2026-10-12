@@ -1,0 +1,22 @@
+{
+  "id": "1875",
+  "name": "lever squat (plate loaded)",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Plate-loaded squat machine that lets you load the legs with a supported back.",
+  "instructions": [
+    "Step under the shoulder pads and set your feet shoulder width.",
+    "Release the safeties and stand tall.",
+    "Sit down and back until your thighs are parallel.",
+    "Drive through your heels to stand.",
+    "Keep your chest up and your knees tracking over your toes."
+  ],
+  "femaleVariant": "5788",
+  "textSource": "opengym"
+}

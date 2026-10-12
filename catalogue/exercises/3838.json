@@ -1,0 +1,23 @@
+{
+  "id": "3838",
+  "name": "crunch (on bench)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch performed lying on a bench. It trains your abs with a slightly larger range of motion.",
+  "instructions": [
+    "Lie on a bench with your knees bent and feet flat.",
+    "Place your hands by your temples.",
+    "Curl your shoulders up, bringing your ribs toward your hips.",
+    "Pause briefly at the top.",
+    "Lower slowly without pulling on your neck."
+  ],
+  "femaleVariant": "0270",
+  "textSource": "opengym"
+}

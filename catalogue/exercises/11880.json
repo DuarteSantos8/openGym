@@ -1,0 +1,23 @@
+{
+  "id": "11880",
+  "name": "lever t bar close grip row (plate loaded)",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A plate-loaded T-bar row with a close grip for thick back work.",
+  "instructions": [
+    "Stand on the platform with your chest supported.",
+    "Grab the close-grip handle with straight arms.",
+    "Pull the handle toward your torso, elbows close.",
+    "Squeeze your shoulder blades together.",
+    "Lower slowly to full extension."
+  ],
+  "textSource": "opengym"
+}

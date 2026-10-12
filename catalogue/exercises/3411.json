@@ -1,0 +1,22 @@
+{
+  "id": "3411",
+  "name": "standing hip circle",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core",
+    "obliques"
+  ],
+  "category": "mobility",
+  "description": "Circle your hips to loosen the hip joints and warm up the glutes.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and hands on your hips.",
+    "Push your hips out to one side, then forward, back and around.",
+    "Draw a large smooth circle.",
+    "Keep your shoulders still.",
+    "Do 10 circles, then reverse direction."
+  ],
+  "textSource": "opengym"
+}

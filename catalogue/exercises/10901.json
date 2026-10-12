@@ -1,0 +1,22 @@
+{
+  "id": "10901",
+  "name": "dumbbell single arm shrug",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "traps",
+  "secondaryMuscles": [
+    "upper back",
+    "grip muscles",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A one-arm shrug with a dumbbell. It builds the upper traps and grip.",
+  "instructions": [
+    "Stand tall holding a dumbbell in one hand at your side.",
+    "Keep your arm straight and your shoulders relaxed.",
+    "Lift your shoulder straight up toward your ear.",
+    "Hold for a moment at the top.",
+    "Lower slowly. Finish your reps and switch arms."
+  ],
+  "textSource": "opengym"
+}

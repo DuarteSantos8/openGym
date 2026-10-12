@@ -1,0 +1,22 @@
+{
+  "id": "4776",
+  "name": "resistance band kneeling woodchop",
+  "bodyPart": "waist",
+  "equipment": "resistance band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A diagonal chop with a resistance band while kneeling. It trains the obliques and core.",
+  "instructions": [
+    "Anchor a band high and kneel sideways to it.",
+    "Hold the handle with both hands.",
+    "Pull the band diagonally down across your body.",
+    "Rotate your torso as you chop.",
+    "Return slowly, then switch sides."
+  ],
+  "textSource": "opengym"
+}

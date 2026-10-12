@@ -1,0 +1,25 @@
+{
+  "id": "3110",
+  "name": "smith hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A hip thrust with the bar on a Smith machine, giving a steady path to load the glutes.",
+  "instructions": [
+    "Sit on the floor with your upper back against a bench and the Smith bar over your hips.",
+    "Pad the bar and roll it into the crease of your hips.",
+    "Plant your feet hip width apart and unrack the bar.",
+    "Drive through your heels and lift your hips until your body is level.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly and repeat."
+  ],
+  "femaleVariant": "5761",
+  "textSource": "opengym"
+}

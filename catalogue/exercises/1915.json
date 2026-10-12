@@ -1,0 +1,21 @@
+{
+  "id": "1915",
+  "name": "seated knee flexor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A seated reach toward the toes that lengthens the hamstrings.",
+  "instructions": [
+    "Sit on the floor with one leg straight out in front of you.",
+    "Reach toward your toes with a long back until you feel the back of the thigh stretch.",
+    "Keep your knee straight but not locked, and avoid rounding your back too much.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

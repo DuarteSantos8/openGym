@@ -1,0 +1,25 @@
+{
+  "id": "2834",
+  "name": "suspender weighted inverted row",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "rear deltoids",
+    "core"
+  ],
+  "category": "strength",
+  "description": "An inverted row on suspension straps with added weight on your body. Builds the back and biceps.",
+  "instructions": [
+    "Hold the suspension handles and lean back with your body in a straight line, with weight on your torso.",
+    "Keep your arms straight and heels on the floor.",
+    "Pull your chest up toward the handles, squeezing your shoulder blades.",
+    "Pause briefly at the top.",
+    "Lower slowly to full arm extension."
+  ],
+  "femaleVariant": "2833",
+  "textSource": "opengym"
+}

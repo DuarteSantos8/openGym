@@ -1,0 +1,24 @@
+{
+  "id": "11283",
+  "name": "criss cross tuck jump",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "calves",
+    "core",
+    "glutes"
+  ],
+  "category": "plyometrics",
+  "description": "A jump where you tuck the knees and cross the feet in the air, great for conditioning and leg power.",
+  "instructions": [
+    "Stand tall with feet shoulder width apart.",
+    "Jump up and pull your knees toward your chest.",
+    "Cross your feet in the air.",
+    "Land softly on the balls of your feet.",
+    "Uncross on the next jump, alternating the crossing foot.",
+    "Keep a steady quick rhythm."
+  ],
+  "textSource": "opengym"
+}

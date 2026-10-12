@@ -1,0 +1,23 @@
+{
+  "id": "5179",
+  "name": "cable standing close grip row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "rhomboids",
+    "biceps",
+    "rear deltoids",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing cable row with a close grip. It trains your lats and mid back while challenging posture.",
+  "instructions": [
+    "Attach a close grip handle to a cable at chest height and step back.",
+    "Stand with a slight knee bend and a braced core.",
+    "Pull the handle toward your lower ribs, elbows close to your body.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly until your arms are straight."
+  ],
+  "textSource": "opengym"
+}

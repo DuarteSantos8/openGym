@@ -1,0 +1,22 @@
+{
+  "id": "11644",
+  "name": "resistance band side lying hip abduction",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Lying on your side, you lift the top leg against band resistance to work the outer hip.",
+  "instructions": [
+    "Lie on your side with the band around your thighs or ankles.",
+    "Keep your legs straight and stacked.",
+    "Lift the top leg up without rolling backward.",
+    "Pause at the top.",
+    "Lower slowly.",
+    "Finish reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

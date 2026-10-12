@@ -1,0 +1,21 @@
+{
+  "id": "2780",
+  "name": "shoulder medial rotation (internal rotation)",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "chest"
+  ],
+  "category": "mobility",
+  "description": "Rotating the upper arm inward, working the muscles that turn the shoulder in.",
+  "instructions": [
+    "Stand or sit tall with a relaxed posture and the joint in a neutral starting position.",
+    "Stand with your elbow at your side bent at 90 degrees, forearm pointing forward.",
+    "Rotate your forearm inward across your stomach, keeping the elbow tucked in.",
+    "Pause briefly, then return slowly.",
+    "Repeat for 10-15 smooth reps, then switch sides if you are working one side at a time."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "3738",
+  "name": "kettlebell one arm bench press",
+  "bodyPart": "chest",
+  "equipment": "kettlebell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A bench press with one kettlebell at a time, adding stability demand for the shoulder and core.",
+  "instructions": [
+    "Lie on a bench holding a kettlebell above your chest.",
+    "Keep your wrist straight and your feet planted.",
+    "Lower the bell to the side of your chest.",
+    "Press it back up to full extension.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

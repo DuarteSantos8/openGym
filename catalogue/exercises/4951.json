@@ -1,0 +1,24 @@
+{
+  "id": "4951",
+  "name": "lever pendulum squat (plate loaded)",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A squat on a pendulum machine that swings along an arc. It loads the quads heavily.",
+  "instructions": [
+    "Load the machine and step onto the platform.",
+    "Place your shoulders under the pads.",
+    "Unlock the machine and lower in a controlled squat.",
+    "Go as deep as comfortable.",
+    "Push through your feet to stand.",
+    "Keep your chest up and heels down."
+  ],
+  "femaleVariant": "5778",
+  "textSource": "opengym"
+}

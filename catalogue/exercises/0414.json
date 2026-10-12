@@ -1,0 +1,31 @@
+{
+  "id": "0414",
+  "name": "dumbbell standing alternate overhead press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Standing, you press dumbbells overhead one arm at a time. It builds the shoulders and triceps while the core stays braced.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand at shoulder level with your palms facing forward.",
+    "Press one dumbbell overhead, fully extending your arm.",
+    "Lower the dumbbell back to shoulder level.",
+    "Repeat with the other arm.",
+    "Continue alternating arms for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "deltoids"
+    ],
+    "secondaries": [
+      "triceps",
+      "trapezius",
+      "abs"
+    ]
+  },
+  "textSource": "exercisedb"
+}

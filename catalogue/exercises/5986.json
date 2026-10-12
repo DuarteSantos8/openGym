@@ -1,0 +1,23 @@
+{
+  "id": "5986",
+  "name": "cone drill",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves",
+    "glutes"
+  ],
+  "category": "plyometrics",
+  "description": "A cone run that builds acceleration, cutting speed and agility.",
+  "instructions": [
+    "Place several cones in a pattern a few yards apart.",
+    "Start in an athletic stance.",
+    "Sprint or shuffle around the cones in order.",
+    "Plant and cut with your hips low.",
+    "Finish the course, rest, then go again."
+  ],
+  "textSource": "opengym"
+}

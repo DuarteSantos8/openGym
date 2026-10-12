@@ -1,0 +1,22 @@
+{
+  "id": "3751",
+  "name": "reverse push up",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A pushup where your hands are behind you, working the triceps hard.",
+  "instructions": [
+    "Sit on the floor and place your hands behind you, fingers pointing toward your hips.",
+    "Lift your hips off the floor.",
+    "Bend your elbows and lower your hips.",
+    "Press back up to straight arms.",
+    "Keep your elbows pointing back."
+  ],
+  "textSource": "opengym"
+}

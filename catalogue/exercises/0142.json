@@ -1,0 +1,23 @@
+{
+  "id": "0142",
+  "name": "bridge (on knees)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A plank-style bridge hold supported on the knees. It builds trunk endurance with less load than a full plank.",
+  "instructions": [
+    "Kneel on a mat and lean forward onto your forearms.",
+    "Position your elbows under your shoulders.",
+    "Lift your hips so your body forms a straight line from knees to head.",
+    "Brace your abs and squeeze your glutes.",
+    "Hold for 20-30 seconds.",
+    "Lower gently and rest."
+  ],
+  "textSource": "opengym"
+}

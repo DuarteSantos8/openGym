@@ -1,0 +1,21 @@
+{
+  "id": "2117",
+  "name": "standing lateral side stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lats"
+  ],
+  "category": "stretching",
+  "description": "A standing side bend for the sides of the waist and ribs.",
+  "instructions": [
+    "Stand tall with your feet hip width apart.",
+    "Reach one arm overhead and bend sideways away from it until you feel the side stretch.",
+    "Keep your chest open and your hips level.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

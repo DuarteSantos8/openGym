@@ -1,0 +1,23 @@
+{
+  "id": "3832",
+  "name": "handboard slope hang",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "lats",
+    "shoulders",
+    "hands"
+  ],
+  "category": "isometric",
+  "description": "A hang from a sloped hangboard hold. It builds finger and forearm strength for climbing.",
+  "instructions": [
+    "Grip the sloped hold with open hands.",
+    "Step off the ground and hang with straight arms.",
+    "Keep your shoulders active and your core tight.",
+    "Hold for 5-10 seconds.",
+    "Rest fully, then repeat."
+  ],
+  "textSource": "opengym"
+}

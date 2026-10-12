@@ -1,0 +1,23 @@
+{
+  "id": "10639",
+  "name": "glute ham developer full sit up",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A full-range sit-up on a glute ham developer. The extended range makes the abs and hip flexors work through a long path.",
+  "instructions": [
+    "Lock your feet in the machine and sit with your hips on the pad.",
+    "Lean back until your torso is in line with or just below your hips.",
+    "Cross your arms over your chest.",
+    "Curl up until your chest reaches your thighs.",
+    "Lower back slowly with a braced core.",
+    "Avoid yanking on your neck."
+  ],
+  "textSource": "opengym"
+}

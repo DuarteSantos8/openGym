@@ -1,0 +1,23 @@
+{
+  "id": "6545",
+  "name": "handstand hold on wall",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A wall-supported handstand held in place, building shoulder strength, balance and body control.",
+  "instructions": [
+    "Place your hands on the floor a short distance from a wall.",
+    "Kick up carefully until your heels rest on the wall.",
+    "Push the floor away and keep your arms straight.",
+    "Tighten your core and glutes.",
+    "Hold for 15-30 seconds, then come down with control."
+  ],
+  "femaleVariant": "6695",
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "3685",
+  "name": "dumbbell chest supported lateral raises",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Lateral raises with your chest on an incline bench to remove cheating and isolate the delts.",
+  "instructions": [
+    "Lie chest-down on an incline bench holding dumbbells.",
+    "Raise your arms out to the sides.",
+    "Stop at shoulder height.",
+    "Lower slowly.",
+    "Keep your neck neutral."
+  ],
+  "textSource": "opengym"
+}

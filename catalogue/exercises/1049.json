@@ -1,0 +1,22 @@
+{
+  "id": "1049",
+  "name": "one leg kickback (with bench support)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "Support yourself on a bench and kick one leg back and up. It works the glutes without any equipment.",
+  "instructions": [
+    "Place your hands on a bench and step back into a hinged position.",
+    "Keep your back flat and your core braced.",
+    "Kick one leg straight back and up, squeezing your glute.",
+    "Lower without letting your hips rotate.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,39 @@
+{
+  "id": "0596",
+  "name": "lever seated fly",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "deltoids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "Seated on a machine, you bring the handles together in front of you with arms nearly straight. Isolates the chest.",
+  "instructions": [
+    "Adjust the seat height and position yourself on the machine with your back against the pad.",
+    "Grasp the handles with a pronated grip and keep your elbows slightly bent.",
+    "Exhale and push the handles forward, bringing them together in front of your chest.",
+    "Pause for a moment, squeezing your chest muscles.",
+    "Inhale and slowly return to the starting position, allowing your chest muscles to stretch.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "chest"
+    ],
+    "secondaries": [
+      "deltoids",
+      "biceps",
+      "serratus"
+    ],
+    "weights": {
+      "chest": 1,
+      "deltoids": 0.4,
+      "serratus": 0.4,
+      "biceps": 0
+    }
+  },
+  "femaleVariant": "2255",
+  "textSource": "exercisedb"
+}

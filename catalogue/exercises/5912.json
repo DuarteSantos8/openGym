@@ -1,0 +1,24 @@
+{
+  "id": "5912",
+  "name": "barbell weighted chains sumo deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "adductors",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Sumo deadlift with chains added to the bar for extra resistance near lockout, hitting the glutes, thighs and back.",
+  "instructions": [
+    "Loop chains over the ends of a barbell and take a wide stance, toes angled out.",
+    "Bend down and grip the bar with your hands inside your knees.",
+    "Brace your core and keep your chest up.",
+    "Push through your feet and stand, with the chains adding load as you rise.",
+    "Lock out your hips, then lower the bar with control."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "1747",
+  "name": "ez bar french press on exercise ball",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A french press with an EZ bar while seated on an exercise ball. Builds triceps strength and asks your core to keep you stable.",
+  "instructions": [
+    "Sit on an exercise ball and hold an EZ barbell with an overhand grip.",
+    "Extend your arms straight up, keeping your elbows close to your head.",
+    "Slowly lower the barbell behind your head by bending your elbows.",
+    "Pause for a moment, then extend your arms back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

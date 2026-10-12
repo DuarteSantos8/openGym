@@ -1,0 +1,21 @@
+{
+  "id": "3257",
+  "name": "standing one arm circling",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "One-arm circles to warm up the shoulder joint.",
+  "instructions": [
+    "Stand tall with feet shoulder-width apart.",
+    "Extend one arm out to the side.",
+    "Make slow circles, gradually larger.",
+    "Reverse the direction.",
+    "Switch arms."
+  ],
+  "textSource": "opengym"
+}

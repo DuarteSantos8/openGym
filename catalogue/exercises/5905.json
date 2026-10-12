@@ -1,0 +1,22 @@
+{
+  "id": "5905",
+  "name": "tiger curl pose",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower back",
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "yoga",
+  "description": "From hands and knees, you extend one leg back and curl the knee toward your nose. Works the abs and mobilizes the spine.",
+  "instructions": [
+    "Start on hands and knees with a neutral spine.",
+    "Extend one leg behind you and look slightly forward.",
+    "Round your back and draw the knee toward your nose.",
+    "Extend again and repeat for 6-8 reps.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

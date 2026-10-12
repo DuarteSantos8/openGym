@@ -1,0 +1,23 @@
+{
+  "id": "4684",
+  "name": "band kneeling incline press",
+  "bodyPart": "chest",
+  "equipment": "band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A kneeling upward press using a band. It targets the upper chest and shoulders.",
+  "instructions": [
+    "Anchor the band low behind you and kneel facing away from it.",
+    "Hold the ends at chest height.",
+    "Press your hands up and forward at an incline.",
+    "Squeeze your chest at the top.",
+    "Return slowly with control and repeat."
+  ],
+  "textSource": "opengym"
+}

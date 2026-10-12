@@ -1,0 +1,38 @@
+{
+  "id": "0301",
+  "name": "dumbbell decline bench press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A dumbbell press on a decline bench. The angle emphasises the lower chest.",
+  "instructions": [
+    "Lie down on a decline bench with your feet secured and your head lower than your hips.",
+    "Hold a dumbbell in each hand and extend your arms straight up above your chest, palms facing forward.",
+    "Lower the dumbbells slowly to the sides of your chest, keeping your elbows at a 90-degree angle.",
+    "Push the dumbbells back up to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "chest"
+    ],
+    "secondaries": [
+      "triceps",
+      "deltoids",
+      "biceps"
+    ],
+    "weights": {
+      "chest": 1,
+      "deltoids": 0.4,
+      "triceps": 0.4,
+      "biceps": 0
+    }
+  },
+  "femaleVariant": "2452",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5526",
+  "name": "hip circle with hula hoop",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "cardio",
+  "description": "Hooping around your waist with a hula hoop for light cardio and core engagement.",
+  "instructions": [
+    "Stand with feet shoulder width apart, holding the hoop against your lower back.",
+    "Give it a push and start swinging your hips in circles.",
+    "Keep the motion smooth and steady.",
+    "Stay tall with a braced core.",
+    "Continue for a set time, then switch direction."
+  ],
+  "textSource": "opengym"
+}

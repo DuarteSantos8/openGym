@@ -1,0 +1,23 @@
+{
+  "id": "5076",
+  "name": "dumbbell overhead lunge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "core",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Hold two dumbbells overhead and lunge. The load above you trains balance, core and shoulder stability along with leg strength.",
+  "instructions": [
+    "Press two dumbbells overhead with straight arms.",
+    "Step forward into a lunge, lowering your back knee toward the floor.",
+    "Keep your core tight and the dumbbells over your shoulders.",
+    "Push off the front foot to come back.",
+    "Alternate legs each rep."
+  ],
+  "textSource": "opengym"
+}

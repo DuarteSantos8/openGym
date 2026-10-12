@@ -1,0 +1,23 @@
+{
+  "id": "6304",
+  "name": "dancer pose natarajasana",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes",
+    "chest",
+    "shoulders"
+  ],
+  "category": "yoga",
+  "description": "A standing balance with a back-held leg and a forward reach. It stretches the quads and opens the chest.",
+  "instructions": [
+    "Stand tall and bend one knee, holding that foot behind you.",
+    "Kick your foot back into your hand.",
+    "Reach your free arm forward.",
+    "Tilt your torso forward as the leg lifts.",
+    "Hold for 20-30 seconds, then switch."
+  ],
+  "textSource": "opengym"
+}

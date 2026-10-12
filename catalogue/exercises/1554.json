@@ -1,0 +1,22 @@
+{
+  "id": "1554",
+  "name": "dumbbell split jump",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A jumping lunge where you switch legs in the air while holding dumbbells. It builds explosive leg power.",
+  "instructions": [
+    "Hold a dumbbell in each hand and step into a lunge position.",
+    "Lower until both knees are bent at about 90 degrees.",
+    "Explode upward and swap your leg positions in the air.",
+    "Land softly in a lunge with the opposite leg forward.",
+    "Keep your torso upright and move fluidly from rep to rep."
+  ],
+  "textSource": "opengym"
+}

@@ -8,12 +8,12 @@ theme, so a version is out before the branch has drifted and every fix reaches p
 fortnight. Whatever is not merged and tested on gym-test by the Friday before rolls into the next
 block, the date does not move. Version numbers follow the release rule, not the size of the change:
 the next release is the last published one plus one patch (1.3.7 → 1.3.8), and a minor bump is
-reserved for something that breaks compatibility, like the new exercise database (v1.4.0).
+reserved for a step as big as the new exercise database (v1.4.0).
 
 - Milestones: https://github.com/DuarteSantos8/openGym/milestones (every open issue sits in exactly one)
-- Tracks, in order: fixes and community features → the new exercise database → programmes → the progression
-  engine → cardio → search → accounts → the iOS app → Android and health → looks and social,
-  with database storage after that
+- Tracks, in order: the new exercise database with the community round (v1.4.0) → programmes → the
+  progression engine → cardio → sharing and gyms → accounts → the iOS app → Android and health →
+  looks and social, with database storage after that
 
 ---
 
@@ -122,34 +122,32 @@ the full list.
 - Still to come from the old block: undo finish (GitLab !130), relabelling an "Unknown" exercise
   after an import, body measurements (PR #82), drag-and-drop on touch (#114)
 
-## v1.3.11: Fixes, community pull requests and the most-asked features  (2026-10-18)
+## v1.4.0: A new exercise database, plus everything planned for v1.3.11 and v1.3.12  (released 2026-10-09)
 
-The round right after the redesign. Already on gym-test as a release candidate: about thirty
-community pull requests, the rest chime that plays with the screen off, pairing the Android app
-over plain http on your own network, smoother exercise swipes and pyramid weights over MCP. On top,
-the things people asked for most on Discord: Health Connect (#371), body measurements (#82), a 1RM
-formula picker (#195), collapsing finished exercises (#241), editing supersets (#292, #293) and time
-per side (#444).
+v1.3.11 and v1.3.12 never shipped on their own: their release candidate grew into this one, so a
+single update brings the new catalogue and two rounds of community work. **No data changes:**
+every exercise id that ever shipped keeps its number, name and muscles, so history, routines,
+records and backups stay exactly as they are, and a phone on v1.3.x keeps working with a v1.4.0
+server.
 
-## v1.3.12: Community features  (2026-11-01)
-
-The long-waiting community pull requests that need a rebase or a design call: a focus view (#222),
-the timer rework (#165), a home-screen widget (#299), distance for cardio (#177) and showing last and
-next on the finish sheet (#324).
-
-## v1.4.0: A new exercise database  (2026-11-15)
-
-**The one compatibility step.** The exercise catalogue is replaced by a new, licensed one with
-proper animations, which means exercise ids change. Your history, routines, custom exercises,
-favourites and import aliases are migrated on first start, so nothing you logged gets lost. Old
-apps keep working until they update. Details follow once it is ready.
-
-- New catalogue with names, muscles, equipment and instructions in every app language
-- Bench with flat / adjustable, TRX / suspension, lats and the three delts as their own
-  categories, exercises that should not carry weight, more routine icons (#132, #188; Discord)
-- Media on built-in exercises and picking a picture from the catalogue for your own (#259)
-- One progress line per set number (#145); custom heatmap targets per muscle; a shareable image
-  after a workout (Discord)
+- **5,632 exercises instead of 1,324**, with new licensed animations (sharper in the app), a
+  description and steps for each, names in every app language, a type filter (strength,
+  stretching, mobility, yoga...) and male or female drawings where both exist
+- The catalogue lives in the repository (`catalogue/`), one file per exercise, open to fixes and
+  translations by pull request; "Suggest a fix" in the app opens an issue for one exercise
+- Search rebuilt: results ranked, typo tolerance, gym shorthand (db, rdl, ohp), plurals, similar
+  exercises under the results (#192, pulled forward from v1.4.5)
+- The v1.3.11 round: Health Connect (#371), body measurements (#82), a 1RM formula picker (#195),
+  collapsing finished exercises (#241), superset name and rest (#292, #293), focus view (#222),
+  last and next on the finish sheet (#324), share a workout as an image (#453), pyramid weights
+  (#445), bench and pull-up bar as equipment, Bengali, a Helm chart and a Nix module
+- From later milestones: a "to failure" set and triple progression (#179, from v1.4.2), treadmill
+  incline (from v1.4.4), per-dumbbell weights (#474) and a dumbbell inventory (#376), back-off
+  sets (PR #475), a sets-based fatigue map (PR #436), a note for a missed day (#261), the rest-end
+  sound of your choice (#306), exercise chips at the top of the workout (#323), Garmin .fit export
+  (#447), Cloudflare Access for the app (PR #439), a web image without root (PR #466)
+- Still open from the old v1.3.12 list: the timer rework (#165), a home-screen widget (#299) and
+  distance for cardio (#177), now in their own milestones below
 
 ## v1.4.1: Programmes & phases  (2026-11-29)
 
@@ -160,11 +158,9 @@ apps keep working until they update. Details follow once it is ready.
 
 ## v1.4.2: Progression engine I  (2026-12-13)
 
-- A universal AMRAP / "to failure" flag and rep or set ranges per set (#154; Discord "Sets to
-  Failure", "More types of sets")
-- Triple progression, reps → sets → load (#179, #186; PR #181)
-- Multi-formula 1RM with Epley as the default shown (#155); assisted exercises as negative added
-  weight (#176)
+- Rep or set ranges per set and AMRAP targets beyond the "to failure" flag (#154; Discord "More
+  types of sets"); the flag itself and triple progression came early in v1.4.0 (#179)
+- Assisted exercises as negative added weight (#176); the multi-formula 1RM came in v1.4.0 (#155)
 
 ## v1.4.3: Progression engine II  (2026-12-27)
 
@@ -175,17 +171,17 @@ apps keep working until they update. Details follow once it is ready.
 
 ## v1.4.4: Cardio, alternatives, groups  (2027-01-10)
 
-- Cardio: incline and intervals (rounds × work/rest), interval programmes such as C25k, rucking as
-  distance + pace + load (#132, #169; Discord "incline treadmill", "cardio programs", "rucking")
+- Cardio: intervals (rounds × work/rest), interval programmes such as C25k, rucking as distance +
+  pace + load, distance for cardio (#132, #169, #177; Discord "cardio programs", "rucking");
+  treadmill incline came early in v1.4.0
 - Exercise alternatives per routine slot (Discord); Replace in the routine editor came in v1.3.9
   (#110)
 - Complexes and interval groups beside supersets (Discord)
 
-## v1.4.5: Search  (2027-01-24)
+## v1.4.5: Sharing, gyms, admin  (2027-01-24)
 
-- Search rebuilt over the new catalogue names in every language, import aliases, custom exercises and
-  history: typo tolerance (GitLab !122), a live result count (!31), filters that compose, built once
-  per catalogue version (#192)
+- Search itself was rebuilt in v1.4.0 (#192); left here: searching your own history and import
+  aliases by name
 - Shared custom exercises between accounts on one instance (#151)
 - "Different gyms": a location on a logged set, separate histories and PRs per location, bodyweight
   shared (Discord "How to deal with different gyms")
@@ -216,7 +212,8 @@ apps keep working until they update. Details follow once it is ready.
 - Health Connect for weight and sessions (Discord "Use health connect", pulled forward into v1.3.11); Withings and other scales
   (#127)
 - The rest timer as an ongoing notification on the lock screen (#122, PR #296) (shipped in v1.3.9); a
-  home-screen widget (#125)
+  home-screen widget (#125, #299) and logging a set from the lock screen (Discord); the timer
+  rework (#165)
 - APK ABI filters (#136) (shipped in v1.3.9), about 12 MB smaller; the auto-backup directory picker (#161,
   second half)
 - Media for the routine's exercises cached on the phone, so a session works with no signal (#123;

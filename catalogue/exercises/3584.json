@@ -1,0 +1,23 @@
+{
+  "id": "3584",
+  "name": "side bridge with arm leg swing",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "shoulders",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A side plank with the top arm and leg swinging, challenging the obliques and balance.",
+  "instructions": [
+    "Lie on one side and prop yourself on your forearm.",
+    "Lift your hips into a straight line.",
+    "Raise the top leg and arm.",
+    "Swing them toward each other under control.",
+    "Keep your hips high, then switch sides."
+  ],
+  "textSource": "opengym"
+}

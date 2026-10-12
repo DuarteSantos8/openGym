@@ -1,0 +1,22 @@
+{
+  "id": "0973",
+  "name": "band calf raise v. 2",
+  "bodyPart": "lower legs",
+  "equipment": "band",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "Rise onto your toes against band resistance. It builds calf strength and ankle stability.",
+  "instructions": [
+    "Sit or stand with the band looped under the balls of your feet.",
+    "Hold the ends firmly so the band is taut.",
+    "Press up onto your toes as high as you can.",
+    "Pause at the top, then lower slowly.",
+    "Keep your ankles straight and avoid rolling out."
+  ],
+  "textSource": "opengym"
+}

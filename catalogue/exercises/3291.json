@@ -1,0 +1,22 @@
+{
+  "id": "3291",
+  "name": "stalder press",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A gymnastics press where you shift your weight over the hands and lift the body up with straight arms. It trains the triceps and shoulders.",
+  "instructions": [
+    "Start by standing with your feet shoulder-width apart and your arms extended overhead.",
+    "Bend your knees slightly and engage your core.",
+    "Lower your body down into a squat position while keeping your arms extended overhead.",
+    "As you squat down, press your arms down towards the ground, engaging your triceps.",
+    "Pause for a moment at the bottom of the squat, then push through your heels to stand back up while simultaneously raising your arms back overhead.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

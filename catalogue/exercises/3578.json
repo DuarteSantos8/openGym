@@ -1,0 +1,22 @@
+{
+  "id": "3578",
+  "name": "kettlebell slingshot",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "core",
+    "forearms",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Pass a kettlebell around your waist in a circle to build core control and coordination.",
+  "instructions": [
+    "Stand with feet shoulder width apart and hold the kettlebell in one hand.",
+    "Pass it behind your back to the other hand.",
+    "Bring it around your waist to the front.",
+    "Keep your hips square and core tight.",
+    "Repeat in the same direction, then reverse."
+  ],
+  "textSource": "opengym"
+}

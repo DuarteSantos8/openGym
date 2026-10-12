@@ -1,0 +1,22 @@
+{
+  "id": "5904",
+  "name": "thread the needle pose",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "shoulders",
+    "rotator cuff"
+  ],
+  "category": "yoga",
+  "description": "A gentle twist from hands and knees. Loosens the upper back and shoulders.",
+  "instructions": [
+    "Start on hands and knees.",
+    "Slide one arm under your chest and rest your shoulder on the floor.",
+    "Keep your hips over your knees.",
+    "Hold for 5 slow breaths.",
+    "Return and switch arms."
+  ],
+  "textSource": "opengym"
+}

@@ -70,6 +70,11 @@ server {
         # CF_CONNECTING_IP=$http_cf_connecting_ip to let the real one through — correct only when
         # Cloudflare is genuinely in front, because that is what overwrites a client-supplied one.
         proxy_set_header CF-Connecting-IP "${CF_CONNECTING_IP}";
+        # A Coach call waits on a model, not on a database: the admin's connection test and a
+        # manual review can both take minutes on a slow endpoint. nginx's 60 s default answered
+        # 504 here while the API was still working on it, which told the admin the wrong thing.
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
     }
 
     # Photos and videos of custom exercises (PUT and GET under api/media/). Nginx picks the
@@ -137,10 +142,34 @@ server {
         add_header Content-Security-Policy "frame-ancestors 'none'" always;
     }
 
-    # Exercise images/GIFs never change → cache hard.
+    # The exercise stills and animations, licensed from Gym visual for openGym only (NOTICE.md).
+    # Cross-Origin-Resource-Policy keeps another site from showing them in its own pages: the
+    # browser refuses a cross-origin <img> or <video> of them. The app loads them same-origin
+    # (the mobile app ships its own copy), so nothing of openGym's is affected. `^~` so this
+    # prefix beats the image regex below; that one's caching is repeated in the nested block,
+    # and so are the headers, since an add_header replaces the inherited set (see the top).
+    location ^~ ${BASE_PATH}/exercise-media/ {
+        rewrite ^\Q${BASE_PATH}\E/(.*)$ /$1 break;
+        add_header Cross-Origin-Resource-Policy "same-origin" always;
+        add_header X-Frame-Options "DENY" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "same-origin" always;
+        add_header Content-Security-Policy "frame-ancestors 'none'" always;
+        location ~* \.(png|jpg|jpeg|gif|webp|avif|mp4)$ {
+            rewrite ^\Q${BASE_PATH}\E/(.*)$ /$1 break;
+            add_header Cache-Control "public, max-age=2592000, immutable";
+            add_header Cross-Origin-Resource-Policy "same-origin" always;
+            add_header X-Frame-Options "DENY" always;
+            add_header X-Content-Type-Options "nosniff" always;
+            add_header Referrer-Policy "same-origin" always;
+            add_header Content-Security-Policy "frame-ancestors 'none'" always;
+        }
+    }
+
+    # Images and fonts never change → cache hard.
     # `expires` would add a second Cache-Control of its own (plus an Expires header) on top of the
     # explicit one below, so the header is set once, here, where `immutable` can be part of it.
-    location ~* \.(png|jpg|jpeg|gif|ico|svg|woff|woff2|webp|avif)$ {
+    location ~* \.(png|jpg|jpeg|gif|ico|svg|woff|woff2|webp|avif|mp4)$ {
         # A regex location wins over the prefix block above, so it never saw its rewrite and
         # looked for the file under the prefix on disk. Same identity-when-empty rewrite here.
         rewrite ^\Q${BASE_PATH}\E/(.*)$ /$1 break;

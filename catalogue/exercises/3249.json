@@ -1,0 +1,22 @@
+{
+  "id": "3249",
+  "name": "two front toe touching",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "obliques"
+  ],
+  "category": "mobility",
+  "description": "A wider standing toe touch that reaches down with both hands to warm up the legs and back.",
+  "instructions": [
+    "Stand with feet wide apart.",
+    "Hinge forward with both arms reaching down.",
+    "Touch the floor or your toes.",
+    "Rise slowly.",
+    "Repeat for the set."
+  ],
+  "textSource": "opengym"
+}

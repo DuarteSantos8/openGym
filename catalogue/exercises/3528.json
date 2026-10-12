@@ -1,0 +1,23 @@
+{
+  "id": "3528",
+  "name": "downward facing dog spine mobility",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "hamstrings",
+    "shoulders",
+    "core"
+  ],
+  "category": "yoga",
+  "description": "A downward dog flowing with gentle spine movement. It loosens the back and hamstrings.",
+  "instructions": [
+    "Start in a downward facing dog.",
+    "Bend one knee, then the other, pedaling gently.",
+    "Shift your hips side to side.",
+    "Let your spine twist a little.",
+    "Keep your hands pressed into the floor.",
+    "Breathe slowly."
+  ],
+  "textSource": "opengym"
+}

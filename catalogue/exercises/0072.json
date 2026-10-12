@@ -1,0 +1,25 @@
+{
+  "id": "0072",
+  "name": "barbell prone incline curl",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Lying face down on an incline bench, you curl the bar up. Works the biceps with a strict stretch at the bottom.",
+  "instructions": [
+    "Set up an incline bench at a 45-degree angle.",
+    "Lie face down on the bench with your chest and stomach resting against it.",
+    "Hold a barbell with an underhand grip, shoulder-width apart.",
+    "Extend your arms fully, allowing the barbell to hang down towards the floor.",
+    "Keeping your upper arms stationary, exhale and curl the weights while contracting your biceps.",
+    "Continue to raise the barbell until your biceps are fully contracted and the bar is at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale and slowly begin to lower the barbell back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2506",
+  "textSource": "exercisedb"
+}

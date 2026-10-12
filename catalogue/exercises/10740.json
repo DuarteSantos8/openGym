@@ -1,0 +1,22 @@
+{
+  "id": "10740",
+  "name": "stick lying single arm triceps stretch",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "lats"
+  ],
+  "category": "stretching",
+  "description": "A triceps stretch on the floor using a stick to deepen the stretch. It opens the back of your upper arm and shoulder.",
+  "instructions": [
+    "Lie on your back holding a stick in both hands.",
+    "Bend one arm and take that hand behind your head.",
+    "Use the other hand to push the stick and press that elbow down.",
+    "Hold for 20-30 seconds.",
+    "Keep your neck relaxed.",
+    "Switch arms."
+  ],
+  "textSource": "opengym"
+}

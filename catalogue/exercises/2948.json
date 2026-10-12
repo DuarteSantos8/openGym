@@ -1,0 +1,21 @@
+{
+  "id": "2948",
+  "name": "roll pec foam rolling",
+  "bodyPart": "chest",
+  "equipment": "roller",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "mobility",
+  "description": "Rolling the chest on a foam roller. It can loosen tight pecs before pressing or after desk work.",
+  "instructions": [
+    "Lie face down and place the roller under one side of your chest.",
+    "Extend that arm out to the side.",
+    "Roll slowly side to side and up and down.",
+    "Pause on tight spots for a few seconds.",
+    "Switch sides and keep the pressure comfortable."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1689",
+  "name": "push and pull bodyweight",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "deltoids"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight movement of pushing and pulling against your own resistance. It trains the chest and arms.",
+  "instructions": [
+    "Start in a push-up position with your hands slightly wider than shoulder-width apart and your body in a straight line.",
+    "Lower your chest towards the ground by bending your elbows, keeping your body straight.",
+    "Push through your palms to extend your arms and return to the starting position.",
+    "From the push-up position, pull your chest towards the ground by bending your elbows, keeping your body straight.",
+    "Push through your palms to extend your arms and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

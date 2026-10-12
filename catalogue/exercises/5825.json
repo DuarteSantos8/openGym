@@ -1,0 +1,23 @@
+{
+  "id": "5825",
+  "name": "smith rear lunge v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A reverse lunge using the Smith machine for a fixed bar path. It works the glutes and quads with extra stability.",
+  "instructions": [
+    "Set the bar on your upper back and stand tall.",
+    "Step one foot back behind you.",
+    "Lower until your front thigh is about parallel to the floor.",
+    "Push through your front heel to return.",
+    "Finish your reps, then switch legs."
+  ],
+  "femaleVariant": "0887",
+  "textSource": "opengym"
+}

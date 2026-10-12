@@ -1,0 +1,22 @@
+{
+  "id": "11903",
+  "name": "standing hip flexors stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "A standing stretch for the front of the hip and thigh, useful after long periods of sitting.",
+  "instructions": [
+    "Stand tall and hold a wall or support for balance.",
+    "Bend one knee and bring your heel toward your glute, holding the ankle.",
+    "Tuck your pelvis slightly and push your hips gently forward.",
+    "Keep your knees close together and your chest upright.",
+    "Hold for 20-30 seconds, then switch legs."
+  ],
+  "textSource": "opengym"
+}

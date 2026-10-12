@@ -1,0 +1,24 @@
+{
+  "id": "0233",
+  "name": "cable standing rear delt row (with rope)",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rhomboids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A standing cable row with a rope or attachment pulled toward the body. It targets the rear delts and upper back.",
+  "instructions": [
+    "Stand facing a cable machine with your feet shoulder-width apart.",
+    "Hold the cable attachment with both hands, palms facing each other, and step back to create tension in the cable.",
+    "Keep your back straight and your core engaged.",
+    "Pull the cable towards your body, squeezing your shoulder blades together.",
+    "Pause for a moment at the peak of the movement, then slowly release the cable back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2882",
+  "textSource": "exercisedb"
+}

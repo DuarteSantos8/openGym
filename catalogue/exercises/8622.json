@@ -1,0 +1,22 @@
+{
+  "id": "8622",
+  "name": "seated incline chest press on a chair",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A seated press angled upward to emphasise the upper chest.",
+  "instructions": [
+    "Sit tall near the front of a sturdy chair with your feet flat on the floor.",
+    "Brace your core and keep your shoulders relaxed.",
+    "Start with your hands near your chest.",
+    "Press them diagonally up and forward until your arms are straight.",
+    "Lower back to the chest slowly."
+  ],
+  "textSource": "opengym"
+}

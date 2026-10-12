@@ -1,0 +1,23 @@
+{
+  "id": "1796",
+  "name": "standing reach up back rotation stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "obliques",
+    "upper back",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "Reaching one arm up and rotating your trunk stretches the lats and the muscles around your spine. It also gives your mid back some rotation.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and reach one arm overhead.",
+    "Rotate your upper body gently away from the raised arm and reach up and over.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "femaleVariant": "4321",
+  "textSource": "opengym"
+}

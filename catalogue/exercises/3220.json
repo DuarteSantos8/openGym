@@ -1,0 +1,23 @@
+{
+  "id": "3220",
+  "name": "astride jumps (male)",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A jump from a squat that ends with the legs spread wide, like a jumping jack with a squat start. It raises the heart rate and trains the legs.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Bend your knees and lower your body into a squat position.",
+    "Jump explosively upwards, extending your legs and arms.",
+    "While in the air, spread your legs apart and bring your arms out to the sides.",
+    "Land softly with your feet shoulder-width apart, bending your knees to absorb the impact.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4961",
+  "name": "dumbbell prone triceps kickback",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A triceps kickback performed lying face down on an incline bench. It isolates the triceps.",
+  "instructions": [
+    "Lie face down on an incline bench holding dumbbells.",
+    "Bend your elbows to 90 degrees and keep your upper arms close.",
+    "Extend your elbows until your arms are straight.",
+    "Squeeze the triceps.",
+    "Lower slowly.",
+    "Keep your upper arms still."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "3229",
+  "name": "lying back extension with press",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "triceps",
+    "glutes",
+    "upper back",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A lying back extension where you also press your arms forward at the top. It adds shoulder work to a back extension.",
+  "instructions": [
+    "Lie face down with your hands near your shoulders.",
+    "Lift your chest off the floor.",
+    "Press your arms forward in front of you.",
+    "Pull them back to your shoulders.",
+    "Lower your chest slowly.",
+    "Keep your neck long throughout."
+  ],
+  "femaleVariant": "3209",
+  "textSource": "opengym"
+}

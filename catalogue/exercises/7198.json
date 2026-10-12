@@ -1,0 +1,23 @@
+{
+  "id": "7198",
+  "name": "resistance band glute bridge abduction",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A glute bridge with a band around the knees, pressing out to light up the side glutes.",
+  "instructions": [
+    "Lie on your back with your knees bent and the band just above your knees.",
+    "Press through your heels to lift your hips.",
+    "At the top, push your knees apart against the band.",
+    "Bring the knees back together.",
+    "Lower your hips slowly.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

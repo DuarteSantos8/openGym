@@ -1,0 +1,22 @@
+{
+  "id": "2874",
+  "name": "leg pull front supported",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "pilates",
+  "description": "A Pilates plank variation with a leg lift that builds core and shoulder stability.",
+  "instructions": [
+    "Start in a high plank with hands under your shoulders.",
+    "Keep your body in one straight line from head to heels.",
+    "Lift one leg a few inches without shifting your hips.",
+    "Lower it and repeat on the other leg.",
+    "Keep your abs tight and your neck long."
+  ],
+  "textSource": "opengym"
+}

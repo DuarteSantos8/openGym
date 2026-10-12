@@ -1,0 +1,22 @@
+{
+  "id": "7176",
+  "name": "lever seated calf press v. 2",
+  "bodyPart": "lower legs",
+  "equipment": "leverage machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "A seated machine calf press that pushes through the balls of the feet. It builds the calf muscles.",
+  "instructions": [
+    "Sit in the machine and place the balls of your feet on the platform.",
+    "Extend your knees almost fully.",
+    "Press up as high as you can onto your toes.",
+    "Pause at the top.",
+    "Lower your heels slowly for a good stretch."
+  ],
+  "textSource": "opengym"
+}

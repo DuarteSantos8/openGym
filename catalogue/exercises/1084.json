@@ -1,0 +1,23 @@
+{
+  "id": "1084",
+  "name": "suspension mountain climber",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Mountain climbers with feet in straps, which adds instability. It trains the core and conditioning.",
+  "instructions": [
+    "Start in a plank with your feet in the straps.",
+    "Keep your hands under your shoulders.",
+    "Drive one knee toward your chest.",
+    "Switch legs in a quick running rhythm.",
+    "Keep your hips level.",
+    "Continue for the set."
+  ],
+  "textSource": "opengym"
+}

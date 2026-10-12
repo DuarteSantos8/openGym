@@ -1,0 +1,23 @@
+{
+  "id": "4663",
+  "name": "backhand raise",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "Lifting your arms behind you from a face-down position. It strengthens the rear shoulders and upper back.",
+  "instructions": [
+    "Lie face down with your arms by your sides, palms up.",
+    "Lift your chest and arms slightly off the floor.",
+    "Raise your hands up and back by squeezing your shoulder blades.",
+    "Pause at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

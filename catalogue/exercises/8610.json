@@ -1,0 +1,22 @@
+{
+  "id": "8610",
+  "name": "chinese plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A plank variation held with a modified base that challenges core stability.",
+  "instructions": [
+    "Set up in a plank on your forearms with elbows under shoulders.",
+    "Squeeze your glutes and brace your abs.",
+    "Keep your body in one straight line.",
+    "Breathe steadily and hold for 20-40 seconds.",
+    "Lower down to rest."
+  ],
+  "textSource": "opengym"
+}

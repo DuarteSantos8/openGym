@@ -1,0 +1,22 @@
+{
+  "id": "0273",
+  "name": "crunch (straight leg up)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch with your legs pointing straight up so you reach toward your toes. It works the abs with less hip flexor pull.",
+  "instructions": [
+    "Lie on your back with your legs straight up toward the ceiling.",
+    "Extend your arms toward your feet.",
+    "Curl your shoulders off the floor and reach toward your toes.",
+    "Squeeze your abs at the top.",
+    "Lower slowly.",
+    "Keep your legs still and your neck relaxed."
+  ],
+  "textSource": "opengym"
+}

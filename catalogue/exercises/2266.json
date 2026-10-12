@@ -1,0 +1,23 @@
+{
+  "id": "2266",
+  "name": "lever back extension v. 2",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A machine back extension that strengthens the muscles along the lower back with support from the pad.",
+  "instructions": [
+    "Adjust the machine and sit with your back against the pad.",
+    "Cross your arms or hold the handles as the machine allows.",
+    "Push back by extending at the hips and lower back.",
+    "Stop when your torso is in a neutral, tall position.",
+    "Return slowly to the start.",
+    "Repeat for the planned reps."
+  ],
+  "femaleVariant": "5184",
+  "textSource": "opengym"
+}

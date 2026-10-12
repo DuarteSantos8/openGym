@@ -1,0 +1,24 @@
+{
+  "id": "4499",
+  "name": "bodyweight full squat with overhead press",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "core",
+    "triceps"
+  ],
+  "category": "plyometrics",
+  "description": "A deep squat followed by a press overhead. Warms up legs and shoulders together.",
+  "instructions": [
+    "Stand with feet shoulder width apart and hands at your shoulders.",
+    "Squat down until your thighs pass parallel.",
+    "Drive up through your heels as you stand.",
+    "Press both arms overhead as you reach the top.",
+    "Lower your hands back to your shoulders.",
+    "Repeat in a smooth rhythm."
+  ],
+  "textSource": "opengym"
+}

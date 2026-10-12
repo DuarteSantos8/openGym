@@ -1,0 +1,22 @@
+{
+  "id": "6074",
+  "name": "bottle weighted lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "weighted",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A side raise with bottles that builds the shoulder caps.",
+  "instructions": [
+    "Stand tall with a bottle in each hand at your sides.",
+    "Raise your arms out to the sides up to shoulder height.",
+    "Lead with your elbows.",
+    "Pause briefly.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

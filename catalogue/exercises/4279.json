@@ -1,0 +1,23 @@
+{
+  "id": "4279",
+  "name": "boat stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A seated stretch that opens up the front of the torso and abs. It leaves your midsection feeling long and loose.",
+  "instructions": [
+    "Lie on your stomach with your legs together.",
+    "Place your hands under your shoulders.",
+    "Press up, lifting your chest and straightening your arms.",
+    "Keep your hips on the floor.",
+    "Hold for 20-30 seconds.",
+    "Lower slowly and relax."
+  ],
+  "textSource": "opengym"
+}

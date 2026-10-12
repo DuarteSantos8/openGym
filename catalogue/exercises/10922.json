@@ -1,0 +1,21 @@
+{
+  "id": "10922",
+  "name": "standing back achilles stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "A standing stretch for the back of the lower leg and the Achilles area.",
+  "instructions": [
+    "Stand facing a wall and step one foot back.",
+    "Keep the back heel down and the knee slightly bent.",
+    "Lean forward until you feel the stretch low in the calf.",
+    "Hold for 20-30 seconds.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

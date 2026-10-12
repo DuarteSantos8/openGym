@@ -1,0 +1,22 @@
+{
+  "id": "8083",
+  "name": "cable straight leg diagonal kickback",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing cable kickback with a straight leg, driven back and slightly out to the side. It isolates the glutes.",
+  "instructions": [
+    "Attach an ankle cuff to a low cable pulley and strap it to one ankle.",
+    "Face the machine and hold the frame for balance.",
+    "Keep your leg straight and kick it back and slightly out to the side.",
+    "Squeeze your glute at the top without leaning forward.",
+    "Return slowly without letting the weight stack touch down.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "10906",
+  "name": "bodyweight split squat hold",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "A held split stance that opens the front of the hip and loads the front thigh.",
+  "instructions": [
+    "Step one foot far forward and the other back into a split stance.",
+    "Lower your hips until the front knee is bent to about 90 degrees.",
+    "Keep your torso upright and your front heel down.",
+    "Hold for 20-30 seconds, breathing steadily.",
+    "Rise up and switch legs."
+  ],
+  "textSource": "opengym"
+}

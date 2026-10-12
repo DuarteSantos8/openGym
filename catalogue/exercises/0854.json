@@ -1,0 +1,21 @@
+{
+  "id": "0854",
+  "name": "weighted standing hand squeeze",
+  "bodyPart": "lower arms",
+  "equipment": "weighted",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "biceps",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A standing hand squeeze holding weights, squeezing the hands together. It works the forearms and grip.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a weight in each hand.",
+    "Extend your arms straight in front of you, palms facing each other.",
+    "Squeeze your hands together as hard as you can, engaging your forearms.",
+    "Hold the squeeze for a few seconds, then release.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

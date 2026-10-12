@@ -1,0 +1,23 @@
+{
+  "id": "7251",
+  "name": "hanging front lever raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "lats",
+    "hip flexors",
+    "grip muscles"
+  ],
+  "category": "calisthenics",
+  "description": "Hanging straight-body raise toward a front lever position that challenges your abs and lats.",
+  "instructions": [
+    "Hang from a pull-up bar with a firm grip.",
+    "Pull your shoulders down and tighten your core.",
+    "Raise your straight body up toward horizontal, keeping your arms straight.",
+    "Hold the top position for a moment.",
+    "Lower slowly without swinging."
+  ],
+  "textSource": "opengym"
+}

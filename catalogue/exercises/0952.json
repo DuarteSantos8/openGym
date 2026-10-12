@@ -1,0 +1,23 @@
+{
+  "id": "0952",
+  "name": "half moon pose ardha chandrasana",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "adductors",
+    "core",
+    "hamstrings",
+    "shoulders"
+  ],
+  "category": "yoga",
+  "description": "Balance on one leg with the torso and top leg extended sideways. It strengthens the standing leg and hips and tests your balance.",
+  "instructions": [
+    "Start in a wide-legged stance and turn one foot out.",
+    "Bend over that leg and place your hand on the floor or a block ahead of the foot.",
+    "Lift the back leg until it is parallel to the floor.",
+    "Open your chest and stack your hips, reaching the top arm up.",
+    "Hold for a few breaths, then lower and switch sides."
+  ],
+  "textSource": "opengym"
+}

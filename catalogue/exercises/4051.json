@@ -1,0 +1,22 @@
+{
+  "id": "4051",
+  "name": "side lying leg raise",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on your side, you lift the top leg. It works the outer hip and glutes.",
+  "instructions": [
+    "Lie on your side with your legs stacked and your head supported.",
+    "Keep your hips stacked and core braced.",
+    "Lift the top leg up with the toes pointing forward.",
+    "Pause at the top.",
+    "Lower slowly, finish the reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

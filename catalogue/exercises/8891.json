@@ -1,0 +1,23 @@
+{
+  "id": "8891",
+  "name": "weighted bag good morning",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Hinging forward with a weighted bag on your back trains the hamstrings, glutes and lower back. It teaches a strong hip hinge.",
+  "instructions": [
+    "Place the weighted bag across your upper back and hold it in place.",
+    "Stand with your feet hip width and your knees slightly bent.",
+    "Push your hips back and lower your torso with a flat back.",
+    "Go down until you feel a stretch in the hamstrings.",
+    "Drive your hips forward to stand tall again.",
+    "Keep your neck neutral all the way."
+  ],
+  "textSource": "opengym"
+}

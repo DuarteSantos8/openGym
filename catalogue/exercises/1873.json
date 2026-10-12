@@ -1,0 +1,20 @@
+{
+  "id": "1873",
+  "name": "lever leg extension (plate loaded)",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "Plate-loaded leg extension that isolates the front of the thighs.",
+  "instructions": [
+    "Sit with your back against the pad and your shins behind the roller.",
+    "Hold the handles.",
+    "Extend your knees until your legs are straight.",
+    "Squeeze your quads at the top.",
+    "Lower slowly under control."
+  ],
+  "textSource": "opengym"
+}

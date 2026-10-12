@@ -1,0 +1,21 @@
+{
+  "id": "1373",
+  "name": "bodyweight standing calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet"
+  ],
+  "category": "calisthenics",
+  "description": "A standing calf raise using just your body weight. It strengthens the calves and ankles and needs no equipment.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, toes pointing forward.",
+    "Place your hands on a wall or stable surface for balance.",
+    "Slowly raise your heels off the ground, lifting your body weight onto the balls of your feet.",
+    "Pause for a moment at the top, then slowly lower your heels back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

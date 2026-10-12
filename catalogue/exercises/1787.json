@@ -1,0 +1,21 @@
+{
+  "id": "1787",
+  "name": "straight arms backward chest stretch",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "stretching",
+  "description": "Reaching straight arms backward opens your chest and the front of your shoulders. Simple, quick and good between sets or after a desk session.",
+  "instructions": [
+    "Stand tall with your feet hip-width apart and reach both straight arms behind you.",
+    "Lift your arms slightly and open your chest without leaning back.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "5471",
+  "name": "rounded back extension",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "Hip-extension variation on a back extension bench where you keep a relaxed, rounded upper back to bias the glutes and hamstrings.",
+  "instructions": [
+    "Set the pad at hip height and hook your heels under the rollers.",
+    "Cross your arms on your chest and let your upper back round slightly.",
+    "Lower your torso until you feel a stretch in the hamstrings.",
+    "Squeeze your glutes and lift until your body is nearly in line.",
+    "Stop before overarching and repeat with control."
+  ],
+  "textSource": "opengym"
+}

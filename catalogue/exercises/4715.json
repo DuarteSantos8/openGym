@@ -1,0 +1,22 @@
+{
+  "id": "4715",
+  "name": "alternating superman v. 2",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "rear deltoids",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "Lifting opposite arm and leg while face down to strengthen the lower back and glutes.",
+  "instructions": [
+    "Lie face down with arms extended overhead.",
+    "Raise your right arm and left leg.",
+    "Hold briefly and lower.",
+    "Raise your left arm and right leg.",
+    "Keep your neck neutral and move smoothly."
+  ],
+  "textSource": "opengym"
+}

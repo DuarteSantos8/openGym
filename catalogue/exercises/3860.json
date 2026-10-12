@@ -1,0 +1,24 @@
+{
+  "id": "3860",
+  "name": "weighted plate bent over row",
+  "bodyPart": "back",
+  "equipment": "weight plate",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A rowing movement holding a weight plate, good for the mid back and for grip strength.",
+  "instructions": [
+    "Hold a weight plate firmly with both hands at its edges.",
+    "Hinge forward at the hips with a flat back and slightly bent knees.",
+    "Let the plate hang below your chest with arms extended.",
+    "Pull the plate toward your lower ribs, keeping your elbows close.",
+    "Squeeze your shoulder blades together, then lower with control.",
+    "Keep your hips still and your neck neutral."
+  ],
+  "textSource": "opengym"
+}

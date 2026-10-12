@@ -1,0 +1,23 @@
+{
+  "id": "4062",
+  "name": "lever lying banded t bar row",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "Chest-supported T bar row on a lever machine with bands for extra resistance as you pull.",
+  "instructions": [
+    "Lie chest down on the support and grip the handles.",
+    "Keep your head neutral.",
+    "Pull your elbows back and squeeze your shoulder blades.",
+    "Pause at the top.",
+    "Lower slowly against the band tension."
+  ],
+  "textSource": "opengym"
+}

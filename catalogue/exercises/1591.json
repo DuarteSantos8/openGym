@@ -1,0 +1,22 @@
+{
+  "id": "1591",
+  "name": "single leg push off",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive single-leg push off the floor or a step. It builds leg drive useful for running and jumping.",
+  "instructions": [
+    "Stand in front of a low step with one foot planted on it.",
+    "Lean slightly forward and keep your core tight.",
+    "Push off the step explosively with that leg and drive your opposite knee up.",
+    "Land softly on the same foot.",
+    "Complete your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

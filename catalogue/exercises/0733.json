@@ -1,0 +1,23 @@
+{
+  "id": "0733",
+  "name": "single leg step up",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A step-up on a box or bench using one leg. It builds the legs and balance.",
+  "instructions": [
+    "Stand in front of a sturdy step.",
+    "Place one foot fully on the step.",
+    "Press through that heel and stand up.",
+    "Bring the other foot up to the step.",
+    "Lower slowly.",
+    "Finish reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

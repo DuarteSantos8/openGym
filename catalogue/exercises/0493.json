@@ -1,0 +1,21 @@
+{
+  "id": "0493",
+  "name": "incline push-up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "You perform a push-up with hands elevated. It makes the push-up easier and trains the chest, shoulders and triceps.",
+  "instructions": [
+    "Place your hands on an elevated surface, such as a bench or step, slightly wider than shoulder-width apart.",
+    "Extend your legs behind you, resting on the balls of your feet, creating a straight line from your head to your heels.",
+    "Lower your chest towards the elevated surface by bending your elbows, keeping your body in a straight line.",
+    "Pause for a moment at the bottom, then push yourself back up to the starting position by straightening your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

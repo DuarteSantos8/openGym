@@ -1,0 +1,21 @@
+{
+  "id": "3969",
+  "name": "tuck up",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "calisthenics",
+  "description": "Seated or reclined, you pull knees and chest together and then extend out again. It works the abs and hip flexors, especially the lower abs.",
+  "instructions": [
+    "Sit on the floor, lean back slightly and hold the floor or your sides for support.",
+    "Extend your legs out in front, hovering just above the floor.",
+    "Pull your knees toward your chest while curling your torso forward.",
+    "Pause briefly at the top with your abs tight.",
+    "Extend back out under control without letting your feet touch down, and repeat."
+  ],
+  "textSource": "opengym"
+}

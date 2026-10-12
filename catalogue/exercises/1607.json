@@ -1,0 +1,21 @@
+{
+  "id": "1607",
+  "name": "cable biceps curl (sz bar)",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A standing cable curl with an SZ bar. The cable keeps constant tension on the biceps.",
+  "instructions": [
+    "Attach an SZ bar to a low pulley and grip it with an underhand grip.",
+    "Stand tall with your elbows at your sides.",
+    "Curl the bar up toward your shoulders.",
+    "Squeeze your biceps at the top.",
+    "Lower slowly and avoid swinging your body."
+  ],
+  "textSource": "opengym"
+}

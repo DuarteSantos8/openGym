@@ -1,0 +1,24 @@
+{
+  "id": "4455",
+  "name": "45 degrees back extension",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A back extension on an angled bench that strengthens the lower back and glutes. Hinging at the hips keeps the movement safe and smooth.",
+  "instructions": [
+    "Set the pad at hip level and hook your heels under the rollers.",
+    "Cross your arms over your chest or hold them behind your head.",
+    "Lower your torso with a straight spine until you feel a hamstring stretch.",
+    "Raise your torso by squeezing your glutes and lower back.",
+    "Stop when your body forms a straight line.",
+    "Avoid over-arching at the top."
+  ],
+  "textSource": "opengym"
+}

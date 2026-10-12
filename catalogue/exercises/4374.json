@@ -1,0 +1,21 @@
+{
+  "id": "4374",
+  "name": "cable standing alternate low fly",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A standing cable fly from a low pulley, sweeping the arms up and across one at a time. It trains the upper chest.",
+  "instructions": [
+    "Stand between two low pulleys holding the handles.",
+    "Take a small step forward with a slight lean.",
+    "Sweep one arm up and across toward the center of your chest.",
+    "Return slowly.",
+    "Alternate sides."
+  ],
+  "textSource": "opengym"
+}

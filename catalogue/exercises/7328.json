@@ -1,0 +1,22 @@
+{
+  "id": "7328",
+  "name": "dumbbell hyperextension",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "Hyperextension with a dumbbell held to your chest to load the lower back and glutes.",
+  "instructions": [
+    "Set up on a hyperextension bench with the pads at your hips.",
+    "Hold a dumbbell against your chest.",
+    "Lower your torso with a flat back.",
+    "Raise up until your body forms a straight line.",
+    "Avoid overarching at the top."
+  ],
+  "textSource": "opengym"
+}

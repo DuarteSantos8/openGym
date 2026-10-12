@@ -1,0 +1,22 @@
+{
+  "id": "4906",
+  "name": "long lever decline sit up",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A decline sit-up with the arms extended overhead. The long lever makes it a tougher core exercise.",
+  "instructions": [
+    "Lie on a decline bench with your feet secured.",
+    "Extend your arms overhead.",
+    "Curl your torso up, raising your arms with it.",
+    "Sit up until your chest is over your thighs.",
+    "Lower slowly back down.",
+    "Keep your arms reaching forward the whole time."
+  ],
+  "textSource": "opengym"
+}

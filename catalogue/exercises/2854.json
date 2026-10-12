@@ -1,0 +1,22 @@
+{
+  "id": "2854",
+  "name": "lying single leg circle",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A hip mobility move where one leg draws circles in the air.",
+  "instructions": [
+    "Lie on your back with one leg extended up.",
+    "Keep your pelvis still.",
+    "Draw small circles with that leg.",
+    "Reverse direction.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

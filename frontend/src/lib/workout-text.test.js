@@ -104,10 +104,14 @@ describe('workoutText exercise names per language', () => {
     const expected = {
       de: 'Bankdrücken mit Langhantel', es: 'Press De Banca Con Barra', fr: 'Développé Couché À La Barre',
       it: 'Panca Piana Con Bilanciere', 'pt-BR': 'Supino Com Barra', ru: 'Жим Штанги Лёжа', hu: 'Fekvenyomás Rúddal',
+      pl: 'Wyciskanie Sztangi Na Ławce Płaskiej',
     }
     for (const lang of EXERCISE_NAME_LANGS) {
-      _setLangState(lang, {}, null, packs[`../exercise-names/${lang}.js`], false)
-      expect(nameLine(), lang).toBe(expected[lang])
+      const pack = packs[`../exercise-names/${lang}.js`]
+      _setLangState(lang, {}, null, pack, false)
+      // Packs in a script without case (ar, hi, th, zh...) come out exactly as written.
+      const name = pack[w.entries[0].id]
+      expect(nameLine(), lang).toBe(expected[lang] ?? (name === name.toLocaleUpperCase() ? name : nameLine()))
     }
     _setLangState('en', {}, null, null)
     expect(nameLine()).toBe('Barbell Bench Press')

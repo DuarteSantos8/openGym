@@ -1,0 +1,20 @@
+{
+  "id": "0274",
+  "name": "crunch floor",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A basic floor crunch. You curl the shoulders off the ground to work the upper abs.",
+  "instructions": [
+    "Lie flat on your back with your knees bent and feet flat on the ground.",
+    "Place your hands behind your head with your elbows pointing outwards.",
+    "Engage your abs and lift your shoulders off the ground, curling forward towards your knees.",
+    "Pause for a moment at the top, then slowly lower your shoulders back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4458",
+  "name": "side bridge with straight legs",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "shoulders",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A side plank with both legs straight, held on one forearm. It strengthens the obliques and hips.",
+  "instructions": [
+    "Lie on your side with your elbow under your shoulder and legs stacked.",
+    "Lift your hips so your body forms a straight line.",
+    "Keep your core tight and your neck neutral.",
+    "Hold for 20-40 seconds without letting your hips sag.",
+    "Lower down and repeat on the other side."
+  ],
+  "textSource": "opengym"
+}

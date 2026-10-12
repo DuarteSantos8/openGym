@@ -1,0 +1,23 @@
+{
+  "id": "4412",
+  "name": "resistance band pullapart (pronated at 90 degrees)",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "upper back",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A band pull-apart with an overhand grip and arms at 90 degrees that hits the rear delts and upper back.",
+  "instructions": [
+    "Stand holding a band in front of you at shoulder height with an overhand grip.",
+    "Keep your arms straight and your core braced.",
+    "Pull your hands apart until the band touches your chest.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly to the start."
+  ],
+  "textSource": "opengym"
+}

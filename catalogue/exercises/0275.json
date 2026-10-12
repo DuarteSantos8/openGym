@@ -1,0 +1,22 @@
+{
+  "id": "0275",
+  "name": "crunch floor v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A classic floor crunch. It strengthens the abs with a short, controlled curl.",
+  "instructions": [
+    "Lie on your back with your knees bent and your feet flat.",
+    "Place your hands lightly by your head or across your chest.",
+    "Curl your shoulders off the floor.",
+    "Pause and squeeze your abs.",
+    "Lower with control.",
+    "Keep your chin off your chest and your lower back on the floor."
+  ],
+  "textSource": "opengym"
+}

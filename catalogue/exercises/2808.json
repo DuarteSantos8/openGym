@@ -1,0 +1,25 @@
+{
+  "id": "2808",
+  "name": "dumbbell sumo pull through",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A sumo-stance dumbbell pull through between the legs. Trains the glutes and hamstrings.",
+  "instructions": [
+    "Stand with your feet wider than shoulder-width apart, toes pointed outwards.",
+    "Hold a dumbbell with both hands in front of your body, arms extended.",
+    "Bend your knees and lower your hips down into a squat position, keeping your back straight.",
+    "Lower the dumbbell down between your legs, keeping your arms straight.",
+    "Drive through your heels and extend your hips forward, pulling the dumbbell up and in front of your body.",
+    "Squeeze your glutes at the top of the movement, then lower the dumbbell back down between your legs.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb",
+  "maleVariant": "2807"
+}

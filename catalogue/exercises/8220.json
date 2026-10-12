@@ -1,0 +1,23 @@
+{
+  "id": "8220",
+  "name": "deep knee bend",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A full-depth bodyweight squat. It builds leg strength and works the mobility of hips and ankles.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Sit your hips back and down as deep as you can.",
+    "Keep your heels down and chest up.",
+    "Pause at the bottom.",
+    "Drive up to standing."
+  ],
+  "textSource": "opengym"
+}

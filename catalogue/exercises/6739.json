@@ -1,0 +1,22 @@
+{
+  "id": "6739",
+  "name": "cable kneeling hip abduction",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A kneeling cable move that lifts the leg out to the side. It targets the outer hip muscles.",
+  "instructions": [
+    "Attach an ankle cuff to a low pulley and put it on one ankle.",
+    "Kneel on all fours with the cuffed leg on the outside.",
+    "Keep your back flat and hips square.",
+    "Lift the knee out to the side against the cable.",
+    "Pause briefly at the top.",
+    "Lower with control, then switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

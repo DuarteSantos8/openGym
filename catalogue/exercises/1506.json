@@ -1,0 +1,21 @@
+{
+  "id": "1506",
+  "name": "band ez barbell close grip curl",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A close-grip curl on an EZ bar with a band adding tension near the top. It targets the biceps.",
+  "instructions": [
+    "Stand on the band and hold the EZ bar with a close grip, palms up.",
+    "Keep your elbows at your sides and your chest tall.",
+    "Curl the bar up toward your shoulders.",
+    "Squeeze at the top without swinging.",
+    "Lower slowly until your arms are straight."
+  ],
+  "textSource": "opengym"
+}

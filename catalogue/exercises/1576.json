@@ -1,0 +1,20 @@
+{
+  "id": "1576",
+  "name": "leg up hamstring stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "Lying on your back with one leg raised, you draw it toward you to stretch the hamstring.",
+  "instructions": [
+    "Lie flat on your back with your legs extended.",
+    "Bend one knee and bring it towards your chest, holding onto your thigh or shin.",
+    "Straighten your leg as much as possible while keeping it elevated.",
+    "Hold the stretch for 20-30 seconds.",
+    "Repeat with the other leg."
+  ],
+  "textSource": "exercisedb"
+}

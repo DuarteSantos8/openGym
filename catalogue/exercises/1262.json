@@ -1,0 +1,22 @@
+{
+  "id": "1262",
+  "name": "cable one arm decline chest fly",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A one-arm decline chest fly with a cable. It trains the lower chest.",
+  "instructions": [
+    "Attach a D-handle to a low pulley cable machine and set the bench to a decline angle.",
+    "Lie down on the bench with your head towards the machine and grab the handle with your right hand.",
+    "Extend your arm straight up above your chest, keeping a slight bend in your elbow.",
+    "With a controlled motion, lower your arm out to the side until your hand is in line with your shoulder.",
+    "Pause for a moment, then reverse the motion and bring your arm back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch to your left arm and repeat the exercise."
+  ],
+  "textSource": "exercisedb"
+}

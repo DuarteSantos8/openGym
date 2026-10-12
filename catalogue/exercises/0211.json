@@ -1,0 +1,23 @@
+{
+  "id": "0211",
+  "name": "cable russian twists (on stability ball)",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "Seated on a stability ball, you rotate a cable handle from hip to hip. It trains the abs and obliques and also challenges your balance.",
+  "instructions": [
+    "Sit on a stability ball with your feet flat on the ground and your knees bent at a 90-degree angle.",
+    "Hold the cable handle with both hands and extend your arms straight out in front of you.",
+    "Lean back slightly while keeping your back straight and your core engaged.",
+    "Twist your torso to the right, bringing the cable handle towards your right hip.",
+    "Pause for a moment, then twist your torso to the left, bringing the cable handle towards your left hip.",
+    "Continue alternating twists for the desired number of repetitions."
+  ],
+  "femaleVariant": "3060",
+  "textSource": "exercisedb"
+}

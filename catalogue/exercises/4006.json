@@ -1,0 +1,22 @@
+{
+  "id": "4006",
+  "name": "backward abdominal stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "Arch back to stretch the front of the trunk. It lengthens the abs.",
+  "instructions": [
+    "Lie face down with hands under your shoulders.",
+    "Press your chest up.",
+    "Keep your hips on the floor.",
+    "Hold for 20-30 seconds.",
+    "Lower slowly."
+  ],
+  "femaleVariant": "4270",
+  "textSource": "opengym"
+}

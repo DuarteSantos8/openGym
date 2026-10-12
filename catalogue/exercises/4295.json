@@ -1,0 +1,23 @@
+{
+  "id": "4295",
+  "name": "dumbbell walking lunge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Lunging forward step after step with a dumbbell in each hand. It builds leg and glute strength and balance.",
+  "instructions": [
+    "Stand tall holding a dumbbell in each hand at your sides.",
+    "Step forward with one leg and lower until both knees are about 90 degrees.",
+    "Keep your torso upright and your front knee over your ankle.",
+    "Push through the front foot and bring the back leg forward into the next step.",
+    "Alternate legs for the desired number of steps."
+  ],
+  "textSource": "opengym"
+}

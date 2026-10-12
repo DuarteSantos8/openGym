@@ -1,0 +1,21 @@
+{
+  "id": "3962",
+  "name": "seated flutter kick",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "calisthenics",
+  "description": "Small alternating leg kicks while seated and leaning back. It trains the lower abs and hip flexors.",
+  "instructions": [
+    "Sit with your hands behind you and lean back slightly.",
+    "Lift both legs off the floor.",
+    "Kick your legs up and down in short alternating moves.",
+    "Keep your core tight and your back from rounding.",
+    "Continue for time."
+  ],
+  "textSource": "opengym"
+}

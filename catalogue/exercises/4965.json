@@ -1,0 +1,23 @@
+{
+  "id": "4965",
+  "name": "jump box v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "A box jump that builds explosive leg power. It trains the whole lower body.",
+  "instructions": [
+    "Stand facing a box with feet shoulder width.",
+    "Dip and swing your arms back.",
+    "Jump onto the box with both feet.",
+    "Land softly with bent knees.",
+    "Stand tall on the box.",
+    "Step down carefully."
+  ],
+  "textSource": "opengym"
+}

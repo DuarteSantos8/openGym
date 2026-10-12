@@ -1,0 +1,24 @@
+{
+  "id": "3197",
+  "name": "prancing",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "hip flexors",
+    "quadriceps",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "A light, springy trot with high knees, like a pony. It's a fun cardio warm-up.",
+  "instructions": [
+    "Stand tall and relaxed.",
+    "Move forward in a bouncy trot.",
+    "Lift each knee up with a springy step.",
+    "Stay on the balls of your feet.",
+    "Swing your arms in rhythm.",
+    "Continue for 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

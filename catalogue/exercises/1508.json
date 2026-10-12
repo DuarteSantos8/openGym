@@ -1,0 +1,21 @@
+{
+  "id": "1508",
+  "name": "band lateral raise v. 2",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A band lateral raise that builds the sides of the shoulders.",
+  "instructions": [
+    "Stand on the band and hold the ends at your sides.",
+    "Keep a slight bend in your elbows.",
+    "Raise your arms out to the sides until they reach shoulder height.",
+    "Pause briefly without shrugging.",
+    "Lower slowly back to your sides."
+  ],
+  "textSource": "opengym"
+}

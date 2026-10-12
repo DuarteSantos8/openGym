@@ -1,0 +1,22 @@
+{
+  "id": "4751",
+  "name": "dumbbell glute bridge v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A glute bridge with a dumbbell resting on your hips. It strengthens the glutes and hamstrings.",
+  "instructions": [
+    "Lie on your back with your knees bent and feet flat.",
+    "Rest a dumbbell on your hips and hold it in place.",
+    "Drive through your heels to lift your hips.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

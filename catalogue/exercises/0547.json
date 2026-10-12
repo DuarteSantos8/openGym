@@ -1,0 +1,21 @@
+{
+  "id": "0547",
+  "name": "kettlebell seesaw press",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "You press one kettlebell up while the other lowers, like a seesaw. Works the shoulders and triceps with a steady rhythm.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a kettlebell in each hand at shoulder height.",
+    "Press one kettlebell overhead while keeping the other kettlebell at shoulder height.",
+    "Lower the pressed kettlebell back to shoulder height while simultaneously pressing the other kettlebell overhead.",
+    "Continue alternating the pressing motion, creating a seesaw-like movement.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

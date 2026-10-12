@@ -1,0 +1,24 @@
+{
+  "id": "10048",
+  "name": "cable step up",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A step-up with cable resistance that adds load to the legs and hips.",
+  "instructions": [
+    "Stand facing a box or bench with a cable handle in your hands.",
+    "Place one foot fully on the box.",
+    "Push through that heel to step up.",
+    "Stand tall on top of the box.",
+    "Step back down with control.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

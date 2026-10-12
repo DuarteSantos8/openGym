@@ -1,0 +1,22 @@
+{
+  "id": "3222",
+  "name": "semi squat jump (male)",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A shallow squat followed by a jump, with the arms swinging for momentum. It trains the leg power and gets the heart rate up.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Bend your knees and lower your body into a squat position.",
+    "Jump explosively, extending your hips and knees while swinging your arms for momentum.",
+    "Land softly on the balls of your feet and immediately go into the next repetition.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

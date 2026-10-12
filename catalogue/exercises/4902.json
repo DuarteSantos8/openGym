@@ -1,0 +1,22 @@
+{
+  "id": "4902",
+  "name": "elevated single leg hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A one-legged hip thrust with the foot or upper back raised on a platform. It increases the range for the glutes.",
+  "instructions": [
+    "Rest your upper back on a bench and put one foot on the floor or a raised step.",
+    "Lift the other leg off the ground.",
+    "Drive through the planted heel and lift your hips.",
+    "Squeeze the glute at the top with your torso level.",
+    "Lower slowly under control.",
+    "Complete your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

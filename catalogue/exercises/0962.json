@@ -1,0 +1,23 @@
+{
+  "id": "0962",
+  "name": "triangle pose trikonasana",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "obliques",
+    "adductors",
+    "shoulders",
+    "lats"
+  ],
+  "category": "stretching",
+  "description": "From a wide stance, reach sideways over the front leg with arms in a line. It stretches the hamstrings, hips and sides.",
+  "instructions": [
+    "Stand with feet wide apart and turn one foot out 90 degrees.",
+    "Raise your arms to shoulder height.",
+    "Reach toward the front foot, then lower that hand to your shin or the floor.",
+    "Extend the other arm up and look toward it.",
+    "Hold for 3 to 5 breaths, then switch sides."
+  ],
+  "textSource": "opengym"
+}

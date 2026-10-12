@@ -1,0 +1,23 @@
+{
+  "id": "7384",
+  "name": "lever hip thrust (plate loaded)",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Plate-loaded machine hip thrust for heavy glute work.",
+  "instructions": [
+    "Sit with your back against the pad and belt secured over your hips.",
+    "Plant your feet flat, shoulder width apart.",
+    "Drive your hips up until your body is level.",
+    "Squeeze your glutes at the top.",
+    "Lower with control."
+  ],
+  "femaleVariant": "3549",
+  "textSource": "opengym"
+}

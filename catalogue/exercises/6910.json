@@ -1,0 +1,23 @@
+{
+  "id": "6910",
+  "name": "deep push up on parallel bars",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up between parallel bars that lets you sink deeper than the floor allows. It gives the chest a greater stretch.",
+  "instructions": [
+    "Grip two parallel bars and hold a straight plank position.",
+    "Keep your elbows at about 45 degrees.",
+    "Lower your chest below the level of your hands.",
+    "Press back up until your arms are straight.",
+    "Keep your body in one line throughout."
+  ],
+  "textSource": "opengym"
+}

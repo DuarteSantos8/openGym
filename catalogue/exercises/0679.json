@@ -1,0 +1,23 @@
+{
+  "id": "0679",
+  "name": "rolling bridge",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "pilates",
+  "description": "A slow bridge where you roll up and down your spine. It strengthens the abs and glutes and improves spinal control.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat.",
+    "Curl your pelvis up and peel your spine off the floor.",
+    "Lift to a bridge position.",
+    "Pause at the top.",
+    "Roll back down one vertebra at a time.",
+    "Move slowly and breathe."
+  ],
+  "textSource": "opengym"
+}

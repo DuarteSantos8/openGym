@@ -1,0 +1,23 @@
+{
+  "id": "6024",
+  "name": "lying alternate frog kick",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A prone move where you alternate kicking each bent leg up, to work the glutes.",
+  "instructions": [
+    "Lie face down with your arms under your forehead.",
+    "Bend one knee to 90 degrees with the sole toward the ceiling.",
+    "Lift that thigh off the floor by squeezing the glute.",
+    "Lower and switch legs.",
+    "Keep your hips on the floor."
+  ],
+  "femaleVariant": "6022",
+  "textSource": "opengym"
+}

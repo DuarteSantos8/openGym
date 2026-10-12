@@ -1,0 +1,22 @@
+{
+  "id": "2345",
+  "name": "sled hack squat legs (form check)",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A side-by-side form check for leg position on the hack squat sled, showing the common mistake next to the correct technique so you can spot it in your own sets.",
+  "instructions": [
+    "Set your back and shoulders against the pads and place your feet on the platform.",
+    "Compare the faulty version with the correct one: your knees track over your toes and your feet sit flat on the platform.",
+    "Perform the lift slowly with a light load and keep the correct position throughout.",
+    "Use a mirror or film a set from the side to check your own position.",
+    "Fix the cue before adding weight, and rest between sets so form stays clean."
+  ],
+  "textSource": "opengym"
+}

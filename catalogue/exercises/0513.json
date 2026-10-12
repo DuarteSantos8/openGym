@@ -1,0 +1,22 @@
+{
+  "id": "0513",
+  "name": "jump squat v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A bodyweight squat finished with an explosive jump, second variation. It builds leg power and conditioning.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Lower your body into a squat position by bending your knees and pushing your hips back.",
+    "Jump explosively, extending your hips and knees fully.",
+    "Land softly on the balls of your feet and immediately lower your body back into a squat position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

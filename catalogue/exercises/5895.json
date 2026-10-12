@@ -1,0 +1,20 @@
+{
+  "id": "5895",
+  "name": "mindful breathing meditation",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "core"
+  ],
+  "category": "yoga",
+  "description": "A seated practice of following your breath. Lowers tension and trains focus.",
+  "instructions": [
+    "Sit tall in a comfortable position and relax your shoulders.",
+    "Rest your hands on your lap.",
+    "Breathe in slowly through your nose.",
+    "Breathe out slowly and notice the pause.",
+    "Continue for 3-10 minutes."
+  ],
+  "textSource": "opengym"
+}

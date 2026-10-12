@@ -1,0 +1,23 @@
+{
+  "id": "4240",
+  "name": "resistance band horizontal pallof press",
+  "bodyPart": "waist",
+  "equipment": "resistance band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A standing Pallof press with a resistance band anchored at chest height. It trains your core to resist rotation.",
+  "instructions": [
+    "Anchor a band at chest height and stand sideways to it.",
+    "Hold the handle at your chest with both hands.",
+    "Step away until the band is taut and brace your core.",
+    "Press your hands straight out in front of you.",
+    "Hold for a second without twisting, then bring them back.",
+    "Complete your reps and switch sides."
+  ],
+  "textSource": "opengym"
+}

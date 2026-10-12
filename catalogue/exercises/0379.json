@@ -1,0 +1,21 @@
+{
+  "id": "0379",
+  "name": "dumbbell rear lateral raise (support head)",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "traps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A rear lateral raise with your forehead supported on a bench or pad. The support protects your lower back and keeps the focus on the rear delts.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a dumbbell in each hand.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
+    "Raise your arms out to the sides, keeping a slight bend in your elbows, until they are parallel to the ground.",
+    "Pause for a moment at the top, then slowly lower your arms back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

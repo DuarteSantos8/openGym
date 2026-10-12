@@ -1,0 +1,23 @@
+{
+  "id": "2564",
+  "name": "jack plank on medicine ball",
+  "bodyPart": "waist",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A plank with jumping jack feet on a medicine ball, challenging core stability.",
+  "instructions": [
+    "Place your hands on a medicine ball in a plank.",
+    "Brace your abs and keep your body straight.",
+    "Jump your feet wide.",
+    "Jump them back together.",
+    "Keep your hips level.",
+    "Continue for the planned reps."
+  ],
+  "textSource": "opengym"
+}

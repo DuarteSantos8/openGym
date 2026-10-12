@@ -1,0 +1,23 @@
+{
+  "id": "5311",
+  "name": "exercise ball serratus wall slide",
+  "bodyPart": "back",
+  "equipment": "stability ball",
+  "target": "serratus anterior",
+  "secondaryMuscles": [
+    "shoulders",
+    "trapezius",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Slide your forearms up a wall on a stability ball to wake up the serratus anterior and improve shoulder control.",
+  "instructions": [
+    "Place a stability ball against a wall and rest your forearms on it.",
+    "Step back slightly so your body leans in.",
+    "Slide your forearms up the ball as you reach overhead.",
+    "Push into the ball and spread your shoulder blades at the top.",
+    "Slide back down slowly.",
+    "Keep your ribs down and avoid arching your lower back."
+  ],
+  "textSource": "opengym"
+}

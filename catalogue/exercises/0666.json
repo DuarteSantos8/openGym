@@ -1,0 +1,22 @@
+{
+  "id": "0666",
+  "name": "raise single arm push-up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up where you lift one arm out to the side at the top. Challenges the core and shoulder stability.",
+  "instructions": [
+    "Start in a push-up position with your hands slightly wider than shoulder-width apart and your feet together.",
+    "Extend one arm straight out to the side, parallel to the ground.",
+    "Lower your body towards the ground by bending your elbows, keeping your back straight and core engaged.",
+    "Push back up to the starting position, using your chest muscles to lift your body.",
+    "Repeat with the other arm extended."
+  ],
+  "textSource": "exercisedb"
+}

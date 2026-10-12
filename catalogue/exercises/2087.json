@@ -1,0 +1,22 @@
+{
+  "id": "2087",
+  "name": "shoulder adductor protractor and elevator stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius",
+    "rhomboids"
+  ],
+  "category": "stretching",
+  "description": "A stretch for the back of the shoulder and the muscles along the upper back.",
+  "instructions": [
+    "Stand tall and bring one arm across your chest.",
+    "Hold it with the other arm just above the elbow.",
+    "Gently pull while rounding the upper back slightly forward.",
+    "Keep your neck relaxed.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "4613",
+  "name": "bodyweight standing military press (wall supported)",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "An unloaded overhead press against a wall to groove a clean path and open the shoulders.",
+  "instructions": [
+    "Stand with your back, head and hips against a wall, hands at shoulder height with elbows bent.",
+    "Brace your abs so your lower back stays on the wall.",
+    "Press your hands straight overhead until your arms are locked out.",
+    "Lower back to shoulder height with control.",
+    "Keep your wrists stacked over your elbows."
+  ],
+  "textSource": "opengym"
+}

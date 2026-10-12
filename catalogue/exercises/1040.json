@@ -1,0 +1,23 @@
+{
+  "id": "1040",
+  "name": "lever pistol squat",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A single leg squat on a machine that supports balance while you load one leg through full depth.",
+  "instructions": [
+    "Step into the machine and put one foot on the platform with the other leg lifted or extended.",
+    "Brace your core and release the safety.",
+    "Lower slowly into a deep squat on one leg.",
+    "Press through your heel to stand.",
+    "Keep your knee in line with your toes. Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "4287",
+  "name": "knee raise",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core",
+    "glutes"
+  ],
+  "category": "mobility",
+  "description": "Lifting your knee toward your chest to warm up the hips and activate the hip flexors. A simple dynamic drill.",
+  "instructions": [
+    "Stand tall with your arms at your sides.",
+    "Lift one knee up toward your chest.",
+    "Hold it for a moment.",
+    "Lower the foot with control.",
+    "Alternate legs.",
+    "Keep your standing leg steady and your back straight."
+  ],
+  "femaleVariant": "3252",
+  "textSource": "opengym"
+}

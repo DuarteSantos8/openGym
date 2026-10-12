@@ -1,0 +1,23 @@
+{
+  "id": "9603",
+  "name": "bodyweight poliquin step",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A controlled step-up and down drill often used for knee strength. It trains the quads and glutes.",
+  "instructions": [
+    "Stand with one foot on a low step.",
+    "Lower the other foot toward the floor with control.",
+    "Keep your knee in line with your toes.",
+    "Touch the floor lightly.",
+    "Drive back up through the working leg.",
+    "Do your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

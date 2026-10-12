@@ -1,0 +1,22 @@
+{
+  "id": "1052",
+  "name": "fixed bar back stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "shoulders",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "Hold a fixed bar and sit your hips back to stretch your back and lats. It opens the upper body.",
+  "instructions": [
+    "Grip a fixed bar or post at about hip height.",
+    "Step back until your arms are straight.",
+    "Sink your hips back and let your chest drop.",
+    "Feel the stretch along your back and sides.",
+    "Hold for 20-30 seconds."
+  ],
+  "textSource": "opengym"
+}

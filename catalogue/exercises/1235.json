@@ -1,0 +1,22 @@
+{
+  "id": "1235",
+  "name": "lever one arm seated row (seated row machine)",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A single-arm row on a seated machine. It lets you load one side of the back at a time.",
+  "instructions": [
+    "Sit at the machine with your chest on the pad and grab one handle.",
+    "Start with your arm extended.",
+    "Pull the handle toward your torso, driving your elbow back.",
+    "Squeeze your shoulder blade, then return slowly.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

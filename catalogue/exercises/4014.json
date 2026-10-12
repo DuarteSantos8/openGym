@@ -1,0 +1,21 @@
+{
+  "id": "4014",
+  "name": "cable standing front raise variation",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A standing cable front raise. It targets the front delts with steady tension.",
+  "instructions": [
+    "Stand facing away from a low pulley.",
+    "Hold the handle with a slight elbow bend.",
+    "Raise the arm to eye level.",
+    "Lower slowly.",
+    "Switch arms."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "7555",
+  "name": "jumping jack high knee",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "calves",
+    "hip flexors",
+    "shoulders"
+  ],
+  "category": "cardio",
+  "description": "Jumping jack paired with a high knee for a lively cardio drill.",
+  "instructions": [
+    "Stand tall with arms at your sides.",
+    "Jump your feet out and raise your arms overhead.",
+    "Jump back in and bring one knee high.",
+    "Alternate knees each rep.",
+    "Stay light on your feet."
+  ],
+  "textSource": "opengym"
+}

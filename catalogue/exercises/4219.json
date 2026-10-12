@@ -1,0 +1,24 @@
+{
+  "id": "4219",
+  "name": "safety bar elevated heel squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A safety bar squat with your heels raised on a small platform. The elevation lets your knees travel forward to target the quads.",
+  "instructions": [
+    "Place plates or a wedge under your heels in front of the rack.",
+    "Unrack the safety bar and step onto the platform.",
+    "Keep your chest upright and brace your core.",
+    "Squat down with your knees tracking over your toes.",
+    "Pause briefly at the bottom.",
+    "Press up and rack the bar when done."
+  ],
+  "textSource": "opengym"
+}

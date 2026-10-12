@@ -1,0 +1,22 @@
+{
+  "id": "0862",
+  "name": "cable twist (up-down)",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A cable twist that rotates the torso with a handle held at the chest. It trains the obliques and abs.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, facing the cable machine.",
+    "Hold the cable handle with both hands in front of your chest, keeping your arms slightly bent.",
+    "Engage your core and slowly rotate your torso to one side, keeping your hips and legs stable.",
+    "Pause for a moment at the end of the rotation, then slowly return to the starting position.",
+    "Repeat the rotation to the opposite side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

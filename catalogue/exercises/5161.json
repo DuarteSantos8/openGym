@@ -1,0 +1,23 @@
+{
+  "id": "5161",
+  "name": "medicine ball throw squat with wall",
+  "bodyPart": "shoulders",
+  "equipment": "medicine ball",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "quadriceps",
+    "glutes",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "Squat down with a medicine ball, then drive up and throw it against a wall. It trains explosive power through the legs and shoulders.",
+  "instructions": [
+    "Stand facing a wall at arm's length and hold a medicine ball at your chest.",
+    "Squat down with your chest up and knees tracking over your toes.",
+    "Drive up explosively and throw the ball at the wall.",
+    "Catch the ball on the rebound with soft hands.",
+    "Reset your stance and repeat for controlled reps."
+  ],
+  "textSource": "opengym"
+}

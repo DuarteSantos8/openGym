@@ -1,0 +1,22 @@
+{
+  "id": "6769",
+  "name": "roll ball lying semispinalis capitis muscle activation",
+  "bodyPart": "neck",
+  "equipment": "roller",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius"
+  ],
+  "category": "mobility",
+  "description": "Lying on your back with a ball under the base of the skull. It releases the deep muscles at the back of the neck.",
+  "instructions": [
+    "Lie on your back with knees bent and a small ball under the base of your skull.",
+    "Relax your head onto the ball.",
+    "Make small nods or turns to roll over the muscle.",
+    "Keep the pressure gentle.",
+    "Breathe slowly.",
+    "Continue for 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

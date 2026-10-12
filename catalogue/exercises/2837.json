@@ -1,0 +1,22 @@
+{
+  "id": "2837",
+  "name": "cable rear lunge from stepbox",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A reverse lunge from a step box with cable tension, training the glutes and legs.",
+  "instructions": [
+    "Stand on a step box facing a cable and hold the handle.",
+    "Step one leg back and down to lunge.",
+    "Lower the back knee toward the floor.",
+    "Push through your front foot to return.",
+    "Switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

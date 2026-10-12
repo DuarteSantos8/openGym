@@ -1,0 +1,22 @@
+{
+  "id": "5684",
+  "name": "crossed arms front leg kick",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A standing front kick with your arms crossed over your chest. Warms up the hips and legs while challenging balance.",
+  "instructions": [
+    "Stand tall with your arms crossed over your chest.",
+    "Shift your weight onto one leg.",
+    "Kick the other leg forward to about hip height with control.",
+    "Lower it and repeat for your reps.",
+    "Switch legs and keep your torso upright."
+  ],
+  "textSource": "opengym"
+}

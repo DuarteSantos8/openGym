@@ -1,0 +1,30 @@
+{
+  "id": "0601",
+  "name": "lever seated reverse fly (parallel grip)",
+  "bodyPart": "shoulders",
+  "equipment": "leverage machine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "Chest against the pad, you pull the handles back and out with a parallel grip. Targets the rear delts and upper back.",
+  "instructions": [
+    "Adjust the seat height and position yourself on the machine with your chest against the pad and your feet flat on the floor.",
+    "Grasp the handles with a parallel grip, palms facing each other, and keep your arms slightly bent.",
+    "Exhale and squeeze your shoulder blades together as you pull the handles back and outward, away from your body.",
+    "Pause for a moment at the peak contraction, then inhale and slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "deltoids"
+    ],
+    "secondaries": [
+      "trapezius",
+      "upper-back"
+    ]
+  },
+  "textSource": "exercisedb"
+}

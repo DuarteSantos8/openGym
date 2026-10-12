@@ -1,0 +1,21 @@
+{
+  "id": "2109",
+  "name": "kneeling abdominal stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "stretching",
+  "description": "A kneeling backbend that opens the front of the torso.",
+  "instructions": [
+    "Kneel with your knees hip width apart and place your hands on your lower back.",
+    "Push your hips forward and lean back until the abdominal muscles stretch.",
+    "Tuck your chin a little and avoid dropping your head back.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

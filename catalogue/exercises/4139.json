@@ -1,0 +1,21 @@
+{
+  "id": "4139",
+  "name": "band overhead triceps extension v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A second version of the band overhead extension for the triceps.",
+  "instructions": [
+    "Stand on one end of the band and hold the other overhead with both hands.",
+    "Bend your elbows behind your head.",
+    "Extend your arms upward.",
+    "Keep your elbows close to your ears.",
+    "Lower under control."
+  ],
+  "textSource": "opengym"
+}

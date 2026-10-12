@@ -1,0 +1,23 @@
+{
+  "id": "3000",
+  "name": "resistance band standing forward achilles stretch",
+  "bodyPart": "lower legs",
+  "equipment": "resistance band",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "stretching",
+  "description": "A standing calf stretch with a band around the forward foot, pulling the toes back to lengthen the Achilles area.",
+  "instructions": [
+    "Loop a resistance band around the ball of your front foot.",
+    "Hold the band ends and stand tall.",
+    "Place the front heel on the floor with the toes lifted.",
+    "Pull the band so your toes draw toward you and lean slightly forward.",
+    "Hold for 20-30 seconds with a comfortable stretch.",
+    "Switch feet and repeat."
+  ],
+  "textSource": "opengym"
+}

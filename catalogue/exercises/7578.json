@@ -1,0 +1,22 @@
+{
+  "id": "7578",
+  "name": "cable front squat with v bar",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Front squat holding a V bar on a low cable.",
+  "instructions": [
+    "Hold a V bar at chest height.",
+    "Stand a step back from the cable.",
+    "Squat down with your elbows up.",
+    "Keep your chest tall.",
+    "Stand up."
+  ],
+  "textSource": "opengym"
+}

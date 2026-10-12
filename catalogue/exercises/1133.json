@@ -1,0 +1,23 @@
+{
+  "id": "1133",
+  "name": "suspender single arm rear delt row",
+  "bodyPart": "shoulders",
+  "equipment": "suspension trainer",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A one-arm strap row with the elbow flared, aimed at the rear shoulder.",
+  "instructions": [
+    "Hold one handle and lean back at an angle.",
+    "Keep your hips level and free hand on your chest or hip.",
+    "Pull the handle toward your shoulder with the elbow flared out.",
+    "Squeeze the rear delt at the end.",
+    "Lower slowly to a straight arm.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

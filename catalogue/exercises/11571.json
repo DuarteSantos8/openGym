@@ -1,0 +1,23 @@
+{
+  "id": "11571",
+  "name": "butt walking",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "hip flexors"
+  ],
+  "category": "mobility",
+  "description": "Sitting on the floor with legs extended, you shuffle forward on your glutes to warm up the hips and work the glutes.",
+  "instructions": [
+    "Sit on the floor with legs straight and arms crossed.",
+    "Lean back slightly.",
+    "Shift your weight to one side and swing the other hip forward.",
+    "Alternate sides to walk forward.",
+    "Keep your torso upright.",
+    "Walk back to reverse."
+  ],
+  "textSource": "opengym"
+}

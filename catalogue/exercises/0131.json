@@ -1,0 +1,23 @@
+{
+  "id": "0131",
+  "name": "bent knee lying twist (on stability ball)",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A lying twist with bent knees while your upper back is on a stability ball. It trains the obliques and trunk control.",
+  "instructions": [
+    "Lie with your upper back on a stability ball and your knees bent at 90 degrees.",
+    "Extend your arms out to the sides for balance.",
+    "Rotate your knees and hips slowly to one side.",
+    "Pause briefly.",
+    "Bring them back through the centre and rotate to the other side.",
+    "Keep your shoulders square to the ceiling."
+  ],
+  "textSource": "opengym"
+}

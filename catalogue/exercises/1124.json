@@ -1,0 +1,23 @@
+{
+  "id": "1124",
+  "name": "suspender one arm chest press",
+  "bodyPart": "chest",
+  "equipment": "suspension trainer",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A single-arm push on one strap that trains the chest while the core fights rotation.",
+  "instructions": [
+    "Hold one handle, lean forward and place your feet wide for balance.",
+    "Keep your hips square.",
+    "Bend your elbow and lower your chest toward the hand.",
+    "Resist twisting at the torso.",
+    "Press back to a straight arm.",
+    "Do all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

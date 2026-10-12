@@ -1,0 +1,22 @@
+{
+  "id": "6262",
+  "name": "barbell standing wrist curl",
+  "bodyPart": "lower arms",
+  "equipment": "barbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A standing wrist curl holding a barbell behind or in front of you. It builds the forearm flexors.",
+  "instructions": [
+    "Stand holding a barbell with an underhand grip.",
+    "Let your hands hang.",
+    "Curl your wrists up.",
+    "Squeeze the forearms.",
+    "Lower slowly.",
+    "Keep your arms still."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4988",
+  "name": "inverse leg curl with bench pads",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight hamstring curl where you lower your torso against the pads. It is very demanding for the back of the thighs.",
+  "instructions": [
+    "Anchor your ankles under the bench pads and kneel upright.",
+    "Cross your arms or hold them in front of you.",
+    "Lean forward slowly from the knees, keeping hips and torso in a straight line.",
+    "Lower as far as you can control.",
+    "Pull yourself back up with your hamstrings."
+  ],
+  "femaleVariant": "8111",
+  "textSource": "opengym"
+}

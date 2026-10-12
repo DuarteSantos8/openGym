@@ -1,0 +1,22 @@
+{
+  "id": "3575",
+  "name": "kettlebell backward lunge",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A reverse lunge holding a kettlebell, friendly on the knees while building glutes and thighs.",
+  "instructions": [
+    "Hold a kettlebell at your chest or by your side.",
+    "Step one leg back and lower your back knee toward the floor.",
+    "Keep your front shin vertical and torso tall.",
+    "Push through the front heel to stand.",
+    "Alternate legs for the set."
+  ],
+  "textSource": "opengym"
+}

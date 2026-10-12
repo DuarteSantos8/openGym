@@ -1,0 +1,23 @@
+{
+  "id": "4146",
+  "name": "band standing single arm twist row",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "obliques",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A one arm band row where you rotate the torso as you pull. It trains the lats and back while the trunk resists and controls the twist.",
+  "instructions": [
+    "Anchor the band at chest height and hold the handle in one hand.",
+    "Stand sideways to the anchor with feet shoulder width apart.",
+    "Row the handle toward your ribs while turning your torso gently toward the pulling side.",
+    "Squeeze your back at the end of the pull.",
+    "Return slowly, untwisting as your arm extends.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

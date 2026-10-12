@@ -1,0 +1,23 @@
+{
+  "id": "9872",
+  "name": "cable lying bench cross lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A lying lateral raise where each hand grips the opposite cable handle and the arms sweep up and across. It hits the side delts with constant tension.",
+  "instructions": [
+    "Lie on a flat bench between two low cable pulleys and grab each handle with the opposite hand.",
+    "Start with your arms crossed over your body and a slight bend in the elbows.",
+    "Raise both arms out and up in a wide arc until your hands are about shoulder height.",
+    "Pause briefly at the top without shrugging.",
+    "Lower slowly back to the crossed position.",
+    "Keep your back flat on the bench and avoid swinging."
+  ],
+  "textSource": "opengym"
+}

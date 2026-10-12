@@ -1,0 +1,22 @@
+{
+  "id": "2752",
+  "name": "split squat v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "calisthenics",
+  "description": "A static lunge-style squat that trains the legs one at a time with balance and control.",
+  "instructions": [
+    "Stand in a long stride with one foot forward and one back.",
+    "Lower your back knee toward the floor.",
+    "Keep your front knee over your ankle.",
+    "Push through the front heel to rise.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

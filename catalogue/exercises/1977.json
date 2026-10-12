@@ -1,0 +1,21 @@
+{
+  "id": "1977",
+  "name": "adduction of arm in back stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "stretching",
+  "description": "Reaching one arm behind your back and pulling it across to stretch the shoulder.",
+  "instructions": [
+    "Stand or sit tall.",
+    "Reach one arm behind your back.",
+    "Grab that wrist with the other hand and gently pull it across your body.",
+    "Keep your shoulders level.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

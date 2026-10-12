@@ -1,0 +1,21 @@
+{
+  "id": "0420",
+  "name": "dumbbell standing kickback",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Bent forward, you straighten your arms behind you with dumbbells. It isolates the triceps.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a dumbbell in each hand.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
+    "Extend your arms straight back, squeezing your triceps at the top of the movement.",
+    "Pause for a moment, then slowly lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2598",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "4243",
+  "name": "medicine ball overhead throw",
+  "bodyPart": "full body",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "lats",
+    "glutes",
+    "triceps"
+  ],
+  "category": "plyometrics",
+  "description": "Throwing a medicine ball up and forward from overhead. It builds full-body explosive power through the core and shoulders.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart holding a medicine ball overhead.",
+    "Lean back slightly and brace your core.",
+    "Throw the ball forward or against a wall as hard as you can.",
+    "Follow through with your arms.",
+    "Catch or pick up the ball and reset.",
+    "Keep your back from over-arching."
+  ],
+  "textSource": "opengym"
+}

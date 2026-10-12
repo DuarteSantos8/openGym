@@ -1,0 +1,22 @@
+{
+  "id": "6748",
+  "name": "kneeling single hamstring curl",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A hamstring curl done from a kneeling position, one leg at a time. It works the back of the thigh.",
+  "instructions": [
+    "Get on all fours with hands under shoulders.",
+    "Keep your back flat and core tight.",
+    "Bend one knee and curl your heel toward your glute.",
+    "Squeeze the hamstring at the top.",
+    "Lower the foot slowly.",
+    "Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

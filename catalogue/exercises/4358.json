@@ -1,0 +1,22 @@
+{
+  "id": "4358",
+  "name": "band kneeling lat pulldown",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A kneeling pulldown using a band anchored overhead. It builds the lats at home.",
+  "instructions": [
+    "Anchor a band high and kneel facing it, holding the ends.",
+    "Lean back slightly and brace your core.",
+    "Pull your elbows down toward your ribs.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly with control."
+  ],
+  "textSource": "opengym"
+}

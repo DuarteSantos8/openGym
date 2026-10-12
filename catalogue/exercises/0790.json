@@ -1,0 +1,21 @@
+{
+  "id": "0790",
+  "name": "standing hip abduction (bent knee)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Lifting a bent knee out to the side while standing. It works the outer hip and glutes and trains balance.",
+  "instructions": [
+    "Stand tall and hold onto a support if needed.",
+    "Shift your weight onto one leg and bend the other knee.",
+    "Lift the bent knee out to the side without leaning.",
+    "Lower with control.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

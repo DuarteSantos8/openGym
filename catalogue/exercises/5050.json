@@ -1,0 +1,22 @@
+{
+  "id": "5050",
+  "name": "lying alternate toe touch floor",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on your back with legs raised, you reach up to touch your toes alternately. It works the abs and obliques.",
+  "instructions": [
+    "Lie on your back with both legs raised toward the ceiling.",
+    "Extend your arms up.",
+    "Crunch up and reach one hand toward the opposite foot.",
+    "Lower and reach with the other hand.",
+    "Keep your legs steady."
+  ],
+  "femaleVariant": "6091",
+  "textSource": "opengym"
+}

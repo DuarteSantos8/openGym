@@ -1,0 +1,20 @@
+{
+  "id": "0553",
+  "name": "kettlebell two arm military press",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Standing, you press a kettlebell in each hand overhead from shoulder height. Builds shoulder and triceps strength with a braced core.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a kettlebell in each hand at shoulder level with your palms facing forward.",
+    "Engage your core and press the kettlebells overhead, fully extending your arms.",
+    "Pause for a moment at the top, then slowly lower the kettlebells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

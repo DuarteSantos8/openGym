@@ -1,0 +1,36 @@
+{
+  "id": "1757",
+  "name": "dumbbell single leg deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A one-leg hip hinge holding a dumbbell. Works the glutes and hamstrings and improves balance.",
+  "instructions": [
+    "Stand with your feet hip-width apart, holding a dumbbell in your right hand.",
+    "Shift your weight onto your left leg and lift your right foot slightly off the ground.",
+    "Keeping your back straight, hinge forward at the hips and lower the dumbbell towards the ground.",
+    "At the same time, extend your right leg straight behind you, maintaining a slight bend in your left knee.",
+    "Lower the dumbbell until your torso and right leg are parallel to the ground.",
+    "Pause for a moment, then engage your glutes and hamstrings to return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "gluteal",
+      "hamstring"
+    ],
+    "secondaries": [
+      "lower-back",
+      "quadriceps",
+      "adductors",
+      "calves"
+    ]
+  },
+  "femaleVariant": "2635",
+  "textSource": "exercisedb"
+}

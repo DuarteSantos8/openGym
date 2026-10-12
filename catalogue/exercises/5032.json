@@ -1,0 +1,22 @@
+{
+  "id": "5032",
+  "name": "leg raise oblique crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "calisthenics",
+  "description": "Raise your legs and crunch to the side. It targets the lower abs and the obliques together.",
+  "instructions": [
+    "Lie on your back with your hands behind your head.",
+    "Lift your legs together toward the ceiling.",
+    "Crunch your shoulders up and toward one side as the legs tilt the other way.",
+    "Lower and repeat to the other side.",
+    "Keep movements slow and controlled."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4310",
+  "name": "single straight leg stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "hamstrings",
+    "obliques"
+  ],
+  "category": "pilates",
+  "description": "A pilates exercise where you scissor your straight legs while holding the raised one. It trains the abs and tests hamstring flexibility.",
+  "instructions": [
+    "Lie on your back, lift your head and shoulders off the mat.",
+    "Extend one leg straight up and the other hovering low.",
+    "Hold the raised leg with both hands and pulse twice toward you.",
+    "Switch legs and repeat, keeping your torso steady.",
+    "Keep your lower back anchored throughout."
+  ],
+  "femaleVariant": "2867",
+  "textSource": "opengym"
+}

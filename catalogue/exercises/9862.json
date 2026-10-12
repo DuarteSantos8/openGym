@@ -1,0 +1,21 @@
+{
+  "id": "9862",
+  "name": "lever single arm preacher curl (plate loaded)",
+  "bodyPart": "upper arms",
+  "equipment": "leverage machine",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm curl on a plate-loaded preacher machine, isolating the biceps.",
+  "instructions": [
+    "Sit at the machine with your upper arm resting on the pad and grip the handle.",
+    "Start with your arm almost straight.",
+    "Curl the handle up toward your shoulder.",
+    "Squeeze at the top.",
+    "Lower slowly, then switch arms."
+  ],
+  "textSource": "opengym"
+}

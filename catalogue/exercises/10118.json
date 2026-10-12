@@ -1,0 +1,23 @@
+{
+  "id": "10118",
+  "name": "medicine ball overhead slam circle",
+  "bodyPart": "full body",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lats",
+    "shoulders",
+    "glutes",
+    "triceps"
+  ],
+  "category": "plyometrics",
+  "description": "A medicine ball slam combined with a circular sweep, building power through the core, lats and shoulders.",
+  "instructions": [
+    "Stand with feet shoulder width apart holding a medicine ball overhead.",
+    "Circle the ball to one side and around as you start to bend your knees.",
+    "Slam the ball hard into the floor in front of you.",
+    "Catch it on the bounce or pick it up, and reset overhead.",
+    "Alternate the circle direction every set and keep your core braced."
+  ],
+  "textSource": "opengym"
+}

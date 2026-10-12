@@ -1,0 +1,23 @@
+{
+  "id": "10734",
+  "name": "balance pad single leg balance",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "core",
+    "glutes"
+  ],
+  "category": "mobility",
+  "description": "A one-legged stand on a foam balance pad. It improves ankle stability and body control.",
+  "instructions": [
+    "Place the pad on a flat floor.",
+    "Step on with one foot and stand tall.",
+    "Lift the other foot off the floor.",
+    "Hold for 20-30 seconds.",
+    "Keep your eyes on a fixed point.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

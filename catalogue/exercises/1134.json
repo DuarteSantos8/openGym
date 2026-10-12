@@ -1,0 +1,23 @@
+{
+  "id": "1134",
+  "name": "suspender single leg plank straight arm",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "glutes",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A straight-arm plank with feet in the straps and one leg lifted, which challenges core stability.",
+  "instructions": [
+    "Put your feet in the straps and set a high plank.",
+    "Lift one leg slightly higher.",
+    "Keep your hips level and body straight.",
+    "Hold for 20-30 seconds.",
+    "Lower the leg and switch sides.",
+    "Breathe steadily throughout."
+  ],
+  "textSource": "opengym"
+}

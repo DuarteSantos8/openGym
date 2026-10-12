@@ -1,0 +1,24 @@
+{
+  "id": "10439",
+  "name": "two ropes climb",
+  "bodyPart": "back",
+  "equipment": "rope",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms",
+    "grip muscles",
+    "core",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Climb up using two ropes, pulling with your arms one hand over the other. It builds a strong pull and grip.",
+  "instructions": [
+    "Grab one rope in each hand and hang with arms long.",
+    "Pull up with one arm while you bend your elbow close to your body.",
+    "Reach higher with the other hand and pull again.",
+    "Keep your core tight and your legs steady.",
+    "Climb to a safe height, then lower under control."
+  ],
+  "textSource": "opengym"
+}

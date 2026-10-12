@@ -1,0 +1,22 @@
+{
+  "id": "2300",
+  "name": "inverted row bent knees",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight row beneath a bar with knees bent to make it easier. Builds the upper back and biceps.",
+  "instructions": [
+    "Set up a bar at waist height and lie underneath it.",
+    "Grab the bar with an overhand grip, slightly wider than shoulder-width apart.",
+    "Position your body so that your heels are on the ground and your body is straight.",
+    "Pull your chest up towards the bar by squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly lower your body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

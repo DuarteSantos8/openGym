@@ -1,0 +1,23 @@
+{
+  "id": "5042",
+  "name": "lying prone w",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "trapezius",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "Lying face down, you pull the arms into a W shape. It builds the rear shoulders and mid back.",
+  "instructions": [
+    "Lie face down with elbows bent and hands by your head.",
+    "Keep your neck neutral.",
+    "Lift your elbows and hands off the floor, pulling the shoulder blades together.",
+    "Hold for a second.",
+    "Lower with control."
+  ],
+  "textSource": "opengym"
+}

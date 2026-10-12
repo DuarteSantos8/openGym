@@ -1,0 +1,22 @@
+{
+  "id": "7200",
+  "name": "resistance band seated bent knee abduction",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A seated band move pressing the knees apart to work the outer hips.",
+  "instructions": [
+    "Sit tall on a bench or chair with the band just above your knees.",
+    "Plant your feet flat and hip-width apart.",
+    "Press your knees out against the band.",
+    "Hold briefly at the widest point.",
+    "Bring the knees back slowly.",
+    "Keep your back straight throughout."
+  ],
+  "textSource": "opengym"
+}

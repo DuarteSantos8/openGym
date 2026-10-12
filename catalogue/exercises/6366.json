@@ -1,0 +1,21 @@
+{
+  "id": "6366",
+  "name": "dumbbell standing back wrist curl",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Holding dumbbells behind your body, you curl your wrists to train your forearms and grip.",
+  "instructions": [
+    "Stand with a dumbbell in each hand behind your back, palms facing back.",
+    "Keep your arms still and your chest tall.",
+    "Curl your wrists upward.",
+    "Squeeze at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

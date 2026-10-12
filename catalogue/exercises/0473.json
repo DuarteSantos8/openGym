@@ -1,0 +1,22 @@
+{
+  "id": "0473",
+  "name": "hanging pike",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "Hanging from a bar, you fold your legs up toward the bar in a pike. It works the abs and hip flexors.",
+  "instructions": [
+    "Hang from a pull-up bar with your arms fully extended and your palms facing away from you.",
+    "Engage your core and lift your legs up towards the bar, keeping them straight.",
+    "Continue lifting until your body forms a 'V' shape, with your legs parallel to the ground.",
+    "Hold the position for a moment, then slowly lower your legs back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2652",
+  "textSource": "exercisedb"
+}

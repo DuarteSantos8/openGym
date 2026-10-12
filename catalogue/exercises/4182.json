@@ -1,0 +1,23 @@
+{
+  "id": "4182",
+  "name": "resistance band rear delt row",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A wide rowing motion with a resistance band. It strengthens the rear shoulders.",
+  "instructions": [
+    "Anchor the band at chest height and hold the handles.",
+    "Step back for tension.",
+    "Pull your hands out to the sides with elbows high.",
+    "Squeeze your shoulder blades.",
+    "Return slowly.",
+    "Keep your torso upright."
+  ],
+  "textSource": "opengym"
+}

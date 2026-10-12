@@ -1,0 +1,24 @@
+{
+  "id": "4583",
+  "name": "boxing right cross (with boxing bag)",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "triceps",
+    "obliques",
+    "core"
+  ],
+  "category": "combat",
+  "description": "A powerful straight punch from the rear hand, driven by the hips and thrown at a bag.",
+  "instructions": [
+    "Stand in a boxing stance facing the bag.",
+    "Rotate your rear foot and hips as you throw the right hand.",
+    "Drive your fist straight to the bag.",
+    "Rotate your shoulder and keep your chin tucked.",
+    "Keep your lead hand up to guard.",
+    "Snap back to your stance and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "0657",
+  "name": "push up (one arm on stability ball)",
+  "bodyPart": "chest",
+  "equipment": "stability ball",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with one hand on a stability ball. It makes the chest and shoulders work harder to stay stable.",
+  "instructions": [
+    "Get into a push-up position with one hand on a stability ball and one on the floor.",
+    "Keep your body in a straight line.",
+    "Lower your chest toward the floor.",
+    "Press back up.",
+    "Keep your core tight.",
+    "Finish your reps, then switch the ball hand."
+  ],
+  "textSource": "opengym"
+}

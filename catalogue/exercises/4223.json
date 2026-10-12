@@ -1,0 +1,23 @@
+{
+  "id": "4223",
+  "name": "tiger tail peroneal",
+  "bodyPart": "lower legs",
+  "equipment": "roller",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles",
+    "soleus"
+  ],
+  "category": "mobility",
+  "description": "Rolling the outer side of your lower leg with a handheld roller. It eases tension in the muscles along the outside of the calf.",
+  "instructions": [
+    "Sit with your leg bent or extended and the outer shin facing up.",
+    "Hold the roller by the handles on the outside of your lower leg.",
+    "Roll from the ankle to just below the knee.",
+    "Use gentle pressure and avoid the bone.",
+    "Pause on any tight areas.",
+    "Switch legs after 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

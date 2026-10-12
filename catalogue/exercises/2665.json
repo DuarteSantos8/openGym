@@ -1,0 +1,22 @@
+{
+  "id": "2665",
+  "name": "lever lateral wide pulldown",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A machine pulldown with a wide grip that targets the lats for a broad back.",
+  "instructions": [
+    "Adjust the seat and thigh pad, then grip the wide handles.",
+    "Sit tall with your chest up.",
+    "Pull the handles down toward your upper chest, leading with the elbows.",
+    "Squeeze the lats, then let the handles rise slowly.",
+    "Avoid leaning far back or using momentum."
+  ],
+  "textSource": "opengym"
+}

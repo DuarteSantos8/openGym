@@ -1,0 +1,25 @@
+{
+  "id": "9939",
+  "name": "power sled pull",
+  "bodyPart": "back",
+  "equipment": "sled machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "hamstrings",
+    "glutes",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A drag-style move where you pull a loaded sled toward you with a rope or strap, walking backward. It trains the back, arms and legs together.",
+  "instructions": [
+    "Attach a rope or strap to a loaded sled and grip it with both hands.",
+    "Face the sled, hinge slightly and set your feet.",
+    "Pull the rope hand over hand while walking backward.",
+    "Keep your chest up and your back straight.",
+    "Drive through your legs as the sled comes toward you.",
+    "Stop when the sled reaches you and reset."
+  ],
+  "textSource": "opengym"
+}

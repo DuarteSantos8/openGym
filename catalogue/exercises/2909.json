@@ -1,0 +1,23 @@
+{
+  "id": "2909",
+  "name": "power sled high pull",
+  "bodyPart": "shoulders",
+  "equipment": "sled machine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius",
+    "biceps",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A pull from low to chest height on a sled, using hip drive. It trains the shoulders and upper back with a bit of power.",
+  "instructions": [
+    "Stand facing the sled and hold the handles or rope with arms long.",
+    "Hinge slightly at the hips with a flat back.",
+    "Drive your hips forward and pull the handles up toward your chest, elbows high.",
+    "Pause briefly at the top.",
+    "Lower under control and repeat."
+  ],
+  "textSource": "opengym"
+}

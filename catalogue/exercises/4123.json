@@ -1,0 +1,22 @@
+{
+  "id": "4123",
+  "name": "kettlebell single front squat",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A front squat holding one kettlebell on one side, challenging legs and core stability.",
+  "instructions": [
+    "Hold a kettlebell at your shoulder with one hand.",
+    "Stand with your feet shoulder-width apart.",
+    "Squat down with your chest tall.",
+    "Drive through your heels to stand.",
+    "Switch sides after your set."
+  ],
+  "textSource": "opengym"
+}

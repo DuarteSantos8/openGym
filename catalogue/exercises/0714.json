@@ -1,0 +1,24 @@
+{
+  "id": "0714",
+  "name": "side plank v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A side plank variation held on one forearm. It builds the obliques and shoulder stability.",
+  "instructions": [
+    "Lie on your side and prop up on your forearm.",
+    "Stack your feet or stagger them.",
+    "Lift your hips into a straight line.",
+    "Keep your core tight.",
+    "Hold for 20-30 seconds.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

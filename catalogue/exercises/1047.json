@@ -1,0 +1,24 @@
+{
+  "id": "1047",
+  "name": "cable close grip front lat pulldown",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "rhomboids",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A lat pulldown with a narrow grip, pulling the bar to your upper chest. It trains the lats and biceps.",
+  "instructions": [
+    "Sit at the pulldown station and secure your thighs under the pads.",
+    "Grab the bar with a close grip.",
+    "Lean back slightly and pull the bar down to your upper chest.",
+    "Drive your elbows down and squeeze your lats.",
+    "Let the bar rise slowly until your arms are straight."
+  ],
+  "femaleVariant": "3754",
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "0543",
+  "name": "kettlebell pirate supper legs",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A kettlebell hinge and carry style move that works the hips and lower back while you keep a flat back and steady core.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a kettlebell in one hand.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
+    "Raise the kettlebell up to shoulder height, keeping your elbow close to your body.",
+    "Extend your arm fully overhead, straightening your elbow.",
+    "Lower the kettlebell back down to shoulder height, then return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "textSource": "exercisedb"
+}

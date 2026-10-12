@@ -1,0 +1,23 @@
+{
+  "id": "8987",
+  "name": "half kneeling side lunge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "groin",
+    "glutes",
+    "quadriceps"
+  ],
+  "category": "mobility",
+  "description": "From a half kneeling position you shift your weight sideways to open the hips and inner thigh. It builds hip mobility.",
+  "instructions": [
+    "Start in a half kneeling position with one knee down and the other foot forward.",
+    "Turn your front foot out to the side.",
+    "Shift your hips sideways toward the straight leg.",
+    "Keep your chest up and feel the inner thigh open.",
+    "Return to the center with control.",
+    "Do all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

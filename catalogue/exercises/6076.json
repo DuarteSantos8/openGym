@@ -1,0 +1,23 @@
+{
+  "id": "6076",
+  "name": "bottle weighted shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "weighted",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "trapezius",
+    "core"
+  ],
+  "category": "strength",
+  "description": "An overhead press with a bottle in each hand. It builds shoulders and triceps.",
+  "instructions": [
+    "Hold a bottle in each hand at shoulder height.",
+    "Brace your core and stand tall.",
+    "Press both bottles overhead until your arms are straight.",
+    "Lower back to shoulder height.",
+    "Do not arch your lower back."
+  ],
+  "textSource": "opengym"
+}

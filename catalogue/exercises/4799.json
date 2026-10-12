@@ -1,0 +1,23 @@
+{
+  "id": "4799",
+  "name": "suspender rollout v. 2",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "lats"
+  ],
+  "category": "calisthenics",
+  "description": "A rollout using suspension handles, a second variation. It challenges the abs as you extend your body forward and pull back.",
+  "instructions": [
+    "Kneel facing the anchor and hold the suspension handles under your shoulders.",
+    "Brace your core and tuck your pelvis slightly.",
+    "Roll your arms forward as your body leans out in a straight line.",
+    "Go only as far as you can keep your back flat.",
+    "Pull back to the start using your abs.",
+    "Keep your ribs down throughout."
+  ],
+  "textSource": "opengym"
+}

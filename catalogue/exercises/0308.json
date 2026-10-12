@@ -1,0 +1,21 @@
+{
+  "id": "0308",
+  "name": "dumbbell fly",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "The classic flat bench dumbbell fly. The arms open in an arc to stretch and squeeze the chest.",
+  "instructions": [
+    "Lie flat on a bench with a dumbbell in each hand, palms facing each other.",
+    "Extend your arms straight up over your chest, with a slight bend in your elbows.",
+    "Keeping a slight bend in your elbows, lower your arms out to the sides in a wide arc until you feel a stretch in your chest.",
+    "Pause for a moment, then reverse the movement and bring the dumbbells back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2253",
+  "textSource": "exercisedb"
+}

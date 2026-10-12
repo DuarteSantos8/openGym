@@ -1,0 +1,23 @@
+{
+  "id": "1557",
+  "name": "dumbbell walking lunges",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Lunges done on the move with dumbbells in your hands. A great move for leg strength, glutes and coordination.",
+  "instructions": [
+    "Hold a dumbbell in each hand at your sides and stand tall.",
+    "Step forward with one leg and lower until both knees are bent at about 90 degrees.",
+    "Keep your torso upright and your front knee over your ankle.",
+    "Push off your back foot and step through into a lunge with the other leg.",
+    "Continue walking forward, alternating legs."
+  ],
+  "textSource": "opengym"
+}

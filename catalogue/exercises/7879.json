@@ -1,0 +1,23 @@
+{
+  "id": "7879",
+  "name": "dumbbell incline triceps kickback",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A chest-supported kickback on an incline bench that isolates the triceps.",
+  "instructions": [
+    "Lie chest down on an incline bench with a dumbbell in each hand.",
+    "Pin your upper arms to your sides.",
+    "Straighten your elbows to kick the weights back.",
+    "Squeeze your triceps.",
+    "Return slowly.",
+    "Keep your upper arms still."
+  ],
+  "textSource": "opengym"
+}

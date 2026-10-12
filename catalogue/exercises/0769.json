@@ -1,0 +1,36 @@
+{
+  "id": "0769",
+  "name": "smith sprint lunge",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A lunge variation on the smith machine, stepping back and lowering into a lunge. It works the glutes and thighs and challenges balance.",
+  "instructions": [
+    "Set up the smith machine with the barbell at hip height.",
+    "Stand facing away from the machine with your feet shoulder-width apart.",
+    "Step back with your right foot and place it on the barbell, resting the top of your foot on the bar.",
+    "Bend your left knee and lower your body into a lunge position, keeping your back straight.",
+    "Push through your left heel to return to the starting position.",
+    "Repeat on the other side, stepping back with your left foot.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves"
+    ]
+  },
+  "femaleVariant": "3111",
+  "textSource": "exercisedb"
+}

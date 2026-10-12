@@ -1,0 +1,23 @@
+{
+  "id": "2930",
+  "name": "resistance band pullapart (supination at 90 degrees)",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A band pull-apart with palms facing up and elbows bent at 90 degrees. It targets the rear delts and external shoulder rotation.",
+  "instructions": [
+    "Hold a band in front of you at chest height with palms up and elbows bent at 90 degrees.",
+    "Keep your elbows tucked near your sides.",
+    "Rotate your forearms outward, pulling the band apart.",
+    "Squeeze your shoulder blades together briefly.",
+    "Return slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

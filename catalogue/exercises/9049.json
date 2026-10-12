@@ -1,0 +1,22 @@
+{
+  "id": "9049",
+  "name": "incline hip raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on an incline bench, you lift your hips off the pad by curling the pelvis. It targets the lower abs.",
+  "instructions": [
+    "Lie on an incline bench and hold the top edge behind your head.",
+    "Bring your legs up so your knees are over your hips.",
+    "Curl your pelvis up to lift your hips off the bench.",
+    "Pause at the top.",
+    "Lower slowly without swinging.",
+    "Keep the movement small and controlled."
+  ],
+  "textSource": "opengym"
+}

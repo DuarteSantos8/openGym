@@ -1,0 +1,22 @@
+{
+  "id": "1067",
+  "name": "cable straight arm pulldown v. 3",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "Pull a cable down with straight arms. It isolates the lats.",
+  "instructions": [
+    "Stand facing a high pulley and grip the bar.",
+    "Hinge slightly forward.",
+    "Pull the bar down to your thighs.",
+    "Squeeze your lats.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

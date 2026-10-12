@@ -1,0 +1,24 @@
+{
+  "id": "3553",
+  "name": "rotational push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "obliques",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with a rotation and arm reach at the top. It works the chest and trunk.",
+  "instructions": [
+    "Start in a push-up position.",
+    "Lower your chest to the floor.",
+    "Press up and rotate, reaching one arm toward the ceiling.",
+    "Return the hand to the floor.",
+    "Lower again for the next rep.",
+    "Alternate sides."
+  ],
+  "textSource": "opengym"
+}

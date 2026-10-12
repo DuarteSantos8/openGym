@@ -1,0 +1,22 @@
+{
+  "id": "6774",
+  "name": "seated rhomboid stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "trapezius",
+    "rear deltoids"
+  ],
+  "category": "stretching",
+  "description": "A seated stretch that opens the space between the shoulder blades. It relieves tightness in the upper back.",
+  "instructions": [
+    "Sit tall and clasp your hands in front of your chest.",
+    "Push your arms forward and round your upper back.",
+    "Tuck your chin slightly and spread the shoulder blades apart.",
+    "Hold for 20-30 seconds while breathing steadily.",
+    "Release slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

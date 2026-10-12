@@ -1,0 +1,35 @@
+{{- with .Values.certificate }}
+{{- if .enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .secretName }}
+  labels:
+    {{- include "helm.labels" $ | nindent 4 }}
+spec:
+  dnsNames:
+    {{- toYaml .dnsNames | nindent 4 }}
+  issuerRef:
+    {{- toYaml .issuerRef | nindent 4 }}
+  secretName: {{ .secretName }}
+{{- if .referenceGrant.enabled }}
+---
+# A Gateway in another namespace needs this grant to read the certificate Secret.
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: {{ include "helm.fullname" $ }}-tls
+  labels:
+    {{- include "helm.labels" $ | nindent 4 }}
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      namespace: {{ .referenceGrant.gatewayNamespace }}
+  to:
+    - group: ""
+      kind: Secret
+      name: {{ .secretName }}
+{{- end }}
+{{- end }}
+{{- end }}

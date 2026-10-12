@@ -1,0 +1,22 @@
+{
+  "id": "3948",
+  "name": "air squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A basic bodyweight squat that builds leg strength and mobility.",
+  "instructions": [
+    "Stand with feet shoulder-width apart.",
+    "Reach your arms forward for balance.",
+    "Sit your hips back and down until your thighs are parallel.",
+    "Keep your chest up.",
+    "Drive through your feet to stand."
+  ],
+  "textSource": "opengym"
+}

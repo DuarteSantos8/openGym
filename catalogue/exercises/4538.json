@@ -1,0 +1,22 @@
+{
+  "id": "4538",
+  "name": "kettlebell bent arm pullover with knees bent",
+  "bodyPart": "back",
+  "equipment": "kettlebell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "chest",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A floor pullover with a kettlebell and bent knees. It stretches and works the lats and chest.",
+  "instructions": [
+    "Lie on your back with your knees bent and feet flat.",
+    "Hold a kettlebell by the horns above your chest with elbows slightly bent.",
+    "Lower it back over your head, feeling a stretch in your lats.",
+    "Keep your lower back close to the floor.",
+    "Pull it back over your chest and repeat."
+  ],
+  "textSource": "opengym"
+}

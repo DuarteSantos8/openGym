@@ -1,0 +1,22 @@
+{
+  "id": "3250",
+  "name": "side toe touching",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "A standing toe touch with a sideways reach to warm up the obliques and hamstrings.",
+  "instructions": [
+    "Stand with your feet wide apart.",
+    "Reach one hand toward the opposite foot.",
+    "Keep your other arm extended behind you.",
+    "Rise and switch sides.",
+    "Alternate at an easy pace."
+  ],
+  "textSource": "opengym"
+}

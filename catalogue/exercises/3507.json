@@ -1,0 +1,23 @@
+{
+  "id": "3507",
+  "name": "self assisted inverse leg curl v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight Nordic-style leg curl where you lower yourself and use your hands to help back up. It builds strong hamstrings.",
+  "instructions": [
+    "Kneel with your ankles anchored under something stable.",
+    "Keep your body straight from knees to head.",
+    "Lower your torso forward slowly, using your hamstrings to resist.",
+    "Catch yourself with your hands near the floor.",
+    "Push off lightly and use your hamstrings to return.",
+    "Keep your hips extended."
+  ],
+  "textSource": "opengym"
+}

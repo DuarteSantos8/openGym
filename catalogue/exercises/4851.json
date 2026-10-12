@@ -1,0 +1,22 @@
+{
+  "id": "4851",
+  "name": "barbell pin good morning",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A good morning starting from pins in a rack. It builds hamstring and lower back strength.",
+  "instructions": [
+    "Set the pins to a hip-hinge height and set the bar on them.",
+    "Get under the bar, brace and unrack.",
+    "Hinge forward with a flat back.",
+    "Return the bar to the pins.",
+    "Stand tall and repeat."
+  ],
+  "textSource": "opengym"
+}

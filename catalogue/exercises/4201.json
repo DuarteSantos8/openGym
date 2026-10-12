@@ -1,0 +1,22 @@
+{
+  "id": "4201",
+  "name": "barbell bench press against chains",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A bench press with chains adding load.",
+  "instructions": [
+    "Lie on bench.",
+    "Unrack the bar.",
+    "Lower to chest.",
+    "Press up.",
+    "Lock out.",
+    "Keep feet planted."
+  ],
+  "textSource": "opengym"
+}

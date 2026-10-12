@@ -1,0 +1,22 @@
+{
+  "id": "6328",
+  "name": "dumbbell low split squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A deep split squat holding dumbbells at your sides, great for loading the quads and glutes one leg at a time.",
+  "instructions": [
+    "Hold a dumbbell in each hand and step into a long split stance.",
+    "Keep your chest up and your front foot flat.",
+    "Lower your back knee toward the floor in a controlled way.",
+    "Push through your front heel to rise.",
+    "Complete your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}
