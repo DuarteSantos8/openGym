@@ -2370,4 +2370,12 @@ export default {
   'Options': 'Параметри',
   'Technique and image': 'Техніка та зображення',
   'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': 'Кардіо використовує інтервали, тривалість і швидкість. Шаблони силової прогресії тут не застосовуються.',
+  // --- sets to failure: a choice of sets ---
+  'Sets to failure': 'Підходи до відмови',
+  'Do the planned reps or time, then go on to failure in the selected sets.': 'Виконайте заплановані повторення або час, а тоді продовжуйте до відмови у вибраних підходах.',
+  'Last': 'Останній',
+  'Tap set numbers to combine them. “+” marks every set as taken to failure, “(+)” at least one.': 'Торкайтеся номерів підходів, щоб поєднувати їх. «+» — усі підходи до відмови, «(+)» — принаймні один.',
+  'Sets marked ? are optional. “Last” follows the number of sets planned.': 'Підходи зі знаком ? необов’язкові. «Останній» слідує за запланованою кількістю підходів.',
+  'All sets to failure': 'Усі підходи до відмови',
+  'Sets to failure: {0}': 'Підходи до відмови: {0}',
 }

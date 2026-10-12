@@ -2453,4 +2453,12 @@ export default {
   'Options': 'বিকল্প',
   'Technique and image': 'কৌশল ও ছবি',
   'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': 'কার্ডিওতে ইন্টারভাল, সময় ও গতি ব্যবহৃত হয়। স্ট্রেংথ প্রগ্রেশন টেমপ্লেট এখানে প্রযোজ্য নয়।',
+  // --- sets to failure: a choice of sets ---
+  'Sets to failure': 'ফেইলিওর পর্যন্ত সেট',
+  'Do the planned reps or time, then go on to failure in the selected sets.': 'নির্ধারিত রেপ বা সময় শেষ করে নির্বাচিত সেটে ফেইলিওর পর্যন্ত চালিয়ে যান।',
+  'Last': 'শেষ',
+  'Tap set numbers to combine them. “+” marks every set as taken to failure, “(+)” at least one.': 'সেটের নম্বরে ট্যাপ করে একসাথে বাছুন। “+” মানে প্রতিটি সেট ফেইলিওর পর্যন্ত, “(+)” মানে অন্তত একটি।',
+  'Sets marked ? are optional. “Last” follows the number of sets planned.': '? চিহ্নিত সেট ঐচ্ছিক। “শেষ” পরিকল্পিত সেট সংখ্যার শেষটিকে বোঝায়।',
+  'All sets to failure': 'সব সেট ফেইলিওর পর্যন্ত',
+  'Sets to failure: {0}': 'ফেইলিওর পর্যন্ত সেট: {0}',
 }

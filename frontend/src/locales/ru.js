@@ -2381,4 +2381,12 @@ export default {
   'Options': 'Параметры',
   'Technique and image': 'Техника и изображение',
   'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': 'Кардио использует интервалы, длительность и скорость. Шаблоны силовой прогрессии здесь не применяются.',
+  // --- sets to failure: a choice of sets ---
+  'Sets to failure': 'Подходы до отказа',
+  'Do the planned reps or time, then go on to failure in the selected sets.': 'Выполните запланированные повторения или время, затем продолжайте до отказа в выбранных подходах.',
+  'Last': 'Последний',
+  'Tap set numbers to combine them. “+” marks every set as taken to failure, “(+)” at least one.': 'Нажимайте номера подходов, чтобы объединять их. «+» — все подходы до отказа, «(+)» — хотя бы один.',
+  'Sets marked ? are optional. “Last” follows the number of sets planned.': 'Подходы со знаком ? необязательны. «Последний» следует за запланированным числом подходов.',
+  'All sets to failure': 'Все подходы до отказа',
+  'Sets to failure: {0}': 'Подходы до отказа: {0}',
 }

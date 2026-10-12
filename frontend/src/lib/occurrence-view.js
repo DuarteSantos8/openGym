@@ -2,6 +2,7 @@
 // beside it. Display only — nothing here decides what you lift; that stays in lib/prescription.
 import { planOptions, planPhase, isTemplateRule } from './prescription/index.js'
 import { fmtNum } from './format.js'
+import { failureSetRange, failureSuffix, hasFailurePlan } from './failure-selection.js'
 import { t } from './i18n.js'
 
 const span = x => (x.min === x.max ? `${x.min}` : `${x.min}–${x.max}`)
@@ -14,7 +15,9 @@ export function occurrenceTargets(occ) {
   const upTo = v => (p.loadTo ? `–${fmtNum(v(p.loadTo))}` : '')
   const load = p.load.mode === 'absolute' ? ` @ ${fmtNum(p.load.value)}${upTo(l => l.value)} ${p.load.unit}`
     : p.load.mode === 'percent_1rm' ? ` @ ${fmtNum(p.load.percent)}${upTo(l => l.percent)}% 1RM` : ''
-  return `${span(p.sets)} × ${p.durationSeconds ? span(p.durationSeconds) + 's' : span(p.reps)}${load}`
+  // "+" when every set goes to failure, "(+)" when some do: the reps are the least, the last rep is not the end.
+  const mark = failureSuffix(occ, failureSetRange(r).max)
+  return `${span(p.sets)} × ${p.durationSeconds ? span(p.durationSeconds) + mark + 's' : span(p.reps) + mark}${load}`
 }
 
 /** The sets the slot plans at least: what the routine's "N sets" adds up. */
@@ -33,7 +36,7 @@ export function occurrenceChips(occ, { preset, effort = 'none' } = {}) {
   if (occ.warmup && occ.warmup.mode !== 'off') chips.push(t('Warm-ups'))
   if (occ.intensifier?.type === 'dropset') chips.push(t('Drop-set'))
   else if (occ.intensifier?.type === 'restpause') chips.push(t('Rest-pause'))
-  if (occ.lastToFailure) chips.push(t('Taken to failure'))
+  if (hasFailurePlan(occ)) chips.push(t('Taken to failure'))
   if (occ.backoff) chips.push(t('Back-off sets'))
   const template = isTemplateRule(occ.rule)
   const rir = effort !== 'none' && occ.mode !== 'cardio' && template ? planOptions(occ.rule).rir : null

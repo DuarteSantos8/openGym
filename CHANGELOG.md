@@ -25,7 +25,12 @@ Delete moved there), the routine's icon and name as its title, a flat list that 
 targets and what is switched on, a "Link to previous" between neighbours for supersets, and the
 muscles the plan reaches as bars. An exercise's settings open on three tabs, **Target**,
 **Progression** and **Options**, with the plan as it reads now and Save pinned to the foot; Replace
-and Remove sit behind its ⋯. How a plan is built, saved and progressed did not change.
+and Remove sit behind its ⋯.
+
+**Choose the sets taken to failure.** Beside "last set", an exercise can take **all** its sets to
+failure, or the ones you pick by number (1 and 3, say). The routine list reads `8+` when every set goes
+there and `8(+)` when some do; a set number the plan only reaches once the progression adds sets is
+marked `?`. A plan that said "last set" keeps saying exactly that.
 
 ## v1.4.1 (2026-10-10)
 

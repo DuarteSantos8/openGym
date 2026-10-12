@@ -2380,4 +2380,12 @@ export default {
   'Options': 'Opciók',
   'Technique and image': 'Technika és kép',
   'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': 'A kardió intervallumokat, időtartamot és sebességet használ. Az erőnléti progressziós sablonok itt nem érvényesek.',
+  // --- sets to failure: a choice of sets ---
+  'Sets to failure': 'Bukásig végzett sorozatok',
+  'Do the planned reps or time, then go on to failure in the selected sets.': 'Told le a tervezett ismétléseket vagy az időt, majd a kijelölt sorozatokban menj tovább bukásig.',
+  'Last': 'Utolsó',
+  'Tap set numbers to combine them. “+” marks every set as taken to failure, “(+)” at least one.': 'Koppints a sorozatszámokra, hogy összekombináld őket. A „+” azt jelenti: minden sorozat bukásig, a „(+)”: legalább egy.',
+  'Sets marked ? are optional. “Last” follows the number of sets planned.': 'A ?-lel jelölt sorozatok opcionálisak. Az „Utolsó” a tervezett sorozatszámot követi.',
+  'All sets to failure': 'Minden sorozat bukásig',
+  'Sets to failure: {0}': 'Bukásig végzett sorozatok: {0}',
 }

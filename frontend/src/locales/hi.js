@@ -2377,4 +2377,12 @@ export default {
   'Options': 'विकल्प',
   'Technique and image': 'तकनीक और छवि',
   'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': 'कार्डियो में इंटरवल, अवधि और गति का उपयोग होता है। स्ट्रेंथ प्रोग्रेशन टेम्पलेट यहाँ लागू नहीं होते।',
+  // --- sets to failure: a choice of sets ---
+  'Sets to failure': 'फेलियर तक के सेट',
+  'Do the planned reps or time, then go on to failure in the selected sets.': 'तय रेप्स या समय पूरा करें, फिर चुने हुए सेट में फेलियर तक जारी रखें।',
+  'Last': 'आख़िरी',
+  'Tap set numbers to combine them. “+” marks every set as taken to failure, “(+)” at least one.': 'सेट नंबर टैप करके उन्हें मिलाएँ। “+” का मतलब हर सेट फेलियर तक, “(+)” का मतलब कम से कम एक।',
+  'Sets marked ? are optional. “Last” follows the number of sets planned.': '? वाले सेट वैकल्पिक हैं। “आख़िरी” योजना में तय सेटों की संख्या के हिसाब से चलता है।',
+  'All sets to failure': 'सभी सेट फेलियर तक',
+  'Sets to failure: {0}': 'फेलियर तक के सेट: {0}',
 }

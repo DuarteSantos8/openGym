@@ -1517,6 +1517,14 @@ export const PT_BR_OVERRIDES = {
   'Options': 'Opções',
   'Technique and image': 'Técnica e imagem',
   'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': 'O cardio usa intervalos, duração e velocidade. Os modelos de progressão de força não se aplicam.',
+  // --- sets to failure: a choice of sets ---
+  'Sets to failure': 'Séries até a falha',
+  'Do the planned reps or time, then go on to failure in the selected sets.': 'Faça as repetições ou o tempo planejados e continue até a falha nas séries escolhidas.',
+  'Last': 'Última',
+  'Tap set numbers to combine them. “+” marks every set as taken to failure, “(+)” at least one.': 'Toque nos números das séries para combiná-las. “+” marca todas as séries até a falha; “(+)”, pelo menos uma.',
+  'Sets marked ? are optional. “Last” follows the number of sets planned.': 'As séries marcadas com ? são opcionais. “Última” acompanha o número de séries planejado.',
+  'All sets to failure': 'Todas as séries até a falha',
+  'Sets to failure: {0}': 'Séries até a falha: {0}',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

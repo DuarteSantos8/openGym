@@ -2,6 +2,7 @@
 import { syncSupersetMeta } from './superset-meta.js'
 import { todayISO, isoOf, weekKey, weekStartOf, fmtNum } from './format.js'
 import { legacyEntriesOf } from './prescription/index.js'
+import { failureSetSelected, hasFailurePlan } from './failure-selection.js'
 import { rowsOfPerformance } from './session-ui-adapter.js'
 import { fmtSpeed } from './speed.js'
 import { hasIncline, inclineFrom } from './incline.js'
@@ -544,20 +545,24 @@ export function applyIntensifierPlan(sets, cfg, grid) {
 }
 
 /**
- * "Last set to failure" (`cfg.lastToFailure`, written only when on): the last work row of a
- * freshly built exercise is marked as taken to failure, the way Greyskull's final set is an
- * AMRAP. Only that one row, and only a row not logged yet; every other row keeps what it had, so
- * a plan without the flag builds exactly the rows it always did. Runs inside applyIntensifierPlan,
- * the step every way of building an exercise's rows ends with, so none of them can forget it.
+ * Sets planned to failure (`cfg.lastToFailure` for the last one, `cfg.failureSets` for more — see
+ * failure-selection.js; each is written only when on): the chosen work rows of a freshly built
+ * exercise are marked as taken to failure, the way Greyskull's final set is an AMRAP. Only rows
+ * not logged yet; every other row keeps what it had, so a plan without either builds exactly the
+ * rows it always did. Runs inside applyIntensifierPlan, the step every way of building an
+ * exercise's rows ends with, so none of them can forget it.
  */
 export function applyFailurePlan(sets, cfg) {
-  if (!cfg || cfg.lastToFailure !== true || modeOf(cfg) === 'cardio') return sets
-  let last = -1
-  sets.forEach((s, i) => { if (!isWarmupRow(s)) last = i })
-  // A timed per-side hold is an L row and an R row that read as one set: both halves are the set.
-  const from = last > 0 && sets[last]?.side === 'R' && sets[last - 1]?.side === 'L' ? last - 1 : last
-  if (last < 0) return sets
-  return sets.map((s, i) => (i >= from && i <= last && !s.done ? { ...s, failure: true } : s))
+  if (!cfg || !hasFailurePlan(cfg) || modeOf(cfg) === 'cardio') return sets
+  // A set is a work row, or a timed per-side hold's L row and R row together: both halves are the set.
+  const groups = []
+  for (let i = 0; i < sets.length; i++) {
+    if (isWarmupRow(sets[i])) continue
+    const pair = sets[i].side === 'L' && sets[i + 1]?.side === 'R' && !isWarmupRow(sets[i + 1])
+    groups.push(pair ? [i, ++i] : [i])
+  }
+  const marked = new Set(groups.filter((_, n) => failureSetSelected(cfg, n, groups.length)).flat())
+  return sets.map((s, i) => (marked.has(i) && !s.done ? { ...s, failure: true } : s))
 }
 
 function shapeRows(sets, cfg, grid) {

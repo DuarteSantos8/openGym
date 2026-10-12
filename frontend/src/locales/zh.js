@@ -2377,4 +2377,12 @@ export default {
   'Options': '选项',
   'Technique and image': '动作要领与图片',
   'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': '有氧使用间歇数、时长和速度，不适用力量进阶模板。',
+  // --- sets to failure: a choice of sets ---
+  'Sets to failure': '做到力竭的组数',
+  'Do the planned reps or time, then go on to failure in the selected sets.': '先完成计划的次数或时间，再在选定的组中做到力竭。',
+  'Last': '最后一组',
+  'Tap set numbers to combine them. “+” marks every set as taken to failure, “(+)” at least one.': '点按组号即可组合。“+”表示每一组都做到力竭，“(+)”表示至少一组。',
+  'Sets marked ? are optional. “Last” follows the number of sets planned.': '标有 ? 的组为可选。“最后一组”按计划组数而定。',
+  'All sets to failure': '所有组都做到力竭',
+  'Sets to failure: {0}': '做到力竭的组：{0}',
 }

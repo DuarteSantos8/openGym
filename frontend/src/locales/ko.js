@@ -2377,4 +2377,12 @@ export default {
   'Options': '옵션',
   'Technique and image': '자세와 이미지',
   'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': '유산소는 인터벌, 시간, 속도를 사용합니다. 근력 점진 템플릿은 적용되지 않습니다.',
+  // --- sets to failure: a choice of sets ---
+  'Sets to failure': '실패 지점까지 가는 세트',
+  'Do the planned reps or time, then go on to failure in the selected sets.': '계획한 반복 횟수나 시간을 채운 뒤, 선택한 세트에서는 실패 지점까지 계속하세요.',
+  'Last': '마지막',
+  'Tap set numbers to combine them. “+” marks every set as taken to failure, “(+)” at least one.': '세트 번호를 눌러 조합하세요. “+”는 모든 세트가 실패 지점까지, “(+)”는 최소 한 세트라는 뜻입니다.',
+  'Sets marked ? are optional. “Last” follows the number of sets planned.': '?가 붙은 세트는 선택 사항입니다. “마지막”은 계획한 세트 수를 따릅니다.',
+  'All sets to failure': '모든 세트 실패 지점까지',
+  'Sets to failure: {0}': '실패 지점까지 가는 세트: {0}',
 }
