@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { queueDone, queueRemaining, queueNext, queueView, weekTally, pinState, queueOf } from './queue.js'
+import { queueDone, queueRemaining, queueNext, queueView, weekTally, pinState, queueOf, queueLiveOn } from './queue.js'
 
 // The DONE RULE is shared with the api's reminder copy (and any planner writing S.queue); these
-// cases are the ones every copy must agree on. Dates are plain strings so nothing here reads the clock.
+// cases are the ones every copy must agree on. Dates are plain strings; a reader asked without a
+// `today` takes the clock's, which is past every fixture date here but the 2099 ones.
 const routines = [{ id: 'd1', name: 'US W1 D1' }, { id: 'd2', name: 'US W1 D2' }, { id: 'd3', name: 'US W1 D3' }, { id: 'own', name: 'Core' }]
 const SINCE = Date.parse('2026-09-07T08:00:00')
 const TODAY = '2026-09-09'
@@ -36,6 +37,29 @@ describe('DONE RULE', () => {
     // …whereas a "past workout" dated inside the week, logged with an early clock, does.
     const backfilled = w({ routineIds: ['d2'], start: SINCE - 86400000, d: '2026-09-07', name: 'US W1 D2' })
     expect(queueDone(S({ workouts: [backfilled] }))).toEqual(['d2'])
+  })
+
+  it('…and at the other end by today: a workout dated later has not happened yet', () => {
+    // Say an API client wrote it. Its start predates `since`, so the name clause is the only one
+    // that could count it.
+    const tomorrow = w({ routineIds: ['d2'], start: SINCE - 86400000, d: '2026-09-10', name: 'US W1 D2' })
+    const st = S({ workouts: [tomorrow] })
+    expect(queueDone(st, TODAY)).toEqual([])
+    expect(queueRemaining(st, TODAY)).toEqual(['d1', 'd2', 'd3'])
+    expect(pinState(st, 'd2', TODAY)).toBe('open')
+    expect(queueView(st, TODAY).items.map(i => i.state)).toEqual(['next', 'later', 'later'])
+    // a week left with only that session is still live today
+    const one = S({ queue: { ...S().queue, ids: ['d2'] }, workouts: [tomorrow] })
+    expect(queueNext(one, TODAY, TODAY)).toBe('d2')
+    expect(queueLiveOn(one, TODAY, TODAY)).toBe(true)
+    // asked about its own date, it has happened
+    expect(queueDone(st, '2026-09-10')).toEqual(['d2'])
+    expect(pinState(st, 'd2', '2026-09-10')).toBe('done')
+    expect(queueLiveOn(one, '2026-09-10', '2026-09-10')).toBe(false)
+    // without a `today`, the readers take the clock's: 2099 is still ahead of it
+    const far = S({ workouts: [{ ...tomorrow, d: '2099-01-01' }] })
+    expect(queueDone(far)).toEqual([])
+    expect(pinState(far, 'd2')).toBe('open')
   })
 
   it('a routine whose own name contains " + " is matched by its whole name', () => {
@@ -352,6 +376,19 @@ describe('weekTally — the streak card fraction', () => {
     const s = S({ queue: null, week: { 0: ['own'] }, workouts: [own('2026-09-06')] })
     expect(weekTally({ ...s, weekStart: 0 }, TODAY)).toEqual({ done: 1, planned: 1 })
     expect(weekTally({ ...s, weekStart: 1 }, TODAY)).toEqual({ done: 0, planned: 1 })
+  })
+
+  it('counts a workout dated later this week from its own day on, as the progress row does', () => {
+    // The DONE RULE stops at the day being drawn, and so does the training on top: on Wednesday
+    // a D1 dated Thursday (its start before the apply) is neither a done session nor extra work.
+    const thu = w({ routineIds: ['d1'], start: SINCE - 1, d: '2026-09-10', name: 'US W1 D1' })
+    expect(queueView(S({ workouts: [thu] }), TODAY).items[0].state).toBe('next')
+    expect(weekTally(S({ workouts: [thu] }), TODAY)).toEqual({ done: 0, planned: 3 })
+    expect(weekTally(S({ workouts: [thu] }), '2026-09-10')).toEqual({ done: 1, planned: 3 })
+    // Which workout earned the credit and how many sessions are done are read for the same day.
+    const later = { ...thu, d: '2099-01-06' }
+    expect(weekTally(S({ workouts: [later] }), TODAY)).toEqual({ done: 0, planned: 3 })
+    expect(weekTally(S({ workouts: [later] }), '2099-01-06')).toEqual({ done: 1, planned: 3 })
   })
 })
 
