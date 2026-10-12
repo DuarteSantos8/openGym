@@ -1,0 +1,9 @@
+// Harry's fork (hpeppitt/opengym): its own application id so it installs beside the upstream
+// app and beside fit-app, and is never offered upstream's APK by the in-app updater. Kept in a
+// file of its own and applied from the last line of build.gradle, so upstream's edits to
+// build.gradle (versionCode bumps every release) merge without conflict.
+android {
+    defaultConfig {
+        applicationId "com.hpeppitt.opengym"
+    }
+}
