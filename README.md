@@ -194,6 +194,7 @@ Traefik and nginx, and there are separate guides for
 | `ALLOWED_PRIVATE_IPS` | Private addresses push endpoints may resolve to (FakeDNS, split-horizon DNS): comma-separated IPs, `a-b` ranges or CIDR blocks | *(none)* |
 | `INTEGRATIONS` | Server integrations to offer, comma-separated: `webhook` ([integrations](docs/INTEGRATIONS.md)) | *(none)* |
 | `INTEGRATIONS_ALLOW_LAN` | `1`: webhooks may reach your home network (Home Assistant), http included; never loopback | *(off)* |
+| `PLANNER_TOKENS` | Fixed tokens for a program that writes a profile's training plan: `<token>=<uid>` pairs, comma-separated, each acting as its user on `GET`/`PUT /api/data` only | *(none)* |
 | `VAPID_SUBJECT` | Contact URL sent with push notifications | your `ORIGIN` |
 | `API_TARGET` | API image to build: `default`, or `coach` with the Claude Agent SDK and Codex CLI | `default` |
 | `COACH_DISABLED` | `1` forces the AI coach off instance-wide | *(unset)* |
