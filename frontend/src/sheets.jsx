@@ -63,6 +63,7 @@ import { workoutFit, fitFileName } from './lib/fit-export.js'
 import { workoutsOn, backfillStart, backfillEnd, completeBackfill, historyAsOf, sessionHistory } from './lib/backfill.js'
 import { legacyEntriesOf, appendOneRm, canonicalJSON, cardioParameters, defaultPlanRule, editPlan, planOptions, planPhase, planWarmupRows, supports, validatePlanRule, validateWarmup, warmupMaxCount, warmupSteps, withRest } from './lib/prescription/index.js'
 import RuleEditor, { Disclosure, PRESET_LABEL } from './components/RuleEditor.jsx'
+import { occurrenceTargets } from './lib/occurrence-view.js'
 import { auditFields, badgeFor } from './views/history-outcome.js'
 import { findingText } from './lib/progression-copy.js'
 import { moveWorkout, sameWorkout, startTimeOf, durationMinOf, setWorkoutDuration, rebuildPrHistory, MAX_DURATION_MIN, endsInFuture } from './lib/workout-date.js'
@@ -1627,14 +1628,8 @@ const cardioOf = rule => {
 }
 
 export function occurrenceSummary(occ) {
-  const r = occ?.rule
-  if (!r) return t('Needs setup')
-  const p = planPhase(r).parameters
-  const span = x => (x.min === x.max ? `${x.min}` : `${x.min}–${x.max}`)
-  const upTo = v => (p.loadTo ? `–${fmtNum(v(p.loadTo))}` : '')
-  const load = p.load.mode === 'absolute' ? ` @ ${fmtNum(p.load.value)}${upTo(l => l.value)} ${p.load.unit}`
-    : p.load.mode === 'percent_1rm' ? ` @ ${fmtNum(p.load.percent)}${upTo(l => l.percent)}% 1RM` : ''
-  return `${t(PRESET_LABEL[r.preset])} — ${span(p.sets)} × ${p.durationSeconds ? span(p.durationSeconds) + 's' : span(p.reps)}${load}`
+  if (!occ?.rule) return t('Needs setup')
+  return `${t(PRESET_LABEL[occ.rule.preset])} — ${occurrenceTargets(occ)}`
 }
 
 /** "+" quick add: a genuine occurrence with the default rule, no sheet. */
@@ -1726,6 +1721,8 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, s
   const [backoff, setBackoff] = useState(() => existing?.backoff === true)
   // Bodyweight follows the catalogue unless the occurrence says otherwise (issues #31/#32/#33).
   const [bw, setBw] = useState(() => !cardio && isBw({ ...(existing || {}), id: ex.id }))
+  // The sheet's three tabs. Each panel stays mounted (the others hidden), so nothing typed is lost on a switch.
+  const [tab, setTab] = useState('target')
   // What the rule cannot use (timed, unloaded, or a preset that shapes its own rows) is hidden
   // and not saved; the choice comes back if the rule does.
   const can = supports(rule)
@@ -1775,157 +1772,193 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, s
     })
   }
 
-  return <>
-    <h3 className="capitalize">{exerciseNameFor(ex)}</h3>
-    <Media ex={ex} minimizable />
-    <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '10px 0 14px', alignItems: 'center' }}>
-      <span className="tag">{t(ex.eq)}</span><span className="dim" aria-hidden="true">·</span>
-      {cardio && <span className="tag acc"><Icon name="figureRun" />{t('Cardio')}</span>}
-      <span className="tag">{t(MUSCLE_NAME[ex.tg] || ex.tg || ex.bp)}</span>
-      {!cardio && (ex.secondaries?.length ? ex.secondaries : smOf(ex)).filter(trainedBy(ex)).slice(0, 3)
-        .map((s, i) => <span key={i} className="tag dim">{t(MUSCLE_NAME[s] || s)}</span>)}
-    </div>
-    {descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
+  const panel = (name, children) => <div role="tabpanel" id={`xc-panel-${name}`} aria-labelledby={`xc-tab-${name}`} hidden={tab !== name}>{children}</div>
+  const tabs = [['target', t('Target')], ['progression', t('Progression')], ['options', t('Options')]]
+  const onTabKey = e => {
+    const at = tabs.findIndex(([id]) => id === tab)
+    const to = e.key === 'ArrowRight' ? (at + 1) % tabs.length : e.key === 'ArrowLeft' ? (at + tabs.length - 1) % tabs.length : e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : -1
+    if (to < 0) return
+    e.preventDefault()
+    setTab(tabs[to][0])
+    document.getElementById(`xc-tab-${tabs[to][0]}`)?.focus()
+  }
+  // Replace, edit-a-custom-exercise and Remove sit behind the ⋯ at the top, like the routine's own.
+  const actions = [
+    onReplace && { icon: 'swap', label: t('Replace exercise'), onClick: () => { close(); onReplace() } },
+    isCustomEx(ex) && { icon: 'pencil', label: t('Edit or delete this exercise'), onClick: () => { close(); customExSheet(ex) } },
+    onDelete && { icon: 'trash', label: t('Remove from routine'), danger: true, onClick: () => { close(); onDelete() } },
+  ].filter(Boolean)
 
-    {cardio ? <div className="row cfgrow" style={{ marginBottom: 18 }}>
-      <Stepper label={t('Intervals')} value={cardioCfg.sets} step={1} decimal={false} onChange={v => setCardioCfg(x => ({ ...x, sets: v }))} />
-      <Stepper label={t('Minutes')} value={cardioCfg.min} step={1} decimal={false} onChange={v => setCardioCfg(x => ({ ...x, min: v }))} />
-      {/* Typed and stepped in the profile's unit, kept in km/h (lib/speed.js). */}
-      <Stepper label={speedUnit === 'mph' ? t('Speed (mph)') : t('Speed (km/h)')} value={toSpeed(cardioCfg.speed, speedUnit)} step={0.5}
-        onChange={v => setCardioCfg(x => ({ ...x, speed: fromSpeed(v, speedUnit) }))} />
-    </div> : <RuleEditor rule={rule} unit={st.unit} effort={effortOf(st) !== 'none'} assisted={assisted} bodyweight={bw} onChange={next => {
+  return <>
+    <div className="xc-head">
+      <Thumb ex={ex} />
+      <div className="grow">
+        <h3 className="capitalize">{exerciseNameFor(ex)}</h3>
+        <div className="xc-meta">{t(ex.eq)} · {t(MUSCLE_NAME[ex.tg] || ex.tg || ex.bp)}</div>
+      </div>
+      {actions.length > 0 && <button type="button" className="iconbtn" aria-label={t('More')}
+        onClick={() => menuSheet({ title: exerciseNameFor(ex), titleClass: exerciseNameClass(ex), items: actions })}><Icon name="more" /></button>}
+    </div>
+    {/* The animation, the muscles and the description fold away: the sheet opens on the numbers. */}
+    <details className="xc-info">
+      <summary><Icon name="info" />{t('Technique and image')}</summary>
+      <Media ex={ex} minimizable />
+      <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '10px 0 14px', alignItems: 'center' }}>
+        <span className="tag">{t(ex.eq)}</span><span className="dim" aria-hidden="true">·</span>
+        {cardio && <span className="tag acc"><Icon name="figureRun" />{t('Cardio')}</span>}
+        <span className="tag">{t(MUSCLE_NAME[ex.tg] || ex.tg || ex.bp)}</span>
+        {!cardio && (ex.secondaries?.length ? ex.secondaries : smOf(ex)).filter(trainedBy(ex)).slice(0, 3)
+          .map((s, i) => <span key={i} className="tag dim">{t(MUSCLE_NAME[s] || s)}</span>)}
+      </div>
+      {descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
+    </details>
+
+    <div className="xc-tabs" role="tablist" aria-label={t('Exercise')} onKeyDown={onTabKey}>
+      {tabs.map(([id, label]) => <button key={id} type="button" role="tab" id={`xc-tab-${id}`} aria-controls={`xc-panel-${id}`}
+        aria-selected={tab === id} tabIndex={tab === id ? 0 : -1} onClick={() => setTab(id)}>{label}</button>)}
+    </div>
+
+    {cardio ? <>
+      {panel('target', <div className="row cfgrow" style={{ marginBottom: 18 }}>
+        <Stepper label={t('Intervals')} value={cardioCfg.sets} step={1} decimal={false} onChange={v => setCardioCfg(x => ({ ...x, sets: v }))} />
+        <Stepper label={t('Minutes')} value={cardioCfg.min} step={1} decimal={false} onChange={v => setCardioCfg(x => ({ ...x, min: v }))} />
+        {/* Typed and stepped in the profile's unit, kept in km/h (lib/speed.js). */}
+        <Stepper label={speedUnit === 'mph' ? t('Speed (mph)') : t('Speed (km/h)')} value={toSpeed(cardioCfg.speed, speedUnit)} step={0.5}
+          onChange={v => setCardioCfg(x => ({ ...x, speed: fromSpeed(v, speedUnit) }))} />
+      </div>)}
+      {panel('progression', <div className="small dim">{t('Cardio uses intervals, duration and speed. Strength progression templates do not apply.')}</div>)}
+    </> : <RuleEditor tab={tab} rule={rule} unit={st.unit} effort={effortOf(st) !== 'none'} assisted={assisted} bodyweight={bw} onChange={next => {
       setRule(next)
       if (next.preset === 'greyskull' && !failureDecided.current) setLastToFailure(true)
     }}
       restDefault={restDefault} defaultRest={st.restSec} onRestDefault={on => { setRestDefault(on); if (on) setRule(r => withRest(r, st.restSec)) }} />}
 
-    {!cardio && <>
-      <h4 className="sec">{t('Advanced options')}</h4>
-      {/* How the movement is loaded and counted (issues #31/#32/#33, #60). */}
-      <div className="sect-b" style={{ marginBottom: 14 }}>
-        <Row icon="figureStrength" iconTint="var(--acc)" title={t('Bodyweight')}
-          subtitle={bw ? (plan.durationSeconds ? t('No weight to enter — just time the hold.') : t('No weight to enter — just log the reps.')) : t('Ask for a weight on every set.')}>
-          {/* On, the rule drops its starting load when its preset can run without one; a preset
-              that steps the load keeps it, and the sets log it as added weight. */}
-          <Switch checked={bw} onChange={v => {
-            setBw(v)
-            const unloaded = editPlan(rule, { load: { mode: 'empty' } })
-            if (v && validatePlanRule(unloaded).ok) setRule(unloaded)
-          }} />
-        </Row>
-        {/* Reps: logged as a total split between the limbs. A hold: the whole hold once per side
-            (#322), so the planned sets double into a left and a right row each. */}
-        <Row icon="shuffle" iconTint="var(--blue)" title={plan.durationSeconds ? t('Per side') : t('Reps per side')}
-          subtitle={plan.durationSeconds
-            ? (side
-              ? t('{0} sets become {1}: one on each side, {2}s held every time.', plan.sets.min, plan.sets.min * 2, plan.durationSeconds.min)
-              : t('For side planks, single-arm holds and the like. Trains each side on its own.'))
-            : (side ? t('You still log the total: {0} is {1} per side.', plan.reps.max, fmtNum(sideReps(plan.reps.max))) : t('For lunges, single-arm rows and the like.'))}>
-          {/* Turning it on rounds the reps up to even: half of an odd total is a rep one side does not get. A hold has nothing to round. */}
-          <Switch checked={side} onChange={v => {
-            setSide(v)
-            const even = n => Math.ceil(n / 2) * 2
-            if (v && !plan.durationSeconds) setRule(r => {
-              const o = planOptions(r)
-              return editPlan(r, { reps: { min: even(o.reps.min), max: even(o.reps.max) }, ...(o.setReps ? { setReps: o.setReps.map(n => (n === 'max' ? n : even(n))) } : {}) })
-            })
-          }} />
-        </Row>
-        {canFailure && <Row icon="gauge" iconTint="var(--purple)" title={t('Last set to failure')}
-          subtitle={lastToFailure ? t('The last set goes until nothing is left, and counts as all-out effort unless you rate it.') : t('Plan the final set as an all-out one.')}>
-          <Switch checked={lastToFailure} onChange={v => { failureDecided.current = true; setLastToFailure(v) }} />
-        </Row>}
-        {canBackoff && <><Row icon="steps" iconTint="var(--acc)" title={t('Back-off sets')} subtitle={t('Each set one step lighter than the one before. The weight above is the first set.')}>
-          <Switch checked={backoff} onChange={setBackoff} />
-        </Row>
-        <div className="small dim" style={{ padding: '0 16px 12px' }}>{backoff
-          ? (backoffPreview ? t('Sets open at {0}. The first set goes up when every set reaches its reps, and the rest follow it.', backoffPreview) : t('The first set goes up when every set reaches its reps, and the rest follow it.'))
-          : t('All sets at the same weight.')}</div></>}
-      </div>
-      {isBellEx(ex) && !bw && <Disclosure title={t('Weight means')} value={dbLoadFor(st, { id: ex.id, dbLoad })}>
-        <DbLoadPicker ex={ex} cfg={{ id: ex.id, dbLoad }} value={dbLoadFor(st, { id: ex.id, dbLoad })}
-          onChange={v => setDbLoad(v === dbLoadFor(st, ex.id) ? undefined : v)} />
-      </Disclosure>}
-      {(plan.load.mode !== 'empty' || !!rule.program.trainingMax) && rule.rounding.mode !== 'allowed_values' && <Disclosure title={t('Plate step')} value={`${rule.rounding.step ?? ''} ${st.unit}`}>
-        <Segmented value={rule.rounding.mode} onChange={mode => setRule(r => ({ ...r, rounding: { ...r.rounding, mode } }))}
-          options={[{ value: 'nearest', label: t('Nearest') }, { value: 'up', label: t('Up') }, { value: 'down', label: t('Down') }]} />
-        <div className="row cfgrow" style={{ marginTop: 8 }}>
-          <Stepper value={rule.rounding.step} step={0.25} unit={st.unit} onChange={v => setRule(r => ({ ...r, rounding: { ...r.rounding, step: v } }))} />
+    {panel('options', <>
+      {!cardio && <>
+        {/* How the movement is loaded and counted (issues #31/#32/#33, #60). */}
+        <div className="sect-b" style={{ marginBottom: 14 }}>
+          <Row icon="figureStrength" iconTint="var(--acc)" title={t('Bodyweight')}
+            subtitle={bw ? (plan.durationSeconds ? t('No weight to enter — just time the hold.') : t('No weight to enter — just log the reps.')) : t('Ask for a weight on every set.')}>
+            {/* On, the rule drops its starting load when its preset can run without one; a preset
+                that steps the load keeps it, and the sets log it as added weight. */}
+            <Switch checked={bw} onChange={v => {
+              setBw(v)
+              const unloaded = editPlan(rule, { load: { mode: 'empty' } })
+              if (v && validatePlanRule(unloaded).ok) setRule(unloaded)
+            }} />
+          </Row>
+          {/* Reps: logged as a total split between the limbs. A hold: the whole hold once per side
+              (#322), so the planned sets double into a left and a right row each. */}
+          <Row icon="shuffle" iconTint="var(--blue)" title={plan.durationSeconds ? t('Per side') : t('Reps per side')}
+            subtitle={plan.durationSeconds
+              ? (side
+                ? t('{0} sets become {1}: one on each side, {2}s held every time.', plan.sets.min, plan.sets.min * 2, plan.durationSeconds.min)
+                : t('For side planks, single-arm holds and the like. Trains each side on its own.'))
+              : (side ? t('You still log the total: {0} is {1} per side.', plan.reps.max, fmtNum(sideReps(plan.reps.max))) : t('For lunges, single-arm rows and the like.'))}>
+            {/* Turning it on rounds the reps up to even: half of an odd total is a rep one side does not get. A hold has nothing to round. */}
+            <Switch checked={side} onChange={v => {
+              setSide(v)
+              const even = n => Math.ceil(n / 2) * 2
+              if (v && !plan.durationSeconds) setRule(r => {
+                const o = planOptions(r)
+                return editPlan(r, { reps: { min: even(o.reps.min), max: even(o.reps.max) }, ...(o.setReps ? { setReps: o.setReps.map(n => (n === 'max' ? n : even(n))) } : {}) })
+              })
+            }} />
+          </Row>
+          {canFailure && <Row icon="gauge" iconTint="var(--purple)" title={t('Last set to failure')}
+            subtitle={lastToFailure ? t('The last set goes until nothing is left, and counts as all-out effort unless you rate it.') : t('Plan the final set as an all-out one.')}>
+            <Switch checked={lastToFailure} onChange={v => { failureDecided.current = true; setLastToFailure(v) }} />
+          </Row>}
+          {canBackoff && <><Row icon="steps" iconTint="var(--acc)" title={t('Back-off sets')} subtitle={t('Each set one step lighter than the one before. The weight above is the first set.')}>
+            <Switch checked={backoff} onChange={setBackoff} />
+          </Row>
+          <div className="small dim" style={{ padding: '0 16px 12px' }}>{backoff
+            ? (backoffPreview ? t('Sets open at {0}. The first set goes up when every set reaches its reps, and the rest follow it.', backoffPreview) : t('The first set goes up when every set reaches its reps, and the rest follow it.'))
+            : t('All sets at the same weight.')}</div></>}
         </div>
-      </Disclosure>}
-      {can.warmup && <Disclosure title={t('Warm-ups')} value={warmup.mode === 'off' ? t('Off') : warmup.mode === 'smart' ? t('Smart ramp') : t('Percentage template')}>
-        <Segmented value={warmup.mode}
-          onChange={mode => setWarmup(mode === 'smart' ? { mode, count: Math.min(3, warmupMaxCount(ex.eq)) }
-            : mode === 'template' ? { mode, steps: [{ percent: 50, reps: 5 }, { percent: 75, reps: 3 }] }
-            : { mode: 'off' })}
-          options={[
-            { value: 'off', label: t('Off') },
-            { value: 'smart', label: t('Smart ramp') },
-            { value: 'template', label: t('Percentage template') },
-          ]} />
-        {warmup.mode === 'smart' && <div className="row cfgrow" style={{ marginTop: 8 }}>
-          <Stepper label={t('Warm-up sets')} value={warmup.count} step={1} decimal={false}
-            onChange={v => setWarmup({ mode: 'smart', count: Math.max(1, Math.min(warmupMaxCount(ex.eq), Math.round(v) || 1)) })} />
-        </div>}
-        {warmup.mode === 'template' && <div style={{ marginTop: 8 }}>
-          {warmup.steps.map((s, i) => <div key={i} className="row cfgrow" style={{ alignItems: 'flex-end', marginBottom: 8 }}>
-            <Stepper label={t('% of work weight')} unit="%" value={s.percent} step={5} decimal={false}
-              onChange={v => setWarmup(w => ({ ...w, steps: w.steps.map((x, j) => (j === i ? { ...x, percent: Math.max(1, Math.min(100, v)) } : x)) }))} />
-            <Stepper label={t('Reps')} value={s.reps} step={1} decimal={false}
-              onChange={v => setWarmup(w => ({ ...w, steps: w.steps.map((x, j) => (j === i ? { ...x, reps: Math.max(1, Math.round(v)) } : x)) }))} />
-            {warmup.steps.length > 1 && <Button variant="ghost" aria-label={t('Remove')} style={{ width: 'auto', flex: 'none', padding: '10px 12px' }}
-              onClick={() => setWarmup(w => ({ ...w, steps: w.steps.filter((_, j) => j !== i) }))}>×</Button>}
-          </div>)}
-          {warmup.steps.length < 5 && <Button variant="ghost"
-            onClick={() => setWarmup(w => ({ ...w, steps: [...w.steps, { ...w.steps.at(-1) }] }))}>{t('Add step')}</Button>}
-        </div>}
-        {warmup.mode !== 'off' && <div className="small dim" style={{ marginTop: 6, marginBottom: 18 }}>
-          {warmupPreview(warmup, ex.eq, rule)}
-        </div>}
-      </Disclosure>}
-      {(can.dropset || can.restpause) && <Disclosure title={t('Intensifier')} value={intensifier?.type === 'dropset' ? t('Drop-set') : intensifier?.type === 'restpause' ? t('Rest-pause') : t('None')}>
-        <Segmented value={intensifier?.type || ''}
-          onChange={v => setIntensifier(!v ? null : v === 'dropset'
-            ? { type: 'dropset', count: 1, pct: 20 }
-            : { type: 'restpause', totalReps: 8, restSec: st.restPauseSec || 15 })}
-          options={[
-            { value: '', label: t('None') },
-            ...(can.dropset ? [{ value: 'dropset', label: t('Drop-set') }] : []),
-            ...(can.restpause ? [{ value: 'restpause', label: t('Rest-pause') }] : []),
-          ]} />
-        {intensifier?.type === 'dropset' && <div className="row cfgrow" style={{ marginTop: 8, marginBottom: 8 }}>
-          <Stepper label={t('Drops')} value={intensifier.count} step={1} min={1} max={5} decimal={false}
-            onChange={v => setIntensifier(x => ({ ...x, count: v }))} />
-          <Stepper label={t('Weight drop (%)')} value={intensifier.pct} step={5} min={5} max={90} decimal={false}
-            onChange={v => setIntensifier(x => ({ ...x, pct: v }))} />
-        </div>}
-        {intensifier?.type === 'restpause' && <div className="row cfgrow" style={{ marginTop: 8, marginBottom: 8 }}>
-          <Stepper label={t('Rest-pause reps')} value={intensifier.totalReps} step={1} min={1} max={100} decimal={false}
-            onChange={v => setIntensifier(x => ({ ...x, totalReps: v }))} />
-          <Stepper label={t('Rest (s)')} value={intensifier.restSec} step={5} min={5} max={120} decimal={false}
-            onChange={v => setIntensifier(x => ({ ...x, restSec: v }))} />
-        </div>}
-      </Disclosure>}
-      {/* How the weight is plate-loaded and what the bar weighs — per exercise, not per plan: it
-          writes straight to S.barWeights / S.loadKind. */}
-      {!plan.durationSeconds && <Disclosure title={t('Plate loading')} value={LOAD_KIND_LABEL[loadKindFor(st, { id: ex.id, bodyweight: bw })]()}>
-        <BarWeightEditor ex={ex} cfg={{ bodyweight: bw }} extra={t('Applies to this exercise everywhere, not just this plan.')} />
-      </Disclosure>}
-    </>}
+        {isBellEx(ex) && !bw && <Disclosure title={t('Weight means')} value={dbLoadFor(st, { id: ex.id, dbLoad })}>
+          <DbLoadPicker ex={ex} cfg={{ id: ex.id, dbLoad }} value={dbLoadFor(st, { id: ex.id, dbLoad })}
+            onChange={v => setDbLoad(v === dbLoadFor(st, ex.id) ? undefined : v)} />
+        </Disclosure>}
+        {(plan.load.mode !== 'empty' || !!rule.program.trainingMax) && rule.rounding.mode !== 'allowed_values' && <Disclosure title={t('Plate step')} value={`${rule.rounding.step ?? ''} ${st.unit}`}>
+          <Segmented value={rule.rounding.mode} onChange={mode => setRule(r => ({ ...r, rounding: { ...r.rounding, mode } }))}
+            options={[{ value: 'nearest', label: t('Nearest') }, { value: 'up', label: t('Up') }, { value: 'down', label: t('Down') }]} />
+          <div className="row cfgrow" style={{ marginTop: 8 }}>
+            <Stepper value={rule.rounding.step} step={0.25} unit={st.unit} onChange={v => setRule(r => ({ ...r, rounding: { ...r.rounding, step: v } }))} />
+          </div>
+        </Disclosure>}
+        {can.warmup && <Disclosure title={t('Warm-ups')} value={warmup.mode === 'off' ? t('Off') : warmup.mode === 'smart' ? t('Smart ramp') : t('Percentage template')}>
+          <Segmented value={warmup.mode}
+            onChange={mode => setWarmup(mode === 'smart' ? { mode, count: Math.min(3, warmupMaxCount(ex.eq)) }
+              : mode === 'template' ? { mode, steps: [{ percent: 50, reps: 5 }, { percent: 75, reps: 3 }] }
+              : { mode: 'off' })}
+            options={[
+              { value: 'off', label: t('Off') },
+              { value: 'smart', label: t('Smart ramp') },
+              { value: 'template', label: t('Percentage template') },
+            ]} />
+          {warmup.mode === 'smart' && <div className="row cfgrow" style={{ marginTop: 8 }}>
+            <Stepper label={t('Warm-up sets')} value={warmup.count} step={1} decimal={false}
+              onChange={v => setWarmup({ mode: 'smart', count: Math.max(1, Math.min(warmupMaxCount(ex.eq), Math.round(v) || 1)) })} />
+          </div>}
+          {warmup.mode === 'template' && <div style={{ marginTop: 8 }}>
+            {warmup.steps.map((s, i) => <div key={i} className="row cfgrow" style={{ alignItems: 'flex-end', marginBottom: 8 }}>
+              <Stepper label={t('% of work weight')} unit="%" value={s.percent} step={5} decimal={false}
+                onChange={v => setWarmup(w => ({ ...w, steps: w.steps.map((x, j) => (j === i ? { ...x, percent: Math.max(1, Math.min(100, v)) } : x)) }))} />
+              <Stepper label={t('Reps')} value={s.reps} step={1} decimal={false}
+                onChange={v => setWarmup(w => ({ ...w, steps: w.steps.map((x, j) => (j === i ? { ...x, reps: Math.max(1, Math.round(v)) } : x)) }))} />
+              {warmup.steps.length > 1 && <Button variant="ghost" aria-label={t('Remove')} style={{ width: 'auto', flex: 'none', padding: '10px 12px' }}
+                onClick={() => setWarmup(w => ({ ...w, steps: w.steps.filter((_, j) => j !== i) }))}>×</Button>}
+            </div>)}
+            {warmup.steps.length < 5 && <Button variant="ghost"
+              onClick={() => setWarmup(w => ({ ...w, steps: [...w.steps, { ...w.steps.at(-1) }] }))}>{t('Add step')}</Button>}
+          </div>}
+          {warmup.mode !== 'off' && <div className="small dim" style={{ marginTop: 6, marginBottom: 18 }}>
+            {warmupPreview(warmup, ex.eq, rule)}
+          </div>}
+        </Disclosure>}
+        {(can.dropset || can.restpause) && <Disclosure title={t('Intensifier')} value={intensifier?.type === 'dropset' ? t('Drop-set') : intensifier?.type === 'restpause' ? t('Rest-pause') : t('None')}>
+          <Segmented value={intensifier?.type || ''}
+            onChange={v => setIntensifier(!v ? null : v === 'dropset'
+              ? { type: 'dropset', count: 1, pct: 20 }
+              : { type: 'restpause', totalReps: 8, restSec: st.restPauseSec || 15 })}
+            options={[
+              { value: '', label: t('None') },
+              ...(can.dropset ? [{ value: 'dropset', label: t('Drop-set') }] : []),
+              ...(can.restpause ? [{ value: 'restpause', label: t('Rest-pause') }] : []),
+            ]} />
+          {intensifier?.type === 'dropset' && <div className="row cfgrow" style={{ marginTop: 8, marginBottom: 8 }}>
+            <Stepper label={t('Drops')} value={intensifier.count} step={1} min={1} max={5} decimal={false}
+              onChange={v => setIntensifier(x => ({ ...x, count: v }))} />
+            <Stepper label={t('Weight drop (%)')} value={intensifier.pct} step={5} min={5} max={90} decimal={false}
+              onChange={v => setIntensifier(x => ({ ...x, pct: v }))} />
+          </div>}
+          {intensifier?.type === 'restpause' && <div className="row cfgrow" style={{ marginTop: 8, marginBottom: 8 }}>
+            <Stepper label={t('Rest-pause reps')} value={intensifier.totalReps} step={1} min={1} max={100} decimal={false}
+              onChange={v => setIntensifier(x => ({ ...x, totalReps: v }))} />
+            <Stepper label={t('Rest (s)')} value={intensifier.restSec} step={5} min={5} max={120} decimal={false}
+              onChange={v => setIntensifier(x => ({ ...x, restSec: v }))} />
+          </div>}
+        </Disclosure>}
+        {/* How the weight is plate-loaded and what the bar weighs — per exercise, not per plan: it
+            writes straight to S.barWeights / S.loadKind. */}
+        {!plan.durationSeconds && <Disclosure title={t('Plate loading')} value={LOAD_KIND_LABEL[loadKindFor(st, { id: ex.id, bodyweight: bw })]()}>
+          <BarWeightEditor ex={ex} cfg={{ bodyweight: bw }} extra={t('Applies to this exercise everywhere, not just this plan.')} />
+        </Disclosure>}
+      </>}
 
-    <Disclosure title={t('Note')} value={note.trim() ? note.trim().slice(0, 24) : t('None')}>
-      <textarea className="input" rows={3} maxLength={500}
-        placeholder={t('Note (optional) — loading cues, "bar only then +1 plate/side each set", anything worth remembering here')}
-        value={note} onChange={e => setNote(e.target.value)} />
-    </Disclosure>
-    <div style={{ height: 8 }} />
-    <Button variant="primary" disabled={!valid} onClick={save}>{saveLabel || (existing ? t('Save') : t('Add to routine'))}</Button>
-    {isCustomEx(ex) && <><div style={{ height: 8 }} /><Button icon="pencil" onClick={() => { close(); customExSheet(ex) }}>{t('Edit or delete this exercise')}</Button></>}
-    {/* The routine editor's counterpart to a workout's Swap (#110): another exercise in this
-        slot, with the slot's sets, reps, weight, rule and note kept (lib/routines.js). What was
-        changed on this sheet and not saved is left behind, as closing it would. */}
-    {onReplace && <><div style={{ height: 8 }} /><Button icon="swap" onClick={() => { close(); onReplace() }}>{t('Replace exercise')}</Button></>}
-    {onDelete && <><div style={{ height: 8 }} /><Button variant="danger" onClick={() => { close(); onDelete() }}>{t('Remove from routine')}</Button></>}
+      <Disclosure title={t('Note')} value={note.trim() ? note.trim().slice(0, 24) : t('None')}>
+        <textarea className="input" rows={3} maxLength={500}
+          placeholder={t('Note (optional) — loading cues, "bar only then +1 plate/side each set", anything worth remembering here')}
+          value={note} onChange={e => setNote(e.target.value)} />
+      </Disclosure>
+    </>)}
+
+    {/* The foot stays in view while the panels scroll: the plan as it reads now, and the way out. */}
+    <div className="xc-foot">
+      {!cardio && <div className="xc-sum">{occurrenceTargets({ rule })}</div>}
+      <Button variant="primary" icon="check" disabled={!valid} onClick={save}>{saveLabel || (existing ? t('Save') : t('Add to routine'))}</Button>
+    </div>
   </>
 }
 // `opts.backups`: the routine editor's sheet, where the slot's planned substitutes are picked.

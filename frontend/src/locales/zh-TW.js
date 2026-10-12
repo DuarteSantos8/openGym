@@ -2531,4 +2531,11 @@ export default {
   'The top set': '頂組',
   'This plan was set up outside the editor. Pick a progression to replace it.': '此計畫是在編輯器之外設定的。請選擇一種進程來取代它。',
   'Top set reps': '頂組次數',
+  // --- routine editor layout ---
+  'Edit routine': '編輯課表',
+  'Link to previous': '與上一個動作連結',
+  'Linked': '已連結',
+  'Options': '選項',
+  'Technique and image': '動作要領與圖片',
+  'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': '有氧使用間歇組數、時間與速度，不適用肌力漸進超負荷規則範本。',
 }

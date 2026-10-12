@@ -2542,4 +2542,11 @@ export default {
   'The top set': 'La série lourde',
   'This plan was set up outside the editor. Pick a progression to replace it.': 'Ce plan a été configuré hors de l’éditeur. Choisissez une progression pour le remplacer.',
   'Top set reps': 'Répétitions de la série lourde',
+  // --- routine editor layout ---
+  'Edit routine': 'Modifier la routine',
+  'Link to previous': 'Lier au précédent',
+  'Linked': 'Lié',
+  'Options': 'Options',
+  'Technique and image': 'Technique et image',
+  'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': "Le cardio utilise des intervalles, une durée et une vitesse. Les modèles de progression de force ne s'appliquent pas.",
 }

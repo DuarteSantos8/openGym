@@ -2542,4 +2542,11 @@ export default {
   'The top set': 'टॉप सेट',
   'This plan was set up outside the editor. Pick a progression to replace it.': 'यह योजना एडिटर के बाहर बनाई गई थी। इसे बदलने के लिए कोई प्रगति चुनें।',
   'Top set reps': 'टॉप सेट के रेप्स',
+  // --- routine editor layout ---
+  'Edit routine': 'रूटीन संपादित करें',
+  'Link to previous': 'पिछले से जोड़ें',
+  'Linked': 'जुड़ा हुआ',
+  'Options': 'विकल्प',
+  'Technique and image': 'तकनीक और छवि',
+  'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': 'कार्डियो में इंटरवल, अवधि और गति का उपयोग होता है। स्ट्रेंथ प्रोग्रेशन टेम्पलेट यहाँ लागू नहीं होते।',
 }

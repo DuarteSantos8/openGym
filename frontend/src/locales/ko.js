@@ -2542,4 +2542,11 @@ export default {
   'The top set': '톱 세트',
   'This plan was set up outside the editor. Pick a progression to replace it.': '이 계획은 편집기 밖에서 설정되었습니다. 바꾸려면 진행 방식을 고르세요.',
   'Top set reps': '톱 세트 반복',
+  // --- routine editor layout ---
+  'Edit routine': '루틴 편집',
+  'Link to previous': '이전 운동과 연결',
+  'Linked': '연결됨',
+  'Options': '옵션',
+  'Technique and image': '자세와 이미지',
+  'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': '유산소는 인터벌, 시간, 속도를 사용합니다. 근력 점진 템플릿은 적용되지 않습니다.',
 }

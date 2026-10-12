@@ -20,6 +20,11 @@ function renderTop() {
   return host
 }
 const button = (host, label) => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === label)
+// Replace sits behind the ⋯ at the top of the sheet: it opens a menu sheet over it.
+const menuItem = (host, label) => {
+  act(() => host.querySelector('button[aria-label="More"]').click())
+  return [...renderTop().querySelectorAll('.menu-item')].find(item => item.textContent.trim() === label)
+}
 
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -35,8 +40,7 @@ describe('Replace exercise', () => {
   it('sits on the settings sheet of a routine exercise and closes it before handing over', () => {
     const onReplace = vi.fn()
     exConfigSheet(EXIDX['0025'], { sets: 3, mode: 'reps', reps: 10, weight: 60 }, vi.fn(), vi.fn(), null, null, onReplace)
-    const host = renderTop()
-    const replace = button(host, 'Replace exercise')
+    const replace = menuItem(renderTop(), 'Replace exercise')
     expect(replace).toBeTruthy()
     act(() => replace.click())
     expect(onReplace).toHaveBeenCalledOnce()
@@ -54,7 +58,7 @@ describe('Replace exercise', () => {
 
   it('is not offered where there is no slot to replace', () => {
     exConfigSheet(EXIDX['0025'], null, vi.fn(), null, null)
-    expect(button(renderTop(), 'Replace exercise')).toBeUndefined()
+    expect(renderTop().querySelector('button[aria-label="More"]')).toBeNull()
   })
 
   it('titles the picker for what the pick is for', () => {

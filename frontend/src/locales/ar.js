@@ -2593,4 +2593,11 @@ export default {
   'The top set': 'مجموعة القمة',
   'This plan was set up outside the editor. Pick a progression to replace it.': 'أُعدّت هذه الخطة خارج المحرر. اختر تدرجًا لاستبدالها.',
   'Top set reps': 'تكرارات مجموعة القمة',
+  // --- routine editor layout ---
+  'Edit routine': 'تعديل الروتين',
+  'Link to previous': 'ربط بالتمرين السابق',
+  'Linked': 'مرتبط',
+  'Options': 'الخيارات',
+  'Technique and image': 'التقنية والصورة',
+  'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': 'الكارديو يعتمد على الفواصل والمدة والسرعة. قوالب تدرّج القوة لا تنطبق عليه.',
 }

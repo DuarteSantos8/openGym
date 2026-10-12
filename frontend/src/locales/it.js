@@ -2543,4 +2543,11 @@ export default {
   'The top set': 'La serie top',
   'This plan was set up outside the editor. Pick a progression to replace it.': 'Questo piano è stato impostato fuori dall’editor. Scegli una progressione per sostituirlo.',
   'Top set reps': 'Ripetizioni della serie top',
+  // --- routine editor layout ---
+  'Edit routine': 'Modifica routine',
+  'Link to previous': 'Collega al precedente',
+  'Linked': 'Collegato',
+  'Options': 'Opzioni',
+  'Technique and image': 'Tecnica e immagine',
+  'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': 'Il cardio usa intervalli, durata e velocità. I modelli di progressione della forza non si applicano.',
 }

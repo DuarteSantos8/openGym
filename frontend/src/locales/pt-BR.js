@@ -1642,6 +1642,13 @@ export const PT_BR_OVERRIDES = {
   'Reduce assistance by': 'Reduzir a assistência em',
   'Build reps at a lighter percentage of your training max, then a heavier block of fewer reps.': 'Acumule repetições a uma porcentagem mais leve do máximo de treino e depois faça um bloco mais pesado com menos repetições.',
   'This plan was set up outside the editor. Pick a progression to replace it.': 'Este plano foi configurado fora do editor. Escolha uma progressão para substituí-lo.',
+  // --- routine editor layout ---
+  'Edit routine': 'Editar rotina',
+  'Link to previous': 'Vincular ao anterior',
+  'Linked': 'Vinculado',
+  'Options': 'Opções',
+  'Technique and image': 'Técnica e imagem',
+  'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': 'O cardio usa intervalos, duração e velocidade. Os modelos de progressão de força não se aplicam.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

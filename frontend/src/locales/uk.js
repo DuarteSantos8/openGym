@@ -2535,4 +2535,11 @@ export default {
   'The top set': 'Топ-підхід',
   'This plan was set up outside the editor. Pick a progression to replace it.': 'Цей план налаштовано поза редактором. Виберіть прогресію, щоб замінити його.',
   'Top set reps': 'Повтори топ-підходу',
+  // --- routine editor layout ---
+  'Edit routine': 'Змінити програму',
+  'Link to previous': 'Зв’язати з попередньою',
+  'Linked': 'Зв’язано',
+  'Options': 'Параметри',
+  'Technique and image': 'Техніка та зображення',
+  'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': 'Кардіо використовує інтервали, тривалість і швидкість. Шаблони силової прогресії тут не застосовуються.',
 }

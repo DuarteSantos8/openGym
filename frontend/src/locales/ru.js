@@ -2546,4 +2546,11 @@ export default {
   'The top set': 'Топ-подход',
   'This plan was set up outside the editor. Pick a progression to replace it.': 'Этот план настроен вне редактора. Выберите прогрессию, чтобы заменить его.',
   'Top set reps': 'Повторы топ-подхода',
+  // --- routine editor layout ---
+  'Edit routine': 'Изменить программу',
+  'Link to previous': 'Связать с предыдущим',
+  'Linked': 'Связано',
+  'Options': 'Параметры',
+  'Technique and image': 'Техника и изображение',
+  'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': 'Кардио использует интервалы, длительность и скорость. Шаблоны силовой прогрессии здесь не применяются.',
 }
