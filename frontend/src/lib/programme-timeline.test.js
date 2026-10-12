@@ -13,7 +13,7 @@ it('does not treat partial history or incompatible weight units as an advancing 
  const partial={...workout('c',1,90),partial:true},foreign={...workout('c',1,200),unit:'lb'};
  const badEntry=workout('c',1,300);badEntry.entries.forEach(entry=>{entry.unit='lb'});
  const timeline=programmeTimelineForCycle({unit:'kg',workouts:[partial,foreign,badEntry]},cycle,{now:'2026-02-03T12:00:00Z'});
- expect(timeline.weeks[0].items[0].exercises[0]).toMatchObject({last:'—',next:'20 kg × 5'});
+ expect(timeline.weeks[0].items[0].exercises[0]).toMatchObject({last:'–',next:'20 kg × 5'});
 });
 
 it('keeps deload targets fixed and uses timed history only for timed prescriptions',()=>{
