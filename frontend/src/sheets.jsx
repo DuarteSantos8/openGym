@@ -297,12 +297,14 @@ function BwSheet({ required, onDone, close }) {
   const unit = st.unit
   const bw = lastBW(st)
   const [v, setV] = useState(bw ? bw.w : 70)
+  const [date, setDate] = useState(todayISO())
   const save = () => {
     const n = Math.round((v || 0) * 10) / 10
     if (!n || n <= 0) { toast(t('Enter a valid weight')); return }
     if (bwTooHeavy(n, unit)) return
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date > todayISO()) { toast(t('Choose a valid date')); return }
     update(s => {
-      const iso = todayISO()
+      const iso = required ? todayISO() : date
       const ex = s.bodyweight.find(b => b.d === iso)
       if (ex) { ex.w = n; ex.t = Date.now() } else s.bodyweight.push({ d: iso, w: n, t: Date.now() })
       s.bodyweight.sort((a, b) => (a.d < b.d ? -1 : 1))
@@ -325,6 +327,11 @@ function BwSheet({ required, onDone, close }) {
         </div>
       : <h3>{t('Log body weight')}</h3>}
     <div className="muted small">{required ? t('Slide or tap to set your weight. We ask before every workout so your curve stays honest.') : t('Today') + ', ' + fmtDate(todayISO(), true)}</div>
+    {!required && <div style={{ margin: '10px 0 6px' }}>
+      <Row icon="calendar" title={t('Date')}>
+        <input type="date" className="timef" value={date} max={todayISO()} onChange={e => setDate(e.target.value)} />
+      </Row>
+    </div>}
     <WeightInput value={v} setValue={setV} unit={unit} />
     <div style={{ height: 14 }} />
     <Button variant="primary" onClick={save}>{required ? t('Save & start workout') : t('Save')}</Button>
