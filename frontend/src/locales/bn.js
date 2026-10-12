@@ -2446,4 +2446,11 @@ export default {
   'The top set': 'সবচেয়ে ভারী সেট',
   'This plan was set up outside the editor. Pick a progression to replace it.': 'এই প্ল্যান এডিটরের বাইরে তৈরি হয়েছে। এটি বদলাতে একটি অগ্রগতির পদ্ধতি বেছে নিন।',
   'Top set reps': 'সবচেয়ে ভারী সেটের রেপ',
+  // --- routine editor layout ---
+  'Edit routine': 'রুটিন সম্পাদনা',
+  'Link to previous': 'আগেরটির সাথে যুক্ত করুন',
+  'Linked': 'যুক্ত',
+  'Options': 'বিকল্প',
+  'Technique and image': 'কৌশল ও ছবি',
+  'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': 'কার্ডিওতে ইন্টারভাল, সময় ও গতি ব্যবহৃত হয়। স্ট্রেংথ প্রগ্রেশন টেমপ্লেট এখানে প্রযোজ্য নয়।',
 }

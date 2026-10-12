@@ -20,6 +20,13 @@ after migrating, a bodyweight double climbed the wrong rep range); a ladder sess
 judged against the plan's minimum rather than the target it asked for, as v1 did. Steps are now
 earned when a session finishes, and a set's own rest drives the timer.
 
+**A redesigned routine editor.** The routine page has a bar with the ⋯ menu (Copy routine, Print and
+Delete moved there), the routine's icon and name as its title, a flat list that shows each exercise's
+targets and what is switched on, a "Link to previous" between neighbours for supersets, and the
+muscles the plan reaches as bars. An exercise's settings open on three tabs, **Target**,
+**Progression** and **Options**, with the plan as it reads now and Save pinned to the foot; Replace
+and Remove sit behind its ⋯. How a plan is built, saved and progressed did not change.
+
 ## v1.4.1 (2026-10-10)
 
 Bug fixes for v1.4.0, mostly the things you told us about on Discord and GitHub.

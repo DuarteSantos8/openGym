@@ -2370,4 +2370,11 @@ export default {
   'The top set': '顶组',
   'This plan was set up outside the editor. Pick a progression to replace it.': '此计划是在编辑器之外设置的。请选择一种进阶方式来替换它。',
   'Top set reps': '顶组次数',
+  // --- routine editor layout ---
+  'Edit routine': '编辑训练日',
+  'Link to previous': '与上一个动作连接',
+  'Linked': '已连接',
+  'Options': '选项',
+  'Technique and image': '动作要领与图片',
+  'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': '有氧使用间歇数、时长和速度，不适用力量进阶模板。',
 }

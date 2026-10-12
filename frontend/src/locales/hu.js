@@ -2373,4 +2373,11 @@ export default {
   'The top set': 'A csúcssorozat',
   'This plan was set up outside the editor. Pick a progression to replace it.': 'Ezt a tervet a szerkesztőn kívül állították be. Válassz progressziót a cseréjéhez.',
   'Top set reps': 'Csúcssorozat ismétlései',
+  // --- routine editor layout ---
+  'Edit routine': 'Rutin szerkesztése',
+  'Link to previous': 'Összekapcsolás az előzővel',
+  'Linked': 'Összekapcsolva',
+  'Options': 'Opciók',
+  'Technique and image': 'Technika és kép',
+  'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': 'A kardió intervallumokat, időtartamot és sebességet használ. Az erőnléti progressziós sablonok itt nem érvényesek.',
 }

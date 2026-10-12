@@ -2370,4 +2370,11 @@ export default {
   'The top set': 'Zirve set',
   'This plan was set up outside the editor. Pick a progression to replace it.': 'Bu plan düzenleyicinin dışında kuruldu. Değiştirmek için bir ilerleme seç.',
   'Top set reps': 'Zirve set tekrarları',
+  // --- routine editor layout ---
+  'Edit routine': 'Rutini düzenle',
+  'Link to previous': 'Öncekiyle bağla',
+  'Linked': 'Bağlı',
+  'Options': 'Seçenekler',
+  'Technique and image': 'Teknik ve görsel',
+  'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': 'Kardiyo aralıkları, süreyi ve hızı kullanır. Kuvvet ilerleme şablonları burada geçerli değildir.',
 }

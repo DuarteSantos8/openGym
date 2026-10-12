@@ -2381,4 +2381,11 @@ export default {
   'The top set': 'เซ็ตหนักสุด',
   'This plan was set up outside the editor. Pick a progression to replace it.': 'แผนนี้ตั้งค่านอกตัวแก้ไข เลือกรูปแบบการเพิ่มน้ำหนักเพื่อแทนที่',
   'Top set reps': 'จำนวนครั้งเซ็ตหนักสุด',
+  // --- routine editor layout ---
+  'Edit routine': 'แก้ไขรูทีน',
+  'Link to previous': 'เชื่อมกับท่าก่อนหน้า',
+  'Linked': 'เชื่อมแล้ว',
+  'Options': 'ตัวเลือก',
+  'Technique and image': 'เทคนิคและภาพ',
+  'Cardio uses intervals, duration and speed. Strength progression templates do not apply.': 'คาร์ดิโอใช้อินเทอร์วัล ระยะเวลา และความเร็ว เทมเพลตการเพิ่มระดับของเวทเทรนนิ่งไม่ได้ใช้ที่นี่',
 }

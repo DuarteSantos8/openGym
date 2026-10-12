@@ -111,7 +111,10 @@ function LoadField({ label, value, upTo, rangeable = false, unit, step, noneMode
 }
 
 // `restDefault`: the exercise takes the profile's rest (`defaultRest`) instead of its own; the wheel's 0:00 says so.
-export default function RuleEditor({ rule, unit, effort, assisted = false, bodyweight = false, restDefault = false, defaultRest = 90, onRestDefault, onChange }) {
+// `tab` ('target' | 'progression') lays the form out as the exercise sheet's two tabs: both panels
+// stay mounted and the other one is hidden, so a field keeps what was typed while you switch.
+// Without it the editor is one flat form, Progression then Target.
+export default function RuleEditor({ rule, unit, effort, assisted = false, bodyweight = false, restDefault = false, defaultRest = 90, onRestDefault, onChange, tab }) {
   const def = PRESETS[rule.preset]
   // The template's numbers (planOptions): the plan's sets, reps, load… and its extras (offsets, rungs…).
   const p = planOptions(rule)
@@ -129,14 +132,21 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
       options={PRESET_IDS.filter(id => id !== 'triple' || !bodyweight || (p.load.mode === 'absolute' && p.load.value > 0) || rule.preset === 'triple').map(id => ({ value: id, label: t(PRESET_LABEL[id]), subtitle: t(PRESET_HINT[id]) }))} />
   </div>
   const errorLine = errors.length > 0 && <div className="small" role="alert" style={{ color: 'var(--red)', margin: '10px 0 14px' }}>{errors[0]}</div>
+  const panel = (name, children) => <div key={name} role="tabpanel" id={`xc-panel-${name}`} aria-labelledby={`xc-tab-${name}`} hidden={tab !== name}>{children}</div>
   // A program edited past its template (an import, a future builder) is shown, not edited: rebuilding
   // it from these numbers would drop what the template does not know. Choosing a template replaces it.
-  if (!isTemplateRule(rule)) return <>
-    <h4 className="sec">{t('Progression')}</h4>
-    {presetRow}
-    <div className="small dim" style={{ marginBottom: 14 }}>{t('This plan was set up outside the editor. Pick a progression to replace it.')}</div>
-    {errorLine}
-  </>
+  if (!isTemplateRule(rule)) {
+    const notice = <>
+      {presetRow}
+      <div className="small dim" style={{ marginBottom: 14 }}>{t('This plan was set up outside the editor. Pick a progression to replace it.')}</div>
+    </>
+    if (tab) return <>{panel('target', notice)}{panel('progression', notice)}{errorLine}</>
+    return <>
+      <h4 className="sec">{t('Progression')}</h4>
+      {notice}
+      {errorLine}
+    </>
+  }
 
   // Defaults: absolute increments for absolute loads, percentage points for percent loads.
   // loadTo: the load range's high end, or undefined for a fixed load.
@@ -173,10 +183,12 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
 
   const stopSummary = p.completion.length ? String(p.completion.length) : t('None')
 
-  return <>
-    <h4 className="sec">{t('Progression')}</h4>
+  const presetBlock = <>
     {presetRow}
     <div className="small dim" style={{ marginBottom: 14 }}>{t(PRESET_HINT[rule.preset])}</div>
+  </>
+  const progressionBody = <>
+    {presetBlock}
 
     {loaded && <div style={{ marginTop: 22, marginBottom: 14 }}>
       <div className="sect-b" style={{ marginBottom: 8 }}>
@@ -228,12 +240,13 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
       </>}
     </Disclosure>}
 
-    <h4 className="sec">{t('Target')}</h4>
-    {!['five_three_one', 'pyramid_reps', 'top_set_backoff'].includes(rule.preset) && <RangeField key={'sets' + rule.preset} label={t('Sets')} value={p.sets} policy={def.ranges.sets} onChange={sets => set({ sets })} />}
+  </>
+  const targetBody = <>
     {supportsTime && <div className="sect-b" style={{ marginBottom: 14 }}>
       <Segmented value={timed ? 'time' : 'reps'} onChange={setTargetMode}
         options={[{ value: 'reps', label: t('Reps') }, { value: 'time', label: t('Time') }]} />
     </div>}
+    {!['five_three_one', 'pyramid_reps', 'top_set_backoff'].includes(rule.preset) && <RangeField key={'sets' + rule.preset} label={t('Sets')} value={p.sets} policy={def.ranges.sets} onChange={sets => set({ sets })} />}
     {!['five_three_one', 'pyramid_reps'].includes(rule.preset) && (timed
       ? <RangeField key={'sec' + rule.preset} label={t('Seconds')} value={p.durationSeconds} step={5} policy={def.ranges.durationSeconds} onChange={durationSeconds => set({ durationSeconds })} />
       : <RangeField key={'reps' + rule.preset} label={rule.preset === 'top_set_backoff' ? t('Top set reps') : t('Reps')} value={p.reps} policy={def.ranges.reps} onChange={reps => set({ reps })} />)}
@@ -359,7 +372,13 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
       </div>
       {p.rir && <div className="small dim" style={{ marginTop: 6 }}>{t('Load only goes up if your hardest set left at least this many reps in reserve.')}</div>}
     </div>}
-
+  </>
+  if (tab) return <>{panel('progression', progressionBody)}{panel('target', <>{presetBlock}{targetBody}</>)}{errorLine}</>
+  return <>
+    <h4 className="sec">{t('Progression')}</h4>
+    {progressionBody}
+    <h4 className="sec">{t('Target')}</h4>
+    {targetBody}
     {errorLine}
   </>
 }
