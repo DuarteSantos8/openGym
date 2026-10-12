@@ -369,6 +369,23 @@ describe('queueOf — the shared normalization', () => {
     expect(queueOf(S({ queue: { ids: ['gone'], since: SINCE } }))).toBe(null)
   })
 
+  it('a queue with neither startsOn nor an apply time reads as no queue, not as a finished week', () => {
+    // Dated from `since || 0`, the week began in 1970: every workout ever logged was inside it,
+    // so an old session under this week's name ticked its slot done, with no recovery prompt.
+    const old = w({ routineIds: ['d1'], d: '2020-01-02', start: Date.parse('2020-01-02T08:00:00'), name: 'US W1 D1' })
+    const noBound = S({ queue: { ids: ['d1', 'd2'], label: 'US W1' }, workouts: [old] })
+    expect(queueOf(noBound)).toBe(null)
+    expect(queueView(noBound, TODAY)).toBe(null)
+    expect(queueDone(noBound)).toEqual([])
+    expect(pinState(noBound, 'd1')).toBe(null)
+    // a zero or non-numeric since is no apply time either
+    expect(queueOf(S({ queue: { ids: ['d1'], since: 0, label: 'US W1' } }))).toBe(null)
+    expect(queueOf(S({ queue: { ids: ['d1'], since: 'monday', label: 'US W1' } }))).toBe(null)
+    // either bound on its own still dates the week
+    expect(queueOf(S({ queue: { ids: ['d1'], since: SINCE } })).startsOn).toBe('2026-09-07')
+    expect(queueOf(S({ queue: { ids: ['d1'], startsOn: '2026-09-07' } })).startsOn).toBe('2026-09-07')
+  })
+
   it('a repeated id is one chip, not two', () => {
     const st = S({ queue: { ids: ['d1', 'd1', 'd2'], since: SINCE, startsOn: '2026-09-07', label: 'US W1' } })
     expect(queueView(st, TODAY).items.map(i => i.id)).toEqual(['d1', 'd2'])
