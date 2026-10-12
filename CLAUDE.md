@@ -140,3 +140,5 @@ output), `api`, `web` (multi-stage build of `frontend/` served by nginx, which a
 - Don't commit `media/` or `data/` (gitignored).
 - Training-logic changes (progression, 1RM, session read-back) need a unit test in `src/lib`
   beside the code, not just manual clicking-through.
+
+@docs/fork/FORK.md

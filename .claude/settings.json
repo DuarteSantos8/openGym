@@ -1,0 +1,7 @@
+{
+  "enabledPlugins": {
+    "core@herry-kit": true,
+    "engineering@herry-kit": true
+  },
+  "permissions": { "allow": [] }
+}

@@ -30,3 +30,7 @@ frontend/bundle-size.json
 
 # Local planning notes
 docs/superpowers/plans/
+
+# Fork: Claude Code project config is tracked here (upstream ignores it)
+!.claude/
+.claude/settings.local.json
