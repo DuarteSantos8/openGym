@@ -55,7 +55,7 @@ test('back-off: a profile with no workouts at all is not nagged for ever', () =>
 });
 
 test('coach week / rotation: the day right after a workout is rest, the second day off is a miss', () => {
-  const queue = { ids: ['push', 'pull'], since: 0, startsOn: '2026-09-07' };
+  const queue = { ids: ['push', 'pull'], since: 1, startsOn: '2026-09-07' };
   const s = S({ week: {}, queue, workouts: [{ id: 'a', d: '2026-09-07', routineId: 'push', start: 1 }] });
   assert.equal(nudgeFor(s, '2026-09-08'), null, 'the day after a session');
   assert.equal(nudgeFor(s, '2026-09-09'), 'pull', 'two days off in a row');

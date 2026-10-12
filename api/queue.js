@@ -13,7 +13,9 @@
 // make look identical, from counting. Only finished workouts (`S.workouts`) count; an in-progress
 // session never does. Missed sets are the planner's business, not the queue's. A queue with
 // `strict: true` (the app's "Start new pass") drops the dated name clause: only a workout started
-// at/after `since` counts, so a session logged earlier that day stays the old pass's.
+// at/after `since` counts, so a session logged earlier that day stays the old pass's. `since` is
+// a clock only while it is positive: 0 is no apply time at all, and every workout ever logged
+// would start after it.
 //
 // NEXT RULE (shared with the frontend): once `startsOn` is reached, the day's session is the
 // first not-done one in slot order — unless pins say otherwise.
@@ -52,7 +54,7 @@ function doneIds(S, q) {
   for (const w of S.workouts || []) {
     if (done.size === want.size) break;
     const ids = routineIdsOf(w);
-    const byClock = (w.start ?? 0) >= S.queue.since;
+    const byClock = S.queue.since > 0 && (w.start ?? 0) >= S.queue.since;
     const byName = S.queue.strict !== true && String(w.d || '') >= q.startsOn;
     if (!byClock && !byName) continue;
     for (const id of ids) {
@@ -80,6 +82,7 @@ function dayIn(ms, tz) {
 function queueOf(S) {
   const q = S.queue;
   if (!q || typeof q !== 'object' || !Array.isArray(q.ids)) return null;
+  if (q.strict === true && !(q.since > 0)) return null; // a strict pass with no clock, as in the frontend
   const startsOn = typeof q.startsOn === 'string' ? q.startsOn : dayIn(q.since || 0, S.reminder?.tz);
   // First valid occurrence of each id — the same normalization as the frontend's queueOf.
   const known = new Set((S.routines || []).map(r => r?.id));
