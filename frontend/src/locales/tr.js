@@ -1,5 +1,9 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Nutrition": "Beslenme",
+  "Sign in to use Nutrition.": "Beslenmeyi kullanmak için giriş yap.",
+  "Nutrition is unavailable. Please try again.": "Beslenme şu anda kullanılamıyor. Lütfen tekrar dene.",
+  "Retry": "Tekrar dene",
   'Confirm': 'Onayla',
   'Cancel': 'İptal',
   'Press back again to exit': 'Çıkmak için geri tuşuna tekrar basın',

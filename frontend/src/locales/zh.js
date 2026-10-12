@@ -1,5 +1,9 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Nutrition": "营养",
+  "Sign in to use Nutrition.": "登录以使用营养功能。",
+  "Nutrition is unavailable. Please try again.": "营养功能暂不可用，请重试。",
+  "Retry": "重试",
   'Confirm': '确认',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回退出',

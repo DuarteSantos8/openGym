@@ -1,5 +1,9 @@
 // Polish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Nutrition": "Odżywianie",
+  "Sign in to use Nutrition.": "Zaloguj się, aby korzystać z Odżywiania.",
+  "Nutrition is unavailable. Please try again.": "Odżywianie jest niedostępne. Spróbuj ponownie.",
+  "Retry": "Spróbuj ponownie",
   'Confirm': 'Potwierdź',
   'Cancel': 'Anuluj',
   'Press back again to exit': 'Naciśnij wstecz ponownie, aby wyjść',

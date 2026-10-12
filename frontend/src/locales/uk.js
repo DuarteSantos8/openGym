@@ -1,5 +1,9 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Nutrition": "Нутриціологія",
+  "Sign in to use Nutrition.": "Увійди, щоб користуватися розділом «Нутриціологія».",
+  "Nutrition is unavailable. Please try again.": "Нутриціологія недоступна. Спробуй ще раз.",
+  "Retry": "Повторити",
   'Confirm': 'Підтвердити',
   'Cancel': 'Скасувати',
   'Press back again to exit': 'Натисни «Назад» ще раз, щоб вийти',

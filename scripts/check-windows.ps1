@@ -8,6 +8,11 @@ $gitShell = Join-Path $env:ProgramFiles 'Git/usr/bin'
 if (Test-Path "$gitShell/sh.exe") { $env:PATH = "$gitShell;$env:PATH" }
 if ((& node.exe --version) -notmatch '^v22\.') { throw 'Use Node.js 22.' }
 function Check-Exit { if ($LASTEXITCODE -ne 0) { throw "Check failed (exit $LASTEXITCODE)." } }
+Push-Location nutrition
+try {
+    & dotnet.exe test tests/OpenGym.Nutrition.Tests/OpenGym.Nutrition.Tests.csproj -c Release
+    Check-Exit
+} finally { Pop-Location }
 Push-Location frontend
 try {
     # The mobile bundle test assumes POSIX paths; this task develops the web app.

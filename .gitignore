@@ -17,6 +17,9 @@ coach-auth/
 *.p12
 
 # Build output / deps
+**/bin/
+**/obj/
+**/TestResults/
 frontend/dist/
 node_modules/
 *.log

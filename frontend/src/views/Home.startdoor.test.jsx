@@ -43,6 +43,14 @@ const mount = () => act(() => root.render(<Home />))
 const door = () => [...host.querySelectorAll('button')].find(b => b.textContent.includes('Choose a different workout'))
 
 describe('Home — the way to the Start screen when a plan already owns today', () => {
+  it('opens Nutrition from its navigation card without starting a workout', () => {
+    setS(); mount()
+    const heading = [...host.querySelectorAll('h2')].find(h => h.textContent === 'Nutrition')
+    expect(heading).toBeTruthy()
+    act(() => heading.closest('.card').querySelector('button').click())
+    expect(nav).toHaveBeenCalledWith('/nutrition')
+    expect(startFlow).not.toHaveBeenCalled()
+  })
   it('offers the door on a planned day, where the Start button would start the plan', () => {
     setS(); mount()
     expect(door()).toBeTruthy()
