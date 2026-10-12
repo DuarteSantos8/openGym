@@ -24,6 +24,17 @@ install would fail, but the prompt is noise. Make the check a no-op when the bui
 (a `VITE_FORK=1` flag or a repo constant), keeping the edit to upstream's file to a guard line.
 Gate: unit test that the check resolves to "no update" under the flag.
 
+### OG-004 Scheduled upstream sync check
+status: ready
+depends on: OG-003
+A fork-only workflow (`.github/workflows/fork-upstream-sync.yml`), weekly cron plus manual
+dispatch: fetch `upstream/main`, attempt a merge on a throwaway branch, and on a clean merge push
+the branch and open a PR so upstream's `test.yml` runs the gate on it. On a conflict or a failing
+suite, open or update an issue listing the conflicting files and failing suites. Never touches
+`main`. Also disable or path-guard upstream's `mirror.yml` in the fork (it fails without GitLab
+credentials), and enable scheduled workflows once in the fork's Actions tab (GitHub disables them
+in forks by default and after 60 idle days). Gate: a manual dispatch opens a PR or an issue.
+
 ## Phase 1: Anatoly import (P0)
 
 ### OG-010 Gemini key in Settings, secure storage
