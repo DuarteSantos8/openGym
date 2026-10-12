@@ -2242,4 +2242,9 @@ export default {
   'Your sports watch, calling you back.': '스포츠 시계가 다시 부르고 있어요.',
   'Coach wants you back on the bar.': '코치가 바 앞으로 돌아오래요.',
   'Gentle, for headphones or a quiet room.': '이어폰이나 조용한 곳에 어울려요.',
+  // Membership barcodes
+  "Barcode": "바코드",
+  "This barcode format is not supported yet": "아직 지원되지 않는 바코드 형식입니다",
+  "No QR code or barcode found in that image": "이 이미지에서 QR 코드나 바코드를 찾을 수 없습니다",
+  "Point the camera at the QR code or barcode": "카메라를 QR 코드나 바코드에 맞추세요",
 }

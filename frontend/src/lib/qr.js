@@ -7,10 +7,7 @@
 // lean-qr (MIT, see NOTICE.md) is loaded with a dynamic import so its ~4kB only loads when a
 // card is actually shown, on every platform — the PWA renders the same code as the app.
 //
-// Scope: lean-qr generates QR codes only. A gym card is virtually always a QR code, and the
-// capture flow (lib/scan.js) refuses any symbology we cannot faithfully reproduce, so a stored
-// card is guaranteed renderable here — canRenderFmt() is the single source of that truth, shared
-// by both sides.
+// QR and supported 1D codes retain their scanned symbology when displayed.
 
 let _leanqr = null
 
@@ -20,12 +17,26 @@ async function loadLeanQr() {
   return _leanqr
 }
 
-// The symbologies we can both read (mlkit) AND redraw (lean-qr). Stored `fmt` is a lower-cased
-// BarcodeFormat. Only QR qualifies: reproducing an EAN/Code128/etc. would need a 1D renderer we
-// deliberately did not add, and a code we can't redraw faithfully is worse than not storing it —
-// it would look scannable but carry the wrong bars.
+// Supported formats must have a matching renderer; never substitute a QR for bars.
 export function canRenderFmt(fmt) {
-  return normalizeFmt(fmt) === 'qrcode'
+  return normalizeFmt(fmt) === 'qrcode' || !!BARCODE_FORMATS[normalizeFmt(fmt)]
+}
+
+export const BARCODE_FORMATS = {
+  code128: 'CODE128', code39: 'CODE39', code93: 'CODE93',
+  ean13: 'EAN13', ean8: 'EAN8', upca: 'UPC', upce: 'UPCE',
+  itf: 'ITF', codabar: 'codabar',
+}
+
+export async function renderCodeToCanvas(canvas, value, fmt = 'qrcode') {
+  const normalized = normalizeFmt(fmt)
+  if (normalized === 'qrcode') return renderQrToCanvas(canvas, value)
+  const format = BARCODE_FORMATS[normalized]
+  if (!format) throw new Error('Unsupported barcode format')
+  const { default: JsBarcode } = await import('jsbarcode')
+  JsBarcode(canvas, value, { format, width: 3, height: 120,
+    displayValue: false, margin: 24, background: '#ffffff', lineColor: '#000000' })
+  return canvas.width
 }
 
 // mlkit reports BarcodeFormat as e.g. 'QR_CODE' | 'QrCode'; older callers may pass 'qr'. Fold

@@ -1,6 +1,24 @@
 import { describe, it, expect } from 'vitest'
 import { generate } from 'lean-qr'
 import { decodeImageData } from './scan-web.js'
+import JsBarcode from 'jsbarcode'
+
+function barcodePixels(value, format) {
+  const target = {}
+  JsBarcode(target, value, { format, displayValue: false })
+  const bits = target.encodings.map(e => e.data).join('')
+  const width = (bits.length + 40) * 3, height = 120
+  const data = new Uint8ClampedArray(width * height * 4).fill(255)
+  for (let y = 10; y < height - 10; y++) {
+    for (let x = 0; x < width; x++) {
+      if (bits[Math.floor(x / 3) - 20] === '1') {
+        const p = (y * width + x) * 4
+        data[p] = data[p + 1] = data[p + 2] = 0
+      }
+    }
+  }
+  return { data, width, height }
+}
 
 // Round trip through the two libraries the browser path relies on: lean-qr draws a code (the
 // same renderer the card view uses), jsQR reads it back. Pixels are built by hand from
@@ -23,6 +41,11 @@ function rasterize(code, scale = 4, quiet = 4) {
 }
 
 describe('decodeImageData', () => {
+  it.each([['CODE128', 'code128', '000123456789'], ['CODE39', 'code39', 'YMCA12345'],
+    ['EAN13', 'ean13', '5901234123457'], ['ITF', 'itf', '00123456']])(
+    'reads rendered %s bars without changing the value or format', async (format, fmt, value) => {
+      expect(await decodeImageData(barcodePixels(value, format))).toEqual({ value, fmt })
+    })
   it('reads back a code lean-qr generated', async () => {
     const value = 'MEMBER-0042-FITZONE'
     const hit = await decodeImageData(rasterize(generate(value)))

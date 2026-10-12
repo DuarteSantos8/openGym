@@ -2245,4 +2245,9 @@ export default {
   'Your sports watch, calling you back.': 'A sportórád visszahív.',
   'Coach wants you back on the bar.': 'Az edző visszavár a rúdhoz.',
   'Gentle, for headphones or a quiet room.': 'Halk, fülhallgatóhoz vagy csendes helyre.',
+  // Membership barcodes
+  "Barcode": "Vonalkód",
+  "This barcode format is not supported yet": "Ez a vonalkódformátum még nem támogatott",
+  "No QR code or barcode found in that image": "Nem található QR-kód vagy vonalkód ezen a képen",
+  "Point the camera at the QR code or barcode": "Irányítsd a kamerát a QR-kódra vagy a vonalkódra",
 }

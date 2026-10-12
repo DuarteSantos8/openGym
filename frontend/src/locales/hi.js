@@ -2242,4 +2242,9 @@ export default {
   'Your sports watch, calling you back.': 'आपकी स्पोर्ट्स घड़ी आपको वापस बुला रही है।',
   'Coach wants you back on the bar.': 'कोच आपको बार पर वापस चाहते हैं।',
   'Gentle, for headphones or a quiet room.': 'धीमी, हेडफ़ोन या शांत कमरे के लिए।',
+  // Membership barcodes
+  "Barcode": "बारकोड",
+  "This barcode format is not supported yet": "यह बारकोड प्रारूप अभी समर्थित नहीं है",
+  "No QR code or barcode found in that image": "इस तस्वीर में कोई QR कोड या बारकोड नहीं मिला",
+  "Point the camera at the QR code or barcode": "कैमरा QR कोड या बारकोड की ओर करें",
 }

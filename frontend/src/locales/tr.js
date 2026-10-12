@@ -2242,4 +2242,9 @@ export default {
   'Your sports watch, calling you back.': 'Spor saatin seni geri çağırıyor.',
   'Coach wants you back on the bar.': 'Koç seni bara geri bekliyor.',
   'Gentle, for headphones or a quiet room.': 'Sakin, kulaklık ya da sessiz bir oda için.',
+  // Membership barcodes
+  "Barcode": "Barkod",
+  "This barcode format is not supported yet": "Bu barkod biçimi henüz desteklenmiyor",
+  "No QR code or barcode found in that image": "Bu görselde QR kod veya barkod bulunamadı",
+  "Point the camera at the QR code or barcode": "Kamerayı QR koda veya barkoda doğrult",
 }

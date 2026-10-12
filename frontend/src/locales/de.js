@@ -2262,4 +2262,9 @@ export default {
   'Your sports watch, calling you back.': 'Deine Sportuhr ruft dich zurück.',
   'Coach wants you back on the bar.': 'Der Coach will dich zurück an der Stange.',
   'Gentle, for headphones or a quiet room.': 'Leise, für Kopfhörer oder einen ruhigen Raum.',
+  // Membership barcodes
+  "Barcode": "Barcode",
+  "This barcode format is not supported yet": "Dieses Barcodeformat wird noch nicht unterstützt",
+  "No QR code or barcode found in that image": "Kein QR-Code oder Barcode in diesem Bild gefunden",
+  "Point the camera at the QR code or barcode": "Richte die Kamera auf den QR-Code oder Barcode",
 }
