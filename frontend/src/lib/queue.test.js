@@ -58,6 +58,25 @@ describe('DONE RULE', () => {
     expect(queueDone(st('Push + Pulling'))).toEqual([])
   })
 
+  it('a since of zero is no clock, so a workout from years before the week credits nothing', () => {
+    // At 0 the time clause was true of every workout ever logged: a week carrying it (with a
+    // startsOn, which keeps it readable) arrived complete, and Home fell back to the weekday plan.
+    const ancient = w({ d: '2020-01-02', start: Date.parse('2020-01-02T08:00:00'), routineIds: ['d1', 'd2', 'd3'], name: 'Full body' })
+    for (const since of [0, null]) {
+      const st = S({ queue: { ids: ['d1', 'd2', 'd3'], since, startsOn: '2026-09-07', label: 'US W1' }, workouts: [ancient] })
+      expect(queueDone(st)).toEqual([])
+      expect(queueView(st, TODAY).complete).toBe(false)
+      expect(queueNext(st, TODAY, TODAY)).toBe('d1')
+      // the name clause still credits a workout dated inside the week
+      const named = { ...st, workouts: [ancient, w({ routineIds: ['d2'], start: 1, name: 'US W1 D2' })] }
+      expect(queueDone(named)).toEqual(['d2'])
+    }
+    // a real apply time is a clock as before
+    expect(queueDone(S({ workouts: [ancient, w({ routineIds: ['d1'] })] }))).toEqual(['d1'])
+    // a strict pass counts by its clock alone: with none it is unreadable, not stuck on its first session
+    expect(queueOf(S({ queue: { ids: ['d1', 'd2'], since: 0, startsOn: '2026-09-07', label: 'R', strict: true } }))).toBe(null)
+  })
+
   it('the routine id has to be on the workout — a name alone is not enough', () => {
     expect(queueDone(S({ workouts: [w({ routineIds: ['x'], name: 'US W1 D1' })] }))).toEqual([])
     expect(queueDone(S({ workouts: [w({ routineIds: [], name: 'US W1 D1' })] }))).toEqual([])

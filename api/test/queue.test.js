@@ -239,6 +239,24 @@ test('a queue without startsOn starts on the day of the apply where the USER is 
   assert.equal(effectiveRoutineId({ ...base, queue: { ...q, startsOn: '2026-09-10' }, reminder: { tz: 'America/New_York' } }, '2026-09-09'), null);
 });
 
+test('queue: a since of zero is no clock, so a workout from years before the week credits nothing', () => {
+  // Kept with the frontend's copy: at 0 every workout ever logged started "after the apply", so
+  // the week read as finished on arrival and the reminder fell back to the weekday plan.
+  const week = { 1: 'r3' };
+  const ancient = { d: '2020-01-02', start: Date.parse('2020-01-02T08:00:00Z'), routineIds: ['r1', 'r2'], name: 'Full body' };
+  for (const since of [0, null]) {
+    const S = { ...base, week, workouts: [ancient], queue: { ids: ['r1', 'r2'], since, startsOn: '2026-09-07', label: 'W1' } };
+    assert.equal(effectiveRoutineId(S, '2026-09-14'), 'r1');   // the week's first session, not Monday's r3
+    assert.equal(pinState(S, 'r1'), 'open');
+    // the name clause still credits a workout dated inside the week
+    const named = { ...S, workouts: [ancient, { d: '2026-09-08', start: 1, routineIds: ['r1'], name: 'Push' }] };
+    assert.equal(effectiveRoutineId(named, '2026-09-14'), 'r2');
+  }
+  // a strict pass counts by its clock alone: with none it is no queue, not one stuck on r1
+  const strict = { ...base, week, queue: { ids: ['r1', 'r2'], since: 0, startsOn: '2026-09-07', label: 'R', strict: true } };
+  assert.equal(effectiveRoutineId(strict, '2026-09-14'), 'r3');
+});
+
 test('queue: a malformed queue falls back to the weekday plan for the reminder', () => {
   const S = { ...base, week: { 1: 'r1' }, queue: { ids: ['gone'], since: 1000 } };
   assert.equal(effectiveRoutineId(S, '2026-09-14'), 'r1'); // Monday
