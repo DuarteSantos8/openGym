@@ -55,14 +55,16 @@ function dayIn(ms, tz) {
   } catch { return new Date(ms).toISOString().slice(0, 10); }
 }
 // Tolerant reader, as in the frontend: a missing or malformed queue reads as none. A missing
-// startsOn means active since the day of the apply (dayIn above); a session whose routine was
-// deleted is dropped from the week (the frontend's queue.js does the same — it could never be
-// started or logged).
+// startsOn means active since the day of the apply (dayIn above), and one with no apply time
+// either is none, as in the frontend: dated from 0 the week began in 1970 and read as finished.
+// A session whose routine was deleted is dropped from the week (the frontend's queue.js does the
+// same — it could never be started or logged).
 function queueOf(S) {
   const q = S.queue;
   if (!q || typeof q !== 'object' || !Array.isArray(q.ids)) return null;
   if (q.strict === true && !(q.since > 0)) return null; // a strict pass with no clock, as in the frontend
-  const startsOn = typeof q.startsOn === 'string' ? q.startsOn : dayIn(q.since || 0, S.reminder?.tz);
+  const startsOn = typeof q.startsOn === 'string' ? q.startsOn : (q.since > 0 ? dayIn(q.since, S.reminder?.tz) : null);
+  if (!startsOn) return null;
   // First valid occurrence of each id — the same normalization as the frontend's queueOf.
   const ids = q.ids.filter((id, i) => q.ids.indexOf(id) === i && (S.routines || []).some(r => r?.id === id));
   if (!ids.length) return null;

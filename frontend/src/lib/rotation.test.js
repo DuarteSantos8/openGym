@@ -30,6 +30,8 @@ describe('the selected mode is derived from the live queue', () => {
     expect(queueRecovery(st)).toBe(true)
     expect(queueRecovery(S())).toBe(false)
     expect(queueRecovery(S({ queue: pass(['a']) }))).toBe(false)
+    // a week with no date at all (neither startsOn nor since) is one to fix, not a finished one
+    expect(queueRecovery(S({ queue: { ids: ['a', 'b'], label: 'W1' } }))).toBe(true)
   })
 })
 
