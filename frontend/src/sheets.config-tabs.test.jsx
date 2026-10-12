@@ -59,7 +59,7 @@ describe('exercise settings: tabs', () => {
     expect(panel('target').contains(field('Sets'))).toBe(true)
     expect(panel('target').querySelector('[data-field="Sets"]')).toBeTruthy()
     const titles = id => [...panel(id).querySelectorAll('.lrow-t')].map(el => el.textContent)
-    expect(titles('progression')).toContain('Increase load by')
+    expect(panel('progression').textContent).toContain('Increase load by')
     expect(titles('options')).toContain('Bodyweight')
     expect(titles('target')).not.toContain('Bodyweight')
   })

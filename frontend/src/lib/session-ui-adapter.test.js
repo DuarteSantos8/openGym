@@ -81,7 +81,7 @@ describe('live audit and plan line', () => {
   })
 
   it('shows a load range as low–high', () => {
-    const rule = defaultPlanRule('autoregulated', { id: 'r', exerciseId: '0025', unit: 'kg', reps: { min: 8, max: 12 }, load: { mode: 'absolute', value: 60, unit: 'kg' }, loadTo: { mode: 'absolute', value: 80, unit: 'kg' } })
+    const rule = defaultPlanRule('manual', { id: 'r', exerciseId: '0025', unit: 'kg', reps: { min: 8, max: 12 }, load: { mode: 'absolute', value: 60, unit: 'kg' }, loadTo: { mode: 'absolute', value: 80, unit: 'kg' } })
     expect(planSummary(generatePrescription({ id: 'p3', now: NOW, trackId: 't', rule }))).toBe('3 × 8–12 @ 60–80 kg')
   })
 })
@@ -139,7 +139,7 @@ describe('saved rows read back as the rows that were logged', () => {
 })
 
 describe('entriesForExposures cardio', () => {
-  const rule = defaultPlanRule('autoregulated', { id: 'rc', exerciseId: '3220', unit: 'kg', ...cardioParameters({ sets: 2, min: 25, speed: 9.5 }) })
+  const rule = defaultPlanRule('manual', { id: 'rc', exerciseId: '3220', unit: 'kg', ...cardioParameters({ sets: 2, min: 25, speed: 9.5 }) })
   const p = generatePrescription({ id: 'pc', now: NOW, trackId: 'tc', rule })
   it('opens minutes-and-speed rows and says it is cardio, not a hold', () => {
     const [entry] = entriesForExposures([{ exposureId: 'x', exerciseId: '3220', prescriptionId: 'pc', mode: 'cardio' }], { pc: p })
@@ -217,7 +217,7 @@ describe('pyramid sets (pyramid_reps)', () => {
 })
 
 describe('a timed per-side hold (#322)', () => {
-  const rule = defaultPlanRule('autoregulated', { id: 'rh', exerciseId: '0089', unit: 'kg', sets: { min: 2, max: 2 }, durationSeconds: { min: 30, max: 30 } })
+  const rule = defaultPlanRule('manual', { id: 'rh', exerciseId: '0089', unit: 'kg', sets: { min: 2, max: 2 }, durationSeconds: { min: 30, max: 30 } })
   const p = generatePrescription({ id: 'ph', now: NOW, trackId: 'th', rule })
   const entry = () => entriesForExposures([{ exposureId: 'x', exerciseId: '0089', prescriptionId: 'ph', mode: 'time', side: true }], { ph: p })[0]
 

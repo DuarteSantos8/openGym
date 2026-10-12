@@ -14,6 +14,7 @@ export { PRESETS, PRESET_IDS, SET_REPS_MAX, REPS_MAX, INCREMENT_TYPES, COMPLETIO
 export { DELOAD_AFTER, DELOAD_FACTOR, DELOAD_FACTOR_MAX, DELOAD_FACTOR_MIN, defaultDeload, deloadLoad, deloadedLoad, isValidDeloadFactor, selectDeloadCandidate } from './deload.js'
 export { reconcileDerivedOneRms, appendOneRm, currentOneRm, DEFAULT_FORMULA, FORMULAS, REP_CAP, WEIGHTED_REP_CAP, FORMULA_NAMES, formulaOf, ensembleCV, weightedEstimate, estimate1RM } from './one-rm.js'
 export { generatePrescription, ruleOfPrescription } from './generate.js'
+export { failureSetsOf, failureSetSelected, failureSetRange, failureSuffix } from './failure.js'
 export { bestLoad, chronologicalWorkouts, planFingerprint, replayProgression, resolveProgressionContext } from './context.js'
 export { groupIdOf, operatorFor, phaseById, phaseOf, restOf } from './program.js'
 export { auditExecution, missingReference, normalizeEffort, summarizeActual } from './audit.js'

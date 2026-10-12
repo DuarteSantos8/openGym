@@ -80,7 +80,7 @@ describe('occurrenceChips', () => {
   })
 
   it('calls a cardio slot Cardio, whatever its rule says', () => {
-    expect(occurrenceChips({ ...base, mode: 'cardio' }, { preset: 'Autoregulated' })).toEqual(['Cardio'])
+    expect(occurrenceChips({ ...base, mode: 'cardio' }, { preset: 'Manual' })).toEqual(['Cardio'])
   })
 
   it('marks a program edited past its template as imported', () => {

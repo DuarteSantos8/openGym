@@ -1619,7 +1619,7 @@ const cloneJSON = v => JSON.parse(JSON.stringify(v))
 
 /** A fresh occurrence's rule: a bodyweight ladder for bodyweight moves, manual for cardio, else linear. */
 export function defaultRuleFor(ex, routine, unit) {
-  const preset = isCardio(ex.id) ? 'autoregulated' : isBodyweightEq(ex.id) ? 'bodyweight_ladder' : 'linear'
+  const preset = isCardio(ex.id) ? 'manual' : isBodyweightEq(ex.id) ? 'bodyweight_ladder' : 'linear'
   return defaultPlanRule(preset, { id: uid(), exerciseId: ex.id, routineId: routine?.id ?? null, unit })
 }
 

@@ -34,6 +34,6 @@ describe('replaceSlotExercise', () => {
   it('between kinds (lifting ↔ cardio) only the note and superset survive; the rule is the new exercise\'s default', () => {
     const out = replaceSlotExercise(slot(BENCH, { note: 'x', sg: 'g' }), TREADMILL, { unit: 'kg' }, 'r')
     expect(out).toMatchObject({ exerciseId: TREADMILL, note: 'x', sg: 'g' })
-    expect(out.rule.preset).toBe('autoregulated')
+    expect(out.rule.preset).toBe('manual')
   })
 })

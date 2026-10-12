@@ -187,7 +187,7 @@ const samePlanV1 = (a, b) => PLAN_KEYS.every(k => (a[k] ?? null) === (b[k] ?? nu
 // one thing left over here — `deloadFactor` and cardio `speed` now have rule fields of their own.
 function noteUnsupported(d, out) {
   const at = { routineId: d.routineId, occurrenceId: d.occurrenceId, exerciseId: d.exerciseId };
-  if (d.preset === 'autoregulated' && typeof d.policy === 'string' && d.policy && d.policy !== 'off'
+  if (d.preset === 'manual' && typeof d.policy === 'string' && d.policy && d.policy !== 'off'
     && (d.cfg.prog || !['linear', 'greyskull', 'double', 'time'].includes(d.policy))) out.push({ ...at, field: 'prog', value: d.policy });
 }
 
@@ -583,7 +583,7 @@ function migrateActive(active, ctx) {
     const planned = isObj(entry.planned) ? entry.planned : null;
     const frozen = d ? d.freeze(planned, values, fit(d.step)) : null;
     const rule = d ? frozen.rule : ruleFrom(values, {
-      id: `rule:${id}:${j}`, routineId: null, exerciseId, preset: 'autoregulated', unit: ctx.unit,
+      id: `rule:${id}:${j}`, routineId: null, exerciseId, preset: 'manual', unit: ctx.unit,
       mode: modeOf(target, info), step: fit(STEPS[ctx.unit][0]), rest: ctx.rest
     });
     const trackId = d ? d.occurrenceId : `${id}:t${j}`;

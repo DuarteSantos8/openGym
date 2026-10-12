@@ -86,7 +86,7 @@ describe('RuleEditor deload', () => {
     expect(o(onChange.mock.calls.at(-1)[0]).deload).toEqual({ after: 10, factor: 0.55 })
   })
   it('is offered only where a session can fall short of the plan', () => {
-    render({ rule: ruleOf('autoregulated') })
+    render({ rule: ruleOf('manual') })
     expect(host.textContent).not.toContain('Back off when stuck')
     render({ rule: ruleOf('hold_seconds') })
     expect(host.textContent).toContain('Back off when stuck')
@@ -260,8 +260,8 @@ describe('RuleEditor', () => {
     expect(o(onChange.mock.calls.at(-1)[0]).completion).toEqual([{ metric: 'max_duration', target: 120 }])
   })
 
-  it('autoregulated: Sets and Reps toggle between a fixed value and a range, the load never does', () => {
-    const rule = withParams(ruleOf('autoregulated'), { load: abs(60), reps: { min: 8, max: 12 } })
+  it('manual: Sets and Reps toggle between a fixed value and a range, the load never does', () => {
+    const rule = withParams(ruleOf('manual'), { load: abs(60), reps: { min: 8, max: 12 } })
     const onChange = render({ rule })
     expect(isRange('Sets')).toBe(false)
     expect(isRange('Reps')).toBe(true)   // 8-12 by default
@@ -270,13 +270,13 @@ describe('RuleEditor', () => {
   })
 
   it('range → fixed collapses to min === max', () => {
-    const onChange = render({ rule: ruleOf('autoregulated', { reps: { min: 8, max: 12 } }) })
+    const onChange = render({ rule: ruleOf('manual', { reps: { min: 8, max: 12 } }) })
     act(() => toggleOf('Reps').click())
     expect(o(onChange.mock.calls.at(-1)[0]).reps).toEqual({ min: 8, max: 8 })
   })
 
   it('keeps min ≤ max while editing a range', () => {
-    const onChange = render({ rule: withParams(ruleOf('autoregulated'), { reps: { min: 8, max: 8 } }) })
+    const onChange = render({ rule: withParams(ruleOf('manual'), { reps: { min: 8, max: 8 } }) })
     act(() => toggleOf('Reps').click())
     const from = [...host.querySelectorAll('.stp-w')].find(w => w.querySelector('.stp-l').textContent === 'Reps from')
     act(() => from.querySelector('[aria-label="Increase"]').click())
@@ -291,7 +291,7 @@ describe('RuleEditor', () => {
   })
 
   it('changing the load mode clears the load range', () => {
-    const onChange = render({ rule: withParams(ruleOf('autoregulated'), { load: abs(60), loadTo: abs(80) }) })
+    const onChange = render({ rule: withParams(ruleOf('manual'), { load: abs(60), loadTo: abs(80) }) })
     pick('Starting load', '% 1RM')
     const p = o(onChange.mock.calls.at(-1)[0])
     expect(p.load).toEqual({ mode: 'percent_1rm', percent: 70 })
@@ -299,7 +299,7 @@ describe('RuleEditor', () => {
   })
 
   it('offers no load range toggle for an empty load', () => {
-    render({ rule: ruleOf('autoregulated') })   // load: None
+    render({ rule: ruleOf('manual') })   // load: None
     expect(toggleOf('Starting load')).toBeNull()
   })
 
@@ -311,7 +311,16 @@ describe('RuleEditor', () => {
 
   it('explains what the RIR floor does, next to the RIR field', () => {
     render({ rule: withParams(linear(), { rir: { min: 1, max: 3 } }), effort: true })
-    expect(host.textContent).toContain('Load only goes up if your hardest set left at least this many reps in reserve.')
+    expect(host.textContent).toContain('A logged RIR below the minimum holds progression.')
+    expect(host.textContent).toContain('Missing RIR never blocks it.')
+    render({ rule: withParams(ruleOf('greyskull'), { rir: { min: 1, max: 3 } }), effort: true })
+    expect(host.textContent).toContain('This preset does not use RIR to decide progression.')
+    render({ rule: withParams(ruleOf('five_three_one'), { rir: { min: 1, max: 3 } }), effort: true })
+    expect(host.textContent).toContain('Phases advance by exposure, even with low or missing RIR.')
+    render({ rule: withParams(ruleOf('double'), { rir: { min: 1, max: 3 } }), effort: true })
+    expect(host.textContent).toContain('A low RIR holds load increases, but the rep aim still follows the last result.')
+    render({ rule: withParams(ruleOf('manual'), { rir: { min: 1, max: 3 } }), effort: true })
+    expect(host.textContent).toContain('This preset has no automatic progression.')
   })
 })
 
@@ -384,11 +393,11 @@ describe('RuleEditor: the four configurable templates', () => {
   })
   it('accumulation then intensification edits the second block and whether the program starts over', () => {
     const onChange = render({ rule: ruleOf('accumulation_intensification') })
-    press('Clean sessions to finish', 'Decrease')
+    press('Successful sessions in total', 'Decrease')
     const next = last(onChange)
     expect(next.program.phases[1].exit).toEqual({ type: 'successes', count: 3 })
     expect(validatePlanRule(next).ok).toBe(true)
-    act(() => [...host.querySelectorAll('[role="switch"]')].at(-1).click())
+    act(() => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Repeat after the last phase')).querySelector('[role="switch"]').click())
     expect(last(onChange).program.end).toBe('complete')
   })
   it('a program edited past its template is shown, not edited: only choosing a template replaces it', () => {
@@ -398,6 +407,62 @@ describe('RuleEditor: the four configurable templates', () => {
     expect(host.textContent).toContain('This plan was set up outside the editor. Pick a progression to replace it.')
     expect(labels()).toEqual([])
     expect(onChange).not.toHaveBeenCalled()
+  })
+})
+
+describe('RuleEditor: controlled progression and cycles', () => {
+  it('lets a named ladder finish at final volume or continue indefinitely with one switch', () => {
+    const update = render({ rule: ruleOf('bodyweight_ladder', { rungs: ['easy', 'hard'] }) })
+    act(() => [...host.querySelectorAll('button')].find(b => b.textContent.startsWith('Stop progressing')).click())
+    expect(host.querySelectorAll('.disc-body [role="switch"]')).toHaveLength(1)
+    act(() => host.querySelector('.disc-body [role="switch"]').click())
+    const open = update.mock.calls.at(-1)[0]
+    expect(o(open).completion).toEqual([])
+    const again = render({ rule: open })
+    act(() => host.querySelector('.disc-body [role="switch"]').click())
+    expect(o(again.mock.calls.at(-1)[0]).completion.map(c => c.metric)).toEqual(['max_sets', 'max_reps', 'difficulty_rung'])
+  })
+  it('offers both new presets with readable descriptions', () => {
+    render({ rule: ruleOf('double_controlled') })
+    expect(host.textContent).toContain('Controlled double progression')
+    expect(host.textContent).toContain('Start at the bottom of the rep range.')
+    expect(labels()).toContain('Reps from')
+  })
+  it('edits all three undulating exposures and keeps their settings across cycle edits', () => {
+    const changed = render({ rule: ruleOf('undulating') })
+    expect(host.textContent).toContain('Volume exposure')
+    expect(host.textContent).toContain('Intermediate exposure')
+    expect(host.textContent).toContain('Strength exposure')
+    const first = host.querySelector('[data-wave="0"]')
+    act(() => first.querySelector('[aria-label="Increase"]').click())
+    const next = changed.mock.calls.at(-1)[0]
+    expect(o(next).wave[0].sets).toBe(4)
+    expect(validatePlanRule(next).ok).toBe(true)
+    const update = render({ rule: next })
+    const row = [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Repeat after the last phase'))
+    act(() => row.querySelector('[role="switch"]').click())
+    expect(update.mock.calls.at(-1)[0].program.end).toBe('complete')
+    expect(o(update.mock.calls.at(-1)[0]).wave[0].sets).toBe(4)
+  })
+  it('explains completion and cumulative successes, and offers a review threshold', () => {
+    render({ rule: ruleOf('accumulation_intensification') })
+    expect(labels()).toContain('Successful sessions in total')
+    expect(labels()).toContain('Misses before training-max review')
+    act(() => [...host.querySelectorAll('button')].find(b => b.textContent.startsWith('Stop progressing')).click())
+    expect(host.textContent).toContain('Completion requires a successful session')
+  })
+  it.each(['five_three_one', 'undulating', 'accumulation_intensification'])('%s resumes cycles when a cycle-count goal is enabled', preset => {
+    const changed = render({ rule: ruleOf(preset) })
+    const row = [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Repeat after the last phase'))
+    act(() => row.querySelector('[role="switch"]').click())
+    const single = changed.mock.calls.at(-1)[0]
+    expect(single.program.end).toBe('complete')
+    const update = render({ rule: single })
+    act(() => [...host.querySelectorAll('button')].find(b => b.textContent.startsWith('Stop progressing')).click())
+    act(() => host.querySelector('.disc-body [role="switch"]').click())
+    const repeating = update.mock.calls.at(-1)[0]
+    expect(repeating.program.end).toBe('repeat')
+    expect(repeating.program.completion).toEqual([{ metric: 'cycle_count', target: 4 }])
   })
 })
 

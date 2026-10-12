@@ -102,7 +102,7 @@ if you want to try it before installing anything.
 
 **Progress**
 
-- Progression rules per routine or per exercise, picked from a list: autoregulated (you set
+- Progression rules per routine or per exercise, picked from a list: manual (you set
   reps, load or seconds by feel), linear, Greyskull LP, **double** and **triple** progression through
   visible rep/set ranges, **pyramid** lightest or heaviest set first (per-set percentages and reps,
   with a one-tap RPT builder), **5/3/1**, **timed holds** that climb in seconds, and a **bodyweight ladder**. Loads can be

@@ -330,7 +330,7 @@ test('v1.3.10 pyramid sets migrate as the pyramid_reps preset, Max sets and per-
   const short = run(v1({ routines: [plan({ id: BENCH, sets: 4, reps: 8, pyramid: [10, 8] })] }), 'pyramid short').profile.routines[0].ex[0].rule;
   assert.deepEqual(planOptions(short).setReps, [10, 8, 8, 8]);
   // Timed work has no rep targets to keep.
-  assert.equal(run(v1({ routines: [plan({ id: SITUP, mode: 'time', sec: 30, sets: 2, pyramid: [10, 8] })] }), 'pyramid timed').profile.routines[0].ex[0].rule.preset, 'autoregulated');
+  assert.equal(run(v1({ routines: [plan({ id: SITUP, mode: 'time', sec: 30, sets: 2, pyramid: [10, 8] })] }), 'pyramid timed').profile.routines[0].ex[0].rule.preset, 'manual');
 });
 
 test('numbers: sets are capped at the engine maximum and the clamp is not silent (M8)', () => {
