@@ -105,7 +105,7 @@ export function saveRotation(s, ids, label, today = todayISO(), now = Date.now()
   // the day after the last workout that credited this one, so nothing already logged re-ticks it.
   if (prev && ids.every(id => prev.ids.includes(id)) && queueView(s, today)?.complete) {
     const q = queueOf(s)
-    const last = lastCreditDay(s)
+    const last = lastCreditDay(s, today)
     sweepPins(s, q.ids, today)
     s.queue = newPass(rotationIds(s), label, s.rotation.id, last ? dayAfter(last) : today, sinceAfter(s, q, now))
   }
@@ -146,11 +146,23 @@ export function chooseFixedWeek(s, today = todayISO()) {
   s.scheduleMode = 'week'
 }
 
-/** The latest day a workout could have credited the current pass, or null. */
-const lastCreditDay = s => {
+/**
+ * The latest date a workout that has happened can carry: today, plus a day of slack for a device
+ * in a time zone ahead of this one (the CSV import allows the same). A date past it came from a
+ * calendar that is wrong, or from an API client.
+ */
+const latestDay = today => dayAfter(today)
+
+/**
+ * The latest day a workout could have credited the current pass, or null. A date past
+ * latestDay(today) is left out: taken as the day the pass was last credited, it parked the next
+ * pass until the day after it. A workout dated tomorrow still counts, so the next pass starts
+ * after it and that workout cannot be credited to both.
+ */
+const lastCreditDay = (s, today) => {
   const q = queueOf(s)
   if (!q) return null
-  const days = creditWindow(s, q).map(w => w.d)
+  const days = creditWindow(s, q).map(w => w.d).filter(d => d <= latestDay(today))
   return days.length ? days.sort().at(-1) : null
 }
 
@@ -205,12 +217,14 @@ export function refillAfter(s, w, today = todayISO(), now = Date.now()) {
   if (!isCircular(q.ids, seq)) return false
   const credited = routineIdsOf(w)
   const last = q.ids.filter(id => credited.includes(id)).at(-1) ?? null
-  const bound = [w.d, lastCreditDay(s)].filter(Boolean).sort().at(-1)
+  // The same dates as lastCreditDay; with none of them left, the next pass starts today, as an
+  // edit's does (saveRotation).
+  const bound = [w.d, lastCreditDay(s, today)].filter(d => d && d <= latestDay(today)).sort().at(-1)
   sweepPins(s, q.ids, today)
   // The rotation's own label only — never the closing pass's (q.label): once adopted from a
   // planner, that would otherwise repeat its original week name ("US W1") on every pass this app
   // generates on its own from then on.
-  s.queue = newPass(rotate(seq, last), s.rotation.label || '', s.rotation.id, dayAfter(bound), sinceAfter(s, q, now))
+  s.queue = newPass(rotate(seq, last), s.rotation.label || '', s.rotation.id, bound ? dayAfter(bound) : today, sinceAfter(s, q, now))
   return true
 }
 
@@ -225,7 +239,7 @@ export function refillIfComplete(s, today = todayISO(), now = Date.now()) {
   const q = queueOf(s)
   if (!q?.rotationId || !s.rotation?.id || q.rotationId !== s.rotation.id) return false
   if (!queueView(s, today)?.complete) return false
-  const last = creditWindow(s, q)
+  const last = creditWindow(s, q).filter(w => w.d <= latestDay(today))
     .sort((x, y) => (x.d === y.d ? (x.start || 0) - (y.start || 0) : x.d < y.d ? -1 : 1)).at(-1)
   return last ? refillAfter(s, last, today, now) : false
 }
