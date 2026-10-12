@@ -173,6 +173,7 @@ Traefik and nginx, and there are separate guides for
 | `AUDIT_DAYS` | Days kept in the activity log; `0` keeps until `AUDIT_MAX` | `90` |
 | `AUDIT_IP` | Record the caller's address: `off`, `net` (network only) or `full` | `off` |
 | `ALLOWED_PRIVATE_IPS` | Private addresses push endpoints may resolve to (FakeDNS, split-horizon DNS): comma-separated IPs, `a-b` ranges or CIDR blocks | *(none)* |
+| `PLANNER_TOKENS` | Fixed tokens for a program that writes a profile's training plan: `<token>=<uid>` pairs, comma-separated, each acting as its user on `GET`/`PUT /api/data` only | *(none)* |
 | `VAPID_SUBJECT` | Contact URL sent with push notifications | your `ORIGIN` |
 | `API_TARGET` | API image to build: `default`, or `coach` with the Claude Agent SDK and Codex CLI | `default` |
 | `COACH_DISABLED` | `1` forces the AI coach off instance-wide | *(unset)* |
