@@ -68,6 +68,19 @@ test('queue: a workout logged before "since" counts only when it is dated inside
   assert.equal(effectiveRoutineId(S2, '2026-09-07'), 'r1');
 });
 
+test('queue: a routine whose own name contains " + " is matched by its whole name', () => {
+  // Kept with the frontend's copy: splitting 'Push + Pull' gave ['Push', 'Pull'], neither of
+  // which is the routine, so that session's reminder went on firing after it was trained.
+  const rs = [{ id: 'pp', name: 'Push + Pull' }, { id: 'r2', name: 'Pull' }];
+  const q = { ids: ['pp', 'r2'], since: 5000, startsOn: '2026-09-07', label: 'W1' };
+  const S = name => ({ ...base, routines: rs, queue: q, workouts: [{ d: '2026-09-07', start: 1000, routineIds: ['pp'], name }] });
+  assert.equal(effectiveRoutineId(S('Push + Pull'), '2026-09-08'), 'r2');
+  assert.equal(effectiveRoutineId(S('Push + Pull + Core'), '2026-09-08'), 'r2');
+  assert.equal(effectiveRoutineId(S('Core + Push + Pull'), '2026-09-08'), 'r2');
+  assert.equal(effectiveRoutineId(S('Legs'), '2026-09-08'), 'pp');
+  assert.equal(effectiveRoutineId(S('Push + Pulling'), '2026-09-08'), 'pp');
+});
+
 test('queue: keeps slot order even when a later session is logged out of order', () => {
   const S = {
     ...base,
