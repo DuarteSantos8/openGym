@@ -13,7 +13,9 @@
 // make look identical, from counting. Only finished workouts (`S.workouts`) count; an in-progress
 // session never does. Missed sets are the planner's business, not the queue's. A queue with
 // `strict: true` (the app's "Start new pass") drops the dated name clause: only a workout started
-// at/after `since` counts, so a session logged earlier that day stays the old pass's.
+// at/after `since` counts, so a session logged earlier that day stays the old pass's. `since` is
+// a clock only while it is positive: 0 is no apply time at all, and every workout ever logged
+// would start after it.
 //
 // NEXT RULE (shared with the frontend): once `startsOn` is reached, the day's session is the
 // first not-done one in slot order — unless pins say otherwise.
@@ -39,7 +41,7 @@ function namesRoutine(w, name) {
 function queueDone(S, id, startsOn) {
   const currentName = (S.routines || []).find(r => r?.id === id)?.name;
   return (S.workouts || []).some(w => routineIdsOf(w).includes(id)
-    && ((w.start ?? 0) >= S.queue.since || (S.queue.strict !== true && String(w.d || '') >= startsOn && namesRoutine(w, currentName))));
+    && ((S.queue.since > 0 && (w.start ?? 0) >= S.queue.since) || (S.queue.strict !== true && String(w.d || '') >= startsOn && namesRoutine(w, currentName))));
 }
 // The calendar date of an instant where the USER is. The frontend's fallback for a missing
 // startsOn is the device's local date of the apply; the closest thing here is the zone the
@@ -59,6 +61,7 @@ function dayIn(ms, tz) {
 function queueOf(S) {
   const q = S.queue;
   if (!q || typeof q !== 'object' || !Array.isArray(q.ids)) return null;
+  if (q.strict === true && !(q.since > 0)) return null; // a strict pass with no clock, as in the frontend
   const startsOn = typeof q.startsOn === 'string' ? q.startsOn : dayIn(q.since || 0, S.reminder?.tz);
   // First valid occurrence of each id — the same normalization as the frontend's queueOf.
   const ids = q.ids.filter((id, i) => q.ids.indexOf(id) === i && (S.routines || []).some(r => r?.id === id));
