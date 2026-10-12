@@ -43,7 +43,15 @@
 import { isoOf, weekKey, weekStartOf } from './format.js'
 
 const routineIdsOf = w => (Array.isArray(w.routineIds) ? w.routineIds : (w.routineId ? [w.routineId] : []))
-const nameParts = w => String(w.name || '').split(' + ')
+// Does this workout's name name this routine? A combined session joins its routines' names with
+// ' + ' (session-merge.js), but a routine can itself be NAMED 'Push + Pull', and then splitting
+// the name cannot tell 'Push + Pull + Core' from 'Push', 'Pull', 'Core'. So the name is looked
+// for at a ' + ' boundary instead: whole, first, last or in the middle.
+const namesRoutine = (w, name) => {
+  if (!name) return false
+  const n = String(w.name || '')
+  return n === name || n.startsWith(name + ' + ') || n.endsWith(' + ' + name) || n.includes(' + ' + name + ' + ')
+}
 
 // Tolerant reader: whole-state sync is last-writer-wins, so a half-written or older-shaped
 // queue can arrive from another client. A bad shape reads as "no queue" rather than taking
@@ -67,7 +75,7 @@ export const queueOf = S => {
 // The DONE RULE for one workout and one session — `isDone` asks it across the log.
 const countsFor = (S, q, w, id) => routineIdsOf(w).includes(id)
   && ((w.start ?? 0) >= q.since
-    || (q.strict !== true && String(w.d || '') >= q.startsOn && nameParts(w).includes(S.routines.find(r => r.id === id)?.name)))
+    || (q.strict !== true && String(w.d || '') >= q.startsOn && namesRoutine(w, S.routines.find(r => r.id === id)?.name)))
 const isDone = (S, q, id) => S.workouts.some(w => countsFor(S, q, w, id))
 
 /** The week's sessions already done, in slot order. `[]` without a queue. */

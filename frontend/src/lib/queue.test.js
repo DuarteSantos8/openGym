@@ -38,6 +38,26 @@ describe('DONE RULE', () => {
     expect(queueDone(S({ workouts: [backfilled] }))).toEqual(['d2'])
   })
 
+  it('a routine whose own name contains " + " is matched by its whole name', () => {
+    // A combined session's name joins its routines with ' + ', but a routine can itself be NAMED
+    // 'Push + Pull'. Splitting the name gave ['Push', 'Pull'], neither of which is the routine,
+    // so a workout logged with an early clock on it never ticked its session done.
+    const rs = [{ id: 'pp', name: 'Push + Pull' }, { id: 'd2', name: 'US W1 D2' }]
+    const st = name => ({
+      routines: rs,
+      queue: { ids: ['pp', 'd2'], since: SINCE, startsOn: '2026-09-07', label: 'US W1' },
+      workouts: [w({ routineIds: ['pp'], start: SINCE - 1, name })],
+    })
+    expect(queueDone(st('Push + Pull'))).toEqual(['pp'])
+    // …alone or merged with another routine on either side
+    expect(queueDone(st('Push + Pull + Core'))).toEqual(['pp'])
+    expect(queueDone(st('Core + Push + Pull'))).toEqual(['pp'])
+    expect(queueDone(st('Core + Push + Pull + Abs'))).toEqual(['pp'])
+    // …while an unrelated name, or one that only starts the same way, is still no match
+    expect(queueDone(st('Legs'))).toEqual([])
+    expect(queueDone(st('Push + Pulling'))).toEqual([])
+  })
+
   it('the routine id has to be on the workout — a name alone is not enough', () => {
     expect(queueDone(S({ workouts: [w({ routineIds: ['x'], name: 'US W1 D1' })] }))).toEqual([])
     expect(queueDone(S({ workouts: [w({ routineIds: [], name: 'US W1 D1' })] }))).toEqual([])
