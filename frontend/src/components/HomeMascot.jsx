@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 const actions = ['idle-curious.gif', 'wave.gif', 'jump.gif']
 const assetBase = `${import.meta.env.BASE_URL}sumrak/`
@@ -7,6 +8,7 @@ const randomBetween = (min, max) => min + Math.random() * (max - min)
 
 export default function HomeMascot() {
   const [action, setAction] = useState('idle.gif')
+  const [failedAction, setFailedAction] = useState(null)
 
   useEffect(() => {
     let showTimer
@@ -31,10 +33,14 @@ export default function HomeMascot() {
     }
   }, [])
 
-  return <img
+  // #app's view transition animates a transform; on mobile a fixed child can be
+  // anchored to that container rather than the viewport. Render at document level.
+  if (typeof document === 'undefined') return null
+  return createPortal(<img
     className="home-mascot"
-    src={`${assetBase}${action}`}
+    src={`${assetBase}${failedAction === action ? 'idle.png' : action}`}
+    onError={() => setFailedAction(action)}
     alt=""
     aria-hidden="true"
-  />
+  />, document.body)
 }
