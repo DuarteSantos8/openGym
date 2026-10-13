@@ -2242,4 +2242,6 @@ export default {
   'Your sports watch, calling you back.': 'Zegarek sportowy wzywa z powrotem.',
   'Coach wants you back on the bar.': 'Trener czeka przy sztandze.',
   'Gentle, for headphones or a quiet room.': 'Cichy, do słuchawek albo spokojnego pomieszczenia.',
+  'Extra': 'Dodatkowe',
+  'Plan {0}/{1} · Extra {2} · {3} sets in total': 'Plan {0}/{1} · Dodatkowe {2} · Serie łącznie: {3}',
 }
