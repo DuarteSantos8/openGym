@@ -395,6 +395,7 @@ function compactWorkout(w) {
       return {
         id: ident(en.id),
         name: libraryName(en.id),
+        ...(en.extra === true ? { extra: true } : {}),
         done: done.length + '/' + sets.length,
         ...(target ? { target: fmtSet({ w: target.weight, r: target.reps, sec: target.sec }) } : {}),
         ...(top ? { top: fmtSet(top) } : {})
@@ -412,12 +413,32 @@ function cleanWorkout(w) {
     ...(w.rating ? { rating: typeof w.rating === 'number' ? w.rating : text(String(w.rating), 20) } : {}),
     ...(w.note ? { note: String(w.note).slice(0, NOTE_MAX) } : {}),
     prs: list(w.prs).length,
+    ...extrasSummary(w),
     entries: entriesOf(w).map(en => ({
       id: ident(en.id),
       name: libraryName(en.id),
+      ...(en.extra === true ? { extra: true } : {}),
       target: targetOf(en),
       sets: setsOf(en).map(cleanSet)
     }))
+  };
+}
+
+// An exercise added during a session (`extra: true`, frontend/src/lib/session-extras.js) is real
+// training but not the plan. A session with any carries the split, so "the plan had 12 sets and
+// 17 were done" can be read without adding it up; one without stays exactly the shape it was.
+function extrasSummary(w) {
+  const entries = entriesOf(w);
+  if (!entries.some(en => en.extra === true)) return {};
+  const work = en => setsOf(en).filter(s => s.done && !isWarmupSet(s)).length;
+  const planned = entries.filter(en => en.extra !== true), extra = entries.filter(en => en.extra === true);
+  return {
+    summary: {
+      plannedExercises: Number.isInteger(w.planEx) ? w.planEx : planned.length,
+      plannedSets: planned.reduce((n, en) => n + work(en), 0),
+      extraExercises: extra.length,
+      extraSets: extra.reduce((n, en) => n + work(en), 0)
+    }
   };
 }
 

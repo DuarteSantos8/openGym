@@ -197,11 +197,14 @@ function draftRecord(active, current, key) {
     const merged = { ...clone(logged[i]), ...entry }
     delete merged.plan
     delete merged.carried
-    for (const k of ['note', 'notePin', 'noProg', 'muscleSnapshot', 'rid', 'planned']) if (!(k in entry)) delete merged[k]
+    for (const k of ['note', 'notePin', 'noProg', 'muscleSnapshot', 'rid', 'planned', 'extra']) if (!(k in entry)) delete merged[k]
     return merged
   })
   const record = { ...current, ...updated, id: key, d: current.d, start: current.start, end: current.end }
   if (!('excludeFromProgression' in updated)) delete record.excludeFromProgression
+  // The planned count (lib/session-extras.js) is the session's, from when it ran: the editor only
+  // holds the exercises that were done, so it cannot count a planned one that was skipped.
+  if (Number.isInteger(current.planEx)) record.planEx = Math.max(current.planEx, updated.planEx ?? 0)
   const base = active.editBase
   for (const k of SESSION_FIELDS) {
     // A draft from before `editBase` existed has nothing to compare with, and keeps the editor's.

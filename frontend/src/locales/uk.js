@@ -2239,4 +2239,6 @@ export default {
   'Your sports watch, calling you back.': 'Ваш спортивний годинник кличе вас назад.',
   'Coach wants you back on the bar.': 'Тренер чекає вас назад біля штанги.',
   'Gentle, for headphones or a quiet room.': 'Тихий, для навушників або спокійної кімнати.',
+  'Extra': 'Дод.',
+  'Plan {0}/{1} · Extra {2} · {3} sets in total': 'План {0}/{1} · Дод. {2} · Усього підходів: {3}',
 }

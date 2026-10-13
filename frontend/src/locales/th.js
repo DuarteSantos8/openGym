@@ -2253,4 +2253,6 @@ export default {
   'Your sports watch, calling you back.': 'นาฬิกาสปอร์ตเรียกคุณกลับมาแล้ว',
   'Coach wants you back on the bar.': 'โค้ชอยากให้คุณกลับมาที่บาร์',
   'Gentle, for headphones or a quiet room.': 'เบา ๆ สำหรับหูฟังหรือห้องที่เงียบ',
+  'Extra': 'เพิ่มเติม',
+  'Plan {0}/{1} · Extra {2} · {3} sets in total': 'แผน {0}/{1} · เพิ่มเติม {2} · รวม {3} เซ็ต',
 }
