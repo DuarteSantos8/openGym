@@ -2352,4 +2352,7 @@ export default {
   'Under Headers, add Authorization with the value Bearer followed by a space and your key.': '在 Headers 中添加 Authorization，值为 Bearer 加一个空格再加你的密钥。',
   'Export Format JSON, Data Type Health Metrics, then choose what to send: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.': 'Export Format 选 JSON，Data Type 选 Health Metrics，然后选择要发送的内容：Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis。',
   'Date Range Previous 7 Days, Summarize Data on with Time Grouping by days, and a daily Sync Cadence.': 'Date Range 选 Previous 7 Days，打开 Summarize Data 并将 Time Grouping 设为按天，Sync Cadence 设为每天。',
+  'Ready-made Shortcut': '现成的快捷指令',
+  'Install it, then paste the address and the key when it asks. The key shows only when it is made: without it, make a new one.': '安装后，在它询问时粘贴地址和密钥。密钥只在创建时显示：如果没有了，请新建一个。',
+  'Install the Shortcut': '安装快捷指令',
 }

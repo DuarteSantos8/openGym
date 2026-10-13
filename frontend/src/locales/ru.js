@@ -2356,4 +2356,7 @@ export default {
   'Under Headers, add Authorization with the value Bearer followed by a space and your key.': 'В Headers добавьте Authorization со значением Bearer, пробелом и вашим ключом.',
   'Export Format JSON, Data Type Health Metrics, then choose what to send: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.': 'Export Format JSON, Data Type Health Metrics, затем выберите, что отправлять: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.',
   'Date Range Previous 7 Days, Summarize Data on with Time Grouping by days, and a daily Sync Cadence.': 'Date Range Previous 7 Days, Summarize Data включено с Time Grouping по дням, и ежедневная Sync Cadence.',
+  'Ready-made Shortcut': 'Готовая быстрая команда',
+  'Install it, then paste the address and the key when it asks. The key shows only when it is made: without it, make a new one.': 'Установите её и вставьте адрес и ключ, когда она попросит. Ключ показывается только при создании: если его нет, создайте новый.',
+  'Install the Shortcut': 'Установить быструю команду',
 }

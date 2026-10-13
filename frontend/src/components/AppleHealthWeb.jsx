@@ -151,6 +151,14 @@ function ShortcutSetup({ close, onChange }) {
       </div>
       : <Button variant="primary" onClick={make} disabled={busy}>{t('Make a key')}</Button>)}
 
+    {/* A ready-made Shortcut this instance shares (HEALTH_SHORTCUT_URL): installed with a tap,
+        it asks for the address and the key above. Building one by hand stays below. */}
+    {state?.shortcut && <div className="card" style={{ background: 'var(--surface-2)', marginTop: 14 }}>
+      <div className="small" style={{ fontWeight: 600, marginBottom: 6 }}>{t('Ready-made Shortcut')}</div>
+      <div className="small muted" style={{ marginBottom: 10 }}>{t('Install it, then paste the address and the key when it asks. The key shows only when it is made: without it, make a new one.')}</div>
+      <Button variant="primary" icon="download" onClick={() => window.open(state.shortcut, '_blank', 'noopener')}>{t('Install the Shortcut')}</Button>
+    </div>}
+
     <h4 className="sec" style={{ marginTop: 18 }}>{t('How to set up the Shortcut')}</h4>
     <ol className="small" style={{ paddingInlineStart: 20, lineHeight: 1.5, margin: '6px 0 0' }}>
       <li>{t('In Shortcuts, make a new shortcut and add “Find Health Samples” for each thing to send: Weight, Body Fat Percentage, Resting Heart Rate, Steps (Group By: Day) and Sleep, from the last 7 days.')}</li>

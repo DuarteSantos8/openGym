@@ -81,3 +81,8 @@ test('bad points are skipped, too many refused', () => {
   const many = { data: { metrics: [{ name: 'step_count', units: 'count', data: Array.from({ length: 20001 }, () => ({ qty: 1, date: '2026-10-12' })) }] } };
   assert.deepEqual(readingsFromAutoExport(many), { error: 'too many samples' });
 });
+
+test('a Shortcut may send the unit once per value', () => {
+  const r = readingsFromShortcut({ metrics: { weight: { values: '180\n181', dates: '2026-10-11T07:30:00+02:00\n2026-10-12T07:30:00+02:00', unit: 'lb\nlb' } } });
+  assert.deepEqual(r.readings.map(x => x.v), [81.647, 82.1]);
+});

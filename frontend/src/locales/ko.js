@@ -2352,4 +2352,7 @@ export default {
   'Under Headers, add Authorization with the value Bearer followed by a space and your key.': 'Headers에 Authorization을 추가하고, 값은 Bearer 뒤에 공백과 키를 넣으세요.',
   'Export Format JSON, Data Type Health Metrics, then choose what to send: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.': 'Export Format은 JSON, Data Type은 Health Metrics로 하고, 보낼 항목을 고르세요: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.',
   'Date Range Previous 7 Days, Summarize Data on with Time Grouping by days, and a daily Sync Cadence.': 'Date Range는 Previous 7 Days, Summarize Data를 켜고 Time Grouping은 일 단위, Sync Cadence는 매일로 하세요.',
+  'Ready-made Shortcut': '준비된 단축어',
+  'Install it, then paste the address and the key when it asks. The key shows only when it is made: without it, make a new one.': '설치한 뒤, 물어볼 때 주소와 키를 붙여 넣으세요. 키는 만들 때만 보입니다. 없으면 새로 만드세요.',
+  'Install the Shortcut': '단축어 설치',
 }

@@ -2363,4 +2363,7 @@ export default {
   'Under Headers, add Authorization with the value Bearer followed by a space and your key.': 'ใน Headers เพิ่ม Authorization โดยใส่ค่าเป็น Bearer ตามด้วยช่องว่างและคีย์ของคุณ',
   'Export Format JSON, Data Type Health Metrics, then choose what to send: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.': 'Export Format เป็น JSON, Data Type เป็น Health Metrics แล้วเลือกสิ่งที่จะส่ง: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis',
   'Date Range Previous 7 Days, Summarize Data on with Time Grouping by days, and a daily Sync Cadence.': 'Date Range เป็น Previous 7 Days เปิด Summarize Data โดยตั้ง Time Grouping เป็นรายวัน และตั้ง Sync Cadence เป็นทุกวัน',
+  'Ready-made Shortcut': 'คำสั่งลัดสำเร็จรูป',
+  'Install it, then paste the address and the key when it asks. The key shows only when it is made: without it, make a new one.': 'ติดตั้ง แล้ววางที่อยู่และคีย์เมื่อระบบถาม คีย์จะแสดงเฉพาะตอนสร้าง ถ้าไม่มีแล้วให้สร้างใหม่',
+  'Install the Shortcut': 'ติดตั้งคำสั่งลัด',
 }

@@ -2407,4 +2407,7 @@ export default {
   'Under Headers, add Authorization with the value Bearer followed by a space and your key.': 'في Headers أضف Authorization بقيمة Bearer متبوعة بمسافة ثم مفتاحك.',
   'Export Format JSON, Data Type Health Metrics, then choose what to send: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.': 'Export Format بصيغة JSON، وData Type هو Health Metrics، ثم اختر ما يُرسل: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.',
   'Date Range Previous 7 Days, Summarize Data on with Time Grouping by days, and a daily Sync Cadence.': 'Date Range على Previous 7 Days، وفعّل Summarize Data مع Time Grouping حسب الأيام، واجعل Sync Cadence يوميًا.',
+  'Ready-made Shortcut': 'اختصار جاهز',
+  'Install it, then paste the address and the key when it asks. The key shows only when it is made: without it, make a new one.': 'ثبّته، ثم الصق العنوان والمفتاح عندما يطلبهما. لا يظهر المفتاح إلا عند إنشائه: إن لم يكن لديك، أنشئ مفتاحًا جديدًا.',
+  'Install the Shortcut': 'تثبيت الاختصار',
 }

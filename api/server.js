@@ -1771,6 +1771,16 @@ try { MEDIA.cleanTmp(); } catch (e) { console.error('media: boot cleanup failed'
  * this one route (POST /api/health/samples), shown once, kept only as its hash, replaced or
  * revoked from Settings → Health, and good for nothing else on the server. */
 const HEALTH_KEY_PREFIX = 'ogh_';
+// A ready-made iPhone Shortcut for that route, shared as an iCloud link (HEALTH_SHORTCUT_URL):
+// Settings → Health offers it beside the steps to build one. Only an iCloud Shortcuts link is
+// taken, so the setting cannot point people anywhere else.
+const HEALTH_SHORTCUT_URL = (() => {
+  const v = String(process.env.HEALTH_SHORTCUT_URL || '').trim();
+  if (!v) return null;
+  if (/^https:\/\/(www\.)?icloud\.com\/shortcuts\/[A-Za-z0-9]{16,64}\/?$/.test(v)) return v;
+  console.error('HEALTH_SHORTCUT_URL ignored: it is not an https://www.icloud.com/shortcuts/… link');
+  return null;
+})();
 const HEALTH_BURST = createWindow({ max: 60, windowMs: 3600000 });
 const keyHash = k => crypto.createHash('sha256').update(String(k)).digest('hex');
 function healthKeyUser(req) {
@@ -2317,7 +2327,7 @@ const routes = {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
     const k = user.healthKey;
-    json(res, 200, { exists: !!k?.hash, created: k?.created || null, used: k?.used || null });
+    json(res, 200, { exists: !!k?.hash, created: k?.created || null, used: k?.used || null, shortcut: HEALTH_SHORTCUT_URL });
   },
   // A new key, replacing any earlier one. The only time the key itself is ever sent.
   'POST /api/health/key': async (req, res) => {

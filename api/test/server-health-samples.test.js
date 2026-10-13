@@ -22,7 +22,7 @@ function mintSession(uid, sv = 0) {
 }
 const session = () => ({ Cookie: `gymsid=${mintSession(UID)}`, 'Content-Type': 'application/json', 'Sec-Fetch-Site': 'same-origin' });
 
-async function startServer(t, state) {
+async function startServer(t, state, env = {}) {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gym-health-'));
   fs.writeFileSync(path.join(dataDir, 'secret'), SECRET, { mode: 0o600 });
   fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({
@@ -31,7 +31,7 @@ async function startServer(t, state) {
   if (state) fs.writeFileSync(path.join(dataDir, `state-${UID}.json`), JSON.stringify(state));
   const child = spawn(process.execPath, ['server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost' }
+    env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost', ...env }
   });
   const h = { log: '', dataDir };
   child.stdout.on('data', d => h.log += d);
@@ -62,7 +62,7 @@ const SHORTCUT = {
 
 test('a key is made once, kept only as its hash, and revoked', async t => {
   const h = await startServer(t, { _rev: 3, unit: 'kg', workouts: [], routines: [] });
-  assert.deepEqual((await call(h, 'GET', '/api/health/key', { headers: session() })).body, { exists: false, created: null, used: null });
+  assert.deepEqual((await call(h, 'GET', '/api/health/key', { headers: session() })).body, { exists: false, created: null, used: null, shortcut: null });
   const made = await call(h, 'POST', '/api/health/key', { headers: session() });
   assert.equal(made.status, 200);
   assert.match(made.body.key, /^ogh_[A-Za-z0-9_-]{30,}$/);
@@ -154,4 +154,13 @@ test('Health Auto Export posts to the same address with the same key, and lands 
   assert.equal(S.health.length, 3);
   assert.equal(S.health.find(x => x.type === 'sleep').v, 420);
   assert.deepEqual(S.bodyweight.map(b => [b.d, b.w]), [['2026-10-12', 80.1]]);
+});
+
+test('a ready-made Shortcut is offered only as an iCloud Shortcuts link', async t => {
+  const link = 'https://www.icloud.com/shortcuts/0123456789abcdef0123456789abcdef';
+  const ok = await startServer(t, null, { HEALTH_SHORTCUT_URL: link });
+  assert.equal((await call(ok, 'GET', '/api/health/key', { headers: session() })).body.shortcut, link);
+  const bad = await startServer(t, null, { HEALTH_SHORTCUT_URL: 'https://example.com/shortcuts/0123456789abcdef0123456789abcdef' });
+  assert.equal((await call(bad, 'GET', '/api/health/key', { headers: session() })).body.shortcut, null);
+  assert.match(bad.log, /HEALTH_SHORTCUT_URL ignored/);
 });

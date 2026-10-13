@@ -2352,4 +2352,7 @@ export default {
   'Under Headers, add Authorization with the value Bearer followed by a space and your key.': 'In Headers aggiungi Authorization con valore Bearer seguito da uno spazio e dalla tua chiave.',
   'Export Format JSON, Data Type Health Metrics, then choose what to send: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.': 'Export Format JSON, Data Type Health Metrics, poi scegli cosa inviare: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.',
   'Date Range Previous 7 Days, Summarize Data on with Time Grouping by days, and a daily Sync Cadence.': 'Date Range Previous 7 Days, Summarize Data attivo con Time Grouping per giorni, e una Sync Cadence giornaliera.',
+  'Ready-made Shortcut': 'Comando Rapido pronto',
+  'Install it, then paste the address and the key when it asks. The key shows only when it is made: without it, make a new one.': 'Installalo, poi incolla l’indirizzo e la chiave quando li chiede. La chiave si vede solo quando viene creata: se non ce l’hai, creane una nuova.',
+  'Install the Shortcut': 'Installa il Comando Rapido',
 }
