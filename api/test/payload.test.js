@@ -209,6 +209,8 @@ test('declined changes are carried forward so the Coach does not nag', () => {
 
 /* ---------- debriefs and the cohort ---------- */
 const debriefState = () => sampleState({
+  // These debriefs intentionally cover a fixed historical session, not today's review.
+  bodyweight: [{ d: '2026-07-01', w: 78 }, { d: '2026-07-20', w: 78.5 }],
   workouts: [
     { id: 'w0', d: '2026-07-06', name: 'Full body A', start: 1000, end: 1000 + 40 * 60000, vol: 500, prs: [], entries: [{ id: '0001', sets: [{ w: 18, r: 10, done: true }] }] },
     { id: 'wx', d: '2026-07-10', name: 'Other', start: 1000, end: 1000 + 30 * 60000, vol: 100, prs: [], entries: [{ id: '0007', sets: [{ sec: 45, done: true }] }] },

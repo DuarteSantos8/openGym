@@ -204,7 +204,7 @@ test('the plan and the log a real app writes pass through exactly as before', ()
   });
   assert.deepEqual(p.window.workouts.at(-1).entries[0].sets[0], { done: true, w: 20, r: 10, rpe: 9.5 });
   assert.deepEqual(p.window.workouts.at(-1).entries[0].target, { sets: 3, reps: 10, sec: undefined, weight: 20 });
-  assert.deepEqual(p.bodyweight, { goal: 80, series: [{ d: '2026-07-20', w: 78.5 }] });
+  assert.deepEqual(p.bodyweight, { goal: 80, series: [S.bodyweight[1]] });
 });
 
 test('the cohort is bounded where it joins the payload, whoever built it', () => {
