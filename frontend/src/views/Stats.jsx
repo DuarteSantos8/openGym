@@ -21,7 +21,7 @@ import { maxRepsSeries } from '../lib/pyramid.js'
 import { perSetSessions, perSetLines, dropOffSet } from '../lib/per-set.js'
 import {
   hasEffort, hasEstimableEffort, displayScale, scaleName, toScale, avgRir, effortSummary, effortWeeks,
-  effortHistogram, isHardSet, HARD_RIR, MIN_RATED
+  effortHistogram, isHardSet, HARD_RIR
 } from '../lib/effort.js'
 import { anchorsByWorkout, resolveSetRir } from '../lib/recovery.js'
 import { Button, Segmented, SelectRow } from '../components/ui.jsx'
@@ -315,23 +315,24 @@ function EffortCard({ S }) {
   const [win, setWin] = useState(90)
   const kind = displayScale(S)
   const hd = scaleName(kind)
-  const logged = effortSummary(S, win)
-  // Thin or missing ratings fall back to estimates (same precedence fatigue scoring
-  // uses), so imported histories get an effort card too. Well-rated windows keep
-  // their logged numbers untouched - estimates never dilute a real average.
-  const blend = logged.rated < MIN_RATED
+  // Every set without a logged rating is estimated (the same precedence fatigue scoring
+  // uses: logged effort first, Epley-inverse estimate against the 90-day anchor second),
+  // so the average always speaks for the whole training, not just the rated subset.
+  // Averaging rated sets only reads as RIR 0 for a history whose only ratings are
+  // imported sets taken to failure. Estimates never override a real rating, so a fully
+  // rated window still reads exactly its logged numbers.
   // Same options as the fatigue map (unit + profile bodyweight), so a bodyweight set is
   // estimated against the same body-mass-inclusive anchor in both places.
   const opts = useMemo(() => ({ unit: S.unit, bodyweightKg: profileBodyweightKg(S) }), [S.unit, S.bodyweight])
   const anchors = useMemo(
-    () => (blend ? anchorsByWorkout(S.workouts, opts) : new Map()),
-    [blend, S.workouts, opts],
+    () => anchorsByWorkout(S.workouts, opts),
+    [S.workouts, opts],
   )
   const resolve = (s, w, e) => resolveSetRir(s, s, e, w, anchors.get(w), opts)
-  const sum = blend ? effortSummary(S, win, resolve) : logged
-  const weeks = blend ? effortWeeks(S, win, resolve) : effortWeeks(S, win)
-  const hist = blend ? effortHistogram(S, win, resolve) : effortHistogram(S, win)
-  const estimated = blend && sum.est > 0
+  const sum = effortSummary(S, win, resolve)
+  const weeks = effortWeeks(S, win, resolve)
+  const hist = effortHistogram(S, win, resolve)
+  const estimated = sum.est > 0
   const maxBin = Math.max(1, ...hist.map(b => b.n))
   // The week's set count rides along in the tooltip, because the pair is the reading:
   // volume up with effort up is fatigue piling up, volume up with effort flat is adaptation.
