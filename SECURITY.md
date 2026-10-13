@@ -311,8 +311,9 @@ Read this before hosting openGym for anyone other than yourself.
   the connecting socket — so it is only as trustworthy as whatever sits in front, which has to
   *overwrite* those headers rather than pass a client-supplied one through. The bundled web
   container now does: it replaces `X-Forwarded-For`/`X-Real-IP` with the real peer and drops
-  `CF-Connecting-IP` unless you set `CF_CONNECTING_IP=$http_cf_connecting_ip`, which is correct
-  only with Cloudflare genuinely in front. Before that it appended to `X-Forwarded-For` and
+  `CF-Connecting-IP` unless you set `CF_CONNECTING_IP='$http_cf_connecting_ip'` in `.env` (the
+  single quotes stop Compose from expanding it to an empty string), which is correct only with
+  Cloudflare genuinely in front. Before that it appended to `X-Forwarded-For` and
   passed `CF-Connecting-IP` straight through, and the API reads the first entry — so any caller
   could choose the address recorded against it. Never the browser's user-agent,
   and never the passkey id behind a failed sign-in — that id is a stable
