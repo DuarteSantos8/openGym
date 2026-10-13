@@ -1,5 +1,10 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Get ready": "প্রস্তুত হোন",
+  "Preview the first exercise and get your equipment ready. Your workout timer starts when you are ready.": "প্রথম ব্যায়ামটি দেখুন এবং সরঞ্জাম প্রস্তুত করুন। আপনি প্রস্তুত হলে ব্যায়ামের সময় গণনা শুরু হবে।",
+  "First exercise": "প্রথম ব্যায়াম",
+  "Ready, start workout": "প্রস্তুত, ব্যায়াম শুরু করুন",
+  "Up next": "পরবর্তী",
   'Confirm': 'নিশ্চিত করুন',
   'Cancel': 'বাতিল',
   'Press back again to exit': 'বের হতে আবার ব্যাক চাপুন',

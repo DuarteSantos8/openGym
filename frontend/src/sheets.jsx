@@ -2775,10 +2775,11 @@ export function startFlow(routineIds) {
 }
 export function beginWorkout(routineIds, bw) {
   const st = S()
+  if (st.active) { navToWorkout(); return }
   const { entries, routineIds: rids, routines } = buildCombinedEntries(st, routineIds)
   update(s => {
     s.active = {
-      id: uid(), d: todayISO(), start: Date.now(),
+      id: uid(), d: todayISO(), start: 0, preparing: true,
       // A session tracks its routines as a list; per-entry `rid` carries which one each
       // exercise came from. No top-level `excludeFromProgression` — per-entry `noProg` does it.
       routineIds: rids,
@@ -2805,7 +2806,7 @@ export function repeatWorkout(w, close) {
     if (S().active) { toast(t('Finish the current workout first.')); return }
     update(s => {
       s.active = {
-        id: uid(), d: todayISO(), start: Date.now(), routineIds: [],
+        id: uid(), d: todayISO(), start: 0, preparing: true, routineIds: [],
         name: w.name || t('Freestyle'), bw: bw || null, cur: 0, entries,
         workoutView: s.workoutView || 'cards',
       }

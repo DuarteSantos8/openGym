@@ -1,5 +1,10 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Get ready": "तैयार हो जाएँ",
+  "Preview the first exercise and get your equipment ready. Your workout timer starts when you are ready.": "पहला व्यायाम देखें और उपकरण तैयार करें। तैयार होने पर व्यायाम का समय शुरू होगा।",
+  "First exercise": "पहला व्यायाम",
+  "Ready, start workout": "तैयार हूँ, व्यायाम शुरू करें",
+  "Up next": "अगला",
   'Confirm': 'पुष्टि करें',
   'Cancel': 'रद्द करें',
   'Press back again to exit': 'बाहर निकलने के लिए फिर से बैक दबाएँ',

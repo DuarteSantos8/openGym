@@ -1,5 +1,10 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Get ready": "준비하세요",
+  "Preview the first exercise and get your equipment ready. Your workout timer starts when you are ready.": "첫 운동을 확인하고 장비를 준비하세요. 준비가 되면 운동 시간이 시작됩니다.",
+  "First exercise": "첫 운동",
+  "Ready, start workout": "준비 완료, 운동 시작",
+  "Up next": "다음 운동",
   'Confirm': '확인',
   'Cancel': '취소',
   'Press back again to exit': '뒤로를 한 번 더 누르면 종료됩니다',

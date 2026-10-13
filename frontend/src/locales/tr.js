@@ -1,5 +1,10 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Get ready": "Hazırlan",
+  "Preview the first exercise and get your equipment ready. Your workout timer starts when you are ready.": "İlk hareketi incele ve ekipmanını hazırla. Antrenman süresi hazır olduğunda başlar.",
+  "First exercise": "İlk hareket",
+  "Ready, start workout": "Hazırım, antrenmanı başlat",
+  "Up next": "Sıradaki",
   'Confirm': 'Onayla',
   'Cancel': 'İptal',
   'Press back again to exit': 'Çıkmak için geri tuşuna tekrar basın',

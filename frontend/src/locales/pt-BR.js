@@ -4,6 +4,11 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  "Get ready": "Prepare-se",
+  "Preview the first exercise and get your equipment ready. Your workout timer starts when you are ready.": "Veja o primeiro exercício e prepare o equipamento. O tempo do treino começa quando você estiver pronto.",
+  "First exercise": "Primeiro exercício",
+  "Ready, start workout": "Pronto, começar treino",
+  "Up next": "A seguir",
   '{0} set brings an {1} with it. Switch on Effort per set in Settings to see it.': '{0} série traz um {1} junto. Ative “Esforço por série” nas Configurações para ver.',
   'Add to this set': 'Adicionar a esta série',
   'Copy this exercise’s warm-up sets, and the rest and note from its Exercise settings, into the routine. A note added for today stays with this workout. Your workout history is kept.': 'Copia para a rotina as séries de aquecimento deste exercício, e o descanso e a anotação das Configurações do exercício dele. Uma anotação adicionada para hoje fica com este treino. Seu histórico de treinos é mantido.',

@@ -1,5 +1,10 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Get ready": "Подготовьтесь",
+  "Preview the first exercise and get your equipment ready. Your workout timer starts when you are ready.": "Посмотрите первое упражнение и подготовьте оборудование. Время тренировки начнётся, когда вы будете готовы.",
+  "First exercise": "Первое упражнение",
+  "Ready, start workout": "Готово, начать тренировку",
+  "Up next": "Далее",
   'Confirm': 'Подтвердить',
   'Cancel': 'Отмена',
   'Press back again to exit': 'Нажмите «Назад» ещё раз, чтобы выйти',

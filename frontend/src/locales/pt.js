@@ -1,5 +1,10 @@
 // Portuguese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Get ready": "Prepara-te",
+  "Preview the first exercise and get your equipment ready. Your workout timer starts when you are ready.": "Vê o primeiro exercício e prepara o equipamento. O tempo do treino começa quando estiveres pronto.",
+  "First exercise": "Primeiro exercício",
+  "Ready, start workout": "Pronto, começar treino",
+  "Up next": "A seguir",
   'Confirm': 'Confirmar',
   'Cancel': 'Cancelar',
   'Press back again to exit': 'Prima novamente para sair',

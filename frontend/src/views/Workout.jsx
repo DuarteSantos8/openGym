@@ -45,6 +45,8 @@ import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEn
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import FocusView from './FocusView.jsx'
+import WorkoutPreparation, { ExercisePreview } from '../components/WorkoutPreview.jsx'
+import { isPreparing, restPreview } from '../lib/workout-preparation.js'
 import { withMeaning, historyAs, dbLoadFor, entryDbLoad, bellsIn, ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
@@ -1902,6 +1904,20 @@ function ActiveWorkout() {
     }
   }, [])
 
+  const preview = restPreview(A, timer)
+  const previewRef = useRef(null)
+  // Set controls can be far down the page. Reveal the preview once per rest, after any
+  // completion sheet/scroll restoration, without stealing keyboard focus or following ticks.
+  useEffect(() => {
+    if (!preview || work) return
+    return afterScrollRestore(() => {
+      const el = previewRef.current
+      if (!el) return
+      el.style.scrollMarginTop = `calc(var(--sat, 0px) + var(--conn, 0px) + ${(listMode ? hdrRef.current?.offsetHeight || 0 : 0) + 12}px)`
+      el.scrollIntoView?.({ block: 'start', behavior: 'auto' })
+    })
+  }, [!!preview, timer?.forIdx, timer?.forSet, !!work])
+
   return <WorkoutScrollAnchor enabled={collapseOn} collapsed={[...collapsed].join(',')}>
     {/* In list mode the whole session scrolls under the header, so the header (name, clock,
         set counter, discard/finish, progress) stays pinned — the one thing you want in view
@@ -1927,6 +1943,7 @@ function ActiveWorkout() {
     </div>
     {editing && <p className="muted small">{t('Editing a saved workout. Date and duration stay unchanged.')}</p>}
     {A.backfill && <div className="muted small" style={{ marginBottom: 8 }}>{t('Logging a past workout, so no rest timers.')}</div>}
+    {!work && preview && <div ref={previewRef}><ExercisePreview active={A} next={preview} title={t('Up next')} /></div>}
 
     {A.entries.length ? (listMode ? (
       <div className="workout-list" data-testid="workout-list" ref={listRef}>
@@ -2085,5 +2102,5 @@ function ActiveWorkout() {
 
 export default function Workout() {
   const active = useStore(s => s.S.active)
-  return active ? <ActiveWorkout /> : <StartChooser />
+  return active ? isPreparing(active) ? <WorkoutPreparation /> : <ActiveWorkout /> : <StartChooser />
 }
