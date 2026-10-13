@@ -2004,6 +2004,8 @@ export default {
   'Could not reach {0} over https://. If your server runs on plain http (common at home), type http://{0} instead.': 'เชื่อมต่อ {0} ผ่าน https:// ไม่ได้ ถ้าเซิร์ฟเวอร์ของคุณใช้ http ธรรมดา (พบบ่อยที่บ้าน) ให้พิมพ์ http://{0} แทน',
   'Collapse completed exercises': 'ย่อท่าฝึกที่เสร็จแล้ว',
   'Keep the current exercise open': 'เปิดท่าฝึกปัจจุบันไว้',
+  'Skip completed exercises': 'ข้ามท่าฝึกที่เสร็จแล้ว',
+  'In Cards and Focus, Prev and Next jump past finished exercises.': 'ในมุมมองการ์ดและโฟกัส ปุ่มก่อนหน้าและถัดไปจะข้ามท่าที่เสร็จแล้ว',
   'Enter how long it took — at least 1 minute.': 'ใส่ระยะเวลาที่ใช้ — อย่างน้อย 1 นาที',
   'Health Connect': 'Health Connect',
   'Write to Health Connect': 'เขียนลงใน Health Connect',

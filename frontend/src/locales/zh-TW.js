@@ -1992,6 +1992,8 @@ export default {
   'Deletes your plan, workouts, body weight and measurements on this device. This cannot be undone.': '刪除這台裝置上的計畫、訓練、體重與身體測量。這個動作無法復原。',
   'Collapse completed exercises': '收合已完成的動作',
   'Keep the current exercise open': '保持目前的動作展開',
+  'Skip completed exercises': '跳過已完成的動作',
+  'In Cards and Focus, Prev and Next jump past finished exercises.': '在卡片模式和專注模式中，「上一個」和「下一個」會跳過已完成的動作。',
   'Body measurements': '身體測量',
   'Circumference & composition': '圍度與組成',
   'Measurement': '測量項目',

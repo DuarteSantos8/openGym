@@ -484,6 +484,13 @@ export default function Settings({ page = null, find = null, via = null }) {
           <Switch aria-label={t('Collapse completed exercises')} checked={!!S.collapseCompleted}
             onChange={v => update(s => { s.collapseCompleted = v; if (s.active) delete s.active.collapseCompleted })} />
         </Row>
+        {/* The same for the two layouts that show one exercise at a time (#523), saved and
+            overridable from the Layout menu the same way. */}
+        <Row icon="chevronRight" iconTint="var(--teal)" title={t('Skip completed exercises')}
+          subtitle={t('In Cards and Focus, Prev and Next jump past finished exercises.')}>
+          <Switch aria-label={t('Skip completed exercises')} checked={!!S.skipCompleted}
+            onChange={v => update(s => { s.skipCompleted = v; if (s.active) delete s.active.skipCompleted })} />
+        </Row>
       </Section>
       <Section title={t('Before and during')}>
         {/* The quick weigh-in that opens on Start (sheets.jsx startFlow, issue #137); off skips

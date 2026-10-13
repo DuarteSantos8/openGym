@@ -1996,6 +1996,8 @@ export default {
   'Could not reach {0} over https://. If your server runs on plain http (common at home), type http://{0} instead.': 'https:// से {0} तक नहीं पहुँच सके। अगर आपका सर्वर सादे http पर चलता है (घर पर आम है), तो इसकी जगह http://{0} लिखें।',
   'Collapse completed exercises': 'पूरे हुए व्यायाम समेटें',
   'Keep the current exercise open': 'वर्तमान व्यायाम खुला रखें',
+  'Skip completed exercises': 'पूरे हुए व्यायाम छोड़ें',
+  'In Cards and Focus, Prev and Next jump past finished exercises.': 'कार्ड और फ़ोकस में पिछला और अगला पूरे हुए व्यायामों को छोड़कर आगे बढ़ते हैं।',
   'Body measurements': 'शरीर के माप',
   'Circumference & composition': 'घेरा और शरीर संरचना',
   'Measurement': 'माप',

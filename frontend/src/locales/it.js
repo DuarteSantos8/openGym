@@ -1996,6 +1996,8 @@ export default {
   'Could not reach {0} over https://. If your server runs on plain http (common at home), type http://{0} instead.': 'Impossibile raggiungere {0} via https://. Se il tuo server usa http semplice (comune in casa), scrivi http://{0}.',
   'Collapse completed exercises': 'Comprimi gli esercizi completati',
   'Keep the current exercise open': 'Mantieni aperto l’esercizio corrente',
+  'Skip completed exercises': 'Salta gli esercizi completati',
+  'In Cards and Focus, Prev and Next jump past finished exercises.': 'In Schede e Focus, Prec. e Succ. saltano gli esercizi finiti.',
   'Body measurements': 'Misure corporee',
   'Circumference & composition': 'Circonferenze e composizione',
   'Measurement': 'Misura',

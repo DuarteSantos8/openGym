@@ -2071,6 +2071,8 @@ export default {
   'Deletes your plan, workouts, body weight and measurements on this device. This cannot be undone.': 'يحذف خطتك وتمارينك ووزن جسمك وقياساتك على هذا الجهاز. لا يمكن التراجع عن ذلك.',
   'Collapse completed exercises': 'طيّ التمارين المكتملة',
   'Keep the current exercise open': 'إبقاء التمرين الحالي مفتوحًا',
+  'Skip completed exercises': 'تخطّي التمارين المكتملة',
+  'In Cards and Focus, Prev and Next jump past finished exercises.': 'في عرض البطاقات والتركيز، يتجاوز «السابق» و«التالي» التمارين المكتملة.',
   'Body measurements': 'قياسات الجسم',
   'Circumference & composition': 'المحيطات والتركيب',
   'Measurement': 'القياس',

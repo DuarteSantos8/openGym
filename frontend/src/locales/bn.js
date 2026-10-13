@@ -2039,6 +2039,8 @@ export default {
   'Deletes your plan, workouts, body weight and measurements on this device. This cannot be undone.': 'এই ডিভাইসে আপনার প্ল্যান, ওয়ার্কআউট, শরীরের ওজন আর মাপ মুছে ফেলে। এটা ফেরানো যাবে না।',
   'Collapse completed exercises': 'সম্পন্ন ব্যায়াম গুটিয়ে রাখুন',
   'Keep the current exercise open': 'বর্তমান ব্যায়াম খোলা রাখুন',
+  'Skip completed exercises': 'সম্পন্ন ব্যায়াম এড়িয়ে যান',
+  'In Cards and Focus, Prev and Next jump past finished exercises.': 'কার্ড ও ফোকাসে “আগের” ও “পরের” শেষ হওয়া ব্যায়াম পেরিয়ে যায়।',
   'Body measurements': 'শরীরের মাপ',
   'Circumference & composition': 'বেড় ও গঠন',
   'Measurement': 'মাপ',

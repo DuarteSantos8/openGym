@@ -1996,6 +1996,8 @@ export default {
   'Could not reach {0} over https://. If your server runs on plain http (common at home), type http://{0} instead.': '无法通过 https:// 连接 {0}。如果你的服务器使用普通 http（在家里很常见），请改为输入 http://{0}。',
   'Collapse completed exercises': '折叠已完成的动作',
   'Keep the current exercise open': '保持当前动作展开',
+  'Skip completed exercises': '跳过已完成的动作',
+  'In Cards and Focus, Prev and Next jump past finished exercises.': '在卡片和专注视图中，“上一个”和“下一个”会跳过已完成的动作。',
   'Body measurements': '身体围度',
   'Circumference & composition': '围度与体成分',
   'Measurement': '测量项',

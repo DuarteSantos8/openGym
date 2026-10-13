@@ -1996,6 +1996,8 @@ export default {
   'Could not reach {0} over https://. If your server runs on plain http (common at home), type http://{0} instead.': 'https://로 {0}에 연결할 수 없습니다. 서버가 일반 http로 돌아간다면(집에서는 흔해요) 대신 http://{0}를 입력하세요.',
   'Collapse completed exercises': '완료한 운동 접기',
   'Keep the current exercise open': '현재 운동은 펼쳐 두기',
+  'Skip completed exercises': '완료한 운동 건너뛰기',
+  'In Cards and Focus, Prev and Next jump past finished exercises.': '카드와 집중 보기에서 이전과 다음이 끝낸 운동을 건너뛰어요.',
   'Body measurements': '신체 측정',
   'Circumference & composition': '둘레와 체성분',
   'Measurement': '측정 항목',

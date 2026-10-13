@@ -2373,7 +2373,7 @@ describe('workout view header menu', () => {
     expect(item(menu, 'Layout').sub).toBe('Focus')
 
     const layout = await openLayout(menu)
-    expect(menuItemsOf(layout).map(it => it.label)).toEqual(['Cards', 'List', 'Compact', 'Focus'])
+    expect(menuItemsOf(layout).map(it => it.label)).toEqual(['Cards', 'List', 'Compact', 'Focus', 'Skip completed exercises'])
     expect(item(layout, 'Focus').on).toBe(true)
     expect(item(layout, 'Cards').on).toBe(false)
   })
@@ -2407,6 +2407,70 @@ describe('workout view header menu', () => {
   it('only offers collapsing in layouts that show more than the current exercise', async () => {
     await mount([exercise('bench', [true])], 0, { active: { workoutView: 'cards' } })
     expect(item(await openLayout(await openMenu()), 'Collapse completed exercises')).toBeUndefined()
+  })
+
+  // #523: Cards and Focus show one exercise at a time, so there the counterpart of folding the
+  // finished ones away is that Prev and Next pass them.
+  const pressPrev = () => click([...container.querySelectorAll('button')].find(b => b.textContent.trim() === 'Prev'))
+  const fourWithTheMiddleDone = () => [exercise('bench', [false]), exercise('row', [true]), exercise('press', [true]), exercise('curl', [false])]
+
+  it('Next stops at every exercise until skipping is switched on, for the running session only', async () => {
+    await mount(fourWithTheMiddleDone(), 0, { active: { workoutView: 'cards' } })
+    await pressNext()
+    await rerender()
+    expect(mocks.S.active.cur).toBe(1)
+    await pressPrev()
+    await rerender()
+    expect(mocks.S.active.cur).toBe(0)
+
+    const layout = await openLayout(await openMenu())
+    expect(menuItemsOf(layout).map(it => it.label)).toEqual(['Cards', 'List', 'Compact', 'Focus', 'Skip completed exercises'])
+    expect(item(layout, 'Skip completed exercises').on).toBe(false)
+    await act(async () => { item(layout, 'Skip completed exercises').onClick() })
+    await rerender()
+    expect(mocks.S.active.skipCompleted).toBe(true)
+    expect(mocks.S.skipCompleted).toBeUndefined()
+    expect(item(await openLayout(await openMenu()), 'Skip completed exercises').on).toBe(true)
+
+    await pressNext()
+    await rerender()
+    expect(mocks.S.active.cur).toBe(3)
+    await pressPrev()
+    await rerender()
+    expect(mocks.S.active.cur).toBe(0)
+  })
+
+  it('the saved setting starts a session with skipping on, and the session can switch it off', async () => {
+    await mount(fourWithTheMiddleDone(), 0, { skipCompleted: true, active: { workoutView: 'cards' } })
+    await pressNext()
+    await rerender()
+    expect(mocks.S.active.cur).toBe(3)
+    await pressPrev()
+    await rerender()
+    expect(mocks.S.active.cur).toBe(0)
+
+    const layout = await openLayout(await openMenu())
+    expect(item(layout, 'Skip completed exercises').on).toBe(true)
+    await act(async () => { item(layout, 'Skip completed exercises').onClick() })
+    await rerender()
+    expect(mocks.S.active.skipCompleted).toBe(false)
+    expect(mocks.S.skipCompleted).toBe(true)
+    await pressNext()
+    await rerender()
+    expect(mocks.S.active.cur).toBe(1)
+  })
+
+  it('with nothing unfinished that way, Next still steps to the neighbour', async () => {
+    await mount([exercise('bench', [false]), exercise('row', [true]), exercise('press', [true])], 0,
+      { skipCompleted: true, active: { workoutView: 'cards' } })
+    await pressNext()
+    await rerender()
+    expect(mocks.S.active.cur).toBe(1)
+  })
+
+  it('does not offer skipping in the layouts that show every exercise', async () => {
+    await mount([exercise('bench', [true]), exercise('row', [false])], 0, { skipCompleted: true, active: { workoutView: 'list' } })
+    expect(item(await openLayout(await openMenu()), 'Skip completed exercises')).toBeUndefined()
   })
 })
 
