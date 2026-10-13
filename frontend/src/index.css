@@ -1851,6 +1851,11 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
    measures the header (--whdr-h on .workout-list, safe area included) because it grows when
    the session name wraps; the fallback is the height of a one-line header. */
 .wl-unit{scroll-margin-top:calc(var(--whdr-h, var(--sat) + var(--conn) + 80px) + 16px)}
+/* A superset is one unit, so finishing a member and moving to the next scrolls to that member's
+   own row (Workout.jsx), not the unit: the row needs the same clearance under the sticky header,
+   since scroll-margin does not inherit from the .wl-unit around it. Scoped to the list so Cards,
+   which has no pinned header, is untouched. */
+.workout-list .ss-ex,.workout-list .setrow,.workout-list .setrow-side{scroll-margin-top:calc(var(--whdr-h, var(--sat) + var(--conn) + 80px) + 16px)}
 .wl-unit.cur{box-shadow:inset 0 0 0 1.5px var(--acc-line)}
 .wl-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
 .wl-summary{display:grid;gap:8px;padding-bottom:10px}
