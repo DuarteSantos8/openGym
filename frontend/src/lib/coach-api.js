@@ -11,6 +11,7 @@ import { DEMO } from './demo.js'
 import { MOBILE } from './mobile.js'
 import { t, getLang } from './i18n.js'
 import { useStore } from '../store/useStore.js'
+import { todayForCoach } from './coach-context.js'
 import { useUI } from '../store/useUI.js'
 
 const POLL_MS = 3000        // a job is running: often enough to feel live
@@ -68,6 +69,10 @@ const _refinePlan = async text => DEMO ? (await demo()).demoRefine(S()) : LOCAL(
 export const refinePlan = (...a) => _refinePlan(...a).then(track)
 const _requestDebrief = async workoutId => DEMO ? (await demo()).demoDebrief(S(), workoutId) : LOCAL() ? (await local()).localDebrief(S(), workoutId) : api('/api/coach/debrief', { method: 'POST', body: JSON.stringify({ workoutId: workoutId || null, lang: getLang() }) })
 export const requestDebrief = (...a) => _requestDebrief(...a).then(track)
+// A question in the chat, answered in words (the `ask` job). The session running here goes along
+// (lib/coach-context.js): the server never holds it.
+const _askCoach = async text => DEMO ? (await demo()).demoAsk(S(), text) : LOCAL() ? (await local()).localAsk(S(), text, todayForCoach(S())) : api('/api/coach/ask', { method: 'POST', body: JSON.stringify({ text, today: todayForCoach(S()), lang: getLang() }) })
+export const askCoach = (...a) => _askCoach(...a).then(track)
 // The room: anonymous medians across the profiles on this instance that opted in. Only a
 // server has a room; a phone with its own key and the demo both answer locally.
 export const cohortStats = async () => DEMO ? (await demo()).demoCohort(S()) : LOCAL() ? { ok: false, enabled: false } : api('/api/coach/cohort')

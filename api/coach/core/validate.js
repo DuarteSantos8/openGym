@@ -618,6 +618,24 @@ function currentOf(type, routine, planned, plan, target) {
 
 function fail(errors) { return { ok: false, errors }; }
 
+/* =============================== chat answers =============================== */
+
+export const MAX_ANSWER_CHARS = 2000;
+
+/**
+ * Validate an answer to a question in the chat: one non-empty string, and nothing to apply — an
+ * answer that tries to carry plan changes is refused, the way a debrief's is.
+ * Returns { ok, proposal:{ answer } } | { ok:false, errors }.
+ */
+export function validateAsk(data) {
+  if (!data || typeof data !== 'object') return fail(['the answer was not an object']);
+  const errors = [];
+  if (Array.isArray(data.changes) && data.changes.length) errors.push('an answer carries no plan changes — drop "changes" and say it in "answer"');
+  if (!isStr(data.answer) || !data.answer.trim()) errors.push('answer is required — reply to the question in plain text');
+  if (errors.length) return fail(errors);
+  return { ok: true, proposal: { answer: clampStr(data.answer.trim(), MAX_ANSWER_CHARS) } };
+}
+
 /* =============================== workout debriefs =============================== */
 
 const DEBRIEF_LISTS = ['highlights', 'watch', 'nextTime'];

@@ -14,7 +14,7 @@ import { CONTRACT } from './payload.js';
 import { buildPrompt, buildPromptParts } from './prompt.js';
 import { SCHEMAS } from './schemas.js';
 import { extractJSON, contractOK } from './parse.js';
-import { validatePlan, validateReview, validateDebrief } from './validate.js';
+import { validatePlan, validateReview, validateDebrief, validateAsk } from './validate.js';
 import { isChangeList, changesOntoPlan } from './refine-changes.js';
 
 /**
@@ -71,6 +71,8 @@ export async function attemptOnce({ adapter, cfg, kind, payload, model, timeoutM
     ? validateReview(parsed.value, payload.plan, { customIds, equipment, offered })
     : kind === 'debrief'
       ? validateDebrief(parsed.value)
+      : kind === 'ask'
+      ? validateAsk(parsed.value)
       : validatePlan(answer, {
       customIds, equipment, offered,
       workingWeights: payload.history?.workingWeights,

@@ -2242,4 +2242,8 @@ export default {
   'Your sports watch, calling you back.': 'Il tuo orologio sportivo ti richiama.',
   'Coach wants you back on the bar.': 'Il coach ti vuole di nuovo al bilanciere.',
   'Gentle, for headphones or a quiet room.': 'Delicato, per le cuffie o una stanza silenziosa.',
+  'About this workout, or anything else': 'Su questo allenamento, o su qualsiasi altra cosa',
+  'Ask the Coach': 'Chiedi al Coach',
+  'Thinking about your question…': 'Sto pensando alla tua domanda…',
+  'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'Questa è la demo, quindi dietro di me non c’è nessun modello di IA. Sul tuo server rispondo a domande come “{0}” usando il tuo piano, le ultime sessioni e l’allenamento che stai facendo adesso.',
 }

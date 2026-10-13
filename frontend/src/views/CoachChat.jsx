@@ -29,7 +29,7 @@ import {
   changeTitle, changeValues, exName, canRevert, revertLast
 } from '../lib/coach.js'
 import { insightsFor, sessionInsights } from '../lib/coach-insights.js'
-import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan, resolvePending, cohortStats, setCohortShare, jobErrorText, awaitedJob, settleAwaited, JOB_ERRORS } from '../lib/coach-api.js'
+import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan, askCoach, resolvePending, cohortStats, setCohortShare, jobErrorText, awaitedJob, settleAwaited, JOB_ERRORS } from '../lib/coach-api.js'
 import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
@@ -94,6 +94,18 @@ export default function CoachChat() {
     })
   }, [job, pending, loading, last?.id])
 
+  // An answer to a question (an `ask` job) has nothing to decide: it goes into the thread as the
+  // Coach's reply, once — `pid` names the job it answers, so a second render or a poll that still
+  // shows it pending cannot write it twice — and the server is told it was read.
+  useEffect(() => {
+    if (!pending || pending.kind !== 'ask' || job) return
+    update(s => {
+      if ((s.coach?.chat || []).some(m => m.pid === pending.id)) return
+      appendChat(s, { role: 'coach', kind: 'text', text: String(pending.answer || ''), pid: pending.id })
+    })
+    resolvePending({ accepted: ['ask'] }).catch(() => {}).finally(() => refresh())
+  }, [pending?.id, !!job])
+
   useEffect(() => { if (typeof endRef.current?.scrollIntoView === 'function') endRef.current.scrollIntoView({ block: 'end' }) }, [S.coach?.chat?.length, !!job, !!pending])
 
   if (!ready) return null
@@ -107,9 +119,11 @@ export default function CoachChat() {
     try {
       // A message about a proposed plan refines it. With no plan at all — the first attempt
       // failed, or nothing was ever built — the message asks for one; a review would only
-      // answer that there is no workout to look at, which is how people got stuck.
+      // answer that there is no workout to look at, which is how people got stuck. Anything else
+      // is a question, answered in words (`ask`): "how long should I rest?" is not a request to
+      // review the whole plan. A review is the chip and the menu's, as it always was.
       if (pending?.kind === 'create' || !(S.routines || []).length) await refinePlan(msg)
-      else await requestReview(msg)
+      else await askCoach(msg)
       update(s => appendChat(s, { role: 'user', kind: 'text', text: msg }))
       setText('')
       refresh()
@@ -180,14 +194,15 @@ export default function CoachChat() {
     }
   })
 
-  const status = job ? t('thinking…') : pending ? t('has a suggestion for you') : t('here when you need it')
+  const status = job || pending?.kind === 'ask' ? t('thinking…') : pending ? t('has a suggestion for you') : t('here when you need it')
   const placeholder = pending?.kind === 'create'
     ? t('What should change?')
     : job ? t('Coach is thinking…') : t('Message the Coach…')
 
   return <div className="narrow chat">
     <div className="chat-hdr">
-      <button className="iconbtn" onClick={() => nav('/plan')} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
+      {/* Back where the chat was opened from (Home, a workout, Plan); Plan when it was opened directly. */}
+      <button className="iconbtn" onClick={() => ((window.history.state?.idx || 0) > 0 ? nav(-1) : nav('/plan'))} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
       <div className="chat-av"><Icon name="sparkles" /></div>
       <div className="grow">
         <h1>{t('Coach')}</h1>
@@ -203,7 +218,7 @@ export default function CoachChat() {
 
       {job && <Typing S={S} kind={job.kind} coachLocal={coachLocal} config={config} />}
 
-      {pending && !job && (pending.kind === 'create'
+      {pending && !job && pending.kind !== 'ask' && (pending.kind === 'create'
         ? <PlanCard p={pending} S={S} update={update} toast={toast} nav={nav} refresh={refresh} />
         : pending.kind === 'debrief'
           ? <DebriefCard p={pending} S={S} update={update} toast={toast} refresh={refresh} />
@@ -283,7 +298,7 @@ function Typing({ S, kind, coachLocal, config }) {
     // local model rather than something wrong; the next line already warns it takes longer.
     eta = local ? '' : t('This usually takes a minute or two.')
   }
-  const doing = kind === 'create' ? t('Building your plan…') : kind === 'debrief' ? t('Looking at that session…') : t('Reading your training…')
+  const doing = kind === 'create' ? t('Building your plan…') : kind === 'debrief' ? t('Looking at that session…') : kind === 'ask' ? t('Thinking about your question…') : t('Reading your training…')
   return <div className="msg coach">
     <div className="bub typing"><i /><i /><i /></div>
     <div className="typing-eta">

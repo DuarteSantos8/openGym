@@ -96,6 +96,7 @@ export const localRefine = async (S, text) => {
   return start(S, 'create', { refine: String(text || '').slice(0, 1000), previous: pendingCreate?.bundle || null, iteration: (pendingCreate?.iteration || 1) + 1 })
 }
 export const localDebrief = (S, workoutId) => start(S, 'debrief', { workoutId: workoutId || null })
+export const localAsk = (S, text, today) => start(S, 'ask', { note: String(text || '').slice(0, 1000), today: today || null })
 export async function localResolve() { await saveCoachDevice({ pending: null }); return { ok: true } }
 export async function localForget() { job = null; lastError = null; await saveCoachDevice({ pending: null, daily: null }); return { ok: true } }
 
@@ -142,7 +143,7 @@ async function start(S, kind, opts) {
 async function run(S, kind, opts, d, adapter) {
   const key = await getApiKey()
   const payload = payloadLib.build(S, {
-    handle: await handle(), kind, intake: opts.intake, note: opts.note, refine: opts.refine, previous: opts.previous, workoutId: opts.workoutId,
+    handle: await handle(), kind, intake: opts.intake, note: opts.note, refine: opts.refine, previous: opts.previous, workoutId: opts.workoutId, today: opts.today,
     lang: getLang()   // what the app shows, which a profile that never picked a language does not store (#303)
   })
   const attempt = await runPipeline({

@@ -2242,4 +2242,8 @@ export default {
   'Your sports watch, calling you back.': '스포츠 시계가 다시 부르고 있어요.',
   'Coach wants you back on the bar.': '코치가 바 앞으로 돌아오래요.',
   'Gentle, for headphones or a quiet room.': '이어폰이나 조용한 곳에 어울려요.',
+  'About this workout, or anything else': '이 운동에 대해, 또는 무엇이든',
+  'Ask the Coach': '코치에게 묻기',
+  'Thinking about your question…': '질문을 생각하고 있어요…',
+  'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': '이것은 데모라서 뒤에 AI 모델이 없습니다. 내 서버에서는 “{0}” 같은 질문에 계획, 최근 세션, 지금 하고 있는 운동을 바탕으로 답합니다.',
 }
