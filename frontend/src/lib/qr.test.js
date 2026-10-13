@@ -29,16 +29,19 @@ describe('normalizeFmt', () => {
 })
 
 describe('canRenderFmt', () => {
-  it('accepts only QR, in any spelling', () => {
+  it.each(['CODE_128', 'CODE_39', 'CODE_93', 'EAN_13', 'EAN_8', 'UPC_A', 'UPC_E', 'ITF', 'CODABAR'])('accepts supported barcode %s', fmt => {
+    expect(canRenderFmt(fmt)).toBe(true)
+  })
+  it('accepts QR, in any spelling', () => {
     expect(canRenderFmt('QR_CODE')).toBe(true)
     expect(canRenderFmt('QrCode')).toBe(true)
     expect(canRenderFmt('qr')).toBe(true)
   })
 
-  it('rejects 1D and other 2D symbologies we cannot faithfully redraw', () => {
+  it('rejects unsupported 2D symbologies', () => {
     // These are readable by the scanner but lean-qr can't reproduce them, so a card in one of
     // these formats must never be stored — it would display as the wrong bars at the turnstile.
-    for (const fmt of ['EAN_13', 'EAN_8', 'CODE_128', 'CODE_39', 'ITF', 'UPC_A', 'PDF_417', 'AZTEC', 'DATA_MATRIX']) {
+    for (const fmt of ['PDF_417', 'AZTEC', 'DATA_MATRIX']) {
       expect(canRenderFmt(fmt)).toBe(false)
     }
   })

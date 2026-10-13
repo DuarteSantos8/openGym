@@ -2242,4 +2242,9 @@ export default {
   'Your sports watch, calling you back.': '你的运动手表在叫你回来。',
   'Coach wants you back on the bar.': '教练等你回到杠铃前。',
   'Gentle, for headphones or a quiet room.': '轻柔，适合耳机或安静的房间。',
+  // Membership barcodes
+  "Barcode": "条形码",
+  "This barcode format is not supported yet": "暂不支持此条形码格式",
+  "No QR code or barcode found in that image": "在此图片中未找到二维码或条形码",
+  "Point the camera at the QR code or barcode": "将相机对准二维码或条形码",
 }

@@ -2297,4 +2297,9 @@ export default {
   'Your sports watch, calling you back.': 'ساعتك الرياضية تناديك للعودة.',
   'Coach wants you back on the bar.': 'المدرب يريدك أن تعود إلى البار.',
   'Gentle, for headphones or a quiet room.': 'هادئ، للسماعات أو لغرفة هادئة.',
+  // Membership barcodes
+  "Barcode": "رمز شريطي",
+  "This barcode format is not supported yet": "تنسيق الرمز الشريطي هذا غير مدعوم بعد",
+  "No QR code or barcode found in that image": "لم يتم العثور على رمز QR أو رمز شريطي في هذه الصورة",
+  "Point the camera at the QR code or barcode": "وجّه الكاميرا نحو رمز QR أو الرمز الشريطي",
 }

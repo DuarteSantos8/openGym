@@ -2239,4 +2239,9 @@ export default {
   'Your sports watch, calling you back.': 'Ваш спортивний годинник кличе вас назад.',
   'Coach wants you back on the bar.': 'Тренер чекає вас назад біля штанги.',
   'Gentle, for headphones or a quiet room.': 'Тихий, для навушників або спокійної кімнати.',
+  // Membership barcodes
+  "Barcode": "Штрихкод",
+  "This barcode format is not supported yet": "Цей формат штрихкоду поки не підтримується",
+  "No QR code or barcode found in that image": "На цьому зображенні не знайдено QR-коду чи штрихкоду",
+  "Point the camera at the QR code or barcode": "Наведи камеру на QR-код або штрихкод",
 }

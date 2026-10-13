@@ -3,14 +3,8 @@
 // it ourselves: draw the source — an uploaded photo or a live <video> frame — onto an offscreen
 // canvas and decode the pixels.
 //
-// Two decoders, tried in order:
-//   1. BarcodeDetector — the browser's own (Chrome/Edge on Android, Samsung Internet). Native
-//      speed and quality when it exists; asked for QR only.
-//   2. jsQR (Apache-2.0, see NOTICE.md) — pure JS, works everywhere including iOS Safari, which
-//      has no BarcodeDetector. Loaded with a dynamic import so it only ships when someone scans.
-//
-// decodeImageData is the pure core (pixels in, string out) and is what the unit test exercises;
-// decodeSource wraps it with the canvas plumbing the browser paths need.
+// Native BarcodeDetector where available, jsQR for QR codes, and ZXing for 1D
+// barcodes on Safari. All decoding stays on the device.
 import { normalizeFmt } from './qr.js'
 
 let _jsqr = null
@@ -23,7 +17,7 @@ let _detector = null
 function nativeDetector() {
   if (_detector !== null) return _detector
   try {
-    _detector = (typeof BarcodeDetector === 'function') ? new BarcodeDetector({ formats: ['qr_code'] }) : false
+    _detector = (typeof BarcodeDetector === 'function') ? new BarcodeDetector() : false
   } catch (e) { _detector = false }
   return _detector
 }
@@ -34,7 +28,29 @@ export async function decodeImageData(img) {
   if (!img || !img.data || !img.width || !img.height) return null
   const jsQR = await loadJsQr()
   const hit = jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' })
-  return hit && hit.data ? { value: hit.data, fmt: 'qrcode' } : null
+  if (hit && hit.data) return { value: hit.data, fmt: 'qrcode' }
+  // Safari lacks BarcodeDetector: decode 1D codes locally with ZXing.
+  const { MultiFormatReader, BarcodeFormat, DecodeHintType, RGBLuminanceSource,
+    BinaryBitmap, HybridBinarizer } = await import('@zxing/library')
+  const pixels = new Int32Array(img.width * img.height)
+  for (let i = 0; i < pixels.length; i++) {
+    const p = i * 4
+    pixels[i] = (img.data[p] << 16) | (img.data[p + 1] << 8) | img.data[p + 2]
+  }
+  const reader = new MultiFormatReader()
+  const hints = new Map()
+  hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.CODE_128, BarcodeFormat.CODE_39,
+    BarcodeFormat.CODE_93, BarcodeFormat.EAN_13, BarcodeFormat.EAN_8,
+    BarcodeFormat.UPC_A, BarcodeFormat.UPC_E, BarcodeFormat.ITF, BarcodeFormat.CODABAR])
+  hints.set(DecodeHintType.TRY_HARDER, true)
+  try {
+    const bitmap = new BinaryBitmap(new HybridBinarizer(new RGBLuminanceSource(pixels, img.width, img.height)))
+    const result = reader.decode(bitmap, hints)
+    return { value: result.getText(), fmt: normalizeFmt(BarcodeFormat[result.getBarcodeFormat()]) }
+  } catch (e) {
+    if (['NotFoundException', 'ChecksumException', 'FormatException'].includes(e?.constructor?.name)) return null
+    throw e
+  } finally { reader.reset() }
 }
 
 // Decode from anything drawImage accepts: <video>, <img>, ImageBitmap, canvas. The source is

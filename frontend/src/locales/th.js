@@ -2253,4 +2253,9 @@ export default {
   'Your sports watch, calling you back.': 'นาฬิกาสปอร์ตเรียกคุณกลับมาแล้ว',
   'Coach wants you back on the bar.': 'โค้ชอยากให้คุณกลับมาที่บาร์',
   'Gentle, for headphones or a quiet room.': 'เบา ๆ สำหรับหูฟังหรือห้องที่เงียบ',
+  // Membership barcodes
+  "Barcode": "บาร์โค้ด",
+  "This barcode format is not supported yet": "ยังไม่รองรับรูปแบบบาร์โค้ดนี้",
+  "No QR code or barcode found in that image": "ไม่พบคิวอาร์โค้ดหรือบาร์โค้ดในภาพนี้",
+  "Point the camera at the QR code or barcode": "เล็งกล้องไปที่คิวอาร์โค้ดหรือบาร์โค้ด",
 }
