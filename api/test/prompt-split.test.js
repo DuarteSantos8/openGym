@@ -5,6 +5,7 @@ import { SCHEMAS } from '../coach/core/schemas.js';
 import { build, FULL_DETAIL_SESSIONS } from '../coach/core/payload.js';
 import { chatCompletionsSpec } from '../coach/core/adapters/openai.js';
 import { validatePlan } from '../coach/core/validate.js';
+import { runPipeline } from '../coach/core/pipeline.js';
 
 const S = (workouts = []) => ({
   lang: 'en', unit: 'kg', routines: [{ id: 'r1', name: 'A', ex: [{ id: '0001', sets: 3, reps: 8 }] }],
@@ -73,6 +74,83 @@ test('the create schema caps the two arrays the validator caps, so a repeating m
   // otherwise runs to the output limit first and the answer arrives truncated and unparseable.
   assert.equal(SCHEMAS.create.properties.routines.maxItems, 7);
   assert.equal(SCHEMAS.create.properties.routines.items.properties.ex.maxItems, 20);
+});
+
+// Model a decoder that can emit only declared object properties, as opposed to a server
+// that merely requests JSON. Keep the candidate synthetic and let the real pipeline judge it.
+function closedDecode(schema, value) {
+  if (schema.type === 'object') {
+    return Object.fromEntries(Object.entries(value).filter(([key]) => schema.properties?.[key])
+      .map(([key, item]) => [key, closedDecode(schema.properties[key], item)]));
+  }
+  if (schema.type === 'array') {
+    if (value.length < (schema.minItems || 0)) throw new Error('array is below minItems');
+    return value.map(item => closedDecode(schema.items, item));
+  }
+  return value;
+}
+
+const createdPlan = () => ({
+  coach_contract: 1,
+  name: 'Synthetic plan',
+  week: { 1: 'r1', 4: 'r1' },
+  routines: [{ id: 'r1', name: 'A', ex: [{ id: '0001', sets: 3, reps: 8 }] }]
+});
+const createPayload = () => ({
+  coach_contract: 1, meta: { lang: 'en', unit: 'kg' },
+  coachProfile: { daysPerWeek: 2, equipment: ['dumbbell'] },
+  plan: { routines: [], week: {} }, library: [{ id: '0001' }]
+});
+
+test('a closed decoder can schedule the requested days instead of emitting an empty week', async () => {
+  const run = async legacyWeek => {
+    let calls = 0;
+    const adapter = {
+      spawns: false,
+      invoke: async ({ schema }) => {
+        calls++;
+        const active = legacyWeek
+          ? { ...schema, properties: { ...schema.properties, week: { type: 'object' } } }
+          : schema;
+        return { code: 0, text: JSON.stringify(closedDecode(active, createdPlan())) };
+      }
+    };
+    return { result: await runPipeline({ adapter, cfg: {}, kind: 'create', payload: createPayload() }), calls };
+  };
+  const before = await run(true);
+  assert.equal(before.calls, 2, 'the repair round cannot escape an object with no declared keys');
+  assert.equal(before.result.errorClass, 'unusable');
+  assert.deepEqual(before.result.errors, ['the week schedules 0 days but 2 were asked for']);
+
+  const after = await run(false);
+  assert.equal(after.calls, 1);
+  assert.equal(after.result.ok, true);
+  assert.deepEqual(after.result.result.bundle.week, { 1: 'r1', 4: 'r1' });
+  const allDays = { ...createdPlan(), week: Object.fromEntries(Array.from({ length: 7 }, (_, d) => [d, 'r1'])) };
+  assert.deepEqual(closedDecode(SCHEMAS.create, allDays).week, allDays.week);
+});
+
+test('a constrained plan cannot emit empty routines or an empty exercise list', () => {
+  assert.throws(() => closedDecode(SCHEMAS.create, { ...createdPlan(), routines: [] }), /minItems/);
+  const emptyExercises = { ...createdPlan(), routines: [{ id: 'r1', name: 'A', ex: [] }] };
+  assert.throws(() => closedDecode(SCHEMAS.create, emptyExercises), /minItems/);
+  assert.deepEqual(closedDecode(SCHEMAS.create, createdPlan()), createdPlan());
+});
+
+test('the plan pipeline still rejects semantic errors when a provider ignores its schema', async () => {
+  const cases = [
+    [{ ...createdPlan(), routines: [{ id: 'r1', name: 'A', ex: [{ id: 'not-a-library-id', sets: 3 }] }] }, /not in the exercise library/],
+    [{ ...createdPlan(), routines: [{ id: 'r1', name: 'A', ex: [{ id: '0009', sets: 3 }] }] }, /needs equipment/],
+    [{ ...createdPlan(), week: { 1: 'r1', 7: 'r1' } }, /not a weekday number/],
+    [{ ...createdPlan(), week: { 1: 'r1', 3: 'r1', 4: 'r1' } }, /3 days but 2 were asked for/],
+    [{ ...createdPlan(), week: { 1: 'missing', 4: 'r1' } }, /not one of the routines/]
+  ];
+  for (const [answer, expected] of cases) {
+    const adapter = { spawns: false, invoke: async () => ({ code: 0, text: JSON.stringify(answer) }) };
+    const result = await runPipeline({ adapter, cfg: {}, kind: 'create', payload: createPayload() });
+    assert.equal(result.errorClass, 'unusable');
+    assert.match(result.errors.join('; '), expected);
+  }
 });
 
 test('older sessions in a review window are compacted, the recent ones keep full sets', () => {
