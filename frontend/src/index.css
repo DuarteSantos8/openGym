@@ -653,6 +653,8 @@ body.chips-dragging *{cursor:inherit}
 /* Health area (views/Health.jsx): a metric per card, two to a row; a card and a measurement open on tap. */
 .health-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .health-grid .card{margin:0}
+/* On Home the tiles sit inside a card of their own, so they take the inner surface to stand apart. */
+.card .health-grid .card{background:var(--surface-2)}
 .health-card,button.measure-history{display:block;width:100%;text-align:start;color:inherit;font:inherit;border:0;cursor:pointer;min-width:0}
 .health-card .l{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--label-2);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .health-card .v{font-size:22px;font-weight:600;letter-spacing:-.02em;margin:6px 0 2px;line-height:1.15}

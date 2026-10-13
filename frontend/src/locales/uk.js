@@ -2343,4 +2343,9 @@ export default {
   'Your key, shown only now': 'Ваш ключ, показаний лише зараз',
   'export.zip from the Health app: your profile → Export All Health Data': 'export.zip із застосунку «Здоров’я»: ваш профіль → Експортувати всі дані',
   '{0} to {1}': 'З {0} по {1}',
+  'Choose the health readings shown on Home.': 'Виберіть показники здоров’я для головного екрана.',
+  'Choose up to {0} readings for Home, in the order you want them. A widget shows once it has a reading.': 'Виберіть до {0} показників для головного екрана в потрібному порядку. Віджет з’явиться, щойно в нього буде значення.',
+  'Health widgets': 'Віджети здоров’я',
+  'Edit Home': 'Змінити головний екран',
+  'The week and today’s workout stay on top. Choose the cards below them and their order.': 'Тиждень і сьогоднішнє тренування залишаються вгорі. Виберіть картки під ними та їхній порядок.',
 }

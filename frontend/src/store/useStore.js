@@ -200,6 +200,12 @@ export const DEF = {
   // entries, Stats, imports and the separate pre-workout weigh-in flow keep working.
   // Defaults on; an older profile without the key reads as on (`!== false`).
   showWeightCard: true,
+  // The health widgets on Home (lib/health/widgets.js): which readings, in which order. null is
+  // the default set, an empty list none.
+  homeWidgets: null,
+  // Home's cards below the week (lib/home-layout.js, the pencil on Home): their order (null is the
+  // default) and the two switches that had none before; check-in and body weight keep their own.
+  homeOrder: null, showHealthCard: true, showStreakCard: true,
   // Whether Start opens the quick weigh-in first (sheets.jsx startFlow, issue #137). Off starts
   // the session straight away; weight can still be logged from Home/Stats. On here, so an
   // older profile without the key reads as on (`!== false`) and keeps the step it had; a profile

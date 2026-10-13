@@ -2346,4 +2346,9 @@ export default {
   'Your key, shown only now': 'Anahtarın, yalnızca şimdi gösteriliyor',
   'export.zip from the Health app: your profile → Export All Health Data': 'Sağlık uygulamasından export.zip: profilin → Tüm Sağlık Verilerini Dışa Aktar',
   '{0} to {1}': '{0} – {1}',
+  'Choose the health readings shown on Home.': 'Ana ekranda gösterilecek sağlık verilerini seç.',
+  'Choose up to {0} readings for Home, in the order you want them. A widget shows once it has a reading.': 'Ana ekran için istediğin sırayla en fazla {0} veri seç. Bir widget, değeri olduğunda görünür.',
+  'Health widgets': 'Sağlık widget’ları',
+  'Edit Home': 'Ana ekranı düzenle',
+  'The week and today’s workout stay on top. Choose the cards below them and their order.': 'Hafta ve bugünün antrenmanı en üstte kalır. Altlarındaki kartları ve sıralarını seç.',
 }

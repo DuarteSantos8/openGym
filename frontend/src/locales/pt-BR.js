@@ -1507,6 +1507,11 @@ export const PT_BR_OVERRIDES = {
   'Your key, shown only now': 'Sua chave, mostrada só agora',
   'export.zip from the Health app: your profile → Export All Health Data': 'export.zip do app Saúde: seu perfil → Exportar Todos os Dados de Saúde',
   '{0} to {1}': 'De {0} a {1}',
+  'Choose the health readings shown on Home.': 'Escolha os dados de saúde mostrados no Início.',
+  'Choose up to {0} readings for Home, in the order you want them. A widget shows once it has a reading.': 'Escolha até {0} dados para o Início, na ordem que quiser. Um widget aparece assim que tem um valor.',
+  'Health widgets': 'Widgets de saúde',
+  'Edit Home': 'Editar Início',
+  'The week and today’s workout stay on top. Choose the cards below them and their order.': 'A semana e o treino de hoje ficam no topo. Escolha os cartões abaixo e a ordem deles.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

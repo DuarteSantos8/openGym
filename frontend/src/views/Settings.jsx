@@ -4,6 +4,8 @@ import { useStore, DEF, hasData } from '../store/useStore.js'
 import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange } from '../lib/health-sync.js'
 import HealthSources from '../components/HealthSources.jsx'
 import AppleHealthWeb from '../components/AppleHealthWeb.jsx'
+import { widgetsSheet } from '../components/HealthWidgets.jsx'
+import { widgetsOf } from '../lib/health/widgets.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { formulaOf, FORMULA_NAMES } from '../lib/onerm.js'
@@ -764,6 +766,9 @@ export default function Settings({ page = null, find = null, via = null }) {
           subtitle={t('Show the body weight card on Home.')}>
           <Switch checked={S.showWeightCard !== false} onChange={v => update(s => { s.showWeightCard = v })} />
         </Row>
+        {/* The health readings on Home (components/HealthWidgets.jsx), chosen and ordered here. */}
+        <Row icon="heart" iconTint="var(--red)" title={t('Health widgets')}
+          subtitle={t('Choose the health readings shown on Home.')} value={String(widgetsOf(S).length)} accessory="chevron" onClick={widgetsSheet} />
         {/* The bar at the top that says the app is offline, kept local, or not synced (#369, #330).
             Here and not under Server & sync, which a phone kept local never shows. Switching it on
             also brings back the no-server line its × hid (#454). */}

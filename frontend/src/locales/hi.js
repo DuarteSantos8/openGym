@@ -2346,4 +2346,9 @@ export default {
   'Your key, shown only now': 'आपकी कुंजी, सिर्फ़ अभी दिखाई गई',
   'export.zip from the Health app: your profile → Export All Health Data': 'हेल्थ ऐप से export.zip: आपकी प्रोफ़ाइल → सारा हेल्थ डेटा एक्सपोर्ट करें',
   '{0} to {1}': '{0} से {1}',
+  'Choose the health readings shown on Home.': 'होम पर दिखने वाला स्वास्थ्य डेटा चुनें।',
+  'Choose up to {0} readings for Home, in the order you want them. A widget shows once it has a reading.': 'होम के लिए अपनी पसंद के क्रम में अधिकतम {0} रीडिंग चुनें। विजेट रीडिंग आने पर दिखता है।',
+  'Health widgets': 'स्वास्थ्य विजेट',
+  'Edit Home': 'होम संपादित करें',
+  'The week and today’s workout stay on top. Choose the cards below them and their order.': 'हफ़्ता और आज का वर्कआउट सबसे ऊपर रहते हैं। उनके नीचे के कार्ड और उनका क्रम चुनें।',
 }

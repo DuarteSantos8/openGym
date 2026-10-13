@@ -2346,4 +2346,9 @@ export default {
   'Your key, shown only now': 'Tu clave, mostrada solo ahora',
   'export.zip from the Health app: your profile → Export All Health Data': 'export.zip de la app Salud: tu perfil → Exportar todos los datos de salud',
   '{0} to {1}': 'Del {0} al {1}',
+  'Choose the health readings shown on Home.': 'Elige los datos de salud que aparecen en Inicio.',
+  'Choose up to {0} readings for Home, in the order you want them. A widget shows once it has a reading.': 'Elige hasta {0} datos para Inicio, en el orden que quieras. Un widget aparece en cuanto tiene un dato.',
+  'Health widgets': 'Widgets de salud',
+  'Edit Home': 'Editar Inicio',
+  'The week and today’s workout stay on top. Choose the cards below them and their order.': 'La semana y el entrenamiento de hoy se quedan arriba. Elige las tarjetas de debajo y su orden.',
 }

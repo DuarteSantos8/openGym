@@ -2357,4 +2357,9 @@ export default {
   'Your key, shown only now': 'คีย์ของคุณ แสดงเฉพาะตอนนี้',
   'export.zip from the Health app: your profile → Export All Health Data': 'export.zip จากแอปสุขภาพ: โปรไฟล์ → ส่งออกข้อมูลสุขภาพทั้งหมด',
   '{0} to {1}': '{0} ถึง {1}',
+  'Choose the health readings shown on Home.': 'เลือกข้อมูลสุขภาพที่จะแสดงในหน้าหลัก',
+  'Choose up to {0} readings for Home, in the order you want them. A widget shows once it has a reading.': 'เลือกข้อมูลได้สูงสุด {0} รายการสำหรับหน้าหลัก ตามลำดับที่ต้องการ วิดเจ็ตจะแสดงเมื่อมีค่าแล้ว',
+  'Health widgets': 'วิดเจ็ตสุขภาพ',
+  'Edit Home': 'แก้ไขหน้าหลัก',
+  'The week and today’s workout stay on top. Choose the cards below them and their order.': 'สัปดาห์และการออกกำลังกายวันนี้อยู่ด้านบนเสมอ เลือกการ์ดด้านล่างและลำดับของการ์ด',
 }

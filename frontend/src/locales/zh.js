@@ -2346,4 +2346,9 @@ export default {
   'Your key, shown only now': '你的密钥，仅此一次显示',
   'export.zip from the Health app: your profile → Export All Health Data': '“健康”App 的 export.zip：个人资料 → 导出所有健康数据',
   '{0} to {1}': '{0} 至 {1}',
+  'Choose the health readings shown on Home.': '选择在首页显示的健康数据。',
+  'Choose up to {0} readings for Home, in the order you want them. A widget shows once it has a reading.': '为首页最多选择 {0} 项数据，并按你想要的顺序排列。小组件有数据后才会显示。',
+  'Health widgets': '健康小组件',
+  'Edit Home': '编辑首页',
+  'The week and today’s workout stay on top. Choose the cards below them and their order.': '本周和今天的训练始终在最上方。选择下方显示的卡片及其顺序。',
 }

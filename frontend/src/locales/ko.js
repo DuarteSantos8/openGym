@@ -2346,4 +2346,9 @@ export default {
   'Your key, shown only now': '내 키, 지금만 표시됨',
   'export.zip from the Health app: your profile → Export All Health Data': '건강 앱의 export.zip: 프로필 → 모든 건강 데이터 내보내기',
   '{0} to {1}': '{0}~{1}',
+  'Choose the health readings shown on Home.': '홈에 표시할 건강 데이터를 선택하세요.',
+  'Choose up to {0} readings for Home, in the order you want them. A widget shows once it has a reading.': '홈에 표시할 데이터를 최대 {0}개까지 원하는 순서로 고르세요. 위젯은 기록이 생기면 나타납니다.',
+  'Health widgets': '건강 위젯',
+  'Edit Home': '홈 편집',
+  'The week and today’s workout stay on top. Choose the cards below them and their order.': '이번 주와 오늘의 운동은 맨 위에 그대로 있습니다. 그 아래 카드와 순서를 고르세요.',
 }

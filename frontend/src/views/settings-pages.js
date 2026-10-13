@@ -110,6 +110,7 @@ export const SEARCH = [
   { page: 'look', title: 'Exercise drawings', icon: 'figureStrength', tint: 'var(--teal)', kw: 'figure male female woman man picture', opts: ['Male', 'Female'] },
   { page: 'look', title: 'Gym check-in', icon: 'qr', tint: 'var(--blue)', kw: 'qr code membership card check in barcode' },
   { page: 'look', title: 'Body weight', icon: 'scale', tint: 'var(--green)', kw: 'weight card home' },
+  { page: 'look', title: 'Health widgets', icon: 'heart', tint: 'var(--red)', kw: 'health widgets home steps sleep heart rate body fat dashboard' },
   { page: 'look', title: 'Show connection status', icon: 'cloud', tint: 'var(--blue)', kw: 'sync offline banner bar connection', when: c => !c.demo },
   // Data & backup
   { page: 'health', title: 'Open Health', icon: 'heart', tint: 'var(--red)', kw: 'health body composition bia scale fat muscle water steps heart rate sleep apple health healthkit' },

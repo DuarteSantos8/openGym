@@ -2349,4 +2349,9 @@ export default {
   'Your key, shown only now': 'A kulcsod, csak most látható',
   'export.zip from the Health app: your profile → Export All Health Data': 'export.zip az Egészség appból: profilod → Összes egészségügyi adat exportálása',
   '{0} to {1}': '{0} – {1}',
+  'Choose the health readings shown on Home.': 'Válaszd ki a kezdőképernyőn látható egészségadatokat.',
+  'Choose up to {0} readings for Home, in the order you want them. A widget shows once it has a reading.': 'Válassz legfeljebb {0} adatot a kezdőképernyőre, tetszőleges sorrendben. Egy widget akkor jelenik meg, amikor már van értéke.',
+  'Health widgets': 'Egészség-widgetek',
+  'Edit Home': 'Kezdőképernyő szerkesztése',
+  'The week and today’s workout stay on top. Choose the cards below them and their order.': 'A hét és a mai edzés felül marad. Válaszd ki az alattuk lévő kártyákat és a sorrendjüket.',
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, streakWeeks, lastBW, setsDoneActive } from '../lib/history.js'
@@ -15,6 +15,9 @@ import { Button } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { dayNoteOf } from '../lib/day-notes.js'
+import HealthWidgets from '../components/HealthWidgets.jsx'
+import { homeEditorSheet } from '../components/HomeEditor.jsx'
+import { homeOrderOf, cardShown } from '../lib/home-layout.js'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -100,10 +103,85 @@ export default function Home() {
   // already in progress wins, as on the today row — starting another would overwrite it.
   const onQueueStart = id => { if (S.active) nav('/workout'); else startFlow([id]) }
 
+  // The cards below the week (lib/home-layout.js): each one's element, placed by the order the
+  // pencil sets. Whether it shows is cardShown's call, so the conditions are not repeated here.
+  const cards = {
+    // Jump to the gym check-in cards (QR membership codes): a quick tap on arrival at the gym.
+    checkin: (
+      <div className="card tappable" style={{ cursor: 'pointer' }} {...tappable(() => nav('/checkin'))}>
+        <div className="row between">
+          <div className="row" style={{ gap: 9 }}>
+            <span className="lrow-i" style={{ background: 'var(--blue)' }}><Icon name="qr" /></span>
+            <div>
+              <div className="lbl2">{t('At the gym')}</div>
+              <div className="ttl">{t('Check in')}</div>
+            </div>
+          </div>
+          <Icon name="chevronRight" className="chev" />
+        </div>
+      </div>
+    ),
+    weight: (
+      <div className="card">
+        <div className="row between bw-head" style={{ marginBottom: 6 }}>
+          <h2 style={{ margin: 0 }}>{t('Body weight')}</h2>
+          <div className="row" style={{ gap: 8 }}>
+            <Button size="sm" icon="target" style={S.targetW ? { color: 'var(--yellow)' } : undefined} onClick={goalSheet}>{S.targetW ? fmtNum(S.targetW) : t('Goal')}</Button>
+            <Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>
+          </div>
+        </div>
+        {bw ? <>
+          <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
+            <div className="big">{fmtNum(bw.w)} <span className="muted" style={{ fontSize: '1rem' }}>{S.unit}</span></div>
+            {/* only when it actually moved — an unchanged weight used to read as "− 0" */}
+            {!!delta && (
+              <span className="small row" style={{ gap: 2, fontWeight: 500, color: bwDeltaColor(delta, bw.w) }}>
+                <Icon name={delta > 0 ? 'arrowUp' : 'arrowDown'} style={{ fontSize: 12 }} />
+                {fmtNum(Math.abs(delta))}
+              </span>
+            )}
+            <span className="dim small" style={{ marginInlineStart: 'auto' }}>{fmtDate(bw.d, true)}</span>
+          </div>
+          {S.targetW && (
+            <div className="small row" style={{ color: 'var(--yellow)', marginTop: 4, gap: 5 }}>
+              <Icon name="target" style={{ fontSize: 13 }} />
+              <span>{t('Goal')} {fmtNum(S.targetW)} {S.unit} · {Math.abs(S.targetW - bw.w) < 0.05 ? t('reached!') : t(S.targetW > bw.w ? '{0} to gain' : '{0} to lose', fmtNum(Math.abs(S.targetW - bw.w)) + ' ' + S.unit)}</span>
+            </div>
+          )}
+          <div className="chart" style={{ marginTop: 8 }}><LineChart points={bwPoints} h={130} unit={S.unit} goal={S.targetW} /></div>
+          {/* every weigh-in, week by week with its average (Discord 'Weight') */}
+          <div className="row" style={{ justifyContent: 'flex-end', marginTop: 4 }}>
+            <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={weighInsSheet}>{t('All weigh-ins')}</Button>
+          </div>
+        </> : <div className="muted small">{S.weighIn === false
+          ? t('No weigh-ins yet. Log your weight to start the curve.')
+          : t("No weigh-ins yet. Log your weight to start the curve (we also ask before every workout).")}</div>}
+      </div>
+    ),
+    health: <HealthWidgets />,
+    streak: (
+      <div className="card tappable" style={{ cursor: 'pointer' }} {...tappable(() => calendarSheet())}>
+        <div className="row between">
+          <div>
+            <div className="row" style={{ gap: 7, fontSize: 22, fontWeight: 600, letterSpacing: '-.021em' }}>
+              <Icon name="flame" style={{ color: 'var(--orange)' }} />
+              {t('{0} week streak', streakWeeks(S))}
+            </div>
+            <div className="muted small" style={{ marginTop: 2 }}>{doneThisWeek}{plannedPerWeek ? ' / ' + plannedPerWeek : ''} {t('this week')} · {tn('{0} workout total', '{0} workouts total', S.workouts.length)}</div>
+          </div>
+          <Icon name="calendar" className="chev" style={{ fontSize: 20 }} />
+        </div>
+      </div>
+    ),
+  }
+
   return <div className="narrow">
     <div className="hdr">
       <div><h1>{user ? t('Hi {0}', user.name) : 'openGym'}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
-      <button className="iconbtn" onClick={() => nav('/settings')} aria-label={trouble ? t('Settings') + ', ' + t('Connection problem') : t('Settings')}><Icon name="gear" />{trouble && <span className="tab-dot" aria-hidden="true" />}</button>
+      <div className="row" style={{ gap: 4, flex: 'none' }}>
+        <button className="iconbtn" onClick={homeEditorSheet} aria-label={t('Edit Home')}><Icon name="pencil" /></button>
+        <button className="iconbtn" onClick={() => nav('/settings')} aria-label={trouble ? t('Settings') + ', ' + t('Connection problem') : t('Settings')}><Icon name="gear" />{trouble && <span className="tab-dot" aria-hidden="true" />}</button>
+      </div>
     </div>
 
     <div className="card">
@@ -158,23 +236,6 @@ export default function Home() {
       </div>}
     </div>
 
-    {/* Jump to the gym check-in cards (QR membership codes). Shown here as a quick tap on
-        arrival at the gym; folds away per user via the "Gym check-in" switch in Settings. */}
-    {S.checkIn !== false && (
-      <div className="card tappable" style={{ cursor: 'pointer' }} {...tappable(() => nav('/checkin'))}>
-        <div className="row between">
-          <div className="row" style={{ gap: 9 }}>
-            <span className="lrow-i" style={{ background: 'var(--blue)' }}><Icon name="qr" /></span>
-            <div>
-              <div className="lbl2">{t('At the gym')}</div>
-              <div className="ttl">{t('Check in')}</div>
-            </div>
-          </div>
-          <Icon name="chevronRight" className="chev" />
-        </div>
-      </div>
-    )}
-
     {!S.routines.length && !S.active && (
       <div className="card">
         <div className="row" style={{ gap: 10, marginBottom: 6 }}>
@@ -187,53 +248,7 @@ export default function Home() {
       </div>
     )}
 
-    {S.showWeightCard !== false && <div className="card">
-      <div className="row between bw-head" style={{ marginBottom: 6 }}>
-        <h2 style={{ margin: 0 }}>{t('Body weight')}</h2>
-        <div className="row" style={{ gap: 8 }}>
-          <Button size="sm" icon="target" style={S.targetW ? { color: 'var(--yellow)' } : undefined} onClick={goalSheet}>{S.targetW ? fmtNum(S.targetW) : t('Goal')}</Button>
-          <Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>
-        </div>
-      </div>
-      {bw ? <>
-        <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
-          <div className="big">{fmtNum(bw.w)} <span className="muted" style={{ fontSize: '1rem' }}>{S.unit}</span></div>
-          {/* only when it actually moved — an unchanged weight used to read as "− 0" */}
-          {!!delta && (
-            <span className="small row" style={{ gap: 2, fontWeight: 500, color: bwDeltaColor(delta, bw.w) }}>
-              <Icon name={delta > 0 ? 'arrowUp' : 'arrowDown'} style={{ fontSize: 12 }} />
-              {fmtNum(Math.abs(delta))}
-            </span>
-          )}
-          <span className="dim small" style={{ marginInlineStart: 'auto' }}>{fmtDate(bw.d, true)}</span>
-        </div>
-        {S.targetW && (
-          <div className="small row" style={{ color: 'var(--yellow)', marginTop: 4, gap: 5 }}>
-            <Icon name="target" style={{ fontSize: 13 }} />
-            <span>{t('Goal')} {fmtNum(S.targetW)} {S.unit} · {Math.abs(S.targetW - bw.w) < 0.05 ? t('reached!') : t(S.targetW > bw.w ? '{0} to gain' : '{0} to lose', fmtNum(Math.abs(S.targetW - bw.w)) + ' ' + S.unit)}</span>
-          </div>
-        )}
-        <div className="chart" style={{ marginTop: 8 }}><LineChart points={bwPoints} h={130} unit={S.unit} goal={S.targetW} /></div>
-        {/* every weigh-in, week by week with its average (Discord 'Weight') */}
-        <div className="row" style={{ justifyContent: 'flex-end', marginTop: 4 }}>
-          <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={weighInsSheet}>{t('All weigh-ins')}</Button>
-        </div>
-      </> : <div className="muted small">{S.weighIn === false
-        ? t('No weigh-ins yet. Log your weight to start the curve.')
-        : t("No weigh-ins yet. Log your weight to start the curve (we also ask before every workout).")}</div>}
-    </div>}
-
-    <div className="card tappable" style={{ cursor: 'pointer' }} {...tappable(() => calendarSheet())}>
-      <div className="row between">
-        <div>
-          <div className="row" style={{ gap: 7, fontSize: 22, fontWeight: 600, letterSpacing: '-.021em' }}>
-            <Icon name="flame" style={{ color: 'var(--orange)' }} />
-            {t('{0} week streak', streakWeeks(S))}
-          </div>
-          <div className="muted small" style={{ marginTop: 2 }}>{doneThisWeek}{plannedPerWeek ? ' / ' + plannedPerWeek : ''} {t('this week')} · {tn('{0} workout total', '{0} workouts total', S.workouts.length)}</div>
-        </div>
-        <Icon name="calendar" className="chev" style={{ fontSize: 20 }} />
-      </div>
-    </div>
+    {/* The cards below the week, in the order and with the switches of the pencil above (lib/home-layout.js). */}
+    {homeOrderOf(S).filter(id => cardShown(S, id)).map(id => <Fragment key={id}>{cards[id]}</Fragment>)}
   </div>
 }

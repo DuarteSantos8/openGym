@@ -2401,4 +2401,9 @@ export default {
   'Your key, shown only now': 'مفتاحك، يظهر الآن فقط',
   'export.zip from the Health app: your profile → Export All Health Data': 'ملف export.zip من تطبيق الصحة: ملفك الشخصي ← تصدير كل البيانات الصحية',
   '{0} to {1}': 'من {0} إلى {1}',
+  'Choose the health readings shown on Home.': 'اختر بيانات الصحة التي تظهر في الرئيسية.',
+  'Choose up to {0} readings for Home, in the order you want them. A widget shows once it has a reading.': 'اختر حتى {0} قراءات للرئيسية بالترتيب الذي تريده. تظهر الأداة بمجرد أن تكون لها قراءة.',
+  'Health widgets': 'أدوات الصحة',
+  'Edit Home': 'تعديل الرئيسية',
+  'The week and today’s workout stay on top. Choose the cards below them and their order.': 'يبقى الأسبوع وتمرين اليوم في الأعلى. اختر البطاقات التي تحتهما وترتيبها.',
 }
