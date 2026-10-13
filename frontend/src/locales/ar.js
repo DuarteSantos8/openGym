@@ -2297,4 +2297,8 @@ export default {
   'Your sports watch, calling you back.': 'ساعتك الرياضية تناديك للعودة.',
   'Coach wants you back on the bar.': 'المدرب يريدك أن تعود إلى البار.',
   'Gentle, for headphones or a quiet room.': 'هادئ، للسماعات أو لغرفة هادئة.',
+  'About this workout, or anything else': 'عن هذا التمرين، أو عن أي شيء آخر',
+  'Ask the Coach': 'اسأل المدرب',
+  'Thinking about your question…': 'أفكر في سؤالك…',
+  'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'هذا هو العرض التجريبي، لذا لا يوجد نموذج ذكاء اصطناعي خلفي. على خادمك الخاص أجيب عن أسئلة مثل «{0}» بالاعتماد على خطتك وجلساتك الأخيرة والتمرين الذي تقوم به الآن.',
 }

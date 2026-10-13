@@ -2565,6 +2565,45 @@ paths:
         '429': { $ref: '#/components/responses/CoachRefused' }
         '503': { $ref: '#/components/responses/CoachOff' }
 
+  /api/coach/ask:
+    post:
+      tags: [coach]
+      operationId: postCoachAsk
+      summary: Ask the Coach a question
+      description: |
+        Queues an `ask` job: a question from the chat, answered in plain text. It changes
+        nothing; the answer arrives as a pending proposal of kind `ask` with an `answer`
+        string, which the client writes into the chat and resolves. The running session,
+        which the server never holds, may ride along as `today`; the payload builder bounds
+        it like a logged workout.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  description: The question. Cut at the instance's message length.
+                today:
+                  type: object
+                  description: The session running on the device (`entries` with their sets), or absent.
+                lang:
+                  type: string
+                  pattern: '^[A-Za-z]{2,3}([-_][A-Za-z0-9]{2,8})?$'
+                  description: The language the app is showing, which the Coach answers in.
+      responses:
+        '202': { $ref: '#/components/responses/CoachJobQueued' }
+        '400':
+          description: No question in the body (`code` is `invalid`).
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/CoachRefused' }
+        '409': { $ref: '#/components/responses/CoachRefused' }
+        '429': { $ref: '#/components/responses/CoachRefused' }
+        '503': { $ref: '#/components/responses/CoachOff' }
+
   /api/coach/debrief:
     post:
       tags: [coach]

@@ -2239,4 +2239,8 @@ export default {
   'Your sports watch, calling you back.': 'Ваш спортивний годинник кличе вас назад.',
   'Coach wants you back on the bar.': 'Тренер чекає вас назад біля штанги.',
   'Gentle, for headphones or a quiet room.': 'Тихий, для навушників або спокійної кімнати.',
+  'About this workout, or anything else': 'Про це тренування або про будь-що інше',
+  'Ask the Coach': 'Запитати тренера',
+  'Thinking about your question…': 'Думаю над вашим запитанням…',
+  'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'Це демо, тож за мною немає моделі ШІ. На вашому власному сервері я відповідаю на запитання на кшталт «{0}», враховуючи ваш план, останні тренування і тренування, яке ви робите зараз.',
 }

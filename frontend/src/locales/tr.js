@@ -2242,4 +2242,8 @@ export default {
   'Your sports watch, calling you back.': 'Spor saatin seni geri çağırıyor.',
   'Coach wants you back on the bar.': 'Koç seni bara geri bekliyor.',
   'Gentle, for headphones or a quiet room.': 'Sakin, kulaklık ya da sessiz bir oda için.',
+  'About this workout, or anything else': 'Bu antrenman ya da başka herhangi bir şey hakkında',
+  'Ask the Coach': 'Koça sor',
+  'Thinking about your question…': 'Sorunu düşünüyorum…',
+  'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'Bu bir demo, yani arkamda bir yapay zekâ modeli yok. Kendi sunucunda “{0}” gibi sorulara planın, son antrenmanların ve şu anda yaptığın antrenmanla cevap veririm.',
 }
