@@ -1,0 +1,10 @@
+[Unit]
+Description=Check openGym for updates every 10 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=10min
+Unit=opengym-deploy.service
+
+[Install]
+WantedBy=timers.target

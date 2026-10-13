@@ -1,0 +1,55 @@
+name: opengym
+
+services:
+  media:
+    image: alpine/git
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        if [ -z "$$(ls -A /out/img 2>/dev/null)" ]; then
+          git clone --depth 1 https://github.com/hasaneyldrm/exercises-dataset /tmp/ds
+          cp /tmp/ds/images/*.jpg /out/img/
+          cp /tmp/ds/videos/*.gif /out/gif/
+        fi
+    volumes:
+      - ./media/img:/out/img
+      - ./media/gif:/out/gif
+
+  api:
+    image: ghcr.io/illya228666/opengym-api:${IMAGE_TAG}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PORT: "3000"
+      DATA_DIR: /data
+      TRUST_PROXY: "1"
+      NUTRITION_URL: http://nutrition:8080
+    volumes:
+      - ./data:/data
+      - ./coach-auth:/coach-auth
+
+  nutrition:
+    image: ghcr.io/illya228666/opengym-nutrition:${IMAGE_TAG}
+    restart: unless-stopped
+    environment:
+      OpenGym__ApiBaseUrl: http://api:3000
+      NO_PROXY: api,nutrition,localhost,127.0.0.1
+
+  web:
+    image: ghcr.io/illya228666/opengym-web:${IMAGE_TAG}
+    restart: unless-stopped
+    depends_on:
+      media:
+        condition: service_completed_successfully
+      api:
+        condition: service_started
+    ports:
+      - "8080:80"
+    environment:
+      NGINX_PORT: "80"
+      BACKEND: api
+      PORT: "3000"
+    volumes:
+      - ./media/img:/usr/share/nginx/html/img:ro
+      - ./media/gif:/usr/share/nginx/html/gif:ro

@@ -1,0 +1,256 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+
+exec 9>/run/opengym-deploy.lock
+flock -n 9 || { echo 'Another deployment is running. Skipping.'; exit 0; }
+cd /opt/opengym
+unset IMAGE_TAG COMPOSE_FILE COMPOSE_PROJECT_NAME
+MODE=${1:-}
+[[ $# -le 1 && ( -z $MODE || $MODE == --rollback || $MODE == --resume ) ]] || { echo 'Usage: opengym-deploy [--rollback|--resume]'; exit 2; }
+
+STATE=/var/lib/opengym-deploy
+PENDING=$STATE/pending
+API=https://api.github.com/repos/illya228666/openGym
+READY_TIMEOUT_SECONDS=120
+mkdir -p "$STATE"
+chmod 700 "$STATE"
+COMPOSE=(docker compose --project-name opengym --env-file .env -f compose.prod.yml)
+
+github_get() {
+    curl -fsSL --retry 2 --connect-timeout 5 --max-time 30 \
+        -H 'Accept: application/vnd.github+json' "$1"
+}
+
+set_tag() {
+    local tag=$1 file=${2:-.env}
+    [[ $tag =~ ^sha-[a-f0-9]{40}$ ]] || return 1
+    [[ $(grep -c '^IMAGE_TAG=' "$file") == 1 ]] || return 1
+    sed "s/^IMAGE_TAG=.*/IMAGE_TAG=$tag/" "$file" > "$file.new"
+    chmod --reference="$file" "$file.new"
+    mv -f "$file.new" "$file"
+}
+
+running_images_match() {
+    local api_id=$1 web_id=$2 nutrition_id=${3:-}
+    if [[ -n $nutrition_id ]]; then
+        [[ $(docker inspect -f '{{.Image}} {{.State.Running}}' opengym-nutrition-1 2>/dev/null) == "$nutrition_id true" ]] || return 1
+    fi
+    [[ $(docker inspect -f '{{.Image}} {{.State.Running}}' opengym-api-1 2>/dev/null) == "$api_id true" &&
+       $(docker inspect -f '{{.Image}} {{.State.Running}}' opengym-web-1 2>/dev/null) == "$web_id true" ]]
+}
+
+nutrition_ready() {
+    timeout -k 5 15 docker exec -i opengym-api-1 node --input-type=module - <<'JS' || return 1
+import assert from 'node:assert/strict'
+const health = await fetch('http://nutrition:8080/health', { signal: AbortSignal.timeout(3000) })
+assert.equal(health.status, 200)
+assert.equal((await health.json()).ok, true)
+const anonymous = await fetch('http://nutrition:8080/api/nutrition/hello', {
+  headers: { 'X-User-Name': 'ReadinessProbe', 'X-User-Id': 'admin' },
+  signal: AbortSignal.timeout(6000)
+})
+assert.equal(anonymous.status, 401, 'Nutrition must reject unverified identity')
+JS
+    [[ $(curl -sS --connect-timeout 3 --max-time 5 -o /dev/null -w '%{http_code}' \
+        http://127.0.0.1:8080/api/nutrition/hello) == 401 ]]
+}
+
+http_ready() {
+    timeout -k 5 25 python3 - <<'PY'
+import json
+from html.parser import HTMLParser
+from urllib.parse import urljoin, urlsplit
+from urllib.request import urlopen
+
+base = 'http://127.0.0.1:8080/'
+class Assets(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.paths = set()
+    def handle_starttag(self, tag, attributes):
+        a = dict(attributes)
+        if tag == 'script' and a.get('src'):
+            self.paths.add(a['src'])
+        if tag == 'link' and a.get('rel') in ('stylesheet', 'modulepreload', 'manifest', 'icon', 'apple-touch-icon') and a.get('href'):
+            self.paths.add(a['href'])
+
+try:
+    with urlopen(base + 'api/health', timeout=3) as r:
+        assert r.status == 200 and json.load(r).get('ok') is True, 'API not ready'
+    with urlopen(base, timeout=3) as r:
+        assert r.status == 200 and r.headers.get_content_type() == 'text/html', 'No HTML'
+        html = r.read(1024 * 1024).decode('utf-8')
+    assets = Assets()
+    assets.feed(html)
+    assert assets.paths, 'No frontend assets in HTML'
+    for path in sorted(assets.paths):
+        url = urljoin(base, path)
+        assert urlsplit(url).netloc == urlsplit(base).netloc, 'Non-local asset'
+        with urlopen(url, timeout=3) as r:
+            assert r.status == 200 and r.read(64), 'Empty asset: ' + path
+            kind = r.headers.get_content_type()
+            assert kind != 'text/html', 'HTML fallback instead of asset: ' + path
+            extension = urlsplit(url).path.rsplit('.', 1)[-1]
+            if extension == 'js':
+                assert kind in ('application/javascript', 'text/javascript'), 'Wrong JS type'
+            if extension == 'css':
+                assert kind == 'text/css', 'Wrong CSS type'
+except Exception as error:
+    print('Readiness: ' + str(error))
+    raise SystemExit(1)
+PY
+}
+
+wait_ready() {
+    local api_id=$1 web_id=$2 nutrition_id=${3:-} deadline=$((SECONDS + READY_TIMEOUT_SECONDS))
+    while (( SECONDS < deadline )); do
+        if running_images_match "$api_id" "$web_id" "$nutrition_id" && http_ready &&
+           { [[ -z $nutrition_id ]] || nutrition_ready; }; then
+            return 0
+        fi
+        sleep 2
+    done
+    echo 'Readiness deadline exceeded.'
+    return 1
+}
+
+finish_snapshot() {
+    local finished="$STATE/rollback-$(date -u +%Y%m%dT%H%M%SZ)-$"
+    # Preserve the last coherent release for manual rollback; rename commits the transaction.
+    mv -T "$PENDING" "$finished" || return 1
+    ln -sfn "$(basename "$finished")" "$STATE/previous.new" || return 1
+    mv -Tf "$STATE/previous.new" "$STATE/previous"
+}
+
+rollback() {
+    local api_id web_id nutrition_id services=(api web)
+    echo 'Restoring previous configuration and exact image IDs.'
+    api_id=$(jq -r '.services.api.image' "$PENDING/images.json") || return 1
+    web_id=$(jq -r '.services.web.image' "$PENDING/images.json") || return 1
+    nutrition_id=$(jq -r '.services.nutrition.image // empty' "$PENDING/images.json") || return 1
+    cp -p "$PENDING/compose" compose.prod.yml.new && mv -f compose.prod.yml.new compose.prod.yml || return 1
+    if [[ -n $nutrition_id ]]; then
+        services+=(nutrition)
+    elif docker inspect opengym-nutrition-1 >/dev/null 2>&1; then
+        # The pre-Nutrition release had no such container or persistent volume.
+        timeout -k 5 30 docker rm -f opengym-nutrition-1 || return 1
+    fi
+    cp -p "$PENDING/env" .env.new && mv -f .env.new .env || return 1
+    timeout -k 5 90 "${COMPOSE[@]}" -f "$PENDING/images.json" \
+        up -d --no-deps --pull never "${services[@]}" || return 1
+    wait_ready "$api_id" "$web_id" "$nutrition_id" || return 1
+    mv "$PENDING" "$STATE/recovered-$(date -u +%Y%m%dT%H%M%SZ)-$$" || return 1
+    echo 'Rollback verified.'
+}
+
+on_exit() {
+    local result=$?
+    trap - EXIT INT TERM
+    if [[ -d $PENDING ]]; then
+        (( result != 0 )) || result=1
+        # Remember the candidate before rollback, even if rollback itself fails.
+        if [[ -f $PENDING/target ]]; then
+            cat "$PENDING/target" >> "$STATE/failed-releases"
+        fi
+        if ! rollback; then
+            echo 'CRITICAL: rollback failed; pending snapshot retained for next run.' >&2
+        fi
+    fi
+    exit "$result"
+}
+trap on_exit EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+# A crash or SIGKILL leaves the snapshot; recover before consulting GitHub.
+if [[ -d $PENDING ]]; then
+    echo 'Recovering interrupted deployment.'
+    cat "$PENDING/target" >> "$STATE/failed-releases"
+    rollback || exit 1
+fi
+
+if [[ $MODE == --rollback ]]; then
+    [[ -d $STATE/previous && ! -d $PENDING ]] || { echo 'No previous release snapshot'; exit 1; }
+    touch "$STATE/hold"
+    cp -aL "$STATE/previous" "$PENDING"
+    cat "$PENDING/target" >> "$STATE/failed-releases"
+    rollback
+    echo 'Automatic deployments paused; use --resume after investigation.'
+    exit 0
+fi
+if [[ $MODE == --resume ]]; then
+    rm -f -- "$STATE/hold"
+fi
+if [[ -f $STATE/hold ]]; then
+    echo 'Automatic deployments paused after manual rollback.'
+    exit 0
+fi
+
+SHA=$(github_get "$API/branches/main" | jq -er '.commit.sha')
+[[ $SHA =~ ^[a-f0-9]{40}$ ]] || { echo 'Invalid main SHA'; exit 1; }
+NEW=sha-$SHA
+RUNS=$(github_get "$API/actions/runs?branch=main&event=push&per_page=30")
+if ! jq -e --arg sha "$SHA" '[.workflow_runs[] | select(
+    .path == ".github/workflows/ci.yml" and .head_sha == $sha and
+    .event == "push" and .status == "completed" and .conclusion == "success"
+)] | length > 0' <<< "$RUNS" >/dev/null; then
+    echo "Main $SHA has no successful CI yet. Skipping."
+    exit 0
+fi
+if [[ -f $STATE/failed-releases ]] && grep -Fxq "$NEW" "$STATE/failed-releases"; then
+    echo "Blocked failed release: $NEW (manual clearance required)."
+    exit 0
+fi
+
+# Pull failures are transient, not evidence that the release is broken.
+for service in api web nutrition; do
+    timeout -k 5 120 docker pull "ghcr.io/illya228666/opengym-$service:$NEW"
+    revision=$(docker image inspect -f '{{index .Config.Labels "org.opencontainers.image.revision"}}' \
+        "ghcr.io/illya228666/opengym-$service:$NEW")
+    [[ $revision == "$SHA" ]] || { echo "Wrong $service image revision"; exit 1; }
+done
+NEW_API=$(docker image inspect -f '{{.Id}}' "ghcr.io/illya228666/opengym-api:$NEW")
+NEW_NUTRITION=$(docker image inspect -f '{{.Id}}' "ghcr.io/illya228666/opengym-nutrition:$NEW")
+NEW_WEB=$(docker image inspect -f '{{.Id}}' "ghcr.io/illya228666/opengym-web:$NEW")
+if running_images_match "$NEW_API" "$NEW_WEB" "$NEW_NUTRITION"; then
+    wait_ready "$NEW_API" "$NEW_WEB" "$NEW_NUTRITION"
+    set_tag "$NEW"
+    echo "Already up to date and ready: $NEW"
+    exit 0
+fi
+
+OLD_API=$(docker inspect -f '{{.Image}}' opengym-api-1)
+OLD_WEB=$(docker inspect -f '{{.Image}}' opengym-web-1)
+OLD_SHA=$(docker image inspect -f '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$OLD_API")
+OLD_WEB_SHA=$(docker image inspect -f '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$OLD_WEB")
+[[ $OLD_SHA =~ ^[a-f0-9]{40}$ && $OLD_SHA == "$OLD_WEB_SHA" ]] || {
+    echo 'No coherent running release to roll back to; refusing update.'; exit 1;
+}
+OLD_NUTRITION=$(docker inspect -f '{{.Image}}' opengym-nutrition-1 2>/dev/null || true)
+if [[ -n $OLD_NUTRITION ]]; then
+    [[ $(docker image inspect -f '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$OLD_NUTRITION") == "$OLD_SHA" ]] || {
+        echo 'Nutrition does not match running release; refusing update.'; exit 1;
+    }
+fi
+wait_ready "$OLD_API" "$OLD_WEB" "$OLD_NUTRITION"
+echo "Deploying actual sha-$OLD_SHA -> $NEW"
+snapshot=$(mktemp -d "$STATE/snapshot.XXXXXX")
+cp -p .env "$snapshot/env"
+cp -p compose.prod.yml "$snapshot/compose"
+if [[ -z $OLD_NUTRITION && -f $STATE/legacy-compose ]]; then
+    cp -p "$STATE/legacy-compose" "$snapshot/compose"
+fi
+set_tag "sha-$OLD_SHA" "$snapshot/env"
+jq -n --arg api "$OLD_API" --arg web "$OLD_WEB" --arg nutrition "$OLD_NUTRITION" \
+    '{services:({api:{image:$api},web:{image:$web}} + (if $nutrition == "" then {} else {nutrition:{image:$nutrition}} end))}' > "$snapshot/images.json"
+printf '%s\n' "$NEW" > "$snapshot/target"
+mv "$snapshot" "$PENDING"
+set_tag "$NEW"
+# Restore the tracked three-service configuration after a pre-Nutrition rollback.
+cp -p "$STATE/release-compose" compose.prod.yml.new
+mv -f compose.prod.yml.new compose.prod.yml
+timeout -k 5 90 "${COMPOSE[@]}" up -d --no-deps --pull never api web nutrition
+wait_ready "$NEW_API" "$NEW_WEB" "$NEW_NUTRITION"
+finish_snapshot
+echo "Deployment successful and ready: $NEW"

@@ -1,0 +1,13 @@
+[Unit]
+Description=Deploy latest verified openGym release
+Wants=network-online.target
+After=network-online.target docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/opengym-deploy
+TimeoutStartSec=15min
+TimeoutStopSec=6min
+# Allow the shell to finish rollback on SIGTERM.
+KillMode=mixed

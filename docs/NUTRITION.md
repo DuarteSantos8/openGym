@@ -64,8 +64,9 @@ docker compose up -d api web nutrition
 
 The first prebuilt install/update needs a successful main publish of all three images.
 Until then, build from source. Rolling back uses the previous shared `IMAGE_TAG` and
-the same pull/up commands. No Proxmox connectivity or automatic production deployment
-is configured by this change.
+the same pull/up commands for a manual installation. The existing Proxmox installation
+uses the verified-SHA timer, readiness checks and exact-image rollback documented in
+[PROXMOX_CD.md](PROXMOX_CD.md); do not mix manual updates with its running timer.
 
 ## Native development
 
