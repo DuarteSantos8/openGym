@@ -211,6 +211,51 @@ test('compatible: a server that rejects JSON mode gets the same request once mor
   assert.ok(!('response_format' in f.calls[1].body));
 });
 
+// OpenRouter in front of Gemini, as it really answers a schema Gemini cannot serve: the
+// provider's words are only in metadata.raw (JSON in a string), the outer message is generic.
+const openRouterWrapped = providerMessage => ({
+  status: 400,
+  body: { error: { message: 'Provider returned error', code: 400, metadata: {
+    raw: JSON.stringify({ error: { code: 400, message: providerMessage, status: 'INVALID_ARGUMENT' } }),
+    provider_name: 'Google AI Studio'
+  } } }
+});
+
+test('compatible: a schema the provider cannot serve, wrapped by OpenRouter, is retried once in plain JSON mode', async () => {
+  const f = fakeFetch(n => n === 1
+    ? openRouterWrapped('The specified schema produces a constraint that has too many states for serving.')
+    : ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] }));
+  const schema = { type: 'object', properties: { coach_contract: { type: 'integer' } } };
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', schema, env: {}, model: 'google/gemini-2.5-flash-lite', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(f.calls.length, 2);
+  assert.equal(f.calls[0].body.response_format.type, 'json_schema');
+  assert.deepEqual(f.calls[1].body.response_format, { type: 'json_object' });
+});
+
+test('a provider error wrapped by OpenRouter reaches stderr in the provider’s own words', async () => {
+  const f = fakeFetch([openRouterWrapped('Request contains an invalid argument: temperature out of range.')]);
+  const r = await openai.invoke({ cfg: {}, prompt: 'P', env, fetch: f });
+  assert.equal(r.code, 1);
+  assert.equal(f.calls.length, 1, 'not a JSON-mode problem, so no second request');
+  assert.ok(r.stderr.includes('Provider returned error'), r.stderr);
+  assert.ok(r.stderr.includes('temperature out of range'), r.stderr);
+});
+
+test('a wrapped provider error that mentions tokens is still "provider", not "auth"', async () => {
+  const f = fakeFetch([openRouterWrapped('The input token count exceeds the maximum number of tokens allowed.')]);
+  const payload = { plan: { routines: [], week: {} } };
+  const cls = await attemptOnce({ adapter: openai, cfg: {}, kind: 'review', payload, invokeOpts: { env, fetch: f } }, null);
+  assert.equal(cls.errorClass, 'provider', cls.detail);
+  assert.ok(cls.detail.includes('token count'), cls.detail);
+});
+
+test('a wrapped provider error whose raw text is not JSON is passed through as it is', async () => {
+  const f = fakeFetch([{ status: 400, body: { error: { message: 'Provider returned error', metadata: { raw: 'upstream said no' } } } }]);
+  const r = await openai.invoke({ cfg: {}, prompt: 'P', env, fetch: f });
+  assert.ok(r.stderr.includes('upstream said no'), r.stderr);
+});
+
 test('a missing key is "missing", like an absent CLI — no request is made', async () => {
   const f = fakeFetch([]);
   const r = await anthropic.invoke({ cfg: {}, prompt: 'P', env: {}, fetch: f });

@@ -36,7 +36,22 @@ export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_token
     withoutJsonMode: body => (body.response_format && body.response_format.type === 'json_schema'
       ? { ...body, response_format: { type: 'json_object' } }
       : (() => { const { response_format: _rf, ...rest } = body; return rest; })()),
-    errorMessage: data => data && data.error && (typeof data.error === 'string' ? data.error : data.error.message),
+    errorMessage: data => {
+      const e = data && data.error;
+      if (!e || typeof e === 'string') return e || null;
+      // OpenRouter wraps the upstream provider's own error: its message is a generic "Provider
+      // returned error" and the provider's words are in metadata.raw, usually as JSON. Those words
+      // are what an owner needs to see, and what the JSON-mode fallback in http.js matches on.
+      const raw = e.metadata && e.metadata.raw;
+      let inner = null;
+      if (typeof raw === 'string' && raw) {
+        try {
+          const j = JSON.parse(raw);
+          inner = (j && j.error && (typeof j.error === 'string' ? j.error : j.error.message)) || null;
+        } catch { inner = raw; }
+      }
+      return inner && inner !== e.message ? `${e.message}: ${inner}` : e.message;
+    },
     readText: data => {
       const choice = (data.choices || [])[0];
       if (!choice) return { error: 'the answer had no choices' };
