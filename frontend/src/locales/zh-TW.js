@@ -1,4 +1,8 @@
 export default {
+  "Nutrition": "營養",
+  "Sign in to use Nutrition.": "登入以使用營養功能。",
+  "Nutrition is unavailable. Please try again.": "營養功能暫時無法使用，請再試一次。",
+  "Retry": "重試",
   'Confirm': '確認',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回以退出',

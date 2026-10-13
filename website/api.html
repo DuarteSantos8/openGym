@@ -210,6 +210,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <p class="side-label">On this page</p>
   <a class="side-link" href="#overview"><b>Overview</b><span>Auth model, sessions, conventions</span></a>
+  <a class="side-link" href="#nutrition"><b>Nutrition</b><span>ASP.NET Core greeting</span></a>
   <a class="side-link" href="#meta"><b>Meta</b><span>Health &amp; public config</span></a>
   <a class="side-link" href="#auth"><b>Auth</b><span>Passkeys &amp; sessions</span></a>
   <a class="side-link" href="#pairing"><b>Pairing</b><span>Connect the mobile app</span></a>
@@ -243,7 +244,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.3.10</span>
-    <span>69 endpoints</span>
+    <span>70 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -288,6 +289,47 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <button data-xall="1">Expand all</button>
     <button data-xall="0">Collapse all</button>
   </div>
+
+<section class="api-sec" id="nutrition">
+  <h2>Nutrition</h2>
+  <p class="sub">ASP.NET Core Nutrition proof of concept using the existing openGym session</p>
+  <div class="eps">
+
+<details class="ep" id="op-getNutritionHello">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/nutrition/hello</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Greet the authenticated Nutrition user</span>
+  </summary>
+  <div class="ep-body">
+<p>Node proxies to the internal ASP.NET Core service, which validates the existing cookie or bearer credentials against Node's <code>/api/me</code>. The name comes from that verified account, never from request parameters or identity headers.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Greeting from ASP.NET Core.<span class="r-sig">{ message: string }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">502</span>
+    <span class="p-desc">The Nutrition service returned an invalid response.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">Nutrition or its authentication connection is unavailable.</span>
+  </div>
+    </div>
+  </div>
+</details>
+  </div>
+</section>
 
 <section class="api-sec" id="meta">
   <h2>Meta</h2>

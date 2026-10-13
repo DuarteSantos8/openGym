@@ -34,6 +34,7 @@ import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from 
 import { effectiveRoutineId } from './queue.js';
 import { stampPut } from './sync-stamps.js';
 import { atomicWrite as durableWrite } from './durable.js';
+import { nutritionHello } from './nutrition.js';
 import { nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
 
 const PORT = +(process.env.PORT || 3000);
@@ -1835,6 +1836,8 @@ const mediaRoutes = {
 
 /* ---------- routes ---------- */
 const routes = {
+  'GET /api/nutrition/hello': async (req, res) => nutritionHello(req, res, { readSession, json }),
+
   'GET /api/health': async (req, res) => json(res, 200, { ok: true, users: db.users.length }),
 
   // Public config the login screen needs before anyone is signed in. `coach` is absent unless

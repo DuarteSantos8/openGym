@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-openGym is a self-hosted gym & body-weight tracker PWA. Two containers (`api` + `web`) plus a
+openGym is a self-hosted gym & body-weight tracker PWA. Core containers (`api` + `web`) plus a
 `./data` folder the user owns — no third-party account, no telemetry. Passkey (WebAuthn) login,
 installable as a home-screen app, optional Capacitor shells for standalone Android/iOS builds.
+This fork also includes `nutrition`, a .NET 10 ASP.NET API behind Node's existing gateway.
+It authenticates through Node `/api/me`; React remains the frontend (docs/NUTRITION.md).
 License: AGPL-3.0-or-later.
 
 ## Project layout
@@ -16,6 +18,7 @@ frontend/  React 19 + Vite app (src/views, src/components, src/store, src/lib). 
            android/ + ios/ are the Capacitor shells for the standalone mobile app (docs/MOBILE.md).
 api/       backend — server.js (Node, no framework), deps: @simplewebauthn/server, web-push.
            coach/ is the optional AI coach; openapi.yaml documents every route.
+nutrition/ .NET 10 service (src/OpenGym.Nutrition) and authentication tests (tests/).
 web/       multi-stage Dockerfile (builds frontend → nginx) + nginx.conf.template (serves app, proxies /api).
 mcp/       optional MCP server — read-only stdio bridge exposing a user's workouts/1RM/muscle
            balance to LLM clients (Claude Desktop, Cursor…). Not part of the Docker build; only

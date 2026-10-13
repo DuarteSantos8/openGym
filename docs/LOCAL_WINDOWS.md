@@ -15,9 +15,10 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/dev.ps1
 ```
 
 Открой <http://localhost:5173>. Frontend обновляется через Vite HMR; API
-перезапускается через `node --watch`. Ctrl+C останавливает оба процесса.
+перезапускается через `node --watch`, Nutrition — через `dotnet watch`.
+Нужен .NET 10 SDK; Ctrl+C останавливает все три процесса.
 Логи находятся в `.local/api.log`, `.local/api-error.log`, `.local/web.log`
-и `.local/web-error.log`. Занятые порты 3000/5173 приводят к понятной ошибке,
+и `.local/web-error.log`, а также `.local/nutrition.log` и `.local/nutrition-error.log`. Занятые порты 3000/5080/5173 приводят к понятной ошибке,
 а не к запуску ещё одной копии приложения.
 
 Node.js **22.23.2** установлен из официального ZIP с проверкой SHA256 в
@@ -109,6 +110,7 @@ Invoke-RestMethod http://localhost:8080/api/health
 собирает образы `opengym-api:local` и `opengym-web:local` из исходников вместо
 загрузки приложения автора. Web публикуется только на 127.0.0.1:8080; API —
 на 127.0.0.1:3000. Первый Docker-запуск скачает медиа в `media/`.
+Nutrition собирается как `opengym-nutrition:local` и не публикует порт.
 В Docker нет hot reload; после правки пересобери сервис той же командой.
 
 Остановка:
@@ -122,15 +124,17 @@ Native API и Docker API используют порт 3000: останавли�
 
 ## Подготовленный CI/CD
 
-`.github/workflows/ci.yml` остаётся локальным, незакоммиченным файлом:
+`.github/workflows/ci.yml` хранится в репозитории:
 
 1. Push в `dev`/`main`, PR в эти ветки и ручной запуск запускают полные API/frontend/MCP тесты,
-   frontend build и дополнительные проверки на Ubuntu с Node 22.
-2. После тестов собираются API `api/Dockerfile` с target `default` и Web
-   `web/Dockerfile` с **корневым build context** (нужен `api/coach/core`).
-3. Оба образа запускаются вместе; проверяются nginx, `/api/health`, `/api/config`.
+   frontend build, .NET 10 тесты и дополнительные проверки на Ubuntu с Node 22.
+2. После тестов собираются API `api/Dockerfile` с target `default`, Nutrition
+   `nutrition/Dockerfile` и Web `web/Dockerfile` с **корневым build context**
+   (нужен `api/coach/core`).
+3. Все три образа (API, Web, Nutrition на .NET 10) запускаются вместе; проверяются nginx, `/api/health`, `/api/config`, cookie/bearer запросы
+   к Nutrition, подстановка имени и отзыв сессии.
 4. Только push в `main` публикует прошедшие проверки образы в
-   `ghcr.io/illya228666/opengym-api` и `ghcr.io/illya228666/opengym-web`
+   `ghcr.io/illya228666/opengym-{api,web,nutrition}`
    с тегами `latest` и `sha-<полный SHA>`. Пока готовится только linux/amd64.
 
 Логин использует встроенный `GITHUB_TOKEN` с `packages: write`; личный токен
@@ -169,3 +173,11 @@ Git и Docker build context исключают `.env`, `.env.*`, `data/`, `coach
 
 Справочные материалы: [Docker Desktop на Windows](https://docs.docker.com/desktop/setup/install/windows-install/),
 [публикация Docker-образов из Actions](https://docs.github.com/en/actions/tutorials/publish-packages/publish-docker-images).
+
+## Nutrition (.NET 10)
+
+Установи .NET 10 SDK. `scripts/dev.ps1` запускает сервис на localhost:5080,
+Node проксирует `/api/nutrition/hello`, а React открывает раздел с карточки
+«Нутрициология» на главной странице. `scripts/check-windows.ps1` включает
+.NET тесты. Docker запускает Nutrition без опубликованного порта.
+Схема авторизации, команды обновления и проверки: [NUTRITION.md](NUTRITION.md).

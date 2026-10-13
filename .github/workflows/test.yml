@@ -8,6 +8,7 @@ on:
       - 'frontend/**'
       - 'api/**'
       - 'mcp/**'
+      - 'nutrition/**'
       - 'scripts/build-coach-assets.mjs'
       - 'scripts/build-coach-library.mjs'
       - 'scripts/build-api-docs.mjs'
@@ -20,6 +21,7 @@ on:
       - 'frontend/**'
       - 'api/**'
       - 'mcp/**'
+      - 'nutrition/**'
       - 'scripts/build-coach-assets.mjs'
       - 'scripts/build-coach-library.mjs'
       - 'scripts/build-api-docs.mjs'
@@ -36,6 +38,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  nutrition:
+    if: github.repository == 'DuarteSantos8/openGym'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet test tests/OpenGym.Nutrition.Tests/OpenGym.Nutrition.Tests.csproj -c Release
+        working-directory: nutrition
+
   test:
     if: github.repository == 'DuarteSantos8/openGym'
     runs-on: ubuntu-latest

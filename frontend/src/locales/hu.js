@@ -1,5 +1,9 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Nutrition": "Táplálkozás",
+  "Sign in to use Nutrition.": "A Táplálkozás használatához jelentkezz be.",
+  "Nutrition is unavailable. Please try again.": "A Táplálkozás nem érhető el. Próbáld újra.",
+  "Retry": "Újra",
   // --- generic ---
   'Confirm': 'Megerősítés',
   'Cancel': 'Mégse',

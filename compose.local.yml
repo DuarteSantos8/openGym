@@ -10,3 +10,6 @@ services:
     pull_policy: build
     ports: !override
       - "127.0.0.1:8080:80"
+  nutrition:
+    image: opengym-nutrition:local
+    pull_policy: build

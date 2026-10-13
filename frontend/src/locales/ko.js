@@ -1,5 +1,9 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Nutrition": "영양",
+  "Sign in to use Nutrition.": "영양 기능을 사용하려면 로그인하세요.",
+  "Nutrition is unavailable. Please try again.": "영양 기능을 사용할 수 없습니다. 다시 시도하세요.",
+  "Retry": "다시 시도",
   'Confirm': '확인',
   'Cancel': '취소',
   'Press back again to exit': '뒤로를 한 번 더 누르면 종료됩니다',

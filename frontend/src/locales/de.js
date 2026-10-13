@@ -1,5 +1,9 @@
 // German UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Nutrition": "Ernährung",
+  "Sign in to use Nutrition.": "Melde dich an, um Ernährung zu nutzen.",
+  "Nutrition is unavailable. Please try again.": "Ernährung ist nicht verfügbar. Bitte versuche es erneut.",
+  "Retry": "Erneut versuchen",
   // --- generic ---
   'Confirm': 'Bestätigen',
   'Cancel': 'Abbrechen',

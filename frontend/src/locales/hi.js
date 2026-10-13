@@ -1,5 +1,9 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Nutrition": "पोषण",
+  "Sign in to use Nutrition.": "पोषण का उपयोग करने के लिए साइन इन करें।",
+  "Nutrition is unavailable. Please try again.": "पोषण उपलब्ध नहीं है। कृपया फिर से कोशिश करें।",
+  "Retry": "फिर से कोशिश करें",
   'Confirm': 'पुष्टि करें',
   'Cancel': 'रद्द करें',
   'Press back again to exit': 'बाहर निकलने के लिए फिर से बैक दबाएँ',

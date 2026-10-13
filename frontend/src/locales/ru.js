@@ -1,5 +1,9 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Nutrition": "Нутрициология",
+  "Sign in to use Nutrition.": "Войди, чтобы пользоваться разделом «Нутрициология».",
+  "Nutrition is unavailable. Please try again.": "Нутрициология недоступна. Попробуй ещё раз.",
+  "Retry": "Повторить",
   'Confirm': 'Подтвердить',
   'Cancel': 'Отмена',
   'Press back again to exit': 'Нажмите «Назад» ещё раз, чтобы выйти',

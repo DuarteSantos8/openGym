@@ -1,5 +1,9 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Nutrition": "التغذية",
+  "Sign in to use Nutrition.": "سجّل الدخول لاستخدام قسم التغذية.",
+  "Nutrition is unavailable. Please try again.": "قسم التغذية غير متاح. يُرجى المحاولة مرة أخرى.",
+  "Retry": "إعادة المحاولة",
   'Confirm': 'تأكيد',
   'Cancel': 'إلغاء',
   'Press back again to exit': 'اضغط زر الرجوع مرة أخرى للخروج',

@@ -35,6 +35,9 @@ jobs:
           - image: web
             context: .
             file: ./web/Dockerfile
+          - image: nutrition
+            context: ./nutrition
+            file: ./nutrition/Dockerfile
     steps:
       - uses: actions/checkout@v7
 

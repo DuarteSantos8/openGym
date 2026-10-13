@@ -1,5 +1,9 @@
 // French UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Nutrition": "Nutrition",
+  "Sign in to use Nutrition.": "Connecte-toi pour utiliser Nutrition.",
+  "Nutrition is unavailable. Please try again.": "Nutrition est indisponible. Réessaie.",
+  "Retry": "Réessayer",
   'Confirm': 'Confirmer',
   'Cancel': 'Annuler',
   'Press back again to exit': 'Appuyez de nouveau pour quitter',

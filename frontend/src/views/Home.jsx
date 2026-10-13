@@ -175,6 +175,13 @@ export default function Home() {
       </div>
     )}
 
+    <div className="card">
+      <div className="row between" style={{ gap: 12 }}>
+        <h2 style={{ margin: 0 }}>{t('Nutrition')}</h2>
+        <Button size="sm" variant="tinted" trailingIcon="chevronRight" onClick={() => nav('/nutrition')}>{t('Open')}</Button>
+      </div>
+    </div>
+
     {!S.routines.length && !S.active && (
       <div className="card">
         <div className="row" style={{ gap: 10, marginBottom: 6 }}>

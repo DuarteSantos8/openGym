@@ -1,4 +1,7 @@
 **/node_modules
+**/bin
+**/obj
+**/TestResults
 frontend/dist
 media
 data

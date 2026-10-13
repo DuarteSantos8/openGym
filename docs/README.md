@@ -11,6 +11,7 @@ Pick the part that matches what you're doing. If you just have a question, try t
 | [Phone app](MOBILE.md) | You want the Android APK or the iPhone options, or to connect the app to your own server |
 | [Importing data](DATA_IMPORTS.md) | You're coming from FitNotes, Strong, Hevy or Apple Health, or sharing a plan with someone |
 | [AI coach](AI_COACH.md) | Your instance has the coach switched on and you want to know what it sees and can change |
+| [Nutrition](NUTRITION.md) | You want to run, develop or verify the ASP.NET Core integration |
 
 The [live demo](https://opengym.duarte-santos.ch/demo/) is the real app with example data, nothing
 to install.

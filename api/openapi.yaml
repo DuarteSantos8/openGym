@@ -125,6 +125,8 @@ servers:
     description: Your self-hosted instance
 
 tags:
+  - name: nutrition
+    description: ASP.NET Core Nutrition proof of concept using the existing openGym session
   - name: meta
     description: Health and public configuration
   - name: auth
@@ -163,6 +165,32 @@ security:
   - bearerAuth: []
 
 paths:
+  /api/nutrition/hello:
+    get:
+      tags: [nutrition]
+      operationId: getNutritionHello
+      summary: Greet the authenticated Nutrition user
+      description: |
+        Node proxies to the internal ASP.NET Core service, which validates the existing
+        cookie or bearer credentials against Node's `/api/me`. The name comes from that
+        verified account, never from request parameters or identity headers.
+      responses:
+        '200':
+          description: Greeting from ASP.NET Core.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [message]
+                properties:
+                  message: { type: string }
+              example: { message: 'Hi, UserName!' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '502':
+          description: The Nutrition service returned an invalid response.
+        '503':
+          description: Nutrition or its authentication connection is unavailable.
+
   /api/health:
     get:
       tags: [meta]

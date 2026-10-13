@@ -1,6 +1,6 @@
 # Self-hosting openGym
 
-openGym is two small containers (a web server and an API) plus a folder of your data.
+This fork of openGym uses three containers (web, Node API and ASP.NET Nutrition) plus a folder of your data.
 This guide takes you from "just cloned it" to "using it from my phone over the internet".
 
 **On this page**
@@ -25,10 +25,10 @@ HTTPS on a LAN without a public domain has [its own guide](SELF_HOSTING_HTTPS.md
 Requirements: [Docker](https://docs.docker.com/get-docker/) with the Compose plugin.
 
 ```bash
-git clone https://github.com/DuarteSantos8/openGym   # or https://gitlab.com/DuarteSantos8/opengym — same repo
+git clone https://github.com/illya228666/openGym   # this fork includes Nutrition
 cd openGym
 cp .env.example .env
-docker compose pull   # prebuilt images from GitLab's registry (amd64 + arm64; the same images are on ghcr.io) — or skip and build from source
+docker compose pull   # this fork's GHCR images — or skip and build from source
 docker compose up -d
 ```
 
@@ -634,6 +634,10 @@ in `.env` if you would rather they had an inbox.
 ## 8. Updating
 
 Running prebuilt images:
+
+This fork uses `ghcr.io/illya228666/opengym-{api,web,nutrition}`. All three must come
+from the same tested build; set `IMAGE_TAG=sha-<full main commit>` in `.env` to pin it.
+See [Nutrition](NUTRITION.md) for the service, authentication and update details.
 
 ```bash
 git pull                    # picks up compose/config changes

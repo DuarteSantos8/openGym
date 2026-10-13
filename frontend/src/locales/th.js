@@ -1,5 +1,9 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Nutrition": "โภชนาการ",
+  "Sign in to use Nutrition.": "เข้าสู่ระบบเพื่อใช้โภชนาการ",
+  "Nutrition is unavailable. Please try again.": "ไม่สามารถใช้โภชนาการได้ โปรดลองอีกครั้ง",
+  "Retry": "ลองอีกครั้ง",
   // --- generic ---
   'Confirm': 'ยืนยัน',
   'Cancel': 'ยกเลิก',

@@ -123,10 +123,10 @@ The full list of what changed release by release is in the [changelog](CHANGELOG
 You need [Docker](https://docs.docker.com/get-docker/) with Compose.
 
 ```bash
-git clone https://github.com/DuarteSantos8/openGym
+git clone https://github.com/illya228666/openGym
 cd openGym
 cp .env.example .env
-docker compose pull      # prebuilt images, amd64 + arm64 (skip this to build from source)
+docker compose pull      # this fork's tested GHCR images, amd64 (or build from source)
 docker compose up -d
 ```
 
@@ -139,10 +139,10 @@ Traefik and nginx, and there are separate guides for
 [HTTPS on a LAN](docs/SELF_HOSTING_HTTPS.md) and [Kubernetes](docs/SELF_HOSTING_KUBERNETES.md).
 
 > [!NOTE]
-> Images are published from the same tag to `registry.gitlab.com/duartesantos8/opengym/{api,web}`
-> (what `docker-compose.yml` pulls) and `ghcr.io/duartesantos8/opengym-{api,web}`. Swap the
-> `image:` lines if you prefer GHCR, or run `docker compose up -d --build` to build locally. Either
-> way you don't need Node on the host.
+> This fork publishes `ghcr.io/illya228666/opengym-{api,web,nutrition}` after tests and
+> container checks. Compose uses those images; `GHCR_OWNER` and `IMAGE_TAG` select a publisher
+> and consistent build. Run `docker compose up -d --build` to build locally without Node or
+> .NET on the host. See [Nutrition integration](docs/NUTRITION.md).
 
 <details>
 <summary><b>Configuration reference</b> (all through <code>.env</code>)</summary>

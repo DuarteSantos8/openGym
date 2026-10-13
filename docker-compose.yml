@@ -35,7 +35,7 @@ services:
   # Passkey auth + per-user data (Node, no framework).
   # image: prebuilt (docker compose pull). build: from source (docker compose up --build).
   api:
-    image: ghcr.io/duartesantos8/opengym-api:latest
+    image: ghcr.io/${GHCR_OWNER:-illya228666}/opengym-api:${IMAGE_TAG:-latest}
     # Default target: no AI runtime, no AI dependency — the image every instance has always had.
     # To opt into the AI Coach, build the other target instead:
     #     API_TARGET=coach docker compose up --build api
@@ -51,6 +51,7 @@ services:
       # cannot drift — change it in .env and both follow.
       - PORT=${PORT:-3000}
       - DATA_DIR=/data
+      - NUTRITION_URL=http://nutrition:8080
       # The API is reachable only through the web container here, and that container overwrites
       # X-Forwarded-For / X-Real-IP with the real peer — so the sign-in throttle may count
       # requests by those headers instead of lumping everyone in as "the web container".
@@ -63,10 +64,20 @@ services:
       # needs backing up — if you lose it, sign the provider in again.
       - ./coach-auth:/coach-auth
 
+  # Internal ASP.NET API: no published port, data volume, or separate login.
+  # No dependency cycle: it calls Node /api/me only while handling a request.
+  nutrition:
+    image: ghcr.io/${GHCR_OWNER:-illya228666}/opengym-nutrition:${IMAGE_TAG:-latest}
+    build:
+      context: ./nutrition
+    restart: unless-stopped
+    environment:
+      - OpenGym__ApiBaseUrl=http://api:${PORT:-3000}
+
   # Builds the React frontend (multi-stage) and serves it, proxying /api → api
   # and the exercise media from the shared volume. Single origin for passkeys.
   web:
-    image: ghcr.io/duartesantos8/opengym-web:latest
+    image: ghcr.io/${GHCR_OWNER:-illya228666}/opengym-web:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: web/Dockerfile
