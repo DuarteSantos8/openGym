@@ -18,7 +18,7 @@ import { closeThenNav } from '../lib/nav.js'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t, tn } from '../lib/i18n.js'
-import { fmtDate, fmtNum, DAYS, weekOrder, weekStartOf } from '../lib/format.js'
+import { fmtDate, fmtNum, fmtChatTimestamp, DAYS, weekOrder, weekStartOf } from '../lib/format.js'
 import { exLine } from '../lib/history.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { DEMO } from '../lib/demo.js'
@@ -236,7 +236,7 @@ function Bubble({ role, kind, at, children }) {
   const cls = kind === 'error' ? ' err' : ''
   return <div className={'msg ' + role}>
     <div className={'bub' + cls}>{children}</div>
-    {at && <div className="msg-t">{stamp(at)}</div>}
+    {at && <div className="msg-t">{fmtChatTimestamp(at)}</div>}
   </div>
 }
 
@@ -253,20 +253,13 @@ function Message({ m, S, profile, openSheet }) {
     return <div className="msg coach" style={entry ? { maxWidth: '100%', width: '100%' } : undefined}>
       {!!m.text && <div className="bub">{m.text}</div>}
       {entry && <Recap entry={entry} S={S} openSheet={openSheet} />}
-      {m.at && <div className="msg-t">{stamp(m.at)}</div>}
+      {m.at && <div className="msg-t">{fmtChatTimestamp(m.at)}</div>}
     </div>
   }
   if (m.kind === 'reverted' || m.kind === 'nochange' || m.kind === 'error' || m.kind === 'text') {
     return <Bubble role={m.role} kind={m.kind} at={m.at}>{m.text}</Bubble>
   }
   return null
-}
-
-const stamp = at => {
-  const d = new Date(at)
-  const today = new Date()
-  const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  return d.toDateString() === today.toDateString() ? time : fmtDate(d.toISOString().slice(0, 10)) + ' · ' + time
 }
 
 function Typing({ S, kind, coachLocal, config }) {
