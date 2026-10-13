@@ -143,7 +143,24 @@ function exercisePickerWorkouts(now = BASE_NOW) {
 function resetFixture(workouts = lifecycleWorkouts()) {
   mocks.S.unit = 'kg'
   mocks.S.bodyweight = []
-  mocks.S.workouts = workouts
+  mocks.S.workouts = workouts.map((workout, wi) => {
+    const exposures = (workout.entries || []).map((legacy) => {
+    return {
+      exerciseId: legacy.id, muscleSnapshot: legacy.muscleSnapshot, mode: 'reps',
+      performance: { sets: (legacy.sets || []).map((row, i) => ({
+        role: 'work', status: row.done ? 'completed' : 'skipped',
+        observations: [row.r != null && { metric: 'repetitions', value: row.r }, row.rir != null && { metric: 'rir', value: row.rir }].filter(Boolean),
+        resistance: row.w > 0 ? { kind: 'external-load', value: row.w, unit: row.unit || workout.unit || 'kg' } : { kind: 'bodyweight' },
+        segments: [],
+        // The real engine shape (see lib/session-ui-adapter.js) carries effort as a row-level
+        // `rir` field, not an observation — legacyEntriesOf (used by the effort/muscle-balance
+        // readers this suite exercises) reads it from there.
+        ...(row.rir != null ? { rir: row.rir } : {}),
+      })) },
+    }
+    })
+    return { ...workout, exposures }
+  })
   mocks.maps.length = 0
   mocks.charts.length = 0
   mocks.mapMounts = 0
@@ -415,37 +432,12 @@ describe('Stats strength exercise rows', () => {
 })
 
 describe('Stats exercise progress picker', () => {
-  it('keeps a legacy reps record whose load is stored only in topW', async () => {
+  // A v1 record that held only its confirmed weight (`topW`) is migrated as one done row at that
+  // load with no reps (api/migration): it still charts, beside a logged occurrence of the same day.
+  it('charts a migrated record that kept only its confirmed weight', async () => {
     resetFixture([workout('legacy-topw', BASE_NOW, [
-      { id: '0025', target: { mode: 'reps' }, topW: 70, sets: [] },
-    ])])
-    await mountStats()
-
-    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
-    expect(card.textContent).toContain('70 kg')
-    const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 70))
-    expect(progressChart?.points).toHaveLength(1)
-    expect(progressChart.points[0].y).toBe(70)
-  })
-
-  it('keeps the strongest topW across repeated legacy records', async () => {
-    resetFixture([workout('legacy-topw-duplicates', BASE_NOW, [
-      { id: '0025', target: { mode: 'reps' }, topW: 70, sets: [] },
-      { id: '0025', target: { mode: 'reps' }, topW: 60, sets: [] },
-    ])])
-    await mountStats()
-
-    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
-    expect(card.textContent).toContain('70 kg')
-    const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 70))
-    expect(progressChart?.points).toHaveLength(1)
-    expect(progressChart.points[0].y).toBe(70)
-  })
-
-  it('keeps a legacy topW when a modern occurrence shares the workout', async () => {
-    resetFixture([workout('modern-and-legacy', BASE_NOW, [
       entry('0025', [set(true, { w: 50, r: 5 })]),
-      { id: '0025', target: { mode: 'reps' }, topW: 70, sets: [] },
+      entry('0025', [{ done: true, w: 70 }]),
     ])])
     await mountStats()
 

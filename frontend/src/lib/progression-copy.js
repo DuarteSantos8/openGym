@@ -1,13 +1,12 @@
-import { POLICY_NAME } from './progression.js'
+import { t } from './i18n.js'
 
-/**
- * Presentation-only view of a progression result. The engine remains the source of truth for
- * both the outcome and its explanation; this helper only makes the policy behind that result
- * explicit in the workout guidance.
- */
-export function progressionGuidance(plan) {
-  if (!plan?.why || plan.kind === 'off' || plan.policy === 'off') return null
-  const policyLabel = POLICY_NAME[plan.policy]
-  if (!policyLabel) return null
-  return { policyLabel, why: plan.why }
+const FIELD = { sets: 'sets', reps: 'reps', load: 'weight', durationSeconds: 'time', rir: 'effort' }
+
+/** Plain language for one audit finding — a warning, never an error. */
+export function findingText(f) {
+  if (f.code === 'below_range') return t('{0} below plan', t(FIELD[f.field]))
+  if (f.code === 'above_range') return t('{0} above plan', t(FIELD[f.field]))
+  if (f.code === 'above_cap') return t('Above the target cap')
+  if (f.code === 'missing_reference') return t('Entered without a 1RM')
+  return t('Progression completed')
 }

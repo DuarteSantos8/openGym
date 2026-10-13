@@ -15,15 +15,17 @@ import { Section, Row, Switch, Segmented, Button } from './ui.jsx'
 // workout's ⋯ → Workout settings). Every row writes the same S.* field as Settings → Workout and
 // Settings → Timer alerts, so a change here sticks for the next session too; nothing in it is
 // for this session only. The one exception to "same as Settings" is Layout: the running session
-// may carry its own layout from the ⋯ menu (S.active.workoutView), and choosing one here clears
+// may carry its own layout from the ⋯ menu (A.workoutView), and choosing one here clears
 // that, or the saved choice would not show until the next workout.
 export function WorkoutSettings({ close }) {
   const S = useStore(s => s.S)
+  const A = useStore(s => s.A)
   const update = useStore(s => s.update)
+  const updateActive = useStore(s => s.updateActive)
   const canVibrate = vibrateSupported()
   const iPhone = appleTouchDevice()
   const wakeOK = wakeLockSupported()
-  const layout = ['list', 'compact'].includes(S.active?.workoutView || S.workoutView) ? (S.active?.workoutView || S.workoutView) : 'cards'
+  const layout = ['list', 'compact'].includes(A?.workoutView || S.workoutView) ? (A?.workoutView || S.workoutView) : 'cards'
   const gif = S.gifSize === 'mini' || S.gifSize === 'off' ? S.gifSize : 'full'
   const allSettings = () => closeThenNav(close, '/settings/workout')
   return <div className="ws-sheet">
@@ -59,7 +61,7 @@ export function WorkoutSettings({ close }) {
       <Row icon="layout" iconTint="var(--blue)" title={t('Layout')}>
         <Segmented className="seg-inline"
           options={[{ value: 'cards', label: t('Cards') }, { value: 'list', label: t('List') }, { value: 'compact', label: t('Compact') }]}
-          value={layout} onChange={v => update(s => { s.workoutView = v; if (s.active) delete s.active.workoutView })} />
+          value={layout} onChange={v => { update(s => { s.workoutView = v }); updateActive(a => { delete a.workoutView }) }} />
       </Row>
       <Row icon="gauge" iconTint="var(--purple)" title={t('Effort per set')}>
         <Segmented className="seg-inline"

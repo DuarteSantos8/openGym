@@ -48,8 +48,8 @@ afterEach(() => {
   host.remove()
 })
 
-const setS = (over = {}) => useStore.setState(s => ({
-  S: { ...s.S, routines, week: {}, dayPlan: {}, workouts: [], active: null, queue: queue(), rotation: null, scheduleMode: null, ...over }, user: null,
+const setS = ({ active = null, ...over } = {}) => useStore.setState(s => ({
+  S: { ...s.S, routines, week: {}, dayPlan: {}, workouts: [], queue: queue(), rotation: null, scheduleMode: null, ...over }, A: active, user: null,
 }))
 const mount = () => act(() => root.render(<Home />))
 const chips = () => [...host.querySelectorAll('.queue .chip')]

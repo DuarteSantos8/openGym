@@ -6,15 +6,18 @@
    it in (views/Settings.jsx doImport). */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('../lib/api.js', () => ({ api: vi.fn(), setRemoteAuth: vi.fn() }))
+vi.mock('../lib/api.js', () => ({ setAccessHeaders: vi.fn(), api: vi.fn(), setRemoteAuth: vi.fn() }))
 vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast: vi.fn() }) } }))
 
 import { api } from '../lib/api.js'
 import { DEF, useStore } from './useStore.js'
+import { buildSessionExposures } from '../lib/session-start.js'
+import { entriesForExposures } from '../lib/session-ui-adapter.js'
+import { ruleOccurrence } from '../lib/test-fixtures.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 const ids = xs => (xs || []).map(x => x.id)
-const workout = (id, d = '2026-09-20') => ({ id, d, start: 1, end: 2, entries: [] })
+const workout = (id, d = '2026-09-20') => ({ id, d, start: 1, end: 2, exposures: [] })
 const puts = () => api.mock.calls.filter(([, o]) => o?.method === 'PUT').map(([, o]) => JSON.parse(o.body))
 const signedIn = (S, rev) => {
   localStorage.setItem('gym_sync', JSON.stringify({ rev, ts: S._ts }))
@@ -94,37 +97,44 @@ describe('importing a backup over a profile that moved on', () => {
 // whole copy, `active` included. A running session lives on this device only, so no backup or
 // server copy can stand in for it: it stays, in the unit of the copy that replaces this one.
 describe('a backup imported while a workout is running', () => {
-  const running = { start: 1000, entries: [{ id: 'bench', sets: [{ w: 100, r: 5, done: true }] }] }
+  const running = { id: 'run', d: '2026-09-20', start: 1000, cur: 0, exposures: [], entries: [{ id: 'bench', sets: [{ w: 100, r: 5, done: true }] }] }
   it('"Merge them in" keeps the running workout', async () => {
-    signedIn({ ...clone(DEF), _ts: 200, workouts: [workout('w1')], active: clone(running) }, 6)
+    signedIn({ ...clone(DEF), _ts: 200, workouts: [workout('w1')] }, 6)
+    useStore.getState().setActive(clone(running))
     api.mockResolvedValueOnce({ state: clone(SERVER), rev: 7 })
     const c = await useStore.getState().importConflict(BACKUP)
     useStore.getState().importBackup(BACKUP, { mergeWith: c })
-    expect(useStore.getState().S.active).toEqual(running)
+    expect(useStore.getState().A).toEqual(running)
   })
   it('"Replace anyway" and the plain import keep it too', async () => {
-    signedIn({ ...clone(DEF), _ts: 200, workouts: [workout('w1')], active: clone(running) }, 6)
+    signedIn({ ...clone(DEF), _ts: 200, workouts: [workout('w1')] }, 6)
+    useStore.getState().setActive(clone(running))
     api.mockResolvedValueOnce({ state: clone(SERVER), rev: 7 })
     await useStore.getState().importConflict(BACKUP)
     useStore.getState().importBackup(BACKUP)
-    expect(useStore.getState().S.active).toEqual(running)
+    expect(useStore.getState().A).toEqual(running)
     useStore.setState({ user: null })
     useStore.getState().importBackup({ ...BACKUP, active: null })
-    expect(useStore.getState().S.active).toEqual(running)
+    expect(useStore.getState().A).toEqual(running)
   })
   it('in the backup\'s unit when the backup is in another one', async () => {
-    signedIn({ ...clone(DEF), _ts: 200, unit: 'kg', workouts: [workout('w1')], active: clone(running) }, 6)
+    signedIn({ ...clone(DEF), _ts: 200, unit: 'kg', workouts: [workout('w1')] }, 6)
+    useStore.getState().setActive(clone(running))
     useStore.setState({ user: null })
     useStore.getState().importBackup({ ...BACKUP, unit: 'lb' })
-    const S = useStore.getState().S
+    const { S, A } = useStore.getState()
     expect(S.unit).toBe('lb')
-    expect(S.active.start).toBe(1000)
-    expect(S.active.entries[0].sets[0].w).not.toBe(100)
+    expect(A.start).toBe(1000)
+    expect(A.entries[0].sets[0].w).not.toBe(100)
   })
   it('a backup taken mid-workout still brings its session when none runs here', async () => {
     signedIn({ ...clone(DEF), _ts: 200, workouts: [workout('w1')] }, 6)
     useStore.setState({ user: null })
-    useStore.getState().importBackup({ ...BACKUP, active: clone(running) })
-    expect(useStore.getState().S.active).toEqual(running)
+    // A real session: the import checks that its entries and exposures agree and that its prescriptions are in the backup.
+    const profile = { ...clone(DEF), routines: [] }
+    const exposures = buildSessionExposures(profile, { id: 'r1', name: 'Push', ex: [ruleOccurrence('0025')] }, { now: 1000, newId: seed => seed, unit: 'kg' })
+    const midWorkout = { id: 'run', d: '2026-09-20', start: 1000, cur: 0, name: 'Push', routineIds: ['r1'], exposures, entries: entriesForExposures(exposures, profile.prescriptions).map(e => ({ ...e, target: { ...e.target, mode: 'reps' } })) }
+    useStore.getState().importBackup({ ...BACKUP, prescriptions: profile.prescriptions, active: clone(midWorkout) })
+    expect(useStore.getState().A?.id).toBe('run')
   })
 })

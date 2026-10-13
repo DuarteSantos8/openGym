@@ -582,6 +582,86 @@ h4.sec{
 :root[data-theme="light"] .search-row>.ex-view-btn{background:rgba(118,118,128,.12)}
 .search-row>.ex-view-btn.on,:root[data-theme="light"] .search-row>.ex-view-btn.on{background:var(--acc-soft);color:var(--acc)}
 
+/* ------------------------------------------------------- routine editor -- */
+/* views/RoutineEdit.jsx: a bar with the back arrow and the ⋯ menu, the routine's icon and name
+   as the page's title, then a flat list — one hairline between exercises, the chips under each —
+   with the superset link between neighbours instead of buried in a row. */
+.re-bar{display:flex;align-items:center;gap:10px;min-height:44px;margin:4px 0 0}
+.re-bar h1{flex:1;min-width:0;font-size:17px;font-weight:600;letter-spacing:-.015em;line-height:1.2}
+.re-bar .iconbtn{width:44px;height:44px;border-radius:12px;background:none;color:var(--label-2)}
+.re-bar .iconbtn:first-child{color:var(--acc);width:36px;margin-inline-start:-6px}
+.re-bar .iconbtn:active{background:var(--surface-2)}
+.re-title{display:flex;align-items:center;gap:12px;margin:14px 0 16px}
+.re-glyph{width:48px;height:48px;flex:none;border-radius:14px;background:var(--surface);color:var(--acc);display:flex;align-items:center;justify-content:center;font-size:26px}
+.re-name{flex:1;min-width:0;width:100%;min-height:44px;padding:0;border:0;border-radius:0;background:none;color:var(--label);font:inherit;font-size:28px;font-weight:600;letter-spacing:-.025em}
+.re-name:focus{outline:0}
+.re-info{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--label-2);margin-bottom:20px}
+.re-notice{display:flex;gap:9px;padding:0 0 16px;font-size:13px;line-height:1.4;color:var(--orange)}
+.re-notice .icn{flex:none;margin-top:1px;font-size:17px}
+.re-sec{display:flex;align-items:baseline;gap:6px;min-width:0}
+.routine-ex-h h4.sec{font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--label);margin:0;padding:0}
+.re-count{font-size:11px;color:var(--label-2)}
+.list.routine-list{gap:0}
+.re-item{gap:10px;min-height:96px;padding:12px 0;border-radius:0;border-bottom:.5px solid var(--sep-op);background:none}
+.re-item:active{background:none}
+.routine-list .swfront{background:var(--bg)}
+.routine-list .swrow.swrow-item{border-radius:0}
+.re-item .routine-grip{margin:0;padding:0;width:18px;justify-content:center}
+.re-item .thumb{width:48px;height:48px;border-radius:10px;object-fit:contain}
+.re-item .tt{font-size:15px;font-weight:600;letter-spacing:-.012em;line-height:1.3}
+.re-item .ss{margin:4px 0;font-variant-numeric:tabular-nums}
+.re-item .ss-pos{min-width:0;height:auto;padding:0;margin-inline-end:5px;border-radius:0;background:none;font-size:11px;font-weight:600}
+.item .item-open>.re-chips{display:flex;flex-wrap:wrap;gap:4px}
+.re-chip{display:inline-flex;align-items:center;gap:4px;max-width:100%;padding:2px 5px;border-radius:7px;background:var(--surface-2);color:var(--label-2);font-size:10px;line-height:1.4}
+.re-chip.warn{color:var(--orange)}
+.re-chip .icn{font-size:10px}
+.re-order{display:flex;flex-direction:column;flex:none}
+.re-order .iconbtn{width:32px;height:32px;border-radius:8px;background:none;color:var(--label-2);font-size:16px}
+.re-order .iconbtn:active{background:var(--surface-2)}
+.re-link{display:flex;justify-content:flex-end;padding-inline-end:34px}
+.re-link button{display:flex;align-items:center;gap:5px;min-height:36px;padding:4px 8px;border-radius:8px;color:var(--label-3);font-size:11px}
+.re-link button.on{color:var(--acc)}
+.re-link .icn{font-size:13px}
+.re-page .ss-label-btn{width:100%;gap:8px;min-height:44px;padding:14px 0 2px;margin:0;border-radius:0;font-size:13px;font-weight:400}
+.re-page .ss-label-btn:active{background:none}
+.re-page .ss-label-btn .ss-label-name{flex:1;text-align:start}
+.re-page .ss-label-btn .dim{color:var(--acc)}
+.re-coverage{margin-top:12px}
+.re-muscles{display:grid;gap:13px;margin-top:14px}
+.re-muscle{display:grid;grid-template-columns:100px 1fr 72px;gap:12px;align-items:center;font-size:13px;color:var(--label-2)}
+.re-muscle .track{height:5px;border-radius:5px;background:var(--surface-2)}
+.re-muscle .track i{display:block;height:100%;border-radius:5px;background:var(--acc);opacity:.7}
+.re-muscle .tnum{text-align:end;white-space:nowrap}
+
+/* ----------------------------------------------- exercise sheet (ExConfig) -- */
+/* Three tabs — Target, Progression, Options — over panels that all stay mounted, with the plan as it
+   reads now and the Save button pinned to the foot of the sheet while the panels scroll. */
+.xc-head{display:flex;align-items:center;gap:14px;margin:6px 0 14px}
+.xc-head .thumb{width:72px;height:72px;border-radius:12px;object-fit:contain}
+.xc-head .grow{flex:1;min-width:0}
+.xc-head h3{margin:0 0 5px;line-height:1.2;overflow-wrap:anywhere}
+.xc-head .iconbtn{background:none;color:var(--label-2);align-self:flex-start}
+.xc-meta{font-size:13px;color:var(--label-2);text-transform:capitalize}
+.xc-info{margin-bottom:16px;font-size:13px}
+.xc-info summary{display:flex;align-items:center;gap:7px;min-height:36px;cursor:pointer;color:var(--acc);list-style:none}
+.xc-info summary::-webkit-details-marker{display:none}
+.xc-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:4px;margin:0 0 20px;border-radius:10px;background:var(--surface)}
+.xc-tabs button{min-height:38px;padding:0 6px;border-radius:7px;font-size:13px;font-weight:500;color:var(--label-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.xc-tabs button[aria-selected="true"]{background:var(--surface-3);color:var(--label)}
+.xc-foot{position:sticky;bottom:calc(-20px - var(--sab));z-index:2;margin:12px -18px calc(-20px - var(--sab));padding:12px 18px calc(20px + var(--sab));background:var(--bg-el);border-top:var(--hair) solid var(--sep-op)}
+:root[data-theme="light"] .xc-foot{background:var(--bg)}
+:root[data-native-kb] .xc-foot{bottom:-20px;margin-bottom:-20px;padding-bottom:20px}
+.xc-sum{margin-bottom:9px;font-size:12px;color:var(--label-2);font-variant-numeric:tabular-nums}
+
+/* Sets to failure (components/FailureSets.jsx): the set numbers as buttons, pressed = to failure. */
+.seg.no-sel .seg-sel{display:none}
+.fs{margin-top:8px}
+.fs-sets{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:8px;margin:14px 0}
+.fs-sets button{min-height:44px;border:var(--hair) solid var(--sep);border-radius:10px;background:var(--surface);color:var(--label);font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+.fs-sets button[aria-pressed="true"]{background:var(--acc);color:var(--on-acc);border-color:transparent}
+.fs-sets button span{margin-inline-start:2px;font-size:11px}
+.fs-sets button:active{transform:scale(.96)}
+
 /* ---------------------------------------------------------------- chips -- */
 .chips{
   display:flex;gap:7px;overflow-x:auto;padding:4px 4px 6px;   /* room for a chip's focus outline inside a sheet (#162) */
@@ -1389,7 +1469,10 @@ body.chips-dragging *{cursor:inherit}
 .cfgrow{gap:8px}
 .cfgrow>div{flex:1;min-width:0}
 .cfgrow .stp button{width:30px}
-.cfgrow .stp-l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cfgrow .stp-l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+.rule-step{align-items:flex-end}
+.rule-step .stp-l{white-space:normal;overflow:visible}
+.rule-step .unit-btn{width:100%;height:44px;padding:0 12px;border-radius:10px;background:var(--surface-2);font-size:13px}
 /* The double-progression row holds four (Step / Reps from / Reps up to / Deload 1RM). Each stepper
    already spends 64px on its two buttons, so four abreast left the input 1px at 320 and 13px at
    368 — "1.25" showed as "1.2", "90" as "9(". Below 480px the row wraps into two pairs instead;
@@ -2109,6 +2192,15 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .lrow.sp-flash,.btn.sp-flash{animation:spflash 1.8s ease}
 @keyframes spflash{0%,45%{background:var(--acc-soft)}100%{background:transparent}}
 .sp-empty{color:var(--label-2);text-align:center;padding:28px 12px;line-height:1.4}
+
+/* --- exercise config: disclosure rows --- */
+.disc-body{padding:4px 16px 14px}
+.disc.open .lrow-c{transform:rotate(90deg)}
+
+/* range toggle: small button at the end of a from/to input row */
+.cfgrow>.rng-btn{flex:none;align-self:flex-end;width:36px;height:36px}
+.rng-btn[aria-pressed="true"]{color:var(--acc)}
+.cfgrow>.unit-btn{flex:none;align-self:flex-end;width:auto;min-width:36px;height:36px;padding:0 12px;border-radius:18px;font-size:13px;white-space:nowrap}
 
 /* ----------------------------------------------------------- RTL (Arabic) -- */
 /* Directional icons flip: back chevrons point right, trailing chevrons point left. */

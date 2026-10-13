@@ -12,6 +12,7 @@ import { EXIDX, smOf } from './exercises.js'
 import { todayISO, weekKey, MONDAY } from './format.js'
 import { queueOf } from './queue.js'
 import { workoutAt } from './history.js'
+import { legacyEntriesOf } from './prescription/index.js'
 
 // The muscles a map can shade, in head-to-toe order — also the order of any list
 // built from them, so "what am I neglecting" reads top-down like a body.
@@ -274,7 +275,7 @@ export function loadOf(items) {
  */
 export const loadOfWorkouts = (workouts, pick) =>
   loadOf((workouts || []).flatMap(w =>
-    (w.entries || []).map(e => ({ id: e.id, ex: e.exercise || e, sets: (e.sets || []).filter(s => s.done && !isWarmupRow(s) && (!pick || pick(s))).length }))))
+    legacyEntriesOf(w).map(e => ({ id: e.id, ex: e.exercise || e, sets: (e.sets || []).filter(s => s.done && !isWarmupRow(s) && (!pick || pick(s))).length }))))
 
 /**
  * Workouts in one existing Muscle balance range, with time injected for deterministic tests.
@@ -290,9 +291,16 @@ export function muscleBalanceWindow(workouts, win, now = Date.now(), today = tod
       : workoutAt(workout) > now - win * 86400000)
 }
 
-/** Load a routine *would* produce, from its planned set counts. */
+/** Load a routine *would* produce, from its planned set counts. `exerciseId` is the v2
+ *  occurrence shape (A57); `id` is kept as a fallback for legacy-shaped callers/fixtures.
+ *  Set count likewise prefers a binding's own `setCount`/`setCountRange`, then a manual
+ *  (`mode: 'off'`) occurrence's literal count, before falling back to 1. */
 export const loadOfRoutine = (routine, exercises = {}) =>
-  loadOf((routine?.ex || []).map(c => ({ id: c.id, ex: exercises[c.id] || c, sets: c.sets || 1 })))
+  loadOf((routine?.ex || []).map(c => ({
+    id: c.exerciseId ?? c.id,
+    ex: exercises[c.exerciseId ?? c.id] || c,
+    sets: c.rule?.program?.phases[0].parameters.sets.min || c.sets || c.binding?.params?.setCount || c.binding?.params?.setCountRange?.max || c.manual?.setCount || 1
+  })))
 
 /**
  * Effective sets programmed by the live recurring week; overrides and history are not plans.

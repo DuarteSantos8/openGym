@@ -17,7 +17,7 @@ import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
 import { MOBILE } from './lib/mobile.js'
-import { exitWorkoutEdit, startFlow } from './sheets.jsx'
+import { startFlow, exitWorkoutEdit } from './sheets.jsx'
 import Icon from './components/Icon.jsx'
 import TabBar from './components/TabBar.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
@@ -28,6 +28,7 @@ import RestTimer from './components/RestTimer.jsx'
 import TimerFlash from './components/TimerFlash.jsx'
 import { openDeviceLinkRedeem } from './components/Passkeys.jsx'
 import Login from './views/Login.jsx'
+import MigrationGate from './views/MigrationGate.jsx'
 import MobileOnboarding from './views/MobileOnboarding.jsx'
 import Home from './views/Home.jsx'
 import CheckIn from './views/CheckIn.jsx'
@@ -70,7 +71,7 @@ function Shell() {
   const navigate = useNavigate()
   const loc = useLocation()
   const navType = useNavigationType()
-  const { S, user, ready } = useStore()
+  const { S, A, user, ready } = useStore()
   // iOS: whether timer sounds get past the ring/silent switch (Settings → Sounds). Page-level,
   // so it is applied here on load and on change rather than at each beep.
   useEffect(() => { setPlayOnSilent(!!S.soundOnSilent) }, [S.soundOnSilent])
@@ -81,6 +82,7 @@ function Shell() {
   useEffect(() => { setAlarmBuzzer(MOBILE && S.vibrate !== false && S.vibrateOnSilent ? buzzAsAlarm : null) }, [S.vibrate, S.vibrateOnSilent])
   const isGuest = useStore(s => s.isGuest())
   const needsMobileOnboarding = useStore(s => s.needsMobileOnboarding)
+  const migration = useStore(s => s.migration)
   const langV = useLang()   // re-renders the whole shell when the language (pack) changes
   useEffect(() => { setNav(navigate) }, [navigate])
   const lastEditPath = useRef(loc.pathname)
@@ -91,11 +93,11 @@ function Shell() {
     lastEditPath.current = loc.pathname
     // The live store, not this render's S: a save that just closed the editor may not have
     // reached this render yet, and asking again would offer to delete the workout it saved.
-    if (previous !== '/workout' || !useStore.getState().S.active?.editingWorkoutId || loc.pathname === '/workout') return
+    if (previous !== '/workout' || !useStore.getState().A?.editingWorkoutId || loc.pathname === '/workout') return
     const destination = loc.pathname + loc.search
     navigate('/workout', { replace: true })
     exitWorkoutEdit(() => navigate(destination, { replace: true }))
-  }, [loc.pathname, loc.search, S.active?.editingWorkoutId, navigate])
+  }, [loc.pathname, loc.search, A?.editingWorkoutId, navigate])
   // A preset key, or the user's own colour as '#rrggbb' (lib/accent.js), already checked.
   const accent = accentValue(S)
   useEffect(() => { applyPrefs(S.theme, accent) }, [S.theme, accent])
@@ -174,11 +176,11 @@ function Shell() {
     return () => window.cancelAnimationFrame(frame)
   }, [loc.pathname, navType])
   // bound to the workout, not to the route — checking Stats mid-session keeps the screen on
-  useWakeLock(!!S.active && !S.active.editingWorkoutId && S.keepAwake !== false)
+  useWakeLock(!!A && !A.editingWorkoutId && S.keepAwake !== false)
   // A running workout has the whole screen (v1.3.11): no tab bar, and the rest bar docks to the
   // bottom edge in its place. Its header's ⌄ goes back to the app, where the tab bar's Resume
   // brings it back.
-  const inWorkout = loc.pathname === '/workout' && !!S.active
+  const inWorkout = loc.pathname === '/workout' && !!A
   useEffect(() => {
     document.body.classList.toggle('no-tabbar', inWorkout)
     return () => document.body.classList.remove('no-tabbar')
@@ -202,7 +204,7 @@ function Shell() {
           re-mounts the boundary, so the tab bar is always a way out */}
       <div id="app" className="vfade" key={loc.pathname}>
         <ErrorBoundary>
-          {!authed ? <Login /> : needsMobileOnboarding ? <MobileOnboarding /> : (
+          {!authed ? <Login /> : migration ? <MigrationGate /> : needsMobileOnboarding ? <MobileOnboarding /> : (
             <Routes>
               <Route path="/home" element={<Home />} />
               {/* Gym check-in — switched off in Settings, the route falls through to the
@@ -237,7 +239,7 @@ function Shell() {
           would ride along with the page for the length of it. Decides for itself when to show —
           including on the sign-in screen, when the server has just ended the session. */}
       <SyncBanner />
-      {!noTabs && <TabBar onStart={startFlow} />}
+        {!noTabs && !migration && <TabBar onStart={startFlow} />}
       <RestTimer />
       <Modals />
       <Toast />

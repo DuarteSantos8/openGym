@@ -29,10 +29,10 @@ const type = (el, value) => {
 const button = (host, text) => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === text)
 const unmountAll = () => act(() => { mounted.splice(0).forEach(r => r.unmount()) })
 
-const entry = (id, w) => ({ id, sets: [{ w, r: 5, done: true }] })
-const workout = (id, d, time, min, entries, prs = []) => {
+const entry = (id, w) => ({ exerciseId: id, performance: { sets: [{ role: 'work', status: 'completed', observations: [{ metric: 'repetitions', value: 5 }], resistance: { kind: 'external-load', value: w } }] } })
+const workout = (id, d, time, min, exposures, prs = []) => {
   const start = backfillStart(d, time)
-  return { id, d, start, end: start + min * 60000, name: id, vol: 100, entries, prs }
+  return { id, d, start, end: start + min * 60000, name: id, vol: 100, exposures, prs }
 }
 const history = () => useStore.getState().S.workouts
 const setHistory = workouts => useStore.setState(s => ({ S: { ...s.S, workouts } }))
@@ -70,7 +70,7 @@ describe('changing the date of a saved workout', () => {
     expect(moved.d).toBe('2026-08-18')
     expect(startTimeOf(moved)).toBe('06:15')
     expect(moved.end - moved.start).toBe(47 * 60000)
-    expect(moved.entries).toEqual([entry('bench', 90)])
+    expect(moved.exposures).toEqual([entry('bench', 90)])
     expect(useUI.getState().toast).toHaveBeenCalledWith('Workout moved')
   })
 
@@ -153,7 +153,7 @@ describe('changing the date of a saved workout', () => {
   })
 
   it('a record written before ids keeps one identity for sync', () => {
-    const legacy = { d: '2026-08-25', start: 1767636000000, end: 1767639600000, name: 'Old', vol: 0, entries: [], prs: [] }
+    const legacy = { d: '2026-08-25', start: 1767636000000, end: 1767639600000, name: 'Old', vol: 0, exposures: [], prs: [] }
     setHistory([legacy])
     const host = render(() => workoutDateSheet(legacy))
     act(() => { type(host.querySelector('input[type=date]'), '2026-08-18') })
@@ -167,7 +167,7 @@ describe('changing the date of a saved workout', () => {
   // key frozen as its id (moved or edited on the other device) must not make its note and date
   // rows quietly write nowhere.
   it('keeps writing to a record from before ids after a sync froze its key as its id', () => {
-    const legacy = { d: '2026-08-25', start: 1767636000000, end: 1767639600000, name: 'Old', vol: 0, entries: [], prs: [] }
+    const legacy = { d: '2026-08-25', start: 1767636000000, end: 1767639600000, name: 'Old', vol: 0, exposures: [], prs: [] }
     setHistory([legacy])
     const host = render(() => workoutDetailSheet(legacy))
     setHistory([{ ...legacy, id: '2026-08-25|1767636000000', d: '2026-08-24', _ts: 5 }])
@@ -178,8 +178,8 @@ describe('changing the date of a saved workout', () => {
   })
 
   it('deletes only the workout it shows, also among records written before ids', () => {
-    const a = { d: '2026-08-20', start: 1767200000000, end: 1767203600000, name: 'A', vol: 0, entries: [], prs: [] }
-    const b = { d: '2026-08-25', start: 1767636000000, end: 1767639600000, name: 'B', vol: 0, entries: [], prs: [] }
+    const a = { d: '2026-08-20', start: 1767200000000, end: 1767203600000, name: 'A', vol: 0, exposures: [], prs: [] }
+    const b = { d: '2026-08-25', start: 1767636000000, end: 1767639600000, name: 'B', vol: 0, exposures: [], prs: [] }
     setHistory([a, b, history()[1]])
     const host = render(() => workoutDetailSheet(b))
     const confirm = render(() => button(host, 'Delete workout').click())
@@ -231,7 +231,7 @@ describe('changing the duration of a saved workout', () => {
     expect(after.end - after.start).toBe(45 * 60000)
     expect(after.start).toBe(before.start)
     expect(after.d).toBe(before.d)
-    expect(after.entries).toEqual(before.entries)
+    expect(after.exposures).toEqual(before.exposures)
     expect(after.prs).toEqual(['bench'])
     expect(after._ts).toBeGreaterThan(0)   // stamped: the sync keeps it over an older copy
     expect(history().map(w => w.id)).toEqual(['early', 'forgot'])

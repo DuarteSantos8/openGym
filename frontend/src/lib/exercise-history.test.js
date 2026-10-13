@@ -1,9 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
-import { exerciseHistory, HISTORY_SESSIONS, bestSetFor } from './exercise-history.js'
+import { exerciseHistory as canonicalExerciseHistory, HISTORY_SESSIONS, bestSetFor as canonicalBestSetFor } from './exercise-history.js'
 import { EXDB } from './exercises-data.js'
 import { estimate1RM, e1rmSeries } from './onerm.js'
-import { lastEntryFor } from './history.js'
-import { nextPrescription } from './progression.js'
+import { exposuresWithPerformance } from './session-ui-adapter.js'
 
 const DAY = 86400000
 const T0 = Date.UTC(2026, 0, 5, 10)
@@ -15,8 +14,37 @@ const session = (i, rows, extra = {}) => ({
 })
 const work = (w, r, done = true) => ({ w, r, done })
 const warm = (w, r) => ({ w, r, done: true, phase: 'warmup' })
+const canonical = S => {
+  if (S.prescriptions) return S
+  const prescriptions = {}
+  const workouts = (S.workouts || []).map(workout => {
+    const exposures = (workout.entries || []).map((entry, index) => {
+    const prescriptionId = `${workout.id}:${index}`
+    prescriptions[prescriptionId] = { rows: (entry.sets || []).map(row => ({ load: row.w > 0 ? { value: row.w } : null })), prefill: { reps: entry.target?.reps ?? entry.sets?.[0]?.r, ...(entry.target?.mode === 'time' ? { durationSeconds: entry.target.sec } : {}) } }
+    // The rows as the live finish writes them.
+    const [written] = exposuresWithPerformance([{ exposureId: prescriptionId, exerciseId: entry.id }], [{ ...entry, exposureId: prescriptionId }], 'kg')
+    return { exerciseId: entry.id, mode: entry.target?.mode, prescriptionId, ...(entry.rid ? { routineId: entry.rid } : {}), performance: written.performance }
+    })
+    return { ...workout, exposures }
+  })
+  return { ...S, workouts, prescriptions }
+}
+const exerciseHistory = (S, ...args) => canonicalExerciseHistory(canonical(S), ...args)
+const bestSetFor = (S, ...args) => canonicalBestSetFor(canonical(S), ...args)
 
 describe('exerciseHistory', () => {
+  it('keeps snapshot-less canonical legacy exposures in history', () => {
+    const S = { workouts: [{ id: 'legacy', d: iso(0), start: T0, exposures: [{ kind: 'legacy', exerciseId: 'bench', performance: { sets: [{ status: 'completed', observations: [{ metric: 'repetitions', value: 8 }], resistance: { kind: 'external-load', value: 50 }, segments: [] }] } }] }] }
+    expect(canonicalExerciseHistory(S, 'bench')).toMatchObject({ total: 1, mode: 'reps', best: 50 })
+  })
+  it('reads volume and targets from canonical exposures and their prescription', () => {
+    const S = {
+      prescriptions: { p: { rows: [{ load: { value: 60 } }], prefill: { reps: 5 } } },
+      workouts: [{ id: 'w', d: iso(0), start: T0, exposures: [{ exerciseId: 'bench', mode: 'reps', prescriptionId: 'p', performance: { sets: [{ role: 'work', status: 'completed', observations: [{ metric: 'repetitions', value: 5 }], resistance: { kind: 'external-load', value: 60 }, segments: [] }] } }] }],
+    }
+    expect(exerciseHistory(S, 'bench')).toMatchObject({ total: 1, best: 60, sessions: [{ target: { reps: 5, weight: 60 }, volume: 300 }] })
+  })
+
   it('is empty when the exercise was never logged', () => {
     const S = { workouts: [session(0, [work(60, 5)])] }
     expect(exerciseHistory(S, 'squat')).toMatchObject({ total: 0, best: 0, prId: null, sessions: [], points: [] })
@@ -31,7 +59,7 @@ describe('exerciseHistory', () => {
     expect(h.metric).toBe('weight')
     expect(h.total).toBe(2)
     expect(h.sessions.map(s => s.d)).toEqual([iso(2), iso(0)])
-    expect(h.sessions[0]).toMatchObject({ value: 65, volume: 65 * 9, target: { mode: 'reps' } })
+    expect(h.sessions[0]).toMatchObject({ value: 65, volume: 65 * 9, mode: 'reps', target: { reps: 5, weight: 65 } })
     expect(h.sessions[0].sets).toHaveLength(2)
     expect(h.sessions[1]).toMatchObject({ value: 60, volume: 600 })
     // the chart stays chronological
@@ -137,7 +165,7 @@ describe('exerciseHistory', () => {
     expect(h).toMatchObject({ total: 1, mode: 'reps', metric: 'weight', best: 100 })
     expect(h.sessions[0]).toMatchObject({ value: 100, volume: 500, e1rm: estimate1RM(100, 5) })
     expect(h.sessions[0].sets).toHaveLength(1)
-    expect(h.sessions[0].sets[0]).toBe(partialSide.sets[0])
+    expect(h.sessions[0].sets[0]).toEqual({ done: true, r: 5, w: 100 })   // the ticked limb only
   })
 
   it('aggregates timed and cardio duplicates by their own metric', () => {
@@ -154,10 +182,9 @@ describe('exerciseHistory', () => {
   })
 
   // The history sheet and Stats speak for the exercise, so a combined day that trains it in two
-  // routines is one session with both occurrences. What the next session opens at is per routine
-  // slot (#216): each routine reads its own occurrence of that day, never the other one's or the
-  // two folded together.
-  it('reads both routines\' occurrences of a combined day, while each routine progresses from its own', () => {
+  // routines is one session with both occurrences. (Each routine progressing from its own
+  // occurrence, #216, is the engine's: prescription/context.test.js.)
+  it('reads both routines\' occurrences of a combined day as one session', () => {
     const heavy = { id: 'bench', rid: 'A', target: { mode: 'reps', sets: 2, reps: 5 }, planned: { sets: 2, reps: 5 }, sets: [work(100, 5), work(100, 5)] }
     const light = { id: 'bench', rid: 'B', target: { mode: 'reps', sets: 2, reps: 12 }, planned: { sets: 2, reps: 12 }, sets: [work(60, 12), work(60, 12)] }
     const S = {
@@ -167,13 +194,8 @@ describe('exerciseHistory', () => {
     }
     const h = exerciseHistory(S, 'bench')
     expect(h).toMatchObject({ total: 1, best: 100 })
-    expect(h.sessions[0].sets).toEqual([...heavy.sets, ...light.sets])
-    expect(e1rmSeries(S, 'bench')).toHaveLength(1)
-
-    expect(lastEntryFor(S, 'bench', 'A').sets).toEqual(heavy.sets)
-    expect(lastEntryFor(S, 'bench', 'B').sets).toEqual(light.sets)
-    expect(nextPrescription(S, S.routines[0].ex[0], S.routines[0]).weight).toBe(102.5)
-    expect(nextPrescription(S, S.routines[1].ex[0], S.routines[1]).weight).toBe(62.5)
+    expect(h.sessions[0].sets.map(row => row.w)).toEqual([100, 100, 60, 60])
+    expect(e1rmSeries(canonical(S), 'bench')).toHaveLength(1)
   })
 })
 
