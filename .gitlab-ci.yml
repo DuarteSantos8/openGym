@@ -1,8 +1,7 @@
 # openGym — GitLab CI/CD
 #
-# This is the pipeline that actually gates and ships the project. It replaces the
-# GitHub Actions workflows (.github/, dormant since the account suspension) and the
-# gitea.com ones (.gitea/, kept only so the mirror stays buildable).
+# GitHub is openGym's home and its Actions (.github/) test and publish it; GitLab is a mirror
+# (.github/workflows/mirror.yml), and this pipeline keeps it building and tested.
 #
 # What it does, in order:
 #   test        — frontend, MCP and api (Coach) suites on every branch, MR and tag, each with a
