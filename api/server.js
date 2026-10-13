@@ -33,7 +33,7 @@ import { createDeviceLink, findDeviceLink, burnDeviceLink, dropDeviceLinks } fro
 import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from './media.js';
 import { effectiveRoutineId } from './queue.js';
 import { stampPut, highestStamp } from './sync-stamps.js';
-import { readingsFromShortcut, mergeReadings } from './health/fold.js';
+import { readingsFromShortcut, readingsFromAutoExport, isAutoExport, mergeReadings } from './health/fold.js';
 import { atomicWrite as durableWrite } from './durable.js';
 import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
 
@@ -2335,7 +2335,8 @@ const routes = {
     saveDb();
     json(res, 200, { ok: true });
   },
-  // Readings an iPhone Shortcut read from Apple Health (api/health/fold.js readingsFromShortcut),
+  // Readings an iPhone Shortcut or the Health Auto Export app read from Apple Health (api/health/
+  // fold.js readingsFromShortcut, readingsFromAutoExport — told apart by the body's shape),
   // folded into the profile the way the app's own import does, and written as a new revision: the
   // app's half-minute revision check picks them up, and a device with unsent changes merges them in
   // (S.health merges by id). Values never reach a log; the answer carries counts only.
@@ -2345,7 +2346,7 @@ const routes = {
     const wait = HEALTH_BURST.take(user.id);
     if (wait) return json(res, 429, { error: 'too many requests', retryAfter: wait }, { 'Retry-After': String(wait) });
     const body = await readBody(req);
-    const r = readingsFromShortcut(body);
+    const r = isAutoExport(body) ? readingsFromAutoExport(body) : readingsFromShortcut(body);
     if (r.error) return json(res, 400, { error: r.error });
     const cur = readStateStrict(user.id);
     if (cur === UNREADABLE) { console.error('state file unreadable for', user.id); return json(res, 503, { error: 'state unreadable' }); }

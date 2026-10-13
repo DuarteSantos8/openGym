@@ -1480,7 +1480,6 @@ export const PT_BR_OVERRIDES = {
   'Copy key': 'Copiar chave',
   'Could not make a key': 'Não foi possível criar a chave',
   'Could not revoke the key': 'Não foi possível revogar a chave',
-  'Every day, by itself, with the Shortcuts app': 'Todo dia, sozinho, com o app Atalhos',
   'For sleep, a dictionary “sleep” with “starts” = Start Date, “ends” = End Date (both ISO 8601) and “values” = Value.': 'Para o sono, um dicionário “sleep” com “starts” = Data de Início, “ends” = Data de Término (ambas em ISO 8601) e “values” = Valor.',
   'How to set up the Shortcut': 'Como configurar o atalho',
   'Import a Health export': 'Importar uma exportação do Saúde',
@@ -1507,6 +1506,13 @@ export const PT_BR_OVERRIDES = {
   'Your key, shown only now': 'Sua chave, mostrada só agora',
   'export.zip from the Health app: your profile → Export All Health Data': 'export.zip do app Saúde: seu perfil → Exportar Todos os Dados de Saúde',
   '{0} to {1}': 'De {0} a {1}',
+  'Every day, by itself: a Shortcut or Health Auto Export': 'Todo dia, sozinho: um Atalho ou o Health Auto Export',
+  'Or with Health Auto Export': 'Ou com o Health Auto Export',
+  'Health Auto Export, an app on the App Store, sends the same readings by itself, without building a Shortcut. It uses the address and key above.': 'O Health Auto Export, um app da App Store, envia os mesmos dados sozinho, sem criar um Atalho. Ele usa o endereço e a chave acima.',
+  'In Health Auto Export, open Automations, add a new one of type REST API and paste the address above as its URL.': 'No Health Auto Export, abra Automations, adicione uma do tipo REST API e cole o endereço acima como URL.',
+  'Under Headers, add Authorization with the value Bearer followed by a space and your key.': 'Em Headers, adicione Authorization com o valor Bearer seguido de um espaço e da sua chave.',
+  'Export Format JSON, Data Type Health Metrics, then choose what to send: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.': 'Export Format JSON, Data Type Health Metrics, e escolha o que enviar: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.',
+  'Date Range Previous 7 Days, Summarize Data on with Time Grouping by days, and a daily Sync Cadence.': 'Date Range Previous 7 Days, Summarize Data ativado com Time Grouping por dias, e uma Sync Cadence diária.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

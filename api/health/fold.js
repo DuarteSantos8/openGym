@@ -1,6 +1,6 @@
 /* Apple Health readings, from raw samples to one reading per metric and day: what the web app reads
  * out of Health's own export (frontend/src/lib/health/apple-export.js) and what the server takes
- * from an iPhone Shortcut (POST /api/health/samples). One module so both fold the same way, give a
+ * from an iPhone Shortcut or the Health Auto Export app (POST /api/health/samples). One module so both fold the same way, give a
  * reading the same id whichever way it came in, and never count a day twice:
  *
  *   - a body reading (weight, body fat, lean mass, BMI, height) is itself, keyed by its type and
@@ -73,7 +73,7 @@ export function createFolder({ since = '', src = APPLE_HEALTH } = {}) {
   const sleep = [];
   let used = 0;
 
-  function add({ type, v, unit, start, end, source = '', asleep = true }) {
+  function add({ type, v, unit, start, end, source = '', asleep = true, lo, hi }) {
     const fold = FOLD[type];
     if (!fold) return false;
     const a = phoneTime(start);
@@ -99,7 +99,8 @@ export function createFolder({ since = '', src = APPLE_HEALTH } = {}) {
     } else {
       const key = `${type}|${a.d}`;
       const r = ranges.get(key) || { n: 0, sum: 0, lo: Infinity, hi: -Infinity };
-      r.n++; r.sum += n; r.lo = Math.min(r.lo, n); r.hi = Math.max(r.hi, n);
+      // A point that is itself a summary (Health Auto Export's Min/Avg/Max) brings its own range.
+      r.n++; r.sum += n; r.lo = Math.min(r.lo, Number.isFinite(lo) ? lo : n); r.hi = Math.max(r.hi, Number.isFinite(hi) ? hi : n);
       ranges.set(key, r);
     }
     return true;
@@ -182,6 +183,63 @@ export function readingsFromShortcut(body, { since = '' } = {}) {
     });
   }
   return { readings: folder.readings(), used: folder.count(), skipped };
+}
+
+/* ---------- what Health Auto Export sends ---------- */
+
+// Health Auto Export, an iPhone app, posts Apple Health on a schedule (its "REST API" automation):
+//   { data: { metrics: [{ name, units, data: [point…] }], workouts, … } }
+// A point is { qty, date, source? } with `date` as "yyyy-MM-dd HH:mm:ss Z"; heart rate is
+// { Min, Avg, Max, date }; sleep is a summarized night { date, totalSleep (or asleep, core, deep,
+// rem), sleepEnd, … } in `units` (hours), or, with Summarize Data off, single stages { startDate,
+// endDate, value }. Names are matched without case or punctuation ("weight_&_body_mass").
+const AUTO_EXPORT = {
+  weightbodymass: 'weight', bodymass: 'weight', weight: 'weight', bodyfatpercentage: 'bodyFat',
+  leanbodymass: 'leanMass', bodymassindex: 'bmi', height: 'height', stepcount: 'steps',
+  walkingrunningdistance: 'distance', activeenergy: 'activeEnergy', basalenergyburned: 'restingEnergy',
+  restingenergy: 'restingEnergy', heartrate: 'heartRate', restingheartrate: 'restingHeartRate',
+  sleepanalysis: 'sleep',
+};
+export const isAutoExport = body => !!body && typeof body === 'object' && !!body.data && Array.isArray(body.data.metrics);
+// A number, or null when there is none (Number(null) would be a 0).
+const finite = x => { if (x == null || x === '') return null; const n = number(x); return Number.isFinite(n) ? n : null; };
+
+/** The readings in a Health Auto Export request body: { readings, used, skipped } or { error }. */
+export function readingsFromAutoExport(body, { since = '' } = {}) {
+  if (!isAutoExport(body)) return { error: 'metrics required' };
+  const folder = createFolder({ since });
+  const nights = new Map();
+  let total = 0, skipped = 0, used = 0;
+  for (const m of body.data.metrics) {
+    const type = AUTO_EXPORT[String(m && m.name || '').toLowerCase().replace(/[^a-z0-9]/g, '')];
+    const points = m && Array.isArray(m.data) ? m.data : [];
+    total += points.length;
+    if (total > MAX_SAMPLES) return { error: 'too many samples' };
+    if (!type) { skipped += points.length; continue; }
+    for (const p of points) {
+      if (!p || typeof p !== 'object') { skipped++; continue; }
+      let ok;
+      if (type === 'sleep' && p.startDate != null) {
+        ok = folder.add({ type, start: p.startDate, end: p.endDate, asleep: !/in ?bed|awake/i.test(String(p.value || '')) });
+      } else if (type === 'sleep') {
+        // A summarized night, on the day it ended: its total sleep, in minutes.
+        const slept = finite(p.totalSleep) ?? ['asleep', 'core', 'deep', 'rem'].reduce((n, k) => n + (finite(p[k]) || 0), 0);
+        const min = /^min/i.test(String(m.units || '')) ? slept : slept * 60;
+        const at = phoneTime(p.sleepEnd) || phoneTime(p.date);
+        ok = !!at && at.d >= since && min >= 1 && min <= 1440;
+        if (ok) { const cur = nights.get(at.d); if (!cur || min > cur.v) nights.set(at.d, { v: Math.round(min), t: at.ms }); used++; }
+      } else if (type === 'heartRate' && p.qty == null) {
+        ok = finite(p.Avg) != null && folder.add({ type, v: finite(p.Avg), lo: finite(p.Min), hi: finite(p.Max), start: p.date, source: String(p.source || '') });
+      } else {
+        ok = finite(p.qty) != null && folder.add({ type, v: finite(p.qty), unit: m.units, start: p.date, source: String(p.source || '') });
+      }
+      if (!ok) skipped++;
+    }
+  }
+  const readings = folder.readings();
+  const have = new Set(readings.map(r => r.sid));
+  for (const [d, n] of nights) if (!have.has(`sleep:${d}`)) readings.push({ type: 'sleep', v: n.v, t: n.t, d, sid: `sleep:${d}`, src: APPLE_HEALTH });
+  return { readings, used: folder.count() + used, skipped };
 }
 
 /* ---------- into a stored profile ---------- */

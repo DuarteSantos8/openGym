@@ -38,7 +38,7 @@ export default function AppleHealthWeb() {
       subtitle={t('export.zip from the Health app: your profile → Export All Health Data')} accessory="chevron"
       onClick={() => fileRef.current?.click()} />
     {user && <Row icon="repeat" iconTint="var(--red)" title={t('Sync with a Shortcut')}
-      subtitle={key?.exists ? (key.used ? t('Last sent {0}', fmtAgo(key.used)) : t('Key ready, nothing sent yet')) : t('Every day, by itself, with the Shortcuts app')}
+      subtitle={key?.exists ? (key.used ? t('Last sent {0}', fmtAgo(key.used)) : t('Key ready, nothing sent yet')) : t('Every day, by itself: a Shortcut or Health Auto Export')}
       accessory="chevron" onClick={() => openSheet(close => <ShortcutSetup close={close} onChange={refreshKey} />)} />}
     <input ref={fileRef} type="file" accept=".zip,.xml,application/zip,text/xml" style={{ display: 'none' }} onChange={pick} />
   </Section>
@@ -158,6 +158,16 @@ function ShortcutSetup({ close, onChange }) {
       <li>{t('In the body, add a dictionary “metrics”; in it one dictionary per thing (weight, bodyFat, restingHeartRate, steps) with “values” = the samples’ Value and “dates” = their Start Date in ISO 8601, and “unit” for weight (kg or lb).')}</li>
       <li>{t('For sleep, a dictionary “sleep” with “starts” = Start Date, “ends” = End Date (both ISO 8601) and “values” = Value.')}</li>
       <li>{t('In Automation, add a daily one at a time you like that runs the shortcut without asking.')}</li>
+    </ol>
+
+    {/* The same address and key take what the Health Auto Export app posts (api/health/fold.js). */}
+    <h4 className="sec" style={{ marginTop: 18 }}>{t('Or with Health Auto Export')}</h4>
+    <div className="small muted" style={{ marginTop: 6 }}>{t('Health Auto Export, an app on the App Store, sends the same readings by itself, without building a Shortcut. It uses the address and key above.')}</div>
+    <ol className="small" style={{ paddingInlineStart: 20, lineHeight: 1.5, margin: '6px 0 0' }}>
+      <li>{t('In Health Auto Export, open Automations, add a new one of type REST API and paste the address above as its URL.')}</li>
+      <li>{t('Under Headers, add Authorization with the value Bearer followed by a space and your key.')}</li>
+      <li>{t('Export Format JSON, Data Type Health Metrics, then choose what to send: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.')}</li>
+      <li>{t('Date Range Previous 7 Days, Summarize Data on with Time Grouping by days, and a daily Sync Cadence.')}</li>
     </ol>
     <div className="small dim" style={{ marginTop: 8 }}>{t('Sending the same days twice adds nothing. Readings you delete here are not sent back.')}</div>
     <div style={{ height: 14 }} />
