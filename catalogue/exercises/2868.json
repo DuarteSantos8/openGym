@@ -1,0 +1,22 @@
+{
+  "id": "2868",
+  "name": "spine twist v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "lower back"
+  ],
+  "category": "pilates",
+  "description": "A seated Pilates twist that mobilises the spine and strengthens the obliques.",
+  "instructions": [
+    "Sit tall with your legs extended and arms reaching out to the sides.",
+    "Flex your feet and grow tall through the crown of your head.",
+    "Twist your torso to one side, pulsing gently for a small extra turn.",
+    "Return to center without sagging in the chest.",
+    "Twist to the other side and repeat."
+  ],
+  "textSource": "opengym"
+}

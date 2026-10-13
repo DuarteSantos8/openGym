@@ -1,0 +1,24 @@
+{
+  "id": "7276",
+  "name": "bottle weighted gorilla row",
+  "bodyPart": "back",
+  "equipment": "weighted",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rear deltoids",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Gorilla row using a weighted bottle in each hand, a handy way to train the back at home.",
+  "instructions": [
+    "Stand wide with a bottle on the floor between your feet and hinge forward.",
+    "Keep your back flat and grip a bottle in each hand.",
+    "Row one bottle up to your hip while the other stays down.",
+    "Lower it, then row with the other side.",
+    "Keep your hips steady and alternate sides."
+  ],
+  "femaleVariant": "6062",
+  "textSource": "opengym"
+}

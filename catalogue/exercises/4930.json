@@ -1,0 +1,22 @@
+{
+  "id": "4930",
+  "name": "lunge stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "A low lunge held to stretch the front of the hip and thigh. It opens up the hips.",
+  "instructions": [
+    "Step one foot forward into a lunge, back knee down on a mat.",
+    "Keep your torso upright.",
+    "Push your hips gently forward.",
+    "Feel the stretch in the front of the back hip and thigh.",
+    "Hold for 20-30 seconds.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

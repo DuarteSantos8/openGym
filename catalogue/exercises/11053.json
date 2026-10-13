@@ -1,0 +1,22 @@
+{
+  "id": "11053",
+  "name": "smith staggered stance hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip thrust on the Smith machine with a staggered stance. It builds the glutes.",
+  "instructions": [
+    "Sit with your upper back on a bench and the bar over your hips.",
+    "Stagger your feet, one slightly ahead.",
+    "Drive through your heels.",
+    "Lift your hips to full extension.",
+    "Squeeze your glutes.",
+    "Lower slowly and switch the stance."
+  ],
+  "textSource": "opengym"
+}

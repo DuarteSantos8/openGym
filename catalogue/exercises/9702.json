@@ -1,0 +1,22 @@
+{
+  "id": "9702",
+  "name": "bodyweight pulse goblet squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A squat held low with small pulses, with your hands clasped at your chest as if holding a weight. It builds thigh endurance.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and hands clasped at your chest.",
+    "Squat down to a deep position.",
+    "Pulse up and down a few centimetres at the bottom.",
+    "Keep your chest tall and heels down.",
+    "Stand up after the planned pulses."
+  ],
+  "textSource": "opengym"
+}

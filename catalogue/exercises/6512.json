@@ -1,0 +1,22 @@
+{
+  "id": "6512",
+  "name": "cable single arm low scapular row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "trapezius",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A low cable row that emphasises the shoulder blade, training the muscles between and around it.",
+  "instructions": [
+    "Set a cable low and hold the handle with one hand.",
+    "Hinge slightly forward with a flat back.",
+    "Pull your shoulder blade back toward your spine.",
+    "Squeeze for a second.",
+    "Return slowly, then switch arms."
+  ],
+  "textSource": "opengym"
+}

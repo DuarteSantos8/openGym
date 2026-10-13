@@ -1,0 +1,23 @@
+{
+  "id": "3848",
+  "name": "seated row with towel",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rear deltoids",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated row using a towel for resistance. It trains your lats and upper back.",
+  "instructions": [
+    "Sit with your legs extended and loop a towel around your feet.",
+    "Hold the ends with arms straight.",
+    "Pull the towel toward your lower ribs.",
+    "Squeeze your shoulder blades together.",
+    "Extend your arms slowly."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "10781",
+  "name": "lying neck extension",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "Lying face down, you lift the head slightly to train the back of the neck.",
+  "instructions": [
+    "Lie face down with your forehead hanging near the edge of a bench or resting just off the floor.",
+    "Keep your shoulders relaxed.",
+    "Lift your head a few centimeters, keeping your chin slightly tucked.",
+    "Pause briefly.",
+    "Lower slowly.",
+    "Use small, controlled reps."
+  ],
+  "textSource": "opengym"
+}

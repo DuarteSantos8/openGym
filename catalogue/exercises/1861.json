@@ -1,0 +1,21 @@
+{
+  "id": "1861",
+  "name": "cable curl with multipurpose v bar",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Standing cable curl using a V bar, giving constant tension on the biceps.",
+  "instructions": [
+    "Attach a multipurpose V bar to a low pulley and grip it with palms up.",
+    "Stand tall with your elbows at your sides.",
+    "Curl the bar up toward your shoulders.",
+    "Squeeze your biceps at the top.",
+    "Lower slowly without letting your elbows drift."
+  ],
+  "textSource": "opengym"
+}

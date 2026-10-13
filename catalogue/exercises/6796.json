@@ -1,0 +1,22 @@
+{
+  "id": "6796",
+  "name": "smith sumo chair squat",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A wide-stance squat on the smith machine down to a chair. The seat gives a consistent depth.",
+  "instructions": [
+    "Place a chair behind you and set the bar on your upper back.",
+    "Take a wide stance with toes turned out.",
+    "Sit back and down until you lightly touch the chair.",
+    "Keep your knees tracking over your toes.",
+    "Drive through your heels to stand up."
+  ],
+  "textSource": "opengym"
+}

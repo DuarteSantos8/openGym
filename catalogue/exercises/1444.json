@@ -1,0 +1,22 @@
+{
+  "id": "1444",
+  "name": "dumbbell bent arm pullover hold",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "lats",
+    "triceps",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "Holding a dumbbell over your chest with bent arms in a pullover position. It keeps the chest and lats under tension.",
+  "instructions": [
+    "Lie on a bench holding a dumbbell with both hands over your chest.",
+    "Lower it behind your head with your elbows bent.",
+    "Stop where you feel a stretch in your chest and lats.",
+    "Hold the position with your core tight.",
+    "Hold for 15-30 seconds, then lift it back up."
+  ],
+  "textSource": "opengym"
+}

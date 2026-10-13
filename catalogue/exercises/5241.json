@@ -1,0 +1,22 @@
+{
+  "id": "5241",
+  "name": "old school reverse extensions",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "A classic reverse hyper lift on a bench, raising the legs behind you. It trains the lower back and glutes.",
+  "instructions": [
+    "Lie face down over a bench with your hips at the edge.",
+    "Hold the bench and keep your legs hanging down.",
+    "Lift your legs behind you until your body is straight.",
+    "Pause and squeeze your glutes.",
+    "Lower slowly without swinging."
+  ],
+  "femaleVariant": "5263",
+  "textSource": "opengym"
+}

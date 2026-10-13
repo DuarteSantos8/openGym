@@ -59,6 +59,35 @@ export const NUDGE_COPY = {
       ]
     }
   },
+  "bn": {
+    "friendly": {
+      "title": "সব ঠিক আছে তো?",
+      "lines": [
+        "{0} এখনও অপেক্ষা করছে। কী হলো?",
+        "আজ {0} হলো না? কাল ছোট একটা সেশনও কাজে দেবে।",
+        "কঠিন দিন গেল? {0} অপেক্ষা করবে। কাল নতুন শুরু।",
+        "এই যে, আজ {0} হলো না। সব ঠিক তো?"
+      ]
+    },
+    "guilt": {
+      "title": "তোমাকে মিস করছি",
+      "lines": [
+        "{0} সারা সন্ধ্যা দরজার পাশে অপেক্ষা করেছে। শুধু তোমার জন্য।",
+        "বারবেল আজ তোমার খোঁজ নিল। আমি কী বলব বুঝতে পারিনি।",
+        "আমি কি কিছু বলেছি? {0} তোমাকে মিস করছে।",
+        "বেঞ্চে তোমার জন্য জায়গা রেখেছিলাম। এখনও খালি।"
+      ]
+    },
+    "drill": {
+      "title": "সাবধান, রিক্রুট!",
+      "lines": [
+        "তোমার গেইনস ব্যাগ গোছাচ্ছে। কাল {0}, কোনো অজুহাত নয়!",
+        "{0} নিজে নিজে হয় না, রিক্রুট। নড়ো!",
+        "অজুহাত ওজন তোলে না। কাল {0}-এর জন্য হাজির হও!",
+        "তোমার পেশিরা নিখোঁজ ডায়েরি করেছে। {0}-এর জন্য হাজির হও!"
+      ]
+    }
+  },
   "de": {
     "friendly": {
       "title": "Alles okay?",
@@ -121,28 +150,28 @@ export const NUDGE_COPY = {
     "friendly": {
       "title": "Tout va bien ?",
       "lines": [
-        "{0} vous attend toujours. Que se passe-t-il ?",
+        "{0} t’attend toujours. Que se passe-t-il ?",
         "Pas de {0} aujourd’hui ? Même une courte séance demain compte.",
         "Journée difficile ? {0} peut attendre. Demain est un nouveau départ.",
         "Hé, {0} n’a pas eu lieu aujourd’hui. Tout va bien ?"
       ]
     },
     "guilt": {
-      "title": "Vous me manquez",
+      "title": "Tu me manques",
       "lines": [
-        "{0} vous a attendu à la porte toute la soirée. Vous.",
-        "La barre a demandé de vos nouvelles aujourd’hui. Je n’ai pas su quoi lui dire.",
-        "C’est quelque chose que j’ai dit ? {0} s’ennuie de vous.",
-        "Je vous ai gardé une place sur le banc. Elle est toujours vide."
+        "{0} t’a attendu à la porte toute la soirée. Toi.",
+        "La barre a demandé de tes nouvelles aujourd’hui. Je n’ai pas su quoi lui dire.",
+        "C’est quelque chose que j’ai dit ? {0} s’ennuie de toi.",
+        "Je t’ai gardé une place sur le banc. Elle est toujours vide."
       ]
     },
     "drill": {
       "title": "Garde-à-vous, recrue !",
       "lines": [
-        "Vos gains font leurs valises. {0} demain, sans excuses !",
+        "Tes gains font leurs valises. {0} demain, sans excuses !",
         "{0} ne va pas se faire tout seul, recrue. Au pas de course !",
-        "Les excuses ne soulèvent pas de poids. Présentez-vous demain pour {0} !",
-        "Vos muscles ont signalé votre disparition. Présentez-vous pour {0} !"
+        "Les excuses ne soulèvent pas de poids. Présente-toi demain pour {0} !",
+        "Tes muscles ont signalé ta disparition. Présente-toi pour {0} !"
       ]
     }
   },

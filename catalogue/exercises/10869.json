@@ -1,0 +1,23 @@
+{
+  "id": "10869",
+  "name": "bosu ball single leg squat",
+  "bodyPart": "upper legs",
+  "equipment": "bosu ball",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A single-leg squat on a Bosu ball. It challenges the legs and balance.",
+  "instructions": [
+    "Stand on one foot on the Bosu.",
+    "Extend your arms for balance.",
+    "Lower into a controlled squat.",
+    "Keep your knee in line with your toes.",
+    "Press back up.",
+    "Switch legs after the set."
+  ],
+  "textSource": "opengym"
+}

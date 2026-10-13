@@ -1,0 +1,22 @@
+{
+  "id": "0930",
+  "name": "band standing row",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A standing row with a band. It works the mid-back and lats.",
+  "instructions": [
+    "Anchor the band at chest height and hold the ends.",
+    "Step back to create tension.",
+    "Pull your elbows back past your ribs.",
+    "Squeeze your shoulder blades.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

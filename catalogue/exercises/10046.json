@@ -1,0 +1,23 @@
+{
+  "id": "10046",
+  "name": "snow angel face to sky",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "shoulders",
+    "lower abs"
+  ],
+  "category": "calisthenics",
+  "description": "Lying face up, you sweep arms and legs out like a snow angel. It trains the abs and keeps your shoulders mobile.",
+  "instructions": [
+    "Lie on your back with arms by your sides and legs together.",
+    "Press your lower back toward the floor.",
+    "Sweep your arms overhead while opening your legs.",
+    "Bring them back together in the same arc.",
+    "Repeat at a steady pace.",
+    "Keep your abs braced and lower back flat."
+  ],
+  "textSource": "opengym"
+}

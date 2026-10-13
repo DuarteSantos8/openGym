@@ -1,0 +1,22 @@
+{
+  "id": "4407",
+  "name": "tiger tail tricep",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A triceps exercise using a bodyweight or stick-style handle, focused on straightening the elbows against resistance.",
+  "instructions": [
+    "Set up facing your anchor or support, with your upper arms close to your body.",
+    "Brace your core and keep your elbows still.",
+    "Straighten your arms fully to engage the triceps.",
+    "Squeeze at the bottom for a moment.",
+    "Return slowly to the start."
+  ],
+  "textSource": "opengym"
+}

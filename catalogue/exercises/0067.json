@@ -1,0 +1,43 @@
+{
+  "id": "0067",
+  "name": "barbell one arm snatch",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "traps",
+    "forearms",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "A one-handed snatch that takes the bar from the floor to overhead in one fast pull. Needs power and coordination.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, toes pointing slightly outwards.",
+    "Hold the barbell with an overhand grip, hands slightly wider than shoulder-width apart.",
+    "Bend your knees and lower your hips into a squat position, keeping your back straight and chest up.",
+    "Explosively extend your hips, knees, and ankles, driving the barbell upwards.",
+    "As the barbell reaches chest level, pull it upwards with your arm, keeping it close to your body.",
+    "Rotate your elbow under the barbell and extend your arm fully overhead, locking out your elbow.",
+    "Lower the barbell back down to the starting position in a controlled manner.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "muscleMap": {
+    "bodyPart": "full body",
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "hamstring",
+      "trapezius",
+      "deltoids"
+    ],
+    "secondaries": [
+      "calves",
+      "forearm",
+      "triceps",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "textSource": "exercisedb"
+}

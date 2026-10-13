@@ -1,0 +1,23 @@
+{
+  "id": "9874",
+  "name": "cable lying single arm cross lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A single-arm lateral raise done lying on your side or back on the floor with a low cable crossing the body. It trains the side delt under steady tension.",
+  "instructions": [
+    "Lie on the floor next to a low pulley and grip the handle with the far hand.",
+    "Begin with your arm across your body and the elbow slightly bent.",
+    "Raise your arm out and up in a smooth arc to about shoulder height.",
+    "Pause briefly at the top.",
+    "Lower slowly back across your body without letting the weight stack rest.",
+    "Complete your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

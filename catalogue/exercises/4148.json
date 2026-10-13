@@ -1,0 +1,23 @@
+{
+  "id": "4148",
+  "name": "band narrow grip high row v. 2",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A second variation of the narrow grip high row using a band. It builds the upper back and rear shoulders.",
+  "instructions": [
+    "Anchor the band high and grip it with hands close together.",
+    "Step back to create tension and stand tall.",
+    "Pull your hands toward your upper chest, elbows flaring slightly.",
+    "Pause and squeeze your shoulder blades together.",
+    "Extend your arms slowly back to the start.",
+    "Keep your torso upright throughout."
+  ],
+  "textSource": "opengym"
+}

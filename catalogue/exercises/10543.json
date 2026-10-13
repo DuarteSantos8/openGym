@@ -1,0 +1,22 @@
+{
+  "id": "10543",
+  "name": "kneeling bend knee chair supported",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes",
+    "calves"
+  ],
+  "category": "mobility",
+  "description": "Kneeling beside a chair for support, you gently bend the knee. It builds comfortable knee range of motion.",
+  "instructions": [
+    "Hold the back of a chair and kneel on one knee on a soft surface.",
+    "Keep your torso upright.",
+    "Slowly sit back toward your heel to bend the knee.",
+    "Stay within a comfortable range.",
+    "Return to the start and switch sides after your reps."
+  ],
+  "textSource": "opengym"
+}

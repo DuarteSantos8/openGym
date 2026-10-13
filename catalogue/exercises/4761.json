@@ -1,0 +1,22 @@
+{
+  "id": "4761",
+  "name": "elevated standing single leg calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "A one-leg calf raise on a step with a full stretch at the bottom. It builds calf strength and balance.",
+  "instructions": [
+    "Stand on one foot with the ball of that foot on a step, other foot lifted.",
+    "Hold a wall or rail for balance.",
+    "Lower your heel below the step.",
+    "Press up onto your toes as high as you can.",
+    "Lower slowly, finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

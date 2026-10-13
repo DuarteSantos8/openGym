@@ -1,0 +1,22 @@
+{
+  "id": "4785",
+  "name": "seated pull up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up from a seated position with your legs assisting. It builds lats and arms while reducing the load.",
+  "instructions": [
+    "Sit under a bar and grab it with an overhand grip.",
+    "Extend your legs in front of you.",
+    "Pull your chest up toward the bar.",
+    "Squeeze your back at the top.",
+    "Lower slowly until your arms are straight."
+  ],
+  "textSource": "opengym"
+}

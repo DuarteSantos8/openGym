@@ -1,0 +1,22 @@
+{
+  "id": "5078",
+  "name": "seated chest clam",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper back"
+  ],
+  "category": "stretching",
+  "description": "Sit tall and open your elbows wide like a clam to stretch the front of the chest and shoulders.",
+  "instructions": [
+    "Sit tall with your fingers lightly behind your head.",
+    "Start with your elbows pointing forward.",
+    "Slowly open your elbows out and back as far as is comfortable.",
+    "Squeeze your shoulder blades together.",
+    "Hold for 20-30 seconds while breathing steadily."
+  ],
+  "femaleVariant": "4946",
+  "textSource": "opengym"
+}

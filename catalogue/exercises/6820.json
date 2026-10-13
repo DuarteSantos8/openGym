@@ -1,0 +1,22 @@
+{
+  "id": "6820",
+  "name": "kettlebell incline fly",
+  "bodyPart": "chest",
+  "equipment": "kettlebell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A fly on an incline bench using kettlebells. It stretches and works the upper chest.",
+  "instructions": [
+    "Lie on an incline bench holding a kettlebell in each hand above your chest.",
+    "Keep a soft bend in the elbows.",
+    "Open your arms wide in an arc until you feel a chest stretch.",
+    "Squeeze the chest to bring the weights back together.",
+    "Control the weights and keep your wrists stable."
+  ],
+  "textSource": "opengym"
+}

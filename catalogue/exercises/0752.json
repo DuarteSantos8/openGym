@@ -1,0 +1,40 @@
+{
+  "id": "0752",
+  "name": "smith deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "On the smith machine, you lift the bar from hip height or lower with a hip hinge. Works the glutes, hamstrings and lower back.",
+  "instructions": [
+    "Set up the smith machine with the bar at hip height.",
+    "Stand with your feet shoulder-width apart, toes pointing slightly outward.",
+    "Bend at the hips and knees, keeping your back straight and chest up, and grip the bar with an overhand grip slightly wider than shoulder-width apart.",
+    "Engage your core and lift the bar by extending your hips and knees, keeping the bar close to your body.",
+    "Stand up straight, fully extending your hips and knees.",
+    "Lower the bar back down by bending at the hips and knees, maintaining control and keeping your back straight.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "bodyPart": "full body",
+    "primaries": [
+      "gluteal",
+      "hamstring",
+      "lower-back"
+    ],
+    "secondaries": [
+      "quadriceps",
+      "adductors",
+      "calves",
+      "abs",
+      "obliques"
+    ]
+  },
+  "femaleVariant": "3618",
+  "textSource": "exercisedb"
+}

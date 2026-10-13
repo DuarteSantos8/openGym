@@ -1,0 +1,21 @@
+{
+  "id": "2738",
+  "name": "dumbbell lying triceps extension on floor",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A floor version of the lying triceps extension, where the floor limits how far you lower the weight.",
+  "instructions": [
+    "Lie on the floor with knees bent, holding a dumbbell in each hand over your chest.",
+    "Keep upper arms still and bend your elbows to lower the weights toward your head.",
+    "Stop just before the weights touch the floor.",
+    "Press back up by straightening your arms.",
+    "Keep your elbows pointing up."
+  ],
+  "textSource": "opengym"
+}

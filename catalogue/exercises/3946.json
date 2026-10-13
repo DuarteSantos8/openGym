@@ -1,0 +1,22 @@
+{
+  "id": "3946",
+  "name": "dumbbell seated upright alternate squeeze press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Press two dumbbells held together, one arm at a time, while seated upright. It trains the chest with a strong inner squeeze.",
+  "instructions": [
+    "Sit upright with a dumbbell in each hand, pressed together in front of your chest.",
+    "Keep the two dumbbells touching.",
+    "Press one dumbbell forward until the arm is straight.",
+    "Bring it back and press with the other arm.",
+    "Keep squeezing the weights together."
+  ],
+  "textSource": "opengym"
+}

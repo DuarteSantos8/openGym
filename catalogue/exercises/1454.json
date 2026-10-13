@@ -1,0 +1,22 @@
+{
+  "id": "1454",
+  "name": "lever seated shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "leverage machine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A machine overhead press that builds the shoulders and triceps with a fixed, stable path.",
+  "instructions": [
+    "Adjust the seat so the handles start near shoulder height and sit with your back on the pad.",
+    "Grip the handles and brace your core.",
+    "Press the handles overhead until your arms are nearly straight.",
+    "Pause briefly at the top without shrugging.",
+    "Lower slowly back to shoulder height and repeat."
+  ],
+  "femaleVariant": "2883",
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "0709",
+  "name": "side hip (on parallel bars)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Between parallel bars, you lift your body and swing your hips side to side. Works the obliques and core.",
+  "instructions": [
+    "Stand between two parallel bars with your feet shoulder-width apart.",
+    "Place your hands on the bars and lift your body off the ground, supporting your weight on your arms.",
+    "Engage your abs and slowly lift your legs to the side, keeping them straight.",
+    "Pause for a moment at the top, then slowly lower your legs back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

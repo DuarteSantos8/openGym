@@ -1,0 +1,23 @@
+{
+  "id": "4107",
+  "name": "barbell sumo deadlift from blocks",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "adductors",
+    "quadriceps",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A sumo deadlift with the bar raised on blocks, shortening the pull and loading hips, legs and back.",
+  "instructions": [
+    "Stand with a wide stance and toes out in front of a bar on blocks.",
+    "Grip the bar inside your knees and set a flat back.",
+    "Push the floor apart with your feet and stand up.",
+    "Lock out by squeezing your glutes.",
+    "Lower the bar back to the blocks with control."
+  ],
+  "textSource": "opengym"
+}

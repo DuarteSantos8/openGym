@@ -1,0 +1,23 @@
+{
+  "id": "1107",
+  "name": "suspender y lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "suspension trainer",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius",
+    "rear deltoids"
+  ],
+  "category": "calisthenics",
+  "description": "Leaning back on the straps, you pull your arms up into a Y shape to train the shoulders and upper back.",
+  "instructions": [
+    "Hold the handles and lean back with arms straight and body in a line.",
+    "Keep your core tight and feet planted.",
+    "Raise your arms up and out until they form a Y overhead.",
+    "Pause at the top without shrugging.",
+    "Lower slowly back to the start.",
+    "Step your feet forward to make it harder."
+  ],
+  "textSource": "opengym"
+}

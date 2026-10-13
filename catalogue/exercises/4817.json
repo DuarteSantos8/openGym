@@ -1,0 +1,22 @@
+{
+  "id": "4817",
+  "name": "kettlebell good morning",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip hinge with a kettlebell held at the chest. It strengthens the hamstrings, glutes and lower back.",
+  "instructions": [
+    "Hold a kettlebell by the horns against your chest.",
+    "Stand with feet shoulder-width apart and knees slightly bent.",
+    "Push your hips back and hinge forward with a flat back.",
+    "Lower until you feel a stretch in your hamstrings.",
+    "Squeeze your glutes to stand tall again."
+  ],
+  "textSource": "opengym"
+}

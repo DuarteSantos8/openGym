@@ -1,0 +1,22 @@
+{
+  "id": "0519",
+  "name": "kettlebell alternating press on floor",
+  "bodyPart": "chest",
+  "equipment": "kettlebell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "Lying on the floor, you press kettlebells up one at a time. It works the chest, shoulders and triceps.",
+  "instructions": [
+    "Start by lying on your back on the floor with your knees bent and feet flat on the ground.",
+    "Hold a kettlebell in each hand, with your palms facing towards your feet and your arms extended straight up towards the ceiling.",
+    "Lower one kettlebell down towards your shoulder while keeping the other kettlebell extended straight up.",
+    "Press the lowered kettlebell back up to the starting position while simultaneously lowering the other kettlebell down towards your shoulder.",
+    "Continue alternating the press motion with each kettlebell for the desired number of repetitions."
+  ],
+  "femaleVariant": "2532",
+  "textSource": "exercisedb"
+}

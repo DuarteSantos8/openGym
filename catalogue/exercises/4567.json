@@ -1,0 +1,23 @@
+{
+  "id": "4567",
+  "name": "cable bent over single arm neutral grip kickback with rope attachment",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm rope kickback that works the triceps with steady cable tension.",
+  "instructions": [
+    "Attach a rope to a low pulley and hold one end with a neutral grip.",
+    "Hinge at the hips with a flat back.",
+    "Keep your upper arm parallel to the floor and tucked in.",
+    "Straighten your elbow and pull the rope back.",
+    "Squeeze at the end of the motion.",
+    "Lower slowly, then switch arms."
+  ],
+  "femaleVariant": "9724",
+  "textSource": "opengym"
+}

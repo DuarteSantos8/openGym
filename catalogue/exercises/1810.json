@@ -1,0 +1,22 @@
+{
+  "id": "1810",
+  "name": "lying knee to chest stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "lower back",
+    "hip flexors",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "Pulling one knee toward your chest while lying down stretches your glutes and lower back. A classic, easy hip release.",
+  "instructions": [
+    "Lie on your back with both legs extended.",
+    "Pull one knee toward your chest with both hands while the other leg stays flat.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

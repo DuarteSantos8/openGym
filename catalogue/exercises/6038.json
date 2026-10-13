@@ -1,0 +1,21 @@
+{
+  "id": "6038",
+  "name": "smith donkey kick",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A kick-back using the Smith machine bar under the foot, to target the glutes.",
+  "instructions": [
+    "Set the bar of the Smith machine at a low height.",
+    "Get on all fours with one foot under the bar.",
+    "Press the bar up by extending your hip.",
+    "Squeeze your glute at the top.",
+    "Lower slowly and repeat before switching legs."
+  ],
+  "textSource": "opengym"
+}

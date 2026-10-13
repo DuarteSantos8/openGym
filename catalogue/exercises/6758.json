@@ -1,0 +1,22 @@
+{
+  "id": "6758",
+  "name": "dumbbell over the bench supination",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A forearm rotation holding a dumbbell with the arm over the end of a bench. It trains the muscles that turn the palm up.",
+  "instructions": [
+    "Sit by a bench and rest your forearm on it with your hand past the edge.",
+    "Hold a dumbbell with a hammer grip.",
+    "Keep your forearm still.",
+    "Rotate your palm up as far as you can.",
+    "Return slowly to the start.",
+    "Finish the reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

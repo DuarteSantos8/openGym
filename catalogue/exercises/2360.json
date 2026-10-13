@@ -1,0 +1,22 @@
+{
+  "id": "2360",
+  "name": "squat knees middle position (form check)",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A side-by-side form check for knee position midway through a squat, showing the common mistake next to the correct technique so you can spot it in your own sets.",
+  "instructions": [
+    "Stand with feet shoulder width apart and begin to squat.",
+    "Compare the faulty version with the correct one: your knees keep tracking in line with your toes on the way up and down.",
+    "Perform the lift slowly with a light load and keep the correct position throughout.",
+    "Use a mirror or film a set from the side to check your own position.",
+    "Fix the cue before adding weight, and rest between sets so form stays clean."
+  ],
+  "textSource": "opengym"
+}

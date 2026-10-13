@@ -1,0 +1,23 @@
+{
+  "id": "3375",
+  "name": "battling ropes fly",
+  "bodyPart": "shoulders",
+  "equipment": "rope",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "upper back",
+    "core",
+    "rear deltoids"
+  ],
+  "category": "cardio",
+  "description": "Sweeping the ropes out and in like a fly, hitting the shoulders and upper body.",
+  "instructions": [
+    "Stand with knees bent, a rope end in each hand and arms in front.",
+    "Sweep your arms out wide and slightly up.",
+    "Bring them back together in front of you.",
+    "Keep a steady rhythm.",
+    "Continue for a set time."
+  ],
+  "textSource": "opengym"
+}

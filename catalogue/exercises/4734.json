@@ -1,0 +1,22 @@
+{
+  "id": "4734",
+  "name": "dumbbell decline overhead sit up",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A decline sit-up holding a dumbbell overhead. The long lever makes your abs work harder.",
+  "instructions": [
+    "Hook your feet on a decline bench and lie back holding a dumbbell above your chest.",
+    "Extend your arms overhead behind you.",
+    "Curl your torso up, keeping the dumbbell over your head.",
+    "Reach the top with your arms above your knees.",
+    "Lower back slowly with control."
+  ],
+  "textSource": "opengym"
+}

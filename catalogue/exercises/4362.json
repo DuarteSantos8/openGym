@@ -1,0 +1,23 @@
+{
+  "id": "4362",
+  "name": "barbell squat 2 sec hold",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A barbell back squat with a two second pause at the bottom, removing bounce and building strength.",
+  "instructions": [
+    "Set a barbell on your upper back and stand with feet shoulder-width apart.",
+    "Brace your core and sit down into a deep squat.",
+    "Pause for two seconds at the bottom.",
+    "Drive through your heels to stand.",
+    "Keep your chest up throughout."
+  ],
+  "textSource": "opengym"
+}

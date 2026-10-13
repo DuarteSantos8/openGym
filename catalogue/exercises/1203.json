@@ -1,0 +1,21 @@
+{
+  "id": "1203",
+  "name": "cable one arm inner biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A single-arm cable curl with the elbow pointing slightly out to emphasise the inner biceps.",
+  "instructions": [
+    "Attach a handle to a low cable and stand facing the stack.",
+    "Hold the handle with one hand, palm up, and turn your elbow slightly out.",
+    "Curl the handle toward your shoulder.",
+    "Squeeze at the top, then lower under control.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

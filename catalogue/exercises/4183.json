@@ -1,0 +1,23 @@
+{
+  "id": "4183",
+  "name": "dumbbell seated cuban press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A seated move combining an upright row, rotation and press. It strengthens shoulders and rotator cuff.",
+  "instructions": [
+    "Sit tall holding dumbbells at your thighs.",
+    "Row them up to chest height with elbows high.",
+    "Rotate your forearms upward.",
+    "Press the dumbbells overhead.",
+    "Reverse the path slowly.",
+    "Use light weights."
+  ],
+  "textSource": "opengym"
+}

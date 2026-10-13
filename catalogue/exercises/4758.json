@@ -1,0 +1,24 @@
+{
+  "id": "4758",
+  "name": "dumbbell step back lunge and row",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "lats",
+    "upper back",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A reverse lunge followed by a row. It trains the legs and the back in one flowing movement.",
+  "instructions": [
+    "Stand holding dumbbells at your sides.",
+    "Step one leg back and lower into a lunge.",
+    "Hinge your torso slightly forward with a flat back.",
+    "Row both dumbbells to your ribs.",
+    "Lower them, push through the front foot to stand, and switch legs."
+  ],
+  "textSource": "opengym"
+}

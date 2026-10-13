@@ -1,0 +1,22 @@
+{
+  "id": "5527",
+  "name": "lever seated bent over rear delt fly",
+  "bodyPart": "shoulders",
+  "equipment": "leverage machine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "Machine rear-delt fly where you lean forward and sweep your arms back.",
+  "instructions": [
+    "Sit on the machine with your chest on the pad and grip the handles.",
+    "Keep a slight bend in your elbows.",
+    "Open your arms out and back, squeezing your shoulder blades.",
+    "Pause, then return slowly.",
+    "Do not shrug."
+  ],
+  "textSource": "opengym"
+}

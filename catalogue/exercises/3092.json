@@ -1,0 +1,25 @@
+{
+  "id": "3092",
+  "name": "high knee squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "A squat followed by a high knee drive as you stand. It combines leg strength with a cardio push.",
+  "instructions": [
+    "Stand with your feet shoulder width apart.",
+    "Squat down with your chest up.",
+    "Drive up through your feet to stand.",
+    "Lift one knee toward your chest as you reach the top.",
+    "Lower the foot and go back into the squat.",
+    "Alternate knees on each rep."
+  ],
+  "femaleVariant": "0478",
+  "textSource": "opengym"
+}

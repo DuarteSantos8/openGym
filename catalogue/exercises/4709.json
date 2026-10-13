@@ -1,0 +1,23 @@
+{
+  "id": "4709",
+  "name": "basketball shot jump",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "calves",
+    "glutes",
+    "shoulders",
+    "triceps"
+  ],
+  "category": "plyometrics",
+  "description": "A jump with a shooting arm motion that trains explosive legs and coordination.",
+  "instructions": [
+    "Stand in an athletic stance with hands at chest height.",
+    "Dip into a quarter squat.",
+    "Jump up and extend one arm like shooting a basketball.",
+    "Land softly with bent knees.",
+    "Reset and repeat."
+  ],
+  "textSource": "opengym"
+}

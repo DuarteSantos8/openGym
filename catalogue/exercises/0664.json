@@ -1,0 +1,25 @@
+{
+  "id": "0664",
+  "name": "push-up to side plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "chest",
+    "triceps"
+  ],
+  "category": "calisthenics",
+  "description": "You do a push-up, then rotate into a side plank. Works the chest, arms, shoulders and obliques.",
+  "instructions": [
+    "Start in a push-up position with your hands shoulder-width apart and your body in a straight line.",
+    "Lower your body towards the ground by bending your elbows, keeping your core engaged.",
+    "Push back up to the starting position.",
+    "Shift your weight onto your left hand and rotate your body to the right, lifting your right arm towards the ceiling.",
+    "Hold the side plank position for a few seconds, then return to the starting position.",
+    "Repeat the push-up and side plank on the opposite side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "femaleVariant": "0682",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1482",
+  "name": "cobra yoga pose",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower back",
+    "chest",
+    "shoulders"
+  ],
+  "category": "yoga",
+  "description": "A gentle yoga backbend that opens the chest and stretches the front of the abs while strengthening the back.",
+  "instructions": [
+    "Lie on your stomach with your palms under your shoulders and legs extended.",
+    "Press the tops of your feet into the floor.",
+    "Lift your chest by straightening your arms partway, keeping your hips down.",
+    "Keep your shoulders away from your ears and your neck long.",
+    "Hold for 15-30 seconds, then lower slowly."
+  ],
+  "femaleVariant": "4267",
+  "textSource": "opengym"
+}

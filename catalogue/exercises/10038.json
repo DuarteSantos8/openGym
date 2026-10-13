@@ -1,0 +1,22 @@
+{
+  "id": "10038",
+  "name": "dumbbell wrist supination",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "biceps",
+    "wrist flexors"
+  ],
+  "category": "strength",
+  "description": "Rotating a dumbbell so your palm turns up, working the muscles that twist the forearm.",
+  "instructions": [
+    "Sit and rest your forearm on your thigh or a bench with the hand hanging free.",
+    "Hold a light dumbbell with your palm facing down.",
+    "Rotate your forearm so the palm turns up.",
+    "Pause at the top.",
+    "Rotate back slowly to the start.",
+    "Finish your reps, then switch arms. Keep your elbow still."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4382",
+  "name": "barbell front rack lunge v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A forward lunge with the bar resting on your front shoulders. The front load works the quads and glutes and challenges your core.",
+  "instructions": [
+    "Rest the barbell on the front of your shoulders with elbows high.",
+    "Stand tall with feet hip-width apart.",
+    "Step forward into a long stride and lower until both knees reach about 90 degrees.",
+    "Push through the front foot to return to standing.",
+    "Alternate legs, keeping your torso upright."
+  ],
+  "textSource": "opengym"
+}

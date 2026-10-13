@@ -1,0 +1,22 @@
+{
+  "id": "3637",
+  "name": "wheel run",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "A fast running motion while holding on to a wheel. It raises your heart rate and challenges the core and shoulders.",
+  "instructions": [
+    "Start in a plank position with your hands on the wheel and your body straight.",
+    "Engage your core and start rolling the wheel forward by extending your arms.",
+    "Continue rolling until your body is fully extended and your arms are overhead.",
+    "Reverse the movement by pulling the wheel back towards your body, using your core and arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

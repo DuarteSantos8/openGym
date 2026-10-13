@@ -1,0 +1,24 @@
+{
+  "id": "10670",
+  "name": "lever stack seated incline single arm chest press",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-arm incline press on a lever machine. Working one side at a time evens out strength differences.",
+  "instructions": [
+    "Sit on the machine and grab one handle at upper-chest height.",
+    "Brace your core to avoid twisting.",
+    "Press the handle forward and up.",
+    "Pause, then lower slowly.",
+    "Keep your shoulder pulled back.",
+    "Do all reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

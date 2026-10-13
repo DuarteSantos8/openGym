@@ -1,0 +1,23 @@
+{
+  "id": "1243",
+  "name": "dead bug v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A lying core drill where arms and legs reach out while your back stays down. It trains core control.",
+  "instructions": [
+    "Lie on your back with arms pointing up and knees bent at 90 degrees.",
+    "Press your lower back into the floor.",
+    "Lower your right arm and left leg toward the floor.",
+    "Return and switch sides.",
+    "Move slowly and keep your back flat."
+  ],
+  "femaleVariant": "3800",
+  "textSource": "opengym"
+}

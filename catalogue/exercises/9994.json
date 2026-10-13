@@ -1,0 +1,23 @@
+{
+  "id": "9994",
+  "name": "ball assisted lying bent knee isometric hip adduction",
+  "bodyPart": "upper legs",
+  "equipment": "stability ball",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "inner thighs",
+    "glutes",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A lying hip adduction hold squeezing a ball between the knees. It trains the inner thighs.",
+  "instructions": [
+    "Lie on your back with your knees bent.",
+    "Place a ball between your knees.",
+    "Squeeze the ball with your inner thighs.",
+    "Hold for 5 to 10 seconds.",
+    "Release slowly.",
+    "Repeat for several reps."
+  ],
+  "textSource": "opengym"
+}

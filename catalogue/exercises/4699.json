@@ -1,0 +1,22 @@
+{
+  "id": "4699",
+  "name": "band air bike",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques",
+    "lower abs"
+  ],
+  "category": "strength",
+  "description": "A pedaling motion on your back with band resistance. It works the lower abs and hip flexors.",
+  "instructions": [
+    "Lie on your back with the band looped around your feet and hold the ends.",
+    "Raise your legs and shoulders slightly off the floor.",
+    "Pedal one leg in while extending the other.",
+    "Twist your torso to bring the opposite elbow to the knee.",
+    "Keep a steady rhythm and keep your core tight."
+  ],
+  "textSource": "opengym"
+}

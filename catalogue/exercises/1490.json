@@ -1,0 +1,22 @@
+{
+  "id": "1490",
+  "name": "standing calf raise (on a staircase)",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet"
+  ],
+  "category": "calisthenics",
+  "description": "A calf raise with your heels hanging off a stair step for extra range. It trains the calves through a deep stretch.",
+  "instructions": [
+    "Stand on the edge of a step or a sturdy platform with your heels hanging off and your toes on the step.",
+    "Hold onto a railing or wall for balance if needed.",
+    "Slowly raise your heels as high as possible, lifting your body weight onto the balls of your feet.",
+    "Pause for a moment at the top, then slowly lower your heels back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2378",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4554",
+  "name": "seated glute stretch v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A seated figure-four stretch that lengthens the glutes and outer hip.",
+  "instructions": [
+    "Sit on a chair or the floor with your back tall.",
+    "Cross one ankle over the opposite knee.",
+    "Keep your back straight and lean your chest forward slowly.",
+    "Feel the stretch in the glute of the crossed leg.",
+    "Hold for 20-30 seconds.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

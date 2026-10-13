@@ -1,0 +1,22 @@
+{
+  "id": "1481",
+  "name": "bow yoga pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "chest",
+    "lower back"
+  ],
+  "category": "yoga",
+  "description": "A yoga backbend where you lie on your belly and hold your ankles. It stretches the thighs, chest and front of the hips.",
+  "instructions": [
+    "Lie on your stomach with your arms along your sides.",
+    "Bend your knees and reach back to hold your ankles.",
+    "Lift your chest and kick your feet gently into your hands to raise your thighs.",
+    "Keep your gaze forward and breathe steadily.",
+    "Hold for 15-30 seconds, then release slowly and rest on the mat."
+  ],
+  "textSource": "opengym"
+}

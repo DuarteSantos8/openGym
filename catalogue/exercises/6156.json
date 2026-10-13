@@ -1,0 +1,24 @@
+{
+  "id": "6156",
+  "name": "kettlebell bent over row",
+  "bodyPart": "back",
+  "equipment": "kettlebell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A bent-over row using a kettlebell. It trains the lats and mid back.",
+  "instructions": [
+    "Hold a kettlebell and hinge forward with a flat back.",
+    "Let your arm hang straight down.",
+    "Row the kettlebell toward your hip.",
+    "Squeeze your shoulder blade back.",
+    "Lower slowly.",
+    "Finish your reps, then switch arms."
+  ],
+  "femaleVariant": "4537",
+  "textSource": "opengym"
+}

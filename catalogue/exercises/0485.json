@@ -1,0 +1,23 @@
+{
+  "id": "0485",
+  "name": "hip raise bridge v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A second version of the hip bridge lifting the hips from the floor. It strengthens the glutes and hamstrings.",
+  "instructions": [
+    "Lie on your back with your knees bent and your feet flat.",
+    "Place your arms at your sides.",
+    "Press through your heels and lift your hips toward the ceiling.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly to the floor.",
+    "Keep your ribs down and avoid overarching."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4417",
+  "name": "sumo squat floor touch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A wide-stance squat in which you touch the floor between your feet. It trains the glutes, thighs and hip mobility.",
+  "instructions": [
+    "Stand with your feet wide and toes turned out.",
+    "Push your hips back and squat down.",
+    "Touch the floor with your fingertips between your feet.",
+    "Keep your chest lifted and your knees tracking over your toes.",
+    "Drive through your heels to stand."
+  ],
+  "textSource": "opengym"
+}

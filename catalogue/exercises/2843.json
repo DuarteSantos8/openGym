@@ -1,0 +1,22 @@
+{
+  "id": "2843",
+  "name": "double leg stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A core-driven move where arms and legs stretch out together and then draw back in.",
+  "instructions": [
+    "Lie on your back and curl your head and shoulders up.",
+    "Hug your knees to your chest.",
+    "Reach your arms overhead while extending your legs.",
+    "Circle your arms and draw your knees back in.",
+    "Keep your lower back down."
+  ],
+  "textSource": "opengym"
+}

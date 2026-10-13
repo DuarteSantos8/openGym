@@ -1,0 +1,22 @@
+{
+  "id": "6548",
+  "name": "decline knee raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Knee raises on a decline bench. The slope adds difficulty and focuses on the lower abs.",
+  "instructions": [
+    "Lie on a decline bench and grip the top behind your head.",
+    "Extend your legs with a slight knee bend.",
+    "Pull your knees up toward your chest, curling the pelvis off the bench.",
+    "Pause briefly at the top.",
+    "Lower your legs slowly without letting the hips drop hard.",
+    "Keep the movement smooth, not jerky."
+  ],
+  "textSource": "opengym"
+}

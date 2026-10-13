@@ -1,0 +1,23 @@
+{
+  "id": "2112",
+  "name": "hip extension supported from back",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "Lifts the hips while the upper back is supported, teaching the glutes to extend the hip through a full range.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat on the floor.",
+    "Place your arms by your sides for support.",
+    "Push through your heels and lift the hips until the body forms a straight line.",
+    "Squeeze your glutes at the top without arching the lower back.",
+    "Lower the hips back down with control.",
+    "Repeat for 10-12 reps."
+  ],
+  "textSource": "opengym"
+}

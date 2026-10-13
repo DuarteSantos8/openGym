@@ -1,0 +1,22 @@
+{
+  "id": "9509",
+  "name": "lever sitting toe raise",
+  "bodyPart": "lower legs",
+  "equipment": "leverage machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "A seated machine raise where your knees stay bent, which emphasises the soleus under the calf.",
+  "instructions": [
+    "Sit at the machine with the pads over your thighs and balls of your feet on the platform.",
+    "Lower your heels for a calf stretch.",
+    "Press up onto your toes as high as you can.",
+    "Pause briefly at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

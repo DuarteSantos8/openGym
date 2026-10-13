@@ -1,0 +1,23 @@
+{
+  "id": "6299",
+  "name": "dragonfly pose maksikanagasana",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "hamstrings",
+    "groin",
+    "core",
+    "shoulders"
+  ],
+  "category": "yoga",
+  "description": "A seated wide-leg arm balance with legs extended out to the sides. It needs hip flexibility and core strength.",
+  "instructions": [
+    "Squat with hands on the floor in front of you.",
+    "Place your knees high on your upper arms.",
+    "Lean forward and lift your feet off the floor.",
+    "Extend your legs wide to the sides.",
+    "Hold for a few breaths, then release."
+  ],
+  "textSource": "opengym"
+}

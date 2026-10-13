@@ -1,0 +1,23 @@
+{
+  "id": "4410",
+  "name": "warrior ii yoga pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "shoulders",
+    "core"
+  ],
+  "category": "yoga",
+  "description": "A strong standing pose with wide legs and arms outstretched, building leg strength, hip opening and stamina.",
+  "instructions": [
+    "Stand with your feet wide apart and turn your front foot out.",
+    "Bend the front knee over the ankle.",
+    "Extend your arms out to the sides at shoulder height.",
+    "Gaze over your front fingertips and keep your torso upright.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

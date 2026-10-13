@@ -1,0 +1,23 @@
+{
+  "id": "9515",
+  "name": "dumbbell sitting good morning",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "lower back",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A seated good morning with a dumbbell held at your chest, bowing forward to train the lower back with less leg involvement.",
+  "instructions": [
+    "Sit on a bench with feet flat and hold a dumbbell against your chest.",
+    "Sit tall and brace your core.",
+    "Hinge forward from the hips, keeping your back flat.",
+    "Stop when your torso is about halfway down.",
+    "Squeeze your back and glutes to sit tall again."
+  ],
+  "textSource": "opengym"
+}

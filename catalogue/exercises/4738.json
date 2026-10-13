@@ -1,0 +1,23 @@
+{
+  "id": "4738",
+  "name": "dumbbell goblet squat and biceps curl",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "biceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A goblet squat followed by a biceps curl in the bottom position. It combines leg and arm work in one rep.",
+  "instructions": [
+    "Stand with feet shoulder-width apart holding a dumbbell by one end at your chest.",
+    "Squat down with your chest up and elbows inside your knees.",
+    "At the bottom, lower the dumbbell and curl it back up.",
+    "Drive through your heels to stand.",
+    "Repeat the full sequence for each rep."
+  ],
+  "textSource": "opengym"
+}

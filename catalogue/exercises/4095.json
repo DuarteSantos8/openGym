@@ -1,0 +1,22 @@
+{
+  "id": "4095",
+  "name": "crunch with leg lift",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch paired with a leg raise to train both the upper and lower abdominals.",
+  "instructions": [
+    "Lie on your back with your hands behind your head and legs extended.",
+    "Crunch your shoulders off the floor.",
+    "At the same time lift your legs toward the ceiling.",
+    "Hold for a moment, then lower slowly.",
+    "Keep your lower back pressed into the floor."
+  ],
+  "textSource": "opengym"
+}

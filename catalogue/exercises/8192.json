@@ -1,0 +1,24 @@
+{
+  "id": "8192",
+  "name": "dumbbell sumo deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "adductors",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A deadlift with a wide stance holding a dumbbell between your legs. It works the glutes, inner thighs and back.",
+  "instructions": [
+    "Stand with a wide stance, toes turned out, and a dumbbell between your feet.",
+    "Hinge down and grab it with both hands.",
+    "Keep your chest up and back flat.",
+    "Drive through your feet to stand tall.",
+    "Lower the weight under control."
+  ],
+  "femaleVariant": "4759",
+  "textSource": "opengym"
+}

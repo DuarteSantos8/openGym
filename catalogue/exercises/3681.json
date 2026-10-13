@@ -1,0 +1,22 @@
+{
+  "id": "3681",
+  "name": "dumbbell squeeze bench press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A bench press with dumbbells pressed together to keep constant tension in the chest.",
+  "instructions": [
+    "Lie on a bench holding dumbbells pressed together above your chest.",
+    "Squeeze them together throughout.",
+    "Lower them to your chest.",
+    "Press back up.",
+    "Keep your feet planted."
+  ],
+  "textSource": "opengym"
+}

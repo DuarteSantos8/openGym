@@ -1,0 +1,20 @@
+{
+  "id": "1739",
+  "name": "dumbbell standing alternating tricep kickback",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Standing kickbacks done one arm at a time with a hinged torso. Trains the triceps with a strong squeeze at full extension.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
+    "Extend your arms straight back, keeping your elbows close to your body.",
+    "Pause for a moment at the top, then slowly lower the dumbbells back to the starting position.",
+    "Repeat with the other arm, alternating sides with each repetition."
+  ],
+  "textSource": "exercisedb"
+}

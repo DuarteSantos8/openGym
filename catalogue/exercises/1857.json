@@ -1,0 +1,21 @@
+{
+  "id": "1857",
+  "name": "lever total abdominal crunch",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "Seated machine crunch that works the abs through a full range, loading the crunch with plates.",
+  "instructions": [
+    "Adjust the seat and sit with your chest against the pad.",
+    "Hold the handles and set your feet firmly.",
+    "Curl your torso forward by contracting your abs.",
+    "Pause at the bottom.",
+    "Return slowly to the start without letting the weight drop."
+  ],
+  "textSource": "opengym"
+}

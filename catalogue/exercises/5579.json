@@ -1,0 +1,21 @@
+{
+  "id": "5579",
+  "name": "ez bar seated wrist curl",
+  "bodyPart": "lower arms",
+  "equipment": "ez barbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Seated wrist curl with an EZ bar to build the forearm flexors.",
+  "instructions": [
+    "Sit on a bench with forearms on your thighs and wrists past your knees.",
+    "Hold the EZ bar with an underhand grip.",
+    "Lower the bar by opening your fingers slightly.",
+    "Curl your wrists up as high as you can.",
+    "Keep your forearms still."
+  ],
+  "textSource": "opengym"
+}

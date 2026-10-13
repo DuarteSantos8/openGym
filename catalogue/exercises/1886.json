@@ -1,0 +1,22 @@
+{
+  "id": "1886",
+  "name": "single heel drop achilles stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "Lets one heel drop off a step to stretch the Achilles and calf.",
+  "instructions": [
+    "Stand on a step with the ball of one foot on the edge.",
+    "Hold a rail for balance.",
+    "Lower your heel slowly below the step.",
+    "Keep the knee straight for the calf, then slightly bent for the soleus.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "2511",
+  "name": "dumbbell reverse grip incline row",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A chest-supported dumbbell row with an underhand grip for the lats and upper back.",
+  "instructions": [
+    "Lie chest down on an incline bench holding dumbbells with an underhand grip.",
+    "Let your arms hang straight.",
+    "Row the dumbbells toward your lower ribs.",
+    "Squeeze your shoulder blades together.",
+    "Lower slowly until your arms are straight.",
+    "Keep your chest on the pad."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "11266",
+  "name": "cable standing hip abduction v. 3",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A standing cable leg raise to the side. It strengthens the outer hip.",
+  "instructions": [
+    "Attach an ankle strap to a low pulley on the near side and hold something for balance.",
+    "Stand tall with your core tight.",
+    "Lift your outside leg out to the side.",
+    "Pause at the top without leaning.",
+    "Return slowly, finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

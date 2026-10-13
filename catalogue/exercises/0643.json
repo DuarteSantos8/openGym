@@ -1,0 +1,20 @@
+{
+  "id": "0643",
+  "name": "overhead triceps stretch",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "stretching",
+  "description": "Reaching one arm overhead and bending the elbow, you pull gently on it with the other hand. Stretches the triceps and shoulder.",
+  "instructions": [
+    "Stand or sit upright with your feet shoulder-width apart.",
+    "Extend one arm overhead, bending at the elbow so that your hand reaches towards the opposite shoulder blade.",
+    "With your other hand, gently pull the elbow of the extended arm towards the opposite side of your head, feeling a stretch in your triceps.",
+    "Hold the stretch for 15-30 seconds, then release.",
+    "Repeat on the other side."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "2273",
+  "name": "boxing right cross",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "chest",
+    "core"
+  ],
+  "category": "combat",
+  "description": "A powerful straight punch with the rear hand, driven by a turn of the hips and back foot.",
+  "instructions": [
+    "Stand in a boxing stance with hands up.",
+    "Push off the back foot and rotate your hips and shoulders.",
+    "Throw your rear hand straight toward the target.",
+    "Keep your lead hand up to protect your chin.",
+    "Pull the hand back along the same line.",
+    "Return to your stance and repeat."
+  ],
+  "textSource": "opengym"
+}

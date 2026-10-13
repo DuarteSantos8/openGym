@@ -1,0 +1,23 @@
+{
+  "id": "4897",
+  "name": "reverse sliding leg curl on floor with towel",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A hamstring curl on a towel where you slide the heels away and pull them back. It is a challenging bodyweight hamstring move.",
+  "instructions": [
+    "Lie on your back with your heels on a towel on a smooth floor.",
+    "Lift your hips into a bridge.",
+    "Slide your feet away from you by extending the knees.",
+    "Pull the heels back toward your hips with your hamstrings.",
+    "Keep your hips high the whole set.",
+    "Lower to the floor when you finish."
+  ],
+  "textSource": "opengym"
+}

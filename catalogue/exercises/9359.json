@@ -1,0 +1,23 @@
+{
+  "id": "9359",
+  "name": "single leg hamstring bridge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A one-legged bridge with your heel planted that works the hamstrings and glutes.",
+  "instructions": [
+    "Lie on your back with one foot flat and the other leg raised.",
+    "Press your heel into the floor.",
+    "Lift your hips until your body forms a line.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly.",
+    "Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

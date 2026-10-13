@@ -1,0 +1,22 @@
+{
+  "id": "3221",
+  "name": "half knee bends (male)",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "calisthenics",
+  "description": "A shallow squat that bends the knees only partway. It is a gentle leg exercise good for warming up or high rep sets.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Bend your knees and lower your body down as if you were sitting back into a chair.",
+    "Keep your chest up and your weight in your heels.",
+    "Pause for a moment at the bottom, then push through your heels to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "6600",
+  "name": "bodyweight supported squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "A squat where you hold on to a support to stay balanced, ideal for learning depth and form.",
+  "instructions": [
+    "Hold on to a sturdy support at chest height.",
+    "Stand with feet shoulder-width apart.",
+    "Sit your hips back and down into a squat.",
+    "Keep your chest up and your heels down.",
+    "Stand back up by pushing through your feet."
+  ],
+  "textSource": "opengym"
+}

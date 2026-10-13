@@ -1,0 +1,21 @@
+{
+  "id": "7921",
+  "name": "cable seated unilateral bicep curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated biceps curl with a cable, working one arm at a time. It gives constant tension throughout the movement.",
+  "instructions": [
+    "Sit facing a low cable and hold the handle with one hand.",
+    "Rest your elbow near your side.",
+    "Curl the handle up toward your shoulder.",
+    "Squeeze at the top.",
+    "Lower slowly and switch arms after your set."
+  ],
+  "textSource": "opengym"
+}

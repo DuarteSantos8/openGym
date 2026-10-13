@@ -1,0 +1,22 @@
+{
+  "id": "0222",
+  "name": "cable side bend",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A standing cable side bend, lowering the handle toward the knee. It trains the obliques and the side of the waist.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and grasp the cable handle with one hand.",
+    "Keep your back straight and your core engaged.",
+    "Slowly bend sideways at the waist, lowering the cable handle towards your knee.",
+    "Pause for a moment, then return to the starting position.",
+    "Repeat on the other side.",
+    "Alternate sides for the desired number of repetitions."
+  ],
+  "femaleVariant": "2576",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "6138",
+  "name": "namaskarasana yoga pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors",
+    "inner thighs"
+  ],
+  "category": "yoga",
+  "description": "A deep squatting pose with the palms pressed together in front of the chest. It opens the hips and inner thighs.",
+  "instructions": [
+    "Stand with your feet wider than your hips and toes turned out.",
+    "Lower into a deep squat.",
+    "Press your palms together at the chest.",
+    "Use your elbows to gently press your knees outward.",
+    "Keep your chest lifted and hold for 20-30 seconds.",
+    "Stand up slowly."
+  ],
+  "textSource": "opengym"
+}

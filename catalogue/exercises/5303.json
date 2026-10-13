@@ -1,0 +1,23 @@
+{
+  "id": "5303",
+  "name": "dumbbell rear delt fly (45 degrees)",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rhomboids",
+    "trapezius",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Raise dumbbells out to the sides on an incline of about 45 degrees to hit the rear delts and upper back.",
+  "instructions": [
+    "Set a bench to 45 degrees and lie chest down on it, a dumbbell in each hand.",
+    "Let your arms hang below you with a soft bend in the elbows.",
+    "Raise the weights out to the sides until your arms are level with your torso.",
+    "Squeeze your shoulder blades together at the top.",
+    "Lower slowly under control.",
+    "Keep your neck neutral and avoid swinging."
+  ],
+  "textSource": "opengym"
+}

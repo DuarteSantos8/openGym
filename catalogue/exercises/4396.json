@@ -1,0 +1,22 @@
+{
+  "id": "4396",
+  "name": "kettlebell side bend v. 2",
+  "bodyPart": "waist",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing side bend with a kettlebell that trains the obliques and the muscles along the side of the trunk.",
+  "instructions": [
+    "Stand tall, holding a kettlebell in one hand at your side.",
+    "Keep your feet hip-width apart and your core braced.",
+    "Bend sideways toward the weighted side without twisting.",
+    "Use your obliques to return to upright.",
+    "Finish your reps, then switch hands."
+  ],
+  "textSource": "opengym"
+}

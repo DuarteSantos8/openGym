@@ -1,0 +1,22 @@
+{
+  "id": "4695",
+  "name": "band standing single arm upright row",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "biceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A one-arm upright row with a band. It works the shoulders and traps.",
+  "instructions": [
+    "Stand on the band and hold the other end in one hand at your thigh.",
+    "Keep your elbow leading the movement.",
+    "Pull your hand up toward your chest, elbow higher than the wrist.",
+    "Pause at the top.",
+    "Lower slowly, then repeat and switch arms."
+  ],
+  "textSource": "opengym"
+}

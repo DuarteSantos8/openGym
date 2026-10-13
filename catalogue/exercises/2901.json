@@ -1,0 +1,21 @@
+{
+  "id": "2901",
+  "name": "power sled biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "sled machine",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A biceps curl using a power sled as the resistance. Adds a unique load for arm strength.",
+  "instructions": [
+    "Stand facing the sled and grip the handle or strap with an underhand grip.",
+    "Keep your elbows tucked at your sides.",
+    "Curl your hands up toward your shoulders, moving the sled.",
+    "Squeeze your biceps at the top.",
+    "Lower slowly and keep your torso still."
+  ],
+  "textSource": "opengym"
+}

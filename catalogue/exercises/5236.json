@@ -1,0 +1,23 @@
+{
+  "id": "5236",
+  "name": "bent arms chin up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "brachialis",
+    "rhomboids",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A chin-up holding the arms bent at the top. It builds strength in the lats and biceps.",
+  "instructions": [
+    "Hang from a bar with an underhand, shoulder-width grip.",
+    "Pull yourself up until your chin clears the bar.",
+    "Keep your elbows bent and your body still.",
+    "Hold briefly at the top.",
+    "Lower slowly until just short of straight arms."
+  ],
+  "textSource": "opengym"
+}

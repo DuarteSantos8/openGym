@@ -1,0 +1,22 @@
+{
+  "id": "5035",
+  "name": "weighted hyperextension",
+  "bodyPart": "back",
+  "equipment": "weighted",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Back extension holding a weight at your chest. It trains the lower back, glutes and hamstrings.",
+  "instructions": [
+    "Set the pad at hip level on a hyperextension bench with your feet secured.",
+    "Hold a weight plate or dumbbell against your chest.",
+    "Lower your torso with a straight back.",
+    "Raise it until your body forms a straight line.",
+    "Do not overarch at the top."
+  ],
+  "femaleVariant": "5782",
+  "textSource": "opengym"
+}

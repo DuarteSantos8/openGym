@@ -1,0 +1,23 @@
+{
+  "id": "3579",
+  "name": "kettlebell deck squat",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "Roll back onto the floor holding a kettlebell from a squat, then roll up into a squat again.",
+  "instructions": [
+    "Hold a kettlebell at your chest and squat down.",
+    "Sit back and roll onto your back, keeping the bell close.",
+    "Use momentum to roll forward onto your feet.",
+    "Stand up out of the squat.",
+    "Keep a tight grip and repeat smoothly."
+  ],
+  "textSource": "opengym"
+}

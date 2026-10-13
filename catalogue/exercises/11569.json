@@ -1,0 +1,23 @@
+{
+  "id": "11569",
+  "name": "resistance band standing side leg raise",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "Standing, you lift one leg out to the side against band tension, working the outer hips.",
+  "instructions": [
+    "Loop the band around your ankles or above the knees and stand tall.",
+    "Hold onto something for balance if needed.",
+    "Lift one leg out to the side with a straight knee.",
+    "Pause at the top without leaning.",
+    "Lower slowly.",
+    "Finish your reps and switch legs."
+  ],
+  "textSource": "opengym"
+}

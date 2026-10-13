@@ -1,0 +1,22 @@
+{
+  "id": "0820",
+  "name": "twist side bridge",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A side bridge with a rotation of the top arm under your body. It challenges the obliques and shoulder stability.",
+  "instructions": [
+    "Lie on your side and prop up on one forearm, feet stacked.",
+    "Lift your hips so your body forms a straight line.",
+    "Reach your top arm under your torso, twisting slightly.",
+    "Return to the straight line.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "0870",
+  "name": "butt-ups",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A lying move where the hips lift off the floor as the knees come toward the chest. It trains the lower abs.",
+  "instructions": [
+    "Lie flat on your back with your knees bent and feet flat on the ground.",
+    "Place your hands by your sides, palms facing down.",
+    "Engaging your abs, lift your legs off the ground, bringing your knees towards your chest.",
+    "At the top of the movement, squeeze your abs and pause for a moment.",
+    "Slowly lower your legs back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

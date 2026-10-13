@@ -1,0 +1,22 @@
+{
+  "id": "1181",
+  "name": "lying straight leg raise v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "calisthenics",
+  "description": "A lying leg raise that targets the lower abs and hip flexors while you keep your legs long.",
+  "instructions": [
+    "Lie on your back with your legs straight and your hands under your hips.",
+    "Press your lower back into the floor.",
+    "Raise both legs together until they point to the ceiling.",
+    "Lower them slowly, stopping just above the floor.",
+    "Keep your core braced and your back from arching."
+  ],
+  "textSource": "opengym"
+}

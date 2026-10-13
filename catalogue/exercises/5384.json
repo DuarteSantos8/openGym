@@ -1,0 +1,23 @@
+{
+  "id": "5384",
+  "name": "roll thoracic spine lying on floor",
+  "bodyPart": "back",
+  "equipment": "roller",
+  "target": "spine",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a foam roller to ease tightness in the thoracic spine. Good before training or on rest days to loosen up.",
+  "instructions": [
+    "Lie on your back with the roller under your upper back, arms crossed.",
+    "Place the roller under the thoracic spine and let your body weight settle onto it.",
+    "Lift your hips and roll up and down the upper back.",
+    "Pause on tender spots and breathe slowly for 20-30 seconds.",
+    "Keep your core braced and avoid rolling over joints or bone.",
+    "Roll for 30-60 seconds, then switch sides if needed."
+  ],
+  "femaleVariant": "5423",
+  "textSource": "opengym"
+}

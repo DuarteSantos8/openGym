@@ -1,0 +1,23 @@
+{
+  "id": "0722",
+  "name": "sideway leg bridge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "obliques",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bridge with a sideways leg shift. It trains the glutes and hips.",
+  "instructions": [
+    "Lie on your back with knees bent.",
+    "Lift your hips into a bridge.",
+    "Step or shift your legs to one side.",
+    "Return to the center.",
+    "Alternate sides.",
+    "Keep your hips lifted."
+  ],
+  "textSource": "opengym"
+}

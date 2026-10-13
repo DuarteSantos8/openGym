@@ -1,0 +1,22 @@
+{
+  "id": "2775",
+  "name": "shoulder abduction",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "mobility",
+  "description": "Raising the arm out to the side, working the side of the shoulder.",
+  "instructions": [
+    "Stand or sit tall with a relaxed posture and the joint in a neutral starting position.",
+    "Stand tall with your arms at your sides.",
+    "Raise one arm out to the side up to about shoulder height.",
+    "Lower slowly without shrugging.",
+    "Repeat for 10-15 smooth reps, then switch sides if you are working one side at a time."
+  ],
+  "femaleVariant": "8839",
+  "textSource": "opengym"
+}

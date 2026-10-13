@@ -1,0 +1,23 @@
+{
+  "id": "4035",
+  "name": "band bent over hip extension",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A bent over kick-back against a band. The hinged torso gives the glutes and hamstrings a deeper stretch and squeeze.",
+  "instructions": [
+    "Anchor the band low and loop it around one ankle.",
+    "Hinge forward at the hips with a flat back, hands on a support.",
+    "Extend the working leg back and up against the band.",
+    "Squeeze your glute at the top.",
+    "Return slowly, finish the reps, then switch legs."
+  ],
+  "textSource": "opengym",
+  "femaleVariant": "0980"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "0562",
+  "name": "landmine 180",
+  "bodyPart": "waist",
+  "equipment": "barbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "You hold a landmine barbell at chest height and rotate it in an arc from side to side. Works the obliques and core with strong hip drive.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold the barbell with both hands in front of your chest.",
+    "Bend your knees slightly and rotate your torso to the right, swinging the barbell down towards your right hip.",
+    "As you reach the bottom of the movement, quickly reverse the motion and rotate your torso to the left, swinging the barbell up and across your body towards your left shoulder.",
+    "Continue this twisting motion, alternating sides, for the desired number of repetitions."
+  ],
+  "femaleVariant": "3605",
+  "textSource": "exercisedb"
+}

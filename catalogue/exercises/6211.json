@@ -1,0 +1,24 @@
+{
+  "id": "6211",
+  "name": "bicycle crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A pedalling crunch where you bring each elbow toward the opposite knee. It works the abs and obliques.",
+  "instructions": [
+    "Lie on your back with your hands by your head.",
+    "Lift your shoulders and bring your knees up.",
+    "Twist to bring one elbow to the opposite knee.",
+    "Extend the other leg.",
+    "Switch sides in a pedalling motion.",
+    "Keep your lower back pressed down."
+  ],
+  "femaleVariant": "6212",
+  "textSource": "opengym"
+}

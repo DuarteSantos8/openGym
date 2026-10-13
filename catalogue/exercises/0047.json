@@ -1,0 +1,39 @@
+{
+  "id": "0047",
+  "name": "barbell incline bench press",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A barbell press on an incline bench, favouring the upper chest and front delts.",
+  "instructions": [
+    "Set up an incline bench at a 45-degree angle.",
+    "Lie down on the bench with your feet flat on the ground.",
+    "Grasp the barbell with an overhand grip, slightly wider than shoulder-width apart.",
+    "Unrack the barbell and lower it slowly towards your chest, keeping your elbows at a 45-degree angle.",
+    "Pause for a moment at the bottom, then push the barbell back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "chest"
+    ],
+    "secondaries": [
+      "triceps",
+      "deltoids",
+      "biceps"
+    ],
+    "weights": {
+      "chest": 1,
+      "deltoids": 0.4,
+      "triceps": 0.4,
+      "biceps": 0
+    }
+  },
+  "femaleVariant": "2388",
+  "textSource": "exercisedb"
+}

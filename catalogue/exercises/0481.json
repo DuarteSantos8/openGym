@@ -1,0 +1,24 @@
+{
+  "id": "0481",
+  "name": "high knees butt kicks",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "hip flexors",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "A cardio drill alternating high knee lifts with heel flicks to the buttocks. It warms up the legs and lifts your heart rate.",
+  "instructions": [
+    "Stand tall with your arms ready to pump.",
+    "Run in place and drive your knees up high.",
+    "Switch to kicking your heels toward your buttocks.",
+    "Alternate between the two patterns.",
+    "Stay light on your feet.",
+    "Keep going for 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

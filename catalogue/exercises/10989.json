@@ -1,0 +1,23 @@
+{
+  "id": "10989",
+  "name": "tuck planche on parallette",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "core",
+    "triceps",
+    "forearms",
+    "upper back"
+  ],
+  "category": "isometric",
+  "description": "A hold on parallettes with knees tucked and hips lifted. It builds shoulder and core strength.",
+  "instructions": [
+    "Place your hands on parallettes and squat down.",
+    "Lean forward over your hands, arms straight.",
+    "Lift your feet with knees tucked toward the chest.",
+    "Hold for a few seconds, rounding your upper back slightly.",
+    "Lower your feet gently."
+  ],
+  "textSource": "opengym"
+}

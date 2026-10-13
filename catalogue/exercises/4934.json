@@ -1,0 +1,24 @@
+{
+  "id": "4934",
+  "name": "reverse plank v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "triceps"
+  ],
+  "category": "isometric",
+  "description": "A plank done face up, with a slightly different arm setup. It strengthens the back of the body and the core.",
+  "instructions": [
+    "Sit with your legs straight and your hands behind you.",
+    "Press into your hands and lift your hips.",
+    "Form a straight line from head to heels.",
+    "Keep your chin neutral.",
+    "Squeeze your glutes.",
+    "Hold for 20-30 seconds."
+  ],
+  "textSource": "opengym"
+}

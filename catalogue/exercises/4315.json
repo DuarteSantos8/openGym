@@ -1,0 +1,22 @@
+{
+  "id": "4315",
+  "name": "spine stretch forward",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A seated pilates stretch where you round forward over your legs, one vertebra at a time. It mobilizes the spine and stretches the hamstrings.",
+  "instructions": [
+    "Sit tall with legs extended hip-width apart and arms reaching forward.",
+    "Flex your feet and lift your torso up out of your hips.",
+    "Curl your chin to your chest and round forward, reaching past your toes.",
+    "Hold for a breath, then stack your spine back up slowly.",
+    "Repeat for several slow reps."
+  ],
+  "textSource": "opengym"
+}

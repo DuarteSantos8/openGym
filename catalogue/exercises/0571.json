@@ -1,0 +1,37 @@
+{
+  "id": "0571",
+  "name": "lever alternating narrow grip seated row",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Seated on a machine, you pull the handles one arm at a time toward your torso with a narrow grip. Targets the lats and mid back.",
+  "instructions": [
+    "Adjust the seat height and footplate position to ensure proper alignment.",
+    "Sit on the machine with your back straight and feet flat on the footplate.",
+    "Grasp the handles with a narrow grip, palms facing each other.",
+    "Keep your chest up and shoulders back throughout the exercise.",
+    "Pull one handle towards your torso while keeping the other handle stationary.",
+    "Squeeze your shoulder blades together at the end of the movement.",
+    "Slowly return the handle to the starting position and repeat with the other side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm",
+      "trapezius",
+      "chest",
+      "triceps"
+    ]
+  },
+  "textSource": "exercisedb"
+}

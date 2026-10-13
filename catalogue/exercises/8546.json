@@ -1,0 +1,23 @@
+{
+  "id": "8546",
+  "name": "lying prone y to t to w",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "trapezius",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "A prone sequence of arm positions that strengthens the upper back and shoulder blade muscles.",
+  "instructions": [
+    "Lie face down with your forehead near the floor and arms extended overhead in a Y.",
+    "Lift your arms slightly and hold.",
+    "Move them out to a T, then bend the elbows into a W.",
+    "Squeeze your shoulder blades together.",
+    "Reverse the order and repeat."
+  ],
+  "textSource": "opengym"
+}

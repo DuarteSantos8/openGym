@@ -1,0 +1,23 @@
+{
+  "id": "6318",
+  "name": "single curtsy lunge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A lunge stepping one leg back and across behind you. It targets the glutes and outer hips.",
+  "instructions": [
+    "Stand tall with feet hip-width apart.",
+    "Step one leg diagonally behind the other.",
+    "Bend both knees and lower your hips.",
+    "Keep your chest up and front knee over your toes.",
+    "Push up and return, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1585",
+  "name": "runners stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "quadriceps"
+  ],
+  "category": "stretching",
+  "description": "A lunge position stretch for the hips, thighs and hamstrings, often used by runners to loosen up.",
+  "instructions": [
+    "Stand with your feet hip-width apart.",
+    "Take a step forward with your right foot, keeping your left foot planted.",
+    "Bend your right knee and lower your body down, keeping your left leg straight.",
+    "Place your hands on your right thigh for support.",
+    "Hold the stretch for 20-30 seconds, then switch sides and repeat."
+  ],
+  "femaleVariant": "4303",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "0070",
+  "name": "barbell preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A curl with the upper arms resting on a preacher pad, which keeps the focus on the biceps.",
+  "instructions": [
+    "Sit on a preacher bench with your upper arms resting on the pad and your chest against the support.",
+    "Grasp the barbell with an underhand grip, slightly wider than shoulder-width apart.",
+    "Keeping your upper arms stationary, exhale and curl the barbell up towards your shoulders.",
+    "Pause for a moment at the top, squeezing your biceps.",
+    "Inhale and slowly lower the barbell back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2497",
+  "textSource": "exercisedb"
+}

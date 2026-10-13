@@ -1,0 +1,23 @@
+{
+  "id": "3307",
+  "name": "strongman keg toss",
+  "bodyPart": "full body",
+  "equipment": "weighted",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "shoulders",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "An explosive strongman lift where you heave a heavy keg up and over a bar behind you. It builds hip power and total body drive.",
+  "instructions": [
+    "Stand with feet wide and the keg between your legs, gripping it low with both hands.",
+    "Hinge at the hips, keep your chest up and your back flat.",
+    "Drive your hips forward hard and pull the keg up your body.",
+    "Extend fully and throw the keg up and back over the bar.",
+    "Reset, step back to the start and repeat with control."
+  ],
+  "textSource": "opengym"
+}

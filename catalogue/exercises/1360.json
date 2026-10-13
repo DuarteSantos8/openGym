@@ -1,0 +1,23 @@
+{
+  "id": "1360",
+  "name": "smith one arm row",
+  "bodyPart": "back",
+  "equipment": "smith machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm row using a smith machine bar. It trains the upper back and lats one side at a time along a guided path.",
+  "instructions": [
+    "Adjust the height of the smith machine bar to waist level.",
+    "Stand facing the smith machine with your feet shoulder-width apart.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
+    "Grasp the bar with one hand using an overhand grip, with your palm facing down.",
+    "Keep your elbow close to your body and pull the bar towards your waist, squeezing your shoulder blades together.",
+    "Pause for a moment at the top of the movement, then slowly lower the bar back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch to the other arm."
+  ],
+  "textSource": "exercisedb"
+}

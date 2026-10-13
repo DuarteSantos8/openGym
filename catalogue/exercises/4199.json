@@ -1,0 +1,23 @@
+{
+  "id": "4199",
+  "name": "barbell deadlift against chains",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A deadlift with chains adding load toward lockout.",
+  "instructions": [
+    "Set chains on the bar.",
+    "Grip the bar.",
+    "Brace.",
+    "Drive your feet through the floor.",
+    "Stand tall.",
+    "Lower with control."
+  ],
+  "textSource": "opengym"
+}

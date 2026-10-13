@@ -1,0 +1,23 @@
+{
+  "id": "5143",
+  "name": "power sled drag",
+  "bodyPart": "full body",
+  "equipment": "sled machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Drag a loaded sled behind you by walking backward or forward. It builds leg drive and conditioning.",
+  "instructions": [
+    "Load a sled and attach a harness or straps.",
+    "Lean slightly forward and brace your core.",
+    "Walk with powerful steps, pushing through the balls of your feet.",
+    "Keep your back straight.",
+    "Cover a set distance, then rest and repeat."
+  ],
+  "textSource": "opengym"
+}

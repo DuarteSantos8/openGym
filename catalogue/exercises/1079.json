@@ -1,0 +1,22 @@
+{
+  "id": "1079",
+  "name": "suspension hyperextension",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Hip hinge back extension with feet in straps. It strengthens the lower back and glutes.",
+  "instructions": [
+    "Place your feet in the straps and lie face down, hands behind your head or across your chest.",
+    "Brace your core.",
+    "Lift your chest by extending your back and hips.",
+    "Stop when your body forms a straight line.",
+    "Lower slowly.",
+    "Avoid overarching at the top."
+  ],
+  "textSource": "opengym"
+}

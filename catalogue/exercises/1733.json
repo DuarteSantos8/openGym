@@ -1,0 +1,21 @@
+{
+  "id": "1733",
+  "name": "dumbbell incline two arm extension",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A two-arm dumbbell triceps extension on an incline bench. It stretches and builds the triceps.",
+  "instructions": [
+    "Sit on an incline bench with a dumbbell in each hand, resting on your thighs.",
+    "Slowly lie back on the bench, keeping the dumbbells close to your chest.",
+    "Once you are fully lying down, extend your arms straight up towards the ceiling, keeping your elbows slightly bent.",
+    "Pause for a moment at the top, then slowly lower the dumbbells back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3078",
+  "textSource": "exercisedb"
+}

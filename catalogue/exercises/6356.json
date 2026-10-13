@@ -1,0 +1,22 @@
+{
+  "id": "6356",
+  "name": "lever outdoor seated lat pulldown",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "Pulling the handles down from overhead on an outdoor lever machine to build your lats and upper back.",
+  "instructions": [
+    "Sit down and grab the handles overhead.",
+    "Lean back very slightly and lift your chest.",
+    "Pull the handles down toward your upper chest, driving your elbows down.",
+    "Squeeze your back at the bottom.",
+    "Let your arms rise slowly until fully stretched, then repeat."
+  ],
+  "textSource": "opengym"
+}

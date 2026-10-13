@@ -1,0 +1,21 @@
+{
+  "id": "4351",
+  "name": "cable incline skull crusher",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A skull crusher on an incline bench with cable resistance, giving steady tension on the triceps.",
+  "instructions": [
+    "Set an incline bench facing away from a low cable and hold the bar overhead.",
+    "Keep your upper arms still.",
+    "Bend your elbows and lower the bar toward your forehead.",
+    "Extend your arms to return.",
+    "Keep your elbows from flaring."
+  ],
+  "textSource": "opengym"
+}

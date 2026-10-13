@@ -1,0 +1,22 @@
+{
+  "id": "3855",
+  "name": "standing back extension and flexion",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "lower back",
+    "glutes",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A standing movement where you arch and then round your back. It warms up your spine.",
+  "instructions": [
+    "Stand with your feet hip width apart and hands on your hips.",
+    "Gently arch your back and look slightly up.",
+    "Round your back and tuck your chin.",
+    "Move slowly between positions.",
+    "Stay within a comfortable range."
+  ],
+  "textSource": "opengym"
+}

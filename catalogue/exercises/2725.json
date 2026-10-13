@@ -1,0 +1,23 @@
+{
+  "id": "2725",
+  "name": "strongman power stairs",
+  "bodyPart": "full body",
+  "equipment": "weight plate",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Carrying a heavy load up a flight of stairs, building leg power and grip.",
+  "instructions": [
+    "Pick up the load and hold it against your chest.",
+    "Brace your core and stand tall.",
+    "Climb the stairs one step at a time.",
+    "Push through your whole foot and keep your chest up.",
+    "Set the load down under control at the top."
+  ],
+  "textSource": "opengym"
+}

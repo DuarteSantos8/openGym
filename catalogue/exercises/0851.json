@@ -1,0 +1,24 @@
+{
+  "id": "0851",
+  "name": "weighted sissy squat",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A sissy squat with added weight, leaning back while the knees travel forward. It isolates the quads.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your toes pointing slightly outward.",
+    "Hold a weight in front of your chest with both hands, or place a barbell across your upper back.",
+    "Keeping your chest up and your core engaged, slowly lower your body down by bending at the knees and hips.",
+    "Continue lowering until your thighs are parallel to the ground or as low as you can comfortably go.",
+    "Pause for a moment at the bottom, then push through your heels to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "4032",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "6559",
+  "name": "weighted plate tibialis anterior curl",
+  "bodyPart": "lower legs",
+  "equipment": "weight plate",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles"
+  ],
+  "category": "strength",
+  "description": "Lifting your toes up against the weight of a plate to strengthen the muscle on the front of your shin.",
+  "instructions": [
+    "Sit on a bench and rest a plate on your forefoot.",
+    "Keep your heel on the floor.",
+    "Pull your toes up toward your shin.",
+    "Pause at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

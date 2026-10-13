@@ -1,0 +1,22 @@
+{
+  "id": "8505",
+  "name": "dumbbell kneeling twist down up raise",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A diagonal chopping and lifting pattern from a kneeling position that trains the obliques and shoulders.",
+  "instructions": [
+    "Kneel on both knees and hold one dumbbell with both hands beside one hip.",
+    "Keep your hips square.",
+    "Twist and lift the dumbbell diagonally up across your body.",
+    "Reverse the path back down to the hip.",
+    "Finish the reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "11253",
+  "name": "cable kneeling pulldown v. 3",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "rear deltoids",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A straight-arm style pulldown from a kneeling position. It targets the lats without help from your legs.",
+  "instructions": [
+    "Kneel facing a high pulley and hold the bar or handles with arms extended.",
+    "Sit tall with your core braced.",
+    "Pull the handle down toward your chest, driving your elbows down.",
+    "Squeeze your lats at the bottom.",
+    "Let the handle rise back slowly to a full stretch."
+  ],
+  "textSource": "opengym"
+}

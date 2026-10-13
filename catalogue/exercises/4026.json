@@ -1,0 +1,22 @@
+{
+  "id": "4026",
+  "name": "resistance band standing front warming up",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "upper back",
+    "rotator cuff"
+  ],
+  "category": "mobility",
+  "description": "A band warm-up with the arms moving in front of the body, loosening the shoulders and chest before a workout.",
+  "instructions": [
+    "Stand tall with feet hip-width apart and hold the band in front of you at shoulder height.",
+    "Keep your arms mostly straight.",
+    "Move your hands apart, stretching the band across your chest.",
+    "Bring your hands back together slowly.",
+    "Repeat for 10 to 15 easy reps."
+  ],
+  "textSource": "opengym"
+}

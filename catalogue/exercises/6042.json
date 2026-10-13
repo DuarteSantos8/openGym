@@ -1,0 +1,23 @@
+{
+  "id": "6042",
+  "name": "bottle weighted single leg romanian deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core",
+    "ankles"
+  ],
+  "category": "strength",
+  "description": "A one-legged hip hinge holding weighted bottles. It works the hamstrings and glutes and challenges balance.",
+  "instructions": [
+    "Stand on one leg holding a bottle in each hand, with a slight bend in the knee.",
+    "Hinge at the hips and extend the free leg straight behind you.",
+    "Lower the bottles toward the floor with a flat back.",
+    "Squeeze your glute to return to standing.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "10926",
+  "name": "standing wall slide quarter squat hold",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves"
+  ],
+  "category": "isometric",
+  "description": "A wall-supported quarter squat that you hold. It gently loads the thighs.",
+  "instructions": [
+    "Stand with your back against a wall and feet slightly forward.",
+    "Slide down until your knees bend about a quarter of the way.",
+    "Keep your back flat to the wall.",
+    "Hold for 15-30 seconds.",
+    "Slide back up."
+  ],
+  "textSource": "opengym"
+}

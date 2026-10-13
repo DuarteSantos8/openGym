@@ -1,0 +1,21 @@
+{
+  "id": "0176",
+  "name": "cable kneeling triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Kneeling cable triceps extension with a rope. Your elbows stay put while the forearms extend, which keeps the work on the triceps.",
+  "instructions": [
+    "Attach a rope handle to a high pulley and kneel down facing the cable machine.",
+    "Grasp the rope with a neutral grip (palms facing each other) and bring your hands to the sides of your head.",
+    "Keep your elbows close to your head and your upper arms stationary throughout the exercise.",
+    "Extend your forearms by contracting your triceps until your arms are fully extended.",
+    "Pause for a moment, then slowly return to the starting position by bending your elbows.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

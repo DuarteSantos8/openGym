@@ -1,0 +1,21 @@
+{
+  "id": "1935",
+  "name": "lying cross over knee pull up stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "lower back",
+    "hip flexors"
+  ],
+  "category": "stretching",
+  "description": "Lying on your back and drawing a crossed knee up toward the opposite shoulder to stretch the glutes and hips.",
+  "instructions": [
+    "Lie on your back with your knees bent.",
+    "Cross one ankle over the opposite knee.",
+    "Hold the knee of the lower leg or behind the thigh and pull it up toward your chest.",
+    "Keep your head and shoulders relaxed on the floor.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

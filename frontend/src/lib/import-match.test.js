@@ -127,8 +127,9 @@ describe('Hevy CSV uses the generated title map', () => {
     expect(matchHevyTitle('Bulgarian Split Squat (Dumbbell)')).toBe('0410')
     expect(matchHevyTitle('Lat Pulldown - Close Grip (Cable)')).toBe('2616')
     expect(matchHevyTitle('Reverse Lunge (Dumbbell)')).toBe('0381')
-    // Word-bag alone still misses these — the title map is what makes CSV work.
-    expect(matchExercise('Bulgarian Split Squat (Dumbbell)')).toBeNull()
+    // Since v1.4 the word-bag finds the new "dumbbell bulgarian split squat" on its own; the
+    // map still wins, so a Hevy history keeps landing on the id earlier imports used.
+    expect(matchExercise('Bulgarian Split Squat (Dumbbell)')).toBe('2290')
   })
 
   it('imports a Hevy CSV onto catalogue ids, not customs', () => {

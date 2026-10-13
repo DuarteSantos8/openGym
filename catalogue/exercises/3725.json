@@ -1,0 +1,23 @@
+{
+  "id": "3725",
+  "name": "barbell overhead lunge",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "core",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A lunge performed with a barbell held locked out overhead. It builds leg strength and demands shoulder and core stability.",
+  "instructions": [
+    "Press a barbell overhead and hold it with straight arms.",
+    "Step forward into a lunge.",
+    "Lower until both knees are around 90 degrees.",
+    "Push off your front foot back to standing.",
+    "Alternate legs and keep the bar steady."
+  ],
+  "textSource": "opengym"
+}

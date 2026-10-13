@@ -1,0 +1,24 @@
+{
+  "id": "3859",
+  "name": "cable bent over row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A hinged row on the cable stack that trains the mid back and lats with steady tension all the way through.",
+  "instructions": [
+    "Attach a handle or bar to a low pulley and grab it.",
+    "Step back and hinge at the hips with a flat back and soft knees.",
+    "Start with your arms extended toward the pulley.",
+    "Pull the handle toward your lower ribs, driving your elbows back.",
+    "Squeeze your shoulder blades together at the top.",
+    "Lower slowly until your arms are straight again."
+  ],
+  "textSource": "opengym"
+}

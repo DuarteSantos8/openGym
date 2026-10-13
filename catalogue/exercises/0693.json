@@ -1,0 +1,22 @@
+{
+  "id": "0693",
+  "name": "seated straight leg calf stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "Seated with a straight leg, you pull your toes toward you. It stretches the calf muscles.",
+  "instructions": [
+    "Sit on the floor with one leg straight.",
+    "Loop a towel around the ball of your foot, or hold your toes.",
+    "Pull your toes toward you.",
+    "Keep your knee straight.",
+    "Hold for 20-30 seconds.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

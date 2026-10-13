@@ -1,0 +1,22 @@
+{
+  "id": "0784",
+  "name": "squat (with band)",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A squat with a loop band around the legs or under the feet to add resistance. It builds the quads and glutes and keeps the knees pushing out.",
+  "instructions": [
+    "Place the band as set up for the drill and stand with feet shoulder-width apart.",
+    "Brace your core and keep your chest up.",
+    "Sit your hips back and bend your knees to lower into a squat.",
+    "Push your knees out against the band.",
+    "Stand up by driving through your heels."
+  ],
+  "textSource": "opengym"
+}

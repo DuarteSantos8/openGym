@@ -1,0 +1,20 @@
+{
+  "id": "2766",
+  "name": "forearm supination",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "biceps"
+  ],
+  "category": "mobility",
+  "description": "Rotating the forearm so the palm turns up. Helps forearm control and wrist mobility.",
+  "instructions": [
+    "Stand or sit tall with a relaxed posture and the joint in a neutral starting position.",
+    "Hold your elbow close to your side bent at 90 degrees, palm facing down.",
+    "Rotate your forearm so your palm turns up to face the ceiling.",
+    "Keep the elbow still and pause briefly at the end.",
+    "Repeat for 10-15 smooth reps, then switch sides if you are working one side at a time."
+  ],
+  "textSource": "opengym"
+}

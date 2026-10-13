@@ -1,0 +1,23 @@
+{
+  "id": "1367",
+  "name": "wide grip rear pull-up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up on a wide overhand grip, pulling to the back of your neck or upper chest. It targets the lats and upper back.",
+  "instructions": [
+    "Grab the pull-up bar with a wide overhand grip, hands slightly wider than shoulder-width apart.",
+    "Hang from the bar with your arms fully extended and your body straight.",
+    "Engage your back muscles and pull your body up towards the bar, leading with your chest.",
+    "Continue pulling until your chin is above the bar.",
+    "Pause for a moment at the top, then slowly lower your body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3628",
+  "textSource": "exercisedb"
+}

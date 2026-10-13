@@ -1,0 +1,19 @@
+{
+  "id": "1769",
+  "name": "bodyweight side lying biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight curl performed while lying on your side. A gentle way to train the biceps without equipment.",
+  "instructions": [
+    "Lie on your side with your legs extended and your head supported by your arm.",
+    "Hold your upper arm against your side and bend your elbow to curl your forearm towards your shoulder.",
+    "Pause for a moment at the top, then slowly lower your forearm back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

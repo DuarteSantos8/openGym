@@ -1,0 +1,22 @@
+{
+  "id": "3984",
+  "name": "push up pike toe touch",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A push up followed by a pike with a reach to the toes. It trains the chest, shoulders and core.",
+  "instructions": [
+    "Start in a high plank.",
+    "Do a push up.",
+    "Lift your hips into a pike.",
+    "Reach one hand to the opposite toe.",
+    "Return to plank and alternate."
+  ],
+  "textSource": "opengym"
+}

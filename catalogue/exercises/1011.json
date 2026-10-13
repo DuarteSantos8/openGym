@@ -1,0 +1,22 @@
+{
+  "id": "1011",
+  "name": "band seated twist",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A seated twist with a band around the waist. It trains the abs and obliques.",
+  "instructions": [
+    "Sit on the ground with your legs extended in front of you and your back straight.",
+    "Wrap the band around your waist and hold the ends with both hands.",
+    "Engage your abs and slowly twist your torso to one side, keeping your back straight and your feet on the ground.",
+    "Pause for a moment at the end of the twist, then slowly return to the starting position.",
+    "Repeat the twist to the other side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "femaleVariant": "2446",
+  "textSource": "exercisedb"
+}

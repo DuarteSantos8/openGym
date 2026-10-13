@@ -1,0 +1,23 @@
+{
+  "id": "3722",
+  "name": "barbell incline lying rear delt raise",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A chest-supported raise with a barbell that isolates the rear shoulders.",
+  "instructions": [
+    "Lie chest down on an incline bench holding a barbell hanging below you.",
+    "Keep your arms nearly straight.",
+    "Raise the bar by lifting your elbows out and back.",
+    "Squeeze your rear delts at the top.",
+    "Lower the barbell slowly."
+  ],
+  "textSource": "opengym"
+}

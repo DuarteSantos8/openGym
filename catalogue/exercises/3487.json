@@ -1,0 +1,24 @@
+{
+  "id": "3487",
+  "name": "pull up with bent knee between chairs",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms",
+    "rhomboids"
+  ],
+  "category": "calisthenics",
+  "description": "A beginner-friendly pull-up built from a bar across two chairs, with the feet on the floor and knees bent. It builds lats and arm pulling strength.",
+  "instructions": [
+    "Set a sturdy bar across two stable chairs, high enough to sit under.",
+    "Sit or lie beneath it and grip the bar slightly wider than your shoulders.",
+    "Keep your knees bent with feet on the floor for light help.",
+    "Pull your chest toward the bar by driving elbows down.",
+    "Lower slowly until your arms are straight.",
+    "Use your legs as little as you can."
+  ],
+  "textSource": "opengym"
+}

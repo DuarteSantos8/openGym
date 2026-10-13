@@ -1,0 +1,23 @@
+{
+  "id": "2728",
+  "name": "strongman front chest squat",
+  "bodyPart": "upper legs",
+  "equipment": "weight plate",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A front squat with a heavy load hugged to the chest, building quads and trunk strength.",
+  "instructions": [
+    "Hold the load tight against your chest with your elbows up.",
+    "Stand with feet shoulder width apart.",
+    "Squat down keeping your chest tall.",
+    "Drive up through your heels.",
+    "Lock out the hips at the top."
+  ],
+  "textSource": "opengym"
+}

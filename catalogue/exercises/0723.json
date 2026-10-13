@@ -1,0 +1,23 @@
+{
+  "id": "0723",
+  "name": "sideways lifts vertical (straight legs)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Lying down with legs straight and vertical, you lift your hips sideways. It targets the lower abs and obliques.",
+  "instructions": [
+    "Lie on your back with legs straight up.",
+    "Place your arms by your sides.",
+    "Lift your hips off the floor.",
+    "Tilt your legs slightly to one side.",
+    "Lower with control.",
+    "Alternate sides."
+  ],
+  "textSource": "opengym"
+}

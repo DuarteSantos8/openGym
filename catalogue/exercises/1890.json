@@ -1,0 +1,22 @@
+{
+  "id": "1890",
+  "name": "crouching heel back achilles stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "Low crouch stretch with one heel pushed back to lengthen the Achilles.",
+  "instructions": [
+    "Crouch down with your hands on the floor for balance.",
+    "Extend one leg back with the heel down.",
+    "Press the heel toward the floor.",
+    "Keep your chest lifted.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

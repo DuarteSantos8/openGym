@@ -1,0 +1,21 @@
+{
+  "id": "10115",
+  "name": "barbell decline close grip press",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A close grip press on a decline bench that loads the triceps and lower chest together.",
+  "instructions": [
+    "Lie on a decline bench and grab the bar with hands about shoulder width apart.",
+    "Unrack the bar and hold it over your lower chest with locked elbows.",
+    "Lower the bar to your lower chest, keeping elbows tucked close.",
+    "Press the bar back up until your arms are straight.",
+    "Keep your wrists stacked over your elbows and use a spotter."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "0093",
+  "name": "barbell seated twist (on stability ball)",
+  "bodyPart": "waist",
+  "equipment": "barbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A seated trunk rotation with a barbell on your shoulders while balancing on a stability ball. It works the obliques and balance.",
+  "instructions": [
+    "Sit on a stability ball with a barbell across your upper back and your feet wide.",
+    "Sit tall with your core braced.",
+    "Rotate your torso to one side without moving your hips.",
+    "Return to the centre.",
+    "Rotate to the other side.",
+    "Keep the movement slow and controlled."
+  ],
+  "textSource": "opengym"
+}

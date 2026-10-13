@@ -1,0 +1,22 @@
+{
+  "id": "5147",
+  "name": "resistance band assisted front rack stretch",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "wrist flexors",
+    "shoulders"
+  ],
+  "category": "stretching",
+  "description": "Use a band to pull yourself into a front rack position. It stretches your wrists, lats and shoulders.",
+  "instructions": [
+    "Loop a band around a sturdy anchor and hold it with both hands in a front rack position.",
+    "Step back and let the band help your elbows lift.",
+    "Keep your elbows high and chest tall.",
+    "Hold for 20-30 seconds.",
+    "Release the tension slowly."
+  ],
+  "textSource": "opengym"
+}

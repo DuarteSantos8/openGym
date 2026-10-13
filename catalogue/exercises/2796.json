@@ -1,0 +1,24 @@
+{
+  "id": "2796",
+  "name": "dumbbell step-up lunge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A dumbbell step-up that finishes with a lunge motion. Builds the quads and glutes.",
+  "instructions": [
+    "Stand in front of a step or platform with a dumbbell in each hand, palms facing your sides.",
+    "Place your right foot on the step, ensuring your entire foot is on the surface.",
+    "Push through your right heel and lift your body up onto the step, bringing your left foot up as well.",
+    "Once both feet are on the step, lower your left foot back down to the starting position, keeping your right foot on the step.",
+    "Repeat the movement, alternating which foot you step up with each time.",
+    "Continue for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb",
+  "maleVariant": "2795"
+}

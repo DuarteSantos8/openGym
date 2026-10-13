@@ -1,0 +1,21 @@
+{
+  "id": "2859",
+  "name": "rolling back",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A rolling move that massages the spine and trains abdominal control.",
+  "instructions": [
+    "Sit with your knees tucked and hold your shins.",
+    "Round your back.",
+    "Roll back onto your shoulders.",
+    "Roll back up to balance.",
+    "Keep your chin tucked."
+  ],
+  "textSource": "opengym"
+}

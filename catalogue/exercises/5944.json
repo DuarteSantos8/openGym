@@ -1,0 +1,21 @@
+{
+  "id": "5944",
+  "name": "dumbbell single arm neutral grip front raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-arm dumbbell front raise using a hammer grip, targeting the front deltoid with less wrist strain.",
+  "instructions": [
+    "Stand tall holding a dumbbell at your side with palm facing in.",
+    "Brace your core and keep a soft bend in your elbow.",
+    "Raise the dumbbell forward to shoulder height.",
+    "Pause briefly, then lower with control.",
+    "Avoid swinging, finish all reps and switch arms."
+  ],
+  "textSource": "opengym"
+}

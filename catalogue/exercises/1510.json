@@ -1,0 +1,23 @@
+{
+  "id": "1510",
+  "name": "crossover reverse lunge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A reverse lunge where the back leg steps behind and across the line of the front leg. It trains glutes, thighs and balance.",
+  "instructions": [
+    "Stand tall with your hands on your hips.",
+    "Step one foot back and across behind your other leg.",
+    "Lower until both knees are bent about 90 degrees.",
+    "Keep your torso upright and your front knee stable.",
+    "Push through the front foot to stand, then repeat or switch sides."
+  ],
+  "textSource": "opengym"
+}

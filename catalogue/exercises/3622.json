@@ -1,0 +1,23 @@
+{
+  "id": "3622",
+  "name": "v up",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "calisthenics",
+  "description": "Lift your legs and torso together to form a V, a demanding core move.",
+  "instructions": [
+    "Lie flat with arms extended overhead.",
+    "Raise legs and torso at the same time.",
+    "Reach your hands toward your toes.",
+    "Lower with control without touching the floor.",
+    "Keep your legs as straight as you can."
+  ],
+  "femaleVariant": "0825",
+  "textSource": "opengym"
+}

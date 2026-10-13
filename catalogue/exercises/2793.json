@@ -1,0 +1,23 @@
+{
+  "id": "2793",
+  "name": "plank walk up",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "core",
+    "chest"
+  ],
+  "category": "calisthenics",
+  "description": "Moving between a forearm and a high plank, building core and arm endurance.",
+  "instructions": [
+    "Start in a forearm plank.",
+    "Place one hand and then the other on the floor to rise to a high plank.",
+    "Lower one forearm and then the other back down.",
+    "Keep your hips steady.",
+    "Alternate the leading arm each rep."
+  ],
+  "textSource": "opengym"
+}

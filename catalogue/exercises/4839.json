@@ -1,0 +1,22 @@
+{
+  "id": "4839",
+  "name": "banded lower body dead bug",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A dead bug with a band around the feet that adds resistance for the legs. It trains the lower abs and anti-extension control.",
+  "instructions": [
+    "Lie on your back with a band around your feet and legs bent over your hips.",
+    "Press your lower back into the floor.",
+    "Extend one leg away against the band.",
+    "Return it and switch legs.",
+    "Keep your ribs down and your core braced."
+  ],
+  "textSource": "opengym"
+}

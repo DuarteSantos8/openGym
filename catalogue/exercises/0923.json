@@ -1,0 +1,22 @@
+{
+  "id": "0923",
+  "name": "band standing incline chest press",
+  "bodyPart": "chest",
+  "equipment": "band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A standing press angled upward using a band. It targets the upper chest.",
+  "instructions": [
+    "Anchor the band low behind you and hold the ends at your chest.",
+    "Step into a staggered stance.",
+    "Press your hands up and forward.",
+    "Squeeze your chest at the top.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

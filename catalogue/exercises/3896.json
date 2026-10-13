@@ -1,0 +1,25 @@
+{
+  "id": "3896",
+  "name": "band seated row",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A seated row with a band that works the mid back and lats.",
+  "instructions": [
+    "Sit on the floor with your legs extended and loop a band around your feet.",
+    "Hold the ends with your arms extended.",
+    "Sit tall with your chest up.",
+    "Pull your elbows back and squeeze your shoulder blades together.",
+    "Slowly extend your arms.",
+    "Keep your shoulders away from your ears."
+  ],
+  "femaleVariant": "0918",
+  "textSource": "opengym"
+}

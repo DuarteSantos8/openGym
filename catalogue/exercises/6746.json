@@ -1,0 +1,23 @@
+{
+  "id": "6746",
+  "name": "cable seated foot inversion",
+  "bodyPart": "lower legs",
+  "equipment": "cable",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "shins"
+  ],
+  "category": "strength",
+  "description": "A seated ankle move turning the foot inward against a cable. It strengthens the inner ankle and lower leg.",
+  "instructions": [
+    "Sit with your leg extended and a cable cuff on your foot.",
+    "Position the cable so it pulls the foot outward.",
+    "Keep your leg still.",
+    "Turn the sole of your foot inward against the cable.",
+    "Pause, then return slowly.",
+    "Finish the reps and switch feet."
+  ],
+  "textSource": "opengym"
+}

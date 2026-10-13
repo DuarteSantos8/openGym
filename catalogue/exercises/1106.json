@@ -1,0 +1,23 @@
+{
+  "id": "1106",
+  "name": "suspender twisting jackknife",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "From a plank with feet in the straps, you pull the knees toward one side of the chest, which hits the abs and obliques hard.",
+  "instructions": [
+    "Set your feet in the straps and get into a straight-arm plank.",
+    "Keep your shoulders stacked over your hands.",
+    "Pull both knees toward your chest, twisting them toward one elbow.",
+    "Pause briefly, then extend the legs back to plank.",
+    "Alternate sides each rep.",
+    "Keep your hips from sagging as you return."
+  ],
+  "textSource": "opengym"
+}

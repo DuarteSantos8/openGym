@@ -1,0 +1,25 @@
+{
+  "id": "0867",
+  "name": "reverse plank",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A plank held face up, supported on your hands and heels. It strengthens the back of the body and opens up the chest.",
+  "instructions": [
+    "Sit on the floor with legs straight and hands behind your hips, fingers pointing forward.",
+    "Press into your hands and heels to lift your hips.",
+    "Straighten your body from head to heels.",
+    "Squeeze your glutes and keep your shoulders away from your ears.",
+    "Hold for 20-45 seconds.",
+    "Lower your hips with control."
+  ],
+  "textSource": "opengym"
+}

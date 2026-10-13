@@ -1,0 +1,22 @@
+{
+  "id": "4109",
+  "name": "resistance band adduction split squat",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "inner thighs"
+  ],
+  "category": "strength",
+  "description": "A split squat with a band pulling you outward, adding inner thigh work.",
+  "instructions": [
+    "Anchor the band to the side and loop it around the working leg.",
+    "Step into a split stance.",
+    "Lower your back knee toward the floor.",
+    "Press back up while resisting the band.",
+    "Finish all reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

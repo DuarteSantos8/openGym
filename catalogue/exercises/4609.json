@@ -1,0 +1,22 @@
+{
+  "id": "4609",
+  "name": "lying side to side knee",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A gentle lying rotation that sways your bent knees side to side to loosen the lower back and hips.",
+  "instructions": [
+    "Lie on your back with arms out to the sides and knees bent, feet flat.",
+    "Keep your shoulders on the floor.",
+    "Slowly drop both knees to one side as far as is comfortable.",
+    "Bring them back to the middle and drop them to the other side.",
+    "Move at an easy pace and breathe through each rep."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "0140",
+  "name": "biceps pull-up",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up with an underhand grip. Targets the biceps.",
+  "instructions": [
+    "Hang from a pull-up bar with your palms facing away from you and your hands shoulder-width apart.",
+    "Engage your core and pull yourself up by bending your elbows, bringing your chest towards the bar.",
+    "Pause at the top of the movement, then slowly lower yourself back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

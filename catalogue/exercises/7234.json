@@ -1,0 +1,22 @@
+{
+  "id": "7234",
+  "name": "dumbbell standing scapular external rotation",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rotator cuff",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "Light dumbbell rotation that strengthens the small muscles behind the shoulder and between the shoulder blades.",
+  "instructions": [
+    "Stand tall holding a light dumbbell with your elbow bent at 90 degrees and tucked at your side.",
+    "Keep your upper arm still and your shoulder blade pulled back and down.",
+    "Rotate your forearm outward as far as you comfortably can.",
+    "Pause briefly, then slowly return to the start.",
+    "Finish all reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

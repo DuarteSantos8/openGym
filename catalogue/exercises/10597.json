@@ -1,0 +1,23 @@
+{
+  "id": "10597",
+  "name": "cable 90 degrees internal rotation catch",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A cable drill with the upper arm at shoulder height and elbow bent to 90 degrees. It trains the rotator cuff to catch and control a quick rotation.",
+  "instructions": [
+    "Set the cable at shoulder height and stand sideways to it.",
+    "Raise your upper arm out to the side with the elbow bent 90 degrees.",
+    "Let the cable pull your forearm back into external rotation.",
+    "Catch it, then rotate the forearm forward and down smoothly.",
+    "Keep your upper arm still and level.",
+    "Complete the reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

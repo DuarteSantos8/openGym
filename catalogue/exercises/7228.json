@@ -1,0 +1,23 @@
+{
+  "id": "7228",
+  "name": "ring wide pull up",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up on rings with a wide grip. The unstable rings make the lats and stabilizers work harder.",
+  "instructions": [
+    "Grab the rings with a wide overhand grip and hang with arms straight.",
+    "Brace your core.",
+    "Pull your chest toward the rings, driving elbows down and out.",
+    "Pause at the top.",
+    "Lower slowly to a full hang."
+  ],
+  "textSource": "opengym"
+}

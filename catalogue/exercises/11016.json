@@ -1,0 +1,23 @@
+{
+  "id": "11016",
+  "name": "dumbbell half kneeling single arm shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A one-arm overhead press from a half kneeling stance. It trains the shoulder while the position challenges your balance and core.",
+  "instructions": [
+    "Kneel on one knee with the other foot flat in front, and hold a dumbbell at shoulder height.",
+    "Brace your core and squeeze the glute of the kneeling leg.",
+    "Press the dumbbell straight overhead until your arm is extended.",
+    "Lower it under control back to your shoulder.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

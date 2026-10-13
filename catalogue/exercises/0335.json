@@ -1,0 +1,23 @@
+{
+  "id": "0335",
+  "name": "dumbbell lateral to front raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A combination raise that goes out to the side and then to the front. It works all the delts in one move.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand with your palms facing your body.",
+    "Keep your back straight and engage your core.",
+    "Raise your arms out to the sides until they are parallel to the ground, keeping a slight bend in your elbows.",
+    "Pause for a moment at the top, then slowly lower your arms back down to the starting position.",
+    "Next, raise your arms in front of you until they are parallel to the ground, again keeping a slight bend in your elbows.",
+    "Pause for a moment at the top, then slowly lower your arms back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

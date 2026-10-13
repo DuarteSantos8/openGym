@@ -1,0 +1,23 @@
+{
+  "id": "5913",
+  "name": "reverse warrior pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "obliques",
+    "lats",
+    "glutes",
+    "adductors"
+  ],
+  "category": "yoga",
+  "description": "A lunge with a back bend and one arm reaching up. Stretches the side body and strengthens the legs.",
+  "instructions": [
+    "Step into a wide warrior II stance.",
+    "Bend your front knee over your ankle.",
+    "Reach your front arm up and lean back.",
+    "Rest your back hand on your leg.",
+    "Hold for 5 slow breaths, then switch."
+  ],
+  "textSource": "opengym"
+}

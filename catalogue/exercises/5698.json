@@ -1,0 +1,22 @@
+{
+  "id": "5698",
+  "name": "dumbbell walking calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "dumbbell",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "Walk forward while rising high onto your toes with each step, holding dumbbells. It builds calf strength and ankle stability.",
+  "instructions": [
+    "Hold a dumbbell in each hand at your sides.",
+    "Stand tall and rise onto the balls of your feet.",
+    "Step forward and stay up on your toes.",
+    "Alternate steps, keeping your heels lifted.",
+    "Walk for the set distance, then lower your heels."
+  ],
+  "textSource": "opengym"
+}

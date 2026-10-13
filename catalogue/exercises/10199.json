@@ -1,0 +1,23 @@
+{
+  "id": "10199",
+  "name": "dumbbell cross romanian deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "forearms",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A Romanian deadlift where the dumbbells reach across the body, training the hamstrings and glutes.",
+  "instructions": [
+    "Stand holding a dumbbell in each hand with a soft bend in the knees.",
+    "Push your hips back and lower the weights down your legs.",
+    "Reach one dumbbell across toward the opposite foot, keeping your back flat.",
+    "Drive your hips forward to stand tall.",
+    "Alternate the crossing side each rep."
+  ],
+  "textSource": "opengym"
+}

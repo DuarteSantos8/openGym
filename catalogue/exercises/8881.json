@@ -1,0 +1,22 @@
+{
+  "id": "8881",
+  "name": "cable forearm pronation",
+  "bodyPart": "lower arms",
+  "equipment": "cable",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "You rotate the forearm so the palm turns down against cable resistance. It strengthens the pronator muscles of the forearm.",
+  "instructions": [
+    "Sit beside a low cable and hold the handle with your forearm resting on your thigh.",
+    "Start with your palm facing up and your wrist neutral.",
+    "Rotate your forearm so the palm turns down.",
+    "Pause, then rotate back slowly against the cable.",
+    "Keep your elbow still and move only the forearm.",
+    "Complete your reps and switch arms."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "9601",
+  "name": "bodyweight patrick step",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A step-down drill that builds knee and hip control. It strengthens the quads and glutes.",
+  "instructions": [
+    "Stand on a low step on one leg.",
+    "Slowly bend the knee and lower the other heel to the floor.",
+    "Keep your knee tracking over your toes.",
+    "Tap the floor lightly.",
+    "Push through the standing leg to rise.",
+    "Do your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

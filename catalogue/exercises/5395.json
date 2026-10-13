@@ -1,0 +1,23 @@
+{
+  "id": "5395",
+  "name": "roll tibialis anterior (single leg) lying on floor",
+  "bodyPart": "lower legs",
+  "equipment": "roller",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a foam roller to ease tightness in the shin. Good before training or on rest days to loosen up.",
+  "instructions": [
+    "Rest one shin on the roller, supporting yourself on your hands.",
+    "Place the roller under the shin and let your body weight settle onto it.",
+    "Roll gently from below the knee to the ankle, then switch legs.",
+    "Pause on tender spots and breathe slowly for 20-30 seconds.",
+    "Keep your core braced and avoid rolling over joints or bone.",
+    "Roll for 30-60 seconds, then switch sides if needed."
+  ],
+  "femaleVariant": "5437",
+  "textSource": "opengym"
+}

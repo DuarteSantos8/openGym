@@ -1,0 +1,24 @@
+{
+  "id": "2795",
+  "name": "dumbbell step up lunge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A step up that flows into a lunge while holding dumbbells. Builds single leg strength and balance.",
+  "instructions": [
+    "Hold a dumbbell in each hand and stand facing a sturdy box or step.",
+    "Step one foot onto the box and drive up until you stand on it.",
+    "Step the same foot back down behind you into a lunge.",
+    "Push back up to the start, keeping your torso upright.",
+    "Finish all reps on one leg, then switch sides."
+  ],
+  "textSource": "opengym",
+  "femaleVariant": "2796"
+}

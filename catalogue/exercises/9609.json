@@ -1,0 +1,23 @@
+{
+  "id": "9609",
+  "name": "kettlebell deadlift v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "quadriceps",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A hip hinge lifting a kettlebell from the floor. It teaches solid deadlift mechanics and builds the posterior chain.",
+  "instructions": [
+    "Stand with feet hip-width apart and the kettlebell between your feet.",
+    "Hinge and bend your knees to grip the handle with a flat back.",
+    "Brace your core and push the floor away.",
+    "Stand fully tall, squeezing your glutes.",
+    "Lower the bell back to the floor with control."
+  ],
+  "textSource": "opengym"
+}

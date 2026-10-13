@@ -1,0 +1,23 @@
+{
+  "id": "3714",
+  "name": "single leg stand",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "core",
+    "calves"
+  ],
+  "category": "isometric",
+  "description": "A simple balance hold on one leg that trains stability in the ankle, hip and core.",
+  "instructions": [
+    "Stand tall with your feet together.",
+    "Lift one foot off the floor and bend the knee slightly.",
+    "Keep your hips level and eyes on a fixed point.",
+    "Hold for 20 to 30 seconds.",
+    "Switch legs and repeat."
+  ],
+  "textSource": "opengym"
+}

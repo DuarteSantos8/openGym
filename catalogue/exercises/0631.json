@@ -1,0 +1,24 @@
+{
+  "id": "0631",
+  "name": "muscle up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "triceps",
+    "shoulders",
+    "chest"
+  ],
+  "category": "calisthenics",
+  "description": "You pull yourself above a bar and then press up into a dip position. Trains the lats, chest and arms in a powerful transition.",
+  "instructions": [
+    "Start by hanging from a pull-up bar with your palms facing away from you and your arms fully extended.",
+    "Engage your core and pull your body up towards the bar, leading with your chest.",
+    "As you reach the top of the movement, transition your grip so that your palms are facing towards you.",
+    "Continue pulling yourself up until your chest is above the bar and your arms are fully flexed.",
+    "Reverse the movement by slowly lowering yourself back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

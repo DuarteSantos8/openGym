@@ -1,0 +1,22 @@
+{
+  "id": "6435",
+  "name": "heel glute bridge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A bridge with heels pushed into the floor and toes lifted. It biases the glutes and hamstrings.",
+  "instructions": [
+    "Lie on your back with knees bent and heels on the floor, toes lifted.",
+    "Keep your arms by your sides.",
+    "Press through your heels and raise your hips.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

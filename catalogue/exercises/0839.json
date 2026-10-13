@@ -1,0 +1,21 @@
+{
+  "id": "0839",
+  "name": "weighted lying twist",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A lying trunk twist holding a weight. It works the obliques and the core.",
+  "instructions": [
+    "Lie on your back with knees bent and hold a weight above your chest.",
+    "Keep your shoulders on the floor.",
+    "Lower your knees to one side.",
+    "Return to centre and lower to the other side.",
+    "Move slowly and keep control."
+  ],
+  "textSource": "opengym"
+}

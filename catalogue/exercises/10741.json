@@ -1,0 +1,22 @@
+{
+  "id": "10741",
+  "name": "resistance band standing single arm triceps stretch",
+  "bodyPart": "upper arms",
+  "equipment": "resistance band",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "lats"
+  ],
+  "category": "stretching",
+  "description": "A standing triceps stretch with a band assisting. The band helps you ease into a deeper stretch.",
+  "instructions": [
+    "Stand tall and hold a band behind your back with one hand low.",
+    "Raise the other arm overhead and bend the elbow, holding the band.",
+    "Gently pull down with the lower hand.",
+    "Feel a stretch in the back of the upper arm.",
+    "Hold for 20-30 seconds.",
+    "Switch arms."
+  ],
+  "textSource": "opengym"
+}

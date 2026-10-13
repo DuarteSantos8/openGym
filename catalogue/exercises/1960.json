@@ -1,0 +1,21 @@
+{
+  "id": "1960",
+  "name": "double kneeling shin stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "Kneeling and sitting back onto your heels to stretch the front of the shins and ankles.",
+  "instructions": [
+    "Kneel on a mat with your feet pointing straight back and the tops of the feet on the floor.",
+    "Slowly sit back toward your heels until you feel the shins and ankles stretch.",
+    "Place your hands on the floor in front of you to control the pressure.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

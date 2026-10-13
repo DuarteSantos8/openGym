@@ -1,0 +1,22 @@
+{
+  "id": "4775",
+  "name": "push up and triceps dip on parallel bars",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A combined move on parallel bars that pairs a push-up with a dip. It works the chest and triceps.",
+  "instructions": [
+    "Place hands on parallel bars and support yourself in a plank.",
+    "Lower into a push-up with your elbows out.",
+    "Press back up to a plank.",
+    "Shift your hands to the edge of the bars, body upright.",
+    "Dip down and press up, then repeat the cycle."
+  ],
+  "textSource": "opengym"
+}

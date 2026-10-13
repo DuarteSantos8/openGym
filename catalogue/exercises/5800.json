@@ -1,0 +1,23 @@
+{
+  "id": "5800",
+  "name": "bodyweight lying prone ys",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "trapezius",
+    "lower back",
+    "rhomboids"
+  ],
+  "category": "calisthenics",
+  "description": "Lie face down and raise your arms into a Y shape. It strengthens the lower traps and shoulder stabilizers.",
+  "instructions": [
+    "Lie face down with your arms extended overhead in a Y.",
+    "Turn your thumbs toward the ceiling.",
+    "Lift your arms off the floor, squeezing your shoulder blades.",
+    "Hold briefly at the top.",
+    "Lower with control and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "2346",
+  "name": "bench dip back arms (form check)",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A side-by-side form check for back and arm position in bench dips, showing the common mistake next to the correct technique so you can spot it in your own sets.",
+  "instructions": [
+    "Sit on the edge of a bench, grip it beside your hips and slide your butt off.",
+    "Compare the faulty version with the correct one: your back stays close to the bench and your elbows point straight behind you.",
+    "Perform the lift slowly with a light load and keep the correct position throughout.",
+    "Use a mirror or film a set from the side to check your own position.",
+    "Fix the cue before adding weight, and rest between sets so form stays clean."
+  ],
+  "textSource": "opengym"
+}

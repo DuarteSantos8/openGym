@@ -1,0 +1,23 @@
+{
+  "id": "10848",
+  "name": "pilates machine lying running",
+  "bodyPart": "lower legs",
+  "equipment": "leverage machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "Reformer footwork that alternates the legs like running. It trains the calves, quads and glutes.",
+  "instructions": [
+    "Lie on the reformer with the balls of your feet on the bar.",
+    "Straighten both legs.",
+    "Lower one heel while bending the other knee.",
+    "Alternate smoothly.",
+    "Keep your pelvis still.",
+    "Maintain steady breathing."
+  ],
+  "textSource": "opengym"
+}

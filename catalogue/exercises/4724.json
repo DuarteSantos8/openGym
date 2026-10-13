@@ -1,0 +1,23 @@
+{
+  "id": "4724",
+  "name": "chin up (in squatting position)",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "quadriceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A chin-up from a low bar while sitting in a squat, using your legs to share the work.",
+  "instructions": [
+    "Set a low bar and grip it with palms facing you.",
+    "Sit into a deep squat beneath it.",
+    "Pull your chest to the bar.",
+    "Lower back down.",
+    "Use your legs as little as possible."
+  ],
+  "textSource": "opengym"
+}

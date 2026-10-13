@@ -1,0 +1,26 @@
+{
+  "id": "0524",
+  "name": "kettlebell bent press",
+  "bodyPart": "waist",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A kettlebell press that takes you from standing to leaning back while the bell stays overhead. It trains the shoulders, trunk and hips.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a kettlebell in your right hand.",
+    "Bend your knees slightly and press the kettlebell overhead with your right arm, keeping your elbow locked.",
+    "Rotate your torso to the left, shifting your weight onto your left foot.",
+    "Bend your left knee and lower your torso towards the ground, keeping your right arm extended overhead.",
+    "As you lower, keep your eyes on the kettlebell and your chest lifted.",
+    "Once your left hand touches the ground, push through your left foot and straighten your left leg, driving your hips forward.",
+    "As you drive your hips forward, use your core and right arm to press the kettlebell back up to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "femaleVariant": "2654",
+  "textSource": "exercisedb"
+}

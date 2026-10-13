@@ -1,0 +1,23 @@
+{
+  "id": "1704",
+  "name": "medicine ball single leg wood chop",
+  "bodyPart": "waist",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A wood chop done on one leg that adds a balance challenge to the core rotation.",
+  "instructions": [
+    "Stand on one leg holding a medicine ball overhead to one side.",
+    "Chop the ball diagonally down across your body.",
+    "Rotate your torso and pivot your standing foot.",
+    "Return the ball overhead with control.",
+    "Complete the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

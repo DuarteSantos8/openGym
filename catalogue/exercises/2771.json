@@ -1,0 +1,21 @@
+{
+  "id": "2771",
+  "name": "hip lateral rotation (external rotation)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "adductors",
+    "hip flexors"
+  ],
+  "category": "mobility",
+  "description": "Rotating the thigh outward at the hip, working the deep hip rotators and glutes.",
+  "instructions": [
+    "Stand or sit tall with a relaxed posture and the joint in a neutral starting position.",
+    "Sit tall on a bench or chair, one knee bent at 90 degrees.",
+    "Keep your thigh still and swing your lower leg inward, which rotates the hip outward.",
+    "Pause briefly, then return to the starting position under control.",
+    "Repeat for 10-15 smooth reps, then switch sides if you are working one side at a time."
+  ],
+  "textSource": "opengym"
+}

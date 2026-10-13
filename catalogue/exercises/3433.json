@@ -1,0 +1,23 @@
+{
+  "id": "3433",
+  "name": "swimmer kicks v. 2 (male)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A face-down flutter kick, lifting the chest and legs off the floor and kicking in a swimming motion. It trains the glutes and lower back.",
+  "instructions": [
+    "Lie face down on a mat with your arms extended overhead.",
+    "Engage your core and lift your chest and legs off the ground simultaneously.",
+    "Kick your legs up and down in a fluttering motion, as if you were swimming.",
+    "Continue kicking for the desired number of repetitions.",
+    "Lower your chest and legs back down to the starting position."
+  ],
+  "femaleVariant": "3434",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "10427",
+  "name": "sandbag over the shoulder toss (weighted)",
+  "bodyPart": "upper legs",
+  "equipment": "sandbag",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "lower back",
+    "core",
+    "shoulders"
+  ],
+  "category": "plyometrics",
+  "description": "Explosively hinge and heave a sandbag backwards over your shoulder. It trains hip power and full body force.",
+  "instructions": [
+    "Stand over the sandbag with feet shoulder width apart.",
+    "Hinge down, grip the bag and keep your back flat.",
+    "Drive your hips forward and pull the bag up the front of your body.",
+    "Extend fully and throw the bag back over your shoulder.",
+    "Reset and repeat, facing the same way."
+  ],
+  "textSource": "opengym"
+}

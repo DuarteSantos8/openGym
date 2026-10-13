@@ -1,0 +1,22 @@
+{
+  "id": "5890",
+  "name": "double pigeon pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "groin",
+    "lower back"
+  ],
+  "category": "yoga",
+  "description": "A seated pose with one shin stacked on the other. Opens the outer hips and glutes.",
+  "instructions": [
+    "Sit with your legs crossed and stack one shin on top of the other.",
+    "Flex your feet to protect your knees.",
+    "Sit tall, then hinge forward over your shins.",
+    "Hold for 5 slow breaths.",
+    "Swap which leg is on top and repeat."
+  ],
+  "textSource": "opengym"
+}

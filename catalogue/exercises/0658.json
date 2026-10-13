@@ -1,0 +1,23 @@
+{
+  "id": "0658",
+  "name": "push-up (wall) v. 2",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up against a wall, a gentle version for beginners. Works the chest, shoulders and triceps.",
+  "instructions": [
+    "Stand facing a wall, about arm's length away.",
+    "Place your hands on the wall at shoulder height, slightly wider than shoulder-width apart.",
+    "Step back with your feet, keeping them hip-width apart.",
+    "Engage your core and keep your body in a straight line from head to heels.",
+    "Bend your elbows and lower your chest towards the wall, keeping your body straight.",
+    "Pause for a moment, then push yourself back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

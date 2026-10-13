@@ -1,0 +1,21 @@
+{
+  "id": "1791",
+  "name": "trap and neck stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "traps",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "trapezius"
+  ],
+  "category": "stretching",
+  "description": "Tilting your head to the side while anchoring the opposite shoulder stretches the upper traps and the side of the neck.",
+  "instructions": [
+    "Sit or stand tall and hold the edge of the seat or a hand behind your back to anchor one shoulder down.",
+    "Tilt your head toward the opposite shoulder until you feel a stretch along your neck.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

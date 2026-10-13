@@ -1,0 +1,23 @@
+{
+  "id": "3475",
+  "name": "lying leg tuck hip back stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "A lying tuck stretch easing the hips and lower back.",
+  "instructions": [
+    "Lie on your back.",
+    "Hug both knees toward your chest.",
+    "Rock gently if comfortable.",
+    "Hold for 20-30 seconds.",
+    "Relax your shoulders.",
+    "Release slowly."
+  ],
+  "textSource": "opengym"
+}

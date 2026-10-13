@@ -1,0 +1,23 @@
+{
+  "id": "10862",
+  "name": "bodyweight single leg deadlift against ball",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A single-leg hinge with a ball against the wall for balance. It trains hamstrings and balance.",
+  "instructions": [
+    "Stand facing a wall with a ball between your hand and the wall.",
+    "Lift one foot slightly.",
+    "Hinge at the hip as the free leg extends back.",
+    "Keep your back flat.",
+    "Return to standing.",
+    "Switch legs after the set."
+  ],
+  "textSource": "opengym"
+}

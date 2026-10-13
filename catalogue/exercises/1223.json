@@ -1,0 +1,23 @@
+{
+  "id": "1223",
+  "name": "underhand grip inverted back row",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight row under a low bar with an underhand grip. It builds the back and biceps.",
+  "instructions": [
+    "Set a bar at waist height and lie under it, gripping it with palms facing you.",
+    "Straighten your body from heels to head.",
+    "Pull your chest up to the bar, squeezing your shoulder blades.",
+    "Lower yourself under control until your arms are straight.",
+    "Keep your hips up the whole time."
+  ],
+  "textSource": "opengym"
+}

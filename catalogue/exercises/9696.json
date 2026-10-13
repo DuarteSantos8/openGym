@@ -1,0 +1,23 @@
+{
+  "id": "9696",
+  "name": "barbell frog stance deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "adductors",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A deadlift with a wide, toes-out stance. It shortens the range and loads the glutes and inner thighs.",
+  "instructions": [
+    "Stand with feet wide, toes turned out, and a bar over mid-foot.",
+    "Hinge and bend your knees to grip the bar.",
+    "Brace your core and keep your back flat.",
+    "Drive through your feet to stand tall.",
+    "Lower the bar with control."
+  ],
+  "textSource": "opengym"
+}

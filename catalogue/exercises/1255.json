@@ -1,0 +1,22 @@
+{
+  "id": "1255",
+  "name": "barbell decline pullover",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A pullover on a decline bench with a barbell. It trains the chest and lats.",
+  "instructions": [
+    "Lie down on a decline bench with your head lower than your hips and your feet secured.",
+    "Hold the barbell with a pronated grip (palms facing away from you) and your hands slightly wider than shoulder-width apart.",
+    "Extend your arms above your chest, keeping a slight bend in your elbows.",
+    "Lower the barbell in an arc motion behind your head, feeling a stretch in your chest and shoulders.",
+    "Pause for a moment, then return the barbell to the starting position by reversing the motion.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

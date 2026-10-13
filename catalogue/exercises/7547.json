@@ -1,0 +1,23 @@
+{
+  "id": "7547",
+  "name": "dumbbell goblet sumo squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "adductors",
+    "quadriceps",
+    "inner thighs",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Wide-stance goblet squat that targets the glutes and inner thighs.",
+  "instructions": [
+    "Stand with feet wide and toes out, holding a dumbbell at your chest.",
+    "Keep your chest up.",
+    "Squat down between your legs.",
+    "Keep your knees pointing over your toes.",
+    "Drive up and squeeze your glutes."
+  ],
+  "textSource": "opengym"
+}

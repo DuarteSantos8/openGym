@@ -1,0 +1,22 @@
+{
+  "id": "7693",
+  "name": "sitting alternate knee to elbow twist",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "From a seated position, twist to bring an elbow toward the opposite knee. It works the abs and obliques.",
+  "instructions": [
+    "Sit tall on the floor, leaning back slightly with your hands behind your head.",
+    "Lift your feet off the floor.",
+    "Twist and bring one elbow toward the opposite knee.",
+    "Return to centre and repeat on the other side.",
+    "Alternate sides at a steady pace."
+  ],
+  "textSource": "opengym"
+}

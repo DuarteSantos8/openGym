@@ -1,0 +1,28 @@
+{
+  "id": "1201",
+  "name": "dumbbell burpee",
+  "bodyPart": "cardio",
+  "equipment": "dumbbell",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves",
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "A burpee with dumbbells that finishes with an overhead press. It builds strength and endurance.",
+  "instructions": [
+    "Start in a standing position with your feet shoulder-width apart and a dumbbell in each hand.",
+    "Lower your body into a squat position, placing the dumbbells on the ground in front of you.",
+    "Kick your feet back into a push-up position, keeping your body in a straight line.",
+    "Perform a push-up, bending your elbows and lowering your chest towards the ground.",
+    "Jump your feet back towards your hands, landing in a squat position.",
+    "Stand up explosively, lifting the dumbbells off the ground and bringing them to your shoulders.",
+    "Press the dumbbells overhead, fully extending your arms.",
+    "Lower the dumbbells back to your shoulders and repeat the entire sequence for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

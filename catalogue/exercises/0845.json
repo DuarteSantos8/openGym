@@ -1,0 +1,22 @@
+{
+  "id": "0845",
+  "name": "weighted russian twist (legs up)",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A weighted Russian twist with the feet lifted, rotating the torso side to side. It trains the abs and obliques.",
+  "instructions": [
+    "Sit on the ground with your knees bent and feet lifted off the ground, keeping your legs together.",
+    "Hold the weight with both hands in front of your chest, keeping your elbows slightly bent.",
+    "Lean back slightly to engage your core muscles.",
+    "Twist your torso to the right, bringing the weight towards the ground on your right side.",
+    "Pause for a moment, then twist your torso to the left, bringing the weight towards the ground on your left side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

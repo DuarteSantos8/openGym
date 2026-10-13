@@ -1,0 +1,22 @@
+{
+  "id": "1584",
+  "name": "rocket jump",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "A deep squat followed by a big vertical jump with your arms reaching up. It builds explosive leg power.",
+  "instructions": [
+    "Stand with feet shoulder-width apart.",
+    "Squat down while swinging your arms back.",
+    "Explode upward and reach both arms overhead as you jump.",
+    "Extend your whole body like a rocket.",
+    "Land softly on bent knees and reset before the next jump."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "6466",
+  "name": "side plank bent leg lift",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A side plank with a bent top leg that you lift, challenging your obliques and outer hips.",
+  "instructions": [
+    "Lie on one side and prop yourself on your forearm.",
+    "Lift your hips so your body forms a line.",
+    "Bend your top knee and lift it upward.",
+    "Lower it without dropping your hips.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

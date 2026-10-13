@@ -1,0 +1,23 @@
+{
+  "id": "8224",
+  "name": "resistance band renegade row",
+  "bodyPart": "waist",
+  "equipment": "resistance band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lats",
+    "upper back",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A renegade row using a resistance band. It trains the core while the lats and back do the pulling.",
+  "instructions": [
+    "Anchor a band and get into a plank facing it.",
+    "Hold the band in one hand.",
+    "Row your elbow back to your ribs.",
+    "Keep your hips level.",
+    "Return slowly and alternate arms."
+  ],
+  "textSource": "opengym"
+}

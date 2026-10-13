@@ -1,0 +1,21 @@
+{
+  "id": "2745",
+  "name": "smith reverse hyperextension",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A reverse hyperextension on the smith machine that works the glutes and hamstrings with support from the lower back.",
+  "instructions": [
+    "Lie face down over a bench with your hips at the edge and legs hanging.",
+    "Hook your heels under the smith bar if it is set low.",
+    "Lift your legs by extending the hips until they are in line with your body.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly without swinging."
+  ],
+  "textSource": "opengym"
+}

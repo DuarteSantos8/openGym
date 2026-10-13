@@ -1,0 +1,25 @@
+{
+  "id": "1529",
+  "name": "barbell power jerk",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "quadriceps",
+    "glutes",
+    "core",
+    "calves"
+  ],
+  "category": "olympic",
+  "description": "An explosive overhead lift where you dip, drive and catch the bar with locked arms in a quarter squat.",
+  "instructions": [
+    "Rack the bar on your front shoulders with elbows slightly forward.",
+    "Dip a short way with your torso upright.",
+    "Drive up explosively and punch the bar overhead.",
+    "Dip under slightly and catch it with locked arms.",
+    "Stand tall, then lower the bar to your shoulders with control."
+  ],
+  "femaleVariant": "2547",
+  "textSource": "opengym"
+}

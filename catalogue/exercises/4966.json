@@ -1,0 +1,24 @@
+{
+  "id": "4966",
+  "name": "press under",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back",
+    "core",
+    "glutes"
+  ],
+  "category": "olympic",
+  "description": "An Olympic style drill where you press yourself down under a barbell overhead. It builds shoulder stability and speed.",
+  "instructions": [
+    "Hold a barbell overhead with a wide grip.",
+    "Press up so your arms lock out.",
+    "Drop into a squat while keeping the bar overhead.",
+    "Keep your arms locked.",
+    "Stand up tall.",
+    "Keep your core braced."
+  ],
+  "textSource": "opengym"
+}

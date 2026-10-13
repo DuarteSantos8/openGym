@@ -1,0 +1,20 @@
+{
+  "id": "0459",
+  "name": "flutter kicks",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "calisthenics",
+  "description": "You lie on your back and kick your legs up and down in small alternating motions. It works the lower abs and hip flexors.",
+  "instructions": [
+    "Lie flat on your back with your legs extended and your hands by your sides.",
+    "Engage your core and lift your legs off the ground about 6 inches.",
+    "Keeping your legs straight, alternate lifting one leg slightly higher than the other.",
+    "Continue this fluttering motion for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

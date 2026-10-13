@@ -1,0 +1,22 @@
+{
+  "id": "3833",
+  "name": "handboard open hand grip",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "hands",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A hang from a hangboard using an open hand grip. It builds finger strength with less strain on your joints.",
+  "instructions": [
+    "Grip the edge with fingers extended and a slight arch.",
+    "Step off and hang with straight arms.",
+    "Keep your shoulders engaged.",
+    "Hold for 5-10 seconds.",
+    "Lower down and rest before the next hang."
+  ],
+  "textSource": "opengym"
+}

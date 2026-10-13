@@ -1,0 +1,23 @@
+{
+  "id": "1612",
+  "name": "swimmer hips",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "rhomboids",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A prone floor move where opposite arm and leg lift in alternation, training the back and glutes.",
+  "instructions": [
+    "Lie face down with your arms extended overhead and your legs straight.",
+    "Lift your chest slightly and brace your glutes.",
+    "Raise one arm and the opposite leg a few inches.",
+    "Switch sides in a controlled flutter.",
+    "Keep your neck neutral and breathe steadily."
+  ],
+  "textSource": "opengym"
+}

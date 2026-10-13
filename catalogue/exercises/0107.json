@@ -1,0 +1,23 @@
+{
+  "id": "0107",
+  "name": "barbell standing front raise over head",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A front raise where the bar travels past shoulder height up to overhead. Targets the front delts.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a barbell in front of your thighs with an overhand grip.",
+    "Keep your back straight and engage your core.",
+    "Slowly raise the barbell in front of you, keeping your arms straight and your palms facing down.",
+    "Continue lifting until the barbell is slightly above shoulder level.",
+    "Pause for a moment at the top, then slowly lower the barbell back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2688",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "0339",
+  "name": "dumbbell lying femoral",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A lying hamstring curl with a dumbbell. You bend the knees to bring the weight toward the glutes.",
+  "instructions": [
+    "Lie flat on your back with your legs extended and a dumbbell resting on your lower abdomen.",
+    "Bend your knees and bring the dumbbell towards your glutes, keeping your feet flat on the ground.",
+    "Pause for a moment at the top, then slowly lower the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2669",
+  "textSource": "exercisedb"
+}

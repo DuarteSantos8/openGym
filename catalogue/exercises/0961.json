@@ -1,0 +1,23 @@
+{
+  "id": "0961",
+  "name": "tree pose vrksasana",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "adductors",
+    "core",
+    "ankles",
+    "calves"
+  ],
+  "category": "yoga",
+  "description": "Balance on one leg with the other foot resting on your inner thigh. It builds balance, focus and hip strength.",
+  "instructions": [
+    "Stand tall and shift your weight onto one foot.",
+    "Place the sole of the other foot on your inner calf or thigh, never on the knee.",
+    "Bring your palms together at your chest or raise them overhead.",
+    "Fix your eyes on one point to stay steady.",
+    "Hold for 5 breaths, then switch legs."
+  ],
+  "textSource": "opengym"
+}

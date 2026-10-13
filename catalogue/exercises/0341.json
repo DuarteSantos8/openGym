@@ -1,0 +1,21 @@
+{
+  "id": "0341",
+  "name": "dumbbell lying one arm deltoid rear",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A face-down one-arm dumbbell raise for the rear delt. You lift the arm up and back, squeezing the shoulder blade.",
+  "instructions": [
+    "Lie face down on a flat bench with a dumbbell in one hand, palm facing inwards.",
+    "Extend your arm straight down towards the floor, keeping it close to your body.",
+    "Raise your arm up and back, squeezing your shoulder blade towards your spine.",
+    "Pause for a moment at the top, then slowly lower your arm back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

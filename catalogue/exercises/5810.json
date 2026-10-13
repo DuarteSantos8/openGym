@@ -1,0 +1,23 @@
+{
+  "id": "5810",
+  "name": "kicks leg bent",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A kneeling glute kick back with the knee bent. It targets the glutes with a controlled squeeze.",
+  "instructions": [
+    "Get on all fours with hands under shoulders and knees under hips.",
+    "Keep your core tight and back flat.",
+    "Lift one leg with the knee bent, pressing your foot toward the ceiling.",
+    "Squeeze your glute at the top.",
+    "Lower and repeat, then switch legs."
+  ],
+  "femaleVariant": "0557",
+  "textSource": "opengym"
+}

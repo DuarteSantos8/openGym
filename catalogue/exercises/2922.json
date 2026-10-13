@@ -1,0 +1,22 @@
+{
+  "id": "2922",
+  "name": "bodyweight standing biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A curl done with your own body resistance, such as pushing one hand against the other. It is a simple way to train the biceps without equipment.",
+  "instructions": [
+    "Stand tall with your feet hip-width apart.",
+    "Place one hand under the wrist of your other hand to give resistance.",
+    "Curl the working hand toward your shoulder while the other hand pushes down.",
+    "Squeeze the biceps at the top.",
+    "Lower slowly, finish the reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

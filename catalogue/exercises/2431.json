@@ -1,0 +1,24 @@
+{
+  "id": "2431",
+  "name": "dumbbell sumo squat off benches",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "inner thighs",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A wide squat with feet on benches that extends the range of motion for the glutes and inner thighs.",
+  "instructions": [
+    "Place a bench under each foot with a wide stance.",
+    "Hold a dumbbell in front of you with both hands.",
+    "Sit your hips down between the benches.",
+    "Lower until you feel a deep stretch in your hips.",
+    "Push through your heels to stand.",
+    "Keep your chest up throughout."
+  ],
+  "textSource": "opengym"
+}

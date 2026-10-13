@@ -1,0 +1,23 @@
+{
+  "id": "3701",
+  "name": "high knee sprints",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "hip flexors",
+    "quadriceps",
+    "calves",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "Running in place at full speed with your knees driving high. A quick way to raise your heart rate and warm up your legs.",
+  "instructions": [
+    "Stand tall with your arms bent at your sides.",
+    "Start running in place, driving each knee up to hip height.",
+    "Pump your arms in rhythm with your legs.",
+    "Stay on the balls of your feet and keep your chest up.",
+    "Go hard for 20 to 30 seconds, then rest."
+  ],
+  "textSource": "opengym"
+}

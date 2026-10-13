@@ -1,0 +1,23 @@
+{
+  "id": "9024",
+  "name": "lying abdominal scissors crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on your back, you crunch up while scissoring your legs. It works the upper and lower abs together.",
+  "instructions": [
+    "Lie on your back with your hands behind your head.",
+    "Lift your shoulders and your legs slightly off the floor.",
+    "Scissor your legs up and down in alternating motion.",
+    "Crunch your ribs toward your hips.",
+    "Keep your lower back pressed down.",
+    "Continue for a set count of reps."
+  ],
+  "textSource": "opengym"
+}

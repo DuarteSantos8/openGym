@@ -1,0 +1,23 @@
+{
+  "id": "6648",
+  "name": "cable high pull with rope attachment",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "trapezius",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A rope pull toward the face from a high pulley. It builds the rear delts and upper back.",
+  "instructions": [
+    "Attach a rope to a high pulley and grip an end in each hand.",
+    "Step back until the cable is taut, with a slight lean back.",
+    "Pull the rope toward your face, elbows flaring high.",
+    "Squeeze your shoulder blades together at the end.",
+    "Let the rope return slowly to the start."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "0343",
+  "name": "dumbbell lying one arm press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A one-arm dumbbell press on a flat bench. Working one side at a time shows up any imbalance.",
+  "instructions": [
+    "Lie flat on a bench with a dumbbell in one hand and your feet flat on the ground.",
+    "Hold the dumbbell at shoulder level with your palm facing forward.",
+    "Press the dumbbell upward until your arm is fully extended.",
+    "Pause for a moment at the top, then slowly lower the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch to the other arm."
+  ],
+  "femaleVariant": "2680",
+  "textSource": "exercisedb"
+}

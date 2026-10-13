@@ -1,0 +1,22 @@
+{
+  "id": "1104",
+  "name": "suspension triceps extension v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "suspension trainer",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A triceps extension leaning on straps. It isolates the triceps.",
+  "instructions": [
+    "Hold the handles and lean forward.",
+    "Keep your elbows bent and by your head.",
+    "Straighten your arms.",
+    "Keep your body straight.",
+    "Return slowly.",
+    "Keep your elbows still."
+  ],
+  "textSource": "opengym"
+}

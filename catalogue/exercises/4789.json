@@ -1,0 +1,23 @@
+{
+  "id": "4789",
+  "name": "side squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "hamstrings",
+    "inner thighs"
+  ],
+  "category": "calisthenics",
+  "description": "A side squat in a wide stance, bending one leg while the other stays straight. It works the thighs, glutes and inner legs.",
+  "instructions": [
+    "Stand with feet wide and your arms in front for balance.",
+    "Shift your weight to one leg and sit back and down.",
+    "Keep the other leg straight.",
+    "Keep your chest up and your heel down.",
+    "Push back to the middle and switch sides."
+  ],
+  "textSource": "opengym"
+}

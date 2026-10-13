@@ -1,0 +1,23 @@
+{
+  "id": "7216",
+  "name": "opposite arm and leg raise against wall",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "shoulders",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "A wall-supported raise of the opposite arm and leg. It trains balance and lower back stability.",
+  "instructions": [
+    "Stand facing a wall in a bent over position with your hands on it.",
+    "Brace your core.",
+    "Lift one arm and the opposite leg at the same time.",
+    "Hold for a second without twisting.",
+    "Lower and repeat on the other side."
+  ],
+  "textSource": "opengym"
+}

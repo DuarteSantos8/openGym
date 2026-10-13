@@ -1,0 +1,22 @@
+{
+  "id": "5124",
+  "name": "side jump twist",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "calves",
+    "quadriceps"
+  ],
+  "category": "plyometrics",
+  "description": "Jump while twisting your hips and legs to the side. It warms up the core and legs.",
+  "instructions": [
+    "Stand with your feet together and arms bent.",
+    "Jump and twist your hips and legs to one side while your shoulders face forward.",
+    "Land softly on the balls of your feet.",
+    "Jump again and twist to the other side.",
+    "Keep a steady rhythm for 30-45 seconds."
+  ],
+  "textSource": "opengym"
+}

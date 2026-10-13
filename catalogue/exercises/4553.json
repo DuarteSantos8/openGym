@@ -1,0 +1,23 @@
+{
+  "id": "4553",
+  "name": "thoracic bridge",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A bridge-like drill that opens the upper back and shoulders while rotating the spine.",
+  "instructions": [
+    "Sit on the floor with your knees bent and one hand behind you.",
+    "Lift your hips toward the ceiling.",
+    "Reach your free arm up and over, rotating your chest toward the ceiling.",
+    "Open your chest as far as feels comfortable.",
+    "Return to the start under control.",
+    "Repeat for reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

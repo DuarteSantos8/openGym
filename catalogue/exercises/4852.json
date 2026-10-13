@@ -1,0 +1,22 @@
+{
+  "id": "4852",
+  "name": "dumbbell alternate lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Raising dumbbells out to the sides one arm at a time. It builds the side delts.",
+  "instructions": [
+    "Stand holding light dumbbells at your sides.",
+    "Keep a slight bend in your elbows.",
+    "Raise one arm out to shoulder height.",
+    "Lower it slowly.",
+    "Switch arms."
+  ],
+  "textSource": "opengym"
+}

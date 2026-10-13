@@ -1,0 +1,29 @@
+# Checks every change to the exercise catalogue: the entries themselves (scripts/catalogue/validate.mjs)
+# and that the files the app is built from were regenerated (build.mjs --check).
+name: Catalogue
+
+on:
+  pull_request:
+    paths: ['catalogue/**', 'scripts/catalogue/**', 'frontend/src/lib/exercises-data.js', 'frontend/src/instr/**', 'frontend/src/exercise-names/**', 'frontend/src/exercise-desc/**', '.github/workflows/catalogue.yml']
+  push:
+    branches: [main]
+    paths: ['catalogue/**', 'scripts/catalogue/**', '.github/workflows/catalogue.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Validate the catalogue
+        run: node scripts/catalogue/validate.mjs
+      - name: Generated files are up to date
+        run: node scripts/catalogue/build.mjs --check
+      - name: Media stay within 180 px (licence)
+        run: node scripts/catalogue/check-media.mjs

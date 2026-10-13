@@ -1,0 +1,23 @@
+{
+  "id": "1509",
+  "name": "barbell bench squat (with chains)",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A barbell squat to a bench with chains adding load as you stand. It builds leg and hip strength and teaches consistent depth.",
+  "instructions": [
+    "Set a bench behind you and load the bar with chains.",
+    "Place the bar on your upper back and stand with feet shoulder-width apart.",
+    "Sit back and down until you touch the bench lightly.",
+    "Keep your chest up and your knees tracking over your toes.",
+    "Drive through your feet to stand, feeling the chains add weight."
+  ],
+  "textSource": "opengym"
+}

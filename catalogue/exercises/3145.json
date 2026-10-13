@@ -1,0 +1,23 @@
+{
+  "id": "3145",
+  "name": "push-up plus",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up finished with an extra shove that spreads the shoulder blades at the top. It trains the chest and the serratus muscles that stabilise the shoulder blades.",
+  "instructions": [
+    "Start in a high plank position with your hands slightly wider than shoulder-width apart and your body in a straight line from head to heels.",
+    "Lower your body towards the ground by bending your elbows, keeping them close to your sides.",
+    "Once your chest is just above the ground, push through your hands to extend your arms and lift your upper body up.",
+    "At the top of the movement, protract your shoulder blades by pushing your upper back towards the ceiling.",
+    "Pause for a moment, then reverse the movement by retracting your shoulder blades and lowering your body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3146",
+  "textSource": "exercisedb"
+}

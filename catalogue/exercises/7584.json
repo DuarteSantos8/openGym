@@ -1,0 +1,23 @@
+{
+  "id": "7584",
+  "name": "cable kneeling high low anti rotation chop",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A kneeling cable chop that moves from high to low while your torso resists twisting. It trains the deep core and obliques to stay stable.",
+  "instructions": [
+    "Kneel side-on to a high cable and hold the handle with both hands.",
+    "Brace your core and keep your hips square.",
+    "Chop the handle diagonally down across your body, arms mostly straight.",
+    "Do not let your torso rotate; the arms and shoulders do the travel.",
+    "Return slowly under control, finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1198",
+  "name": "jumping pull up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "quadriceps"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up that uses a small jump to help you up, then a slow lowering phase. Good for building pulling strength.",
+  "instructions": [
+    "Stand under a pull-up bar and grip it slightly wider than your shoulders.",
+    "Bend your knees and jump up, pulling your chin above the bar.",
+    "Pause for a moment at the top.",
+    "Lower yourself slowly until your arms are straight.",
+    "Reset on the floor and repeat."
+  ],
+  "textSource": "opengym"
+}

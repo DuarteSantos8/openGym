@@ -1,0 +1,22 @@
+{
+  "id": "3960",
+  "name": "pike to cobra",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "A flowing bodyweight move that goes from a pike with hips high to a cobra with chest lifted. It warms up the shoulders, spine and hamstrings.",
+  "instructions": [
+    "Start on hands and toes with your hips high in an inverted V.",
+    "Bend your elbows and glide your chest forward and down between your hands.",
+    "Sweep forward and up, straightening your arms and lifting your chest into a cobra.",
+    "Keep your legs active and look slightly forward.",
+    "Reverse the path, pushing your hips back up into the pike, and repeat smoothly."
+  ],
+  "textSource": "opengym"
+}

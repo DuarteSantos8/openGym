@@ -1,0 +1,23 @@
+{
+  "id": "4224",
+  "name": "cable lying pallof press",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A Pallof press done lying on your back that resists rotation. It strengthens the deep core and obliques.",
+  "instructions": [
+    "Lie on your back beside a low cable pulley with a handle in both hands.",
+    "Hold the handle at your chest, arms bent.",
+    "Brace your core to stay flat.",
+    "Press your arms straight up while resisting the cable pull.",
+    "Hold a second, then bring the handle back to your chest.",
+    "Finish your reps and switch sides."
+  ],
+  "textSource": "opengym"
+}

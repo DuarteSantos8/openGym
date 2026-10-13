@@ -1,0 +1,23 @@
+{
+  "id": "4795",
+  "name": "single leg step up on bench",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A step-up onto a bench using one leg at a time. It builds strength in the thighs and glutes and helps balance.",
+  "instructions": [
+    "Stand facing a sturdy bench and place one foot fully on top.",
+    "Lean slightly forward and press through that heel.",
+    "Step up until the leg is straight and you stand tall.",
+    "Lower yourself slowly back down with control.",
+    "Avoid pushing off the trailing foot.",
+    "Complete your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

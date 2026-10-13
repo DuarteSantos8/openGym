@@ -1,0 +1,23 @@
+{
+  "id": "1286",
+  "name": "dumbbell one arm chest fly on exercise ball",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A one-arm chest fly with your upper back on a stability ball. The wobbly base brings your core in while the chest does the work.",
+  "instructions": [
+    "Sit on an exercise ball with a dumbbell in one hand and your feet flat on the ground.",
+    "Walk your feet forward, rolling the ball until your upper back is supported on the ball and your head, neck, and shoulders are off the ball.",
+    "Extend your arm with the dumbbell straight up above your chest, palm facing inward.",
+    "Slowly lower the dumbbell out to the side, keeping a slight bend in your elbow.",
+    "Pause for a moment when your arm is parallel to the ground.",
+    "Engage your chest muscles to bring the dumbbell back up to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

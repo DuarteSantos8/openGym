@@ -1,0 +1,22 @@
+{
+  "id": "11284",
+  "name": "kettlebell single arm alternate fly",
+  "bodyPart": "chest",
+  "equipment": "kettlebell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A lying chest fly with a kettlebell, alternating arms. It trains the chest and challenges your control.",
+  "instructions": [
+    "Lie on your back holding a kettlebell over your chest in one hand.",
+    "Keep a soft bend in your elbow.",
+    "Lower the kettlebell out to the side in an arc.",
+    "Bring it back over your chest.",
+    "Switch hands and alternate."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "1864",
+  "name": "extra decline sit up",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A steeper decline sit-up that increases the load on the abs.",
+  "instructions": [
+    "Set a decline bench to a steep angle and hook your feet under the pads.",
+    "Lie back and cross your arms over your chest.",
+    "Curl your torso up until you are sitting.",
+    "Squeeze your abs at the top.",
+    "Lower slowly back down."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "0694",
+  "name": "seated twist (on stability ball)",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "Seated on a stability ball, you rotate your torso. It warms up the trunk and trains balance.",
+  "instructions": [
+    "Sit tall on a stability ball with feet flat.",
+    "Hold your arms in front of your chest.",
+    "Rotate your torso to one side.",
+    "Keep your hips facing forward.",
+    "Return to center and twist the other way.",
+    "Move slowly and controlled."
+  ],
+  "textSource": "opengym"
+}

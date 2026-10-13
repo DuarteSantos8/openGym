@@ -1,0 +1,23 @@
+{
+  "id": "5051",
+  "name": "glute ham twist",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "Hips lifted into a bridge, you twist from side to side. It trains the trunk rotators and glutes.",
+  "instructions": [
+    "Lie on your back with knees bent, feet flat and arms out wide.",
+    "Lift your hips into a bridge.",
+    "Rotate your knees and hips to one side.",
+    "Return to center and rotate to the other side.",
+    "Stay controlled and keep your shoulders on the floor."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "2323",
+  "name": "dumbbells sumo squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "inner thighs",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A wide stance squat holding dumbbells that emphasises the glutes and inner thighs.",
+  "instructions": [
+    "Stand with your feet wider than your shoulders and toes pointing out.",
+    "Hold one or two dumbbells with both hands in front of you.",
+    "Sit your hips down and back, keeping your chest up.",
+    "Lower until your thighs are about parallel to the floor.",
+    "Push through your heels and squeeze your glutes to stand.",
+    "Keep your knees in line with your toes."
+  ],
+  "textSource": "opengym"
+}

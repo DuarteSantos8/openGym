@@ -1,0 +1,22 @@
+{
+  "id": "2154",
+  "name": "resistance band glute bridge",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A floor bridge with a band around the thighs to keep the glutes working hard.",
+  "instructions": [
+    "Lie on your back with your knees bent and a band around your thighs just above the knees.",
+    "Place your feet flat, hip width apart.",
+    "Push your knees gently out against the band.",
+    "Drive through your heels and lift your hips until your body forms a straight line.",
+    "Squeeze your glutes, then lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

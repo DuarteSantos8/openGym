@@ -1,0 +1,21 @@
+{
+  "id": "2786",
+  "name": "spine (lumbar) flexion",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "Curling the lower back forward, working the abs and mobilising the lumbar spine.",
+  "instructions": [
+    "Stand or sit tall with a relaxed posture and the joint in a neutral starting position.",
+    "Stand with feet hip width apart and knees slightly soft.",
+    "Round your lower back forward and tuck your chin and pelvis in.",
+    "Pause briefly, then return upright.",
+    "Repeat for 10-15 smooth reps, then switch sides if you are working one side at a time."
+  ],
+  "textSource": "opengym"
+}

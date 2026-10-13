@@ -1,0 +1,22 @@
+{
+  "id": "5672",
+  "name": "bodyweight b stance good morning",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip hinge with one foot staggered slightly behind. It biases one leg to train the hamstrings and glutes and builds balance.",
+  "instructions": [
+    "Stand with one foot flat and the other slightly behind, toe resting on the floor.",
+    "Place your hands behind your head.",
+    "Push your hips back and hinge forward with a flat back.",
+    "Go down until you feel a stretch in the hamstring of the front leg.",
+    "Return to standing and switch legs after your set."
+  ],
+  "textSource": "opengym"
+}

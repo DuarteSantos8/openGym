@@ -1,0 +1,21 @@
+{
+  "id": "1887",
+  "name": "standing heel back achilles stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus"
+  ],
+  "category": "stretching",
+  "description": "Classic lunge-style calf stretch with the back heel kept down.",
+  "instructions": [
+    "Stand facing a wall and step one foot back.",
+    "Keep the back leg straight and the heel down.",
+    "Bend your front knee and lean forward.",
+    "Feel the stretch in the back calf.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

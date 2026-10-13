@@ -1,0 +1,23 @@
+{
+  "id": "9969",
+  "name": "lying supine heel slide",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hip flexors",
+    "calves"
+  ],
+  "category": "rehab",
+  "description": "A gentle floor move where you slide your heel toward your hips and back. It restores knee and hip bend with low strain.",
+  "instructions": [
+    "Lie on your back with both legs straight.",
+    "Slowly slide one heel along the floor toward your buttocks.",
+    "Bend the knee as far as feels comfortable.",
+    "Pause for a second.",
+    "Slide the heel back out until the leg is straight.",
+    "Repeat for your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

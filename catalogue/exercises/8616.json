@@ -1,0 +1,21 @@
+{
+  "id": "8616",
+  "name": "seated elbow chest fly on a chair",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A seated chest fly with bent elbows that squeezes the pecs by pressing the arms together.",
+  "instructions": [
+    "Sit tall near the front of a sturdy chair with your feet flat on the floor.",
+    "Brace your core and keep your shoulders relaxed.",
+    "Raise your elbows to chest height with forearms up.",
+    "Squeeze your elbows together in front of you.",
+    "Open them out again under control.",
+    "Keep your shoulders away from your ears."
+  ],
+  "textSource": "opengym"
+}

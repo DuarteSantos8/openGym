@@ -1,0 +1,23 @@
+{
+  "id": "8585",
+  "name": "mid back elbow squeeze",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "rear deltoids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A simple drill that squeezes the elbows back to engage the mid back. It trains the muscles between the shoulder blades.",
+  "instructions": [
+    "Stand or sit tall with your hands by your head or elbows bent in front.",
+    "Pull your elbows back and down.",
+    "Squeeze your shoulder blades together.",
+    "Hold for a second at the end.",
+    "Return slowly to the start.",
+    "Keep your neck relaxed."
+  ],
+  "textSource": "opengym"
+}

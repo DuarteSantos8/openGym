@@ -1,0 +1,22 @@
+{
+  "id": "11256",
+  "name": "cable bench press v. 3",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A bench press using cables. The steady tension gives your chest and triceps constant work.",
+  "instructions": [
+    "Lie on a bench between two low pulleys and hold a handle in each hand at chest level.",
+    "Plant your feet and keep your shoulder blades back.",
+    "Press the handles up until your arms are straight.",
+    "Squeeze your chest at the top.",
+    "Lower slowly until you feel a stretch."
+  ],
+  "textSource": "opengym"
+}

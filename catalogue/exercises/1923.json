@@ -1,0 +1,21 @@
+{
+  "id": "1923",
+  "name": "assisted lying hamstring stretch",
+  "bodyPart": "upper legs",
+  "equipment": "assisted",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "A partner lifts your straight leg to deepen a relaxed hamstring stretch.",
+  "instructions": [
+    "Lie on your back with your legs straight and relax completely.",
+    "Have a partner lift one leg by the heel, keeping the knee straight.",
+    "Tell your partner to stop when you feel a pull behind the thigh.",
+    "Keep your other leg and lower back flat on the floor.",
+    "Hold for 20-30 seconds, then switch legs."
+  ],
+  "textSource": "opengym"
+}

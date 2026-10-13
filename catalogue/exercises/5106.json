@@ -1,0 +1,21 @@
+{
+  "id": "5106",
+  "name": "alternate toe tap leg lift",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "Lie on your back and tap each toe up toward the ceiling in turn. It targets the lower abs.",
+  "instructions": [
+    "Lie on your back with both legs raised straight up.",
+    "Press your lower back into the floor.",
+    "Reach one leg up so your toes tap toward the ceiling.",
+    "Alternate legs with control.",
+    "Keep your core tight and breathe steadily."
+  ],
+  "textSource": "opengym"
+}

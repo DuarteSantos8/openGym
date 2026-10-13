@@ -1,0 +1,23 @@
+{
+  "id": "9988",
+  "name": "resistance band kneeling sissy squat",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "core",
+    "hip flexors",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A kneeling sissy squat with a resistance band for assistance or load. It places a big stretch on the quads.",
+  "instructions": [
+    "Set the band at a stable anchor and kneel with it around your body or hands.",
+    "Keep your hips forward and your body in a straight line from knees to head.",
+    "Lean back slowly, keeping your hips extended.",
+    "Go as far as you can control.",
+    "Use your quads to pull yourself back up.",
+    "Keep your core braced and your movement smooth."
+  ],
+  "textSource": "opengym"
+}

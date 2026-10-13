@@ -1,0 +1,24 @@
+{
+  "id": "4726",
+  "name": "commando pull up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up with a staggered, side-on grip that you pull to alternating sides of the bar. It builds lats, arms and grip.",
+  "instructions": [
+    "Grab the bar with one hand in front of the other, palms facing each other, and hang with arms straight.",
+    "Brace your core and pull your body up, moving your head to one side of the bar.",
+    "Get your chin or shoulder level with the bar.",
+    "Lower under control to a full hang.",
+    "Switch which side your head passes on each rep, or each set."
+  ],
+  "femaleVariant": "5270",
+  "textSource": "opengym"
+}

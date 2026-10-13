@@ -1,0 +1,21 @@
+{
+  "id": "3719",
+  "name": "cable standing high cross triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm cable pushdown from a high pulley, crossing the body to isolate the triceps.",
+  "instructions": [
+    "Set a cable to a high position and hold the handle with one hand.",
+    "Stand facing the machine with your elbow bent and tucked.",
+    "Press the handle down and across your body until your arm is straight.",
+    "Return slowly to the start.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1023",
+  "name": "band straight back stiff leg deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A stiff-leg deadlift with a band, hinging at the hips with a straight back. It trains the glutes and hamstrings.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and place the band around your upper legs.",
+    "Hold the band with both hands in front of your thighs, palms facing your body.",
+    "Keeping your back straight and your knees slightly bent, hinge at the hips and lower the band towards the ground.",
+    "Feel the stretch in your hamstrings as you lower the band.",
+    "Engage your glutes and hamstrings to lift your body back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

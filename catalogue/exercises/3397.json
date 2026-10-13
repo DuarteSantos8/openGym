@@ -1,0 +1,24 @@
+{
+  "id": "3397",
+  "name": "dumbbell full swing",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip-driven swing with a dumbbell, taking the weight from between the legs to overhead.",
+  "instructions": [
+    "Hold one dumbbell with both hands and stand with feet shoulder-width apart.",
+    "Hinge back and swing the weight between your legs.",
+    "Drive your hips forward to swing the dumbbell overhead.",
+    "Let it fall back and hinge again.",
+    "Keep your back flat and your arms loose.",
+    "Control the dumbbell at all times."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "10890",
+  "name": "elastic bed toe jump",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "plyometrics",
+  "description": "Toe jumps on an elastic bed. It trains calves and ankle bounce.",
+  "instructions": [
+    "Stand on the elastic bed with feet together.",
+    "Rise onto your toes.",
+    "Jump using your ankles.",
+    "Land softly on the balls of your feet.",
+    "Stay quick and light.",
+    "Continue for the set."
+  ],
+  "textSource": "opengym"
+}

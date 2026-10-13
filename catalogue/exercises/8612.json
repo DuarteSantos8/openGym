@@ -1,0 +1,22 @@
+{
+  "id": "8612",
+  "name": "resistance band seated inversion foot",
+  "bodyPart": "lower legs",
+  "equipment": "band",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "shins"
+  ],
+  "category": "rehab",
+  "description": "A seated ankle drill that works the muscles on the inside of the lower leg.",
+  "instructions": [
+    "Sit with one leg extended and loop the band around the forefoot, anchored on the outside.",
+    "Keep your leg still.",
+    "Turn your foot inward against the band.",
+    "Return slowly.",
+    "Finish the reps, then switch feet."
+  ],
+  "textSource": "opengym"
+}

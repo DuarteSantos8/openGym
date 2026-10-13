@@ -1,0 +1,22 @@
+{
+  "id": "3757",
+  "name": "band high fly",
+  "bodyPart": "chest",
+  "equipment": "band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A band chest fly from a high anchor, pulling downward to work the lower chest.",
+  "instructions": [
+    "Anchor a band high and hold one end in each hand, facing away.",
+    "Step forward and lean slightly.",
+    "Bring your hands together in front of your waist with a soft elbow.",
+    "Squeeze your chest at the end.",
+    "Return slowly."
+  ],
+  "femaleVariant": "0898",
+  "textSource": "opengym"
+}

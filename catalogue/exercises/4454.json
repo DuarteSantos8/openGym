@@ -1,0 +1,23 @@
+{
+  "id": "4454",
+  "name": "band seated wide grip row",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "Seated rowing with a band and a wide grip. It works the upper back and rear shoulders.",
+  "instructions": [
+    "Sit with your legs extended and loop the band around your feet.",
+    "Grab the band with a wide grip and sit tall.",
+    "Pull your hands toward your chest with elbows flared.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly with control and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "0681",
+  "name": "rotate push up (on knees)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "obliques",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A knee push-up that adds a rotation to reach upward. It works the chest and the trunk.",
+  "instructions": [
+    "Start in a push-up position on your knees.",
+    "Lower your chest toward the floor.",
+    "Press back up.",
+    "Rotate your torso and lift one arm toward the ceiling.",
+    "Return the arm to the floor.",
+    "Alternate sides."
+  ],
+  "textSource": "opengym"
+}

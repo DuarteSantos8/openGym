@@ -1,0 +1,22 @@
+{
+  "id": "10749",
+  "name": "walk leg kick",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "hip flexors"
+  ],
+  "category": "cardio",
+  "description": "Walk while kicking each leg up. It warms the legs.",
+  "instructions": [
+    "Stand tall.",
+    "Step forward and kick the opposite leg up.",
+    "Alternate legs.",
+    "Swing your arms.",
+    "Continue for the set time."
+  ],
+  "textSource": "opengym"
+}

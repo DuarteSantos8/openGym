@@ -1,0 +1,23 @@
+{
+  "id": "4291",
+  "name": "dumbbell single leg glute bridge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A one-legged hip bridge with a dumbbell resting on your hips. It hits the glutes hard and challenges hip stability.",
+  "instructions": [
+    "Lie on your back with one knee bent, foot flat, and the other leg extended or raised.",
+    "Rest a dumbbell across your hips and hold it steady.",
+    "Drive through the planted heel and lift your hips until your body forms a straight line.",
+    "Squeeze your glute at the top for a second.",
+    "Lower with control and repeat, then switch legs."
+  ],
+  "femaleVariant": "5755",
+  "textSource": "opengym"
+}

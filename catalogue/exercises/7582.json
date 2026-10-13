@@ -1,0 +1,23 @@
+{
+  "id": "7582",
+  "name": "kettlebell ipsilateral reverse lunge",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Reverse lunge with the kettlebell on the same side as the working leg.",
+  "instructions": [
+    "Hold a kettlebell in one hand.",
+    "Step back with the leg on the same side.",
+    "Lower under control.",
+    "Keep your torso upright.",
+    "Push back up and switch sides."
+  ],
+  "textSource": "opengym"
+}

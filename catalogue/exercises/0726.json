@@ -1,0 +1,22 @@
+{
+  "id": "0726",
+  "name": "single leg bridge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A glute bridge on one leg. It builds glute strength and hip stability.",
+  "instructions": [
+    "Lie on your back with knees bent.",
+    "Extend one leg straight.",
+    "Drive through the planted heel and lift your hips.",
+    "Squeeze your glute at the top.",
+    "Lower with control.",
+    "Finish reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

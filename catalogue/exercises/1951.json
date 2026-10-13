@@ -1,0 +1,21 @@
+{
+  "id": "1951",
+  "name": "sitting one leg external stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "groin"
+  ],
+  "category": "stretching",
+  "description": "A seated stretch that opens one hip by turning the leg outward.",
+  "instructions": [
+    "Sit on the floor and bend one leg so the foot rests against the opposite thigh.",
+    "Lean your chest forward over the bent leg while pressing the knee toward the floor until the hip stretches.",
+    "Keep your back long.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

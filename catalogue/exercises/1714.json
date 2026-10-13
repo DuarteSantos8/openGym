@@ -1,0 +1,20 @@
+{
+  "id": "1714",
+  "name": "assisted prone rectus femoris stretch",
+  "bodyPart": "waist",
+  "equipment": "assisted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "quadriceps"
+  ],
+  "category": "stretching",
+  "description": "A partner-assisted stretch lying face down for the rectus femoris. It lengthens the front of the hip and thigh.",
+  "instructions": [
+    "Lie face down on the ground with your legs straight.",
+    "Bend your right knee and reach back with your right hand to grab your right foot or ankle.",
+    "Gently pull your right foot or ankle towards your glutes, feeling a stretch in the front of your right thigh.",
+    "Hold the stretch for 20-30 seconds.",
+    "Release and repeat on the other side."
+  ],
+  "textSource": "exercisedb"
+}

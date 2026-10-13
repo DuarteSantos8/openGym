@@ -1,0 +1,24 @@
+{
+  "id": "3198",
+  "name": "zigzag hops",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "glutes",
+    "quadriceps",
+    "hip flexors"
+  ],
+  "category": "plyometrics",
+  "description": "Hopping diagonally forward in a zigzag pattern. It trains agility and lower leg power.",
+  "instructions": [
+    "Stand with your knees slightly bent.",
+    "Hop forward and to one side.",
+    "Land softly on both feet.",
+    "Hop forward and to the other side.",
+    "Keep your hops light and quick.",
+    "Continue for 20-30 seconds."
+  ],
+  "textSource": "opengym"
+}

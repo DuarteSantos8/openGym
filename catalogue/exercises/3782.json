@@ -1,0 +1,25 @@
+{
+  "id": "3782",
+  "name": "band jump lunge with single arm row",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "lats",
+    "upper back"
+  ],
+  "category": "plyometrics",
+  "description": "A jumping lunge combined with a one-arm band row. It raises your heart rate and builds leg power.",
+  "instructions": [
+    "Anchor the band at a low point and hold the handle in one hand.",
+    "Start in a lunge position with your chest up.",
+    "Jump and switch legs in mid-air.",
+    "Land softly in a lunge and pull the handle to your ribs.",
+    "Keep your front knee over your ankle on each landing.",
+    "Switch rowing arm for the next set."
+  ],
+  "textSource": "opengym"
+}

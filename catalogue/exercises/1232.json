@@ -1,0 +1,22 @@
+{
+  "id": "1232",
+  "name": "lever seated squat",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A squat on a seated lever machine with a supported torso. It loads the thighs and glutes with a guided path.",
+  "instructions": [
+    "Sit in the machine with your back against the pad and shoulders under the supports.",
+    "Place your feet on the platform about shoulder width apart.",
+    "Push through your feet to extend your legs.",
+    "Lower slowly until your knees are comfortably bent.",
+    "Keep your knees in line with your toes."
+  ],
+  "textSource": "opengym"
+}

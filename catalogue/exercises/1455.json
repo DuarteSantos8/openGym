@@ -1,0 +1,22 @@
+{
+  "id": "1455",
+  "name": "lever chest press v. 2",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A machine chest press with a lever arm that guides the push. It builds the chest and triceps.",
+  "instructions": [
+    "Adjust the seat so the handles line up with the middle of your chest.",
+    "Sit back with your shoulder blades against the pad and feet flat.",
+    "Press the handles forward until your arms are almost straight.",
+    "Pause, then return slowly until you feel a stretch across the chest.",
+    "Keep your wrists straight and your back on the pad throughout."
+  ],
+  "textSource": "opengym"
+}

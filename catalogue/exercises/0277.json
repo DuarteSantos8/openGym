@@ -1,0 +1,21 @@
+{
+  "id": "0277",
+  "name": "decline crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch performed on a decline bench with the feet secured. The slope adds resistance for the abs.",
+  "instructions": [
+    "Lie on a decline bench with your feet secured and your knees bent at a 90-degree angle.",
+    "Place your hands behind your head or across your chest.",
+    "Engage your abs and lift your upper body towards your knees, curling your torso.",
+    "Pause for a moment at the top, then slowly lower your upper body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2450",
+  "textSource": "exercisedb"
+}

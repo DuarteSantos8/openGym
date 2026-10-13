@@ -1,0 +1,22 @@
+{
+  "id": "0705",
+  "name": "side bridge v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes"
+  ],
+  "category": "isometric",
+  "description": "Lying on your side, you hold your hips up off the floor on your forearm. Works the obliques and core.",
+  "instructions": [
+    "Lie on your side with your legs extended and stacked on top of each other.",
+    "Place your forearm on the ground directly below your shoulder, with your elbow bent at a 90-degree angle.",
+    "Engage your core and lift your hips off the ground, creating a straight line from your head to your feet.",
+    "Hold this position for the desired amount of time.",
+    "Lower your hips back down to the starting position.",
+    "Repeat on the other side."
+  ],
+  "textSource": "exercisedb"
+}

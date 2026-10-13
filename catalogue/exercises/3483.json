@@ -1,0 +1,24 @@
+{
+  "id": "3483",
+  "name": "around the world superman hold",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "lower back",
+    "hamstrings",
+    "rear deltoids",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A face-down superman hold with the arms sweeping in a circle. It strengthens the glutes, lower back and rear shoulders.",
+  "instructions": [
+    "Lie face down with your arms extended overhead and legs straight.",
+    "Lift your arms, chest and legs a few centimetres off the floor.",
+    "Sweep your arms out to the sides and down toward your hips in a wide arc.",
+    "Sweep them back overhead along the same path.",
+    "Keep your neck neutral and legs lifted throughout.",
+    "Lower down with control after your set."
+  ],
+  "textSource": "opengym"
+}

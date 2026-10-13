@@ -1,0 +1,21 @@
+{
+  "id": "0832",
+  "name": "weighted crunch",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A crunch holding a weight on the chest. It strengthens the abs with added resistance.",
+  "instructions": [
+    "Lie flat on your back with your knees bent and feet flat on the ground.",
+    "Hold a weight plate or dumbbell on your chest.",
+    "Engage your abs and lift your upper body off the ground, curling forward until your shoulder blades are off the ground.",
+    "Pause for a moment at the top, then slowly lower your upper body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2540",
+  "textSource": "exercisedb"
+}

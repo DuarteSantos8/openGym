@@ -1,4 +1,4 @@
-# opengym.duarte-santos.ch
+# opengym.ch
 
 Source of the project website — plain hand-written HTML/CSS/JS, no build step,
 served by nginx.
@@ -12,10 +12,12 @@ Not in this folder (added at deploy time):
   icons the PWA uses, so the browser tab, home screen and app all match)
 - `openGym.apk` — the signed release build (see `../docs/MOBILE.md`)
 - `demo/` — the browser-only demo build of the app, embedded in the `#demo` section and
-  reachable on its own at `/demo/`. Built from `../frontend` with `VITE_DEMO=1` and the
-  jsDelivr media bases (see the `pages` job in `../.gitlab-ci.yml`), so the ~140 MB
-  of exercise media stays out of it. It has to live on this host: the site frames it, and
-  `X-Frame-Options: SAMEORIGIN` would block it from anywhere else.
+  reachable on its own at `/demo/`. Built from `../frontend` with `VITE_DEMO=1`, with the
+  180 px exercise media from `../catalogue/media` staged into `demo/exercise-media/` by
+  `../scripts/catalogue/stage-media.mjs` (see the `pages` job in `../.gitlab-ci.yml`).
+  Never put larger media here (see `../catalogue/media/NOTICE.md`). It has to live on
+  this host: the site frames it, and `X-Frame-Options: SAMEORIGIN` would block it from
+  anywhere else.
 
 Every page has the same top bar. Pages with a table of contents (home, docs, about, API)
 also have a contents drawer (`.side`), opened by the green **Contents** pill in the

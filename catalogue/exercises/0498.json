@@ -1,0 +1,24 @@
+{
+  "id": "0498",
+  "name": "inverted row with straps",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "Hanging from straps with a straight body, you row your chest up. It trains the upper back and biceps.",
+  "instructions": [
+    "Set up a suspension trainer or straps at chest height.",
+    "Stand facing the anchor point and grab the handles with an overhand grip.",
+    "Walk your feet forward, leaning back until your body is at an angle.",
+    "Keep your body straight and engage your core.",
+    "Pull your chest towards the handles, squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly lower yourself back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3897",
+  "textSource": "exercisedb"
+}

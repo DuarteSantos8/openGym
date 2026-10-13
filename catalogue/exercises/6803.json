@@ -1,0 +1,22 @@
+{
+  "id": "6803",
+  "name": "side and front in out",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A seated in and out leg drill that goes to the side and then to the front. It works the abs and obliques.",
+  "instructions": [
+    "Sit on the floor leaning back, hands behind you for support.",
+    "Lift your feet off the floor with knees bent.",
+    "Extend your legs out to one side and pull them back in.",
+    "Extend them straight in front and pull back in.",
+    "Repeat the pattern on the other side."
+  ],
+  "textSource": "opengym"
+}

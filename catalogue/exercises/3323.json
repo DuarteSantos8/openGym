@@ -1,0 +1,24 @@
+{
+  "id": "3323",
+  "name": "kettlebell half turkish get up",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "glutes",
+    "core",
+    "obliques",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "The first half of a turkish get up, moving from lying to a seated position with the kettlebell overhead. It builds shoulder stability and core strength.",
+  "instructions": [
+    "Lie on your back with a kettlebell pressed up in one hand and the same side knee bent.",
+    "Keep your eyes on the bell and your arm vertical.",
+    "Roll onto the opposite elbow, then onto your hand.",
+    "Come up to a tall seated position with your arm still locked overhead.",
+    "Reverse the steps slowly to lie back down, then switch sides."
+  ],
+  "textSource": "opengym"
+}

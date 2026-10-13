@@ -1,0 +1,20 @@
+{
+  "id": "0302",
+  "name": "dumbbell decline fly",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A dumbbell fly on a decline bench. The arms open in a wide arc to stretch and train the lower chest.",
+  "instructions": [
+    "Lie on a decline bench with your feet secured and your head lower than your hips.",
+    "Hold a dumbbell in each hand with your palms facing each other and your arms extended above your chest.",
+    "Lower the dumbbells out to the sides in a wide arc until you feel a stretch in your chest.",
+    "Pause for a moment, then squeeze your chest muscles to bring the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

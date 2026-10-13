@@ -1,0 +1,24 @@
+{
+  "id": "3529",
+  "name": "landmine stand up high knee",
+  "bodyPart": "full body",
+  "equipment": "landmine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "shoulders",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A landmine move combining a stand-up with a high knee drive. It trains the legs and core.",
+  "instructions": [
+    "Hold the end of a landmine barbell at your chest.",
+    "Stand from a squat, driving through your legs.",
+    "Raise one knee high as you stand.",
+    "Lower the foot and squat again.",
+    "Keep the barbell close to your chest.",
+    "Alternate legs each rep."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4203",
+  "name": "barbell banded sumo deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "adductors",
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A wide stance deadlift with band resistance.",
+  "instructions": [
+    "Set the band over the bar.",
+    "Stand wide.",
+    "Grip inside your legs.",
+    "Drive up.",
+    "Squeeze glutes.",
+    "Lower with control."
+  ],
+  "textSource": "opengym"
+}

@@ -10,26 +10,28 @@
 <link rel="preconnect" href="https://stats.duarte-santos.ch">
 <meta property="og:title" content="openGym Docs — the complete reference">
 <meta property="og:description" content="The complete openGym reference: every feature, self-hosting with Docker, every setting, the AI Coach, imports, backups, MCP, troubleshooting.">
-<meta property="og:image" content="https://opengym.duarte-santos.ch/img/social.jpg">
+<meta property="og:image" content="https://opengym.ch/img/social.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="openGym — your training, your data, your server. Two phones showing the home and workout screens.">
-<meta property="og:url" content="https://opengym.duarte-santos.ch/docs.html">
+<meta property="og:image:alt" content="openGym: your training, your data, your server. Two phones showing the home and workout screens.">
+<meta property="og:url" content="https://opengym.ch/docs.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="openGym">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="openGym Docs — the complete reference">
-<meta name="twitter:image" content="https://opengym.duarte-santos.ch/img/social.jpg">
-<link rel="canonical" href="https://opengym.duarte-santos.ch/docs.html">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
-<link rel="icon" type="image/png" sizes="180x180" href="icon-180.png">
+<meta name="twitter:title" content="openGym Docs: the complete reference">
+<meta name="twitter:image" content="https://opengym.ch/img/social.jpg">
+<link rel="canonical" href="https://opengym.ch/docs.html">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="96x96" href="/icon-96.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=22">
+<link rel="stylesheet" href="styles.css?v=26">
 <script>document.documentElement.className += ' js'</script>
-<!-- Umami web analytics for opengym.duarte-santos.ch (self-hosted, cookieless). -->
+<!-- Umami web analytics for opengym.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
 <script type="application/ld+json">
-{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is openGym really free?", "acceptedAnswer": {"@type": "Answer", "text": "Yes — free as in cost and as in freedom (AGPL-3.0). No pro tier, no locked features, no ads, and the license keeps every fork open source too."}}, {"@type": "Question", "name": "Why isn't openGym on the Play Store or App Store?", "acceptedAnswer": {"@type": "Answer", "text": "By choice (and on iOS, by Apple's rules for sideloading). Store accounts cost money, impose terms that sit badly with the AGPL, and put a gatekeeper between you and an app whose whole point is that your data is yours. The signed Android APK is a direct download."}}, {"@type": "Question", "name": "Should I pick the mobile app or self-host?", "acceptedAnswer": {"@type": "Answer", "text": "To simply track your training: the mobile app. For data on your own hardware, synced across devices, with profiles for the people you train with: self-host with Docker. The backup file migrates everything between the two, or pair the app to your server."}}, {"@type": "Question", "name": "What's on the openGym roadmap?", "acceptedAnswer": {"@type": "Answer", "text": "A small, themed release roughly every two weeks: a session queue, programmes and phases, AMRAP/%1RM/5-3-1 progression, cardio intervals, then database storage (v1.4.0), better search, OIDC login, a trainer role and an App Store build. The full plan is in ROADMAP.md on GitHub."}}, {"@type": "Question", "name": "Was openGym written with AI?", "acceptedAnswer": {"@type": "Answer", "text": "openGym is developed with Claude Code, Anthropic's coding agent; a large share of the code, tests and docs is drafted that way, and every change is reviewed, tested and released by the maintainer. The app itself calls no AI service unless an admin switches on the optional AI coach."}}, {"@type": "Question", "name": "Where does the exercise database come from?", "acceptedAnswer": {"@type": "Answer", "text": "From hasaneyldrm/exercises-dataset: 1,324 exercises with animations and instructions. The metadata and instruction text are MIT; the images and animations are third-party media that openGym never redistributes — your instance downloads them from upstream on first run."}}, {"@type": "Question", "name": "What does the AGPL license mean for me?", "acceptedAnswer": {"@type": "Answer", "text": "You can self-host, use, modify and share openGym freely. Only if you run a modified version as a network service must you offer that version's source under the same license. Using or self-hosting it unmodified obliges you to nothing."}}]}
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is openGym really free?", "acceptedAnswer": {"@type": "Answer", "text": "Yes — free as in cost and as in freedom (AGPL-3.0). No pro tier, no locked features, no ads, and the license keeps every fork open source too."}}, {"@type": "Question", "name": "Why isn't openGym on the Play Store or App Store?", "acceptedAnswer": {"@type": "Answer", "text": "By choice (and on iOS, by Apple's rules for sideloading). Store accounts cost money, impose terms that sit badly with the AGPL, and put a gatekeeper between you and an app whose whole point is that your data is yours. The signed Android APK is a direct download."}}, {"@type": "Question", "name": "Should I pick the mobile app or self-host?", "acceptedAnswer": {"@type": "Answer", "text": "To simply track your training: the mobile app. For data on your own hardware, synced across devices, with profiles for the people you train with: self-host with Docker. The backup file migrates everything between the two, or pair the app to your server."}}, {"@type": "Question", "name": "What's on the openGym roadmap?", "acceptedAnswer": {"@type": "Answer", "text": "A small, themed release roughly every two weeks: a session queue, programmes and phases, AMRAP/%1RM/5-3-1 progression, cardio intervals, then database storage (v1.4.0), better search, OIDC login, a trainer role and an App Store build. The full plan is in ROADMAP.md on GitHub."}}, {"@type": "Question", "name": "Was openGym written with AI?", "acceptedAnswer": {"@type": "Answer", "text": "openGym is developed with Claude Code, Anthropic's coding agent; a large share of the code, tests and docs is drafted that way, and every change is reviewed, tested and released by the maintainer. The app itself calls no AI service unless an admin switches on the optional AI coach."}}, {"@type": "Question", "name": "Where does the exercise database come from?", "acceptedAnswer": {"@type": "Answer", "text": "The exercise text lives in openGym's own catalogue in the repository, open to fixes and translations by pull request; the oldest entries came from ExerciseDB under MIT. The pictures and animations are licensed from Gym visual for use in openGym only and ship with it at 180 px. Reusing them anywhere else needs your own licence from gymvisual.com."}}, {"@type": "Question", "name": "What does the AGPL license mean for me?", "acceptedAnswer": {"@type": "Answer", "text": "You can self-host, use, modify and share openGym freely. Only if you run a modified version as a network service must you offer that version's source under the same license. Using or self-hosting it unmodified obliges you to nothing."}}]}
 </script>
 </head>
 <body class="topnav dock">
@@ -283,7 +285,8 @@
 
   <h3 id="f-plan">Routines &amp; the plan builder</h3>
   <ul>
-    <li><b>1,324 exercises</b> — searchable, with animated demonstrations and step-by-step
+    <li><b>5,632 exercises</b>: searchable (typos and gym shorthand welcome), with animated
+        demonstrations on a male or female figure, a short description and step-by-step
         instructions, plus a <b>filter for the equipment you actually own</b> (the filter
         options adapt to what you've picked, so every combination on screen has results).</li>
     <li><b>Your own exercises:</b> a name and a body part is enough; they behave like built-in
@@ -450,8 +453,8 @@
   <ul>
     <li><b>Light/dark themes, 8 accent colors or one of your own</b>, saved to your profile, over a
         hand-drawn icon set instead of emoji, so it looks the same on every phone.</li>
-    <li><b>18 languages:</b> EN, DE, ES, FR, IT, PT (Portugal), PT (Brazil), PL, TR, RU,
-        UK, ZH, ZH-TW, KO, HI, TH, HU, AR, with Arabic laid out right to left. Exercise instructions
+    <li><b>19 languages:</b> EN, DE, ES, FR, IT, PT (Portugal), PT (Brazil), PL, TR, RU,
+        UK, ZH, ZH-TW, KO, HI, BN, TH, HU, AR, with Arabic laid out right to left. Exercise instructions
         are localized in 12 of them, and built-in exercise names are translated in seven
         (PT-BR, HU, DE, ES, RU, IT, FR). Translations load on demand, so the app stays fast.</li>
     <li><b>kg or lb</b> — pick your unit; imports convert.</li>
@@ -476,8 +479,8 @@ cp .env.example .env
 docker compose pull    # prebuilt images (amd64 + arm64) — skip to build from source
 docker compose up -d</code></pre>
   <p>Open <code>http://localhost:8080</code>, tap <b>Create profile</b>, and you're in. The
-     first launch downloads the exercise media (~140&nbsp;MB) once into <code>media/img</code>
-     and <code>media/gif</code>. Check it's healthy:</p>
+     exercise pictures and animations are part of the web image, so there's nothing else to
+     download. Check it's healthy:</p>
   <pre><code>docker compose ps
 curl http://localhost:8080/api/health      # {"ok":true,...}</code></pre>
   <p>Logs: <code>docker compose logs -f</code> · stop: <code>docker compose down</code> ·
@@ -882,12 +885,12 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
      and each release is tested on a staging instance and on real phones first. The app itself
      needs no AI service &mdash; the <a href="#coach">AI coach</a> and the <a href="#mcp">MCP server</a>
      are opt-in. <a href="https://github.com/DuarteSantos8/openGym#how-opengym-is-built" rel="noopener">More on this in the README</a>.</p>
-  <p>The exercise database comes from
-     <a href="https://github.com/hasaneyldrm/exercises-dataset" rel="noopener">hasaneyldrm/exercises-dataset</a>:
-     1,324 exercises with animations and instructions. The metadata and instruction text are
-     MIT; the images and animations are third-party media that openGym never redistributes —
-     your instance downloads them from upstream on first run (see the
-     <a href="#faq">FAQ</a> for the licensing details).</p>
+  <p>The exercise catalogue lives in the repository as one JSON file per exercise
+     (<a href="https://github.com/DuarteSantos8/openGym/blob/main/catalogue/README.md" rel="noopener">catalogue/</a>),
+     with its translations next to it, and anyone can fix or translate an entry with a pull
+     request. The pictures and animations are licensed from
+     <a href="https://gymvisual.com/" rel="noopener">Gym visual</a> for openGym and ship with it at
+     180&nbsp;px (see the <a href="#faq">FAQ</a> for the licensing details).</p>
 
   <h2 id="build">Build it yourself</h2>
   <p>Everything on this page is built from the public repo:</p>
@@ -930,7 +933,7 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
   <table class="cfg">
     <tr><td>No passkey prompt on my phone</td><td>You're on <code>http://</code> or a bare IP. Passkeys need HTTPS or localhost — set up a domain, or use guest mode / the mobile app.</td></tr>
     <tr><td>"verification failed" on login</td><td><code>RP_ID</code>/<code>ORIGIN</code> don't match the address bar — see the checklist above, starting with what the server logged.</td></tr>
-    <tr><td>Media didn't download</td><td><code>docker compose logs media</code>, re-run <code>docker compose up -d</code>, or run <code>./scripts/fetch-media.sh</code>.</td></tr>
+    <tr><td>Exercise pictures missing</td><td>You're on an image older than v1.4.0 or a custom build: <code>docker compose pull &amp;&amp; docker compose up -d</code>. A source build needs <code>catalogue/media/</code> checked out.</td></tr>
     <tr><td>Port 8080 already used</td><td><code>WEB_PORT=9090</code> in <code>.env</code> (and update <code>ORIGIN</code> for local testing).</td></tr>
     <tr><td>No "Reminders" page in Settings</td><td>Needs a signed-in profile and HTTPS (or localhost) — guest mode and plain HTTP over LAN can't subscribe.</td></tr>
     <tr><td>Day reminder fires at the wrong time</td><td>Toggle it off and on so it re-detects your browser's timezone (also happens on every app load).</td></tr>
@@ -970,8 +973,9 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
   <h3>Is it really free?</h3>
   <p>Yes — free as in cost <i>and</i> as in freedom (AGPL-3.0). No pro tier, no locked
      features, no ads, and the license keeps every fork open source too. If it replaced a
-     paid tracker for you, there's a <a href="https://buymeacoffee.com/duartesantos" rel="noopener">coffee button</a> —
-     a star, a bug report or a pull request is worth just as much.</p>
+     paid tracker for you, there's a <a href="https://buymeacoffee.com/duartesantos" rel="noopener">coffee button</a>
+     and a <a href="https://ko-fi.com/opengym" rel="noopener">Ko-fi page</a>,
+     though a star, a bug report or a pull request is worth just as much.</p>
   <h3>Why isn't it on the Play Store / App Store?</h3>
   <p>By choice (and on iOS, by Apple's rules for sideloading). Store accounts cost money,
      impose terms that sit badly with the AGPL, and put a gatekeeper between you and an app
@@ -995,19 +999,18 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
      reviewed, tested and released by the maintainer. The app itself calls no AI service unless
      you switch the coach on. See <a href="#arch">How it's built</a>.</p>
   <h3>Where does the exercise database come from?</h3>
-  <p>From <a href="https://github.com/hasaneyldrm/exercises-dataset" rel="noopener">hasaneyldrm/exercises-dataset</a>:
-     1,324 exercises with animations and instructions, localized in 12 of openGym's 17 UI
-     languages — including openGym's separately curated Brazilian Portuguese translation.
-     That dataset licenses the two halves differently, and so does openGym: the exercise
-     metadata and instruction text are <b>MIT</b>, while the images and animations are
-     third-party media used under the dataset's terms rather than openGym's AGPL — their
-     ownership is currently disputed between
-     <a href="https://gymvisual.com/" rel="noopener">Gym visual</a> and ExerciseDB, and a
-     clarification has been requested.</p>
-  <p>openGym does not redistribute that media — your instance downloads it from the upstream
-     source on first run. If you want to reuse it yourself, commercially or otherwise, clear
-     it with the rights holder first. Full third-party notices, including the body-diagram
-     geometry, are in
+  <p>The text is openGym's own: one JSON file per exercise in
+     <a href="https://github.com/DuarteSantos8/openGym/blob/main/catalogue/README.md" rel="noopener">catalogue/</a>,
+     translations next to it, and fixes welcome as pull requests. The 1,324 exercises openGym
+     started with came from ExerciseDB by way of hasaneyldrm/exercises-dataset, and their
+     original text stays under <b>MIT</b>; everything written since is AGPL like the rest of
+     openGym.</p>
+  <p>The pictures and animations are a different matter: they are &copy; Aliaksandr
+     Makatserchyk, <a href="https://gymvisual.com/" rel="noopener">Gym visual</a>, licensed for
+     use in openGym only, at 180&nbsp;px in the repository and on servers and larger only inside
+     the app packages. They are not covered by the AGPL, and there's no media pack or CDN to
+     pull them from. Reusing them anywhere else needs your own licence from gymvisual.com.
+     Full third-party notices, including the body-diagram geometry, are in
      <a href="https://github.com/DuarteSantos8/openGym/blob/main/NOTICE.md" rel="noopener">NOTICE.md</a>.</p>
   <h3>What does the AGPL mean for me?</h3>
   <p>You can self-host, use, modify and share openGym freely. If you run a <i>modified</i>
@@ -1029,6 +1032,6 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
   </div>
 </div></footer>
 
-<script src="site.js?v=22" defer></script>
+<script src="site.js?v=26" defer></script>
 </body>
 </html>

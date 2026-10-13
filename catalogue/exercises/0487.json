@@ -1,0 +1,23 @@
+{
+  "id": "0487",
+  "name": "hip raise crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A reverse crunch that lifts the hips while the legs rise over the torso. It targets the lower abs.",
+  "instructions": [
+    "Lie on your back with your legs lifted and knees bent.",
+    "Place your hands at your sides or under your hips.",
+    "Curl your hips off the floor, bringing your knees toward your chest.",
+    "Hold briefly at the top.",
+    "Lower with control.",
+    "Avoid using momentum."
+  ],
+  "textSource": "opengym"
+}

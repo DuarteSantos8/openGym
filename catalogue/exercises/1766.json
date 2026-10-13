@@ -1,0 +1,22 @@
+{
+  "id": "1766",
+  "name": "self assisted inverse leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight leg curl on a lying leg curl station. Works the hamstrings with a controlled curl and slow lowering.",
+  "instructions": [
+    "Lie face down on a leg curl machine with your legs extended and your ankles hooked under the padded lever.",
+    "Place your hands on the side handles of the machine for support.",
+    "Keeping your upper body stationary, exhale and curl your legs upward as far as possible.",
+    "Hold the contracted position for a brief pause as you squeeze your hamstrings.",
+    "Slowly lower your legs back to the starting position while inhaling.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

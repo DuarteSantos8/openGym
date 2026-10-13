@@ -1,0 +1,22 @@
+{
+  "id": "4847",
+  "name": "weighted plate standing high front raise",
+  "bodyPart": "shoulders",
+  "equipment": "weight plate",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "trapezius",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Raising a weight plate in front of you to above eye level. It trains the front shoulders and upper chest.",
+  "instructions": [
+    "Stand holding a weight plate with both hands at your thighs.",
+    "Keep your arms nearly straight.",
+    "Raise the plate up and overhead.",
+    "Pause at the top.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1381",
+  "name": "dumbbell seated one leg calf raise - palm up",
+  "bodyPart": "lower legs",
+  "equipment": "dumbbell",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A one-leg seated calf raise with a dumbbell held with your palm up. It works the soleus under the calf one side at a time.",
+  "instructions": [
+    "Sit on a bench or chair with your back straight and your feet flat on the ground.",
+    "Hold a dumbbell in one hand and place it on top of your thigh, palm facing up.",
+    "Lift one leg off the ground and extend it in front of you, keeping your knee slightly bent.",
+    "Raise your heel as high as possible by pushing through the ball of your foot.",
+    "Pause for a moment at the top, then slowly lower your heel back down.",
+    "Repeat for the desired number of repetitions, then switch legs and repeat."
+  ],
+  "textSource": "exercisedb"
+}

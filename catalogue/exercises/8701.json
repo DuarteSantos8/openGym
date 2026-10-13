@@ -1,0 +1,22 @@
+{
+  "id": "8701",
+  "name": "weighted bag walking lunge",
+  "bodyPart": "upper legs",
+  "equipment": "sandbag",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A walking lunge carrying a weighted bag, building the legs, glutes and core.",
+  "instructions": [
+    "Hold the bag at your chest or on your shoulders.",
+    "Stand tall.",
+    "Step forward and lower until both knees are about 90 degrees.",
+    "Push through the front foot and bring the back leg forward.",
+    "Continue, alternating legs."
+  ],
+  "textSource": "opengym"
+}

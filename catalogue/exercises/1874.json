@@ -1,0 +1,20 @@
+{
+  "id": "1874",
+  "name": "lever alternate leg extension (plate loaded)",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "One leg at a time on a plate-loaded extension machine, evening out strength between the legs.",
+  "instructions": [
+    "Sit with your back against the pad and your shins behind the rollers.",
+    "Hold the handles.",
+    "Extend one leg until it is straight.",
+    "Lower it slowly.",
+    "Repeat with the other leg and keep alternating."
+  ],
+  "textSource": "opengym"
+}

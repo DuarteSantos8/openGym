@@ -1,0 +1,3163 @@
+{
+ "1010": {
+  "bp": "upper legs",
+  "primaries": [
+   "gluteal",
+   "hamstring"
+  ],
+  "secondaries": [
+   "lower-back",
+   "quadriceps",
+   "adductors",
+   "calves"
+  ]
+ },
+ "1012": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "triceps",
+   "trapezius",
+   "abs",
+   "obliques"
+  ]
+ },
+ "1253": {
+  "primaries": [
+   "calves"
+  ],
+  "secondaries": []
+ },
+ "1254": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "triceps",
+   "deltoids",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "1256": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "triceps",
+   "deltoids",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "1257": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "triceps",
+   "deltoids",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "1269": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "upper-back",
+   "trapezius"
+  ]
+ },
+ "1270": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "upper-back",
+   "trapezius"
+  ]
+ },
+ "1299": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "deltoids",
+   "triceps",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "1300": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "deltoids",
+   "triceps",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "1301": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "deltoids",
+   "triceps",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "1313": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "chest",
+   "triceps"
+  ]
+ },
+ "1317": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "1318": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "chest",
+   "triceps"
+  ]
+ },
+ "1320": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "chest",
+   "triceps"
+  ]
+ },
+ "1321": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "chest",
+   "triceps"
+  ]
+ },
+ "1323": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "chest",
+   "triceps"
+  ]
+ },
+ "1324": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "chest",
+   "triceps"
+  ]
+ },
+ "1325": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "triceps"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "trapezius": 0.4,
+   "triceps": 0
+  }
+ },
+ "1326": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "1327": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "1347": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "triceps"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "trapezius": 0.4,
+   "triceps": 0
+  }
+ },
+ "1349": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "chest",
+   "triceps"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "trapezius": 0.4,
+   "chest": 0,
+   "triceps": 0
+  }
+ },
+ "1350": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "chest",
+   "triceps"
+  ]
+ },
+ "1375": {
+  "primaries": [
+   "calves"
+  ],
+  "secondaries": []
+ },
+ "1376": {
+  "primaries": [
+   "calves"
+  ],
+  "secondaries": []
+ },
+ "1383": {
+  "primaries": [
+   "calves"
+  ],
+  "secondaries": []
+ },
+ "1384": {
+  "primaries": [
+   "calves"
+  ],
+  "secondaries": []
+ },
+ "1385": {
+  "primaries": [
+   "calves"
+  ],
+  "secondaries": []
+ },
+ "1391": {
+  "muscleWeights": {
+   "calves": 1,
+   "quadriceps": 0.4,
+   "hamstring": 0
+  }
+ },
+ "1392": {
+  "muscleWeights": {
+   "calves": 1,
+   "gluteal": 0.4,
+   "hamstring": 0
+  }
+ },
+ "1393": {
+  "primaries": [
+   "calves"
+  ],
+  "secondaries": []
+ },
+ "1394": {
+  "primaries": [
+   "calves"
+  ],
+  "secondaries": []
+ },
+ "1395": {
+  "primaries": [
+   "calves"
+  ],
+  "secondaries": []
+ },
+ "1425": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
+ "1429": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "triceps": 0
+  }
+ },
+ "1431": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "1432": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "triceps": 0
+  }
+ },
+ "1434": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ]
+ },
+ "1435": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "1436": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "1451": {
+  "primaries": [
+   "triceps"
+  ],
+  "secondaries": [
+   "deltoids",
+   "chest",
+   "upper-back",
+   "trapezius",
+   "biceps"
+  ]
+ },
+ "1456": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "chest",
+   "triceps",
+   "trapezius",
+   "serratus"
+  ]
+ },
+ "1457": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "chest",
+   "triceps",
+   "trapezius",
+   "serratus"
+  ]
+ },
+ "1459": {
+  "primaries": [
+   "gluteal",
+   "hamstring"
+  ],
+  "secondaries": [
+   "lower-back",
+   "quadriceps",
+   "adductors",
+   "calves"
+  ]
+ },
+ "1461": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "1462": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "1463": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
+ "1464": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
+ "1479": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "deltoids",
+   "triceps",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "1614": {
+  "primaries": [
+   "biceps"
+  ],
+  "secondaries": [
+   "forearm"
+  ]
+ },
+ "1615": {
+  "primaries": [
+   "biceps"
+  ],
+  "secondaries": [
+   "forearm"
+  ]
+ },
+ "1616": {
+  "primaries": [
+   "biceps"
+  ],
+  "secondaries": [
+   "forearm"
+  ]
+ },
+ "1756": {
+  "primaries": [
+   "gluteal",
+   "hamstring"
+  ],
+  "secondaries": [
+   "lower-back",
+   "quadriceps",
+   "adductors",
+   "calves"
+  ]
+ },
+ "1757": {
+  "primaries": [
+   "gluteal",
+   "hamstring"
+  ],
+  "secondaries": [
+   "lower-back",
+   "quadriceps",
+   "adductors",
+   "calves"
+  ]
+ },
+ "1760": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "2144": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "deltoids",
+   "triceps",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "2287": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
+ "2289": {
+  "muscleWeights": {
+   "calves": 1,
+   "hamstring": 0
+  }
+ },
+ "2318": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "chest",
+   "triceps",
+   "trapezius",
+   "serratus"
+  ]
+ },
+ "2330": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "triceps"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "trapezius": 0.4,
+   "triceps": 0
+  }
+ },
+ "2334": {
+  "muscleWeights": {
+   "calves": 1,
+   "gluteal": 0.4,
+   "hamstring": 0
+  }
+ },
+ "2335": {
+  "muscleWeights": {
+   "calves": 1,
+   "hamstring": 0
+  }
+ },
+ "2364": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "triceps",
+   "deltoids"
+  ]
+ },
+ "2611": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
+ "2616": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "triceps"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "trapezius": 0.4,
+   "triceps": 0
+  }
+ },
+ "2736": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "triceps"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "trapezius": 0.4,
+   "triceps": 0
+  }
+ },
+ "2805": {
+  "primaries": [
+   "gluteal",
+   "hamstring"
+  ],
+  "secondaries": [
+   "lower-back",
+   "quadriceps",
+   "adductors",
+   "calves"
+  ]
+ },
+ "3006": {
+  "muscleWeights": {
+   "gluteal": 1,
+   "hamstring": 0
+  }
+ },
+ "3017": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "3142": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ]
+ },
+ "3195": {
+  "primaries": [
+   "hamstring"
+  ],
+  "secondaries": [
+   "calves"
+  ]
+ },
+ "3200": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "chest",
+   "triceps"
+  ]
+ },
+ "3235": {
+  "primaries": [
+   "hamstring"
+  ],
+  "secondaries": [
+   "calves"
+  ]
+ },
+ "3281": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ]
+ },
+ "3418": {
+  "bp": "full body",
+  "primaries": [
+   "upper-back",
+   "abs"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "hip-flexors"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "abs": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "hip-flexors": 0.4,
+   "triceps": 0
+  }
+ },
+ "3563": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "triceps"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "trapezius": 0.4,
+   "triceps": 0
+  }
+ },
+ "3758": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "deltoids",
+   "triceps",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "3759": {
+  "primaries": [
+   "gluteal",
+   "hamstring",
+   "lower-back"
+  ],
+  "secondaries": []
+ },
+ "3888": {
+  "bp": "full body",
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "hamstring",
+   "trapezius",
+   "deltoids"
+  ],
+  "secondaries": [
+   "calves",
+   "forearm",
+   "triceps",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0007": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "triceps"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "trapezius": 0.4,
+   "triceps": 0
+  }
+ },
+ "0009": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "triceps",
+   "deltoids"
+  ]
+ },
+ "0015": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "triceps": 0
+  }
+ },
+ "0017": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "triceps": 0
+  }
+ },
+ "0019": {
+  "primaries": [
+   "triceps"
+  ],
+  "secondaries": [
+   "deltoids",
+   "chest",
+   "upper-back",
+   "trapezius",
+   "biceps"
+  ]
+ },
+ "0025": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "triceps",
+   "deltoids",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "0027": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "0028": {
+  "bp": "full body",
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "hamstring",
+   "trapezius",
+   "deltoids",
+   "triceps"
+  ],
+  "secondaries": [
+   "calves",
+   "forearm",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0029": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0030": {
+  "primaries": [
+   "triceps"
+  ],
+  "secondaries": [
+   "chest",
+   "deltoids",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "triceps": 1,
+   "chest": 0.4,
+   "deltoids": 0.4,
+   "biceps": 0
+  }
+ },
+ "0032": {
+  "bp": "full body",
+  "primaries": [
+   "gluteal",
+   "hamstring",
+   "lower-back"
+  ],
+  "secondaries": [
+   "quadriceps",
+   "adductors",
+   "calves",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0033": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "triceps",
+   "deltoids",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "0042": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0043": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0045": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "triceps",
+   "deltoids",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "0047": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "triceps",
+   "deltoids",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "0049": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "0063": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0064": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "0066": {
+  "bp": "full body",
+  "primaries": [
+   "gluteal",
+   "hamstring",
+   "lower-back"
+  ],
+  "secondaries": [
+   "quadriceps",
+   "adductors",
+   "calves",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0067": {
+  "bp": "full body",
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "hamstring",
+   "trapezius",
+   "deltoids"
+  ],
+  "secondaries": [
+   "calves",
+   "forearm",
+   "triceps",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0068": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0069": {
+  "bp": "full body",
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0085": {
+  "primaries": [
+   "gluteal",
+   "hamstring"
+  ],
+  "secondaries": [
+   "lower-back",
+   "quadriceps",
+   "adductors",
+   "calves"
+  ]
+ },
+ "0086": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "chest",
+   "triceps",
+   "trapezius",
+   "serratus"
+  ]
+ },
+ "0091": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "chest",
+   "triceps",
+   "trapezius",
+   "serratus"
+  ]
+ },
+ "0099": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0116": {
+  "primaries": [
+   "gluteal",
+   "hamstring"
+  ],
+  "secondaries": [
+   "lower-back",
+   "quadriceps",
+   "adductors",
+   "calves"
+  ]
+ },
+ "0117": {
+  "bp": "full body",
+  "primaries": [
+   "gluteal",
+   "hamstring",
+   "lower-back"
+  ],
+  "secondaries": [
+   "quadriceps",
+   "adductors",
+   "calves",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0118": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "0122": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "triceps",
+   "deltoids",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "0124": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0127": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0148": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "chest",
+   "triceps",
+   "trapezius",
+   "serratus"
+  ]
+ },
+ "0150": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "triceps"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "trapezius": 0.4,
+   "triceps": 0
+  }
+ },
+ "0151": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "triceps",
+   "deltoids",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "0153": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "triceps"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "trapezius": 0.4,
+   "triceps": 0
+  }
+ },
+ "0154": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "trapezius",
+   "upper-back"
+  ]
+ },
+ "0155": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "upper-back",
+   "trapezius"
+  ]
+ },
+ "0157": {
+  "bp": "full body",
+  "primaries": [
+   "gluteal",
+   "hamstring",
+   "lower-back"
+  ],
+  "secondaries": [
+   "quadriceps",
+   "adductors",
+   "calves",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0158": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "upper-back",
+   "trapezius"
+  ]
+ },
+ "0159": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "0167": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "chest",
+   "triceps"
+  ]
+ },
+ "0168": {
+  "primaries": [
+   "adductors"
+  ],
+  "secondaries": [
+   "gluteal",
+   "hamstring"
+  ]
+ },
+ "0169": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "triceps",
+   "deltoids",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "0171": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "upper-back",
+   "trapezius"
+  ]
+ },
+ "0177": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "triceps"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "trapezius": 0.4,
+   "triceps": 0
+  }
+ },
+ "0179": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "upper-back",
+   "trapezius"
+  ]
+ },
+ "0180": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "0185": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "upper-back",
+   "trapezius"
+  ]
+ },
+ "0188": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "upper-back",
+   "trapezius"
+  ]
+ },
+ "0189": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "0193": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "chest",
+   "triceps"
+  ]
+ },
+ "0196": {
+  "primaries": [
+   "gluteal"
+  ],
+  "secondaries": [
+   "hamstring"
+  ]
+ },
+ "0197": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "triceps"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "trapezius": 0.4,
+   "triceps": 0
+  }
+ },
+ "0198": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "triceps"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "trapezius": 0.4,
+   "triceps": 0
+  }
+ },
+ "0202": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "trapezius",
+   "upper-back"
+  ]
+ },
+ "0203": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "trapezius",
+   "upper-back"
+  ]
+ },
+ "0205": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "triceps"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "trapezius": 0.4,
+   "triceps": 0
+  }
+ },
+ "0208": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "chest",
+   "triceps"
+  ]
+ },
+ "0213": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "0214": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "0218": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "0219": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "chest",
+   "triceps",
+   "trapezius",
+   "serratus"
+  ]
+ },
+ "0227": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "upper-back",
+   "trapezius"
+  ]
+ },
+ "0228": {
+  "primaries": [
+   "gluteal"
+  ],
+  "secondaries": [
+   "hamstring"
+  ]
+ },
+ "0234": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "0236": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "chest",
+   "triceps"
+  ]
+ },
+ "0239": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "chest",
+   "triceps"
+  ]
+ },
+ "0245": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "triceps"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "trapezius": 0.4,
+   "triceps": 0
+  }
+ },
+ "0253": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "0289": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "triceps",
+   "deltoids",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "0292": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "0293": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "0295": {
+  "bp": "full body",
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "hamstring",
+   "trapezius"
+  ],
+  "secondaries": [
+   "calves",
+   "forearm",
+   "deltoids",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0300": {
+  "primaries": [
+   "gluteal",
+   "hamstring"
+  ],
+  "secondaries": [
+   "lower-back",
+   "quadriceps",
+   "adductors",
+   "calves"
+  ]
+ },
+ "0301": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "triceps",
+   "deltoids",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "0314": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "triceps",
+   "deltoids",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "0404": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "chest",
+   "triceps",
+   "trapezius",
+   "serratus"
+  ]
+ },
+ "0405": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "chest",
+   "triceps",
+   "trapezius",
+   "serratus"
+  ]
+ },
+ "0413": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0414": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "triceps",
+   "trapezius",
+   "abs"
+  ]
+ },
+ "0426": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "chest",
+   "triceps",
+   "trapezius",
+   "serratus"
+  ]
+ },
+ "0432": {
+  "primaries": [
+   "gluteal",
+   "hamstring"
+  ],
+  "secondaries": [
+   "lower-back",
+   "quadriceps",
+   "adductors",
+   "calves"
+  ]
+ },
+ "0434": {
+  "primaries": [
+   "gluteal",
+   "hamstring"
+  ],
+  "secondaries": [
+   "lower-back",
+   "quadriceps",
+   "adductors",
+   "calves"
+  ]
+ },
+ "0499": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "0518": {
+  "bp": "full body",
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "hamstring",
+   "trapezius"
+  ],
+  "secondaries": [
+   "calves",
+   "forearm",
+   "deltoids",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0525": {
+  "bp": "full body",
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "hamstring",
+   "trapezius"
+  ],
+  "secondaries": [
+   "calves",
+   "forearm",
+   "deltoids",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0526": {
+  "bp": "full body",
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "hamstring",
+   "trapezius"
+  ],
+  "secondaries": [
+   "calves",
+   "forearm",
+   "deltoids",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0527": {
+  "bp": "full body",
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "deltoids",
+   "triceps"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "trapezius",
+   "forearm",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0529": {
+  "bp": "full body",
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "hamstring",
+   "trapezius",
+   "deltoids"
+  ],
+  "secondaries": [
+   "calves",
+   "forearm",
+   "triceps",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0533": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0534": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0535": {
+  "bp": "full body",
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "hamstring",
+   "trapezius"
+  ],
+  "secondaries": [
+   "calves",
+   "forearm",
+   "deltoids",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0537": {
+  "bp": "full body",
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "hamstring",
+   "trapezius",
+   "deltoids",
+   "triceps"
+  ],
+  "secondaries": [
+   "calves",
+   "forearm",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0538": {
+  "bp": "full body",
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "deltoids",
+   "triceps"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "trapezius",
+   "forearm",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0542": {
+  "bp": "full body",
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "hamstring",
+   "trapezius",
+   "deltoids"
+  ],
+  "secondaries": [
+   "calves",
+   "forearm",
+   "triceps",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0552": {
+  "bp": "full body",
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "hamstring",
+   "trapezius"
+  ],
+  "secondaries": [
+   "calves",
+   "forearm",
+   "deltoids",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0571": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "chest",
+   "triceps"
+  ]
+ },
+ "0573": {
+  "primaries": [
+   "lower-back"
+  ],
+  "secondaries": [
+   "gluteal",
+   "hamstring"
+  ]
+ },
+ "0575": {
+  "primaries": [
+   "biceps"
+  ],
+  "secondaries": [
+   "forearm"
+  ]
+ },
+ "0576": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "deltoids",
+   "triceps",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "0577": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "deltoids",
+   "triceps",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "0578": {
+  "primaries": [
+   "gluteal",
+   "hamstring"
+  ],
+  "secondaries": [
+   "lower-back",
+   "quadriceps",
+   "adductors",
+   "calves"
+  ]
+ },
+ "0579": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "triceps"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "trapezius": 0.4,
+   "triceps": 0
+  }
+ },
+ "0582": {
+  "primaries": [
+   "hamstring"
+  ],
+  "secondaries": [
+   "calves"
+  ]
+ },
+ "0584": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "trapezius",
+   "upper-back"
+  ]
+ },
+ "0585": {
+  "primaries": [
+   "quadriceps"
+  ],
+  "secondaries": []
+ },
+ "0586": {
+  "primaries": [
+   "hamstring"
+  ],
+  "secondaries": [
+   "calves"
+  ]
+ },
+ "0587": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "chest",
+   "triceps",
+   "trapezius",
+   "serratus"
+  ]
+ },
+ "0588": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "chest",
+   "triceps"
+  ]
+ },
+ "0590": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "chest",
+   "triceps",
+   "trapezius",
+   "serratus"
+  ]
+ },
+ "0592": {
+  "primaries": [
+   "biceps"
+  ],
+  "secondaries": [
+   "forearm"
+  ]
+ },
+ "0593": {
+  "primaries": [
+   "gluteal",
+   "hamstring"
+  ],
+  "secondaries": [
+   "lower-back"
+  ]
+ },
+ "0594": {
+  "primaries": [
+   "calves"
+  ],
+  "secondaries": []
+ },
+ "0596": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "deltoids",
+   "biceps",
+   "serratus"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "serratus": 0.4,
+   "biceps": 0
+  }
+ },
+ "0597": {
+  "primaries": [
+   "gluteal"
+  ],
+  "secondaries": [
+   "hamstring"
+  ],
+  "muscleWeights": {
+   "gluteal": 1,
+   "hamstring": 0
+  }
+ },
+ "0598": {
+  "primaries": [
+   "adductors"
+  ],
+  "secondaries": [
+   "gluteal",
+   "hamstring"
+  ]
+ },
+ "0599": {
+  "primaries": [
+   "hamstring"
+  ],
+  "secondaries": [
+   "calves",
+   "adductors"
+  ]
+ },
+ "0601": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "trapezius",
+   "upper-back"
+  ]
+ },
+ "0602": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "trapezius",
+   "upper-back"
+  ]
+ },
+ "0603": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "chest",
+   "triceps",
+   "trapezius",
+   "serratus",
+   "biceps"
+  ]
+ },
+ "0605": {
+  "primaries": [
+   "calves"
+  ],
+  "secondaries": []
+ },
+ "0606": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "chest",
+   "triceps"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "trapezius": 0.4,
+   "chest": 0,
+   "triceps": 0
+  }
+ },
+ "0607": {
+  "primaries": [
+   "triceps"
+  ],
+  "secondaries": [],
+  "muscleWeights": {
+   "triceps": 1,
+   "deltoids": 0
+  }
+ },
+ "0627": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "0638": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "0648": {
+  "bp": "full body",
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "hamstring",
+   "trapezius"
+  ],
+  "secondaries": [
+   "calves",
+   "forearm",
+   "deltoids",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0651": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "triceps": 0
+  }
+ },
+ "0652": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "triceps": 0
+  }
+ },
+ "0673": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "triceps"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "trapezius": 0.4,
+   "triceps": 0
+  }
+ },
+ "0738": {
+  "muscleWeights": {
+   "calves": 1,
+   "hamstring": 0
+  }
+ },
+ "0739": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
+ "0740": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ]
+ },
+ "0741": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
+ "0742": {
+  "primaries": [
+   "calves"
+  ],
+  "secondaries": []
+ },
+ "0743": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
+ "0744": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ]
+ },
+ "0748": {
+  "primaries": [
+   "chest"
+  ],
+  "secondaries": [
+   "triceps",
+   "deltoids",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "chest": 1,
+   "deltoids": 0.4,
+   "triceps": 0.4,
+   "biceps": 0
+  }
+ },
+ "0751": {
+  "primaries": [
+   "triceps"
+  ],
+  "secondaries": [
+   "chest",
+   "deltoids",
+   "biceps"
+  ],
+  "muscleWeights": {
+   "triceps": 1,
+   "chest": 0.4,
+   "deltoids": 0.4,
+   "biceps": 0
+  }
+ },
+ "0752": {
+  "bp": "full body",
+  "primaries": [
+   "gluteal",
+   "hamstring",
+   "lower-back"
+  ],
+  "secondaries": [
+   "quadriceps",
+   "adductors",
+   "calves",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0755": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "lower-back",
+   "abs",
+   "obliques"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "lower-back": 0.4,
+   "abs": 0.4,
+   "obliques": 0.4,
+   "calves": 0
+  }
+ },
+ "0760": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
+ "0762": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "trapezius",
+   "upper-back"
+  ]
+ },
+ "0763": {
+  "primaries": [
+   "calves"
+  ],
+  "secondaries": []
+ },
+ "0765": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "chest",
+   "triceps",
+   "trapezius",
+   "serratus"
+  ]
+ },
+ "0766": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "chest",
+   "triceps",
+   "trapezius",
+   "serratus"
+  ]
+ },
+ "0768": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ]
+ },
+ "0769": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ]
+ },
+ "0770": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0772": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "chest",
+   "triceps",
+   "trapezius",
+   "serratus"
+  ]
+ },
+ "0773": {
+  "primaries": [
+   "calves"
+  ],
+  "secondaries": []
+ },
+ "0774": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "chest",
+   "triceps",
+   "trapezius",
+   "serratus"
+  ]
+ },
+ "0776": {
+  "bp": "full body",
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "hamstring",
+   "trapezius"
+  ],
+  "secondaries": [
+   "calves",
+   "forearm",
+   "deltoids",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0786": {
+  "bp": "full body",
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors",
+   "deltoids"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "triceps",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0808": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "0811": {
+  "bp": "full body",
+  "primaries": [
+   "gluteal",
+   "hamstring",
+   "lower-back"
+  ],
+  "secondaries": [
+   "quadriceps",
+   "adductors",
+   "calves",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0818": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm",
+   "trapezius",
+   "triceps"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "trapezius": 0.4,
+   "triceps": 0
+  }
+ },
+ "0841": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "triceps": 0
+  }
+ },
+ "0852": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves",
+   "lower-back",
+   "abs",
+   "obliques"
+  ]
+ },
+ "0861": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "0869": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "chest",
+   "triceps",
+   "trapezius",
+   "serratus"
+  ]
+ },
+ "0970": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ],
+  "muscleWeights": {
+   "upper-back": 1,
+   "biceps": 0.4,
+   "deltoids": 0.4,
+   "forearm": 0.4,
+   "triceps": 0
+  }
+ },
+ "0988": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "0990": {
+  "primaries": [
+   "upper-back"
+  ],
+  "secondaries": [
+   "biceps",
+   "deltoids",
+   "forearm"
+  ]
+ },
+ "0997": {
+  "primaries": [
+   "deltoids"
+  ],
+  "secondaries": [
+   "chest",
+   "triceps",
+   "trapezius",
+   "serratus"
+  ]
+ }
+}

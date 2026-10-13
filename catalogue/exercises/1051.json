@@ -1,0 +1,23 @@
+{
+  "id": "1051",
+  "name": "cat stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "upper back",
+    "core",
+    "lower abs"
+  ],
+  "category": "stretching",
+  "description": "A gentle spinal stretch on hands and knees, rounding the back like a cat. It loosens the spine.",
+  "instructions": [
+    "Start on hands and knees with hands under shoulders.",
+    "Tuck your chin and round your back toward the ceiling.",
+    "Draw your belly button in and hold for a few breaths.",
+    "Return to a neutral spine.",
+    "Repeat slowly, holding the rounded position 15-20 seconds."
+  ],
+  "femaleVariant": "0249",
+  "textSource": "opengym"
+}

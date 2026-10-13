@@ -1,0 +1,22 @@
+{
+  "id": "8141",
+  "name": "cable standing crossover",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A standing cable fly where your hands cross in front of the chest. It focuses on squeezing the pecs.",
+  "instructions": [
+    "Set the pulleys at a high position and grab a handle in each hand.",
+    "Step forward with a slight lean.",
+    "Bring your hands together in a wide arc.",
+    "Squeeze your chest as your hands cross.",
+    "Return slowly to a stretch."
+  ],
+  "textSource": "opengym"
+}

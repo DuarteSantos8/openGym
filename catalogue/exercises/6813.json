@@ -1,0 +1,22 @@
+{
+  "id": "6813",
+  "name": "barbell bench press (side pov)",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "The barbell bench press seen from the side to check bar path and form. It builds the chest, shoulders and triceps.",
+  "instructions": [
+    "Lie on a bench with your eyes under the bar and feet planted.",
+    "Grip the bar slightly wider than shoulder width and unrack it.",
+    "Lower the bar to your mid chest with elbows at about 45 degrees.",
+    "Touch lightly and press back up over your shoulders.",
+    "Keep your shoulder blades pinched throughout."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1130",
+  "name": "suspender reverse fly wake up",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A reverse fly on the straps that works the rear shoulders and upper back to improve posture.",
+  "instructions": [
+    "Hold the handles and lean back with arms straight in front.",
+    "Keep your body in a line.",
+    "Open your arms wide, pulling the shoulder blades together.",
+    "Keep arms slightly bent and level with the shoulders.",
+    "Return slowly to the start.",
+    "Walk your feet forward to lighten the load."
+  ],
+  "textSource": "opengym"
+}

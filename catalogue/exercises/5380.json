@@ -1,0 +1,24 @@
+{
+  "id": "5380",
+  "name": "roll shoulder back rotation lying on floor",
+  "bodyPart": "shoulders",
+  "equipment": "roller",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "upper back",
+    "rear deltoids"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a foam roller to ease tightness in the shoulder and upper back. Good before training or on rest days to loosen up.",
+  "instructions": [
+    "Lie on your side with the roller under your upper back.",
+    "Place the roller under the shoulder and upper back and let your body weight settle onto it.",
+    "Rotate your top arm back and forth to open the shoulder.",
+    "Pause on tender spots and breathe slowly for 20-30 seconds.",
+    "Keep your core braced and avoid rolling over joints or bone.",
+    "Roll for 30-60 seconds, then switch sides if needed."
+  ],
+  "femaleVariant": "5419",
+  "textSource": "opengym"
+}

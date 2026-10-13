@@ -1,0 +1,23 @@
+{
+  "id": "6982",
+  "name": "wrist full push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "wrist extensors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A full push-up focusing on wrist position and control. It builds the chest while preparing the wrists for load.",
+  "instructions": [
+    "Start in a plank with your hands under your shoulders.",
+    "Spread your fingers and keep your wrists stacked.",
+    "Lower your chest to the floor under control.",
+    "Press back to the top.",
+    "Keep your body straight from head to heels."
+  ],
+  "textSource": "opengym"
+}

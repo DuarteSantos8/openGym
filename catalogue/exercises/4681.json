@@ -1,0 +1,22 @@
+{
+  "id": "4681",
+  "name": "band lying alternate leg press",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "Pressing one leg at a time against a band while lying down. It builds leg strength with light equipment.",
+  "instructions": [
+    "Lie on your back and loop the band around the soles of your feet, holding the ends.",
+    "Bend both knees toward your chest.",
+    "Press one foot out straight against the band.",
+    "Bring it back and press the other leg.",
+    "Alternate smoothly with control."
+  ],
+  "textSource": "opengym"
+}

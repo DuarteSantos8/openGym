@@ -1,0 +1,21 @@
+{
+  "id": "0872",
+  "name": "reverse crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch that curls the hips off the floor with the knees bent. It targets the lower abs.",
+  "instructions": [
+    "Lie flat on your back with your arms extended along your sides.",
+    "Bend your knees and lift your feet off the ground, bringing your thighs perpendicular to the floor.",
+    "Contract your abs and curl your hips off the floor, bringing your knees towards your chest.",
+    "Pause for a moment at the top, then slowly lower your hips back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "0671",
+  "textSource": "exercisedb"
+}

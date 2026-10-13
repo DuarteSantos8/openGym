@@ -1,0 +1,24 @@
+{
+  "id": "0828",
+  "name": "walk (equipment)",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "glutes",
+    "quadriceps",
+    "hamstrings"
+  ],
+  "category": "cardio",
+  "description": "Easy walking on a machine or track at a steady pace, great for warming up or building a base of aerobic fitness.",
+  "instructions": [
+    "Step onto the machine and set a comfortable speed.",
+    "Stand tall with your shoulders relaxed.",
+    "Swing your arms naturally as you walk.",
+    "Land on your heel and roll through to your toes.",
+    "Walk for 10-30 minutes at a pace where you can still talk.",
+    "Slow down gradually at the end."
+  ],
+  "textSource": "opengym"
+}

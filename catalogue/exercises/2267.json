@@ -1,0 +1,24 @@
+{
+  "id": "2267",
+  "name": "lever seated leg press",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A seated machine leg press that drives the legs forward to build thigh and glute strength with back support.",
+  "instructions": [
+    "Adjust the seat and sit with your back flat against the pad.",
+    "Place your feet on the platform about shoulder-width apart.",
+    "Push through your heels until your legs are nearly straight.",
+    "Do not lock your knees.",
+    "Bend your knees slowly to return.",
+    "Repeat for the planned reps."
+  ],
+  "femaleVariant": "2608",
+  "textSource": "opengym"
+}

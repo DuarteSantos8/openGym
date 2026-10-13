@@ -1,0 +1,24 @@
+{
+  "id": "4164",
+  "name": "dumbbell devils press",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A full body move: burpee onto dumbbells, then swing them overhead. It builds power and conditioning.",
+  "instructions": [
+    "Stand holding a dumbbell in each hand.",
+    "Squat and place the dumbbells on the floor, then step or jump your feet back.",
+    "Do a push up if you like.",
+    "Jump your feet forward and stand up, swinging the dumbbells overhead.",
+    "Lower the dumbbells under control.",
+    "Keep your back flat and move with rhythm."
+  ],
+  "textSource": "opengym"
+}

@@ -7,6 +7,7 @@ import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { rememberDefaultLang } from '../lib/default-lang.js'
 import { guestAllowed } from '../lib/guest.js'
 import { MOBILE, initReminderSync, nativeLoad, nativeSave, onAppActive, readJsonFile, syncReminder, writeAutoBackup, writeJsonFile } from '../lib/mobile.js'
+import { initHealthSync, syncHealth } from '../lib/health-sync.js'
 import { refillIfComplete } from '../lib/rotation.js'
 import { liftLegacy } from '../lib/sync-legacy.js'
 import { mergeStates, localExtras, stampChange, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
@@ -19,6 +20,7 @@ import { saveWorkoutEdit, deleteEditedWorkout } from '../lib/session-edit.js'
 import { appBase } from '../lib/app-base.js'
 import { linkTokenFromSearch, stripLinkFromUrl } from '../lib/device-link.js'
 import { loadRemote, chooseLocal, forgetRemote, connect, normalizeServerUrl, renewToken } from '../lib/remote.js'
+import { loadCfAccess } from '../lib/cf-access.js'
 import { loadCoachDevice, saveCoachDevice, coachDeviceSettings } from '../lib/coach-device.js'
 import { RTL_LANGS } from '../lib/i18n-core.js'
 import { DEFAULT_TEMPLATE_ID } from '../lib/structuralBalanceTemplates.js'
@@ -86,6 +88,12 @@ export const DEF = {
   unit: 'kg', restSec: 90, restPauseSec: 15, sound: true, soundOnSilent: false, vibrateOnSilent: false, timerFlash: false, timedSetOvertime: false, keepAwake: true, lang: 'en',
   theme: 'dark', accent: 'lime', body: 'male', targetW: null,
   bodyweight: [], routines: [], week: {}, dayPlan: {},
+  // A note per day off (#261): { [iso]: { tag, text, _ts } } (lib/day-notes.js). A noted day is
+  // excused from the missed-day nudge; each day merges on its own stamp (lib/sync-merge.js).
+  dayNotes: {},
+  // Body measurements (#82): one check-in per day, values in cm whatever the weight unit
+  // (lib/measurements.js); merged across devices like weigh-ins (lib/sync-merge.js).
+  measurements: [], measurementEnabled: null, customMeasurements: [],
   queue: null,   // a planner's floating week (lib/queue.js) — via the API, or by this rotation feature (below)
   // The in-app rotation's reusable definition — { id, sequence, label } (lib/rotation.js). Never
   // a live queue: it only ever feeds `queue`, and `queue.rotationId` says the pass is managed here.
@@ -105,6 +113,13 @@ export const DEF = {
   // 'cards' behaviour. beginWorkout copies the value onto s.active, so the header ⋮ menu can
   // override it for the running session without touching this saved default.
   workoutView: 'cards',
+  // List and Compact fold a finished exercise into one line (Settings → Workout; #241). The
+  // workout's Layout menu can flip it for the running session (s.active.collapseCompleted).
+  collapseCompleted: false,
+  // How the Library, the exercise picker and the muscle explorer show exercises — 'list' (rows
+  // with a small thumbnail) or 'cards' (a grid of pictures with the name underneath). Switched
+  // by the button in those headers (ExerciseViewToggle); older profiles overlay onto the list.
+  exerciseView: 'list',
   // Which controls the workout screen shows besides the sets themselves. The default is the
   // lean layout: one "more" button per exercise and a menu on each set number. Every switch
   // brings one of the old always-visible button groups back (Settings → During a workout).
@@ -153,6 +168,14 @@ export const DEF = {
   // leg press is 'single'; a barbell you never load plates on is 'none'. Absent or null = derived
   // from the equipment. Stamped like the plate list, for the same reason.
   loadKind: {},
+  // What a dumbbell or kettlebell weight means, keyed by exercise id: { mode: 'each' | 'total' |
+  // null, _ts } (lib/dumbbells.js). Absent or null = as entered, counted once, which is how every
+  // set was read before the choice existed. A routine slot can say its own (cfg.dbLoad).
+  dbLoad: {},
+  // The dumbbells you own, per unit: { kg: { weights: [3, 6, 8, …], _ts }, lb: { … } }
+  // (lib/dumbbells.js). Single bells, lightest first. Kept per unit and stamped like the plates;
+  // absent or empty = no list, and dumbbell lifts step by their increment as before.
+  dumbbells: {},
   // Gym check-in cards (see views/CheckIn.jsx). Each is a membership
   // code shown as a QR/barcode at the gym's turnstile — added by typing it, importing a photo
   // of the card, or scanning it. We only ever keep the code's VALUE, never a photo: the image
@@ -183,6 +206,13 @@ export const DEF = {
   // stuck sync then shows as a dot on Home instead. Defaults on; an older profile without the
   // key reads as on (`!== false`).
   connStatus: true,
+  // Whether "Share as image" puts this session's muscle map on the card (sheets.jsx
+  // ShareWorkoutImage, #453). On by default; absent reads as on (`!== false`).
+  shareMap: true,
+  // The quiet line a device with no server shows ("On this phone only…", "Guest mode…", #454).
+  // That is a choice, not a fault, so its × hides it for good; a real problem still shows the bar.
+  // Defaults on; an older profile without the key reads as on (`!== false`).
+  connLocal: true,
   // Where a planned session's reps come from (Settings → During a workout, lib/session-start.js):
   // 'plan' opens at the routine's own sets × reps and lets history and progression decide the
   // weight; 'last' carries the reps over from the last session, the way it always worked before.
@@ -263,7 +293,7 @@ function loadState() {
 // weigh-ins and custom exercises. A custom exercise is all a new guest may have made — with its
 // photo or video, which the server counts as unreferenced until the state that names it lands —
 // so a profile created from such a copy takes it at once, like one holding a workout.
-const hasData = st => !!((st.workouts || []).length || (st.routines || []).length || (st.bodyweight || []).length || (st.customEx || []).length)
+const hasData = st => !!((st.workouts || []).length || (st.routines || []).length || (st.bodyweight || []).length || (st.customEx || []).length || (st.measurements || []).length)
 
 // Decide whether a pulled account state may replace the local saved state. A local active workout
 // is deliberately carried forward: the server stores completed/saved state, while the in-progress
@@ -443,6 +473,7 @@ export const useStore = create((set, get) => {
   }
 
   initReminderSync(() => get().S)
+  initHealthSync(() => get().S)
 
   // Mobile build: the file mirror, and beside it whose copy it is and which one (its `_ts`) —
   // restoreFromMirror takes the file back only for that account, and only while the two agree,
@@ -462,7 +493,7 @@ export const useStore = create((set, get) => {
   const nativePersist = (now = false) => {
     clearTimeout(saveTm)
     saveTm = null
-    const write = () => { saveTm = null; syncReminder(get().S); return saveMirror() }
+    const write = () => { saveTm = null; syncReminder(get().S); syncHealth(get().S).catch(() => {}); return saveMirror() }
     if (now) return write()
     saveTm = setTimeout(write, 800)
     return null
@@ -1810,6 +1841,8 @@ export const useStore = create((set, get) => {
       // case it behaves exactly like the signed-in web flow below, straight from here.
       if (MOBILE) {
         const remote = await loadRemote()
+        // Before the first request: a server behind Cloudflare Access answers nothing without it.
+        await loadCfAccess({ pairedBase: remote?.mode === 'remote' ? remote.base : '' })
         set({ coachLocal: coachDeviceSettings(await loadCoachDevice()) })
         if (remote?.mode === 'remote') {
           setRemoteAuth(remote.base, remote.token)

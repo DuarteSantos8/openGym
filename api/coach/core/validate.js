@@ -14,7 +14,15 @@
  * model verbatim for the one repair round (FR-48) — and a list of six problems produces a
  * better second attempt than the first of them does.
  */
-import { libraryHas, libraryName } from './library.js';
+import { libraryHas, libraryName, equipmentAllows } from './library.js';
+
+// A catalogue exercise the person's equipment does not reach, and that was not in the library
+// slice they were offered (which already pins what they train). The prompt says "their
+// equipment"; a model that names a leverage machine anyway is told so on the repair round
+// instead of the plan arriving with a machine they do not own.
+const offEquipment = (ctx, id) => !!ctx.equipment?.length && libraryHas(id)
+  && !(ctx.offered && ctx.offered.has(id)) && !equipmentAllows(ctx.equipment, id);
+const OFF_EQUIPMENT = (where, id) => `${where} "${id}" needs equipment the user does not have — use an exercise from the library provided in the payload`;
 import { glyphStr } from './glyphs.js';
 
 // The closed list (FR-23 / C3). Adding a member here is a deliberate act with an apply
@@ -27,7 +35,7 @@ export const CHANGE_TYPES = [
   'add-routine', 'remove-routine', 'rename-routine',
   'week'
 ];
-const POLICIES = ['off', 'linear', 'greyskull', 'double', 'time'];
+const POLICIES = ['off', 'linear', 'greyskull', 'double', 'triple', 'time'];
 const MODES = ['reps', 'time', 'cardio'];
 const MAX_INC = 50;
 // A prescription, not a world record. Anything past this is a model slip or a hostile answer,
@@ -79,7 +87,13 @@ export function validatePlan(data, ctx = {}) {
   const errors = [];
   if (!data || typeof data !== 'object') return fail(['the answer was not an object']);
   if (data.nochange) return fail(['a plan was requested but the answer said "no change"']);
-  if (!Array.isArray(data.routines) || !data.routines.length) errors.push('routines must be a non-empty array');
+  if (!Array.isArray(data.routines) || !data.routines.length) {
+    // A review-style change list where a plan was asked for (#471): say what the task wants,
+    // so the repair round sends the plan rather than the same list again.
+    errors.push(Array.isArray(data.changes)
+      ? 'this task needs the complete plan (week and every routine with its ex), not a list of changes — start from refine.previous when revising, apply what was asked, and send the whole plan'
+      : 'routines must be a non-empty array');
+  }
 
   // A custom id that shadows a library id is the one case where the screen and the plan
   // disagree: the approval card resolves the id against the catalogue and shows that exercise,
@@ -109,6 +123,7 @@ export function validatePlan(data, ctx = {}) {
         errors.push(`${where}.id "${e.id}" is not in the exercise library and is not one of your own customEx entries — use an id from the library provided in the payload`);
         return;
       }
+      if (offEquipment(ctx, e.id)) { errors.push(OFF_EQUIPMENT(`${where}.id`, e.id)); return; }
       const clean = { id: e.id, sets: isInt(e.sets, 1, 10) ? e.sets : 3 };
       const mode = MODES.includes(e.mode) ? e.mode : 'reps';
       const perSide = !!e.side;
@@ -135,6 +150,8 @@ export function validatePlan(data, ctx = {}) {
       // adds a set and restarts the reps. Without it the Coach can neither see nor prescribe
       // how a push-up is meant to get harder.
       if (isInt(e.repsMax, 1, 100)) clean.repsMax = e.repsMax;
+      // Triple progression's set ceiling (frontend/src/lib/progression.js tripleSetsOf).
+      if (isInt(e.setsMax, 1, 10)) clean.setsMax = e.setsMax;
       if (clean.repsMax != null && clean.repsMin != null && clean.repsMax < clean.repsMin) {
         errors.push(INVERTED_RANGE(where)); return;
       }
@@ -318,6 +335,7 @@ export function validateReview(data, plan, ctx = {}) {
         }
         const a = c.after || {};
         if (!isStr(a.id) || !knownEx(a.id)) { errors.push(`${where}.after.id must be an exercise id from the library`); return; }
+        if (offEquipment(ctx, a.id)) { errors.push(OFF_EQUIPMENT(`${where}.after.id`, a.id)); return; }
         const perSide = !!a.side;
         if (perSide && isInt(a.reps, 1, 100) && a.reps % 2) { errors.push(ODD_PER_SIDE(`${where}.after.reps`)); return; }
         if (isInt(a.repsMax, 1, 100) && isInt(a.repsMin, 1, 100) && a.repsMax < a.repsMin) { errors.push(INVERTED_RANGE(`${where}.after`)); return; }
@@ -331,6 +349,7 @@ export function validateReview(data, plan, ctx = {}) {
           ...(POLICIES.includes(a.prog) ? { prog: a.prog } : {}),
           ...(isInt(a.repsMin, 1, 100) ? { repsMin: a.repsMin } : {}),
           ...(isInt(a.repsMax, 1, 100) ? { repsMax: a.repsMax } : {}),
+          ...(isInt(a.setsMax, 1, 10) ? { setsMax: a.setsMax } : {}),
           ...(a.bodyweight != null ? { bodyweight: !!a.bodyweight } : {}),
           ...(perSide ? { side: true } : {}),
           ...(isInt(a.position, 0, MAX_EX_PER_ROUTINE) ? { position: a.position } : {})
@@ -345,6 +364,7 @@ export function validateReview(data, plan, ctx = {}) {
         }
         const a = c.after || {};
         if (!isStr(a.id) || !knownEx(a.id)) { errors.push(`${where}.after.id must be an exercise id from the library`); return; }
+        if (offEquipment(ctx, a.id)) { errors.push(OFF_EQUIPMENT(`${where}.after.id`, a.id)); return; }
         if (a.id === target.exId) { errors.push(`${where} swaps an exercise for itself`); return; }
         out.after = {
           id: a.id, name: libraryName(a.id),
@@ -419,6 +439,8 @@ export function validateReview(data, plan, ctx = {}) {
         const listed = Array.isArray(a.ex) ? a.ex : [];
         const bad = listed.find(e => !e || !isStr(e.id) || !knownEx(e.id));
         if (bad) { errors.push(`${where}.after.ex "${bad.id}" is not in the exercise library — use an id from the library provided in the payload`); return; }
+        const offEq = listed.find(e => offEquipment(ctx, e.id));
+        if (offEq) { errors.push(OFF_EQUIPMENT(`${where}.after.ex`, offEq.id)); return; }
         const ex = listed.slice(0, MAX_EX_PER_ROUTINE);
         if (!ex.length) { errors.push(`${where}.after.ex must list at least one exercise from the library`); return; }
         const odd = ex.find(e => e.side && isInt(e.reps, 1, 100) && e.reps % 2);
@@ -434,6 +456,7 @@ export function validateReview(data, plan, ctx = {}) {
             ...(isInt(e.sec, 5, 3600) ? { sec: e.sec } : {}),
             ...(isInt(e.repsMin, 1, 100) ? { repsMin: e.repsMin } : {}),
             ...(isInt(e.repsMax, 1, 100) ? { repsMax: e.repsMax } : {}),
+            ...(isInt(e.setsMax, 1, 10) ? { setsMax: e.setsMax } : {}),
             ...(POLICIES.includes(e.prog) ? { prog: e.prog } : {}),
             ...(isNum(e.inc) && e.inc > 0 && e.inc <= MAX_INC ? { inc: e.inc } : {}),
             ...(e.bodyweight != null ? { bodyweight: !!e.bodyweight } : {}),

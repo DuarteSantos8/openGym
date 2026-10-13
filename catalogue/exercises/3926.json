@@ -1,0 +1,24 @@
+{
+  "id": "3926",
+  "name": "side lying leg circle",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors",
+    "adductors",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A slow side-lying leg circle that works the outer hip and mobilizes the hip joint.",
+  "instructions": [
+    "Lie on your side with your legs stacked.",
+    "Lift the top leg slightly.",
+    "Draw small circles in the air.",
+    "Do 10 circles, then reverse direction.",
+    "Keep your pelvis still.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

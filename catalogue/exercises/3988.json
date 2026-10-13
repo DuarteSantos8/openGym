@@ -1,0 +1,22 @@
+{
+  "id": "3988",
+  "name": "barbell incline reverse grip spider curl with chest support",
+  "bodyPart": "lower arms",
+  "equipment": "barbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "brachialis",
+    "biceps",
+    "wrist extensors"
+  ],
+  "category": "strength",
+  "description": "A reverse grip curl done chest down on an incline bench. It targets the forearms and brachialis.",
+  "instructions": [
+    "Lie chest down on an incline bench holding a barbell overhand.",
+    "Keep your upper arms vertical.",
+    "Curl the bar up.",
+    "Squeeze at the top.",
+    "Lower fully with control."
+  ],
+  "textSource": "opengym"
+}

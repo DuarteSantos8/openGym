@@ -1,0 +1,25 @@
+{
+  "id": "4511",
+  "name": "bridge pose setu bandhasana",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core",
+    "chest"
+  ],
+  "category": "yoga",
+  "description": "A yoga backbend that strengthens the glutes and opens the chest and hip flexors.",
+  "instructions": [
+    "Lie on your back with your knees bent and feet hip width apart.",
+    "Place your arms alongside your body, palms down.",
+    "Press through your feet and lift your hips.",
+    "Roll your shoulders under and lengthen your chest.",
+    "Hold for 20-30 seconds while breathing steadily.",
+    "Lower down slowly."
+  ],
+  "femaleVariant": "0941",
+  "textSource": "opengym"
+}

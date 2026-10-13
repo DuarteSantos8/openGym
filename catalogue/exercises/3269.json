@@ -1,0 +1,22 @@
+{
+  "id": "3269",
+  "name": "run and hop",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "calves",
+    "glutes"
+  ],
+  "category": "cardio",
+  "description": "Run in place and add a hop to lift the heart rate and wake up the legs.",
+  "instructions": [
+    "Stand tall with feet under your hips.",
+    "Run on the spot at a steady pace, pumping your arms.",
+    "Every few steps, hop off one foot and land softly.",
+    "Stay light on the balls of your feet.",
+    "Keep going for 30-60 seconds at a pace you can hold."
+  ],
+  "textSource": "opengym"
+}

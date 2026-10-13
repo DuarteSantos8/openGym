@@ -1,0 +1,23 @@
+{
+  "id": "0685",
+  "name": "run",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "A running style move that gets your heart rate up. Keep a steady pace for as long as you like.",
+  "instructions": [
+    "Start by standing upright with your feet hip-width apart.",
+    "Engage your core and keep your upper body relaxed.",
+    "Begin jogging in place, lifting your knees up towards your chest and landing softly on the balls of your feet.",
+    "Maintain a steady pace and continue jogging for the desired duration or distance.",
+    "Remember to breathe deeply and maintain good posture throughout the exercise."
+  ],
+  "femaleVariant": "2196",
+  "textSource": "exercisedb"
+}

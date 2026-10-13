@@ -1,0 +1,22 @@
+{
+  "id": "5132",
+  "name": "seated pulse back squeeze",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "calisthenics",
+  "description": "Small pulses while squeezing your shoulder blades together seated. It strengthens the upper back.",
+  "instructions": [
+    "Sit tall with elbows bent.",
+    "Draw your shoulder blades together.",
+    "Pulse your elbows back in small movements.",
+    "Keep your shoulders down.",
+    "Maintain the squeeze throughout.",
+    "Continue for 20-30 seconds."
+  ],
+  "textSource": "opengym"
+}

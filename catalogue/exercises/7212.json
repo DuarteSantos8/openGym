@@ -1,0 +1,23 @@
+{
+  "id": "7212",
+  "name": "resistance band air bike v. 2",
+  "bodyPart": "waist",
+  "equipment": "resistance band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "An air bike crunch with band tension for extra work on the abs and hips.",
+  "instructions": [
+    "Lie on your back, hands behind your head, band around your feet.",
+    "Lift your shoulders and bring one knee toward your chest.",
+    "Rotate your opposite elbow toward that knee.",
+    "Extend the other leg against the band.",
+    "Alternate in a pedalling motion.",
+    "Keep a steady rhythm."
+  ],
+  "textSource": "opengym"
+}

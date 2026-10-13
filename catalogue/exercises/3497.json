@@ -1,0 +1,24 @@
+{
+  "id": "3497",
+  "name": "sliding floor pulldown on towel",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "triceps",
+    "core",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "Slide your hands along the floor on a towel, from overhead down toward your sides. It teaches a pulldown pattern for the lats.",
+  "instructions": [
+    "Kneel or lie face down with your hands on towels on a smooth floor.",
+    "Start with your arms extended overhead.",
+    "Press down and pull your arms back toward your hips, sliding the towels.",
+    "Squeeze your lats at the end.",
+    "Slide the hands back overhead with control.",
+    "Keep your core braced."
+  ],
+  "textSource": "opengym"
+}

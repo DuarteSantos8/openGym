@@ -1,0 +1,24 @@
+{
+  "id": "4283",
+  "name": "feet and ankles rotation stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "shins"
+  ],
+  "category": "mobility",
+  "description": "Rotating the foot in slow circles to mobilise the ankle. It warms up the joint and relieves stiffness.",
+  "instructions": [
+    "Sit with one leg extended or crossed over your knee.",
+    "Hold your lower leg steady.",
+    "Draw slow circles with your foot.",
+    "Do 10 circles in one direction.",
+    "Switch to the other direction.",
+    "Repeat on the other foot."
+  ],
+  "femaleVariant": "3246",
+  "textSource": "opengym"
+}

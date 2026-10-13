@@ -1,0 +1,24 @@
+{
+  "id": "8189",
+  "name": "wide chin up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms",
+    "rhomboids"
+  ],
+  "category": "calisthenics",
+  "description": "A chin-up with a wider underhand grip. It hits the lats and biceps.",
+  "instructions": [
+    "Hang from a bar with an underhand grip wider than shoulders.",
+    "Brace your core.",
+    "Pull until your chin is over the bar.",
+    "Squeeze your back at the top.",
+    "Lower slowly to a full hang."
+  ],
+  "femaleVariant": "4915",
+  "textSource": "opengym"
+}

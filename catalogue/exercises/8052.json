@@ -1,0 +1,23 @@
+{
+  "id": "8052",
+  "name": "kneeling thoracic rotation",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "obliques",
+    "upper back",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "A kneeling rotation that opens up the mid back. Good for loosening your upper spine before training or after sitting.",
+  "instructions": [
+    "Kneel on all fours with your hands under your shoulders.",
+    "Place one hand behind your head.",
+    "Rotate your upper body and point that elbow toward the ceiling.",
+    "Follow your elbow with your eyes and keep your hips square.",
+    "Return and touch the elbow toward the opposite arm.",
+    "Do your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

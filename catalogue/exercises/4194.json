@@ -1,0 +1,22 @@
+{
+  "id": "4194",
+  "name": "cable half kneeling external rotation",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A rotator cuff exercise in a half kneeling stance.",
+  "instructions": [
+    "Kneel on one knee beside a cable at elbow height.",
+    "Hold the handle with elbow at your side.",
+    "Rotate your forearm outward.",
+    "Pause.",
+    "Return slowly.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

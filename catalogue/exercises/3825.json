@@ -1,0 +1,22 @@
+{
+  "id": "3825",
+  "name": "mid air lateral raises with switching palms",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "trapezius",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A lateral raise where you turn your palms over at the top. It works the side of your shoulders from two angles.",
+  "instructions": [
+    "Stand with a light dumbbell in each hand at your sides.",
+    "Raise your arms out to shoulder height with palms down.",
+    "Turn your palms up in mid air, then back down.",
+    "Lower the weights slowly.",
+    "Keep your elbows slightly bent."
+  ],
+  "textSource": "opengym"
+}

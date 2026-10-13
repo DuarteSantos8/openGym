@@ -1,0 +1,21 @@
+{
+  "id": "3318",
+  "name": "swing 360",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "A rotating movement that swings the arms and torso in a full circle. It gets the heart rate up and loosens the trunk.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and knees slightly bent.",
+    "Hold your arms straight out in front of you, parallel to the ground.",
+    "Engage your core and swing your arms in a circular motion, rotating your torso as you do so.",
+    "Continue the circular motion, swinging your arms and rotating your torso for the desired number of repetitions.",
+    "Remember to breathe throughout the exercise."
+  ],
+  "textSource": "exercisedb"
+}

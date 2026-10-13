@@ -1,0 +1,22 @@
+{
+  "id": "6150",
+  "name": "dumbbell seated double concentration curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A concentration curl done with both arms at once, elbows braced on your thighs. It isolates the biceps.",
+  "instructions": [
+    "Sit on a bench with your feet wide.",
+    "Hold a dumbbell in each hand and lean forward.",
+    "Rest the backs of your upper arms on your inner thighs.",
+    "Curl both dumbbells up toward your shoulders.",
+    "Squeeze at the top.",
+    "Lower slowly to a full stretch."
+  ],
+  "textSource": "opengym"
+}

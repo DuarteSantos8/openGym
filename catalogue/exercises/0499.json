@@ -1,0 +1,34 @@
+{
+  "id": "0499",
+  "name": "inverted row",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "Lying beneath a bar with a straight body, you pull your chest to the bar. It builds the upper back and biceps.",
+  "instructions": [
+    "Set up a bar at waist height or use a suspension trainer.",
+    "Stand facing the bar or suspension trainer, with your feet shoulder-width apart.",
+    "Grab the bar or handles with an overhand grip, slightly wider than shoulder-width apart.",
+    "Lean back, keeping your body straight and your heels on the ground.",
+    "Pull your chest towards the bar or handles, squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly lower yourself back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ]
+  },
+  "femaleVariant": "2299",
+  "textSource": "exercisedb"
+}

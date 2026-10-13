@@ -1,0 +1,23 @@
+{
+  "id": "3710",
+  "name": "dumbbell split squat front foot elevated with bosu ball",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A split squat with the front foot on a bosu ball for a deeper range and extra balance work.",
+  "instructions": [
+    "Hold a dumbbell in each hand and place your front foot on a bosu ball, back foot behind you.",
+    "Keep your torso upright.",
+    "Lower your back knee toward the floor.",
+    "Press through your front foot to stand.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

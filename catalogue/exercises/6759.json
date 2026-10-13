@@ -1,0 +1,23 @@
+{
+  "id": "6759",
+  "name": "seated tibialis anterior press",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "A seated press with the front of the foot to train the shin muscle. It helps balance the lower leg.",
+  "instructions": [
+    "Sit tall with your heels on the floor.",
+    "Lift the toes of one foot as high as you can.",
+    "Press them up against light resistance such as the other foot.",
+    "Pause at the top.",
+    "Lower slowly.",
+    "Finish the reps, then switch feet."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "1241",
+  "name": "bird dog",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "shoulders",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "From hands and knees, you extend opposite arm and leg. It builds core control and back stability.",
+  "instructions": [
+    "Start on all fours with hands under your shoulders and knees under your hips.",
+    "Extend your right arm forward and left leg back.",
+    "Keep your hips level and your back flat.",
+    "Hold for a moment, then return.",
+    "Repeat on the other side and alternate."
+  ],
+  "femaleVariant": "0135",
+  "textSource": "opengym"
+}

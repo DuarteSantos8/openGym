@@ -1,0 +1,24 @@
+{
+  "id": "0244",
+  "name": "cable twisting pull",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A cable pull that rotates the torso as you pull the handle toward the body. It trains the lats and the core together.",
+  "instructions": [
+    "Attach a cable handle to a low pulley and stand facing the machine.",
+    "Grasp the handle with your left hand and step away from the machine, extending your arm fully.",
+    "Position your feet shoulder-width apart, with your knees slightly bent.",
+    "Keep your back straight and your core engaged throughout the exercise.",
+    "Pull the handle towards your body, rotating your torso to the right as you do so.",
+    "Squeeze your back muscles at the end of the movement.",
+    "Slowly return to the starting position, keeping tension on the cable.",
+    "Repeat for the desired number of repetitions, then switch sides and perform with your right hand."
+  ],
+  "textSource": "exercisedb"
+}

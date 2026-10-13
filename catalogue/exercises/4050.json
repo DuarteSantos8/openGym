@@ -1,0 +1,23 @@
+{
+  "id": "4050",
+  "name": "resistance band hip thrusts",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "Hip thrust with a band across the hips for resistance. It is a direct glute builder.",
+  "instructions": [
+    "Sit with your upper back against a bench and the band across your hips, anchored to each side.",
+    "Plant your feet flat, knees bent.",
+    "Drive your hips up until your torso is level.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

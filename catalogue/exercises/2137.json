@@ -1,0 +1,22 @@
+{
+  "id": "2137",
+  "name": "dumbbell arnold press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A seated dumbbell press that rotates the palms from facing you to facing forward as you lift. Hits all three heads of the shoulder.",
+  "instructions": [
+    "Sit on a bench with back support and hold a dumbbell in each hand at shoulder level, palms facing your body and elbows bent.",
+    "Press the dumbbells upward until your arms are fully extended and your palms are facing forward.",
+    "Rotate your wrists as you lift, so that your palms are facing forward at the top of the movement.",
+    "Pause for a moment at the top, then slowly lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2386",
+  "textSource": "exercisedb"
+}

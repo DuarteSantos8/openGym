@@ -1,0 +1,23 @@
+{
+  "id": "3377",
+  "name": "battling ropes russian twist",
+  "bodyPart": "waist",
+  "equipment": "rope",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core",
+    "hip flexors"
+  ],
+  "category": "cardio",
+  "description": "A seated twist where you swing the ropes side to side. It trains the obliques and conditioning.",
+  "instructions": [
+    "Sit on the floor with knees bent and lean back slightly.",
+    "Hold the rope ends in front of you.",
+    "Twist your torso to one side and swing the ropes.",
+    "Twist to the other side.",
+    "Keep your chest lifted and continue for the set time."
+  ],
+  "textSource": "opengym"
+}

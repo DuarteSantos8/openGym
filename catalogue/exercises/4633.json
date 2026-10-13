@@ -1,0 +1,23 @@
+{
+  "id": "4633",
+  "name": "world's greatest stretch",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "hamstrings",
+    "upper back",
+    "obliques"
+  ],
+  "category": "mobility",
+  "description": "A multi-part warm-up combining a lunge, a rotation and a hamstring stretch.",
+  "instructions": [
+    "Step into a long lunge with both hands on the floor inside your front foot.",
+    "Drop your hips low.",
+    "Rotate your chest toward the front leg and raise that arm.",
+    "Return the hand to the floor and straighten the front leg.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "3335",
+  "name": "dumbbell glute bridge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A loaded hip bridge that targets your glutes. Resting a dumbbell on your hips adds resistance.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat on the floor.",
+    "Hold a dumbbell across your hips.",
+    "Drive through your heels and lift your hips toward the ceiling.",
+    "Squeeze your glutes hard at the top.",
+    "Lower your hips slowly and repeat."
+  ],
+  "femaleVariant": "3427",
+  "textSource": "opengym"
+}

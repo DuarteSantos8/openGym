@@ -1,0 +1,21 @@
+{
+  "id": "6693",
+  "name": "cable kneeling side crunch",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A kneeling crunch to the side against a high cable. It targets the obliques with steady resistance.",
+  "instructions": [
+    "Attach a rope to a high pulley and kneel beside the stack.",
+    "Hold the rope at the side of your head.",
+    "Crunch sideways, bringing your elbow toward your hip.",
+    "Pause and squeeze your side.",
+    "Return slowly, then switch sides after your reps."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4826",
+  "name": "alternate leg raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on your back, you raise one leg at a time. It works the lower abs and hip flexors.",
+  "instructions": [
+    "Lie flat on your back with your legs straight and arms at your sides.",
+    "Press your lower back into the floor.",
+    "Raise one leg up toward the ceiling.",
+    "Lower it slowly while lifting the other leg.",
+    "Keep alternating without arching your back."
+  ],
+  "femaleVariant": "1613",
+  "textSource": "opengym"
+}

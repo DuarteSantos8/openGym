@@ -1,0 +1,20 @@
+{
+  "id": "11796",
+  "name": "external rotation shoulders mobilization",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff"
+  ],
+  "category": "mobility",
+  "description": "A gentle shoulder mobility drill for external rotation.",
+  "instructions": [
+    "Stand tall with your elbow bent to 90 degrees at your side.",
+    "Rotate your forearm outward away from your belly.",
+    "Keep your elbow tucked in.",
+    "Return slowly and repeat 8-12 times.",
+    "Switch arms."
+  ],
+  "textSource": "opengym"
+}

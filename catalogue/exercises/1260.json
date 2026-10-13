@@ -1,0 +1,22 @@
+{
+  "id": "1260",
+  "name": "cable decline one arm press",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A one-arm cable press from a decline angle. It trains the chest and triceps.",
+  "instructions": [
+    "Adjust the cable machine to a decline position.",
+    "Stand facing away from the machine and grab the handle with one hand.",
+    "Position yourself with your back against the decline bench and your arm extended straight in front of you.",
+    "Bend your elbow and lower the handle towards your chest while keeping your upper arm stationary.",
+    "Pause for a moment at the bottom, then push the handle back up to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

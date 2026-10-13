@@ -1,0 +1,23 @@
+{
+  "id": "1041",
+  "name": "lever lying chest press (plate loaded)",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A plate-loaded press from a lying position, working the chest with a guided path.",
+  "instructions": [
+    "Lie back on the machine bench and grip the handles at chest level.",
+    "Plant your feet and keep your shoulders pulled back.",
+    "Press the handles up until your arms are almost straight.",
+    "Lower slowly until you feel a stretch in the chest.",
+    "Keep your back on the pad throughout."
+  ],
+  "femaleVariant": "3610",
+  "textSource": "opengym"
+}

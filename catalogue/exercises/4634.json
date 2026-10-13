@@ -1,0 +1,23 @@
+{
+  "id": "4634",
+  "name": "high knee to butt kick",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "hip flexors",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "A running-in-place drill that alternates a high knee with a heel kick to raise your heart rate.",
+  "instructions": [
+    "Stand tall with feet hip-width apart.",
+    "Drive one knee up to hip height.",
+    "Lower it and kick the same heel toward your glutes.",
+    "Alternate sides at a steady, light pace.",
+    "Keep your core braced and stay on the balls of your feet."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "6033",
+  "name": "ab tuck",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A seated or lying tuck that draws knees and chest together to train the abs.",
+  "instructions": [
+    "Sit on the floor and lean back slightly.",
+    "Extend your legs in front of you.",
+    "Pull your knees to your chest as you bring your torso forward.",
+    "Extend again under control.",
+    "Keep your core braced."
+  ],
+  "textSource": "opengym"
+}

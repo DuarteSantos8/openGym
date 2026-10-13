@@ -1,0 +1,23 @@
+{
+  "id": "0243",
+  "name": "cable twist",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A standing cable twist with the handle held at the chest. You rotate the torso side to side to work the abs and obliques.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, facing the cable machine.",
+    "Hold the cable handle with both hands in front of your chest, keeping your arms slightly bent.",
+    "Engage your core and twist your torso to the right, pulling the cable across your body.",
+    "Pause for a moment at the end of the movement, feeling the contraction in your abs and obliques.",
+    "Slowly return to the starting position, resisting the cable's pull.",
+    "Repeat the movement to the left side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "femaleVariant": "2451",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5060",
+  "name": "prone cervical extension",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "trapezius",
+    "upper back",
+    "sternocleidomastoid"
+  ],
+  "category": "mobility",
+  "description": "Lying face down, you gently lift your head. It trains the muscles at the back of the neck.",
+  "instructions": [
+    "Lie face down with your forehead on the floor or a towel.",
+    "Keep your arms by your sides.",
+    "Slowly lift your head a few inches, keeping your chin tucked.",
+    "Pause briefly.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

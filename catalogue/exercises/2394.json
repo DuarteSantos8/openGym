@@ -1,0 +1,23 @@
+{
+  "id": "2394",
+  "name": "floor hyperextension",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "lower back",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A floor-based back extension that strengthens the glutes and lower back.",
+  "instructions": [
+    "Lie face down with your arms extended or by your head.",
+    "Squeeze your glutes and lift your chest and legs slightly off the floor.",
+    "Keep your neck neutral and look at the floor.",
+    "Pause at the top for a second.",
+    "Lower slowly to the floor.",
+    "Repeat without forcing a big arch."
+  ],
+  "textSource": "opengym"
+}

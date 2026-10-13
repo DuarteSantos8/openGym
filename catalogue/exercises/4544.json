@@ -1,0 +1,23 @@
+{
+  "id": "4544",
+  "name": "band incline bench press",
+  "bodyPart": "chest",
+  "equipment": "band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "An incline press using a band for resistance, targeting the upper chest and front shoulders.",
+  "instructions": [
+    "Set an incline bench and anchor a band behind it or under the bench.",
+    "Sit back with the band handles at chest level.",
+    "Brace your core and keep your shoulder blades pulled together.",
+    "Press the handles up and slightly forward until your arms are straight.",
+    "Lower slowly back to the start, feeling the band pull.",
+    "Keep your wrists straight throughout."
+  ],
+  "textSource": "opengym"
+}

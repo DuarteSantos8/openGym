@@ -1,0 +1,24 @@
+{
+  "id": "3779",
+  "name": "band skier",
+  "bodyPart": "full body",
+  "equipment": "band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "core",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A skiing motion with the band: swing both arms down and back while hinging at the hips. It works your lats, hips and core.",
+  "instructions": [
+    "Anchor the band overhead and hold a handle in each hand.",
+    "Stand with soft knees and arms extended in front of you.",
+    "Pull the handles down and back past your hips as you hinge forward.",
+    "Return the arms up and stand tall in one smooth motion.",
+    "Keep your back flat and move with control."
+  ],
+  "textSource": "opengym"
+}

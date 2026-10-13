@@ -1,0 +1,22 @@
+{
+  "id": "4765",
+  "name": "glute ham single leg hyperextension",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-leg hyperextension on the glute ham bench. It strengthens the glutes and hamstrings and the lower back.",
+  "instructions": [
+    "Set up on the bench with one foot planted and the other lifted behind you.",
+    "Cross your arms over your chest.",
+    "Lower your torso with a flat back.",
+    "Raise to a straight line, squeezing your glute.",
+    "Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

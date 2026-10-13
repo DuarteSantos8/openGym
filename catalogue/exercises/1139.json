@@ -1,0 +1,22 @@
+{
+  "id": "1139",
+  "name": "suspender split fly",
+  "bodyPart": "shoulders",
+  "equipment": "suspension trainer",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A fly on the straps with a split stance, opening the arms to work the shoulders and chest.",
+  "instructions": [
+    "Hold the handles and step into a split stance leaning forward.",
+    "Keep arms slightly bent and hands in front of you.",
+    "Open your arms out wide to the sides.",
+    "Squeeze at the end of the stretch without shrugging.",
+    "Bring the arms back together under control.",
+    "Switch the lead leg halfway through."
+  ],
+  "textSource": "opengym"
+}

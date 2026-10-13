@@ -1,0 +1,22 @@
+{
+  "id": "4339",
+  "name": "barbell pullover v. 2",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "chest",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A pullover with a barbell lying on a bench. It stretches and strengthens the lats and chest.",
+  "instructions": [
+    "Lie on a bench holding a barbell over your chest with a close grip.",
+    "Keep a slight bend in your elbows.",
+    "Lower the bar in an arc behind your head until you feel a deep stretch.",
+    "Pull it back over your chest using your lats.",
+    "Keep your core braced and your ribs down."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "3682",
+  "name": "dumbbell incline alternate bicep curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Curl dumbbells one at a time while lying back on an incline bench to stretch and work the biceps.",
+  "instructions": [
+    "Sit back on an incline bench with dumbbells hanging down.",
+    "Curl one dumbbell up with the palm facing up.",
+    "Lower it slowly.",
+    "Curl the other arm.",
+    "Keep your upper arms still."
+  ],
+  "textSource": "opengym"
+}

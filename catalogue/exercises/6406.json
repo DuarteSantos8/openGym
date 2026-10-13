@@ -1,0 +1,21 @@
+{
+  "id": "6406",
+  "name": "ez barbell preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Curling an EZ bar over a preacher pad, which keeps your upper arms still so your biceps do the work.",
+  "instructions": [
+    "Sit at a preacher bench with your upper arms resting on the pad.",
+    "Hold an EZ bar with an underhand grip.",
+    "Curl the bar up toward your shoulders.",
+    "Squeeze your biceps at the top.",
+    "Lower slowly until your arms are almost straight and repeat."
+  ],
+  "textSource": "opengym"
+}

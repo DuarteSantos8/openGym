@@ -1,0 +1,22 @@
+{
+  "id": "4672",
+  "name": "elbows back stretch",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "stretching",
+  "description": "Pulling your elbows behind you to open up the chest and front of the shoulders.",
+  "instructions": [
+    "Stand tall with your hands behind your head and elbows pointing out.",
+    "Draw your elbows back and squeeze your shoulder blades together.",
+    "Lift your chest slightly.",
+    "Hold for 20-30 seconds.",
+    "Relax and repeat."
+  ],
+  "femaleVariant": "0444",
+  "textSource": "opengym"
+}

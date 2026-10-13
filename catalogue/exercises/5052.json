@@ -1,0 +1,22 @@
+{
+  "id": "5052",
+  "name": "single leg calf raise off step",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "calisthenics",
+  "description": "One-legged calf raise from the edge of a step. It builds calf strength with a deep stretch.",
+  "instructions": [
+    "Stand on one foot on the edge of a step, holding a rail for balance.",
+    "Let your heel lower below the step.",
+    "Rise as high as possible on your toes.",
+    "Pause briefly.",
+    "Lower slowly, then switch legs."
+  ],
+  "textSource": "opengym"
+}

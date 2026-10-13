@@ -1,0 +1,22 @@
+{
+  "id": "5985",
+  "name": "balloon drill",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A playful balance and leg drill where you keep a balloon in the air using quick footwork and small jumps.",
+  "instructions": [
+    "Toss a balloon into the air in an open space.",
+    "Stay on the balls of your feet with bent knees.",
+    "Move under the balloon and tap it up.",
+    "Use small hops to reach it.",
+    "Keep it up for 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

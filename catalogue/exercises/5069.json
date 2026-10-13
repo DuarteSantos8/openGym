@@ -1,0 +1,22 @@
+{
+  "id": "5069",
+  "name": "kettlebell lunge with twist",
+  "bodyPart": "waist",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "Lunge forward while holding a kettlebell at your chest and rotate over the front leg. Trains legs and trunk rotation together.",
+  "instructions": [
+    "Stand holding a kettlebell at chest height with both hands.",
+    "Step forward into a lunge, front knee over your ankle.",
+    "Rotate your torso toward the front leg, keeping hips square.",
+    "Turn back to center and push off the front foot to return.",
+    "Alternate legs for each rep."
+  ],
+  "textSource": "opengym"
+}

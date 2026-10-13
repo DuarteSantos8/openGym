@@ -1,0 +1,23 @@
+{
+  "id": "1120",
+  "name": "suspender middle row",
+  "bodyPart": "shoulders",
+  "equipment": "suspension trainer",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A strap row to mid-chest height that works the upper back and arms using your body weight.",
+  "instructions": [
+    "Grip the handles and lean back with arms straight.",
+    "Keep your body in a straight line.",
+    "Pull your chest toward your hands, elbows close by.",
+    "Squeeze the shoulder blades together.",
+    "Lower slowly to straight arms.",
+    "Step forward to ease the load."
+  ],
+  "textSource": "opengym"
+}

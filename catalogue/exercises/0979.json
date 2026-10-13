@@ -1,0 +1,25 @@
+{
+  "id": "0979",
+  "name": "band horizontal pallof press",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes"
+  ],
+  "category": "isometric",
+  "description": "A Pallof press with a band anchored to the side, pressing out and holding. It trains the core to resist rotation.",
+  "instructions": [
+    "Attach the band to a sturdy anchor point at waist height.",
+    "Stand perpendicular to the anchor point with your feet shoulder-width apart.",
+    "Grasp the band handle with both hands and step away from the anchor point to create tension in the band.",
+    "Bring your hands to your chest, keeping your elbows bent and close to your body.",
+    "Engage your core and maintain a stable stance.",
+    "Extend your arms straight out in front of you, pushing the band away from your body.",
+    "Hold the extended position for a few seconds, focusing on maintaining tension in your core.",
+    "Slowly bring your hands back to your chest, resisting the pull of the band.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

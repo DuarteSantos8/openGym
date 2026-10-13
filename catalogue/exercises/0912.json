@@ -1,0 +1,21 @@
+{
+  "id": "0912",
+  "name": "band lying leg raise",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lying leg raise against a band. It works the hip muscles.",
+  "instructions": [
+    "Lie on your back with the band around your legs.",
+    "Keep your legs straight.",
+    "Raise one leg against the band.",
+    "Lower slowly.",
+    "Alternate sides."
+  ],
+  "textSource": "opengym"
+}

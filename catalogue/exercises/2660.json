@@ -1,0 +1,21 @@
+{
+  "id": "2660",
+  "name": "lever preacher curl (plate loaded) v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "leverage machine",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A plate-loaded preacher machine curl that isolates the biceps with your upper arms supported.",
+  "instructions": [
+    "Adjust the seat so your upper arms rest flat on the pad.",
+    "Grip the handles with palms up.",
+    "Curl the handles toward your shoulders.",
+    "Squeeze at the top, then lower slowly.",
+    "Do not lift your elbows off the pad or let the weight drop."
+  ],
+  "textSource": "opengym"
+}

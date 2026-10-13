@@ -1,0 +1,25 @@
+{
+  "id": "3662",
+  "name": "pike-to-cobra push-up",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "triceps"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up flow that moves from pike position down and through to a cobra. It trains the shoulders, chest and spine mobility.",
+  "instructions": [
+    "Start in a push-up position with your hands slightly wider than shoulder-width apart and your feet together.",
+    "Engage your core and lift your hips up towards the ceiling, forming an inverted V shape with your body.",
+    "Lower your upper body towards the ground by bending your elbows, keeping them close to your body.",
+    "As you lower down, shift your weight forward and transition into a cobra pose by straightening your arms and lifting your chest up.",
+    "Reverse the movement by bending your elbows and lowering your chest back down towards the ground.",
+    "Push through your hands to return to the inverted V position.",
+    "Continue the movement by lowering your hips back down towards the ground, returning to the starting push-up position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -13,7 +13,27 @@ const backend = process.env.API_TARGET || 'http://127.0.0.1:3000'
 // presenting the expected Origin here covers the ones that don't send it. Match your .env if you
 // changed ORIGIN: API_ORIGIN=https://gym.example.com npm run dev
 const apiOrigin = process.env.API_ORIGIN || 'http://localhost:8080'
-const media = process.env.MEDIA_TARGET || 'http://127.0.0.1:8888'
+// Exercise media: served straight from catalogue/media in dev (see catalogueMedia below), or
+// proxied to a server of your choice with MEDIA_TARGET.
+const media = process.env.MEDIA_TARGET
+const catalogueMedia = {
+  name: 'opengym-catalogue-media',
+  configureServer(server) {
+    if (media) return
+    const dirs = { '/exercise-media/still/': ['still', '.webp'], '/exercise-media/clip/': ['clip', '.mp4'] }
+    const root = resolve(fileURLToPath(new URL('.', import.meta.url)), '../catalogue/media')
+    server.middlewares.use((req, res, next) => {
+      const prefix = Object.keys(dirs).find(p => req.url.startsWith(p))
+      if (!prefix) return next()
+      const [dir, ext] = dirs[prefix]
+      const name = decodeURIComponent(req.url.slice(prefix.length).split('?')[0])
+      const file = join(root, dir, name)
+      if (!/^\d{4,5}\.(webp|mp4)$/.test(name) || !name.endsWith(ext) || !existsSync(file)) { res.statusCode = 404; return res.end() }
+      res.setHeader('Content-Type', ext === '.mp4' ? 'video/mp4' : 'image/webp')
+      res.end(readFileSync(file))
+    })
+  }
+}
 
 // Optional web analytics (Umami). Injected only when BOTH vars are set at build time,
 // so a plain `npm run build` — and every self-hosted install — stays telemetry-free.
@@ -82,7 +102,7 @@ const appVersion = process.env.APP_BUILD ? `${pkgVersion}+${process.env.APP_BUIL
 
 export default defineConfig({
   define: { __APP_VERSION__: JSON.stringify(appVersion) },
-  plugins: [react(), umami, flavor, swStamp],
+  plugins: [react(), umami, flavor, swStamp, catalogueMedia],
   base: './',
   server: {
     // The Coach's core (payload, validator, prompts, HTTP adapters) lives in ../api/coach/core
@@ -91,8 +111,9 @@ export default defineConfig({
     fs: { allow: ['..'] },
     proxy: {
       '/api': { target: backend, changeOrigin: true, headers: { Origin: apiOrigin } },
-      '/img': { target: media, changeOrigin: true },
-      '/gif': { target: media, changeOrigin: true }
+      ...(media ? {
+        '/exercise-media': { target: media, changeOrigin: true }
+      } : {})
     }
   },
   build: { chunkSizeWarningLimit: 1500 }

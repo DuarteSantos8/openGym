@@ -1,0 +1,22 @@
+{
+  "id": "4124",
+  "name": "dead bug with medicine ball",
+  "bodyPart": "waist",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A dead bug holding a medicine ball overhead to add trunk control demand.",
+  "instructions": [
+    "Lie on your back holding a medicine ball above your chest, knees bent over your hips.",
+    "Press your lower back into the floor.",
+    "Lower the ball overhead while extending the opposite leg.",
+    "Return to the start.",
+    "Alternate sides."
+  ],
+  "textSource": "opengym"
+}

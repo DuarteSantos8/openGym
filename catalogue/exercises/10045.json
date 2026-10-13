@@ -1,0 +1,24 @@
+{
+  "id": "10045",
+  "name": "snow angel face to floor",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "glutes",
+    "upper back",
+    "trapezius"
+  ],
+  "category": "calisthenics",
+  "description": "Lying face down, you sweep your arms and legs like a snow angel. It works the muscles along your back.",
+  "instructions": [
+    "Lie face down with arms by your sides and legs together.",
+    "Lift your chest and arms slightly off the floor.",
+    "Sweep your arms out and overhead while opening your legs.",
+    "Bring them back to the start in the same arc.",
+    "Repeat in a smooth rhythm.",
+    "Keep your neck long and look at the floor."
+  ],
+  "textSource": "opengym"
+}

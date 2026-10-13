@@ -1,0 +1,22 @@
+{
+  "id": "0982",
+  "name": "band lying hip external rotation",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "core"
+  ],
+  "category": "strength",
+  "description": "A side-lying clam-style move with a band around the knees that fires up the outer hip and glute muscles.",
+  "instructions": [
+    "Lie on your side with knees bent and a loop band around your thighs just above the knees.",
+    "Keep your feet together and your hips stacked.",
+    "Rotate the top knee upward, opening like a clamshell.",
+    "Pause at the top.",
+    "Lower slowly and repeat, then switch sides.",
+    "Keep your pelvis still so the movement comes from the hip."
+  ],
+  "femaleVariant": "3022",
+  "textSource": "opengym"
+}

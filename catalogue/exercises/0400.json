@@ -1,0 +1,22 @@
+{
+  "id": "0400",
+  "name": "dumbbell seated one leg calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "dumbbell",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "Seated with a dumbbell on one knee, you lift your heel and lower it slowly. It works the calf, especially the deeper soleus.",
+  "instructions": [
+    "Sit on a bench or chair with your feet flat on the ground and a dumbbell resting on your right thigh.",
+    "Extend your left leg straight out in front of you, keeping your foot flexed.",
+    "Place the ball of your right foot on an elevated surface, such as a step or weight plate.",
+    "Using your calf muscles, raise your right heel as high as possible.",
+    "Pause for a moment at the top, then slowly lower your heel back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch legs."
+  ],
+  "textSource": "exercisedb"
+}

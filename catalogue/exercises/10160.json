@@ -1,0 +1,22 @@
+{
+  "id": "10160",
+  "name": "box jump drop 2 foot land",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A drop from a box with a soft two foot landing that trains landing control and leg power.",
+  "instructions": [
+    "Stand on a sturdy box with your toes near the edge.",
+    "Step off the box, do not jump.",
+    "Land on both feet at the same time with soft, bent knees.",
+    "Sink into a quarter squat to absorb the impact and hold the landing.",
+    "Step back up and repeat. Keep your knees in line with your toes."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4227",
+  "name": "cable lying front raise",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A front raise lying on your back using a low cable. It isolates the front delts without any body swing.",
+  "instructions": [
+    "Lie on your back with your head toward a low pulley.",
+    "Hold the handle with straight arms by your hips.",
+    "Raise your arms in an arc until they point straight up.",
+    "Pause at the top.",
+    "Lower slowly back toward your thighs.",
+    "Keep your ribs down and core braced."
+  ],
+  "textSource": "opengym"
+}

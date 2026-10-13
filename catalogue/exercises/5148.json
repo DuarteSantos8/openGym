@@ -1,0 +1,22 @@
+{
+  "id": "5148",
+  "name": "jumping single leg lunge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A lunge jump where you land on a single leg. It builds explosive leg power and balance.",
+  "instructions": [
+    "Stand in a lunge position.",
+    "Lower down, then jump explosively off your front leg.",
+    "Land softly on the same leg.",
+    "Control the next repetition, keeping your torso upright.",
+    "Switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

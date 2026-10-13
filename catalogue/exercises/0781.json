@@ -1,0 +1,22 @@
+{
+  "id": "0781",
+  "name": "split squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A staggered-stance squat where the back leg stays put. It works the quads and glutes one side at a time.",
+  "instructions": [
+    "Stand in a long stride with one foot forward and the other back.",
+    "Keep your torso upright and core tight.",
+    "Bend both knees and lower until the back knee hovers just above the floor.",
+    "Press through the front heel to stand back up.",
+    "Finish all reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

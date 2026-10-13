@@ -1,0 +1,22 @@
+{
+  "id": "1169",
+  "name": "seated groin stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "groin",
+    "inner thighs"
+  ],
+  "category": "stretching",
+  "description": "A seated butterfly-style stretch for the inner thighs.",
+  "instructions": [
+    "Sit tall on the floor and bring the soles of your feet together.",
+    "Hold your feet or ankles and let your knees fall out.",
+    "Keep your back straight and chest lifted.",
+    "Lean forward slightly from the hips until you feel a stretch.",
+    "Hold for 20-30 seconds and breathe slowly."
+  ],
+  "femaleVariant": "1057",
+  "textSource": "opengym"
+}

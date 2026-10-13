@@ -1,0 +1,25 @@
+{
+  "id": "3226",
+  "name": "prone cobra palms under thighs",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "upper back",
+    "trapezius",
+    "hamstrings"
+  ],
+  "category": "isometric",
+  "description": "A face-down hold where you lift your chest with your palms tucked under your thighs. It builds lower back and upper back endurance.",
+  "instructions": [
+    "Lie face down with your palms under your thighs.",
+    "Keep your neck long and look at the floor.",
+    "Lift your chest off the ground using your back muscles.",
+    "Squeeze your glutes.",
+    "Hold for 15-30 seconds.",
+    "Lower slowly and rest."
+  ],
+  "femaleVariant": "3206",
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4606",
+  "name": "pvc overhead squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "core",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "A squat with a light pipe held overhead that checks your mobility and trains posture through the whole body.",
+  "instructions": [
+    "Hold a PVC pipe overhead with a wide grip and arms locked out.",
+    "Stand with feet slightly wider than shoulders.",
+    "Squat down by sitting between your hips, keeping the pipe over your mid-foot.",
+    "Go as deep as you can with your chest up and heels down.",
+    "Drive through your feet to stand back up."
+  ],
+  "textSource": "opengym"
+}

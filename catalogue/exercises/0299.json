@@ -1,0 +1,21 @@
+{
+  "id": "0299",
+  "name": "dumbbell cuban press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A Cuban press combining an upright row, a rotation and a press. It trains the shoulders and the rotator cuff.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand at shoulder height with your palms facing down.",
+    "Keeping your core engaged and your elbows slightly bent, press the dumbbells up and overhead until your arms are fully extended.",
+    "Rotate your wrists so that your palms are facing forward.",
+    "Slowly lower the dumbbells back to the starting position, rotating your wrists back to the starting position as you do so.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

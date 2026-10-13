@@ -1,0 +1,22 @@
+{
+  "id": "0384",
+  "name": "dumbbell reverse preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A preacher curl with an overhand grip. It strengthens the biceps, the arm flexor beneath them and the forearms.",
+  "instructions": [
+    "Sit on a preacher bench with your upper arms resting on the pad and your chest against the support.",
+    "Hold a dumbbell in each hand with an underhand grip, palms facing up.",
+    "Keeping your upper arms stationary, exhale and curl the dumbbells as you contract your biceps.",
+    "Continue to curl the dumbbells until your biceps are fully contracted and the dumbbells are at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale and slowly lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

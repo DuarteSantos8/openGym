@@ -1,0 +1,24 @@
+{
+  "id": "3327",
+  "name": "full planche push-up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up from the planche position with the feet off the ground. It is an elite bodyweight move for the chest, shoulders and triceps.",
+  "instructions": [
+    "Start in a push-up position with your hands placed slightly wider than shoulder-width apart.",
+    "Engage your core and lower your body down towards the ground, keeping your elbows close to your sides.",
+    "As you lower yourself, lean your body forward and lift your feet off the ground, balancing on your hands.",
+    "Continue to lower your body until your chest is just above the ground.",
+    "Push through your hands and extend your arms to lift your body back up to the starting position.",
+    "Maintain a straight line from your head to your heels throughout the movement.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

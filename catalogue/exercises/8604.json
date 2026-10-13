@@ -1,0 +1,21 @@
+{
+  "id": "8604",
+  "name": "lever seated leg curl (plate loaded)",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A plate-loaded seated curl that isolates the hamstrings.",
+  "instructions": [
+    "Sit in the machine and adjust the pad above your ankles.",
+    "Keep your back against the support.",
+    "Curl your heels down and back as far as you can.",
+    "Squeeze your hamstrings briefly.",
+    "Return slowly without letting the weight crash."
+  ],
+  "textSource": "opengym"
+}

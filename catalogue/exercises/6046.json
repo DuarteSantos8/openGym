@@ -1,0 +1,23 @@
+{
+  "id": "6046",
+  "name": "bottle weighted split squat",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A stationary lunge holding bottles at your sides. It builds single-leg strength in the quads and glutes.",
+  "instructions": [
+    "Hold a bottle in each hand and step into a long split stance.",
+    "Keep your torso upright.",
+    "Lower your back knee toward the floor.",
+    "Press through the front heel to rise.",
+    "Complete your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

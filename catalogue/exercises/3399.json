@@ -1,0 +1,24 @@
+{
+  "id": "3399",
+  "name": "barbell front rack lunge",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A lunge with the barbell in the front rack, emphasizing quads and an upright torso.",
+  "instructions": [
+    "Rest the barbell on your front shoulders with elbows high.",
+    "Step forward into a long stride.",
+    "Lower your back knee toward the floor.",
+    "Keep your chest tall and your core braced.",
+    "Push through the front foot to return.",
+    "Alternate legs or finish all reps on one side."
+  ],
+  "textSource": "opengym"
+}

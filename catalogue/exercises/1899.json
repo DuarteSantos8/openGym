@@ -1,0 +1,23 @@
+{
+  "id": "1899",
+  "name": "side lunge adductor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "inner thighs",
+    "groin",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "A wide side lunge that stretches the inner thigh of the straight leg.",
+  "instructions": [
+    "Stand with your feet wide apart.",
+    "Shift your weight to one side and bend that knee.",
+    "Keep the other leg straight with the foot flat.",
+    "Keep your chest tall.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

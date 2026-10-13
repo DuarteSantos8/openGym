@@ -1,0 +1,23 @@
+{
+  "id": "1493",
+  "name": "wheel pose yoga pose",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "shoulders",
+    "glutes",
+    "quadriceps",
+    "chest"
+  ],
+  "category": "yoga",
+  "description": "A deep yoga backbend with hands and feet on the floor and the body arched upward. It opens the chest and strengthens the back.",
+  "instructions": [
+    "Lie on your back with your knees bent and feet flat near your hips.",
+    "Place your palms beside your head with fingers pointing toward your shoulders.",
+    "Press through your hands and feet to lift your hips and then your head.",
+    "Straighten your arms as far as comfortable and keep your thighs parallel.",
+    "Hold for 5-15 seconds, then lower slowly with your chin tucked."
+  ],
+  "textSource": "opengym"
+}

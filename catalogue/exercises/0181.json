@@ -1,0 +1,22 @@
+{
+  "id": "0181",
+  "name": "cable lying close grip curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A curl done lying on the floor facing a low cable, with hands close together. The lying position keeps tension on the biceps through the whole range.",
+  "instructions": [
+    "Set a low pulley with a short bar and lie on your back with your feet toward the stack.",
+    "Grab the bar with a close underhand grip and arms extended.",
+    "Keep your upper arms still and curl the bar toward your shoulders.",
+    "Squeeze your biceps at the top for a moment.",
+    "Lower the bar slowly until your arms are straight again.",
+    "Don't let your elbows drift away from your sides."
+  ],
+  "textSource": "opengym"
+}

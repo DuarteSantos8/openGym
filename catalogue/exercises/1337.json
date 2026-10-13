@@ -1,0 +1,21 @@
+{
+  "id": "1337",
+  "name": "exercise ball back stretch",
+  "bodyPart": "back",
+  "equipment": "stability ball",
+  "target": "lats",
+  "secondaryMuscles": [
+    "lower back",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "Draping your back over a stability ball to lengthen the spine and stretch the lats.",
+  "instructions": [
+    "Sit on a stability ball and walk your feet forward.",
+    "Lean back until your back rests over the ball.",
+    "Let your arms fall overhead and relax.",
+    "Breathe deeply and let your back open.",
+    "Hold for 20-30 seconds."
+  ],
+  "textSource": "opengym"
+}

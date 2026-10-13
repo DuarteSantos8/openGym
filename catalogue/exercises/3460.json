@@ -1,0 +1,23 @@
+{
+  "id": "3460",
+  "name": "side plank hip adduction (bent knee)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "glutes"
+  ],
+  "category": "calisthenics",
+  "description": "A side plank with the top leg lifting inward, working the inner thighs and obliques.",
+  "instructions": [
+    "Set up in a side plank with the bottom knee bent.",
+    "Keep your body straight.",
+    "Lift your hips.",
+    "Raise the bottom leg toward the top leg.",
+    "Lower with control.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5697",
+  "name": "dumbbell lying row on rack",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A chest-supported row done lying face down on an incline bench or rack. With the body supported, it focuses the work on the upper back.",
+  "instructions": [
+    "Lie face down on a raised bench with a dumbbell in each hand.",
+    "Let your arms hang straight down.",
+    "Row the weights up toward your ribs, elbows close to your body.",
+    "Squeeze your shoulder blades together at the top.",
+    "Lower slowly to full arm extension."
+  ],
+  "textSource": "opengym"
+}

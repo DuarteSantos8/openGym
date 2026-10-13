@@ -1,0 +1,22 @@
+{
+  "id": "9514",
+  "name": "countermovement jump arms on hip",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "A vertical jump with hands on your hips so the legs do all the work. It develops explosive leg power.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and hands on your hips.",
+    "Dip quickly into a quarter squat.",
+    "Explode upward, extending hips, knees and ankles.",
+    "Reach for maximum height without using your arms.",
+    "Land softly on bent knees and reset."
+  ],
+  "textSource": "opengym"
+}

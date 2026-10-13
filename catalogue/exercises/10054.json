@@ -1,0 +1,25 @@
+{
+  "id": "10054",
+  "name": "barbell static lunge",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lunge held in one place with a barbell on your back, so the feet stay put while you lower and rise.",
+  "instructions": [
+    "Place a barbell across your upper back.",
+    "Step into a split stance with one foot forward.",
+    "Lower straight down until your back knee nearly touches the floor.",
+    "Keep your chest tall and torso upright.",
+    "Press through the front heel to rise.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "10534",
+  "name": "seated single leg knee flexion",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes"
+  ],
+  "category": "rehab",
+  "description": "Sitting down, you bend one knee by sliding your heel back. It is a gentle way to build knee mobility and hamstring control.",
+  "instructions": [
+    "Sit on a chair with your feet flat on the floor.",
+    "Slide one foot back under the chair, bending the knee.",
+    "Pause briefly at the end of the range.",
+    "Return the foot slowly to the start.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

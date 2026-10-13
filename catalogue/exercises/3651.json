@@ -1,0 +1,22 @@
+{
+  "id": "3651",
+  "name": "dumbbell rdl death march",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Walk forward doing Romanian deadlifts with dumbbells, a balance and hamstring challenge.",
+  "instructions": [
+    "Hold dumbbells at your sides and stand tall.",
+    "Hinge at the hips on one leg as you step forward.",
+    "Keep your back flat and raise the rear leg.",
+    "Stand tall and step into the next rep.",
+    "Alternate legs as you move forward."
+  ],
+  "textSource": "opengym"
+}

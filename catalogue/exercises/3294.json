@@ -1,0 +1,23 @@
+{
+  "id": "3294",
+  "name": "archer push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A wide push-up that shifts the weight to one arm while the other arm stays straight. It trains the chest and triceps on the way to one arm push-ups.",
+  "instructions": [
+    "Start in a push-up position with your hands slightly wider than shoulder-width apart.",
+    "Extend one arm straight out to the side, parallel to the ground.",
+    "Lower your body by bending your elbows, keeping your back straight and core engaged.",
+    "Push back up to the starting position.",
+    "Repeat on the other side, extending the opposite arm out to the side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

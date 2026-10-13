@@ -1,0 +1,22 @@
+{
+  "id": "6606",
+  "name": "smith curtsey lunge",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A curtsey lunge on the smith machine that steps one leg behind and across the other. It hits the glutes and outer hips with a stable bar path.",
+  "instructions": [
+    "Set the bar on your upper back and unrack it, feet hip-width apart.",
+    "Step one leg back and diagonally behind the other, like a curtsey.",
+    "Lower until your front thigh is near parallel, chest tall.",
+    "Press through the front heel to return to standing.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

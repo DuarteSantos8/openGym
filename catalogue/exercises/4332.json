@@ -1,0 +1,21 @@
+{
+  "id": "4332",
+  "name": "crunch hold",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "isometric",
+  "description": "A crunch held at the top to keep the abs under tension. Simple and burns quickly.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat.",
+    "Place your hands lightly behind your head or across your chest.",
+    "Curl your head and shoulders off the floor.",
+    "Hold the top position for 20-30 seconds, breathing steadily.",
+    "Lower down with control."
+  ],
+  "textSource": "opengym"
+}

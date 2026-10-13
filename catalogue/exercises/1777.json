@@ -1,0 +1,22 @@
+{
+  "id": "1777",
+  "name": "above head chest stretch",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "stretching",
+  "description": "Reaching both arms overhead and back opens the front of your chest and shoulders. It is an easy stretch to undo hunched posture.",
+  "instructions": [
+    "Stand tall and interlace your fingers, then raise your arms overhead.",
+    "Press your arms slightly back and lift your chest without arching your lower back.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "femaleVariant": "4514",
+  "textSource": "opengym"
+}

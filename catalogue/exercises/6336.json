@@ -1,0 +1,22 @@
+{
+  "id": "6336",
+  "name": "bodyweight slow to explosive squats",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A squat that goes down slowly and then jumps up fast, training control, leg strength and power together.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Lower into a squat over about three seconds.",
+    "Pause briefly at the bottom with your chest up.",
+    "Explode upward into a jump.",
+    "Land softly with bent knees and go straight into the next rep."
+  ],
+  "textSource": "opengym"
+}

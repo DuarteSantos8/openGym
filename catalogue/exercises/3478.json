@@ -1,0 +1,23 @@
+{
+  "id": "3478",
+  "name": "lying leg tuck hip twist to left stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "A lying tuck stretch with the knees guided to the left.",
+  "instructions": [
+    "Lie on your back and tuck your knees.",
+    "Lower your knees to the left.",
+    "Keep both shoulders down.",
+    "Hold for 20-30 seconds.",
+    "Breathe slowly.",
+    "Return to center."
+  ],
+  "textSource": "opengym"
+}

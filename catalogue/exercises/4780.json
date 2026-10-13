@@ -1,0 +1,22 @@
+{
+  "id": "4780",
+  "name": "seated chin up (low bar position)",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A seated chin-up using a low bar with an underhand grip. It lets you train the lats and biceps with a reduced load.",
+  "instructions": [
+    "Set a bar at a low height and sit under it.",
+    "Grab it with an underhand grip, arms extended.",
+    "Extend your legs in front with heels on the floor.",
+    "Pull your chest toward the bar.",
+    "Lower slowly to straight arms."
+  ],
+  "textSource": "opengym"
+}

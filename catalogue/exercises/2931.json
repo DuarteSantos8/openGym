@@ -1,0 +1,23 @@
+{
+  "id": "2931",
+  "name": "shoulder flexion back to wall",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius",
+    "rotator cuff",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "Raising your arms overhead while your back stays against a wall. It improves shoulder mobility and posture.",
+  "instructions": [
+    "Stand with your back, head and hips against a wall.",
+    "Keep your arms at your sides with elbows straight.",
+    "Raise your arms forward and up overhead as far as you can without arching your back.",
+    "Pause at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1792",
+  "name": "wrap around shoulder stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "stretching",
+  "description": "Wrapping one arm across your body and hooking it with the other stretches the back of the shoulder and upper back.",
+  "instructions": [
+    "Stand tall and bring one arm across your chest at shoulder height.",
+    "Hook it with your other forearm and pull it gently closer to your chest.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

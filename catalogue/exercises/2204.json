@@ -1,0 +1,22 @@
+{
+  "id": "2204",
+  "name": "roller body saw",
+  "bodyPart": "waist",
+  "equipment": "roller",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A plank with forearms on a roller, rolling forward and back like a saw. Challenges the abs and core.",
+  "instructions": [
+    "Start in a plank position with your forearms on the roller and your body in a straight line.",
+    "Engage your core and slowly roll the roller forward, extending your body as far as you can while maintaining control.",
+    "Pause for a moment at the furthest point, then slowly roll the roller back towards your starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "5435",
+  "textSource": "exercisedb"
+}

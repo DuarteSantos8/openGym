@@ -1,0 +1,21 @@
+{
+  "id": "4992",
+  "name": "opposite crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Crunch where opposite arm and leg move toward each other. It hits the abs and obliques together.",
+  "instructions": [
+    "Lie on your back with hands lightly behind your head.",
+    "Lift one leg bent while curling your torso up.",
+    "Bring the opposite elbow toward the raised knee.",
+    "Lower slowly with control.",
+    "Alternate sides on each rep."
+  ],
+  "textSource": "opengym"
+}

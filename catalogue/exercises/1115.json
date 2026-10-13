@@ -1,0 +1,22 @@
+{
+  "id": "1115",
+  "name": "suspender handstand push up",
+  "bodyPart": "upper arms",
+  "equipment": "suspension trainer",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "An advanced inverted press with hands on the straps, working the triceps and shoulders strongly.",
+  "instructions": [
+    "Set the straps low and place your hands in the handles in a pike position.",
+    "Kick or walk your feet up into an inverted position with a tight core.",
+    "Bend your elbows to lower your head between the handles.",
+    "Press back up until your arms are straight.",
+    "Keep your body steady, using a wall or spotter if needed.",
+    "Come down carefully when finished."
+  ],
+  "textSource": "opengym"
+}

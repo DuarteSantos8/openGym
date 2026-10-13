@@ -1,0 +1,22 @@
+{
+  "id": "6523",
+  "name": "lever linear hack squat",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A hack squat on a linear lever machine that loads your thighs and glutes along a fixed path.",
+  "instructions": [
+    "Stand on the platform with your back against the pad and shoulders under the supports.",
+    "Place your feet shoulder-width apart.",
+    "Lower into a squat until your thighs are about parallel.",
+    "Press through your feet to stand.",
+    "Keep your back against the pad throughout."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4134",
+  "name": "kettlebell single leg step up",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A step up holding a kettlebell, training each leg separately.",
+  "instructions": [
+    "Hold a kettlebell and stand facing a box.",
+    "Place one foot on the box.",
+    "Drive through that heel to step up.",
+    "Lower slowly.",
+    "Finish all reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

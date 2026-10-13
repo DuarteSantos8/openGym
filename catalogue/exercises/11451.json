@@ -1,0 +1,22 @@
+{
+  "id": "11451",
+  "name": "standing wall slide half squat hold",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "isometric",
+  "description": "A wall-supported half squat held in place to build quad endurance with low joint stress.",
+  "instructions": [
+    "Stand with your back against a wall and feet about a step in front of you.",
+    "Slide down until your knees are bent to about 45-60 degrees.",
+    "Keep your back flat on the wall and your knees over your ankles.",
+    "Press through your whole foot and breathe steadily.",
+    "Hold for 20-45 seconds, then slide back up."
+  ],
+  "textSource": "opengym"
+}

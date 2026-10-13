@@ -1,0 +1,24 @@
+{
+  "id": "4590",
+  "name": "boxing left uppercut (with partner)",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "biceps",
+    "chest",
+    "obliques",
+    "core"
+  ],
+  "category": "combat",
+  "description": "A rising punch with the left hand thrown to a partner's pad, using leg and hip drive.",
+  "instructions": [
+    "Face your partner, who holds a pad low in front of them.",
+    "Stand in a boxing stance and bend your knees slightly.",
+    "Dip slightly and drive up through your legs.",
+    "Rotate your hips as you bring your left fist up in a tight arc.",
+    "Hit the pad with the palm facing you.",
+    "Reset your guard."
+  ],
+  "textSource": "opengym"
+}

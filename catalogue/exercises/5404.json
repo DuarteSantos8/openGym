@@ -1,0 +1,22 @@
+{
+  "id": "5404",
+  "name": "stick pass around stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "stretching",
+  "description": "Swinging a stick from front to back in a wide arc to open up the shoulders. A classic warm-up for shoulder mobility.",
+  "instructions": [
+    "Stand tall and hold the stick in front of you with a wide overhand grip.",
+    "Keep your arms straight and raise the stick overhead.",
+    "Carry it back behind your body in a smooth arc.",
+    "Return the same way to the start.",
+    "Repeat for 8-10 slow passes and narrow your grip as you get more flexible."
+  ],
+  "textSource": "opengym"
+}

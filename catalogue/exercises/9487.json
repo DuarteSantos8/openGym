@@ -1,0 +1,22 @@
+{
+  "id": "9487",
+  "name": "sitting floor leg raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "calisthenics",
+  "description": "From a seated position with hands behind you, you lift your legs to train the lower abs and hip flexors.",
+  "instructions": [
+    "Sit on the floor with your hands planted behind your hips and legs extended.",
+    "Lean back slightly and brace your abs.",
+    "Raise both legs together a short way off the floor.",
+    "Lower them slowly without letting your heels drop to the ground.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

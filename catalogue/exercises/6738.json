@@ -1,0 +1,22 @@
+{
+  "id": "6738",
+  "name": "resistance band reverse hyper with stability ball on flat bench",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A reverse hyper with your torso on a stability ball and a band adding resistance. It trains glutes and hamstrings while sparing the spine.",
+  "instructions": [
+    "Lie face down with your hips over a stability ball on a flat bench.",
+    "Loop a band around your feet and anchor it low in front.",
+    "Hold the bench for stability.",
+    "Raise both legs until they are in line with your body.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly against the band."
+  ],
+  "textSource": "opengym"
+}

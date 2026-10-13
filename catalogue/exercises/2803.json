@@ -1,0 +1,23 @@
+{
+  "id": "2803",
+  "name": "dumbbell supported squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A dumbbell squat done with a support for balance. Builds the quads and glutes.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand at your sides.",
+    "Keeping your chest up and core engaged, slowly lower your body down by bending your knees and pushing your hips back.",
+    "Continue lowering until your thighs are parallel to the ground, or as low as you can comfortably go.",
+    "Pause for a moment at the bottom, then push through your heels to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb",
+  "maleVariant": "2804"
+}

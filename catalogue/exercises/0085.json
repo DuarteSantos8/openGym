@@ -1,0 +1,37 @@
+{
+  "id": "0085",
+  "name": "barbell romanian deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "Hinge at the hips with the bar close to your legs to feel a hamstring stretch, then stand tall. Trains the hamstrings and glutes.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your toes pointing forward.",
+    "Hold the barbell with an overhand grip, hands slightly wider than shoulder-width apart.",
+    "Bend at the hips, keeping your back straight and your knees slightly bent.",
+    "Lower the barbell towards the ground, keeping it close to your body.",
+    "Feel the stretch in your hamstrings as you lower the barbell.",
+    "Once you feel a stretch in your hamstrings, push your hips forward and stand up straight.",
+    "Squeeze your glutes at the top of the movement.",
+    "Lower the barbell back down to the starting position and repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "gluteal",
+      "hamstring"
+    ],
+    "secondaries": [
+      "lower-back",
+      "quadriceps",
+      "adductors",
+      "calves"
+    ]
+  },
+  "femaleVariant": "2213",
+  "textSource": "exercisedb"
+}

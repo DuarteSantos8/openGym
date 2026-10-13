@@ -1,0 +1,23 @@
+{
+  "id": "4251",
+  "name": "dumbbell straight arm twisting sit up",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A sit-up with a rotation while holding a dumbbell on straight arms. It works the abs and obliques.",
+  "instructions": [
+    "Lie on your back with knees bent, holding a dumbbell over your chest.",
+    "Sit up while keeping your arms straight.",
+    "Twist toward one side at the top.",
+    "Return to centre and lower slowly.",
+    "Alternate sides on each rep.",
+    "Keep your feet down and movement controlled."
+  ],
+  "textSource": "opengym"
+}

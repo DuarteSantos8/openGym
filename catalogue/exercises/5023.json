@@ -1,0 +1,22 @@
+{
+  "id": "5023",
+  "name": "weighted seated leg raise on floor",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "Seated leg raise with added weight. It challenges the lower abs and hip flexors.",
+  "instructions": [
+    "Sit on the floor with your hands behind you and weight secured to your legs or between your feet.",
+    "Lean back slightly and brace your core.",
+    "Raise your legs up while keeping them as straight as you can.",
+    "Lower them slowly without touching the floor.",
+    "Keep your back from rounding too far."
+  ],
+  "textSource": "opengym"
+}

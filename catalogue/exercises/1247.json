@@ -1,0 +1,22 @@
+{
+  "id": "1247",
+  "name": "russian twist (with medicine ball)",
+  "bodyPart": "waist",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "Rotating a medicine ball from side to side while seated. It works the obliques.",
+  "instructions": [
+    "Sit with your knees bent and lean back slightly, holding a medicine ball at your chest.",
+    "Lift your feet slightly if you can.",
+    "Rotate your torso to one side and tap the ball by your hip.",
+    "Rotate to the other side.",
+    "Keep your chest tall and move with control."
+  ],
+  "textSource": "opengym"
+}

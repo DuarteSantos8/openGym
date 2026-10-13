@@ -1,0 +1,23 @@
+{
+  "id": "0946",
+  "name": "crane pose bakasana",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "triceps",
+    "wrist flexors"
+  ],
+  "category": "yoga",
+  "description": "An arm balance where your knees rest on the backs of your upper arms and your feet lift. It builds wrist, arm and core strength.",
+  "instructions": [
+    "Squat with feet together and place your hands flat on the floor shoulder-width apart.",
+    "Bend your elbows slightly and rest your shins against the backs of your upper arms.",
+    "Shift your weight forward onto your hands and lift one foot, then the other.",
+    "Round your upper back, draw your belly in and gaze slightly ahead.",
+    "Hold for a few breaths, then lower your feet gently."
+  ],
+  "textSource": "opengym"
+}

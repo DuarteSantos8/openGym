@@ -1,0 +1,21 @@
+{
+  "id": "1437",
+  "name": "dumbbell finger curls",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "wrist extensors"
+  ],
+  "category": "strength",
+  "description": "Small dumbbell curls where the bar rolls down to your fingertips and back up. A simple way to build finger and forearm grip strength.",
+  "instructions": [
+    "Sit on a bench or chair with your feet flat on the ground and your back straight.",
+    "Hold a dumbbell in one hand with an underhand grip, resting your forearm on your thigh, palm facing up.",
+    "Allow the dumbbell to roll down to your fingertips, then curl it back up by flexing your fingers.",
+    "Repeat for the desired number of repetitions, then switch to the other hand."
+  ],
+  "femaleVariant": "3076",
+  "textSource": "exercisedb"
+}

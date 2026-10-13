@@ -1,0 +1,22 @@
+{
+  "id": "6516",
+  "name": "lever bent over wide grip row (with chest support)",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A chest-supported row with a wide grip that shifts more work to the upper back and rear shoulders.",
+  "instructions": [
+    "Lean your chest on the pad and take the wide handles.",
+    "Start with your arms extended.",
+    "Pull the handles back with your elbows flared out.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "1828",
+  "name": "reaching down triceps stretch",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "lats"
+  ],
+  "category": "stretching",
+  "description": "Reaching your hand down your upper back stretches the triceps and the back of the shoulder. A common warm-up and cooldown stretch.",
+  "instructions": [
+    "Raise one arm overhead, bend the elbow and drop your hand behind your head.",
+    "Use your other hand to press your elbow gently back and down.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

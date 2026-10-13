@@ -1,0 +1,24 @@
+{
+  "id": "4595",
+  "name": "front knee kick kickboxing (with partner)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes",
+    "lower abs",
+    "core"
+  ],
+  "category": "combat",
+  "description": "A knee strike driven forward into a partner's pad, working the thighs, hips and core.",
+  "instructions": [
+    "Face your partner, who holds a pad at waist height.",
+    "Stand in a fighting stance with hands up.",
+    "Drive your rear knee up and forward into the pad.",
+    "Rise slightly onto the toes of your standing foot.",
+    "Keep your torso upright.",
+    "Lower the leg and switch sides."
+  ],
+  "textSource": "opengym"
+}

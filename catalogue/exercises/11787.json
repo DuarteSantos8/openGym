@@ -1,0 +1,22 @@
+{
+  "id": "11787",
+  "name": "seated median nerve mobilization",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "biceps",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "A gentle seated nerve glide for the median nerve running down the arm to the hand.",
+  "instructions": [
+    "Sit tall and lift one arm out to the side, palm up.",
+    "Extend your wrist and fingers backward.",
+    "Tilt your head slightly away from that arm.",
+    "Return slowly and repeat 8-10 times.",
+    "Stay within a mild stretch, then switch arms."
+  ],
+  "textSource": "opengym"
+}

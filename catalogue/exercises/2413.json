@@ -1,0 +1,23 @@
+{
+  "id": "2413",
+  "name": "barbell wide grip drag curl",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A curl where the bar drags up your torso with a wide grip, targeting the biceps.",
+  "instructions": [
+    "Stand holding a barbell with a wide underhand grip.",
+    "Keep your elbows pointing back and the bar close to your body.",
+    "Drag the bar up your torso by pulling your elbows behind you.",
+    "Squeeze your biceps at the top.",
+    "Lower slowly along the same path.",
+    "Keep your torso upright."
+  ],
+  "textSource": "opengym"
+}

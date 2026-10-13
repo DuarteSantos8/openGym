@@ -1,0 +1,34 @@
+{
+  "id": "0768",
+  "name": "smith single leg split squat",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A single-leg split squat using the smith bar for balance, with the back foot raised. It trains the quads and glutes one side at a time.",
+  "instructions": [
+    "Stand in front of the smith machine with your feet shoulder-width apart.",
+    "Place one foot behind you on a bench or step, with your toes pointing forward.",
+    "Hold onto the smith machine bar for stability.",
+    "Bend your front knee and lower your body down into a lunge position, keeping your back straight.",
+    "Pause for a moment at the bottom, then push through your front heel to return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch legs."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves"
+    ]
+  },
+  "femaleVariant": "2670",
+  "textSource": "exercisedb"
+}

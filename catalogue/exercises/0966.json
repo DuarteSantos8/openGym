@@ -1,0 +1,24 @@
+{
+  "id": "0966",
+  "name": "barbell deadlift (back view)",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "upper back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "The barbell deadlift shown from behind. It's a full posterior chain lift for the glutes, hamstrings and back.",
+  "instructions": [
+    "Stand with feet hip width apart, bar over mid-foot.",
+    "Hinge at the hips and grip the bar just outside your legs.",
+    "Brace your core and keep your back flat.",
+    "Push the floor away and stand up, keeping the bar close to your legs.",
+    "Lock out your hips at the top without leaning back.",
+    "Lower the bar by pushing your hips back and bending your knees."
+  ],
+  "textSource": "opengym"
+}

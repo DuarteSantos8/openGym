@@ -1,0 +1,23 @@
+{
+  "id": "3861",
+  "name": "stability ball body saw",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "lower back"
+  ],
+  "category": "isometric",
+  "description": "A plank with your forearms on a stability ball, rocking back and forth to challenge deep core control.",
+  "instructions": [
+    "Place your forearms on a stability ball and extend your legs into a plank.",
+    "Squeeze your glutes and brace your abs so your body forms a straight line.",
+    "Slowly push your elbows forward a few inches by shifting your body weight.",
+    "Pull back to the start without letting your hips sag.",
+    "Keep the movement small and controlled.",
+    "Repeat for time or reps."
+  ],
+  "textSource": "opengym"
+}

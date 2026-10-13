@@ -1,0 +1,23 @@
+{
+  "id": "0957",
+  "name": "revolved side angle pose parivrtta parsvakonasana",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques",
+    "hamstrings",
+    "shoulders"
+  ],
+  "category": "yoga",
+  "description": "A deep lunge with a twist and hands pressed together. It strengthens the legs and wrings out the spine.",
+  "instructions": [
+    "Step into a long lunge with the back heel lifted.",
+    "Bring your palms together at your chest.",
+    "Twist your torso and hook the opposite elbow outside the front knee.",
+    "Press your palms together and look up or ahead.",
+    "Hold for 3 to 5 breaths, then switch sides."
+  ],
+  "textSource": "opengym"
+}

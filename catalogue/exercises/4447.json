@@ -1,0 +1,24 @@
+{
+  "id": "4447",
+  "name": "resistance band elevated glute bridge",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A glute bridge with your feet raised and a band adding resistance. Targets the glutes with a deep range of motion.",
+  "instructions": [
+    "Lie on your back with your feet on a bench and a band around your thighs just above the knees.",
+    "Bend your knees and place your arms by your sides.",
+    "Push your knees out against the band and drive through your heels.",
+    "Lift your hips until your body forms a straight line from shoulders to knees.",
+    "Squeeze your glutes at the top for a moment.",
+    "Lower your hips slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

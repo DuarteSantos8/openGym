@@ -1,0 +1,22 @@
+{
+  "id": "10590",
+  "name": "walkout lat stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "shoulders",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "Walk your hands out and sit your hips back to stretch the lats. It opens the sides of the back.",
+  "instructions": [
+    "Stand and hinge forward to place your hands on the floor.",
+    "Walk your hands out in front of you.",
+    "Sit your hips back and press your chest down.",
+    "Hold for 20-30 seconds.",
+    "Walk your hands back in and stand up."
+  ],
+  "textSource": "opengym"
+}

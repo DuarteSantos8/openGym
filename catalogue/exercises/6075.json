@@ -1,0 +1,21 @@
+{
+  "id": "6075",
+  "name": "bottle weighted alternate front raise",
+  "bodyPart": "shoulders",
+  "equipment": "weighted",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Alternating front raises with a bottle in each hand. It works the front delts.",
+  "instructions": [
+    "Stand tall with a bottle in each hand.",
+    "Raise one arm forward to shoulder height.",
+    "Lower it slowly as you raise the other.",
+    "Keep your torso still.",
+    "Breathe steadily."
+  ],
+  "textSource": "opengym"
+}

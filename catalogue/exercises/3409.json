@@ -1,0 +1,22 @@
+{
+  "id": "3409",
+  "name": "standing phelps",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "upper back",
+    "chest"
+  ],
+  "category": "mobility",
+  "description": "Swim-style arm swings that loosen the shoulders and chest as a warm-up.",
+  "instructions": [
+    "Stand tall with feet shoulder-width apart.",
+    "Swing both arms forward and up in big arcs.",
+    "Swing them back down past your hips behind you.",
+    "Keep the movement loose and rhythmic.",
+    "Continue for 20-30 seconds."
+  ],
+  "textSource": "opengym"
+}

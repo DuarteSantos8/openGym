@@ -1,0 +1,22 @@
+{
+  "id": "8364",
+  "name": "resistance band overhead shoulder press v. 2",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "An overhead press with a band, training the shoulders and triceps with tension that rises toward the top.",
+  "instructions": [
+    "Stand on the band with feet shoulder-width apart and hold the handles at shoulder height.",
+    "Brace your core and keep ribs down.",
+    "Press the handles overhead until your arms are straight.",
+    "Lower them back to your shoulders under control.",
+    "Repeat without leaning back."
+  ],
+  "textSource": "opengym"
+}

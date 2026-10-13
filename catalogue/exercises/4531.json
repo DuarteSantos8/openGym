@@ -1,0 +1,23 @@
+{
+  "id": "4531",
+  "name": "kettlebell single arm clean and press",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A clean followed by an overhead press with one kettlebell. It links hip power with shoulder strength.",
+  "instructions": [
+    "Hinge and swing the kettlebell back, then clean it to your shoulder.",
+    "Settle into a stable rack position with your core tight.",
+    "Bend your knees slightly, then press the bell straight overhead.",
+    "Lock out your elbow with your biceps near your ear.",
+    "Lower it to your shoulder, then to the floor. Switch arms after your set."
+  ],
+  "textSource": "opengym"
+}

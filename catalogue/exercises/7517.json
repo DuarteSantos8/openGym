@@ -1,0 +1,23 @@
+{
+  "id": "7517",
+  "name": "ring one arm pull up",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "core",
+    "grip muscles"
+  ],
+  "category": "calisthenics",
+  "description": "Advanced single-arm pull on a ring that demands serious back and arm strength.",
+  "instructions": [
+    "Hang from one ring with a firm grip.",
+    "Brace your core and keep your legs together.",
+    "Pull your chin up toward the ring.",
+    "Lower with control to a full hang.",
+    "Complete reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

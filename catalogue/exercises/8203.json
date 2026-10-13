@@ -1,0 +1,22 @@
+{
+  "id": "8203",
+  "name": "sitting russian twist on a chair",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A Russian twist done seated on a chair. It works the obliques with low impact.",
+  "instructions": [
+    "Sit near the edge of a chair and lean back slightly.",
+    "Clasp your hands in front of your chest.",
+    "Rotate your torso to one side.",
+    "Return to centre and rotate to the other side.",
+    "Keep your chest tall."
+  ],
+  "textSource": "opengym"
+}

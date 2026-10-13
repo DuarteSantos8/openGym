@@ -1,0 +1,22 @@
+{
+  "id": "11092",
+  "name": "landmine kneeling 180s",
+  "bodyPart": "waist",
+  "equipment": "landmine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A kneeling rotational move with a landmine bar, swinging it in a wide arc side to side. It builds strong, rotating abs.",
+  "instructions": [
+    "Kneel facing the landmine and hold the end of the bar with both hands in front of your chest.",
+    "Keep your hips squared and core tight.",
+    "Swing the bar in an arc to one side by rotating your torso.",
+    "Swing across to the other side in a controlled sweep.",
+    "Keep a steady rhythm for the set."
+  ],
+  "textSource": "opengym"
+}

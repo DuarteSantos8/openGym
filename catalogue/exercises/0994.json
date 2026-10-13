@@ -1,0 +1,21 @@
+{
+  "id": "0994",
+  "name": "band reverse wrist curl",
+  "bodyPart": "lower arms",
+  "equipment": "band",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A reverse wrist curl with a band, lifting the back of the hands. It strengthens the forearms.",
+  "instructions": [
+    "Sit on a bench or chair with your feet flat on the ground.",
+    "Hold the band with an overhand grip, palms facing down, and wrap it around your fingers.",
+    "Rest your forearms on your thighs, with your wrists hanging off the edge.",
+    "Slowly curl your wrists upward, squeezing your forearms.",
+    "Pause for a moment at the top, then slowly lower your wrists back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

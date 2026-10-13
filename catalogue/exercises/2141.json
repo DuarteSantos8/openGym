@@ -1,0 +1,26 @@
+{
+  "id": "2141",
+  "name": "walk elliptical cross trainer",
+  "bodyPart": "cardio",
+  "equipment": "elliptical machine",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "glutes",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "Smooth walking-style motion on an elliptical cross trainer. Low-impact cardio that builds endurance.",
+  "instructions": [
+    "Adjust the resistance level and incline of the elliptical machine to your desired settings.",
+    "Step onto the pedals of the machine and grip the handles lightly.",
+    "Begin by pushing down with your feet and pulling the handles towards your body.",
+    "Continue this motion, alternating between pushing and pulling, to simulate a walking or running motion.",
+    "Maintain a steady pace and keep your core engaged throughout the exercise.",
+    "Continue for the desired duration of your cardio workout.",
+    "Gradually decrease the intensity and speed of the machine before stepping off."
+  ],
+  "femaleVariant": "3624",
+  "textSource": "exercisedb"
+}

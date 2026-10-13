@@ -1,0 +1,23 @@
+{
+  "id": "1155",
+  "name": "suspender single leg deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-leg hip hinge with the straps for balance, training the hamstrings and glutes.",
+  "instructions": [
+    "Hold the handles and stand on one leg.",
+    "Soften the standing knee.",
+    "Hinge at the hip as the other leg extends behind you.",
+    "Keep your back flat and hips square.",
+    "Squeeze the glute to stand back up.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

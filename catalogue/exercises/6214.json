@@ -1,0 +1,24 @@
+{
+  "id": "6214",
+  "name": "lying scissors cross",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A lying scissor kick where the legs cross over each other. It trains the inner thighs and lower abs.",
+  "instructions": [
+    "Lie on your back with your legs lifted.",
+    "Press your lower back into the floor.",
+    "Open your legs wide.",
+    "Cross one leg over the other.",
+    "Open and cross the other leg on top.",
+    "Keep a steady rhythm."
+  ],
+  "femaleVariant": "6213",
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "10758",
+  "name": "medicine ball skater hop",
+  "bodyPart": "upper legs",
+  "equipment": "medicine ball",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "calves",
+    "core",
+    "hip flexors"
+  ],
+  "category": "plyometrics",
+  "description": "A lateral hop from leg to leg while holding a medicine ball. It trains balance and side-to-side power.",
+  "instructions": [
+    "Hold a medicine ball at your chest.",
+    "Hop sideways onto one leg.",
+    "Land softly with a bent knee.",
+    "Pause briefly, then push off to the other side.",
+    "Keep your chest up.",
+    "Alternate for the reps."
+  ],
+  "textSource": "opengym"
+}

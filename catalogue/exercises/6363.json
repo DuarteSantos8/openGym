@@ -1,0 +1,21 @@
+{
+  "id": "6363",
+  "name": "cable standing wrist reverse curl",
+  "bodyPart": "lower arms",
+  "equipment": "cable",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist extensors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "An overhand wrist curl on a low cable that works the top of your forearms with constant tension.",
+  "instructions": [
+    "Face a low cable and grab the handle with an overhand grip.",
+    "Step back and let your arms hang with elbows close to your sides.",
+    "Extend your wrists to pull the handle upward.",
+    "Hold for a second.",
+    "Lower under control and repeat."
+  ],
+  "textSource": "opengym"
+}

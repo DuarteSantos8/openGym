@@ -1,0 +1,22 @@
+{
+  "id": "1891",
+  "name": "toe squat stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "feet",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "Kneeling on the toes to stretch the feet and front of the ankles.",
+  "instructions": [
+    "Kneel on a mat with your toes tucked under.",
+    "Sit back onto your heels slowly.",
+    "Rest your hands on your thighs.",
+    "Ease off if the stretch is too sharp.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Release and shake out your feet."
+  ],
+  "textSource": "opengym"
+}

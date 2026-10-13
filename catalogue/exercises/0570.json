@@ -1,0 +1,21 @@
+{
+  "id": "0570",
+  "name": "leg pull in flat bench",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "Seated on a flat bench, you pull your knees in toward your chest and extend them again. Works the lower abs and hip flexors.",
+  "instructions": [
+    "Sit on a flat bench with your legs extended straight out in front of you.",
+    "Place your hands on the bench beside your hips for support.",
+    "Engage your abs and lift your legs off the ground, bringing your knees towards your chest.",
+    "Pause for a moment at the top, then slowly lower your legs back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

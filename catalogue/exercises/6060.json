@@ -1,0 +1,22 @@
+{
+  "id": "6060",
+  "name": "bottle weighted pullover",
+  "bodyPart": "back",
+  "equipment": "weighted",
+  "target": "lats",
+  "secondaryMuscles": [
+    "chest",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lying pullover with a bottle held in both hands. It stretches and works the lats and chest.",
+  "instructions": [
+    "Lie on your back, knees bent, holding a bottle with both hands over your chest.",
+    "Keep your arms nearly straight.",
+    "Lower the bottle in an arc behind your head.",
+    "Stop when you feel a stretch in your sides.",
+    "Pull it back over your chest."
+  ],
+  "textSource": "opengym"
+}

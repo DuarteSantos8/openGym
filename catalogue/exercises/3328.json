@@ -1,0 +1,24 @@
+{
+  "id": "3328",
+  "name": "barbell complex stiff leg deadlift clean step",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "upper back",
+    "shoulders",
+    "quadriceps"
+  ],
+  "category": "olympic",
+  "description": "A barbell complex that links a stiff leg deadlift into a clean and then a step. It builds posterior chain power and rhythm.",
+  "instructions": [
+    "Stand holding a light barbell with an overhand grip at thigh height.",
+    "Lower the bar down your legs with soft knees and a flat back.",
+    "Stand up, then pull the bar explosively and catch it on your shoulders.",
+    "Take a controlled step forward with the bar racked.",
+    "Step back, lower the bar and begin the next round."
+  ],
+  "textSource": "opengym"
+}

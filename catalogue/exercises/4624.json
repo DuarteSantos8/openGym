@@ -1,0 +1,20 @@
+{
+  "id": "4624",
+  "name": "dumbbell crunch up",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A weighted crunch holding a dumbbell at the chest to add resistance for the abs.",
+  "instructions": [
+    "Lie on your back with knees bent and a dumbbell held against your chest.",
+    "Brace your abs.",
+    "Curl your head and shoulders off the floor.",
+    "Pause at the top.",
+    "Lower back down slowly."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "10041",
+  "name": "dumbbell side plank v. 2",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A side plank with a dumbbell added, usually held in the top hand, to make the hold harder.",
+  "instructions": [
+    "Lie on your side, elbow under your shoulder, with a dumbbell in your top hand.",
+    "Lift your hips into a straight line from head to feet.",
+    "Hold the dumbbell either at your side or pointing to the ceiling.",
+    "Hold for 15-30 seconds.",
+    "Lower with control, then switch sides.",
+    "Keep your hips high and don't rotate."
+  ],
+  "textSource": "opengym"
+}

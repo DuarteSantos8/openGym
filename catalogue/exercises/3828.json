@@ -1,0 +1,23 @@
+{
+  "id": "3828",
+  "name": "bent over row with towel",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rear deltoids",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A row using a towel for resistance. It trains your back and arms with no equipment.",
+  "instructions": [
+    "Hold a towel with both hands and stretch it taut.",
+    "Hinge forward at the hips with a flat back.",
+    "Pull the towel toward your chest while pulling it apart.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

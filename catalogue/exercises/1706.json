@@ -1,0 +1,22 @@
+{
+  "id": "1706",
+  "name": "stability ball front plank",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "isometric",
+  "description": "A forearm plank with your elbows on a stability ball. The wobbly surface makes your abs and shoulders work harder to hold a straight line.",
+  "instructions": [
+    "Kneel behind a stability ball and place your forearms on it.",
+    "Walk your feet back until your body forms a straight line from head to heels.",
+    "Brace your abs and squeeze your glutes.",
+    "Keep your neck neutral and your hips from sagging or rising.",
+    "Hold for 20-40 seconds, then lower to the floor."
+  ],
+  "textSource": "opengym"
+}

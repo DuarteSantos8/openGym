@@ -1,0 +1,22 @@
+{
+  "id": "2354",
+  "name": "deadlift back (form check)",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A side-by-side form check for back position during a deadlift, showing the common mistake next to the correct technique so you can spot it in your own sets.",
+  "instructions": [
+    "Stand with the bar over mid-foot, hinge down and grip it just outside your legs.",
+    "Compare the faulty version with the correct one: your back stays neutral and braced from the floor to lockout.",
+    "Perform the lift slowly with a light load and keep the correct position throughout.",
+    "Use a mirror or film a set from the side to check your own position.",
+    "Fix the cue before adding weight, and rest between sets so form stays clean."
+  ],
+  "textSource": "opengym"
+}

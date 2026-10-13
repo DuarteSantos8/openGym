@@ -1,0 +1,24 @@
+{
+  "id": "3326",
+  "name": "band alternate lat pulldown with twist",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "rhomboids",
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing band pulldown done one arm at a time with a trunk twist. It trains your lats and adds core work.",
+  "instructions": [
+    "Anchor a band high in front of you and hold both handles with arms overhead.",
+    "Stand tall in a staggered stance.",
+    "Pull one handle down toward your ribs while rotating your torso.",
+    "Keep your elbow tucked and shoulder down.",
+    "Return slowly and switch to the other arm."
+  ],
+  "textSource": "opengym"
+}

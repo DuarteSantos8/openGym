@@ -1,0 +1,24 @@
+{
+  "id": "6011",
+  "name": "side step rear delt row",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rhomboids",
+    "upper back",
+    "quadriceps",
+    "glutes"
+  ],
+  "category": "plyometrics",
+  "description": "A side step paired with a rowing motion that works the rear shoulders and upper back while elevating your pulse.",
+  "instructions": [
+    "Stand in a slight squat with your arms out in front.",
+    "Step to the side.",
+    "Pull your elbows back and squeeze your shoulder blades.",
+    "Return your arms forward as you step back.",
+    "Alternate sides at a steady pace."
+  ],
+  "femaleVariant": "6012",
+  "textSource": "opengym"
+}

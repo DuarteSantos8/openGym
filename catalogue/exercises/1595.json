@@ -1,0 +1,23 @@
+{
+  "id": "1595",
+  "name": "smith front squat",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "hamstrings",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A front squat with the bar guided by the smith machine. It trains the quads with an upright torso.",
+  "instructions": [
+    "Set the bar at shoulder height and rest it on the front of your shoulders with elbows up.",
+    "Unrack it and step your feet slightly forward.",
+    "Squat down until your thighs are about parallel to the floor.",
+    "Keep your elbows high and your chest up.",
+    "Press through your heels to stand and rerack when done."
+  ],
+  "textSource": "opengym"
+}

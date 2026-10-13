@@ -1,0 +1,22 @@
+{
+  "id": "1004",
+  "name": "band squat",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A squat with a band above the knees. It trains the glutes and thighs.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, with the band placed just above your knees.",
+    "Keeping your chest up and core engaged, push your hips back and bend your knees to lower into a squat position.",
+    "Make sure your knees are tracking over your toes and your weight is in your heels.",
+    "Pause for a moment at the bottom, then push through your heels to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

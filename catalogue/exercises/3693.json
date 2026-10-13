@@ -1,0 +1,21 @@
+{
+  "id": "3693",
+  "name": "dumbbell bench supported external rotation",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A light rotation exercise lying on a bench that strengthens the small rotator cuff muscles around the shoulder.",
+  "instructions": [
+    "Lie on your side on a bench with a light dumbbell in your top hand, elbow bent 90 degrees at your side.",
+    "Keep your elbow tucked against your ribs.",
+    "Rotate your forearm upward, lifting the dumbbell toward the ceiling.",
+    "Lower it slowly back to the start.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

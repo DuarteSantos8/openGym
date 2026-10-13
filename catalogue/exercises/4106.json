@@ -1,0 +1,22 @@
+{
+  "id": "4106",
+  "name": "cable split stance horizontal pallof press",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "An anti-rotation press from a split stance that teaches your core to resist twisting.",
+  "instructions": [
+    "Set the cable at chest height and stand sideways in a split stance.",
+    "Hold the handle at your chest with both hands.",
+    "Press the handle straight out in front of you.",
+    "Hold for a second without letting your torso twist.",
+    "Return the handle to your chest, then switch sides."
+  ],
+  "textSource": "opengym"
+}

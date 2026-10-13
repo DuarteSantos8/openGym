@@ -1,0 +1,21 @@
+{
+  "id": "2136",
+  "name": "dumbbell cuban press v. 2",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A cuban press variation with dumbbells that mixes a press and a wrist rotation. Works the shoulders and rotator cuff.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand at shoulder height with your palms facing down.",
+    "Keeping your core engaged and your back straight, press the dumbbells straight up overhead until your arms are fully extended.",
+    "Rotate your wrists so that your palms are facing forward.",
+    "Lower the dumbbells back down to shoulder height, rotating your wrists back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

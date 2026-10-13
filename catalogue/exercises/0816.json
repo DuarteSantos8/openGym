@@ -1,0 +1,20 @@
+{
+  "id": "0816",
+  "name": "triceps press",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight triceps press that lowers the body by bending the elbows, then presses back up. It works the triceps.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your knees slightly bent.",
+    "Extend your arms straight out in front of you, parallel to the ground.",
+    "Bend your elbows and lower your body towards the ground, keeping your upper arms close to your sides.",
+    "Pause for a moment at the bottom, then push yourself back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "3540",
+  "name": "kneeling t spine mobility stretching",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "obliques",
+    "upper back",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "A kneeling thoracic rotation stretch.",
+  "instructions": [
+    "Kneel on all fours.",
+    "Place one hand behind your head.",
+    "Rotate your elbow up toward the ceiling.",
+    "Hold for 20-30 seconds.",
+    "Return to start.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

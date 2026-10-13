@@ -1,0 +1,23 @@
+{
+  "id": "3869",
+  "name": "cable seated chest fly",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A seated fly on the cable machine that isolates the chest with constant tension.",
+  "instructions": [
+    "Sit on a bench between two cable stacks with the pulleys at chest height.",
+    "Grab a handle in each hand and hold your arms out with soft elbows.",
+    "Press your back firmly into the bench.",
+    "Bring your hands together in front of your chest in a wide arc.",
+    "Squeeze, then open your arms slowly.",
+    "Stop when you feel a good stretch."
+  ],
+  "textSource": "opengym"
+}

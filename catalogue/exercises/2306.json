@@ -1,0 +1,23 @@
+{
+  "id": "2306",
+  "name": "spin hook kick",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "calves"
+  ],
+  "category": "combat",
+  "description": "A spinning kick where you turn your body and sweep the heel in a hook around the target. Great for balance and coordination.",
+  "instructions": [
+    "Stand in a fighting stance with your hands up.",
+    "Turn your head and shoulders to look behind you.",
+    "Spin on the ball of your supporting foot.",
+    "Swing your kicking leg around and hook the heel across the target.",
+    "Land in a balanced stance.",
+    "Repeat, then switch sides."
+  ],
+  "textSource": "opengym"
+}

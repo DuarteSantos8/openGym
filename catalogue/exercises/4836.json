@@ -1,0 +1,21 @@
+{
+  "id": "4836",
+  "name": "dumbbell reverse grip squeeze bench press",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A dumbbell press with a reverse grip and the weights squeezed together. It emphasises the triceps and inner chest.",
+  "instructions": [
+    "Lie on a bench holding two dumbbells together over your chest with a reverse (palms toward you) grip.",
+    "Squeeze the dumbbells together firmly.",
+    "Lower them to your chest with elbows close to your body.",
+    "Press back up, keeping the squeeze.",
+    "Keep your wrists straight throughout."
+  ],
+  "textSource": "opengym"
+}

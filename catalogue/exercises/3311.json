@@ -1,0 +1,23 @@
+{
+  "id": "3311",
+  "name": "barbell front squat (from blocks)",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "upper back",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A front squat started from a rack or blocks height, so you begin the rep with the bar already set. It builds quad and trunk strength.",
+  "instructions": [
+    "Set the bar on the blocks or rack at front shoulder height.",
+    "Step in, rest the bar on your front shoulders with elbows high.",
+    "Lift it off and stand tall with feet shoulder width apart.",
+    "Squat down with a tall chest until your thighs pass parallel.",
+    "Stand back up by driving through your feet, then re-rack the bar."
+  ],
+  "textSource": "opengym"
+}

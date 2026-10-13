@@ -1,0 +1,22 @@
+{
+  "id": "4020",
+  "name": "criss cross leg raises",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "obliques",
+    "adductors"
+  ],
+  "category": "calisthenics",
+  "description": "Lying leg raises with legs crossing over each other. It targets the lower abs and inner thighs.",
+  "instructions": [
+    "Lie on your back with legs straight and raised.",
+    "Lower them slightly.",
+    "Cross one leg over the other.",
+    "Switch the cross.",
+    "Keep your lower back down."
+  ],
+  "textSource": "opengym"
+}

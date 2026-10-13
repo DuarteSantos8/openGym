@@ -1,0 +1,24 @@
+{
+  "id": "3581",
+  "name": "lunge with leg lift",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A lunge followed by lifting the back leg, working the glutes and balance.",
+  "instructions": [
+    "Stand tall and step one leg forward into a lunge.",
+    "Lower until both knees reach about 90 degrees.",
+    "Press up and lift the rear leg behind or beside you.",
+    "Hold briefly with your core tight.",
+    "Lower and repeat, then switch sides."
+  ],
+  "femaleVariant": "3807",
+  "textSource": "opengym"
+}

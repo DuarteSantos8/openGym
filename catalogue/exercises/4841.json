@@ -1,0 +1,23 @@
+{
+  "id": "4841",
+  "name": "barbell band assisted deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "grip muscles",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A barbell deadlift with a band that assists off the floor. It lets you train heavy lockout work and hip drive.",
+  "instructions": [
+    "Attach a band to the barbell and anchor it overhead or to a rack.",
+    "Stand with the bar over midfoot and grip just outside your knees.",
+    "Brace and push the floor away to lift.",
+    "Stand tall and lock out your hips.",
+    "Lower with control."
+  ],
+  "textSource": "opengym"
+}

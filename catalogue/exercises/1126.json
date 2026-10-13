@@ -1,0 +1,23 @@
+{
+  "id": "1126",
+  "name": "suspender one leg chest press",
+  "bodyPart": "chest",
+  "equipment": "suspension trainer",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "glutes"
+  ],
+  "category": "calisthenics",
+  "description": "A strap chest press with one foot lifted, adding a balance challenge to the pressing movement.",
+  "instructions": [
+    "Hold the handles, lean forward and lift one foot off the floor.",
+    "Keep your body straight.",
+    "Lower your chest between your hands.",
+    "Press back up without letting the hips drop.",
+    "Keep the raised leg in line with your body.",
+    "Switch legs after your set."
+  ],
+  "textSource": "opengym"
+}

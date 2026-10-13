@@ -1,0 +1,21 @@
+{
+  "id": "2412",
+  "name": "cable seated neck flexion (with head harness)",
+  "bodyPart": "neck",
+  "equipment": "cable",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "Seated with a harness attached to a cable behind you, you tuck your chin forward to train the neck flexors.",
+  "instructions": [
+    "Fit the head harness and sit facing away from the cable, attached at head height.",
+    "Start with your head tilted slightly back.",
+    "Bring your chin toward your chest.",
+    "Pause, then return slowly in control.",
+    "Keep the load light and your shoulders relaxed."
+  ],
+  "textSource": "opengym"
+}

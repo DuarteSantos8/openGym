@@ -1,0 +1,22 @@
+{
+  "id": "2268",
+  "name": "lever seated crunch (hands pad)",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A seated machine crunch where the hands press on a pad, working the abs against steady resistance.",
+  "instructions": [
+    "Sit on the machine and adjust the seat so your hands reach the pad.",
+    "Place your hands on the pads and brace your feet.",
+    "Curl your torso forward by contracting your abs.",
+    "Pause briefly at the bottom.",
+    "Return slowly to the upright start.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

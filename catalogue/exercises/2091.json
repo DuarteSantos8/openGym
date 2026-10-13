@@ -1,0 +1,21 @@
+{
+  "id": "2091",
+  "name": "fingers down forearm stretch",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist extensors",
+    "hands"
+  ],
+  "category": "stretching",
+  "description": "A stretch for the top of the forearm with the fingers pointing down.",
+  "instructions": [
+    "Extend one arm in front of you with the palm facing down.",
+    "Bend the wrist so the fingers point toward the floor.",
+    "Use your other hand to press the back of the hand gently toward you.",
+    "Keep your elbow straight.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

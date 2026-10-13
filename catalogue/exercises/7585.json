@@ -1,0 +1,22 @@
+{
+  "id": "7585",
+  "name": "twist turn lift",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A floor core move that combines a twist with a leg or torso lift. It works the abs and obliques through rotation.",
+  "instructions": [
+    "Lie on your back with your knees bent and arms extended.",
+    "Lift your shoulders and legs off the floor.",
+    "Twist your torso and bring your knees toward one side.",
+    "Turn back through the centre and lift again.",
+    "Repeat to the other side, keeping the movement smooth and controlled."
+  ],
+  "textSource": "opengym"
+}

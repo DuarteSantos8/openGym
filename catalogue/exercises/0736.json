@@ -1,0 +1,21 @@
+{
+  "id": "0736",
+  "name": "sit up",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "The classic sit up, curling your torso from the floor to upright. It builds strength in the abs and hip flexors.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat.",
+    "Cross your arms over your chest or rest your fingertips by your head.",
+    "Curl your torso up until your chest nears your thighs.",
+    "Lower slowly back to the floor with control.",
+    "Avoid yanking on your neck; lead with your chest."
+  ],
+  "textSource": "opengym"
+}

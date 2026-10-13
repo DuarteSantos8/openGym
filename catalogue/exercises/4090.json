@@ -1,0 +1,23 @@
+{
+  "id": "4090",
+  "name": "landmine sumo squat",
+  "bodyPart": "upper legs",
+  "equipment": "landmine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "core",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A wide stance squat holding the end of a landmine barbell at your chest, which trains glutes and legs with an upright torso.",
+  "instructions": [
+    "Stand facing the landmine anchor with a wide stance and hold the bar end against your chest.",
+    "Brace your core and keep your elbows tucked in.",
+    "Sit down between your legs, knees tracking over your toes.",
+    "Lower until your thighs are about parallel.",
+    "Press through your heels to stand tall."
+  ],
+  "textSource": "opengym"
+}

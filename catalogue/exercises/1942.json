@@ -1,0 +1,21 @@
+{
+  "id": "1942",
+  "name": "standing iliotibial stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques"
+  ],
+  "category": "stretching",
+  "description": "A standing side lean that stretches the iliotibial band along the outside of the thigh.",
+  "instructions": [
+    "Stand next to a wall or support and cross your outer leg behind the other.",
+    "Lean your hips toward the wall and reach the outer arm overhead until the outside of the hip and thigh stretches.",
+    "Keep your chest facing forward.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

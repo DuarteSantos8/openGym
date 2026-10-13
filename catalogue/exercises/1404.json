@@ -1,0 +1,21 @@
+{
+  "id": "1404",
+  "name": "back stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "lower back",
+    "upper back"
+  ],
+  "category": "stretching",
+  "description": "A simple stretch to lengthen the back and ease tightness.",
+  "instructions": [
+    "Stand or sit tall and clasp your hands in front of you.",
+    "Press your arms forward and round your upper back.",
+    "Let your head drop gently.",
+    "Breathe slowly into your back.",
+    "Hold for 20-30 seconds."
+  ],
+  "textSource": "opengym"
+}

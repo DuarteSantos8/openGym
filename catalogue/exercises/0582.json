@@ -1,0 +1,31 @@
+{
+  "id": "0582",
+  "name": "lever kneeling leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "Kneeling on a machine, you curl your lower legs up against a pad. Isolates the hamstrings.",
+  "instructions": [
+    "Adjust the machine to fit your body and select the desired weight.",
+    "Kneel on the machine facing downwards, with your knees resting on the pad and your feet secured under the footpads.",
+    "Grasp the handles or the sides of the machine for stability.",
+    "Keeping your upper body stationary, exhale and curl your legs up towards your glutes by flexing your knees.",
+    "Pause for a moment at the top of the movement, squeezing your hamstrings.",
+    "Inhale and slowly lower your legs back to the starting position, fully extending your knees.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "hamstring"
+    ],
+    "secondaries": [
+      "calves"
+    ]
+  },
+  "femaleVariant": "3609",
+  "textSource": "exercisedb"
+}

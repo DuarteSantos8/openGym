@@ -1,0 +1,24 @@
+{
+  "id": "3166",
+  "name": "bodyweight standing row",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A standing, bent-over row pulling a bar or handles toward your body with an overhand grip. It builds the upper back and the muscles that retract the shoulder blades.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and knees slightly bent.",
+    "Grasp a bar or handles with an overhand grip, palms facing down.",
+    "Keep your back straight and core engaged.",
+    "Pull the bar or handles towards your body, squeezing your shoulder blades together.",
+    "Pause for a moment at the top of the movement.",
+    "Slowly release and extend your arms back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3163",
+  "textSource": "exercisedb"
+}

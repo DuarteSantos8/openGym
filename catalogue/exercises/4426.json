@@ -1,0 +1,23 @@
+{
+  "id": "4426",
+  "name": "dumbbell lying wide grip row on rack",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "lats",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A chest-supported row with a wide elbow path that emphasises the upper back and rear delts.",
+  "instructions": [
+    "Lie face down on a high bench with a dumbbell in each hand.",
+    "Let your arms hang straight down.",
+    "Row the dumbbells up with elbows flaring out to the sides.",
+    "Squeeze your shoulder blades together.",
+    "Lower under control."
+  ],
+  "textSource": "opengym"
+}

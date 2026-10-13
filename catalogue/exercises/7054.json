@@ -1,0 +1,22 @@
+{
+  "id": "7054",
+  "name": "dumbbell standing hands torsion",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "wrist extensors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A standing twisting move holding a dumbbell that works the forearm rotators. It builds wrist and grip strength.",
+  "instructions": [
+    "Stand holding a dumbbell by its handle in front of you.",
+    "Keep your elbows bent and close to your sides.",
+    "Rotate your forearms and wrists inward and outward.",
+    "Move slowly through the full range.",
+    "Keep your shoulders relaxed."
+  ],
+  "textSource": "opengym"
+}

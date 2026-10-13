@@ -1,0 +1,22 @@
+{
+  "id": "3345",
+  "name": "hand spring wrist curl",
+  "bodyPart": "lower arms",
+  "equipment": "weighted",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "grip muscles",
+    "hands"
+  ],
+  "category": "strength",
+  "description": "A wrist curl using a hand grip spring, strengthening your forearms and grip.",
+  "instructions": [
+    "Sit with a forearm resting on your thigh or a bench, palm up.",
+    "Hold the hand spring in that hand.",
+    "Squeeze the handles together by curling your wrist and fingers.",
+    "Hold briefly at full squeeze.",
+    "Release slowly, finish your reps, then switch hands."
+  ],
+  "textSource": "opengym"
+}

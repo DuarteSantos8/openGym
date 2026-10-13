@@ -1,0 +1,22 @@
+{
+  "id": "1563",
+  "name": "front back leg raises",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "hamstrings",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A standing leg swing forward and backward, loosening the hips. A nice warm-up for the hips and hamstrings.",
+  "instructions": [
+    "Stand tall next to a wall or support and hold on with one hand.",
+    "Swing your outside leg forward with a straight knee.",
+    "Swing it back behind you, squeezing your glute.",
+    "Keep your torso upright and avoid arching your lower back.",
+    "Do all reps on one side, then turn around and switch legs."
+  ],
+  "textSource": "opengym"
+}

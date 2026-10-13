@@ -1,0 +1,24 @@
+{
+  "id": "2291",
+  "name": "cable wide grip lat pulldown",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "upper back",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A pulldown with a wide grip that builds the broad muscles of the upper back.",
+  "instructions": [
+    "Sit at the pulldown station and secure your thighs under the pads.",
+    "Grab the bar with a wide overhand grip.",
+    "Lean back slightly and pull the bar down to your upper chest.",
+    "Drive your elbows down and back, squeezing your shoulder blades.",
+    "Control the bar back up until your arms are fully extended.",
+    "Avoid swinging your torso."
+  ],
+  "textSource": "opengym"
+}

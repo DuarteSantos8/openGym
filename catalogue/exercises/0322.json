@@ -1,0 +1,23 @@
+{
+  "id": "0322",
+  "name": "dumbbell incline inner biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "An incline curl that emphasises the inner biceps. The dumbbells curl up from a deep stretch behind the body.",
+  "instructions": [
+    "Sit on an incline bench with a dumbbell in each hand, palms facing each other.",
+    "Rest your upper arms on the bench, allowing your elbows to hang down and your palms to face forward.",
+    "Keeping your upper arms stationary, exhale and curl the weights while contracting your biceps.",
+    "Continue to raise the dumbbells until your biceps are fully contracted and the dumbbells are at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale and slowly begin to lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2521",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "9693",
+  "name": "dumbbell alternating arm thruster",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A squat into an overhead press, alternating arms with dumbbells. It works legs and shoulders together.",
+  "instructions": [
+    "Hold a dumbbell in each hand at shoulder height.",
+    "Squat down with your chest tall.",
+    "Drive up and press one dumbbell overhead.",
+    "Lower it back to your shoulder as you squat again.",
+    "Alternate arms each rep."
+  ],
+  "textSource": "opengym"
+}

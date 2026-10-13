@@ -1,0 +1,21 @@
+{
+  "id": "1447",
+  "name": "lever calf stretch (plate loaded)",
+  "bodyPart": "lower legs",
+  "equipment": "leverage machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "A calf stretch on a plate-loaded lever machine, using the platform to push the heel down and lengthen the lower leg.",
+  "instructions": [
+    "Set up on the machine and place the ball of one foot on the platform with the heel free.",
+    "Keep your knee straight and stand tall.",
+    "Let the heel sink down until you feel a stretch in the calf.",
+    "Hold for 20-30 seconds, breathing steadily, then release slowly.",
+    "Switch legs and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4688",
+  "name": "resistance band triceps pushdown",
+  "bodyPart": "upper arms",
+  "equipment": "resistance band",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A pushdown against a band anchored overhead that isolates the triceps.",
+  "instructions": [
+    "Anchor the band high and hold the handles with elbows bent at your sides.",
+    "Keep your elbows pinned.",
+    "Press the handles down until your arms are straight.",
+    "Squeeze your triceps for a moment.",
+    "Return slowly to the start."
+  ],
+  "femaleVariant": "5268",
+  "textSource": "opengym"
+}

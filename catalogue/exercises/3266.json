@@ -1,0 +1,22 @@
+{
+  "id": "3266",
+  "name": "elbow push up",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "triceps"
+  ],
+  "category": "calisthenics",
+  "description": "Move between a forearm plank and a high plank, one arm at a time, to train the core and shoulders.",
+  "instructions": [
+    "Start in a forearm plank with body in a straight line.",
+    "Press up onto one hand, then the other, into a high plank.",
+    "Lower back down to your forearms one arm at a time.",
+    "Keep your hips steady and avoid rocking side to side.",
+    "Alternate which arm leads each rep."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "2747",
+  "name": "lever adduction thrust",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "inner thighs"
+  ],
+  "category": "strength",
+  "description": "A machine hip thrust that squeezes the legs inward, training the inner thighs and glutes.",
+  "instructions": [
+    "Sit in the machine with the pads between or around your legs as set.",
+    "Brace your core.",
+    "Thrust your hips up while squeezing your legs inward.",
+    "Hold the squeeze briefly at the top.",
+    "Lower with control."
+  ],
+  "textSource": "opengym"
+}

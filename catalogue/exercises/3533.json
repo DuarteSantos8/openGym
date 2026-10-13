@@ -1,0 +1,22 @@
+{
+  "id": "3533",
+  "name": "quads",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight squat variation focused on the front of the thighs. It trains the quads and glutes.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Lower your body by bending your knees and pushing your hips back as if sitting on a chair.",
+    "Keep your chest up and your back straight.",
+    "Lower yourself until your thighs are parallel to the ground.",
+    "Push through your heels to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

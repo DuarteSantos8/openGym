@@ -1,0 +1,23 @@
+{
+  "id": "2187",
+  "name": "barbell reverse close-grip bench press",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A close-grip bench press using a reverse (underhand) grip. Emphasises the triceps and upper chest.",
+  "instructions": [
+    "Lie flat on a bench with your feet flat on the ground and your back pressed against the bench.",
+    "Grasp the barbell with a reverse grip, hands shoulder-width apart.",
+    "Lift the barbell off the rack and hold it directly above your chest with your arms fully extended.",
+    "Slowly lower the barbell down towards your chest, keeping your elbows close to your body.",
+    "Pause for a moment when the barbell is just above your chest.",
+    "Push the barbell back up to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

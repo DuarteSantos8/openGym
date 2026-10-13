@@ -1,0 +1,23 @@
+{
+  "id": "12018",
+  "name": "kettlebell standing slingshots (advanced)",
+  "bodyPart": "waist",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "forearms",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Passing a kettlebell around your torso in quick circles. It challenges the core, grip and coordination.",
+  "instructions": [
+    "Stand with your feet hip width apart holding a kettlebell by the handle.",
+    "Pass it around your waist from one hand to the other behind your back.",
+    "Continue the circle to the front, keeping the movement smooth.",
+    "Keep your core tight and your hips still.",
+    "After several reps, reverse the direction."
+  ],
+  "textSource": "opengym"
+}

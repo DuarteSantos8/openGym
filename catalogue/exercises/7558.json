@@ -1,0 +1,22 @@
+{
+  "id": "7558",
+  "name": "wall sit from deficit",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "Wall sit with heels raised for a tougher quad hold.",
+  "instructions": [
+    "Stand with your heels on a low platform and your back on a wall.",
+    "Slide down until thighs are parallel.",
+    "Keep your back flat.",
+    "Hold for 20-45 seconds.",
+    "Slide up carefully."
+  ],
+  "textSource": "opengym"
+}

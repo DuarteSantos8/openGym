@@ -1,0 +1,22 @@
+{
+  "id": "6050",
+  "name": "bottle weighted glute bridge",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A hip bridge with a weighted bottle resting on your hips. It isolates the glutes with light load.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat.",
+    "Hold a bottle across your hips with both hands.",
+    "Push through your heels and lift your hips.",
+    "Squeeze your glutes at the top, forming a straight line from shoulders to knees.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

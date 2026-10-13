@@ -1,0 +1,22 @@
+{
+  "id": "8653",
+  "name": "seated open up and under swing on a chair",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "obliques",
+    "lats"
+  ],
+  "category": "mobility",
+  "description": "A seated swing that opens the chest and then sweeps the arms underneath, warming up the trunk and shoulders.",
+  "instructions": [
+    "Sit tall near the front of a sturdy chair with your feet flat on the floor.",
+    "Brace your core and keep your shoulders relaxed.",
+    "Swing both arms open to the sides.",
+    "Rotate and sweep them under and across your body.",
+    "Open back out and alternate directions with a smooth rhythm."
+  ],
+  "textSource": "opengym"
+}

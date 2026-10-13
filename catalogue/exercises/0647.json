@@ -1,0 +1,23 @@
+{
+  "id": "0647",
+  "name": "plyo sit squat (wall)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "A jumping variation of the wall sit. You drop into a wall squat and then explode upward, building leg power.",
+  "instructions": [
+    "Stand with your back close to a wall, feet shoulder width apart.",
+    "Lower into a wall sit with your thighs parallel to the floor.",
+    "Drive through your feet and jump up explosively.",
+    "Land softly with bent knees.",
+    "Drop straight back into the sit and repeat.",
+    "Keep your chest tall and land quietly."
+  ],
+  "textSource": "opengym"
+}

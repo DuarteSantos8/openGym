@@ -1,0 +1,23 @@
+{
+  "id": "4462",
+  "name": "roll ball foot",
+  "bodyPart": "lower legs",
+  "equipment": "roller",
+  "target": "calves",
+  "secondaryMuscles": [
+    "feet",
+    "soleus",
+    "ankles"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a small ball to ease tension in the foot sole. A simple way to loosen tight spots before or after training.",
+  "instructions": [
+    "Place the ball under your foot sole while seated or standing.",
+    "Shift your weight onto the ball until you feel moderate, tolerable pressure.",
+    "Roll slowly back and forth over a short range, about 2-3 cm at a time.",
+    "When you find a tender spot, pause on it and breathe for 20-30 seconds.",
+    "Keep your breathing steady and avoid rolling over bone or joints.",
+    "Repeat on the other side if needed."
+  ],
+  "textSource": "opengym"
+}

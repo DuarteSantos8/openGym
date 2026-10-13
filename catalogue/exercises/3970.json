@@ -1,0 +1,24 @@
+{
+  "id": "3970",
+  "name": "jack burpee with push up",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "chest",
+    "triceps",
+    "quadriceps",
+    "core",
+    "shoulders"
+  ],
+  "category": "cardio",
+  "description": "A burpee that adds a jumping jack finish and a push-up on the floor. It spikes your heart rate while working the chest, arms and legs.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Squat down, place your hands on the floor and jump your feet back into a plank.",
+    "Lower your chest to the floor in a push-up and press back up.",
+    "Jump your feet back toward your hands.",
+    "Explode up into a jumping jack, landing softly, then flow into the next rep."
+  ],
+  "textSource": "opengym"
+}

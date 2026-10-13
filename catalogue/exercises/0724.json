@@ -1,0 +1,23 @@
+{
+  "id": "0724",
+  "name": "sideways lifts vertical turn (straight legs)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A leg-up hip lift with a rotation. It works the lower abs and obliques.",
+  "instructions": [
+    "Lie on your back with legs straight up.",
+    "Press your arms into the floor.",
+    "Lift your hips and rotate them to one side.",
+    "Lower slowly.",
+    "Repeat to the other side.",
+    "Keep legs straight."
+  ],
+  "textSource": "opengym"
+}

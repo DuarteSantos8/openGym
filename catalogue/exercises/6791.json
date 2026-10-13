@@ -1,0 +1,21 @@
+{
+  "id": "6791",
+  "name": "shoulder internal rotation test",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "A simple check of how far your shoulder turns inward, handy for spotting tightness before you train.",
+  "instructions": [
+    "Stand tall with your feet hip-width apart.",
+    "Reach one arm behind your back with the palm facing out.",
+    "Slide your hand slowly up your spine as far as is comfortable.",
+    "Note how high your thumb reaches, keeping your chest open.",
+    "Lower the arm, then repeat with the other side to compare."
+  ],
+  "textSource": "opengym"
+}

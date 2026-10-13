@@ -1,0 +1,24 @@
+{
+  "id": "2928",
+  "name": "barbell overhead shrug",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "traps",
+  "secondaryMuscles": [
+    "upper back",
+    "shoulders",
+    "trapezius",
+    "forearms",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A shrug done with the barbell locked out overhead. It targets the traps and helps with overhead stability.",
+  "instructions": [
+    "Hold a barbell locked out overhead with a wide grip.",
+    "Keep your arms straight and your ribs down.",
+    "Shrug your shoulders up toward your ears.",
+    "Pause briefly at the top.",
+    "Lower slowly without bending your elbows."
+  ],
+  "textSource": "opengym"
+}

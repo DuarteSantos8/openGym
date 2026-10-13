@@ -1,0 +1,21 @@
+{
+  "id": "6561",
+  "name": "lever ab swing",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A rotating ab machine movement where you swing your legs and trunk to work the abs.",
+  "instructions": [
+    "Sit in the machine and secure yourself with the pads.",
+    "Hold the handles and brace your core.",
+    "Swing your legs to one side using your abs.",
+    "Return to the centre with control.",
+    "Repeat on the other side."
+  ],
+  "textSource": "opengym"
+}

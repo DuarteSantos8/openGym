@@ -1,0 +1,23 @@
+{
+  "id": "11258",
+  "name": "cable standing push pull v. 3",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "chest",
+    "triceps",
+    "biceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing move with one arm pressing while the other rows. It trains pushing and pulling together and tests your core.",
+  "instructions": [
+    "Stand in a staggered stance between two cables, one handle in each hand.",
+    "Brace your core and keep your hips square.",
+    "Press one handle forward while pulling the other back toward your ribs.",
+    "Reverse the roles slowly.",
+    "Alternate sides for the set."
+  ],
+  "textSource": "opengym"
+}

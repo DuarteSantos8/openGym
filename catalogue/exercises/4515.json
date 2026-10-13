@@ -1,0 +1,22 @@
+{
+  "id": "4515",
+  "name": "back pec stretch v. 2",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "stretching",
+  "description": "A back-clasped chest opener that lengthens the pecs and the front of the shoulders.",
+  "instructions": [
+    "Stand tall with your feet hip-width apart.",
+    "Clasp your hands together behind your back.",
+    "Straighten your arms and lift them gently away from your body.",
+    "Open your chest and pull your shoulder blades together.",
+    "Hold for 20-30 seconds while breathing slowly.",
+    "Release and repeat."
+  ],
+  "textSource": "opengym"
+}

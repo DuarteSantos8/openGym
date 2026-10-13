@@ -1,0 +1,22 @@
+{
+  "id": "0785",
+  "name": "squat jacks",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "A cardio move that mixes a squat with a jumping jack. It raises your heart rate and burns the legs.",
+  "instructions": [
+    "Start in a squat with hands together at your chest.",
+    "Jump your feet wide while staying low in the squat.",
+    "Jump your feet back together, still low.",
+    "Keep your chest lifted and knees over your toes.",
+    "Continue at a steady, quick pace."
+  ],
+  "textSource": "opengym"
+}

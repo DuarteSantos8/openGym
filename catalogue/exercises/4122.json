@@ -1,0 +1,22 @@
+{
+  "id": "4122",
+  "name": "cable one arm reverse fly",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A single arm reverse fly on a cable to isolate the rear delts.",
+  "instructions": [
+    "Stand sideways to a cable at shoulder height and grab the handle with the far hand.",
+    "Keep a slight bend in your elbow.",
+    "Pull your arm across and back in an arc.",
+    "Squeeze your rear delt.",
+    "Return slowly, then switch arms."
+  ],
+  "textSource": "opengym"
+}

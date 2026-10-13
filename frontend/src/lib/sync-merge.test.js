@@ -960,3 +960,27 @@ describe('a reset leads the unit over a copy that switched before it', () => {
     }
   })
 })
+
+describe('body measurements across devices (#82)', () => {
+  const base = { unit: 'kg', _ts: 100 }
+  it('keeps both devices\' check-ins, and of one day the one saved later', () => {
+    const phone = { ...base, _ts: 300, measurements: [{ d: '2026-10-01', t: 200, waist: 80 }, { d: '2026-10-03', t: 300, waist: 79 }] }
+    const desk = { ...base, _ts: 250, measurements: [{ d: '2026-10-01', t: 250, waist: 81 }, { d: '2026-10-02', t: 250, chest: 100 }] }
+    const out = mergeStates(phone, desk)
+    expect(out.measurements.map(e => e.d)).toEqual(['2026-10-01', '2026-10-02', '2026-10-03'])
+    expect(out.measurements[0].waist).toBe(81)
+  })
+  it('a check-in deleted on one device stays deleted', () => {
+    const prev = { ...base, measurements: [{ d: '2026-10-01', t: 200, waist: 80 }] }
+    const next = stampDeletions(prev, { ...base, measurements: [] }, 500)
+    expect(next.deleted.measurements['2026-10-01']).toBe(500)
+    const out = mergeStates({ ...next, _ts: 500 }, { ...prev, _ts: 300 })
+    expect(out.measurements || []).toEqual([])
+  })
+  it('a check-in edited now wins over the other device\'s older copy of that day', () => {
+    const prev = { ...base, measurements: [{ d: '2026-10-01', t: 200, waist: 80 }] }
+    const next = { ...base, measurements: [{ d: '2026-10-01', t: 201, waist: 78 }] }
+    stampChange(prev, next, 1000)
+    expect(next.measurements[0].t).toBe(1000)
+  })
+})

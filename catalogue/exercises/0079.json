@@ -1,0 +1,22 @@
+{
+  "id": "0079",
+  "name": "barbell revers wrist curl v. 2",
+  "bodyPart": "lower arms",
+  "equipment": "barbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "biceps",
+    "brachialis"
+  ],
+  "category": "strength",
+  "description": "A reverse wrist curl with the forearms resting on the thighs. Builds the muscles on top of the forearms.",
+  "instructions": [
+    "Sit on a bench with your feet flat on the ground and your knees bent.",
+    "Hold a barbell with an overhand grip, palms facing down, and your hands shoulder-width apart.",
+    "Rest your forearms on your thighs, allowing your wrists to hang off the edge.",
+    "Keeping your forearms stationary, exhale and curl your wrists upward as far as possible.",
+    "Hold the contracted position for a brief pause, then inhale and slowly lower the barbell back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

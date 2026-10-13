@@ -1,0 +1,24 @@
+{
+  "id": "3488",
+  "name": "cobra push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "lower back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up that flows into a cobra-style chest opening at the top. It trains the chest and arms and works the back and spine.",
+  "instructions": [
+    "Start in a push-up position with hands under your shoulders.",
+    "Lower your chest to the floor with elbows tucked.",
+    "Press up and keep going, letting your hips sink forward.",
+    "Lift your chest and look slightly up, like a cobra.",
+    "Return to the plank by lifting your hips back.",
+    "Keep the movement smooth and controlled."
+  ],
+  "textSource": "opengym"
+}

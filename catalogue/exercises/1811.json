@@ -1,0 +1,23 @@
+{
+  "id": "1811",
+  "name": "standing knee to chest stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "lower back",
+    "hip flexors",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "Standing on one leg and hugging the other knee to your chest stretches your glutes and tests your balance. A good warm-up move.",
+  "instructions": [
+    "Stand tall, using a wall for balance if needed.",
+    "Lift one knee and pull it gently toward your chest with both hands.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "femaleVariant": "8062",
+  "textSource": "opengym"
+}

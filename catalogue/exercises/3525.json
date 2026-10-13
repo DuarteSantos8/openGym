@@ -1,0 +1,24 @@
+{
+  "id": "3525",
+  "name": "landmine kneeling one arm shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "landmine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A kneeling single-arm press with a landmine. It trains the shoulders and builds core stability.",
+  "instructions": [
+    "Kneel facing the end of a landmine barbell.",
+    "Hold the end at shoulder height with one hand.",
+    "Keep your core tight and torso upright.",
+    "Press the end up and forward until your arm is straight.",
+    "Lower with control.",
+    "Complete your reps, then switch arms."
+  ],
+  "femaleVariant": "10768",
+  "textSource": "opengym"
+}

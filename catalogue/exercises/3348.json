@@ -1,0 +1,22 @@
+{
+  "id": "3348",
+  "name": "incline shoulder tap",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "triceps"
+  ],
+  "category": "calisthenics",
+  "description": "A plank on an incline where you tap each shoulder, building core and shoulder stability.",
+  "instructions": [
+    "Place your hands on a bench or box and extend into a plank position.",
+    "Spread your feet slightly wider for balance.",
+    "Lift one hand and tap the opposite shoulder.",
+    "Keep your hips level and body in a straight line.",
+    "Alternate sides at a steady pace."
+  ],
+  "textSource": "opengym"
+}

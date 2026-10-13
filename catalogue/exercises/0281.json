@@ -1,0 +1,22 @@
+{
+  "id": "0281",
+  "name": "decline sit up (arms straight)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A sit-up on a decline bench with your arms held straight out in front. It trains the abs through a longer range, and straight arms make it a bit harder.",
+  "instructions": [
+    "Lie on a decline bench and hook your feet under the pads.",
+    "Extend your arms straight in front of you, parallel to the floor.",
+    "Curl your torso up, rolling off the bench one section at a time.",
+    "Reach your arms toward your knees as you sit up.",
+    "Lower back down slowly with control.",
+    "Keep your chin off your chest and don't yank with your arms."
+  ],
+  "textSource": "opengym"
+}

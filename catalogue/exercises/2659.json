@@ -1,0 +1,22 @@
+{
+  "id": "2659",
+  "name": "lever incline chest press (plate loaded)",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A plate-loaded machine press on an incline that targets the upper chest and the front of the shoulders.",
+  "instructions": [
+    "Adjust the seat so the handles are level with your upper chest.",
+    "Sit back and grip the handles with feet flat on the floor.",
+    "Press forward until your arms are nearly straight.",
+    "Squeeze the chest, then return slowly.",
+    "Keep your back against the pad and your shoulders down."
+  ],
+  "textSource": "opengym"
+}

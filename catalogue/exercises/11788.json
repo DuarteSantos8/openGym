@@ -1,0 +1,21 @@
+{
+  "id": "11788",
+  "name": "seated ulnar nerve mobilization",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "A gentle seated nerve glide for the ulnar nerve on the inner side of the arm.",
+  "instructions": [
+    "Sit tall with one arm out to the side.",
+    "Bend your elbow and bring your hand toward your face like a mask.",
+    "Tilt your head slightly away.",
+    "Straighten the arm back out, keeping it gentle.",
+    "Repeat 8-10 times, then switch arms."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "7561",
+  "name": "bodyweight single leg squat with support",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Supported single leg squat that helps you progress toward the full version.",
+  "instructions": [
+    "Hold a stable support with one hand.",
+    "Stand on one leg with the other lifted.",
+    "Lower down as far as you can with control.",
+    "Use the support only as much as needed.",
+    "Push up and switch legs."
+  ],
+  "textSource": "opengym"
+}

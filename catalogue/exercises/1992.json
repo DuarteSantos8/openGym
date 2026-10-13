@@ -1,0 +1,23 @@
+{
+  "id": "1992",
+  "name": "sled full hack squat",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A hack squat on a sled machine through a full range of motion, loading the quads and glutes.",
+  "instructions": [
+    "Set your shoulders under the pads and your feet shoulder-width on the platform.",
+    "Unlock the safety and straighten your legs.",
+    "Lower your hips slowly until your thighs are below parallel.",
+    "Keep your back flat against the pad and knees tracking over your toes.",
+    "Press through your whole foot to stand back up."
+  ],
+  "femaleVariant": "2554",
+  "textSource": "opengym"
+}

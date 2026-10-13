@@ -1,0 +1,24 @@
+{
+  "id": "4591",
+  "name": "boxing right cross (with partner)",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "triceps",
+    "obliques",
+    "core"
+  ],
+  "category": "combat",
+  "description": "A straight rear-hand punch with hip rotation, thrown to a partner's pad.",
+  "instructions": [
+    "Face your partner, who holds a pad at head height.",
+    "Stand in a boxing stance with hands up.",
+    "Rotate your rear foot and hips as you throw the right hand.",
+    "Drive your fist straight to the pad.",
+    "Keep your chin tucked and left hand up.",
+    "Snap back to your stance."
+  ],
+  "textSource": "opengym"
+}

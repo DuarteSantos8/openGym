@@ -1,0 +1,23 @@
+{
+  "id": "6303",
+  "name": "camel pose ustrasana",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "chest",
+    "core",
+    "shoulders"
+  ],
+  "category": "yoga",
+  "description": "A kneeling backbend with hands on your heels. It opens the chest and stretches the thighs and hips.",
+  "instructions": [
+    "Kneel with knees hip-width apart and hands on your lower back.",
+    "Push your hips forward.",
+    "Lean back and reach for your heels.",
+    "Lift your chest and let your head drop gently if comfortable.",
+    "Hold for 15-30 seconds, then rise."
+  ],
+  "textSource": "opengym"
+}

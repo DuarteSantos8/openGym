@@ -1,0 +1,20 @@
+{
+  "id": "0089",
+  "name": "barbell seated close-grip concentration curl",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated close-grip curl with the arms braced on the thighs. Isolates the biceps.",
+  "instructions": [
+    "Sit on a bench with your feet flat on the floor and hold a barbell with an underhand grip, hands shoulder-width apart.",
+    "Rest your upper arms against your inner thighs, just above your knees, and let the barbell hang down in front of you.",
+    "Keeping your upper arms stationary, exhale and curl the barbell up towards your shoulders, contracting your biceps.",
+    "Hold the contracted position for a brief pause, then inhale and slowly lower the barbell back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

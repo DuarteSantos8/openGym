@@ -1,0 +1,24 @@
+{
+  "id": "4824",
+  "name": "diagonal punch",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "core",
+    "obliques",
+    "triceps",
+    "chest"
+  ],
+  "category": "plyometrics",
+  "description": "A fast, rotating punch that travels across the body. It raises your heart rate and trains shoulders, core and rotation.",
+  "instructions": [
+    "Stand in an athletic stance with your fists up.",
+    "Rotate your hips and torso as you throw a punch across your body.",
+    "Extend your arm fully and pivot your back foot.",
+    "Pull the arm back quickly.",
+    "Alternate sides at a brisk, controlled pace."
+  ],
+  "femaleVariant": "5112",
+  "textSource": "opengym"
+}

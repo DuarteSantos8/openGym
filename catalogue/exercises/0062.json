@@ -1,0 +1,24 @@
+{
+  "id": "0062",
+  "name": "barbell narrow row",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "rear deltoids",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A bent-over row with a close grip that puts extra work on the lats and the muscles between the shoulder blades.",
+  "instructions": [
+    "Hold a barbell with a narrow, underhand or neutral grip, hinge at the hips and keep your back flat.",
+    "Let the bar hang at arm's length below your chest.",
+    "Pull the bar toward your lower ribs, keeping your elbows close to your sides.",
+    "Squeeze your shoulder blades together at the top.",
+    "Lower the bar under control until your arms are straight.",
+    "Keep your neck neutral and avoid jerking with your lower back."
+  ],
+  "textSource": "opengym"
+}

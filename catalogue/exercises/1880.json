@@ -1,0 +1,21 @@
+{
+  "id": "1880",
+  "name": "leaning abductor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "Leaning stretch for the outer hip and thigh.",
+  "instructions": [
+    "Stand next to a wall and lean on it with one hand.",
+    "Cross your outer leg behind the inner one.",
+    "Lean your hips toward the wall.",
+    "Keep both feet flat.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

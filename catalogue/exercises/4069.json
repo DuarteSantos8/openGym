@@ -1,0 +1,22 @@
+{
+  "id": "4069",
+  "name": "barbell bench press with 2 board",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "Bench press with two boards on the chest, giving a slightly longer range than the three board press.",
+  "instructions": [
+    "Lie on a bench with two boards stacked on your chest.",
+    "Grip the bar slightly wider than shoulders.",
+    "Lower the bar until it touches the boards.",
+    "Press back up to full extension.",
+    "Keep your feet planted and shoulder blades pinched."
+  ],
+  "textSource": "opengym"
+}

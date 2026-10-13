@@ -1,0 +1,23 @@
+{
+  "id": "1151",
+  "name": "suspender twist side",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "From a side-facing plank position with the straps, you twist to hit the obliques.",
+  "instructions": [
+    "Place your feet in the straps and set a high plank.",
+    "Brace your core.",
+    "Twist your hips to one side, bringing the knees across.",
+    "Return to the center with control.",
+    "Twist to the other side.",
+    "Keep your shoulders square."
+  ],
+  "textSource": "opengym"
+}

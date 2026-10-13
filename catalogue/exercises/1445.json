@@ -1,0 +1,22 @@
+{
+  "id": "1445",
+  "name": "dumbbell rdl stretch",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "isometric",
+  "description": "Holding the bottom of a Romanian deadlift with dumbbells. It loads the hamstrings in their stretched position.",
+  "instructions": [
+    "Stand holding dumbbells in front of your thighs.",
+    "Push your hips back and lower the dumbbells along your legs.",
+    "Stop when you feel a deep stretch in your hamstrings.",
+    "Hold the position with a flat back.",
+    "Hold for 15-30 seconds, then stand up."
+  ],
+  "textSource": "opengym"
+}

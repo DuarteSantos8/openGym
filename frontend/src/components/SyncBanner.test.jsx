@@ -9,7 +9,8 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 /* The connection indicator: every way the app can be without its server gets a line that stays
    while the condition lasts — offline, an error with its HTTP code, a server that refuses this
-   device, an answer that is not openGym's, no server at all — and says what to do about it.
+   device, an answer that is not openGym's, a guest in a browser — and says what to do about it.
+   A phone kept local on purpose gets no line at all (#454).
    Never in the public demo, never during the phone's first-launch choice, and a change merely
    waiting for its push does not flash it. The store is a stand-in: its `sync` is what each test
    sets; ServerSync.jsx (the words and the actions) is the real one. */
@@ -18,9 +19,10 @@ const mocks = vi.hoisted(() => {
   state.toast = vi.fn()
   state.syncNow = vi.fn(async () => state.sync)
   state.passkeyLogin = vi.fn(async () => ({ id: 'u1', name: 'andi' }))
+  state.update = vi.fn(mut => { state.S = { ...state.S }; mut(state.S) })
   state.snapshot = () => ({
     S: state.S, user: state.user, sync: state.sync, needsMobileOnboarding: state.onboarding,
-    isGuest: () => state.guest, syncNow: state.syncNow,
+    isGuest: () => state.guest, syncNow: state.syncNow, update: state.update,
     setUser: vi.fn(), adoptProfile: vi.fn(async () => ({})),
   })
   return state
@@ -59,7 +61,7 @@ beforeEach(() => {
   Object.assign(mocks, { MOBILE: false, DEMO: false, webauthn: true, user: { id: 'u1', name: 'andi' }, guest: false, onboarding: false, sync: sync('ok'), S: {} })
   mocks.sheets.length = 0
   mocks.navs.length = 0
-  mocks.toast.mockClear(); mocks.syncNow.mockClear(); mocks.passkeyLogin.mockClear()
+  mocks.toast.mockClear(); mocks.syncNow.mockClear(); mocks.passkeyLogin.mockClear(); mocks.update.mockClear()
   host = document.createElement('div')
   document.body.appendChild(host)
   root = createRoot(host)
@@ -206,17 +208,27 @@ describe('not connected — it says so, and what to do', () => {
 })
 
 describe('no server at all', () => {
-  it('a phone kept local says so quietly, with a way to connect', () => {
+  // #454, #369: local use on a phone is a choice, so no bar for it. Settings still names it and
+  // offers Connect (the line); only a server the phone was paired with can be missing.
+  it('a phone kept local shows no bar at all, only the Settings line says it', () => {
     mocks.MOBILE = true
     mocks.user = null
     mocks.guest = true
     mocks.sync = sync('local', { server: null })
     render()
-    expect(bar().className).toContain('quiet')
-    expect(text()).toBe('On this phone only, not connected to a server')
-    expect(label()).toBe('Connect')
-    act(() => button().click())
-    expect(openedConnect().dataset.again).toBe('false')
+    expect(bar()).toBeNull()
+    expect(conn()).toBe('')
+    const view = connectionView(sync('local', { server: null }), { mobile: true })
+    expect(view.banner).toBeNull()
+    expect(view.line).toBe('On this phone only, not connected to a server')
+    expect(view.action).toBe('connect')
+  })
+
+  it('a paired phone whose server cannot be reached still hears it', () => {
+    mocks.MOBILE = true
+    mocks.sync = sync('offline', { pending: true })
+    render()
+    expect(text()).toBe('Your server can’t be reached. Your changes are saved on this device and sync once it answers again.')
   })
 
   it('a guest in a browser: "Sign in" leads to Settings, where signing in and creating a profile are', () => {
@@ -245,6 +257,49 @@ describe('no server at all', () => {
     mocks.sync = sync('local')
     render()
     expect(bar()).toBeNull()
+  })
+})
+
+// #454: a device kept local on purpose read "not connected to a server" on every screen, for good.
+// The quiet line has an × that hides it; a problem with a server never gets one.
+describe('hiding the no-server line', () => {
+  const close = () => host.querySelector('.conn-x')
+
+  it('a phone kept local never shows the line, so there is nothing to close (#454)', () => {
+    mocks.MOBILE = true
+    mocks.user = null
+    mocks.guest = true
+    mocks.sync = sync('local', { server: null })
+    render()
+    expect(bar()).toBeNull()
+    expect(conn()).toBe('')
+  })
+
+  it('a guest in a browser: the × hides the line, and Settings is not opened by it', () => {
+    mocks.user = null
+    mocks.guest = true
+    mocks.sync = sync('local')
+    render()
+    act(() => close().click())
+    expect(mocks.navs).toEqual([])
+    render()
+    expect(bar()).toBeNull()
+  })
+
+  it('a profile without the key still shows the line', () => {
+    Object.assign(mocks, { user: null, guest: true, sync: sync('local'), S: {} })
+    render()
+    expect(bar()).not.toBeNull()
+  })
+
+  it('hidden, a problem with a server still shows, and has no × of its own', () => {
+    mocks.S = { connLocal: false }
+    for (const [st, extra] of [['offline', { pending: true }], ['error', { lastError: { status: 502 } }], ['auth', {}], ['held', {}]]) {
+      mocks.sync = sync(st, extra)
+      render()
+      expect(bar(), st).not.toBeNull()
+      expect(close(), st).toBeNull()
+    }
   })
 })
 
@@ -316,7 +371,7 @@ describe('with the connection status switched off', () => {
   it('hides the bar whatever it would say, and gives the page its height back', () => {
     for (const [st, extra, who] of [
       ['offline', { pending: true }, {}], ['error', { lastError: { status: 502 } }, {}], ['auth', {}, {}], ['held', {}, {}],
-      ['local', { server: null }, { MOBILE: true, user: null, guest: true }], ['local', {}, { user: null, guest: true }],
+      ['local', {}, { user: null, guest: true }],
     ]) {
       Object.assign(mocks, { MOBILE: false, user: { id: 'u1', name: 'andi' }, guest: false }, who, { sync: sync(st, extra), S: { connStatus: true } })
       both()

@@ -1,0 +1,23 @@
+{
+  "id": "4767",
+  "name": "hanging knee circle raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques",
+    "lower abs",
+    "grip muscles"
+  ],
+  "category": "calisthenics",
+  "description": "Hanging from a bar, you raise your knees in a circular path. It targets the lower abs and obliques.",
+  "instructions": [
+    "Hang from a bar with arms straight and legs together.",
+    "Raise your knees toward your chest.",
+    "Move them in a circle to one side and back down.",
+    "Keep your body from swinging.",
+    "Alternate the circle direction each rep."
+  ],
+  "textSource": "opengym"
+}

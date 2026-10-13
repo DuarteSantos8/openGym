@@ -1,0 +1,23 @@
+{
+  "id": "11260",
+  "name": "cable kneeling military press v. 3",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A kneeling overhead press with cables. The position keeps your legs out of it, so the shoulders do the work.",
+  "instructions": [
+    "Kneel between two low pulleys and hold the handles at shoulder height.",
+    "Squeeze your glutes and brace your abs.",
+    "Press both handles straight overhead.",
+    "Lock out without leaning back.",
+    "Lower under control to your shoulders."
+  ],
+  "textSource": "opengym"
+}

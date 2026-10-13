@@ -1,0 +1,23 @@
+{
+  "id": "4406",
+  "name": "tiger yoga pose",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "core",
+    "glutes",
+    "shoulders",
+    "hip flexors"
+  ],
+  "category": "yoga",
+  "description": "A hands-and-knees pose where one leg extends back and the spine arches, mobilising the back and hips.",
+  "instructions": [
+    "Start on all fours with hands under shoulders and knees under hips.",
+    "Round your back and draw one knee toward your nose.",
+    "Then extend that leg back and up while lifting your chest.",
+    "Move smoothly with your breath.",
+    "Do your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

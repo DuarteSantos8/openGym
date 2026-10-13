@@ -1,0 +1,22 @@
+{
+  "id": "2208",
+  "name": "roller back stretch",
+  "bodyPart": "back",
+  "equipment": "roller",
+  "target": "spine",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "mobility",
+  "description": "Rolling your back over a roller to loosen it up. Helps ease stiffness along the spine.",
+  "instructions": [
+    "Start by sitting on the ground with your legs extended in front of you.",
+    "Place the roller perpendicular to your body, just below your glutes.",
+    "Slowly roll your body backwards, allowing the roller to move up your back.",
+    "Continue rolling until the roller reaches your upper back.",
+    "Pause for a moment, then slowly roll back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

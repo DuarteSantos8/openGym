@@ -1,0 +1,22 @@
+{
+  "id": "1485",
+  "name": "plow yoga pose",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "hamstrings",
+    "shoulders",
+    "upper back"
+  ],
+  "category": "yoga",
+  "description": "An inverted yoga pose where the legs are lowered behind the head. It stretches the spine, shoulders and hamstrings.",
+  "instructions": [
+    "Lie on your back with your arms by your sides.",
+    "Lift your legs and hips up and over, supporting your lower back with your hands if needed.",
+    "Lower your toes toward the floor behind your head.",
+    "Keep your neck relaxed and do not turn your head.",
+    "Hold for 15-30 seconds, then roll down slowly one vertebra at a time."
+  ],
+  "textSource": "opengym"
+}

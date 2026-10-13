@@ -1,0 +1,22 @@
+{
+  "id": "5027",
+  "name": "foam roll serratus wall slide",
+  "bodyPart": "back",
+  "equipment": "roller",
+  "target": "serratus anterior",
+  "secondaryMuscles": [
+    "trapezius",
+    "shoulders",
+    "rotator cuff"
+  ],
+  "category": "mobility",
+  "description": "Wall slide with a foam roller under your forearms. It teaches smooth shoulder blade movement and serratus control.",
+  "instructions": [
+    "Stand facing a wall with a foam roller under your forearms against the wall.",
+    "Press your forearms firmly into the roller.",
+    "Roll the roller up the wall as you reach overhead.",
+    "Keep your core braced and neck relaxed.",
+    "Roll back down under control."
+  ],
+  "textSource": "opengym"
+}

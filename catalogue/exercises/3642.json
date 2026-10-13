@@ -1,0 +1,23 @@
+{
+  "id": "3642",
+  "name": "weighted stretch lunge",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A weighted lunge into a deep stretch for the hips. It trains the glutes and quads while opening up the hip flexors.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Take a step forward with your right foot, keeping your back straight.",
+    "Lower your body by bending your knees until your right thigh is parallel to the ground.",
+    "Push through your right heel to return to the starting position.",
+    "Repeat with your left leg.",
+    "Continue alternating legs for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

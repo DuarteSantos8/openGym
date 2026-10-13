@@ -1,0 +1,23 @@
+{
+  "id": "6804",
+  "name": "plank alternate anti gravity pull up",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "obliques",
+    "core",
+    "lats"
+  ],
+  "category": "calisthenics",
+  "description": "From a plank you alternately pull one arm up toward your chest as if climbing. It builds core stability and shoulder control.",
+  "instructions": [
+    "Start in a forearm or high plank with your body in a straight line.",
+    "Brace your core and squeeze your glutes.",
+    "Pull one arm up and back toward your ribs.",
+    "Return it to the floor under control.",
+    "Alternate arms without rocking your hips."
+  ],
+  "textSource": "opengym"
+}

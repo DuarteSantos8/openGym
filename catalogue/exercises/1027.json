@@ -1,0 +1,22 @@
+{
+  "id": "1027",
+  "name": "assisted single leg press",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A machine press done with one leg at a time, helping you build leg strength and fix imbalances.",
+  "instructions": [
+    "Sit on the machine and place one foot on the platform.",
+    "Release the safety and lower the platform until your knee is bent about 90 degrees.",
+    "Press through your heel to straighten the leg without locking the knee.",
+    "Lower back with control.",
+    "Keep your hips on the seat. Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

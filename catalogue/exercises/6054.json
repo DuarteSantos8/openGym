@@ -1,0 +1,22 @@
+{
+  "id": "6054",
+  "name": "bottle weighted side bend",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A standing side bend with a bottle in one hand. It strengthens the obliques.",
+  "instructions": [
+    "Stand with feet hip-width apart, a bottle in one hand at your side.",
+    "Place the other hand lightly behind your head.",
+    "Bend sideways toward the bottle without leaning forward.",
+    "Return to upright by squeezing your side.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

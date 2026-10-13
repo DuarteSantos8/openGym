@@ -1,0 +1,24 @@
+{
+  "id": "3500",
+  "name": "full squat mobility",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "adductors",
+    "hip flexors",
+    "ankles",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "A deep squat hold with gentle movement to open the hips, ankles and lower back.",
+  "instructions": [
+    "Stand with feet slightly wider than your shoulders, toes turned out.",
+    "Lower into a deep squat, keeping your heels down.",
+    "Press your elbows against your inner knees with hands together.",
+    "Shift gently side to side and hold the bottom.",
+    "Keep your chest lifted.",
+    "Stand up slowly."
+  ],
+  "textSource": "opengym"
+}

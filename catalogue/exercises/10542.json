@@ -1,0 +1,22 @@
+{
+  "id": "10542",
+  "name": "seated single leg hugging knee flexion with towel",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hip flexors"
+  ],
+  "category": "mobility",
+  "description": "The same hugging knee flexion, using a towel around the shin to help. It adds a gentle assisted bend.",
+  "instructions": [
+    "Sit tall on a chair and loop a towel around one shin.",
+    "Hold the towel ends with both hands.",
+    "Pull the knee gently toward your chest, bending it.",
+    "Hold for a moment, then release.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

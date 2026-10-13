@@ -1,0 +1,23 @@
+{
+  "id": "6219",
+  "name": "cable standing single arm fly",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A standing fly on a cable, one arm at a time. It builds the chest.",
+  "instructions": [
+    "Stand sideways to a cable with the handle at chest height.",
+    "Step forward for balance.",
+    "Pull the handle across your body.",
+    "Squeeze your chest.",
+    "Return slowly.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

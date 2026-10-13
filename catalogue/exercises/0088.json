@@ -1,0 +1,23 @@
+{
+  "id": "0088",
+  "name": "barbell seated calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "barbell",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "Seated calf raise with the bar resting on your thighs. Isolates the soleus and calves.",
+  "instructions": [
+    "Sit on a bench with your feet flat on the floor and a barbell resting on your thighs.",
+    "Place the balls of your feet on a raised platform, such as a block or step.",
+    "Position the barbell across your thighs and hold it securely with your hands.",
+    "Keeping your back straight and your core engaged, lift your heels off the ground by extending your ankles.",
+    "Pause for a moment at the top, then slowly lower your heels back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2676",
+  "textSource": "exercisedb"
+}

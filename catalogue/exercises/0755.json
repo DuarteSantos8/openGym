@@ -1,0 +1,51 @@
+{
+  "id": "0755",
+  "name": "smith hack squat",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "On the smith machine, you squat with your feet forward of the bar. Works the quads and glutes.",
+  "instructions": [
+    "Adjust the barbell on the smith machine to an appropriate height for your body.",
+    "Stand with your feet shoulder-width apart, toes slightly pointed outwards.",
+    "Position yourself under the barbell, resting it on your upper traps and shoulders.",
+    "Grasp the barbell with an overhand grip, slightly wider than shoulder-width apart.",
+    "Engage your core and keep your chest up as you unrack the barbell.",
+    "Take a step back and position your feet slightly wider than shoulder-width apart.",
+    "Bend your knees and lower your body down, keeping your chest up and back straight.",
+    "Continue descending until your thighs are parallel to the ground or slightly below.",
+    "Pause for a moment at the bottom, then push through your heels to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves",
+      "lower-back",
+      "abs",
+      "obliques"
+    ],
+    "weights": {
+      "quadriceps": 1,
+      "gluteal": 1,
+      "adductors": 1,
+      "hamstring": 0.4,
+      "lower-back": 0.4,
+      "abs": 0.4,
+      "obliques": 0.4,
+      "calves": 0
+    }
+  },
+  "textSource": "exercisedb"
+}

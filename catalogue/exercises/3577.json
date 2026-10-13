@@ -1,0 +1,23 @@
+{
+  "id": "3577",
+  "name": "kettlebell lunge clean and press",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Combine a lunge with a kettlebell clean and overhead press for a full body strength move.",
+  "instructions": [
+    "Start standing with a kettlebell hanging in one hand.",
+    "Step back into a lunge while cleaning the bell to your shoulder.",
+    "Rise from the lunge and press the bell overhead.",
+    "Lower the bell to the shoulder, then to your side.",
+    "Alternate legs and switch hands after the set."
+  ],
+  "textSource": "opengym"
+}

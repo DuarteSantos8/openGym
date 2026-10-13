@@ -1,0 +1,23 @@
+{
+  "id": "5458",
+  "name": "dumbbell standing single arm cross raise",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Raise one dumbbell diagonally across your body. Works the chest and front shoulder.",
+  "instructions": [
+    "Stand holding a dumbbell by your opposite hip.",
+    "Keep a slight bend in your elbow.",
+    "Raise the dumbbell diagonally up and across to head height.",
+    "Squeeze your chest at the top.",
+    "Lower slowly.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

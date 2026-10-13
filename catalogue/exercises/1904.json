@@ -1,0 +1,21 @@
+{
+  "id": "1904",
+  "name": "standing wide leg adductor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "groin",
+    "inner thighs"
+  ],
+  "category": "stretching",
+  "description": "A standing side lunge position that lengthens the inner thighs.",
+  "instructions": [
+    "Stand with your feet wide apart, toes pointing slightly out.",
+    "Shift your weight to one side and bend that knee while the other leg stays straight, and feel the inner thigh stretch.",
+    "Keep your chest up and the straight leg's foot flat on the floor.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

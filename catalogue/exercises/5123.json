@@ -1,0 +1,23 @@
+{
+  "id": "5123",
+  "name": "cable reverse grip pulldown",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "Pull a bar down to your chest with an underhand grip. It works the lats and gets the biceps more involved.",
+  "instructions": [
+    "Sit at a pulldown station with palms facing you, hands shoulder-width apart.",
+    "Lean back slightly and keep your chest up.",
+    "Pull the bar down to your upper chest.",
+    "Squeeze your shoulder blades down and together.",
+    "Let the bar rise slowly until your arms are straight."
+  ],
+  "femaleVariant": "2491",
+  "textSource": "opengym"
+}

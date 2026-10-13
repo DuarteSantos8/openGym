@@ -1,0 +1,21 @@
+{
+  "id": "1983",
+  "name": "reaching up shoulder stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "lats",
+    "triceps"
+  ],
+  "category": "stretching",
+  "description": "Reaching overhead to stretch the shoulders and the sides of the upper body.",
+  "instructions": [
+    "Stand tall with your feet hip width apart.",
+    "Reach one or both arms overhead and up as high as you can, then press them slightly backward.",
+    "Do not arch your lower back as you reach.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

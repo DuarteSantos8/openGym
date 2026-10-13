@@ -1,0 +1,22 @@
+{
+  "id": "3973",
+  "name": "dumbbell single leg calf raise v. 2",
+  "bodyPart": "lower legs",
+  "equipment": "dumbbell",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "A one-leg calf raise holding a dumbbell for extra load. It builds calf strength and ankle stability.",
+  "instructions": [
+    "Hold a dumbbell in one hand and stand on the ball of the opposite foot, ideally on a step.",
+    "Rest your free hand on a wall or rail for balance.",
+    "Lift your heel as high as you can, squeezing the calf.",
+    "Pause for a moment at the top.",
+    "Lower your heel slowly below the step level, then repeat and switch legs."
+  ],
+  "textSource": "opengym"
+}

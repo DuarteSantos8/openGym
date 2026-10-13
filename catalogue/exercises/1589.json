@@ -1,0 +1,22 @@
+{
+  "id": "1589",
+  "name": "single leg butt kick",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "quadriceps",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A hopping drill where you flick one heel up to your glutes. It warms up the hamstrings and raises your heart rate.",
+  "instructions": [
+    "Stand on one leg with the other foot lifted.",
+    "Hop lightly on your standing foot.",
+    "Kick your free heel toward your glutes each hop.",
+    "Land softly on the ball of your foot.",
+    "Complete your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

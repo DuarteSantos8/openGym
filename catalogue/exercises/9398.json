@@ -1,0 +1,23 @@
+{
+  "id": "9398",
+  "name": "lever standing pec fly",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "Standing at a machine, you bring your arms together in front of your chest. It isolates the chest.",
+  "instructions": [
+    "Stand in the machine with your hands on the handles.",
+    "Keep your elbows slightly bent.",
+    "Bring the handles together in front of your chest.",
+    "Squeeze your chest at the end.",
+    "Return slowly until you feel a stretch.",
+    "Keep your chest tall and your back still."
+  ],
+  "textSource": "opengym"
+}

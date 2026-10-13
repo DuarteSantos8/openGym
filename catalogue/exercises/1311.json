@@ -1,0 +1,22 @@
+{
+  "id": "1311",
+  "name": "wide hand push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with your hands placed wider than your shoulders. It puts more emphasis on the chest and less on the triceps.",
+  "instructions": [
+    "Start in a high plank position with your hands wider than shoulder-width apart.",
+    "Keep your body in a straight line from head to toe.",
+    "Lower your chest towards the ground by bending your elbows, keeping them close to your sides.",
+    "Push through your palms to extend your arms and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "4037",
+  "textSource": "exercisedb"
+}

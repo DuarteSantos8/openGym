@@ -1,0 +1,23 @@
+{
+  "id": "0564",
+  "name": "lateral box jump",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "A sideways jump onto a box that builds explosive power in the legs. It also trains landing control.",
+  "instructions": [
+    "Stand beside a sturdy box or step.",
+    "Bend your knees and swing your arms back.",
+    "Jump up and sideways, landing with both feet on the box.",
+    "Land softly with bent knees and stand tall.",
+    "Step down carefully.",
+    "Repeat, then switch the side you start from."
+  ],
+  "textSource": "opengym"
+}

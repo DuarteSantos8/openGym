@@ -1,0 +1,22 @@
+{
+  "id": "6770",
+  "name": "kneeling sartorius stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "adductors"
+  ],
+  "category": "stretching",
+  "description": "A kneeling stretch for the long strap muscle across the front of the thigh and hip.",
+  "instructions": [
+    "Kneel on one knee in a half-kneeling position.",
+    "Tuck your pelvis and squeeze the glute of the back leg.",
+    "Shift your hips forward slightly.",
+    "Lean slightly to the side of the back leg.",
+    "Hold for 20-30 seconds, breathing calmly.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

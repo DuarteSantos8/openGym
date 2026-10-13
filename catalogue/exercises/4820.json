@@ -1,0 +1,23 @@
+{
+  "id": "4820",
+  "name": "ring reverse ab rollout",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "shoulders",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A hanging or reclined rollout that drives the knees in under the rings. It strongly trains the lower abs and core.",
+  "instructions": [
+    "Set up in a push-up position with your feet in the ring straps.",
+    "Keep your arms straight and shoulders over your hands.",
+    "Pull your knees toward your chest by curling your pelvis.",
+    "Pause with your hips lifted and abs tight.",
+    "Extend your legs back to a straight plank slowly."
+  ],
+  "textSource": "opengym"
+}

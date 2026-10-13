@@ -1,0 +1,21 @@
+{
+  "id": "10656",
+  "name": "pilates machine lying knee extension on heels",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "Straighten your knees on a reformer pressing through the heels. It works the thighs.",
+  "instructions": [
+    "Lie on the carriage with heels on the bar.",
+    "Bend your knees.",
+    "Press out through the heels until straight.",
+    "Return slowly.",
+    "Keep your hips level."
+  ],
+  "textSource": "opengym"
+}

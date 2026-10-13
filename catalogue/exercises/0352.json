@@ -1,0 +1,21 @@
+{
+  "id": "0352",
+  "name": "dumbbell neutral grip bench press",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A dumbbell bench press with palms facing each other. It works the chest, front shoulders and triceps with a shoulder-friendly grip.",
+  "instructions": [
+    "Lie flat on a bench with your feet flat on the ground and your back pressed against the bench.",
+    "Hold a dumbbell in each hand with a neutral grip (palms facing each other) and your arms extended straight up over your chest.",
+    "Slowly lower the dumbbells down towards your chest, keeping your elbows close to your body.",
+    "Pause for a moment at the bottom, then push the dumbbells back up to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

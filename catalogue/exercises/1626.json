@@ -1,0 +1,22 @@
+{
+  "id": "1626",
+  "name": "smith machine reverse decline close grip bench press",
+  "bodyPart": "chest",
+  "equipment": "smith machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A reverse grip, close grip decline bench press in the smith machine. It works the chest and triceps.",
+  "instructions": [
+    "Adjust the smith machine to a decline position.",
+    "Lie down on the bench with your feet secured under the foot pads.",
+    "Grasp the barbell with a close grip, slightly narrower than shoulder-width apart.",
+    "Unrack the barbell and lower it slowly towards your chest, keeping your elbows tucked in.",
+    "Pause for a moment at the bottom, then push the barbell back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

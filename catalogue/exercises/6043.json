@@ -1,0 +1,23 @@
+{
+  "id": "6043",
+  "name": "bottle weighted swing",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip-driven swing with a weighted bottle held in both hands. It trains the glutes and hamstrings explosively.",
+  "instructions": [
+    "Stand with feet wider than your hips, holding a bottle with both hands.",
+    "Hinge back and let the bottle swing between your legs.",
+    "Snap your hips forward and let the bottle swing to chest height.",
+    "Keep your arms relaxed, the hips do the work.",
+    "Let it fall back and hinge into the next rep."
+  ],
+  "textSource": "opengym"
+}

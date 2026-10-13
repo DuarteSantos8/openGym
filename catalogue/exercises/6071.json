@@ -1,0 +1,23 @@
+{
+  "id": "6071",
+  "name": "bottle weighted upright row",
+  "bodyPart": "shoulders",
+  "equipment": "weighted",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "biceps",
+    "upper back",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A vertical pull with bottles toward your chest. It works the shoulders and traps.",
+  "instructions": [
+    "Stand tall holding bottles in front of your thighs, palms facing you.",
+    "Pull them up along your body, elbows leading.",
+    "Stop at about chest height.",
+    "Lower slowly.",
+    "Keep the bottles close to your torso."
+  ],
+  "textSource": "opengym"
+}

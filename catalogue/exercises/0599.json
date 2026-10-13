@@ -1,0 +1,32 @@
+{
+  "id": "0599",
+  "name": "lever seated leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves"
+  ],
+  "category": "strength",
+  "description": "Seated on a machine, you curl your lower legs back and down against a pad. Isolates the hamstrings.",
+  "instructions": [
+    "Adjust the machine to fit your body and sit on it with your back against the backrest.",
+    "Place your lower legs under the padded lever, just above your ankles.",
+    "Grasp the handles on the sides of the machine for support.",
+    "Keeping your upper legs stationary, exhale and curl your legs up as far as possible.",
+    "Hold the contracted position for a brief pause as you squeeze your hamstrings.",
+    "Inhale and slowly lower the lever back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "hamstring"
+    ],
+    "secondaries": [
+      "calves",
+      "adductors"
+    ]
+  },
+  "femaleVariant": "2257",
+  "textSource": "exercisedb"
+}

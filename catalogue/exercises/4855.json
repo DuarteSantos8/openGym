@@ -1,0 +1,21 @@
+{
+  "id": "4855",
+  "name": "bodyweight standing oblique twist",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A standing trunk rotation without load. It warms up the obliques and spine.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and arms at chest height.",
+    "Rotate your torso to one side.",
+    "Return to center.",
+    "Rotate to the other side.",
+    "Keep your hips facing forward."
+  ],
+  "textSource": "opengym"
+}

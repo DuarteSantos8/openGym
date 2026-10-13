@@ -1,0 +1,30 @@
+{
+  "id": "2364",
+  "name": "assisted wide-grip chest dip (kneeling)",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A machine-assisted wide-grip dip with your knees on a pad. Lets you train the chest with less bodyweight.",
+  "instructions": [
+    "Adjust the machine to your desired height and secure your knees on the pad.",
+    "Grasp the handles with a wide grip and keep your elbows slightly bent.",
+    "Lower your body by bending your elbows until your upper arms are parallel to the floor.",
+    "Push yourself back up to the starting position by extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "chest"
+    ],
+    "secondaries": [
+      "triceps",
+      "deltoids"
+    ]
+  },
+  "textSource": "exercisedb"
+}

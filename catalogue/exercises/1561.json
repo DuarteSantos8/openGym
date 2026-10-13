@@ -1,0 +1,20 @@
+{
+  "id": "1561",
+  "name": "exercise ball seated quad stretch",
+  "bodyPart": "upper legs",
+  "equipment": "stability ball",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "stretching",
+  "description": "A gentle quad stretch using a stability ball for support. It opens up the front of the thigh.",
+  "instructions": [
+    "Sit on the edge of a stability ball with your torso upright.",
+    "Hold on to something steady for balance if needed.",
+    "Bend one knee and bring your heel toward your glutes, holding your ankle.",
+    "Keep your knees close together and your hips square.",
+    "Hold for 20-30 seconds, then switch legs."
+  ],
+  "textSource": "opengym"
+}

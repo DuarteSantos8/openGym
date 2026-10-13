@@ -1,0 +1,23 @@
+{
+  "id": "4783",
+  "name": "seated pull up (legs elevated)",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "core",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A seated pull-up with your feet raised on a bench, which increases the load. It builds the back and arms.",
+  "instructions": [
+    "Place your feet on a bench and sit under a bar.",
+    "Grab it with an overhand grip, arms extended.",
+    "Pull your chest up toward the bar.",
+    "Squeeze your shoulder blades at the top.",
+    "Lower slowly to straight arms."
+  ],
+  "textSource": "opengym"
+}

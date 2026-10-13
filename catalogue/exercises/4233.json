@@ -1,0 +1,22 @@
+{
+  "id": "4233",
+  "name": "weighted seated one arm wrist curl",
+  "bodyPart": "lower arms",
+  "equipment": "weighted",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A one-arm wrist curl, palm up, seated with a weight. It builds the forearm flexors and grip.",
+  "instructions": [
+    "Sit and rest one forearm on your thigh, palm up.",
+    "Let the weight roll toward your fingertips.",
+    "Curl your wrist up as far as you can.",
+    "Pause at the top.",
+    "Lower slowly.",
+    "Finish your reps and switch arms."
+  ],
+  "textSource": "opengym"
+}

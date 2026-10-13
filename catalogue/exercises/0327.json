@@ -1,0 +1,23 @@
+{
+  "id": "0327",
+  "name": "dumbbell incline row",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A chest-supported dumbbell row on an incline bench. Supporting the chest takes the lower back out of the move.",
+  "instructions": [
+    "Set up an incline bench at a 45-degree angle.",
+    "Grab a dumbbell in each hand and sit on the bench with your chest against the incline.",
+    "Extend your arms fully, allowing the dumbbells to hang straight down from your shoulders.",
+    "Pull the dumbbells up towards your chest, squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2510",
+  "textSource": "exercisedb"
+}

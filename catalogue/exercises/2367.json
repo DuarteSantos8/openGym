@@ -1,0 +1,24 @@
+{
+  "id": "2367",
+  "name": "dumbbell rear lunge from step",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A reverse lunge from a raised step that works the legs and glutes with a deeper range.",
+  "instructions": [
+    "Stand on a low step with a dumbbell in each hand.",
+    "Step one foot back and off the step.",
+    "Lower your back knee toward the floor while keeping your torso upright.",
+    "Keep your front knee over your ankle.",
+    "Push through your front heel to return to standing.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

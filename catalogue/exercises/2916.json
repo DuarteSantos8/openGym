@@ -1,0 +1,24 @@
+{
+  "id": "2916",
+  "name": "kettlebell goblet carry",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "core",
+    "biceps",
+    "upper back",
+    "forearms",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "Walking while hugging a kettlebell at chest height. It trains posture, the trunk and the upper back.",
+  "instructions": [
+    "Hold a kettlebell by the horns close to your chest, elbows tucked.",
+    "Stand tall with your ribs down and abs braced.",
+    "Walk with steady steps without leaning back.",
+    "Cover the set distance, keeping the bell high and still.",
+    "Set the kettlebell down with a flat back."
+  ],
+  "textSource": "opengym"
+}

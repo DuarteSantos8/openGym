@@ -1,0 +1,22 @@
+{
+  "id": "3744",
+  "name": "rear delt fly with bed sheet",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A no-equipment fly that uses a bed sheet pulled apart to work the rear shoulders.",
+  "instructions": [
+    "Hold a bed sheet taut in both hands in front of you.",
+    "Keep your arms nearly straight.",
+    "Pull your hands apart, opening your arms out to the sides.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly and keep tension on the sheet."
+  ],
+  "textSource": "opengym"
+}

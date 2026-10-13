@@ -1,0 +1,23 @@
+{
+  "id": "0848",
+  "name": "weighted seated neck extension (with head harness)",
+  "bodyPart": "neck",
+  "equipment": "weighted",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "trapezius",
+    "upper back",
+    "sternocleidomastoid"
+  ],
+  "category": "strength",
+  "description": "A seated neck extension with a weighted head harness, working the muscles at the back of the neck.",
+  "instructions": [
+    "Sit on a bench wearing a head harness with a light weight hanging in front.",
+    "Lean slightly forward and rest your hands on your thighs.",
+    "Let your chin drop toward your chest in a controlled way.",
+    "Raise your head back up until your neck is neutral.",
+    "Repeat slowly for the set.",
+    "Keep your back straight and use a light load."
+  ],
+  "textSource": "opengym"
+}

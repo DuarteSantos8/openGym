@@ -1,0 +1,24 @@
+{
+  "id": "1536",
+  "name": "barbell snatch from blocks",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "trapezius",
+    "shoulders",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "A snatch started from blocks. It trains the pull and the deep overhead catch.",
+  "instructions": [
+    "Set the bar on blocks and take a wide grip with a flat back.",
+    "Brace your core and keep the bar close to your body.",
+    "Extend your hips and knees powerfully and shrug your shoulders.",
+    "Pull under the bar and catch it overhead in a full squat, then stand up.",
+    "Stand tall to finish, then lower the bar with control."
+  ],
+  "textSource": "opengym"
+}

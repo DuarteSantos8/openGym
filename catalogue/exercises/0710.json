@@ -1,0 +1,21 @@
+{
+  "id": "0710",
+  "name": "side hip abduction",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "Standing on one leg, you lift the other leg out to the side. Works the outer hips and glutes.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your hands on your hips.",
+    "Shift your weight to one leg and lift the opposite leg out to the side, keeping it straight.",
+    "Pause for a moment at the top, then slowly lower your leg back down to the starting position.",
+    "Repeat on the other side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

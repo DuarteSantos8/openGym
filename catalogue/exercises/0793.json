@@ -1,0 +1,21 @@
+{
+  "id": "0793",
+  "name": "band standing lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A lateral raise using a band underfoot. It builds the side delts for broader-looking shoulders.",
+  "instructions": [
+    "Stand on the middle of the band and hold an end in each hand.",
+    "Keep a slight bend in your elbows.",
+    "Raise your arms out to the sides to shoulder height.",
+    "Lower slowly against the band tension.",
+    "Avoid shrugging or swinging your body."
+  ],
+  "textSource": "opengym"
+}

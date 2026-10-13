@@ -144,6 +144,18 @@ describe('the alarm buzz in the Android app', () => {
     expect(calls.schedule.at(-1)).toMatchObject({ alarmBuzz: false })
   })
 
+  it('hands the plugin the end tone Settings → Sound picked', async () => {
+    h.platform = 'android'
+    const calls = capture()
+    const alert = await import('./rest-alert.js')
+    await alert.armRestAlert(Date.now() + 90_000, { totalSec: 90, sound: true })
+    expect(calls.schedule.at(-1)).toMatchObject({ sound: true, classic: false })
+    await alert.armRestAlert(Date.now() + 90_000, { totalSec: 90, sound: true, classic: true })
+    expect(calls.schedule.at(-1)).toMatchObject({ sound: true, classic: true, tone: 'classic' })
+    await alert.armRestAlert(Date.now() + 90_000, { totalSec: 90, sound: true, tone: 'whistle' })
+    expect(calls.schedule.at(-1)).toMatchObject({ sound: true, classic: false, tone: 'whistle' })
+  })
+
   it('buzzAsAlarm reaches the plugin with the pattern and answers true', async () => {
     h.platform = 'android'
     const calls = capture()

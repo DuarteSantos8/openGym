@@ -1,0 +1,40 @@
+{
+  "id": "0535",
+  "name": "kettlebell hang clean",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "calves"
+  ],
+  "category": "olympic",
+  "description": "You swing a kettlebell from a hang position up to the rack at your shoulder in one smooth pull. Trains the hips, back and shoulders for power.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a kettlebell in front of your thighs.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
+    "Lower the kettlebell towards the ground, allowing it to swing between your legs.",
+    "Quickly extend your hips and knees, using the momentum to swing the kettlebell up to shoulder height.",
+    "As the kettlebell reaches shoulder height, rotate your wrists and catch the kettlebell in the rack position, with your elbow tucked in and the kettlebell resting on your forearm.",
+    "Lower the kettlebell back down to the starting position between your legs, and repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "bodyPart": "full body",
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "hamstring",
+      "trapezius"
+    ],
+    "secondaries": [
+      "calves",
+      "forearm",
+      "deltoids",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "textSource": "exercisedb"
+}

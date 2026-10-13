@@ -1,0 +1,20 @@
+{
+  "id": "0010",
+  "name": "assisted hanging knee raise with throw down",
+  "bodyPart": "waist",
+  "equipment": "assisted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "An assisted hanging knee raise that ends with the legs dropping back down under control. Trains the abs and hip flexors.",
+  "instructions": [
+    "Hang from a pull-up bar with your arms fully extended and your palms facing away from you.",
+    "Engage your core and lift your knees towards your chest, keeping your legs together.",
+    "Once your knees are at chest level, explosively throw your legs down towards the ground, extending them fully.",
+    "Allow your legs to swing back up and repeat the movement for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

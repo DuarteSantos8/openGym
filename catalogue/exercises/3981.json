@@ -1,0 +1,22 @@
+{
+  "id": "3981",
+  "name": "finger push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "calisthenics",
+  "description": "A push up supported on your fingertips. It challenges the hands and forearms as well as the chest.",
+  "instructions": [
+    "Get into a high plank on your fingertips.",
+    "Keep your body straight.",
+    "Lower your chest to the floor.",
+    "Press up.",
+    "Reduce the range if your fingers tire."
+  ],
+  "textSource": "opengym"
+}

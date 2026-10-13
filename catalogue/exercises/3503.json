@@ -1,0 +1,25 @@
+{
+  "id": "3503",
+  "name": "elbow to knee side plank crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A side plank where you crunch the top elbow toward the knee. It targets the obliques and core.",
+  "instructions": [
+    "Set up in a side plank on your forearm, top hand behind your head.",
+    "Lift your hips so your body is in line.",
+    "Bring your top elbow and knee together in a crunch.",
+    "Extend back to the side plank.",
+    "Keep your hips lifted throughout.",
+    "Finish your reps, then switch sides."
+  ],
+  "femaleVariant": "3936",
+  "textSource": "opengym"
+}

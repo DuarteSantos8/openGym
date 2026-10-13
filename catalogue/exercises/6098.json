@@ -1,0 +1,24 @@
+{
+  "id": "6098",
+  "name": "swim leg circle",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core",
+    "hamstrings"
+  ],
+  "category": "pilates",
+  "description": "A lying leg circle drill with a swimming-style rhythm. It loosens the hips and trains the glutes and core control.",
+  "instructions": [
+    "Lie face down with your arms extended in front of you.",
+    "Lift one leg slightly off the floor.",
+    "Draw small, controlled circles with that leg.",
+    "Reverse the direction after several circles.",
+    "Lower the leg and repeat on the other side.",
+    "Keep your hips pressed down and your core braced."
+  ],
+  "femaleVariant": "6099",
+  "textSource": "opengym"
+}

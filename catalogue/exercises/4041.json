@@ -1,0 +1,23 @@
+{
+  "id": "4041",
+  "name": "dumbbell russian twist (on stability ball)",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "hip flexors",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "Rotating a dumbbell side to side while balanced on a stability ball. It challenges the obliques and balance.",
+  "instructions": [
+    "Sit on a stability ball and walk your feet out until your upper back rests on it, hips lifted.",
+    "Hold a dumbbell with both hands above your chest.",
+    "Rotate your torso and arms to one side.",
+    "Rotate smoothly to the other side.",
+    "Keep your hips high and move with control."
+  ],
+  "textSource": "opengym"
+}

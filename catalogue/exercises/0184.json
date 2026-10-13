@@ -1,0 +1,23 @@
+{
+  "id": "0184",
+  "name": "cable lying extension pullover (with rope attachment)",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Lying on a bench, you take a rope overhead and back in an arc with straight arms. It stretches and trains the lats and chest.",
+  "instructions": [
+    "Attach a rope to a cable machine and set the pulley at the highest position.",
+    "Lie down on a bench with your head towards the cable machine.",
+    "Hold the rope with both hands and extend your arms straight up above your chest.",
+    "Keeping your arms straight, slowly lower the rope behind your head while maintaining control.",
+    "Pause for a moment at the bottom, then slowly raise the rope back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3056",
+  "textSource": "exercisedb"
+}

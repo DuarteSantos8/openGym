@@ -1,0 +1,23 @@
+{
+  "id": "4833",
+  "name": "dumbbell standing single arm arnold press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A one-arm Arnold press with a rotating grip. It works all heads of the shoulder while challenging core stability.",
+  "instructions": [
+    "Stand tall holding a dumbbell at shoulder height, palm facing you.",
+    "Brace your core and keep your other arm at your side.",
+    "Press the dumbbell up while rotating your palm to face forward.",
+    "Fully extend your arm overhead.",
+    "Lower while rotating back, then switch sides."
+  ],
+  "textSource": "opengym"
+}

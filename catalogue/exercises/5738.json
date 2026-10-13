@@ -1,0 +1,22 @@
+{
+  "id": "5738",
+  "name": "suspension chest press",
+  "bodyPart": "chest",
+  "equipment": "suspension trainer",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up style press on suspension straps. The unstable handles make your chest, arms and core work together.",
+  "instructions": [
+    "Hold the handles and lean forward with a straight body.",
+    "Start with your hands by your chest and elbows bent.",
+    "Press yourself away until your arms are straight.",
+    "Keep your core tight and hips in line.",
+    "Lower back slowly with control."
+  ],
+  "textSource": "opengym"
+}

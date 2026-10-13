@@ -1,0 +1,22 @@
+{
+  "id": "3141",
+  "name": "bird dog v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "rear deltoids"
+  ],
+  "category": "calisthenics",
+  "description": "A floor stability move reaching opposite arm and leg to train the back and core.",
+  "instructions": [
+    "Start on all fours with a neutral spine.",
+    "Extend one arm forward and the opposite leg back.",
+    "Keep your hips level and avoid arching your back.",
+    "Pause for a moment.",
+    "Return and switch sides."
+  ],
+  "textSource": "opengym"
+}

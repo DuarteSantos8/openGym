@@ -1,0 +1,23 @@
+{
+  "id": "8892",
+  "name": "kettlebell staggered stance deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A deadlift with a staggered stance holding a kettlebell. It loads one leg more than the other.",
+  "instructions": [
+    "Stand with one foot slightly behind the other.",
+    "Hold a kettlebell in front of your thighs.",
+    "Hinge at the hips and lower the bell toward the floor.",
+    "Keep your back flat and weight mostly on the front foot.",
+    "Drive your hips forward to stand tall.",
+    "Switch stances after your set."
+  ],
+  "textSource": "opengym"
+}

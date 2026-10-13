@@ -1,0 +1,23 @@
+{
+  "id": "4384",
+  "name": "body saw plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "lower abs",
+    "glutes"
+  ],
+  "category": "isometric",
+  "description": "A plank variation where you rock your body forward and back in small motions. It heavily challenges the abs and shoulders.",
+  "instructions": [
+    "Get into a forearm plank with elbows under your shoulders.",
+    "Squeeze your glutes and brace your abs.",
+    "Shift your body forward so your shoulders move past your elbows.",
+    "Rock back to the start in a slow, smooth motion.",
+    "Keep your hips level and avoid sagging."
+  ],
+  "textSource": "opengym"
+}

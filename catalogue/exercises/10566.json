@@ -1,0 +1,23 @@
+{
+  "id": "10566",
+  "name": "half kneeling torso twist",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "glutes",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "From a half-kneeling stance, rotate your torso. It opens the spine and warms up the trunk.",
+  "instructions": [
+    "Kneel on one knee with the other foot forward.",
+    "Hold your arms crossed in front of your chest.",
+    "Rotate your upper body toward the front leg.",
+    "Return to the centre and keep your hips square.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

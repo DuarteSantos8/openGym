@@ -1,0 +1,23 @@
+{
+  "id": "4905",
+  "name": "banded glute ham raise v. 3",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A glute ham raise with a band for assistance, a third variation. It builds the hamstrings and glutes.",
+  "instructions": [
+    "Set up on a glute ham bench with your ankles locked and a band for support.",
+    "Cross your arms or hold the band in front of you.",
+    "Lower your torso toward the floor with a straight body.",
+    "Squeeze your hamstrings and glutes to pull yourself back up.",
+    "Stop when your body is in a straight line.",
+    "Move slowly and avoid jerking."
+  ],
+  "textSource": "opengym"
+}

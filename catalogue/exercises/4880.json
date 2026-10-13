@@ -1,0 +1,22 @@
+{
+  "id": "4880",
+  "name": "lying criss cross legs",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on your back, you cross your legs back and forth. It works the lower abs.",
+  "instructions": [
+    "Lie on your back with legs raised slightly off the floor.",
+    "Press your lower back down.",
+    "Cross one leg over the other.",
+    "Switch and cross the other way.",
+    "Continue smoothly."
+  ],
+  "textSource": "opengym"
+}

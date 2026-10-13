@@ -1,0 +1,22 @@
+{
+  "id": "8664",
+  "name": "dumbbell curtsey lunge v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A lunge where one leg crosses behind you, working the glutes and outer hips with added load.",
+  "instructions": [
+    "Stand holding dumbbells at your sides.",
+    "Step one foot back and across behind the other leg.",
+    "Lower until the front thigh is nearly parallel to the floor.",
+    "Push through the front foot to stand.",
+    "Alternate legs or finish one side before switching."
+  ],
+  "textSource": "opengym"
+}

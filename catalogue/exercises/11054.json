@@ -1,0 +1,22 @@
+{
+  "id": "11054",
+  "name": "lever staggered stance hip thrust (plate loaded)",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A plate-loaded machine hip thrust with a staggered stance. It targets the glutes.",
+  "instructions": [
+    "Sit in the machine with the pad over your hips.",
+    "Stagger your feet.",
+    "Drive through your heels.",
+    "Lift your hips fully.",
+    "Squeeze your glutes.",
+    "Lower slowly and switch the stance."
+  ],
+  "textSource": "opengym"
+}

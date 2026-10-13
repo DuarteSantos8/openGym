@@ -1,0 +1,22 @@
+{
+  "id": "2861",
+  "name": "saw",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "pilates",
+  "description": "A seated twist that reaches toward the opposite foot, training the obliques and stretching the back of the legs.",
+  "instructions": [
+    "Sit with legs wide and arms out.",
+    "Rotate your torso to one side.",
+    "Reach your hand past your opposite foot.",
+    "Return to centre.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

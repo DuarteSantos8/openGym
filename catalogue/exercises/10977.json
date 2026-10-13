@@ -1,0 +1,22 @@
+{
+  "id": "10977",
+  "name": "dumbbell hyperextension v. 2",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Back extension holding a dumbbell. It trains the lower back and glutes.",
+  "instructions": [
+    "Set the pad at hip height and hold a dumbbell at your chest.",
+    "Lower your torso with a flat back.",
+    "Lift until you are in a straight line.",
+    "Squeeze your glutes.",
+    "Lower slowly.",
+    "Do not overextend."
+  ],
+  "textSource": "opengym"
+}

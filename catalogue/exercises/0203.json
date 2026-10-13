@@ -1,0 +1,33 @@
+{
+  "id": "0203",
+  "name": "cable rear delt row (with rope)",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rhomboids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A bent-over cable row with a rope, pulling toward the face and chest. It builds the rear delts and the upper back.",
+  "instructions": [
+    "Attach a rope handle to a low pulley cable machine.",
+    "Stand facing the machine with your feet shoulder-width apart.",
+    "Grasp the rope handle with an overhand grip, palms facing each other.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
+    "Keep your elbows slightly bent and pull the rope towards your chest, squeezing your shoulder blades together.",
+    "Pause for a moment at the top of the movement, then slowly release the tension and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "deltoids"
+    ],
+    "secondaries": [
+      "trapezius",
+      "upper-back"
+    ]
+  },
+  "textSource": "exercisedb"
+}

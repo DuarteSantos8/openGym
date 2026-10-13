@@ -1,0 +1,22 @@
+{
+  "id": "1486",
+  "name": "push up (with push up handles)",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up on handles that lets you go a little deeper and keeps the wrists neutral. It trains the chest, shoulders and triceps.",
+  "instructions": [
+    "Place the handles shoulder-width apart and grip them in a plank position.",
+    "Keep your body in a straight line from head to heels.",
+    "Lower your chest until it is between the handles, elbows about 45 degrees from your body.",
+    "Press back up until your arms are straight.",
+    "Keep your core tight and your hips from sagging."
+  ],
+  "textSource": "opengym"
+}

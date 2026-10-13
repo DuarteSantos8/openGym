@@ -1,0 +1,23 @@
+{
+  "id": "1062",
+  "name": "weighted one leg hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A single-leg hip thrust with weight resting on your hips. It strengthens each glute separately and fixes side-to-side gaps.",
+  "instructions": [
+    "Rest your upper back on a bench and place the weight on your hips.",
+    "Plant one foot and lift the other leg off the floor.",
+    "Push through your heel to raise your hips until your torso is level.",
+    "Pause and squeeze your glute.",
+    "Lower slowly.",
+    "Complete the reps, then change legs."
+  ],
+  "textSource": "opengym"
+}

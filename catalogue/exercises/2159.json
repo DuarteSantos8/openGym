@@ -1,0 +1,24 @@
+{
+  "id": "2159",
+  "name": "resistance band one leg glute bridge",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A single-leg glute bridge with a band added, making your glutes and hamstrings work harder on each side.",
+  "instructions": [
+    "Lie on your back with a loop band above your knees and knees bent.",
+    "Lift one foot off the floor and extend that leg.",
+    "Drive through the other heel and lift your hips.",
+    "Squeeze the glutes at the top and keep the hips level.",
+    "Lower with control.",
+    "Finish the reps, then switch legs."
+  ],
+  "femaleVariant": "2556",
+  "textSource": "opengym"
+}

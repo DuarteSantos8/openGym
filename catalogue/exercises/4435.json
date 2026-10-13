@@ -1,0 +1,24 @@
+{
+  "id": "4435",
+  "name": "high knee squat v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A squat followed by a high knee drive, combining leg strength with a bit of cardio.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Squat down with your chest lifted.",
+    "Stand up explosively and drive one knee up toward your chest.",
+    "Land softly and drop into the next squat.",
+    "Alternate knees on each rep."
+  ],
+  "femaleVariant": "3957",
+  "textSource": "opengym"
+}

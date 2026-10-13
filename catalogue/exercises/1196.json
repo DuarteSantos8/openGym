@@ -1,0 +1,21 @@
+{
+  "id": "1196",
+  "name": "dumbbell alternate biceps curl v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Curling one dumbbell at a time while standing. A classic way to build the biceps with a steady rhythm.",
+  "instructions": [
+    "Stand tall with a dumbbell in each hand, palms facing forward.",
+    "Keeping your elbow by your side, curl one dumbbell up toward your shoulder.",
+    "Squeeze at the top, then lower it under control.",
+    "Repeat with the other arm and keep alternating.",
+    "Avoid swinging your torso to lift the weight."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "5335",
+  "name": "kettlebell swing clean grip front squat overhead press",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "shoulders",
+    "core",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A kettlebell complex that links a swing, clean, front squat and press. A full-body strength and conditioning flow.",
+  "instructions": [
+    "Stand over the kettlebell and swing it back between your legs.",
+    "Swing it up, then clean it to the rack position at your shoulder.",
+    "Squat down with the bell held in front of you.",
+    "Stand up and press the bell overhead.",
+    "Lower it back with control for the next rep.",
+    "Switch arms after your set."
+  ],
+  "textSource": "opengym"
+}

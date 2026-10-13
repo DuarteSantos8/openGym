@@ -1,0 +1,23 @@
+{
+  "id": "3442",
+  "name": "medicine ball standing overhead throw",
+  "bodyPart": "chest",
+  "equipment": "medicine ball",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive overhead throw with a medicine ball, working the upper body and trunk.",
+  "instructions": [
+    "Stand with feet shoulder-width apart holding the ball overhead.",
+    "Arch back slightly.",
+    "Throw the ball forward and down with force.",
+    "Follow through with your arms.",
+    "Pick up the ball.",
+    "Reset and repeat."
+  ],
+  "textSource": "opengym"
+}

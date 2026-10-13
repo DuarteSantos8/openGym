@@ -1,0 +1,22 @@
+{
+  "id": "1711",
+  "name": "assisted oblique glute minimus and medius stretch",
+  "bodyPart": "upper legs",
+  "equipment": "assisted",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "stretching",
+  "description": "A partner-assisted stretch for the outer hip and side of the trunk. It eases tightness in the small gluteal muscles and obliques.",
+  "instructions": [
+    "Lie on your back or side while your partner supports your top leg.",
+    "Have your partner gently guide the leg across your body while you stay relaxed.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

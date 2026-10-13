@@ -1,0 +1,22 @@
+{
+  "id": "0905",
+  "name": "band kneeling pulldown",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A kneeling pulldown with a band anchored overhead. It trains the lats and mid-back.",
+  "instructions": [
+    "Anchor the band high and kneel facing it.",
+    "Grab the ends with arms extended up.",
+    "Pull your elbows down toward your ribs.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly with control."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "2661",
+  "name": "cable seated row with v bar",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A seated cable row with a V-shaped grip that trains the mid back and lats.",
+  "instructions": [
+    "Sit at the cable row station with your feet on the platform and knees slightly bent.",
+    "Grip the V bar and sit tall with arms extended.",
+    "Pull the bar toward your lower ribs and squeeze your shoulder blades.",
+    "Return slowly until your arms are straight.",
+    "Keep your chest up and avoid rocking."
+  ],
+  "textSource": "opengym"
+}

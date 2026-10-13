@@ -1,0 +1,22 @@
+{
+  "id": "3831",
+  "name": "lying single leg reverse biceps curl with towel",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "brachialis",
+    "biceps",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Lying on your back, you curl a towel looped around one foot with an overhand grip. It targets your forearms and biceps.",
+  "instructions": [
+    "Lie on your back and loop a towel around one foot.",
+    "Hold the ends with an overhand grip.",
+    "Pull the towel toward you while the foot resists.",
+    "Pause at the top.",
+    "Lower slowly, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,37 @@
+{
+  "id": "1254",
+  "name": "band bench press",
+  "bodyPart": "chest",
+  "equipment": "band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A bench press using resistance bands. It trains the chest, shoulders and triceps.",
+  "instructions": [
+    "Lie flat on a bench with your feet flat on the ground and your back pressed against the bench.",
+    "Grasp the band handles with an overhand grip, slightly wider than shoulder-width apart.",
+    "Extend your arms fully, pushing the bands away from your chest.",
+    "Slowly lower the bands back down to your chest, keeping your elbows at a 90-degree angle.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "chest"
+    ],
+    "secondaries": [
+      "triceps",
+      "deltoids",
+      "biceps"
+    ],
+    "weights": {
+      "chest": 1,
+      "deltoids": 0.4,
+      "triceps": 0.4,
+      "biceps": 0
+    }
+  },
+  "textSource": "exercisedb"
+}

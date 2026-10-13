@@ -1,0 +1,22 @@
+{
+  "id": "8331",
+  "name": "kettlebell half kneeling halo",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "triceps",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A kettlebell circle around the head from a half kneeling stance that mobilises the shoulders and challenges core stability.",
+  "instructions": [
+    "Kneel on one knee with the other foot forward and hold the kettlebell upside down at chest height.",
+    "Squeeze your glutes and keep your ribs down.",
+    "Circle the bell around your head slowly, keeping it close.",
+    "Complete the reps, then reverse the direction.",
+    "Switch the kneeling leg and repeat."
+  ],
+  "textSource": "opengym"
+}

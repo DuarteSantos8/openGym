@@ -1,0 +1,22 @@
+{
+  "id": "2920",
+  "name": "single leg bodyweight deadlift with arm and leg extended",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A single-leg hinge with your arms extended that trains hamstrings, glutes and balance.",
+  "instructions": [
+    "Stand on one leg with arms reaching forward.",
+    "Soften your standing knee slightly.",
+    "Hinge at the hips as your free leg lifts behind you.",
+    "Keep your back flat and body in a long line.",
+    "Return to standing and repeat, then switch legs."
+  ],
+  "textSource": "opengym"
+}

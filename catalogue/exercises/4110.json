@@ -1,0 +1,22 @@
+{
+  "id": "4110",
+  "name": "dumbbell seated zottman curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "wrist extensors"
+  ],
+  "category": "strength",
+  "description": "A seated curl that turns your palms down on the way back, training biceps and forearms.",
+  "instructions": [
+    "Sit upright holding dumbbells with palms facing forward.",
+    "Curl both dumbbells up to shoulder height.",
+    "At the top rotate your palms to face down.",
+    "Lower slowly in that reverse grip.",
+    "Rotate your palms back up at the bottom."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "10931",
+  "name": "standing external rotation behind back with towel",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids",
+    "shoulders"
+  ],
+  "category": "rehab",
+  "description": "Holding a towel behind your back to rotate the shoulder outward. It improves shoulder control.",
+  "instructions": [
+    "Stand tall holding a towel behind your back with both hands.",
+    "Keep the lower hand still and pull the upper hand away.",
+    "Rotate the upper shoulder outward.",
+    "Hold briefly and release.",
+    "Finish your reps, then switch hands."
+  ],
+  "textSource": "opengym"
+}

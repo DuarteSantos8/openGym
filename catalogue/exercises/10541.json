@@ -1,0 +1,22 @@
+{
+  "id": "10541",
+  "name": "seated single leg hugging knee flexion",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hip flexors"
+  ],
+  "category": "mobility",
+  "description": "Seated, you hug one knee toward your chest and bend it. It mobilizes the hip and knee gently.",
+  "instructions": [
+    "Sit tall on a chair with feet flat.",
+    "Lift one knee and clasp your hands around the shin.",
+    "Gently pull the knee toward your chest and flex it.",
+    "Hold for a moment, then release.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

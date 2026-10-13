@@ -1,0 +1,22 @@
+{
+  "id": "2988",
+  "name": "squat mobility",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "ankles"
+  ],
+  "category": "mobility",
+  "description": "A deep squat hold and rock that opens the hips and ankles.",
+  "instructions": [
+    "Stand with feet slightly wider than shoulder width.",
+    "Sink into a deep squat, keeping your heels down.",
+    "Press your elbows gently against your knees.",
+    "Rock side to side and sit tall.",
+    "Spend 30-45 seconds there, then stand up."
+  ],
+  "textSource": "opengym"
+}

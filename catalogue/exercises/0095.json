@@ -1,0 +1,21 @@
+{
+  "id": "0095",
+  "name": "barbell shrug",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "traps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Shrug the shoulders toward your ears while holding the bar. Builds the upper traps.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a barbell in front of you with an overhand grip.",
+    "Keep your arms straight and your back straight throughout the exercise.",
+    "Lift your shoulders up towards your ears as high as possible, squeezing your traps at the top.",
+    "Hold for a moment, then slowly lower your shoulders back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2480",
+  "textSource": "exercisedb"
+}

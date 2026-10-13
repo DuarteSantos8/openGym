@@ -1,0 +1,23 @@
+{
+  "id": "4745",
+  "name": "dumbbell kneeling arnold press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "An Arnold press done from a kneeling position, which takes the legs out and challenges your core. It trains all three heads of the shoulder.",
+  "instructions": [
+    "Kneel tall holding dumbbells in front of your shoulders, palms facing you.",
+    "Brace your core and squeeze your glutes.",
+    "Press up while rotating your palms to face forward.",
+    "Finish with your arms straight overhead.",
+    "Reverse the rotation as you lower back to the start."
+  ],
+  "textSource": "opengym"
+}

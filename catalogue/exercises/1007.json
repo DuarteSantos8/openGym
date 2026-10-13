@@ -1,0 +1,21 @@
+{
+  "id": "1007",
+  "name": "band standing twisting crunch",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A standing twisting crunch with a band, bringing the elbow toward the opposite knee. It trains the abs and obliques.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and place the band around your upper back, crossing it in front of your chest.",
+    "Hold the ends of the band with your hands, keeping your elbows bent and close to your sides.",
+    "Engage your abs and twist your torso to one side, bringing your elbow towards the opposite knee.",
+    "Pause for a moment, then return to the starting position.",
+    "Repeat on the other side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

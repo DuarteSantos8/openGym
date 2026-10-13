@@ -1,0 +1,21 @@
+{
+  "id": "11006",
+  "name": "seated arm crossover and chest out on a chair",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper back"
+  ],
+  "category": "stretching",
+  "description": "A seated stretch that crosses the arms and then opens the chest. It loosens the upper body.",
+  "instructions": [
+    "Sit tall on a chair.",
+    "Cross your arms in front of your chest and hug yourself.",
+    "Open your arms wide and push your chest out.",
+    "Hold the open position for 5-10 seconds.",
+    "Repeat."
+  ],
+  "textSource": "opengym"
+}

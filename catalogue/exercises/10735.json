@@ -1,0 +1,24 @@
+{
+  "id": "10735",
+  "name": "hanging alternating knee raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "calisthenics",
+  "description": "A hanging ab move where you lift one knee at a time. It strengthens the lower abs and hip flexors.",
+  "instructions": [
+    "Hang from a bar with arms straight.",
+    "Brace your core and keep your body still.",
+    "Lift one knee toward your chest.",
+    "Lower it slowly and lift the other knee.",
+    "Avoid swinging.",
+    "Alternate for the reps."
+  ],
+  "textSource": "opengym"
+}

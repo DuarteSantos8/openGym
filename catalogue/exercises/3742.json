@@ -1,0 +1,22 @@
+{
+  "id": "3742",
+  "name": "sliding leg curl on floor with towel v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A bodyweight hamstring curl where your heels slide on a towel across the floor.",
+  "instructions": [
+    "Lie on your back with your heels on towels on a smooth floor.",
+    "Lift your hips off the ground.",
+    "Slide your heels toward your butt, curling your legs.",
+    "Slowly slide them back out.",
+    "Keep your hips high throughout."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "6065",
+  "name": "bottle weighted kickback",
+  "bodyPart": "upper arms",
+  "equipment": "weighted",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "rear deltoids",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-arm triceps kickback holding a bottle. It isolates the back of the arm.",
+  "instructions": [
+    "Hinge forward with a flat back, upper arm parallel to the floor, bottle in hand.",
+    "Keep your elbow tight at your side.",
+    "Straighten your arm behind you.",
+    "Squeeze your triceps.",
+    "Bend slowly, then switch arms."
+  ],
+  "textSource": "opengym"
+}

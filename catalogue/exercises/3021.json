@@ -1,0 +1,21 @@
+{
+  "id": "3021",
+  "name": "scapula push-up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "serratus anterior",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A scapular push-up, protracting and retracting the shoulder blades. Strengthens the serratus anterior and upper back.",
+  "instructions": [
+    "Start in a high plank position with your hands directly under your shoulders and your body in a straight line.",
+    "Lower your chest towards the ground, keeping your elbows close to your body.",
+    "As you lower, squeeze your shoulder blades together and push your chest forward.",
+    "Pause for a moment at the bottom, then push back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

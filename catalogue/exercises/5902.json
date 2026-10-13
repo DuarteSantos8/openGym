@@ -1,0 +1,23 @@
+{
+  "id": "5902",
+  "name": "standing figure four pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "quadriceps",
+    "core",
+    "ankles"
+  ],
+  "category": "yoga",
+  "description": "A one-leg balance with the ankle crossed over the opposite knee. Stretches the outer hip.",
+  "instructions": [
+    "Stand tall and shift your weight onto one leg.",
+    "Cross the other ankle over the standing thigh.",
+    "Bend your standing knee and sit your hips back.",
+    "Hold for 5 slow breaths with a long spine.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

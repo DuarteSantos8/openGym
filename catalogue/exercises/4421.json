@@ -1,0 +1,22 @@
+{
+  "id": "4421",
+  "name": "cable donkey kickback",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "Kicking one leg back from a hands-and-knees position against cable resistance. It isolates the glutes.",
+  "instructions": [
+    "Attach an ankle strap to a low cable and get on all fours facing the machine.",
+    "Hook the strap around one ankle.",
+    "Keeping the knee bent, drive your heel up toward the ceiling.",
+    "Squeeze your glute at the top without arching your back.",
+    "Return slowly and repeat, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "3680",
+  "name": "kettlebell overhand grip swing",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core",
+    "shoulders",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A kettlebell swing with an overhand grip that builds explosive hip power and a strong posterior chain.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and a kettlebell on the floor in front of you.",
+    "Hinge at the hips and grip the handle with an overhand grip.",
+    "Hike the bell back between your legs.",
+    "Snap your hips forward and swing it to chest height.",
+    "Let it fall back and hinge again, keeping your back flat."
+  ],
+  "textSource": "opengym"
+}

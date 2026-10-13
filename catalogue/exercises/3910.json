@@ -1,0 +1,23 @@
+{
+  "id": "3910",
+  "name": "weighted push up with vest",
+  "bodyPart": "chest",
+  "equipment": "weighted",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up wearing a weighted vest for extra load on the chest and triceps.",
+  "instructions": [
+    "Put on a weighted vest and start in a plank with hands under shoulders.",
+    "Brace your core and glutes.",
+    "Lower your chest to the floor with elbows at about 45 degrees.",
+    "Press back up to straight arms.",
+    "Keep your body in a straight line.",
+    "Repeat for the set."
+  ],
+  "textSource": "opengym"
+}

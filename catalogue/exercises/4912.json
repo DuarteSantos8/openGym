@@ -1,0 +1,23 @@
+{
+  "id": "4912",
+  "name": "ring leg curl v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A hamstring curl with the heels in rings, second variation. It builds hamstrings and glutes with an unstable setup.",
+  "instructions": [
+    "Lie on your back with your heels in the rings.",
+    "Lift your hips into a bridge.",
+    "Pull the rings toward your glutes by bending the knees.",
+    "Pause and squeeze the hamstrings.",
+    "Extend your legs slowly back out.",
+    "Keep your hips high throughout."
+  ],
+  "textSource": "opengym"
+}

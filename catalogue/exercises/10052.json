@@ -1,0 +1,24 @@
+{
+  "id": "10052",
+  "name": "landmine cossack squat",
+  "bodyPart": "upper legs",
+  "equipment": "landmine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A side-to-side deep squat holding a landmine end at your chest. It works the glutes, inner thighs and hip mobility.",
+  "instructions": [
+    "Stand with feet wide, holding the end of a landmine bar at your chest.",
+    "Shift to one side and bend that knee deeply.",
+    "Keep the other leg straight with the toes up.",
+    "Push through the bent leg to return to centre.",
+    "Shift to the other side.",
+    "Keep your chest tall and heel down on the working side."
+  ],
+  "textSource": "opengym"
+}

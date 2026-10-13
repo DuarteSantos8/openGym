@@ -1,0 +1,24 @@
+{
+  "id": "2197",
+  "name": "run on treadmill",
+  "bodyPart": "cardio",
+  "equipment": "stationary bike",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "quadriceps",
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "cardio",
+  "description": "Running at a steady pace on a treadmill to build endurance and burn energy.",
+  "instructions": [
+    "Step onto the belt and clip the safety key to your clothing.",
+    "Start at a walk and raise the speed gradually to a comfortable jog.",
+    "Keep your chest tall and your arms swinging loosely at your sides.",
+    "Land softly under your hips and keep your steps quick.",
+    "Run for 10-30 minutes at a pace where you can still breathe steadily.",
+    "Slow to a walk for a few minutes to cool down."
+  ],
+  "textSource": "opengym"
+}

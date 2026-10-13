@@ -1,0 +1,21 @@
+{
+  "id": "0847",
+  "name": "weighted seated bicep curl (on stability ball)",
+  "bodyPart": "upper arms",
+  "equipment": "medicine ball",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated biceps curl on a stability ball holding a medicine ball. It trains the biceps and balance.",
+  "instructions": [
+    "Sit on a stability ball with your feet flat on the ground and your back straight.",
+    "Hold a medicine ball with an underhand grip, palms facing up, and let your arms hang down by your sides.",
+    "Keeping your upper arms stationary, exhale and curl the medicine ball up towards your shoulders.",
+    "Pause for a moment at the top, squeezing your biceps.",
+    "Inhale and slowly lower the medicine ball back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

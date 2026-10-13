@@ -1,0 +1,22 @@
+{
+  "id": "4959",
+  "name": "lunge thighs (form check)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "A form check drawing for the lunge, showing correct and incorrect positions. It reminds you how to train the thighs safely.",
+  "instructions": [
+    "Stand tall with feet hip width.",
+    "Step forward into a lunge.",
+    "Keep your front knee over your ankle.",
+    "Keep your torso upright.",
+    "Push back up to the start.",
+    "Compare with the incorrect position to correct your form."
+  ],
+  "textSource": "opengym"
+}

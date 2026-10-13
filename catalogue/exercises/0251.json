@@ -1,0 +1,21 @@
+{
+  "id": "0251",
+  "name": "chest dip",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight dip with a forward lean on parallel bars. It targets the lower chest, triceps and shoulders.",
+  "instructions": [
+    "Position yourself on parallel bars with your arms fully extended and your body straight.",
+    "Lower your body by bending your elbows until your shoulders are below your elbows.",
+    "Push yourself back up to the starting position by straightening your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3599",
+  "textSource": "exercisedb"
+}

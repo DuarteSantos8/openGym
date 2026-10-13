@@ -1,0 +1,22 @@
+{
+  "id": "1763",
+  "name": "shoulder grip pull-up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up with hands about shoulder-width apart. Builds the lats, upper back and biceps.",
+  "instructions": [
+    "Grab the pull-up bar with a shoulder-width grip, palms facing away from you.",
+    "Hang freely with your arms fully extended.",
+    "Engage your back muscles and pull your body up towards the bar until your chin is above the bar.",
+    "Pause for a moment at the top, then slowly lower your body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3900",
+  "textSource": "exercisedb"
+}

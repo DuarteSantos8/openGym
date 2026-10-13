@@ -1,0 +1,23 @@
+{
+  "id": "2420",
+  "name": "resistance band air bike",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "strength",
+  "description": "A bicycle crunch with a band adding resistance to the leg movement.",
+  "instructions": [
+    "Lie on your back with a band looped around your feet.",
+    "Hold the ends with your hands or place them by your head.",
+    "Lift your shoulders and bring your knees up.",
+    "Pedal your legs while twisting your elbow toward the opposite knee.",
+    "Keep your lower back flat.",
+    "Continue for the planned reps."
+  ],
+  "textSource": "opengym"
+}

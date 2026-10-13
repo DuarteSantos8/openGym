@@ -1,0 +1,24 @@
+{
+  "id": "3692",
+  "name": "dumbbell goblet box squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A goblet squat that touches a box behind you, teaching depth control and sitting back into your hips.",
+  "instructions": [
+    "Place a box or bench behind you and hold a dumbbell at your chest.",
+    "Stand with your feet shoulder width apart.",
+    "Push your hips back and lower until you lightly touch the box.",
+    "Keep your chest up and knees in line with your toes.",
+    "Drive through your heels to stand up without rocking."
+  ],
+  "femaleVariant": "11320",
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "0034",
+  "name": "barbell decline bent arm pullover",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "triceps",
+    "chest"
+  ],
+  "category": "strength",
+  "description": "A pullover on a decline bench with slightly bent arms, stretching and working the lats.",
+  "instructions": [
+    "Lie down on a decline bench with your head lower than your hips and your feet secured.",
+    "Hold a barbell with a pronated grip (palms facing away from you) and extend your arms straight above your chest.",
+    "Lower the barbell behind your head in a controlled manner, keeping your arms slightly bent.",
+    "Pause for a moment, then raise the barbell back to the starting position by contracting your lats.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

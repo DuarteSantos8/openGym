@@ -1,0 +1,23 @@
+{
+  "id": "8798",
+  "name": "barbell lying seal row on rack",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A chest-supported barbell row lying on a raised bench or rack, removing the lower back from the lift.",
+  "instructions": [
+    "Lie face down on a raised bench so the bar hangs below you.",
+    "Grip the bar slightly wider than shoulders.",
+    "Row the bar up toward your chest by pulling elbows back.",
+    "Squeeze your shoulder blades together.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

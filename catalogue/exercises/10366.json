@@ -1,0 +1,22 @@
+{
+  "id": "10366",
+  "name": "resistance band sitting floor tibialis press",
+  "bodyPart": "lower legs",
+  "equipment": "resistance band",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "A seated move that pulls the toes toward the shins against a band to strengthen the front of the lower leg.",
+  "instructions": [
+    "Sit on the floor with your legs out and loop a band around your foot, anchored in front.",
+    "Keep your leg straight and your heel on the floor.",
+    "Pull your toes up toward your shin against the band.",
+    "Hold briefly, then slowly release.",
+    "Do all reps on one foot, then switch."
+  ],
+  "textSource": "opengym"
+}

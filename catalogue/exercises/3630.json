@@ -1,0 +1,23 @@
+{
+  "id": "3630",
+  "name": "standing hamstrings and back stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "lower back",
+    "calves",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "Fold forward from standing to lengthen the hamstrings and lower back.",
+  "instructions": [
+    "Stand tall with feet hip width apart.",
+    "Hinge forward at the hips with a long spine.",
+    "Let your arms hang toward the floor.",
+    "Keep your knees soft.",
+    "Hold for 20-30 seconds while breathing steadily.",
+    "Release slowly and repeat on the other side if needed."
+  ],
+  "textSource": "opengym"
+}

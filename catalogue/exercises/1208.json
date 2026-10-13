@@ -1,0 +1,22 @@
+{
+  "id": "1208",
+  "name": "cable twist (up down) v. 2",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A diagonal cable rotation from high to low that trains the obliques and builds rotational strength.",
+  "instructions": [
+    "Set the cable pulley high and stand sideways to the machine, holding the handle with both hands.",
+    "Start with the handle above your shoulder, arms mostly straight.",
+    "Rotate your torso and pull the handle diagonally down across your body.",
+    "Keep your hips steady and your core braced.",
+    "Return slowly, finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

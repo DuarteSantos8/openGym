@@ -1,0 +1,23 @@
+{
+  "id": "2562",
+  "name": "side jump step up",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "A side-on step with a jump that trains power in the legs.",
+  "instructions": [
+    "Stand beside a low step.",
+    "Place your near foot on the step.",
+    "Drive up with a small jump.",
+    "Land softly on the step.",
+    "Step down with control.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

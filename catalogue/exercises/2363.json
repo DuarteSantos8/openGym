@@ -1,0 +1,20 @@
+{
+  "id": "2363",
+  "name": "wide-grip chest dip on high parallel bars",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A wide-grip dip on high parallel bars, leaning forward. Targets the chest and shoulders.",
+  "instructions": [
+    "Position yourself on the parallel bars with your arms fully extended and your body suspended in the air.",
+    "Lean forward slightly and lower your body by bending your elbows until your chest is just above the bars.",
+    "Pause for a moment, then push yourself back up to the starting position by straightening your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

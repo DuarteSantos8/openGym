@@ -1,0 +1,23 @@
+{
+  "id": "3534",
+  "name": "bodyweight standing pulse calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "calisthenics",
+  "description": "A standing calf raise with small pulses at the top. It builds calf endurance.",
+  "instructions": [
+    "Stand with feet hip-width apart, holding a support for balance.",
+    "Rise up onto the balls of your feet.",
+    "Pulse up and down in small movements.",
+    "Keep your knees straight.",
+    "Lower fully when you finish.",
+    "Keep the movement controlled."
+  ],
+  "textSource": "opengym"
+}

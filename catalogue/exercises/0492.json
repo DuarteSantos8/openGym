@@ -1,0 +1,23 @@
+{
+  "id": "0492",
+  "name": "incline push up depth jump",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "An incline push-up with a drop and explosive rebound. It builds chest power and quickness.",
+  "instructions": [
+    "Find an elevated surface, such as a bench or step, and place your hands shoulder-width apart on the edge.",
+    "Step your feet back, keeping your body in a straight line from head to heels.",
+    "Lower your chest towards the edge of the surface, bending your elbows and keeping your body aligned.",
+    "Push through your palms to extend your arms and return to the starting position.",
+    "Jump off the edge of the surface, landing softly with your knees slightly bent.",
+    "Repeat the push-up and depth jump for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

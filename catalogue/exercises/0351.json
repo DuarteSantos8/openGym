@@ -1,0 +1,21 @@
+{
+  "id": "0351",
+  "name": "dumbbell lying triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Lying on a bench, you bend and straighten the elbows to lower dumbbells toward your forehead and press back up. A classic triceps builder.",
+  "instructions": [
+    "Lie flat on a bench with a dumbbell in each hand, palms facing each other.",
+    "Extend your arms straight up over your chest, keeping your elbows close to your body.",
+    "Lower the dumbbells down towards your forehead, bending your elbows.",
+    "Pause for a moment, then extend your arms back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2251",
+  "textSource": "exercisedb"
+}

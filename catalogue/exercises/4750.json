@@ -1,0 +1,22 @@
+{
+  "id": "4750",
+  "name": "dumbbell russian twist with legs floor off",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "strength",
+  "description": "A Russian twist with a dumbbell and your feet lifted off the floor. It strongly challenges the obliques and balance.",
+  "instructions": [
+    "Sit down and lean back slightly with a dumbbell held in both hands.",
+    "Lift your feet off the floor with knees bent.",
+    "Rotate your torso to bring the dumbbell beside one hip.",
+    "Twist to the other side in a controlled way.",
+    "Keep your chest up and your back long."
+  ],
+  "textSource": "opengym"
+}

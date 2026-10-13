@@ -1,0 +1,24 @@
+{
+  "id": "3034",
+  "name": "bent leg kickback (kneeling)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "From all fours, you drive one bent knee up toward the ceiling. It targets the glutes without any equipment.",
+  "instructions": [
+    "Start on hands and knees with your hands under your shoulders.",
+    "Brace your core and keep your back flat.",
+    "Lift one leg with the knee bent at 90 degrees.",
+    "Push the sole of your foot toward the ceiling and squeeze your glute.",
+    "Lower slowly without arching your back.",
+    "Complete your reps, then switch legs."
+  ],
+  "femaleVariant": "1474",
+  "textSource": "opengym"
+}

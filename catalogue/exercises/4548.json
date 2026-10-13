@@ -1,0 +1,25 @@
+{
+  "id": "4548",
+  "name": "burpee squat",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "chest",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A burpee with a squat finish that raises your heart rate and works the whole body.",
+  "instructions": [
+    "Stand with feet shoulder-width apart.",
+    "Drop into a squat and place your hands on the floor.",
+    "Jump or step your feet back into a plank.",
+    "Lower your chest down, then press back up.",
+    "Jump your feet forward to your hands.",
+    "Stand and finish with a bodyweight squat before the next rep."
+  ],
+  "textSource": "opengym"
+}

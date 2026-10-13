@@ -1,0 +1,40 @@
+{
+  "id": "1432",
+  "name": "assisted standing pull-up",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A pull-up done on an assisted machine that takes part of your body weight. It builds the lats and upper back while you work up to full pull-ups.",
+  "instructions": [
+    "Adjust the machine to your desired weight and height settings.",
+    "Stand facing the machine with your feet shoulder-width apart.",
+    "Grasp the handles with an overhand grip, slightly wider than shoulder-width apart.",
+    "Engage your lats and biceps, and pull yourself up towards the handles.",
+    "Pause for a moment at the top, squeezing your back muscles.",
+    "Slowly lower yourself back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ],
+    "weights": {
+      "upper-back": 1,
+      "biceps": 0.4,
+      "deltoids": 0.4,
+      "forearm": 0.4,
+      "triceps": 0
+    }
+  },
+  "textSource": "exercisedb"
+}

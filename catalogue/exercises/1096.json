@@ -1,0 +1,22 @@
+{
+  "id": "1096",
+  "name": "suspension shoulder external rotation",
+  "bodyPart": "shoulders",
+  "equipment": "suspension trainer",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "External rotation using straps. It strengthens the rotator cuff.",
+  "instructions": [
+    "Hold the handles with elbows bent at 90 degrees.",
+    "Lean back slightly.",
+    "Rotate your forearms outward and upward.",
+    "Keep your elbows by your sides.",
+    "Return slowly.",
+    "Keep the motion small."
+  ],
+  "textSource": "opengym"
+}

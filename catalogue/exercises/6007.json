@@ -1,0 +1,23 @@
+{
+  "id": "6007",
+  "name": "low lunge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes",
+    "groin"
+  ],
+  "category": "stretching",
+  "description": "A deep lunge stretch that opens the hip flexors and quads.",
+  "instructions": [
+    "Step one foot forward into a lunge and lower your back knee.",
+    "Keep your front knee over your ankle.",
+    "Push your hips forward and lift your chest.",
+    "Reach your arms overhead if you like.",
+    "Hold for 20-30 seconds, then switch legs."
+  ],
+  "femaleVariant": "5893",
+  "textSource": "opengym"
+}

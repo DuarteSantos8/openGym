@@ -1,0 +1,22 @@
+{
+  "id": "6812",
+  "name": "roll ball seated pectineus activation",
+  "bodyPart": "upper legs",
+  "equipment": "medicine ball",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "inner thighs",
+    "groin",
+    "hip flexors"
+  ],
+  "category": "stretching",
+  "description": "A seated move using a ball to wake up the inner upper thigh. It works the pectineus and the nearby adductors.",
+  "instructions": [
+    "Sit tall on a chair with a ball between your knees.",
+    "Place your feet flat and keep your back straight.",
+    "Squeeze the ball gently with your thighs.",
+    "Hold the squeeze for 5-10 seconds.",
+    "Relax and repeat several times."
+  ],
+  "textSource": "opengym"
+}

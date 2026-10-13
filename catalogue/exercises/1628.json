@@ -1,0 +1,21 @@
+{
+  "id": "1628",
+  "name": "ez barbell spider curl",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A spider curl with an EZ bar, lying chest down on an incline bench. It isolates the biceps with no swing.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold the ez barbell with an underhand grip, palms facing up.",
+    "Rest your upper arms on a preacher bench or stability ball, allowing your elbows to hang down.",
+    "Keeping your upper arms stationary, exhale and curl the barbell up towards your shoulders.",
+    "Pause for a moment at the top, squeezing your biceps.",
+    "Inhale and slowly lower the barbell back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

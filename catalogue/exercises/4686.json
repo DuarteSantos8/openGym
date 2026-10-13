@@ -1,0 +1,22 @@
+{
+  "id": "4686",
+  "name": "band standing behind head military press",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "An overhead press with the band starting behind the head. It trains the shoulders and triceps.",
+  "instructions": [
+    "Stand on the band and hold the ends behind your head at shoulder level.",
+    "Brace your core and keep your ribs down.",
+    "Press your hands straight overhead.",
+    "Lock out your arms without shrugging.",
+    "Lower slowly back behind your head and repeat."
+  ],
+  "textSource": "opengym"
+}

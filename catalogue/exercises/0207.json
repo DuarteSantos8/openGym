@@ -1,0 +1,23 @@
+{
+  "id": "0207",
+  "name": "cable reverse-grip pushdown",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A pushdown with an underhand grip on a high pulley. Switching the grip shifts more load onto the triceps' medial head.",
+  "instructions": [
+    "Attach a straight bar to a high pulley cable machine.",
+    "Stand facing the machine with your feet shoulder-width apart.",
+    "Grasp the bar with an underhand grip, palms facing up, and your hands shoulder-width apart.",
+    "Keep your elbows close to your sides and your upper arms stationary throughout the exercise.",
+    "Using your triceps, push the bar down until your arms are fully extended and your triceps are contracted.",
+    "Pause for a moment, then slowly return the bar to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2520",
+  "textSource": "exercisedb"
+}

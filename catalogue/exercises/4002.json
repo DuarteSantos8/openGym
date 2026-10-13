@@ -1,0 +1,21 @@
+{
+  "id": "4002",
+  "name": "v up double crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "calisthenics",
+  "description": "A V up where you crunch your arms and legs together twice. It hits the whole abdominal wall.",
+  "instructions": [
+    "Lie flat with arms overhead.",
+    "Lift your arms and legs into a V.",
+    "Crunch in again.",
+    "Lower with control.",
+    "Keep your legs straight."
+  ],
+  "textSource": "opengym"
+}

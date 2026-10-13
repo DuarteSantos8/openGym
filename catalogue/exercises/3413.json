@@ -1,0 +1,22 @@
+{
+  "id": "3413",
+  "name": "lying shoulder sweep",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "chest",
+    "rotator cuff"
+  ],
+  "category": "mobility",
+  "description": "Slide your arms along the floor in a wide arc to mobilise the shoulders.",
+  "instructions": [
+    "Lie on your back with arms straight out to the sides.",
+    "Sweep both arms up in an arc toward overhead.",
+    "Keep your arms as close to the floor as you comfortably can.",
+    "Return along the same path.",
+    "Move slowly for 10-12 reps."
+  ],
+  "textSource": "opengym"
+}

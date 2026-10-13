@@ -1,0 +1,21 @@
+{
+  "id": "1164",
+  "name": "smith calf raise v. 2",
+  "bodyPart": "lower legs",
+  "equipment": "smith machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "strength",
+  "description": "Calf raise under a Smith machine bar, working the calves with a fixed bar path for stable loading.",
+  "instructions": [
+    "Set the bar on your shoulders and stand with the balls of your feet on a step.",
+    "Keep your knees almost straight and your torso upright.",
+    "Lower your heels for a full stretch.",
+    "Rise onto your toes as high as you can.",
+    "Pause at the top, then lower under control."
+  ],
+  "textSource": "opengym"
+}

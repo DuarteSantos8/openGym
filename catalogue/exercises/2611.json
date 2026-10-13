@@ -1,0 +1,42 @@
+{
+  "id": "2611",
+  "name": "lever horizontal one leg press",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A horizontal machine leg press done one leg at a time. Builds the glutes and quads.",
+  "instructions": [
+    "Adjust the seat of the machine so that your knees are at a 90-degree angle when your feet are on the footplate.",
+    "Sit on the machine with your back against the backrest and your feet shoulder-width apart on the footplate.",
+    "Place your hands on the handles or sides of the machine for stability.",
+    "Push the footplate away from your body by extending your leg, keeping your back against the backrest.",
+    "Pause for a moment at the fully extended position, then slowly bend your leg to return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch legs."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves"
+    ],
+    "weights": {
+      "quadriceps": 1,
+      "gluteal": 1,
+      "adductors": 1,
+      "hamstring": 0.4,
+      "calves": 0
+    }
+  },
+  "femaleVariant": "0883",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4011",
+  "name": "cable bent over row with bar",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A bent over row with a cable and straight bar. It builds the lats and mid-back.",
+  "instructions": [
+    "Face the low pulley and hinge forward holding the bar.",
+    "Keep a flat back.",
+    "Pull the bar toward your waist.",
+    "Squeeze your back.",
+    "Extend your arms slowly."
+  ],
+  "textSource": "opengym"
+}

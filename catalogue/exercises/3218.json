@@ -1,0 +1,22 @@
+{
+  "id": "3218",
+  "name": "hands clasped circular toe touch (male)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "calves"
+  ],
+  "category": "mobility",
+  "description": "A standing toe touch with the hands clasped and moved in a circular path. It stretches the hamstrings and warms up the hips and back.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your hands clasped together in front of your chest.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
+    "Lower your hands towards your toes in a circular motion, reaching as far as you can without straining.",
+    "Pause for a moment at the bottom, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

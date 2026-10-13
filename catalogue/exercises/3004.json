@@ -1,0 +1,25 @@
+{
+  "id": "3004",
+  "name": "briskly walking",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "glutes",
+    "quadriceps",
+    "hamstrings"
+  ],
+  "category": "cardio",
+  "description": "A fast-paced walk that lifts your heart rate without the impact of running. Easy on the joints and good for steady fitness.",
+  "instructions": [
+    "Stand tall with your shoulders relaxed.",
+    "Start walking at a pace faster than a stroll.",
+    "Swing your arms naturally with elbows bent.",
+    "Land on your heel and roll through to your toes.",
+    "Keep breathing steadily and stay able to talk.",
+    "Walk for 20-45 minutes."
+  ],
+  "femaleVariant": "3003",
+  "textSource": "opengym"
+}

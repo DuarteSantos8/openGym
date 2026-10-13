@@ -1,0 +1,22 @@
+{
+  "id": "10194",
+  "name": "butterfly back roll",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "core",
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "Rock back and forth on your spine with legs in a butterfly position. It massages the back and loosens the hips.",
+  "instructions": [
+    "Sit with the soles of your feet together and knees open.",
+    "Hold your feet or ankles.",
+    "Roll back slowly along your spine.",
+    "Roll forward to sit up again.",
+    "Repeat smoothly for 8 to 10 reps."
+  ],
+  "textSource": "opengym"
+}

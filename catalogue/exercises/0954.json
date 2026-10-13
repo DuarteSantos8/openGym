@@ -1,0 +1,22 @@
+{
+  "id": "0954",
+  "name": "hero pose virasana",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "ankles",
+    "shins",
+    "hip flexors"
+  ],
+  "category": "yoga",
+  "description": "Kneel and sit between your feet, stretching the thighs and ankles. A grounded seat for breathing or meditation.",
+  "instructions": [
+    "Kneel with knees together and feet slightly wider than your hips.",
+    "Sit your hips down between your heels, using a block if needed.",
+    "Rest your hands on your thighs and lengthen your spine.",
+    "Relax your shoulders and breathe evenly.",
+    "Hold for 30-60 seconds, then come out slowly."
+  ],
+  "textSource": "opengym"
+}

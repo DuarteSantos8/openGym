@@ -1,0 +1,24 @@
+{
+  "id": "2830",
+  "name": "power sled rear lunge",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A rear lunge while pushing or holding a power sled. Builds leg strength with extra resistance.",
+  "instructions": [
+    "Hold the sled handles and stand tall with your feet together.",
+    "Step one foot back into a lunge, lowering your back knee toward the floor.",
+    "Keep your torso upright and your front knee over your ankle.",
+    "Push through the front foot to return to standing.",
+    "Alternate legs on each rep."
+  ],
+  "femaleVariant": "2829",
+  "textSource": "opengym"
+}

@@ -1,0 +1,27 @@
+{
+  "id": "2466",
+  "name": "bridge - mountain climber (cross body)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "hamstrings",
+    "shoulders",
+    "triceps"
+  ],
+  "category": "calisthenics",
+  "description": "A plank-position mountain climber driving knee across the body. Works the abs and obliques, and raises your heart rate.",
+  "instructions": [
+    "Start in a high plank position with your hands directly under your shoulders and your body in a straight line.",
+    "Engage your core and lift your right foot off the ground, bringing your right knee towards your left elbow.",
+    "Return your right foot to the starting position and repeat the movement with your left foot towards your right elbow.",
+    "Continue alternating sides, moving at a controlled pace.",
+    "Keep your hips level and avoid lifting your hips too high or sagging them too low.",
+    "Maintain a steady breathing pattern throughout the exercise.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "0141",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5633",
+  "name": "barbell narrow stance squat v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Back squat with a narrow stance for more quad focus.",
+  "instructions": [
+    "Rest a barbell on your upper back with feet close together.",
+    "Brace your core.",
+    "Squat down with your chest up.",
+    "Stand back up through your feet.",
+    "Keep your knees tracking over your toes."
+  ],
+  "textSource": "opengym"
+}

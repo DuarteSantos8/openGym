@@ -1,0 +1,21 @@
+{
+  "id": "0455",
+  "name": "finger curls",
+  "bodyPart": "lower arms",
+  "equipment": "barbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "You let a barbell roll to your fingertips and curl it back up. It builds finger and forearm strength for a better grip.",
+  "instructions": [
+    "Sit on a bench with your feet flat on the ground and hold a barbell with an underhand grip, palms facing up.",
+    "Rest your forearms on your thighs, allowing your wrists to hang off the edge.",
+    "Slowly curl your fingers towards your palms, squeezing the barbell tightly.",
+    "Hold the contraction for a moment, then slowly release your fingers back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

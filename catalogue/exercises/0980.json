@@ -1,0 +1,24 @@
+{
+  "id": "0980",
+  "name": "band bent-over hip extension",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A bent-over hip extension with a band, kicking one leg back. It trains the glutes.",
+  "instructions": [
+    "Attach the band to a sturdy anchor point at ankle height.",
+    "Stand facing away from the anchor point with your feet shoulder-width apart.",
+    "Step back to create tension in the band, keeping your knees slightly bent.",
+    "Hinge at the hips and lean forward, maintaining a neutral spine.",
+    "Extend your right leg straight back, squeezing your glutes at the top.",
+    "Lower your right leg back down and repeat with the left leg.",
+    "Continue alternating legs for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb",
+  "maleVariant": "4035"
+}

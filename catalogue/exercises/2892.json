@@ -1,0 +1,22 @@
+{
+  "id": "2892",
+  "name": "scissors (beginner)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A beginner floor exercise crossing the legs like scissors to train the lower abs.",
+  "instructions": [
+    "Lie on your back with arms by your sides.",
+    "Lift both legs a little off the floor.",
+    "Open them wide, then cross one over the other.",
+    "Alternate which leg is on top with each rep.",
+    "Keep your lower back flat on the floor."
+  ],
+  "textSource": "opengym"
+}

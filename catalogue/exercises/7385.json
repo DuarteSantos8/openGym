@@ -1,0 +1,24 @@
+{
+  "id": "7385",
+  "name": "pull up (negative)",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "calisthenics",
+  "description": "Slow lowering phase of a pull-up that builds strength for full pull-ups.",
+  "instructions": [
+    "Jump or step up so your chin is above the bar.",
+    "Grip the bar slightly wider than your shoulders.",
+    "Lower yourself slowly over 3-5 seconds.",
+    "Stop at a full hang with straight arms.",
+    "Step back up and repeat."
+  ],
+  "femaleVariant": "4774",
+  "textSource": "opengym"
+}

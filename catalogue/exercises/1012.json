@@ -1,0 +1,34 @@
+{
+  "id": "1012",
+  "name": "band twisting overhead press",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "An overhead press with a band, twisting the torso as you press. It trains the shoulders and core.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and place the band under your feet.",
+    "Hold the band handles at shoulder height with your palms facing forward.",
+    "Engage your core and press the band overhead, fully extending your arms.",
+    "As you press, twist your torso to one side, keeping your hips stable.",
+    "Pause for a moment at the top, then return to the starting position.",
+    "Repeat the press and twist on the opposite side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "deltoids"
+    ],
+    "secondaries": [
+      "triceps",
+      "trapezius",
+      "abs",
+      "obliques"
+    ]
+  },
+  "textSource": "exercisedb"
+}

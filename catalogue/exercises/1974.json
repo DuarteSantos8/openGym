@@ -1,0 +1,21 @@
+{
+  "id": "1974",
+  "name": "standing reverse shoulder stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "upper back"
+  ],
+  "category": "stretching",
+  "description": "Standing with your hands clasped behind you to open the front of the shoulders.",
+  "instructions": [
+    "Stand tall and clasp your hands behind your back.",
+    "Straighten your arms and squeeze your shoulder blades together.",
+    "Lift your hands slightly away from your body.",
+    "Keep your chest up and avoid arching your lower back.",
+    "Hold for 20-30 seconds, then release."
+  ],
+  "textSource": "opengym"
+}

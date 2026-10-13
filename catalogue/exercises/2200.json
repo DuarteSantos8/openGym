@@ -1,0 +1,23 @@
+{
+  "id": "2200",
+  "name": "roll hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "stability ball",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A hip thrust done by rolling a ball under your body, which trains the glutes and challenges your balance.",
+  "instructions": [
+    "Lie on your back with your heels on a stability ball and your arms by your sides.",
+    "Brace your core and press your heels into the ball.",
+    "Lift your hips until your body forms a straight line from shoulders to knees.",
+    "Squeeze your glutes at the top for a second.",
+    "Lower your hips slowly without letting the ball drift away.",
+    "Repeat for the planned reps, keeping the ball steady."
+  ],
+  "textSource": "opengym"
+}

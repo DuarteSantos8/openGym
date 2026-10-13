@@ -1,0 +1,22 @@
+{
+  "id": "6052",
+  "name": "bottle weighted overhead crunch",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A crunch with a bottle held overhead. The extra lever length makes your abs work harder.",
+  "instructions": [
+    "Lie on your back, knees bent, holding a bottle with both hands above your chest.",
+    "Extend your arms overhead or keep them over your face.",
+    "Curl your ribs toward your hips and lift your shoulders off the floor.",
+    "Pause at the top.",
+    "Lower slowly without dropping your head."
+  ],
+  "textSource": "opengym"
+}

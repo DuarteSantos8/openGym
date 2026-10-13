@@ -1,0 +1,21 @@
+{
+  "id": "11649",
+  "name": "bent knee calves stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "A calf stretch with a bent back knee that targets the deeper soleus muscle near the Achilles tendon.",
+  "instructions": [
+    "Stand facing a wall with hands on it and one foot back.",
+    "Bend both knees, keeping the back heel flat on the floor.",
+    "Lean forward until you feel a stretch low in the back calf.",
+    "Keep your hips square and chest up.",
+    "Hold for 20-30 seconds, then switch legs."
+  ],
+  "textSource": "opengym"
+}

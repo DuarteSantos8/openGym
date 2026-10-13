@@ -1,0 +1,22 @@
+{
+  "id": "2870",
+  "name": "swimming",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "rear deltoids"
+  ],
+  "category": "pilates",
+  "description": "A prone Pilates exercise with alternating arm and leg flutters that trains the back and glutes.",
+  "instructions": [
+    "Lie face down with arms extended overhead and legs long.",
+    "Lift your arms, chest and legs slightly off the mat.",
+    "Flutter opposite arm and leg up and down in a quick, small rhythm.",
+    "Keep your abs drawn in and your neck long.",
+    "Continue for 20-30 seconds, then rest."
+  ],
+  "textSource": "opengym"
+}

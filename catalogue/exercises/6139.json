@@ -1,0 +1,23 @@
+{
+  "id": "6139",
+  "name": "squat mobility twist",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "mobility",
+  "description": "A deep squat paired with a trunk rotation. It opens the hips and upper back and improves rotation.",
+  "instructions": [
+    "Lower into a deep squat with your feet shoulder-width apart.",
+    "Place one hand on the floor or inside your knee.",
+    "Rotate your chest and reach the other arm up toward the ceiling.",
+    "Follow your hand with your eyes.",
+    "Return to the center and switch sides.",
+    "Keep your heels on the floor."
+  ],
+  "textSource": "opengym"
+}

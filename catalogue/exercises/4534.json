@@ -1,0 +1,22 @@
+{
+  "id": "4534",
+  "name": "kettlebell standing slingshots",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "core",
+    "forearms",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "Passing a kettlebell around your body in circles while standing. It works the shoulders, core and grip.",
+  "instructions": [
+    "Stand tall holding a kettlebell by the handle with both hands.",
+    "Pass it behind your back from one hand to the other.",
+    "Bring it around to the front and pass it again.",
+    "Keep your hips steady and your core tight.",
+    "Reverse direction halfway through your set."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "3385",
+  "name": "lever seated leg press v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A seated machine press that loads the thighs and glutes with a stable path.",
+  "instructions": [
+    "Sit on the machine and set your back firmly against the pad.",
+    "Place your feet on the platform about shoulder-width apart.",
+    "Release the safety and lower the weight until your knees bend to about 90 degrees.",
+    "Press through your whole foot to extend your legs.",
+    "Stop just short of locking your knees.",
+    "Lower under control and repeat."
+  ],
+  "textSource": "opengym"
+}

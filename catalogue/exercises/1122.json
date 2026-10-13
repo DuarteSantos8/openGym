@@ -1,0 +1,23 @@
+{
+  "id": "1122",
+  "name": "suspender oblique rollout",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Rolling out on the straps with a slight side angle, you hit the obliques and deep core.",
+  "instructions": [
+    "Hold the handles kneeling or standing, arms in front.",
+    "Brace your core and keep your back flat.",
+    "Roll forward and angle your arms toward one side.",
+    "Go only as far as you can hold a flat back.",
+    "Pull back to the start using your abs.",
+    "Alternate sides each rep."
+  ],
+  "textSource": "opengym"
+}

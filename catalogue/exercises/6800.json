@@ -1,0 +1,23 @@
+{
+  "id": "6800",
+  "name": "dumbbell military press russian twist with legs floor off",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "triceps",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A seated combo that pairs an overhead press with a Russian twist, feet off the floor. It challenges the trunk and shoulders together.",
+  "instructions": [
+    "Sit leaning back slightly with knees bent and feet off the floor.",
+    "Hold dumbbells at your shoulders.",
+    "Press both dumbbells overhead.",
+    "Lower them, then twist your torso to one side.",
+    "Twist to the other side and repeat the sequence."
+  ],
+  "textSource": "opengym"
+}

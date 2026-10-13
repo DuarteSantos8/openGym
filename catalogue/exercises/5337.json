@@ -1,0 +1,25 @@
+{
+  "id": "5337",
+  "name": "burpee push up mountain climber complex",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "chest",
+    "triceps",
+    "core",
+    "quadriceps",
+    "shoulders"
+  ],
+  "category": "plyometrics",
+  "description": "A conditioning chain of a burpee, a push-up and mountain climbers. Raises your heart rate quickly.",
+  "instructions": [
+    "Stand tall, then drop your hands to the floor and jump your feet back.",
+    "Do one push-up.",
+    "Run your knees in and out for several mountain climbers.",
+    "Jump your feet in toward your hands.",
+    "Jump up with arms overhead.",
+    "Keep a steady pace and a tight core."
+  ],
+  "textSource": "opengym"
+}

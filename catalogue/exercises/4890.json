@@ -1,0 +1,23 @@
+{
+  "id": "4890",
+  "name": "glute ham raise with extended arms",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A glute ham raise performed with the arms stretched out in front, making the lift harder. It strongly trains the hamstrings and glutes.",
+  "instructions": [
+    "Set up on the glute ham bench with your ankles locked in and thighs supported.",
+    "Extend your arms straight out in front of you.",
+    "Lower your torso toward the floor with a straight body.",
+    "Squeeze your hamstrings and glutes to pull yourself back up.",
+    "Stop when your body is in a straight line.",
+    "Move slowly and avoid arching your lower back."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,38 @@
+{
+  "id": "0289",
+  "name": "dumbbell bench press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "The classic dumbbell press on a flat bench. It builds the chest, shoulders and triceps with a good range of motion.",
+  "instructions": [
+    "Lie flat on a bench with your feet flat on the ground and your back pressed against the bench.",
+    "Hold a dumbbell in each hand, with your palms facing forward and your arms extended above your chest.",
+    "Lower the dumbbells slowly to the sides of your chest, keeping your elbows at a 90-degree angle.",
+    "Pause for a moment, then push the dumbbells back up to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "chest"
+    ],
+    "secondaries": [
+      "triceps",
+      "deltoids",
+      "biceps"
+    ],
+    "weights": {
+      "chest": 1,
+      "deltoids": 0.4,
+      "triceps": 0.4,
+      "biceps": 0
+    }
+  },
+  "femaleVariant": "2254",
+  "textSource": "exercisedb"
+}

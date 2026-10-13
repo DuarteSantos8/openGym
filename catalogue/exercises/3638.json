@@ -1,0 +1,23 @@
+{
+  "id": "3638",
+  "name": "push to run",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "A push-up that flows into fast alternating knee drives in the plank position. It raises the heart rate and trains the chest and core.",
+  "instructions": [
+    "Start in a push-up position with your hands shoulder-width apart and your body in a straight line.",
+    "Lower your chest towards the ground by bending your elbows, keeping your body straight.",
+    "Push through your hands to extend your arms and return to the starting position.",
+    "Quickly bring one knee towards your chest, then quickly switch and bring the other knee towards your chest.",
+    "Continue alternating knees as fast as you can while maintaining good form.",
+    "Continue for the desired duration or number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

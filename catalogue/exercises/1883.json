@@ -1,0 +1,21 @@
+{
+  "id": "1883",
+  "name": "exercise ball lying abductor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "stability ball",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "Lying stretch using a stability ball for support while opening the outer hip.",
+  "instructions": [
+    "Lie on your back with your calves resting on a stability ball.",
+    "Cross one ankle over the opposite knee.",
+    "Roll the ball gently to bring your legs toward your chest.",
+    "Feel the stretch in the outer hip.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

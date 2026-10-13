@@ -1,0 +1,22 @@
+{
+  "id": "6425",
+  "name": "kettlebell good morning v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Holding a kettlebell at your chest, you hinge at the hips to train hamstrings, glutes and your lower back.",
+  "instructions": [
+    "Stand with feet hip-width apart, holding a kettlebell at your chest.",
+    "Keep your knees slightly bent.",
+    "Push your hips back and tip your torso forward, back flat.",
+    "Lower until you feel your hamstrings stretch.",
+    "Squeeze your glutes to return upright."
+  ],
+  "textSource": "opengym"
+}

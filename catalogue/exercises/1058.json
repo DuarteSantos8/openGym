@@ -1,0 +1,21 @@
+{
+  "id": "1058",
+  "name": "standing one arm chest stretch",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "biceps"
+  ],
+  "category": "stretching",
+  "description": "Place one arm against a wall and turn away to open the chest. It eases tight pecs.",
+  "instructions": [
+    "Stand next to a wall or door frame.",
+    "Place your forearm or hand on the wall at shoulder height.",
+    "Slowly turn your body away from the arm.",
+    "Hold for 20-30 seconds.",
+    "Switch arms and repeat."
+  ],
+  "textSource": "opengym"
+}

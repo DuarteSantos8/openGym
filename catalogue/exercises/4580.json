@@ -1,0 +1,23 @@
+{
+  "id": "4580",
+  "name": "cat cow stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "core",
+    "shoulders"
+  ],
+  "category": "yoga",
+  "description": "A gentle spinal flow between arching and rounding the back to loosen the spine.",
+  "instructions": [
+    "Start on all fours with hands under shoulders and knees under hips.",
+    "Inhale and drop your belly, lifting your chest and tailbone into cow.",
+    "Exhale and round your back toward the ceiling into cat.",
+    "Tuck your chin and pull your belly in.",
+    "Move slowly between the two positions.",
+    "Repeat for 10-12 breaths."
+  ],
+  "femaleVariant": "5252",
+  "textSource": "opengym"
+}

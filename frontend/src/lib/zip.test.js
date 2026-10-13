@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { zipStore, readZip, looksLikeZip, crc32, ZipError, MAX_ENTRIES } from './zip.js'
+import { zipStore, readZip, looksLikeZip, crc32, ZipError, MAX_ENTRIES, MAX_TOTAL } from './zip.js'
 
 const text = async blob => new TextDecoder().decode(new Uint8Array(await blob.arrayBuffer()))
 const u8 = async blob => new Uint8Array(await blob.arrayBuffer())
@@ -59,5 +59,10 @@ describe('zip', () => {
     expect(await refusal(handZip([{ name: '/etc/passwd', data }]))).toBe('bad-name')
     expect(await refusal(handZip([{ name: 'a.txt', data }], { count: MAX_ENTRIES + 1 }))).toBe('too-many')
     expect(await refusal(new Blob(['not a zip at all']))).toBe('not-zip')
+  })
+
+  it('refuses an export above the import size limit before reading the file', async () => {
+    const blob = { size: MAX_TOTAL + 1, slice: () => { throw new Error('read past the size guard') } }
+    await expect(zipStore([{ name: 'media/large.mp4', blob }])).rejects.toMatchObject({ code: 'too-large' })
   })
 })

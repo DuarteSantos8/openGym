@@ -1,0 +1,22 @@
+{
+  "id": "0822",
+  "name": "twist squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A squat that adds a torso twist as you stand. It trains the legs and rotational control.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and hands together at your chest.",
+    "Sit down into a squat.",
+    "As you stand, rotate your torso to one side.",
+    "Return to the centre and squat again.",
+    "Alternate twisting sides."
+  ],
+  "textSource": "opengym"
+}

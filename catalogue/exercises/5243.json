@@ -1,0 +1,22 @@
+{
+  "id": "5243",
+  "name": "cable lying triceps extension (low)",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Lying on a bench with a low cable, extending the arms. It isolates the triceps.",
+  "instructions": [
+    "Lie on a bench with a low pulley behind your head.",
+    "Hold the bar or rope with your arms up over your face.",
+    "Keep your upper arms still.",
+    "Bend your elbows to lower the handle toward your forehead.",
+    "Extend your arms back up."
+  ],
+  "femaleVariant": "5262",
+  "textSource": "opengym"
+}

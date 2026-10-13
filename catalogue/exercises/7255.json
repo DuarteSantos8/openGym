@@ -1,0 +1,22 @@
+{
+  "id": "7255",
+  "name": "seated frog half to full sit up",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "groin"
+  ],
+  "category": "calisthenics",
+  "description": "Sit-up started from a seated frog position, with knees out and soles together, to work the abs and open the hips.",
+  "instructions": [
+    "Sit on the floor with the soles of your feet together and knees dropped out.",
+    "Lower your back halfway to the floor under control.",
+    "Pause, then lower fully to lie flat.",
+    "Curl your torso back up to sitting, using your abs.",
+    "Keep your feet together and avoid yanking on your neck."
+  ],
+  "textSource": "opengym"
+}

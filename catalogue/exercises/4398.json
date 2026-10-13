@@ -1,0 +1,24 @@
+{
+  "id": "4398",
+  "name": "resistance band squat",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A squat with a resistance band for added load. It builds strength in the legs and hips.",
+  "instructions": [
+    "Stand on the band with feet shoulder-width apart and hold the handles at your shoulders.",
+    "Brace your core and keep your chest tall.",
+    "Sit your hips back and bend your knees to lower into a squat.",
+    "Keep your knees tracking over your toes.",
+    "Drive through your feet to stand up."
+  ],
+  "femaleVariant": "7197",
+  "textSource": "opengym"
+}

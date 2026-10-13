@@ -1,0 +1,23 @@
+{
+  "id": "1135",
+  "name": "suspender single leg plank",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "glutes",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A forearm plank with feet in the straps and one leg raised, fighting rotation and sag.",
+  "instructions": [
+    "Place your feet in the straps and rest on your forearms.",
+    "Lift one leg a bit higher than the other.",
+    "Keep your hips square and abs tight.",
+    "Hold for 20-30 seconds.",
+    "Lower and switch legs.",
+    "Do not let the lower back arch."
+  ],
+  "textSource": "opengym"
+}

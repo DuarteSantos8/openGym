@@ -1,0 +1,25 @@
+{
+  "id": "9875",
+  "name": "cable sitting bench single arm twisting row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "biceps",
+    "rear deltoids",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A seated one-arm cable row where you rotate the torso and wrist as you pull. It works the lats and mid back through a longer range.",
+  "instructions": [
+    "Sit on a bench facing a low cable with your feet braced and take the handle in one hand.",
+    "Sit tall with your arm extended and your torso turned slightly toward the cable.",
+    "Pull the handle back while rotating your torso and wrist toward your hip.",
+    "Squeeze your shoulder blade toward your spine at the end.",
+    "Return slowly with your arm extended and your torso rotating back.",
+    "Keep your chest up, then switch sides after your reps."
+  ],
+  "textSource": "opengym"
+}

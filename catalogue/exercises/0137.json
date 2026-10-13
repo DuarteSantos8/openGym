@@ -1,0 +1,21 @@
+{
+  "id": "0137",
+  "name": "body-up",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight press-up that pushes the body back toward the hands. Trains the triceps.",
+  "instructions": [
+    "Start by placing your hands on a raised surface, such as a bench or parallel bars, with your palms facing down and fingers pointing forward.",
+    "Extend your legs out in front of you, keeping your heels on the ground and your body straight.",
+    "Lower your body by bending your elbows, keeping them close to your sides, until your upper arms are parallel to the ground.",
+    "Pause for a moment, then push through your palms to straighten your arms and lift your body back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

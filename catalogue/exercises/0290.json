@@ -1,0 +1,21 @@
+{
+  "id": "0290",
+  "name": "dumbbell bench seated press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "chest"
+  ],
+  "category": "strength",
+  "description": "A seated dumbbell press on a bench with back support. It targets the shoulders and the triceps.",
+  "instructions": [
+    "Sit on a bench with a dumbbell in each hand, resting on your thighs.",
+    "Lean back and position the dumbbells to the sides of your chest, palms facing forward.",
+    "Press the dumbbells upward until your arms are fully extended.",
+    "Pause for a moment at the top, then slowly lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

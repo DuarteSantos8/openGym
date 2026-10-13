@@ -1,0 +1,23 @@
+{
+  "id": "4558",
+  "name": "child to cobra pose",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "yoga",
+  "description": "A yoga flow that moves from a resting child pose into a gentle backbend, mobilising the spine.",
+  "instructions": [
+    "Start in child pose, knees apart, arms stretched forward.",
+    "Shift forward and lower your chest toward the floor.",
+    "Slide forward and press into your hands to lift your chest into cobra.",
+    "Keep your hips down and your shoulders away from your ears.",
+    "Hold for a few breaths.",
+    "Push back into child pose and repeat."
+  ],
+  "textSource": "opengym"
+}

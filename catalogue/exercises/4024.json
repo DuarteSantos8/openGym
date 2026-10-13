@@ -1,0 +1,22 @@
+{
+  "id": "4024",
+  "name": "resistance band standing overhead warming up",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "rotator cuff",
+    "triceps"
+  ],
+  "category": "mobility",
+  "description": "A light band warm-up that presses the arms overhead to wake up the shoulders before training.",
+  "instructions": [
+    "Stand tall with feet hip-width apart and hold the band with both hands at chest height.",
+    "Keep a slight tension in the band.",
+    "Raise your arms overhead in a smooth arc.",
+    "Lower back to chest height slowly.",
+    "Repeat for 10 to 15 easy reps without shrugging."
+  ],
+  "textSource": "opengym"
+}

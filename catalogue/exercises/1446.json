@@ -1,0 +1,23 @@
+{
+  "id": "1446",
+  "name": "barbell zercher squat hold",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "biceps",
+    "adductors"
+  ],
+  "category": "isometric",
+  "description": "Holding the bottom of a Zercher squat with the bar in your elbows. It challenges the legs and core.",
+  "instructions": [
+    "Place the barbell in the crooks of your elbows.",
+    "Squat down until your thighs are about parallel.",
+    "Keep your chest up and your core tight.",
+    "Hold the bottom position steadily.",
+    "Hold for 10-20 seconds, then stand up."
+  ],
+  "textSource": "opengym"
+}

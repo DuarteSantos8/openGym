@@ -1,0 +1,25 @@
+{
+  "id": "4452",
+  "name": "band bent over wide grip row",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "rear deltoids",
+    "biceps",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A bent-over row with a band and a wide grip. Targets the upper back and rear shoulders.",
+  "instructions": [
+    "Stand on the band with feet hip width apart and grab it with a wide overhand grip.",
+    "Hinge at the hips with a flat back and soft knees.",
+    "Pull your hands toward your lower ribs, elbows flaring out.",
+    "Squeeze your shoulder blades together at the top.",
+    "Lower slowly until your arms are straight.",
+    "Keep your torso still throughout."
+  ],
+  "textSource": "opengym"
+}

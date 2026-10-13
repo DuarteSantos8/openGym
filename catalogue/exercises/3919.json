@@ -1,0 +1,23 @@
+{
+  "id": "3919",
+  "name": "landmine rear lunge",
+  "bodyPart": "upper legs",
+  "equipment": "landmine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A reverse lunge holding a landmine bar at the chest, working the quads and glutes.",
+  "instructions": [
+    "Hold the end of a landmine bar at your chest.",
+    "Stand tall with feet hip-width apart.",
+    "Step one foot back and lower into a lunge.",
+    "Keep your front knee over your ankle.",
+    "Push through the front foot to stand.",
+    "Alternate legs."
+  ],
+  "textSource": "opengym"
+}

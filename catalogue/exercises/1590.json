@@ -1,0 +1,21 @@
+{
+  "id": "1590",
+  "name": "lever lying single leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A lying hamstring curl on a machine using one leg at a time. It helps balance strength between legs.",
+  "instructions": [
+    "Lie face down on the machine and place one leg under the pad above your heel.",
+    "Hold the handles and keep your hips pressed down.",
+    "Curl your heel up toward your glutes.",
+    "Squeeze your hamstring at the top.",
+    "Lower slowly, then switch legs after your reps."
+  ],
+  "femaleVariant": "4427",
+  "textSource": "opengym"
+}

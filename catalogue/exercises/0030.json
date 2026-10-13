@@ -1,0 +1,39 @@
+{
+  "id": "0030",
+  "name": "barbell close-grip bench press",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A bench press with a narrower grip that shifts more of the work to the triceps while still working the chest.",
+  "instructions": [
+    "Lie flat on a bench with your feet flat on the ground and your back pressed against the bench.",
+    "Grasp the barbell with a close grip, slightly narrower than shoulder-width apart.",
+    "Unrack the barbell and lower it slowly towards your chest, keeping your elbows close to your body.",
+    "Pause for a moment when the barbell touches your chest.",
+    "Push the barbell back up to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "triceps"
+    ],
+    "secondaries": [
+      "chest",
+      "deltoids",
+      "biceps"
+    ],
+    "weights": {
+      "triceps": 1,
+      "chest": 0.4,
+      "deltoids": 0.4,
+      "biceps": 0
+    }
+  },
+  "femaleVariant": "2391",
+  "textSource": "exercisedb"
+}

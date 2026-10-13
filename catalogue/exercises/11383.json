@@ -1,0 +1,21 @@
+{
+  "id": "11383",
+  "name": "wrist extensor stretch",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist extensors"
+  ],
+  "category": "stretching",
+  "description": "Stretches the muscles on top of the forearm that lift the wrist. Good after typing, climbing or heavy gripping.",
+  "instructions": [
+    "Extend one arm in front of you with the elbow straight and palm facing down.",
+    "Bend the wrist so your fingers point toward the floor.",
+    "With your other hand, gently pull the back of the hand toward you.",
+    "Keep the stretch mild and your shoulder relaxed.",
+    "Hold for 20-30 seconds, then switch arms."
+  ],
+  "femaleVariant": "1849",
+  "textSource": "opengym"
+}

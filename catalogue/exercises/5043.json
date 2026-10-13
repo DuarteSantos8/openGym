@@ -1,0 +1,23 @@
+{
+  "id": "5043",
+  "name": "lying prone w to t",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "trapezius",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "Lying face down, you move from a W to a T shape. It trains the back of the shoulders and upper back.",
+  "instructions": [
+    "Lie face down in a W with elbows bent.",
+    "Lift your arms slightly off the floor.",
+    "Straighten your arms out to the sides into a T.",
+    "Pull back to the W while keeping your shoulder blades squeezed.",
+    "Repeat smoothly."
+  ],
+  "textSource": "opengym"
+}

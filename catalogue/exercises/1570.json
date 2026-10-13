@@ -1,0 +1,22 @@
+{
+  "id": "1570",
+  "name": "knee tuck jump",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive vertical jump where you pull your knees into your chest at the top. Great for power and conditioning.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and arms ready.",
+    "Dip into a quarter squat and swing your arms back.",
+    "Jump explosively and tuck both knees toward your chest.",
+    "Extend your legs again before landing.",
+    "Land softly on bent knees and reset before the next jump."
+  ],
+  "textSource": "opengym"
+}

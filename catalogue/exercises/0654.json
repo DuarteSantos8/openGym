@@ -1,0 +1,24 @@
+{
+  "id": "0654",
+  "name": "push up (knee chest)",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "hip flexors",
+    "core",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up where you pull a knee toward your chest on each rep. It adds core and conditioning work.",
+  "instructions": [
+    "Start in a plank with your hands under your shoulders.",
+    "Lower into a push-up.",
+    "Press back up.",
+    "Drive one knee toward your chest.",
+    "Return that foot to the plank.",
+    "Alternate legs each rep."
+  ],
+  "textSource": "opengym"
+}

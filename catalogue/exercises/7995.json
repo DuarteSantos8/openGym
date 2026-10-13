@@ -1,0 +1,23 @@
+{
+  "id": "7995",
+  "name": "dumbbell bent over y raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "trapezius",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "Hinge forward and raise light dumbbells out and up into a Y shape. It trains the shoulders and the muscles between the shoulder blades.",
+  "instructions": [
+    "Hold a light dumbbell in each hand and hinge at the hips with a flat back.",
+    "Let your arms hang below your shoulders, palms facing each other.",
+    "Raise both arms forward and up at about 45 degrees to form a Y.",
+    "Pause briefly at the top and squeeze your shoulder blades.",
+    "Lower the weights slowly under control.",
+    "Keep your neck long and avoid swinging your torso."
+  ],
+  "textSource": "opengym"
+}

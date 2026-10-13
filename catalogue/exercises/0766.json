@@ -1,0 +1,33 @@
+{
+  "id": "0766",
+  "name": "smith shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "smith machine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "An overhead press using the smith bar, pressed from shoulder height to full extension. It builds strong shoulders and triceps.",
+  "instructions": [
+    "Adjust the seat height and position yourself on the smith machine with your feet shoulder-width apart.",
+    "Grasp the bar with an overhand grip, slightly wider than shoulder-width apart.",
+    "Lift the bar off the rack and position it at shoulder level, with your elbows bent and palms facing forward.",
+    "Press the bar upward until your arms are fully extended overhead.",
+    "Pause for a moment at the top, then slowly lower the bar back down to shoulder level.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "deltoids"
+    ],
+    "secondaries": [
+      "chest",
+      "triceps",
+      "trapezius",
+      "serratus"
+    ]
+  },
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,42 @@
+{
+  "id": "0527",
+  "name": "kettlebell double jerk",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "With two kettlebells you drive from the rack to overhead using legs and arms. It builds the shoulders and legs.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a kettlebell in each hand at shoulder height.",
+    "Bend your knees slightly and engage your core.",
+    "Press the kettlebells overhead, fully extending your arms.",
+    "Bend your knees and quickly drop into a partial squat.",
+    "Explosively extend your hips and knees, driving the kettlebells overhead.",
+    "Lock out your arms and catch the kettlebells overhead with your knees slightly bent.",
+    "Stand up straight and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "bodyPart": "full body",
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "deltoids",
+      "triceps"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves",
+      "trapezius",
+      "forearm",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "textSource": "exercisedb"
+}

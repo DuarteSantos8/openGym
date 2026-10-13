@@ -1,0 +1,22 @@
+{
+  "id": "0909",
+  "name": "band lunges",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "Lunges with band resistance. They build the quads and glutes with extra tension.",
+  "instructions": [
+    "Stand on the band with the ends held at your shoulders.",
+    "Step forward into a long stride.",
+    "Lower your back knee toward the floor.",
+    "Press through the front heel to return.",
+    "Alternate legs."
+  ],
+  "textSource": "opengym"
+}

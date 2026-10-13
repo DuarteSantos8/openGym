@@ -1,0 +1,24 @@
+{
+  "id": "5214",
+  "name": "riding outdoor bicycle",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves",
+    "glutes"
+  ],
+  "category": "cardio",
+  "description": "Cycling outdoors at an easy to moderate pace. It is a low-impact way to build endurance.",
+  "instructions": [
+    "Adjust your saddle so your leg is almost straight at the bottom of the pedal stroke.",
+    "Wear a helmet and check your brakes.",
+    "Start at an easy pace to warm up.",
+    "Pedal smoothly at a steady, comfortable rhythm for 20-60 minutes.",
+    "Cool down with a few minutes of easy pedalling."
+  ],
+  "femaleVariant": "5215",
+  "textSource": "opengym"
+}

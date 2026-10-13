@@ -1,0 +1,23 @@
+{
+  "id": "8369",
+  "name": "seated over head straight arm stretch",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "lats",
+    "triceps"
+  ],
+  "category": "stretching",
+  "description": "A seated overhead reach that stretches the chest and shoulders. It helps open up the upper body after desk time.",
+  "instructions": [
+    "Sit tall on a chair or bench.",
+    "Interlace your fingers and straighten your arms.",
+    "Raise them overhead with palms facing up.",
+    "Lift your chest and reach slightly back.",
+    "Breathe normally and hold for 20 to 30 seconds.",
+    "Release slowly."
+  ],
+  "textSource": "opengym"
+}

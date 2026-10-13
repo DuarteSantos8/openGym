@@ -1,0 +1,22 @@
+{
+  "id": "2889",
+  "name": "starfish crunch (advanced)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A wide-limb crunch that works the abs while your arms and legs open and close like a starfish.",
+  "instructions": [
+    "Lie on your back with arms and legs spread wide.",
+    "Brace your core and press your lower back into the floor.",
+    "Crunch up, bringing your arms and legs toward the center.",
+    "Slowly open back out to the starfish shape.",
+    "Keep your movements controlled and repeat."
+  ],
+  "textSource": "opengym"
+}

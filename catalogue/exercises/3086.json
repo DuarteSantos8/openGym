@@ -1,0 +1,25 @@
+{
+  "id": "3086",
+  "name": "elbow to knee twists",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "quadriceps",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "A standing move where you twist to bring an elbow toward the opposite knee. It raises your pulse and works the sides of your waist.",
+  "instructions": [
+    "Stand tall with your hands behind your head.",
+    "Lift one knee up and across your body.",
+    "Twist your torso to meet the knee with the opposite elbow.",
+    "Return to standing.",
+    "Alternate sides at a steady pace.",
+    "Keep your chest lifted and breathe evenly."
+  ],
+  "femaleVariant": "0442",
+  "textSource": "opengym"
+}

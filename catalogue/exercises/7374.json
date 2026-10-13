@@ -1,0 +1,24 @@
+{
+  "id": "7374",
+  "name": "smith sumo deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "adductors",
+    "lower back",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "Wide-stance deadlift on the smith machine that trains glutes and inner thighs.",
+  "instructions": [
+    "Stand with feet wide, toes turned out, and grip the bar inside your knees.",
+    "Brace your core and keep your chest up.",
+    "Push your feet into the floor and stand tall.",
+    "Lock out your hips at the top.",
+    "Lower the bar by pushing your hips back."
+  ],
+  "femaleVariant": "6557",
+  "textSource": "opengym"
+}

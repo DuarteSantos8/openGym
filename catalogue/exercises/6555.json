@@ -1,0 +1,22 @@
+{
+  "id": "6555",
+  "name": "ab mat sit up",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A sit-up on a shaped ab mat that supports the lower back and allows a fuller range of motion.",
+  "instructions": [
+    "Lie back on an ab mat with knees bent and feet flat.",
+    "Cross your arms over your chest or place your hands by your ears.",
+    "Curl your torso up until you are sitting tall.",
+    "Pause briefly at the top.",
+    "Lower back down slowly.",
+    "Avoid pulling on your neck."
+  ],
+  "textSource": "opengym"
+}

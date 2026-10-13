@@ -1,0 +1,23 @@
+{
+  "id": "1618",
+  "name": "dumbbell incline hammer press on exercise ball",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A neutral-grip press on an incline bench set on an exercise ball. The ball adds an unstable challenge for the triceps.",
+  "instructions": [
+    "Sit on an exercise ball with a dumbbell in each hand, palms facing each other.",
+    "Walk your feet forward and roll your body down the ball until your head, neck, and upper back are supported on the ball.",
+    "Hold the dumbbells at shoulder level, elbows bent and pointing out to the sides.",
+    "Press the dumbbells up and slightly inward, keeping your palms facing each other.",
+    "Extend your arms fully, squeezing your triceps at the top of the movement.",
+    "Slowly lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

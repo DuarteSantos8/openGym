@@ -1,0 +1,21 @@
+{
+  "id": "1944",
+  "name": "hip external rotator stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A floor stretch for the deep hip rotators and buttock muscles.",
+  "instructions": [
+    "Lie on your back with your knees bent.",
+    "Cross one ankle over the opposite knee and pull the lower thigh toward your chest until the buttock stretches.",
+    "Keep your head and shoulders relaxed on the floor.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

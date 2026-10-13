@@ -1,0 +1,22 @@
+{
+  "id": "0886",
+  "name": "smith one leg deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A single-leg deadlift using the smith bar. It trains the hamstrings, glutes and balance.",
+  "instructions": [
+    "Stand holding the bar at hip height on a single leg.",
+    "Keep a slight bend in the standing knee.",
+    "Hinge forward, sliding the bar down your leg.",
+    "Keep your back flat and extend the free leg behind you.",
+    "Drive your hips forward to stand, then switch legs."
+  ],
+  "textSource": "opengym"
+}

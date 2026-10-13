@@ -1,0 +1,23 @@
+{
+  "id": "5989",
+  "name": "figure run",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves",
+    "glutes"
+  ],
+  "category": "plyometrics",
+  "description": "A run in a figure-eight around two cones, which builds agility, balance and quick turns.",
+  "instructions": [
+    "Set two cones about 5 yards apart.",
+    "Start next to one cone in an athletic stance.",
+    "Run a figure-eight around both cones.",
+    "Lean into the turns and keep your hips low.",
+    "Run for 20-30 seconds, then change direction."
+  ],
+  "textSource": "opengym"
+}

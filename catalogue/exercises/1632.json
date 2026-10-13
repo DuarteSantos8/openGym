@@ -1,0 +1,21 @@
+{
+  "id": "1632",
+  "name": "cable drag curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A cable curl where you drag the handle up along your body. It trains the biceps with the elbows pulled back.",
+  "instructions": [
+    "Stand facing a cable machine with your feet shoulder-width apart.",
+    "Grasp the cable attachment with an underhand grip, palms facing up, and arms fully extended.",
+    "Keeping your upper arms stationary, exhale and curl the cable attachment towards your shoulders by contracting your biceps.",
+    "Pause for a moment at the top of the movement, squeezing your biceps.",
+    "Inhale and slowly lower the cable attachment back to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "4597",
+  "name": "hook kick kickboxing (with partner)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques",
+    "quadriceps",
+    "core"
+  ],
+  "category": "combat",
+  "description": "A roundhouse-style hook kick delivered to a partner's pad, building hip rotation and power.",
+  "instructions": [
+    "Face your partner, who holds a kick pad to the side.",
+    "Stand in a fighting stance with hands up.",
+    "Pivot on your standing foot and lift your rear knee out.",
+    "Rotate your hips and swing your leg in an arc into the pad.",
+    "Keep your torso steady.",
+    "Bring the leg back and switch sides."
+  ],
+  "textSource": "opengym"
+}

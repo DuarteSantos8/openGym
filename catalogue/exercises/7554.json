@@ -1,0 +1,23 @@
+{
+  "id": "7554",
+  "name": "parallel bars bent knee inverted row",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rear deltoids",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Easier bodyweight row under parallel bars with knees bent.",
+  "instructions": [
+    "Lie under parallel bars and grab them.",
+    "Bend your knees with feet on the floor.",
+    "Keep your body straight from shoulders to knees.",
+    "Pull your chest to the bars.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

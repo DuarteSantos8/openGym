@@ -1,0 +1,23 @@
+{
+  "id": "1334",
+  "name": "exercise ball back extension with hands behind head",
+  "bodyPart": "back",
+  "equipment": "stability ball",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A stability ball back extension with your hands behind your head. It strengthens the lower back, glutes and upper back.",
+  "instructions": [
+    "Place the stability ball on the ground and lie face down on top of it with your hips resting on the ball.",
+    "Position your feet against a wall or other stable surface for support.",
+    "Cross your arms behind your head, with your hands touching the back of your head.",
+    "Engage your core and slowly lift your upper body off the ball, extending your back until your body forms a straight line from your head to your hips.",
+    "Pause for a moment at the top of the movement, then slowly lower your upper body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2821",
+  "textSource": "exercisedb"
+}

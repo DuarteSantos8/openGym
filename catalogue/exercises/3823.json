@@ -1,0 +1,22 @@
+{
+  "id": "3823",
+  "name": "decline shoulder tap",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "core",
+    "chest",
+    "triceps"
+  ],
+  "category": "calisthenics",
+  "description": "A plank with your feet raised where you tap alternate shoulders. It trains shoulder strength and core stability.",
+  "instructions": [
+    "Place your feet on a bench and your hands on the floor under your shoulders.",
+    "Keep your body in a straight line.",
+    "Lift one hand and tap the opposite shoulder.",
+    "Return it and tap with the other hand.",
+    "Keep your hips from rocking."
+  ],
+  "textSource": "opengym"
+}

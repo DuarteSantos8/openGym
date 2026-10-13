@@ -1,0 +1,23 @@
+{
+  "id": "2717",
+  "name": "strongman crucifix hold",
+  "bodyPart": "shoulders",
+  "equipment": "weight plate",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "forearms",
+    "grip muscles",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "Holding weights out to your sides at shoulder height, building shoulder endurance.",
+  "instructions": [
+    "Pick up a weight in each hand and stand tall.",
+    "Raise your arms out to the sides until level with your shoulders.",
+    "Hold the position with a braced core.",
+    "Keep your shoulders down and wrists straight.",
+    "Hold as long as you can, then lower with control."
+  ],
+  "textSource": "opengym"
+}

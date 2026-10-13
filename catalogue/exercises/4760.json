@@ -1,0 +1,22 @@
+{
+  "id": "4760",
+  "name": "elevated standing calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "A standing calf raise from a raised platform so your heels drop below the toes. The extra range works the calves hard.",
+  "instructions": [
+    "Stand with the balls of your feet on a step or block, heels hanging off.",
+    "Hold something for balance.",
+    "Lower your heels below the step to stretch your calves.",
+    "Rise up as high as you can on your toes.",
+    "Pause at the top, then lower slowly."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1771",
+  "name": "bodyweight kneeling triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "chest"
+  ],
+  "category": "calisthenics",
+  "description": "A kneeling bodyweight triceps press with elbows kept tight to your sides. Builds triceps strength without equipment.",
+  "instructions": [
+    "Kneel down on the ground with your knees hip-width apart.",
+    "Place your hands on the ground in front of you, shoulder-width apart, fingers pointing forward.",
+    "Extend your legs straight behind you, balancing on your toes and hands, forming a straight line from head to heels.",
+    "Bend your elbows and lower your upper body towards the ground, keeping your elbows close to your sides.",
+    "Pause for a moment at the bottom, then push through your hands to straighten your arms and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3036",
+  "textSource": "exercisedb"
+}

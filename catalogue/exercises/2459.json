@@ -1,0 +1,24 @@
+{
+  "id": "2459",
+  "name": "tire flip",
+  "bodyPart": "upper legs",
+  "equipment": "tire",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Flipping a heavy tire end over end by driving through your legs. Builds full-body power, especially glutes and legs.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, facing the tire.",
+    "Bend your knees and hinge at the hips, lowering into a squat position.",
+    "Reach down and grab the bottom edge of the tire with both hands, fingers facing towards you.",
+    "Engage your glutes and leg muscles, and explosively drive through your legs to lift the tire off the ground.",
+    "As the tire flips over, use your upper body strength to guide it and maintain control.",
+    "Once the tire is fully flipped, quickly step back and reset your stance.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

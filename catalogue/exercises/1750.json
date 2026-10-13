@@ -1,0 +1,21 @@
+{
+  "id": "1750",
+  "name": "medicine ball supine chest throw",
+  "bodyPart": "upper arms",
+  "equipment": "medicine ball",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive chest throw with a medicine ball while lying on your back. Develops fast pressing power in the triceps and chest.",
+  "instructions": [
+    "Lie flat on your back on a bench with your knees bent and feet flat on the ground.",
+    "Hold the medicine ball with both hands, extending your arms straight up above your chest.",
+    "Lower the medicine ball towards your chest, keeping your elbows close to your body.",
+    "Explosively push the medicine ball upwards, extending your arms fully and throwing the ball as high as possible.",
+    "Catch the medicine ball and repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5517",
+  "name": "supinated grip inverted row",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight row hanging under a bar with an underhand grip. Builds the back and biceps.",
+  "instructions": [
+    "Lie under a bar set at about waist height and grip it with palms facing you.",
+    "Hang with your body straight and heels on the floor.",
+    "Pull your chest toward the bar, squeezing your shoulder blades.",
+    "Pause briefly at the top.",
+    "Lower with control until your arms are straight."
+  ],
+  "textSource": "opengym"
+}

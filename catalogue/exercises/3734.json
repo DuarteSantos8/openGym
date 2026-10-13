@@ -1,0 +1,22 @@
+{
+  "id": "3734",
+  "name": "kettlebell kickstand one leg deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-leg deadlift with the back foot lightly touching the floor for support, so you can focus on the working leg.",
+  "instructions": [
+    "Hold a kettlebell and stand with one foot slightly behind, toes on the ground as a kickstand.",
+    "Hinge at the hips over your front leg.",
+    "Lower the bell toward the floor with a flat back.",
+    "Drive through your front heel to stand.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

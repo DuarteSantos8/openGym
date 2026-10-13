@@ -1,0 +1,34 @@
+{
+  "id": "0300",
+  "name": "dumbbell deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A deadlift with a dumbbell in each hand. You hinge and stand to work the glutes, hamstrings and back.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, toes pointing forward.",
+    "Hold a dumbbell in each hand, palms facing your body, arms extended downwards.",
+    "Bend at your hips and knees, lowering the dumbbells towards the ground while keeping your back straight.",
+    "Push through your heels and extend your hips and knees, lifting the dumbbells back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "gluteal",
+      "hamstring"
+    ],
+    "secondaries": [
+      "lower-back",
+      "quadriceps",
+      "adductors",
+      "calves"
+    ]
+  },
+  "femaleVariant": "2484",
+  "textSource": "exercisedb"
+}

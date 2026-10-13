@@ -1,0 +1,21 @@
+{
+  "id": "4768",
+  "name": "incline alternate flutter kicks",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on an incline, you alternate straight-leg flutter kicks. It trains the lower abs.",
+  "instructions": [
+    "Lie back on an incline bench and hold the edges behind your head.",
+    "Lift your legs a few inches off the floor.",
+    "Kick your legs up and down alternately in small motions.",
+    "Keep your lower back pressed down.",
+    "Continue for the set time or reps."
+  ],
+  "textSource": "opengym"
+}

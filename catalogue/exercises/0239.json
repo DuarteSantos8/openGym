@@ -1,0 +1,37 @@
+{
+  "id": "0239",
+  "name": "cable straight back seated row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A seated cable row with a straight back and an overhand grip. It builds the muscles of the mid and upper back.",
+  "instructions": [
+    "Sit on the cable row machine with your feet flat on the footrests and your knees slightly bent.",
+    "Grasp the cable handles with an overhand grip, palms facing down.",
+    "Keep your back straight and lean slightly forward from the hips.",
+    "Pull the cable handles towards your body, squeezing your shoulder blades together.",
+    "Pause for a moment at the peak of the movement, then slowly release the handles back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm",
+      "trapezius",
+      "chest",
+      "triceps"
+    ]
+  },
+  "femaleVariant": "3069",
+  "textSource": "exercisedb"
+}

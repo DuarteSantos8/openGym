@@ -15,6 +15,7 @@ import { buildPrompt, buildPromptParts } from './prompt.js';
 import { SCHEMAS } from './schemas.js';
 import { extractJSON, contractOK } from './parse.js';
 import { validatePlan, validateReview, validateDebrief } from './validate.js';
+import { isChangeList, changesOntoPlan } from './refine-changes.js';
 
 /**
  * One attempt: prompt → provider → parse → validate.
@@ -59,12 +60,19 @@ export async function attemptOnce({ adapter, cfg, kind, payload, model, timeoutM
   // The user's own exercises are in the library slice the model was given (flagged `custom`),
   // so they are a legitimate thing for it to name back — the validator has to agree.
   const customIds = (payload.library || []).filter(e => e && e.custom).map(e => e.id);
+  const equipment = payload.coachProfile?.equipment || [];
+  const offered = new Set((payload.library || []).map(e => e && e.id));
+  // A revision answered as a review-style change list (#471) is laid onto the plan it revises
+  // when every change can be placed exactly, and then judged as the plan it now is.
+  const answer = kind === 'create' && isChangeList(parsed.value)
+    ? changesOntoPlan(payload.refine?.previous, parsed.value) || parsed.value
+    : parsed.value;
   const checked = kind === 'review'
-    ? validateReview(parsed.value, payload.plan, { customIds })
+    ? validateReview(parsed.value, payload.plan, { customIds, equipment, offered })
     : kind === 'debrief'
       ? validateDebrief(parsed.value)
-      : validatePlan(parsed.value, {
-      customIds,
+      : validatePlan(answer, {
+      customIds, equipment, offered,
       workingWeights: payload.history?.workingWeights,
       daysPerWeek: payload.coachProfile?.daysPerWeek
     });

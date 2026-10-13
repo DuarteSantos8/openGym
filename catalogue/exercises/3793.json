@@ -1,0 +1,24 @@
+{
+  "id": "3793",
+  "name": "resistance band split jump with single arm row",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "lats",
+    "upper back"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive split jump with a one-arm band row. It builds power in your legs and trains your back.",
+  "instructions": [
+    "Anchor the band at a low point and hold the handle in one hand.",
+    "Start in a split stance with a slight bend in both knees.",
+    "Jump up and switch legs in mid-air.",
+    "Land softly in the opposite split stance and row the handle to your ribs.",
+    "Alternate legs, and switch rowing arm for the next set."
+  ],
+  "textSource": "opengym"
+}

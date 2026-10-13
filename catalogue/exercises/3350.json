@@ -1,0 +1,23 @@
+{
+  "id": "3350",
+  "name": "cable lateral lunge",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A sideways lunge against cable tension, training glutes, inner thighs and side to side strength.",
+  "instructions": [
+    "Hold a low cable handle at your chest and stand sideways to the stack.",
+    "Step wide to one side and sit back into that hip.",
+    "Keep the other leg straight and feet flat.",
+    "Push off your bent leg to return to center.",
+    "Complete the reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

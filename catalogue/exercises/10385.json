@@ -1,0 +1,24 @@
+{
+  "id": "10385",
+  "name": "weighted sandbag shouldering",
+  "bodyPart": "full body",
+  "equipment": "sandbag",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "trapezius",
+    "quadriceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A lift that heaves the sandbag from the floor up onto your shoulder, building power and total body strength.",
+  "instructions": [
+    "Stand over a sandbag and grip it firmly with both hands.",
+    "Lift the bag, driving through your legs and hips.",
+    "Pull it to your lap, then heave it up onto one shoulder.",
+    "Lower it to the floor with control.",
+    "Alternate shoulders each rep."
+  ],
+  "textSource": "opengym"
+}

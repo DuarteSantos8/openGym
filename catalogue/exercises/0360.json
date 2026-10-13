@@ -1,0 +1,20 @@
+{
+  "id": "0360",
+  "name": "dumbbell one arm shoulder press v. 2",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A one-arm overhead dumbbell press, second variation. It trains the shoulder and triceps while your core resists leaning.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a dumbbell in one hand at shoulder level, palm facing forward.",
+    "Engage your core and press the dumbbell straight up overhead, fully extending your arm.",
+    "Pause for a moment at the top, then slowly lower the dumbbell back to shoulder level.",
+    "Repeat for the desired number of repetitions, then switch to the other arm."
+  ],
+  "textSource": "exercisedb"
+}

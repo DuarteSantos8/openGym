@@ -1,0 +1,21 @@
+{
+  "id": "9676",
+  "name": "lever lying knee flexion",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "The classic lying leg curl on a machine, isolating the hamstrings.",
+  "instructions": [
+    "Lie face down on the machine with the pad above your heels.",
+    "Grip the handles and keep your hips down.",
+    "Curl your heels toward your glutes.",
+    "Squeeze at the top.",
+    "Lower slowly back to the start."
+  ],
+  "textSource": "opengym"
+}

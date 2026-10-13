@@ -1,0 +1,22 @@
+{
+  "id": "2072",
+  "name": "hip thrusts",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A glute-focused bridge with the upper back on a bench, lifting the hips to build strong glutes.",
+  "instructions": [
+    "Sit on the floor with your upper back against a bench and knees bent.",
+    "Plant your feet flat, hip-width apart.",
+    "Drive through your heels to lift your hips until your torso is level.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly and repeat."
+  ],
+  "femaleVariant": "2145",
+  "textSource": "opengym"
+}

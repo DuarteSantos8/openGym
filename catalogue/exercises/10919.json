@@ -1,0 +1,22 @@
+{
+  "id": "10919",
+  "name": "seated single leg foot side to side v. 2",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "shins"
+  ],
+  "category": "mobility",
+  "description": "A second version of the side-to-side seated foot move for ankle mobility.",
+  "instructions": [
+    "Sit tall and lift one foot a little off the floor.",
+    "Keep your leg still.",
+    "Sweep the foot to the inside, then to the outside.",
+    "Keep the motion smooth and pain free.",
+    "Repeat, then switch feet."
+  ],
+  "textSource": "opengym"
+}

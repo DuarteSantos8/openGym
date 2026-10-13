@@ -1,0 +1,23 @@
+{
+  "id": "4423",
+  "name": "barbell lying close grip underhand row on rack",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "rhomboids",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight row hanging under a barbell set in a rack, using a close underhand grip to target the lats and biceps.",
+  "instructions": [
+    "Set a barbell in a rack at about waist height.",
+    "Lie underneath and grab it with a close underhand grip.",
+    "Keep your body straight and heels on the floor.",
+    "Pull your chest to the bar.",
+    "Lower yourself under control."
+  ],
+  "textSource": "opengym"
+}

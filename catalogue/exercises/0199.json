@@ -1,0 +1,22 @@
+{
+  "id": "0199",
+  "name": "cable pushdown (straight arm) v. 2",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A straight-arm pushdown from a high pulley, moving the bar from overhead to the thighs. It isolates the lats without bending the elbows.",
+  "instructions": [
+    "Attach a straight bar to a high pulley cable machine.",
+    "Stand facing the machine with your feet shoulder-width apart and a slight bend in your knees.",
+    "Grasp the bar with an overhand grip, keeping your arms straight and your palms facing down.",
+    "Engage your core and keep your back straight as you exhale and push the bar down towards your thighs.",
+    "Pause for a moment at the bottom, then slowly return the bar to the starting position while inhaling.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

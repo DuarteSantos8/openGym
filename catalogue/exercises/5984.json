@@ -1,0 +1,24 @@
+{
+  "id": "5984",
+  "name": "123 back drill",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves",
+    "glutes"
+  ],
+  "category": "plyometrics",
+  "description": "A cone drill with a set number of steps forward and back to sharpen speed and quick direction changes.",
+  "instructions": [
+    "Set a cone line a few yards apart.",
+    "Sprint to the first cone and touch it, then back to the start.",
+    "Sprint to the second cone and back.",
+    "Go to the third cone and back.",
+    "Stay low when turning.",
+    "Rest, then repeat."
+  ],
+  "textSource": "opengym"
+}

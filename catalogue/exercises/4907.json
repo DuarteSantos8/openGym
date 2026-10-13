@@ -1,0 +1,23 @@
+{
+  "id": "4907",
+  "name": "side plank with raised leg v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A side plank with the top leg lifted, a second variation. It adds hip work to the oblique hold.",
+  "instructions": [
+    "Set up in a side plank on your forearm with your body in a line.",
+    "Lift your top leg to hip height.",
+    "Keep your hips high and your core tight.",
+    "Hold for 20-30 seconds without dropping.",
+    "Lower down gently.",
+    "Repeat on the other side."
+  ],
+  "textSource": "opengym"
+}

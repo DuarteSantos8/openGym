@@ -1,0 +1,23 @@
+{
+  "id": "1702",
+  "name": "single leg foot touch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "core",
+    "ankles"
+  ],
+  "category": "strength",
+  "description": "A single-leg balance drill where you reach down to touch the floor or foot, training hip control and stability.",
+  "instructions": [
+    "Stand on one leg with a soft knee.",
+    "Hinge at the hips and reach down toward your foot or the floor.",
+    "Keep your back flat and your free leg extended behind you.",
+    "Return to standing by squeezing your glute.",
+    "Finish all reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

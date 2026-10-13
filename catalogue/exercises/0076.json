@@ -1,0 +1,23 @@
+{
+  "id": "0076",
+  "name": "barbell rear delt row",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rhomboids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A wide-grip bent-over row that emphasises the rear delts and upper back.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and knees slightly bent.",
+    "Hold a barbell with an overhand grip, hands slightly wider than shoulder-width apart.",
+    "Bend forward at the hips, keeping your back straight and chest up.",
+    "Pull the barbell towards your chest, squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly lower the barbell back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

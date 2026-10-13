@@ -1,0 +1,22 @@
+{
+  "id": "2866",
+  "name": "side twist",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders"
+  ],
+  "category": "pilates",
+  "description": "A Pilates twist from a side-supported position that trains the obliques and shoulder stability.",
+  "instructions": [
+    "Set up in a side support with one hand on the mat and your feet stacked.",
+    "Lift your hips and reach your top arm to the ceiling.",
+    "Thread the top arm under your body as you rotate your torso.",
+    "Open back up and reach to the ceiling again.",
+    "Keep your hips lifted throughout, then switch sides."
+  ],
+  "textSource": "opengym"
+}

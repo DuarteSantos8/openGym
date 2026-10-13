@@ -1,0 +1,22 @@
+{
+  "id": "5754",
+  "name": "dumbbell hip thrust v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip thrust with a dumbbell resting on your hips. Strong glute builder for the glutes.",
+  "instructions": [
+    "Sit with your upper back against a bench and a dumbbell on your hips.",
+    "Plant your feet flat, shoulder-width apart.",
+    "Drive through your heels and lift your hips until your torso is level.",
+    "Squeeze your glutes at the top with your chin tucked.",
+    "Lower under control and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "2249",
+  "name": "cable triceps pushdown (v bar)",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A cable pushdown with a V bar that isolates the back of the upper arm.",
+  "instructions": [
+    "Attach a V bar to a high pulley and stand facing the stack.",
+    "Grip the bar with your elbows pinned to your sides.",
+    "Push the bar down until your arms are fully straight.",
+    "Squeeze your triceps for a moment at the bottom.",
+    "Let the bar rise until your forearms are just past parallel.",
+    "Keep your upper arms still throughout the set."
+  ],
+  "textSource": "opengym"
+}

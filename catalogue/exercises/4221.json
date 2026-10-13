@@ -1,0 +1,22 @@
+{
+  "id": "4221",
+  "name": "tiger tail hamstring",
+  "bodyPart": "upper legs",
+  "equipment": "roller",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves"
+  ],
+  "category": "mobility",
+  "description": "Using a handheld roller on the back of your thigh to loosen tight hamstrings. It works well before or after leg training.",
+  "instructions": [
+    "Sit on the floor with one leg extended.",
+    "Hold the roller by both handles on the back of your thigh.",
+    "Roll from the knee toward your hip with steady pressure.",
+    "Slow down on tight spots.",
+    "Keep breathing and keep the leg relaxed.",
+    "Switch legs after 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "11800",
+  "name": "dumbbell lying single straight arm press on floor",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-arm press from the floor with a straight arm that trains the chest and shoulder stabilisers.",
+  "instructions": [
+    "Lie on your back on the floor with knees bent and one dumbbell held above your chest.",
+    "Keep the other arm resting on the floor beside you.",
+    "Press the dumbbell up until your arm is straight and the shoulder reaches forward.",
+    "Lower it back with control until your upper arm touches the floor.",
+    "Complete the reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

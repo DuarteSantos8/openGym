@@ -1,0 +1,24 @@
+{
+  "id": "3435",
+  "name": "single leg hip bridge (straight leg)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A one-leg hip bridge with the other leg held straight, strongly working glutes and hamstrings.",
+  "instructions": [
+    "Lie on your back with one knee bent and foot flat.",
+    "Extend the other leg straight.",
+    "Drive through your heel and lift your hips.",
+    "Keep your pelvis level.",
+    "Lower with control.",
+    "Switch legs after your set."
+  ],
+  "femaleVariant": "0729",
+  "textSource": "opengym"
+}

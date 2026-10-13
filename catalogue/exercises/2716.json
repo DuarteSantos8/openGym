@@ -1,0 +1,23 @@
+{
+  "id": "2716",
+  "name": "strongman circle of conan",
+  "bodyPart": "full body",
+  "equipment": "weight plate",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "upper back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A heavy walk in a circle holding a load, building grip, back and leg strength.",
+  "instructions": [
+    "Pick up the load and hold it against your body.",
+    "Brace your core and keep your chest up.",
+    "Walk in a circle with steady steps.",
+    "Stay balanced and avoid leaning away.",
+    "Set the load down under control when you finish."
+  ],
+  "textSource": "opengym"
+}

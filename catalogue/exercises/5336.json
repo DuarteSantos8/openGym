@@ -1,0 +1,23 @@
+{
+  "id": "5336",
+  "name": "kettlebell forward lunge v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A forward lunge holding a kettlebell, a second variation. It builds the thighs and glutes.",
+  "instructions": [
+    "Hold a kettlebell at chest height or by your side.",
+    "Step forward into a lunge.",
+    "Lower until both knees are bent about 90 degrees.",
+    "Keep your front knee over your ankle.",
+    "Push back to the start.",
+    "Alternate legs."
+  ],
+  "textSource": "opengym"
+}

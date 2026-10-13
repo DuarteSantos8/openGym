@@ -1,0 +1,23 @@
+{
+  "id": "2753",
+  "name": "kettlebell resistance band full squat from deficit",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A deep squat from a raised platform with a band for added resistance, training the legs and glutes.",
+  "instructions": [
+    "Stand on a low platform, band under your feet and a kettlebell at your chest.",
+    "Sit down into the deepest squat you can control.",
+    "Keep your heels flat and chest up.",
+    "Push through your feet to stand.",
+    "Keep tension in the band all the way up."
+  ],
+  "textSource": "opengym"
+}

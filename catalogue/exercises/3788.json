@@ -1,0 +1,24 @@
+{
+  "id": "3788",
+  "name": "resistance band high knee lunge with single arm row",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "lats",
+    "upper back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lunge that finishes with a high knee, combined with a one-arm band row. It builds leg strength and balance.",
+  "instructions": [
+    "Anchor the band at a low point and hold the handle in one hand.",
+    "Step back into a lunge and lower until your front thigh is about parallel.",
+    "Push through your front foot and drive the rear knee up to hip height.",
+    "Row the handle to your ribs while balancing on one leg.",
+    "Return to the start under control. Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

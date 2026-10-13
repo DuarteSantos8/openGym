@@ -1,0 +1,23 @@
+{
+  "id": "4405",
+  "name": "the eagle yoga pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "shoulders",
+    "upper back",
+    "hip flexors"
+  ],
+  "category": "yoga",
+  "description": "A balancing pose with wrapped legs and arms. It stretches the hips and shoulders and builds focus.",
+  "instructions": [
+    "Stand tall and bend both knees slightly.",
+    "Lift one leg and wrap it across the other thigh.",
+    "Cross your arms in front, one elbow over the other, palms together.",
+    "Lift your elbows and sink your hips slightly.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

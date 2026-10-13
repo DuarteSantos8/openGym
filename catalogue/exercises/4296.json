@@ -1,0 +1,23 @@
+{
+  "id": "4296",
+  "name": "crossover kneeling hip flexor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "quadriceps",
+    "obliques"
+  ],
+  "category": "stretching",
+  "description": "A kneeling lunge stretch with a cross-body reach to deepen the stretch along the front of the hip.",
+  "instructions": [
+    "Kneel on one knee with the other foot forward in a lunge, on a mat.",
+    "Tuck your pelvis slightly and keep your torso upright.",
+    "Reach the arm on the kneeling side up and across toward the opposite side.",
+    "Shift your hips gently forward until you feel the stretch at the front of the hip.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "femaleVariant": "0265",
+  "textSource": "opengym"
+}

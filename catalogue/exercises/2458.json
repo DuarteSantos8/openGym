@@ -1,0 +1,24 @@
+{
+  "id": "2458",
+  "name": "wall ball",
+  "bodyPart": "full body",
+  "equipment": "medicine ball",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A squat-to-throw movement with a medicine ball that conditions the whole body.",
+  "instructions": [
+    "Stand facing a wall holding a medicine ball at your chest.",
+    "Squat down with your chest up.",
+    "Drive up powerfully and throw the ball to a target on the wall.",
+    "Catch the ball as it returns.",
+    "Flow straight into the next squat.",
+    "Keep a steady rhythm."
+  ],
+  "textSource": "opengym"
+}

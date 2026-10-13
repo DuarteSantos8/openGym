@@ -1,0 +1,21 @@
+{
+  "id": "0986",
+  "name": "band one arm overhead biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A standing one-arm curl with the arm held overhead against band tension. It trains the biceps.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and place one end of the band under your foot.",
+    "Hold the other end of the band with your arm fully extended overhead, palm facing forward.",
+    "Keeping your upper arm stationary, curl your forearm towards your shoulder, squeezing your biceps.",
+    "Pause for a moment at the top, then slowly lower your forearm back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "6195",
+  "name": "band standing reverse curl",
+  "bodyPart": "lower arms",
+  "equipment": "band",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "brachialis",
+    "biceps",
+    "wrist extensors"
+  ],
+  "category": "strength",
+  "description": "A standing curl with an overhand grip on a band. It strengthens the forearms and brachialis.",
+  "instructions": [
+    "Stand on a band holding the ends with an overhand grip.",
+    "Keep your elbows at your sides.",
+    "Curl your hands up toward your shoulders.",
+    "Pause at the top.",
+    "Lower slowly.",
+    "Keep your wrists straight."
+  ],
+  "textSource": "opengym"
+}

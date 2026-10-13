@@ -1,0 +1,24 @@
+{
+  "id": "10595",
+  "name": "medicine ball pullover catch",
+  "bodyPart": "back",
+  "equipment": "medicine ball",
+  "target": "lats",
+  "secondaryMuscles": [
+    "chest",
+    "triceps",
+    "core",
+    "shoulders"
+  ],
+  "category": "plyometrics",
+  "description": "A lying throw and catch that sends a medicine ball overhead and back. It trains explosive lat and core strength.",
+  "instructions": [
+    "Lie on your back with knees bent, holding a medicine ball overhead.",
+    "Pull the ball forward over your chest to throw it up toward a partner or wall.",
+    "Catch the ball with soft elbows as it returns.",
+    "Let it travel back overhead in a controlled arc.",
+    "Keep your lower back pressed to the floor.",
+    "Repeat at a steady rhythm."
+  ],
+  "textSource": "opengym"
+}

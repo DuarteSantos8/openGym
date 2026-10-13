@@ -1,0 +1,24 @@
+{
+  "id": "3317",
+  "name": "strongman car flip",
+  "bodyPart": "full body",
+  "equipment": "weighted",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "lower back",
+    "shoulders",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A strongman event where you lift one side of a heavy vehicle and flip it over. It takes full body strength and leg drive.",
+  "instructions": [
+    "Squat low at the edge of the vehicle with a flat back and hands underneath.",
+    "Brace your core and pull your chest up.",
+    "Drive hard through your legs and lift the edge to hip height.",
+    "Shift your hands and push up and over with your legs and arms.",
+    "Let it roll over fully, then step back and reset for the next flip."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5095",
+  "name": "dumbbell single arm overhead lunge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "core",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Lunge while holding one dumbbell overhead. The one-sided load challenges balance and trunk stability.",
+  "instructions": [
+    "Press a dumbbell overhead with one arm and lock it out.",
+    "Step forward into a lunge.",
+    "Lower your back knee toward the floor, keeping your torso upright.",
+    "Push through the front foot to return.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

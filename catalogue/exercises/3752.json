@@ -1,0 +1,22 @@
+{
+  "id": "3752",
+  "name": "lying double legs biceps curl with towel",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "brachialis",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A lying curl where you pull a towel wrapped around your feet with your hands, so your legs provide resistance.",
+  "instructions": [
+    "Lie on your back and wrap a towel around both feet, holding the ends.",
+    "Lift your legs slightly and press them against the towel.",
+    "Curl the towel toward your chest while your legs resist.",
+    "Lower slowly.",
+    "Keep your elbows at your sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "0992",
+  "name": "band push sit-up",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "chest"
+  ],
+  "category": "strength",
+  "description": "A sit-up that pushes a band forward as you come up. It trains the abs.",
+  "instructions": [
+    "Attach the band securely to a stable anchor point.",
+    "Lie flat on your back with your knees bent and feet flat on the ground.",
+    "Hold the band with both hands and extend your arms straight up towards the ceiling.",
+    "Engaging your abs, slowly lift your upper body off the ground, curling forward until your torso is at a 45-degree angle.",
+    "Pause for a moment at the top, then slowly lower your upper body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

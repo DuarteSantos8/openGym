@@ -1,0 +1,22 @@
+{
+  "id": "7329",
+  "name": "dumbbell jefferson curl",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "spine",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "Slow, light-loaded spinal roll down and up that builds control and flexibility in the back and hamstrings.",
+  "instructions": [
+    "Stand on a low step holding a light dumbbell in front of you.",
+    "Tuck your chin and slowly roll down one vertebra at a time.",
+    "Let the dumbbell hang near your shins.",
+    "Pause at the bottom, then roll up slowly.",
+    "Keep the weight light and the movement smooth."
+  ],
+  "textSource": "opengym"
+}

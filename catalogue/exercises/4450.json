@@ -1,0 +1,25 @@
+{
+  "id": "4450",
+  "name": "suspender wide grip inverted row",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "rear deltoids",
+    "core",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight row hanging under straps with a wide grip. Works the upper back and lats while the core keeps you rigid.",
+  "instructions": [
+    "Hold the handles of a suspension trainer with a wide overhand grip and lean back, arms straight.",
+    "Walk your feet forward to set the difficulty.",
+    "Keep your body in a straight line from head to heels.",
+    "Pull your chest toward the handles, squeezing your shoulder blades.",
+    "Pause briefly at the top.",
+    "Lower yourself with control until your arms are straight."
+  ],
+  "textSource": "opengym"
+}

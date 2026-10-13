@@ -1,0 +1,23 @@
+{
+  "id": "6207",
+  "name": "side plank leg lift (left)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A side plank with a leg raise on the left side. It works the obliques and outer hip.",
+  "instructions": [
+    "Lie on your left side and prop up on your forearm.",
+    "Lift your hips into a side plank.",
+    "Raise your top leg slowly.",
+    "Lower the leg without dropping your hips.",
+    "Repeat for your set.",
+    "Switch sides for the right-side version."
+  ],
+  "textSource": "opengym"
+}

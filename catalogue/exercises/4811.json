@@ -1,0 +1,23 @@
+{
+  "id": "4811",
+  "name": "side plank v. 3",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A side plank hold, a second variation. It strengthens the obliques and the muscles that keep your trunk stable.",
+  "instructions": [
+    "Lie on your side and prop yourself on your forearm under your shoulder.",
+    "Stack or stagger your feet.",
+    "Lift your hips so your body forms a straight line.",
+    "Keep your neck neutral and your core tight.",
+    "Hold for 20-40 seconds.",
+    "Lower down and repeat on the other side."
+  ],
+  "textSource": "opengym"
+}

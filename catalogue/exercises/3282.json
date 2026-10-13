@@ -1,0 +1,21 @@
+{
+  "id": "3282",
+  "name": "weighted floor crunch feet on bench",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A loaded crunch with the calves on a bench, for stronger abs once bodyweight crunches feel easy.",
+  "instructions": [
+    "Lie on your back with your calves on a bench and knees bent.",
+    "Hold a weight plate or dumbbell against your chest.",
+    "Curl your shoulders off the floor by tightening your abs.",
+    "Pause at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

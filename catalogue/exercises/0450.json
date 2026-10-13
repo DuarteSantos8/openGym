@@ -1,0 +1,21 @@
+{
+  "id": "0450",
+  "name": "ez barbell jm bench press",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A hybrid between a close-grip press and a skull crusher using an EZ bar. It builds the triceps and the front of the shoulders.",
+  "instructions": [
+    "Lie flat on a bench with your feet flat on the ground and your back pressed against the bench.",
+    "Grasp the ez barbell with an overhand grip, slightly wider than shoulder-width apart.",
+    "Lower the barbell to your chest, keeping your elbows tucked in close to your body.",
+    "Push the barbell back up to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

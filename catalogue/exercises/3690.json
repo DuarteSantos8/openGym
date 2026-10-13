@@ -1,0 +1,23 @@
+{
+  "id": "3690",
+  "name": "dumbbell seated on exercise ball shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "An overhead press on a stability ball. The unstable seat makes your core work along with the shoulders.",
+  "instructions": [
+    "Sit on a stability ball with your feet wide and a dumbbell in each hand at shoulder height.",
+    "Brace your core and sit tall.",
+    "Press the dumbbells overhead until your arms are almost straight.",
+    "Lower them back to shoulder height with control.",
+    "Keep your ribs down and avoid leaning back."
+  ],
+  "textSource": "opengym"
+}

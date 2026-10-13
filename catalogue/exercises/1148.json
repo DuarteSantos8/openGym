@@ -1,0 +1,23 @@
+{
+  "id": "1148",
+  "name": "suspender supine plank",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "hamstrings"
+  ],
+  "category": "isometric",
+  "description": "A back-facing plank with the heels in the straps that strengthens the glutes, back and core.",
+  "instructions": [
+    "Lie on your back with heels in the straps.",
+    "Press through your heels and lift your hips.",
+    "Make a straight line from shoulders to heels.",
+    "Squeeze your glutes and keep abs tight.",
+    "Hold for 20-30 seconds.",
+    "Lower under control."
+  ],
+  "textSource": "opengym"
+}

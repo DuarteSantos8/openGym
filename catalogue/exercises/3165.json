@@ -1,0 +1,22 @@
+{
+  "id": "3165",
+  "name": "bodyweight standing row (with towel)",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A standing row done with both hands on a towel, pulling toward your chest. It trains the upper back and shoulder blade squeeze with no gear.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a towel in front of you with both hands.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
+    "Pull the towel towards your chest, squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly release the tension and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3164",
+  "textSource": "exercisedb"
+}

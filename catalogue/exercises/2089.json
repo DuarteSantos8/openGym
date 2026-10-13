@@ -1,0 +1,21 @@
+{
+  "id": "2089",
+  "name": "finger stretch",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "hands"
+  ],
+  "category": "stretching",
+  "description": "A simple stretch that opens the fingers and forearm muscles, useful after typing or gripping.",
+  "instructions": [
+    "Hold one arm out in front of you with the elbow straight.",
+    "Use the other hand to gently pull the fingers back until you feel a stretch in the palm and forearm.",
+    "Keep the fingers straight and relaxed.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

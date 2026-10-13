@@ -1,0 +1,22 @@
+{
+  "id": "4845",
+  "name": "kettlebell lying on floor chest press",
+  "bodyPart": "chest",
+  "equipment": "kettlebell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A floor press with kettlebells. The floor limits range and keeps the focus on the chest and triceps.",
+  "instructions": [
+    "Lie on the floor holding a kettlebell in each hand at chest level.",
+    "Keep your elbows at about 45 degrees from your body.",
+    "Press the kettlebells up until your arms are straight.",
+    "Lower until your upper arms touch the floor.",
+    "Press again."
+  ],
+  "textSource": "opengym"
+}

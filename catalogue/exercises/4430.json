@@ -1,0 +1,21 @@
+{
+  "id": "4430",
+  "name": "weighted side lying side neck raise",
+  "bodyPart": "neck",
+  "equipment": "weighted",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A gentle neck exercise lying on your side and lifting the head against light resistance to strengthen the side neck muscles.",
+  "instructions": [
+    "Lie on your side with your head supported at the edge of the bench.",
+    "Place a light weight or plate on the side of your head, held steady.",
+    "Lift your head slowly toward the ceiling.",
+    "Pause, then lower under control.",
+    "Complete your reps, then switch sides. Use light weight."
+  ],
+  "textSource": "opengym"
+}

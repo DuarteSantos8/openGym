@@ -1,0 +1,22 @@
+{
+  "id": "5906",
+  "name": "twisted leg lunge pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "yoga",
+  "description": "A lunge with a twist toward the front leg. Opens the hips and spine.",
+  "instructions": [
+    "Step into a low lunge with your back knee down.",
+    "Bring your palms together at your chest.",
+    "Twist toward the front leg and hook your elbow outside the knee.",
+    "Hold for 5 slow breaths.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

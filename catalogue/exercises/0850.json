@@ -1,0 +1,21 @@
+{
+  "id": "0850",
+  "name": "weighted side bend (on stability ball)",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A side bend on a stability ball holding a weight in one hand. It trains the obliques.",
+  "instructions": [
+    "Sit on a stability ball with your feet shoulder-width apart and flat on the ground.",
+    "Hold a weight in one hand and place your other hand on your hip.",
+    "Engage your core and slowly bend sideways towards the weighted side, keeping your back straight.",
+    "Pause for a moment at the bottom, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "textSource": "exercisedb"
+}

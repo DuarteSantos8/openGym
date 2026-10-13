@@ -1,0 +1,24 @@
+{
+  "id": "2993",
+  "name": "kettlebell goblet squat mobility",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "hamstrings",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A goblet squat held low with a kettlebell as a counterweight, used to loosen the hips and ankles.",
+  "instructions": [
+    "Hold a kettlebell by the horns against your chest.",
+    "Stand with your feet wider than your shoulders and toes slightly out.",
+    "Squat down as deep as you comfortably can with your chest up.",
+    "Use your elbows to push your knees out and pause at the bottom.",
+    "Rock gently side to side to open the hips.",
+    "Drive through your feet to stand back up."
+  ],
+  "textSource": "opengym"
+}

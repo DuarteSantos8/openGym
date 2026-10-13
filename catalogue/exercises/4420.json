@@ -1,0 +1,24 @@
+{
+  "id": "4420",
+  "name": "marching on spot",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "hip flexors",
+    "quadriceps",
+    "calves",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "A low-impact cardio move where you march in place to raise your heart rate and warm up the legs.",
+  "instructions": [
+    "Stand tall with your arms bent at your sides.",
+    "Lift one knee up toward hip height.",
+    "Lower it and lift the other knee.",
+    "Swing your arms in rhythm with your steps.",
+    "Keep a steady pace for 1-3 minutes."
+  ],
+  "femaleVariant": "5690",
+  "textSource": "opengym"
+}

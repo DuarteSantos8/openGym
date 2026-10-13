@@ -1,0 +1,23 @@
+{
+  "id": "4790",
+  "name": "single leg bench squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A one-legged squat down to a bench behind you. It builds leg strength and balance while the bench keeps the depth safe.",
+  "instructions": [
+    "Stand in front of a bench with your back to it and lift one foot off the floor.",
+    "Reach your arms forward for balance.",
+    "Sit your hips back and lower until you lightly touch the bench.",
+    "Keep the working knee in line with your toes.",
+    "Drive through the heel to stand back up.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

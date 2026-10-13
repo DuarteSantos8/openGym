@@ -1,0 +1,23 @@
+{
+  "id": "0944",
+  "name": "chair pose utkatasana",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "shoulders",
+    "lower back"
+  ],
+  "category": "yoga",
+  "description": "Sit back into an imaginary chair with arms overhead. It strengthens the thighs and glutes while challenging balance.",
+  "instructions": [
+    "Stand with feet together or hip-width apart.",
+    "Bend your knees and send your hips back, keeping your chest lifted.",
+    "Raise your arms overhead with palms facing each other.",
+    "Keep your knees over your ankles and your tailbone tucked slightly.",
+    "Hold for 5 slow breaths, then stand up."
+  ],
+  "textSource": "opengym"
+}

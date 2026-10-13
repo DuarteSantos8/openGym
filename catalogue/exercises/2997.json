@@ -1,0 +1,25 @@
+{
+  "id": "2997",
+  "name": "band assisted pull up v. 3",
+  "bodyPart": "back",
+  "equipment": "assisted",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "grip muscles",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up where a band under your foot or knee takes some of your weight, so you can build up to full reps.",
+  "instructions": [
+    "Loop a band over the pull-up bar and place a foot or knee in it.",
+    "Grab the bar with an overhand grip a little wider than your shoulders.",
+    "Hang with your arms long and your shoulders engaged.",
+    "Pull your chest toward the bar by driving your elbows down.",
+    "Lower slowly until your arms are straight again.",
+    "Use a thinner band as you get stronger."
+  ],
+  "femaleVariant": "3844",
+  "textSource": "opengym"
+}

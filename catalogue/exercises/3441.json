@@ -1,0 +1,22 @@
+{
+  "id": "3441",
+  "name": "seated flexion and extension neck",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "trapezius"
+  ],
+  "category": "mobility",
+  "description": "A seated neck mobility drill moving the head forward and back.",
+  "instructions": [
+    "Sit tall with your shoulders relaxed.",
+    "Lower your chin gently toward your chest.",
+    "Hold for a moment.",
+    "Slowly lift your head and look up slightly.",
+    "Move through a comfortable range only.",
+    "Repeat 8-10 times smoothly."
+  ],
+  "textSource": "opengym"
+}

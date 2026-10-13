@@ -1,0 +1,22 @@
+{
+  "id": "6757",
+  "name": "dumbbell standing single arm biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm standing curl. It builds the biceps and lets you focus on each arm separately.",
+  "instructions": [
+    "Stand tall holding a dumbbell at your side, palm facing forward.",
+    "Keep your elbow tucked at your side.",
+    "Curl the weight up toward your shoulder.",
+    "Squeeze your biceps at the top.",
+    "Lower slowly until the arm is straight.",
+    "Finish the reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

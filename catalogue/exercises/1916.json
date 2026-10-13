@@ -1,0 +1,21 @@
+{
+  "id": "1916",
+  "name": "standing reach down hamstring stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A standing forward fold that stretches the hamstrings and calves.",
+  "instructions": [
+    "Stand with your feet hip width apart.",
+    "Hinge at the hips and reach your hands down toward your shins or toes until you feel the back of the thighs stretch.",
+    "Let your head and neck hang relaxed and keep a slight bend in the knees.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

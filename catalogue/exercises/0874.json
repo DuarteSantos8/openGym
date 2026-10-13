@@ -1,0 +1,22 @@
+{
+  "id": "0874",
+  "name": "cable standing crunch (with rope attachment)",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A standing cable crunch with a rope held behind the head, curling the torso forward. It strengthens the abs.",
+  "instructions": [
+    "Attach a rope to a cable machine at chest height.",
+    "Stand facing away from the machine with your feet shoulder-width apart.",
+    "Hold the rope with both hands and bring it behind your head, keeping your elbows bent.",
+    "Engage your abs and slowly crunch your torso forward, bringing your elbows towards your knees.",
+    "Pause for a moment at the top of the crunch, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2674",
+  "textSource": "exercisedb"
+}

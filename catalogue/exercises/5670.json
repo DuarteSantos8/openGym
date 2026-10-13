@@ -1,0 +1,24 @@
+{
+  "id": "5670",
+  "name": "barbell zercher deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "quadriceps",
+    "core",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A deadlift with the bar cradled in the crooks of your elbows. It loads the glutes, legs and back and trains an upright torso.",
+  "instructions": [
+    "Place the bar on a low rack or the floor and stand over it.",
+    "Squat down and hook the bar in the crooks of your elbows.",
+    "Lift your chest and brace your core.",
+    "Stand up by driving through your legs and extending your hips.",
+    "Lower the bar back down under control, keeping your back flat."
+  ],
+  "textSource": "opengym"
+}

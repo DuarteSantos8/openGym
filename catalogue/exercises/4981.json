@@ -1,0 +1,21 @@
+{
+  "id": "4981",
+  "name": "barbell close grip biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Barbell curl with hands placed close together. This grip puts extra emphasis on the outer part of the biceps.",
+  "instructions": [
+    "Stand holding a barbell with an underhand grip, hands closer than shoulder width.",
+    "Keep your elbows tucked against your sides.",
+    "Curl the bar up toward your shoulders without swinging.",
+    "Squeeze your biceps at the top for a moment.",
+    "Lower the bar slowly until your arms are straight."
+  ],
+  "textSource": "opengym"
+}

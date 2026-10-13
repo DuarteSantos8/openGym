@@ -1,0 +1,24 @@
+{
+  "id": "3891",
+  "name": "hanging toes to bar",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "grip muscles",
+    "lats",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A tough hanging core move that brings the toes all the way up to the bar.",
+  "instructions": [
+    "Hang from a bar with a firm grip.",
+    "Engage your lats and brace your core.",
+    "Raise your straight legs up until your toes touch the bar.",
+    "Pause briefly at the top.",
+    "Lower your legs with control.",
+    "Avoid excessive swinging."
+  ],
+  "textSource": "opengym"
+}

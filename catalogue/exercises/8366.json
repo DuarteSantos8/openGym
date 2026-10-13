@@ -1,0 +1,23 @@
+{
+  "id": "8366",
+  "name": "kettlebell side swing v. 2",
+  "bodyPart": "waist",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "hamstrings",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A swing performed to the side of the body that hits the obliques and hips while the legs drive the kettlebell.",
+  "instructions": [
+    "Stand with feet wider than hips and hold a kettlebell with both hands.",
+    "Hinge at the hips and swing the bell between your legs.",
+    "Drive your hips forward and swing it up and across to one side.",
+    "Let it fall back through your legs and swing to the other side.",
+    "Keep your back flat throughout."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "9927",
+  "name": "cable lying incline side leg raise",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A side-lying leg raise with a cable on an incline. It works the outer hip and glutes.",
+  "instructions": [
+    "Lie on your side on an incline surface.",
+    "Attach the cuff to your top ankle.",
+    "Raise your top leg out to the side.",
+    "Pause at the top.",
+    "Lower with control.",
+    "Do your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

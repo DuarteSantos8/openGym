@@ -1,0 +1,23 @@
+{
+  "id": "3013",
+  "name": "low glute bridge on floor",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A low glute bridge on the floor, lifting your hips. Works the glutes and hamstrings.",
+  "instructions": [
+    "Lie flat on your back with your knees bent and feet flat on the ground.",
+    "Place your arms by your sides, palms facing down.",
+    "Engage your glutes and core, then lift your hips off the ground until your body forms a straight line from your knees to your shoulders.",
+    "Pause for a moment at the top, squeezing your glutes.",
+    "Slowly lower your hips back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3014",
+  "textSource": "exercisedb"
+}

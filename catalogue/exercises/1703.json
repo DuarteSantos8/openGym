@@ -1,0 +1,23 @@
+{
+  "id": "1703",
+  "name": "single leg transverse bend",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques",
+    "core",
+    "ankles"
+  ],
+  "category": "mobility",
+  "description": "A single-leg bend with a twist that trains balance and mobility through the hips and torso.",
+  "instructions": [
+    "Stand on one leg with a soft knee.",
+    "Hinge forward at the hips and reach across your body.",
+    "Rotate your torso slightly as you reach.",
+    "Return to standing with control.",
+    "Complete the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

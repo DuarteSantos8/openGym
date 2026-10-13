@@ -1,0 +1,21 @@
+{
+  "id": "3687",
+  "name": "dumbbell drag bicep curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "brachialis"
+  ],
+  "category": "strength",
+  "description": "A curl where the dumbbells travel up close to your torso, dragging along your body. It keeps tension on the biceps and limits shoulder swing.",
+  "instructions": [
+    "Stand tall holding a dumbbell in each hand, palms forward.",
+    "Pull your elbows back slightly and curl the weights up, keeping them close to your body.",
+    "Squeeze your biceps at the top without letting your elbows drift forward.",
+    "Lower the dumbbells slowly along the same path.",
+    "Keep your torso still and avoid swinging."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,29 @@
+{
+  "id": "1384",
+  "name": "hack one leg calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "sled machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A one-leg calf raise on a hack machine. It lets you train each calf on its own under a supported load.",
+  "instructions": [
+    "Adjust the sled machine to an appropriate weight.",
+    "Stand on the sled machine with one foot, keeping the other foot off the ground.",
+    "Hold onto the handles for stability.",
+    "Raise your heel as high as possible, lifting your body up on the ball of your foot.",
+    "Pause for a moment at the top, then slowly lower your heel back down to the starting position.",
+    "Repeat for the desired number of repetitions.",
+    "Switch legs and repeat the exercise."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "calves"
+    ],
+    "secondaries": []
+  },
+  "textSource": "exercisedb"
+}

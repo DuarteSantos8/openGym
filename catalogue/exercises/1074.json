@@ -1,0 +1,21 @@
+{
+  "id": "1074",
+  "name": "suspender fly",
+  "bodyPart": "chest",
+  "equipment": "suspension trainer",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Open your arms wide against the straps. It stretches and works the chest.",
+  "instructions": [
+    "Face away from the anchor, hands at chest level.",
+    "Lean forward with arms together.",
+    "Open your arms wide.",
+    "Pull back together.",
+    "Keep your elbows slightly bent."
+  ],
+  "textSource": "opengym"
+}

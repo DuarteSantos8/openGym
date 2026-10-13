@@ -1,0 +1,23 @@
+{
+  "id": "3484",
+  "name": "elbow to knee sit up",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A sit-up that finishes by driving one elbow toward the opposite knee. It works the abs and obliques.",
+  "instructions": [
+    "Lie on your back with knees bent and hands behind your head.",
+    "Curl up and rotate your torso, bringing one elbow toward the opposite knee.",
+    "Pause briefly at the top.",
+    "Lower your back to the floor with control.",
+    "Repeat on the other side, alternating.",
+    "Avoid pulling on your neck."
+  ],
+  "femaleVariant": "7028",
+  "textSource": "opengym"
+}

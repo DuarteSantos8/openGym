@@ -1,0 +1,22 @@
+{
+  "id": "3572",
+  "name": "kettlebell strict press",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing overhead press with a kettlebell and no leg drive, focused on shoulder strength.",
+  "instructions": [
+    "Hold the kettlebell at shoulder height in the rack position.",
+    "Stand tall with glutes and abs tight.",
+    "Press the bell straight overhead until your arm is locked out.",
+    "Lower it back to the shoulder under control.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "1176",
+  "name": "dumbbell incline front raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A front raise performed lying on an incline bench to reduce swinging and isolate the front delts.",
+  "instructions": [
+    "Lie face down or back on an incline bench holding dumbbells.",
+    "Start with your arms hanging or in front of you.",
+    "Raise the weights forward to shoulder height with straight arms.",
+    "Pause briefly at the top.",
+    "Lower slowly under control."
+  ],
+  "textSource": "opengym"
+}

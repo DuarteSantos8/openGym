@@ -1,0 +1,23 @@
+{
+  "id": "4029",
+  "name": "band hip adduction",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "inner thighs",
+    "groin",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "Standing leg movement against a band that squeezes the thigh inward. It strengthens the inner thigh.",
+  "instructions": [
+    "Anchor the band low and loop it around the ankle nearest the anchor.",
+    "Stand tall and hold a support for balance.",
+    "Pull the working leg across in front of the other leg.",
+    "Pause for a moment and return slowly.",
+    "Finish all reps, then switch legs."
+  ],
+  "femaleVariant": "0900",
+  "textSource": "opengym"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "3501",
+  "name": "front plank with leg lift",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "shoulders",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A forearm plank with alternating leg lifts. It builds core stability and glute strength.",
+  "instructions": [
+    "Set up in a forearm plank with elbows under your shoulders.",
+    "Keep your body in a straight line.",
+    "Lift one leg a few inches without rotating your hips.",
+    "Lower it and lift the other leg.",
+    "Keep your core tight and your hips level.",
+    "Breathe steadily."
+  ],
+  "femaleVariant": "2898",
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "10998",
+  "name": "wall facing single leg split handstand hold",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "core",
+    "triceps",
+    "forearms",
+    "upper back"
+  ],
+  "category": "isometric",
+  "description": "A wall-facing handstand with one leg split off the wall. It trains balance and shoulder endurance.",
+  "instructions": [
+    "Kick up into a handstand facing the wall.",
+    "Keep your arms straight and push the floor away.",
+    "Lift one leg off the wall.",
+    "Hold for 10-20 seconds with control.",
+    "Return the leg and come down safely."
+  ],
+  "textSource": "opengym"
+}

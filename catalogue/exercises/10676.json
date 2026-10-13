@@ -1,0 +1,24 @@
+{
+  "id": "10676",
+  "name": "weighted backpack walking",
+  "bodyPart": "full body",
+  "equipment": "weighted",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core",
+    "upper back"
+  ],
+  "category": "cardio",
+  "description": "Walking with a loaded backpack to add resistance. It builds leg endurance and trunk strength.",
+  "instructions": [
+    "Put on a backpack and tighten the straps snug.",
+    "Stand tall with your shoulders back.",
+    "Walk at a steady pace on flat ground.",
+    "Take natural strides and breathe evenly.",
+    "Keep your core lightly braced.",
+    "Walk for 10-30 minutes depending on your fitness."
+  ],
+  "textSource": "opengym"
+}

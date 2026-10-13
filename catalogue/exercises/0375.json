@@ -1,0 +1,21 @@
+{
+  "id": "0375",
+  "name": "dumbbell pullover",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "latissimus dorsi",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "Lying across or along a bench, you lower one dumbbell behind your head and pull it back over your chest. It works the chest and lats with a deep stretch.",
+  "instructions": [
+    "Lie flat on a bench with your head at one end and your feet on the floor.",
+    "Hold a dumbbell with both hands and extend your arms straight above your chest.",
+    "Keeping a slight bend in your elbows, slowly lower the dumbbell behind your head until you feel a stretch in your chest and shoulders.",
+    "Pause for a moment, then raise the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

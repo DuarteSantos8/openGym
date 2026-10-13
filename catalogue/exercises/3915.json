@@ -1,0 +1,24 @@
+{
+  "id": "3915",
+  "name": "decline pike press (between benches)",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "trapezius",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A harder pike push-up with the feet raised, hands on benches, loading the shoulders strongly.",
+  "instructions": [
+    "Place your hands on two benches and your feet on a higher surface behind you.",
+    "Lift your hips into a pike.",
+    "Bend your elbows and lower your head between the benches.",
+    "Press up to straight arms.",
+    "Keep your core tight.",
+    "Control the descent."
+  ],
+  "textSource": "opengym"
+}

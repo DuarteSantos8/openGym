@@ -1,0 +1,24 @@
+{
+  "id": "0989",
+  "name": "band one arm twisting chest press",
+  "bodyPart": "chest",
+  "equipment": "band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A one-arm chest press with a band that adds a twist. It trains the chest and core.",
+  "instructions": [
+    "Attach the band to a sturdy anchor point at chest height.",
+    "Stand with your side facing the anchor point and grab the band with one hand.",
+    "Step away from the anchor point to create tension in the band.",
+    "Position your feet shoulder-width apart and slightly bend your knees.",
+    "Bring your hand holding the band across your body, towards the opposite shoulder.",
+    "While maintaining tension in the band, push your hand forward and away from your body, extending your arm.",
+    "Slowly return to the starting position and repeat for the desired number of repetitions.",
+    "Switch sides and repeat the exercise with the other hand."
+  ],
+  "textSource": "exercisedb"
+}

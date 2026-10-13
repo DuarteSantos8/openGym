@@ -1,0 +1,22 @@
+{
+  "id": "7577",
+  "name": "bodyweight heel elevated squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Squat with heels raised to emphasize the quads.",
+  "instructions": [
+    "Stand with your heels on a small plate.",
+    "Extend your arms in front.",
+    "Squat deep with your chest up.",
+    "Keep your knees tracking over your toes.",
+    "Stand back up."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "7235",
+  "name": "dumbbell standing scapular external rotation (front pov)",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A light dumbbell rotation that trains the rear shoulder and rotator cuff.",
+  "instructions": [
+    "Stand tall holding a light dumbbell with your elbow tucked and bent to 90 degrees.",
+    "Keep your upper arm against your side.",
+    "Rotate your forearm outward, away from your body.",
+    "Squeeze your shoulder blade back.",
+    "Return slowly.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

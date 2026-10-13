@@ -1,0 +1,23 @@
+{
+  "id": "2733",
+  "name": "strongman apollons axle",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "shoulders",
+    "trapezius",
+    "glutes",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "Lifting a thick axle bar from the floor to overhead. The fat grip makes it a brutal test for hands, forearms and shoulders.",
+  "instructions": [
+    "Stand over the thick axle with feet shoulder width apart and grip it firmly.",
+    "Pull it up the thighs with a flat back and clean it to your chest.",
+    "Dip and drive with your legs, pressing the axle overhead until your arms lock.",
+    "Bring it back down to your chest and then the floor with control."
+  ],
+  "textSource": "opengym"
+}

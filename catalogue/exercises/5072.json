@@ -1,0 +1,22 @@
+{
+  "id": "5072",
+  "name": "kettlebell sit up press",
+  "bodyPart": "waist",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "Sit up from the floor with a kettlebell and press it overhead at the top. A core and shoulder combo move.",
+  "instructions": [
+    "Lie on your back with your knees bent, holding a kettlebell at your chest.",
+    "Curl and sit up using your abs.",
+    "Press the kettlebell overhead as you reach the top.",
+    "Lower it back to your chest.",
+    "Roll back down slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

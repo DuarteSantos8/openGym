@@ -1,0 +1,22 @@
+{
+  "id": "1786",
+  "name": "assisted trunk flex chest stretch",
+  "bodyPart": "chest",
+  "equipment": "assisted",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "With a partner helping you lean the trunk forward, you stretch your chest and front shoulders. It gives a controlled, deeper opening.",
+  "instructions": [
+    "Sit or stand with your hands clasped behind your head and your elbows wide.",
+    "Have your partner pull your elbows back as you gently tilt your trunk forward.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

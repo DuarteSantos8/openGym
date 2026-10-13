@@ -1,0 +1,21 @@
+{
+  "id": "6367",
+  "name": "cable standing back wrist curl v. 2",
+  "bodyPart": "lower arms",
+  "equipment": "cable",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A standing wrist curl with a low cable behind you, giving steady tension on your forearm flexors.",
+  "instructions": [
+    "Stand with your back to a low cable and hold the handle behind you.",
+    "Keep your elbows tucked and your chest up.",
+    "Curl your wrists to pull the handle upward.",
+    "Squeeze at the top.",
+    "Lower with control and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "10110",
+  "name": "barbell fat bar reverse curl",
+  "bodyPart": "lower arms",
+  "equipment": "barbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "biceps",
+    "brachialis",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A reverse curl with a thick bar, which challenges your grip and the forearm muscles even more.",
+  "instructions": [
+    "Hold a fat barbell with an overhand grip.",
+    "Stand with elbows by your sides.",
+    "Curl the bar up toward your shoulders.",
+    "Squeeze at the top.",
+    "Lower slowly.",
+    "Keep your wrists straight."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "1921",
+  "name": "recumbent knee flexor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "Lying on your back, you lift one straight leg to stretch the hamstring with the lower back supported.",
+  "instructions": [
+    "Lie on your back with both legs straight.",
+    "Lift one leg toward the ceiling, holding behind the thigh or calf.",
+    "Keep the knee as straight as is comfortable and the other leg flat on the floor.",
+    "Gently draw the leg toward you until you feel a pull behind the thigh.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

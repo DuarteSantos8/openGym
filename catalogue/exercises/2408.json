@@ -1,0 +1,21 @@
+{
+  "id": "2408",
+  "name": "weighted lying neck extension (with head harness)",
+  "bodyPart": "neck",
+  "equipment": "weighted",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "Lying face down with a harness on your head, you lift against added weight to strengthen the muscles at the back of the neck.",
+  "instructions": [
+    "Lie face down on a bench with your head past the edge and the weighted harness fitted.",
+    "Start with your chin tucked toward your chest.",
+    "Raise your head slowly until your face looks forward.",
+    "Pause, then lower back under control.",
+    "Use a light weight and smooth reps, never jerking the neck."
+  ],
+  "textSource": "opengym"
+}

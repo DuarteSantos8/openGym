@@ -1,0 +1,22 @@
+{
+  "id": "5819",
+  "name": "dumbbell empty can exercise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "trapezius",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "Raise light dumbbells with thumbs pointing down, as if emptying a can. It targets the front and side shoulder.",
+  "instructions": [
+    "Hold light dumbbells with your thumbs pointing down.",
+    "Stand tall with arms at your sides.",
+    "Raise your arms diagonally forward to shoulder height.",
+    "Hold briefly without shrugging.",
+    "Lower slowly with control."
+  ],
+  "textSource": "opengym"
+}
