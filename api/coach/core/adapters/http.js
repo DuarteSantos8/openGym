@@ -100,6 +100,30 @@ async function readJson(res) {
   try { return { data: JSON.parse(text), text }; } catch { return { data: null, text }; }
 }
 
+/* Folds a streamed Chat Completions answer into the one-shot shape readText expects. Streaming
+ * keeps bytes flowing, so a CDN's idle timeout cannot cut a slow reasoning model off. */
+async function readStream(res) {
+  const text = await res.text();
+  if (!/^\s*(data|event|id|retry)?:/.test(text)) {
+    try { return { data: JSON.parse(text), text }; } catch { return { data: null, text }; }
+  }
+  let content = '';
+  let finish = null;
+  for (const line of text.split(/\r?\n/)) {
+    if (!line.startsWith('data:')) continue;
+    const payload = line.slice(5).trim();
+    if (!payload || payload === '[DONE]') continue;
+    let ev;
+    try { ev = JSON.parse(payload); } catch { continue; }
+    if (ev.error) return { data: { error: ev.error }, text };
+    const choice = (ev.choices || [])[0];
+    if (!choice) continue;
+    if (choice.delta && typeof choice.delta.content === 'string') content += choice.delta.content;
+    if (choice.finish_reason) finish = choice.finish_reason;
+  }
+  return { data: { choices: [{ message: { content }, finish_reason: finish }] }, text };
+}
+
 export function httpAdapter(spec) {
   const id = spec.id;
   const meta = HTTP_PROVIDERS[id];
@@ -180,7 +204,7 @@ export function httpAdapter(spec) {
           if (e.name === 'AbortError') return { code: -1, text: '', stderr: 'timed out', timedOut: true };
           return { code: 1, text: '', stderr: `could not reach ${hostOf(base)}: ${trim(e.message, 200)}` };
         }
-        const { data, text } = await readJson(res);
+        const { data, text } = await (spec.stream && res.ok ? readStream(res) : readJson(res));
         if (!res.ok) {
           const msg = spec.errorMessage(data) || trim(text, 200);
           if (RETRY_STATUSES.has(res.status) && transientRetries < RETRY_DELAYS_MS.length && !(signal && signal.aborted)) {
@@ -196,6 +220,7 @@ export function httpAdapter(spec) {
           }
           return { code: 1, text: '', stderr: `${res.status} ${trim(msg, 280)}` };
         }
+        if (data && data.error && !data.choices) return { code: 1, text: '', stderr: trim(spec.errorMessage(data) || 'the provider reported an error', 280) };
         let out;
         try { out = spec.readText(data); } catch (e) { out = { error: `unexpected response shape: ${trim(e.message, 100)}` }; }
         if (out.error) return { code: 1, text: '', stderr: out.error };

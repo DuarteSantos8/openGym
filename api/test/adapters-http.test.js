@@ -107,6 +107,38 @@ test('compatible: the configured base URL, max_tokens, and no Authorization head
   assert.equal(g.calls[0].headers.authorization, 'Bearer compat-1');
 });
 
+/** An SSE body as a hosted Chat Completions endpoint streams it: reasoning first, then content. */
+const sse = (parts, finish = 'stop') => [
+  ': keep-alive',
+  'data: ' + JSON.stringify({ choices: [{ delta: { role: 'assistant', reasoning_content: 'thinking…' } }] }),
+  ...parts.map(p => 'data: ' + JSON.stringify({ choices: [{ delta: { content: p } }] })),
+  'data: ' + JSON.stringify({ choices: [{ delta: {}, finish_reason: finish }] }),
+  'data: [DONE]', ''
+].join('\n\n');
+
+test('compatible: asks for a stream and folds the events back into one answer; OpenAI stays one-shot', async () => {
+  const f = fakeFetch([ok(sse(['{"coach_contract":1,', '"nochange":true,', '"reading":"fine"}']))]);
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env, model: 'deepseek-v4-pro', fetch: f });
+  assert.equal(r.code, 0);
+  assert.equal(r.text, ANSWER);
+  assert.equal(f.calls[0].body.stream, true);
+
+  const o = fakeFetch([ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
+  await openai.invoke({ cfg: {}, prompt: 'P', env, model: 'gpt-x', fetch: o });
+  assert.equal('stream' in o.calls[0].body, false);
+});
+
+test('compatible: a streamed answer cut at the output limit, or an error event after the 200, is a failure', async () => {
+  const cut = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env, model: 'm', fetch: fakeFetch([ok(sse(['{"coach_contract":1,'], 'length'))]) });
+  assert.equal(cut.code, 1);
+  assert.match(cut.stderr, /cut off at the output limit/);
+
+  const errBody = sse(['{"a":']).replace('data: [DONE]', 'data: ' + JSON.stringify({ error: { message: 'upstream overloaded' } }));
+  const err = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env, model: 'm', fetch: fakeFetch([ok(errBody)]) });
+  assert.equal(err.code, 1);
+  assert.equal(err.stderr, 'upstream overloaded');
+});
+
 test('compatible: a base that already names its API version is used as the full prefix (#437)', async () => {
   const answer = ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] });
   const at = baseUrl => ({ provider: 'compatible', providerOptions: { compatible: { baseUrl } } });
