@@ -40,9 +40,19 @@ const unitOf = S => (S?.unit === 'lb' ? 'lb' : 'kg')
 // of coming back from it (lib/sync-merge.js keeps whichever side set a key last).
 
 /** The sizes of a stored plate list with their counts, `_ts` and junk keys left out. */
-const sizesOf = entry => (entry && typeof entry === 'object' && !Array.isArray(entry)
-  ? Object.entries(entry).filter(([k]) => num(k) > 0)
-  : [])
+// Keys are read back as the sizes they name, to the hundredth: "7.50" and "7.5" (an import, a
+// hand-edited backup) are one size, holding the larger count, never two that add up.
+const sizesOf = entry => {
+  if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return []
+  const out = new Map()
+  for (const [k, v] of Object.entries(entry)) {
+    const w = Math.round(num(k) * 100 + 1e-7) / 100
+    if (!(w > 0)) continue
+    const key = String(w)
+    out.set(key, Math.max(num(out.get(key)), num(v)))
+  }
+  return [...out]
+}
 
 /** Whether this profile counts its own plates for its unit, rather than loading the standard set. */
 export const ownsPlates = S => sizesOf(S?.plates?.[unitOf(S)]).length > 0
@@ -80,6 +90,56 @@ export function withPlatePairs(S, w, n, now = Date.now()) {
   return { ...(S?.plates || {}), [unit]: { ...list, _ts: now } }
 }
 
+/** The heaviest plate a weight field accepts, exclusive. */
+export const PLATE_MAX = 1000
+
+/** A typed plate weight as stored: a number above 0 and below PLATE_MAX, to the hundredth; else null. */
+export function cleanPlateWeight(v) {
+  const w = typeof v === 'string' ? Number(v.replace(',', '.')) : Number(v)
+  if (!Number.isFinite(w)) return null
+  // Rounded first, checked after: 999.995 rounds to 1000, which is over the limit.
+  const r = Math.round(w * 100 + 1e-7) / 100   // 1.255 × 100 is 125.4999… in floating point
+  return r > 0 && r < PLATE_MAX ? r : null
+}
+
+/**
+ * Every size the inventory sheet lists, heaviest first: each standard size of the unit — always
+ * there, at 0 pairs when not owned, so it can be counted in — plus the sizes added by hand, which
+ * stay listed (even at 0 pairs) until removed. `custom` marks the added ones: only they can go.
+ */
+export function plateSizesFor(S) {
+  const unit = unitOf(S)
+  const counts = new Map(ownsPlates(S)
+    ? sizesOf(S.plates[unit]).map(([k, v]) => [num(k), Math.max(0, Math.floor(num(v)))]).filter(([w]) => w > 0)
+    : inventoryFor(S).map(p => [p.w, p.n]))
+  const standard = new Set(PLATE_SIZES[unit])
+  const out = PLATE_SIZES[unit].map(w => ({ w, n: counts.get(w) || 0, custom: false }))
+  for (const [w, n] of counts) if (!standard.has(w)) out.push({ w, n, custom: true })
+  return out.sort((a, b) => b.w - a.w)
+}
+
+/** The profile's own list for its unit as { size: pairs }, the standard set copied in first. */
+const ownList = S => (ownsPlates(S)
+  ? Object.fromEntries(sizesOf(S.plates[unitOf(S)]))
+  : Object.fromEntries(inventoryFor(S).map(p => [p.w, p.n])))
+
+/** S.plates with a size added at one pair, stamped; unchanged (same object) when it is already there or not a weight. */
+export function withPlateSize(S, w, now = Date.now()) {
+  const size = cleanPlateWeight(w)
+  if (size === null) return S?.plates || {}
+  const list = ownList(S)
+  if (Object.keys(list).some(k => num(k) === size)) return S?.plates || {}
+  list[size] = 1
+  return { ...(S?.plates || {}), [unitOf(S)]: { ...list, _ts: now } }
+}
+
+/** S.plates without size `w` in the profile's unit, stamped. */
+export function withoutPlateSize(S, w, now = Date.now()) {
+  const list = ownList(S)
+  for (const k of Object.keys(list)) if (num(k) === num(w)) delete list[k]
+  return { ...(S?.plates || {}), [unitOf(S)]: { ...list, _ts: now } }
+}
+
 /** S.plates with the profile's unit back on the standard set: a stamped list with no sizes. */
 export const withStandardPlates = (S, now = Date.now()) => ({ ...(S?.plates || {}), [unitOf(S)]: { _ts: now } })
 
@@ -100,9 +160,12 @@ export const withLoadKind = (map, exId, kind, now = Date.now()) =>
 /** The count of one size in this profile's inventory (0 when it has none). */
 export const pairsOf = (S, w) => inventoryFor(S).find(p => p.w === w)?.n || 0
 
-// Everything is done in quarter-units so 1.25 and 2.5 stay exact integers.
-const Q = 4
-const q = w => Math.round(w * Q)
+// Everything is done in whole steps of the finest size the inventory needs: quarter-units for the
+// usual plates, so 1.25 and 2.5 stay exact integers and the search stays small; twentieths or
+// hundredths only for an inventory with sizes like 0.1 kg or 2.2 lb.
+const SCALES = [4, 20, 100]
+const fits = (w, Q) => Math.abs(w * Q - Math.round(w * Q)) < 1e-6
+const scaleFor = items => SCALES.find(Q => items.every(p => fits(p.w, Q))) || 100
 
 /**
  * Plates for `weight`, from `inv` ([{ w, n }], heaviest first). Heaviest-first greedy when that
@@ -111,11 +174,33 @@ const q = w => Math.round(w * Q)
  * heavier plates on ties. When nothing hits it, the closest load BELOW and what is missing.
  *   → { plates: [w, …] heaviest first, missing: number }   (missing 0 = exact)
  */
+// The same stack is asked for again on every render of a workout card: answers are kept, keyed
+// by the inventory and the weight, a few hundred of them.
+const stackCache = new Map()
+const STACK_CACHE_MAX = 500
+// Above this many steps the exact search is skipped and the heaviest-first load stands: a fine
+// scale (microplates) with a large rack and a heavy target would otherwise take tens of ms per
+// row. The standard sets never come near it (plates-parity.test.js).
+const SEARCH_BUDGET = 400000
+
 export function plateStack(weight, inv) {
+  const key = num(weight) + '|' + (inv || []).map(p => p.w + 'x' + p.n).join(',')
+  const hit = stackCache.get(key)
+  if (hit) return { plates: [...hit.plates], missing: hit.missing }
+  const res = searchStack(weight, inv)
+  if (stackCache.size >= STACK_CACHE_MAX) stackCache.delete(stackCache.keys().next().value)
+  stackCache.set(key, res)
+  return { plates: [...res.plates], missing: res.missing }
+}
+
+function searchStack(weight, inv) {
   const requested = Math.max(0, num(weight))
-  const target = Math.floor(requested * Q)
-  if (target === 0) return { plates: [], missing: requested }
   const items = (inv || []).filter(p => p.w > 0 && p.n > 0).sort((a, b) => b.w - a.w)
+  const Q = scaleFor(items)
+  const q = w => Math.round(w * Q)
+  // A hair of tolerance: 70.3 × 100 is 7029.999… in floating point, and the plate is not missing.
+  const target = Math.floor(requested * Q + 1e-6)
+  if (target === 0) return { plates: [], missing: requested }
   // 1. greedy
   const greedy = []
   let left = target
@@ -128,14 +213,19 @@ export function plateStack(weight, inv) {
   // missing. The search below would only find that again, with a table as long as the target:
   // a typo like 9999 in a weight field built it on every keystroke.
   const all = items.reduce((sum, p) => sum + q(p.w) * p.n, 0)
-  if (left === 0 || target >= all) return { plates: greedy, missing: requested - (target - left) / Q }
+  if (left === 0 || target >= all) return { plates: greedy, missing: Math.max(0, requested - (target - left) / Q) }
+  // No more of a size than fits under the target is ever worth trying.
+  const caps = items.map(p => Math.min(p.n, Math.floor(target / q(p.w))))
+  if ((target + 1) * caps.reduce((a, c) => a + c + 1, 0) > SEARCH_BUDGET) {
+    return { plates: greedy, missing: Math.max(0, requested - (target - left) / Q) }
+  }
   // 2. exact fit with the fewest plates: f[i][s] = min plates using sizes i.. to make s
   const n = items.length
   const INF = 1e9
   const f = Array.from({ length: n + 1 }, () => new Int32Array(target + 1).fill(INF))
   f[n][0] = 0
   for (let i = n - 1; i >= 0; i--) {
-    const unit = q(items[i].w), cap = items[i].n
+    const unit = q(items[i].w), cap = caps[i]
     for (let s = 0; s <= target; s++) {
       let best = f[i + 1][s]
       for (let k = 1; k <= cap && k * unit <= s; k++) {
@@ -151,7 +241,7 @@ export function plateStack(weight, inv) {
   const plates = []
   let s = sum
   for (let i = 0; i < n; i++) {
-    const unit = q(items[i].w), cap = items[i].n
+    const unit = q(items[i].w), cap = caps[i]
     // Largest k that still leaves an optimal remainder → heavier plates on ties.
     for (let k = Math.min(cap, Math.floor(s / unit)); k >= 0; k--) {
       if (f[i + 1][s - k * unit] + k === f[i][s]) {
@@ -161,7 +251,7 @@ export function plateStack(weight, inv) {
       }
     }
   }
-  return { plates, missing: requested - sum / Q }
+  return { plates, missing: Math.max(0, requested - sum / Q) }
 }
 
 /**

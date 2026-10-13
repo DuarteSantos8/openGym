@@ -2235,4 +2235,5 @@ export default {
   'Your sports watch, calling you back.': '你的運動手錶在叫你回來。',
   'Coach wants you back on the bar.': '教練等你回到槓鈴前。',
   'Gentle, for headphones or a quiet room.': '輕柔，適合耳機或安靜的房間。',
+  'Missing a size? Type its weight and add it.': '缺少某個規格？輸入重量後新增。',
 }

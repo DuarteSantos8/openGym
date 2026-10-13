@@ -2242,4 +2242,5 @@ export default {
   'Your sports watch, calling you back.': 'Zegarek sportowy wzywa z powrotem.',
   'Coach wants you back on the bar.': 'Trener czeka przy sztandze.',
   'Gentle, for headphones or a quiet room.': 'Cichy, do słuchawek albo spokojnego pomieszczenia.',
+  'Missing a size? Type its weight and add it.': 'Brakuje jakiegoś rozmiaru? Wpisz jego wagę i dodaj.',
 }

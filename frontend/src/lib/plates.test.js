@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { PLATE_SIZES, DEFAULT_PAIRS, inventoryFor, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, loadKindOf, withLoadKind, plateStack, plateDelta, loadKindFor, baseWeightFor, rowLoad, sameLoad, dropGrid } from './plates.js'
+import { PLATE_SIZES, DEFAULT_PAIRS, inventoryFor, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, loadKindOf, withLoadKind, plateStack, plateDelta, loadKindFor, baseWeightFor, rowLoad, sameLoad, dropGrid, cleanPlateWeight, plateSizesFor, withPlateSize, withoutPlateSize } from './plates.js'
 import { EXDB } from './exercises-data.js'
 
 const idOf = eq => EXDB.find(e => e.eq === eq).id
@@ -265,5 +265,106 @@ describe('loads between quarter-unit boundaries', () => {
     const S = { unit: 'kg', plates: { kg: { 5: 3 } } }
     const snap = dropGrid(S, { id: idOf('barbell') })
     expect(snap(48.74)).toBe(40)
+  })
+})
+
+// Plates of any weight (flexible-plate-sizes): added and removed like dumbbells.
+describe('plates of any weight', () => {
+  const kg = (plates = undefined) => ({ unit: 'kg', plates })
+
+  test('a typed weight: above 0, below 1000, to the hundredth', () => {
+    expect(cleanPlateWeight(7.5)).toBe(7.5)
+    expect(cleanPlateWeight('7,5')).toBe(7.5)
+    expect(cleanPlateWeight(1.255)).toBe(1.26)
+    for (const bad of [0, -5, 1000, 999.995, '999,999', 1e6, 'abc', NaN, null, 0.001]) expect(cleanPlateWeight(bad)).toBeNull()
+    expect(cleanPlateWeight(999.99)).toBe(999.99)
+  })
+
+  test('the first change copies the standard set in, then adds the new size at one pair', () => {
+    const S = kg()
+    const plates = withPlateSize(S, 7.5, 1)
+    const after = { ...S, plates }
+    expect(ownsPlates(after)).toBe(true)
+    expect(pairsOf(after, 7.5)).toBe(1)
+    for (const p of inventoryFor(S)) expect(pairsOf(after, p.w)).toBe(p.n)
+    expect(plates.kg._ts).toBe(1)
+  })
+
+  test('adding a size already there changes nothing', () => {
+    const S = kg({ kg: { 20: 2, 7.5: 3, _ts: 1 } })
+    expect(withPlateSize(S, 7.5, 2)).toBe(S.plates)
+    expect(withPlateSize(S, '7,50', 2)).toBe(S.plates)
+    expect(withPlateSize(S, 'nope', 2)).toBe(S.plates)
+  })
+
+  test('removing an added size takes it off the sheet and off every load', () => {
+    const S = kg({ kg: { 20: 2, 7.5: 4, _ts: 1 } })
+    const after = { ...S, plates: withoutPlateSize(S, 7.5, 2) }
+    expect(plateSizesFor(after).map(p => p.w)).not.toContain(7.5)
+    expect(plateStack(7.5, inventoryFor(after)).plates).toEqual([])
+  })
+
+  test('the sheet lists every standard size, and added sizes marked as removable', () => {
+    const S = kg({ kg: { 20: 2, 7.5: 0, _ts: 1 } })
+    const sizes = plateSizesFor(S)
+    expect(sizes.map(p => p.w)).toEqual([25, 20, 15, 10, 7.5, 5, 2.5, 1.25, 0.5])
+    expect(sizes.find(p => p.w === 7.5)).toEqual({ w: 7.5, n: 0, custom: true })
+    expect(sizes.find(p => p.w === 25)).toEqual({ w: 25, n: 0, custom: false })
+    expect(inventoryFor(S).map(p => p.w)).toEqual([20])
+    // no list of its own: the standard set, the uncommon sizes at 0
+    expect(plateSizesFor(kg()).find(p => p.w === 0.5)).toEqual({ w: 0.5, n: 0, custom: false })
+  })
+
+  test('each unit keeps its own list', () => {
+    const S = { unit: 'lb', plates: { kg: { 20: 2, _ts: 1 } } }
+    const plates = withPlateSize(S, 2, 3)
+    expect(plates.kg).toEqual({ 20: 2, _ts: 1 })
+    expect(Object.keys(plates.lb)).toContain('2')
+  })
+
+  test('a load only the new size makes is found', () => {
+    const inv = [{ w: 20, n: 2 }, { w: 7.5, n: 1 }]
+    expect(rowLoad('pairs', 75, 20, inv)).toMatchObject({ perSide: 27.5, plates: [20, 7.5], missing: 0 })
+  })
+
+  test('microplates with decimals load exactly', () => {
+    const inv = [{ w: 10, n: 2 }, { w: 0.1, n: 1 }]
+    expect(plateStack(10.1, inv)).toEqual({ plates: [10, 0.1], missing: 0 })
+    expect(rowLoad('pairs', 40.2, 20, inv)).toMatchObject({ plates: [10, 0.1], missing: 0 })
+    expect(plateStack(2.2, [{ w: 2.2, n: 1 }])).toEqual({ plates: [2.2], missing: 0 })
+    expect(plateStack(70.3, [{ w: 70, n: 1 }, { w: 0.3, n: 1 }]).missing).toBe(0)
+  })
+})
+
+// Adversarial review of flexible-plate-sizes.
+describe('plates of any weight: edge cases', () => {
+  test('"7.50" and "7.5" are one size, never two that add up', () => {
+    const S = { unit: 'kg', plates: { kg: { '7.50': 2, 20: 1, _ts: 1 } } }
+    const plates = withPlatePairs(S, 7.5, 3, 2)
+    const after = { ...S, plates }
+    expect(Object.keys(plates.kg).filter(k => k !== '_ts').sort()).toEqual(['20', '7.5'])
+    expect(inventoryFor(after)).toEqual([{ w: 20, n: 1 }, { w: 7.5, n: 3 }])
+  })
+
+  test('a stored size off the hundredth is read as its hundredth', () => {
+    const S = { unit: 'kg', plates: { kg: { 1.125: 1, _ts: 1 } } }
+    expect(inventoryFor(S)).toEqual([{ w: 1.13, n: 1 }])
+  })
+
+  test('a large rack with microplates stays fast on a heavy, reachable target', () => {
+    const inv = [45, 35, 25, 10, 5, 2.5].map(w => ({ w, n: 10 })).concat([{ w: 0.33, n: 2 }])
+    const t0 = performance.now()
+    for (let i = 0; i < 50; i++) plateStack(300 + i * 1.37, inv)
+    expect((performance.now() - t0) / 50).toBeLessThan(15)
+    // whatever it returns adds up to the weight minus what it says is missing
+    const r = plateStack(321.66, inv)
+    expect(Math.abs(r.plates.reduce((a, b) => a + b, 0) + r.missing - 321.66)).toBeLessThan(1e-6)
+  })
+
+  test('the same question twice gets the same answer, and the answer can be changed safely', () => {
+    const inv = [{ w: 20, n: 2 }, { w: 7.5, n: 1 }]
+    const a = plateStack(27.5, inv)
+    a.plates.push(999)
+    expect(plateStack(27.5, inv)).toEqual({ plates: [20, 7.5], missing: 0 })
   })
 })

@@ -6,7 +6,7 @@ import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment
 import { fmtDate, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
 import { usesBar, defaultBarWeight, hasBarOverride, isNoBar } from './lib/bar.js'
-import { PLATE_SIZES, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
+import { plateSizesFor, ownsPlates, withPlatePairs, withStandardPlates, withPlateSize, withoutPlateSize, cleanPlateWeight, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
 import { toScale, rirOf, EFFORT_PRESETS, effortColor } from './lib/effort.js'
 import { beep, vibrate } from './lib/sound.js'
 import { t, tn, dateLocale, instrFor, instrTranslated, descFor, exerciseNameFor, exerciseNameClass, getLang, useLang } from './lib/i18n.js'
@@ -847,18 +847,36 @@ function PlateInventorySheet({ close }) {
   const st = useStore(s => s.S)
   const unit = st.unit === 'lb' ? 'lb' : 'kg'
   const own = ownsPlates(st)
+  const sizes = plateSizesFor(st)
+  const [draft, setDraft] = useState(null)
   const setPairs = (w, n) => update(s => { s.plates = withPlatePairs(s, w, n) })
+  const remove = w => update(s => { s.plates = withoutPlateSize(s, w) })
   const reset = () => update(s => { s.plates = withStandardPlates(s) })
+  // Any weight, like the dumbbells: a size already on the list is left as it is.
+  const add = () => {
+    const w = cleanPlateWeight(draft)
+    if (w === null) { toast(t('Enter a valid weight')); return }
+    update(s => { s.plates = withPlateSize(s, w) })
+    setDraft(null)
+  }
   return <>
     <h3>{t('Plates')}</h3>
     <div className="muted small" style={{ marginBottom: 14 }}>
       {t('Pairs of each size you own. Every set row loads from this list, so a home gym with one pair of 45s is never told to use two.')}
     </div>
-    {PLATE_SIZES[unit].map(w => (
-      <div className="row cfgrow" key={w} style={{ marginBottom: 6 }}>
-        <Stepper label={fmtPlate(w) + ' ' + unit} value={pairsOf(st, w)} step={1} decimal={false} unit={t('pairs')} onChange={n => setPairs(w, n)} />
+    {sizes.map(({ w, n, custom }) => (
+      <div className="row cfgrow" key={w} style={{ marginBottom: 6, gap: 6 }}>
+        <Stepper label={fmtPlate(w) + ' ' + unit} value={n} step={1} decimal={false} unit={t('pairs')} onChange={v => setPairs(w, v)} />
+        {/* A standard size is always listed (0 pairs: you don't have it); one added by hand can go. */}
+        {custom && <button className="iconbtn" aria-label={t('Remove {0}', fmtPlate(w) + ' ' + unit)} onClick={() => remove(w)}><Icon name="trash" /></button>}
       </div>
     ))}
+    <div className="small dim" style={{ marginTop: 10 }}>{t('Missing a size? Type its weight and add it.')}</div>
+    <div className="row" style={{ gap: 8, margin: '8px 0 4px' }}>
+      <NumberField className="input" decimal value={draft ?? ''} onChange={v => setDraft(v)}
+        aria-label={t('Weight ({0})', unit)} placeholder={t('Weight ({0})', unit)} onKeyDown={e => { if (e.key === 'Enter') add() }} />
+      <Button icon="plus" onClick={add} style={{ flex: '0 0 auto', width: 'auto' }}>{t('Add')}</Button>
+    </div>
     <div className="small dim" style={{ margin: '4px 0 14px' }}>
       {own ? t('Your own list for {0}.', unit) : t('The standard set, plenty of each. Change any count to make it yours.')}
     </div>
