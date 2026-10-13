@@ -1280,8 +1280,13 @@ function usageMap(st) {
 }
 // The swap pickers' own scope (#473): exercises sharing the swapped exercise's target muscle.
 const SAME = '≈'
-function ExercisePicker({ onPick, title, close, like }) {
+function ExercisePicker({ onPick, title, close, like, actionIcon }) {
   const st = useStore(s => s.S)
+  const isSwap = !!like || title === t('Swap exercise') || title === t('Replace exercise') || title === 'Swap exercise' || title === 'Replace exercise'
+  const quickIcon = actionIcon || (isSwap ? 'swap' : 'plus')
+  const quickLabel = e => isSwap
+    ? (title ? `${title}: ${exerciseNameFor(e)}` : `${t('Swap exercise')}: ${exerciseNameFor(e)}`)
+    : t('Add “{0}”', exerciseNameFor(e))
   const usage = usageMap(st)
   const [q, setQ] = useState('')
   // What a swap is away from: the picker opens on what trains the same muscle, if anything you
@@ -1341,19 +1346,20 @@ function ExercisePicker({ onPick, title, close, like }) {
         <Thumb ex={e} /><div className="grow"><div className={`tt ${exerciseNameClass(e)}`}>{isFav(st, e.id) && <Icon name="starFill" className="fav-star" />}{exerciseNameFor(e)}</div><div className="ss capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</div></div>
         {/* Accent tag = already in a routine/log ("Chosen"); the yellow star by the name = favourite. */}
         {usage[e.id] && <span className="tag acc"><Icon name="starFill" /></span>}
-        {/* A "+" glyph reads as "add this now" — it used to just open the same detail sheet as
+        {/* A "+" or "swap" glyph reads as "commit this now" — it used to just open the same detail sheet as
             tapping the row, so it added nothing until you'd scrolled past the sets/reps config
-            and found the real button. Now it does what it looks like: adds with the default
-            config right away. Tapping the row itself still opens the detail/config sheet, for
-            when you want to set sets/reps before adding. */}
-        <button className="iconbtn chev" aria-label={t('Add “{0}”', exerciseNameFor(e))} style={{ padding: 8, margin: -8 }}
-          onClick={ev => { ev.stopPropagation(); onPick(e, true) }}><Icon name="plus" /></button>
+            and found the real button. Now it does what it looks like: commits with the default
+            config right away. In a swap or replace flow (#561), the opposed-arrows glyph makes it clear
+            this replaces the chosen exercise rather than adding a new one. Tapping the row itself still
+            opens the detail/config sheet, for when you want to set sets/reps before committing. */}
+        <button className="iconbtn chev" aria-label={quickLabel(e)} style={{ padding: 8, margin: -8 }}
+          onClick={ev => { ev.stopPropagation(); onPick(e, true) }}><Icon name={quickIcon} /></button>
       </div>
   if (byMuscle) return <>
     <div className="row between" style={{ marginBottom: 10 }}><h3>{title || t('Add exercise')}</h3>
       <Button size="sm" variant="ghost" onClick={() => setByMuscle(false)}>{t('All')}</Button>
     </div>
-    <MuscleExplorer onPick={onPick} />
+    <MuscleExplorer onPick={onPick} pickIcon={quickIcon} />
   </>
 
   return <>
@@ -1410,7 +1416,7 @@ function ExercisePicker({ onPick, title, close, like }) {
 // `title` names what the pick is for when it is not an add — the routine editor's Replace (#110).
 // `like` is the exercise a swap or a replace is away from: the picker then opens on the ones that
 // train the same muscle, same equipment first (#473).
-export const exercisePicker = (onPick, { title, like } = {}) => ui().openSheet(close => <ExercisePicker onPick={onPick} title={title} like={like} close={close} />)
+export const exercisePicker = (onPick, { title, like, actionIcon } = {}) => ui().openSheet(close => <ExercisePicker onPick={onPick} title={title} like={like} actionIcon={actionIcon} close={close} />)
 
 /** Start a safe swap for one exact active-workout occurrence. */
 export function swapActiveWorkoutExercise(index) {
