@@ -88,6 +88,35 @@ export const NUDGE_COPY = {
       ]
     }
   },
+  "cs": {
+    "friendly": {
+      "title": "Všechno v pořádku?",
+      "lines": [
+        "Sestava {0} pořád čeká. Co se děje?",
+        "Dnes bez sestavy {0}? Zítra se počítá i krátký trénink.",
+        "Náročný den? Sestava {0} počká. Zítra je nový začátek.",
+        "Hele, sestava {0} dneska nevyšla. Je všechno v pohodě?"
+      ]
+    },
+    "guilt": {
+      "title": "Stýská se mi",
+      "lines": [
+        "Sestava {0} čekala celý večer u dveří. Na tebe.",
+        "Činka se po tobě dneska ptala. Nevěděl jsem, co jí říct.",
+        "Řekl jsem něco špatně? Sestavě {0} se po tobě stýská.",
+        "Držel jsem ti místo na lavici. Pořád je prázdné."
+      ]
+    },
+    "drill": {
+      "title": "Pozor, bažante!",
+      "lines": [
+        "Tvoje forma si balí kufry. Zítra {0}, žádné výmluvy!",
+        "Sestava {0} se sama neodcvičí, bažante. Pohyb!",
+        "Výmluvy činky nezvednou. Zítra se hlásíš na {0}!",
+        "Tvoje svaly po tobě vyhlásily pátrání. Nástup na {0}!"
+      ]
+    }
+  },
   "de": {
     "friendly": {
       "title": "Alles okay?",

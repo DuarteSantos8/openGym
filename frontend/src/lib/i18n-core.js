@@ -5,7 +5,7 @@
 
 export const LANGS = {
   en: 'English', de: 'Deutsch', 'de-CH': 'Deutsch (Schweiz)', es: 'Español', fr: 'Français',
-  it: 'Italiano', pt: 'Português (Portugal)', 'pt-BR': 'Português (Brasil)', pl: 'Polski',
+  it: 'Italiano', pt: 'Português (Portugal)', 'pt-BR': 'Português (Brasil)', pl: 'Polski', cs: 'Čeština',
   tr: 'Türkçe', ru: 'Русский', uk: 'Українська', zh: '简体中文', 'zh-TW': '繁體中文',
   ko: '한국어', hi: 'हिन्दी', bn: 'বাংলা', th: 'ไทย', hu: 'Magyar', ar: 'العربية'
 }
@@ -18,7 +18,7 @@ export const RTL_LANGS = new Set(['ar'])
 export const DATE_LOCALES = {
   en: 'en-GB', de: 'de-DE', 'de-CH': 'de-CH', es: 'es-ES', fr: 'fr-FR', it: 'it-IT',
   pt: 'pt-PT', 'pt-BR': 'pt-BR',
-  pl: 'pl-PL', tr: 'tr-TR', ru: 'ru-RU', uk: 'uk-UA', zh: 'zh-CN', 'zh-TW': 'zh-TW', ko: 'ko-KR', hi: 'hi-IN', bn: 'bn-BD-u-nu-latn', th: 'th-TH', hu: 'hu-HU', ar: 'ar-u-nu-latn'
+  pl: 'pl-PL', cs: 'cs-CZ', tr: 'tr-TR', ru: 'ru-RU', uk: 'uk-UA', zh: 'zh-CN', 'zh-TW': 'zh-TW', ko: 'ko-KR', hi: 'hi-IN', bn: 'bn-BD-u-nu-latn', th: 'th-TH', hu: 'hu-HU', ar: 'ar-u-nu-latn'
 }
 
 // Locales derived from another language by a pure text transform rather than carried as their
@@ -223,7 +223,7 @@ export const exerciseNameFor = ex => {
 // the English names ("supino com barra"). Left without the title-casing English gets, those
 // read all lower-case in every list, card and history row. A new pack goes here only when it
 // carries real casing; i18n-core.test.js checks this list against the packs themselves.
-export const CASED_NAME_LANGS = ['de']
+export const CASED_NAME_LANGS = ['de', 'cs']
 
 // EXDB stores English names lower-case and the UI title-cases them with CSS. A pack in
 // CASED_NAME_LANGS carries its own casing and must not be cased again on top, so the class that
