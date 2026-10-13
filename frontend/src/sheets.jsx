@@ -2246,7 +2246,7 @@ function DayOverride({ iso, close }) {
   const remaining = queueRemaining(st)
   // Your own rotation's pass (its rotationId matches the saved rotation) is your loop, not a coach's week.
   const ownLoop = !!st.queue && !!st.rotation && st.queue.rotationId === st.rotation.id
-  const coach = remaining.map(id => st.routines.find(r => r.id === id)).filter(Boolean)
+  const coach = [...new Set(remaining)].map(id => st.routines.find(r => r.id === id)).filter(Boolean)
   // Active pins straight from the plan (earliest day per session, today or later) — not the
   // row's 'pinned' items, which leave out the session pinned to today itself.
   const pinnedOn = Object.entries(st.dayPlan).filter(([d, id]) => d >= todayISO() && remaining.includes(id)).sort()

@@ -56,30 +56,42 @@ export const queueOf = S => {
   const q = S?.queue
   if (!q || typeof q !== 'object' || !Array.isArray(q.ids)) return null
   const routines = Array.isArray(S.routines) ? S.routines : []
-  // First valid occurrence of each id: a queue is a set of sessions, and a repeated id would
-  // otherwise show twice in the progress row and count twice in the week's tally. The persisted
-  // payload is never rewritten — normalizing is a read, not a migration.
-  const ids = q.ids.filter((id, i) => q.ids.indexOf(id) === i && routines.some(r => r.id === id))
+  // A routine may fill more than one slot (e.g. Weights A twice in a loop); each slot is its own
+  // session, done by its own workout (doneSlots). The persisted payload is never rewritten.
+  const ids = q.ids.filter(id => routines.some(r => r.id === id))
   if (!ids.length) return null
   return { ...q, ids, startsOn: typeof q.startsOn === 'string' ? q.startsOn : isoOf(new Date(q.since || 0)) }
 }
 
-// The DONE RULE for one workout and one session — `isDone` asks it across the log.
+// The DONE RULE for one workout and one session — `doneSlots` asks it across the log.
 const countsFor = (S, q, w, id) => routineIdsOf(w).includes(id)
   && ((w.start ?? 0) >= q.since
     || (q.strict !== true && String(w.d || '') >= q.startsOn && nameParts(w).includes(S.routines.find(r => r.id === id)?.name)))
-const isDone = (S, q, id) => S.workouts.some(w => countsFor(S, q, w, id))
+
+// Per slot, in slot order: the nth slot of a routine is done once n workouts count for it.
+const doneSlots = (S, q) => {
+  const credits = {}, seen = {}
+  return q.ids.map(id => {
+    if (credits[id] == null) credits[id] = S.workouts.filter(w => countsFor(S, q, w, id)).length
+    seen[id] = (seen[id] || 0) + 1
+    return seen[id] <= credits[id]
+  })
+}
 
 /** The week's sessions already done, in slot order. `[]` without a queue. */
 export function queueDone(S) {
   const q = queueOf(S)
-  return q ? q.ids.filter(id => isDone(S, q, id)) : []
+  if (!q) return []
+  const done = doneSlots(S, q)
+  return q.ids.filter((id, i) => done[i])
 }
 
 /** The sessions still to do, in slot order — the first is the next one. `[]` without a queue. */
 export function queueRemaining(S) {
   const q = queueOf(S)
-  return q ? q.ids.filter(id => !isDone(S, q, id)) : []
+  if (!q) return []
+  const done = doneSlots(S, q)
+  return q.ids.filter((id, i) => !done[i])
 }
 
 /**
@@ -129,7 +141,7 @@ export function queueLiveOn(S, iso, today) {
 export function pinState(S, id) {
   const q = queueOf(S)
   if (!q || !id || !q.ids.includes(id)) return null
-  return isDone(S, q, id) ? 'done' : 'open'
+  return queueRemaining(S).includes(id) ? 'open' : 'done'
 }
 
 /**
@@ -148,13 +160,19 @@ export function queueView(S, today) {
   const pins = activePins(S, remaining, today).sort((a, b) => (a.iso < b.iso ? -1 : a.iso > b.iso ? 1 : 0))
   // A routine the planner has since retired keeps its id as the name — better than a blank chip.
   const nameOf = id => S.routines.find(r => r.id === id)?.name ?? id
+  // A routine in several slots: only its first open slot is 'next' or 'pinned'.
+  const done = doneSlots(S, q)
+  const firstOpen = {}
+  q.ids.forEach((id, i) => { if (!done[i] && firstOpen[id] == null) firstOpen[id] = i })
   return {
     label: q.label || '',
-    items: q.ids.map(id => {
-      const pin = id !== next && pins.find(p => p.id === id && p.iso !== on)
+    items: q.ids.map((id, i) => {
+      const lead = !done[i] && firstOpen[id] === i
+      const isNext = lead && id === next
+      const pin = lead && !isNext && pins.find(p => p.id === id && p.iso !== on)
       return {
         id, name: nameOf(id),
-        state: !remaining.includes(id) ? 'done' : id === next ? 'next' : pin ? 'pinned' : 'later',
+        state: done[i] ? 'done' : isNext ? 'next' : pin ? 'pinned' : 'later',
         ...(pin ? { on: pin.iso } : {}),
       }
     }),
@@ -195,7 +213,9 @@ export function weekTally(S, today) {
   // (by date, not array position — a backfilled log is not always in order); every other
   // workout this week is training on top, and so is a crediting workout's own half.
   const chrono = (a, b) => ((a.d || '') < (b.d || '') ? -1 : (a.d || '') > (b.d || '') ? 1 : (a.start || 0) - (b.start || 0))
-  const credited = new Set(q.ids.map(id => S.workouts.filter(w => countsFor(S, q, w, id)).sort(chrono)[0]).filter(Boolean))
+  const slots = {}
+  q.ids.forEach(id => { slots[id] = (slots[id] || 0) + 1 })
+  const credited = new Set(Object.keys(slots).flatMap(id => S.workouts.filter(w => countsFor(S, q, w, id)).sort(chrono).slice(0, slots[id])))
   // (a logged workout keeps its credit even if its routine was deleted since — existence only
   // decides what is PLANNED)
   const other = thisWeek.filter(w => !credited.has(w) || routineIdsOf(w).some(unqueued)).length

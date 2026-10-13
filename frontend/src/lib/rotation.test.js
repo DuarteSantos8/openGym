@@ -37,7 +37,7 @@ describe('starting a pass from a saved rotation', () => {
   it('starts today, from the rotation ids that still exist, stamped with the rotation id', () => {
     const s = S({ rotation: { id: 'r1', sequence: ['a', 'gone', 'b', 'a'], label: 'My split' } })
     expect(startPass(s, TODAY, NOW)).toBe(true)
-    expect(s.queue).toEqual({ ids: ['a', 'b'], since: NOW, startsOn: TODAY, label: 'My split', rotationId: 'r1' })
+    expect(s.queue).toEqual({ ids: ['a', 'b', 'a'], since: NOW, startsOn: TODAY, label: 'My split', rotationId: 'r1' })
   })
 
   it('does nothing when no rotation routine survives', () => {

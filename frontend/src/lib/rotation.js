@@ -33,11 +33,11 @@ export const scheduleModeOf = S => (queueOf(S) || S?.scheduleMode === 'rotation'
 /** A queue payload arrived but is unusable (malformed, duplicate-only, all-deleted): Week + a fix-up in Plan. */
 export const queueRecovery = S => S?.queue != null && !queueOf(S)
 
-/** The saved sequence's routines that still exist, first occurrence of each — the ids a new pass gets. */
+/** The saved sequence's routines that still exist, repeats kept — the ids a new pass gets. */
 export const rotationIds = S => {
   const seq = Array.isArray(S?.rotation?.sequence) ? S.rotation.sequence : []
   const routines = Array.isArray(S?.routines) ? S.routines : []
-  return seq.filter((id, i) => seq.indexOf(id) === i && routines.some(r => r.id === id))
+  return seq.filter(id => routines.some(r => r.id === id))
 }
 
 const newPass = (ids, label, rotationId, startsOn, since) => ({ ids, since, startsOn, label, rotationId })
