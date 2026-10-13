@@ -2487,7 +2487,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Whether the profile has a Shortcut key</span>
   </summary>
   <div class="ep-body">
-<p>The state of the key an iPhone Shortcut uses for <code>POST /api/health/samples</code>, never the key itself: whether there is one, when it was made and when it was last used (ms).</p>
+<p>The state of the key an iPhone Shortcut uses for <code>POST /api/health/samples</code>, never the key itself: whether there is one, when it was made and when it was last used (ms), and the instance's ready-made Shortcut (<code>HEALTH_SHORTCUT_URL</code>, an iCloud link) or null.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 
@@ -2495,7 +2495,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">The key's state.<span class="r-sig">{ exists: boolean, created: integer | null, used: integer | null }</span></span>
+    <span class="p-desc">The key's state.<span class="r-sig">{ exists: boolean, created: integer | null, used: integer | null, shortcut: string <span class="p-hint">(uri)</span> | null }</span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>

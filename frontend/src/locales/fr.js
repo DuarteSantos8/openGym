@@ -2357,4 +2357,7 @@ export default {
   'Under Headers, add Authorization with the value Bearer followed by a space and your key.': 'Dans Headers, ajoute Authorization avec la valeur Bearer suivie d’un espace et de ta clé.',
   'Export Format JSON, Data Type Health Metrics, then choose what to send: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.': 'Export Format JSON, Data Type Health Metrics, puis choisis quoi envoyer : Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.',
   'Date Range Previous 7 Days, Summarize Data on with Time Grouping by days, and a daily Sync Cadence.': 'Date Range Previous 7 Days, Summarize Data activé avec Time Grouping par jours, et une Sync Cadence quotidienne.',
+  'Ready-made Shortcut': 'Raccourci prêt à l’emploi',
+  'Install it, then paste the address and the key when it asks. The key shows only when it is made: without it, make a new one.': 'Installe-le, puis colle l’adresse et la clé quand il les demande. La clé n’est affichée qu’à sa création : sans elle, crées-en une nouvelle.',
+  'Install the Shortcut': 'Installer le Raccourci',
 }

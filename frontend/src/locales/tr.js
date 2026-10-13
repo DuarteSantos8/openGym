@@ -2357,4 +2357,7 @@ export default {
   'Under Headers, add Authorization with the value Bearer followed by a space and your key.': 'Headers altında Authorization ekle; değeri Bearer, bir boşluk ve anahtarın.',
   'Export Format JSON, Data Type Health Metrics, then choose what to send: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.': 'Export Format JSON, Data Type Health Metrics, sonra neyin gönderileceğini seç: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.',
   'Date Range Previous 7 Days, Summarize Data on with Time Grouping by days, and a daily Sync Cadence.': 'Date Range Previous 7 Days, Summarize Data açık ve Time Grouping günlere göre, ayrıca günlük bir Sync Cadence.',
+  'Ready-made Shortcut': 'Hazır Kestirme',
+  'Install it, then paste the address and the key when it asks. The key shows only when it is made: without it, make a new one.': 'Yükle, sonra istediğinde adresi ve anahtarı yapıştır. Anahtar yalnızca oluşturulurken görünür: elinde yoksa yenisini oluştur.',
+  'Install the Shortcut': 'Kestirmeyi yükle',
 }

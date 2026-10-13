@@ -2360,4 +2360,7 @@ export default {
   'Under Headers, add Authorization with the value Bearer followed by a space and your key.': 'A Headers alatt add hozzá az Authorization fejlécet, értéke Bearer, egy szóköz és a kulcsod.',
   'Export Format JSON, Data Type Health Metrics, then choose what to send: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.': 'Export Format JSON, Data Type Health Metrics, majd válaszd ki, mit küldjön: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.',
   'Date Range Previous 7 Days, Summarize Data on with Time Grouping by days, and a daily Sync Cadence.': 'Date Range Previous 7 Days, Summarize Data bekapcsolva, Time Grouping napokra, és napi Sync Cadence.',
+  'Ready-made Shortcut': 'Kész Parancs',
+  'Install it, then paste the address and the key when it asks. The key shows only when it is made: without it, make a new one.': 'Telepítsd, majd illeszd be a címet és a kulcsot, amikor kéri. A kulcs csak létrehozáskor látszik: ha nincs meg, készíts újat.',
+  'Install the Shortcut': 'Parancs telepítése',
 }

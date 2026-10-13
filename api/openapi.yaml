@@ -2576,7 +2576,8 @@ paths:
       summary: Whether the profile has a Shortcut key
       description: |
         The state of the key an iPhone Shortcut uses for `POST /api/health/samples`, never the key
-        itself: whether there is one, when it was made and when it was last used (ms).
+        itself: whether there is one, when it was made and when it was last used (ms), and the
+        instance's ready-made Shortcut (`HEALTH_SHORTCUT_URL`, an iCloud link) or null.
       responses:
         '200':
           description: The key's state.
@@ -2588,6 +2589,7 @@ paths:
                   exists: { type: boolean }
                   created: { oneOf: [{ type: integer }, { type: 'null' }] }
                   used: { oneOf: [{ type: integer }, { type: 'null' }] }
+                  shortcut: { oneOf: [{ type: string, format: uri }, { type: 'null' }] }
         '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [health]

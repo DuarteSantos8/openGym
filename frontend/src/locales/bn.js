@@ -2436,4 +2436,7 @@ export default {
   'Under Headers, add Authorization with the value Bearer followed by a space and your key.': 'Headers-এ Authorization যোগ করুন, মান Bearer, তারপর একটি স্পেস ও আপনার কী।',
   'Export Format JSON, Data Type Health Metrics, then choose what to send: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.': 'Export Format JSON, Data Type Health Metrics, তারপর কী পাঠাবেন বেছে নিন: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis।',
   'Date Range Previous 7 Days, Summarize Data on with Time Grouping by days, and a daily Sync Cadence.': 'Date Range Previous 7 Days, Summarize Data চালু করে Time Grouping দিন অনুযায়ী, আর Sync Cadence প্রতিদিন।',
+  'Ready-made Shortcut': 'তৈরি শর্টকাট',
+  'Install it, then paste the address and the key when it asks. The key shows only when it is made: without it, make a new one.': 'এটি ইনস্টল করুন, তারপর চাইলে ঠিকানা ও কী পেস্ট করুন। কী শুধু তৈরির সময় দেখা যায়: না থাকলে নতুন একটি তৈরি করুন।',
+  'Install the Shortcut': 'শর্টকাট ইনস্টল করুন',
 }

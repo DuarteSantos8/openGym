@@ -1518,6 +1518,9 @@ export const PT_BR_OVERRIDES = {
   'Under Headers, add Authorization with the value Bearer followed by a space and your key.': 'Em Headers, adicione Authorization com o valor Bearer seguido de um espaço e da sua chave.',
   'Export Format JSON, Data Type Health Metrics, then choose what to send: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.': 'Export Format JSON, Data Type Health Metrics, e escolha o que enviar: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.',
   'Date Range Previous 7 Days, Summarize Data on with Time Grouping by days, and a daily Sync Cadence.': 'Date Range Previous 7 Days, Summarize Data ativado com Time Grouping por dias, e uma Sync Cadence diária.',
+  'Ready-made Shortcut': 'Atalho pronto',
+  'Install it, then paste the address and the key when it asks. The key shows only when it is made: without it, make a new one.': 'Instale o atalho e cole o endereço e a chave quando ele pedir. A chave só aparece quando é criada: se você não tiver mais, crie uma nova.',
+  'Install the Shortcut': 'Instalar o Atalho',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

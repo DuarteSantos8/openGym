@@ -2357,4 +2357,7 @@ export default {
   'Under Headers, add Authorization with the value Bearer followed by a space and your key.': 'Headers में Authorization जोड़ें, मान Bearer, फिर एक स्पेस और आपकी कुंजी।',
   'Export Format JSON, Data Type Health Metrics, then choose what to send: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.': 'Export Format JSON, Data Type Health Metrics, फिर चुनें कि क्या भेजना है: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis।',
   'Date Range Previous 7 Days, Summarize Data on with Time Grouping by days, and a daily Sync Cadence.': 'Date Range Previous 7 Days, Summarize Data चालू और Time Grouping दिनों के हिसाब से, और Sync Cadence रोज़ाना।',
+  'Ready-made Shortcut': 'तैयार शॉर्टकट',
+  'Install it, then paste the address and the key when it asks. The key shows only when it is made: without it, make a new one.': 'इसे इंस्टॉल करें, फिर पूछे जाने पर पता और कुंजी चिपकाएँ। कुंजी सिर्फ़ बनाते समय दिखती है: अगर आपके पास नहीं है, तो नई बनाएँ।',
+  'Install the Shortcut': 'शॉर्टकट इंस्टॉल करें',
 }

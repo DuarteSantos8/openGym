@@ -179,7 +179,8 @@ export function readingsFromShortcut(body, { since = '' } = {}) {
     total += values.length;
     if (total > MAX_SAMPLES) return { error: 'too many samples' };
     values.forEach((v, i) => {
-      if (!folder.add({ type, v: number(v), unit: m.unit, start: dates[i], source: 'shortcut' })) skipped++;
+      // A Shortcut may send the unit once or once per value (the samples' Unit): the first is it.
+      if (!folder.add({ type, v: number(v), unit: listOf(m.unit)[0], start: dates[i], source: 'shortcut' })) skipped++;
     });
   }
   return { readings: folder.readings(), used: folder.count(), skipped };
