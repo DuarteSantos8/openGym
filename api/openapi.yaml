@@ -1415,6 +1415,10 @@ paths:
       tags: [data]
       operationId: getData
       summary: Pull the account's app state
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+        - plannerToken: []
       description: >-
         Returns the caller's entire app state as one JSON blob, or `{"state": null}`
         if nothing has been synced yet, together with `rev`, the server's revision of
@@ -1441,6 +1445,10 @@ paths:
       tags: [data]
       operationId: putData
       summary: Push the account's app state
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+        - plannerToken: []
       description: |
         Replaces the stored state wholesale (atomic write; there is no merge on the
         server). The `active` field (an in-progress workout) is stripped before
@@ -2972,6 +2980,14 @@ components:
         The same signed session token, carried as `Authorization: Bearer <token>` by
         the paired mobile app (obtained from `POST /api/pair/redeem`). Bearer requests
         skip the CSRF origin check; a browser never attaches this header on its own.
+    plannerToken:
+      type: http
+      scheme: bearer
+      description: >-
+        A fixed token from `PLANNER_TOKENS` (`<token>=<uid>`, comma-separated), for a
+        program that writes a profile's training on the server's side, such as its
+        floating week. It acts as its mapped user on `GET` and `PUT /api/data` only and
+        is refused everywhere else. A planner read is not that user's last sync.
 
   responses:
     Unauthorized:
