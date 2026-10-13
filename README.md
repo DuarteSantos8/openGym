@@ -352,4 +352,8 @@ version's source under the same license.
 > non-commercial fork may keep them unmodified with the notice; anything else needs your own licence
 > from gymvisual.com. The exercise text in `catalogue/` is openGym's and open to contributions.
 
+**Contributing:** pull requests are signed off once with the [Contributor License Agreement](CLA.md):
+you keep the copyright in your work, openGym may use and relicense it (so the app can stay in the
+App Store and Google Play long term), and every version released under the AGPL stays AGPL.
+
 Full third-party notices, including the body-diagram geometry, are in [NOTICE.md](NOTICE.md).
