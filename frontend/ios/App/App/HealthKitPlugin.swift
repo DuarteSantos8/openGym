@@ -17,6 +17,8 @@ import HealthKit
  *   queryDaily({ type, unit, start, end, stat })   -> { days: [{ date, value, min?, max? }] }
  *                                                     stat: 'sum' | 'avg' | 'range'
  *   querySleep({ start, end })                     -> { nights: [{ date, minutes, start, end }] }
+ *   queryCategory({ type, start, end })            -> { samples: [{ value, start, end, source }] }
+ *   queryWorkouts({ start, end })                  -> { workouts: [{ activity, start, end, minutes, kcal?, km? }] }
  * Times are milliseconds since 1970; `date` is the local day, YYYY-MM-DD.
  */
 @objc(HealthKitPlugin)
@@ -29,21 +31,47 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "querySamples", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "queryDaily", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "querySleep", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "queryCategory", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "queryWorkouts", returnType: CAPPluginReturnPromise),
     ]
 
     private let store = HKHealthStore()
 
     // The only unit strings the app sends; anything else is refused rather than handed to
     // HKUnit(from:), which raises an exception on a string it cannot parse.
-    private static let units: [String: HKUnit] = [
+    // Built from HKUnit's own constructors, never parsed, so none of them can raise.
+    private static let units: [String: HKUnit] = {
+        var u: [String: HKUnit] = [
         "kg": HKUnit.gramUnit(with: .kilo),
+        "g": HKUnit.gram(),
+        "mg": HKUnit.gramUnit(with: .milli),
+        "mcg": HKUnit.gramUnit(with: .micro),
         "%": HKUnit.percent(),
         "count": HKUnit.count(),
         "cm": HKUnit.meterUnit(with: .centi),
+        "m": HKUnit.meter(),
         "km": HKUnit.meterUnit(with: .kilo),
         "kcal": HKUnit.kilocalorie(),
         "count/min": HKUnit.count().unitDivided(by: HKUnit.minute()),
-    ]
+        "min": HKUnit.minute(),
+        "ms": HKUnit.secondUnit(with: .milli),
+        "mmHg": HKUnit.millimeterOfMercury(),
+        "degC": HKUnit.degreeCelsius(),
+        "mg/dL": HKUnit.gramUnit(with: .milli).unitDivided(by: HKUnit.literUnit(with: .deci)),
+        "km/hr": HKUnit.meterUnit(with: .kilo).unitDivided(by: HKUnit.hour()),
+        "mL": HKUnit.literUnit(with: .milli),
+        "L": HKUnit.liter(),
+        "L/min": HKUnit.liter().unitDivided(by: HKUnit.minute()),
+        "IU": HKUnit.internationalUnit(),
+        "mcS": HKUnit.siemenUnit(with: .micro),
+        "dBASPL": HKUnit.decibelAWeightedSoundPressureLevel(),
+        "mL/kg*min": HKUnit.literUnit(with: .milli).unitDivided(by: HKUnit.gramUnit(with: .kilo).unitMultiplied(by: HKUnit.minute())),
+        "kcal/hr*kg": HKUnit.kilocalorie().unitDivided(by: HKUnit.hour().unitMultiplied(by: HKUnit.gramUnit(with: .kilo))),
+        ]
+        // Power (running and cycling) came with iOS 16; before it there is nothing to read anyway.
+        if #available(iOS 16.0, *) { u["W"] = HKUnit.watt() }
+        return u
+    }()
 
     // Sleep analysis values that count as asleep: unspecified (1), core (3), deep (4), REM (5).
     // In bed (0) and awake (2) do not. Raw values, valid on every iOS this app supports.
@@ -83,7 +111,9 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         let ids = call.getArray("read", String.self) ?? []
         var types = Set<HKObjectType>()
         for id in ids {
-            if id.hasPrefix("HKCategoryTypeIdentifier") {
+            if id == "HKWorkoutTypeIdentifier" {
+                types.insert(HKObjectType.workoutType())
+            } else if id.hasPrefix("HKCategoryTypeIdentifier") {
                 if let t = HKObjectType.categoryType(forIdentifier: HKCategoryTypeIdentifier(rawValue: id)) { types.insert(t) }
             } else if let t = HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier(rawValue: id)) {
                 types.insert(t)
@@ -203,6 +233,50 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
                 return ["date": key, "minutes": n.minutes, "start": self.ms(n.start), "end": self.ms(n.end)]
             }
             call.resolve(["nights": out])
+        }
+        store.execute(query)
+    }
+
+    // Any category's samples as they are: the app folds them by day (api/health/fold.js) and reads
+    // the value by the category's own family (severity, flow, test result…).
+    @objc func queryCategory(_ call: CAPPluginCall) {
+        guard let id = call.getString("type"), id.hasPrefix("HKCategoryTypeIdentifier"),
+              let type = HKObjectType.categoryType(forIdentifier: HKCategoryTypeIdentifier(rawValue: id)) else {
+            call.reject("Unknown type", "invalid")
+            return
+        }
+        let start = date(call, "start", Date.distantPast)
+        let end = date(call, "end", Date())
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: [])
+        let sort = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
+        let query = HKSampleQuery(sampleType: type, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sort]) { _, samples, error in
+            if let error = error { self.reject(call, error); return }
+            let out: [[String: Any]] = (samples as? [HKCategorySample] ?? []).map { s in
+                ["value": s.value, "start": self.ms(s.startDate), "end": self.ms(s.endDate),
+                 "source": s.sourceRevision.source.bundleIdentifier]
+            }
+            call.resolve(["samples": out])
+        }
+        store.execute(query)
+    }
+
+    // Workouts: the activity as HealthKit's number, the minutes, and the energy and distance the
+    // workout carries (HKWorkout's totals, which every iOS this app supports still fills in).
+    @objc func queryWorkouts(_ call: CAPPluginCall) {
+        let start = date(call, "start", Date.distantPast)
+        let end = date(call, "end", Date())
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: [])
+        let sort = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
+        let query = HKSampleQuery(sampleType: HKObjectType.workoutType(), predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sort]) { _, samples, error in
+            if let error = error { self.reject(call, error); return }
+            let out: [[String: Any]] = (samples as? [HKWorkout] ?? []).map { w in
+                var o: [String: Any] = ["activity": Int(w.workoutActivityType.rawValue), "start": self.ms(w.startDate),
+                                        "end": self.ms(w.endDate), "minutes": w.duration / 60]
+                if let e = w.totalEnergyBurned?.doubleValue(for: HKUnit.kilocalorie()) { o["kcal"] = e }
+                if let d = w.totalDistance?.doubleValue(for: HKUnit.meterUnit(with: .kilo)) { o["km"] = d }
+                return o
+            }
+            call.resolve(["workouts": out])
         }
         store.execute(query)
     }

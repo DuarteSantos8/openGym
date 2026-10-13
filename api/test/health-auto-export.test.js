@@ -50,7 +50,8 @@ test('each metric in canonical units, a day of two sources counted once', () => 
   assert.equal(x['restingHeartRate@2026-10-12'].v, 54);
   assert.deepEqual([x['sleep@2026-10-12'].v, x['sleep@2026-10-12'].sid, x['sleep@2026-10-12'].t], [435, 'sleep:2026-10-12', Date.parse('2026-10-12T06:45:00+02:00')]);
   assert.ok(r.readings.every(x => x.src === 'apple-health'));
-  assert.equal(r.skipped, 1, 'blood pressure is not a metric here');
+  assert.deepEqual([x['systolic@2026-10-12'].v, x['diastolic@2026-10-12'].v], [120, 80], 'blood pressure is two readings');
+  assert.equal(r.skipped, 0);
 });
 
 test('sleep without a total adds its stages; single stages leave out in bed and awake', () => {

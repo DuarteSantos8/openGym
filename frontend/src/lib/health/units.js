@@ -1,9 +1,11 @@
 // Health values on screen and back. Stored values are always in the metric's canonical unit
 // (lib/health/metrics.js); what is shown follows the profile:
 //   mass      kg or lb — the profile's weight unit
-//   height    cm, or feet and inches on a profile in pounds (as lib/measurements.js shows inches)
-//   distance  km or mi — the cardio speed unit (lib/speed.js), which itself follows the weight
-//             unit until the profile picks one
+//   length    cm, or inches on a profile in pounds (height as feet and inches, as
+//             lib/measurements.js shows inches); temperatures in °C, or °F on such a profile
+//   distance  km or mi, speeds km/h or mph — the cardio speed unit (lib/speed.js), which itself
+//             follows the weight unit until the profile picks one
+//   levels    a symptom, a flow or a test reads as its word (Mild, Heavy, Positive)
 // Energy stays in kcal: the app has no kJ setting, and inventing one for this area alone would
 // make it disagree with the rest of the app.
 import { metricOf } from './metrics.js'
@@ -21,17 +23,27 @@ const roundTo = (n, dec) => { const f = 10 ** dec; return Math.round(n * f) / f 
 /** A number in the app's locale with at most `dec` decimals. */
 export const fmtDec = (n, dec) => roundTo(Number(n), dec).toLocaleString(dateLocale(), { maximumFractionDigits: dec })
 
+// How a dim is shown on an imperial profile: the unit and the factor from the stored one. Lengths
+// and temperatures follow the weight unit, distances and speeds the cardio speed unit.
+const IMPERIAL = {
+  mass: S => imperialMass(S) && ['lb', 1 / KG_PER_LB],
+  length: S => imperialMass(S) && ['in', 1 / CM_PER_IN],
+  distance: S => imperialDistance(S) && ['mi', 1 / KM_PER_MI],
+  speed: S => imperialDistance(S) && ['mph', 1 / KM_PER_MI],
+}
+const imperial = (m, S) => (IMPERIAL[m.dim] ? IMPERIAL[m.dim](S) : null) || null
+const fahrenheit = (m, S) => m.dim === 'temp' && imperialMass(S)
+
 /** The unit label shown next to a value of `type`, for this profile. */
 export function displayUnit(type, S) {
   const m = metricOf(type)
-  if (!m) return ''
-  if (m.dim === 'mass') return imperialMass(S) ? 'lb' : 'kg'
-  if (m.dim === 'height') return imperialMass(S) ? 'in' : 'cm'
-  if (m.dim === 'distance') return imperialDistance(S) ? 'mi' : 'km'
-  if (m.unit === 'count') return ''
+  if (!m || m.levels) return ''
+  const imp = imperial(m, S)
+  if (imp) return imp[0]
+  if (fahrenheit(m, S)) return '°F'
+  if (m.unit === 'count' || m.unit === 'years') return ''
   if (m.unit === 'min') return 'h'
-  if (m.unit === 'years') return ''
-  return m.unit
+  return m.shown || m.unit
 }
 
 /** A stored value as the number the screen shows (no rounding for display beyond the metric's). */
@@ -39,9 +51,9 @@ export function toDisplay(type, v, S) {
   const m = metricOf(type)
   if (v == null || !Number.isFinite(Number(v)) || !m) return null
   let n = Number(v)
-  if (m.dim === 'mass' && imperialMass(S)) n = n / KG_PER_LB
-  else if (m.dim === 'height' && imperialMass(S)) n = n / CM_PER_IN
-  else if (m.dim === 'distance' && imperialDistance(S)) n = n / KM_PER_MI
+  const imp = imperial(m, S)
+  if (imp) n = n * imp[1]
+  else if (fahrenheit(m, S)) n = n * 9 / 5 + 32
   return roundTo(n, Math.max(m.dec, m.dim === 'mass' ? 1 : 0))
 }
 
@@ -50,9 +62,9 @@ export function fromDisplay(type, v, S) {
   const m = metricOf(type)
   if (v == null || v === '' || !Number.isFinite(Number(v)) || !m) return null
   let n = Number(v)
-  if (m.dim === 'mass' && imperialMass(S)) n = n * KG_PER_LB
-  else if (m.dim === 'height' && imperialMass(S)) n = n * CM_PER_IN
-  else if (m.dim === 'distance' && imperialDistance(S)) n = n * KM_PER_MI
+  const imp = imperial(m, S)
+  if (imp) n = n / imp[1]
+  else if (fahrenheit(m, S)) n = (n - 32) * 5 / 9
   // Two more decimals than shown: a value typed in pounds comes back as typed.
   return roundTo(n, Math.max(m.dec, 1) + 2)
 }
@@ -79,8 +91,9 @@ export function fmtFeetInches(cm) {
 export function fmtHealth(type, v, S, { unit = true } = {}) {
   const m = metricOf(type)
   if (!m || v == null || !Number.isFinite(Number(v))) return '–'
+  if (m.levels) return t(m.levels[Math.round(Number(v))] || m.levels[1] || '–')
   if (m.unit === 'min') return fmtMinutes(v)
-  if (m.dim === 'height' && imperialMass(S)) return fmtFeetInches(v)
+  if (type === 'height' && imperialMass(S)) return fmtFeetInches(v)
   const n = toDisplay(type, v, S)
   const shown = fmtDec(n, m.dec)
   const u = displayUnit(type, S)
@@ -92,8 +105,9 @@ export function fmtHealthDelta(type, delta, S) {
   const m = metricOf(type)
   if (!m || delta == null || !Number.isFinite(delta)) return ''
   const sign = delta > 0 ? '+' : delta < 0 ? '−' : ''
+  if (m.levels) return ''
   if (m.unit === 'min') return sign + fmtMinutes(Math.abs(delta))
-  if (m.dim === 'height' && imperialMass(S)) {
+  if (type === 'height' && imperialMass(S)) {
     const inches = roundTo(Math.abs(delta) / CM_PER_IN, 1)
     return `${sign}${fmtDec(inches, 1)} in`
   }

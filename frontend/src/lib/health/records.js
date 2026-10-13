@@ -16,6 +16,7 @@
 //   g    a body composition measurement: the records of one reading of a scale share it, so the
 //        form opens, edits and deletes them together
 //   lo/hi a day's lowest and highest reading, next to its mean (heart rate)
+//   a/kc/km a workout's activity (api/health/catalogue.js WORKOUTS), energy (kcal), distance (km)
 //   c    created, ms; `_ts` last edited, ms — the stamp the sync merge holds two copies by
 //
 // Why separate records and not one BodyComposition object: every metric is then the same shape
@@ -27,6 +28,7 @@
 // The records belong to the profile's own state, which only ever syncs to the user's own server
 // (pushState); the account's id is the document's, so a record carries none of its own.
 import { HEALTH_METRICS, metricOf } from './metrics.js'
+import { EXTRA_FIELDS, trimImported } from '../../../../api/health/catalogue.js'
 import { isoOf, uid, weekKey } from '../format.js'
 
 export const MANUAL = 'manual'
@@ -43,7 +45,7 @@ const dayOf = ms => isoOf(new Date(ms))
  * Values outside what the metric allows are refused rather than clamped: a scale that reports a
  * body fat of 0 % has not measured anything.
  */
-export function makeRecord({ type, v, t, d, src = MANUAL, sid, g, lo, hi, id }, now = Date.now()) {
+export function makeRecord({ type, v, t, d, src = MANUAL, sid, g, id, ...more }, now = Date.now()) {
   const m = metricOf(type)
   const value = Number(v)
   const at = Number(t)
@@ -57,8 +59,12 @@ export function makeRecord({ type, v, t, d, src = MANUAL, sid, g, lo, hi, id }, 
   }
   if (sid != null) r.sid = String(sid)
   if (g) r.g = String(g)
-  if (Number.isFinite(Number(lo)) && lo != null) r.lo = Number(lo)
-  if (Number.isFinite(Number(hi)) && hi != null) r.hi = Number(hi)
+  for (const k of EXTRA_FIELDS) {
+    const x = more[k]
+    if (x == null || x === '') continue
+    if (k === 'a') r.a = String(x)
+    else if (Number.isFinite(Number(x))) r[k] = Number(x)
+  }
   r.c = now
   r._ts = now
   return r
@@ -93,11 +99,13 @@ export function normalizeHealthState(S) {
     bySource.set(key, cur ? newer(cur, r) : r)
   }
   out.push(...bySource.values())
-  S.health = out.sort(byTime)
+  // Within what a profile can hold (catalogue.js MAX_IMPORTED), the same way on every copy.
+  S.health = trimImported(out.sort(byTime))
   return S
 }
 
-const sameReading = (a, b) => a.v === b.v && a.t === b.t && a.d === b.d && (a.lo ?? null) === (b.lo ?? null) && (a.hi ?? null) === (b.hi ?? null)
+const sameReading = (a, b) => a.v === b.v && a.t === b.t && a.d === b.d && EXTRA_FIELDS.every(k => (a[k] ?? null) === (b[k] ?? null))
+const extrasOf = r => Object.fromEntries(EXTRA_FIELDS.filter(k => r[k] != null).map(k => [k, r[k]]))
 
 /**
  * Readings from a source folded into the records. A reading the records already hold (same
@@ -122,7 +130,7 @@ export function importRecords(health, incoming, { now = Date.now(), deleted = nu
     if (i != null) {
       const cur = out[i]
       if (sameReading(cur, rec)) continue
-      out[i] = { ...cur, v: rec.v, t: rec.t, d: rec.d, ...(rec.lo != null ? { lo: rec.lo } : {}), ...(rec.hi != null ? { hi: rec.hi } : {}), _ts: now }
+      out[i] = { ...cur, v: rec.v, t: rec.t, d: rec.d, ...extrasOf(rec), _ts: now }
       updated++
       continue
     }
@@ -131,7 +139,7 @@ export function importRecords(health, incoming, { now = Date.now(), deleted = nu
     out.push(rec)
     added++
   }
-  return { health: out.sort(byTime), added, updated }
+  return { health: trimImported(out.sort(byTime)), added, updated }
 }
 
 /** The records without those of `src` — what "remove imported data" takes out. */
@@ -267,6 +275,7 @@ export function dailyValues(S, type) {
       for (const r of rs) bySrc.set(r.src, (bySrc.get(r.src) || 0) + Number(r.v))
       v = Math.max(...bySrc.values())
     } else if (m.daily === 'mean') v = rs.reduce((s, r) => s + Number(r.v), 0) / rs.length
+    else if (m.daily === 'max') v = Math.max(...rs.map(r => Number(r.v)))
     else v = Number(last.v)
     const lo = rs.some(r => r.lo != null) ? Math.min(...rs.map(r => r.lo ?? r.v)) : undefined
     const hi = rs.some(r => r.hi != null) ? Math.max(...rs.map(r => r.hi ?? r.v)) : undefined

@@ -99,11 +99,65 @@ function zipOf(name, text) {
   return new Blob([local, nameB, comp, cd, nameB, eocd])
 }
 
+describe('everything else Health records', () => {
+  const cat = (type, value, start, end = start, source = 'iPhone') =>
+    `<Record type="HKCategoryTypeIdentifier${type}" sourceName="${source}" startDate="${start}" endDate="${end}" value="${value}"/>\n`
+  const X = '<HealthData>\n' +
+    cat('Headache', 'HKCategoryValueSeverityMild', '2026-10-11 08:00:00 +0200') +
+    cat('Headache', 'HKCategoryValueSeveritySevere', '2026-10-11 18:00:00 +0200') +
+    cat('Headache', 'HKCategoryValueSeverityNotPresent', '2026-10-12 08:00:00 +0200') +
+    cat('MenstrualFlow', 'HKCategoryValueMenstrualFlowMedium', '2026-10-11 00:00:00 +0200') +
+    cat('MenstrualFlow', 'HKCategoryValueMenstrualFlowNone', '2026-10-12 00:00:00 +0200') +
+    cat('OvulationTestResult', 'HKCategoryValueOvulationTestResultLuteinizingHormoneSurge', '2026-10-11 09:00:00 +0200') +
+    cat('AppleStandHour', 'HKCategoryValueAppleStandHourStood', '2026-10-11 09:00:00 +0200', '2026-10-11 10:00:00 +0200', 'Watch') +
+    cat('AppleStandHour', 'HKCategoryValueAppleStandHourIdle', '2026-10-11 10:00:00 +0200', '2026-10-11 11:00:00 +0200', 'Watch') +
+    cat('AppleStandHour', 'HKCategoryValueAppleStandHourStood', '2026-10-11 11:00:00 +0200', '2026-10-11 12:00:00 +0200', 'Watch') +
+    cat('MindfulSession', 'HKCategoryValueNotApplicable', '2026-10-11 07:00:00 +0200', '2026-10-11 07:10:00 +0200') +
+    cat('HandwashingEvent', 'HKCategoryValueNotApplicable', '2026-10-11 12:00:00 +0200', '2026-10-11 12:00:20 +0200', 'Watch') +
+    rec('HKQuantityTypeIdentifierDietaryWater', '0.5', '2026-10-11 09:00:00 +0200', { unit: 'L' }) +
+    rec('HKQuantityTypeIdentifierDietaryWater', '250', '2026-10-11 13:00:00 +0200', { unit: 'mL' }) +
+    rec('HKQuantityTypeIdentifierBodyTemperature', '98.6', '2026-10-11 08:00:00 +0200', { unit: 'degF' }) +
+    rec('HKQuantityTypeIdentifierBloodGlucose', '5.5', '2026-10-11 08:00:00 +0200', { unit: 'mmol&lt;180.1558800000541&gt;/L' }) +
+    // a workout as newer phones write it: energy and distance in its statistics
+    '<Workout workoutActivityType="HKWorkoutActivityTypeTraditionalStrengthTraining" duration="45" durationUnit="min" sourceName="Watch" startDate="2026-10-11 18:00:00 +0200" endDate="2026-10-11 18:45:00 +0200">\n' +
+    ' <WorkoutStatistics type="HKQuantityTypeIdentifierActiveEnergyBurned" startDate="2026-10-11 18:00:00 +0200" endDate="2026-10-11 18:45:00 +0200" sum="310" unit="kcal"/>\n' +
+    '</Workout>\n' +
+    // and as older ones did, on the workout itself
+    '<Workout workoutActivityType="HKWorkoutActivityTypeRunning" duration="1800" durationUnit="s" totalDistance="3.1" totalDistanceUnit="mi" totalEnergyBurned="1255.2" totalEnergyBurnedUnit="kJ" sourceName="Watch" startDate="2026-10-12 07:00:00 +0200" endDate="2026-10-12 07:30:00 +0200"/>\n' +
+    '</HealthData>\n'
+
+  it('symptoms, cycle, habits, food, vitals and workouts each fold the way the catalogue says', () => {
+    const x = by(readingsFromExportText(X))
+    expect(x['headache@2026-10-11'].v).toBe(4)
+    expect(x['headache@2026-10-12']).toBeUndefined()
+    expect(x['menstrualFlow@2026-10-11'].v).toBe(3)
+    expect(x['menstrualFlow@2026-10-12']).toBeUndefined()
+    expect(x['ovulationTest@2026-10-11'].v).toBe(2)
+    expect(x['standHours@2026-10-11'].v).toBe(2)
+    expect(x['mindful@2026-10-11'].v).toBe(10)
+    expect(x['handwashing@2026-10-11'].v).toBe(1)
+    expect(x['dietWater@2026-10-11'].v).toBe(750)
+    expect(x['bodyTemperature@2026-10-11'].v).toBe(37)
+    expect(Math.round(x['glucose@2026-10-11'].v)).toBe(99)
+    expect(x['workout@2026-10-11']).toMatchObject({ v: 45, a: 'traditionalStrengthTraining', kc: 310, sid: 'workout:' + Date.parse('2026-10-11T18:00:00+02:00') })
+    expect(x['workout@2026-10-12']).toMatchObject({ v: 30, a: 'running', kc: 300, km: 4.99 })
+  })
+
+  it('a workout or a symptom imported twice is still one record', () => {
+    const S = { unit: 'kg', bodyweight: [], health: [] }
+    applyReadings(S, readingsFromExportText(X), { now: 1 })
+    const n = S.health.length
+    expect(applyReadings(S, readingsFromExportText(X), { now: 2 })).toEqual({ added: 0, updated: 0 })
+    expect(S.health.length).toBe(n)
+    expect(S.health.find(r => r.type === 'workout' && r.a === 'running')).toMatchObject({ kc: 300, km: 4.99 })
+  })
+})
+
 describe('reading the file', () => {
   it('inflates export.xml out of export.zip as a stream', async () => {
     const seen = []
     const { readings, records } = await readAppleHealthExport(zipOf('apple_health_export/export.xml', XML), { onProgress: f => seen.push(f) })
-    expect(records).toBe(15)   // 12 known quantities and 3 asleep spans; in-bed time and SpO2 are not read
+    expect(records).toBe(16)   // 13 quantities and 3 asleep spans; in-bed time is not sleep
     expect(by(readings)['steps@2026-10-11'].v).toBe(6000)
     expect(seen.at(-1)).toBe(1)
   })
