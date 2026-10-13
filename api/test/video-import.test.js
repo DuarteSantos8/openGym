@@ -125,3 +125,12 @@ test('the API and the worker accept and refuse the same links', () => {
   }
   assert.equal(cleanBox({ x: 0.5, y: 0.5, w: 0.01, h: 0.5 }), null);
 });
+
+test('several name boxes are kept, cleaned, up to three', async () => {
+  const { cleanNames } = await import('../video-import.js');
+  const b = { x: 0.1, y: 0.8, w: 0.5, h: 0.1 };
+  assert.deepEqual(cleanNames([b, { x: 0.6, y: 0.9, w: 0.3, h: 0.05 }, { x: 0, y: 0, w: 0, h: 0 }]), [b, { x: 0.6, y: 0.9, w: 0.3, h: 0.05 }]);
+  assert.deepEqual(cleanNames([b]), b);
+  assert.equal(cleanNames([]), null);
+  assert.equal(cleanNames([b, b, b, b, b]).length, 3);
+});

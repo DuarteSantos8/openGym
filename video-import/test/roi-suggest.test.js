@@ -29,8 +29,8 @@ test('the changing words are the name, the changing clock is the timer, the fixe
 
 test('nothing that changes, nothing suggested', () => {
   const f = { width: 640, height: 360, tsv: tsv([word(1, 1, 1, 20, 20, 120, 20, 95, 'LOGO')]) }
-  assert.deepEqual(suggestRois([f, f, f]), { name: null, timer: null })
-  assert.deepEqual(suggestRois([]), { name: null, timer: null })
+  assert.deepEqual(suggestRois([f, f, f]), { name: null, names: [], timer: null })
+  assert.deepEqual(suggestRois([]), { name: null, names: [], timer: null })
 })
 
 test('boxes from the client are clamped and refused when degenerate', () => {
@@ -40,4 +40,14 @@ test('boxes from the client are clamped and refused when degenerate', () => {
   assert.equal(cleanBox(null), null)
   const p = padBox({ x: 0.9, y: 0.9, w: 0.2, h: 0.2 })
   assert.ok(p.x + p.w <= 1 && p.y + p.h <= 1)
+})
+
+test('a label that never changes ("NEXT") is not the name, even when OCR misreads it now and then', () => {
+  const frame = (label, name) => ({
+    width: 640, height: 360,
+    tsv: tsv([word(1, 1, 1, 290, 40, 60, 20, 90, label), word(2, 1, 1, 260, 280, 120, 16, 88, name)])
+  })
+  const s = suggestRois([frame('NEXT', 'SIDE SQUATS'), frame('NEXT', 'GOBLET SQUAT'), frame('NEXI', 'CALF RAISES'), frame('NEXT', 'PUSH UPS')])
+  assert.ok(s.name && s.name.y > 0.7, JSON.stringify(s))
+  assert.equal(s.names.length, 1)
 })

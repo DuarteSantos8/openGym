@@ -67,7 +67,7 @@ export function metadataDraft(info) {
     source = 'description'
   }
   const blocks = [], hints = []
-  let parts = 0
+  const parts = []
   for (const c of chapters) {
     const dur = Math.max(0, Math.round(c.end - c.start))
     if (!dur) continue
@@ -82,7 +82,7 @@ export function metadataDraft(info) {
     if (NOISE_RE.test(key)) continue
     // On the title with its numbers: normName drops digits, and "Group 1" is all in the number.
     const numbered = String(c.title || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^\p{L}0-9]+/gu, ' ').trim()
-    if (PART_RE.test(numbered)) { parts++; continue }
+    if (PART_RE.test(numbered)) { parts.push({ start: Math.round(c.start), end: Math.round(c.end), label: String(c.title || '').trim().slice(0, 60) }); continue }
     blocks.push({
       start: Math.round(c.start), end: Math.round(c.start) + dur, dur,
       kind: r.rest ? 'rest' : 'work', key, text, conf: 0.9,
@@ -94,7 +94,7 @@ export function metadataDraft(info) {
   const durs = work.map(b => b.dur).sort((a, b) => a - b)
   const medianDur = durs.length ? durs[durs.length >> 1] : 0
   const usable = distinct.size >= MIN_EXERCISES && medianDur <= MAX_EXERCISE_CHAPTER
-  return { blocks, hints, usable, source, ...(usable ? {} : { why: !distinct.size && parts ? 'parts' : medianDur > MAX_EXERCISE_CHAPTER ? 'long' : 'few' }) }
+  return { blocks, hints, parts, usable, source, ...(usable ? {} : { why: !distinct.size && parts.length ? 'parts' : medianDur > MAX_EXERCISE_CHAPTER ? 'long' : 'few' }) }
 }
 
 /** The facts about a video the job and the result carry; nothing else from the info JSON. */

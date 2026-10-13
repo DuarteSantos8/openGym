@@ -2198,5 +2198,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .vi-conf{margin-inline-start:auto;font-size:12px;font-weight:600;padding:2px 6px;border-radius:10px;font-variant-numeric:tabular-nums}
 .vi-conf.good{color:var(--green);background:color-mix(in srgb,var(--green) 14%,transparent)}
 .vi-conf.mid{color:var(--orange);background:color-mix(in srgb,var(--orange) 14%,transparent)}
+.vi-conf.new{color:var(--blue);background:color-mix(in srgb,var(--blue) 14%,transparent)}
 .vi-conf.low{color:var(--red);background:color-mix(in srgb,var(--red) 14%,transparent)}
 .vi-acts{display:flex;flex-direction:column;gap:2px}
+.vi-box-x{position:absolute;top:-10px;inset-inline-end:-10px;width:20px;height:20px;border-radius:10px;border:0;padding:0;background:var(--red);color:#fff;font-size:14px;line-height:20px;pointer-events:auto;cursor:pointer}
+.vi-split{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.vi-split .num{width:56px;padding:5px 8px;border:0;border-radius:var(--r-sm);background:var(--surface-2);color:var(--label);font:inherit;outline:none}

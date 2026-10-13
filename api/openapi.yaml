@@ -3291,7 +3291,11 @@ paths:
               required: [id, name]
               properties:
                 id: { type: string }
-                name: { $ref: '#/components/schemas/VideoImportBox' }
+                name:
+                  description: One box, or up to three where the names appear in more than one place.
+                  oneOf:
+                    - { $ref: '#/components/schemas/VideoImportBox' }
+                    - { type: array, maxItems: 3, items: { $ref: '#/components/schemas/VideoImportBox' } }
                 timer: { $ref: '#/components/schemas/VideoImportBox' }
                 remember: { type: boolean, default: true }
       responses:
@@ -3534,6 +3538,7 @@ components:
               type: object
               properties:
                 name: { oneOf: [{ $ref: '#/components/schemas/VideoImportBox' }, { type: 'null' }] }
+                names: { type: array, items: { $ref: '#/components/schemas/VideoImportBox' }, description: Every place a name seems to appear, best first. }
                 timer: { oneOf: [{ $ref: '#/components/schemas/VideoImportBox' }, { type: 'null' }] }
             width: { type: integer }
             height: { type: integer }
@@ -3557,6 +3562,7 @@ components:
                     type: object
                     properties:
                       kind: { type: string, enum: [warmup, interval, stretch, other] }
+                      label: { type: string, description: 'The part of the video it is in, from its chapters ("Group 1: Lower body").' }
                       start: { type: number }
                       end: { type: number }
                       rounds: { type: integer }
@@ -3579,6 +3585,10 @@ components:
                             side: { type: boolean }
                             occurrences: { type: array, items: { type: object, properties: { start: { type: number }, dur: { type: number } } } }
                             thumb: { type: string, description: 'A data: URL; absent for a chapters draft.' }
+                            strip:
+                              type: array
+                              description: 'Stills every 15 s across a long row read as one (a cool-down with no names on screen), for splitting it on the review screen.'
+                              items: { type: object, properties: { t: { type: number }, src: { type: string } } }
     Error:
       type: object
       required: [error]

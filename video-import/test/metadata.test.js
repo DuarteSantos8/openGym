@@ -70,3 +70,8 @@ test('long chapters are parts even without a "Group N" title', () => {
   const m = metadataDraft({ duration: 2400, chapters: chapters([[0, 600, 'Legs'], [600, 1200, 'Arms'], [1200, 1800, 'Back'], [1800, 2400, 'Abs']]) })
   assert.equal(m.usable, false); assert.equal(m.why, 'long')
 })
+
+test('part chapters come back as parts, with their titles', () => {
+  const m = metadataDraft({ duration: 900, chapters: chapters([[0, 60, 'Warm up'], [60, 480, 'Group 1: Lower body'], [480, 900, 'Group 2: Upper body']]) })
+  assert.deepEqual(m.parts, [{ start: 60, end: 480, label: 'Group 1: Lower body' }, { start: 480, end: 900, label: 'Group 2: Upper body' }])
+})

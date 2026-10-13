@@ -60,28 +60,42 @@ paste the link under **Plan → share icon → Import from a video**, check the 
    even if it has chapters* to skip this.
 2. **Otherwise the video is read.** The server downloads a small copy (480p at most, no sound) and
    looks at one frame per second.
-3. **The first time for a channel, you mark two boxes**: one around the exercise name and one
-   around the timer. You get three stills from the video, with a suggestion already drawn. The boxes
-   are saved for that channel, so its next video skips this step. If they turn out wrong, use
-   *Mark the boxes again* on the review screen.
+3. **The first time for a channel, you mark the boxes**: one around the exercise name and one
+   around the timer. You get three stills from the video, with a suggestion already drawn (labels
+   that never change, such as "NEXT", are not suggested). If the names appear in more than one
+   place, for example in a big preview during the workout and a small one in the warm-up, draw a
+   box around each one (up to three). The boxes are saved for that channel, so its next video skips
+   this step. If they turn out wrong, use *Mark the boxes again* on the review screen.
 4. **Reading.** The name and timer are cropped from every frame, thresholded, and read with
    Tesseract (or PaddleOCR, see below). The timer is read as digits only.
 5. **Blocks and rounds.** Seconds with the same name are one block. When the timer restarts, a new
-   block begins even if the name stays the same. A single misread frame is outvoted by the frames
+   block begins, even if the name stays the same or no name is on screen at all. The timer is only
+   trusted when its readings actually count down; a timer drawn in a style OCR cannot read is
+   ignored rather than cutting every exercise into pieces. Rings and tick marks around the digits
+   are removed before reading. A single misread frame is outvoted by the frames
    around it. "REST", "PAUSE", "GET READY" and "NEXT: …" screens are rest, and a "NEXT: Burpees"
-   also names the exercise that follows. A repeating sequence of names counts as rounds.
+   also names the exercise that follows. A creator who shows the name only on the short screen
+   *before* an exercise, and nothing while it is done, is recognised: the name moves onto the
+   exercise that follows it. A repeating sequence of names counts as rounds.
 6. **Sections.** Short work blocks that alternate with short rests form an interval section. Work
    before the first interval section is the warm-up, and work after the last one is the stretch.
-   A caption or chapter that says "warm up" or "cool down" decides the section instead.
+   A chapter that says "warm up" or "cool down" decides the section instead. Chapters that name the
+   parts of a video ("Group 1: Lower body") become the review screen's sections, and an exercise
+   never runs across two of them.
 7. **Review.** Each row shows a thumbnail, its time in the video (which links straight to that
    moment), the text as read, the exercise it matched, and a confidence score. You can re-pick the
    exercise, rename or delete a row, merge it into the row above, and change the work time, rest and
-   rounds. A name that matches nothing in the library is never dropped. It becomes one of your own
-   exercises, unless you pick an existing one.
-8. **The routine.** Each interval exercise becomes *rounds × timed sets* with its rest between
-   the sets. For example, three rounds of burpees at 40 s on / 20 s off is **Burpees 3 × 0:40,
-   rest 0:20**. The app has no rest between the members of a superset, so you do A A A, B B B
-   instead of the video's A B C, A B C, with the same work and rest times. The warm-up and the
+   rounds. You can also add an exercise again (**+**). A long hold read as one exercise (a cool-down
+   with nothing on screen) can be split into 30-second holds, each with its own still, so you can
+   see which move it is. A name that matches nothing in the library is never dropped. It becomes
+   one of your own exercises (marked *new*), unless you pick an existing one. A row with no name
+   at all is not saved until you pick its exercise or delete it. The percentage on a matched row is
+   how sure the reading and the match are.
+8. **The routine.** You choose the order. *Rounds as sets* (the default) makes each interval
+   exercise *rounds × timed sets* with its rest between the sets: three rounds of burpees at
+   40 s on / 20 s off is **Burpees 3 × 0:40, rest 0:20**, and you do A A A, B B B. *As in the
+   video* keeps the video's order, A B C D E, then A B C D E again: one timed set per entry, so the
+   same exercise appears once per round. The warm-up and the
    stretch each become a named group of single timed holds, done straight through. A left/right
    stretch becomes one per-side hold. The routine keeps a link to the video, and importing the same
    video again replaces the routine instead of adding a second copy.
@@ -136,6 +150,9 @@ failing with "could not read the video", rebuild the worker:
 - **Chapters that include the rest.** When each chapter is "Burpees" for the whole minute
   (work and rest together), the draft shows 60 s of work and no rest. Fix it on the review screen,
   or tick *Read the video even if it has chapters*.
+- **A timer OCR cannot read** (a stylised font, white digits over a white wall) gives no timing.
+  The blocks then come from the captions alone, and a stretch with no captions arrives as one long
+  row for you to split.
 - **Rest between rounds** has no place in a routine. The review screen shows how long it was, so you
   can take it after the last exercise of each round.
 - **Reps.** Only times are read. A "20 squats" caption becomes a timed set of however long the

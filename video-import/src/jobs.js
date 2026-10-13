@@ -19,7 +19,7 @@ import { metadataDraft, sourceOf } from './metadata.js'
 import { classify } from './classify.js'
 import { analyse, roiSetup } from './pipeline.js'
 import { probe } from './frames.js'
-import { cleanBox } from './roi-suggest.js'
+import { cleanBox, cleanNames } from './roi-suggest.js'
 
 export const MAX_CONCURRENT = Math.max(1, +process.env.VIDEO_IMPORT_CONCURRENCY || 1)
 export const MAX_QUEUE = 8
@@ -120,7 +120,7 @@ export function submitRoi(id, roi) {
   const job = get(id)
   if (!job) throw new JobError(404, 'not-found', 'no such job')
   if (job.status !== 'needs_roi' || !job.roiWaiter) throw new JobError(409, 'not-waiting', 'this job is not waiting for boxes')
-  const name = cleanBox(roi?.name)
+  const name = cleanNames(roi?.name)
   const timer = roi?.timer ? cleanBox(roi.timer) : null
   if (!name) throw new JobError(400, 'bad-roi', 'draw a box around the exercise name')
   job.roiWaiter({ name, timer })
@@ -183,7 +183,7 @@ export async function execute(job) {
     const file = await d.download(job.url, workDir, { signal, onProgress: f => setStage(job, 'download', f) })
     const dims = await d.probe(file, { signal })
     const saved = job.source.channelId && job.rois[job.source.channelId]
-    let roi = saved ? { name: cleanBox(saved.name), timer: saved.timer ? cleanBox(saved.timer) : null } : null
+    let roi = saved ? { name: cleanNames(saved.name), timer: saved.timer ? cleanBox(saved.timer) : null } : null
     if (!roi?.name) {
       job.roiSetup = await d.roiSetup(file, { workDir, signal, dims })
       job.status = 'needs_roi'
@@ -196,7 +196,7 @@ export async function execute(job) {
       holding = true
       job.status = 'running'
     }
-    const out = await d.analyse(file, roi, { workDir, signal, dims, hints: meta.hints, progress: (stage, f) => setStage(job, stage, f) })
+    const out = await d.analyse(file, roi, { workDir, signal, dims, hints: meta.hints, parts: meta.parts, progress: (stage, f) => setStage(job, stage, f) })
     finish(job, 'done', {
       result: {
         source: job.source, method: 'video', roi, roiSaved: !!saved,

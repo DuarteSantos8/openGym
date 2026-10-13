@@ -17,7 +17,7 @@ import { DEMO } from '../lib/demo.js'
 import { exOr } from '../lib/exercises.js'
 import { exerciseNameFor } from '../lib/i18n-core.js'
 import { fmtDuration } from '../lib/duration.js'
-import { draftRows, rowConfidence, mergeRows, buildVideoRoutine, mergeVideoRoutine, videoLinkAt } from '../lib/import-video.js'
+import { draftRows, rowBadge, rowsMissingName, mergeRows, duplicateRow, splitRow, buildVideoRoutine, mergeVideoRoutine, videoLinkAt } from '../lib/import-video.js'
 import { videoImportAvailable, startVideoImport, videoImportJob, submitVideoRoi, cancelVideoImport, stageText, videoImportError } from '../lib/video-import-api.js'
 import { exercisePicker } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
@@ -47,6 +47,7 @@ export default function VideoImport() {
   const [busy, setBusy] = useState(false)
   const [rows, setRows] = useState(null)
   const [name, setName] = useState('')
+  const [order, setOrder] = useState('grouped')
   const lastUrl = useRef('')
 
   useEffect(() => { if (user && !config) refreshConfig() }, [user])
@@ -107,11 +108,14 @@ export default function VideoImport() {
 
   const save = () => {
     if (!rows?.length) return
+    // A row with nothing to save it as is never dropped quietly: it is named, picked or deleted.
+    const missing = rowsMissingName(rows).length
+    if (missing) return toast(tn('{0} row has no exercise yet. Pick one or delete the row.', '{0} rows have no exercise yet. Pick one or delete the rows.', missing))
     const source = job?.result?.source || {}
     const labels = { warmup: t('Warm-up'), stretch: t('Stretching'), other: t('Exercises') }
     let out
     update(s => {
-      const built = buildVideoRoutine(rows, { name, source, labels, customEx: s.customEx || [] })
+      const built = buildVideoRoutine(rows, { name, source, labels, customEx: s.customEx || [], order })
       out = mergeVideoRoutine(s, built)
     })
     toast(out?.updated ? t('Routine updated from the video') : t('Routine added from the video'))
@@ -160,7 +164,7 @@ export default function VideoImport() {
         try { setJob(await submitVideoRoi(jobId, { ...roi, remember: keep })) } catch (e) { toast(videoImportError(e.data?.code, e.message)) } finally { setBusy(false) }
       }} onCancel={cancel} busy={busy} />}
 
-    {rows && <Review rows={rows} setRows={setRows} result={job?.result} name={name} setName={setName} S={S}
+    {rows && <Review rows={rows} setRows={setRows} result={job?.result} name={name} setName={setName} S={S} order={order} setOrder={setOrder}
       onSave={save} onReset={reset}
       onReadVideo={() => start({ mode: 'video' })}
       onRedraw={() => start({ mode: 'video', redraw: true })} />}
@@ -181,11 +185,18 @@ function Header({ nav }) {
 
 // Drawing a box: press, drag, release, on top of the still. Coordinates are fractions of the
 // image, which is what the server stores — the same box fits every resolution of the video.
+// Names can sit in more than one place (a big preview in the workout, a small one in the
+// warm-up): each drag in "Exercise name" adds a box, up to three, and × removes one. The timer
+// has one box, and a new drag replaces it.
+const MAX_NAME_BOXES = 3
 function RoiStep({ job, onDone, onCancel, busy }) {
   const setup = job.roiSetup
+  const suggested = setup.suggest?.names?.length ? setup.suggest.names : setup.suggest?.name ? [setup.suggest.name] : []
   const [sample, setSample] = useState(0)
   const [which, setWhich] = useState('name')
-  const [boxes, setBoxes] = useState({ name: setup.suggest?.name || null, timer: setup.suggest?.timer || null })
+  const [names, setNames] = useState(suggested.slice(0, MAX_NAME_BOXES))
+  const [timer, setTimer] = useState(setup.suggest?.timer || null)
+  const [drawing, setDrawing] = useState(null)
   const [keep, setKeep] = useState(true)
   const drag = useRef(null)
   const frame = useRef(null)
@@ -198,14 +209,20 @@ function RoiStep({ job, onDone, onCancel, busy }) {
   const move = e => {
     if (!drag.current) return
     const p = at(e), a = drag.current
-    setBoxes(b => ({ ...b, [which]: { x: Math.min(a.x, p.x), y: Math.min(a.y, p.y), w: Math.abs(p.x - a.x), h: Math.abs(p.y - a.y) } }))
+    setDrawing({ x: Math.min(a.x, p.x), y: Math.min(a.y, p.y), w: Math.abs(p.x - a.x), h: Math.abs(p.y - a.y) })
   }
   const up = () => {
     drag.current = null
     // A tap, not a drag, leaves no box behind.
-    setBoxes(b => (b[which] && (b[which].w < 0.02 || b[which].h < 0.02) ? { ...b, [which]: null } : b))
+    if (drawing && drawing.w >= 0.02 && drawing.h >= 0.02) {
+      if (which === 'timer') setTimer(drawing)
+      else setNames(list => [...list, drawing].slice(-MAX_NAME_BOXES))
+    }
+    setDrawing(null)
   }
   const style = b => ({ left: b.x * 100 + '%', top: b.y * 100 + '%', width: b.w * 100 + '%', height: b.h * 100 + '%' })
+  // The × sits inside the frame, which draws on pointer-down: it must not start a box.
+  const remove = (e, i) => { e.stopPropagation(); setNames(list => list.filter((_, k) => k !== i)) }
 
   return <>
     <Section title={t('Mark the name and the timer')} footer={t('Drag a box around where the exercise name appears, then switch to Timer and do the same for the countdown. Saved for this channel, so its next video skips this step.')}>
@@ -214,13 +231,18 @@ function RoiStep({ job, onDone, onCancel, busy }) {
         <div ref={frame} className="vi-frame" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
           style={{ aspectRatio: setup.width && setup.height ? `${setup.width} / ${setup.height}` : '16 / 9' }}>
           <img src={setup.samples[sample]?.src} alt="" draggable={false} />
-          {boxes.name && <div className={'vi-box name' + (which === 'name' ? ' on' : '')} style={style(boxes.name)}><span>{t('Exercise name')}</span></div>}
-          {boxes.timer && <div className={'vi-box timer' + (which === 'timer' ? ' on' : '')} style={style(boxes.timer)}><span>{t('Timer')}</span></div>}
+          {names.map((b, i) => <div key={i} className={'vi-box name' + (which === 'name' ? ' on' : '')} style={style(b)}>
+            <span>{t('Exercise name')}</span>
+            <button className="vi-box-x" onPointerDown={e => e.stopPropagation()} onClick={e => remove(e, i)} aria-label={t('Remove this box')}>×</button>
+          </div>)}
+          {timer && <div className={'vi-box timer' + (which === 'timer' ? ' on' : '')} style={style(timer)}><span>{t('Timer')}</span></div>}
+          {drawing && <div className={'vi-box on ' + which} style={style(drawing)} />}
         </div>
         <div className="row" style={{ gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
           {setup.samples.map((s, i) => <button key={i} className={'chip' + (i === sample ? ' on' : '')} onClick={() => setSample(i)}>{clock(s.t)}</button>)}
-          {boxes.timer && <button className="chip" onClick={() => setBoxes(b => ({ ...b, timer: null }))}>{t('No timer on screen')}</button>}
+          {timer && <button className="chip" onClick={() => setTimer(null)}>{t('No timer on screen')}</button>}
         </div>
+        {which === 'name' && <div className="small muted" style={{ marginTop: 6 }}>{t('Names shown in more than one place (a big preview, a small one in the warm-up)? Drag a box around each, up to three.')}</div>}
       </div>
       <label className="row" style={{ gap: 10, padding: '6px 12px 10px' }}>
         <Check checked={keep} onChange={setKeep} label={t('Remember for this channel')} />
@@ -228,7 +250,7 @@ function RoiStep({ job, onDone, onCancel, busy }) {
       </label>
     </Section>
     <div className="row" style={{ gap: 8 }}>
-      <Button variant="primary" icon="check" disabled={busy || !boxes.name} onClick={() => onDone(boxes, keep)}>{t('Continue')}</Button>
+      <Button variant="primary" icon="check" disabled={busy || !names.length} onClick={() => onDone({ name: names.length === 1 ? names[0] : names, timer }, keep)}>{t('Continue')}</Button>
       <Button onClick={onCancel}>{t('Cancel')}</Button>
     </div>
   </>
@@ -236,18 +258,19 @@ function RoiStep({ job, onDone, onCancel, busy }) {
 
 /* ----------------------------------------------------------------- review */
 
-function Review({ rows, setRows, result, name, setName, S, onSave, onReset, onReadVideo, onRedraw }) {
+function Review({ rows, setRows, result, name, setName, S, order, setOrder, onSave, onReset, onReadVideo, onRedraw }) {
   const source = result?.source || {}
   const sections = result?.draft?.sections || []
   const patch = (rid, p) => setRows(rs => rs.map(r => (r.rid === rid ? { ...r, ...p } : r)))
   const remove = rid => setRows(rs => rs.filter(r => r.rid !== rid))
   const pick = row => exercisePicker(ex => patch(row.rid, { exId: ex.id, matchConf: 1, how: 'picked', create: null }), { title: t('Pick the exercise'), like: row.exId || undefined })
-  const unmatched = rows.filter(r => !r.exId).length
+  const unmatched = rows.filter(r => !r.exId && String(r.create?.n || '').trim()).length
+  const hasRounds = rows.some(r => r.section === 'interval' && r.rounds > 1)
 
   const groups = []
   for (const r of rows) {
     const g = groups.find(x => x.idx === r.sectionIdx)
-    if (g) g.rows.push(r); else groups.push({ idx: r.sectionIdx, kind: r.section, rows: [r] })
+    if (g) g.rows.push(r); else groups.push({ idx: r.sectionIdx, kind: r.section, label: r.label, rows: [r] })
   }
   const methodText = result?.method === 'video' ? t('Read off the video') : t('Read from the video’s chapters')
 
@@ -258,6 +281,14 @@ function Review({ rows, setRows, result, name, setName, S, onSave, onReset, onRe
       </div>
     </Section>
 
+    {hasRounds && <Section title={t('Order')} footer={order === 'video'
+      ? t('Each round as in the video: A B C D E, then A B C D E again. The same exercise appears once per round.')
+      : t('Each exercise once, with its rounds as sets: A × 2, B × 2 … Shorter, but in a different order than the video.')}>
+      <div style={{ padding: '8px 12px' }}>
+        <Segmented value={order} onChange={setOrder} options={[{ value: 'grouped', label: t('Rounds as sets') }, { value: 'video', label: t('As in the video') }]} />
+      </div>
+    </Section>}
+
     {!rows.length && <div className="card"><div className="small muted">{t('No exercise names were found. Try marking the boxes again, or check that the video shows the names on screen.')}</div></div>}
 
     {groups.map(g => {
@@ -266,9 +297,11 @@ function Review({ rows, setRows, result, name, setName, S, onSave, onReset, onRe
         ? [s.rounds > 1 ? tn('{0} round', '{0} rounds', s.rounds) : null, s.work ? t('{0} work', fmtDuration(s.work)) : null, s.rest ? t('{0} rest', fmtDuration(s.rest)) : null].filter(Boolean).join(' · ')
         : null
       const roundRest = g.kind === 'interval' && s.roundRest > 0 ? t('The video also rests {0} between rounds; a routine has no place for that, so take it after the last exercise of each round.', fmtDuration(s.roundRest)) : null
-      return <Section key={g.idx} title={sectionTitle(g.kind) + (summary ? ' · ' + summary : '')} footer={roundRest}>
+      return <Section key={g.idx} title={[g.label, sectionTitle(g.kind)].filter(Boolean).join(' · ') + (summary ? ' · ' + summary : '')} footer={roundRest}>
         {g.rows.map((r, i) => <ReviewRow key={r.rid} row={r} S={S} kind={g.kind} sourceUrl={source.url}
           onPatch={p => patch(r.rid, p)} onPick={() => pick(r)} onDelete={() => remove(r.rid)}
+          onDuplicate={() => setRows(rs => duplicateRow(rs, r.rid))}
+          onSplit={r.sec >= 60 && r.rounds === 1 ? hold => setRows(rs => splitRow(rs, r.rid, hold)) : null}
           onMergeUp={i > 0 ? () => setRows(rs => mergeRows(rs, g.rows[i - 1].rid, r.rid)) : null} />)}
       </Section>
     })}
@@ -284,9 +317,10 @@ function Review({ rows, setRows, result, name, setName, S, onSave, onReset, onRe
   </>
 }
 
-function ReviewRow({ row, S, kind, sourceUrl, onPatch, onPick, onDelete, onMergeUp }) {
-  const conf = rowConfidence(row)
-  const tone = conf >= 0.75 ? 'good' : conf >= 0.5 ? 'mid' : 'low'
+function ReviewRow({ row, S, kind, sourceUrl, onPatch, onPick, onDelete, onDuplicate, onSplit, onMergeUp }) {
+  const badge = rowBadge(row)
+  const tone = badge.kind === 'match' ? (badge.pct >= 75 ? 'good' : badge.pct >= 50 ? 'mid' : 'low') : badge.kind === 'new' ? 'new' : 'low'
+  const [hold, setHold] = useState(30)
   const ex = row.exId ? exOr(row.exId) : null
   const exName = ex ? exerciseNameFor(ex) : null
   const link = videoLinkAt(sourceUrl, row.start)
@@ -297,12 +331,12 @@ function ReviewRow({ row, S, kind, sourceUrl, onPatch, onPick, onDelete, onMerge
       <span>{clock(row.start)}</span>
     </a>
     <div className="vi-main">
-      <div className="vi-read small muted" title={row.variants.join(' · ')}>“{row.text}”{row.dur ? ' · ' + fmtDuration(row.dur) : ''}</div>
+      <div className="vi-read small muted" title={row.variants.join(' · ')}>{row.text ? '“' + row.text + '”' : <i>{t('No name on screen')}</i>}{row.dur ? ' · ' + fmtDuration(row.dur) : ''}</div>
       {ex
         ? <button className="vi-match" onClick={onPick}><span>{exName}</span><Icon name="chevronDown" /></button>
         : <div className="vi-new">
             <span className="small">{t('New exercise:')}</span>
-            <TextField value={row.create?.n || ''} maxLength={80} onChange={e => onPatch({ create: { ...(row.create || {}), n: e.target.value } })} />
+            <TextField value={row.create?.n || ''} maxLength={80} placeholder={t('Name it, or pick one')} onChange={e => onPatch({ create: { ...(row.create || {}), n: e.target.value } })} />
             <button className="chip" onClick={onPick}>{t('Pick existing')}</button>
           </div>}
       <div className="vi-nums">
@@ -310,11 +344,19 @@ function ReviewRow({ row, S, kind, sourceUrl, onPatch, onPick, onDelete, onMerge
         {interval && <label><span className="small muted">{t('Rest (s)')}</span><NumberField decimal={false} value={row.rest} onChange={v => onPatch({ rest: v || 0 })} /></label>}
         {interval && <label><span className="small muted">{t('Rounds')}</span><NumberField decimal={false} value={row.rounds} onChange={v => onPatch({ rounds: v || 1 })} /></label>}
         {!interval && <label className="vi-side"><Check checked={row.side} onChange={v => onPatch({ side: v })} label={t('Per side')} /><span className="small">{t('Per side')}</span></label>}
-        <span className={'vi-conf ' + tone} title={t('How sure the reading and the match are')}>{Math.round(conf * 100)}%</span>
+        <span className={'vi-conf ' + tone} title={badge.kind === 'match' ? t('How sure the reading and the match are') : badge.kind === 'new' ? t('Not in the library: it will be added as your own exercise') : t('Nothing on screen named this one: pick the exercise')}>
+          {badge.kind === 'match' ? badge.pct + '%' : badge.kind === 'new' ? t('new') : '?'}
+        </span>
       </div>
+      {onSplit && <div className="vi-split">
+        <span className="small muted">{t('One long stretch read as one exercise?')}</span>
+        <button className="chip" onClick={() => onSplit(hold)}>{t('Split into holds of {0}', fmtDuration(hold))}</button>
+        <NumberField decimal={false} value={hold} onChange={v => setHold(Math.max(5, v || 30))} aria-label={t('Seconds per hold')} />
+      </div>}
     </div>
     <div className="vi-acts">
       {onMergeUp && <button className="iconbtn" onClick={onMergeUp} aria-label={t('Merge with the row above')} title={t('Merge with the row above')}><Icon name="arrowUp" /></button>}
+      <button className="iconbtn" onClick={onDuplicate} aria-label={t('Add this exercise again')} title={t('Add this exercise again')}><Icon name="plus" /></button>
       <button className="iconbtn" onClick={onDelete} aria-label={t('Delete')} title={t('Delete')}><Icon name="trash" /></button>
     </div>
   </div>

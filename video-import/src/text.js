@@ -153,6 +153,8 @@ export function snapSec(x) {
  * two blocks, or a per-side stretch reads as one long hold.
  */
 export function sameName(a, b) {
+  // Two blocks nobody could read are not the same exercise; they are two unknowns.
+  if (!normName(a) || !normName(b)) return false
   const x = sideOf(a), y = sideOf(b)
   if (x.side && y.side && x.side !== y.side) return false
   return similarity(a, b) >= SAME_NAME

@@ -46,3 +46,18 @@ test('difference: the share of pixels two crops disagree on', async () => {
   assert.equal(difference(a, a), 0)
   assert.equal(difference(a, new Uint8Array(5)), 1)
 })
+
+test('digitsOnly: the dashes of a progress ring go, the digit stays', async () => {
+  const { digitsOnly } = await import('../src/image.js')
+  const w = 20, h = 20, px = new Uint8Array(w * h).fill(255)
+  for (let y = 4; y < 16; y++) { px[y * w + 9] = 0; px[y * w + 10] = 0 }   // a "1" in the middle, 12 px tall
+  px[0 * w + 5] = 0; px[0 * w + 6] = 0                                     // a dash on the top edge
+  px[18 * w + 2] = 0                                                         // a tick near the bottom
+  const out = digitsOnly(px, w, h)
+  assert.equal(out[10 * w + 9], 0, 'the digit is kept')
+  assert.equal(out[0 * w + 5], 255, 'the edge dash is gone')
+  assert.equal(out[18 * w + 2], 255, 'the small tick is gone')
+  const tight = new Uint8Array(w * h).fill(255)
+  for (let y = 0; y < h; y++) tight[y * w + 9] = 0                          // a digit touching both edges
+  assert.equal(digitsOnly(tight, w, h), tight, 'nothing digit-sized left: the crop stays as it was')
+})

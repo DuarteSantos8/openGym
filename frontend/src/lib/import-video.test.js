@@ -242,3 +242,43 @@ describe('a dumbbell workout read off the screen (B7-F2UcHmqk)', () => {
     expect(m('Ak-Al').id).toBeNull()
   })
 })
+
+describe('the review screen’s tools', async () => {
+  const { rowBadge, rowsMissingName, duplicateRow, splitRow } = await import('./import-video.js')
+  const rows = draftRows(RESULT)
+  it('badges: a percentage for a match, "new" for a name the library lacks, a question for no name', () => {
+    expect(rowBadge(rows[2])).toEqual({ kind: 'match', pct: 90 })
+    expect(rowBadge(rows[3])).toEqual({ kind: 'new' })
+    expect(rowBadge({ ...rows[3], create: { n: '' } })).toEqual({ kind: 'unnamed' })
+  })
+  it('a duplicated row is the same exercise again, right after it', () => {
+    const d = duplicateRow(rows, rows[2].rid)
+    expect(d).toHaveLength(rows.length + 1)
+    expect(d[3].exId).toBe(rows[2].exId)
+    expect(d[3].rid).not.toBe(rows[2].rid)
+    const { routine } = buildVideoRoutine(d, { labels: LABELS })
+    expect(routine.ex.filter(e => e.id === '1160')).toHaveLength(2)
+  })
+  it('a long hold split into 30-second holds: the first keeps its name, the rest ask, each with its own still', () => {
+    const long = { ...rows[5], sec: 235, start: 3450, strip: [3453, 3468, 3483, 3498, 3513].map(t => ({ t, src: 'data:image/jpeg;base64,' + t })) }
+    const s = splitRow([long], long.rid, 30)
+    expect(s).toHaveLength(8)
+    expect(s[0].exId).toBe(long.exId)
+    expect(s.slice(1).every(r => r.unnamed && !r.exId)).toBe(true)
+    expect(s[1].thumb).toBe('data:image/jpeg;base64,3483')
+    expect(rowsMissingName(s)).toHaveLength(7)
+  })
+  it('in the video’s order the same exercise appears once per round', () => {
+    const iv = { draft: { sections: [{ kind: 'interval', rows: [
+      { id: 'a', name: 'Burpees', conf: 0.9, sec: 40, rest: 20, rounds: 2, occurrences: [{ start: 0, dur: 40 }] },
+      { id: 'b', name: 'Plank Jacks', conf: 0.9, sec: 40, rest: 20, rounds: 2, occurrences: [{ start: 60, dur: 40 }] },
+      { id: 'c', name: 'Jump Squat', conf: 0.9, sec: 40, rest: 20, rounds: 1, occurrences: [{ start: 120, dur: 40 }] }
+    ] }] } }
+    const v = buildVideoRoutine(draftRows(iv), { order: 'video' }).routine.ex
+    expect(v.map(e => [e.id, e.sets, e.sec, e.restSec])).toEqual([
+      ['1160', 1, 40, 20], ['3930', 1, 40, 20], ['0514', 1, 40, 20], ['1160', 1, 40, 20], ['3930', 1, 40, 20]
+    ])
+    const g = buildVideoRoutine(draftRows(iv), {}).routine.ex
+    expect(g.map(e => [e.id, e.sets])).toEqual([['1160', 2], ['3930', 2], ['0514', 1]])
+  })
+})

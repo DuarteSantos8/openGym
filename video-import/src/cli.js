@@ -2,10 +2,11 @@
 // pointing anyone at it, and for seeing why one reads badly. Not used by the server.
 //
 //   docker compose --profile video-import run --rm -v "$PWD/out:/out" video-import \
-//     node src/cli.js <youtube-url> [--video] [--name x,y,w,h] [--timer x,y,w,h] [--out /out]
+//     node src/cli.js <youtube-url> [--video] [--name x,y,w,h[;x,y,w,h]] [--timer x,y,w,h] [--out /out]
 //
 // Without --name/--timer it uses the suggested boxes. With --out it writes the ROI stills there
-// (with the boxes it used) and the full result as result.json, so the boxes can be checked by eye.
+// and the full result as result.json, so the boxes can be checked by eye, and every second's raw
+// reading as frames.json.
 
 import fs from 'node:fs'
 import os from 'node:os'
@@ -21,9 +22,11 @@ import { cleanBox } from './roi-suggest.js'
 const args = process.argv.slice(2)
 const flag = k => args.includes(k)
 const opt = k => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : null }
-const box = s => { if (!s) return null; const [x, y, w, h] = s.split(',').map(Number); return cleanBox({ x, y, w, h }) }
+const one = s => { const [x, y, w, h] = s.split(',').map(Number); return cleanBox({ x, y, w, h }) }
+// "--name a,b,c,d;e,f,g,h": several places the names appear.
+const box = s => { if (!s) return null; const list = s.split(';').map(one).filter(Boolean); return list.length > 1 ? list : list[0] || null }
 const url = args.find(a => !a.startsWith('--') && canonicalYouTube(a))
-if (!url) { console.error('usage: node src/cli.js <youtube-url> [--video] [--name x,y,w,h] [--timer x,y,w,h] [--out dir]'); process.exit(2) }
+if (!url) { console.error('usage: node src/cli.js <youtube-url> [--video] [--name x,y,w,h[;x,y,w,h]] [--timer x,y,w,h] [--out dir]'); process.exit(2) }
 const out = opt('--out')
 const log = (...a) => console.error('·', ...a)
 
@@ -54,9 +57,11 @@ try {
     if (!roi.name) { log('no name box: pass --name x,y,w,h (fractions of the frame); look at the samples in --out'); process.exit(1) }
     log('using boxes', JSON.stringify(roi))
     const stages = new Set()
-    const res = await analyse(file, roi, { workDir, dims, hints: meta.hints, progress: s => { if (!stages.has(s)) { stages.add(s); log(s) } } })
+    const res = await analyse(file, roi, { workDir, dims, hints: meta.hints, parts: meta.parts, progress: s => { if (!stages.has(s)) { stages.add(s); log(s) } } })
     log('stats', JSON.stringify(res.stats))
     result = { source, method: 'video', roi, draft: res.draft, blocks: res.blocks }
+    // Every second's raw reading, for tuning the segmentation offline without reading the video again.
+    if (out) fs.writeFileSync(path.join(out, 'frames.json'), JSON.stringify(res.frames))
   }
   log(`done in ${Math.round((Date.now() - t0) / 1000)} s`)
   if (out) fs.writeFileSync(path.join(out, 'result.json'), JSON.stringify(result, null, 1))

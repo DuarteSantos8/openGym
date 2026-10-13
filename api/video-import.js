@@ -56,6 +56,15 @@ export function cleanBox(b) {
   return { x: r(x), y: r(y), w: r(w), h: r(h) };
 }
 
+/** One name box or several (a video that shows its names in more than one place), up to three. */
+export function cleanNames(v) {
+  if (Array.isArray(v)) {
+    const boxes = v.map(cleanBox).filter(Boolean).slice(0, 3);
+    return boxes.length ? (boxes.length === 1 ? boxes[0] : boxes) : null;
+  }
+  return cleanBox(v);
+}
+
 const JOB_RE = /^[0-9a-f]{24}$/;
 const CHANNEL_RE = /^[A-Za-z0-9_@.-]{1,80}$/;
 
@@ -140,12 +149,13 @@ export function videoImportRoutes({ json, readBody, readSession, dataDir, atomic
       json(res, 200, publicJob(job));
     },
 
-    // { id, name: box, timer?: box, remember?: boolean } — the boxes for a job that is waiting.
+    // { id, name: box | [box…], timer?: box, remember?: boolean } — the boxes for a job that is
+    // waiting; several name boxes when the names appear in more than one place.
     // Remembered for the video's channel unless `remember` is false.
     'POST /api/video-import/roi': async (req, res) => {
       const user = guard(req, res); if (!user) return;
       const b = await readBody(req);
-      const name = cleanBox(b.name);
+      const name = cleanNames(b.name);
       const timer = b.timer == null ? null : cleanBox(b.timer);
       if (!name) return json(res, 400, { error: 'draw a box around the exercise name', code: 'bad-roi' });
       const job = await ownJob(res, user, b.id); if (!job) return;

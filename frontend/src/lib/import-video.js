@@ -201,7 +201,9 @@ export function draftRows(result, S = {}) {
       const first = (r.occurrences || [])[0] || { start: 0, dur: r.sec }
       rows.push({
         rid: r.id || 'v' + rows.length,
-        section: s.kind, sectionIdx: si,
+        section: s.kind, sectionIdx: si, label: typeof s.label === 'string' ? s.label.slice(0, 60) : '',
+        // Nothing on screen named it (a hold only the timer counted out): the user picks it.
+        unnamed: !shown,
         text: shown, variants: r.variants || [], alt: r.alt || null,
         ocrConf: typeof r.conf === 'number' ? r.conf : 0,
         exId: m.id, matchConf: m.conf, how: m.how, candidates: m.candidates,
@@ -209,7 +211,8 @@ export function draftRows(result, S = {}) {
         sec: Math.max(1, Math.round(r.sec || 0)), rest: Math.max(0, Math.round(r.rest || 0)),
         rounds: Math.max(1, Math.round(r.rounds || 1)), side: !!r.side,
         start: first.start, dur: first.dur, occurrences: r.occurrences || [],
-        thumb: typeof r.thumb === 'string' && r.thumb.startsWith('data:image/') ? r.thumb : null
+        thumb: typeof r.thumb === 'string' && r.thumb.startsWith('data:image/') ? r.thumb : null,
+        strip: Array.isArray(r.strip) ? r.strip.filter(x => x && typeof x.src === 'string' && x.src.startsWith('data:image/')).map(x => ({ t: Number(x.t) || 0, src: x.src })) : []
       })
     }
   })
@@ -221,6 +224,53 @@ export function rowConfidence(row) {
   if (!row) return 0
   const match = row.exId ? (row.matchConf || 0.5) : 0
   return Math.round(Math.min(row.ocrConf || 0, match || 0) * 100) / 100
+}
+
+/**
+ * What the row's badge says. A percentage only means something for a row that matched: how sure
+ * the reading and the match are. A name the library does not have is "new" (it will be added as
+ * the user's own exercise), and a row with no name at all is a question.
+ *   { kind: 'match', pct } | { kind: 'new' } | { kind: 'unnamed' }
+ */
+export function rowBadge(row) {
+  if (row?.exId) return { kind: 'match', pct: Math.round(rowConfidence(row) * 100) }
+  if (!String(row?.create?.n || '').trim()) return { kind: 'unnamed' }
+  return { kind: 'new' }
+}
+
+/** Rows that would be saved with no exercise at all: no match and no name to create one from. */
+export const rowsMissingName = rows => (rows || []).filter(r => !r.exId && !String(r.create?.n || '').trim())
+
+/** A copy of a row right after it — the same exercise done again somewhere the video did not show. */
+export function duplicateRow(rows, rid) {
+  const i = rows.findIndex(r => r.rid === rid)
+  if (i < 0) return rows
+  const copy = { ...rows[i], rid: rows[i].rid + '+' + uid(), occurrences: rows[i].occurrences.slice(), start: rows[i].start + 0.001 }
+  return [...rows.slice(0, i + 1), copy, ...rows.slice(i + 1)]
+}
+
+/**
+ * One long row read as one (a cool-down with nothing on screen to tell the holds apart) cut into
+ * holds of `hold` seconds. The first keeps the row's exercise; the others ask for theirs, each
+ * with the still from its own moment so the user can see which move it is.
+ */
+export function splitRow(rows, rid, hold = 30) {
+  const i = rows.findIndex(r => r.rid === rid)
+  const row = rows[i]
+  const len = Math.max(5, Math.round(hold) || 30)
+  if (!row || row.sec < len * 2) return rows
+  const n = Math.min(40, Math.round(row.sec / len))
+  const stillAt = t => {
+    const s = (row.strip || []).reduce((best, x) => (Math.abs(x.t - t) < Math.abs((best?.t ?? Infinity) - t) ? x : best), null)
+    return s ? s.src : null
+  }
+  const pieces = Array.from({ length: n }, (_, k) => {
+    const start = row.start + k * len
+    const base = { ...row, rid: row.rid + '/' + k, sec: len, rounds: 1, start, dur: len, occurrences: [{ start, dur: len }], strip: [] }
+    if (k === 0) return { ...base, thumb: stillAt(start + 3) || row.thumb }
+    return { ...base, text: '', variants: [], unnamed: true, exId: null, matchConf: 0, how: null, candidates: [], create: { n: '', bp: row.create?.bp || 'upper legs' }, thumb: stillAt(start + 3) }
+  })
+  return [...rows.slice(0, i), ...pieces, ...rows.slice(i + 1)]
 }
 
 /** Two rows that are one exercise read two ways: the first keeps its match, the times add up. */
@@ -247,7 +297,12 @@ const MAX_SEC = 3600
  * opts: { name, source: { url, id, title, channel }, labels: { warmup, stretch, other } }
  * The labels are the group names in the reader's language; the caller passes them through t().
  */
-export function buildVideoRoutine(rows, { name, source = {}, labels = {}, customEx = [] } = {}) {
+/**
+ * opts.order: 'grouped' (default) — an interval exercise is one entry of rounds × timed sets;
+ * 'video' — the video's own order, round by round (A B C D E, A B C D E), one timed set per entry,
+ * so the same exercise appears in the routine as many times as the video does it.
+ */
+export function buildVideoRoutine(rows, { name, source = {}, labels = {}, customEx = [], order = 'grouped' } = {}) {
   const created = []
   const idFor = row => {
     if (row.exId && (EXIDX[canonicalExId(row.exId)] || customEx.some(c => c.id === row.exId) || created.some(c => c.id === row.exId))) {
@@ -266,15 +321,27 @@ export function buildVideoRoutine(rows, { name, source = {}, labels = {}, custom
   // finisher between them, a stretch), and inside each the order it first did each exercise.
   const ordered = rows.slice().sort((a, b) => a.sectionIdx - b.sectionIdx || a.start - b.start)
   const groups = new Map()
+  // In the video's order an interval section is laid out round by round once all its rows are in.
+  const pending = []
+  const flush = () => {
+    if (!pending.length) return
+    const most = Math.max(...pending.map(p => p.rounds))
+    for (let k = 0; k < most; k++) for (const p of pending) if (p.rounds > k) ex.push({ ...p.cfg, sets: 1 })
+    pending.length = 0
+  }
+  let lastSection = null
   for (const row of ordered) {
+    if (row.sectionIdx !== lastSection) { flush(); lastSection = row.sectionIdx }
     const id = idFor(row)
     if (!id) continue
     const sec = Math.min(MAX_SEC, Math.max(1, Math.round(row.sec) || 1))
     const cfg = { id, mode: 'time', sec, weight: 0 }
     if (row.section === 'interval') {
-      cfg.sets = Math.min(MAX_SETS, Math.max(1, Math.round(row.rounds) || 1))
+      const rounds = Math.min(MAX_SETS, Math.max(1, Math.round(row.rounds) || 1))
+      cfg.sets = rounds
       const rest = Math.round(row.rest) || 0
       if (rest > 0) cfg.restSec = rest
+      if (order === 'video') { pending.push({ cfg, rounds }); continue }
     } else {
       cfg.sets = 1
       if (row.side) cfg.side = true
@@ -286,6 +353,7 @@ export function buildVideoRoutine(rows, { name, source = {}, labels = {}, custom
     }
     ex.push(cfg)
   }
+  flush()
   // A group of one is just an exercise: no superset around a lone stretch.
   ex.forEach((e, i) => {
     if (e.sg && !(ex[i - 1]?.sg === e.sg || ex[i + 1]?.sg === e.sg)) { delete e.sg; delete e.sgName }

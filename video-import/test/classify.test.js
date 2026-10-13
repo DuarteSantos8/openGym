@@ -115,3 +115,36 @@ test('one block cut in two by a few seconds of OCR nonsense is one section again
   assert.equal(out[0].rounds, 2)
   assert.equal(out[0].end, 800)
 })
+
+test('a cool-down of holds the timer counts but no caption names becomes one row per hold (B7-F2UcHmqk)', () => {
+  // Intervals, then four 30-second stretches shown only by a countdown: no name on screen.
+  const s = []
+  for (let r = 0; r < 2; r++) for (const e of ['BURPEES', 'PLANK', 'SQUATS']) { s.push([e, 40]); s.push(['REST', 20]) }
+  s.pop()
+  const frames = framesOf(s)
+  let t = frames.length
+  for (let h = 0; h < 4; h++) for (let i = 0; i < 30; i++) frames.push({ t: t++, name: '', nameConf: 0, timer: String(30 - i) })
+  const d = classify(segment(frames))
+  const cool = d.sections.find(x => x.kind === 'stretch')
+  assert.ok(cool, JSON.stringify(d.sections.map(x => x.kind)))
+  assert.deepEqual(cool.rows.map(r => [r.key, r.sec]), [['', 30], ['', 30], ['', 30], ['', 30]], 'four holds, never merged into one 120 s row')
+  assert.ok(cool.rows.every(r => r.thumbT >= r.occurrences[0].start))
+})
+
+test('two unknowns are never the same exercise', async () => {
+  const { sameName } = await import('../src/text.js')
+  assert.equal(sameName('', ''), false)
+  assert.equal(sameName('burpees', ''), false)
+})
+
+test('the video’s parts from its chapters keep two blocks apart and name them (B7-F2UcHmqk)', () => {
+  const s = [[null, 30]]
+  for (let r = 0; r < 2; r++) for (const e of ['GOBLET SQUAT', 'SUMO DEADLIFT', 'CALF RAISES']) { s.push([e, 40]); s.push(['REST', 20]) }
+  for (let r = 0; r < 2; r++) for (const e of ['SKULL CRUSHERS', 'PUSH UPS', 'BENT OVER ROW']) { s.push([e, 40]); s.push(['REST', 20]) }
+  const frames = framesOf(s)
+  const split = 30 + 6 * 60
+  const parts = [{ start: 30, end: split, label: 'Group 1: Lower body' }, { start: split, end: frames.length, label: 'Group 2: Upper body' }]
+  const d = classify(segment(frames), { parts })
+  const iv = d.sections.filter(x => x.kind === 'interval')
+  assert.deepEqual(iv.map(x => [x.label, x.rows.length, x.rounds]), [['Group 1: Lower body', 3, 2], ['Group 2: Upper body', 3, 2]])
+})

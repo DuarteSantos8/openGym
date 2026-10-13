@@ -32,7 +32,10 @@ function labelOf(f) {
   const timer = parseTimer(f.timer)
   // A reading Tesseract itself doubts is noise more often than a name: a shadow, the edge of the
   // instructor's arm, a logo half in the box. Below MIN_CONF it counts as nothing on screen.
-  if (key.replace(/\s/g, '').length < MIN_CHARS || (f.nameConf != null && Number(f.nameConf) < MIN_CONF)) return { kind: 'none', key: '', raw: '', timer, conf: 0 }
+  // A name has a word: three letters in a row at least. "Al-Ul", "V;;ﬁ", "Ey Ww" are the edge of a
+  // frame or a shadow read as text, not a name.
+  const hasWord = /\p{L}{3,}/u.test(raw)
+  if (!hasWord || key.replace(/\s/g, '').length < MIN_CHARS || (f.nameConf != null && Number(f.nameConf) < MIN_CONF)) return { kind: 'none', key: '', raw: '', timer, conf: 0 }
   const r = restOf(key)
   return { kind: r.rest ? 'rest' : 'work', key, raw, timer, next: r.next, conf: Number(f.nameConf) || 0 }
 }
@@ -74,8 +77,27 @@ function joins(run, lab) {
   return sameName(runKey(run), lab.key)
 }
 
+/**
+ * How much the timer readings can be trusted: the share of neighbouring readings that step down
+ * (or up) by exactly one second. A clean countdown is near 1; a timer drawn over a busy picture,
+ * or in a font OCR cannot read, is near 0 — and its "restarts" are noise that would cut every
+ * exercise into pieces. Below TIMER_TRUST the timer is not used at all.
+ */
+export function timerQuality(timers) {
+  let pairs = 0, steps = 0
+  for (let i = 1; i < timers.length; i++) {
+    if (timers[i] == null || timers[i - 1] == null) continue
+    pairs++
+    if (Math.abs(timers[i] - timers[i - 1]) === 1) steps++
+  }
+  return pairs >= 10 ? steps / pairs : 0
+}
+export const TIMER_TRUST = 0.6
+
 export function segment(frames) {
-  const labels = (frames || []).map(f => ({ t: f.t, ...labelOf(f) }))
+  const raw = (frames || []).map(f => ({ t: f.t, ...labelOf(f) }))
+  const trusted = timerQuality(raw.map(l => l.timer)) >= TIMER_TRUST
+  const labels = trusted ? raw : raw.map(l => ({ ...l, timer: null }))
   // 1–2: runs of one kind and one name, bridging short holes.
   const runs = []
   let cur = null
@@ -98,17 +120,20 @@ export function segment(frames) {
   }
   flushPending()
 
-  // 3: a timer restart inside a run is a second block of the same name.
+  // 3: a timer restart inside a run is a second block of the same name. In a stretch with no
+  // caption on screen (a warm-up or a cool-down of 30-second holds shown only by the timer) it is
+  // the only thing that tells one hold from the next: those pieces are marked `timed`.
   const split = []
   for (const run of runs) {
-    if (run.kind !== 'work') { split.push(run); continue }
+    if (run.kind === 'rest') { split.push(run); continue }
     const cuts = timerResets(run.labels.map(l => l.timer)).filter(i => i >= MIN_BLOCK && run.labels.length - i >= MIN_BLOCK)
     let from = 0
+    const timed = run.kind === 'gap' && cuts.length > 0
     for (const i of cuts) {
-      split.push({ kind: run.kind, labels: run.labels.slice(from, i), reset: true })
+      split.push({ kind: run.kind, labels: run.labels.slice(from, i), reset: true, timed })
       from = i
     }
-    split.push({ kind: run.kind, labels: run.labels.slice(from), reset: from > 0 })
+    split.push({ kind: run.kind, labels: run.labels.slice(from), reset: from > 0, timed })
   }
 
   // 4: name each run by majority.
@@ -119,7 +144,7 @@ export function segment(frames) {
   for (const b of blocks) {
     const prev = out[out.length - 1]
     if (b.dur < MIN_BLOCK && prev) { absorb(prev, b); continue }
-    if (prev && prev.kind === b.kind && b.kind !== 'work') { absorb(prev, b, true); continue }
+    if (prev && prev.kind === b.kind && b.kind !== 'work' && !b.resets) { absorb(prev, b, true); continue }
     if (prev && prev.kind === 'work' && b.kind === 'work' && !b.resets && sameName(prev.key, b.key)) { absorb(prev, b, true); continue }
     out.push(b)
   }
@@ -144,7 +169,7 @@ function toBlock(run) {
   return {
     start, end, dur: end - start, kind: run.kind, key: key || '', text,
     conf: named.length ? Math.round((count / named.length) * (meanConf / 100) * 100) / 100 : 0,
-    variants, next, resets: !!run.reset,
+    variants, next, resets: !!run.reset, ...(run.timed ? { timed: true } : {}),
     timerMax: timers.length ? Math.max(...timers) : null
   }
 }

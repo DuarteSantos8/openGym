@@ -128,4 +128,30 @@ describe('import from a video', () => {
     const r = useStore.getState().S.routines.find(x => x.videoId === 'dQw4w9WgXcQ')
     expect(r.ex).toHaveLength(1)
   })
+
+  it('"As in the video" saves each round in turn: the same exercise once per round', async () => {
+    jobAnswer = DONE
+    sessionStorage.setItem('gym_video_import_job', JOB)
+    render()
+    await flush()
+    await act(async () => { button('As in the video').click() })
+    await act(async () => { button('Save routine').click() })
+    const r = useStore.getState().S.routines.find(x => x.videoId === 'dQw4w9WgXcQ')
+    expect(r.ex).toHaveLength(6)
+    expect(r.ex.every(e => e.sets === 1 && e.sec === 40 && e.restSec === 20)).toBe(true)
+    expect(r.ex[0].id).toBe(r.ex[2].id)
+  })
+
+  it('a row with no name and no exercise stops the save and says why', async () => {
+    jobAnswer = { ...DONE, result: { ...DONE.result, draft: { sections: [{ kind: 'stretch', rows: [
+      { id: 'v9', name: '', conf: 0, sec: 30, rest: 0, rounds: 1, occurrences: [{ start: 3500, dur: 30 }] }
+    ] }] } } }
+    sessionStorage.setItem('gym_video_import_job', JOB)
+    render()
+    await flush()
+    expect(container.textContent).toMatch(/No name on screen/)
+    await act(async () => { button('Save routine').click() })
+    expect(useUI.getState().toastMsg).toMatch(/no exercise yet/)
+    expect(useStore.getState().S.routines.some(x => x.videoId === 'dQw4w9WgXcQ')).toBe(false)
+  })
 })

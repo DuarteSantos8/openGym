@@ -74,14 +74,24 @@ export function suggestRois(frames) {
     const clock = s.seen.filter(x => isClock(x.text)).length / s.seen.length
     const words = s.seen.filter(x => wordy(x.text) && !isClock(x.text)).length / s.seen.length
     const height = s.seen.reduce((a, x) => a + x.h, 0) / s.seen.length
-    return { box: s.box, frames, texts, clock, words, height }
+    // How much of the time the spot says one and the same thing: a label ("NEXT", "MOD", a
+    // logo) says it always, a caption a different thing at each exercise.
+    const counts = new Map()
+    for (const x of s.seen) { const k = normName(x.text) || x.text; counts.set(k, (counts.get(k) || 0) + 1) }
+    const fixed = Math.max(...counts.values()) / s.seen.length
+    return { box: s.box, frames, texts, clock, words, height, fixed }
   }).filter(s => s.frames >= 2 && s.texts >= 2)
 
   const timer = scored.filter(s => s.clock >= 0.6).sort((a, b) => b.frames * b.texts - a.frames * a.texts)[0] || null
-  const name = scored.filter(s => s !== timer && s.words >= 0.6)
-    .sort((a, b) => b.frames * b.height - a.frames * a.height)[0] || null
+  const names = scored.filter(s => s !== timer && s.words >= 0.6 && s.fixed < 0.6)
+    .sort((a, b) => b.texts * b.height - a.texts * a.height)
+  // Up to two places: some creators show the next exercise in a different spot in the warm-up.
+  const picked = []
+  for (const s of names) if (picked.length < 2 && !picked.some(p => iou(p.box, s.box) > 0.1)) picked.push(s)
+  const boxes = picked.map(s => padBox(s.box))
   return {
-    name: name ? padBox(name.box) : null,
+    name: boxes[0] || null,
+    names: boxes,
     timer: timer ? padBox(timer.box, 0.35) : null
   }
 }
@@ -96,4 +106,13 @@ export function cleanBox(b) {
   w = Math.min(Math.max(w, 0), 1 - x); h = Math.min(Math.max(h, 0), 1 - y)
   if (w < 0.02 || h < 0.02) return null
   return { x: round(x), y: round(y), w: round(w), h: round(h) }
+}
+
+/** One name box or several (up to three), cleaned; a single box stays a single box. null if none is usable. */
+export function cleanNames(v) {
+  if (Array.isArray(v)) {
+    const boxes = v.map(cleanBox).filter(Boolean).slice(0, 3)
+    return boxes.length ? (boxes.length === 1 ? boxes[0] : boxes) : null
+  }
+  return cleanBox(v)
 }

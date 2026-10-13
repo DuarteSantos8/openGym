@@ -2682,8 +2682,8 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow">
     <span class="p-name">name<em class="p-req" title="required">required</em></span>
-    <span class="p-type"><a href="#schema-VideoImportBox">VideoImportBox</a></span>
-    <span class="p-desc"></span>
+    <span class="p-type"><a href="#schema-VideoImportBox">VideoImportBox</a> | <a href="#schema-VideoImportBox">VideoImportBox</a>[]</span>
+    <span class="p-desc">One box, or up to three where the names appear in more than one place.</span>
   </div>
   <div class="prow">
     <span class="p-name">timer</span>
@@ -3657,6 +3657,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">roiSetup.suggest.name</span>
     <span class="p-type"><a href="#schema-VideoImportBox">VideoImportBox</a> | null</span>
     <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">roiSetup.suggest.names</span>
+    <span class="p-type"><a href="#schema-VideoImportBox">VideoImportBox</a>[]</span>
+    <span class="p-desc">Every place a name seems to appear</span>
   </div>
   <div class="prow">
     <span class="p-name">roiSetup.suggest.timer</span>

@@ -22,16 +22,32 @@ export const MAX_WORK = 120
 export const MAX_REST = 60
 export const SECTION_BREAK = 120   // a rest this long ends an interval section
 const MIN_INTERVALS = 3
+const MIN_TIMED = 10   // seconds: a timed hold shorter than this is a countdown to the next thing
 
 const isRestish = b => b && (b.kind === 'rest' || b.kind === 'gap')
 
 /** The kind a hint range or the block's own caption gives it, or null. */
 function hintFor(b, hints) {
-  const own = sectionWord(b.text || b.key)
-  if (own) return own
+  // The video's own chapter first: a "Quad stretch" in the middle of a chapter called "Mobility
+  // warm-up" is part of the warm-up. The caption's word decides only where no chapter does.
   const mid = b.start + b.dur / 2
   const h = (hints || []).find(x => mid >= x.start && mid < x.end)
-  return h ? h.kind : null
+  if (h) return h.kind
+  return sectionWord(b.text || b.key)
+}
+
+/** A block that runs across a chapter boundary ends there: what follows is the next part. */
+function cutAtParts(blocks, parts) {
+  if (!parts?.length) return blocks
+  const edges = parts.flatMap(p => [p.start, p.end])
+  const out = []
+  for (const b of blocks) {
+    const cut = edges.find(e => e > b.start + MIN_TIMED && e < b.end - MIN_TIMED)
+    if (b.kind !== 'work' || cut == null) { out.push(b); continue }
+    out.push({ ...b, end: cut, dur: cut - b.start })
+    out.push({ start: cut, end: b.end, dur: b.end - cut, kind: 'gap', key: '', text: '', conf: 0, variants: {}, next: null, resets: true, timerMax: null })
+  }
+  return out
 }
 
 /**
@@ -77,9 +93,13 @@ function joinNeighbours(blocks) {
   return out
 }
 
-export function classify(blocks, { hints = [] } = {}) {
-  const bs = joinNeighbours((blocks || []).filter(b => b && b.dur > 0))
-  const preview = previewLayout(bs)
+export function classify(blocks, { hints = [], parts = [] } = {}) {
+  // The video's own parts, from its chapters ("Group 1: Lower body"): a block never runs across
+  // two of them, and each section is named after the part it is in.
+  const partOf = b => (parts || []).findIndex(p => b.start + b.dur / 2 >= p.start && b.start + b.dur / 2 < p.end)
+  const joined = joinNeighbours((blocks || []).filter(b => b && b.dur > 0))
+  const preview = previewLayout(joined)
+  const bs = cutAtParts(joined, parts)
   // A rest screen that names the next exercise speaks for a work block OCR could not read.
   for (let i = 0; i < bs.length; i++) {
     const b = bs[i], nx = bs[i + 1]
@@ -99,6 +119,7 @@ export function classify(blocks, { hints = [] } = {}) {
     if (!flag[i]) { i++; continue }
     let j = i, count = 0, last = i
     while (j < bs.length) {
+      if (bs[j].kind === 'work' && parts.length && partOf(bs[j]) !== partOf(bs[i])) break
       if (bs[j].kind === 'work') {
         // A longer rest between two rounds (60–120 s) keeps the section going when intervals
         // follow it; the work before it is an interval like the others.
@@ -134,12 +155,25 @@ export function classify(blocks, { hints = [] } = {}) {
       continue
     }
     const b = bs[x]
-    if (b.kind !== 'work') continue
     const kind = hintFor(b, hints) || (!ranges.length ? 'other' : x < firstIv ? 'warmup' : x > lastIv ? 'stretch' : 'other')
+    // A hold the timer counts out but no caption names, in a warm-up or a cool-down of
+    // 30-second stretches: an exercise all the same, with no name, for the review screen to
+    // ask about. Between two blocks the same thing is a transition, and is left out.
+    if (b.kind === 'gap' && b.timed && b.dur >= MIN_TIMED && b.dur <= MAX_WORK && (kind === 'warmup' || kind === 'stretch')) {
+      Object.assign(b, { kind: 'work', key: '', text: '', conf: 0, variants: {}, unnamed: true })
+    }
+    if (b.kind !== 'work') continue
     if (!loose || loose.kind !== kind) { loose = { kind, blocks: [] }; sections.push(loose) }
     loose.blocks.push(b)
   }
-  const out = mergeIntervals(sections.map(s => (s.rows ? s : looseSection(s.kind, s.blocks))))
+  const built = sections.map(s => (s.rows ? s : looseSection(s.kind, s.blocks)))
+  for (const s of built) {
+    const i = (parts || []).findIndex(p => (s.start + s.end) / 2 >= p.start && (s.start + s.end) / 2 < p.end)
+    if (i >= 0) { s.part = i; s.label = parts[i].label }
+  }
+  const out = mergeIntervals(built)
+  // A section is as many rounds as its exercises were done.
+  for (const s of out) if (s.kind === 'interval' && s.rows.length) s.rounds = Math.max(...s.rows.map(r => r.rounds))
   let n = 0
   for (const s of out) for (const row of s.rows) row.id = 'v' + (++n)
   return { sections: out.filter(s => s.rows.length), ...(preview ? { layout: 'preview' } : {}) }
@@ -258,7 +292,7 @@ export function mergeIntervals(sections) {
     if (s.kind !== 'interval') { res.push(s); continue }
     let k = res.length - 1
     while (k >= 0 && isJunk(res[k])) k--
-    const prev = k >= 0 && res[k].kind === 'interval' ? res[k] : null
+    const prev = k >= 0 && res[k].kind === 'interval' && res[k].part === s.part ? res[k] : null
     const shared = prev ? s.rows.filter(r => prev.rows.some(p => sameName(p.key, r.key))).length : 0
     if (!prev || shared < Math.min(prev.rows.length, s.rows.length) * 0.5) { res.push(s); continue }
     const junk = res.splice(k + 1)

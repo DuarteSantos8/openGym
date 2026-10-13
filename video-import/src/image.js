@@ -62,3 +62,37 @@ export function difference(a, b) {
   for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) n++
   return n / a.length
 }
+
+/**
+ * A timer crop with only its digits left: the dashes of a progress ring, a tick mark, the arc
+ * that sweeps round a countdown — anything small, or anything that runs into the edge of the
+ * box, goes. Digits are the tall marks in the middle. Works on binarised pixels (0 = ink).
+ * If cleaning would leave no digit-sized mark at all, the crop is returned as it was: a box
+ * drawn tight round the digits must not lose them for touching its edge.
+ */
+export function digitsOnly(px, w, h, { minHeight = 0.35 } = {}) {
+  const seen = new Uint8Array(px.length)
+  const keep = new Uint8Array(px.length).fill(255)
+  const stack = []
+  let kept = 0
+  for (let start = 0; start < px.length; start++) {
+    if (px[start] !== 0 || seen[start]) continue
+    // One connected mark, 4-neighbourhood.
+    const comp = []
+    let x0 = w, y0 = h, x1 = 0, y1 = 0
+    stack.push(start); seen[start] = 1
+    while (stack.length) {
+      const i = stack.pop()
+      comp.push(i)
+      const x = i % w, y = (i - x) / w
+      if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y
+      for (const j of [x > 0 ? i - 1 : -1, x < w - 1 ? i + 1 : -1, y > 0 ? i - w : -1, y < h - 1 ? i + w : -1]) {
+        if (j >= 0 && !seen[j] && px[j] === 0) { seen[j] = 1; stack.push(j) }
+      }
+    }
+    const tall = (y1 - y0 + 1) >= h * minHeight
+    const edge = x0 === 0 || y0 === 0 || x1 === w - 1 || y1 === h - 1
+    if (tall && !edge) { for (const i of comp) keep[i] = 0; kept++ }
+  }
+  return kept ? keep : px
+}

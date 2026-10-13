@@ -6,7 +6,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import crypto from 'node:crypto'
 import { run } from './proc.js'
-import { binarize, pgm, blank, difference } from './image.js'
+import { binarize, pgm, blank, difference, digitsOnly } from './image.js'
 
 const even = n => Math.max(2, Math.round(n / 2) * 2)
 export const NEAR = 0.03   // share of differing pixels below which two name crops are one caption
@@ -44,23 +44,28 @@ export function cropGeometry(box, w, h, outH = 72) {
   return { cw, ch, cx, cy, ow, oh }
 }
 
+/** The name boxes of a ROI as a list: one box, or several where a video shows its names in more than one place. */
+export const nameBoxes = roi => [].concat(roi?.name || []).filter(Boolean).slice(0, MAX_NAME_BOXES)
+export const MAX_NAME_BOXES = 3
+
 /**
  * The name and timer crops at 1 fps, thresholded and de-duplicated.
  *
- * Returns { seconds, name: [...], timer: [...] } where each list has one entry per second:
- * the path of a PGM to read, or null for a blank crop. Identical crops share a path, so a
- * caption that sits still for 40 seconds is read once, not forty times.
+ * Returns { seconds, names: [[...], ...], timer: [...] }: one list per name box and one for the
+ * timer, each with an entry per second — the path of a PGM to read, or null for a blank crop.
+ * Identical crops share a path, so a caption that sits still for 40 seconds is read once.
  */
 export async function extractCrops(file, roi, { width, height, duration, workDir, signal, onProgress } = {}) {
   const parts = [], maps = []
-  const kinds = ['name', ...(roi.timer ? ['timer'] : [])]
+  const boxes = nameBoxes(roi)
+  const kinds = [...boxes.map((_, i) => 'name' + i), ...(roi.timer ? ['timer'] : [])]
   const geo = {}
-  kinds.forEach(k => { geo[k] = cropGeometry(roi[k], width, height, k === 'timer' ? 64 : 72) })
-  const split = kinds.length > 1 ? `split=${kinds.length}${kinds.map(k => `[${k}0]`).join('')}` : 'null[name0]'
+  kinds.forEach(k => { geo[k] = cropGeometry(k === 'timer' ? roi.timer : boxes[+k.slice(4)], width, height, k === 'timer' ? 64 : 72) })
+  const split = kinds.length > 1 ? `split=${kinds.length}${kinds.map(k => `[${k}s]`).join('')}` : `null[${kinds[0]}s]`
   parts.push(`[0:v]fps=1,${split}`)
   for (const k of kinds) {
     const g = geo[k]
-    parts.push(`[${k}0]crop=${g.cw}:${g.ch}:${g.cx}:${g.cy},scale=${g.ow}:${g.oh}:flags=bicubic,format=gray[${k}]`)
+    parts.push(`[${k}s]crop=${g.cw}:${g.ch}:${g.cx}:${g.cy},scale=${g.ow}:${g.oh}:flags=bicubic,format=gray[${k}]`)
     maps.push('-map', `[${k}]`, '-f', 'rawvideo', path.join(workDir, `${k}.gray`))
   }
   await run('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-nostdin', '-y', '-progress', 'pipe:1', '-nostats', '-i', file, '-filter_complex', parts.join(';'), ...maps], {
@@ -87,21 +92,27 @@ export async function extractCrops(file, roi, { width, height, duration, workDir
     for (let i = 0; i < n; i++) {
       const b = binarize(raw.subarray(i * size, (i + 1) * size))
       if (blank(b)) { out[k].push(null); last = null; continue }
+      // The timer is read as its digits alone: the ring round a countdown reads as more digits.
+      const px = k === 'timer' ? digitsOnly(b.px, ow, oh) : b.px
       // A caption over a moving picture is never byte-identical from one second to the next.
       // Within NEAR of the crop just read it is the same caption, and is not read again. The
       // timer changes every second by design, so it only shares exact copies.
-      if (k === 'name' && last && difference(b.px, last.px) < NEAR) { out[k].push(last.path); continue }
-      const hash = crypto.createHash('sha1').update(b.px).digest('hex')
+      if (k !== 'timer' && last && difference(px, last.px) < NEAR) { out[k].push(last.path); continue }
+      const hash = crypto.createHash('sha1').update(px).digest('hex')
       let p = seen.get(hash)
       if (!p) {
         p = path.join(dir, `${String(seen.size).padStart(5, '0')}.pgm`)
-        fs.writeFileSync(p, pgm(b.px, ow, oh))
+        fs.writeFileSync(p, pgm(px, ow, oh))
         seen.set(hash, p)
       }
-      last = { px: b.px, path: p }
+      last = { px, path: p }
       out[k].push(p)
     }
   }
-  if (!out.timer) out.timer = new Array(out.name.length).fill(null)
-  return { seconds: Number.isFinite(seconds) ? seconds : 0, name: out.name, timer: out.timer }
+  const len = Number.isFinite(seconds) ? seconds : 0
+  return {
+    seconds: len,
+    names: boxes.map((_, i) => out['name' + i]),
+    timer: out.timer || new Array(len).fill(null)
+  }
 }
