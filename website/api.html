@@ -2562,17 +2562,23 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="m post">POST</span>
     <span class="ep-path"><code>/api/health/samples</code><span class="ep-chip public">public</span></span>
     <span class="ep-chev" aria-hidden="true"></span>
-    <span class="ep-sum">Readings an iPhone Shortcut read from Apple Health</span>
+    <span class="ep-sum">Readings an iPhone Shortcut or Health Auto Export read from Apple Health</span>
   </summary>
   <div class="ep-body">
 <p>Authenticated by the profile's Shortcut key (<code>Authorization: Bearer ogh_…</code>), not by a session. The readings are folded into the profile the way the app's own Apple Health import folds them (one reading per sample, one per day for a day's total, heart rate as the day's mean, lowest and highest, sleep as the night's asleep time) and written as a new revision, which the app's revision check picks up. A second send of the same readings changes nothing; a reading the user deleted is not brought back; nothing the user typed is touched. At most 60 requests an hour and 20,000 values a request.</p>
+<p>Two bodies are taken, told apart by their shape: a Shortcut's <code>metrics</code> object, or what the Health Auto Export app's REST API automation posts (JSON, Health Metrics) under <code>data.metrics</code>. Both give the same readings the same ids, so a day sent both ways is one.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public: no authentication required.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
   <div class="prow">
-    <span class="p-name">metrics<em class="p-req" title="required">required</em></span>
+    <span class="p-name">metrics</span>
     <span class="p-type">object</span>
     <span class="p-desc">By metric (<code>weight</code>, <code>bodyFat</code>, <code>leanMass</code>, <code>bmi</code>, <code>height</code>, <code>steps</code>, <code>distance</code>, <code>activeEnergy</code>, <code>restingEnergy</code>, <code>heartRate</code>, <code>restingHeartRate</code>): <code>values</code> and <code>dates</code>, parallel lists or the same as text with one item per line, and an optional <code>unit</code> (kg, lb, %, cm, m, in, km, mi, kcal, kJ). Dates are ISO 8601 with their offset; a day's total takes the day. <code>sleep</code> takes <code>starts</code>, <code>ends</code> and <code>values</code> (the stage of each span; in-bed and awake spans are left out). Unknown metrics are skipped.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">data</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">Health Auto Export's body: <code>metrics</code> is a list of <code>{ name, units, data }</code>, each point <code>{ qty, date }</code> with <code>date</code> as <code>yyyy-MM-dd HH:mm:ss Z</code>; <code>heart_rate</code> points are <code>{ Min, Avg, Max, date }</code>; <code>sleep_analysis</code> is a night <code>{ date, totalSleep, sleepEnd }</code> in hours, or single stages <code>{ startDate, endDate, value }</code>. Read: weight &amp; body mass, body fat percentage, lean body mass, body mass index, height, step count, walking + running distance, active and basal energy, heart rate, resting heart rate, sleep analysis; anything else is skipped.</span>
   </div>
 </div>
     <p class="ep-h">Responses</p>
@@ -2583,7 +2589,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">400</span>
-    <span class="p-desc">No <code>metrics</code></span>
+    <span class="p-desc">Neither <code>metrics</code> nor <code>data.metrics</code></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>

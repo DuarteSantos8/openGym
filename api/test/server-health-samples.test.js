@@ -136,3 +136,22 @@ test('no profile yet: the Shortcut is told to open the app first', async t => {
   const r = await send(h, key, SHORTCUT);
   assert.equal(r.status, 409);
 });
+
+test('Health Auto Export posts to the same address with the same key, and lands on the same days', async t => {
+  const h = await startServer(t, { _rev: 1, unit: 'kg', workouts: [], routines: [] });
+  const key = (await call(h, 'POST', '/api/health/key', { headers: session() })).body.key;
+  const AUTO = { data: { metrics: [
+    { name: 'step_count', units: 'count', data: [{ qty: 9500, date: '2026-10-12 00:00:00 +0200', source: 'iPhone' }] },
+    { name: 'weight_&_body_mass', units: 'kg', data: [{ qty: 80.1, date: '2026-10-12 07:31:00 +0200' }] },
+    { name: 'sleep_analysis', units: 'hr', data: [{ date: '2026-10-12', totalSleep: 7, sleepEnd: '2026-10-12 06:30:00 +0200' }] },
+  ], workouts: [] } };
+  const r = await send(h, key, AUTO);
+  assert.deepEqual({ status: r.status, added: r.body.added }, { status: 200, added: 3 });
+  // the Shortcut sending the same day afterwards adds nothing beside it
+  const sc = await send(h, key, { metrics: { steps: { values: '9500', dates: '2026-10-12' }, weight: { values: '80.1', dates: '2026-10-12T07:31:00+02:00', unit: 'kg' } } });
+  assert.deepEqual({ added: sc.body.added, updated: sc.body.updated }, { added: 0, updated: 0 });
+  const S = h.disk();
+  assert.equal(S.health.length, 3);
+  assert.equal(S.health.find(x => x.type === 'sleep').v, 420);
+  assert.deepEqual(S.bodyweight.map(b => [b.d, b.w]), [['2026-10-12', 80.1]]);
+});
