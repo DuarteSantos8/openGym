@@ -18,6 +18,7 @@ import { fatigueStateOf } from '../lib/recovery-view.js'
 import { e1rmSeries, best1RM, formulaOf } from '../lib/onerm.js'
 import { currentDbLoad, workoutAs } from '../lib/dumbbells.js'
 import { maxRepsSeries } from '../lib/pyramid.js'
+import { weighInAt } from '../lib/bodyweight.js'
 import { perSetSessions, perSetLines, dropOffSet } from '../lib/per-set.js'
 import {
   hasEffort, hasEstimableEffort, displayScale, scaleName, toScale, avgRir, effortSummary, effortWeeks,
@@ -427,9 +428,9 @@ export default function Stats() {
   const kind = displayScale(S)
   const hd = scaleName(kind)
 
-  const bwPts = S.bodyweight.filter(b => range === 0 || (b.t || new Date(b.d).getTime()) > now - range * 86400000)
-    .map(b => ({ t: b.t || new Date(b.d).getTime(), y: b.w, d: b.d }))
-  const bw30 = S.bodyweight.filter(b => (b.t || new Date(b.d).getTime()) > now - 30 * 86400000)
+  const bwPts = S.bodyweight.filter(b => range === 0 || weighInAt(b) > now - range * 86400000)
+    .map(b => ({ t: weighInAt(b), y: b.w, d: b.d }))
+  const bw30 = S.bodyweight.filter(b => weighInAt(b) > now - 30 * 86400000)
   const bwDelta30 = bw30.length > 1 ? bw30[bw30.length - 1].w - bw30[0].w : null
   const workouts = S.workouts
   const monthW = workouts.filter(w => workoutDay(w)?.slice(0, 7) === todayISO().slice(0, 7)).length

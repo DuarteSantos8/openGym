@@ -1,7 +1,7 @@
 // Weigh-ins read back week by week (Discord 'Weight'). From one morning to the next, body weight
 // moves with water, salt and the last meal by more than it moves in a month, so the number worth
 // following is the week's mean — the one a single weigh-in on the card cannot give you.
-import { weekKey } from './format.js'
+import { isoOf, weekKey } from './format.js'
 
 /**
  * The weigh-ins grouped into weeks, newest week first. Each week carries its mean, how many
@@ -25,4 +25,14 @@ export function weeklyWeights(bodyweight, ws) {
   })
   weeks.forEach((week, i) => { week.delta = i ? week.avg - weeks[i - 1].avg : null })
   return weeks.reverse()
+}
+
+/**
+ * Where a weigh-in sits on a time axis. `t` is when it was typed, which is what a sync merge goes
+ * by; for a weigh-in logged for an earlier day that is not on its day, so it is put
+ * at noon of the day it is for instead.
+ */
+export function weighInAt(b) {
+  const t = Number(b?.t)
+  return t > 0 && isoOf(new Date(t)) === b.d ? t : new Date(b.d + 'T12:00:00').getTime()
 }

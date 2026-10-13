@@ -2090,6 +2090,7 @@ export default {
   'Enter at least one measurement': 'أدخل قياسًا واحدًا على الأقل',
   'Choose a valid date': 'اختر تاريخًا صالحًا',
   'That date already has measurements. Edit it instead.': 'هذا التاريخ فيه قياسات بالفعل. عدّلها بدلًا من ذلك.',
+  'That date already has a weigh-in. Delete it first.': 'هذا التاريخ فيه وزن مسجّل بالفعل. احذفه أولًا.',
   'A custom measurement with that name already exists.': 'يوجد قياس مخصص بهذا الاسم بالفعل.',
   'Body fat must be between 0 and 100%.': 'يجب أن تكون نسبة الدهون بين 0 و100%.',
   'No measurements yet': 'لا توجد قياسات بعد',

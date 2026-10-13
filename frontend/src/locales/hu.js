@@ -2038,6 +2038,7 @@ export default {
   'Enter at least one measurement': 'Adj meg legalább egy méretet',
   'Choose a valid date': 'Válassz érvényes dátumot',
   'That date already has measurements. Edit it instead.': 'Ehhez a naphoz már van méret. Inkább szerkeszd azt.',
+  'That date already has a weigh-in. Delete it first.': 'Ehhez a naphoz már van mérés. Előbb töröld azt.',
   'A custom measurement with that name already exists.': 'Már van ilyen nevű egyéni méret.',
   'Body fat must be between 0 and 100%.': 'A testzsír 0 és 100% között lehet.',
   'No measurements yet': 'Még nincs méret',

@@ -2015,6 +2015,7 @@ export default {
   'Enter at least one measurement': 'Wpisz co najmniej jeden pomiar',
   'Choose a valid date': 'Wybierz prawidłową datę',
   'That date already has measurements. Edit it instead.': 'Ta data ma już pomiary — edytuj je zamiast tego.',
+  'That date already has a weigh-in. Delete it first.': 'Ta data ma już ważenie — najpierw je usuń.',
   'A custom measurement with that name already exists.': 'Własny pomiar o tej nazwie już istnieje.',
   'Body fat must be between 0 and 100%.': 'Tkanka tłuszczowa musi mieścić się między 0 a 100 %.',
   'No measurements yet': 'Brak pomiarów',

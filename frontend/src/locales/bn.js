@@ -2058,6 +2058,7 @@ export default {
   'Enter at least one measurement': 'অন্তত একটি মাপ লিখুন',
   'Choose a valid date': 'সঠিক তারিখ বেছে নিন',
   'That date already has measurements. Edit it instead.': 'এই তারিখে আগেই মাপ আছে। বরং সেটা সম্পাদনা করুন।',
+  'That date already has a weigh-in. Delete it first.': 'এই তারিখে আগেই ওজন মাপা আছে। আগে সেটা মুছুন।',
   'A custom measurement with that name already exists.': 'এই নামে একটি কাস্টম মাপ আগে থেকেই আছে।',
   'Body fat must be between 0 and 100%.': 'শরীরের চর্বি ০ থেকে ১০০% এর মধ্যে হতে হবে।',
   'No measurements yet': 'এখনো কোনো মাপ নেই',

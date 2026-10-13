@@ -2032,6 +2032,7 @@ export default {
   'Enter at least one measurement': 'Введіть хоча б один вимір',
   'Choose a valid date': 'Оберіть коректну дату',
   'That date already has measurements. Edit it instead.': 'На цю дату вже є виміри. Змініть їх.',
+  'That date already has a weigh-in. Delete it first.': 'На цю дату вже є зважування. Спершу видаліть його.',
   'A custom measurement with that name already exists.': 'Власний вимір із такою назвою вже існує.',
   'Body fat must be between 0 and 100%.': 'Відсоток жиру має бути від 0 до 100%.',
   'No measurements yet': 'Вимірів поки немає',

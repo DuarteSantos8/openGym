@@ -1025,6 +1025,7 @@ export const PT_BR_OVERRIDES = {
   'Clear': 'Limpar',
   'QR code': 'QR code',
   'Delete weigh-in': 'Excluir pesagem',
+  'That date already has a weigh-in. Delete it first.': 'Essa data já tem uma pesagem — exclua-a primeiro.',
   'Green': 'Verde',
   'Blue': 'Azul',
   'Orange': 'Laranja',

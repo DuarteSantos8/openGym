@@ -2015,6 +2015,7 @@ export default {
   'Enter at least one measurement': '请至少输入一项测量',
   'Choose a valid date': '请选择有效日期',
   'That date already has measurements. Edit it instead.': '该日期已有测量——请直接编辑。',
+  'That date already has a weigh-in. Delete it first.': '该日期已有称重记录——请先删除。',
   'A custom measurement with that name already exists.': '已有同名的自定义测量项。',
   'Body fat must be between 0 and 100%.': '体脂率必须在 0% 到 100% 之间。',
   'No measurements yet': '还没有测量',

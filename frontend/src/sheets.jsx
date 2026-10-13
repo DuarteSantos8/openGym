@@ -297,14 +297,17 @@ function BwSheet({ required, onDone, close }) {
   const unit = st.unit
   const bw = lastBW(st)
   const [v, setV] = useState(bw ? bw.w : 70)
+  const [date, setDate] = useState(todayISO())
   const save = () => {
     const n = Math.round((v || 0) * 10) / 10
     if (!n || n <= 0) { toast(t('Enter a valid weight')); return }
     if (bwTooHeavy(n, unit)) return
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date > todayISO()) { toast(t('Choose a valid date')); return }
+    // Today's weigh-in is replaced by a second one, as it always was; an earlier day's is not.
+    if (date !== todayISO() && st.bodyweight.some(b => b.d === date)) { toast(t('That date already has a weigh-in. Delete it first.')); return }
     update(s => {
-      const iso = todayISO()
-      const ex = s.bodyweight.find(b => b.d === iso)
-      if (ex) { ex.w = n; ex.t = Date.now() } else s.bodyweight.push({ d: iso, w: n, t: Date.now() })
+      const ex = s.bodyweight.find(b => b.d === date)
+      if (ex) { ex.w = n; ex.t = Date.now() } else s.bodyweight.push({ d: date, w: n, t: Date.now() })
       s.bodyweight.sort((a, b) => (a.d < b.d ? -1 : 1))
     })
     close()
@@ -324,7 +327,12 @@ function BwSheet({ required, onDone, close }) {
           <button className="iconbtn" aria-label={t('Cancel')} onClick={() => close()}><Icon name="xmark" /></button>
         </div>
       : <h3>{t('Log body weight')}</h3>}
-    <div className="muted small">{required ? t('Slide or tap to set your weight. We ask before every workout so your curve stays honest.') : t('Today') + ', ' + fmtDate(todayISO(), true)}</div>
+    {required
+      ? <div className="muted small">{t('Slide or tap to set your weight. We ask before every workout so your curve stays honest.')}</div>
+      : <label className="measure-date">
+          <span>{t('Date')}</span>
+          <input className="field" type="date" value={date} max={todayISO()} onChange={e => setDate(e.target.value)} />
+        </label>}
     <WeightInput value={v} setValue={setV} unit={unit} />
     <div style={{ height: 14 }} />
     <Button variant="primary" onClick={save}>{required ? t('Save & start workout') : t('Save')}</Button>

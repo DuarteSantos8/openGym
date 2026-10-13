@@ -2019,6 +2019,7 @@ export default {
   'Enter at least one measurement': 'Введи хотя бы один замер',
   'Choose a valid date': 'Выбери корректную дату',
   'That date already has measurements. Edit it instead.': 'На эту дату замеры уже есть — измени их.',
+  'That date already has a weigh-in. Delete it first.': 'На эту дату взвешивание уже есть — сначала удали его.',
   'A custom measurement with that name already exists.': 'Свой замер с таким названием уже есть.',
   'Body fat must be between 0 and 100%.': 'Процент жира должен быть от 0 до 100 %.',
   'No measurements yet': 'Замеров пока нет',

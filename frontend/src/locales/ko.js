@@ -2015,6 +2015,7 @@ export default {
   'Enter at least one measurement': '측정값을 하나 이상 입력하세요',
   'Choose a valid date': '올바른 날짜를 선택하세요',
   'That date already has measurements. Edit it instead.': '그 날짜에는 이미 측정값이 있어요 — 기존 기록을 편집하세요.',
+  'That date already has a weigh-in. Delete it first.': '그 날짜에는 이미 체중 기록이 있어요 — 먼저 삭제하세요.',
   'A custom measurement with that name already exists.': '같은 이름의 사용자 항목이 이미 있어요.',
   'Body fat must be between 0 and 100%.': '체지방률은 0에서 100 % 사이여야 해요.',
   'No measurements yet': '아직 측정값이 없어요',

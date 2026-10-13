@@ -2015,6 +2015,7 @@ export default {
   'Enter at least one measurement': 'Introduz pelo menos uma medida',
   'Choose a valid date': 'Escolhe uma data válida',
   'That date already has measurements. Edit it instead.': 'Essa data já tem medidas — edita-as em vez disso.',
+  'That date already has a weigh-in. Delete it first.': 'Essa data já tem uma pesagem — elimina-a primeiro.',
   'A custom measurement with that name already exists.': 'Já existe uma medida personalizada com esse nome.',
   'Body fat must be between 0 and 100%.': 'A gordura corporal tem de estar entre 0 e 100 %.',
   'No measurements yet': 'Ainda sem medidas',

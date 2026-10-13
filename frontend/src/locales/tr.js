@@ -2015,6 +2015,7 @@ export default {
   'Enter at least one measurement': 'En az bir ölçü gir',
   'Choose a valid date': 'Geçerli bir tarih seç',
   'That date already has measurements. Edit it instead.': 'Bu tarihte zaten ölçü var — onu düzenle.',
+  'That date already has a weigh-in. Delete it first.': 'Bu tarihte zaten tartı var — önce onu sil.',
   'A custom measurement with that name already exists.': 'Bu adda özel bir ölçü zaten var.',
   'Body fat must be between 0 and 100%.': 'Vücut yağı %0 ile %100 arasında olmalı.',
   'No measurements yet': 'Henüz ölçü yok',

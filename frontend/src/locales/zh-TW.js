@@ -2011,6 +2011,7 @@ export default {
   'Enter at least one measurement': '請至少輸入一項測量',
   'Choose a valid date': '請選擇有效的日期',
   'That date already has measurements. Edit it instead.': '這個日期已經有測量紀錄，請改為編輯它。',
+  'That date already has a weigh-in. Delete it first.': '這個日期已經有體重紀錄，請先刪除它。',
   'A custom measurement with that name already exists.': '已經有同名的自訂測量。',
   'Body fat must be between 0 and 100%.': '體脂率必須介於 0 到 100% 之間。',
   'No measurements yet': '還沒有測量紀錄',

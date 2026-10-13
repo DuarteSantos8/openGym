@@ -2046,6 +2046,7 @@ export default {
   'Enter at least one measurement': 'ใส่การวัดอย่างน้อยหนึ่งรายการ',
   'Choose a valid date': 'เลือกวันที่ที่ถูกต้อง',
   'That date already has measurements. Edit it instead.': 'วันที่นี้มีการวัดอยู่แล้ว แก้ไขอันเดิมแทนนะ',
+  'That date already has a weigh-in. Delete it first.': 'วันที่นี้มีการชั่งน้ำหนักอยู่แล้ว ลบอันเดิมก่อน',
   'A custom measurement with that name already exists.': 'มีการวัดแบบกำหนดเองชื่อนี้อยู่แล้ว',
   'Body fat must be between 0 and 100%.': 'ไขมันในร่างกายต้องอยู่ระหว่าง 0 ถึง 100%',
   'No measurements yet': 'ยังไม่มีการวัด',

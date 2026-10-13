@@ -2015,6 +2015,7 @@ export default {
   'Enter at least one measurement': 'कम से कम एक माप दर्ज करें',
   'Choose a valid date': 'मान्य तारीख़ चुनें',
   'That date already has measurements. Edit it instead.': 'उस तारीख़ के माप पहले से हैं — उन्हीं को संपादित करें।',
+  'That date already has a weigh-in. Delete it first.': 'उस तारीख़ की वज़न प्रविष्टि पहले से है — पहले उसे हटाएँ।',
   'A custom measurement with that name already exists.': 'इस नाम का कस्टम माप पहले से मौजूद है।',
   'Body fat must be between 0 and 100%.': 'बॉडी फैट 0 से 100 % के बीच होना चाहिए।',
   'No measurements yet': 'अभी कोई माप नहीं',
