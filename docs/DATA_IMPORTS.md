@@ -53,7 +53,9 @@ the result and pick `export.xml` under **Import from another app**. The file is 
 megabytes; openGym reads only the body-weight records from it, in whatever unit each one was saved
 in, and keeps one weigh-in per day. Days that already have a weigh-in are left alone.
 
-A CSV with a date column and a weight column works the same way.
+A CSV with a date column and a weight column works the same way, and so does Strong's
+measurements export (Settings → Export Data, the file with *Measurement Type* and *Value*
+columns): only its weight rows are read, each in the unit it was logged in.
 
 ## Sharing a plan
 
