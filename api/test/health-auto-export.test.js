@@ -86,3 +86,17 @@ test('a Shortcut may send the unit once per value', () => {
   const r = readingsFromShortcut({ metrics: { weight: { values: '180\n181', dates: '2026-10-11T07:30:00+02:00\n2026-10-12T07:30:00+02:00', unit: 'lb\nlb' } } });
   assert.deepEqual(r.readings.map(x => x.v), [81.647, 82.1]);
 });
+
+test('every metric a Shortcut can send, in the units a phone may use', () => {
+  const at = '2026-10-12T08:00:00+02:00';
+  const one = (v, unit) => ({ values: [String(v)], dates: [at], unit });
+  const r = readingsFromShortcut({ metrics: {
+    weight: one(12.5, 'st'), bodyFat: one('0,2', '%'), leanMass: one(140, 'lb'), bmi: one(24.1, 'count'), height: one(70, 'in'),
+    steps: one(9000, 'count'), distance: one(5, 'mi'), activeEnergy: one(2092, 'kJ'), restingEnergy: one(1700, 'Cal'),
+    heartRate: { values: '60\n100', dates: `${at}\n2026-10-12T09:00:00+02:00`, unit: 'count/min' }, restingHeartRate: one(55, 'count/min'),
+  } });
+  const x = Object.fromEntries(r.readings.map(x => [x.type, x.v]));
+  assert.deepEqual(x, { weight: 79.379, bodyFat: 20, leanMass: 63.503, bmi: 24.1, height: 177.8, steps: 9000, distance: 8.05,
+    activeEnergy: 500, restingEnergy: 1700, heartRate: 80, restingHeartRate: 55 });
+  assert.equal(r.skipped, 0);
+});

@@ -161,9 +161,9 @@ function ShortcutSetup({ close, onChange }) {
 
     <h4 className="sec" style={{ marginTop: 18 }}>{t('How to set up the Shortcut')}</h4>
     <ol className="small" style={{ paddingInlineStart: 20, lineHeight: 1.5, margin: '6px 0 0' }}>
-      <li>{t('In Shortcuts, make a new shortcut and add “Find Health Samples” for each thing to send: Weight, Body Fat Percentage, Resting Heart Rate, Steps (Group By: Day) and Sleep, from the last 7 days.')}</li>
+      <li>{t('In Shortcuts, make a new shortcut and add “Find Health Samples” for each thing to send, from the last 7 days: Weight, Body Fat Percentage, Lean Body Mass, Body Mass Index, Height, Resting Heart Rate and Sleep; Steps, Walking + Running Distance, Active Energy and Resting Energy with Group By: Day; Heart Rate with Group By: Hour.')}</li>
       <li>{t('Add “Get Contents of URL” with the address above, method POST, a header Authorization with the value Bearer followed by a space and your key, and a JSON body.')}</li>
-      <li>{t('In the body, add a dictionary “metrics”; in it one dictionary per thing (weight, bodyFat, restingHeartRate, steps) with “values” = the samples’ Value and “dates” = their Start Date in ISO 8601, and “unit” for weight (kg or lb).')}</li>
+      <li>{t('In the body, add a dictionary “metrics”; in it one dictionary per thing (weight, bodyFat, leanMass, bmi, height, steps, distance, activeEnergy, restingEnergy, heartRate, restingHeartRate) with “values” = the samples’ Value, “dates” = their Start Date in ISO 8601 and “unit” = their Unit.')}</li>
       <li>{t('For sleep, a dictionary “sleep” with “starts” = Start Date, “ends” = End Date (both ISO 8601) and “values” = Value.')}</li>
       <li>{t('In Automation, add a daily one at a time you like that runs the shortcut without asking.')}</li>
     </ol>
@@ -174,7 +174,7 @@ function ShortcutSetup({ close, onChange }) {
     <ol className="small" style={{ paddingInlineStart: 20, lineHeight: 1.5, margin: '6px 0 0' }}>
       <li>{t('In Health Auto Export, open Automations, add a new one of type REST API and paste the address above as its URL.')}</li>
       <li>{t('Under Headers, add Authorization with the value Bearer followed by a space and your key.')}</li>
-      <li>{t('Export Format JSON, Data Type Health Metrics, then choose what to send: Weight & Body Mass, Body Fat Percentage, Step Count, Resting Heart Rate, Sleep Analysis.')}</li>
+      <li>{t('Export Format JSON, Data Type Health Metrics, then choose what to send: Weight & Body Mass, Body Fat Percentage, Lean Body Mass, Body Mass Index, Height, Step Count, Walking + Running Distance, Active Energy, Basal Energy Burned, Heart Rate, Resting Heart Rate, Sleep Analysis.')}</li>
       <li>{t('Date Range Previous 7 Days, Summarize Data on with Time Grouping by days, and a daily Sync Cadence.')}</li>
     </ol>
     <div className="small dim" style={{ marginTop: 8 }}>{t('Sending the same days twice adds nothing. Readings you delete here are not sent back.')}</div>

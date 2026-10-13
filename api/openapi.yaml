@@ -2648,7 +2648,7 @@ paths:
                     By metric (`weight`, `bodyFat`, `leanMass`, `bmi`, `height`, `steps`, `distance`,
                     `activeEnergy`, `restingEnergy`, `heartRate`, `restingHeartRate`): `values` and
                     `dates`, parallel lists or the same as text with one item per line, and an
-                    optional `unit` (kg, lb, %, cm, m, in, km, mi, kcal, kJ). Dates are ISO 8601
+                    optional `unit` (kg, lb, st, %, cm, m, in, ft, km, mi, kcal, kJ), once or once per value. Dates are ISO 8601
                     with their offset; a day's total takes the day. `sleep` takes `starts`, `ends`
                     and `values` (the stage of each span; in-bed and awake spans are left out).
                     Unknown metrics are skipped.
