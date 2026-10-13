@@ -66,14 +66,16 @@ function candidateUrls(spec, base, path) {
   return versionlessBases.has(base) ? [bare, url] : [url, bare];
 }
 
-/** `send(url)` with the fallback above. When the other form fails as well, the first answer is
- *  the one returned, so Ollama's "model not found" 404 still reaches the person unchanged. */
+/** `send(url)` with the fallback above. When both forms answer 404, keep the first error so
+ *  Ollama's "model not found" still reaches the person unchanged. Other answers belong to the
+ *  selected route, including JSON-mode rejection and transient errors handled by invoke. */
 async function reach(spec, base, path, send) {
   const urls = candidateUrls(spec, base, path);
   const first = await send(urls[0]);
   if (first.status !== 404 || urls.length < 2) return first;
   const second = await send(urls[1]);
-  if (!second.ok) { try { await second.text(); } catch { /* drained or gone */ } return first; }
+  if (second.status === 404) { try { await second.text(); } catch { /* drained or gone */ } return first; }
+  try { await first.text(); } catch { /* drained or gone */ }
   if (urls[1] === endpointUrl(base, path)) versionlessBases.delete(base);
   else versionlessBases.add(base);
   return second;
