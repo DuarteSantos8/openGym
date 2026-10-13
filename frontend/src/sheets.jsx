@@ -1,9 +1,10 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from './store/useStore.js'
+import { getSourceLabel, hasHealthStore, replaceDailyWeight } from './lib/health-weight.js'
 import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V } from './lib/equipment.js'
-import { fmtDate, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
+import { fmtAgo, fmtDate, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
 import { usesBar, defaultBarWeight, hasBarOverride, isNoBar } from './lib/bar.js'
 import { PLATE_SIZES, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
@@ -264,7 +265,7 @@ const bwTooHeavy = (n, unit) => {
   toast(t('That looks too heavy. Keep it at {0} or less.', fmtNum(bwMax(unit)) + ' ' + unit))
   return true
 }
-function WeightInput({ value, setValue, unit }) {
+function WeightInput({ value, setValue, unit, caption }) {
   const W_HI = wHi(unit)
   const clamp = x => Math.max(W_LO, Math.min(W_HI, Math.round((x || 0) * 10) / 10))
   const sv = Math.max(W_LO, Math.min(W_HI, value))
@@ -281,6 +282,7 @@ function WeightInput({ value, setValue, unit }) {
       </label>
       <button className="bw-pm" onClick={() => onSlide(value + 0.1)} aria-label={t('Increase by {0}', fmtNum(0.1))}><Icon name="plus" /></button>
     </div>
+    {caption && <p className="muted small" role="status" style={{ textAlign: 'center', margin: '2px 0 0' }}>{caption}</p>}
     <div className="chips" style={{ justifyContent: 'center', margin: '8px 0' }}>
       <button className="chip" onClick={() => onSlide(value - 1)}>−1</button>
       <button className="chip" onClick={() => onSlide(value - 0.5)}>−0.5</button>
@@ -292,21 +294,23 @@ function WeightInput({ value, setValue, unit }) {
 }
 
 /* ============================ body weight ============================ */
-function BwSheet({ required, onDone, close }) {
+function BwSheet({ required, onDone, close, fallbackReason }) {
   const st = useStore(s => s.S)
   const unit = st.unit
   const bw = lastBW(st)
+  // Only where this device reads a health store: which weight is pre-filled, and how old it is.
+  const usesHealth = useStore(s => hasHealthStore() && !!s.user)
+  const when = bw && (bw.src ? bw.m : bw.t)
   const [v, setV] = useState(bw ? bw.w : 70)
+  // The line describes the pre-filled number, so it goes once the field holds another one.
+  const label = bw ? getSourceLabel(bw.src) : null
+  const origin = usesHealth && label && v === bw.w ? [label, when && fmtAgo(when)].filter(Boolean).join(' · ') : null
   const save = () => {
     const n = Math.round((v || 0) * 10) / 10
     if (!n || n <= 0) { toast(t('Enter a valid weight')); return }
     if (bwTooHeavy(n, unit)) return
-    update(s => {
-      const iso = todayISO()
-      const ex = s.bodyweight.find(b => b.d === iso)
-      if (ex) { ex.w = n; ex.t = Date.now() } else s.bodyweight.push({ d: iso, w: n, t: Date.now() })
-      s.bodyweight.sort((a, b) => (a.d < b.d ? -1 : 1))
-    })
+    // Today's Health weigh-in saved unchanged stays as it is: a Health reading is not retagged as typed.
+    if (!(bw && bw.src && bw.d === todayISO() && n === bw.w)) update(s => { s.bodyweight = replaceDailyWeight(s.bodyweight, { d: todayISO(), w: n, t: Date.now() }) })
     close()
     if (onDone) onDone(n); else toast(t('Weight saved'))
   }
@@ -325,7 +329,8 @@ function BwSheet({ required, onDone, close }) {
         </div>
       : <h3>{t('Log body weight')}</h3>}
     <div className="muted small">{required ? t('Slide or tap to set your weight. We ask before every workout so your curve stays honest.') : t('Today') + ', ' + fmtDate(todayISO(), true)}</div>
-    <WeightInput value={v} setValue={setV} unit={unit} />
+    {fallbackReason && <p className="muted small" role="status">{t(fallbackReason)}</p>}
+    <WeightInput value={v} setValue={setV} unit={unit} caption={fallbackReason ? null : origin} />
     <div style={{ height: 14 }} />
     <Button variant="primary" onClick={save}>{required ? t('Save & start workout') : t('Save')}</Button>
     {required && <>
@@ -358,8 +363,9 @@ function WeighInRow({ b, unit, confirm = false }) {
     title: t('Delete weigh-in?'), message: `${fmtDate(b.d, true)} · ${fmtNum(b.w)} ${unit}`,
     confirmText: t('Delete'), danger: true, onConfirm: delEntry,
   })
+  const source = b.src && hasHealthStore() ? getSourceLabel(b.src) : null
   return <div className="row between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)' }}>
-    <span className="small muted">{fmtDate(b.d, true)}</span>
+    <span className="small muted">{fmtDate(b.d, true)}{source && ` · ${source}`}</span>
     <span className="row" style={{ gap: 12 }}><b>{fmtNum(b.w)} {unit}</b>
       <button className="iconbtn" style={{ width: 32, height: 30, borderRadius: 8, fontSize: 15, color: 'var(--red)' }} onClick={confirm ? ask : delEntry} aria-label={t('Delete weigh-in')}><Icon name="trash" /></button></span>
   </div>
@@ -2771,7 +2777,19 @@ export function startFlow(routineIds) {
   // The weigh-in is a setting (Settings → During a workout, issue #137): off goes straight
   // into the session with no body weight on it, same as "Start without weighing in".
   if (S().weighIn === false) { beginWorkout(routineIds, null); return }
-  bwSheet({ required: true, onDone: bw => beginWorkout(routineIds, bw) })
+  // Apple Health pre-fills the sheet (BwSheet says how old the reading is) but never answers it:
+  // a reading can be weeks old, and the check-in is what keeps the curve honest.
+  const { healthWeightStatus, user } = useStore.getState()
+  const usesHealth = hasHealthStore() && !!user
+  const reasons = {
+    pending: 'Apple Health is still checking for a weight. Enter your weight to start.',
+    unsupported: 'Apple Health is unavailable on this device. Enter your weight to start.',
+    'no-readable-data': 'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.',
+    failed: 'Apple Health could not load your weight. Enter your weight to start.',
+  }
+  const fallbackReason = usesHealth ? reasons[healthWeightStatus] : null
+  if (fallbackReason) console.warn(`Apple Health: ${healthWeightStatus}; using manual weigh-in`)
+  bwSheet({ required: true, fallbackReason, onDone: bw => beginWorkout(routineIds, bw) })
 }
 export function beginWorkout(routineIds, bw) {
   const st = S()

@@ -2239,4 +2239,10 @@ export default {
   'Your sports watch, calling you back.': 'Ваш спортивний годинник кличе вас назад.',
   'Coach wants you back on the bar.': 'Тренер чекає вас назад біля штанги.',
   'Gentle, for headphones or a quiet room.': 'Тихий, для навушників або спокійної кімнати.',
+  'Apple Health': 'Apple Health',
+  'Manual': 'Вручну',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'Apple Health ще шукає вагу. Введи свою вагу, щоб почати.',
+  'Apple Health is unavailable on this device. Enter your weight to start.': 'Apple Health недоступне на цьому пристрої. Введи свою вагу, щоб почати.',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'В Apple Health немає ваги, яку можна прочитати. Перевір доступ до Health у Налаштуваннях або введи вагу тут.',
+  'Apple Health could not load your weight. Enter your weight to start.': 'Apple Health не вдалося завантажити твою вагу. Введи свою вагу, щоб почати.',
 }

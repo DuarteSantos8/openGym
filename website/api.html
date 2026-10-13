@@ -4089,7 +4089,17 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow">
     <span class="p-name">t</span>
     <span class="p-type">number</span>
-    <span class="p-desc">Timestamp (ms).</span>
+    <span class="p-desc">Timestamp (ms) the entry was last saved.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">src</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Health store the weight was read from, e.g. &quot;apple-health&quot;. Absent on a typed weigh-in.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">m</span>
+    <span class="p-type">number</span>
+    <span class="p-desc">Timestamp (ms) the health reading was measured.</span>
   </div>
 </div>
   </div>

@@ -3,6 +3,9 @@
   "appName": "openGym",
   "webDir": "dist",
   "backgroundColor": "#0c0e12",
+  "ios": {
+    "loggingBehavior": "none"
+  },
   "android": {
     "allowMixedContent": true
   }

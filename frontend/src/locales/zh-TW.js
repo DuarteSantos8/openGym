@@ -2235,4 +2235,10 @@ export default {
   'Your sports watch, calling you back.': '你的運動手錶在叫你回來。',
   'Coach wants you back on the bar.': '教練等你回到槓鈴前。',
   'Gentle, for headphones or a quiet room.': '輕柔，適合耳機或安靜的房間。',
+  'Apple Health': 'Apple 健康',
+  'Manual': '手動',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'Apple 健康仍在尋找體重。請輸入體重以開始。',
+  'Apple Health is unavailable on this device. Enter your weight to start.': '此裝置無法使用 Apple 健康。請輸入體重以開始。',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'Apple 健康中沒有可讀取的體重。你可以在「設定」中檢查健康取用權限，或在此輸入體重。',
+  'Apple Health could not load your weight. Enter your weight to start.': 'Apple 健康無法載入你的體重。請輸入體重以開始。',
 }

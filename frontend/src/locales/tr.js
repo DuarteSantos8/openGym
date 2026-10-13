@@ -2242,4 +2242,10 @@ export default {
   'Your sports watch, calling you back.': 'Spor saatin seni geri çağırıyor.',
   'Coach wants you back on the bar.': 'Koç seni bara geri bekliyor.',
   'Gentle, for headphones or a quiet room.': 'Sakin, kulaklık ya da sessiz bir oda için.',
+  'Apple Health': 'Apple Health',
+  'Manual': 'Manuel',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'Apple Health hâlâ bir ağırlık arıyor. Başlamak için ağırlığını gir.',
+  'Apple Health is unavailable on this device. Enter your weight to start.': 'Apple Health bu cihazda kullanılamıyor. Başlamak için ağırlığını gir.',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'Apple Health\'te okunabilir bir ağırlık yok. Ayarlar\'dan Health erişimini kontrol edebilir veya ağırlığını buraya girebilirsin.',
+  'Apple Health could not load your weight. Enter your weight to start.': 'Apple Health ağırlığını yükleyemedi. Başlamak için ağırlığını gir.',
 }
