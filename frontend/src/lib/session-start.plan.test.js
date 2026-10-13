@@ -280,3 +280,52 @@ describe('"Your last session" keeps the old carry-over', () => {
     expect(reps(e)).toEqual([10, 10])
   })
 })
+
+describe('"Your last session" for an exercise with progression off', () => {
+  const routine = extra => [{ id: 'A', name: 'A', ex: [{ id: BENCH, sets: 2, reps: 10, weight: 50, prog: 'off', ...extra }] }]
+  const last = { w: 60, r: 7 }
+
+  it('opens the rows at the weight and reps logged last time', () => {
+    const st = state(routine(), { startFrom: 'last' })
+    train(st, ['A'], last)
+    const [e] = start(st, ['A'])
+    expect(e.plan.kind).toBe('off')
+    expect(work(e).map(s => [s.w, s.r])).toEqual([[60, 7], [60, 7]])
+  })
+
+  it('does the same for a routine that never set a weight', () => {
+    const st = state(routine({ weight: 0 }), { startFrom: 'last' })
+    train(st, ['A'], last)
+    const [e] = start(st, ['A'])
+    expect(work(e).map(s => [s.w, s.r])).toEqual([[60, 7], [60, 7]])
+  })
+
+  it('"Your plan" opens at the routine\'s weight and reps', () => {
+    const st = state(routine())
+    train(st, ['A'], last)
+    const [e] = start(st, ['A'])
+    expect(work(e).map(s => [s.w, s.r])).toEqual([[50, 10], [50, 10]])
+  })
+
+  it('leaves an exercise that has a progression policy to that policy', () => {
+    const st = state(routine({ prog: 'linear' }), { startFrom: 'last' })
+    train(st, ['A'], { w: 50, r: 10 })
+    const [e] = start(st, ['A'])
+    expect(e.plan.kind).toBe('up')
+    expect(work(e).map(s => s.w)).toEqual([52.5, 52.5])
+  })
+
+  it('still opens a routine kept out of progression at its own numbers', () => {
+    const st = state(routine(), { startFrom: 'last' })
+    train(st, ['A'], last)
+    st.routines[0].excludeFromProgression = true
+    const [e] = start(st, ['A'])
+    expect(work(e).map(s => [s.w, s.r])).toEqual([[50, 10], [50, 10]])
+  })
+
+  it('opens at the routine\'s numbers the first time, with nothing to copy', () => {
+    const st = state(routine(), { startFrom: 'last' })
+    const [e] = start(st, ['A'])
+    expect(work(e).map(s => [s.w, s.r])).toEqual([[50, 10], [50, 10]])
+  })
+})
