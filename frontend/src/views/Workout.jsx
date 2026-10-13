@@ -1173,7 +1173,7 @@ function ActiveWorkout() {
     const m = modeOf({ ...(e.target || {}), id: e.id })
     // A warm-up of a dumbbell lift lands on a bell you own when the profile lists them (#376).
     const ramp = (m === 'reps' && ownedWeightsFor(S, { ...(e.target || {}), id: e.id })) || defaultIncrement(e.id, S.unit)
-    e.sets = insertWarmupRow(e.sets, m, e.target || {}, ramp, barFloor(S, e.id))
+    e.sets = insertWarmupRow(e.sets, m, { ...(e.target || {}), id: e.id }, ramp, barFloor(S, e.id))
   })
   // The set-number menu's Remove and the swipe both go through deleteActiveSet, Undo and all.
   const removeSetAt = (idx, i) => deleteActiveSet(idx, i, { editing })

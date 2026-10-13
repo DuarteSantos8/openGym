@@ -494,6 +494,14 @@ describe('freestyleConfig', () => {
     expect(insertWarmupRow(rows, 'reps', bench, 5)[0].w).toBe(25)
   })
 
+  it('an added warm-up on an assistance machine gives more help, ramping down to the work weight', () => {
+    // 0017 assisted pull-up: 40 (1.5 × 25 rounded up to the step), then halfway down to 35
+    const rows = [{ w: 25, r: 10, done: false }]
+    const one = insertWarmupRow(rows, 'reps', { id: '0017' }, 5)
+    expect(one[0].w).toBe(40)
+    expect(insertWarmupRow(one, 'reps', { id: '0017' }, 5)[1].w).toBe(35)
+  })
+
   it('caps the planned warm-ups and ignores nonsense values', () => {
     const S = { exWeights: {}, workouts: [] }
     const base = { id: '0025', mode: 'reps', sets: 1, reps: 5, weight: 100 }
