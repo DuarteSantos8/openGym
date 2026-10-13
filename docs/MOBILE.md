@@ -169,8 +169,9 @@ never stored.
   app's whole backup past 25 MB, and a few videos would take the state file down with them. A
   device-to-device transfer keeps it. iOS includes Library in iCloud and computer backups.
 - **Permissions:** Android already has the camera. iOS asks for the camera
-  (`NSCameraUsageDescription`, now also for photos and videos of exercises) and, to record a
-  video with sound from the picker, the microphone (`NSMicrophoneUsageDescription`).
+  (`NSCameraUsageDescription`, now also for photos and videos of exercises and for the QR codes
+  on the machines) and, to record a video with sound from the picker, the microphone
+  (`NSMicrophoneUsageDescription`).
 
 Worth checking on a real device after changes here, since no test runs a WebView: a short
 video autoplays muted in the Android WebView; a long video seeks from its `_capacitor_file_`
