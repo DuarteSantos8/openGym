@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, test } from 'vitest'
 import lt from '../locales/lt.js'
 import pl from '../locales/pl.js'
-import { DATE_LOCALES, LANGS, _setLangState, tn } from './i18n-core.js'
+import { DATE_LOCALES, LANGS, _setLangState, t, tn } from './i18n-core.js'
 
 const placeholders = value => [...String(value).matchAll(/\{\d+\}/g)].map(match => match[0]).sort()
 
@@ -21,6 +21,30 @@ describe('Lithuanian locale', () => {
     expect(workouts(21)).toBe('21 treniruotė')
     expect(workouts(22)).toBe('22 treniruotės')
     expect(workouts(1.5)).toBe('1.5 treniruotės')
+  })
+
+  test('keeps context-sensitive fitness terms and both passkey sentences coherent', () => {
+    _setLangState('lt', lt, null, null)
+    const bio = t('your fingerprint, face or PIN')
+    expect(t('Passkeys use {0}. No passwords to remember.', bio))
+      .toBe('Prisijungimą su prieigos raktu patvirtinate piršto atspaudu, veido atpažinimu arba PIN kodu. Nereikia prisiminti slaptažodžių.')
+    expect(t('Pick a name, then confirm with {0}. The passkey lives on your device, so no password needed.', bio))
+      .toContain('patvirtinkite piršto atspaudu')
+    expect(t('Weekly')).toBe('Kas savaitę')
+    expect(t('Quick check-in')).toBe('Greitas pasisvėrimas')
+    expect(t('Pull-ups (10 reps, bodyweight)')).toContain('Prisitraukimai')
+    expect(t('soleus')).toBe('plekšninis raumuo')
+    expect(t('brachialis')).toBe('žastinis raumuo')
+  })
+
+  test('handles zero, teen, plural and decimal change counts', () => {
+    _setLangState('lt', lt, null, null)
+    const changes = n => tn('{0} change applied', '{0} changes applied', n)
+    expect(changes(1)).toBe('Pritaikytas 1 pakeitimas')
+    expect(changes(2)).toBe('Pritaikyti 2 pakeitimai')
+    expect(changes(0)).toBe('Pritaikyta 0 pakeitimų')
+    expect(changes(11)).toBe('Pritaikyta 11 pakeitimų')
+    expect(changes(1.5)).toBe('Pritaikyta 1.5 pakeitimo')
   })
 
   test('matches the baseline key set and preserves interpolation placeholders', () => {
