@@ -1410,6 +1410,162 @@ paths:
               example: { error: "credential already registered", code: "credential-exists" }
         '429': { $ref: '#/components/responses/TooManyRequests' }
 
+  /api/account/plan-keys:
+    get:
+      tags: [auth]
+      operationId: listPlanKeys
+      summary: List the signed-in profile's plan credentials
+      description: Metadata only; never returns tokens or token hashes. A plan key cannot call this route.
+      responses:
+        '200':
+          description: Credential metadata.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  keys: { type: array, items: { $ref: '#/components/schemas/PlanKey' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [auth]
+      operationId: createPlanKey
+      summary: Create a credential restricted to plan reads and imports
+      description: |
+        Requires a normal account session and a fresh owner proof (passkey assertion or
+        current password while PASSWORD_LOGIN=1), like adding a passkey. At most ten
+        unexpired credentials per profile. Returns the token once; only its SHA-256 hash
+        is stored. Plan keys cannot create more keys, authenticate as a mobile app,
+        read full profile state or write workouts, weigh-ins or account settings.
+        Sign out everywhere, account disable/delete, expiry or explicit revocation
+        invalidates the credential. The same owner-proof throttling applies as to passkeys.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - { $ref: '#/components/schemas/OwnerProof' }
+                - type: object
+                  required: [name]
+                  properties:
+                    name: { type: string, minLength: 1, maxLength: 80 }
+                    days: { type: integer, minimum: 1, maximum: 365, default: 30 }
+      responses:
+        '200':
+          description: Metadata and token, returned only once.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/PlanKey' }
+                  - type: object
+                    properties:
+                      token: { type: string, description: 'Send as Authorization: Bearer opg_plan_… on /api/plans only.' }
+        '400': { description: Invalid metadata or too many credentials. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: Fresh owner proof required or refused. }
+        '429': { description: Owner-proof request throttled. }
+  /api/account/plan-keys/revoke:
+    post:
+      tags: [auth]
+      operationId: revokePlanKey
+      summary: Revoke one of the signed-in profile's plan credentials
+      description: Requires a normal session. A key belonging to another account is never changed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id: { type: string }
+      responses:
+        '200': { description: Revoked (also succeeds if already absent). }
+        '400': { description: Credential id required. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/plans:
+    get:
+      tags: [data]
+      operationId: getPlans
+      summary: Read routines and weekly assignments without workout history
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+        - planKeyAuth: []
+      description: Returns prescriptions, referenced custom-exercise metadata and revision; no workouts, weigh-ins or settings.
+      responses:
+        '200':
+          description: Current plan and revision for conditional import.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  plan: { $ref: '#/components/schemas/PlanFile' }
+                  rev: { type: integer }
+                  wid: { type: [string, 'null'] }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { description: Stored profile could not be read; nothing is replaced. }
+  /api/plans/import:
+    post:
+      tags: [data]
+      operationId: importPlan
+      summary: Import a JSON plan file without changing recorded results
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+        - planKeyAuth: []
+      description: |
+        Adds routines with fresh ids and reuses or adds custom exercises exactly as the
+        existing Plan file importer does, converting prescribed loads to the profile's unit.
+        An opt-in schedule flag replaces weekly assignments; default leaves them intact.
+        Workouts, weigh-ins, date assignments and settings are preserved. Unknown exercise
+        ids and extra fields are refused instead of being silently dropped. No provider call.
+        Requires baseRev and, when the document has a write id, its baseWid from GET /api/plans.
+        A conflict returns only revision/write id, never full profile state. Read/check/write
+        is atomic within the server process. Repeating the same revision cannot import twice;
+        fetching a fresh revision and importing again intentionally adds new routines.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [plan, baseRev]
+              properties:
+                plan: { $ref: '#/components/schemas/PlanFile' }
+                baseRev: { type: integer, minimum: 0 }
+                baseWid: { type: string }
+                schedule: { type: boolean, default: false }
+      responses:
+        '200':
+          description: Imported.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  rev: { type: integer }
+                  wid: { type: string }
+                  routines: { type: integer, description: Number of added routines. }
+        '400': { description: Invalid plan file, unit, unknown exercise id, extra field or missing revision. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: Stale revision or different write id; nothing imported.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string, const: conflict }
+                  rev: { type: integer }
+                  wid: { type: [string, 'null'] }
+        '413': { description: Body exceeds the existing 5 MiB request limit. }
+        '503': { description: Stored profile or plan is unreadable; nothing is replaced. }
+
   /api/data:
     get:
       tags: [data]
@@ -2955,6 +3111,10 @@ paths:
 
 components:
   securitySchemes:
+    planKeyAuth:
+      type: http
+      scheme: bearer
+      description: Expiring, revocable opg_plan_ credential; accepted only by GET /api/plans and POST /api/plans/import.
     cookieAuth:
       type: apiKey
       in: cookie
@@ -3099,6 +3259,105 @@ components:
           example: { error: "that code is wrong, used or expired", code: "link-invalid" }
 
   schemas:
+    PlanKey:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        expires: { type: integer, description: Expiry in epoch milliseconds. }
+        scope: { type: string, const: 'plans:write' }
+    PlanFile:
+      type: object
+      description: Existing openGym plan file. Import accepts at most 100 routines, 100 exercises per routine and 100 custom exercises. See docs/DATA_IMPORTS.md.
+      additionalProperties: false
+      required: [opengym_plan, routines]
+      properties:
+        opengym_plan: { type: integer, const: 1 }
+        exported: { type: string }
+        name: { type: string }
+        unit: { type: string, enum: [kg, lb, lbs] }
+        weightUnit: { type: string, enum: [kg, lb, lbs] }
+        week:
+          type: object
+          description: Weekday keys 0 through 6, with a routine id or array of routine ids from this file.
+          additionalProperties:
+            oneOf:
+              - { type: string }
+              - { type: array, items: { type: string } }
+        routines:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, name, ex]
+            properties:
+              id: { type: string }
+              name: { type: string }
+              emoji: { type: string }
+              prog: { type: string }
+              excludeFromProgression: { type: boolean }
+              ex:
+                type: array
+                minItems: 1
+                maxItems: 100
+                items: { $ref: '#/components/schemas/PlanExercise' }
+        customEx:
+          type: array
+          maxItems: 100
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, n, bp]
+            properties:
+              id: { type: string }
+              n: { type: string }
+              bp: { type: string }
+              desc: { type: string }
+              url: { type: string }
+              eq: { type: string }
+              tg: { type: string }
+              primaries: { type: array, items: { type: string } }
+              secondaries: { type: array, items: { type: string } }
+              muscleGroups: { type: array, items: { type: string } }
+    PlanExercise:
+      type: object
+      additionalProperties: false
+      required: [id, sets]
+      properties:
+        id: { type: string }
+        sets: { type: integer, minimum: 1, maximum: 100 }
+        mode: { type: string, enum: [reps, time, cardio] }
+        reps: { type: number }
+        weight: { type: number }
+        min: { type: number }
+        speed: { type: number }
+        sec: { type: number }
+        bodyweight: { type: boolean }
+        side: { type: boolean }
+        prog: { type: string }
+        inc: { type: number }
+        deloadFactor: { type: number }
+        repsMin: { type: number }
+        repsMax: { type: number }
+        restSec: { type: number }
+        warmupRestSec: { type: number }
+        sg: { type: string }
+        note: { type: string }
+        warmupSets: { type: number }
+        pyramid: { type: array, items: { oneOf: [{ type: number }, { type: string, const: max }] } }
+        pyramidRest: { type: array, items: { type: number } }
+        intensifier:
+          type: object
+          additionalProperties: false
+          required: [type]
+          properties:
+            type: { type: string, enum: [dropset, restpause] }
+            count: { type: number }
+            pct: { type: number }
+            totalReps: { type: number }
+            restSec: { type: number }
     Error:
       type: object
       required: [error]
