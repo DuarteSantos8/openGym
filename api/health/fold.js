@@ -26,7 +26,7 @@ export const FOLD = {
   sleep: 'sleep',
 };
 
-const mass = (v, u) => (/^lbs?$/i.test(u) ? v * LB_KG : /^g$/i.test(u) ? v / 1000 : v);
+const mass = (v, u) => (/^lbs?$/i.test(u) ? v * LB_KG : /^st$/i.test(u) ? v * 14 * LB_KG : /^g$/i.test(u) ? v / 1000 : v);
 const percent = v => (v <= 1 ? v * 100 : v);
 const length = (v, u) => (u === 'm' ? v * 100 : u === 'mm' ? v / 10 : u === 'in' ? v * 2.54 : u === 'ft' ? v * 30.48 : v);
 const distance = (v, u) => (u === 'mi' ? v * 1.609344 : u === 'm' ? v / 1000 : v);

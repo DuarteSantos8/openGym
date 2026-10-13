@@ -2573,7 +2573,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow">
     <span class="p-name">metrics</span>
     <span class="p-type">object</span>
-    <span class="p-desc">By metric (<code>weight</code>, <code>bodyFat</code>, <code>leanMass</code>, <code>bmi</code>, <code>height</code>, <code>steps</code>, <code>distance</code>, <code>activeEnergy</code>, <code>restingEnergy</code>, <code>heartRate</code>, <code>restingHeartRate</code>): <code>values</code> and <code>dates</code>, parallel lists or the same as text with one item per line, and an optional <code>unit</code> (kg, lb, %, cm, m, in, km, mi, kcal, kJ). Dates are ISO 8601 with their offset; a day's total takes the day. <code>sleep</code> takes <code>starts</code>, <code>ends</code> and <code>values</code> (the stage of each span; in-bed and awake spans are left out). Unknown metrics are skipped.</span>
+    <span class="p-desc">By metric (<code>weight</code>, <code>bodyFat</code>, <code>leanMass</code>, <code>bmi</code>, <code>height</code>, <code>steps</code>, <code>distance</code>, <code>activeEnergy</code>, <code>restingEnergy</code>, <code>heartRate</code>, <code>restingHeartRate</code>): <code>values</code> and <code>dates</code>, parallel lists or the same as text with one item per line, and an optional <code>unit</code> (kg, lb, st, %, cm, m, in, ft, km, mi, kcal, kJ), once or once per value. Dates are ISO 8601 with their offset; a day's total takes the day. <code>sleep</code> takes <code>starts</code>, <code>ends</code> and <code>values</code> (the stage of each span; in-bed and awake spans are left out). Unknown metrics are skipped.</span>
   </div>
   <div class="prow">
     <span class="p-name">data</span>
