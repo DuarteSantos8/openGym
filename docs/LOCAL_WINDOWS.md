@@ -177,7 +177,7 @@ Git и Docker build context исключают `.env`, `.env.*`, `data/`, `coach
 ## Nutrition (.NET 10)
 
 Установи .NET 10 SDK. `scripts/dev.ps1` запускает сервис на localhost:5080,
-Node проксирует `/api/nutrition/hello`, а React открывает раздел с карточки
+Node проксирует `/api/nutrition/*`, а React открывает дневник питания с карточки
 «Нутрициология» на главной странице. `scripts/check-windows.ps1` включает
 .NET тесты. Docker запускает Nutrition без опубликованного порта.
 Схема авторизации, команды обновления и проверки: [NUTRITION.md](NUTRITION.md).

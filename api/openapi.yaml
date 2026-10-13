@@ -126,7 +126,7 @@ servers:
 
 tags:
   - name: nutrition
-    description: ASP.NET Core Nutrition proof of concept using the existing openGym session
+    description: Personal food catalog and diary using the existing openGym session
   - name: meta
     description: Health and public configuration
   - name: auth
@@ -165,6 +165,217 @@ security:
   - bearerAuth: []
 
 paths:
+  /api/nutrition/products:
+    get:
+      tags: [nutrition]
+      operationId: listNutritionProducts
+      summary: Search personal products (50 per page).
+      parameters:
+        - { name: search, in: query, schema: { type: string, maxLength: 200 } }
+        - { name: offset, in: query, schema: { type: integer, minimum: 0, default: 0 } }
+      responses:
+        '200':
+          description: Successful user-scoped operation.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NutritionProductPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: 'No active item belongs to this user.' }
+        '409': { description: 'Entry creation id already used with a different payload.' }
+        '410': { description: 'A retried entry creation refers to a deleted entry.' }
+        '503': { description: 'Nutrition or authentication unavailable.' }
+    post:
+      tags: [nutrition]
+      operationId: createNutritionProduct
+      summary: Create a personal product.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NutritionProductInput' }
+      responses:
+        '201':
+          description: Successful user-scoped operation.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NutritionProduct' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: 'No active item belongs to this user.' }
+        '409': { description: 'Entry creation id already used with a different payload.' }
+        '410': { description: 'A retried entry creation refers to a deleted entry.' }
+        '503': { description: 'Nutrition or authentication unavailable.' }
+  /api/nutrition/products/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [nutrition]
+      operationId: getNutritionProduct
+      summary: Get a personal product.
+      responses:
+        '200':
+          description: Successful user-scoped operation.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NutritionProduct' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: 'No active item belongs to this user.' }
+        '409': { description: 'Entry creation id already used with a different payload.' }
+        '410': { description: 'A retried entry creation refers to a deleted entry.' }
+        '503': { description: 'Nutrition or authentication unavailable.' }
+    put:
+      tags: [nutrition]
+      operationId: updateNutritionProduct
+      summary: Update a product without changing diary snapshots.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NutritionProductInput' }
+      responses:
+        '200':
+          description: Successful user-scoped operation.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NutritionProduct' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: 'No active item belongs to this user.' }
+        '409': { description: 'Entry creation id already used with a different payload.' }
+        '410': { description: 'A retried entry creation refers to a deleted entry.' }
+        '503': { description: 'Nutrition or authentication unavailable.' }
+    delete:
+      tags: [nutrition]
+      operationId: deleteNutritionProduct
+      summary: Remove a product from the catalog; keep diary history.
+      responses:
+        '200':
+          description: Successful user-scoped operation.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NutritionOk' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: 'No active item belongs to this user.' }
+        '409': { description: 'Entry creation id already used with a different payload.' }
+        '410': { description: 'A retried entry creation refers to a deleted entry.' }
+        '503': { description: 'Nutrition or authentication unavailable.' }
+  /api/nutrition/diary:
+    get:
+      tags: [nutrition]
+      operationId: getNutritionDiary
+      summary: Get a day with unrounded nutritional totals.
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema: { type: string, format: date }
+      description: Local calendar date, not a UTC instant. Timed entries first, then untimed in creation order.
+      responses:
+        '200':
+          description: Successful user-scoped operation.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NutritionDiary' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: 'No active item belongs to this user.' }
+        '409': { description: 'Entry creation id already used with a different payload.' }
+        '410': { description: 'A retried entry creation refers to a deleted entry.' }
+        '503': { description: 'Nutrition or authentication unavailable.' }
+  /api/nutrition/entries:
+    post:
+      tags: [nutrition]
+      operationId: createNutritionEntry
+      summary: Create consumed food with a retry-safe client UUID.
+      description: Reuse the same id and payload after an uncertain network failure. Different payload returns 409; deleted ids return 410. The server snapshots the product only on first creation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NutritionEntryCreate' }
+      responses:
+        '201':
+          description: Successful user-scoped operation.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NutritionEntry' }
+        '200':
+          description: Replay of the original entry creation, including its current state.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NutritionEntry' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: 'No active item belongs to this user.' }
+        '409': { description: 'Entry creation id already used with a different payload.' }
+        '410': { description: 'A retried entry creation refers to a deleted entry.' }
+        '503': { description: 'Nutrition or authentication unavailable.' }
+  /api/nutrition/entries/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [nutrition]
+      operationId: getNutritionEntry
+      summary: Get a personal diary entry.
+      responses:
+        '200':
+          description: Successful user-scoped operation.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NutritionEntry' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: 'No active item belongs to this user.' }
+        '409': { description: 'Entry creation id already used with a different payload.' }
+        '410': { description: 'A retried entry creation refers to a deleted entry.' }
+        '503': { description: 'Nutrition or authentication unavailable.' }
+    put:
+      tags: [nutrition]
+      operationId: updateNutritionEntry
+      summary: Edit quantity, date, time or explicitly replace a product.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NutritionEntryUpdate' }
+      responses:
+        '200':
+          description: Successful user-scoped operation.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NutritionEntry' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: 'No active item belongs to this user.' }
+        '409': { description: 'Entry creation id already used with a different payload.' }
+        '410': { description: 'A retried entry creation refers to a deleted entry.' }
+        '503': { description: 'Nutrition or authentication unavailable.' }
+    delete:
+      tags: [nutrition]
+      operationId: deleteNutritionEntry
+      summary: Delete a diary entry (repeated deletion is safe).
+      responses:
+        '200':
+          description: Successful user-scoped operation.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NutritionOk' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: 'No active item belongs to this user.' }
+        '409': { description: 'Entry creation id already used with a different payload.' }
+        '410': { description: 'A retried entry creation refers to a deleted entry.' }
+        '503': { description: 'Nutrition or authentication unavailable.' }
+
   /api/nutrition/hello:
     get:
       tags: [nutrition]
@@ -2964,6 +3175,11 @@ components:
         skip the CSRF origin check; a browser never attaches this header on its own.
 
   responses:
+    BadRequest:
+      description: Invalid request fields, date, time or numerical precision.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
     Unauthorized:
       description: No session, expired/revoked session, or a disabled account.
       content:
@@ -3089,6 +3305,85 @@ components:
           example: { error: "that code is wrong, used or expired", code: "link-invalid" }
 
   schemas:
+    NutritionValues:
+      type: object
+      required: [calories, protein, fat, carbohydrates]
+      properties:
+        calories: { type: number, description: 'kcal; decimal calculation without intermediate rounding.' }
+        protein: { type: number, description: Grams of protein. }
+        fat: { type: number, description: Grams of fat. }
+        carbohydrates: { type: number, description: Grams of carbohydrates. }
+    NutritionProductInput:
+      type: object
+      required: [name, calories, protein, fat, carbohydrates]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+        brand: { oneOf: [{ type: string, maxLength: 100 }, { type: 'null' }] }
+        calories: { type: number, minimum: 0, maximum: 1000, multipleOf: 0.001 }
+        protein: { type: number, minimum: 0, maximum: 100, multipleOf: 0.001 }
+        fat: { type: number, minimum: 0, maximum: 100, multipleOf: 0.001 }
+        carbohydrates: { type: number, minimum: 0, maximum: 100, multipleOf: 0.001 }
+      description: All nutritional values are per 100 grams; up to 3 decimal places.
+    NutritionProduct:
+      allOf:
+        - { $ref: '#/components/schemas/NutritionProductInput' }
+        - type: object
+          required: [id]
+          properties:
+            id: { type: string, format: uuid }
+    NutritionProductPage:
+      type: object
+      required: [products, hasMore]
+      properties:
+        products:
+          type: array
+          items: { $ref: '#/components/schemas/NutritionProduct' }
+        hasMore: { type: boolean }
+    NutritionEntryUpdate:
+      type: object
+      required: [quantityGrams, date]
+      properties:
+        quantityGrams: { type: number, exclusiveMinimum: 0, maximum: 100000, multipleOf: 0.001 }
+        date: { type: string, format: date, description: 'Local date in yyyy-MM-dd format.' }
+        time: { oneOf: [{ type: string, pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$' }, { type: 'null' }] }
+        productId:
+          oneOf: [{ type: string, format: uuid }, { type: 'null' }]
+          description: 'Omit or use null to preserve the snapshot; supply an id to take a fresh snapshot.'
+    NutritionEntryCreate:
+      allOf:
+        - { $ref: '#/components/schemas/NutritionEntryUpdate' }
+        - type: object
+          required: [id, productId]
+          properties:
+            id: { type: string, format: uuid, description: 'Client UUID; immutable retry identity scoped to the authenticated user.' }
+            productId: { type: string, format: uuid }
+    NutritionEntry:
+      type: object
+      required: [id, productId, name, brand, quantityGrams, date, time, per100Grams, nutrition]
+      properties:
+        id: { type: string, format: uuid }
+        productId: { type: string, format: uuid }
+        name: { type: string }
+        brand: { oneOf: [{ type: string }, { type: 'null' }] }
+        quantityGrams: { type: number }
+        date: { type: string, format: date }
+        time: { oneOf: [{ type: string }, { type: 'null' }] }
+        per100Grams: { $ref: '#/components/schemas/NutritionValues' }
+        nutrition: { $ref: '#/components/schemas/NutritionValues' }
+    NutritionDiary:
+      type: object
+      required: [date, entries, totals]
+      properties:
+        date: { type: string, format: date }
+        entries:
+          type: array
+          items: { $ref: '#/components/schemas/NutritionEntry' }
+        totals: { $ref: '#/components/schemas/NutritionValues' }
+    NutritionOk:
+      type: object
+      required: [ok]
+      properties:
+        ok: { type: boolean }
     Error:
       type: object
       required: [error]

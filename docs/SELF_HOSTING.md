@@ -559,7 +559,13 @@ are not encrypted at rest — whoever can read that folder can see them.
 
 ## 6. Backups
 
-Everything is in `./data`:
+Profiles, passkeys and workout data are in `./data`. **Nutrition is separate:** its
+SQLite database lives in the persistent `nutrition-data` Docker volume. A complete
+instance backup needs both stores; stop the writers and follow the paired backup and
+restore procedure in [Nutrition](NUTRITION.md#complete-instance-backup-and-restore).
+Workout JSON exports and mobile auto-backups do not include the food diary.
+
+The workout/account archive is:
 
 ```bash
 tar czf opengym-backup-$(date +%F).tar.gz data/

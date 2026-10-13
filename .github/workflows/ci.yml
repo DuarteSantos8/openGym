@@ -123,8 +123,9 @@ jobs:
       - name: Boot all three images and check authentication end to end
         run: |
           docker network create opengym-ci
+          docker volume create opengym-ci-nutrition
           docker run -d --name api --network opengym-ci -e DATA_DIR=/data -e PASSWORD_LOGIN=1 -e NUTRITION_URL=http://nutrition:8080 opengym-api:ci
-          docker run -d --name nutrition --network opengym-ci -e OpenGym__ApiBaseUrl=http://api:3000 -e NO_PROXY=api,nutrition,localhost,127.0.0.1 opengym-nutrition:ci
+          docker run -d --name nutrition --network opengym-ci -v opengym-ci-nutrition:/data -e OpenGym__ApiBaseUrl=http://api:3000 -e NO_PROXY=api,nutrition,localhost,127.0.0.1 opengym-nutrition:ci
           docker run -d --name web --network opengym-ci -p 127.0.0.1:8080:80 opengym-web:ci
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail http://localhost:8080/api/health
           curl --fail http://localhost:8080/api/config
@@ -132,6 +133,10 @@ jobs:
           grep -q 'type="module"' /tmp/opengym.html
           docker exec -i api node --input-type=module < scripts/ci/nutrition-internal-smoke.mjs
           node scripts/ci/nutrition-smoke.mjs http://localhost:8080
+          docker rm -f nutrition
+          docker run -d --name nutrition --network opengym-ci -v opengym-ci-nutrition:/data -e OpenGym__ApiBaseUrl=http://api:3000 -e NO_PROXY=api,nutrition,localhost,127.0.0.1 opengym-nutrition:ci
+          docker exec -i api node --input-type=module < scripts/ci/nutrition-internal-smoke.mjs
+          node scripts/ci/nutrition-smoke.mjs http://localhost:8080 --verify-persistence
       - name: Container diagnostics
         if: failure()
         run: |
@@ -161,4 +166,5 @@ jobs:
         if: always()
         run: |
           docker rm -f web api nutrition || true
+          docker volume rm opengym-ci-nutrition || true
           docker network rm opengym-ci || true

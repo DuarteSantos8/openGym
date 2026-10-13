@@ -25,9 +25,13 @@ test('Nutrition gateway preserves Node session rules and forwards only credentia
   const calls = [];
   let reply = { status: 200, body: { message: 'Hi, Илья!' } };
   const service = http.createServer((req, res) => {
-    calls.push({ url: req.url, headers: req.headers });
-    res.writeHead(reply.status, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(reply.body));
+    let body = '';
+    req.on('data', d => body += d);
+    req.on('end', () => {
+      calls.push({ url: req.url, method: req.method, headers: req.headers, body });
+      res.writeHead(reply.status, { 'Content-Type': 'application/json' });
+      res.end(reply.raw ?? JSON.stringify(reply.body));
+    });
   });
   await new Promise(resolve => service.listen(0, '127.0.0.1', resolve));
   const child = spawn(process.execPath, ['server.js'], {
@@ -79,6 +83,46 @@ test('Nutrition gateway preserves Node session rules and forwards only credentia
   assert.equal((await hello({ Authorization: `Bearer ${token}` })).status, 401);
   reply = { status: 503, body: { error: 'authentication unavailable' } };
   assert.equal((await hello({ Authorization: `Bearer ${token}` })).status, 503);
+
+  const id = 'b8d5423d-a4f6-4759-a3cb-71bd068da786';
+  const auth = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', 'X-User-Id': 'admin' };
+  reply = { status: 200, body: { products: [], hasMore: false } };
+  let response = await fetch(base + '/api/nutrition/products?search=rice%20milk&offset=50&userId=admin', { headers: auth });
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), reply.body);
+  assert.equal(calls.at(-1).url, '/api/nutrition/products?search=rice+milk&offset=50');
+  assert.equal(calls.at(-1).headers['x-user-id'], undefined);
+  await fetch(base + '/api/nutrition/diary?date=2026-10-13&userId=admin', { headers: auth });
+  assert.equal(calls.at(-1).url, '/api/nutrition/diary?date=2026-10-13');
+  for (const [method, route] of [['POST', 'products'], ['POST', 'entries'], ['PUT', 'products/' + id],
+    ['PUT', 'entries/' + id], ['DELETE', 'products/' + id], ['DELETE', 'entries/' + id], ['GET', 'entries/' + id]]) {
+    const payload = { id, productId: id, quantityGrams: 125, date: '2026-10-13', time: null };
+    reply = { status: method === 'POST' ? 201 : 200, body: { id } };
+    response = await fetch(base + '/api/nutrition/' + route, { method, headers: auth,
+      ...(['POST', 'PUT'].includes(method) ? { body: JSON.stringify(payload) } : {}) });
+    assert.equal(response.status, reply.status);
+    assert.deepEqual(await response.json(), reply.body);
+    assert.equal(calls.at(-1).method, method);
+    assert.equal(calls.at(-1).url, '/api/nutrition/' + route);
+    if (['POST', 'PUT'].includes(method)) assert.deepEqual(JSON.parse(calls.at(-1).body), payload);
+  }
+  const before = calls.length;
+  assert.equal((await fetch(base + '/api/nutrition/entries', { method: 'POST', headers: { Cookie: `__Host-gymsid=${token}`, Origin: 'https://evil.example', 'Content-Type': 'application/json' }, body: '{}' })).status, 403);
+  assert.equal((await fetch(base + '/api/nutrition/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })).status, 401);
+  assert.equal((await fetch(base + '/api/nutrition/products', { method: 'POST', headers: auth, body: 'null' })).status, 400);
+  assert.equal((await fetch(base + '/api/nutrition/entries', { method: 'POST', headers: auth, body: JSON.stringify({ name: 'x'.repeat(65537) }) })).status, 413);
+  assert.equal((await fetch(base + '/api/nutrition/arbitrary', { headers: auth })).status, 404);
+  assert.equal(calls.length, before);
+  for (const status of [400, 401, 404, 409, 410, 413]) {
+    reply = { status, body: { error: 'failure', code: 'invalid_input' } };
+    response = await fetch(base + '/api/nutrition/products', { headers: auth });
+    assert.equal(response.status, status);
+    assert.deepEqual(await response.json(), reply.body);
+  }
+  reply = { status: 200, raw: '<html>Not our API</html>' };
+  assert.equal((await fetch(base + '/api/nutrition/products', { headers: auth })).status, 502);
+  reply = { status: 302, body: {} };
+  assert.equal((await fetch(base + '/api/nutrition/products', { headers: auth })).status, 502);
   service.closeAllConnections();
   await new Promise(resolve => service.close(resolve));
   assert.equal((await hello({ Authorization: `Bearer ${token}` })).status, 503);

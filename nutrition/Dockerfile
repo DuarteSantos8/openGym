@@ -23,5 +23,7 @@ LABEL org.opencontainers.image.title="opengym-nutrition" \
 WORKDIR /app
 COPY --from=build /out ./
 ENV ASPNETCORE_HTTP_PORTS=8080
+ENV Nutrition__DatabasePath=/data/nutrition.db
+RUN mkdir /data && chown $APP_UID:$APP_UID /data
 USER $APP_UID
 ENTRYPOINT ["dotnet", "OpenGym.Nutrition.dll"]

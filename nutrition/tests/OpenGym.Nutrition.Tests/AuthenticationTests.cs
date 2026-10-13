@@ -83,10 +83,21 @@ public sealed class AuthenticationTests
 
     private sealed class NutritionFactory : WebApplicationFactory<Program>
     {
+        private readonly string directory = Path.Combine(Path.GetTempPath(), "nutrition-auth-" + Guid.NewGuid());
         public AuthBackend Backend { get; } = new();
-        protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.ConfigureServices(services =>
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
+            builder.UseSetting("Nutrition:DatabasePath", Path.Combine(directory, "test.db"));
+            builder.ConfigureServices(services =>
             services.AddHttpClient(OpenGymAuthenticationHandler.ClientName)
                 .ConfigurePrimaryHttpMessageHandler(() => Backend));
+        }
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+        }
     }
 
     private sealed class AuthBackend : HttpMessageHandler

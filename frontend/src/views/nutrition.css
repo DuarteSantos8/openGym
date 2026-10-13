@@ -1,0 +1,31 @@
+.nutrition-page{display:flex;flex-direction:column;gap:18px}
+.nutrition-page h2{font-size:20px;font-weight:600}
+.nutrition-date{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.nutrition-date>.btn,.nutrition-row>.btn,.nutrition-actions .btn{width:auto;flex:0 0 auto}
+.nutrition-date .field{flex:1;min-width:150px;width:auto;color-scheme:dark}
+:root[data-theme="light"] .nutrition-date .field{color-scheme:light}
+.nutrition-values{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:12px 0 0}
+.nutrition-values dt{font-size:13px;color:var(--label-2);overflow-wrap:anywhere}
+.nutrition-values dd{margin:4px 0 0;font-size:20px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.nutrition-list{list-style:none;margin:0;padding:0}
+.nutrition-list>li{padding:16px 0;border-bottom:var(--hair) solid var(--sep)}
+.nutrition-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.nutrition-row>div:first-child,.nutrition-choice{flex:1;min-width:140px;overflow-wrap:anywhere}
+.nutrition-row p{margin:4px 0;font-size:14px;color:var(--label-2)}
+.nutrition-choice{display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:start;padding:12px;border-radius:var(--r-sm);background:var(--surface);color:var(--label);min-height:44px}
+.nutrition-choice span{font-size:14px;color:var(--label-2)}
+.nutrition-choice[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--acc)}
+.nutrition-choice:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.nutrition-choice:active{background:var(--surface-2)}
+.nutrition-picker{display:flex;flex-direction:column;gap:10px}
+.nutrition-form .nutrition-picker .nutrition-list{max-height:260px;overflow:auto}
+.nutrition-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.nutrition-form,.nutrition-product-form{display:flex;flex-direction:column;gap:16px}
+.nutrition-fields label,.nutrition-product-form>label{display:flex;flex-direction:column;gap:8px;font-size:14px}
+.nutrition-fields input{width:100%;min-width:0;color-scheme:dark}
+:root[data-theme="light"] .nutrition-fields input{color-scheme:light}
+.nutrition-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}
+.nutrition-confirm{flex-basis:100%}
+.nutrition-error{padding:12px;background:var(--surface);border-radius:var(--r-sm)}
+.nutrition-values dt,.nutrition-row p,.nutrition-choice span,.nutrition-picker .field::placeholder{color:color-mix(in srgb,var(--label) 70%,var(--surface))}
+@media(max-width:400px){.nutrition-values{grid-template-columns:repeat(2,minmax(0,1fr))}.nutrition-fields{grid-template-columns:minmax(0,1fr)}.nutrition-row>div:first-child{flex-basis:100%}}

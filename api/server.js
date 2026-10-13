@@ -34,7 +34,7 @@ import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from 
 import { effectiveRoutineId } from './queue.js';
 import { stampPut } from './sync-stamps.js';
 import { atomicWrite as durableWrite } from './durable.js';
-import { nutritionHello } from './nutrition.js';
+import { nutritionHello, nutritionProxy, nutritionRoute } from './nutrition.js';
 import { nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
 
 const PORT = +(process.env.PORT || 3000);
@@ -1835,7 +1835,18 @@ const mediaRoutes = {
 };
 
 /* ---------- routes ---------- */
+const nutritionGateway = (req, res) => nutritionProxy(req, res, { readSession, json, readBody });
 const routes = {
+  'GET /api/nutrition/products': nutritionGateway,
+  'POST /api/nutrition/products': nutritionGateway,
+  'GET /api/nutrition/products/{id}': nutritionGateway,
+  'PUT /api/nutrition/products/{id}': nutritionGateway,
+  'DELETE /api/nutrition/products/{id}': nutritionGateway,
+  'GET /api/nutrition/diary': nutritionGateway,
+  'POST /api/nutrition/entries': nutritionGateway,
+  'GET /api/nutrition/entries/{id}': nutritionGateway,
+  'PUT /api/nutrition/entries/{id}': nutritionGateway,
+  'DELETE /api/nutrition/entries/{id}': nutritionGateway,
   'GET /api/nutrition/hello': async (req, res) => nutritionHello(req, res, { readSession, json }),
 
   'GET /api/health': async (req, res) => json(res, 200, { ok: true, users: db.users.length }),
@@ -2576,6 +2587,7 @@ const server = http.createServer(async (req, res) => {
   // above stays a plain lookup, and so csrfOk and the catch-all see one name for every file.
   const mm = /^\/api\/media\/([0-9a-f]{64})$/.exec(url.pathname);
   if (mm) { key = req.method + ' /api/media/{hash}'; req.mediaHash = mm[1]; }
+  key = nutritionRoute(req.method, url.pathname) || key;
   const handler = routes[key];
   if (!handler) return json(res, 404, { error: 'not found' });
   if (!csrfOk(req, key)) {
