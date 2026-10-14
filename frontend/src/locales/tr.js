@@ -517,7 +517,7 @@ export default {
   'bosu ball': 'bosu topu', 'cable': 'kablo', 'dumbbell': 'dambıl',
   'elliptical machine': 'eliptik bisiklet', 'ez barbell': 'EZ bar', 'hammer': 'çekiç',
   'kettlebell': 'kettlebell', 'clubbell': 'clubbell', 'macebell': 'macebell', 'leverage machine': 'kaldıraçlı makine', 'medicine ball': 'sağlık topu',
-  'olympic barbell': 'olimpik halter', 'resistance band': 'direnç bandı', 'roller': 'silindir',
+  'olympic barbell': 'olimpik halter', 'Olympic bar weight': 'Olimpik bar ağırlığı', 'Used for barbell and Olympic bar exercises unless an exercise has its own override.': 'Egzersize özel bir değer yoksa halter ve olimpik bar egzersizlerinde kullanılır.', 'resistance band': 'direnç bandı', 'roller': 'silindir',
   'rope': 'ip', 'skierg machine': 'SkiErg', 'sled machine': 'kızak',
   'smith machine': 'Smith makinesi', 'stability ball': 'pilates topu', 'stationary bike': 'kondisyon bisikleti',
   'stepmill machine': 'merdiven makinesi', 'tire': 'lastik', 'trap bar': 'trap bar',

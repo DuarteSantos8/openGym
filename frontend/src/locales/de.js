@@ -535,7 +535,7 @@ export default {
   'bosu ball': 'Bosu-Ball', 'cable': 'Kabelzug', 'dumbbell': 'Kurzhantel',
   'elliptical machine': 'Crosstrainer', 'ez barbell': 'SZ-Stange', 'hammer': 'Hammer',
   'kettlebell': 'Kettlebell', 'clubbell': 'Clubbell', 'macebell': 'Macebell', 'leverage machine': 'Hebelmaschine', 'medicine ball': 'Medizinball',
-  'olympic barbell': 'Olympia-Langhantel', 'resistance band': 'Widerstandsband', 'roller': 'Rolle',
+  'olympic barbell': 'Olympia-Langhantel', 'Olympic bar weight': 'Gewicht der Olympiastange', 'Used for barbell and Olympic bar exercises unless an exercise has its own override.': 'Wird für Langhantel- und Olympiastangen-Übungen verwendet, sofern die Übung keinen eigenen Wert hat.', 'resistance band': 'Widerstandsband', 'roller': 'Rolle',
   'rope': 'Seil', 'skierg machine': 'SkiErg', 'sled machine': 'Schlitten',
   'smith machine': 'Multipresse', 'stability ball': 'Gymnastikball', 'stationary bike': 'Ergometer',
   'stepmill machine': 'Treppenmaschine', 'tire': 'Reifen', 'trap bar': 'Trap-Stange',

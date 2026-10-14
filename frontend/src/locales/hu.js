@@ -517,7 +517,7 @@ export default {
   'bosu ball': 'bosu labda', 'cable': 'kábel', 'dumbbell': 'súlyzó',
   'elliptical machine': 'elliptikus tréner', 'ez barbell': 'EZ-rúd', 'hammer': 'kalapácsfogás',
   'kettlebell': 'kettlebell', 'clubbell': 'clubbell', 'macebell': 'macebell', 'leverage machine': 'emelőkaros gép', 'medicine ball': 'medicinlabda',
-  'olympic barbell': 'olimpiai rúd', 'resistance band': 'ellenállószalag', 'roller': 'henger',
+  'olympic barbell': 'olimpiai rúd', 'Olympic bar weight': 'Olimpiai rúd súlya', 'Used for barbell and Olympic bar exercises unless an exercise has its own override.': 'A súlyzórudas és olimpiai rúddal végzett gyakorlatoknál használatos, ha nincs saját gyakorlatbeállítás.', 'resistance band': 'ellenállószalag', 'roller': 'henger',
   'rope': 'kötél', 'skierg machine': 'SkiErg', 'sled machine': 'szán',
   'smith machine': 'Smith-gép', 'stability ball': 'fitneszlabda', 'stationary bike': 'szobabicikli',
   'stepmill machine': 'lépcsőzőgép', 'tire': 'gumiabroncs', 'trap bar': 'trap rúd',

@@ -27,8 +27,13 @@ const exOf = exOrId => (typeof exOrId === 'string' ? EXIDX[exOrId] : exOrId)
 export const usesBar = exOrId => BAR_EQ.has(exOf(exOrId)?.eq)
 
 /** The default bar weight for an equipment type, in the given unit. null off the list. */
-export const defaultBarWeight = (eq, unit) =>
-  (unit === 'lb' ? DEFAULT_BAR_LB : DEFAULT_BAR_KG)[eq] ?? null
+export const defaultBarWeight = (eq, unit, S) => {
+  if (eq === 'barbell' || eq === 'olympic barbell') {
+    const own = S?.olympicBarWeight
+    if (typeof own === 'number' && Number.isFinite(own) && own > 0) return own
+  }
+  return (unit === 'lb' ? DEFAULT_BAR_LB : DEFAULT_BAR_KG)[eq] ?? null
+}
 
 /**
  * A stored 0 is "no bar", not "unset" (issue #138). Smith machines that counterbalance their
@@ -57,7 +62,7 @@ export function barWeightFor(S, exOrId) {
   const own = (S?.barWeights || {})[ex.id]
   if (own === 0) return 0
   if (own > 0) return own
-  return defaultBarWeight(ex.eq, S?.unit)
+  return defaultBarWeight(ex.eq, S?.unit, S)
 }
 
 /**

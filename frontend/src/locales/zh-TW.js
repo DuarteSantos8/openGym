@@ -509,7 +509,7 @@ export default {
   'bosu ball': 'BOSU 半圓平衡球', 'cable': '滑輪纜繩', 'dumbbell': '啞鈴',
   'elliptical machine': '滑步機', 'ez barbell': 'W槓 / 曲槓', 'hammer': '鐵鎚',
   'kettlebell': '壺鈴', 'clubbell': '棍鈴', 'macebell': '錘鈴', 'leverage machine': '槓桿機械式器材', 'medicine ball': '藥球',
-  'olympic barbell': '奧林匹克槓', 'resistance band': '阻力帶', 'roller': '滾筒',
+  'olympic barbell': '奧林匹克槓', 'Olympic bar weight': '奧林匹克槓重量', 'Used for barbell and Olympic bar exercises unless an exercise has its own override.': '用於槓鈴與奧林匹克槓訓練，除非該動作另有個別設定。', 'resistance band': '阻力帶', 'roller': '滾筒',
   'rope': '戰繩 / 繩索', 'skierg machine': '滑雪機', 'sled machine': '雪橇車',
   'smith machine': '史密斯機', 'stability ball': '抗力球', 'stationary bike': '飛輪車 / 健身車',
   'stepmill machine': '階梯機 / 樓梯機', 'tire': '輪胎', 'trap bar': '六角槓',

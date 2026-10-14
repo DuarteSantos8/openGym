@@ -382,6 +382,8 @@ export default {
   'macebell': 'صولجان',
   'medicine ball': 'كرة طبية',
   'olympic barbell': 'بار أولمبي',
+  'Olympic bar weight': 'وزن البار الأولمبي',
+  'Used for barbell and Olympic bar exercises unless an exercise has its own override.': 'يُستخدم افتراضيًا لتمارين البار والبار الأولمبي ما لم يكن للتمرين إعداد خاص.',
   'resistance band': 'شريط مقاومة',
   'roller': 'أسطوانة',
   'rope': 'الحبل',

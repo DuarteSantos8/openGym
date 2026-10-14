@@ -157,6 +157,9 @@ export const DEF = {
   // lib/bar.js). Personal equipment, so it syncs with the account but never travels in a
   // shared plan. Logged weights stay the total — this only feeds the plate math.
   barWeights: {},
+  // Default weight for barbell and Olympic-barbell exercises, in the profile unit. Null uses
+  // the usual 20 kg / 45 lb default; per-exercise barWeights still take precedence.
+  olympicBarWeight: null,
   // Plate inventory, per unit: { lb: { 45: 1, 35: 1, …, _ts }, kg: { … } } — pairs of each size
   // you own (lib/plates.js), stamped with when the list was last changed so a sync keeps the
   // later one (lib/sync-merge.js). Kept per unit: a 45 lb plate is not a 20.4 kg one, so a unit

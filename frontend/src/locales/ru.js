@@ -507,7 +507,7 @@ export default {
   'bosu ball': 'босу', 'cable': 'блок', 'dumbbell': 'гантель',
   'elliptical machine': 'эллипсоид', 'ez barbell': 'EZ-гриф', 'hammer': 'молот',
   'kettlebell': 'гиря', 'clubbell': 'клаббелл', 'macebell': 'булава', 'leverage machine': 'рычажный тренажёр', 'medicine ball': 'медбол',
-  'olympic barbell': 'олимпийская штанга', 'resistance band': 'эспандер', 'roller': 'ролик',
+  'olympic barbell': 'олимпийская штанга', 'Olympic bar weight': 'Вес олимпийского грифа', 'Used for barbell and Olympic bar exercises unless an exercise has its own override.': 'Используется для упражнений со штангой, если для упражнения не задан отдельный вес грифа.', 'resistance band': 'эспандер', 'roller': 'ролик',
   'rope': 'канат', 'skierg machine': 'SkiErg', 'sled machine': 'сани',
   'smith machine': 'машина Смита', 'stability ball': 'фитбол', 'stationary bike': 'велотренажёр',
   'stepmill machine': 'степмил', 'tire': 'покрышка', 'trap bar': 'трэп-гриф',

@@ -517,7 +517,7 @@ export default {
   'bosu ball': 'bosu', 'cable': 'wyciąg', 'dumbbell': 'hantle',
   'elliptical machine': 'orbitrek', 'ez barbell': 'sztanga łamana', 'hammer': 'młot',
   'kettlebell': 'kettlebell', 'clubbell': 'clubbell', 'macebell': 'macebell', 'leverage machine': 'maszyna dźwigniowa', 'medicine ball': 'piłka lekarska',
-  'olympic barbell': 'sztanga olimpijska', 'resistance band': 'guma oporowa', 'roller': 'wałek',
+  'olympic barbell': 'sztanga olimpijska', 'Olympic bar weight': 'Waga sztangi olimpijskiej', 'Used for barbell and Olympic bar exercises unless an exercise has its own override.': 'Używana w ćwiczeniach ze sztangą, chyba że ćwiczenie ma własne ustawienie.', 'resistance band': 'guma oporowa', 'roller': 'wałek',
   'rope': 'lina', 'skierg machine': 'SkiErg', 'sled machine': 'sanie',
   'smith machine': 'maszyna Smitha', 'stability ball': 'piłka gimnastyczna', 'stationary bike': 'rower stacjonarny',
   'stepmill machine': 'schodołaz', 'tire': 'opona', 'trap bar': 'trap bar',

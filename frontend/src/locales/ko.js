@@ -517,7 +517,7 @@ export default {
   'bosu ball': '보수볼', 'cable': '케이블', 'dumbbell': '덤벨',
   'elliptical machine': '일립티컬', 'ez barbell': 'EZ바', 'hammer': '해머',
   'kettlebell': '케틀벨', 'clubbell': '클럽벨', 'macebell': '메이스벨', 'leverage machine': '레버리지 머신', 'medicine ball': '메디신볼',
-  'olympic barbell': '올림픽 바벨', 'resistance band': '저항 밴드', 'roller': '롤러',
+  'olympic barbell': '올림픽 바벨', 'Olympic bar weight': '올림픽 바 무게', 'Used for barbell and Olympic bar exercises unless an exercise has its own override.': '운동별 재정의 값이 없으면 바벨 및 올림픽 바 운동에 적용됩니다.', 'resistance band': '저항 밴드', 'roller': '롤러',
   'rope': '로프', 'skierg machine': '스키에르그', 'sled machine': '슬레드',
   'smith machine': '스미스 머신', 'stability ball': '짐볼', 'stationary bike': '실내 자전거',
   'stepmill machine': '스텝밀', 'tire': '타이어', 'trap bar': '트랩바',

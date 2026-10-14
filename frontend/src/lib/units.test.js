@@ -105,8 +105,18 @@ describe('convertStateUnit: bar weights', () => {
     expect(conv({ '0025': 0 }, 'kg', 'lb')).toEqual({ '0025': 0 })
   })
 
+  it('converts the global Olympic-bar setting and removes redundant exercise overrides', () => {
+    const kg = { unit: 'kg', olympicBarWeight: 15, barWeights: { '0025': 15, '1344': 12 } }
+    const lb = convertStateUnit(kg, 'lb')
+    expect(lb.olympicBarWeight).toBe(33)
+    expect(lb.barWeights).toEqual({ '1344': 26.5 })
+    const back = convertStateUnit(lb, 'kg')
+    expect(back.olympicBarWeight).toBe(15)
+    expect(back.barWeights).toEqual({ '1344': 12 })
+  })
+
   it('a custom bar converts like any weight, and drops out when it lands on the new default', () => {
-    expect(conv({ '0025': 33 }, 'lb', 'kg')).toEqual({ '0025': 15 })      // women's bar
+    expect(conv({ '0025': 33 }, 'lb', 'kg')).toEqual({ '0025': 15 })
     expect(conv({ '0025': 15 }, 'kg', 'lb')).toEqual({ '0025': 33 })
     expect(conv({ '0025': 44 }, 'lb', 'kg')).toEqual({})                  // 44 lb → 20 kg = the kg default
     expect(conv({ 1383: 100 }, 'lb', 'kg')).toEqual({ 1383: 45.25 })      // a sled's own weight is not a bar
