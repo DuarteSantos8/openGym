@@ -146,7 +146,7 @@ export default function Plan({ view = 'schedule' }) {
 
   const mode = scheduleModeOf(S)
 
-  return <div className="narrow plan">
+  return <div className="plan">
     <SubHeader title={view === 'routines' ? t('Routines') : t('Schedule')}
       sub={view === 'routines' ? null : mode === 'rotation' ? t('Your routines in a loop') : t('Your weekly routine')}
       action={<button className="iconbtn" onClick={openMenu} aria-label={t('Plan options')} title={t('Plan options')}><Icon name="share" /></button>} />

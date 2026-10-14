@@ -184,7 +184,7 @@ export default function Measurements() {
     onConfirm: () => { update(state => { state.measurements = state.measurements.filter(e => e.d !== entry.d) }); toast(t('Measurements deleted')) },
   })
 
-  return <div className="narrow">
+  return <div>
     <SubHeader title={t('Body measurements')} sub={t('Circumference & composition')}
       action={<button className="iconbtn" onClick={manageMeasurementsSheet} aria-label={t('Choose measurements')}><Icon name="gear" /></button>} />
 

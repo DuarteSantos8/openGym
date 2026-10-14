@@ -92,6 +92,9 @@
   /* height of the connection indicator under the status bar, 0 while there is none — set by
      components/SyncBanner.jsx. Whatever starts at the top of the screen starts below it. */
   --conn:0px;
+  /* The one page width. The app shell (#app, and the connection row above it) is the only thing
+     that reads it; a page never sets its own outer width. The desktop block widens it. */
+  --page-w:560px;
 }
 
 :root[data-theme="light"] {
@@ -225,7 +228,7 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 /* ---------------------------------------------------------------- layout -- */
 #app{
   padding:calc(var(--sat) + var(--conn) + 8px) var(--pad) calc(88px + var(--sab));
-  max-width:560px;margin:0 auto;
+  max-width:var(--page-w);margin:0 auto;
 }
 /* Android 15 with the keyboard up: room to scroll the last field on a page above the keys.
    The tab bar stays where it is, under the keyboard, rather than riding up on it. */
@@ -252,7 +255,7 @@ body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
   background:color-mix(in srgb,var(--bg) 94%,transparent);
   -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);
 }
-.conn-row{max-width:560px;margin:0 auto;padding:6px 0}
+.conn-row{max-width:var(--page-w);margin:0 auto;padding:6px 0}
 .conn{
   display:flex;align-items:center;gap:9px;width:100%;text-align:start;min-height:34px;
   padding-block:6px;padding-inline:12px 8px;border-radius:var(--r);
@@ -537,12 +540,6 @@ h4.sec{
 }
 .item:active{background:var(--surface-2)}
 .routine-list{position:relative}
-/* One column at every width (#277), whatever page it is on. The desktop layout puts the #app
-   lists outside a .narrow page in two columns, and before the .narrow rule below won on
-   specificity this list sat in that grid on a computer, while the reorder measures its rows top
-   to bottom and draws the drop line across the whole list: an exercise dragged just below the
-   next one in its column landed at the end. Supersets ("the exercise above") read as a column too. */
-#app .list.routine-list{display:flex;flex-direction:column}
 .routine-drag-row{touch-action:pan-y;-webkit-touch-callout:none;position:relative;transition:transform var(--fast) var(--ease)}
 .routine-list.is-reordering{user-select:none;-webkit-user-select:none}
 .routine-list.is-reordering .routine-drag-row{transition:none}
@@ -1949,26 +1946,15 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 }
 
 /* --------------------------------------------------- desktop (≥1000px) --- */
-.cols{display:block}
 @media (min-width:1000px){
-  #app{max-width:1080px;padding-top:calc(var(--conn) + 32px);padding-bottom:calc(128px + var(--sab))}
-  .conn-row{max-width:640px}   /* the width of the .narrow pages below it */
+  :root{--page-w:640px}
+  #app{padding-top:calc(var(--conn) + 32px);padding-bottom:calc(128px + var(--sab))}
   body.resting #app{padding-bottom:calc(220px + var(--sab))}
   body.no-tabbar #app{padding-bottom:calc(40px + var(--sab))}
   body.no-tabbar.resting #app{padding-bottom:calc(130px + var(--sab))}
   .workout-end-spacer{height:40px}
-  .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
-  .cols>*{min-width:0}
-  /* Two columns on the full-width pages (Library, History, Stats, Plan, Muscles). A .narrow page
-     is a single 640px column and keeps its lists in one too. The #app in that selector is what
-     lets it win: `.narrow .list` alone lost to `#app .list` on specificity, so Home, Workout,
-     Admin and the rest showed their lists two-up on a computer. Sheets live in #modal-root,
-     outside #app, and are one column at every width. */
-  #app .list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  #modal-root .list,#app .narrow .list{display:flex;flex-direction:column}
-  .narrow{max-width:640px;margin:0 auto}
   .tiles{grid-template-columns:repeat(4,1fr)}
-  .cols .tiles,.center .tiles{grid-template-columns:1fr 1fr}   /* a 300px dialog has no room for four */
+  .center .tiles{grid-template-columns:1fr 1fr}   /* a 300px dialog has no room for four */
   #tabbar{
     left:50%;right:auto;bottom:16px;transform:translateX(-50%);width:520px;
     border:var(--hair) solid var(--sep-op);border-radius:var(--r-xl);

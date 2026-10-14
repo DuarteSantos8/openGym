@@ -131,7 +131,7 @@ export default function CoachIntake() {
   const dots = STEPS.filter(s => s !== 'consent')
   const dotIndex = dots.indexOf(key)
 
-  return <div className="narrow ob">
+  return <div className="ob">
     <SubHeader title={t('Coach')} onBack={back}
       sub={key !== 'consent' && <div className="ob-dots">
         {dots.map((s, i) => <span key={s} className={'ob-dot' + (i === dotIndex ? ' on' : i < dotIndex ? ' done' : '')} />)}

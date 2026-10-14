@@ -129,7 +129,7 @@ export default function MobileOnboarding() {
   </>
   const wrap = { display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '78vh', textAlign: 'center' }
   return (
-    <div className="narrow" style={wrap}>
+    <div style={wrap}>
       {head}
       <div className="muted" style={{ marginBottom: 34 }}>{t('How do you want to use openGym?')}</div>
       <Button variant="primary" icon="lock" onClick={() => chooseLocalMode()}>{t('Use on this device')}</Button>

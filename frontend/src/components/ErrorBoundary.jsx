@@ -22,7 +22,7 @@ export default class ErrorBoundary extends Component {
     if (!this.state.failed) return this.props.children
     const active = useStore.getState().S.active
     return (
-      <div className="narrow">
+      <div>
         <div className="empty" style={{ marginTop: '18vh' }}>
           <div className="ico"><Icon name="info" /></div>
           <div style={{ fontWeight: 600, marginBottom: 6 }}>{t('Something went wrong')}</div>

@@ -937,7 +937,7 @@ export default function Settings({ page = null, find = null, via = null }) {
 
   /* ---------------- a page ---------------- */
   if (page && pages[page]) {
-    return <div className="narrow" ref={body}>
+    return <div ref={body}>
       <SubHeader title={t(PAGES[page].title)} onBack={back} />
       {pages[page]()}
     </div>
@@ -966,7 +966,7 @@ function SettingsRoot({ ctx, preview, open, user, sync, go }) {
     : MOBILE ? { title: t('This phone'), sub: t('All data stays on this phone') }
     : { title: t('Guest'), sub: t('Your data lives on this device. Sign in to sync.') }
   const initial = user && !DEMO ? String(user.name || '?').trim().charAt(0).toUpperCase() : null
-  return <div className="narrow">
+  return <div>
     {/* Me opens from the avatar in either mode, so back is back, not a fixed Home. */}
     <SubHeader title={t('Settings')} />
     <div className="sp-search">

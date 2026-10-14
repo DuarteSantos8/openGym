@@ -463,7 +463,7 @@ export default function RoutineEdit() {
   const missingCount = profile ? r.ex.filter(e => !exAvailable(S, exOr(e.id))).length : 0
   const swipe = workoutControls(S).swipeSets
 
-  return <div className="narrow">
+  return <div>
     <SubHeader action={<button className="iconbtn" aria-label={t('Pick an icon')} onClick={() => glyphPicker(r.emoji, g => update(s => { s.routines.find(x => x.id === id).emoji = g }))}><Icon name={glyphOf(r.emoji)} /></button>}>
       <input className="input" defaultValue={r.name} aria-label={t('Routine name')} style={{ fontWeight: 600, fontSize: 20, letterSpacing: '-.021em' }}
         onChange={e => update(s => { s.routines.find(x => x.id === id).name = e.target.value.trim() || t('Routine') })} />

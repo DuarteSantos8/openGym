@@ -289,7 +289,7 @@ export default function Admin() {
   const activeCount = (users || []).filter(u => u.lastSync && Date.now() - u.lastSync < 7 * 86400000).length
   const disabledCount = (users || []).filter(u => u.disabled).length
 
-  return <div className="narrow">
+  return <div>
     <SubHeader title="Admin" sub={users ? users.length + ' users · ' + activeCount + ' active this week' : usersErr ? 'Could not load' : 'Loading…'}
       action={<button className="iconbtn" onClick={() => { loadUsers(); loadInvites(); setTick(n => n + 1) }} aria-label="refresh">↻</button>} />
     <div className="adm-intro">

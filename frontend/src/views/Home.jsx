@@ -28,7 +28,7 @@ export default function Home() {
   const { done: doneThisWeek, planned: plannedPerWeek } = weekTally(S, todayISO())
   const bwPoints = S.bodyweight.slice(-30).map(b => ({ t: b.t || new Date(b.d).getTime(), y: b.w, d: b.d }))
 
-  return <div className="narrow">
+  return <div>
     <RootHeader title={user ? t('Hi {0}', user.name) : BRAND.name}
       sub={today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })} />
 

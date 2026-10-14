@@ -53,7 +53,7 @@ export default function ProgressHub() {
   const sets = inRange.reduce((n, w) => n + setsDone(w), 0)
   const open = path => nav(path + '?range=' + range)
 
-  return <div className="narrow">
+  return <div>
     <RootHeader title={t('Progress')} />
     <Segmented className="seg-range" value={range} onChange={setRange} options={rangeOptions()} />
     <HubCard icon="scale" tint="var(--teal)" title={t('Body')}

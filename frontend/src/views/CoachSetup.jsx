@@ -135,7 +135,7 @@ export default function CoachSetup() {
     : coachLocal?.mode === 'byok' ? t('Runs on this phone with your own API key')
     : t('Off. Choose how the Coach should run.')
 
-  return <div className="narrow">
+  return <div>
     <SubHeader title={t('AI Coach')} />
 
     <Section title={t('How should the Coach run?')} footer={current}>

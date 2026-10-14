@@ -84,7 +84,7 @@ export default function Login() {
 
   // Demo build: no backend to sign in against — the only way in is the local guest profile.
   if (DEMO) return (
-    <div className="narrow" style={wrap}>
+    <div style={wrap}>
       {head}
       <div className="muted" style={{ marginBottom: 30 }}>{t('Live demo. Everything stays in this browser.')}</div>
       <Button variant="primary" icon="play" onClick={() => setGuest(true)}>{t('Start the demo')}</Button>
@@ -98,7 +98,7 @@ export default function Login() {
   )
 
   return (
-    <div className="narrow" style={wrap}>
+    <div style={wrap}>
       {head}
       <div className="muted" style={{ marginBottom: 34 }}>{t('Your workouts. Your weights. Your profile.')}</div>
       {webauthnOK() ? <>

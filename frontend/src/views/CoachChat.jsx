@@ -186,7 +186,7 @@ export default function CoachChat() {
     ? t('What should change?')
     : job ? t('Coach is thinking…') : t('Message the Coach…')
 
-  return <div className="narrow chat">
+  return <div className="chat">
     <div className="chat-hdr">
       <SubHeader title={t('Coach')} sub={<span className={'chat-st' + (job ? ' live' : '')}>{status}</span>}
         action={<button className="iconbtn" onClick={menu} aria-label={t('More')}><Icon name="more" /></button>} />

@@ -67,7 +67,7 @@ export default function CheckIn() {
     if (card && card.id !== lastId) update(s => { s.lastGymCardId = card.id }, false)
   }
 
-  return <div className="narrow">
+  return <div>
     <SubHeader title={t('Check in')} sub={cards.length ? t('Show this at the gym') : t('Add your gym card')} />
 
     <div className="ci-rail" ref={railRef} onScroll={onScroll}>

@@ -5,7 +5,7 @@ import RootHeader from '../components/RootHeader.jsx'
 // The Nutrition tab's root. Food logging, saved meals, recipes and goals come with the Nutrition
 // update; until then the tab says so instead of showing controls that do nothing.
 export default function FoodHub() {
-  return <div className="narrow">
+  return <div>
     <RootHeader title={t('Nutrition')} />
     <div className="card">
       <div className="empty">

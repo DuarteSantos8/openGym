@@ -29,7 +29,7 @@ export default function TrainHub() {
     { path: '/train/routines', icon: 'clipboard', title: t('Routines'), sub: tn('{0} routine', '{0} routines', S.routines.length) },
   ]
 
-  return <div className="narrow">
+  return <div>
     <RootHeader title={t('Training')} />
     <TodayCard />
     <div className="tiles hub-tiles">
