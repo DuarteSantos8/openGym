@@ -100,6 +100,9 @@ export async function extractCrops(file, roi, { width, height, duration, workDir
     out[k] = []
     let last = null   // { px, path } of the crop the previous second used
     for (let i = 0; i < n; i++) {
+      // The masks are plain JavaScript over every second of the video: hand the event loop back
+      // now and then, so the job's progress (and a cancel) are still answered while they run.
+      if (i % 25 === 24) await new Promise(r => setImmediate(r))
       const gray = raw.subarray(i * size, (i + 1) * size)
       let px
       if (k.startsWith('timer')) {
