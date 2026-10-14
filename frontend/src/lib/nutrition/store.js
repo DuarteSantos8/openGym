@@ -5,6 +5,7 @@ import { offResults } from './off.js'
 import { useDiarySelection } from './selection.js'
 import { useHubSync } from './sync.js'
 import { useStore } from '../../store/useStore.js'
+import { todayISO } from '../format.js'
 
 // NutriTrace's data as the app shows it: the diary per date, the settings it adds up against,
 // the day's activity rows, the target's inputs and your foods. Server state read through the hub
@@ -81,6 +82,9 @@ export const useNutrition = create((set, get) => {
   }
 
   async function write(date, change) {
+    // Nothing is logged to a day that has not happened: it would count toward that day's target
+    // before it exists, and a weight logged ahead would become the current one.
+    if ((change.addItems?.length || change.addWater?.length) && !(date <= todayISO())) throw invalid('nothing can be logged to a future day')
     const g = gen
     const current = await NtApi.getDiaryDate(date)
     const n = issue(date)
@@ -126,16 +130,21 @@ export const useNutrition = create((set, get) => {
       }
     },
 
-    async loadDay(date, { force = false } = {}) {
+    // `signal`: the caller no longer wants the day (the calendar moved on); an aborted load
+    // leaves the day as it was before it.
+    async loadDay(date, { force = false, signal } = {}) {
       const cur = get().days[date]
       if (!force && cur && (cur.status === 'ready' || cur.status === 'loading')) return
+      if (signal?.aborted) return
       const g = gen
       const n = issue(date)
       if (!cur || cur.status !== 'ready') patchDay(date, { status: 'loading' })
       try {
-        applyDay(date, n, g, await NtApi.getDiaryDate(date))
+        applyDay(date, n, g, await NtApi.getDiaryDate(date, { signal }))
       } catch (e) {
-        if (g === gen && n >= (applied[date] || 0) && get().days[date]?.status !== 'ready') patchDay(date, { status: 'error', error: e })
+        if (g !== gen || n < (applied[date] || 0) || get().days[date]?.status === 'ready') return
+        if (e?.code === 'aborted') patchDay(date, { status: cur?.status || 'idle', error: cur?.error || null })
+        else patchDay(date, { status: 'error', error: e })
       }
     },
 
@@ -190,12 +199,16 @@ export const useNutrition = create((set, get) => {
     // Which days from `from` to `to` (at most 42, the calendar's visible weeks) have food logged:
     // `logged.days`, with `logged.checked` the days known either way. NutriTrace has no range
     // read, so each day not already in the cache is one GET /api/diary/:date (and lands in it).
-    async loadLogged(from, to) {
-      const want = isoDays(from, to).filter(d => !get().logged.checked.has(d) && get().days[d]?.status !== 'ready')
-      for (const d of isoDays(from, to)) if (get().days[d]?.status === 'ready') markLogged(d, get().days[d].entry)
+    // Days after today are never read (nothing can be logged to them). `signal` stops the rest,
+    // and aborts the reads in flight, when the calendar moves to another month or closes.
+    async loadLogged(from, to, { signal } = {}) {
+      const today = todayISO()
+      const days = isoDays(from, to).filter(d => d <= today)
+      const want = days.filter(d => !get().logged.checked.has(d) && get().days[d]?.status !== 'ready')
+      for (const d of days) if (get().days[d]?.status === 'ready') markLogged(d, get().days[d].entry)
       const queue = [...want]
       const worker = async () => {
-        while (queue.length) await get().loadDay(queue.shift())
+        while (queue.length && !signal?.aborted) await get().loadDay(queue.shift(), { signal })
       }
       await Promise.all(Array.from({ length: Math.min(LOGGED_CONCURRENCY, queue.length) }, worker))
     },
@@ -259,10 +272,13 @@ export const useNutrition = create((set, get) => {
 })
 
 // Another account signing in on this device never sees the last one's data, picks or sync.
+// (Tests that replace useStore with a bare hook have no subscribe; they have no account to change.)
 const who = s => (s.user ? String(s.user.id ?? s.user.name ?? '') : '')
-useStore.subscribe((s, prev) => {
-  if (who(s) === who(prev)) return
-  useNutrition.getState().reset()
-  useDiarySelection.getState().reset()
-  useHubSync.getState().reset()
-})
+if (typeof useStore.subscribe === 'function') {
+  useStore.subscribe((s, prev) => {
+    if (who(s) === who(prev)) return
+    useNutrition.getState().reset()
+    useDiarySelection.getState().reset()
+    useHubSync.getState().reset()
+  })
+}

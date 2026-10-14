@@ -230,14 +230,21 @@ export function waterLog(amountMl, { now = new Date(), hour12 = true } = {}) {
  * @returns {import('./api.js').DiaryWrite}
  */
 export function dayWrite(day, { addItems = [], addWater = [], removeItems = [], removeWater = [] } = {}) {
+  // An added entry whose uuid the day already holds replaces it where it stands: a retry is the
+  // same entry, and an edit after a lost answer is the newer one.
   const merge = (list, add, remove) => {
     const gone = new Set(remove)
-    const have = new Set()
+    const at = new Map()
     const out = []
-    for (const e of [...(Array.isArray(list) ? list : []), ...add]) {
-      if (!e || typeof e !== 'object' || gone.has(e.uuid) || (e.uuid && have.has(e.uuid))) continue
-      if (e.uuid) have.add(e.uuid)
+    for (const e of Array.isArray(list) ? list : []) {
+      if (!e || typeof e !== 'object' || gone.has(e.uuid) || (e.uuid && at.has(e.uuid))) continue
+      if (e.uuid) at.set(e.uuid, out.length)
       out.push(e)
+    }
+    for (const e of add) {
+      if (!e || typeof e !== 'object' || gone.has(e.uuid)) continue
+      if (e.uuid && at.has(e.uuid)) out[at.get(e.uuid)] = e
+      else { if (e.uuid) at.set(e.uuid, out.length); out.push(e) }
     }
     return out
   }

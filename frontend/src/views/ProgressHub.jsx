@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { doneUnits, setsDone, streakWeeks, workoutDay } from '../lib/history.js'
 import { fmtNum } from '../lib/format.js'
+import { weighInTime } from '../lib/bodyweight.js'
 import { t, tn } from '../lib/i18n.js'
 import { bwDeltaColor } from '../sheets.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
@@ -44,7 +45,7 @@ export default function ProgressHub() {
   const from = range ? Date.now() - range * DAY : 0
   const at = w => new Date(workoutDay(w) + 'T12:00').getTime()
 
-  const weights = S.bodyweight.filter(b => (b.t || new Date(b.d).getTime()) >= from)
+  const weights = S.bodyweight.filter(b => weighInTime(b) >= from)
   const last = S.bodyweight[S.bodyweight.length - 1]
   const change = weights.length > 1 ? weights[weights.length - 1].w - weights[0].w : null
   const inRange = S.workouts.filter(w => at(w) >= from)

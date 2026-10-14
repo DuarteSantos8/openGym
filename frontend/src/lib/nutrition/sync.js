@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { create } from 'zustand'
 import { HubSync, nutritionAvailable } from './api.js'
 import { useStore } from '../../store/useStore.js'
@@ -30,6 +31,33 @@ export async function refreshHubStatus() {
   } catch {
     return null
   }
+}
+
+// How often focus and visibility may re-read the status (every tab root has an avatar).
+export const STATUS_REFRESH_MS = 30 * 1000
+let lastStatusRead = -Infinity
+
+/** Keeps useHubSync current for the avatar dot: read on mount, and again whenever the app comes
+ *  back to the front (visibility or window focus), at most every STATUS_REFRESH_MS. */
+export function useHubStatusRefresh() {
+  const user = useStore(s => s.user)
+  const on = nutritionAvailable(user)
+  useEffect(() => {
+    if (!on) return undefined
+    const read = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return
+      if (Date.now() - lastStatusRead < STATUS_REFRESH_MS) return
+      lastStatusRead = Date.now()
+      refreshHubStatus()
+    }
+    read()
+    document.addEventListener('visibilitychange', read)
+    window.addEventListener('focus', read)
+    return () => {
+      document.removeEventListener('visibilitychange', read)
+      window.removeEventListener('focus', read)
+    }
+  }, [on])
 }
 
 let inflight = null
@@ -80,6 +108,7 @@ export function resetSyncThrottle() {
   inflight = null
   trailing = null
   lastDone = -Infinity
+  lastStatusRead = -Infinity
 }
 
 /** The kcal row the hub keeps for a workout (call after syncNow), or null.

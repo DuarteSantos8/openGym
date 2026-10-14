@@ -212,14 +212,32 @@ describe('the diary store', () => {
     expect(n().caloriesOut(DAY)).toBe(2600)
   })
 
-  it('marks logged days for the visible range only', async () => {
+  it('marks logged days for the visible range only, never past today', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-10-20T10:00:00'))
     useFake({ days: { [DAY]: fixtureDay(DAY), '2026-10-02': fixtureDay('2026-10-02'), '2025-01-01': fixtureDay('2025-01-01') } })
     await n().loadLogged('2026-10-01', '2026-10-31')
     expect([...n().logged.days].sort()).toEqual(['2026-10-02', DAY])
-    expect(nt.requests.every(r => /^\/nt\/api\/diary\/2026-10-\d\d$/.test(r.path))).toBe(true)
-    expect(nt.requests).toHaveLength(31)
+    expect(nt.requests.every(r => /^\/nt\/api\/diary\/2026-10-(0\d|1\d|20)$/.test(r.path))).toBe(true)
+    expect(nt.requests).toHaveLength(20)
     await n().loadLogged('2026-10-01', '2026-10-31')
-    expect(nt.requests).toHaveLength(31)
+    expect(nt.requests).toHaveLength(20)
+  })
+
+  it('an aborted range read stops and leaves the days it did not reach alone', async () => {
+    const ctl = new AbortController()
+    ctl.abort()
+    await n().loadLogged('2026-10-01', '2026-10-10', { signal: ctl.signal })
+    expect(nt.requests).toHaveLength(0)
+    expect(n().days).toEqual({})
+  })
+
+  it('refuses to log to a day after today', async () => {
+    const later = '2999-01-01'
+    await expect(n().logQuick(later, n().draftQuick({ kcal: 100, meal: 0 }))).rejects.toMatchObject({ code: 'invalid' })
+    useDiarySelection.getState().setDate(later)
+    expect(useDiarySelection.getState().date).toBeNull()
+    expect(nt.requests).toHaveLength(0)
   })
 })
 

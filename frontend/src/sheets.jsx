@@ -58,6 +58,10 @@ import { finishCompare, finishCardio } from './lib/finish-compare.js'
 import { workoutFit, fitFileName } from './lib/fit-export.js'
 import { joinSessionNoProg } from './lib/session-noprog.js'
 import { buildCombinedEntries, deriveSessionName } from './lib/session-merge.js'
+import { syncNow } from './lib/nutrition/sync.js'
+import { reportWorkoutKcal } from './lib/nutrition/workout-kcal.js'
+import { useNutrition } from './lib/nutrition/store.js'
+import { nutritionAvailable } from './lib/nutrition/api.js'
 import { workoutsOn, backfillStart, backfillEnd, completeBackfill, historyAsOf, sessionHistory } from './lib/backfill.js'
 import { moveWorkout, sameWorkout, startTimeOf, durationMinOf, setWorkoutDuration, rebuildPrHistory, MAX_DURATION_MIN, endsInFuture } from './lib/workout-date.js'
 import { editCompletedSession, editLeftEmpty, editedRecord, editChangesNothing } from './lib/session-edit.js'
@@ -294,21 +298,28 @@ function WeightInput({ value, setValue, unit }) {
 }
 
 /* ============================ body weight ============================ */
-function BwSheet({ required, onDone, close }) {
+// `date`: the day the weigh-in is for (Home on a past day); today when absent.
+function BwSheet({ required, onDone, close, date }) {
   const st = useStore(s => s.S)
   const unit = st.unit
   const bw = lastBW(st)
-  const [v, setV] = useState(bw ? bw.w : 70)
+  // Never a day to come: a weight logged ahead would read as the current one (lastBW).
+  const day = date && date < todayISO() ? date : todayISO()
+  const onDay = st.bodyweight.find(b => b.d === day)
+  const [v, setV] = useState(onDay ? onDay.w : bw ? bw.w : 70)
   const save = () => {
     const n = Math.round((v || 0) * 10) / 10
     if (!n || n <= 0) { toast(t('Enter a valid weight')); return }
     if (bwTooHeavy(n, unit)) return
+    // `t` is when the weigh-in was logged, the sync's change stamp (lib/sync-merge.js stampChange
+    // restamps it on every edit); charts place it by its day `d` (lib/bodyweight.js weighInTime).
     update(s => {
-      const iso = todayISO()
-      const ex = s.bodyweight.find(b => b.d === iso)
-      if (ex) { ex.w = n; ex.t = Date.now() } else s.bodyweight.push({ d: iso, w: n, t: Date.now() })
+      const ex = s.bodyweight.find(b => b.d === day)
+      if (ex) { ex.w = n; ex.t = Date.now() } else s.bodyweight.push({ d: day, w: n, t: Date.now() })
       s.bodyweight.sort((a, b) => (a.d < b.d ? -1 : 1))
     })
+    // The weight goes to NutriTrace now rather than at the hub's next poll.
+    void syncNow()
     close()
     if (onDone) onDone(n); else toast(t('Weight saved'))
   }
@@ -326,7 +337,7 @@ function BwSheet({ required, onDone, close }) {
           <button className="iconbtn" aria-label={t('Cancel')} onClick={() => close()}><Icon name="xmark" /></button>
         </div>
       : <h3>{t('Log body weight')}</h3>}
-    <div className="muted small">{required ? t('Slide or tap to set your weight. We ask before every workout so your curve stays honest.') : t('Today') + ', ' + fmtDate(todayISO(), true)}</div>
+    <div className="muted small">{required ? t('Slide or tap to set your weight. We ask before every workout so your curve stays honest.') : day === todayISO() ? t('Today') + ', ' + fmtDate(day, true) : fmtDate(day, true)}</div>
     <WeightInput value={v} setValue={setV} unit={unit} />
     <div style={{ height: 14 }} />
     <Button variant="primary" onClick={save}>{required ? t('Save & start workout') : t('Save')}</Button>
@@ -2688,10 +2699,25 @@ function mediaGoesToo(rec) {
 export const workoutDetailSheet = w => ui().openSheet(close => <WorkoutDetail w={w} close={close} />)
 
 /* ============================ calendar ============================ */
-function Calendar({ start, close }) {
+// `onPick(iso)`: Home's date navigator. Every day is then a date to go to, and the days with food
+// logged in NutriTrace are marked beside the trained ones (the one calendar for both).
+function Calendar({ start, close, onPick }) {
   const st = useStore(s => s.S)
-  const [cur, setCur] = useState(() => { const d = start ? new Date(start) : new Date(); d.setDate(1); return d })
+  const logged = useNutrition(s => s.logged)
+  const [cur, setCur] = useState(() => {
+    const d = !start ? new Date() : typeof start === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(start) ? new Date(start + 'T12:00:00') : new Date(start)
+    d.setDate(1)
+    return d
+  })
   const y = cur.getFullYear(), mo = cur.getMonth()
+  // The shown month only (NutriTrace has no range read: one request per day not cached yet),
+  // never past today; another month or closing the sheet cancels what is still loading.
+  useEffect(() => {
+    if (!onPick || !nutritionAvailable(useStore.getState().user)) return undefined
+    const ctl = new AbortController()
+    useNutrition.getState().loadLogged(isoOf(new Date(y, mo, 1)), isoOf(new Date(y, mo + 1, 0)), { signal: ctl.signal })
+    return () => ctl.abort()
+  }, [onPick, y, mo])
   const byDay = {}
   st.workouts.forEach(w => {
     const day = workoutDay(w)
@@ -2714,8 +2740,10 @@ function Calendar({ start, close }) {
     // note as the tooltip; tapping it opens the day sheet, where the note is.
     const note = !ws && dayNoteOf(st, iso)
     const dotCls = ws ? 'done' : note ? 'noted' : ovr && planned ? 'ovr' : planned ? 'plan' : ''
-    cells.push(<button key={d} className={'cal-d' + (ws ? ' has' : '') + (note ? ' noted' : '') + (iso === todayISO() ? ' today' : '')}
-      title={note ? dayNoteLine(note, t) : undefined} onClick={() => {
+    const ate = !!onPick && logged.days.has(iso)
+    cells.push(<button key={d} className={'cal-d' + (ws ? ' has' : '') + (note ? ' noted' : '') + (ate ? ' logged' : '') + (iso === todayISO() ? ' today' : '')}
+      title={note ? dayNoteLine(note, t) : undefined} disabled={!!onPick && iso > todayISO()} onClick={() => {
+      if (onPick) { close(); onPick(iso); return }
       if (!ws) { close(); dayOverrideSheet(iso); return }
       if (ws.length === 1) { close(); workoutDetailSheet(ws[0]); return }
       close(); ui().openSheet(c2 => <><h3>{fmtDate(iso, true)}</h3><div className="list">{ws.map(w => <WorkoutRow key={w.id} w={w} onClick={() => { c2(); workoutDetailSheet(w) }} />)}</div></>)
@@ -2735,11 +2763,12 @@ function Calendar({ start, close }) {
       <span><i style={{ background: 'var(--orange)' }} />{t('Rescheduled')}</span>
       {Object.keys(st.dayNotes || {}).some(k => k.startsWith(y + '-' + String(mo + 1).padStart(2, '0')) && dayNoteOf(st, k)) &&
         <span><i style={{ background: 'var(--indigo)' }} />{t('Day note')}</span>}
+      {onPick && <span><i className="cal-logged-key" />{t('Food logged')}</span>}
     </div>
-    <div className="small dim" style={{ textAlign: 'center', marginTop: 10 }}>{t('Tap a trained day for details · tap any other day to plan a session')}</div>
+    <div className="small dim" style={{ textAlign: 'center', marginTop: 10 }}>{onPick ? t('Tap a day to see it') : t('Tap a trained day for details · tap any other day to plan a session')}</div>
   </>
 }
-export const calendarSheet = start => ui().openSheet(close => <Calendar start={start} close={close} />)
+export const calendarSheet = (start, { onPick } = {}) => ui().openSheet(close => <Calendar start={start} close={close} onPick={onPick} />)
 
 /* shared small workout row (used in lists) */
 export function WorkoutRow({ w, onClick }) {
@@ -3426,6 +3455,8 @@ function doFinishWorkout() {
     refillAfter(s, w)
   })
   useStore.getState().autoBackupNow()
+  // Its kcal entry reaches the day's diary now rather than at the hub's next poll.
+  void syncNow().then(status => (status ? reportWorkoutKcal(shown) : null))
   useUI.getState().stopRest()
   // A hold still counting (a plank left unchecked, then Finish early) goes with the workout, as
   // on Discard: its bar is app-wide and would chime over the summary, and its callback writes

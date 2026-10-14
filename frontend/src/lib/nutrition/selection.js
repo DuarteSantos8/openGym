@@ -29,7 +29,8 @@ export const useDiarySelection = create((set, get) => ({
 
   /** The date to show and log to (YYYY-MM-DD), as of now. */
   day: () => get().date || todayISO(),
-  setDate: iso => set({ date: !iso || iso === todayISO() ? null : iso, meal: null }),
+  /** Pick a date. Today or later is today: there is nothing to show or log on a day to come. */
+  setDate: iso => set({ date: !iso || !(iso < todayISO()) ? null : iso, meal: null }),
   /** Pick the meal by hand (slot index), or null to go back to the clock. */
   setMeal: (slot, now = Date.now()) => set({ meal: slot == null ? null : { slot: Number(slot), at: now } }),
   /** The meal slot to log to, as of `now`, given NutriTrace's settings. */

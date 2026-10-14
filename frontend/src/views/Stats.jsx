@@ -4,6 +4,7 @@ import { useStore } from '../store/useStore.js'
 import { EXIDX, matchExercise, betterWeight, isAssisted } from '../lib/exercises.js'
 import { setLabel, modeOf, effortOf, entriesForExercise, metricEntriesForExercise, metricModeForEntry, bestWeightForEntry, completedRepsOf, workoutDay, workoutAt } from '../lib/history.js'
 import { fmtNum, fmtDate, fmtVol, todayISO, isoOf, weekKey, weekStartOf, exerciseNameText } from '../lib/format.js'
+import { weighInTime } from '../lib/bodyweight.js'
 import { speedUnitOf, speedLabel, toSpeed } from '../lib/speed.js'
 import { t, exerciseNameFor, exerciseNameClass, getLang } from '../lib/i18n.js'
 import { bwSheet, goalSheet, calendarSheet, dayOverrideSheet, workoutDetailSheet, exerciseHistorySheet, weighInsSheet } from '../sheets.jsx'
@@ -437,8 +438,8 @@ export default function Stats({ section = 'body' }) {
   const kind = displayScale(S)
   const hd = scaleName(kind)
 
-  const bwPts = S.bodyweight.filter(b => range === 0 || (b.t || new Date(b.d).getTime()) > now - range * 86400000)
-    .map(b => ({ t: b.t || new Date(b.d).getTime(), y: b.w, d: b.d }))
+  const bwPts = S.bodyweight.filter(b => range === 0 || weighInTime(b) > now - range * 86400000)
+    .map(b => ({ t: weighInTime(b), y: b.w, d: b.d }))
   const workouts = S.workouts
 
   // Dumbbell weights are read in each exercise's current meaning (lib/dumbbells.js), so the

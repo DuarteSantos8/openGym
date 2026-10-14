@@ -1,0 +1,106 @@
+/* The Home diary and its logging sheets: the date strip, the calories ring, water, meals and
+   activity rows, the food picker and the amount sheets. Reads the tokens in index.css only; the
+   macro colours are --macro-* (always P · C · F, always labelled). Loaded after tab-shell.css. */
+
+.nt-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* Icon tints for the .lrow-i squares these cards lead with. */
+.tint-blue{--tint:var(--blue)}
+.tint-pink{--tint:var(--pink)}
+.tint-purple{--tint:var(--purple)}
+.tint-teal{--tint:var(--teal)}
+.tint-quiet{--tint:var(--surface-3)}
+.tint-quiet .icn{color:var(--label)}
+.nt-lead{min-width:0}
+.home-tap{cursor:pointer}
+.home-streak{letter-spacing:-.021em}
+
+/* --- date strip: sticky under the header, the one date navigator --- */
+.date-strip{
+  position:sticky;top:var(--sat);z-index:5;display:flex;align-items:center;gap:4px;
+  margin:0 0 12px;padding:4px 0;background:var(--bg);
+}
+.date-strip-l{display:flex;align-items:center;gap:4px;font-size:17px;font-weight:600;letter-spacing:-.012em;padding:8px 4px;min-height:44px}
+.date-strip-l .icn{font-size:13px;color:var(--label-2)}
+.date-strip-left{margin-inline-start:auto;color:var(--acc-ink);font-weight:500;white-space:nowrap}
+.date-strip-left.over{color:var(--orange-ink)}
+.date-strip-today{margin-inline-start:auto;color:var(--acc-ink);padding:8px;min-height:44px}
+.date-strip-left+.date-strip-today{margin-inline-start:6px}
+
+/* --- calories ring + macros --- */
+.kcal-card.loading{opacity:.6}
+.kcal-top{position:relative;display:flex;align-items:center;gap:16px;margin-bottom:12px}
+.kcal-ring{width:112px;height:112px;flex:none}
+.kcal-ring circle{fill:none;stroke-width:9}
+.kcal-ring-bg{stroke:var(--surface-2)}
+.kcal-ring-fg{stroke:var(--acc);stroke-linecap:round;transition:stroke-dashoffset var(--med) var(--ease)}
+.kcal-ring-fg.over{stroke:var(--orange)}
+.kcal-mid{position:absolute;inset-inline-start:0;width:112px;text-align:center}
+.kcal-left{font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.kcal-side{display:flex;flex-direction:column;gap:4px}
+.macro-bar{margin-top:8px}
+.macro-track{height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden;margin-top:4px}
+.macro-track>i{display:block;height:100%;border-radius:3px;background:var(--acc)}
+.macro-track>i.p,.mdot.p{background:var(--macro-protein)}
+.macro-track>i.c,.mdot.c{background:var(--macro-carbs)}
+.macro-track>i.f,.mdot.f{background:var(--macro-fat)}
+.water-track>i{background:var(--blue)}
+.mdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-inline-end:6px;vertical-align:middle}
+.macro-line{display:flex;flex-wrap:wrap;gap:4px 12px;color:var(--label-2)}
+
+/* --- meals --- */
+.meals-card{padding-block:4px}
+.meal-row+.meal-row,.activity-rows{border-top:var(--hair) solid var(--sep)}
+.meal-head{display:flex;align-items:center;gap:4px}
+.meal-toggle{flex:1;min-width:0;display:grid;grid-template-columns:1fr auto auto;grid-template-areas:"name kcal chev" "sub kcal chev";column-gap:8px;align-items:center;text-align:start;padding:10px 0;min-height:52px}
+.meal-toggle:disabled{opacity:1;cursor:default}
+.meal-name{grid-area:name;font-size:16px;font-weight:500}
+.meal-sub{grid-area:sub}
+.meal-kcal{grid-area:kcal}
+.meal-toggle .chev{grid-area:chev;font-size:14px;color:var(--label-3)}
+.meal-add{flex:none;color:var(--acc-ink)}
+.meal-add.on{color:var(--label-2)}
+.meal-items{list-style:none;margin:0 0 8px;padding:0}
+.meal-item,.activity-row{display:flex;align-items:center;gap:10px;padding:6px 0}
+.meal-item .tt,.activity-row .tt{display:block;font-size:15px}
+.meal-item .ss,.activity-row .ss{display:block}
+.meal-picker{padding-bottom:12px}
+.meal-picker .item{background:var(--surface-2)}
+.activity-rows{padding-top:4px}
+.activity-rows ul{list-style:none;margin:0;padding:0}
+.activity-row.muted-row .tt,.activity-row.muted-row>.small{color:var(--label-2)}
+
+/* --- food picker and amount sheets --- */
+.food-picker .searchf{margin-bottom:8px}
+.food-row .grow{min-width:0}
+.food-kcal{white-space:nowrap;color:var(--label-2)}
+.fp-note{padding:6px 2px}
+.fp-quick{margin-top:12px}
+.portion-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px;margin-bottom:8px}
+.portion-f{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
+.portion-f .num,.portion-f .field{width:100%}
+.portion-sum{display:flex;flex-direction:column;gap:4px;margin:8px 0 12px}
+.nt-error{color:var(--red-ink);margin:4px 0 10px}
+.plus-tiles{display:flex;gap:10px;margin-top:4px}
+.plus-tiles>.btn{flex:1}
+.logging-to{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:6px 0 10px;min-height:44px;text-align:start}
+.logging-to-v{font-weight:600;color:var(--acc-ink)}
+.logging-to .icn{font-size:12px;color:var(--acc-ink)}
+
+/* --- training on another day, weight --- */
+.day-session .list{margin-top:6px}
+.day-session-row{margin-top:4px}
+.bw-card>.row:first-child{margin-bottom:6px;flex-wrap:wrap;row-gap:8px}
+.bw-card>.row:first-child>.row{margin-inline-start:auto}
+.bw-delta{font-weight:500}
+.bw-delta .icn{font-size:12px}
+.bw-delta .muted{font-weight:400}
+.bw-when{margin-inline-start:auto}
+.bw-goal{color:var(--yellow-ink);margin-top:4px}
+.bw-goal .icn{font-size:13px}
+.bw-chart{margin-top:8px}
+.bw-goal-btn{color:var(--yellow-ink)}
+
+/* --- the calendar's food mark (Home's date picker) --- */
+.cal-d.logged>span{text-decoration:underline;text-decoration-color:var(--blue);text-decoration-thickness:2px;text-underline-offset:3px}
+.cal-logged-key{background:var(--blue)}

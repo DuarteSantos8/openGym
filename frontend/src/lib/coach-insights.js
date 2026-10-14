@@ -6,6 +6,7 @@
 // window it names, which is why an old proposal in the thread still draws its chart months
 // later, against the data as it was then.
 import { EXIDX } from './exercises.js'
+import { weighInTime } from './bodyweight.js'
 import { workoutVolume, workoutAt } from './history.js'
 import { isWarmupRow } from './workout-model.js'
 import { bestSetOf } from './onerm.js'
@@ -47,7 +48,7 @@ export function insightsFor(S, win = {}, { topN = 3 } = {}) {
   const from = win.from || ws[0]?.d || null
   const to = win.to || ws[ws.length - 1]?.d || null
   const bw = (S.bodyweight || []).filter(b => b && b.d && (!from || b.d >= from) && (!to || b.d <= to))
-    .map(b => ({ t: b.t || new Date(b.d + 'T12:00:00').getTime(), y: b.w, d: b.d }))
+    .map(b => ({ t: weighInTime(b), y: b.w, d: b.d }))
   const bodyweight = {
     points: bw,
     delta: bw.length > 1 ? Math.round((bw[bw.length - 1].y - bw[0].y) * 10) / 10 : null,

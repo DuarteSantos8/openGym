@@ -3,6 +3,15 @@
 // following is the week's mean — the one a single weigh-in on the card cannot give you.
 import { weekKey } from './format.js'
 
+/** Where a weigh-in sits on a time axis: noon of its day `d`. Not its `t`, which is when it was
+ *  logged and the sync's change stamp (sync-merge.js stampChange): a weigh-in typed in for an
+ *  earlier day, imported, or corrected later still belongs to its own day. Falls back to `t`
+ *  for an entry without a day. */
+export function weighInTime(b) {
+  const at = b && typeof b.d === 'string' ? new Date(b.d + 'T12:00:00').getTime() : NaN
+  return Number.isFinite(at) ? at : Number(b?.t) || 0
+}
+
 /**
  * The weigh-ins grouped into weeks, newest week first. Each week carries its mean, how many
  * weigh-ins it holds, the change of its mean from the week before it that has any (null for the
