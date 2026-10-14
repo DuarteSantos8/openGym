@@ -5,6 +5,35 @@ const target = new URL('/api/nutrition/hello', base);
 if (!['http:', 'https:'].includes(target.protocol) || target.username || target.password)
   throw new Error('NUTRITION_URL must be an HTTP(S) URL without credentials');
 
+/** MCP uses the same HTTP service, with a short-lived operation-bound credential, never SQLite. */
+export async function requestNutrition(method, pathname, query = {}, body, credential) {
+  const known = nutritionRoute(method, pathname)
+    || (method === 'GET' && ['/api/nutrition/products', '/api/nutrition/diary'].includes(pathname))
+    || (method === 'POST' && pathname === '/api/nutrition/entries');
+  if (!known) throw new Error('Unsupported Nutrition operation');
+  const url = new URL(pathname, base);
+  for (const key of pathname.endsWith('/products') ? ['search', 'offset'] : ['date'])
+    if (query[key] !== undefined) url.searchParams.set(key, query[key]);
+  try {
+    const response = await fetch(url, { method, headers: { Authorization: 'Bearer ' + credential,
+      Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: body === undefined ? undefined : JSON.stringify(body), redirect: 'error', signal: AbortSignal.timeout(8000) });
+    if (![200, 201, 400, 401, 403, 404, 409, 410, 413].includes(response.status))
+      throw new Error('Invalid Nutrition response');
+    const raw = await response.text();
+    if (raw.length > 8 * 1024 * 1024) throw new Error('Invalid Nutrition response');
+    const result = JSON.parse(raw);
+    if (!result || typeof result !== 'object' || Array.isArray(result)) throw new Error('Invalid Nutrition response');
+    if (!response.ok) throw Object.assign(new Error(result.code || result.error || 'Nutrition request rejected'),
+      { code: result.code || 'nutrition_error', status: response.status });
+    return result;
+  } catch (error) {
+    if (error.status) throw error;
+    throw Object.assign(new Error('Nutrition unavailable; check the diary or retry the identical entry ID and payload'),
+      { code: 'nutrition_unavailable', status: 503, uncertain: method !== 'GET' });
+  }
+}
+
 export async function nutritionHello(req, res, { readSession, json }) {
   if (!readSession(req)) return json(res, 401, { error: 'not signed in' });
   const headers = { Accept: 'application/json' };

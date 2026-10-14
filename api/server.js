@@ -34,7 +34,7 @@ import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from 
 import { effectiveRoutineId } from './queue.js';
 import { stampPut } from './sync-stamps.js';
 import { atomicWrite as durableWrite } from './durable.js';
-import { nutritionHello, nutritionProxy, nutritionRoute } from './nutrition.js';
+import { nutritionHello, nutritionProxy, nutritionRoute, requestNutrition } from './nutrition.js';
 import { nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
 
 const PORT = +(process.env.PORT || 3000);
@@ -1879,6 +1879,7 @@ const routes = {
       // Public like the two flags above: the caps are not a secret, and the absence of the
       // block is how the app knows this server does not take photos and videos at all.
       ...(MEDIA_ON ? { media: mediaConfig(MEDIA_LIMITS) } : {}),
+      ...(mcpOAuth ? { mcp: { url: mcpOAuth.resource.href } } : {}),
       ...(readSession(req) ? { coach: coachConfig.publicConfig() } : {})
     });
   },
@@ -2538,6 +2539,24 @@ startWarmup();
 // hourly budget have let the upload in; from there media.js's own idle timer takes over. The
 // tests shorten it, as they do REMINDER_TICK_MS.
 const BODY_TIMEOUT_MS = Math.max(50, +(process.env.BODY_TIMEOUT_MS || 300000) || 300000);
+// Optional remote integration. No imports, store reads or routes while disabled.
+let mcpOAuth = null;
+let remoteMcp = null;
+const mcpAuthBudget = createWindow({ max: 120, windowMs: 60000 });
+if (/^(1|true|yes|on)$/i.test(process.env.MCP_ENABLED || '')) {
+  const { createMcpOAuth } = await import('./mcp-oauth.js');
+  const { createHttpMcp } = await import('../mcp/src/http.js');
+  mcpOAuth = createMcpOAuth({ data: DATA, secret: SECRET, origin: ORIGIN, publicUrl: process.env.MCP_PUBLIC_URL,
+    clients: JSON.parse(process.env.MCP_OAUTH_CLIENTS || '[]'), userById: id => db.users.find(user => user.id === id),
+    readSession, json });
+  const budget = createWindow({ max: 120, windowMs: 60000 });
+  remoteMcp = createHttpMcp({ oauth: mcpOAuth, json, requestNutrition, takeBudget: id => budget.take(id),
+    readState: id => {
+      const state = readStateStrict(id);
+      if (state === UNREADABLE) throw Object.assign(new Error('Training state unreadable'), { code: 'state_unreadable', status: 503 });
+      return state;
+    } });
+}
 function bodyDeadline(req) {
   if (req.complete) return;
   // The socket itself, not req: a route that answered without reading the body has finished its
@@ -2583,6 +2602,39 @@ const server = http.createServer(async (req, res) => {
   try { url = new URL(req.url, 'http://x'); }
   catch { return json(res, 400, { error: 'bad request' }); }
   let key = req.method + ' ' + url.pathname;
+  if (remoteMcp) {
+    try {
+      if (url.pathname.startsWith('/oauth/') && !url.pathname.startsWith('/oauth/.well-known/')) {
+        const retryAfter = mcpAuthBudget.take(limitAddress(req));
+        if (retryAfter) return json(res, 429, { error: 'rate_limited' }, { 'Retry-After': String(retryAfter) });
+      }
+      if (url.pathname === '/mcp') { await remoteMcp.handle(req, res); return; }
+      if (url.pathname === '/api/mcp/nutrition/identity' && req.method === 'GET') {
+        const identity = mcpOAuth.nutritionIdentity((req.headers.authorization || '').replace(/^Bearer /, ''));
+        return json(res, identity ? 200 : 401, identity || { error: 'invalid delegation' });
+      }
+      if (url.pathname === '/api/mcp/connections' && req.method === 'GET') {
+        const user = readSession(req);
+        return user ? json(res, 200, { connections: mcpOAuth.grants(user.id) }) : json(res, 401, { error: 'not signed in' });
+      }
+      if (url.pathname === '/api/mcp/connections/revoke' && req.method === 'POST') {
+        if (!csrfOk(req, key)) return json(res, 403, { error: 'cross-origin request refused' });
+        const user = readSession(req);
+        if (!user) return json(res, 401, { error: 'not signed in' });
+        const { grantId } = await readBody(req);
+        if (!mcpOAuth.grants(user.id).some(grant => grant.grantId === grantId)) return json(res, 404, { error: 'not found' });
+        mcpOAuth.store.revoke(grantId);
+        audit(req, 'mcp.revoke', { user });
+        return json(res, 200, { ok: true });
+      }
+      if (await mcpOAuth.handle(req, res, url.pathname)) return;
+    } catch (error) {
+      console.error('mcp request failed:', error.code || error.name, error.syscall || '');
+      if (!res.headersSent) json(res, error.status || 503,
+        { error: error.status && error.status < 500 ? 'invalid_mcp_request' : 'mcp_unavailable' });
+      return;
+    }
+  }
   // The one route with a parameter in its path. Mapped onto its template key here so the table
   // above stays a plain lookup, and so csrfOk and the catch-all see one name for every file.
   const mm = /^\/api\/media\/([0-9a-f]{64})$/.exec(url.pathname);

@@ -38,7 +38,7 @@ async function load(dir, uid = 'alex') {
   return import('../src/state.js')
 }
 
-afterEach(() => { vi.unstubAllEnvs() })
+afterEach(() => { vi.restoreAllMocks(); vi.unstubAllEnvs() })
 afterAll(() => { dirs.forEach(d => fs.rmSync(d, { recursive: true, force: true })) })
 
 describe('a read failure is not "you never signed in"', () => {
@@ -68,14 +68,16 @@ describe('a read failure is not "you never signed in"', () => {
 
   // Root reads a mode-000 file anyway (the GitLab CI container runs as root), so the failure this
   // needs cannot be made there.
-  const asRoot = typeof process.getuid === 'function' && process.getuid() === 0
-  test.skipIf(asRoot)('a permission failure names the file, not the server\'s path', async () => {
+  test('a permission failure names the file, not the server\'s path', async () => {
     const dir = mk({ 'db.json': DB, 'state-alex.json': '{}' })
-    fs.chmodSync(path.join(dir, 'state-alex.json'), 0o000)
     const { getState } = await load(dir)
+    const read = fs.readFileSync
+    vi.spyOn(fs, 'readFileSync').mockImplementation((file, ...args) => {
+      if (file === path.join(dir, 'state-alex.json')) throw Object.assign(new Error(`permission denied ${file}`), { code: 'EACCES' })
+      return read(file, ...args)
+    })
     let err = null
     try { getState() } catch (e) { err = e }
-    fs.chmodSync(path.join(dir, 'state-alex.json'), 0o600)
     expect(err).toBeTruthy()
     expect(err.code).toBe('EIO')
     expect(err.message).toMatch(/cannot read state-alex\.json: EACCES/)

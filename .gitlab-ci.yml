@@ -246,6 +246,8 @@ test:api:
     - npm ci --cache .npm --prefer-offline --omit=optional
     # The Coach tests run on node:test and drive the in-repo fixture provider plus a local mock
     # of the Chat Completions shape, so the whole job works without an AI account or the network.
+    # Embedded MCP integration tests also need the sibling SDK packages.
+    - npm ci --prefix ../mcp
     # Same suite `npm test` runs, plus the JUnit file and node's own coverage table.
     - node --experimental-test-coverage --test
         --test-reporter=spec --test-reporter-destination=stdout
@@ -302,7 +304,7 @@ build:images:
   parallel:
     matrix:
       - IMAGE: api
-        CONTEXT: "./api"
+        CONTEXT: "."
         DOCKERFILE: "./api/Dockerfile"
       - IMAGE: web
         CONTEXT: "."
@@ -392,11 +394,11 @@ build:api-check:
   stage: build
   needs: ["test:api"]
   script:
-    - docker build --target default -t opengym-api:default ./api
-    - docker build --target coach   -t opengym-api:coach   ./api
+    - docker build -f api/Dockerfile --target default -t opengym-api:default .
+    - docker build -f api/Dockerfile --target coach   -t opengym-api:coach   .
     # No --target, exactly like build:images. What it ships is whatever Dockerfile stage happens
     # to be last, and that untargeted artifact is the image every self-hoster pulls as :latest.
-    - docker build -t opengym-api:published ./api
+    - docker build -f api/Dockerfile -t opengym-api:published .
     # --- the published image has no AI runtime, and does not need one for the HTTPS providers
     - |
       set -eu

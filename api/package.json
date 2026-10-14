@@ -10,6 +10,7 @@
     "test": "node --test test/*.test.js"
   },
   "dependencies": {
+    "oidc-provider": "9.12.2",
     "@simplewebauthn/server": "^13.1.1",
     "undici": "^7.29.0",
     "web-push": "^3.6.7"

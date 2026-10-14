@@ -21,7 +21,8 @@ public sealed class OpenGymAuthenticationHandler(
         if (!Request.Headers.ContainsKey("Cookie") && !Request.Headers.ContainsKey("Authorization"))
             return AuthenticateResult.NoResult();
 
-        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/me");
+        var delegated = Request.Headers.Authorization.ToString().StartsWith("Bearer ogn.", StringComparison.Ordinal);
+        using var request = new HttpRequestMessage(HttpMethod.Get, delegated ? "/api/mcp/nutrition/identity" : "/api/me");
         // These values are credentials, never identity claims. Node verifies the signature,
         // expiry, session version and current account status for every request.
         foreach (var name in new[] { "Cookie", "Authorization" })
@@ -39,6 +40,12 @@ public sealed class OpenGymAuthenticationHandler(
             var me = await response.Content.ReadFromJsonAsync<MeResponse>(Context.RequestAborted);
             if (string.IsNullOrWhiteSpace(me?.User?.Id) || string.IsNullOrWhiteSpace(me.User.Name))
                 return Unavailable();
+
+            // Internal credentials authorize exactly one method/path and cannot become a
+            // general browser session or be reused to alter the product catalog.
+            if (delegated && (me.Delegated is null || me.Delegated.Method != Request.Method
+                || me.Delegated.Pathname != Request.Path.Value))
+                return AuthenticateResult.Fail("The Nutrition delegation does not authorize this operation.");
 
             var identity = new ClaimsIdentity([
                 new Claim(ClaimTypes.NameIdentifier, me.User.Id),
@@ -65,6 +72,7 @@ public sealed class OpenGymAuthenticationHandler(
         await Response.WriteAsJsonAsync(new { error = unavailable ? "authentication unavailable" : "not signed in" });
     }
 
-    private sealed record MeResponse(UserResponse? User);
+    private sealed record MeResponse(UserResponse? User, DelegationResponse? Delegated);
+    private sealed record DelegationResponse(string? Method, string? Pathname);
     private sealed record UserResponse(string? Id, string? Name);
 }

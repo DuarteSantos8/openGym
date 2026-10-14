@@ -102,10 +102,39 @@ except Exception as error:
 PY
 }
 
+# Opt-in MCP probes create no accounts, grants or diary records. Verify through nginx
+# with the configured virtual host, never by calling Cloudflare or copying a user's session.
+mcp_ready() {
+    timeout -k 5 15 docker exec -i opengym-api-1 node --input-type=module - <<'JS'
+import assert from 'node:assert/strict'
+import http from 'node:http'
+const configuration = await fetch('http://127.0.0.1:3000/api/config', { signal: AbortSignal.timeout(3000) })
+const { mcp } = await configuration.json()
+if (!mcp) process.exit(0)
+const resource = new URL(mcp.url)
+const get = pathname => new Promise((resolve, reject) => {
+  const req = http.request({ hostname: 'web', port: 80, path: pathname, headers: { Host: resource.host } }, res => {
+    let body = ''
+    res.on('data', chunk => body += chunk)
+    res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, body }))
+  })
+  req.setTimeout(3000, () => req.destroy(new Error('MCP readiness timeout')))
+  req.on('error', reject)
+  req.end()
+})
+const metadata = await get('/.well-known/oauth-protected-resource')
+assert.equal(metadata.status, 200)
+assert.equal(JSON.parse(metadata.body).resource, mcp.url)
+const unauthorized = await get(resource.pathname)
+assert.equal(unauthorized.status, 401)
+assert.match(unauthorized.headers['www-authenticate'], /oauth-protected-resource/)
+JS
+}
+
 wait_ready() {
     local api_id=$1 web_id=$2 nutrition_id=${3:-} deadline=$((SECONDS + READY_TIMEOUT_SECONDS))
     while (( SECONDS < deadline )); do
-        if running_images_match "$api_id" "$web_id" "$nutrition_id" && http_ready &&
+        if running_images_match "$api_id" "$web_id" "$nutrition_id" && http_ready && mcp_ready &&
            { [[ -z $nutrition_id ]] || nutrition_ready; }; then
             return 0
         fi

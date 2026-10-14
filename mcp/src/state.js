@@ -109,6 +109,12 @@ export function init() {
     // merely closes the pipe would leak a process per session. Watching is unaffected: the
     // stdio transport is what keeps the loop alive while a client is actually attached.
     _watcher.unref()
+    _watcher.on('error', () => {
+      _watcher?.close()
+      _watcher = null
+      _state = undefined
+      _loadedMtime = 0
+    })
   } catch { /* fs.watch unsupported on this platform; tools will re-read on mtime change */ }
 }
 
@@ -154,7 +160,7 @@ export function _seedStateForTests(state) {
   if (_watcher) { _watcher.close(); _watcher = null }
 }
 
-function defaultsShape() {
+export function defaultsShape() {
   return {
     unit: 'kg', restSec: 90, sound: true, lang: 'en',
     theme: 'dark', accent: 'lime', body: 'male', targetW: null,

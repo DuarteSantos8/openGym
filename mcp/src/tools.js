@@ -2,7 +2,7 @@
    {0}/{1} template the lib returns so the LLM gets final text, not template strings.
    ISO dates are validated on the way in; the handlers never see 'yesterday'. */
 import { z } from 'zod'
-import { getState, getUser } from './state.js'
+import { getState as localState, getUser as localUser } from './state.js'
 import {
   fmt, setLabel, exLine, muscleName, policyName, friendlyDuration, ratio, muscleOrder
 } from './labels.js'
@@ -19,6 +19,7 @@ import { loadOfWorkouts, rankOf, levelsOf } from '../../frontend/src/lib/muscles
 import { policyFor } from '../../frontend/src/lib/progression.js'
 import { buildSessionEntries, startsFromLast } from '../../frontend/src/lib/session-start.js'
 
+const localContext = { getState: localState, getUser: localUser }
 /* ---------- helpers ---------- */
 
 // A 'YYYY-MM-DD' the calendar actually has. The regex alone let 2026-02-30 through, and
@@ -35,7 +36,7 @@ const isoDate = () => z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be YYYY-MM-D
 
 // A custom exercise lives in S.customEx and is merged into EXIDX by registerCustom() at
 // store load (useStore.js:54). The MCP server deliberately never calls it: http.js serves
-// several profiles from one process behind withRemoteState, so mutating the module-global
+// several profiles with request-scoped state, so mutating the module-global
 // index would leak one profile's customs into another's reads.
 const customOf = (id, S) => (S.customEx || []).find(ex => ex.id === id)
 // exOr's miss is a placeholder object, not null — callers that only need a name are fine
@@ -101,8 +102,8 @@ export const listRoutines = {
   name: 'list_routines',
   description: 'List the workout routines saved in the user\'s openGym profile (the same list the Plan screen shows). Each routine is a named set of exercises with set/rep targets. Use this to discover the plan structure before diving into a specific routine or today\'s workout.',
   schema: {},
-  handler: () => {
-    const S = getState()
+  handler: (_params, context = localContext) => {
+    const S = context.getState()
     if (!S) return noState()
     return {
       unit: S.unit || 'kg',
@@ -124,8 +125,8 @@ export const getRoutine = {
   name: 'get_routine',
   description: 'Get the full exercise list for a single routine (the same view the routine editor shows). Returns mode (reps/time/cardio), set/rep/weight targets (a `pyramid` list of per-set rep targets, \'max\' meaning as many reps as possible, when the exercise uses pyramid sets), superset links, any per-exercise custom increment or Epley deload factor, and each exercise\'s own rest in seconds (absent means it inherits the global rest timer). Use routine_id from list_routines.',
   schema: { routine_id: z.string().min(1) },
-  handler: ({ routine_id }) => {
-    const S = getState()
+  handler: ({ routine_id }, context = localContext) => {
+    const S = context.getState()
     if (!S) return noState()
     const r = (S.routines || []).find(x => x.id === routine_id)
     if (!r) { const e = new Error(`no routine with id ${JSON.stringify(routine_id)}`); e.code = 'ENOENT'; throw e }
@@ -179,8 +180,8 @@ export const getWeekPlan = {
   name: 'get_week_plan',
   description: 'Show the user\'s training plan. `days` is the authoritative answer to "what is planned when": the next seven dates from today with the routines planned for each (a date can hold several — a combined day) and how each was decided: a coach-week session ("coach"), a session the user pinned to that date ("pinned"), a one-off routine override ("override"), a "rest" override ("rest_override"), the weekday plan ("weekday") or nothing ("rest"). `coach_week` is the current coach week when one is running (a week written by an external planner through the API, never by the app): its sessions are done IN ORDER on whatever days the user trains (no weekday attached), the first undone one is today\'s session, a session can be pinned to a date, and `waiting` means the week starts on `starts_on`. `weekdays` is the user\'s own weekly plan keyed by JS getDay() (Sunday=0 … Saturday=6, the openGym state convention) — in a coach week it holds only the routines the user planned themselves, which ride along beside the coach-week session.',
   schema: {},
-  handler: () => {
-    const S = getState()
+  handler: (_params, context = localContext) => {
+    const S = context.getState()
     if (!S) return noState()
     const today = new Date()
     const isoToday = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0')
@@ -251,8 +252,8 @@ export const listWorkouts = {
     to: isoDate().optional().describe('Inclusive end date YYYY-MM-DD. Defaults to today.'),
     limit: z.number().int().min(1).max(200).optional().describe('Max items to return. Defaults to 25.')
   },
-  handler: ({ from, to, limit }) => {
-    const S = getState()
+  handler: ({ from, to, limit }, context = localContext) => {
+    const S = context.getState()
     if (!S) return noState()
     const lim = Math.min(Math.max(limit || 25, 1), 200)
     // `to` is documented as defaulting to today, and had no default at all. A row dated in the
@@ -311,8 +312,8 @@ export const getWorkout = {
     date: isoDate().optional().describe('The workout date as YYYY-MM-DD. If two sessions share that date, the answer lists them instead and asks for a workout_id.'),
     workout_id: z.string().min(1).optional().describe('The id from list_workouts. Preferred: it names one session even on a day with two.')
   },
-  handler: ({ date, workout_id }) => {
-    const S = getState()
+  handler: ({ date, workout_id }, context = localContext) => {
+    const S = context.getState()
     if (!S) return noState()
     const workouts = S.workouts || []
     let w
@@ -370,8 +371,8 @@ export const getBodyweight = {
     from: isoDate().optional().describe('Inclusive start date YYYY-MM-DD.'),
     to: isoDate().optional().describe('Inclusive end date YYYY-MM-DD. Defaults to today.')
   },
-  handler: ({ from, to }) => {
-    const S = getState()
+  handler: ({ from, to }, context = localContext) => {
+    const S = context.getState()
     if (!S) return noState()
     const goal = S.targetW || null
     // Same documented default as list_workouts: a future-dated weigh-in is not "latest".
@@ -406,8 +407,8 @@ export const estimate1rm = {
     exercise_id: z.string().min(1).optional().describe('An exercise id from list_routines or get_workout entries. If omitted, returns a full PR table.'),
     formula: z.enum(['epley', 'brzycki', 'lombardi']).optional().describe(`Formula to use. Defaults to ${DEFAULT_FORMULA}.`)
   },
-  handler: ({ exercise_id, formula }) => {
-    const S = getState()
+  handler: ({ exercise_id, formula }, context = localContext) => {
+    const S = context.getState()
     if (!S) return noState()
     const f = formula || DEFAULT_FORMULA
     if (exercise_id) {
@@ -454,8 +455,8 @@ export const muscleBalance = {
   schema: {
     period: z.enum(['week', 'month', 'all']).describe('window: last 7 days, last 30 days, or all-time')
   },
-  handler: ({ period }) => {
-    const S = getState()
+  handler: ({ period }, context = localContext) => {
+    const S = context.getState()
     if (!S) return noState()
     // Whole local days, counting today: a week is the 7 dates ending today, a month the 30. The
     // cutoff used to be an instant 7 x 24h back, which for the workouts that carry no clock — an
@@ -536,8 +537,8 @@ export const previewSession = {
     routine_id: z.string().min(1).optional().describe('Routine to preview. Defaults to the routine scheduled for `date`.'),
     date: isoDate().optional().describe('Date the session would be started on, YYYY-MM-DD. Affects which routine is scheduled and any one-off day override. Defaults to today.')
   },
-  handler: ({ routine_id, date }) => {
-    const S = getState()
+  handler: ({ routine_id, date }, context = localContext) => {
+    const S = context.getState()
     if (!S) return noState()
     const now = new Date()
     const iso = date || (now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0'))
@@ -665,4 +666,8 @@ function noState() {
     error: 'no synced state yet — sign in at least once from a device so the openGym api can save a state file for this profile',
     unit: 'kg'
   }
+}
+/** Bind reads to one caller. Never replace module-global state for an HTTP request. */
+export function createTrainingTools(context) {
+  return TOOLS.map(tool => ({ ...tool, handler: params => tool.handler(params, context) }))
 }

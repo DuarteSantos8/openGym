@@ -84,6 +84,14 @@ Installing configuration does not itself deploy unverified images. The first
 Nutrition deployment waits for successful main publication. Failed `main` CI
 leaves the former two-service release running, even after CD installation.
 
+Remote MCP is opt-in inside the API image, not a fourth image. See
+[MCP setup](../mcp/README.md) for the existing-origin HTTPS/OAuth configuration.
+With MCP enabled, the updated script also checks protected-resource discovery
+and a `401` authentication challenge through nginx before declaring readiness;
+it creates no grants or diary records. Install the updated script when releasing
+this feature. Configuration and script changes in a `dev` checkout do not enable
+MCP or update this host automatically.
+
 ## Rollback and pause
 
 On startup/update failure the script restores the prior `.env`, Compose file

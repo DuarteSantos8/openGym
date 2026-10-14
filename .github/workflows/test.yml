@@ -117,6 +117,8 @@ jobs:
       # install as test:api in .gitlab-ci.yml; the Agent SDK is optional and stays out).
       - run: npm ci --omit=optional
         working-directory: api
+      - run: npm ci
+        working-directory: mcp
       - run: npm test
         working-directory: api
       # The api's copy of the exercise catalogue is generated and committed. A dataset change
@@ -139,13 +141,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - run: docker build --target default -t opengym-api:default ./api
-      - run: docker build --target coach   -t opengym-api:coach   ./api
+      - run: docker build -f api/Dockerfile --target default -t opengym-api:default .
+      - run: docker build -f api/Dockerfile --target coach   -t opengym-api:coach   .
       # No --target, exactly like docker-publish.yml. That workflow names no stage, so what it
       # ships is whatever Dockerfile stage happens to be last -- and that untargeted artifact,
       # not opengym-api:default above, is the image every self-hoster pulls as :latest. Build it
       # the same way here so the assertion below is about the thing we actually publish.
-      - run: docker build -t opengym-api:published ./api
+      - run: docker build -f api/Dockerfile -t opengym-api:published .
 
       - name: the image published as :latest has no AI runtime either
         run: |

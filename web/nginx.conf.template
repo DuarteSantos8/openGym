@@ -32,6 +32,44 @@ server {
     add_header Referrer-Policy "same-origin" always;
     add_header Content-Security-Policy "frame-ancestors 'none'" always;
 
+    # MCP/OAuth stay on the existing origin/port. Explicit locations prevent SPA fallbacks;
+    # request-scoped SSE must not be buffered or cached by nginx.
+    location = ${BASE_PATH}/mcp {
+        client_max_body_size 64k;
+        resolver ${RESOLVER} valid=10s ipv6=off;
+        set $mcp_upstream http://${BACKEND}:${PORT};
+        proxy_pass $mcp_upstream$api_request_uri;
+        proxy_http_version 1.1;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header CF-Connecting-IP "${CF_CONNECTING_IP}";
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 60s;
+    }
+    location ^~ ${BASE_PATH}/oauth/ {
+        client_max_body_size 64k;
+        resolver ${RESOLVER} valid=10s ipv6=off;
+        set $oauth_upstream http://${BACKEND}:${PORT};
+        proxy_pass $oauth_upstream$api_request_uri;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header CF-Connecting-IP "${CF_CONNECTING_IP}";
+        proxy_cache off;
+    }
+    # RFC 8414/9728 discovery lives at the origin root, including for subpath hosting.
+    location ^~ /.well-known/ {
+        resolver ${RESOLVER} valid=10s ipv6=off;
+        set $metadata_upstream http://${BACKEND}:${PORT};
+        proxy_pass $metadata_upstream$request_uri;
+        proxy_set_header Host $http_host;
+        proxy_cache off;
+    }
+
     # API → backend container.
     # `^~` so this prefix beats the regex locations below: without it a request for a path such
     # as /api/anything.json would be matched by the \.(js|css|json|html)$ block instead and be

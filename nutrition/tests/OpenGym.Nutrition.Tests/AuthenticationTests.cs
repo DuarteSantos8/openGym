@@ -53,6 +53,21 @@ public sealed class AuthenticationTests
         Assert.Equal(2, factory.Backend.Calls);
     }
 
+    [Fact]
+    public async Task DelegatedCredentialRequiresMatchingOperationAndVerifiedIdentity()
+    {
+        using var factory = new NutritionFactory();
+        using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Add("Authorization", "Bearer ogn.internal-operation");
+        factory.Backend.Body = "{\"user\":{\"id\":\"u1\",\"name\":\"Илья\"},\"delegated\":{\"method\":\"GET\",\"pathname\":\"/api/nutrition/products\"}}";
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/api/nutrition/products")).StatusCode);
+        Assert.Equal("http://127.0.0.1:3000/api/mcp/nutrition/identity", factory.Backend.Target);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/nutrition/diary?date=2026-10-13")).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.PostAsJsonAsync("/api/nutrition/products", new { name = "Spoofed" })).StatusCode);
+        factory.Backend.Body = "{\"user\":{\"id\":\"u1\",\"name\":\"Илья\"}}";
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/nutrition/products")).StatusCode);
+    }
+
     [Theory]
     [InlineData(500, "{}")]
     [InlineData(302, "{}")]

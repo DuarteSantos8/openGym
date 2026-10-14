@@ -80,7 +80,7 @@ jobs:
       - name: Build API (default target)
         uses: docker/build-push-action@v7
         with:
-          context: ./api
+          context: .
           file: ./api/Dockerfile
           target: default
           load: true
@@ -124,7 +124,7 @@ jobs:
         run: |
           docker network create opengym-ci
           docker volume create opengym-ci-nutrition
-          docker run -d --name api --network opengym-ci -e DATA_DIR=/data -e PASSWORD_LOGIN=1 -e NUTRITION_URL=http://nutrition:8080 opengym-api:ci
+          docker run -d --name api --network opengym-ci -e DATA_DIR=/data -e PASSWORD_LOGIN=1 -e NUTRITION_URL=http://nutrition:8080 -e MCP_ENABLED=1 -e 'MCP_OAUTH_CLIENTS=[{"client_id":"mcp-ci","redirect_uris":["https://client.example/callback"]}]' opengym-api:ci
           docker run -d --name nutrition --network opengym-ci -v opengym-ci-nutrition:/data -e OpenGym__ApiBaseUrl=http://api:3000 -e NO_PROXY=api,nutrition,localhost,127.0.0.1 opengym-nutrition:ci
           docker run -d --name web --network opengym-ci -p 127.0.0.1:8080:80 opengym-web:ci
           curl --retry 30 --retry-delay 1 --retry-all-errors --fail http://localhost:8080/api/health
@@ -133,6 +133,7 @@ jobs:
           grep -q 'type="module"' /tmp/opengym.html
           docker exec -i api node --input-type=module < scripts/ci/nutrition-internal-smoke.mjs
           node scripts/ci/nutrition-smoke.mjs http://localhost:8080
+          node scripts/ci/mcp-smoke.mjs http://localhost:8080 --disposable
           docker rm -f nutrition
           docker run -d --name nutrition --network opengym-ci -v opengym-ci-nutrition:/data -e OpenGym__ApiBaseUrl=http://api:3000 -e NO_PROXY=api,nutrition,localhost,127.0.0.1 opengym-nutrition:ci
           docker exec -i api node --input-type=module < scripts/ci/nutrition-internal-smoke.mjs

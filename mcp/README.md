@@ -1,50 +1,23 @@
 # openGym MCP server
 
-A [Model Context Protocol](https://modelcontextprotocol.io) bridge that lets an external LLM
-application (Claude Desktop, Cursor, Cline, Continue, etc.) read your openGym profile —
-routines, workouts, body-weight log, estimated 1RMs, and muscle balance — directly from your
-self-hosted `./data` directory.
+Two entrances share the same tool registration and training handlers:
 
-It is read-only, runs locally as a stdio process spawned by the LLM client, adds no new
-container, and requires no extra authentication. The LLM never sees passkeys, VAPID keys, or
-session secrets — it can only read the same `state-<uid>.json` files the openGym api already
-writes.
+- **Local stdio:** the original nine read-only training tools, using `OPENGYM_DATA` and `OPENGYM_UID`.
+- **Remote Streamable HTTP:** opt-in `/mcp` inside the existing Node API, with OAuth delegation and seven Nutrition API tools. No fourth image, new account system or published internal port.
 
-The numbers it answers with are computed by the **same pure functions the React UI uses**
-(`frontend/src/lib/*.js`) — `estimate1RM`, `loadOfWorkouts`, `effectiveRoutine`, etc. — so a
-"what's my bench 1RM?" answer matches the Stats screen exactly.
+Training statistics still use the pure functions in `frontend/src/lib/`. Remote calls obtain the verified user's snapshot through Node's existing state reader, not an AI-supplied user ID. State is scoped to one request; custom exercise names cannot leak through a global registry. Nutrition uses its existing HTTP API, historical snapshots, decimal totals and retry rules. MCP never opens SQLite or calculates nutrients.
 
-> Phase 1 of a multi-phase plan. Read-only today; long-lived token auth + write tools are
-> planned but not shipped yet. See **Roadmap** below.
+## Local stdio (unchanged configuration)
 
-## Quick start
-
-### 1. Install
-
-```bash
+```sh
 cd mcp
-npm install
+npm ci
+OPENGYM_DATA=/absolute/path/to/openGym/data OPENGYM_UID=<your-user-id> node src/index.js
 ```
 
-### 2. Point it at your data
+`OPENGYM_UID` can be omitted for one profile. Client configuration remains:
 
-The MCP server reads the same `./data` directory `docker compose up` creates. Pick the profile
-to answer for — its user id is in `./data/db.json` under `users[].id`:
-
-```bash
-# single-user instance (the common self-hosted case) — auto-detected:
-node src/index.js
-
-# multi-user instance, or just to be explicit:
-OPENGYM_UID=<your-uid> OPENGYM_DATA=/path/to/openGym/data node src/index.js
-```
-
-### 3. Register with your LLM client
-
-Add the server to your LLM client's MCP config. For Claude Desktop, edit
-`claude_desktop_config.json` (macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`):
-
-```jsonc
+```json
 {
   "mcpServers": {
     "opengym": {
@@ -52,94 +25,118 @@ Add the server to your LLM client's MCP config. For Claude Desktop, edit
       "args": ["/absolute/path/to/openGym/mcp/src/index.js"],
       "env": {
         "OPENGYM_DATA": "/absolute/path/to/openGym/data",
-        "OPENGYM_UID": "<your-uid>"   // optional — auto-detected if you have one profile
+        "OPENGYM_UID": "<your-user-id>"
       }
     }
   }
 }
 ```
 
-For Cursor and other MCP-compatible clients, see the client's MCP docs — the same `command` +
-`args` + `env` shape is what every stdio MCP server expects.
+Only nine training tools are exposed over stdio. Do not give a remote client filesystem access or an OpenGym browser session.
 
-Restart the client; you should see the openGym tools appear with "serving profile \<name\>" on
-the server's stderr.
+## Enable a private remote connection
+
+Remote MCP is **disabled by default**. For source use, install both packages (`npm ci --omit=optional` in `api`, `npm ci` in `mcp`). The Dockerfile installs them automatically. API builds now use the repository root:
+
+```sh
+docker build -f api/Dockerfile .
+```
+
+Configure the existing deployment's `.env`:
+
+```dotenv
+ORIGIN=https://gym.example.com
+MCP_ENABLED=1
+MCP_PUBLIC_URL=https://gym.example.com/mcp
+MCP_OAUTH_CLIENTS=[{"client_id":"opengym-chatgpt","client_name":"ChatGPT","redirect_uris":["https://chatgpt.com/connector/oauth/REPLACE_WITH_YOUR_CALLBACK_ID"]}]
+TZ=Europe/Berlin
+```
+
+The callback above is a placeholder. In ChatGPT's private plugin/custom MCP connection settings, choose OAuth with a predefined public client, enter the configured `client_id`, leave the client secret empty, and copy **the exact callback shown by that client** into `redirect_uris`. If authentication method selection is available, use `none`. Restart API after changing clients. Use only trusted exact callbacks, no wildcards. Other OAuth-capable MCP clients can have separate predefined IDs. This private-first release has no dynamic client registration (DCR) or client metadata document fetching (CIMD).
+
+Connect to `MCP_PUBLIC_URL`, sign in to OpenGym with the existing login, then approve requested scopes. An already signed-in browser still gets explicit consent. When not signed in, the page links to OpenGym in another tab; reload consent after signing in. No app password or browser token is sent to ChatGPT.
+
+`oidc-provider` handles authorization code + mandatory PKCE S256, exact redirect matching, opaque access tokens (10 minutes), rotating refresh tokens and grants with a maximum 30-day lifetime. Clients request `offline_access` for refresh. Refresh does not extend the grant indefinitely. The `resource` is the exact MCP URL.
+
+| Scope | Access |
+|---|---|
+| `training.read` | Nine training tools |
+| `nutrition.read` | Personal products, entries and daily totals |
+| `nutrition.write` | Single-entry create, update and confirmed delete |
+
+Every request/tool checks current account, session version, resource, grant and scope. Disabled/deleted users, revoked grants and **sign out all devices** lose access and refresh rights. Ordinary OpenGym sessions cannot authorize `/mcp`; MCP tokens cannot authorize ordinary `/api/*` operations. Tool scope errors carry `mcp/www_authenticate` for reauthorization; missing HTTP authorization returns `401` with discovery. Host/Origin checks, a 64 KiB body limit and per-user request budgets protect MCP; OAuth endpoints have a per-address budget.
+
+### Inspect and revoke connections
+
+Use the normal OpenGym authenticated API:
+
+- `GET /api/mcp/connections` lists **your** grant/client IDs, scopes and creation times, never access/refresh tokens.
+- `POST /api/mcp/connections/revoke` with JSON `{ "grantId": "<id-from-your-list>" }` revokes that grant and its linked artifacts. Normal same-origin CSRF checks apply. Another user's grant returns `404`.
+
+There is no new settings UI in v1. Use these authenticated endpoints or **sign out all devices**. Disabling MCP removes remote entrances but does not erase grants; revoke before disabling if they must remain invalid after re-enabling.
 
 ## Tools
 
-Nine read-only tools in v1:
+Original names and calculation behavior are preserved:
 
-| Tool | What it answers |
+| Tool | Purpose |
 |---|---|
-| `list_routines` | What routines are saved in my profile? (names + exercise counts) |
-| `get_routine` | What does the Push Day routine prescribe? (sets/reps/weight and rest per exercise) |
-| `preview_session` | What will the app actually put on screen when I start this routine — after the progression policy and my history have overridden the plan? |
-| `get_week_plan` | What's planned when: the next seven days with their routines and how each was decided (coach week, a pinned session, an override, the weekday plan), the current coach week when one is running, and the weekday table. |
-| `list_workouts` | Recent sessions — newest first, with dates, sets done/planned, volume, duration, PRs. |
-| `get_workout` | Full set-by-set breakdown of one session, by `workout_id` or by date. On a day with two sessions the date alone returns both ids to pick from rather than guessing at one. |
-| `get_bodyweight` | Weigh-ins with the latest weight, the goal line, and deltas vs goal. |
-| `estimate_1rm` | All-time best 1RM for an exercise + the trend, or a PR table across all exercises. |
-| `muscle_balance` | Which muscles I've trained this week/month/all-time, ranked + which I've neglected. |
+| `list_routines` | Saved routines and exercise counts |
+| `get_routine` | Stored sets/reps/weight/rest |
+| `preview_session` | Actual prescription after progression and history |
+| `get_week_plan` | Next seven days, coach week and weekday plan |
+| `list_workouts` | Recent sessions, volume, duration and PRs |
+| `get_workout` | Full session by ID/date; ambiguous date returns IDs to choose from |
+| `get_bodyweight` | Latest weight, goal and deltas |
+| `estimate_1rm` | Best 1RM/trend or the PR table |
+| `muscle_balance` | Trained and neglected muscles |
 
-`get_routine` and `preview_session` answer two different questions, and confusing them is the
-easiest way for a coach to give wrong advice. `get_routine` reports what the routine *stores*.
-`preview_session` reports what the athlete will actually *see*: a routine holding "squat 3×8 @
-60 kg" opens at 75 kg if the policy progressed or deloaded from that routine's last logged
-session. The routine's own weight is the last fallback the session builder consults, not the
-first; its reps hold unless a policy that moves reps moved them, or the profile starts planned
-sessions from the last session (`starts_from`). Ask `preview_session` before naming a weight.
+Ask `preview_session` before advising a weight: stored routine weight may differ from the opening prescription. JSON is returned as text and `structuredContent`. Training “today” uses the **process timezone**, not each user's timezone. Set `TZ`; explicit dates avoid ambiguity.
 
-Each tool returns JSON the LLM can format as it likes; structured fields (sets, dates, levels)
-are pre-formatted into human-readable labels in `src/labels.js` so the LLM doesn't need to
-re-interpret them.
+Remote-only Nutrition tools:
 
-## How it reuses the training logic
+| Tool | Input / behavior |
+|---|---|
+| `nutrition_search_products` | Optional `search`, `offset`; paginated **personal** catalog |
+| `nutrition_get_product` | `product_id` from catalog results |
+| `nutrition_get_diary` | Explicit local `date` (`YYYY-MM-DD`); entries and service-computed totals |
+| `nutrition_get_entry` | `entry_id`; inspect before edit/delete |
+| `nutrition_create_entry` | New UUID `entry_id`, `product_id`, `quantity_grams`, `date`, optional `time` (`HH:mm` or null) |
+| `nutrition_update_entry` | `entry_id`, complete quantity/date/time; optional intentional product replacement |
+| `nutrition_delete_entry` | Exact `entry_id` and `confirmed: true` after confirmation |
 
-The MCP server imports the training helpers under `frontend/src/lib/` directly as Node ESM
-and calls the same functions the React UI does (`history.js`, `onerm.js`, `muscles.js`,
-`exercises.js`). The numbers it returns match what the Stats screen shows, because they are
-the same code.
+Products contain values per 100 grams, not serving/piece weights. For “I ate 200 grams of buckwheat and two eggs,” search the user's catalog, clarify raw/cooked/brand ambiguity and obtain grams for eggs. Do not invent products or piece-to-grams conversions. A fully specified “record 200 g of this product on this date” needs no redundant confirmation. Each product is a separate write, so partly successful meals must be reported as partial, not atomic.
 
-The one lib file that wasn't Node-safe was `i18n.js` (Vite's `import.meta.glob` at module
-top level) — split into `i18n-core.js` (pure, Node-safe) + `i18n.js` (Vite/React bits,
-re-exports from core). `exercises.js` got a one-line `import.meta.env || {}` guard. No new
-dependencies landed in `frontend/`, no public exports changed.
+Generate one entry UUID before creation; retain the **identical UUID and payload** for retries. Nutrition returns the original entry for identical retries, `409 idempotency_conflict` for a different payload and `410 entry_deleted` after deletion. Timeout/network/malformed/upstream-error responses return `nutrition_unavailable`; writes include `outcome: "unknown"` and `retry_same_id: true`. Inspect the diary or retry the identical operation, never a fresh UUID. This prevents protocol retry duplicates, not a later independently generated duplicate natural-language command.
 
-## Design constraints honoured
+Updating without `product_id` retains historical nutrition even after product deletion; intentional replacement takes a new snapshot. Edits retain the existing last-write-wins contract, without optimistic concurrency. Delete confirmation is a client/user workflow guard, not cryptographic proof of user intent.
 
-- **One runtime dependency beyond the MCP SDK:** none. No database driver, no HTTP framework.
-- **No new container.** stdio transport is spawned by the LLM client; nothing to add to
-  `docker-compose.yml`.
-- **No new auth.** The filesystem is the boundary — same as `docker compose` running on the
-  user's box. No passkey material, VAPID keys, or session secrets ever cross it.
-- **No telemetry, no network.** Reads `./data/*.json` and exits when the LLM client
-  disconnects.
+## Deployment and security boundary
 
-## Tests
+Existing `web → api → nutrition` remains intact. nginx proxies `/mcp` without SSE buffering/caching, `/oauth/*`, and root `/.well-known/*` to Node. For prefix hosting use `BASE_PATH=/gym` and `MCP_PUBLIC_URL=https://gym.example.com/gym/mcp`; discovery stays at the origin root, including path-specific aliases. OAuth external scheme/host come from configuration, not forwarded input. MCP and `ORIGIN` must share one HTTPS origin; HTTP is allowed only for loopback development.
 
-```bash
-cd mcp && npm test
+Reuse Cloudflare HTTPS. Do not cache dynamic routes or put interactive Access/challenge pages in front of MCP/token/discovery. Keep API/Nutrition ports internal. Cloudflare Tunnel can carry the same origin without extra origin ports. OpenAI Secure MCP Tunnel is not configured here; adding it later is a connectivity choice, not a different tool implementation.
+
+Nutrition receives a 60-second HMAC-signed internal credential bound to user, grant, session version, HTTP method and path. It revalidates with Node and compares the delegated method/path. No broad browser session is manufactured or forwarded; product-catalog writes are not MCP tools.
+
+Artifacts/signing keys are stored separately in `data/mcp-oauth.json`, AES-256-GCM encrypted with a key derived from existing `data/secret`. Back up and restore **both together**; protect backups as credentials. Corruption/mismatched secret fails startup closed. Do not delete this file as a “repair”; old backups can resurrect grants and need deliberate revoke-all/session-version reset. OAuth assumes **one Node writer**, like current JSON storage; replace the adapter with transactional shared storage before multiple replicas. Expired rows are swept on writes and capacity is bounded.
+
+GHCR still publishes three application images after successful main CI. `dev` validates but does not deploy production. CI adds a disposable OAuth + real Nutrition smoke; deployment readiness optionally probes discovery and unauthenticated MCP through nginx without data mutations. Install the updated deployment script separately when releasing; this checkout does not modify Proxmox.
+
+## Verification
+
+```sh
+cd mcp
+npm test
+npm run check:node-loadable
+cd ../api
+node --test test/mcp-oauth-store.test.js test/mcp-nutrition.test.js test/server-mcp.test.js test/server-nutrition.test.js
 ```
 
-58 cases seeding state from `frontend/src/lib/demoSeed.js` (the same deterministic fixture
-the public demo runs on). Pins JSON shape and the user-facing edge cases: rest-day override,
-missing routine, zero-workout history, no synced state, superset links, three 1RM formulas.
-"Today" is pinned via `vi.useFakeTimers({ now: ..., toFake: ['Date'] })` so date-dependent
-tools see consistent values regardless of when the suite runs. The pure lib functions have
-their own 92 tests in `frontend/src/lib/*.test.js`.
+CI runs Nutrition tests and `scripts/ci/mcp-smoke.mjs http://localhost:8080 --disposable` on fresh containers only. The smoke creates accounts/products and must **never** target production. Tests cover isolation, real consent/PKCE/resource/scopes, HTTPS prefixes, persistence/rotation/revocation, storage failure rollback, uncertain writes and Nutrition retry/delete rules.
 
-## Roadmap
+References: [OpenAI OAuth integration](https://developers.openai.com/plugins/build/auth), [MCP authorization](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization), [TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk), [oidc-provider](https://github.com/panva/node-oidc-provider).
 
-- **Done (Phase 1):** read-only stdio, 8 tools, direct `./data` access.
-- **Done (Phase 1.5):** `preview_session` — the policy's next prescription, the opening set
-  rows it produces, and which of plan / confirmed weight / history each number came from.
-- **Phase 2:** read+write over stdio. Requires a long-lived token auth path minted from the
-  admin dashboard (new `./data/tokens.json`) and a write-lock against the web UI's read-modify-
-  write of `state-<uid>.json`. Tools: `log_workout`, `add_bodyweight`, `edit_routine`,
-  `assign_weekday`, `override_day`.
-- **Phase 3:** Streamable HTTP transport, opt-in 4th container in `docker-compose.yml`. Same
-  tool implementations, second transport — the MCP SDK supports both behind one tool registration.
-
-## License
+Future tools can use the same registration path with explicit scopes and existing module/API rules. Atomic batches, workout/plan/bodyweight writes, per-user timezone, connections UI, DCR/CIMD and publication review are outside v1. Live ChatGPT/Cloudflare behavior still needs integration validation; protocol tests alone are not that evidence.
 
 AGPL-3.0-or-later, same as openGym.
