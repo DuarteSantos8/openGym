@@ -2,8 +2,8 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
-import { HEALTH_METRICS, HEALTH_TYPES } from '../lib/health/metrics.js'
-import { MAX_WIDGETS, moveWidget, toggleWidget, visibleWidgets, widgetsOf } from '../lib/health/widgets.js'
+import { HEALTH_METRICS } from '../lib/health/metrics.js'
+import { MAX_WIDGETS, moveWidget, toggleWidget, visibleWidgets, widgetChoices, widgetsOf } from '../lib/health/widgets.js'
 import { MetricCard } from '../views/Health.jsx'
 import Icon from './Icon.jsx'
 import { Button, Check } from './ui.jsx'
@@ -33,7 +33,7 @@ function WidgetChooser({ close }) {
   const S = useStore(s => s.S)
   const chosen = widgetsOf(S)
   const set = list => useStore.getState().update(s => { s.homeWidgets = list })
-  const others = HEALTH_TYPES.filter(k => !chosen.includes(k))
+  const others = widgetChoices(S).filter(k => !chosen.includes(k))
   const row = (k, on) => <div className="lrow" key={k}>
     <Check checked={on} label={t(HEALTH_METRICS[k].label)} onChange={() => set(toggleWidget(chosen, k))} />
     <span className="lrow-m"><span className="lrow-t">{t(HEALTH_METRICS[k].label)}</span></span>

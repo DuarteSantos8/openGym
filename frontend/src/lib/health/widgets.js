@@ -1,7 +1,7 @@
 // The health widgets on Home: which metrics, in which order (S.homeWidgets). A setting like any
 // other, so it follows the profile to every device. null — a profile that never chose — is the
 // default set; an empty list is "none", which hides the card.
-import { HEALTH_METRICS } from './metrics.js'
+import { HEALTH_METRICS, HEALTH_TYPES } from './metrics.js'
 import { hasData } from './records.js'
 
 export const DEFAULT_WIDGETS = ['steps', 'sleep', 'restingHeartRate', 'bodyFat']
@@ -15,6 +15,17 @@ export function widgetsOf(S) {
 
 /** The widgets the Home card shows: the chosen ones that have a reading. Empty hides the card. */
 export const visibleWidgets = S => widgetsOf(S).filter(k => hasData(S, k))
+
+// What the chooser always offers; any other kind of reading once the profile has one, so the
+// list is not a hundred kinds the phone never records.
+const ALWAYS = ['weight', 'bmi', 'bodyFat', 'fatMass', 'leanMass', 'muscleMass', 'bodyWater', 'visceralFat', 'boneMass',
+  'protein', 'bmr', 'metabolicAge', 'height', 'steps', 'distance', 'activeEnergy', 'restingEnergy', 'heartRate', 'restingHeartRate', 'sleep']
+
+/** The metrics the chooser lists: the main ones and every other one the profile has a reading of. */
+export function widgetChoices(S) {
+  const present = new Set((S?.health || []).map(r => r?.type))
+  return HEALTH_TYPES.filter(k => ALWAYS.includes(k) || present.has(k))
+}
 
 /** The list with `type` switched on (at the end) or off; refuses a seventh. */
 export function toggleWidget(list, type) {

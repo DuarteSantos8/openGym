@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_WIDGETS, MAX_WIDGETS, moveWidget, toggleWidget, visibleWidgets, widgetsOf } from './widgets.js'
+import { DEFAULT_WIDGETS, MAX_WIDGETS, moveWidget, toggleWidget, visibleWidgets, widgetChoices, widgetsOf } from './widgets.js'
 import { makeRecord } from './records.js'
 
 const T = new Date('2026-10-12T08:00:00').getTime()
@@ -28,5 +28,14 @@ describe('health widgets on Home', () => {
     expect(moveWidget(['a', 'b', 'c'], 'c', -1)).toEqual(['a', 'c', 'b'])
     expect(moveWidget(['a', 'b', 'c'], 'a', -1)).toEqual(['a', 'b', 'c'])
     expect(moveWidget(['a', 'b', 'c'], 'a', 1)).toEqual(['b', 'a', 'c'])
+  })
+})
+
+describe('the chooser', () => {
+  it('offers the main readings, and any other kind once the profile has one', () => {
+    const none = widgetChoices({ health: [] })
+    expect(none).toContain('steps')
+    expect(none).not.toContain('spo2')
+    expect(widgetChoices({ health: [{ type: 'spo2' }] })).toContain('spo2')
   })
 })
