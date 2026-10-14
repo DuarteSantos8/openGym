@@ -63,13 +63,28 @@ describe('check-locales.mjs', () => {
     expect(r.out).toContain('blank')
   })
 
-  it('still fails a key one pack does not carry', () => {
+  it('fails a key translated in only one locale', () => {
     const r = run({ de, fr: { Save: 'Enregistrer' } })
     expect(r.code).toBe(1)
-    expect(r.out).toContain('missing')
+    expect(r.out).toContain('only here')
   })
 
   // The app's own packs, so the suite carries the same check CI does rather than only the rule.
+  it('allows new ru/de copy to fall back to English in other locales', () => {
+    const r = run({ de: { Save: 'Speichern', 'MCP connection': 'MCP-Verbindung' },
+      ru: { Save: 'Сохранить', 'MCP connection': 'Подключение MCP' }, fr: { Save: 'Enregistrer' } })
+    expect(r.code).toBe(0)
+    expect(r.out).toContain('in sync')
+  })
+
+  it('still requires new copy in both primary locales and preserves legacy coverage', () => {
+    const incomplete = run({ de: { Save: 'Speichern', 'MCP connection': 'MCP-Verbindung' }, ru: { Save: 'Сохранить' }, fr: { Save: 'Enregistrer' } })
+    expect(incomplete.code).toBe(1)
+    expect(incomplete.out).toContain('MCP connection')
+    const legacy = run({ de: { Save: 'Speichern' }, ru: { Save: 'Сохранить' }, fr: { Save: 'Enregistrer' }, es: {} })
+    expect(legacy.code).toBe(1)
+  })
+
   it('passes the locale packs this app ships', () => {
     const r = spawnSync(process.execPath, [script], { encoding: 'utf8' })
     expect(r.stdout + r.stderr).toContain('in sync')

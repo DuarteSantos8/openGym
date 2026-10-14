@@ -165,6 +165,62 @@ security:
   - bearerAuth: []
 
 paths:
+  /api/mcp/settings:
+    get:
+      tags: [auth]
+      operationId: getMcpSettings
+      summary: Read effective MCP connection settings.
+      description: Authenticated users receive public client IDs, scopes and process timezone. Only administrators receive saved configuration and restartRequired. Does not return OAuth tokens or secrets.
+      responses:
+        '200':
+          description: Effective settings, with saved configuration for administrators only.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    put:
+      tags: [admin]
+      operationId: saveMcpSettings
+      summary: Save MCP configuration for the next API restart.
+      description: Admin-only, same-origin CSRF protected. Saves data/mcp-settings.json atomically; never edits .env or changes the current OAuth provider. Saved settings override environment defaults on restart.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/McpConfiguration' }
+      responses:
+        '200': { description: Effective and saved settings, including restartRequired. }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/mcp/connections:
+    get:
+      tags: [auth]
+      operationId: listMcpConnections
+      summary: List the current account's MCP grants, even while remote MCP is disabled.
+      description: Grant IDs, client IDs, scopes and creation times only. Other accounts and access/refresh tokens are never returned.
+      responses:
+        '200': { description: Object with the current account's connections array. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/mcp/connections/revoke:
+    post:
+      tags: [auth]
+      operationId: revokeMcpConnection
+      summary: Revoke an owned grant and all linked OAuth artifacts.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [grantId]
+              properties:
+                grantId: { type: string }
+      responses:
+        '200': { description: Revoked successfully. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { description: Grant does not belong to the current account or is no longer active. }
   /api/nutrition/products:
     get:
       tags: [nutrition]
@@ -3305,6 +3361,27 @@ components:
           example: { error: "that code is wrong, used or expired", code: "link-invalid" }
 
   schemas:
+    McpConfiguration:
+      type: object
+      required: [enabled, url, clients]
+      properties:
+        enabled: { type: boolean }
+        url: { type: string, format: uri, maxLength: 2048, description: 'Existing OpenGym HTTPS origin, ending in /mcp. HTTP for enabled MCP is localhost-only.' }
+        clients:
+          type: array
+          maxItems: 10
+          description: At least one client is required when enabled. Public clients only, no secrets or wildcard callbacks.
+          items:
+            type: object
+            required: [client_id, redirect_uris]
+            properties:
+              client_id: { type: string, minLength: 1, maxLength: 128 }
+              client_name: { type: string, maxLength: 100 }
+              redirect_uris:
+                type: array
+                minItems: 1
+                maxItems: 10
+                items: { type: string, format: uri, maxLength: 2048 }
     NutritionValues:
       type: object
       required: [calories, protein, fat, carbohydrates]

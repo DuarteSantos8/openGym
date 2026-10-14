@@ -2046,3 +2046,15 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 [dir="rtl"] .hm-wrap,[dir="rtl"] .cal-grid{direction:ltr}
 /* Tight tracking is tuned for Latin; Arabic is a connected script and gets none. */
 [dir="rtl"] *{letter-spacing:0}
+
+/* MCP inherits Settings controls; long endpoint/client values remain selectable and wrap. */
+.mcp-content{padding:16px;line-height:1.5}
+.mcp-content p:first-child{margin-top:0}
+.mcp-content p:last-child{margin-bottom:0}
+.mcp-content label{display:block;margin:12px 0 6px;font-weight:600}
+.mcp-value{overflow-wrap:anywhere;user-select:text}
+.mcp-steps{margin:0;padding-inline-start:22px}
+.mcp-steps li+li{margin-top:8px}
+.mcp-client{min-width:0;margin:20px 0 0;padding:0;border:0}
+.mcp-client legend{font-weight:600}
+.mcp-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}

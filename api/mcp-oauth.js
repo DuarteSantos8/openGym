@@ -2,20 +2,18 @@ import crypto from 'node:crypto';
 import path from 'node:path';
 import Provider, { errors } from 'oidc-provider';
 import { createOAuthStore } from './mcp-oauth-store.js';
+import { McpScopes, validateMcpConfiguration } from './mcp-config.js';
 
-export const McpScopes = ['training.read', 'nutrition.read', 'nutrition.write'];
+export { McpScopes } from './mcp-config.js';
 const GrantLifetimeSeconds = 30 * 86400;
 const InternalCredentialSeconds = 60;
 const escapeHtml = value => String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
 
 /** OAuth protocol belongs to oidc-provider; OpenGym supplies login, consent and account status. */
 export function createMcpOAuth({ data, secret, origin, publicUrl, clients, userById, readSession, json }) {
-  const resource = new URL(publicUrl || origin + '/mcp');
-  if (resource.search || resource.hash || resource.username || resource.password || !resource.pathname.endsWith('/mcp')
-    || !['http:', 'https:'].includes(resource.protocol)
-    || (resource.protocol !== 'https:' && !['localhost', '127.0.0.1', '[::1]'].includes(resource.hostname)))
-    throw new Error('MCP_PUBLIC_URL must be an HTTPS URL ending in /mcp (HTTP is localhost-only)');
-  if (resource.origin !== new URL(origin).origin) throw new Error('MCP must use the existing OpenGym origin');
+  const configuration = validateMcpConfiguration({ enabled: true, url: publicUrl || origin + '/mcp', clients }, origin);
+  const resource = new URL(configuration.url);
+  clients = configuration.clients;
   const prefix = resource.pathname.slice(0, -'/mcp'.length);
   const issuer = resource.origin + prefix + '/oauth';
   const sessionVersion = user => user.sv || 0;
@@ -24,15 +22,6 @@ export function createMcpOAuth({ data, secret, origin, publicUrl, clients, userB
     return !!user && !user.disabled && sessionVersion(user) === binding.sessionVersion;
   };
   const store = createOAuthStore(path.join(data, 'mcp-oauth.json'), secret, active);
-  if (!Array.isArray(clients) || !clients.length || clients.some(client => !client.client_id
-    || !Array.isArray(client.redirect_uris) || !client.redirect_uris.length))
-    throw new Error('MCP_OAUTH_CLIENTS must contain predefined client IDs and exact redirect_uris');
-  for (const client of clients) for (const redirect of client.redirect_uris) {
-    const uri = new URL(redirect);
-    if (uri.hash || uri.username || uri.password || (uri.protocol !== 'https:'
-      && !(uri.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(uri.hostname))))
-      throw new Error('OAuth redirect must be HTTPS (HTTP is localhost-only)');
-  }
   let keys = store.get('OpenGymKeys', 'signing');
   if (!keys) {
     const { privateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });

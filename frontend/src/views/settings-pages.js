@@ -1,6 +1,6 @@
 // Settings (v1.3.11): which page each row lives on, and the index the search field reads.
 //
-// The root holds eleven rows in four groups plus the account card; each opens a page at
+// The root groups the page rows alongside the account card; each opens a page at
 // /settings/<page>. Rare things hang one level further down (Workout → Fine-tuning). Titles here
 // are the English keys the pages render with t(), so a search hit can find its row on the page
 // by the same text and flash it (views/Settings.jsx). settings-pages.test.jsx renders every page
@@ -17,6 +17,7 @@ export const PAGES = {
   equipment: { title: 'Equipment', icon: 'kettlebell', tint: 'var(--indigo)' },
   look: { title: 'Look & Home', icon: 'palette', tint: 'var(--purple)' },
   coach: { title: 'AI Coach', icon: 'sparkles', tint: 'var(--green)' },
+  mcp: { title: 'MCP', icon: 'cloud', tint: 'var(--blue)', kw: 'chatgpt oauth assistant ai nutrition connection permissions клиент доступ подключение' },
   data: { title: 'Data & backup', icon: 'folder', tint: 'var(--blue)' },
   about: { title: 'About & updates', icon: 'info', tint: 'var(--grey)' },
   account: { title: 'Account', icon: 'personCircle', tint: 'var(--grey)' },
@@ -25,7 +26,7 @@ export const PAGES = {
 export const PAGE_IDS = Object.keys(PAGES)
 
 // The root, top to bottom. Whether a row shows is pageVisible's call.
-export const ROOT_GROUPS = [['workout', 'alerts', 'reminders'], ['plan', 'units', 'equipment'], ['look', 'coach'], ['data', 'about']]
+export const ROOT_GROUPS = [['workout', 'alerts', 'reminders'], ['plan', 'units', 'equipment'], ['look', 'coach', 'mcp'], ['data', 'about']]
 
 /**
  * Whether a page exists for this device and profile. Reminders need a push server (signed in) or
@@ -50,6 +51,10 @@ const signedInWeb = c => !!c.user && !c.mobile && !c.demo
 const remind = c => !!c.mobile || !!c.pushOK
 const PUSH = 'Push notifications'
 export const SEARCH = [
+  { page: 'mcp', title: 'MCP URL', icon: 'cloud', tint: 'var(--blue)', kw: 'endpoint oauth chatgpt copy address', when: c => !!c.user && !c.demo },
+  { page: 'mcp', title: 'Read training plans and statistics', icon: 'shield', tint: 'var(--blue)', kw: 'mcp training permission scope read' },
+  { page: 'mcp', title: 'Read products, diary and nutritional totals', icon: 'shield', tint: 'var(--blue)', kw: 'mcp nutrition permission scope read' },
+  { page: 'mcp', title: 'Create, edit and delete food diary entries', icon: 'shield', tint: 'var(--blue)', kw: 'mcp nutrition permission scope write' },
   // Workout
   { page: 'workout', title: 'Rest timer', icon: 'timer', tint: 'var(--orange)', kw: 'rest pause break seconds minutes timer countdown' },
   { page: 'workout', title: 'Rest-pause rest', icon: 'bolt', tint: 'var(--orange)', kw: 'burst cluster rest pause' },
@@ -183,7 +188,7 @@ export function searchSettings(query, ctx, tr = t) {
   for (const id of PAGE_IDS) {
     const top = PAGES[id].parent ? PAGES[id].parent : id
     if (!pageVisible(top, ctx) || id === 'advanced') continue
-    consider({ page: id, title: PAGES[id].title, icon: PAGES[id].icon, tint: PAGES[id].tint }, true)
+    consider({ page: id, title: PAGES[id].title, icon: PAGES[id].icon, tint: PAGES[id].tint, kw: PAGES[id].kw }, true)
   }
   for (const e of SEARCH) {
     if (!pageVisible(PAGES[e.page].parent || e.page, ctx)) continue

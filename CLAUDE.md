@@ -138,6 +138,10 @@ output), `api`, `web` (multi-stage build of `frontend/` served by nginx, which a
 
 ## Guidelines from CONTRIBUTING.md worth knowing before changing code
 
+- **Development localization targets en, ru, de only.** This is a resource-saving workflow,
+  not a product language/feature cut. Preserve all other languages and existing translations;
+  new untranslated strings use English fallback. Do not populate other packs unless requested.
+  Keep existing translation checks and apply the new-string scope described in [AGENTS.md](AGENTS.md).
 - **Dependency-light is a hard constraint, not a preference.** Frontend: React + Router + Zustand
   and nothing else. `api/`: two dependencies total. New dependencies are a hard sell either side.
 - Don't commit `media/` or `data/` (gitignored).

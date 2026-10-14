@@ -17,9 +17,9 @@ const read = f => fs.readFileSync(path.join(API, f), 'utf8');
 const rootImports = src => [...src.matchAll(/(?:from\s+|import\s*\(\s*)['"]\.\/([^'"/]+\.js)['"]/g)].map(m => m[1]);
 
 test('every root-level module server.js needs is on the Dockerfile COPY line', () => {
-  const line = read('Dockerfile').split('\n').find(l => /^COPY\s+server\.js\b/.test(l));
+  const line = read('Dockerfile').split('\n').find(l => /^COPY\s+api\/server\.js\b/.test(l));
   assert.ok(line, 'the COPY line that carries server.js');
-  const copied = new Set(line.trim().split(/\s+/).slice(1, -1));
+  const copied = new Set(line.trim().split(/\s+/).slice(1, -1).map(source => path.relative('api', source)));
 
   const needed = new Set(['server.js']);
   const queue = ['server.js'];
@@ -32,4 +32,19 @@ test('every root-level module server.js needs is on the Dockerfile COPY line', (
   const missing = [...needed].filter(f => !copied.has(f));
   assert.deepEqual(missing, [], `add ${missing.join(', ')} to the COPY line in api/Dockerfile`);
   for (const f of copied) assert.ok(fs.existsSync(path.join(API, f)), `${f} is copied but does not exist`);
+});
+
+test('embedded MCP and shared training imports are copied with the root build context', () => {
+  const dockerfile = read('Dockerfile');
+  assert.match(dockerfile, /WORKDIR \/app\/api/);
+  assert.match(dockerfile, /COPY api\/package\.json api\/package-lock\.json\*? \.\//);
+  assert.match(dockerfile, /WORKDIR \/app\/mcp/);
+  assert.match(dockerfile, /COPY mcp\/package\.json mcp\/package-lock\.json \.\//);
+  assert.match(dockerfile, /COPY mcp\/src \.\/src/);
+  assert.match(dockerfile, /COPY frontend\/src\/lib \/app\/frontend\/src\/lib/);
+  const root = path.join(API, '..');
+  for (const file of ['mcp/package-lock.json', 'mcp/src/http.js', 'mcp/src/server.js', 'frontend/src/lib/session-start.js'])
+    assert.ok(fs.existsSync(path.join(root, file)), file);
+  const compose = fs.readFileSync(path.join(root, 'docker-compose.yml'), 'utf8');
+  assert.match(compose, /build:\s+context: \.\s+dockerfile: api\/Dockerfile/);
 });

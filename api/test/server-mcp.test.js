@@ -16,7 +16,7 @@ test('Remote MCP OAuth binds PKCE, scopes, accounts and revocation without expos
   const secret = crypto.randomBytes(32).toString('hex');
   fs.writeFileSync(path.join(directory, 'secret'), secret);
   fs.writeFileSync(path.join(directory, 'db.json'), JSON.stringify({ users: [
-    { id: 'alice', name: 'Alice' }, { id: 'bob', name: 'Bob' }
+    { id: 'alice', name: 'Alice' }, { id: 'bob', name: 'Bob' }, { id: 'admin', name: 'Admin', admin: true }
   ], creds: [], subs: [], invites: [] }));
   for (const id of ['alice', 'bob']) fs.writeFileSync(path.join(directory, `state-${id}.json`), JSON.stringify({
     unit: 'kg', routines: [{ id: 'r1', name: id + ' routine', ex: [] }], customEx: []
@@ -86,6 +86,19 @@ test('Remote MCP OAuth binds PKCE, scopes, accounts and revocation without expos
   const metadata = await discovery.json();
   assert.deepEqual(metadata.code_challenge_methods_supported, ['S256']);
   assert.equal(metadata.issuer, issuer);
+  assert.equal((await request('/api/mcp/settings')).status, 401);
+  const userSettings = await (await request('/api/mcp/settings', { headers: { Cookie: 'gymsid=' + mint('alice') } })).json();
+  assert.equal(userSettings.enabled, true);
+  assert.equal(userSettings.saved, undefined);
+  assert.equal(userSettings.clients[0].redirect_uris, undefined);
+  const configuration = { enabled: false, url: resource, clients: [
+    { client_id: 'test-client', redirect_uris: ['https://client.example/callback'] }
+  ] };
+  const saveSettings = (uid, value, requestOrigin = origin) => request('/api/mcp/settings', { method: 'PUT',
+    headers: { Cookie: 'gymsid=' + mint(uid), Origin: requestOrigin, 'Content-Type': 'application/json' }, body: JSON.stringify(value) });
+  assert.equal((await saveSettings('alice', configuration)).status, 403);
+  assert.equal((await saveSettings('admin', configuration, 'https://evil.example')).status, 403);
+  assert.equal((await saveSettings('admin', { ...configuration, url: 'https://evil.example/mcp' })).status, 400);
   assert.deepEqual(metadata.token_endpoint_auth_methods_supported, ['none']);
   const authParams = { client_id: 'test-client', redirect_uri: 'https://client.example/callback',
     response_type: 'code', scope: 'training.read', resource };
@@ -219,4 +232,21 @@ test('Remote MCP OAuth binds PKCE, scopes, accounts and revocation without expos
   assert.equal((await rpc(rotated.access_token, 'tools/list')).status, 401);
   assert.equal((await refresh(rotated.refresh_token)).status, 400);
   await connect('alice', 'training.read', true);
+  const savedSettings = await saveSettings('admin', configuration);
+  assert.equal(savedSettings.status, 200);
+  const pending = await savedSettings.json();
+  assert.equal(pending.enabled, true);
+  assert.equal(pending.saved.enabled, false);
+  assert.equal(pending.restartRequired, true);
+  await stop(); await start();
+  assert.equal((await rpc(alice.access_token, 'tools/list')).status, 404);
+  const applied = await (await request('/api/mcp/settings', { headers: { Cookie: 'gymsid=' + mint('admin') } })).json();
+  assert.equal(applied.enabled, false);
+  assert.equal(applied.restartRequired, false);
+  const retained = await (await request('/api/mcp/connections', { headers: { Cookie: 'gymsid=' + mint('alice') } })).json();
+  assert.ok(retained.connections.length > 0);
+  const removed = await request('/api/mcp/connections/revoke', { method: 'POST', headers: {
+    Cookie: 'gymsid=' + mint('alice'), Origin: origin, 'Content-Type': 'application/json'
+  }, body: JSON.stringify({ grantId: retained.connections[0].grantId }) });
+  assert.equal(removed.status, 200);
 });

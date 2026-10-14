@@ -42,7 +42,21 @@ Remote MCP is **disabled by default**. For source use, install both packages (`n
 docker build -f api/Dockerfile .
 ```
 
-Configure the existing deployment's `.env`:
+Administrators can now configure MCP in **Settings → MCP → MCP server settings**:
+enable remote MCP, set its public URL, add predefined OAuth clients and paste exact
+callback URLs. Save, then restart the API container. The page distinguishes current
+settings from saved changes pending restart; it does not restart the service for you.
+Only administrators can save; all signed-in users can copy connection details and
+inspect/revoke their own connections. The page also explains permissions, dates and
+safe Nutrition workflows. New UI copy is localized for English, Russian and German;
+other languages use the English fallback.
+
+GUI settings are written atomically to `data/mcp-settings.json` and override MCP
+environment defaults on the next API start. Include this file in the normal data
+backup. It contains public client configuration, never OAuth tokens or client secrets.
+The server refuses corrupt saved settings instead of silently reverting to `.env`.
+
+Without saved GUI configuration, the existing deployment's `.env` bootstraps MCP:
 
 ```dotenv
 ORIGIN=https://gym.example.com
@@ -73,7 +87,11 @@ Use the normal OpenGym authenticated API:
 - `GET /api/mcp/connections` lists **your** grant/client IDs, scopes and creation times, never access/refresh tokens.
 - `POST /api/mcp/connections/revoke` with JSON `{ "grantId": "<id-from-your-list>" }` revokes that grant and its linked artifacts. Normal same-origin CSRF checks apply. Another user's grant returns `404`.
 
-There is no new settings UI in v1. Use these authenticated endpoints or **sign out all devices**. Disabling MCP removes remote entrances but does not erase grants; revoke before disabling if they must remain invalid after re-enabling.
+**Settings → MCP → Your MCP connections** lists owned grants and asks for confirmation
+before revoking one. The management endpoints remain available while remote MCP is
+disabled. Disabling removes remote entrances only after API restart and does not erase
+grants; revoke separately if they must remain invalid after re-enabling. **Sign out all
+devices** is still the account-wide revoke option.
 
 ## Tools
 
@@ -137,6 +155,6 @@ CI runs Nutrition tests and `scripts/ci/mcp-smoke.mjs http://localhost:8080 --di
 
 References: [OpenAI OAuth integration](https://developers.openai.com/plugins/build/auth), [MCP authorization](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization), [TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk), [oidc-provider](https://github.com/panva/node-oidc-provider).
 
-Future tools can use the same registration path with explicit scopes and existing module/API rules. Atomic batches, workout/plan/bodyweight writes, per-user timezone, connections UI, DCR/CIMD and publication review are outside v1. Live ChatGPT/Cloudflare behavior still needs integration validation; protocol tests alone are not that evidence.
+Future tools can use the same registration path with explicit scopes and existing module/API rules. Atomic batches, workout/plan/bodyweight writes, per-user timezone, DCR/CIMD and publication review are outside v1. Live ChatGPT/Cloudflare behavior still needs integration validation; protocol tests alone are not that evidence.
 
 AGPL-3.0-or-later, same as openGym.

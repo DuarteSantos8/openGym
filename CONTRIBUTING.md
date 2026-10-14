@@ -45,10 +45,16 @@ cd mcp && npm test
   session back, belongs in a pure helper in `src/lib` with a test beside it. These rules are easy
   to get subtly wrong and nearly impossible to check by clicking; the progression engine has had
   real bugs that only a test caught.
-- **New UI strings go into every locale** in `frontend/src/locales/`. English is the source
-  language and has no file. `node scripts/check-locales.mjs` (run in CI) flags a key that is
-  missing, blank or has lost a `{n}` placeholder. Portuguese (Brazil) inherits from Portuguese
-  (Portugal) and has its own guard test.
+- **Current development localization scope: en, ru, de.** New and changed UI copy is maintained
+  in English (the source language, with no locale file), Russian and German. This saves development
+  time and resources; it is **not a reduction in the product's supported languages or features**.
+  Keep all other languages selectable and preserve their existing translations, exercise
+  instructions and localization infrastructure. New untranslated copy uses the standard English
+  fallback; do not add translations or English duplicates to other packs unless explicitly requested.
+  Existing shared-key, nonblank-value, plural-form and `{n}`-placeholder checks remain in place;
+  new-string checks must respect this scope. Broader translation work can resume later.
+  Portuguese (Brazil) still inherits from Portuguese (Portugal) and retains its guard test.
+  See [AGENTS.md](AGENTS.md) for the project working rule.
 
 ## Using AI tools
 

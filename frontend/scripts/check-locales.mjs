@@ -7,8 +7,8 @@
 //
 //   node scripts/check-locales.mjs
 //
-// The reference is the union of all locales, not one blessed file: a key added to a
-// single locale then flags the other ten instead of passing unnoticed.
+// New copy is translated for en (source), ru and de. Keys already carried by any other
+// locale remain mandatory everywhere; primary-only additions intentionally fall back to English.
 
 import { readdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -37,6 +37,8 @@ for (const file of files) {
 const seen = new Map()
 for (const dict of locales.values()) for (const k of Object.keys(dict)) seen.set(k, (seen.get(k) || 0) + 1)
 const union = [...seen.keys()]
+const primary = new Set(['ru', 'de'])
+const shared = new Set([...locales].filter(([lang]) => !primary.has(lang)).flatMap(([, dict]) => Object.keys(dict)))
 
 // t('…{0}…', x) substitutes by index, so a translation that loses a {0} drops the number out of
 // the sentence and one that invents a {1} prints the braces at the reader. The KEY is the English
@@ -47,7 +49,7 @@ const marks = s => [...String(s).matchAll(/\{\d+\}/g)].map(m => m[0]).sort().joi
 let failed = false
 for (const [lang, dict] of locales) {
   const keys = new Set(Object.keys(dict))
-  const missing = union.filter(k => !keys.has(k))
+  const missing = union.filter(k => !keys.has(k) && (primary.has(lang) || shared.has(k)))
   const orphans = union.filter(k => keys.has(k) && seen.get(k) === 1)
   // A blank value is worse than no translation: the English fallback only runs for a key that
   // is ABSENT, so an empty string reaches the screen as an empty screen.
@@ -77,8 +79,8 @@ for (const [lang, dict] of locales) {
 }
 
 if (failed) {
-  console.error('\nEvery locale must carry the same keys, each translated to something, with the source string\'s {n} placeholders.')
+  console.error('\nLegacy shared keys remain required in every locale; new keys require ru/de, with nonblank values and matching {n} placeholders.')
   process.exit(1)
 }
 
-console.log(`${locales.size} locales, ${union.length} keys each — in sync.`)
+console.log(`${locales.size} locales, ${shared.size} shared keys, ${union.length - shared.size} en/ru/de additions — in sync.`)

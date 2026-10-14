@@ -35,6 +35,7 @@ import { effectiveRoutineId } from './queue.js';
 import { stampPut } from './sync-stamps.js';
 import { atomicWrite as durableWrite } from './durable.js';
 import { nutritionHello, nutritionProxy, nutritionRoute, requestNutrition } from './nutrition.js';
+import { createMcpConfiguration } from './mcp-config.js';
 import { nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
 
 const PORT = +(process.env.PORT || 3000);
@@ -1837,6 +1838,35 @@ const mediaRoutes = {
 /* ---------- routes ---------- */
 const nutritionGateway = (req, res) => nutritionProxy(req, res, { readSession, json, readBody });
 const routes = {
+  'GET /api/mcp/settings': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    json(res, 200, mcpConfiguration.status(isAdmin(user)));
+  },
+  'PUT /api/mcp/settings': async (req, res) => {
+    const user = requireAdmin(req, res); if (!user) return;
+    try { mcpConfiguration.save(await readBody(req)); }
+    catch (error) {
+      if (error.status === 400) return json(res, 400, { error: error.message });
+      throw error;
+    }
+    audit(req, 'mcp.configure', { user });
+    json(res, 200, mcpConfiguration.status(true));
+  },
+  'GET /api/mcp/connections': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    json(res, 200, { connections: await mcpConnections(user) });
+  },
+  'POST /api/mcp/connections/revoke': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const { grantId } = await readBody(req);
+    if (!(await mcpConnections(user)).some(grant => grant.grantId === grantId)) return json(res, 404, { error: 'not found' });
+    (await mcpConnectionStore()).revoke(grantId);
+    audit(req, 'mcp.revoke', { user });
+    json(res, 200, { ok: true });
+  },
   'GET /api/nutrition/products': nutritionGateway,
   'POST /api/nutrition/products': nutritionGateway,
   'GET /api/nutrition/products/{id}': nutritionGateway,
@@ -2539,15 +2569,29 @@ startWarmup();
 // hourly budget have let the upload in; from there media.js's own idle timer takes over. The
 // tests shorten it, as they do REMINDER_TICK_MS.
 const BODY_TIMEOUT_MS = Math.max(50, +(process.env.BODY_TIMEOUT_MS || 300000) || 300000);
-// Optional remote integration. No imports, store reads or routes while disabled.
+// Optional OAuth/remote runtime; settings and own-grant management remain available while off.
 let mcpOAuth = null;
 let remoteMcp = null;
+let mcpStore = null;
+const mcpConfiguration = createMcpConfiguration({ data: DATA, origin: ORIGIN });
+async function mcpConnectionStore() {
+  if (!mcpStore) {
+    const { createOAuthStore } = await import('./mcp-oauth-store.js');
+    // Reuse the provider's store while running; disabled MCP still permits own-grant revocation.
+    if (!mcpStore) mcpStore = mcpOAuth?.store || createOAuthStore(path.join(DATA, 'mcp-oauth.json'), SECRET);
+  }
+  return mcpStore;
+}
+async function mcpConnections(user) {
+  return (await mcpConnectionStore()).list('OpenGymGrant')
+    .filter(grant => grant.userId === user.id && grant.sessionVersion === (user.sv || 0));
+}
 const mcpAuthBudget = createWindow({ max: 120, windowMs: 60000 });
-if (/^(1|true|yes|on)$/i.test(process.env.MCP_ENABLED || '')) {
+if (mcpConfiguration.effective.enabled) {
   const { createMcpOAuth } = await import('./mcp-oauth.js');
   const { createHttpMcp } = await import('../mcp/src/http.js');
-  mcpOAuth = createMcpOAuth({ data: DATA, secret: SECRET, origin: ORIGIN, publicUrl: process.env.MCP_PUBLIC_URL,
-    clients: JSON.parse(process.env.MCP_OAUTH_CLIENTS || '[]'), userById: id => db.users.find(user => user.id === id),
+  mcpOAuth = createMcpOAuth({ data: DATA, secret: SECRET, origin: ORIGIN, publicUrl: mcpConfiguration.effective.url,
+    clients: mcpConfiguration.effective.clients, userById: id => db.users.find(user => user.id === id),
     readSession, json });
   const budget = createWindow({ max: 120, windowMs: 60000 });
   remoteMcp = createHttpMcp({ oauth: mcpOAuth, json, requestNutrition, takeBudget: id => budget.take(id),
@@ -2612,20 +2656,6 @@ const server = http.createServer(async (req, res) => {
       if (url.pathname === '/api/mcp/nutrition/identity' && req.method === 'GET') {
         const identity = mcpOAuth.nutritionIdentity((req.headers.authorization || '').replace(/^Bearer /, ''));
         return json(res, identity ? 200 : 401, identity || { error: 'invalid delegation' });
-      }
-      if (url.pathname === '/api/mcp/connections' && req.method === 'GET') {
-        const user = readSession(req);
-        return user ? json(res, 200, { connections: mcpOAuth.grants(user.id) }) : json(res, 401, { error: 'not signed in' });
-      }
-      if (url.pathname === '/api/mcp/connections/revoke' && req.method === 'POST') {
-        if (!csrfOk(req, key)) return json(res, 403, { error: 'cross-origin request refused' });
-        const user = readSession(req);
-        if (!user) return json(res, 401, { error: 'not signed in' });
-        const { grantId } = await readBody(req);
-        if (!mcpOAuth.grants(user.id).some(grant => grant.grantId === grantId)) return json(res, 404, { error: 'not found' });
-        mcpOAuth.store.revoke(grantId);
-        audit(req, 'mcp.revoke', { user });
-        return json(res, 200, { ok: true });
       }
       if (await mcpOAuth.handle(req, res, url.pathname)) return;
     } catch (error) {

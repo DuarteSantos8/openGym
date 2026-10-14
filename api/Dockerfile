@@ -53,7 +53,7 @@ RUN npm ci --omit=dev --omit=optional && npm cache clean --force
 
 # Every module server.js imports from the api root has to be named here: the image carries nothing
 # else, and one that is missing only shows at boot, as ERR_MODULE_NOT_FOUND.
-COPY api/server.js api/nutrition.js api/mcp-oauth.js api/mcp-oauth-store.js api/push-messages.js api/nudge.js api/nudge-copy.js api/verify-error.js api/password.js api/rate-limit.js api/passkeys-store.js api/device-link.js api/media.js api/queue.js api/sync-stamps.js api/durable.js ./
+COPY api/server.js api/nutrition.js api/mcp-config.js api/mcp-oauth.js api/mcp-oauth-store.js api/push-messages.js api/nudge.js api/nudge-copy.js api/verify-error.js api/password.js api/rate-limit.js api/passkeys-store.js api/device-link.js api/media.js api/queue.js api/sync-stamps.js api/durable.js ./
 COPY api/coach ./coach
 # Keep shared ESM paths identical to the checkout; never copy user data or a Vite bundle.
 WORKDIR /app/mcp
