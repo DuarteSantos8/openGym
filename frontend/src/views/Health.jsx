@@ -126,7 +126,7 @@ function MetricDetail({ type, close }) {
         <h3 style={{ margin: 0 }}>{label(type)}</h3>
         <div style={{ marginTop: 6, fontSize: 30, fontWeight: 600, letterSpacing: '-.026em', lineHeight: 1.1 }}>{latest ? fmtHealth(type, latest.v, S) : '–'}</div>
         {latest && <div className="small dim" style={{ marginTop: 3 }}>
-          {fmtDate(latest.d, true)}{latest.delta ? ` · ${fmtHealthDelta(type, latest.delta, S)} ${t('since previous')}` : ''}
+          {fmtDate(latest.d, true)}{latest.delta && fmtHealthDelta(type, latest.delta, S) ? ` · ${fmtHealthDelta(type, latest.delta, S)} ${t('since previous')}` : ''}
           {latest.lo != null && latest.hi != null ? ` · ${fmtHealth(type, latest.lo, S, { unit: false })}–${fmtHealth(type, latest.hi, S)}` : ''}
           {latest.derived ? ` · ${t('from weight and height')}` : ''}
         </div>}
@@ -164,7 +164,7 @@ export function MetricCard({ S, type }) {
     <div className="l"><Icon name={m.icon} style={{ color: m.color }} />{label(type)}</div>
     <div className="v">{latest ? fmtHealth(type, latest.v, S) : '–'}</div>
     <div className="small dim">{latest
-      ? (latest.delta ? `${fmtHealthDelta(type, latest.delta, S)} · ` : '') + fmtDate(latest.d, true)
+      ? (latest.delta && fmtHealthDelta(type, latest.delta, S) ? `${fmtHealthDelta(type, latest.delta, S)} · ` : '') + fmtDate(latest.d, true)
       : t('No data yet')}</div>
     {spark.length > 1 && <div className="health-spark"><LineChart points={spark} h={40} axes={false} color={m.color} /></div>}
   </button>
@@ -226,7 +226,8 @@ export default function Health() {
       <button className="iconbtn" onClick={() => compositionSheet()} aria-label={t('New measurement')}><Icon name="plus" /></button>
     </div>
     <div className="chips" style={{ marginBottom: 4 }} role="tablist">
-      {tabs.map(g => <button key={g} role="tab" aria-selected={tab === g} className={'chip nocap' + (tab === g ? ' on' : '')} onClick={() => setTab(g)}>{t(GROUPS[g].label)}</button>)}
+      {tabs.map(g => <button key={g} role="tab" aria-selected={tab === g} className={'chip nocap' + (tab === g ? ' on' : '')}
+        onClick={e => { setTab(g); e.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }) }}>{t(GROUPS[g].label)}</button>)}
     </div>
 
     {tab === 'overview' && !shown.length && <div className="card">
