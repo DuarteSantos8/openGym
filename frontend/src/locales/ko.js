@@ -1,5 +1,9 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Skip phase": "단계 건너뛰기",
+  "Resume phase": "단계 재개",
+  "Skipped": "건너뜀",
+  "Remaining work skipped. Completed sets are kept.": "남은 운동을 건너뛰었습니다. 완료한 세트는 유지됩니다.",
   'Confirm': '확인',
   'Cancel': '취소',
   'Press back again to exit': '뒤로를 한 번 더 누르면 종료됩니다',

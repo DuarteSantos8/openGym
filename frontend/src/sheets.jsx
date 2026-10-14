@@ -1,5 +1,5 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
-import { countsAsWork, sectionOf, sectionFields } from './lib/workout-sections.js'
+import { countsAsWork, sectionOf, sectionFields, sectionLabel } from './lib/workout-sections.js'
 import { SectionHeading } from './components/WorkoutSections.jsx'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
@@ -2537,6 +2537,8 @@ function WorkoutDetail({ w, close }) {
       </div>
     }) : entryRows(groups[0]?.units || [])}
     {/* Progress photos and form-check videos: added and removed right here, on the saved record. */}
+    {w.sections?.filter(section => (w.resumeEntries || w.entries).some(entry => entry.sectionId === section.id && entry.skipped === true)).map(section =>
+      <p key={section.id} className="small muted">{sectionLabel(section, t)} · {t('Remaining work skipped. Completed sets are kept.')}</p>)}
     <WorkoutMediaSection w={w} />
     <div className="small muted" style={{ margin: '4px 0 6px' }}>{t('Session note')}</div>
     <textarea ref={noteRef} className="input" rows={2} maxLength={NOTE_MAX} value={note}
@@ -3180,10 +3182,11 @@ export const supersetSheet = (meta, onSave) => ui().openSheet(close => <Superset
 
 // Shown when the last exercise's last set is checked — finish, or keep going.
 function WorkoutComplete({ close }) {
+  const skipped = useStore(state => state.S.active?.entries.some(entry => entry.skipped === true))
   return <div style={{ textAlign: 'center', padding: '8px 0' }}>
     <div style={{ fontSize: 44, display: 'flex', justifyContent: 'center', color: 'var(--acc)' }}><Icon name="checkCircle" /></div>
-    <h3 style={{ margin: '8px 0' }}>{t("That's the whole workout!")}</h3>
-    <div className="muted small" style={{ marginBottom: 16 }}>{t('All exercises done. Nice work! Finish up, or add another one if you’ve got more in you.')}</div>
+    <h3 style={{ margin: '8px 0' }}>{skipped ? t('Finish workout') : t("That's the whole workout!")}</h3>
+    <div className="muted small" style={{ marginBottom: 16 }}>{skipped ? t('Remaining work skipped. Completed sets are kept.') : t('All exercises done. Nice work! Finish up, or add another one if you’ve got more in you.')}</div>
     <Button variant="primary" icon="flag" onClick={() => { close(); finishWorkout() }}>{t('Finish workout')}</Button>
     <div style={{ height: 8 }} />
     <Button onClick={() => { close(); useUI.getState().toast(t('Keep going: tap “+ Add exercise” below')) }}>{t('Continue workout')}</Button>

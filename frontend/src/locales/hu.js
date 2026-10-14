@@ -1,5 +1,9 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Skip phase": "Szakasz kihagyása",
+  "Resume phase": "Szakasz folytatása",
+  "Skipped": "Kihagyva",
+  "Remaining work skipped. Completed sets are kept.": "A hátralévő munka kihagyva. Az elvégzett sorozatok megmaradnak.",
   // --- generic ---
   'Confirm': 'Megerősítés',
   'Cancel': 'Mégse',

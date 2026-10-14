@@ -1,5 +1,9 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Skip phase": "跳过阶段",
+  "Resume phase": "继续阶段",
+  "Skipped": "已跳过",
+  "Remaining work skipped. Completed sets are kept.": "已跳过剩余训练，已完成的组数会保留。",
   'Confirm': '确认',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回退出',

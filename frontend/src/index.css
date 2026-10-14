@@ -2182,6 +2182,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .section-exercise-actions .btn { width: auto; min-height: 44px; white-space: normal; text-align: left; }
 .section-exercise-actions .btn + .btn { color: var(--label-2); }
 .section-empty { margin: 10px 12px; }
+.phase-content { border: 0; padding: 0; margin: 0; min-width: 0; }
+.workout-phase-header > .btn { width: auto; max-width: 35%; min-height: 44px; flex: none; white-space: normal; }
+.wchip.skipped { color: var(--label-2); text-decoration: line-through; }
 .section-move { margin: 0 4px 8px; }
 .section-move summary { width: fit-content; min-height: 44px; display: flex; align-items: center; gap: 8px; color: var(--acc); font-size: 13px; cursor: pointer; }
 .section-move summary::after { content: ''; width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); margin-top: -4px; }

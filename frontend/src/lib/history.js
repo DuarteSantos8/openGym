@@ -814,7 +814,7 @@ export const setUnits = s => (isSideSet(s) ? 2 : 1)
 // How many of a row's units are done: both sides independently for a per-side row, else 0/1.
 export const doneUnits = s => (isSideSet(s) ? (s.sides.L.done ? 1 : 0) + (s.sides.R.done ? 1 : 0) : (s.done ? 1 : 0))
 // Total completion-units across a session's rows (both sides of every unilateral set counted).
-export const setUnitsTotal = entries => (entries || []).reduce((n, e) => n + (e.sets || []).reduce((m, s) => m + setUnits(s), 0), 0)
+export const setUnitsTotal = entries => (entries || []).reduce((n, e) => n + (e.sets || []).reduce((m, s) => m + (e.skipped === true ? doneUnits(s) : setUnits(s)), 0), 0)
 
 export function setsDone(w) {
   let n = 0

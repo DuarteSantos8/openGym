@@ -3,7 +3,7 @@ import { supersetMeta } from './superset-meta.js'
 // the stores makes the uneven-round and re-check rules explicit and directly testable.
 import { isWarmupRow } from './workout-model.js'
 
-const hasWork = (entries, idx) => !!entries[idx]?.sets?.some(set => !set.done)
+const hasWork = (entries, idx) => entries[idx]?.skipped !== true && !!entries[idx]?.sets?.some(set => !set.done)
 
 // Return the first unfinished navigation unit after the current one, wrapping once so a user
 // who completed units out of order is never offered workout completion while earlier work remains.

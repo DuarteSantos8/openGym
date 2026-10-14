@@ -103,6 +103,7 @@ export function editCompletedSession(state, ref) {
   const original = key == null ? null : list(state.workouts).find(w => keyOf(w) === key)
   if (!original) throw new Error('Workout deleted')
   const active = clone(original)
+  if (original.resumeEntries?.some(entry => entry.skipped === true)) active.entries = clone(original.resumeEntries)
   active.cur = 0
   active.editingWorkoutId = key
   active.editBase = Object.fromEntries(SESSION_FIELDS.map(k => [k, sessionField(original, k)]))
@@ -112,7 +113,7 @@ export function editCompletedSession(state, ref) {
   // progression, and a swap in the editor keeps its replacement out too. A workout out as a whole
   // opens with the header's "Don't count for progression" on (lib/session-noprog.js), so it can
   // be switched off there, and an exercise added in the editor stays out with the rest.
-  if (original.excludeFromProgression === true) {
+  if (original.excludeFromProgression === true && !original.resumeEntries?.some(entry => entry.skipped === true)) {
     for (const entry of list(active.entries)) if (entry && entry.noProg !== true) entry.noProg = true
     active.noProg = true
   }
@@ -201,6 +202,7 @@ function draftRecord(active, current, key) {
     return merged
   })
   const record = { ...current, ...updated, id: key, d: current.d, start: current.start, end: current.end }
+  if (!('resumeEntries' in updated) && current.resumeEntries?.some(entry => entry.skipped === true)) delete record.resumeEntries
   if (!('excludeFromProgression' in updated)) delete record.excludeFromProgression
   const base = active.editBase
   for (const k of SESSION_FIELDS) {

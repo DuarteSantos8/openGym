@@ -5,6 +5,25 @@ export * from '../../../api/coach/core/workout-sections.js'
 const newId = uid
 const rowsOf = container => container?.ex || container?.entries || []
 
+export const entrySettled = entry => entry?.skipped === true || !!entry?.sets?.length && entry.sets.every(set => set.done)
+export const sectionSkipped = (active, id) => active.entries.some(entry => entry.sectionId === id && entry.skipped === true)
+
+// Session-only: retain every row (including a completed left side) for history and undo.
+export function skipSection(active, id, skip = true) {
+  if (!active?.sections?.some(section => section.id === id)) return false
+  for (const entry of active.entries) {
+    if (entry.sectionId !== id) continue
+    if (skip && !entrySettled(entry)) entry.skipped = true
+    else if (!skip) delete entry.skipped
+  }
+  if (skip && active.entries[active.cur]?.sectionId === id) {
+    const next = active.entries.findIndex((entry, index) => index > active.cur && !entrySettled(entry))
+    const first = active.entries.findIndex(entry => !entrySettled(entry))
+    if (next >= 0 || first >= 0) active.cur = next >= 0 ? next : first
+  }
+  return true
+}
+
 export const SECTION_COLORS = [
   ['Amber', '#ffb340'], ['Teal', '#45c9b0'], ['Blue', '#6da9ff'], ['Violet', '#b59bff'],
   ['Cyan', '#60cde3'], ['Pink', '#ef91b7'], ['Orange', '#ef986b'], ['Grey', '#a7adb7'],

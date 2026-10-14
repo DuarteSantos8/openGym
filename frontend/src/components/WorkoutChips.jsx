@@ -17,7 +17,7 @@ import { sectionColor, sectionLabel } from '../lib/workout-sections.js'
 // moves the page under your thumb, and it scrolls sideways on its own (the .chips strip rules in
 // index.css), never the page.
 // Functions, so each word is a literal t() call the string checks can see.
-const STATE_WORD = { done: () => t('Finished'), partial: () => t('Started'), todo: () => t('Not started yet') }
+const STATE_WORD = { done: () => t('Finished'), partial: () => t('Started'), todo: () => t('Not started yet'), skipped: () => t('Skipped') }
 
 export default function WorkoutChips({ entries, sections = [], cur, onPick }) {
   const strip = useRef(null)

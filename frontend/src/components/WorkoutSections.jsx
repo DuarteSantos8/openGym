@@ -147,7 +147,7 @@ export function SectionActions({ section, count, onAdd, onRemove, disabled }) {
   </div>
 }
 
-export function WorkoutPhase({ section, count, onAdd, onRemove, editor, disabled, dropTarget, reorderable, phaseDrag, children }) {
+export function WorkoutPhase({ section, count, onAdd, onRemove, onSkip, skipped, editor, disabled, dropTarget, reorderable, phaseDrag, children }) {
   const [editing, setEditing] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const editButton = useRef(null)
@@ -169,13 +169,15 @@ export function WorkoutPhase({ section, count, onAdd, onRemove, editor, disabled
         <span className="workout-section-heading"><span className="phase-color-dot" aria-hidden="true" />{label}</span>
         <span className="phase-count">{count}</span><Icon name={collapsed ? 'chevronDown' : 'chevronUp'} />
       </button>
+      {onSkip && <Button size="sm" disabled={disabled} aria-label={`${t(skipped ? 'Resume phase' : 'Skip phase')}: ${label}`} onClick={onSkip}>{skipped ? t('Resume phase') : t('Skip phase')}</Button>}
       {editor && <button ref={editButton} className="iconbtn" disabled={disabled} aria-expanded={editing} aria-label={t('Edit phase: {0}', sectionLabel(section, t))} onClick={() => { if (collapsed) setCollapsed(false); setEditing(!editing) }}><Icon name={editing ? 'xmark' : 'more'} /></button>}
     </div>
     <div id={bodyId} className="workout-phase-body" hidden={collapsed}>
       {editing && <div className="phase-inline-settings"><SectionManager {...editor} initialEditing={section.id} inline close={closeEditor} /></div>}
-      {children}
+      {skipped && <p className="muted small" role="status">{t('Remaining work skipped. Completed sets are kept.')}</p>}
+      <fieldset className="phase-content" disabled={skipped}>{children}</fieldset>
       {!count && <p className="section-empty muted small">{t('Add an exercise or drag one here.')}</p>}
-      <SectionActions section={section} count={count} onAdd={onAdd} onRemove={onRemove} disabled={disabled} />
+      <SectionActions section={section} count={count} onAdd={onAdd} onRemove={onRemove} disabled={disabled || skipped} />
     </div>
   </section>
 }

@@ -2,7 +2,7 @@ import { Fragment, useEffect, useId, useRef, useState } from 'react'
 import SwipeCards from '../components/SwipeCards.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
 import { WorkoutSections, WorkoutPhase, SectionMove, removeSectionExerciseSheet, editWorkoutSections, usePhaseReorder } from '../components/WorkoutSections.jsx'
-import { sectionOf, sectionFields, countsAsWork, assignSection, sectionLabel, reorderSection } from '../lib/workout-sections.js'
+import { sectionOf, sectionFields, countsAsWork, assignSection, sectionLabel, reorderSection, skipSection, sectionSkipped, entrySettled } from '../lib/workout-sections.js'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { workoutControls } from '../lib/workout-controls.js'
@@ -965,7 +965,7 @@ function ActiveWorkout() {
   // Keyed by index like the units, so a different number of exercises starts over.
   const [openedState, setOpenedState] = useState(() => ({ len: A.entries.length, keys: new Set() }))
   const opened = openedState.len === A.entries.length ? openedState.keys : new Set()
-  const finished = u => u.every(idx => A.entries[idx].sets.length > 0 && A.entries[idx].sets.every(s => s.done))
+  const finished = u => u.every(idx => entrySettled(A.entries[idx]))
   const collapsed = new Set(collapseOn ? units.filter(u =>
     !u.includes(cur) && !opened.has(u.join('-')) && finished(u),
   ).map(u => u.join('-')) : [])
@@ -1033,6 +1033,7 @@ function ActiveWorkout() {
       const order = listMode ? [c, ...A2.entries.keys()] : shownUnit
       let at = null
       for (const k of order) {
+        if (A2.entries[k]?.skipped === true) continue
         const j = A2.entries[k]?.sets.findIndex(x => !x.done) ?? -1
         if (j >= 0) { at = { idx: k, i: j }; break }
       }
@@ -1590,7 +1591,7 @@ function ActiveWorkout() {
   // checks the set off through the normal path, so rest, supersets and the finish prompt all
   // behave exactly as they do for a reps set.
   const startTimed = (idx, i, onFocusProgress) => {
-    if (editing) return
+    if (editing || useStore.getState().S.active?.entries[idx]?.skipped === true) return
     const e = A.entries[idx]
     // This tap may be the only one before the hold's countdown beeps (a timed first exercise):
     // get the audio context running while it still counts as a gesture (iOS, #152).
@@ -1648,6 +1649,7 @@ function ActiveWorkout() {
   // (store/useUI.js). The tick's own beep would sound over the chime's first note and clip it,
   // and its short buzz would cut the pattern off: a new vibrate call replaces the running one.
   const toggle = (idx, i, side, { quiet = false, onFocusProgress } = {}) => {
+    if (useStore.getState().S.active?.entries[idx]?.skipped === true) return
     // Ticking a set ends the typing in that row: drop the keyboard before the rest timer, the
     // effort sheet or the next exercise moves in. WebKit keeps the input focused across the
     // button tap, and a focused input with its keyboard gone is what leaves the tab bar
@@ -1673,7 +1675,7 @@ function ActiveWorkout() {
         // follows a finished exercise, and in list mode any exercise can be worked on, so judging
         // the marker's unit here declared the workout complete after one set elsewhere.
         const ownUnit = unitOf(units, idx)
-        const unitDone = ownUnit.every(ui => (ui === idx ? e : A.entries[ui]).sets.every(x => x.done))
+        const unitDone = ownUnit.every(ui => entrySettled(ui === idx ? e : A.entries[ui]))
         if (unitDone) workoutDone = !nextUnfinishedUnit(A.entries, supersetUnits(A.entries), idx)
         if (e.sets.every(x => x.done)) {
           exJustDone = true
@@ -1697,7 +1699,7 @@ function ActiveWorkout() {
 
       const freshUnits = supersetUnits(fresh.entries)
       const freshUnit = freshUnits.find(u => u.includes(idx))
-      const freshUnitDone = freshUnit?.every(ui => fresh.entries[ui].sets.every(x => x.done))
+      const freshUnitDone = freshUnit?.every(ui => entrySettled(fresh.entries[ui]))
       const nextUnit = freshUnitDone ? nextUnfinishedUnit(fresh.entries, freshUnits, idx) : null
       const freshWorkoutDone = freshUnitDone && !nextUnit
       const restBeforeWarmup = nextUnit?.some(ui =>
@@ -1938,6 +1940,17 @@ function ActiveWorkout() {
     if (active?.id === A.id) confirmRemoveExercise(active.entries.findIndex(current => current.occurrenceId === entry.occurrenceId))
   })
   const phaseProps = section => ({ section, count: A.entries.filter(entry => entry.sectionId === section.id).length, disabled: !!work,
+    skipped: sectionSkipped(A, section.id),
+    onSkip: A.entries.some(entry => entry.sectionId === section.id && (entry.skipped === true || !entrySettled(entry))) ? () => {
+      if (useUI.getState().work) return
+      const current = useStore.getState().S.active
+      if (current?.id !== A.id) return
+      const skip = !sectionSkipped(current, section.id)
+      const rest = useUI.getState().timer
+      if (skip && current.entries[rest?.forIdx]?.sectionId === section.id) useUI.getState().stopRest()
+      update(s => { if (s.active?.id === A.id) skipSection(s.active, section.id, skip) })
+      resetSectionProgress()
+    } : undefined,
     onAdd: () => addExercise(section.id), onRemove: () => removeFromPhase(section),
     editor: { activeId: A.id, onStructureChange: resetSectionProgress } })
   const currentSection = sectionOf(A.entries[cur], A)
@@ -2117,7 +2130,7 @@ function ActiveWorkout() {
       </Button>
     </div>
     {(() => {
-      const exDone = A.entries.filter(e => e.sets.length && e.sets.every(s => s.done)).length
+      const exDone = A.entries.filter(entrySettled).length
       const allDone = A.entries.length > 0 && exDone === A.entries.length
       return <button className={allDone ? 'btn primary' : 'btn ghost dim'} onClick={finishWorkout}>
         {editing ? t('Save changes') : allDone ? t('Finish workout') : t('Finish workout early · {0} exercises', exDone + '/' + A.entries.length)}

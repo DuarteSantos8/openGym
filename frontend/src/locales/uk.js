@@ -1,5 +1,9 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Skip phase": "Пропустити етап",
+  "Resume phase": "Продовжити етап",
+  "Skipped": "Пропущено",
+  "Remaining work skipped. Completed sets are kept.": "Решту роботи пропущено. Виконані підходи збережено.",
   'Confirm': 'Підтвердити',
   'Cancel': 'Скасувати',
   'Press back again to exit': 'Натисни «Назад» ще раз, щоб вийти',
