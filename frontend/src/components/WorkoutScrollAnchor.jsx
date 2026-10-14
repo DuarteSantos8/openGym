@@ -4,7 +4,6 @@ import { Component, createRef } from 'react'
 // brackets the collapse itself, including changes made while the Layout sheet locks the body.
 export default class WorkoutScrollAnchor extends Component {
   root = createRef()
-  leadingSpace = null
 
   getSnapshotBeforeUpdate(prev) {
     if (prev.collapsed === this.props.collapsed) return null
@@ -24,20 +23,15 @@ export default class WorkoutScrollAnchor extends Component {
   componentDidUpdate(prev, state, snapshot) {
     if (!snapshot) return
     const root = this.root.current
-    if (this.leadingSpace) this.leadingSpace.style.marginTop = ''
-    this.leadingSpace = null
     if (!snapshot.anchor.isConnected) { root.style.paddingBottom = ''; return }
     const body = document.body
     const locked = body.style.position === 'fixed'
     const delta = snapshot.anchor.getBoundingClientRect().top - snapshot.top
     const y = locked ? -(parseFloat(body.style.top) || 0) : window.scrollY
     const target = Math.max(0, y + delta)
-    // At the page start we cannot scroll to a negative offset. Keep the minimum gap
-    // before the surviving tile instead; a later expansion reclaims it.
-    if (y + delta < 0) {
-      snapshot.anchor.style.marginTop = `${-(y + delta)}px`
-      this.leadingSpace = snapshot.anchor
-    }
+    // At the page start we cannot scroll to a negative offset, so the surviving tile moves
+    // up with the collapse. Padding it back down would leave a black gap between the
+    // folded exercises and the pending ones.
     // Collapsing near the page end can clamp scrollY before we restore it. Keep only the
     // trailing space needed to hold this viewport; a later expansion can reclaim it.
     const oldSpace = parseFloat(root.style.paddingBottom) || 0

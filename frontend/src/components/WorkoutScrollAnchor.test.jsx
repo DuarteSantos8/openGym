@@ -72,17 +72,12 @@ it('reserves only enough space to avoid a page-end clamp, then reclaims it on ex
   expect(container.firstChild.style.paddingBottom).toBe('')
 })
 
-it('holds the next tile at the page start when shrinking would require a negative scroll offset', async () => {
+it('lets the next tile move up at the page start instead of leaving a gap above it', async () => {
   scrollY = 400
   await render('', [['0', 100, 700], ['1', 800, 650]])
-  const top = tileTop('1')
   await render('0', [['0', 100, 100], ['1', 200, 650]])
-  expect(tileTop('1')).toBe(top)
   expect(window.scrollY).toBe(0)
-  expect(container.querySelector('[data-unit-key="1"]').style.marginTop).toBe('200px')
-  const firstTop = tileTop('0')
-  await render('', [['0', 100, 700], ['1', 800, 650]])
-  expect(tileTop('0')).toBe(firstTop)
+  expect(tileTop('1')).toBe(200)
   expect(container.querySelector('[data-unit-key="1"]').style.marginTop).toBe('')
 })
 
