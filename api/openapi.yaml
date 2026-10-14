@@ -3009,10 +3009,241 @@ paths:
                 properties:
                   rev: { type: integer }
                   wid: { type: string, description: 'The write id (`_wid`) of the stored document; absent before its first write.' }
+          headers:
+            ETag: { $ref: '#/components/headers/SyncETag' }
         '401': { $ref: '#/components/responses/SyncUnauthorized' }
         '404': { $ref: '#/components/responses/SyncUserGone' }
 
+  /api/sync/workouts:
+    get:
+      tags: [sync]
+      operationId: syncWorkouts
+      summary: 'Sync: finished workouts changed since the last pass'
+      description: |
+        Every finished workout whose summary changed after the pass `since` names, and every
+        workout removed after it, in revision order, a page at a time. The last page of a pass
+        carries `next_since`, an opaque token no other route hands out: keep the last one that
+        arrived and send it as `since`. Everything after that pass comes, however many answers in
+        between were lost on the way.
+
+        The server learns what changed by comparing summaries when this route is read. A change
+        only the hub cannot see (a note, a photo) is no change. Without `since`, or with anything
+        but a token of this profile's current log (a `rev` from any route, a token from before a
+        restart or from before the profile's data went back in time, a restored backup), the pass
+        is `full`: every workout there is and every removal on record. In a full pass, a workout
+        the hub holds that is not listed is no longer in the profile; hold such deletes behind the
+        same guard as a `reset_at`. A profile with no state file answers 409 `no-state`, never an
+        empty list.
+
+        A workout is named by its own `id`, or by `d<date>s<start>` when it has none (an old
+        import); one with neither is left out. `date` is the local day as the app stored it,
+        never derived from `start`. Ids are capped at 128 characters and names at 200, and a page
+        stops at `limit` entries or about 256 KB, whichever comes first.
+      security:
+        - hubToken: []
+      parameters:
+        - { name: since, in: query, schema: { type: string }, description: 'The `next_since` of the last pass that arrived. Absent, or anything else: a full pass.' }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 500, default: 100 }, description: Entries (workouts and removals together) per page, at most. }
+        - { name: cursor, in: query, schema: { type: string }, description: 'The `next_cursor` of the page before. A cursor carries the pass on; `since` is then ignored.' }
+      responses:
+        '200':
+          description: One page of changes.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rev: { type: integer, description: The revision this page was read at. }
+                  wid: { type: string }
+                  unit: { type: string, enum: [kg, lb], description: 'The profile''s unit. Every weight on the wire is kg regardless.' }
+                  full: { type: boolean, description: This pass lists every workout and every removal on record. }
+                  reset_at: { type: [integer, 'null'], description: 'When the profile was last reset ("reset everything"), ms. Hold deletes that follow one.' }
+                  items: { type: array, items: { $ref: '#/components/schemas/SyncWorkout' } }
+                  deleted:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+                        deleted_at: { type: [integer, 'null'], description: 'The removal on record, ms; null when the workout went without one.' }
+                  next_cursor: { type: [string, 'null'], description: 'More of this pass; null on its last page.' }
+                  next_since: { type: [string, 'null'], description: 'On the last page of a pass: the `since` of the next one. Null while there is more.' }
+              example:
+                rev: 412
+                wid: 9f3a0c1d2e4b5a69
+                unit: kg
+                full: false
+                reset_at: null
+                items:
+                  - id: lq2k9x7a1b
+                    date: '2026-10-14'
+                    start: 1760430000000
+                    end: 1760433480000
+                    duration_min: 58
+                    name: Push day
+                    routine_id: r1
+                    sets_done: 18
+                    strength_sets: 17
+                    cardio: [{ min: 10, speed_kmh: 6, km: 1 }]
+                    distance_km: 1
+                    bodyweight_kg: 78.4
+                    edited_at: 1760433500000
+                    content_hash: 'sha256:5b1d…'
+                deleted: [{ id: lq1x0a2b3c, deleted_at: 1760430999000 }]
+                next_cursor: null
+                next_since: eyJlIjoiOWYzYTBjMWQyZTRiIiwiciI6NDEyfQ
+          headers:
+            ETag: { $ref: '#/components/headers/SyncETag' }
+        '400':
+          description: '`limit` or `cursor` is malformed (`code`: `bad-limit`, `bad-cursor`).'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "limit must be 1 to 500", code: "bad-limit" }
+        '401': { $ref: '#/components/responses/SyncUnauthorized' }
+        '404': { $ref: '#/components/responses/SyncUserGone' }
+        '409': { $ref: '#/components/responses/SyncNoState' }
+        '503': { $ref: '#/components/responses/SyncStateUnreadable' }
+
+  /api/sync/bodyweight:
+    get:
+      tags: [sync]
+      operationId: syncBodyweight
+      summary: 'Sync: weigh-ins by date, in kg'
+      description: |
+        One value per date, as every device of the profile shows it: of two entries for a day the
+        later one, and none where a removal on record is as late as it. In kg, converted from the
+        profile's unit and rounded to 0.01 (a value kept in lb comes back within 0.05 kg of what was
+        written). `deleted` lists the dates removed, with no weigh-in since. The `ETag` is what a
+        write decided on this answer sends back as `If-Match`.
+      security:
+        - hubToken: []
+      parameters:
+        - { name: from, in: query, schema: { type: string, format: date }, description: 'First date (inclusive), 1900-01-01 to tomorrow.' }
+        - { name: to, in: query, schema: { type: string, format: date }, description: 'Last date (inclusive), 1900-01-01 to tomorrow.' }
+      responses:
+        '200':
+          description: The weigh-ins and removals in the range.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rev: { type: integer }
+                  wid: { type: string }
+                  unit: { type: string, enum: [kg, lb], description: The unit the profile stores weigh-ins in. }
+                  items: { type: array, items: { $ref: '#/components/schemas/SyncWeighIn' } }
+                  deleted:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date: { type: string, format: date }
+                        deleted_at: { type: integer, description: ms }
+              example:
+                rev: 412
+                wid: 9f3a0c1d2e4b5a69
+                unit: lb
+                items: [{ date: '2026-10-14', kg: 78.38, t: 1760410000000 }]
+                deleted: [{ date: '2026-10-01', deleted_at: 1760000000000 }]
+          headers:
+            ETag: { $ref: '#/components/headers/SyncETag' }
+        '400':
+          description: '`from` or `to` is not a real date (`bad-date`), or `from` is after `to` (`bad-range`).'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "from is after to", code: "bad-range" }
+        '401': { $ref: '#/components/responses/SyncUnauthorized' }
+        '404': { $ref: '#/components/responses/SyncUserGone' }
+        '409': { $ref: '#/components/responses/SyncNoState' }
+        '503': { $ref: '#/components/responses/SyncStateUnreadable' }
+
+  /api/sync/bodyweight/{date}:
+    put:
+      tags: [sync]
+      operationId: syncPutBodyweight
+      summary: 'Sync: set the weigh-in of one date'
+      description: |
+        Sets the date's weigh-in to `kg`, stored in the profile's unit to 0.1 like the app's own
+        weigh-in; any other field the app keeps on that entry stays. Read, changed and written on
+        the server with nothing in between, so a device's save can never be lost inside it; and only
+        over the version named in `If-Match` (revision and write id), so a save that landed after
+        the hub read the profile is a 409 to decide again on, never overwritten. The body is at
+        most 4 KB. The entry's `t`, and the document's `_ts`,
+        are the server's clock moved past anything the profile held, so every device's merge keeps
+        it as the newest change, and a correction made on a phone after it still wins. The write
+        moves the revision: open devices pick it up on their next poll. A value within half the
+        stored step of what the date holds (what the hub read, written back) changes nothing
+        (`changed: false`, same revision).
+      security:
+        - hubToken: []
+      parameters:
+        - { name: date, in: path, required: true, schema: { type: string, format: date }, description: 'The day, as a `YYYY-MM-DD` string, 1900-01-01 to tomorrow.' }
+        - { name: If-Match, in: header, required: true, schema: { type: string }, description: 'The `ETag` this write was decided on, `"<rev>:<wid>"`. The revision alone is taken only by a document that has no write id yet.' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [kg]
+              properties:
+                kg: { type: number, minimum: 20, maximum: 400, description: The weight in kg. }
+                t: { type: integer, description: 'When the value was taken on the hub''s side, ms. Checked and never used: the server stamps every write by its own clock.' }
+              example: { kg: 78.4, t: 1760410000000 }
+      responses:
+        '200': { $ref: '#/components/responses/SyncWeighInWritten' }
+        '400':
+          description: '`date` (`bad-date`), `kg` (`bad-weight`), `t` (`bad-time`) or `If-Match` (`bad-if-match`) is malformed.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "kg must be a number from 20 to 400", code: "bad-weight" }
+        '401': { $ref: '#/components/responses/SyncUnauthorized' }
+        '404': { $ref: '#/components/responses/SyncUserGone' }
+        '409': { $ref: '#/components/responses/SyncWeighInConflict' }
+        '413':
+          description: The body is over 4 KB.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "body too large" }
+        '428': { $ref: '#/components/responses/SyncPreconditionRequired' }
+        '503': { $ref: '#/components/responses/SyncStateUnreadable' }
+    delete:
+      tags: [sync]
+      operationId: syncDeleteBodyweight
+      summary: 'Sync: remove the weigh-in of one date'
+      description: |
+        Removes every entry of the date and puts a removal on record later than them, so every
+        device drops it on its next merge. The same precondition and write as the PUT. A date with no
+        weigh-in changes nothing (`changed: false`, same revision).
+      security:
+        - hubToken: []
+      parameters:
+        - { name: date, in: path, required: true, schema: { type: string, format: date }, description: 'The day, as a `YYYY-MM-DD` string, 1900-01-01 to tomorrow.' }
+        - { name: If-Match, in: header, required: true, schema: { type: string }, description: 'The `ETag` this removal was decided on, `"<rev>:<wid>"`. The revision alone is taken only by a document that has no write id yet.' }
+      responses:
+        '200': { $ref: '#/components/responses/SyncWeighInWritten' }
+        '400':
+          description: '`date` (`bad-date`) or `If-Match` (`bad-if-match`) is malformed.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "date must be a real YYYY-MM-DD date", code: "bad-date" }
+        '401': { $ref: '#/components/responses/SyncUnauthorized' }
+        '404': { $ref: '#/components/responses/SyncUserGone' }
+        '409': { $ref: '#/components/responses/SyncWeighInConflict' }
+        '428': { $ref: '#/components/responses/SyncPreconditionRequired' }
+        '503': { $ref: '#/components/responses/SyncStateUnreadable' }
+
 components:
+  headers:
+    SyncETag:
+      description: 'The stored document''s version, `"<rev>:<wid>"` (`"<rev>"` before its first write): the `If-Match` of a weigh-in write decided on this answer.'
+      schema: { type: string }
+
   securitySchemes:
     cookieAuth:
       type: apiKey
@@ -3040,11 +3271,14 @@ components:
         nothing else: not the cookie, not a paired token). A JWS signed with ES256 by a key
         in `HUB_JWKS`, header `{"alg":"ES256","kid":…,"typ":"JWT"}`, claims:
         `iss` = `HUB_ISSUER`, `aud` = `opengym-sync` (a string), `sub` = the user id,
-        `scope` = `sync`, `iat`/`exp` in seconds with `exp - iat <= 60`, `jti`. Refused with
-        `401 {"code":"token-invalid"}` when the algorithm is anything but ES256, the `kid` is
-        unknown, the signature is wrong, `iss`/`aud`/`scope` differ, it has expired, `iat` is
-        more than 30 s ahead, or it lives longer than 60 s. Failures are audited as
-        `sync.token.fail` with a reason code; the token itself is never logged.
+        `scope` = `sync`, `iat`/`exp` in seconds with `exp - iat <= 60`, `jti` (at least 128
+        random bits, base64url). Refused with `401 {"code":"token-invalid"}` when the algorithm
+        is anything but ES256, the `kid` is unknown, the signature is wrong or not in its one
+        canonical base64url spelling, `iss`/`aud`/`scope` differ, it has expired, `iat` is more
+        than 30 s ahead, it lives longer than 60 s, or `jti` is missing or short. A token is good
+        for one call: the same `jti` again while the token is in date is refused with
+        `401 {"code":"replay"}`, so sign one per call. Failures are audited as `sync.token.fail`
+        with a reason code; the token itself is never logged.
 
   responses:
     Unauthorized:
@@ -3062,12 +3296,14 @@ components:
     SyncUnauthorized:
       description: >-
         No hub token (`not signed in`; a cookie or a paired token counts as none), a token that
-        fails verification (`code: token-invalid`), or a disabled profile (`code: disabled`).
+        fails verification (`code: token-invalid`), a token used before (`code: replay`), or a
+        disabled profile (`code: disabled`).
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
           examples:
             invalid: { value: { error: "invalid sync token", code: "token-invalid" } }
+            replay: { value: { error: "sync token already used", code: "replay" } }
             disabled: { value: { error: "this account has been disabled", code: "disabled" } }
     SyncUserGone:
       description: >-
@@ -3078,6 +3314,66 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
           example: { error: "no such user", code: "user-gone" }
+    SyncStateUnreadable:
+      description: >-
+        The profile's state file exists but cannot be read. Transient for the hub: back off and
+        retry, and never take it for an empty profile.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: "state unreadable", code: "state-unreadable" }
+    SyncNoState:
+      description: >-
+        The profile has no state file on this server: no device has synced yet, or the data
+        volume is not the one the profile was written to. Never an empty profile; nothing to sync.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: "this profile has no data on this server yet", code: "no-state", rev: 0 }
+    SyncWeighInWritten:
+      description: >-
+        Done, or nothing to do (`changed: false`, same revision). `entry` is the date's weigh-in
+        as it now reads (null once removed); `rev` and `wid` are the document's after the write.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              ok: { type: boolean, const: true }
+              changed: { type: boolean }
+              entry: { oneOf: [{ $ref: '#/components/schemas/SyncWeighIn' }, { type: 'null' }] }
+              unit: { type: string, enum: [kg, lb] }
+              rev: { type: integer }
+              wid: { type: string }
+          example: { ok: true, changed: true, entry: { date: '2026-10-14', kg: 78.38, t: 1760410000123 }, unit: lb, rev: 413, wid: ab12cd34ef56ab78 }
+      headers:
+        ETag: { $ref: '#/components/headers/SyncETag' }
+    SyncWeighInConflict:
+      description: >-
+        Not written. `rev-mismatch`: the profile moved on since the revision in `If-Match`;
+        the body carries the current `rev`, `wid` and the date's `entry` (null when it has none)
+        and the `ETag` header the version to decide again on. `no-state`: the profile has no
+        data on this server yet (no device has synced), so there is nothing to write into.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error: { type: string }
+              code: { type: string, enum: [rev-mismatch, no-state] }
+              rev: { type: integer }
+              wid: { type: string }
+              entry: { oneOf: [{ $ref: '#/components/schemas/SyncWeighIn' }, { type: 'null' }] }
+          example: { error: "conflict", code: "rev-mismatch", rev: 413, wid: ab12cd34ef56ab78, entry: { date: '2026-10-14', kg: 81, t: 1760410000999 } }
+    SyncPreconditionRequired:
+      description: >-
+        No `If-Match`, or one with the revision alone on a document that has a write id. Every
+        weigh-in write names the version it was decided on, `"<rev>:<wid>"`; the current one is in
+        the `ETag` header of this answer.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: "If-Match with the revision this write was decided on is required", code: "precondition-required" }
     CoachOff:
       description: >-
         The Coach is not set up on this instance (switched off, or no provider connected).
@@ -3604,6 +3900,45 @@ components:
         w: { type: number, description: Weight in `unit`. }
         t: { type: number, description: Timestamp (ms). }
       additionalProperties: true
+
+    # ------------------------------------------------------------------ sync hub
+    SyncWorkout:
+      type: object
+      description: >-
+        A finished workout as the sync hub reads it: what it needs to post the session elsewhere
+        and estimate its energy, never the sets themselves. `content_hash` covers every field but
+        `edited_at`: a different hash is a change worth passing on.
+      properties:
+        id: { type: string, maxLength: 128, description: 'The workout''s `id`, or `d<date>s<start>` for one without; cut at 128 characters.' }
+        date: { type: [string, 'null'], format: date, description: 'The local day as stored; null when what is stored is not a date.' }
+        start: { type: [integer, 'null'], description: ms }
+        end: { type: [integer, 'null'], description: ms }
+        duration_min: { type: [integer, 'null'], description: 'From `start` and `end`; null unless `end` is after `start`.' }
+        name: { type: [string, 'null'], maxLength: 200, description: Cut at 200 characters. }
+        routine_id: { type: [string, 'null'], maxLength: 128, description: Cut at 128 characters. }
+        sets_done: { type: integer, description: 'Sets ticked done (a per-side set with either side ticked).' }
+        strength_sets: { type: integer, description: Of those, the ones that are not cardio. }
+        cardio:
+          type: array
+          description: >-
+            One row per done cardio set: one whose exercise's target is cardio, or that logged
+            minutes with no target saying otherwise.
+          items:
+            type: object
+            properties:
+              min: { type: number }
+              speed_kmh: { type: [number, 'null'] }
+              km: { type: [number, 'null'], description: '`speed_kmh` × `min` / 60, to 0.01.' }
+        distance_km: { type: [number, 'null'], description: The cardio rows' km together; null with none. }
+        bodyweight_kg: { type: [number, 'null'], description: 'The body weight the session was logged at (`bw`), in kg to 0.1, so a unit switch does not move the hash.' }
+        edited_at: { type: [integer, 'null'], description: 'The workout''s own edit stamp (`_ts`), ms.' }
+        content_hash: { type: string, description: '`sha256:` and 64 hex digits.' }
+    SyncWeighIn:
+      type: object
+      properties:
+        date: { type: string, format: date }
+        kg: { type: number, description: 'In kg, to 0.01, whatever unit the profile stores.' }
+        t: { type: [integer, 'null'], description: 'The entry''s edit stamp, ms: the later one wins a merge.' }
 
     # ------------------------------------------------------------------ push
     PushSubscription:

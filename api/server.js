@@ -744,7 +744,8 @@ function json(res, code, obj, extraHeaders) {
 class HttpError extends Error {
   constructor(status, message) { super(message); this.status = status; }
 }
-function readBody(req) {
+// `max` is MAX_BODY for every route but one that knows its body is small (the sync hub's weigh-in).
+function readBody(req, max = MAX_BODY) {
   return new Promise((resolve, reject) => {
     let size = 0, over = false; const chunks = [];
     req.on('data', d => {
@@ -756,10 +757,10 @@ function readBody(req) {
         // reset before it has parsed the answer reports a dropped connection instead of the
         // 413. A client that keeps streaming past twice the cap is not a mistaken one, and is
         // cut off.
-        if (size > 2 * MAX_BODY) req.destroy();
+        if (size > 2 * max) req.destroy();
         return;
       }
-      if (size > MAX_BODY) {
+      if (size > max) {
         over = true; chunks.length = 0;
         reject(new HttpError(413, 'body too large'));
         return;
@@ -2291,8 +2292,8 @@ const routes = {
     // this kernel — 3901 of 3999 back-to-back same-size writes shared one timestamp), and a
     // `_rev` going from 7 to 8 does not change the file's size, so two writes inside one 4 ms
     // tick are the same (mtimeMs, size) key. A reader that sampled between them would then serve
-    // the old revision until some later write happened to land on a different tick. This is the
-    // only writer of a state file in the tree, so evicting here is the whole fix.
+    // the old revision until some later write happened to land on a different tick. The writers of
+    // a state file are this route and commitState below (the sync hub's weigh-ins), and each evicts.
     stateCache.delete(user.id);
     // Starts (or stops) the grace clock of every stored file this write stopped (or started)
     // referencing. Bookkeeping only: the state is already saved, so nothing here may turn a
@@ -2595,8 +2596,33 @@ const routes = {
 
   /* ---------- the sync hub (sync-routes.js) ---------- */
   // Absent unless HUB_JWKS is set. Its own credential, checked there: never sessionOf.
-  ...(HUB ? syncRoutes({ hub: HUB, json, findUser: id => db.users.find(u => u.id === id) || null, readStateCached, auditFail }) : {})
+  ...(HUB ? syncRoutes({
+    hub: HUB, json, findUser: id => db.users.find(u => u.id === id) || null,
+    readStateCached, readStateStrict, UNREADABLE, readBody, commitState, auditFail
+  }) : {})
 };
+
+// How the sync routes store a document they changed (sync-routes.js): the bookkeeping PUT /api/data
+// does once its checks have passed (server-sync.test.js holds the two to each other), kept apart so
+// that route stays as upstream has it. Synchronous, so a caller that read `cur` with nothing awaited
+// since has an atomic compare-and-write. Where PUT /api/data takes `_ts` from the device that wrote,
+// this write is the server's own and moves it on: a device that compares copies by `_ts`
+// (useStore restoredStateFor) then never takes its older copy for the newer and pushes it back.
+function commitState(uid, cur, next) {
+  const was = Number(cur?._ts) || 0;
+  if (!((Number(next._ts) || 0) > was)) next._ts = Math.max(Date.now(), was + 1);
+  const rev = (cur?._rev || 0) + 1;
+  next._rev = rev;
+  next._wids = [...(Array.isArray(cur?._wids) ? cur._wids : []), ...(cur?._wid ? [cur._wid] : [])]
+    .filter(x => typeof x === 'string').slice(-WID_KEEP);
+  next._wid = crypto.randomBytes(8).toString('hex');
+  atomicWrite(stateFile(uid), JSON.stringify(next));
+  stateCache.delete(uid);
+  if (MEDIA_ON) {
+    try { MEDIA.noteState(uid, next); } catch (e) { console.error('media noteState', e); }
+  }
+  return { rev, wid: next._wid };
+}
 
 /* ---------- Coach: boot recovery, notifications, scheduled reviews ---------- */
 // A job that was running when the process died is not coming back; say so rather than leaving
@@ -2671,10 +2697,12 @@ const server = http.createServer(async (req, res) => {
   try { url = new URL(req.url, 'http://x'); }
   catch { return json(res, 400, { error: 'bad request' }); }
   let key = req.method + ' ' + url.pathname;
-  // The one route with a parameter in its path. Mapped onto its template key here so the table
+  // The routes with a parameter in their path. Mapped onto their template key here so the table
   // above stays a plain lookup, and so csrfOk and the catch-all see one name for every file.
   const mm = /^\/api\/media\/([0-9a-f]{64})$/.exec(url.pathname);
   if (mm) { key = req.method + ' /api/media/{hash}'; req.mediaHash = mm[1]; }
+  const sd = /^\/api\/sync\/bodyweight\/([^/]+)$/.exec(url.pathname);
+  if (sd) { key = req.method + ' /api/sync/bodyweight/{date}'; req.syncDate = sd[1]; }
   const handler = routes[key];
   if (!handler) return json(res, 404, { error: 'not found' });
   if (!csrfOk(req, key)) {

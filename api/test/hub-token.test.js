@@ -2,7 +2,7 @@
    contract asks of a verifier. The routes that use them are in server-sync.test.js. */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { hubKeysFromEnv, verifyHubToken, HUB_AUDIENCE } from '../hub-token.js';
+import { hubKeysFromEnv, verifyHubToken, replayCache, HUB_AUDIENCE } from '../hub-token.js';
 import { ISSUER, hubKey, jwks, mint, badTokens } from './hub-fixtures.mjs';
 
 const key = hubKey('hub-1');
@@ -69,7 +69,8 @@ describe('verifyHubToken', () => {
       expired: 'expired', 'wrong-aud': 'aud', 'aud-array': 'aud', 'wrong-iss': 'iss', hs256: 'alg',
       'alg-none': 'malformed', 'alg-none-signed': 'alg', 'unknown-kid': 'kid', 'other-key': 'signature',
       tampered: 'signature', 'der-signature': 'signature', 'lifetime-61s': 'lifetime', 'iat-future': 'iat',
-      'scope-user': 'scope', 'no-sub': 'sub', 'crit-header': 'crit'
+      'scope-user': 'scope', 'no-sub': 'sub', 'crit-header': 'crit',
+      'non-canonical-signature': 'signature', 'no-jti': 'jti', 'short-jti': 'jti'
     };
     const tokens = badTokens(key);
     assert.deepEqual(Object.keys(tokens).sort(), Object.keys(expect).sort());
@@ -96,5 +97,52 @@ describe('verifyHubToken', () => {
     const user = mint(key, { claims: { aud: 'nutritrace', scope: 'user' } });
     assert.equal(verify(user, { audience: 'nutritrace', scopes: ['user'] }).ok, true);
     assert.equal(verify(user).reason, 'aud');
+  });
+
+  it('takes only the canonical spelling of a signature that is otherwise good', () => {
+    const good = mint(key);
+    const [h, p, s] = good.split('.');
+    assert.equal(verify(good).ok, true);
+    const B64U = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+    const i = B64U.indexOf(s.at(-1));
+    // Every spelling of the last character that decodes to the same bytes, bar the original.
+    const others = [...B64U].filter((c, j) => j !== i && (j & ~15) === (i & ~15));
+    assert.equal(others.length, 15);
+    for (const c of others) {
+      const respelled = `${h}.${p}.${s.slice(0, -1)}${c}`;
+      assert.deepEqual(Buffer.from(s.slice(0, -1) + c, 'base64url'), Buffer.from(s, 'base64url'), 'the same bytes');
+      assert.deepEqual(verify(respelled), { ok: false, reason: 'signature' });
+    }
+  });
+});
+
+describe('replayCache', () => {
+  const claims = (jti, exp) => ({ jti, exp });
+  it('lets a jti through once while its token is in date', () => {
+    const c = replayCache();
+    const now = 1_800_000_000_000;
+    assert.equal(c.seen(claims('a'.repeat(22), now / 1000 + 60), now), false);
+    assert.equal(c.seen(claims('a'.repeat(22), now / 1000 + 60), now + 1000), true);
+    assert.equal(c.seen(claims('a'.repeat(22), now / 1000 + 60), now + 59_999), true);
+    assert.equal(c.seen(claims('b'.repeat(22), now / 1000 + 60), now + 1000), false);
+  });
+
+  it('forgets a jti once its token has expired, and holds no more than that', () => {
+    const c = replayCache();
+    const now = 1_800_000_000_000;
+    for (let i = 0; i < 100; i++) c.seen(claims(`jti-${i}`.padEnd(22, 'x'), now / 1000 + 60), now);
+    assert.equal(c.size, 100);
+    // Past every exp: the next call sweeps them all out.
+    assert.equal(c.seen(claims('z'.repeat(22), now / 1000 + 200), now + 61_000), false);
+    assert.equal(c.size, 1);
+  });
+
+  it('stays within its bound, dropping the oldest first', () => {
+    const c = replayCache({ max: 3 });
+    const now = 1_800_000_000_000, exp = now / 1000 + 60;
+    for (const j of ['a', 'b', 'c', 'd']) c.seen(claims(j.repeat(22), exp), now);
+    assert.equal(c.size, 3);
+    assert.equal(c.seen(claims('d'.repeat(22), exp), now), true);
+    assert.equal(c.seen(claims('a'.repeat(22), exp), now), false, 'the oldest went first');
   });
 });

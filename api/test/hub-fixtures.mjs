@@ -38,6 +38,10 @@ export function badTokens(key, sub = 'u1') {
   const good = mint(key, { sub });
   const [gh, gp, gs] = good.split('.');
   const forged = JSON.parse(Buffer.from(gp, 'base64url').toString());
+  // The same 64 signature bytes spelled another way: 86 characters carry 516 bits, and the last
+  // character's low 4 are spare, which a lenient decoder ignores.
+  const B64U = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+  const respelled = gs.slice(0, -1) + B64U[B64U.indexOf(gs.at(-1)) ^ 1];
   return {
     expired: mint(key, { sub, claims: { iat: t - 120, exp: t - 60 } }),
     'wrong-aud': mint(key, { sub, claims: { aud: 'nutritrace' } }),
@@ -51,6 +55,9 @@ export function badTokens(key, sub = 'u1') {
     'other-key': mint(other, { sub }),
     'tampered': `${gh}.${enc({ ...forged, sub: 'someone-else' })}.${gs}`,
     'der-signature': mint(key, { sub, sign: input => crypto.sign('sha256', input, key.privateKey) }),
+    'non-canonical-signature': `${gh}.${gp}.${respelled}`,
+    'no-jti': mint(key, { sub, claims: { jti: undefined } }),
+    'short-jti': mint(key, { sub, claims: { jti: 'abc' } }),
     'lifetime-61s': mint(key, { sub, claims: { iat: t, exp: t + 61 } }),
     // Well past the 30 s of skew, so it is still refused when a slow run sends it seconds later.
     'iat-future': mint(key, { sub, claims: { iat: t + 45, exp: t + 90 } }),

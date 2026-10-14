@@ -246,7 +246,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.1</span>
-    <span>71 endpoints</span>
+    <span>75 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -3185,7 +3185,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
-    <span class="p-desc">No hub token (<code>not signed in</code>; a cookie or a paired token counts as none), a token that fails verification (<code>code: token-invalid</code>), or a disabled profile (<code>code: disabled</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;invalid sync token&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;this account has been disabled&quot;}</code></span></span>
+    <span class="p-desc">No hub token (<code>not signed in</code>; a cookie or a paired token counts as none), a token that fails verification (<code>code: token-invalid</code>), a token used before (<code>code: replay</code>), or a disabled profile (<code>code: disabled</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;invalid sync token&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;sync token already used&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;this account has been disabled&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">404</span>
@@ -3211,15 +3211,261 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">The current revision (0 when the profile has no state yet).<span class="r-sig">{ rev: integer, wid: string }</span></span>
+    <span class="p-desc">The current revision (0 when the profile has no state yet).<span class="r-sig">{ rev: integer, wid: string } &middot; sets <code>ETag</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
-    <span class="p-desc">No hub token (<code>not signed in</code>; a cookie or a paired token counts as none), a token that fails verification (<code>code: token-invalid</code>), or a disabled profile (<code>code: disabled</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;invalid sync token&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;this account has been disabled&quot;}</code></span></span>
+    <span class="p-desc">No hub token (<code>not signed in</code>; a cookie or a paired token counts as none), a token that fails verification (<code>code: token-invalid</code>), a token used before (<code>code: replay</code>), or a disabled profile (<code>code: disabled</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;invalid sync token&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;sync token already used&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;this account has been disabled&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">404</span>
     <span class="p-desc">The token is good but its <code>sub</code> names no profile any more: it was deleted. Only this body (<code>code: user-gone</code>) means that; a plain <code>{&quot;error&quot;:&quot;not found&quot;}</code> is an instance without <code>HUB_JWKS</code>, and says nothing about the profile.<span class="r-sig"><code>{&quot;error&quot;:&quot;no such user&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-syncWorkouts">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/sync/workouts</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Sync: finished workouts changed since the last pass</span>
+  </summary>
+  <div class="ep-body">
+<p>Every finished workout whose summary changed after the pass <code>since</code> names, and every workout removed after it, in revision order, a page at a time. The last page of a pass carries <code>next_since</code>, an opaque token no other route hands out: keep the last one that arrived and send it as <code>since</code>. Everything after that pass comes, however many answers in between were lost on the way.</p>
+<p>The server learns what changed by comparing summaries when this route is read. A change only the hub cannot see (a note, a photo) is no change. Without <code>since</code>, or with anything but a token of this profile's current log (a <code>rev</code> from any route, a token from before a restart or from before the profile's data went back in time, a restored backup), the pass is <code>full</code>: every workout there is and every removal on record. In a full pass, a workout the hub holds that is not listed is no longer in the profile; hold such deletes behind the same guard as a <code>reset_at</code>. A profile with no state file answers 409 <code>no-state</code>, never an empty list.</p>
+<p>A workout is named by its own <code>id</code>, or by <code>d&lt;date&gt;s&lt;start&gt;</code> when it has none (an old import); one with neither is left out. <code>date</code> is the local day as the app stored it, never derived from <code>start</code>. Ids are capped at 128 characters and names at 200, and a page stops at <code>limit</code> entries or about 256 KB, whichever comes first.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Hub token only: <code>Authorization: Bearer &lt;ES256 JWS&gt;</code> signed by a key in <code>HUB_JWKS</code>. A session cookie or a paired token is refused.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">since</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The <code>next_since</code> of the last pass that arrived. Absent, or anything else: a full pass.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">limit</span>
+    <span class="p-type">integer <span class="p-hint">(1&ndash;500, default 100)</span></span>
+    <span class="p-desc">Entries (workouts and removals together) per page</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">cursor</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The <code>next_cursor</code> of the page before. A cursor carries the pass on; <code>since</code> is then ignored.</span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">One page of changes.<span class="r-sig">{ rev: integer, wid: string, unit: &quot;kg&quot; | &quot;lb&quot;, full: boolean, reset_at: integer | null, items: <a href="#schema-SyncWorkout">SyncWorkout</a>[], deleted: object[], next_cursor: string | null, next_since: string | null } &middot; sets <code>ETag</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>limit</code> or <code>cursor</code> is malformed (<code>code</code>: <code>bad-limit</code>, <code>bad-cursor</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;limit must be 1 to 500&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No hub token (<code>not signed in</code>; a cookie or a paired token counts as none), a token that fails verification (<code>code: token-invalid</code>), a token used before (<code>code: replay</code>), or a disabled profile (<code>code: disabled</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;invalid sync token&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;sync token already used&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;this account has been disabled&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">The token is good but its <code>sub</code> names no profile any more: it was deleted. Only this body (<code>code: user-gone</code>) means that; a plain <code>{&quot;error&quot;:&quot;not found&quot;}</code> is an instance without <code>HUB_JWKS</code>, and says nothing about the profile.<span class="r-sig"><code>{&quot;error&quot;:&quot;no such user&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">The profile has no state file on this server: no device has synced yet, or the data volume is not the one the profile was written to. Never an empty profile; nothing to sync.<span class="r-sig"><code>{&quot;error&quot;:&quot;this profile has no data on this server yet&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">The profile's state file exists but cannot be read. Transient for the hub: back off and retry, and never take it for an empty profile.<span class="r-sig"><code>{&quot;error&quot;:&quot;state unreadable&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-syncBodyweight">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/sync/bodyweight</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Sync: weigh-ins by date, in kg</span>
+  </summary>
+  <div class="ep-body">
+<p>One value per date, as every device of the profile shows it: of two entries for a day the later one, and none where a removal on record is as late as it. In kg, converted from the profile's unit and rounded to 0.01 (a value kept in lb comes back within 0.05 kg of what was written). <code>deleted</code> lists the dates removed, with no weigh-in since. The <code>ETag</code> is what a write decided on this answer sends back as <code>If-Match</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Hub token only: <code>Authorization: Bearer &lt;ES256 JWS&gt;</code> signed by a key in <code>HUB_JWKS</code>. A session cookie or a paired token is refused.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">from</span>
+    <span class="p-type">string <span class="p-hint">(date)</span></span>
+    <span class="p-desc">First date (inclusive), 1900-01-01 to tomorrow.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">to</span>
+    <span class="p-type">string <span class="p-hint">(date)</span></span>
+    <span class="p-desc">Last date (inclusive), 1900-01-01 to tomorrow.</span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The weigh-ins and removals in the range.<span class="r-sig">{ rev: integer, wid: string, unit: &quot;kg&quot; | &quot;lb&quot;, items: <a href="#schema-SyncWeighIn">SyncWeighIn</a>[], deleted: object[] } &middot; sets <code>ETag</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>from</code> or <code>to</code> is not a real date (<code>bad-date</code>), or <code>from</code> is after <code>to</code> (<code>bad-range</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;from is after to&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No hub token (<code>not signed in</code>; a cookie or a paired token counts as none), a token that fails verification (<code>code: token-invalid</code>), a token used before (<code>code: replay</code>), or a disabled profile (<code>code: disabled</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;invalid sync token&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;sync token already used&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;this account has been disabled&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">The token is good but its <code>sub</code> names no profile any more: it was deleted. Only this body (<code>code: user-gone</code>) means that; a plain <code>{&quot;error&quot;:&quot;not found&quot;}</code> is an instance without <code>HUB_JWKS</code>, and says nothing about the profile.<span class="r-sig"><code>{&quot;error&quot;:&quot;no such user&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">The profile has no state file on this server: no device has synced yet, or the data volume is not the one the profile was written to. Never an empty profile; nothing to sync.<span class="r-sig"><code>{&quot;error&quot;:&quot;this profile has no data on this server yet&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">The profile's state file exists but cannot be read. Transient for the hub: back off and retry, and never take it for an empty profile.<span class="r-sig"><code>{&quot;error&quot;:&quot;state unreadable&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-syncPutBodyweight">
+  <summary>
+    <span class="m put">PUT</span>
+    <span class="ep-path"><code>/api/sync/bodyweight/{date}</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Sync: set the weigh-in of one date</span>
+  </summary>
+  <div class="ep-body">
+<p>Sets the date's weigh-in to <code>kg</code>, stored in the profile's unit to 0.1 like the app's own weigh-in; any other field the app keeps on that entry stays. Read, changed and written on the server with nothing in between, so a device's save can never be lost inside it; and only over the version named in <code>If-Match</code> (revision and write id), so a save that landed after the hub read the profile is a 409 to decide again on, never overwritten. The body is at most 4 KB. The entry's <code>t</code>, and the document's <code>_ts</code>, are the server's clock moved past anything the profile held, so every device's merge keeps it as the newest change, and a correction made on a phone after it still wins. The write moves the revision: open devices pick it up on their next poll. A value within half the stored step of what the date holds (what the hub read, written back) changes nothing (<code>changed: false</code>, same revision).</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Hub token only: <code>Authorization: Bearer &lt;ES256 JWS&gt;</code> signed by a key in <code>HUB_JWKS</code>. A session cookie or a paired token is refused.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">date <span class="p-hint">(path)</span><em class="p-req" title="required">required</em></span>
+    <span class="p-type">string <span class="p-hint">(date)</span></span>
+    <span class="p-desc">The day, as a <code>YYYY-MM-DD</code> string, 1900-01-01 to tomorrow.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">If-Match <span class="p-hint">(header)</span><em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The <code>ETag</code> this write was decided on, <code>&quot;&lt;rev&gt;:&lt;wid&gt;&quot;</code>. The revision alone is taken only by a document that has no write id yet.</span>
+  </div>
+</div>
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">kg<em class="p-req" title="required">required</em></span>
+    <span class="p-type">number <span class="p-hint">(20&ndash;400)</span></span>
+    <span class="p-desc">The weight in kg.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">t</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc">When the value was taken on the hub's side, ms. Checked and never used: the server stamps every write by its own clock.</span>
+  </div>
+</div>
+<pre><code>{
+  &quot;kg&quot;: 78.4,
+  &quot;t&quot;: 1760410000000
+}</code></pre>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done, or nothing to do (<code>changed: false</code>, same revision). <code>entry</code> is the date's weigh-in as it now reads (null once removed); <code>rev</code> and <code>wid</code> are the document's after the write.<span class="r-sig">{ ok: always true, changed: boolean, entry: <a href="#schema-SyncWeighIn">SyncWeighIn</a> | null, unit: &quot;kg&quot; | &quot;lb&quot;, rev: integer, wid: string } &middot; sets <code>ETag</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>date</code> (<code>bad-date</code>), <code>kg</code> (<code>bad-weight</code>), <code>t</code> (<code>bad-time</code>) or <code>If-Match</code> (<code>bad-if-match</code>) is malformed.<span class="r-sig"><code>{&quot;error&quot;:&quot;kg must be a number from 20 to 400&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No hub token (<code>not signed in</code>; a cookie or a paired token counts as none), a token that fails verification (<code>code: token-invalid</code>), a token used before (<code>code: replay</code>), or a disabled profile (<code>code: disabled</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;invalid sync token&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;sync token already used&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;this account has been disabled&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">The token is good but its <code>sub</code> names no profile any more: it was deleted. Only this body (<code>code: user-gone</code>) means that; a plain <code>{&quot;error&quot;:&quot;not found&quot;}</code> is an instance without <code>HUB_JWKS</code>, and says nothing about the profile.<span class="r-sig"><code>{&quot;error&quot;:&quot;no such user&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">Not written. <code>rev-mismatch</code>: the profile moved on since the revision in <code>If-Match</code>; the body carries the current <code>rev</code>, <code>wid</code> and the date's <code>entry</code> (null when it has none) and the <code>ETag</code> header the version to decide again on. <code>no-state</code>: the profile has no data on this server yet (no device has synced), so there is nothing to write into.<span class="r-sig"><code>{&quot;error&quot;:&quot;conflict&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">413</span>
+    <span class="p-desc">The body is over 4 KB.<span class="r-sig"><code>{&quot;error&quot;:&quot;body too large&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">428</span>
+    <span class="p-desc">No <code>If-Match</code>, or one with the revision alone on a document that has a write id. Every weigh-in write names the version it was decided on, <code>&quot;&lt;rev&gt;:&lt;wid&gt;&quot;</code>; the current one is in the <code>ETag</code> header of this answer.<span class="r-sig"><code>{&quot;error&quot;:&quot;If-Match with the revision this write was decided on is required&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">The profile's state file exists but cannot be read. Transient for the hub: back off and retry, and never take it for an empty profile.<span class="r-sig"><code>{&quot;error&quot;:&quot;state unreadable&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-syncDeleteBodyweight">
+  <summary>
+    <span class="m delete">DELETE</span>
+    <span class="ep-path"><code>/api/sync/bodyweight/{date}</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Sync: remove the weigh-in of one date</span>
+  </summary>
+  <div class="ep-body">
+<p>Removes every entry of the date and puts a removal on record later than them, so every device drops it on its next merge. The same precondition and write as the PUT. A date with no weigh-in changes nothing (<code>changed: false</code>, same revision).</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Hub token only: <code>Authorization: Bearer &lt;ES256 JWS&gt;</code> signed by a key in <code>HUB_JWKS</code>. A session cookie or a paired token is refused.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">date <span class="p-hint">(path)</span><em class="p-req" title="required">required</em></span>
+    <span class="p-type">string <span class="p-hint">(date)</span></span>
+    <span class="p-desc">The day, as a <code>YYYY-MM-DD</code> string, 1900-01-01 to tomorrow.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">If-Match <span class="p-hint">(header)</span><em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The <code>ETag</code> this removal was decided on, <code>&quot;&lt;rev&gt;:&lt;wid&gt;&quot;</code>. The revision alone is taken only by a document that has no write id yet.</span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done, or nothing to do (<code>changed: false</code>, same revision). <code>entry</code> is the date's weigh-in as it now reads (null once removed); <code>rev</code> and <code>wid</code> are the document's after the write.<span class="r-sig">{ ok: always true, changed: boolean, entry: <a href="#schema-SyncWeighIn">SyncWeighIn</a> | null, unit: &quot;kg&quot; | &quot;lb&quot;, rev: integer, wid: string } &middot; sets <code>ETag</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>date</code> (<code>bad-date</code>) or <code>If-Match</code> (<code>bad-if-match</code>) is malformed.<span class="r-sig"><code>{&quot;error&quot;:&quot;date must be a real YYYY-MM-DD date&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No hub token (<code>not signed in</code>; a cookie or a paired token counts as none), a token that fails verification (<code>code: token-invalid</code>), a token used before (<code>code: replay</code>), or a disabled profile (<code>code: disabled</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;invalid sync token&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;sync token already used&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;this account has been disabled&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">The token is good but its <code>sub</code> names no profile any more: it was deleted. Only this body (<code>code: user-gone</code>) means that; a plain <code>{&quot;error&quot;:&quot;not found&quot;}</code> is an instance without <code>HUB_JWKS</code>, and says nothing about the profile.<span class="r-sig"><code>{&quot;error&quot;:&quot;no such user&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">Not written. <code>rev-mismatch</code>: the profile moved on since the revision in <code>If-Match</code>; the body carries the current <code>rev</code>, <code>wid</code> and the date's <code>entry</code> (null when it has none) and the <code>ETag</code> header the version to decide again on. <code>no-state</code>: the profile has no data on this server yet (no device has synced), so there is nothing to write into.<span class="r-sig"><code>{&quot;error&quot;:&quot;conflict&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">428</span>
+    <span class="p-desc">No <code>If-Match</code>, or one with the revision alone on a document that has a write id. Every weigh-in write names the version it was decided on, <code>&quot;&lt;rev&gt;:&lt;wid&gt;&quot;</code>; the current one is in the <code>ETag</code> header of this answer.<span class="r-sig"><code>{&quot;error&quot;:&quot;If-Match with the revision this write was decided on is required&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">The profile's state file exists but cannot be read. Transient for the hub: back off and retry, and never take it for an empty profile.<span class="r-sig"><code>{&quot;error&quot;:&quot;state unreadable&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -4158,6 +4404,132 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">t</span>
     <span class="p-type">number</span>
     <span class="p-desc">Timestamp (ms).</span>
+  </div>
+</div>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-SyncWorkout">
+  <summary>
+    <span class="sch-name"><code>SyncWorkout</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">A finished workout as the sync hub reads it: what it needs to post the session elsewhere and estimate its energy, never the sets themselves.</span>
+  </summary>
+  <div class="ep-body">
+<p><code>content_hash</code> covers every field but <code>edited_at</code>: a different hash is a change worth passing on.</p>
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">id</span>
+    <span class="p-type">string <span class="p-hint">(&le; 128 chars)</span></span>
+    <span class="p-desc">The workout's <code>id</code>, or <code>d&lt;date&gt;s&lt;start&gt;</code> for one without; cut at 128 characters.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">date</span>
+    <span class="p-type">string | null <span class="p-hint">(date)</span></span>
+    <span class="p-desc">The local day as stored; null when what is stored is not a date.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">start</span>
+    <span class="p-type">integer | null</span>
+    <span class="p-desc">ms</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">end</span>
+    <span class="p-type">integer | null</span>
+    <span class="p-desc">ms</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">duration_min</span>
+    <span class="p-type">integer | null</span>
+    <span class="p-desc">From <code>start</code> and <code>end</code>; null unless <code>end</code> is after <code>start</code>.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">name</span>
+    <span class="p-type">string | null <span class="p-hint">(&le; 200 chars)</span></span>
+    <span class="p-desc">Cut at 200 characters.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">routine_id</span>
+    <span class="p-type">string | null <span class="p-hint">(&le; 128 chars)</span></span>
+    <span class="p-desc">Cut at 128 characters.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">sets_done</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc">Sets ticked done (a per-side set with either side ticked).</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">strength_sets</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc">Of those</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">cardio</span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc">One row per done cardio set: one whose exercise's target is cardio, or that logged minutes with no target saying otherwise.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">cardio[].min</span>
+    <span class="p-type">number</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">cardio[].speed_kmh</span>
+    <span class="p-type">number | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">cardio[].km</span>
+    <span class="p-type">number | null</span>
+    <span class="p-desc"><code>speed_kmh</code> × <code>min</code> / 60, to 0.01.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">distance_km</span>
+    <span class="p-type">number | null</span>
+    <span class="p-desc">The cardio rows' km together; null with none.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">bodyweight_kg</span>
+    <span class="p-type">number | null</span>
+    <span class="p-desc">The body weight the session was logged at (<code>bw</code>), in kg to 0.1, so a unit switch does not move the hash.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">edited_at</span>
+    <span class="p-type">integer | null</span>
+    <span class="p-desc">The workout's own edit stamp (<code>_ts</code>), ms.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">content_hash</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"><code>sha256:</code> and 64 hex digits.</span>
+  </div>
+</div>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-SyncWeighIn">
+  <summary>
+    <span class="sch-name"><code>SyncWeighIn</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum"></span>
+  </summary>
+  <div class="ep-body">
+
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">date</span>
+    <span class="p-type">string <span class="p-hint">(date)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">kg</span>
+    <span class="p-type">number</span>
+    <span class="p-desc">In kg, to 0.01, whatever unit the profile stores.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">t</span>
+    <span class="p-type">integer | null</span>
+    <span class="p-desc">The entry's edit stamp, ms: the later one wins a merge.</span>
   </div>
 </div>
   </div>

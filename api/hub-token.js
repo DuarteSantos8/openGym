@@ -8,7 +8,8 @@
  *     the public key as the secret, no `none`); its `kid` must name a configured key;
  *   - `iss` is HUB_ISSUER, `aud` the one audience asked for, as a string, never an array;
  *   - `exp` in the future, `iat` at most 30 s ahead of this clock, and no token lives over 60 s;
- *   - `sub` is a profile id, `scope` one the route allows.
+ *   - `sub` is a profile id, `scope` one the route allows, `jti` at least 128 bits of base64url;
+ *   - each token is used once (replayCache below, applied by sync-routes.js).
  *
  * A token that fails any of it is refused, and nothing here falls back to another way in. The
  * token itself is never logged; a refusal carries only a reason code.
@@ -23,6 +24,8 @@ const SKEW_S = 30;
 // A real token is a few hundred bytes; this only stops a megabyte header being decoded.
 const MAX_TOKEN = 4096;
 const SEGMENT = /^[A-Za-z0-9_-]+$/;
+// At least 128 random bits, base64url (22 characters), as the contract asks.
+const JTI = /^[A-Za-z0-9_-]{22,128}$/;
 const label = v => String(v).slice(0, 40);
 
 // → { issuer, keys: Map<kid, KeyObject> }, or null when HUB_JWKS is unset. Throws when it is set
@@ -76,9 +79,13 @@ export function verifyHubToken(hub, token, { audience, scopes, now = Date.now() 
   if (header.crit !== undefined) return fail('crit');
   const key = typeof header.kid === 'string' ? hub.keys.get(header.kid) : undefined;
   if (!key) return fail('kid');
-  // JWS carries ES256 as r || s, 64 bytes, not the DER node defaults to.
+  // JWS carries ES256 as r || s, 64 bytes, not the DER node defaults to. Node decodes base64url
+  // leniently: the spare low bits of the last character are ignored, so several strings decode to
+  // the same 64 bytes. Only the canonical spelling is accepted, which closes that encoding-level
+  // malleability. (ECDSA itself still admits a second valid signature, (r, n - s), so a token's
+  // string is not unique; nothing here relies on it being so: replays are keyed on `jti`.)
   const sig = Buffer.from(parts[2], 'base64url');
-  if (sig.length !== 64) return fail('signature');
+  if (sig.length !== 64 || sig.toString('base64url') !== parts[2]) return fail('signature');
   let good = false;
   try { good = crypto.verify('sha256', Buffer.from(parts[0] + '.' + parts[1]), { key, dsaEncoding: 'ieee-p1363' }, sig); }
   catch { good = false; }
@@ -94,5 +101,29 @@ export function verifyHubToken(hub, token, { audience, scopes, now = Date.now() 
   if (c.exp <= c.iat || c.exp - c.iat > MAX_LIFETIME_S) return fail('lifetime');
   if (typeof c.sub !== 'string' || !c.sub) return fail('sub');
   if (!scopes.includes(c.scope)) return fail('scope');
+  if (typeof c.jti !== 'string' || !JTI.test(c.jti)) return fail('jti');
   return { ok: true, claims: c };
+}
+
+// Each token is good for one call: a `jti` seen before, while its token could still pass the
+// checks above, is a replay. `seen(claims)` is false the first time (and remembers the jti), true
+// after. A token passes verification until its `exp`, at most 90 s away (60 s of lifetime after an
+// `iat` up to 30 s ahead), so each jti is kept until then and no longer. In memory: a restart
+// forgets them, which reopens only tokens minted in the 90 s before it. Past `max` live entries the
+// oldest goes first; reaching that takes more valid tokens in 90 s than the hub, which alone can
+// sign them, ever sends.
+export function replayCache({ max = 100000 } = {}) {
+  const until = new Map(); // jti -> ms when its token expires
+  return {
+    seen(claims, now = Date.now()) {
+      // Insertion order is close to expiry order: every exp is within 90 s of its insert.
+      for (const [k, t] of until) { if (t > now) break; until.delete(k); }
+      if ((until.get(claims.jti) || 0) > now) return true;
+      until.delete(claims.jti);
+      until.set(claims.jti, claims.exp * 1000);
+      while (until.size > max) until.delete(until.keys().next().value);
+      return false;
+    },
+    get size() { return until.size; }
+  };
 }
