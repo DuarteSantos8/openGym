@@ -37,6 +37,7 @@ import { forgetCoach } from '../lib/coach-api.js'
 import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration } from '../lib/duration.js'
 import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, plateInventorySheet, dumbbellInventorySheet, menuSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
+import SubHeader from '../components/SubHeader.jsx'
 import { durationSheet } from '../components/DurationWheel.jsx'
 import { showsConnection, showsLocalLine } from '../components/SyncBanner.jsx'
 import BackupFolderRow, { useBackupFolder, autoBackupSubtitle } from '../components/BackupFolderRow.jsx'
@@ -936,29 +937,21 @@ export default function Settings({ page = null, find = null, via = null }) {
 
   /* ---------------- a page ---------------- */
   if (page && pages[page]) {
-    const parent = PAGES[page].parent
     return <div className="narrow" ref={body}>
-      <div className="sp-nav">
-        {/* Named by what it says ("Settings", "Workout"), so a voice command for the visible
-            word finds it; the chevron is hidden from assistive tech. */}
-        <button className="sp-back" onClick={back}>
-          <Icon name="chevronLeft" /><span>{parent ? t(PAGES[parent].title) : t('Settings')}</span>
-        </button>
-        <h1 className="sp-title">{t(PAGES[page].title)}</h1>
-      </div>
+      <SubHeader title={t(PAGES[page].title)} onBack={back} />
       {pages[page]()}
     </div>
   }
 
   /* ---------------- the root ---------------- */
   return <SettingsRoot ctx={ctx} preview={preview} open={open} user={user} sync={sync}
-    home={tabBack} go={(hit) => {
+    go={(hit) => {
       if (hit.page === 'coach') { nav('/train/coach/setup'); return }
       nav('/me/' + hit.page, hit.isPage ? undefined : { state: hit.via ? { find: hit.title, via: hit.via } : { find: hit.title } })
     }} />
 }
 
-function SettingsRoot({ ctx, preview, open, user, sync, home, go }) {
+function SettingsRoot({ ctx, preview, open, user, sync, go }) {
   // The router's key for this history entry (what useLocation().key reads), taken once.
   const [key] = useState(() => window.history.state?.key || null)
   const [q, setQ] = useState(() => (key && lastQuery.key === key ? lastQuery.q : ''))
@@ -974,11 +967,8 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go }) {
     : { title: t('Guest'), sub: t('Your data lives on this device. Sign in to sync.') }
   const initial = user && !DEMO ? String(user.name || '?').trim().charAt(0).toUpperCase() : null
   return <div className="narrow">
-    <div className="sp-nav">
-      {/* Me opens from the avatar in either mode, so back is back, not a fixed Home. */}
-      <button className="sp-back" onClick={home}><Icon name="chevronLeft" /><span>{t('Back')}</span></button>
-    </div>
-    <h1 className="sp-root-title">{t('Settings')}</h1>
+    {/* Me opens from the avatar in either mode, so back is back, not a fixed Home. */}
+    <SubHeader title={t('Settings')} />
     <div className="sp-search">
       <SearchField value={q} onChange={e => set(e.target.value)} onClear={() => set('')}
         placeholder={t('Search…')} aria-label={t('Search settings')} inputMode="search" enterKeyHint="search" autoComplete="off" />

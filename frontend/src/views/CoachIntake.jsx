@@ -13,6 +13,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
+import { back as tabBack } from '../lib/use-tab-nav.js'
 import { DAYN } from '../lib/format.js'
 import { EXDB } from '../lib/exercises.js'
 import { emptyCoach, coachAvailable, hasConsent, CONSENT_VERSION, CATEGORY_TEXT, appendChat } from '../lib/coach.js'
@@ -21,6 +22,7 @@ import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
 import { activeProfile } from '../lib/equipment.js'
 import Icon from '../components/Icon.jsx'
+import SubHeader from '../components/SubHeader.jsx'
 import { Button, TextArea } from '../components/ui.jsx'
 import '../coach.css'
 
@@ -87,7 +89,7 @@ export default function CoachIntake() {
   const optional = ['equipment', 'limits', 'extras'].includes(key)
 
   const next = () => (last ? finish() : setStep(step + 1))
-  const back = () => (step ? setStep(step - 1) : nav(editing ? '/train/coach' : '/train/routines'))
+  const back = () => (step ? setStep(step - 1) : tabBack(editing ? '/train/coach' : '/train/routines'))
 
   const agree = () => {
     update(s => { s.coach = { ...(s.coach || emptyCoach()), consent: { agreedAt: new Date().toISOString(), version: CONSENT_VERSION } } })
@@ -130,13 +132,11 @@ export default function CoachIntake() {
   const dotIndex = dots.indexOf(key)
 
   return <div className="narrow ob">
-    <div className="ob-top">
-      <button className="iconbtn" onClick={back} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
-      {key !== 'consent' && <div className="ob-dots">
+    <SubHeader title={t('Coach')} onBack={back}
+      sub={key !== 'consent' && <div className="ob-dots">
         {dots.map((s, i) => <span key={s} className={'ob-dot' + (i === dotIndex ? ' on' : i < dotIndex ? ' done' : '')} />)}
       </div>}
-      {optional && !last ? <button className="ob-skip" onClick={next}>{t('Skip')}</button> : <span style={{ width: 36 }} />}
-    </div>
+      action={optional && !last && <button className="ob-skip" onClick={next}>{t('Skip')}</button>} />
 
     <div className="ob-body">
       {key === 'consent' && <Consent onAgree={agree} onDecline={() => nav('/train/routines')} />}

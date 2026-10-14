@@ -17,6 +17,7 @@ import CoachIntake from './CoachIntake.jsx'
 import { requestPlan, disclosure } from '../lib/coach-api.js'
 import { CONSENT_VERSION, CATEGORY_TEXT } from '../lib/coach.js'
 import { setLang } from '../lib/i18n.js'
+import { back } from '../lib/use-tab-nav.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -51,6 +52,7 @@ vi.mock('../lib/coach-api.js', () => ({
   disclosure: vi.fn(() => Promise.resolve(null)),
   JOB_ERRORS: { busy: 'the app’s busy line' },
 }))
+vi.mock('../lib/use-tab-nav.js', () => ({ back: vi.fn() }))
 vi.mock('../coach.css', () => ({}))
 
 let host, root
@@ -316,7 +318,7 @@ describe('CoachIntake — moving around', () => {
     act(() => host.querySelector('.iconbtn').click())
     expect(eyebrow()).toBe('Before we start')
     act(() => host.querySelector('.iconbtn').click())
-    expect(mocks.nav).toHaveBeenCalledWith('/train/routines')
+    expect(back).toHaveBeenCalledWith('/train/routines')
   })
 
   it('Back from the first screen of the editor goes to the conversation, not the plan', () => {
@@ -324,7 +326,7 @@ describe('CoachIntake — moving around', () => {
     mount()
     expect(eyebrow()).toBe('Your goal')
     act(() => host.querySelector('.iconbtn').click())
-    expect(mocks.nav).toHaveBeenCalledWith('/train/coach')
+    expect(back).toHaveBeenCalledWith('/train/coach')
   })
 
   it('Skip is offered only on the three optional screens, and never on the last one', () => {

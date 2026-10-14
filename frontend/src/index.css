@@ -2111,22 +2111,6 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 @media (hover:hover){.dw-it:hover{color:var(--label)}}
 
 /* ------------------------------------------------------- Settings (v1.3.11) -- */
-/* A sub-page's nav bar: the back button names where it goes, the title sits in the middle.
-   The back column is at least as wide as its label ("Einstellungen" stays whole), and the two
-   side columns share what is left equally, so the title is centred whenever it can be and moves
-   over when the label needs the room. Only a label past half the screen is cut. */
-.sp-nav{display:grid;grid-template-columns:minmax(max-content,1fr) minmax(0,max-content) minmax(0,1fr);align-items:center;column-gap:6px;
-  min-height:44px;margin:4px -6px 10px}
-.sp-back{display:inline-flex;align-items:center;gap:2px;color:var(--acc-ink);font-size:17px;padding:6px;border-radius:10px;
-  min-width:0;max-width:50vw;justify-self:start}
-.sp-back span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sp-back .icn{font-size:22px;--icon-stroke:2.2;flex:none}
-/* A long title ("Alertas do temporizador", "Megjelenés és Kezdőlap") takes a second line rather
-   than lose its end to an ellipsis next to a whole back label. */
-.sp-title{text-align:center;font-weight:600;font-size:17px;line-height:1.2;margin:0;overflow:hidden;overflow-wrap:anywhere;-webkit-hyphens:auto;hyphens:auto;
-  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;text-wrap:balance}
-.sp-root-title{font-size:34px;line-height:1.06;font-weight:700;letter-spacing:-.028em;margin:2px 0 10px}
-@media (max-width:420px){.sp-root-title{font-size:30px}}
 .sp-search{margin-bottom:18px}
 /* the account card on top of the root: a big round avatar, the name, one line under it */
 .lrow.sp-acct{padding-block:12px;gap:14px}

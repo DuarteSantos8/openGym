@@ -110,10 +110,6 @@ describe('the root', () => {
     expect(rule).toMatch(/white-space:normal/)
     expect(rule).toMatch(/line-clamp:3/)
     expect(rule).toMatch(/min-width:min-content/)
-    // the sub-page title takes a second line rather than an ellipsis ("Alertas do temporizador")
-    const title = css.match(/^\.sp-title\{([^}]*)\}/m)?.[1] || ''
-    expect(title).not.toMatch(/nowrap/)
-    expect(title).toMatch(/line-clamp:2/)
   })
 
   it('previews a rest that was never on the old list, and no timer at all', () => {
@@ -309,15 +305,23 @@ describe('the pages', () => {
     expect(mocks.S.wc.exerciseChips).toBe(false)
   })
 
-  it('a sub-page names where back goes; Fine-tuning goes back to Workout', () => {
+  it('a sub-page carries the shared header; back lands on its parent settings page', () => {
     mount('alerts')
-    expect(host.querySelector('.sp-back').textContent).toBe('Settings')
-    expect(host.querySelector('.sp-back').hasAttribute('aria-label')).toBe(false)   // its name is the word it shows
-    expect(host.querySelector('.sp-title').textContent).toBe('Timer alerts')
+    expect(host.querySelector('.sub-hdr h1').textContent).toBe('Timer alerts')
+    act(() => host.querySelector('.sub-hdr button[aria-label="Back"]').click())
+    expect(mocks.backs.at(-1)).toBe('/me')
     mount('advanced')
-    expect(host.querySelector('.sp-back').textContent).toBe('Workout')
-    act(() => host.querySelector('.sp-back').click())
+    expect(host.querySelector('.sub-hdr h1').textContent).toBe('Fine-tuning')
+    act(() => host.querySelector('.sub-hdr button[aria-label="Back"]').click())
     expect(mocks.backs.at(-1)).toBe('/me/workout')
+  })
+
+  it('the root carries it too, and its back is the tab\'s own', () => {
+    mount()
+    expect(host.querySelector('.sub-hdr h1').textContent).toBe('Settings')
+    const before = mocks.backs.length
+    act(() => host.querySelector('.sub-hdr button[aria-label="Back"]').click())
+    expect(mocks.backs).toHaveLength(before + 1)   // the tab's back, with no parent given: the tab decides
   })
 
   it('a search hit flashes its row', () => {

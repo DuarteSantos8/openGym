@@ -365,7 +365,7 @@ describe('back on a sub-page', () => {
     await launch('#/home')
     await click(tab('Progress'))
     await click(document.querySelector('.avatar-btn'))
-    await click(document.querySelector('.sp-back'))
+    await click(document.querySelector('.sub-hdr button[aria-label="Back"]'))
     expect(hash()).toBe('#/progress')
   })
 })

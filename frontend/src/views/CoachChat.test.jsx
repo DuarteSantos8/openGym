@@ -6,6 +6,7 @@ import CoachChat from './CoachChat.jsx'
 import { CONSENT_VERSION } from '../lib/coach.js'   // the consent a fixture grants is the current one, whatever its number
 import { effectiveRoutine } from '../lib/history.js'
 import { todayISO } from '../lib/format.js'
+import { back } from '../lib/use-tab-nav.js'
 
 // The chat is where a plan is imported. These pin that the Import button applies the pending
 // plan through the store, writes the decision into the thread, and leaves today startable.
@@ -51,6 +52,7 @@ vi.mock('../lib/api.js', () => ({
   api: vi.fn(() => Promise.resolve({})),
   IS_APPLE: false, IS_ANDROID: false, BIO: 'biometrics',
 }))
+vi.mock('../lib/use-tab-nav.js', () => ({ back: vi.fn() }))
 vi.mock('../coach.css', () => ({}))
 
 let dom, root, container
@@ -111,6 +113,15 @@ afterEach(async () => {
 })
 
 describe('the Coach chat', () => {
+  it('carries the shared header, and its back is the tab\'s: one step down the stack', async () => {
+    await mount(null)
+    const header = container.querySelector('.sub-hdr')
+    expect(header.querySelector('h1').textContent).toBe('Coach')
+    expect(header.querySelector('[aria-label="More"]')).toBeTruthy()
+    await click(header.querySelector('button[aria-label="Back"]'))
+    expect(back).toHaveBeenCalledTimes(1)
+  })
+
   it('opens with the questionnaire summary and pitches the plan as a card with routine tabs', async () => {
     await mount({ id: 'p1', kind: 'create', bundle: bundle(everyDay) })
     expect(container.textContent).toContain('Build muscle')

@@ -15,7 +15,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { closeThenNav } from '../lib/nav.js'
-import { back } from '../lib/use-tab-nav.js'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t, tn } from '../lib/i18n.js'
@@ -33,6 +32,7 @@ import { insightsFor, sessionInsights } from '../lib/coach-insights.js'
 import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan, resolvePending, cohortStats, setCohortShare, jobErrorText, awaitedJob, settleAwaited, JOB_ERRORS } from '../lib/coach-api.js'
 import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
+import SubHeader from '../components/SubHeader.jsx'
 import { glyphOf } from '../lib/glyphs.js'
 import LineChart from '../components/LineChart.jsx'
 import { Button, Check, Switch, Section, Row, SelectRow } from '../components/ui.jsx'
@@ -188,13 +188,8 @@ export default function CoachChat() {
 
   return <div className="narrow chat">
     <div className="chat-hdr">
-      <button className="iconbtn" onClick={back} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
-      <div className="chat-av"><Icon name="chat" /></div>
-      <div className="grow">
-        <h1>{t('Coach')}</h1>
-        <div className={'chat-st' + (job ? ' live' : '')}>{status}</div>
-      </div>
-      <button className="iconbtn" onClick={menu} aria-label={t('More')}><Icon name="more" /></button>
+      <SubHeader title={t('Coach')} sub={<span className={'chat-st' + (job ? ' live' : '')}>{status}</span>}
+        action={<button className="iconbtn" onClick={menu} aria-label={t('More')}><Icon name="more" /></button>} />
     </div>
 
     <div className="msgs">
