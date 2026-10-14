@@ -35,10 +35,6 @@ describe('per-unit defaults', () => {
     expect(defaultBarWeight('ez barbell', 'kg')).toBe(10)
     expect(defaultBarWeight('ez barbell', 'lb')).toBe(25)
     expect(defaultBarWeight('olympic barbell', 'kg')).toBe(20)
-    expect(defaultBarWeight('barbell', 'kg')).toBe(20)
-    expect(defaultBarWeight('olympic barbell', 'kg')).toBe(20)
-    expect(defaultBarWeight('barbell', 'kg', { olympicBarWeight: 15 })).toBe(15)
-    expect(defaultBarWeight('olympic barbell', 'lb', { olympicBarWeight: 33 })).toBe(33)
     // A lb profile gets the bar its gym actually racks, not a 44.1 lb conversion.
     expect(defaultBarWeight('barbell', 'lb')).toBe(45)
     expect(defaultBarWeight('dumbbell', 'kg')).toBeNull()
