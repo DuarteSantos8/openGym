@@ -433,6 +433,8 @@ h4.sec{
 #tabbar button.start .cir .icn{font-size:26px;--icon-stroke:2;color:inherit;opacity:1}
 #tabbar button.start span{color:var(--acc);font-weight:600}
 #tabbar button.start .tab-time{font-variant-numeric:tabular-nums}
+#tabbar.workout-action button.start{flex:0 1 auto;flex-direction:row;gap:10px;margin-top:0;min-width:180px;justify-content:center;font-size:14px}
+#tabbar.workout-action button.start .cir{width:44px;height:44px}
 /* `.cir` is itself a <span>, so the label rules above and below reach it too and
    outrank the `.cir` block — which is how the running state ended up painting an
    orange play glyph onto an orange disc. Both states restate their own colour.

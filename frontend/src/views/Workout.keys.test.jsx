@@ -1,16 +1,17 @@
 // @vitest-environment happy-dom
 // Hardware keys on the workout screen (issue #133), against the real store and timers: what a
 // key press does to the session, not only what lib/workout-keys.js decides.
-import React, { act } from 'react'
+import React, { act, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Workout from './Workout.jsx'
+import TabBar from '../components/TabBar.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
-vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})), appBase: () => '/' }))
+vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})), appBase: () => '/', webauthnOK: () => false }))
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const clone = value => JSON.parse(JSON.stringify(value))
@@ -24,14 +25,20 @@ const entry = (id, done, extra = {}) => ({
 let root
 let container
 
-function renderWorkout(entries, cur = 0, extra = {}) {
+function WorkoutWithAction() {
+  const [action, setAction] = useState(null)
+  return <><Workout onActionChange={setAction} /><TabBar workoutAction={action} onStart={() => {}} /></>
+}
+
+function renderWorkout(entries, cur = 0, extra = {}, withAction = false) {
   const S = clone(DEF)
   S.active = { id: 'keys-test', d: '2026-09-23', start: Date.now(), routineId: null, name: 'Keys', bw: null, cur, entries, ...extra }
   useStore.setState({ S, user: null })
+  if (withAction) localStorage.setItem('gym_guest', '1')
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
-  act(() => root.render(<MemoryRouter><Workout /></MemoryRouter>))
+  act(() => root.render(<MemoryRouter initialEntries={['/workout']}>{withAction ? <WorkoutWithAction /> : <Workout />}</MemoryRouter>))
 }
 
 const press = (key, target = document.body) => {
@@ -48,6 +55,148 @@ beforeEach(() => {
   useUI.setState({ sheets: [], toastMsg: '', timer: null, work: null })
   root = null
   container = null
+})
+
+describe('the persistent workout action', () => {
+  const button = () => container.querySelector('#tabbar .start')
+  const tap = () => act(() => button().click())
+
+  it.each(['cards', 'list', 'compact', 'focus'])('completes a set and offers Next without logging unseen work in %s', workoutView => {
+    renderWorkout([entry('1001', [false]), entry('1002', [false])], 0, { workoutView }, true)
+    expect(button().getAttribute('aria-label')).toBe('Complete set')
+    tap()
+    expect(doneOf(0)).toEqual([true])
+    expect(useUI.getState().timer).not.toBeNull()
+    expect(button().textContent).toBe('Next')
+    tap()
+    expect(active().cur).toBe(1)
+    expect(active().workoutView).toBe(workoutView)
+    expect(doneOf(1)).toEqual([false])
+    tap()
+    expect(doneOf(1)).toEqual([true])
+    expect(button().textContent).toBe('Finish')
+    // The set completion sheet may already be open; dismiss it before reopening Finish.
+    act(() => useUI.setState({ sheets: [] }))
+    tap()
+    expect(useUI.getState().sheets.length).toBeGreaterThan(0)
+    expect(active()).not.toBeNull()
+  })
+
+  it('starts a hold, ignores a bouncing tap, then logs the actual held duration', () => {
+    const plank = { id: '1001', target: { mode: 'time', sec: 45 }, sets: [{ sec: 45, w: 0, done: false }] }
+    renderWorkout([plank, entry('1002', [false])], 0, {}, true)
+    expect(button().textContent).toBe('Start')
+    tap()
+    expect(button().textContent).toBe('Done')
+    tap()
+    expect(doneOf(0)).toEqual([false])
+    act(() => vi.advanceTimersByTime(10_000))
+    tap()
+    expect(active().entries[0].sets[0].sec).toBe(10)
+    expect(doneOf(0)).toEqual([true])
+    expect(button().textContent).toBe('Next')
+  })
+
+  it.each(['cards', 'list', 'compact', 'focus'])('logs cardio without starting a hold in %s', workoutView => {
+    const row = { min: 20, speed: 6, incline: 8, done: false }
+    renderWorkout([{ id: '3666', target: { mode: 'cardio' }, sets: [row] }, entry('1002', [false])], 0, { workoutView }, true)
+    expect(button().textContent).toBe('Complete')
+    tap()
+    expect(active().entries[0].sets[0]).toMatchObject({ ...row, done: true })
+    expect(useUI.getState().work).toBeNull()
+    expect(button().textContent).toBe('Next')
+    tap()
+    expect(active().cur).toBe(1)
+    expect(doneOf(1)).toEqual([false])
+  })
+
+  it.each(['cards', 'list', 'compact', 'focus'])('times both sides with switch and full rest in %s', workoutView => {
+    renderWorkout([{ id: '1001', target: { mode: 'time', sets: 1, sec: 10, side: true }, sets: [
+      { sec: 10, w: 0, done: false, side: 'L' }, { sec: 10, w: 0, done: false, side: 'R' },
+    ] }, entry('1002', [false])], 0, { workoutView }, true)
+    tap()
+    act(() => vi.advanceTimersByTime(11_000))
+    expect(doneOf(0)).toEqual([true, false])
+    expect(useUI.getState().timer).toMatchObject({ kind: 'switch', total: 10 })
+    expect(button().textContent).toBe('Start')
+    tap()
+    act(() => vi.advanceTimersByTime(4_000))
+    tap()
+    expect(doneOf(0)).toEqual([true, true])
+    expect(active().entries[0].sets.map(s => s.sec)).toEqual([10, 4])
+    expect(useUI.getState().timer.total).toBe(useStore.getState().S.restSec)
+    expect(useUI.getState().timer.kind).toBeUndefined()
+    expect(button().textContent).toBe('Next')
+  })
+
+  it.each([
+    { phase: 'warmup', warmup: true },
+    { type: 'dropset', drops: [{ w: 40, r: 6 }, { w: 30, r: 5 }] },
+    { type: 'restpause', clusters: [{ r: 4, restSec: 15 }, { r: 2, restSec: 15 }] },
+  ])('completes a specialised rep row without changing its details: %j', details => {
+    const row = { w: 60, r: 12, done: false, ...details }
+    renderWorkout([entry('1001', [], { sets: [row, { w: 60, r: 5, done: false }] })], 0, {}, true)
+    tap()
+    expect(active().entries[0].sets[0]).toMatchObject({ ...row, done: true })
+    expect(doneOf(0)).toEqual([true, false])
+    expect(button().textContent).toBe('Complete')
+  })
+
+  it('keeps a superset in round order', () => {
+    renderWorkout([entry('1001', [false, false], { sg: 'pair' }), entry('1002', [false, false], { sg: 'pair' })], 0, {}, true)
+    tap()
+    expect(active().cur).toBe(1)
+    tap()
+    expect(active().cur).toBe(0)
+    expect(doneOf(0)).toEqual([true, false])
+    expect(doneOf(1)).toEqual([true, false])
+  })
+
+  it('reveals the next unfinished Focus set before completing when another set is being inspected', () => {
+    renderWorkout([entry('1001', [false, false, false])], 0, { workoutView: 'focus' }, true)
+    act(() => container.querySelector('button[aria-label="Set 3"]').click())
+    expect(button().textContent).toBe('Next')
+    tap()
+    expect(doneOf(0)).toEqual([false, false, false])
+    expect(active().workoutView).toBe('focus')
+    expect(button().getAttribute('aria-label')).toBe('Complete set')
+    tap()
+    expect(doneOf(0)).toEqual([true, false, false])
+  })
+
+  it('names and completes each side separately', () => {
+    renderWorkout([entry('1001', [], { sets: [{ done: false, sides: {
+      L: { w: 10, r: 5, done: false }, R: { w: 10, r: 5, done: false },
+    } }] }), entry('1002', [false])], 0, {}, true)
+    expect(button().textContent).toBe('Complete left side')
+    tap()
+    expect(doneOf(0)).toEqual([false])
+    expect(button().textContent).toBe('Complete right side')
+    tap()
+    expect(doneOf(0)).toEqual([true])
+  })
+
+  it('does not complete behind a sheet or double-log when a keyboard shortcut is used', () => {
+    renderWorkout([entry('1001', [false, false, false])], 0, {}, true)
+    act(() => useUI.getState().openSheet(() => null))
+    tap()
+    expect(doneOf(0)).toEqual([false, false, false])
+    act(() => useUI.setState({ sheets: [] }))
+    expect(press('Enter', button()).defaultPrevented).toBe(true)
+    expect(doneOf(0)).toEqual([true, false, false])
+  })
+
+  it.each([{ editingWorkoutId: 'saved' }, { backfill: true }])('leaves historical workout controls unchanged: %j', flags => {
+    renderWorkout([entry('1001', [false])], 0, flags, true)
+    expect(button().textContent).toBe('Workout')
+    tap()
+    expect(doneOf(0)).toEqual([false])
+  })
+
+  it('leaves an empty workout as navigation', () => {
+    renderWorkout([], 0, {}, true)
+    expect(button().textContent).toBe('Workout')
+  })
 })
 
 afterEach(() => {
