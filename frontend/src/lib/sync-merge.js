@@ -80,6 +80,7 @@ import { bestWeightForEntry } from './history.js'
 import { convertStateUnit, convertBodyWeight } from './units.js'
 import { sanitizeAccent } from './accent.js'
 import { readDayNote as readNote } from './day-notes.js'
+import { trimImported } from '../../../api/health/catalogue.js'
 
 const clone = o => JSON.parse(JSON.stringify(o))
 const list = v => (Array.isArray(v) ? v : [])
@@ -175,7 +176,8 @@ export function mergeHealth(a = [], b = []) {
     const cur = byId.get(r.id)
     if (!cur || (Number(r._ts) || 0) > (Number(cur._ts) || 0)) byId.set(r.id, r)
   }
-  return [...byId.values()].sort((x, y) => (Number(x.t) || 0) - (Number(y.t) || 0))
+  // Within what a profile can hold, the same way on every copy (api/health/catalogue.js).
+  return trimImported([...byId.values()].sort((x, y) => (Number(x.t) || 0) - (Number(y.t) || 0)))
 }
 
 /** One entry per day; where both have a day, the one edited later (`t`); sorted by day. */

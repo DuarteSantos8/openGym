@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { isoOf } from '../format.js'
 import {
   makeRecord, normalizeHealthState, importRecords, withoutSource, compositionMeasurements, saveComposition,
   deleteComposition, bridgeWeights, weighInsWithoutSource, dailyValues, derivedBmi, latestOf, seriesOf, historyOf, importId,
@@ -164,9 +165,9 @@ describe('reading the records back', () => {
 })
 
 describe('Apple Health readings', () => {
-  it('samples: one reading per UUID, percent scaled to 0–100', () => {
-    expect(readingsFromSamples('bodyFat', [{ id: 'U', value: 0.184, start: T }, { value: 1, start: T }]))
-      .toEqual([{ type: 'bodyFat', v: 18.4, t: T, sid: 'U', src: AH }])
+  it('samples: one reading per time, the same id an export gives it, percent scaled to 0–100', () => {
+    expect(readingsFromSamples('bodyFat', [{ id: 'U', value: 0.184, start: T }, { value: 0.184, start: T }, { value: 'x', start: T }]))
+      .toEqual([{ type: 'bodyFat', v: 18.4, t: T, d: isoOf(new Date(T)), sid: `bodyFat:${T}`, src: AH }])
   })
   it('daily statistics: one per day, keyed by day, zero totals skipped, heart rate range kept', () => {
     expect(readingsFromDays('steps', [{ date: '2026-10-10', value: 8123.6 }, { date: '2026-10-11', value: 0 }]))

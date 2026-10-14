@@ -4,7 +4,7 @@ import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { fmtAgo } from '../lib/format.js'
 import { PROVIDERS } from '../lib/health/providers.js'
-import { HEALTH_METRICS } from '../lib/health/metrics.js'
+import { GROUPS, HEALTH_METRICS } from '../lib/health/metrics.js'
 import { countSource } from '../lib/health/records.js'
 import { connectSource, disconnectSource, loadSources, onSourcesChange, removeSourceData, syncSource } from '../lib/health/sync.js'
 import { Row, Section, Switch } from './ui.jsx'
@@ -57,7 +57,8 @@ function SourceCard({ provider, st }) {
   const askConnect = () => confirmSheet({
     title: t('Connect {0}?', name),
     message: t('openGym will ask to read: {0}. It writes nothing, and the data stays in your profile on your own server.',
-      types.map(k => t(HEALTH_METRICS[k].label)).join(', ')),
+      // By group: a hundred-odd types one by one would be a wall; the system's own sheet lists each.
+      [...new Set(types.map(k => HEALTH_METRICS[k]?.group).filter(Boolean))].map(g => t(GROUPS[g].label)).join(', ')),
     confirmText: t('Continue'),
     onConfirm: connect,
   })

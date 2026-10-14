@@ -5,12 +5,13 @@ import { useUI } from '../store/useUI.js'
 import { t, dateLocale } from '../lib/i18n.js'
 import { fmtDate, isoOf, uid, weekStartOf } from '../lib/format.js'
 import { MOBILE } from '../lib/mobile.js'
-import { BIA_TYPES, BODY_CORE, HEALTH_METRICS, OVERVIEW_TYPES, metricOf, typesInGroup } from '../lib/health/metrics.js'
+import { BIA_TYPES, BODY_CORE, GROUPS, GROUP_CORE, HEALTH_GROUPS, HEALTH_METRICS, OVERVIEW_TYPES, metricOf, typesInGroup } from '../lib/health/metrics.js'
+import { workoutLabel } from '../../../api/health/catalogue.js'
 import {
   bridgeWeights, compositionMeasurements, deleteComposition, hasData, historyOf, latestOf, normalizeHealthState,
   saveComposition, seriesOf,
 } from '../lib/health/records.js'
-import { chartValue, displayUnit, fmtHealth, fmtHealthDelta, fromDisplay, toDisplay } from '../lib/health/units.js'
+import { chartValue, displayUnit, fmtHealth, fmtHealthDelta, fmtMinutes, fromDisplay, toDisplay } from '../lib/health/units.js'
 import { PROVIDERS, sourceLabel } from '../lib/health/providers.js'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
@@ -141,7 +142,7 @@ function MetricDetail({ type, close }) {
       <span className="nm" style={{ cursor: r.g ? 'pointer' : undefined }} onClick={r.g ? () => compositionSheet(r.g) : undefined}>
         <b>{fmtHealth(type, r.v, S)}</b>
         <span className="small dim" style={{ display: 'block', fontWeight: 400 }}>
-          {fmtDate(r.d, true)}{metricOf(type)?.daily !== 'sum' && !r.weighIn ? ' · ' + fmtTime(r.t) : ''} · {t(sourceLabel(r.src))}
+          {r.a ? t(workoutLabel(r.a)) + ' · ' : ''}{fmtDate(r.d, true)}{metricOf(type)?.daily !== 'sum' || r.a ? ' · ' + fmtTime(r.t) : ''} · {t(sourceLabel(r.src))}
         </span>
       </span>
       <button className="iconbtn" style={{ color: 'var(--red)' }} aria-label={t('Delete')} onClick={() => removeRow(r)}><Icon name="trash" /></button>
@@ -169,10 +170,28 @@ export function MetricCard({ S, type }) {
   </button>
 }
 
-const TABS = () => [
-  { value: 'overview', label: t('Overview') }, { value: 'body', label: t('Body') },
-  { value: 'activity', label: t('Activity') }, { value: 'heart', label: t('Heart') }, { value: 'sleep', label: t('Sleep') },
-]
+// The tabs that are always there; every other one shows once it has a reading.
+const MAIN_TABS = ['overview', 'body', 'activity', 'heart', 'sleep']
+
+/** The workouts Health recorded, newest first: activity, length, energy, distance. */
+function WorkoutList({ S }) {
+  const rows = (S.health || []).filter(r => r?.type === 'workout').sort((a, b) => b.t - a.t).slice(0, 100)
+  if (!rows.length) return <div className="empty small">{t('No readings yet')}</div>
+  const remove = r => confirmSheet({
+    title: t('Delete this reading?'), message: t('Deletes the reading of {0}. It will not be imported again.', fmtDate(r.d, true)),
+    confirmText: t('Delete'), danger: true, onConfirm: () => update(s => { s.health = s.health.filter(x => x.id !== r.id) }),
+  })
+  return <div className="list">{rows.map(r => <div key={r.id} className="mrow" style={{ minHeight: 48 }}>
+    <span className="nm">
+      <b>{t(workoutLabel(r.a))}</b>
+      <span className="small dim" style={{ display: 'block', fontWeight: 400 }}>
+        {[fmtDate(r.d, true) + ' · ' + fmtTime(r.t), fmtMinutes(r.v), r.kc ? fmtHealth('activeEnergy', r.kc, S) : null,
+          r.km ? fmtHealth('distance', r.km, S) : null].filter(Boolean).join(' · ')}
+      </span>
+    </span>
+    <button className="iconbtn" style={{ color: 'var(--red)' }} aria-label={t('Delete')} onClick={() => remove(r)}><Icon name="trash" /></button>
+  </div>)}</div>
+}
 
 export default function Health() {
   const nav = useNavigate()
@@ -189,9 +208,16 @@ export default function Health() {
     return () => { gone = true }
   }, [])
 
+  // The types the profile has any reading of, found once: a tab lists those and its core ones.
+  const present = useMemo(() => {
+    const set = new Set((S.health || []).map(r => r?.type))
+    if ((S.bodyweight || []).length) set.add('weight')
+    return set
+  }, [S.health, S.bodyweight])
+  const tabs = HEALTH_GROUPS.filter(g => MAIN_TABS.includes(g) || typesInGroup(g).some(k => present.has(k)))
+  const core = tab === 'body' ? BODY_CORE : GROUP_CORE[tab] || []
   const shown = tab === 'overview' ? OVERVIEW_TYPES.filter(k => hasData(S, k))
-    : tab === 'body' ? [...BODY_CORE, ...typesInGroup('body').filter(k => !BODY_CORE.includes(k) && hasData(S, k))]
-      : typesInGroup(tab)
+    : [...core, ...typesInGroup(tab).filter(k => !core.includes(k) && present.has(k))]
   const measurements = tab === 'body' ? compositionMeasurements(S.health) : []
 
   return <div className="narrow">
@@ -199,7 +225,9 @@ export default function Health() {
       <div style={{ flex: 1 }}><h1>{t('Health')}</h1><div className="sub">{t('Body composition, activity, heart and sleep')}</div></div>
       <button className="iconbtn" onClick={() => compositionSheet()} aria-label={t('New measurement')}><Icon name="plus" /></button>
     </div>
-    <Segmented className="seg-range" value={tab} onChange={setTab} options={TABS()} />
+    <div className="chips" style={{ marginBottom: 4 }} role="tablist">
+      {tabs.map(g => <button key={g} role="tab" aria-selected={tab === g} className={'chip nocap' + (tab === g ? ' on' : '')} onClick={() => setTab(g)}>{t(GROUPS[g].label)}</button>)}
+    </div>
 
     {tab === 'overview' && !shown.length && <div className="card">
       <div className="muted small">{t('Log a body composition measurement, or connect a source in Settings → Health, and your readings show up here with their trends.')}</div>
@@ -208,7 +236,10 @@ export default function Health() {
       {canConnect && <><div style={{ height: 8 }} /><Button icon="heart" onClick={() => nav('/settings/health')}>{t('Connect a source')}</Button></>}
     </div>}
 
+    {tab !== 'overview' && !shown.length && <div className="empty small">{t('No readings yet')}</div>}
     <div className="health-grid">{shown.map(k => <MetricCard key={k} S={S} type={k} />)}</div>
+
+    {tab === 'workouts' && <><h4 className="sec" style={{ marginTop: 18 }}>{t('History')}</h4><WorkoutList S={S} /></>}
 
     {tab === 'body' && <>
       <div className="row between" style={{ margin: '18px 2px 10px' }}>

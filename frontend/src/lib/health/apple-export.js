@@ -4,27 +4,13 @@
 // The export is `export.zip` holding `apple_health_export/export.xml` — often hundreds of MB, nearly
 // all of it heart rate and step samples. Nothing here holds the file whole: the zip entry is
 // inflated as a stream (the browser's own DecompressionStream, no library), the XML is scanned one
-// chunk at a time for <Record> tags, and every sample goes straight into the folding of
+// chunk at a time for <Record> and <Workout> tags, and every sample goes straight into the folding of
 // api/health/fold.js — the same folding the server gives an iPhone Shortcut's samples — so what
 // stays in memory is one number per metric and day, not the samples, and a reading has the same id
 // whichever way it came in.
 import { createFolder } from '../../../../api/health/fold.js'
+import { BY_HK, TYPES, canonical } from '../../../../api/health/catalogue.js'
 
-// HealthKit identifier → the health area's metric.
-const TYPES = {
-  HKQuantityTypeIdentifierBodyMass: 'weight',
-  HKQuantityTypeIdentifierBodyFatPercentage: 'bodyFat',
-  HKQuantityTypeIdentifierLeanBodyMass: 'leanMass',
-  HKQuantityTypeIdentifierBodyMassIndex: 'bmi',
-  HKQuantityTypeIdentifierHeight: 'height',
-  HKQuantityTypeIdentifierStepCount: 'steps',
-  HKQuantityTypeIdentifierDistanceWalkingRunning: 'distance',
-  HKQuantityTypeIdentifierActiveEnergyBurned: 'activeEnergy',
-  HKQuantityTypeIdentifierBasalEnergyBurned: 'restingEnergy',
-  HKQuantityTypeIdentifierHeartRate: 'heartRate',
-  HKQuantityTypeIdentifierRestingHeartRate: 'restingHeartRate',
-  HKCategoryTypeIdentifierSleepAnalysis: 'sleep',
-}
 // In bed and awake are not sleep; every "asleep" value is (unspecified, core, deep, REM, and the
 // plain "asleep" of older phones).
 const ASLEEP = /^HKCategoryValueSleepAnalysisAsleep/
@@ -34,33 +20,72 @@ const ATTR = {}
 const attr = (tag, name) => {
   const re = ATTR[name] || (ATTR[name] = new RegExp(`\\s${name}="([^"]*)"`))
   const m = re.exec(tag)
-  return m ? m[1] : null
+  if (!m) return null
+  // An attribute holds XML's escapes: a glucose unit is "mmol&lt;180.1558800000541&gt;/L".
+  return m[1].includes('&') ? m[1].replace(/&(lt|gt|amp|quot|apos);/g, (_, e) => ENTITY[e]) : m[1]
 }
-
-/** One <Record …> tag into the folder; tags of types the health area does not read are skipped. */
-function addTag(folder, tag) {
-  const type = TYPES[attr(tag, 'type')]
-  if (!type) return
-  if (type === 'sleep') {
-    folder.add({ type, start: attr(tag, 'startDate'), end: attr(tag, 'endDate'), asleep: ASLEEP.test(attr(tag, 'value') || '') })
-    return
-  }
-  folder.add({ type, v: Number(attr(tag, 'value')), unit: attr(tag, 'unit') || '', start: attr(tag, 'startDate'), source: attr(tag, 'sourceName') || '' })
-}
+const ENTITY = { lt: '<', gt: '>', amp: '&', quot: '"', apos: "'" }
 
 /**
- * Scans text that arrives in pieces for <Record …> tags, handing each opening tag to `onTag`.
- * A tag cut between two pieces is carried over to the next one.
+ * The tags of an export into a folder: every <Record> of a type the catalogue knows (others are
+ * skipped), and every <Workout> with its <WorkoutStatistics> — which newer phones write for the
+ * energy and distance that older ones put on the workout itself. A workout is handed over when the
+ * next one starts, or at finish().
+ */
+function exportReader(folder) {
+  let w = null
+  const flush = () => { if (w) folder.addWorkout(w); w = null }
+  return {
+    tag(tag) {
+      if (tag.startsWith('<Record ')) {
+        const type = BY_HK[attr(tag, 'type')]
+        if (!type) return
+        const kind = TYPES[type].kind
+        const start = attr(tag, 'startDate'), end = attr(tag, 'endDate'), source = attr(tag, 'sourceName') || ''
+        if (kind === 'sleep') folder.add({ type, start, end, asleep: ASLEEP.test(attr(tag, 'value') || '') })
+        else if (kind === 'min' || kind === 'ev' || kind === 'lvl' || kind === 'val') folder.add({ type, start, end, source, raw: attr(tag, 'value') })
+        else folder.add({ type, v: Number(attr(tag, 'value')), unit: attr(tag, 'unit') || '', start, source })
+      } else if (tag.startsWith('<WorkoutStatistics ')) {
+        if (!w) return
+        const type = BY_HK[attr(tag, 'type')], sum = Number(attr(tag, 'sum'))
+        if (!(sum > 0)) return
+        if (type === 'activeEnergy' && w.kcal == null) w.kcal = canonical('activeEnergy', sum, attr(tag, 'unit'))
+        else if (TYPES[type]?.dim === 'distance' && w.km == null) w.km = canonical('distance', sum, attr(tag, 'unit'))
+      } else if (tag.startsWith('<Workout ')) {
+        flush()
+        const dur = Number(attr(tag, 'duration')), dist = Number(attr(tag, 'totalDistance')), e = Number(attr(tag, 'totalEnergyBurned'))
+        w = {
+          activity: attr(tag, 'workoutActivityType'), start: attr(tag, 'startDate'), end: attr(tag, 'endDate'),
+          minutes: dur > 0 ? canonical('workout', dur, attr(tag, 'durationUnit') || 'min') : null,
+          km: dist > 0 ? canonical('distance', dist, attr(tag, 'totalDistanceUnit')) : null,
+          kcal: e > 0 ? canonical('activeEnergy', e, attr(tag, 'totalEnergyBurnedUnit')) : null,
+        }
+      }
+    },
+    finish: flush,
+  }
+}
+
+const TAGS = ['<Record ', '<Workout']
+
+/**
+ * Scans text that arrives in pieces for <Record …> and <Workout…> tags, handing each opening tag
+ * to `onTag`. A tag cut between two pieces is carried over to the next one.
  */
 export function createScanner(onTag) {
   let rest = ''
   return {
     push(text) {
       const s = rest + text
+      // The next of each tag, found once and kept until passed: workouts are rare among millions
+      // of records, so looking for one again after every record would read the text over and over.
+      const next = TAGS.map(() => -2)
       let i = 0
       for (;;) {
-        const start = s.indexOf('<Record ', i)
-        if (start < 0) { rest = s.slice(Math.max(i, s.length - 8)); return }
+        for (let k = 0; k < TAGS.length; k++) if (next[k] !== -1 && next[k] < i) next[k] = s.indexOf(TAGS[k], i)
+        const found = next.filter(x => x >= 0)
+        if (!found.length) { rest = s.slice(Math.max(i, s.length - 20)); return }
+        const start = Math.min(...found)
         const end = s.indexOf('>', start)
         if (end < 0) { rest = s.slice(start); return }
         onTag(s.slice(start, end + 1))
@@ -73,8 +98,10 @@ export function createScanner(onTag) {
 /** The readings of an export, from text in one piece (tests) or any iterable of pieces. */
 export function readingsFromExportText(pieces, opts) {
   const folder = createFolder(opts)
-  const scan = createScanner(tag => addTag(folder, tag))
+  const reader = exportReader(folder)
+  const scan = createScanner(reader.tag)
   for (const p of typeof pieces === 'string' ? [pieces] : pieces) scan.push(p)
+  reader.finish()
   return folder.readings()
 }
 
@@ -138,13 +165,15 @@ export async function readAppleHealthExport(file, { since = '', onProgress } = {
     stream = stream.pipeThrough(new TransformStream({ transform(chunk, c) { read += chunk.byteLength; progress(read / file.size); c.enqueue(chunk) } }))
   }
   const folder = createFolder({ since })
-  const scan = createScanner(tag => addTag(folder, tag))
+  const tags = exportReader(folder)
+  const scan = createScanner(tags.tag)
   const reader = stream.pipeThrough(new TextDecoderStream()).getReader()
   for (;;) {
     const { value, done } = await reader.read()
     if (done) break
     scan.push(value)
   }
+  tags.finish()
   if (onProgress) onProgress(1)
   return { readings: folder.readings(), records: folder.count() }
 }
