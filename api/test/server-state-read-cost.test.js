@@ -168,6 +168,8 @@ test('the three hot-path state reads all go through readStateCached', () => {
     const end = src.indexOf("\n  '", at + 1);
     return src.slice(at, end === -1 ? undefined : end);
   };
+  // GET /api/sync/rev (sync-routes.js) polls as often as a device does, so it gets the cache too.
+  assert.match(src, /syncRoutes\(\{[^}]*\breadStateCached\b/, 'the sync routes should be handed the cached read');
   for (const key of ['GET /api/data/rev', 'POST /api/push/test', 'POST /api/push/rest-timer']) {
     const body = handler(key);
     assert.match(body, /readStateCached\(user\.id\)/, `${key} should read through the cache`);

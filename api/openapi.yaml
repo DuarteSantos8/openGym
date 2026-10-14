@@ -94,6 +94,10 @@ info:
       `MEDIA_VIDEO_MAX_SEC` (60), `MEDIA_GC_GRACE_DAYS` (14), `MEDIA_UPLOADS_PER_HOUR` (600
       per profile), `MEDIA_MIN_FREE_MB` (512, `0` = no floor): photos and videos of custom
       exercises (tag `media`). Every MB here is 2^20 bytes.
+    - `HUB_JWKS` (a JWKS JSON string of EC P-256 public keys, each with a `kid`) and
+      `HUB_ISSUER`: add the `sync` routes, for a separate sync service that signs a
+      short-lived ES256 token per call. Unset (the default), every one of them is a 404.
+      Set but unusable (bad JSON, a private key, no `HUB_ISSUER`), the server refuses to start.
 
     ### Conventions
     - Every response body is JSON with `Cache-Control: no-store`. The one exception is
@@ -157,6 +161,10 @@ tags:
     description: >-
       AI Coach: plans, reviews and debriefs. Every route here answers 503 unless the
       instance has the Coach switched on and a provider connected.
+  - name: sync
+    description: >-
+      Background sync by a separate hub service (`HUB_JWKS`), one profile per call, with a
+      hub token instead of a session. Every route here is a 404 while `HUB_JWKS` is unset.
 
 security:
   - cookieAuth: []
@@ -2953,6 +2961,57 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  /api/sync/ping:
+    get:
+      tags: [sync]
+      operationId: syncPing
+      summary: 'Sync: is this profile still there and syncable'
+      description: |
+        The hub's check before a sync run. The profile named by the token's `sub` is looked
+        up on every call, on this and every other `sync` route.
+      security:
+        - hubToken: []
+      responses:
+        '200':
+          description: The profile exists and is not disabled.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  user:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      name: { type: string }
+              example: { ok: true, user: { id: "Vh3kQ9w2ZbYc0aLm", name: "Ada" } }
+        '401': { $ref: '#/components/responses/SyncUnauthorized' }
+        '404': { $ref: '#/components/responses/SyncUserGone' }
+
+  /api/sync/rev:
+    get:
+      tags: [sync]
+      operationId: syncRev
+      summary: 'Sync: current revision of the profile''s state'
+      description: |
+        Exactly what `GET /api/data/rev` answers the profile's own devices. The hub polls it
+        and reads further only when `rev` moved.
+      security:
+        - hubToken: []
+      responses:
+        '200':
+          description: The current revision (0 when the profile has no state yet).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rev: { type: integer }
+                  wid: { type: string, description: 'The write id (`_wid`) of the stored document; absent before its first write.' }
+        '401': { $ref: '#/components/responses/SyncUnauthorized' }
+        '404': { $ref: '#/components/responses/SyncUserGone' }
+
 components:
   securitySchemes:
     cookieAuth:
@@ -2972,6 +3031,20 @@ components:
         The same signed session token, carried as `Authorization: Bearer <token>` by
         the paired mobile app (obtained from `POST /api/pair/redeem`). Bearer requests
         skip the CSRF origin check; a browser never attaches this header on its own.
+    hubToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        A hub token, accepted by the `sync` routes and nowhere else (and those accept
+        nothing else: not the cookie, not a paired token). A JWS signed with ES256 by a key
+        in `HUB_JWKS`, header `{"alg":"ES256","kid":…,"typ":"JWT"}`, claims:
+        `iss` = `HUB_ISSUER`, `aud` = `opengym-sync` (a string), `sub` = the user id,
+        `scope` = `sync`, `iat`/`exp` in seconds with `exp - iat <= 60`, `jti`. Refused with
+        `401 {"code":"token-invalid"}` when the algorithm is anything but ES256, the `kid` is
+        unknown, the signature is wrong, `iss`/`aud`/`scope` differ, it has expired, `iat` is
+        more than 30 s ahead, or it lives longer than 60 s. Failures are audited as
+        `sync.token.fail` with a reason code; the token itself is never logged.
 
   responses:
     Unauthorized:
@@ -2986,6 +3059,25 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
           example: { error: "forbidden" }
+    SyncUnauthorized:
+      description: >-
+        No hub token (`not signed in`; a cookie or a paired token counts as none), a token that
+        fails verification (`code: token-invalid`), or a disabled profile (`code: disabled`).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          examples:
+            invalid: { value: { error: "invalid sync token", code: "token-invalid" } }
+            disabled: { value: { error: "this account has been disabled", code: "disabled" } }
+    SyncUserGone:
+      description: >-
+        The token is good but its `sub` names no profile any more: it was deleted. Only this
+        body (`code: user-gone`) means that; a plain `{"error":"not found"}` is an instance
+        without `HUB_JWKS`, and says nothing about the profile.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: "no such user", code: "user-gone" }
     CoachOff:
       description: >-
         The Coach is not set up on this instance (switched off, or no provider connected).

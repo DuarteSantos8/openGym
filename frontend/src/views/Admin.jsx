@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { api } from '../lib/api.js'
+import { copyText } from '../lib/clipboard.js'
 import { fmtDate, fmtNum, fmtVol, fmtDur } from '../lib/format.js'
 import { auditCat, auditLine, fmtWhen } from '../lib/audit.js'
 import { workoutVolume, setsDone } from '../lib/history.js'
@@ -31,14 +32,21 @@ const rel = ts => {
 const dur = ms => { const m = Math.max(0, Math.floor(ms / 60000)); return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + (m % 60) + ' min' }
 
 // The one time the reset code is visible. Locked, so a tap beside the sheet cannot lose it
-// before it has been copied or written down.
+// before it has been copied or written down. It is shown once, so "Copied" is said only when the
+// clipboard took it; otherwise the code is shown selected below, to copy by hand.
 function ResetCodeSheet({ name, email, code, expires, close }) {
   const toast = useUI(s => s.toast)
-  const copy = () => { navigator.clipboard?.writeText(code).catch(() => {}); toast('Copied') }
+  const [manual, setManual] = useState(false)
+  const copy = async () => {
+    if (await copyText(code)) { setManual(false); toast('Copied') }
+    else { setManual(true); toast('Could not copy. It is selected below: copy it by hand.') }
+  }
   return <>
     <h3>Reset code for {name}</h3>
     <div className="adm-lead">Give them this code. They choose “Sign in with password” → “Have a reset code from your admin?”, enter their name <b>{name}</b>{email && <> (or their sign-in e-mail <b>{email}</b>)</>}, the code and a new password. It works once, until {new Date(expires).toLocaleString()}, and will not be shown again.</div>
     <button className="adm-code" style={{ fontSize: 22, width: '100%', padding: '14px 0' }} onClick={copy} aria-label="copy code">{code}</button>
+    {manual && <input className="input" readOnly dir="ltr" value={code} aria-label="Copy this by hand" autoFocus
+      onFocus={e => e.target.select()} style={{ marginTop: 8 }} />}
     <div style={{ height: 12 }} />
     <Button variant="primary" onClick={close}>Done</Button>
   </>
@@ -153,7 +161,7 @@ function UserDetail({ id, onChanged, close }) {
 function InvitesCard({ invites, reload, inviteOnly }) {
   const toast = useUI(s => s.toast)
   const gen = () => api('/api/admin/invites/new', { method: 'POST', body: '{}' })
-    .then(({ invite }) => { navigator.clipboard?.writeText(invite.code).catch(() => {}); toast('Code ' + invite.code + ' created & copied'); reload() })
+    .then(async ({ invite }) => { reload(); toast('Code ' + invite.code + (await copyText(invite.code) ? ' created & copied' : ' created')) })
     .catch(e => toast(e.message))
   const revoke = code => confirmSheet({
     title: 'Revoke code ' + code + '?', message: 'Anyone who has it can no longer use it. People who already signed up with it are not affected.',
@@ -161,7 +169,8 @@ function InvitesCard({ invites, reload, inviteOnly }) {
     onConfirm: () => api('/api/admin/invites/revoke', { method: 'POST', body: JSON.stringify({ code }) })
       .then(() => { toast('Code revoked'); reload() }).catch(e => toast(e.message))
   })
-  const copy = code => { navigator.clipboard?.writeText(code).catch(() => {}); toast('Copied ' + code) }
+  // The codes are listed on the card, so a refused copy only has to say so.
+  const copy = async code => toast(await copyText(code) ? 'Copied ' + code : 'Could not copy ' + code)
   const open = (invites || []).filter(i => !i.usedBy)
   const used = (invites || []).filter(i => i.usedBy)
   return <div className="card">

@@ -10,7 +10,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
    asks first and then shows the one-time code exactly once, on a sheet that a stray tap cannot
    close. Only an instance with password sign-in sends `password` on the user, and only then is
    any of this there. */
-const mocks = vi.hoisted(() => ({ answers: {}, sheets: [], posts: [], confirm: vi.fn() }))
+const mocks = vi.hoisted(() => ({ answers: {}, sheets: [], posts: [], confirm: vi.fn(), toast: vi.fn(), copyText: vi.fn() }))
 vi.mock('../lib/api.js', () => ({
   api: (path, init) => {
     if (init?.method === 'POST') mocks.posts.push({ path, body: JSON.parse(init.body) })
@@ -18,6 +18,7 @@ vi.mock('../lib/api.js', () => ({
     return key in mocks.answers ? Promise.resolve(mocks.answers[key]) : Promise.reject(new Error('not found'))
   }
 }))
+vi.mock('../lib/clipboard.js', () => ({ copyText: (...a) => mocks.copyText(...a) }))
 vi.mock('../store/useStore.js', () => {
   const snap = () => ({ user: { id: 'adm', name: 'Admin', admin: true }, S: {} })
   const useStore = selector => selector ? selector(snap()) : snap()
@@ -25,7 +26,7 @@ vi.mock('../store/useStore.js', () => {
   return { useStore }
 })
 vi.mock('../store/useUI.js', () => {
-  const snap = () => ({ toast: () => {}, openSheet: (render, opts) => mocks.sheets.push({ render, opts }) })
+  const snap = () => ({ toast: (...a) => mocks.toast(...a), openSheet: (render, opts) => mocks.sheets.push({ render, opts }) })
   const useUI = selector => selector ? selector(snap()) : snap()
   useUI.getState = snap
   return { useUI }
@@ -64,6 +65,8 @@ beforeEach(() => {
   mocks.sheets.length = 0
   mocks.posts.length = 0
   mocks.confirm.mockClear()
+  mocks.toast.mockClear()
+  mocks.copyText.mockReset()
   mocks.answers = {
     '/api/admin/users': { users: [{ id: 'u1', name: 'Mallory', workouts: 0, lastSync: null, disabled: false }], invite_only: false },
     '/api/admin/invites': { invites: [] },
@@ -110,6 +113,50 @@ describe('Admin → Reset password', () => {
     expect(button(sheet, 'Reset password')).toBeTruthy()
     expect(sheet.textContent).toMatch(/lets them set one/)
     expect(sheet.textContent).toMatch(/reset code until/)
+  })
+})
+
+describe('Admin → copying a one-time code', () => {
+  it('says "Copied" of the reset code only when the clipboard took it, and otherwise selects it to copy by hand', async () => {
+    mocks.answers['/api/admin/user'] = detail({ password: true, resetUntil: null })
+    const sheet = await openMallory()
+    act(() => button(sheet, 'Reset password').click())
+    const before = mocks.sheets.length
+    await act(async () => { await mocks.confirm.mock.calls[0][0].onConfirm() })
+    await settle()
+    const shown = render(mocks.sheets.slice(before).find(s => s.opts?.locked).render(() => {}))
+
+    mocks.copyText.mockResolvedValueOnce(true)
+    await act(async () => { button(shown, 'K7WQ-2MZP-4HXA').click() })
+    expect(mocks.copyText).toHaveBeenLastCalledWith('K7WQ-2MZP-4HXA')
+    expect(mocks.toast).toHaveBeenLastCalledWith('Copied')
+    expect(shown.querySelector('input')).toBeNull()
+
+    mocks.copyText.mockResolvedValueOnce(false)
+    await act(async () => { button(shown, 'K7WQ-2MZP-4HXA').click() })
+    expect(mocks.toast.mock.lastCall[0]).toMatch(/Could not copy/)
+    const field = shown.querySelector('input')
+    expect(field.value).toBe('K7WQ-2MZP-4HXA')
+    expect(field.readOnly).toBe(true)
+  })
+
+  it('says an invite code was copied only when it was', async () => {
+    mocks.answers['/api/admin/invites'] = { invites: [{ code: 'INV-1234' }] }
+    mocks.answers['/api/admin/invites/new'] = { invite: { code: 'INV-5678' } }
+    const page = render(<Admin />)
+    await settle()
+
+    mocks.copyText.mockResolvedValueOnce(false)
+    await act(async () => { button(page, 'INV-1234').click() })
+    expect(mocks.toast).toHaveBeenLastCalledWith('Could not copy INV-1234')
+    mocks.copyText.mockResolvedValueOnce(true)
+    await act(async () => { button(page, 'INV-1234').click() })
+    expect(mocks.toast).toHaveBeenLastCalledWith('Copied INV-1234')
+
+    mocks.copyText.mockResolvedValueOnce(false)
+    await act(async () => { [...page.querySelectorAll('button')].find(b => b.textContent.includes('New code')).click() })
+    await settle()
+    expect(mocks.toast).toHaveBeenLastCalledWith('Code INV-5678 created')
   })
 })
 

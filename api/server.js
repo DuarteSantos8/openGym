@@ -35,6 +35,8 @@ import { effectiveRoutineId } from './queue.js';
 import { stampPut } from './sync-stamps.js';
 import { atomicWrite as durableWrite } from './durable.js';
 import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
+import { hubKeysFromEnv } from './hub-token.js';
+import { syncRoutes } from './sync-routes.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -91,6 +93,17 @@ const TRUST_PROXY = /^(1|true|yes|on)$/i.test(process.env.TRUST_PROXY || '');
 // baked into each cookie when it's issued, so lowering this never cuts an existing session short.
 const SESSION_DAYS = Math.max(1, +(process.env.SESSION_DAYS || 90) || 90);
 const MAX_BODY = 5 * 1024 * 1024;
+// The sync hub's public keys and issuer (HUB_JWKS, HUB_ISSUER; sync-routes.js). Unset, there are
+// no /api/sync/* routes at all. Set but unusable, the server refuses to start rather than run
+// with sync silently off.
+const HUB = (() => {
+  try { return hubKeysFromEnv(process.env); }
+  catch (e) { console.error(`${e.message}. Refusing to start: fix HUB_JWKS / HUB_ISSUER or unset HUB_JWKS.`); process.exit(1); }
+})();
+// HUB_ISSUER on its own is a half-done setup, not a request to switch sync off: say so once.
+if (!HUB && String(process.env.HUB_ISSUER || '').trim()) {
+  console.warn('sync: HUB_ISSUER is set but HUB_JWKS is empty, so the /api/sync/* routes are off');
+}
 // Secure cookies require HTTPS; over plain http://localhost the flag would drop the cookie
 const SECURE = /^https:/i.test(ORIGIN) ? ' Secure;' : '';
 
@@ -2578,7 +2591,11 @@ const routes = {
   /* ---------- photos & videos ---------- */
   // Absent, not refusing, when MEDIA_UPLOADS=0: a 404 is what a server from before the feature
   // answers, and the client already treats that as "this server does not store them".
-  ...(MEDIA_ON ? mediaRoutes : {})
+  ...(MEDIA_ON ? mediaRoutes : {}),
+
+  /* ---------- the sync hub (sync-routes.js) ---------- */
+  // Absent unless HUB_JWKS is set. Its own credential, checked there: never sessionOf.
+  ...(HUB ? syncRoutes({ hub: HUB, json, findUser: id => db.users.find(u => u.id === id) || null, readStateCached, auditFail }) : {})
 };
 
 /* ---------- Coach: boot recovery, notifications, scheduled reviews ---------- */

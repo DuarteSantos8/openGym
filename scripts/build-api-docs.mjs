@@ -134,7 +134,8 @@ const TAGS = {
   // A tag missing from this map renders nowhere at all, silently, so every tag in the
   // spec needs a line here.
   coach: { title: 'AI Coach', side: 'Plans, reviews, debriefs' },
-  admin: { title: 'Admin', side: 'Users, invites, audit log, Coach' }
+  admin: { title: 'Admin', side: 'Users, invites, audit log, Coach' },
+  sync: { title: 'Sync', side: 'Background sync hub (HUB_JWKS)' }
 }
 
 // "Admin: list all users" → "List all users": the section heading and the ADMIN
@@ -152,6 +153,12 @@ function authOf (op, tag) {
     return {
       chip: 'admin',
       line: 'Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.'
+    }
+  }
+  if (tag === 'sync') {
+    return {
+      chip: null,
+      line: 'Hub token only: <code>Authorization: Bearer &lt;ES256 JWS&gt;</code> signed by a key in <code>HUB_JWKS</code>. A session cookie or a paired token is refused.'
     }
   }
   return {
