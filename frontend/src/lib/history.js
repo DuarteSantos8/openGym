@@ -1058,12 +1058,21 @@ export function insertWarmupRow(rows, mode, target, step = 2.5, floor = 0) {
 // lose its drops, a rest-pause row would add its bursts into one inflated rep count, and a
 // per-side row would merge both sides with no way back (a per-side warm-up is never made a work
 // set again).
-export const canBeWarmup = row => !!row && !isWarmupRow(row) && !isSideSet(row) && !isDropSet(row) && !isRestPauseSet(row)
+export const canBeWarmup = row => !!row && !isWarmupRow(row) && !isDropSet(row) && !isRestPauseSet(row)
 
 export function makeWarmupAt(rows, i) {
   const src = rows[i]
   if (!canBeWarmup(src)) return rows
-  const warm = { w: src.w || 0, r: src.r, done: !!src.done, phase: 'warmup', warmup: true }
+  let warm
+  if (isSideSet(src)) {
+    const left = src.sides.L || { w: 0, r: 0 }
+    const right = src.sides.R || { w: 0, r: 0 }
+    const w = left.w + right.w
+    const r = Math.max(left.r, right.r)
+    warm = { w, r, done: !!src.done, phase: 'warmup', warmup: true }
+  } else {
+    warm = { w: src.w || 0, r: src.r, done: !!src.done, phase: 'warmup', warmup: true }
+  }
   if (src.at != null) warm.at = src.at
   return placeRow(rows, i, warm)
 }
