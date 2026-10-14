@@ -1,0 +1,18 @@
+{
+  "commit_id": "a4c22122-63b0-4937-8137-f0f88b906e18",
+  "test_id": "25895c07-63b4-4870-ba33-06883f9d21b8",
+  "testcase_id": "01M4WM6185XAPFNNNFW2KRMHK0",
+  "project_id": "01KM2CDFXKKHWDD2TSG94JGVGJ",
+  "folder_id": "01KM2CDFYCGAVS50DA3YHM6GMA",
+  "org_id": "3063150",
+  "session_name": "workout",
+  "executions": [
+    {
+      "execution_id": "34caeef3-0870-4c77-aa99-24e1eab56c8d",
+      "run_kind": "author",
+      "status": "passed",
+      "valid": true,
+      "at": "2026-10-14T07:21:46.930Z"
+    }
+  ]
+}
