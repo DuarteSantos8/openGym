@@ -1,0 +1,144 @@
+/* The UI kit: the tokens, and the classes the primitives in components/layout.jsx, blocks.jsx
+   and sheet-layout.jsx apply. index.css stays the source of every component's look; this file
+   only adds what used to be written inline. It loads after index.css (main.jsx). No page width
+   here: that is the shell's.
+
+   A utility is written with its class three times (.mb-4.mb-4.mb-4, specificity 0,3,0). Written
+   once it lost to the index.css rules on the very elements the primitives emit: h4.sec, .sheet h3,
+   .card h2 (0,1,1), .item .ss, .tag.acc, .chip.on, .chips.wchips (0,2,0). Tripled it beats every
+   class rule there without reaching for an id or !important, and an id rule (#app, #modal-root)
+   still wins, as it should. src/ui-kit-cascade.test.js holds every utility to that. */
+
+:root {
+  /* space; 2-5 is the half step, 5px */
+  --space-1:2px; --space-2:4px; --space-2-5:5px; --space-3:6px; --space-4:8px; --space-5:10px;
+  --space-6:12px; --space-7:14px; --space-8:16px; --space-9:18px; --space-10:22px;
+
+  /* rhythm */
+  --gap-list:var(--space-4);
+  --gap-row:var(--space-6);
+  --gap-block:var(--space-6);
+  --gap-section:var(--space-10);
+
+  /* type */
+  --fs-caption:12px; --fs-footnote:13px; --fs-subhead:15px; --fs-callout:16px; --fs-body:17px;
+  --fs-title3:20px; --fs-title2:22px; --fs-tile:26px; --fs-big:30px; --fs-large:34px;
+  --fw-regular:400; --fw-medium:500; --fw-semibold:600; --fw-bold:700;
+
+  /* layout (--page-w and --pad live in index.css) */
+  --tap-min:44px; --row-min:46px; --item-min:60px;
+
+  /* media: drawn over photos and video, the same in both themes */
+  --on-media:#fff; --media-bg:#000; --knob:#fff;
+}
+
+/* ---------------------------------------------------------------- utilities -- */
+
+/* ink */
+.ink-danger.ink-danger.ink-danger{color:var(--red-ink)}
+.ink-warn.ink-warn.ink-warn{color:var(--yellow-ink)}
+.ink-orange.ink-orange.ink-orange{color:var(--orange-ink)}
+.ink-acc.ink-acc.ink-acc{color:var(--acc-ink)}
+.ink-ok.ink-ok.ink-ok{color:var(--green-ink)}
+
+/* Stack: a column of blocks. Never around .lrow rows: their hairlines are adjacency selectors. */
+.stack.stack.stack{display:flex;flex-direction:column}
+
+/* gap, for Stack and Inline (.row's own gap is 12px, --space-6) */
+.g-0.g-0.g-0{gap:0}
+.g-1.g-1.g-1{gap:var(--space-1)}
+.g-2.g-2.g-2{gap:var(--space-2)}
+.g-2\.5.g-2\.5.g-2\.5{gap:var(--space-2-5)}
+.g-3.g-3.g-3{gap:var(--space-3)}
+.g-4.g-4.g-4{gap:var(--space-4)}
+.g-5.g-5.g-5{gap:var(--space-5)}
+.g-6.g-6.g-6{gap:var(--space-6)}
+.g-7.g-7.g-7{gap:var(--space-7)}
+.g-8.g-8.g-8{gap:var(--space-8)}
+.g-9.g-9.g-9{gap:var(--space-9)}
+.g-10.g-10.g-10{gap:var(--space-10)}
+
+/* Inline: .row's alignment and wrapping */
+.wrap.wrap.wrap{flex-wrap:wrap}
+.jc-end.jc-end.jc-end{justify-content:flex-end}
+.ai-start.ai-start.ai-start{align-items:flex-start}
+.ai-end.ai-end.ai-end{align-items:flex-end}
+.ai-baseline.ai-baseline.ai-baseline{align-items:baseline}
+.ai-stretch.ai-stretch.ai-stretch{align-items:stretch}
+
+/* Spacer: the height of today's spacer divs */
+.sp-1.sp-1.sp-1{height:var(--space-1)}
+.sp-2.sp-2.sp-2{height:var(--space-2)}
+.sp-2\.5.sp-2\.5.sp-2\.5{height:var(--space-2-5)}
+.sp-3.sp-3.sp-3{height:var(--space-3)}
+.sp-4.sp-4.sp-4{height:var(--space-4)}
+.sp-5.sp-5.sp-5{height:var(--space-5)}
+.sp-6.sp-6.sp-6{height:var(--space-6)}
+.sp-7.sp-7.sp-7{height:var(--space-7)}
+.sp-8.sp-8.sp-8{height:var(--space-8)}
+.sp-9.sp-9.sp-9{height:var(--space-9)}
+.sp-10.sp-10.sp-10{height:var(--space-10)}
+
+/* margins */
+.m-0.m-0.m-0{margin:0}
+.mb-0.mb-0.mb-0{margin-bottom:0}
+.mb-1.mb-1.mb-1{margin-bottom:var(--space-1)}
+.mb-2.mb-2.mb-2{margin-bottom:var(--space-2)}
+.mb-2\.5.mb-2\.5.mb-2\.5{margin-bottom:var(--space-2-5)}
+.mb-3.mb-3.mb-3{margin-bottom:var(--space-3)}
+.mb-4.mb-4.mb-4{margin-bottom:var(--space-4)}
+.mb-5.mb-5.mb-5{margin-bottom:var(--space-5)}
+.mb-6.mb-6.mb-6{margin-bottom:var(--space-6)}
+.mb-7.mb-7.mb-7{margin-bottom:var(--space-7)}
+.mb-8.mb-8.mb-8{margin-bottom:var(--space-8)}
+.mb-9.mb-9.mb-9{margin-bottom:var(--space-9)}
+.mb-10.mb-10.mb-10{margin-bottom:var(--space-10)}
+.mt-0.mt-0.mt-0{margin-top:0}
+.mt-1.mt-1.mt-1{margin-top:var(--space-1)}
+.mt-2.mt-2.mt-2{margin-top:var(--space-2)}
+.mt-2\.5.mt-2\.5.mt-2\.5{margin-top:var(--space-2-5)}
+.mt-3.mt-3.mt-3{margin-top:var(--space-3)}
+.mt-4.mt-4.mt-4{margin-top:var(--space-4)}
+.mt-5.mt-5.mt-5{margin-top:var(--space-5)}
+.mt-6.mt-6.mt-6{margin-top:var(--space-6)}
+.mt-7.mt-7.mt-7{margin-top:var(--space-7)}
+.mt-8.mt-8.mt-8{margin-top:var(--space-8)}
+.mt-9.mt-9.mt-9{margin-top:var(--space-9)}
+.mt-10.mt-10.mt-10{margin-top:var(--space-10)}
+
+/* type */
+.fs-caption.fs-caption.fs-caption{font-size:var(--fs-caption)}
+.fs-footnote.fs-footnote.fs-footnote{font-size:var(--fs-footnote)}
+.fs-subhead.fs-subhead.fs-subhead{font-size:var(--fs-subhead)}
+.fs-callout.fs-callout.fs-callout{font-size:var(--fs-callout)}
+.fs-body.fs-body.fs-body{font-size:var(--fs-body)}
+.fs-title3.fs-title3.fs-title3{font-size:var(--fs-title3)}
+.fs-title2.fs-title2.fs-title2{font-size:var(--fs-title2)}
+.fs-tile.fs-tile.fs-tile{font-size:var(--fs-tile)}
+.fs-big.fs-big.fs-big{font-size:var(--fs-big)}
+.fs-large.fs-large.fs-large{font-size:var(--fs-large)}
+.fw-regular.fw-regular.fw-regular{font-weight:var(--fw-regular)}
+.fw-medium.fw-medium.fw-medium{font-weight:var(--fw-medium)}
+.fw-semibold.fw-semibold.fw-semibold{font-weight:var(--fw-semibold)}
+.fw-bold.fw-bold.fw-bold{font-weight:var(--fw-bold)}
+.ta-start.ta-start.ta-start{text-align:start}
+.ta-center.ta-center.ta-center{text-align:center}
+.ta-end.ta-end.ta-end{text-align:end}
+
+/* ---------------------------------------------------------------- modifiers -- */
+/* Single-purpose classes the primitives set on their own elements. */
+
+/* Card tone: a 1px ring in the tone's colour, inside the card so nothing moves, over the card's
+   own shadow. The alert and live cards set borderColor inline for this, on a card that has no
+   border, so it never showed. */
+.card.card-danger{box-shadow:inset 0 0 0 1px var(--red),var(--shadow-card)}
+.card.card-accent{box-shadow:inset 0 0 0 1px var(--acc),var(--shadow-card)}
+.card.card-orange{box-shadow:inset 0 0 0 1px var(--orange),var(--shadow-card)}
+
+/* Stat: the big number's unit, and a smaller number */
+.big .stat-unit,.tile .v .stat-unit{font-size:var(--fs-callout)}
+.big.big-sm{font-size:var(--fs-title2)}
+
+/* StatTile value sizes below the default 26px */
+.tile .v.v-sm{font-size:var(--fs-body)}
+.tile .v.v-xs{font-size:var(--fs-subhead)}

@@ -476,7 +476,7 @@ function MultiSelectSheet({ values, options, onToggle, title, doneLabel, close }
         })}
       </div>
       <div style={{ height: 8 }} />
-      <Button variant="primary" onClick={close}>{doneLabel || 'Done'}</Button>
+      <Button variant="primary" onClick={close}>{doneLabel || t('Done')}</Button>
     </>
   )
 }
