@@ -257,8 +257,10 @@ describe('the web container refuses a BASE_PATH it cannot serve', () => {
     // master both stay there. The listen port stays 80: compose, the probes and the healthcheck
     // all address NGINX_PORT. The base image's EXPOSE 8080 is only metadata.
     const dockerfile = readFileSync(join(WEB, 'Dockerfile'), 'utf8')
-    expect(dockerfile).toMatch(/^FROM --platform=\$BUILDPLATFORM node:22-alpine AS build$/m)
-    expect(dockerfile).toMatch(/^FROM nginxinc\/nginx-unprivileged:alpine$/m)
+    // Base images are pinned by digest; the tag lives in the comment line above each FROM.
+    // The regexes intentionally accept any sha256 digest so digest bumps keep passing.
+    expect(dockerfile).toMatch(/^# node:22-alpine\nFROM --platform=\$BUILDPLATFORM node@sha256:[0-9a-f]{64} AS build$/m)
+    expect(dockerfile).toMatch(/^# nginxinc\/nginx-unprivileged:alpine\nFROM nginxinc\/nginx-unprivileged@sha256:[0-9a-f]{64}$/m)
     const users = [...dockerfile.matchAll(/^USER \S+$/gm)].map(m => m[0])
     expect(users.at(-1)).toBe('USER 101')
     const root = dockerfile.search(/^USER root$/m)
