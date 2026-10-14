@@ -16,6 +16,7 @@
 import * as cfgStore from './config.js';
 import { readState, listUserIds, isSharing } from './jobs.js';
 import { libraryHas, libraryName } from './core/library.js';
+import { countsAsWork } from './core/workout-sections.js';
 
 export const MIN_PEOPLE = 3;
 export const MAX_EXERCISES = 12;
@@ -55,7 +56,7 @@ function participant(S) {
   if (!workouts.length) return null;
   const best = {};
   workouts.forEach(w => (w.entries || []).forEach(en => {
-    if (!libraryHas(en?.id)) return;
+    if (!libraryHas(en?.id) || !countsAsWork(en, w)) return;
     (en.sets || []).forEach(s => {
       if (!s.done || isWarmup(s) || !(s.w > 0) || !(s.r > 0)) return;
       const est = epley(s.w * toKg, s.r);

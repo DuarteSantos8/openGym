@@ -31,7 +31,7 @@ const keyOf = w => (w?.id != null ? w.id : legacySyncKey(w))
 // another device wrote. Save takes the draft's value only where the editor changed it, so an
 // editor opened on an old note does not write that old note back over a newer one, or delete a
 // note written meanwhile. The note is compared as the finish writes it, trimmed.
-const SESSION_FIELDS = ['note', 'name', 'bw']
+const SESSION_FIELDS = ['note', 'name', 'bw', 'sections']
 const sessionField = (w, k) => (k === 'note' ? (w?.note || '').trim() : (w?.[k] ?? null))
 
 // The same data whatever order its keys were written in. A key holding undefined is no key, as it
@@ -205,7 +205,7 @@ function draftRecord(active, current, key) {
   const base = active.editBase
   for (const k of SESSION_FIELDS) {
     // A draft from before `editBase` existed has nothing to compare with, and keeps the editor's.
-    const edited = !base || sessionField(updated, k) !== base[k]
+    const edited = !base || !sameData(sessionField(updated, k), base[k])
     const value = edited ? sessionField(updated, k) : current[k]
     if (value == null || value === '') delete record[k]
     else record[k] = value

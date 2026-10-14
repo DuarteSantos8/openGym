@@ -1,3 +1,4 @@
+import { sameSection } from './workout-sections.js'
 import { supersetUnits } from './history.js'
 
 function moveTarget(active, index, direction) {
@@ -6,6 +7,7 @@ function moveTarget(active, index, direction) {
   const source = units.findIndex(unit => unit.includes(index))
   const target = source + direction
   if (source < 0 || target < 0 || target >= units.length) return null
+  if (!sameSection(active.entries[units[source][0]], active.entries[units[target][0]])) return null
   return { units, source, target }
 }
 

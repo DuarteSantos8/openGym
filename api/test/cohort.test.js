@@ -17,6 +17,7 @@ const lifter = (w1, w2, { unit = 'kg', weeks = 4 } = {}) => sampleState({
   workouts: Array.from({ length: weeks }, (_, i) => ({
     id: 'w' + i, d: daysAgo(i * 7 + 1), name: 'A', start: 1, end: 60001, vol: 0, prs: [],
     entries: [
+      { id: '0001', section: { id: 'prep', type: 'warmup', label: 'Warm-up', countsAsWork: false }, sets: [{ w: w1 * 10, r: 5, done: true }] },
       { id: '0001', sets: [{ w: w1, r: 5, done: true }, { w: w1 * 2, r: 5, done: true, warmup: true }] },
       ...(w2 ? [{ id: '0002', sets: [{ w: w2, r: 10, done: true }] }] : [])
     ]
