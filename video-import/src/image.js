@@ -98,43 +98,93 @@ export function digitsOnly(px, w, h, { minHeight = 0.35 } = {}) {
 }
 
 /**
- * A timer crop as black digits on white, or null when no digits stand out.
+ * Text in a crop as black on white, or null when nothing in it looks like text.
  *
- * A timer is the brightest (or darkest) thing in its box: white digits over a wall that is
- * nearly as light defeats a threshold chosen for the whole crop, but not one taken just under the
- * brightest pixels. Both polarities are tried; each keeps only marks the size of a digit — taller
- * than a third of the box, shorter than nearly all of it (the ring round a countdown is), clear
- * of the edges — and the one that leaves 1–3 such marks of one height, side by side, wins.
+ * Captions and timers are drawn to stand out — the brightest or the darkest marks in their box —
+ * but over a sky or a light wall a threshold chosen for the whole crop picks a tree or a shadow
+ * instead. So several thresholds are tried in both polarities, and the marks each leaves are
+ * judged as characters: the right height for the box, solid enough to be a stroke (the thin
+ * ring round a countdown is not), clear of the edges, the same height as their neighbours and
+ * lined up with them. The candidate with the most such characters wins.
+ *   opts.digits: a timer — 1–4 characters of one height on one line, solid strokes (not blocks).
  */
-export function timerMask(gray, w, h) {
+export function textMask(gray, w, h, { digits = false } = {}) {
   const sorted = Uint8Array.from(gray).sort()
   const at = q => sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))]
+  const hi = at(0.995), lo = at(0.005)
+  if (hi - lo < 40) return null
+  const minH = digits ? 0.15 : 0.1, maxH = digits ? 0.8 : 0.7
   let best = null
   for (const bright of [true, false]) {
-    const hi = at(0.995), lo = at(0.005)
-    if (hi - lo < 40) continue
-    const thr = bright ? hi - Math.max(20, (hi - lo) * 0.18) : lo + Math.max(20, (hi - lo) * 0.18)
-    const ink = new Uint8Array(gray.length)
-    for (let i = 0; i < gray.length; i++) ink[i] = bright ? gray[i] >= thr : gray[i] <= thr
-    const comps = components(ink, w, h).filter(c => {
-      const ch = c.y1 - c.y0 + 1, cw = c.x1 - c.x0 + 1
-      return ch >= h * 0.3 && ch <= h * 0.8 && cw <= ch * 1.1 && c.x0 > 0 && c.y0 > 0 && c.x1 < w - 1 && c.y1 < h - 1 && c.n >= ch * 2
-    })
-    // Digits of one number: one height, one line.
-    const hs = comps.map(c => c.y1 - c.y0)
-    const mid = hs.slice().sort((a, b) => a - b)[hs.length >> 1]
-    const line = comps.filter(c => Math.abs(c.y1 - c.y0 - mid) <= mid * 0.25)
-    if (!line.length || line.length > 4) continue
-    const cy = line.map(c => (c.y0 + c.y1) / 2)
-    if (Math.max(...cy) - Math.min(...cy) > mid * 0.3) continue
-    const score = Math.min(line.length, 3) * 10 + line.reduce((t, c) => t + c.n, 0) / gray.length
-    if (!best || score > best.score) best = { score, line }
+    // Thin digits a shade brighter than the wall behind them need a threshold close to white; on
+    // a caption the same threshold breaks letters into pieces.
+    for (const k of digits ? [0.04, 0.08, 0.12, 0.22, 0.32, 0.45] : [0.12, 0.22, 0.32, 0.45]) {
+      const thr = bright ? hi - (hi - lo) * k : lo + (hi - lo) * k
+      const ink = new Uint8Array(gray.length)
+      for (let i = 0; i < gray.length; i++) ink[i] = bright ? gray[i] >= thr : gray[i] <= thr
+      // A stroke is drawn to stand out from what is right round it; a patch of shadow is not.
+      const standsOut = c => {
+        let inside = 0, around = 0, n = 0
+        for (const i of c.px) inside += gray[i]
+        for (let y = Math.max(0, c.y0 - 2); y <= Math.min(h - 1, c.y1 + 2); y++) {
+          for (let x = Math.max(0, c.x0 - 2); x <= Math.min(w - 1, c.x1 + 2); x++) {
+            const i = y * w + x
+            if (!ink[i]) { around += gray[i]; n++ }
+          }
+        }
+        return !n || Math.abs(inside / c.n - around / n) >= 35
+      }
+      const chars = components(ink, w, h).filter(c => {
+        const ch = c.y1 - c.y0 + 1, cw = c.x1 - c.x0 + 1
+        const fill = c.n / (cw * ch)
+        // A box drawn tight round a caption cuts its "p" and "g": letters may touch the top and the
+        // bottom of a name's box. Digits keep clear of every edge (the ring touches them).
+        const clear = digits ? c.y0 > 0 && c.y1 < h - 1 : true
+        return ch >= h * minH && ch <= h * maxH && cw <= ch * (digits ? 1.1 : 4) && fill >= 0.2 &&
+          (!digits || fill <= 0.7) && c.x0 > 0 && c.x1 < w - 1 && clear && standsOut(c)
+      })
+      if (!chars.length) continue
+      let line
+      if (digits) {
+        // Digits of one number: one height.
+        const hs = chars.map(c => c.y1 - c.y0).sort((x, y) => x - y)
+        line = []
+        for (const ref of hs) {
+          const same = chars.filter(c => Math.abs(c.y1 - c.y0 - ref) <= Math.max(2, ref * 0.3))
+          if (same.length > line.length) line = same
+        }
+      } else {
+        // Letters of a caption: about one size (a "q" or a "g" reaches below the others, a dot of
+        // dust does not reach the middle), on lines of their own.
+        const m = median(chars.map(c => c.y1 - c.y0))
+        const sized = chars.filter(c => c.y1 - c.y0 >= m * 0.45 && c.y1 - c.y0 <= m * 1.8)
+        const rows = []
+        for (const c of sized.sort((a, b) => a.y0 - b.y0)) {
+          const row = rows.find(r => c.y0 < r.y1 - m * 0.3 && c.y1 > r.y0 + m * 0.3)
+          if (row) { row.list.push(c); row.y0 = Math.min(row.y0, c.y0); row.y1 = Math.max(row.y1, c.y1) } else rows.push({ y0: c.y0, y1: c.y1, list: [c] })
+        }
+        line = rows.filter(r => r.list.length >= 2).flatMap(r => r.list)
+      }
+      if (digits) {
+        const cy = line.map(c => (c.y0 + c.y1) / 2)
+        const ref = line[0] ? line[0].y1 - line[0].y0 : 0
+        line = line.filter((c, i) => Math.abs(cy[i] - median(cy)) <= ref * 0.3)
+        if (!line.length || line.length > 4) continue
+      } else if (line.length < 2) continue
+      const score = Math.min(line.length, digits ? 3 : 40) * 10 + line.reduce((t, c) => t + c.n, 0) / gray.length
+      if (!best || score > best.score) best = { score, line }
+    }
   }
   if (!best) return null
   const out = new Uint8Array(gray.length).fill(255)
   for (const c of best.line) for (const i of c.px) out[i] = 0
   return out
 }
+
+/** The timer's digits (see textMask). */
+export const timerMask = (gray, w, h) => textMask(gray, w, h, { digits: true })
+
+const median = a => { const s = a.slice().sort((x, y) => x - y); return s.length ? s[s.length >> 1] : 0 }
 
 /** Connected marks (4-neighbourhood) of a 0/1 mask: { x0, y0, x1, y1, n, px }. */
 function components(ink, w, h) {

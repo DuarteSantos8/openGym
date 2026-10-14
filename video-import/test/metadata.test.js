@@ -68,7 +68,8 @@ test('chapters that are the parts of a video, not its exercises, are not a draft
 
 test('long chapters are parts even without a "Group N" title', () => {
   const m = metadataDraft({ duration: 2400, chapters: chapters([[0, 600, 'Legs'], [600, 1200, 'Arms'], [1200, 1800, 'Back'], [1800, 2400, 'Abs']]) })
-  assert.equal(m.usable, false); assert.equal(m.why, 'long')
+  assert.equal(m.usable, false); assert.equal(m.why, 'parts')
+  assert.deepEqual(m.parts.map(p => p.label), ['Legs', 'Arms', 'Back', 'Abs'])
 })
 
 test('part chapters come back as parts, with their titles', () => {

@@ -38,7 +38,9 @@ async function tesseract(files, { kind, workDir, signal }) {
   fs.writeFileSync(list, files.join('\n') + '\n')
   // One line of text (psm 7). The timer only ever shows digits and a colon, and saying so
   // stops "0:35" being read as "O:3S".
-  const args = [list, 'stdout', '--psm', '7', '-l', kind === 'timer' ? 'eng' : LANGS]
+  // Names can run to two lines ("5 x PUSH UPS to / DOWNWARDS DOG"): a block (psm 6), its lines
+  // joined. The timer is one line (psm 7).
+  const args = [list, 'stdout', '--psm', kind === 'timer' ? '7' : '6', '-l', kind === 'timer' ? 'eng' : LANGS]
   if (kind === 'timer') args.push('-c', 'tessedit_char_whitelist=0123456789:')
   args.push('tsv')
   try {

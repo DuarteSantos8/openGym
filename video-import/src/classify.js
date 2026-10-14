@@ -368,7 +368,16 @@ export function harmonise(sections, { cuts = [], timed = false } = {}) {
   for (const s of sections) {
     if (s.kind !== 'warmup' && s.kind !== 'stretch') continue
     // Moves the countdown laid out are right as they are.
-    if (timed && s.rows.every(r => !r.side)) continue
+    // Moves the countdown laid out keep their lengths, up to the few seconds a countdown read late
+    // or run into the next announcement costs: those take the section's usual length.
+    if (timed) {
+      // A few seconds of countdown at the very end of a part (the last "3, 2, 1" before the
+      // outro) is not a move.
+      s.rows = s.rows.filter(r => r.sec >= MIN_TIMED)
+      const usual = mode(s.rows.map(r => snapSec(r.sec))).value
+      if (usual) for (const r of s.rows) if (Math.abs(r.sec - usual) <= 5) r.sec = usual
+      continue
+    }
     const byCuts = movesByCuts(s, cuts)
     if (byCuts) { s.rows = byCuts; continue }
     const hold = s.beat || named
@@ -509,7 +518,10 @@ export function pairRounds(sections) {
     const single = s.rows.filter(r => (r.occurrences || []).length === 1)
     for (const a of single) {
       if (!s.rows.includes(a)) continue
-      const b = single.find(x => x !== a && s.rows.includes(x) && Math.abs(x.occurrences[0].start - a.occurrences[0].start - lap) <= 3)
+      // Never the left and the right of one move: those are two exercises, not two readings.
+      const sides = x => sideOf(x.key).side
+      const b = single.find(x => x !== a && s.rows.includes(x) && Math.abs(x.occurrences[0].start - a.occurrences[0].start - lap) <= 3 &&
+        !(sides(a) && sides(x) && sides(a) !== sides(x)))
       if (!b) continue
       const [keep, drop] = (b.conf || 0) > (a.conf || 0) ? [b, a] : [a, b]
       const joined = combineRows(a, b)

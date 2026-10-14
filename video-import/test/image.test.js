@@ -66,11 +66,12 @@ test('timerMask: white digits on a light wall survive, the ring round them does 
   const { timerMask } = await import('../src/image.js')
   const w = 60, h = 60, g = new Uint8Array(w * h).fill(200)                 // a light wall
   const put = (x0, y0, x1, y1, v) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) g[y * w + x] = v }
-  put(15, 18, 26, 42, 252); put(32, 18, 43, 42, 252)                         // two white digits
+  put(15, 18, 26, 42, 252); put(32, 18, 43, 42, 252)                         // two white digits,
+  put(18, 22, 23, 38, 200); put(35, 22, 40, 38, 200)                         // drawn as strokes, not blocks
   for (let y = 4; y < 56; y++) { g[y * w + 4] = 250; g[y * w + 55] = 250 }  // the ring's sides, taller than any digit
   const m = timerMask(g, w, h)
   assert.ok(m)
-  assert.equal(m[30 * w + 20], 0, 'a digit is ink')
+  assert.equal(m[30 * w + 16], 0, 'a digit is ink')
   assert.equal(m[30 * w + 4], 255, 'the ring is not')
   assert.equal(timerMask(new Uint8Array(w * h).fill(200), w, h), null, 'nothing on it, nothing read')
 })

@@ -201,3 +201,15 @@ test('one exercise read two ways in two rounds, one round apart, is one row (B7-
   const s = pairRounds([{ kind: 'interval', rows: [r('overhead tuck', [2862, 3162]), r('drop sit up', [2922], 0.8), r('v sit', [2982, 3282]), r('drop 81t te', [3222], 0.4), r('plank', [3102, 3402])] }])
   assert.deepEqual(s[0].rows.map(x => [x.key, x.rounds]), [['overhead tuck', 2], ['drop sit up', 2], ['v sit', 2], ['plank', 2]])
 })
+
+test('30 s on, 30 s off is an interval block of 30/30, in two rounds', async () => {
+  const { timerPhases } = await import('../src/segment.js')
+  const f = []
+  const run = (n, name) => { for (let i = n; i >= 0; i--) f.push({ t: f.length, name, nameConf: 90, timer: String(i) }) }
+  for (let r = 0; r < 2; r++) for (const e of ['SQUATS', 'LUNGES', 'BURPEES']) { run(29, 'NEXT ' + e); run(29, '') }
+  const d = classify(timerPhases(f), { timed: true })
+  const iv = d.sections.find(s => s.kind === 'interval')
+  assert.ok(iv, JSON.stringify(d.sections.map(s => s.kind)))
+  assert.deepEqual([iv.work, iv.rest, iv.rounds], [30, 30, 2])
+  assert.deepEqual(iv.rows.map(r => [r.key, r.sec, r.rest, r.rounds]), [['squats', 30, 30, 2], ['lunges', 30, 30, 2], ['burpees', 30, 30, 2]])
+})

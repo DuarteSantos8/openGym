@@ -27,7 +27,8 @@ const MIN_CHARS = 3              // shorter readings are OCR dust ("|", "ii")
 export const MIN_CONF = 40       // Tesseract's own confidence (0–100) below which a reading is noise
 
 function labelOf(f) {
-  const raw = cleanCaption(f.name)
+  // "(R)" and "(L)" would be lost as single letters once the caption is a key: spelled out.
+  const raw = cleanCaption(String(f.name || '').replace(/[([{]\s*([rlRL])\s*[)\]}]/g, (_, x) => (/r/i.test(x) ? '(right)' : '(left)')))
   const key = normName(raw)
   const timer = parseTimer(f.timer)
   // A reading Tesseract itself doubts is noise more often than a name: a shadow, the edge of the
@@ -196,24 +197,39 @@ function absorb(into, b, merge = false) {
  * reaches zero or the next run starts.
  */
 export function countdownRuns(frames) {
-  const v = (frames || []).map(f => parseTimer(f.timer))
+  // Each second can carry two readings (taken half a second apart): a run takes whichever fits.
+  const both = (frames || []).map(f => [parseTimer(f.timer), parseTimer(f.timerB)].filter(x => x != null && x >= 0))
+  const v = both.map(c => (c.length ? c[0] : null))
   const runs = []
   let cur = null
-  const fits = (t, x) => cur && Math.abs(cur.top - (t - cur.start) - x) <= 1
-  const confirmed = t => {
+  // A reading fits the run when it is the count it should be — or that count with a stray "1" in
+  // front (a piece of the ring round the digits read as a one: 8 as 18).
+  const fitsOne = (t, x) => {
+    if (!cur) return false
+    const e = cur.top - (t - cur.start)
+    return Math.abs(e - x) <= 1 || (x >= 10 && x < 20 && e < 10 && Math.abs(e - (x - 10)) <= 1)
+  }
+  const confirmedAs = (t, x) => {
     let ok = 0, bad = 0
-    for (let k = 1; k <= 4 && t + k < v.length; k++) {
-      const x = v[t + k]
-      if (x == null) continue
-      if (Math.abs(v[t] - k - x) <= 1) ok++; else bad++
+    for (let k = 1; k <= 4 && t + k < both.length; k++) {
+      const c = both[t + k]
+      if (!c.length) continue
+      if (c.some(y => Math.abs(x - k - y) <= 1)) ok++; else bad++
     }
     return ok >= 2 && ok > bad
   }
-  for (let t = 0; t < v.length; t++) {
-    const x = v[t]
-    if (x == null || x < 0) continue
-    if (fits(t, x)) { cur.last = t; continue }
-    if (x >= 3 && confirmed(t)) { if (cur) runs.push(cur); cur = { start: t, top: x, last: t } }
+  for (let t = 0; t < both.length; t++) {
+    const cands = both[t]
+    if (!cands.length) continue
+    if (cands.some(x => fitsOne(t, x))) { cur.last = t; continue }
+    const x = cands.find(y => (y >= 3 || (cur && y >= 0)) && confirmedAs(t, y))
+    if (x == null) continue
+    // A confirmed reading a little off the count (OCR caught the first seconds late, or misread
+    // a few): the same countdown, re-anchored. A new countdown is a jump up, or one that starts
+    // after the current one is over.
+    const e = cur ? cur.top - (t - cur.start) : -1
+    if (cur && e >= 3 && x <= e + 3 && e - x <= 5) { cur.top = x + (t - cur.start); cur.last = t; continue }
+    if (x >= 3) { if (cur) runs.push(cur); cur = { start: t, top: x, last: t } }
   }
   if (cur) runs.push(cur)
   // A countdown first caught at 23 when its neighbours start at 29 began a few seconds earlier,
@@ -227,7 +243,7 @@ export function countdownRuns(frames) {
     if (back > 0) { r.start -= back; r.top += back }
   })
   return runs.map((r, i) => {
-    const next = runs[i + 1]?.start ?? v.length
+    const next = runs[i + 1]?.start ?? both.length
     // It reaches zero `top` seconds after it showed `top`, and is gone a second later.
     return { start: r.start, end: Math.min(next, r.start + r.top + 1), top: r.top }
   }).filter(r => r.end - r.start >= MIN_RUN)
@@ -252,13 +268,17 @@ export function timerPhases(frames) {
     const named = []
     for (let t = a; t < b; t++) if (labels[t]?.key) named.push({ t, l: labels[t] })
     if (!named.length) return null
-    const key = mode(named.map(n => n.l.key)).value
-    const mine = named.filter(n => sameName(n.l.key, key) || n.l.key === key)
-    const raw = mode(mine.map(n => n.l.raw)).value || key
+    const first = mode(named.map(n => n.l.key)).value
+    const mine = named.filter(n => sameName(n.l.key, first) || n.l.key === first)
+    // The fullest reading: a caption that types itself out is read short at first.
+    const longest = Math.max(...mine.map(n => n.l.key.length))
+    const full = mine.filter(n => n.l.key.length >= longest * 0.9)
+    const key = mode(full.map(n => n.l.key)).value || first
+    const raw = mode(full.filter(n => n.l.key === key).map(n => n.l.raw)).value || key
     return {
       key, raw, first: mine[0].t, cover: mine.length / (b - a),
       conf: Math.round(mine.reduce((s, n) => s + (n.l.conf || 0), 0) / mine.length) / 100,
-      kind: mine[0].l.kind, next: mine.find(n => n.l.next)?.l.next || null,
+      kind: (full.find(n => n.l.key === key) || mine[0]).l.kind, next: restOf(key).next || null,
       variants: Object.fromEntries(Object.entries(mine.reduce((m, n) => ({ ...m, [n.l.key]: (m[n.l.key] || 0) + 1 }), {})))
     }
   }
@@ -285,22 +305,72 @@ export function timerPhases(frames) {
     if (r.start - at >= MIN_RUN) { blocks.push(...segment(frames.slice(at, r.start))); pending = null }
     at = r.end
     const c = caps[i]
+    const lateIn = c && (c.first - r.start) / len(r) >= 0.5
     if (c && c.kind === 'rest') {
-      blocks.push(block(r, { kind: 'rest', key: c.key, text: c.raw, conf: c.conf, variants: c.variants, next: c.next }))
-      pending = c.next ? { key: normName(c.next), raw: c.next, conf: c.conf, variants: { [normName(c.next)]: 1 }, first: c.first } : null
+      const named = c.next ? { key: normName(c.next), raw: c.next, conf: c.conf, variants: { [normName(c.next)]: 1 }, first: c.first } : null
+      // "REST", or a "Next: …" over the whole of a short countdown: a rest. A "Next: …" that comes
+      // up late in a move with no rest after it is only the announcement; the move is a move.
+      if (!c.next || restAt(i) || !lateIn) {
+        blocks.push(block(r, { kind: 'rest', key: c.key, text: c.raw, conf: c.conf, variants: c.variants, next: c.next }))
+        pending = named || pending
+        return
+      }
+      const own = pending
+      pending = named
+      if (own) blocks.push(block(r, { kind: 'work', key: own.key, text: own.raw, conf: own.conf, variants: own.variants, ...(own.first < r.start ? { captionAt: own.first } : {}) }))
+      else blocks.push(block(r, { kind: 'gap', key: '', text: '', conf: 0, variants: {}, timed: true }))
       return
     }
-    if (restAt(i)) {
+    // Equal lengths (30 s on, 30 s off) say nothing about which is the rest; the captions do. A
+    // countdown with a caption over most of it, between two with none at their start, announces
+    // the next exercise: the video names each exercise during the rest before it.
+    const bare = j => runs[j] && (!caps[j] || (caps[j].first - runs[j].start) / len(runs[j]) >= 0.5)
+    const announces = c && c.cover >= 0.6 && (c.first - r.start) / len(r) < 0.3 && bare(i + 1) && (i === 0 || bare(i - 1))
+    if (restAt(i) || announces) {
       blocks.push(block(r, { kind: 'rest', key: 'rest', text: 'NEXT', conf: c?.conf || 0, variants: {}, next: c?.key || null }))
       pending = asNext(c) || pending
       return
     }
-    const late = c && (c.first - r.start) / len(r) >= 0.5
-    const own = c && !late && !(pending && !sameName(pending.key, c.key) && c.first - r.start > 3) ? c : pending
+    const late = lateIn
+    // A name announced for this move wins over a later or a doubtful reading in it.
+    const doubtful = c && pending && !sameName(pending.key, c.key) && (c.first - r.start > 3 || c.conf < 0.55)
+    const own = c && !late && !doubtful ? c : pending
     pending = late ? asNext(c) : null
     if (own) blocks.push(block(r, { kind: 'work', key: own.key, text: own.raw, conf: own.conf, variants: own.variants, ...(own.first < r.start ? { captionAt: own.first } : {}) }))
     else blocks.push(block(r, { kind: 'gap', key: '', text: '', conf: 0, variants: {}, timed: true }))
   })
   if (frames.length - at >= MIN_RUN) blocks.push(...segment(frames.slice(at)))
+  return fillFromRounds(blocks)
+}
+
+/**
+ * A move no caption named, one round after (or before) a named move of its length, is that move
+ * again: a block done in rounds repeats itself at a steady lap. The lap is the distance most
+ * named moves have to their next time. The name is marked as inferred (low confidence) for the
+ * review screen.
+ */
+export function fillFromRounds(blocks) {
+  const work = blocks.filter(b => b.kind === 'work' && b.key)
+  const gaps = []
+  work.forEach((b, i) => { const n = work.slice(i + 1).find(x => sameName(x.key, b.key)); if (n) gaps.push(n.start - b.start) })
+  if (gaps.length < 3) return blocks
+  const lap = mode(gaps).value
+  if (gaps.filter(g => Math.abs(g - lap) <= 2).length < gaps.length * 0.5) return blocks
+  for (const b of blocks) {
+    if (b.kind !== 'gap' || !b.timed) continue
+    const twin = work.find(w => Math.abs(Math.abs(w.start - b.start) - lap) <= 2 && Math.abs(w.dur - b.dur) <= 5)
+    if (twin) Object.assign(b, { kind: 'work', key: twin.key, text: twin.text, conf: 0.3, variants: twin.variants, inferred: true })
+  }
   return blocks
+}
+
+/** One reading per second from the two taken: the one that carries on the count from the second before. */
+export function timerTrack(frames) {
+  let prev = null
+  return (frames || []).map(f => {
+    const c = [parseTimer(f.timer), parseTimer(f.timerB)].filter(x => x != null && x >= 0)
+    const pick = !c.length ? null : prev == null ? c[0] : c.reduce((a, b) => (Math.abs(b - (prev - 1)) < Math.abs(a - (prev - 1)) ? b : a))
+    if (pick != null) prev = pick
+    return pick
+  })
 }

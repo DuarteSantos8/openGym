@@ -130,3 +130,66 @@ test('timer first: a short countdown between two long ones is a rest that names 
   move('ARM CIRCLES'); move('SWING STEP'); move('TOE TOUCH'); move('')
   assert.deepEqual(timerPhases(g).map(b => [b.kind, b.key, b.dur]), [['gap', '', 30], ['work', 'arm circles', 30], ['work', 'swing step', 30], ['work', 'toe touch', 30]])
 })
+
+test('a lone R or L in brackets is a side (OfV5kHgRpmM)', async () => {
+  const { sideOf, sameName } = await import('../src/text.js')
+  assert.deepEqual(sideOf('Side plank hold (R)'), { base: 'side plank hold', side: 'R' })
+  assert.deepEqual(sideOf('SL glute bridge (L)'), { base: 'sl glute bridge', side: 'L' })
+  assert.equal(sameName('sl glute bridge (r)', 'sl glute bridge (l)'), false)
+  assert.equal(sameName('sl glute bridge r', 'sl glute bridge l'), false)
+  assert.deepEqual(sideOf('side plank hold r'), { base: 'side plank hold', side: 'R' })
+})
+
+test('a caption caught while it is typed out is the same name', async () => {
+  const { sameName } = await import('../src/text.js')
+  assert.equal(sameName('sumo sq', 'sumo squat'), true)
+  assert.equal(sameName('straight leg cr', 'straight leg crunches'), true)
+  assert.equal(sameName('push', 'push ups'), false, 'too short to tell')
+  assert.equal(sameName('sl glute bridge right', 'sl glute bridge left'), false)
+})
+
+test('two moves that share all but their first word are two moves (cDq-nFmD0rI)', async () => {
+  const { sameName } = await import('../src/text.js')
+  assert.equal(sameName('neck stretch alternate both sides', 'elbow stretch alternate both sides'), false)
+  assert.equal(sameName('drop sit up', 'drop sit uh'), true)
+})
+
+test('30 s on, 30 s off: the captions say which is the rest, whatever the layout', async () => {
+  const { timerPhases } = await import('../src/segment.js')
+  const run = (f, n, name, from = 0, to = n + 1) => { for (let i = n; i >= 0; i--) f.push({ t: f.length, name: n - i >= from && n - i < to ? name : '', nameConf: 90, timer: String(i) }) }
+  // The name over the whole rest, nothing during the work (Juice & Toya, at 30/30).
+  const a = []
+  for (const e of ['SQUATS', 'LUNGES', 'BURPEES']) { run(a, 29, e); run(a, 29, '') }
+  assert.deepEqual(timerPhases(a).map(b => [b.kind, b.key]), [['rest', 'rest'], ['work', 'squats'], ['rest', 'rest'], ['work', 'lunges'], ['rest', 'rest'], ['work', 'burpees']])
+  // "REST" with a "next up" over the rest, the name during the work (Rowan Row, at 30/30).
+  const b = []
+  for (const e of ['SQUATS', 'LUNGES', 'BURPEES']) { run(b, 29, 'NEXT UP ' + e); run(b, 29, e) }
+  assert.deepEqual(timerPhases(b).map(x => [x.kind, x.key]), [['rest', 'next up squats'], ['work', 'squats'], ['rest', 'next up lunges'], ['work', 'lunges'], ['rest', 'next up burpees'], ['work', 'burpees']])
+  // The name during the work only, a bare "REST" between (no announcement).
+  const c = []
+  for (const e of ['SQUATS', 'LUNGES', 'BURPEES']) { run(c, 29, e); run(c, 29, 'REST') }
+  assert.deepEqual(timerPhases(c).map(x => [x.kind, x.key]).filter(x => x[0] === 'work'), [['work', 'squats'], ['work', 'lunges'], ['work', 'burpees']])
+})
+
+test('a lone capital in front of a caption in capitals is part of it (cDq-nFmD0rI)', async () => {
+  const { cleanCaption } = await import('../src/text.js')
+  assert.equal(cleanCaption('V UPS'), 'V UPS')
+  assert.equal(cleanCaption('o ARM CIRCLES -!'), 'ARM CIRCLES')
+  assert.equal(cleanCaption('I - T-SPINE OPENER I'), 'T-SPINE OPENER')
+})
+
+test('a move nobody could read, one round after a named one of its length, is that move (B7-F2UcHmqk)', async () => {
+  const { fillFromRounds } = await import('../src/segment.js')
+  const w = (start, key) => ({ kind: 'work', key, text: key, start, dur: 40, end: start + 40, conf: 0.8, variants: {} })
+  const g = start => ({ kind: 'gap', key: '', text: '', start, dur: 40, end: start + 40, timed: true, conf: 0, variants: {} })
+  const out = fillFromRounds([w(0, 'goblet squat'), w(60, 'sumo deadlift'), w(120, 'calf raises'), w(180, 'push ups'), w(240, 'goblet squat'), g(300), w(360, 'calf raises'), w(420, 'push ups')])
+  assert.equal(out[5].key, 'sumo deadlift')
+  assert.equal(out[5].inferred, true)
+})
+
+test('a short mixed-case word after a caption in capitals is debris (cDq-nFmD0rI)', async () => {
+  const { cleanCaption } = await import('../src/text.js')
+  assert.equal(cleanCaption('SUMO SQUAT Ll'), 'SUMO SQUAT')
+  assert.equal(cleanCaption('PIKE PUSH UPS Bl'), 'PIKE PUSH UPS')
+  assert.equal(cleanCaption('Push ups'), 'Push ups')
+})

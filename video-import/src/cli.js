@@ -2,7 +2,7 @@
 // pointing anyone at it, and for seeing why one reads badly. Not used by the server.
 //
 //   docker compose --profile video-import run --rm -v "$PWD/out:/out" video-import \
-//     node src/cli.js <youtube-url> [--video] [--name x,y,w,h[;x,y,w,h]] [--timer x,y,w,h] [--out /out]
+//     node src/cli.js <youtube-url> [--video] [--name x,y,w,h[;x,y,w,h]] [--file video.mp4] [--timer x,y,w,h] [--out /out]
 //
 // Without --name/--timer it uses the suggested boxes. With --out it writes the ROI stills there
 // and the full result as result.json, so the boxes can be checked by eye, and every second's raw
@@ -26,7 +26,7 @@ const one = s => { const [x, y, w, h] = s.split(',').map(Number); return cleanBo
 // "--name a,b,c,d;e,f,g,h": several places the names appear.
 const box = s => { if (!s) return null; const list = s.split(';').map(one).filter(Boolean); return list.length > 1 ? list : list[0] || null }
 const url = args.find(a => !a.startsWith('--') && canonicalYouTube(a))
-if (!url) { console.error('usage: node src/cli.js <youtube-url> [--video] [--name x,y,w,h[;x,y,w,h]] [--timer x,y,w,h] [--out dir]'); process.exit(2) }
+if (!url) { console.error('usage: node src/cli.js <youtube-url> [--video] [--name x,y,w,h[;x,y,w,h]] [--file video.mp4] [--timer x,y,w,h] [--out dir]'); process.exit(2) }
 const out = opt('--out')
 const log = (...a) => console.error('·', ...a)
 
@@ -44,7 +44,8 @@ try {
     result = { source, method: meta.source, draft: classify(meta.blocks, { hints: meta.hints }) }
   } else {
     let last = -1
-    const file = await download(yt.url, workDir, { onProgress: f => { const p = Math.floor(f * 10); if (p !== last) { last = p; log(`download ${p * 10}%`) } } })
+    // --file: a copy already on disk (tuning on the same video again and again).
+    const file = opt('--file') || await download(yt.url, workDir, { onProgress: f => { const p = Math.floor(f * 10); if (p !== last) { last = p; log(`download ${p * 10}%`) } } })
     const dims = await probe(file)
     log(`video ${dims.width}x${dims.height}, ${Math.round(dims.duration)} s, ${(fs.statSync(file).size / 1e6).toFixed(1)} MB`)
     const setup = await roiSetup(file, { workDir, dims })

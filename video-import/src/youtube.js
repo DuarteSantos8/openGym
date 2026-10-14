@@ -16,8 +16,20 @@ export class VideoError extends Error {
   constructor(code, message) { super(message); this.code = code }
 }
 
-/** yt-dlp's info JSON for one video. */
-export async function metadata(url, { signal } = {}) {
+/**
+ * yt-dlp's info JSON for one video. YouTube now and then serves a page without the chapters it
+ * has (more often under load): a long video that comes back with none is asked for once more.
+ */
+export async function metadata(url, opts = {}) {
+  const info = await metadataOnce(url, opts)
+  if (!info.chapters?.length && (+info.duration || 0) > 600) {
+    const again = await metadataOnce(url, opts).catch(e => { if (e.cancelled) throw e; return null })
+    if (again?.chapters?.length) return again
+  }
+  return info
+}
+
+async function metadataOnce(url, { signal } = {}) {
   let stdout
   try {
     ({ stdout } = await run('yt-dlp', [...BASE, '--skip-download', '--dump-single-json', url], { signal, timeoutMs: 120000, maxOut: 32 * 1024 * 1024 }))

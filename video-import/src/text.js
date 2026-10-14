@@ -90,6 +90,12 @@ function sideWord(raw) {
 
 /** { base, side } — the name without its side word ("left side" too), and 'L' / 'R' / null. */
 export function sideOf(text) {
+  // "Side plank hold (R)", "Glute bridge (L)": a lone R or L in brackets is a side too.
+  const short = /[([{]\s*([rlRL])\s*[)\]}]/.exec(String(text || ''))
+  if (short) return { base: normName(String(text).replace(short[0], ' ')), side: short[1].toUpperCase() }
+  // The same once a caption is a key and its brackets are gone: "sl glute bridge r".
+  const tail = /^(.{3,}\S)\s+([rl])$/i.exec(String(text || '').trim())
+  if (tail && !/[()]/.test(text)) return { base: normName(tail[1]), side: tail[2].toUpperCase() }
   const words = String(text || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').split(/[^\p{L}0-9]+/u).filter(Boolean)
   let side = null
   const keep = []
@@ -160,6 +166,13 @@ export function sameName(a, b) {
   if (!normName(a) || !normName(b)) return false
   const x = sideOf(a), y = sideOf(b)
   if (x.side && y.side && x.side !== y.side) return false
+  // A caption caught while it was still being typed out: "sumo sq" is "sumo squat".
+  const [s1, s2] = [normName(a), normName(b)].sort((p, q) => p.length - q.length)
+  if (s1.length >= 5 && s1.length >= s2.length * 0.5 && s2.startsWith(s1)) return true
+  // "Neck stretch (alternate both sides)" and "Elbow stretch (alternate both sides)" share most of
+  // their words, but a move is named by its first one.
+  const w1 = normName(a).split(' ')[0], w2 = normName(b).split(' ')[0]
+  if (w1.length >= 3 && w2.length >= 3 && similarity(w1, w2) < 0.5) return false
   return similarity(a, b) >= SAME_NAME
 }
 
@@ -171,7 +184,13 @@ export function sameName(a, b) {
 export function cleanCaption(raw) {
   const words = String(raw || '').trim().split(/\s+/).filter(Boolean)
   const letters = w => (w.match(/\p{L}/gu) || []).length
-  while (words.length && letters(words[0]) < 2) words.shift()
+  // A capital on its own in front of a caption in capitals is a word of it ("V UPS", "X JUMPS"),
+  // except the I and O that the edge of a frame reads as.
+  const keepsLead = words.length > 1 && /^[A-HJ-NP-Z]$/.test(words[0]) && /^[^a-z]*$/.test(words.slice(1).join(' ')) && letters(words[1]) >= 2
+  while (!keepsLead && words.length && letters(words[0]) < 2) words.shift()
   while (words.length && letters(words[words.length - 1]) < 2) words.pop()
+  // A caption in capitals that ends in a short mixed-case word ("SUMO SQUAT Ll"): debris too.
+  const caps = words.length > 1 && /^[^a-z]*$/.test(words.slice(0, -1).join(' '))
+  if (caps && words[words.length - 1].length <= 2 && /[a-z]/.test(words[words.length - 1])) words.pop()
   return words.join(' ')
 }

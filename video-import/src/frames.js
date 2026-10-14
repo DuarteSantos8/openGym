@@ -6,10 +6,10 @@ import fs from 'node:fs'
 import path from 'node:path'
 import crypto from 'node:crypto'
 import { run } from './proc.js'
-import { binarize, pgm, blank, difference, timerMask } from './image.js'
+import { binarize, pgm, blank, difference, timerMask, textMask } from './image.js'
 
 const even = n => Math.max(2, Math.round(n / 2) * 2)
-export const NEAR = 0.03   // share of differing pixels below which two name crops are one caption
+export const NEAR = 0.01   // share of differing pixels below which two name crops are one caption
 
 /** { width, height, duration } of the first video stream. */
 export async function probe(file, { signal } = {}) {
@@ -58,12 +58,19 @@ export const MAX_NAME_BOXES = 3
 export async function extractCrops(file, roi, { width, height, duration, workDir, signal, onProgress } = {}) {
   const parts = [], maps = []
   const boxes = nameBoxes(roi)
-  const kinds = [...boxes.map((_, i) => 'name' + i), ...(roi.timer ? ['timer'] : [])]
+  const kinds = [...boxes.map((_, i) => 'name' + i), ...(roi.timer ? ['timer', 'timerB'] : [])]
   const geo = {}
-  kinds.forEach(k => { geo[k] = cropGeometry(k === 'timer' ? roi.timer : boxes[+k.slice(4)], width, height, k === 'timer' ? TIMER_H : 72) })
-  // One more branch: the whole frame, tiny, for spotting cuts between moves (see sceneChanges).
-  const split = `split=${kinds.length + 1}${kinds.map(k => `[${k}s]`).join('')}[scene0]`
-  parts.push(`[0:v]fps=1,${split}`)
+  kinds.forEach(k => { geo[k] = cropGeometry(k.startsWith('timer') ? roi.timer : boxes[+k.slice(4)], width, height, k.startsWith('timer') ? TIMER_H : 72) })
+  // A timer redraws the moment its number changes, often with a little animation (the digits
+  // spin or fade in), and where in the second that falls differs from video to video and even
+  // within one. So the timer is taken twice a second — at the start and half a second in — and
+  // the countdown keeps whichever reading fits it (segment.js). Everything else once, half a
+  // second in. One more branch: the whole frame, tiny, for spotting cuts (see sceneChanges).
+  const once = kinds.filter(k => k !== 'timerB')
+  const split = `split=${once.length + 1}${once.map(k => `[${k}s]`).join('')}[scene0]`
+  parts.push(`[0:v]split=2[at0][at5]`)
+  parts.push(`[at5]trim=start=0.5,setpts=PTS-STARTPTS,fps=1,${split}`)
+  parts.push(roi.timer ? `[at0]fps=1[timerBs]` : `[at0]nullsink`)
   parts.push(`[scene0]scale=${SCENE_W}:${SCENE_H}:flags=area,format=gray[scene]`)
   maps.push('-map', '[scene]', '-f', 'rawvideo', path.join(workDir, 'scene.gray'))
   for (const k of kinds) {
@@ -95,20 +102,25 @@ export async function extractCrops(file, roi, { width, height, duration, workDir
     for (let i = 0; i < n; i++) {
       const gray = raw.subarray(i * size, (i + 1) * size)
       let px
-      if (k === 'timer') {
+      if (k.startsWith('timer')) {
         // The timer is read as its digits alone, taken from the brightest (or darkest) marks:
         // the ring round a countdown and a light wall behind white digits read as noise.
         px = timerMask(gray, ow, oh)
         if (!px) { out[k].push(null); last = null; continue }
       } else {
-        const b = binarize(gray)
-        if (blank(b)) { out[k].push(null); last = null; continue }
-        px = b.px
+        // Text-like marks first (white captions over a sky); the plain threshold where nothing
+        // in the crop looks like text yet.
+        px = textMask(gray, ow, oh)
+        if (!px) {
+          const b = binarize(gray)
+          if (blank(b)) { out[k].push(null); last = null; continue }
+          px = b.px
+        }
       }
       // A caption over a moving picture is never byte-identical from one second to the next.
       // Within NEAR of the crop just read it is the same caption, and is not read again. The
       // timer changes every second by design, so it only shares exact copies.
-      if (k !== 'timer' && last && difference(px, last.px) < NEAR) { out[k].push(last.path); continue }
+      if (!k.startsWith('timer') && last && difference(px, last.px) < NEAR) { out[k].push(last.path); continue }
       const hash = crypto.createHash('sha1').update(px).digest('hex')
       let p = seen.get(hash)
       if (!p) {
@@ -127,7 +139,8 @@ export async function extractCrops(file, roi, { width, height, duration, workDir
     seconds: len,
     scene: sceneChanges(sceneRaw, SCENE_W * SCENE_H).slice(0, len),
     names: boxes.map((_, i) => out['name' + i]),
-    timer: out.timer || new Array(len).fill(null)
+    timer: out.timer || new Array(len).fill(null),
+    timerB: out.timerB || new Array(len).fill(null)
   }
 }
 
