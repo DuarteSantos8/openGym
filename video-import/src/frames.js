@@ -6,7 +6,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import crypto from 'node:crypto'
 import { run } from './proc.js'
-import { binarize, pgm, blank, difference, digitsOnly } from './image.js'
+import { binarize, pgm, blank, difference, timerMask } from './image.js'
 
 const even = n => Math.max(2, Math.round(n / 2) * 2)
 export const NEAR = 0.03   // share of differing pixels below which two name crops are one caption
@@ -60,7 +60,7 @@ export async function extractCrops(file, roi, { width, height, duration, workDir
   const boxes = nameBoxes(roi)
   const kinds = [...boxes.map((_, i) => 'name' + i), ...(roi.timer ? ['timer'] : [])]
   const geo = {}
-  kinds.forEach(k => { geo[k] = cropGeometry(k === 'timer' ? roi.timer : boxes[+k.slice(4)], width, height, k === 'timer' ? 64 : 72) })
+  kinds.forEach(k => { geo[k] = cropGeometry(k === 'timer' ? roi.timer : boxes[+k.slice(4)], width, height, k === 'timer' ? TIMER_H : 72) })
   // One more branch: the whole frame, tiny, for spotting cuts between moves (see sceneChanges).
   const split = `split=${kinds.length + 1}${kinds.map(k => `[${k}s]`).join('')}[scene0]`
   parts.push(`[0:v]fps=1,${split}`)
@@ -93,10 +93,18 @@ export async function extractCrops(file, roi, { width, height, duration, workDir
     out[k] = []
     let last = null   // { px, path } of the crop the previous second used
     for (let i = 0; i < n; i++) {
-      const b = binarize(raw.subarray(i * size, (i + 1) * size))
-      if (blank(b)) { out[k].push(null); last = null; continue }
-      // The timer is read as its digits alone: the ring round a countdown reads as more digits.
-      const px = k === 'timer' ? digitsOnly(b.px, ow, oh) : b.px
+      const gray = raw.subarray(i * size, (i + 1) * size)
+      let px
+      if (k === 'timer') {
+        // The timer is read as its digits alone, taken from the brightest (or darkest) marks:
+        // the ring round a countdown and a light wall behind white digits read as noise.
+        px = timerMask(gray, ow, oh)
+        if (!px) { out[k].push(null); last = null; continue }
+      } else {
+        const b = binarize(gray)
+        if (blank(b)) { out[k].push(null); last = null; continue }
+        px = b.px
+      }
       // A caption over a moving picture is never byte-identical from one second to the next.
       // Within NEAR of the crop just read it is the same caption, and is not read again. The
       // timer changes every second by design, so it only shares exact copies.
@@ -136,3 +144,6 @@ export function sceneChanges(raw, size) {
   }
   return out
 }
+
+// Timer crops are scaled to this height: big enough for Tesseract to read two digits cleanly.
+const TIMER_H = 120

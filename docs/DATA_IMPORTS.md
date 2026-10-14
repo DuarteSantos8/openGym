@@ -68,7 +68,14 @@ paste the link under **Plan → share icon → Import from a video**, check the 
    this step. If they turn out wrong, use *Mark the boxes again* on the review screen.
 4. **Reading.** The name and timer are cropped from every frame, thresholded, and read with
    Tesseract (or PaddleOCR, see below). The timer is read as digits only.
-5. **Blocks and rounds.** Seconds with the same name are one block. When the timer restarts, a new
+5. **The countdown first.** When the video shows a timer the OCR can follow, every countdown to
+   zero is one phase (a work, a rest, a warm-up move), as long as it counts, and the captions only
+   name the phases: a short countdown between two longer ones is a rest whose caption names the
+   next exercise; a caption that comes up late in a move announces the next one; one at the start
+   names its own. The timer is read from its brightest (or darkest) marks only, so white digits
+   over a light wall and the ring round a countdown do not get in the way. An exercise read two ways
+   in two rounds, exactly one round apart, is one exercise. Without a usable timer:
+   **Blocks and rounds.** Seconds with the same name are one block. When the timer restarts, a new
    block begins, even if the name stays the same or no name is on screen at all. The timer is only
    trusted when its readings actually count down; a timer drawn in a style OCR cannot read is
    ignored rather than cutting every exercise into pieces. Rings and tick marks around the digits

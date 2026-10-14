@@ -93,12 +93,13 @@ function joinNeighbours(blocks) {
   return out
 }
 
-export function classify(blocks, { hints = [], parts = [], cuts = [] } = {}) {
+export function classify(blocks, { hints = [], parts = [], cuts = [], timed = false } = {}) {
   // The video's own parts, from its chapters ("Group 1: Lower body"): a block never runs across
   // two of them, and each section is named after the part it is in.
   const partOf = b => (parts || []).findIndex(p => b.start + b.dur / 2 >= p.start && b.start + b.dur / 2 < p.end)
   const joined = joinNeighbours((blocks || []).filter(b => b && b.dur > 0))
-  const preview = previewLayout(joined)
+  // Blocks from the countdown already know which caption names which exercise.
+  const preview = timed ? false : previewLayout(joined)
   const bs = cutAtParts(joined, parts)
   // A rest screen that names the next exercise speaks for a work block OCR could not read.
   for (let i = 0; i < bs.length; i++) {
@@ -171,7 +172,7 @@ export function classify(blocks, { hints = [], parts = [], cuts = [] } = {}) {
     const i = (parts || []).findIndex(p => (s.start + s.end) / 2 >= p.start && (s.start + s.end) / 2 < p.end)
     if (i >= 0) { s.part = i; s.label = parts[i].label }
   }
-  const out = harmonise(mergeIntervals(built), { cuts })
+  const out = harmonise(pairRounds(mergeIntervals(built)), { cuts, timed })
   // A section is as many rounds as its exercises were done.
   for (const s of out) if (s.kind === 'interval' && s.rows.length) s.rounds = Math.max(...s.rows.map(r => r.rounds))
   let n = 0
@@ -329,7 +330,7 @@ const steps = list => list.slice(1).map((t, i) => t - list[i]).filter(d => d > 0
  * length: the first keeps its name, the rest arrive with no name for the review screen to ask
  * about, each with its own moment in the video.
  */
-export function harmonise(sections, { cuts = [] } = {}) {
+export function harmonise(sections, { cuts = [], timed = false } = {}) {
   const holds = []
   for (const s of sections) {
     if (s.kind === 'interval') {
@@ -366,6 +367,8 @@ export function harmonise(sections, { cuts = [] } = {}) {
   const named = holds.length ? snapSec(median(holds)) : 0
   for (const s of sections) {
     if (s.kind !== 'warmup' && s.kind !== 'stretch') continue
+    // Moves the countdown laid out are right as they are.
+    if (timed && s.rows.every(r => !r.side)) continue
     const byCuts = movesByCuts(s, cuts)
     if (byCuts) { s.rows = byCuts; continue }
     const hold = s.beat || named
@@ -489,4 +492,32 @@ export function movesByCuts(section, cuts) {
     if (r) { const { captionAt, ...rest } = r; return { ...rest, ...piece } }
     return { name: '', key: '', variants: [], alt: null, conf: 0, unnamed: true, ...piece }
   })
+}
+
+/**
+ * One exercise read two ways in two rounds ("Drop Sit-Up" in round one, "Drop 81t-Te" in round
+ * two) is one exercise: in a section done in rounds, two rows seen once each, exactly one round
+ * apart, are joined. The round's length comes from the rows that were read the same both times.
+ * The better-read name stays.
+ */
+export function pairRounds(sections) {
+  for (const s of sections) {
+    if (s.kind !== 'interval') continue
+    const laps = s.rows.filter(r => (r.occurrences || []).length >= 2).map(r => r.occurrences[1].start - r.occurrences[0].start)
+    if (laps.length < 2) continue
+    const lap = median(laps)
+    const single = s.rows.filter(r => (r.occurrences || []).length === 1)
+    for (const a of single) {
+      if (!s.rows.includes(a)) continue
+      const b = single.find(x => x !== a && s.rows.includes(x) && Math.abs(x.occurrences[0].start - a.occurrences[0].start - lap) <= 3)
+      if (!b) continue
+      const [keep, drop] = (b.conf || 0) > (a.conf || 0) ? [b, a] : [a, b]
+      const joined = combineRows(a, b)
+      Object.assign(joined, { name: keep.name, key: keep.key, conf: keep.conf, occurrences: [...a.occurrences, ...b.occurrences], thumbT: a.thumbT })
+      s.rows[s.rows.indexOf(a)] = joined
+      s.rows.splice(s.rows.indexOf(b), 1)
+      void drop
+    }
+  }
+  return sections
 }

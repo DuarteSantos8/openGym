@@ -106,3 +106,27 @@ test('readings Tesseract itself doubts are no reading', () => {
     .map((f, i) => ({ ...f, timer: '', nameConf: i >= 20 && i < 30 ? 20 : 90 })))
   assert.deepEqual(kinds(bs).map(k => k.split(':')[0]), ['work', 'gap', 'work'])
 })
+
+test('countdowns are runs: misreads ignored, a run caught late starts with its neighbours (B7-F2UcHmqk)', async () => {
+  const { countdownRuns } = await import('../src/segment.js')
+  const f = []
+  const push = (vals) => vals.forEach(v => f.push({ t: f.length, name: '', timer: v == null ? '' : String(v) }))
+  const cd = (from, misread = {}) => Array.from({ length: from + 1 }, (_, i) => misread[from - i] ?? from - i)
+  push(cd(29, { 14: 4, 27: 271 })); push(cd(29)); push([null, null, null, null, null, null]); push(cd(23)); push(cd(29))
+  const runs = countdownRuns(f)
+  assert.deepEqual(runs.map(r => [r.start, r.end - r.start]), [[0, 30], [30, 30], [60, 30], [90, 30]])
+})
+
+test('timer first: a short countdown between two long ones is a rest that names the next work (B7-F2UcHmqk)', async () => {
+  const { timerPhases } = await import('../src/segment.js')
+  const f = []
+  const run = (n, name, nameFor = n) => { for (let i = n; i >= 0; i--) f.push({ t: f.length, name: n - i < nameFor ? name : '', nameConf: 90, timer: String(i) }) }
+  for (let r = 0; r < 2; r++) for (const e of ['GOBLET SQUAT', 'SUMO DEADLIFT', 'CALF RAISES']) { run(19, e, 4); run(39, '') }
+  const blocks = timerPhases(f)
+  assert.deepEqual(blocks.map(b => [b.kind, b.key, b.dur]).slice(0, 4), [['rest', 'rest', 20], ['work', 'goblet squat', 40], ['rest', 'rest', 20], ['work', 'sumo deadlift', 40]])
+  // A warm-up with no rests: the next move is announced in the last ten seconds of this one.
+  const g = []
+  const move = name => { for (let i = 29; i >= 0; i--) g.push({ t: g.length, name: i < 10 && name ? name : '', nameConf: 90, timer: String(i) }) }
+  move('ARM CIRCLES'); move('SWING STEP'); move('TOE TOUCH'); move('')
+  assert.deepEqual(timerPhases(g).map(b => [b.kind, b.key, b.dur]), [['gap', '', 30], ['work', 'arm circles', 30], ['work', 'swing step', 30], ['work', 'toe touch', 30]])
+})

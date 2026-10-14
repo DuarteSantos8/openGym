@@ -108,7 +108,10 @@ export function parseTimer(raw) {
   const s = String(raw || '').replace(/[oO]/g, '0').replace(/[^0-9:.]/g, '')
   let m = /^(\d{1,2})[:.](\d{2})$/.exec(s)
   if (m) return +m[1] * 60 + +m[2]
-  m = /^(\d{1,3})(?:\.0)?$/.exec(s)
+  // "0:40" whose colon was too small to keep reads "040"; "1:30" reads "130".
+  m = /^(\d{1,2})(\d{2})$/.exec(s)
+  if (m) return +m[2] < 60 ? +m[1] * 60 + +m[2] : null
+  m = /^(\d{1,2})(?:\.0)?$/.exec(s)
   if (m) return +m[1]
   return null
 }

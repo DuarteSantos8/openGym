@@ -185,3 +185,122 @@ function absorb(into, b, merge = false) {
     if (!into.next && b.next) into.next = b.next
   }
 }
+
+/* ------------------------------------------------------------- timer first */
+
+/**
+ * The countdowns on screen, as runs: { start, end, top }. A countdown is the most reliable
+ * clock a follow-along has — each work, each rest, each warm-up move counts down to zero on its
+ * own. A run starts at a reading the next seconds confirm (29, then 28, 27…), keeps every
+ * reading that fits its count, ignores the ones that do not (a "14" read as "4"), and ends when it
+ * reaches zero or the next run starts.
+ */
+export function countdownRuns(frames) {
+  const v = (frames || []).map(f => parseTimer(f.timer))
+  const runs = []
+  let cur = null
+  const fits = (t, x) => cur && Math.abs(cur.top - (t - cur.start) - x) <= 1
+  const confirmed = t => {
+    let ok = 0, bad = 0
+    for (let k = 1; k <= 4 && t + k < v.length; k++) {
+      const x = v[t + k]
+      if (x == null) continue
+      if (Math.abs(v[t] - k - x) <= 1) ok++; else bad++
+    }
+    return ok >= 2 && ok > bad
+  }
+  for (let t = 0; t < v.length; t++) {
+    const x = v[t]
+    if (x == null || x < 0) continue
+    if (fits(t, x)) { cur.last = t; continue }
+    if (x >= 3 && confirmed(t)) { if (cur) runs.push(cur); cur = { start: t, top: x, last: t } }
+  }
+  if (cur) runs.push(cur)
+  // A countdown first caught at 23 when its neighbours start at 29 began a few seconds earlier,
+  // as far as the quiet seconds before it allow: OCR missed its first readings, not the video.
+  runs.forEach((r, i) => {
+    const near = runs.slice(Math.max(0, i - 5), i + 6).filter(x => x !== r && x.top > r.top && x.top <= r.top * 1.5).map(x => x.top)
+    if (near.length < 2) return
+    const usual = mode(near).value
+    const room = r.start - (i ? runs[i - 1].start + runs[i - 1].top + 1 : 0)
+    const back = Math.min(usual - r.top, room)
+    if (back > 0) { r.start -= back; r.top += back }
+  })
+  return runs.map((r, i) => {
+    const next = runs[i + 1]?.start ?? v.length
+    // It reaches zero `top` seconds after it showed `top`, and is gone a second later.
+    return { start: r.start, end: Math.min(next, r.start + r.top + 1), top: r.top }
+  }).filter(r => r.end - r.start >= MIN_RUN)
+}
+const MIN_RUN = 5
+
+/**
+ * Blocks built on the countdowns instead of the captions: one per run, named by the captions.
+ * A caption that covers a short run before a longer run with none is a rest that announces the
+ * next exercise ("NEXT · GOBLET SQUAT" over a 20 s countdown, then 40 s of work); one that first
+ * comes up in the second half of a run announces the run after it (a warm-up with no rests); one
+ * at the start of a run names that run. Runs no caption named are timed gaps — an exercise all
+ * the same, for the review screen to name. Stretches with no countdown at all are read caption by
+ * caption, as before. null when the video shows no usable countdown.
+ */
+export function timerPhases(frames) {
+  if (!frames?.length) return null
+  const runs = countdownRuns(frames)
+  if (runs.length < 3 || runs.reduce((t, r) => t + r.end - r.start, 0) < frames.length * 0.3) return null
+  const labels = frames.map(f => labelOf(f))
+  const captionOf = (a, b) => {
+    const named = []
+    for (let t = a; t < b; t++) if (labels[t]?.key) named.push({ t, l: labels[t] })
+    if (!named.length) return null
+    const key = mode(named.map(n => n.l.key)).value
+    const mine = named.filter(n => sameName(n.l.key, key) || n.l.key === key)
+    const raw = mode(mine.map(n => n.l.raw)).value || key
+    return {
+      key, raw, first: mine[0].t, cover: mine.length / (b - a),
+      conf: Math.round(mine.reduce((s, n) => s + (n.l.conf || 0), 0) / mine.length) / 100,
+      kind: mine[0].l.kind, next: mine.find(n => n.l.next)?.l.next || null,
+      variants: Object.fromEntries(Object.entries(mine.reduce((m, n) => ({ ...m, [n.l.key]: (m[n.l.key] || 0) + 1 }), {})))
+    }
+  }
+  const caps = runs.map(r => captionOf(r.start, r.end))
+  const len = r => r.end - r.start
+  // A rest is a short countdown between two longer ones (20 s between two 40 s works, or the
+  // "get ready" before a warm-up's first move). Its caption, however long OCR caught it, names
+  // what comes next.
+  const restAt = i => {
+    const r = runs[i], p = runs[i - 1], n = runs[i + 1]
+    const pl = p && r.start - p.end <= 2 ? len(p) : null
+    const nl = n && n.start - r.end <= 2 ? len(n) : null
+    if (pl == null && nl == null) return false
+    return (pl == null || len(r) <= pl * 0.7) && (nl == null || len(r) <= nl * 0.7)
+  }
+  const blocks = []
+  let pending = null    // a name announced for the run that comes next
+  const block = (r, extra) => ({ start: r.start, end: r.end, dur: len(r), resets: true, timerMax: r.top, ...extra })
+  const asNext = c => c && { key: c.key, raw: c.raw, conf: c.conf, variants: c.variants, first: c.first }
+  let at = 0
+  runs.forEach((r, i) => {
+    // Seconds with no countdown between two runs: read the old way, caption by caption. What was
+    // announced before them is not carried across.
+    if (r.start - at >= MIN_RUN) { blocks.push(...segment(frames.slice(at, r.start))); pending = null }
+    at = r.end
+    const c = caps[i]
+    if (c && c.kind === 'rest') {
+      blocks.push(block(r, { kind: 'rest', key: c.key, text: c.raw, conf: c.conf, variants: c.variants, next: c.next }))
+      pending = c.next ? { key: normName(c.next), raw: c.next, conf: c.conf, variants: { [normName(c.next)]: 1 }, first: c.first } : null
+      return
+    }
+    if (restAt(i)) {
+      blocks.push(block(r, { kind: 'rest', key: 'rest', text: 'NEXT', conf: c?.conf || 0, variants: {}, next: c?.key || null }))
+      pending = asNext(c) || pending
+      return
+    }
+    const late = c && (c.first - r.start) / len(r) >= 0.5
+    const own = c && !late && !(pending && !sameName(pending.key, c.key) && c.first - r.start > 3) ? c : pending
+    pending = late ? asNext(c) : null
+    if (own) blocks.push(block(r, { kind: 'work', key: own.key, text: own.raw, conf: own.conf, variants: own.variants, ...(own.first < r.start ? { captionAt: own.first } : {}) }))
+    else blocks.push(block(r, { kind: 'gap', key: '', text: '', conf: 0, variants: {}, timed: true }))
+  })
+  if (frames.length - at >= MIN_RUN) blocks.push(...segment(frames.slice(at)))
+  return blocks
+}

@@ -194,3 +194,10 @@ test('in a warm-up with no rests, a caption shown before the end of a move names
   const own = harmonise([{ kind: 'stretch', rows: [cap('a', 100, 8), cap('b', 130, 8), cap('c', 160, 8), cap('d', 190, 25)] }], { cuts: [100, 130, 160, 190, 220] })
   assert.deepEqual(own[0].rows.map(r => r.key), ['a', 'b', 'c', 'd'])
 })
+
+test('one exercise read two ways in two rounds, one round apart, is one row (B7-F2UcHmqk)', async () => {
+  const { pairRounds } = await import('../src/classify.js')
+  const r = (name, starts, conf = 0.8) => ({ name, key: name, conf, sec: 40, rest: 20, rounds: starts.length, variants: [name], occurrences: starts.map(start => ({ start, dur: 40 })) })
+  const s = pairRounds([{ kind: 'interval', rows: [r('overhead tuck', [2862, 3162]), r('drop sit up', [2922], 0.8), r('v sit', [2982, 3282]), r('drop 81t te', [3222], 0.4), r('plank', [3102, 3402])] }])
+  assert.deepEqual(s[0].rows.map(x => [x.key, x.rounds]), [['overhead tuck', 2], ['drop sit up', 2], ['v sit', 2], ['plank', 2]])
+})

@@ -96,3 +96,66 @@ export function digitsOnly(px, w, h, { minHeight = 0.35 } = {}) {
   }
   return kept ? keep : px
 }
+
+/**
+ * A timer crop as black digits on white, or null when no digits stand out.
+ *
+ * A timer is the brightest (or darkest) thing in its box: white digits over a wall that is
+ * nearly as light defeats a threshold chosen for the whole crop, but not one taken just under the
+ * brightest pixels. Both polarities are tried; each keeps only marks the size of a digit — taller
+ * than a third of the box, shorter than nearly all of it (the ring round a countdown is), clear
+ * of the edges — and the one that leaves 1–3 such marks of one height, side by side, wins.
+ */
+export function timerMask(gray, w, h) {
+  const sorted = Uint8Array.from(gray).sort()
+  const at = q => sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))]
+  let best = null
+  for (const bright of [true, false]) {
+    const hi = at(0.995), lo = at(0.005)
+    if (hi - lo < 40) continue
+    const thr = bright ? hi - Math.max(20, (hi - lo) * 0.18) : lo + Math.max(20, (hi - lo) * 0.18)
+    const ink = new Uint8Array(gray.length)
+    for (let i = 0; i < gray.length; i++) ink[i] = bright ? gray[i] >= thr : gray[i] <= thr
+    const comps = components(ink, w, h).filter(c => {
+      const ch = c.y1 - c.y0 + 1, cw = c.x1 - c.x0 + 1
+      return ch >= h * 0.3 && ch <= h * 0.8 && cw <= ch * 1.1 && c.x0 > 0 && c.y0 > 0 && c.x1 < w - 1 && c.y1 < h - 1 && c.n >= ch * 2
+    })
+    // Digits of one number: one height, one line.
+    const hs = comps.map(c => c.y1 - c.y0)
+    const mid = hs.slice().sort((a, b) => a - b)[hs.length >> 1]
+    const line = comps.filter(c => Math.abs(c.y1 - c.y0 - mid) <= mid * 0.25)
+    if (!line.length || line.length > 4) continue
+    const cy = line.map(c => (c.y0 + c.y1) / 2)
+    if (Math.max(...cy) - Math.min(...cy) > mid * 0.3) continue
+    const score = Math.min(line.length, 3) * 10 + line.reduce((t, c) => t + c.n, 0) / gray.length
+    if (!best || score > best.score) best = { score, line }
+  }
+  if (!best) return null
+  const out = new Uint8Array(gray.length).fill(255)
+  for (const c of best.line) for (const i of c.px) out[i] = 0
+  return out
+}
+
+/** Connected marks (4-neighbourhood) of a 0/1 mask: { x0, y0, x1, y1, n, px }. */
+function components(ink, w, h) {
+  const seen = new Uint8Array(ink.length)
+  const out = []
+  const stack = []
+  for (let s = 0; s < ink.length; s++) {
+    if (!ink[s] || seen[s]) continue
+    const c = { x0: w, y0: h, x1: 0, y1: 0, n: 0, px: [] }
+    seen[s] = 1; stack.push(s)
+    while (stack.length) {
+      const i = stack.pop()
+      c.px.push(i); c.n++
+      const x = i % w, y = (i - x) / w
+      if (x < c.x0) c.x0 = x; if (x > c.x1) c.x1 = x; if (y < c.y0) c.y0 = y; if (y > c.y1) c.y1 = y
+      if (x > 0 && ink[i - 1] && !seen[i - 1]) { seen[i - 1] = 1; stack.push(i - 1) }
+      if (x < w - 1 && ink[i + 1] && !seen[i + 1]) { seen[i + 1] = 1; stack.push(i + 1) }
+      if (y > 0 && ink[i - w] && !seen[i - w]) { seen[i - w] = 1; stack.push(i - w) }
+      if (y < h - 1 && ink[i + w] && !seen[i + w]) { seen[i + w] = 1; stack.push(i + w) }
+    }
+    out.push(c)
+  }
+  return out
+}

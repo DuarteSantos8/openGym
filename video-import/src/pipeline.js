@@ -5,7 +5,8 @@ import path from 'node:path'
 import fs from 'node:fs'
 import { probe, extractCrops, still, stillDataUrl } from './frames.js'
 import { readCrops } from './ocr.js'
-import { segment } from './segment.js'
+import { segment, timerPhases, timerQuality, TIMER_TRUST } from './segment.js'
+import { parseTimer } from './text.js'
 import { classify, cutsOf } from './classify.js'
 import { suggestRois } from './roi-suggest.js'
 import { run } from './proc.js'
@@ -70,8 +71,11 @@ export async function analyse(file, roi, { workDir, signal, hints = [], parts = 
     const best = names.map(n => n.readings[t]).reduce((a, r) => (score(r) > score(a) ? r : a), { text: '', conf: 0 })
     frames.push({ t, name: best.text, nameConf: best.conf, timer: timer.readings[t]?.text || '', scene: crops.scene[t] || 0 })
   }
-  const blocks = segment(frames)
-  const draft = classify(blocks, { hints, parts, cuts: cutsOf(frames.map(f => f.scene)) })
+  // The countdown first, where the video has one the OCR can follow: it knows every work, rest
+  // and hold to the second. The captions alone otherwise.
+  const phases = timerQuality(frames.map(f => parseTimer(f.timer))) >= TIMER_TRUST ? timerPhases(frames) : null
+  const blocks = phases || segment(frames)
+  const draft = classify(blocks, { hints, parts, cuts: cutsOf(frames.map(f => f.scene)), timed: !!phases })
   progress('thumbs', 0)
   const rows = draft.sections.flatMap(s => s.rows)
   for (let i = 0; i < rows.length; i++) {
