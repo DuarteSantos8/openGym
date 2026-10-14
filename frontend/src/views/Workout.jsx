@@ -1,6 +1,8 @@
 import { Fragment, useEffect, useId, useRef, useState } from 'react'
 import SwipeCards from '../components/SwipeCards.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
+import { WorkoutSections, WorkoutPhase, SectionMove, removeSectionExerciseSheet, editWorkoutSections, usePhaseReorder } from '../components/WorkoutSections.jsx'
+import { sectionOf, sectionFields, countsAsWork, assignSection, sectionLabel, reorderSection, skipSection, sectionSkipped, entrySettled } from '../lib/workout-sections.js'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { workoutControls } from '../lib/workout-controls.js'
@@ -8,8 +10,8 @@ import { useUI } from '../store/useUI.js'
 import { exOr, betterWeight } from '../lib/exercises.js'
 import { usesBar } from '../lib/bar.js'
 import { loadKindFor, baseWeightFor, inventoryFor, rowLoad, sameLoad, plateDelta, dropGrid } from '../lib/plates.js'
-import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, freestyleConfig, defaultConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf } from '../lib/history.js'
-import { fmtNum, fmtPlate, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN } from '../lib/format.js'
+import { effectiveRoutines, effectiveRoutineIds, lastDisplayEntryFor, bestWeightFor, bestWeightForEntry, buildSets, freestyleConfig, defaultConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf } from '../lib/history.js'
+import { fmtNum, fmtPlate, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN, uid } from '../lib/format.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { clampIncline, hasIncline, inclineFits, inclineFrom, INCLINE_STEP } from '../lib/incline.js'
 import { beep, vibrate, unlock } from '../lib/sound.js'
@@ -189,7 +191,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   const H = sessionHistory(S)
   // The routine's own last session of this exercise (or any, for a routine that has none), the
   // same one the rows and the progression line were built from (#216).
-  const last = lastEntryFor(H, entry.id, entry.rid)
+  const last = lastDisplayEntryFor(H, entry.id, entry.rid, entry)
   const standingNote = exNoteFor(S, entry.id)
   // Only worth surfacing while there is still work left: once the exercise is finished, a note
   // telling you what to do in it is behind you, and the block is already long.
@@ -206,7 +208,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     : bestHist > 0 && bestKept > 0 ? betterWeight(entry.id, bestHist, bestKept) : Math.max(bestHist, bestKept)
   // What the progression policy decided for this session, and why (issue #17). Computed when
   // the session was built so the reason matches the numbers already in the rows.
-  const plan = entry.plan
+  const plan = countsAsWork(entry, S.active) ? entry.plan : null
   const guidance = progressionGuidance(plan)
   // The plan this exercise was built from (issue #275), on one quiet line in every view — the
   // routine's "2 × 10" is the thing the rows are measured against. When today's rows open
@@ -963,7 +965,7 @@ function ActiveWorkout() {
   // Keyed by index like the units, so a different number of exercises starts over.
   const [openedState, setOpenedState] = useState(() => ({ len: A.entries.length, keys: new Set() }))
   const opened = openedState.len === A.entries.length ? openedState.keys : new Set()
-  const finished = u => u.every(idx => A.entries[idx].sets.length > 0 && A.entries[idx].sets.every(s => s.done))
+  const finished = u => u.every(idx => entrySettled(A.entries[idx]))
   const collapsed = new Set(collapseOn ? units.filter(u =>
     !u.includes(cur) && !opened.has(u.join('-')) && finished(u),
   ).map(u => u.join('-')) : [])
@@ -1031,6 +1033,7 @@ function ActiveWorkout() {
       const order = listMode ? [c, ...A2.entries.keys()] : shownUnit
       let at = null
       for (const k of order) {
+        if (A2.entries[k]?.skipped === true) continue
         const j = A2.entries[k]?.sets.findIndex(x => !x.done) ?? -1
         if (j >= 0) { at = { idx: k, i: j }; break }
       }
@@ -1366,8 +1369,8 @@ function ActiveWorkout() {
     if (fresh) progressHighWater.current = fresh.entries.map(e => e.sets.filter(s => s.done).length)
     workoutCompleteSheet()
   }
-  // Adds an exercise after the current unit: the button under the session and the ⋯ menu's Add.
-  const addExercise = () => exercisePicker((ex, quick) => {
+  // Adds an exercise after the current unit, or at the end of a selected phase.
+  const addExercise = sectionId => exercisePicker((ex, quick) => {
     // A freehand add inherits the current unit's routine (its `rid`) so it lands in that
     // routine's block in a combined session and gets a real prescription; a routine-less
     // freestyle session has no `rid` to inherit. It inherits the block's `noProg` too: an
@@ -1377,18 +1380,28 @@ function ActiveWorkout() {
     // hand (its ⋯ menu) is that exercise's own choice for today and is not passed on; a session
     // kept out as a whole (the header ⋮) takes the new one with it (joinSessionNoProg).
     const curEntry = A.entries[A.cur]
-    const curRid = curEntry?.rid
+    const curRid = curEntry?.rid || A.routineId
     const routine = curRid ? S.routines.find(r => r.id === curRid) : null
     const freestyle = !routine
     const noProg = !freestyle && builtOutOfProgression(curEntry, routine)
     // Freestyle has no routine prescription to apply: show the last target in the config
     // sheet and carry its completed rows forward. A planned session uses its configured
     // target when progression is off, while progression-enabled sessions keep their path.
-    const seed = freestyle ? freestyleConfig(sessionHistory(S), { id: ex.id, ...defaultConfig(ex.id) }) : null
+    const source = sectionId ? { sectionId } : curEntry || { sectionId: A.sections?.at(-1)?.id }
+    const seed = freestyle ? freestyleConfig(sessionHistory(S), { id: ex.id, ...defaultConfig(ex.id), ...sectionFields(source, A) }) : null
     const commit = cfg => {
+      if (useUI.getState().work) return false
+      const current = useStore.getState().S.active
+      if (current?.id !== A.id || (sectionId && !current.sections?.some(section => section.id === sectionId))) {
+        useUI.getState().toast(t('This phase is no longer available. Choose another phase.'))
+        return false
+      }
       if (focusMode) focusPointerEpoch.current++
       update(s => {
-        const full = { ...cfg, id: ex.id }
+        const sectionSource = sectionId ? { sectionId } : s.active.entries[s.active.cur] || { sectionId: s.active.sections?.at(-1)?.id }
+        const fields = sectionFields(sectionSource, s.active)
+        if (s.active.sections?.length) fields.occurrenceId = uid()
+        const full = { ...cfg, ...fields, id: ex.id }
         // A planned session builds the exercise the way its routine would (prescription, reps
         // source, target); freestyle reproduces what you did last time.
         // Read from before the session's day when it is logged into the past (sessionHistory).
@@ -1396,25 +1409,32 @@ function ActiveWorkout() {
         // Freestyle stamps the meaning of a dumbbell weight and reads last time in it, the way
         // buildPlannedEntry does for a planned exercise (lib/dumbbells.js).
         const built = freestyle
-          ? { target: withMeaning(s, cfg, ex.id), plan: null, sets: applyIntensifierPlan(buildSets(historyAs(past, ex.id, dbLoadFor(s, full)), full, {
+          ? { target: withMeaning(s, { ...cfg, ...fields }, ex.id), plan: null, sets: applyIntensifierPlan(buildSets(historyAs(past, ex.id, dbLoadFor(s, full)), full, {
             step: modeOf(full) === 'reps' ? (ownedWeightsFor(s, full) || weightIncrement(full, s.unit)) : defaultIncrement(ex.id, s.unit), preferLast: true,
           }), full, dropGrid(s, full)) }
           : buildPlannedEntry(past, full, routine, { noProg })
-        const insertAt = insertionIndexAfterCurrentUnit(supersetUnits(s.active.entries), s.active.cur, s.active.entries.length)
-        s.active.entries.splice(insertAt, 0, joinSessionNoProg(s.active, { id: ex.id, ...built, ...(curRid ? { rid: curRid } : {}), ...(noProg ? { noProg: true } : {}) }))
+        let insertAt = insertionIndexAfterCurrentUnit(supersetUnits(s.active.entries), s.active.cur, s.active.entries.length)
+        if (sectionId) {
+          const rank = s.active.sections.findIndex(section => section.id === sectionId)
+          insertAt = s.active.entries.findIndex(entry => s.active.sections.findIndex(section => section.id === entry.sectionId) > rank)
+          if (insertAt < 0) insertAt = s.active.entries.length
+        }
+        s.active.entries.splice(insertAt, 0, joinSessionNoProg(s.active, { id: ex.id, ...fields, ...built, ...(curRid ? { rid: curRid } : {}), ...(noProg ? { noProg: true } : {}) }))
         s.active.cur = insertAt
         useUI.getState().shiftRestOwner(insertAt, 1)
       })
+      progressHighWater.current = useStore.getState().S.active?.entries.map(e => e.sets.filter(s => s.done).length) || []
+      return true
     }
     // The "+" on a picker row reads as "add this now" — routed through the same detail
     // sheet before, so it added nothing until you'd scrolled past it and found the real
     // button. Quick-add commits with the same default (or, freestyle, last-session) config
     // the sheet would have opened with; tapping the row still opens that sheet for anyone
     // who wants to set sets/reps first.
-    if (quick) { commit(seed || defaultConfig(ex.id)); useUI.getState().toast(t('“{0}” added to {1}', exerciseNameText(ex), routine ? routine.name : t('Freestyle'))) }
+    if (quick && commit(seed || defaultConfig(ex.id))) useUI.getState().toast(t('“{0}” added to {1}', exerciseNameText(ex), sectionId ? sectionLabel(A.sections.find(section => section.id === sectionId), t) : routine ? routine.name : t('Freestyle')))
     // The confirm names what it changes: this workout, never the routine behind it.
-    else exConfigSheet(ex, null, commit, null, routine, seed, null, t('Add to this workout'))
-  })
+    else if (!quick) exConfigSheet(ex, null, commit, null, routine, seed, null, t('Add to this workout'))
+  }, sectionId ? { title: t('Add exercise to {0}', sectionLabel(A.sections.find(section => section.id === sectionId), t)) } : undefined)
   // Ending the session without saving it. The ⋯ menu's last item since the header's ✕ became the
   // ⌄ that only leaves the screen (v1.3.11).
   const discardWorkout = () => confirmSheet({
@@ -1433,7 +1453,7 @@ function ActiveWorkout() {
           onClick: workoutSettingsSheet },
       ] },
       { title: t('Add'), items: [
-        { icon: 'plusCircle', label: t('Add exercise'), onClick: addExercise },
+        { icon: 'plusCircle', label: t('Add exercise'), onClick: () => addExercise() },
         !editing && { icon: 'clipboard', label: t('Add routine'), sub: t('Bring another routine into this session'), onClick: addRoutineToSessionSheet },
       ] },
       { title: t('This workout'), items: [
@@ -1496,7 +1516,7 @@ function ActiveWorkout() {
         // The sheet may outlive its workout or entry. Never apply its result to whatever later
         // happens to occupy the same index.
         if (!activeEntry || activeEntry.id !== entryId) return
-        const full = { ...cfg, id: activeEntry.id }
+        const full = { ...cfg, ...sectionFields(activeEntry, s.active), id: activeEntry.id }
         // The weight the sheet showed is today's. Left as it was, it is not an edit of the plan's:
         // stamped as the plan, a later edit of the reps would restart from today's load as though
         // it had been typed in (nextPrescription), so the plan keeps its own.
@@ -1531,7 +1551,9 @@ function ActiveWorkout() {
   // superset it asks WHICH exercise of the group to remove.
   const removeExercise = idx => { focusPointerEpoch.current++; removeActiveExercise(idx) }
   const confirmRemoveExercise = idx => {
-    const e = A.entries[idx]
+    const active = useStore.getState().S.active
+    if (active?.id !== A.id) return
+    const e = active.entries[idx]
     if (!e) return
     const hasDone = (e.sets || []).some(s => s.done)
     confirmSheet({
@@ -1539,7 +1561,12 @@ function ActiveWorkout() {
       message: hasDone
         ? t('The sets you logged for this exercise in this session will be lost.')
         : t('This removes the exercise from your current session.'),
-      confirmText: t('Remove'), danger: true, onConfirm: () => removeExercise(idx)
+      confirmText: t('Remove'), danger: true, onConfirm: () => {
+        const current = useStore.getState().S.active
+        if (current?.id !== active.id) return
+        const index = e.occurrenceId ? current.entries.findIndex(entry => entry.occurrenceId === e.occurrenceId) : current.entries.indexOf(e)
+        if (index >= 0) removeExercise(index)
+      }
     })
   }
   const removeExerciseSheet = () => {
@@ -1564,7 +1591,7 @@ function ActiveWorkout() {
   // checks the set off through the normal path, so rest, supersets and the finish prompt all
   // behave exactly as they do for a reps set.
   const startTimed = (idx, i, onFocusProgress) => {
-    if (editing) return
+    if (editing || useStore.getState().S.active?.entries[idx]?.skipped === true) return
     const e = A.entries[idx]
     // This tap may be the only one before the hold's countdown beeps (a timed first exercise):
     // get the audio context running while it still counts as a gesture (iOS, #152).
@@ -1622,6 +1649,7 @@ function ActiveWorkout() {
   // (store/useUI.js). The tick's own beep would sound over the chime's first note and clip it,
   // and its short buzz would cut the pattern off: a new vibrate call replaces the running one.
   const toggle = (idx, i, side, { quiet = false, onFocusProgress } = {}) => {
+    if (useStore.getState().S.active?.entries[idx]?.skipped === true) return
     // Ticking a set ends the typing in that row: drop the keyboard before the rest timer, the
     // effort sheet or the next exercise moves in. WebKit keeps the input focused across the
     // button tap, and a focused input with its keyboard gone is what leaves the tab bar
@@ -1647,7 +1675,7 @@ function ActiveWorkout() {
         // follows a finished exercise, and in list mode any exercise can be worked on, so judging
         // the marker's unit here declared the workout complete after one set elsewhere.
         const ownUnit = unitOf(units, idx)
-        const unitDone = ownUnit.every(ui => (ui === idx ? e : A.entries[ui]).sets.every(x => x.done))
+        const unitDone = ownUnit.every(ui => entrySettled(ui === idx ? e : A.entries[ui]))
         if (unitDone) workoutDone = !nextUnfinishedUnit(A.entries, supersetUnits(A.entries), idx)
         if (e.sets.every(x => x.done)) {
           exJustDone = true
@@ -1671,7 +1699,7 @@ function ActiveWorkout() {
 
       const freshUnits = supersetUnits(fresh.entries)
       const freshUnit = freshUnits.find(u => u.includes(idx))
-      const freshUnitDone = freshUnit?.every(ui => fresh.entries[ui].sets.every(x => x.done))
+      const freshUnitDone = freshUnit?.every(ui => entrySettled(fresh.entries[ui]))
       const nextUnit = freshUnitDone ? nextUnfinishedUnit(fresh.entries, freshUnits, idx) : null
       const freshWorkoutDone = freshUnitDone && !nextUnit
       const restBeforeWarmup = nextUnit?.some(ui =>
@@ -1787,7 +1815,7 @@ function ActiveWorkout() {
     update(s => { if (s.active) s.active.cur = chip.unit[0] })
   }
   const chipRow = wc.exerciseChips && A.entries.length > 0
-    ? <WorkoutChips entries={A.entries} cur={cur} onPick={pickChip} />
+    ? <WorkoutChips entries={A.entries} sections={A.sections} cur={cur} onPick={pickChip} />
     : null
 
   // Hardware keys (issue #133, lib/workout-keys.js): Space or Enter ticks the next set, ← and →
@@ -1902,35 +1930,32 @@ function ActiveWorkout() {
     }
   }, [])
 
-  return <WorkoutScrollAnchor enabled={collapseOn} collapsed={[...collapsed].join(',')}>
-    {/* In list mode the whole session scrolls under the header, so the header (name, clock,
-        set counter, discard/finish, progress) stays pinned — the one thing you want in view
-        while you are somewhere in the middle of a long stack. Cards mode never scrolls far. */}
-    <div className={'whdr' + (listMode ? ' stick' : '')} ref={hdrRef}>
-    {/* ⌄ leaves the screen and keeps the session running (the tab bar's Resume brings it back);
-        in the editor of a saved workout it is the ✕ that closes the editor. Discard is in the ⋯
-        menu now, and Finish is a labelled pill rather than a check that looked like a set tick: it
-        opens the Finish sheet (Finish and save, Discard), the editor's Save saves at once. */}
-    <div className="hdr whdr-bar">
-      {editing
-        ? <button className="iconbtn" aria-label={t('Close editor')} title={t('Close editor')} onClick={() => exitWorkoutEdit()}><Icon name="xmark" /></button>
-        : <button className="iconbtn" aria-label={t('Minimize')} title={t('Minimize')} onClick={() => nav('/home')}><Icon name="chevronDown" /></button>}
-      <div className="whdr-mid"><div className="whdr-name">{A.name}</div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <Elapsed start={A.start} />} · {t('{0} sets', done + '/' + total)}</div></div>
-      <button className="iconbtn" aria-label={t('Workout options')} title={t('Workout options')} onClick={openViewMenu}><Icon name="more" /></button>
-      <button className="btn primary pill whdr-finish" aria-label={editing ? t('Save changes') : undefined}
-        onClick={() => (editing ? finishWorkout() : finishWorkoutSheet({ onDiscard: discardWorkout }))}>{editing ? t('Save') : t('Finish')}</button>
-    </div>
-    <div className="wprog"><i style={{ width: (total ? done / total * 100 : 0) + '%' }} /></div>
-    {/* In the list the chips ride in the pinned header, so any exercise is one tap away from
-        anywhere in a long stack. */}
-    {listMode && chipRow}
-    </div>
-    {editing && <p className="muted small">{t('Editing a saved workout. Date and duration stay unchanged.')}</p>}
-    {A.backfill && <div className="muted small" style={{ marginBottom: 8 }}>{t('Logging a past workout, so no rest timers.')}</div>}
-
-    {A.entries.length ? (listMode ? (
-      <div className="workout-list" data-testid="workout-list" ref={listRef}>
-        {units.map((u, ui) => {
+  const resetSectionProgress = () => { progressHighWater.current = useStore.getState().S.active?.entries.map(e => e.sets.filter(s => s.done).length) || [] }
+  const phaseDrag = usePhaseReorder(listRef, A.sections || [], !!work || !listMode, (sourceId, targetId) => {
+    editWorkoutSections({ activeId: A.id }, current => reorderSection(current, sourceId, targetId), resetSectionProgress)
+  })
+  const moveToPhase = (entry, sectionId) => editWorkoutSections({ activeId: A.id }, active => assignSection(active, entry.occurrenceId, sectionId), resetSectionProgress)
+  const removeFromPhase = section => removeSectionExerciseSheet(section, A.entries.filter(entry => entry.sectionId === section.id), entry => {
+    const active = useStore.getState().S.active
+    if (active?.id === A.id) confirmRemoveExercise(active.entries.findIndex(current => current.occurrenceId === entry.occurrenceId))
+  })
+  const phaseProps = section => ({ section, count: A.entries.filter(entry => entry.sectionId === section.id).length, disabled: !!work,
+    skipped: sectionSkipped(A, section.id),
+    onSkip: A.entries.some(entry => entry.sectionId === section.id && (entry.skipped === true || !entrySettled(entry))) ? () => {
+      if (useUI.getState().work) return
+      const current = useStore.getState().S.active
+      if (current?.id !== A.id) return
+      const skip = !sectionSkipped(current, section.id)
+      const rest = useUI.getState().timer
+      if (skip && current.entries[rest?.forIdx]?.sectionId === section.id) useUI.getState().stopRest()
+      update(s => { if (s.active?.id === A.id) skipSection(s.active, section.id, skip) })
+      resetSectionProgress()
+    } : undefined,
+    onAdd: () => addExercise(section.id), onRemove: () => removeFromPhase(section),
+    editor: { activeId: A.id, onStructureChange: resetSectionProgress } })
+  const currentSection = sectionOf(A.entries[cur], A)
+  const CurrentPhase = currentSection ? WorkoutPhase : Fragment
+  const renderListUnit = (u, ui) => {
           const multi = u.length > 1
           const isCur = u.includes(cur)
           const isCollapsed = collapsed.has(u.join('-'))
@@ -1978,13 +2003,42 @@ function ActiveWorkout() {
                 {...blockProps(u[0])} />
             )}
             </div>
+            <SectionMove sections={A.sections} entry={A.entries[u[0]]} grouped={multi} disabled={!!work} onMove={sectionId => moveToPhase(A.entries[u[0]], sectionId)} />
           </section>
-        })}
+  }
+
+  return <WorkoutScrollAnchor enabled={collapseOn} collapsed={[...collapsed].join(',')}>
+    {/* In list mode the whole session scrolls under the header, so the header (name, clock,
+        set counter, discard/finish, progress) stays pinned — the one thing you want in view
+        while you are somewhere in the middle of a long stack. Cards mode never scrolls far. */}
+    <div className={'whdr' + (listMode ? ' stick' : '')} ref={hdrRef}>
+    <div className="hdr whdr-bar">
+      {editing
+        ? <button className="iconbtn" aria-label={t('Close editor')} title={t('Close editor')} onClick={() => exitWorkoutEdit()}><Icon name="xmark" /></button>
+        : <button className="iconbtn" aria-label={t('Minimize')} title={t('Minimize')} onClick={() => nav('/home')}><Icon name="chevronDown" /></button>}
+      <div className="whdr-mid"><div className="whdr-name">{A.name}</div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <Elapsed start={A.start} />} · {t('{0} sets', done + '/' + total)}</div></div>
+      <button className="iconbtn" aria-label={t('Workout options')} title={t('Workout options')} onClick={openViewMenu}><Icon name="more" /></button>
+      <button className="btn primary pill whdr-finish" aria-label={editing ? t('Save changes') : undefined}
+        onClick={() => (editing ? finishWorkout() : finishWorkoutSheet({ onDiscard: discardWorkout }))}>{editing ? t('Save') : t('Finish')}</button>
+    </div>
+    <div className="wprog"><i style={{ width: (total ? done / total * 100 : 0) + '%' }} /></div>
+    {listMode && chipRow}
+    </div>
+    {editing && <p className="muted small">{t('Editing a saved workout. Date and duration stay unchanged.')}</p>}
+    {A.backfill && <div className="muted small" style={{ marginBottom: 8 }}>{t('Logging a past workout, so no rest timers.')}</div>}
+
+    <WorkoutSections activeId={A.id} onStructureChange={resetSectionProgress} />
+    {(A.sections?.length || A.entries.length) ? ((listMode || !A.entries.length) ? (
+      <div className="workout-list" data-testid="workout-list" ref={listRef}>
+        {A.sections?.length ? A.sections.map(section => <WorkoutPhase key={section.id} {...phaseProps(section)} reorderable phaseDrag={phaseDrag}>
+          {units.map((u, ui) => A.entries[u[0]].sectionId === section.id ? renderListUnit(u, ui) : null)}
+        </WorkoutPhase>) : units.map(renderListUnit)}
       </div>
     ) : <>
       {/* The chips stand in for "Exercise 2 / 5": the number is on the current chip, and the
           others say what is done and what is waiting (#323). */}
       {chipRow || <div className="muted small" style={{ marginBottom: 6 }}>{isSuperset ? t('Superset {0} / {1}', unitIdx + 1, units.length) : t('Exercise {0} / {1}', unitIdx + 1, units.length)}</div>}
+      <CurrentPhase key={currentSection?.id || 'flat'} {...(currentSection ? phaseProps(currentSection) : {})}>
       <SwipeCards index={unitIdx} count={units.length} revision={A}
         timerKey={timer && `${timer.endsAt}:${timer.forIdx ?? ''}`} workKey={work?.endsAt}
         onNavigate={navigateUnit} renderPreview={direction => {
@@ -2036,6 +2090,8 @@ function ActiveWorkout() {
         <ExerciseBlock entryIdx={cur} onPairPrev={onPairPrev} onPairNext={onPairNext} {...blockProps(cur)} />
       )}
       </SwipeCards>
+      <SectionMove sections={A.sections} entry={A.entries[cur]} grouped={isSuperset} disabled={!!work} onMove={sectionId => moveToPhase(A.entries[cur], sectionId)} />
+      </CurrentPhase>
     </>) : <div className="empty"><div className="ico"><Icon name="shuffle" /></div>{t('Freestyle workout. Add your first exercise and off you go.')}</div>}
 
     <div style={{ height: 12 }} />
@@ -2045,7 +2101,7 @@ function ActiveWorkout() {
     </div>}
     {!listMode && <div style={{ height: 10 }} />}
     {wc.exerciseButtons && listMode && A.entries.length > 0 && <div className="muted small" style={{ marginBottom: 6 }}>{t('Move, swap and remove below act on the exercise marked {0}.', t('Current'))}</div>}
-    <Button onClick={addExercise} icon="plus">{t('Add exercise')}</Button>
+    {!A.sections?.length && <Button disabled={!!work} onClick={() => addExercise()} icon="plus">{t('Add exercise')}</Button>}
     {wc.exerciseButtons && A.entries.length > 0 && <>
       <div style={{ height: 6 }} />
       <div className="row">
@@ -2065,6 +2121,7 @@ function ActiveWorkout() {
       </div>
     </>}
     <div style={{ height: 10 }} />
+    {!listMode && A.entries.length > 0 && A.sections?.filter(section => !A.entries.some(entry => entry.sectionId === section.id)).map(section => <WorkoutPhase key={section.id} {...phaseProps(section)} />)}
     {/* Wrapping up is when you know how the session went, so the note sits with the finish
         button rather than somewhere in the header. */}
     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
@@ -2073,7 +2130,7 @@ function ActiveWorkout() {
       </Button>
     </div>
     {(() => {
-      const exDone = A.entries.filter(e => e.sets.length && e.sets.every(s => s.done)).length
+      const exDone = A.entries.filter(entrySettled).length
       const allDone = A.entries.length > 0 && exDone === A.entries.length
       return <button className={allDone ? 'btn primary' : 'btn ghost dim'} onClick={finishWorkout}>
         {editing ? t('Save changes') : allDone ? t('Finish workout') : t('Finish workout early · {0} exercises', exDone + '/' + A.entries.length)}

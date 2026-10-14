@@ -14,6 +14,8 @@ vi.mock('../components/BodyMap.jsx', () => ({ default: () => null }))
 
 import RoutineEdit, { ROUTINE_DRAG_SLOP, ROUTINE_LONG_PRESS_MS, reorderRoutineUnit } from './RoutineEdit.jsx'
 import { DEF, useStore } from '../store/useStore.js'
+import { useUI } from '../store/useUI.js'
+import { addSection, SECTION_PRESETS, removeSection } from '../lib/workout-sections.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const clone = value => JSON.parse(JSON.stringify(value))
@@ -447,5 +449,83 @@ describe('reorderRoutineUnit', () => {
     expect(reorderRoutineUnit(items, 3, 1)).toBe(true)
     expect(items.map(e => e.id)).toEqual(['a', 'b', 'd', 'c'])
     expect(items[0].sg).toBe('pair'); expect(items[1].sg).toBe('pair'); expect(items[3].sg).toBeUndefined()
+  })
+})
+
+describe('direct phase controls', () => {
+  const addWarmup = () => act(() => useStore.getState().update(s => { addSection(s.routines[0], SECTION_PRESETS[0]) }))
+  const phase = type => useStore.getState().S.routines[0].sections.find(s => s.type === type)
+  const addToWarmup = () => act(() => host.querySelector('[aria-label="Add exercise to Warm-up"]').click())
+
+  it('adds quick and configured exercises to the selected phase and rejects a removed destination', () => {
+    mount([configured('0025')]); addWarmup()
+    const warm = phase('warmup').id
+    addToWarmup()
+    expect(sheets.exercisePicker.mock.lastCall[1]).toBe('Add exercise to Warm-up')
+    act(() => sheets.exercisePicker.mock.lastCall[0]({ id: '0047' }, true))
+    expect(exercises().find(e => e.id === '0047').sectionId).toBe(warm)
+    addToWarmup()
+    act(() => sheets.exercisePicker.mock.lastCall[0]({ id: '1259' }, false))
+    act(() => sheets.exConfigSheet.mock.lastCall[2]({ mode: 'time', sets: 1, sec: 30 }))
+    expect(exercises().find(e => e.id === '1259')).toMatchObject({ sectionId: warm, section: { countsAsWork: false }, sec: 30 })
+    addToWarmup()
+    act(() => sheets.exercisePicker.mock.lastCall[0]({ id: '1001' }, false))
+    const commit = sheets.exConfigSheet.mock.lastCall[2]
+    act(() => useStore.getState().update(s => { removeSection(s.routines[0], warm, phase('work').id) }))
+    const before = clone(exercises())
+    act(() => commit({ sets: 1, reps: 5 }))
+    expect(exercises()).toEqual(before)
+  })
+
+  it('drags a whole superset into an empty phase using the visible handle', () => {
+    mount([configured('0025', { sg: 'pair' }), configured('0047', { sg: 'pair' })]); addWarmup()
+    const layout = geometry()
+    vi.mocked(layout.list.getBoundingClientRect).mockReturnValue(rect(80, 450))
+    const zones = host.querySelectorAll('[data-section-zone]')
+    vi.spyOn(zones[0], 'getBoundingClientRect').mockReturnValue(rect(80, 200))
+    vi.spyOn(zones[1], 'getBoundingClientRect').mockReturnValue(rect(290, 200))
+    const ids = exercises().map(e => e.occurrenceId)
+    const handle = rows()[1].querySelector('[data-drag-handle]')
+    pointer(handle, 'pointerdown', { kind: 'mouse', y: 200 })
+    expect(host.querySelectorAll('.is-dragging')).toHaveLength(2)
+    pointer(handle, 'pointermove', { kind: 'mouse', y: 350 })
+    expect(zones[1].classList.contains('is-drop-target')).toBe(true)
+    pointer(handle, 'pointerup', { kind: 'mouse', y: 350 })
+    expect(exercises().map(e => e.occurrenceId)).toEqual(ids)
+    expect(exercises().every(e => e.sectionId === phase('warmup').id && e.sg === 'pair')).toBe(true)
+    expect(host.querySelector('[data-section-zone]').textContent).toContain('Add an exercise or drag one here.')
+  })
+
+  it('moves a group inline and scopes removal to that phase without removing its neighbours', () => {
+    mount([configured('0025', { sg: 'pair' }), configured('0047', { sg: 'pair' }), configured('1259')]); addWarmup()
+    act(() => [...rows()[0].querySelectorAll('.section-move button')].find(b => b.textContent === 'Warm-up').click())
+    expect(exercises().filter(e => e.sectionId === phase('warmup').id)).toHaveLength(2)
+    act(() => host.querySelector('[aria-label="Remove exercise from Warm-up"]').click())
+    const sheet = useUI.getState().sheets.at(-1)
+    act(() => root.render(sheet.render(() => {})))
+    expect(host.querySelectorAll('.section-remove-choices button')).toHaveLength(2)
+    act(() => host.querySelector('.section-remove-choices button').click())
+    expect(sheets.confirmSheet.mock.lastCall[0].title.toLowerCase()).toContain('barbell bench press')
+    act(() => sheets.confirmSheet.mock.lastCall[0].onConfirm())
+    expect(exercises().map(e => e.id)).toEqual(['1259', '0047'])
+    expect(exercises().find(e => e.id === '0047').sg).toBeUndefined()
+    useUI.setState({ sheets: [] })
+  })
+
+  it('keeps non-drag reorder buttons available in phases without splitting groups or crossing boundaries', () => {
+    mount([configured('0025', { sg: 'pair' }), configured('0047', { sg: 'pair' }), configured('1259')]); addWarmup()
+    const occurrenceIds = exercises().map(e => e.occurrenceId)
+    const menu = rows()[0].querySelector('.compact-actions')
+    expect(menu.open).toBe(false)
+    act(() => menu.querySelector('summary').click())
+    const down = menu.querySelector('[aria-label="Move down"]')
+    expect(down.disabled).toBe(false)
+    act(() => down.click())
+    expect(exercises().map(e => e.occurrenceId)).toEqual([occurrenceIds[2], occurrenceIds[0], occurrenceIds[1]])
+    expect(exercises().slice(1).every(e => e.sg === 'pair')).toBe(true)
+    expect(rows()[1].querySelector('[aria-label="Move down"]').disabled).toBe(true)
+    act(() => [...rows()[0].querySelectorAll('.section-move button')].find(b => b.textContent === 'Warm-up').click())
+    expect(rows()[0].querySelector('[aria-label="Move down"]').disabled).toBe(true)
+    expect(rows()[2].querySelector('[aria-label="Move up"]').disabled).toBe(true)
   })
 })

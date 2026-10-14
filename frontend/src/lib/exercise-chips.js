@@ -11,6 +11,7 @@ const touched = s => !!(s.done || (isSideSet(s) && (s.sides.L?.done || s.sides.R
  *  hold the chip back), 'partial' once anything is ticked, else 'todo'. An exercise with no rows
  *  yet has nothing done. */
 export function entryProgress(entry) {
+  if (entry?.skipped === true) return 'skipped'
   const sets = entry?.sets || []
   const work = sets.filter(s => !isWarmupRow(s))
   if (work.length && work.every(s => s.done)) return 'done'
@@ -23,7 +24,8 @@ export function exerciseChips(entries, cur) {
   const list = Array.isArray(entries) ? entries : []
   return supersetUnits(list).map((unit, k) => {
     const states = unit.map(idx => entryProgress(list[idx]))
-    const state = states.every(s => s === 'done') ? 'done' : states.some(s => s !== 'todo') ? 'partial' : 'todo'
+    const state = states.some(s => s === 'skipped') && states.every(s => s === 'done' || s === 'skipped') ? 'skipped'
+      : states.every(s => s === 'done') ? 'done' : states.some(s => s !== 'todo') ? 'partial' : 'todo'
     return { key: unit.join('-'), unit, n: k + 1, state, current: unit.includes(cur) }
   })
 }

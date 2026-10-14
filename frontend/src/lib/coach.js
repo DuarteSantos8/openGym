@@ -1,3 +1,4 @@
+import { cleanSections, sectionFields, countsAsWork } from './workout-sections.js'
 // The AI Coach, on the client side: everything that decides what a proposal *does* to a plan.
 //
 // The server produces proposals; it never writes into your state. Applying one is ordinary
@@ -89,6 +90,7 @@ export function canonicalPlan(S) {
   return {
     routines: (S.routines || []).map(r => ({
       id: r.id, name: r.name || '', prog: r.prog || '',
+      ...(r.sections?.length ? { sections: cleanSections(r.sections) } : {}),
       ex: (r.ex || []).map(e => {
         const mode = modeOf(e)
         return {
@@ -100,7 +102,8 @@ export function canonicalPlan(S) {
           weight: mode === 'cardio' ? 0 : (e.weight || 0),
           prog: e.prog || '', inc: e.inc || 0, repsMin: e.repsMin || 0, repsMax: e.repsMax || 0,
           bodyweight: isBw(e), side: isPerSide(e),
-          sg: e.sg || ''
+          sg: e.sg || '',
+          ...(r.sections?.length ? { sectionId: e.sectionId || '', occurrenceId: e.occurrenceId || '' } : {})
         }
       })
     })),
@@ -117,11 +120,9 @@ export function hashPlan(plan) {
   const canon = JSON.stringify({
     routines: (plan?.routines || []).map(r => [r.id, r.name, r.prog, (r.ex || []).map(e =>
       [e.id, e.mode, e.sets, e.reps, e.sec, e.min, e.speed, e.weight, e.prog, e.inc,
-        e.repsMin, e.repsMax, e.bodyweight, e.side, e.sg].join(':')
-    )]),
-    // `plan` is a canonicalPlan output, so each day is already an array. `{1:['r1']}` → "1=r1",
-    // byte-identical to the pre-upgrade fingerprint; `{3:['r2','r3']}` → "3=r2+r3". Weekday
-    // keys still sorted; the routine list within a day never is.
+        e.repsMin, e.repsMax, e.bodyweight, e.side, e.sg,
+        ...(r.sections?.length ? [e.sectionId, e.occurrenceId] : [])].join(':')
+    ), ...(r.sections?.length ? [JSON.stringify(r.sections)] : [])]),
     week: Object.keys(plan?.week || {}).sort().map(k => k + '=' + [].concat(plan.week[k]).join('+'))
   })
   let h1 = 0x811c9dc5, h2 = 0x01000193
@@ -178,7 +179,8 @@ export function markStale(proposal, S) {
   const planMoved = !!proposal.planHash && proposal.planHash !== planHash(S)
   const changes = (proposal.changes || []).map(c => {
     const r = c.target?.routineId ? findRoutine(S, c.target.routineId) : null
-    let stale = false
+    let stale = !!r?.sections?.length && (!proposal.planHash || planMoved || ['add-exercise', 'reorder', 'superset'].includes(c.type))
+    if (c.target?.exId && (r?.ex || []).filter(e => e.id === c.target.exId).length > 1) stale = true
     if (c.type !== 'add-routine' && c.type !== 'week' && !r) stale = true
     else if (c.target?.exId && !findEx(r, c.target.exId)) stale = true
     else if (c.type === 'week') {
@@ -556,6 +558,11 @@ export function applyChangeSet(s, proposal, acceptedIds) {
   const changes = (proposal.changes || []).filter(c => accepted.has(c.id) && c.status !== 'stale')
   if (!changes.length) return { applied: 0 }
 
+  for (const c of changes) {
+    const routine = findRoutine(s, c.target?.routineId)
+    if (c.target?.exId && (routine?.ex || []).filter(e => e.id === c.target.exId).length > 1) throw new Error(t('This Coach change has an ambiguous exercise target.'))
+    if (routine?.sections?.length && (['add-exercise', 'reorder', 'superset'].includes(c.type) || !proposal.planHash || proposal.planHash !== planHash(s))) throw new Error(t('The workout phases changed. Request a new Coach review.'))
+  }
   pushSnapshot(s, proposal.id, t('Before the Coach’s changes'))
   const applied = []
   for (const c of changes) {

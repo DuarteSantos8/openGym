@@ -7,6 +7,7 @@ import Workout, { removeActiveExercise } from './Workout.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { LANGS, DERIVED_LOCALES } from '../lib/i18n-core.js'
+import { addSection, SECTION_PRESETS, moveSection, assignSection } from '../lib/workout-sections.js'
 
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})) }))
@@ -268,4 +269,76 @@ describe('remove-exercise edge cases', () => {
     expect(useStore.getState().S.active.entries.map(e => e.id)).toEqual(['same', 'other'])
     expect(useStore.getState().S.workouts).toEqual(workouts)
   })
+})
+
+it('adds to an empty active phase through the real picker and preserves rest ownership', () => {
+  renderWorkout([entry('0025')])
+  act(() => useStore.getState().update(s => {
+    const warm = addSection(s.active, SECTION_PRESETS[0])
+    moveSection(s.active, warm, -1)
+    s.workoutView = 'list'
+  }))
+  const workOccurrence = useStore.getState().S.active.entries[0].occurrenceId
+  act(() => useUI.getState().startRest(90, 0))
+  act(() => container.querySelector('[aria-label="Add exercise to Warm-up"]').click())
+  const picker = renderTopSheet()
+  expect(picker.querySelector('h3').textContent).toBe('Add exercise to Warm-up')
+  act(() => picker.querySelector('button[aria-label^="Add “"]').click())
+  const active = useStore.getState().S.active
+  expect(active.entries).toHaveLength(2)
+  expect(active.entries[0].section).toMatchObject({ type: 'warmup', countsAsWork: false })
+  expect(active.cur).toBe(0)
+  expect(active.entries[1].occurrenceId).toBe(workOccurrence)
+  expect(useUI.getState().timer.forIdx).toBe(1)
+})
+
+it('keeps active moves attached to logged occurrences and blocks changes during a running set', () => {
+  renderWorkout([entry('0025'), entry('0047')])
+  act(() => useStore.getState().update(s => {
+    addSection(s.active, SECTION_PRESETS[0]); s.workoutView = 'list'
+    s.active.entries[0].sets[0].done = true
+  }))
+  const selected = useStore.getState().S.active.entries[0].occurrenceId
+  act(() => useUI.getState().startRest(90, 0))
+  act(() => [...container.querySelectorAll('.section-move button')].find(b => b.textContent === 'Warm-up').click())
+  const active = useStore.getState().S.active
+  expect(active.entries[1].occurrenceId).toBe(selected)
+  expect(active.entries[1].sets[0].done).toBe(true)
+  expect(active.cur).toBe(1)
+  expect(useUI.getState().timer.forIdx).toBe(1)
+  act(() => useUI.getState().startWork(30, 'Hold', vi.fn()))
+  expect([...container.querySelectorAll('.section-exercise-actions button,.section-move button')].every(button => button.disabled)).toBe(true)
+})
+
+it('closes phase settings when card navigation changes the current phase', () => {
+  renderWorkout([entry('0025'), entry('0047')])
+  act(() => useStore.getState().update(s => {
+    const warm = addSection(s.active, SECTION_PRESETS[0])
+    assignSection(s.active, s.active.entries[0].occurrenceId, warm)
+    moveSection(s.active, warm, -1)
+    s.workoutView = 'cards'
+  }))
+  act(() => container.querySelector('[aria-label="Edit phase: Warm-up"]').click())
+  expect(container.querySelector('.phase-inline-settings')).toBeTruthy()
+  act(() => [...container.querySelectorAll('button')].find(button => button.textContent === 'Next').click())
+  expect(container.querySelector('[aria-label="Edit phase: Main work"]')).toBeTruthy()
+  expect(container.querySelector('.phase-inline-settings')).toBeNull()
+  act(() => container.querySelector('[aria-label="Edit phase: Main work"]').click())
+  expect(container.querySelector('.section-form .input').value).toBe('Main work')
+})
+
+it('removes the confirmed phased occurrence after its index changes', () => {
+  renderWorkout([entry('0025'), entry('0025')])
+  act(() => useStore.getState().update(s => { addSection(s.active, SECTION_PRESETS[0]) }))
+  const occurrence = useStore.getState().S.active.entries[0].occurrenceId
+  act(() => removeButton().click())
+  const choices = renderTopSheet()
+  act(() => choices.querySelector('button').click())
+  const sheet = renderTopSheet()
+  act(() => useStore.getState().update(s => {
+    assignSection(s.active, occurrence, s.active.sections[1].id)
+  }))
+  act(() => [...sheet.querySelectorAll('button')].find(button => button.textContent === 'Remove').click())
+  expect(useStore.getState().S.active.entries).toHaveLength(1)
+  expect(useStore.getState().S.active.entries[0].occurrenceId).not.toBe(occurrence)
 })
