@@ -609,7 +609,7 @@ export default {
   'Traps': 'ट्रैपेज़ियस',
   'Shoulders': 'कंधे',
   'Chest': 'छाती',
-  'Upper back': 'ऊपरी पीठ',
+  'Lats & upper back': 'लैट्स और ऊपरी पीठ',
   'Serratus': 'सेरेटस',
   'Biceps': 'बाइसेप्स',
   'Triceps': 'ट्राइसेप्स',

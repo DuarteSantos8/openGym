@@ -609,7 +609,7 @@ export default {
   'Traps': 'Trapezio',
   'Shoulders': 'Spalle',
   'Chest': 'Petto',
-  'Upper back': 'Dorsali',
+  'Lats & upper back': 'Dorsali e schiena alta',
   'Serratus': 'Dentato',
   'Biceps': 'Bicipiti',
   'Triceps': 'Tricipiti',

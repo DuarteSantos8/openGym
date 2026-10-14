@@ -598,7 +598,7 @@ export default {
   'Traps': '斜方肌',
   'Shoulders': '肩膀',
   'Chest': '胸肌',
-  'Upper back': '上背部',
+  'Lats & upper back': '背闊肌和上背部',
   'Serratus': '前鋸肌',
   'Biceps': '二頭肌',
   'Triceps': '三頭肌',

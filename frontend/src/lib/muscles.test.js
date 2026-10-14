@@ -20,6 +20,14 @@ describe('multi-muscle exercise metadata', () => {
     expect(MUSCLE_NAME.chest).toBe('Chest')
   })
 
+  // The map has no lats region of its own: they count as the upper back, so its name has to say so
+  // or the lats read as missing from Stats and the custom-exercise picker (#607).
+  it('counts the lats as the upper back and names them there', () => {
+    expect(muscleGroupsOf({ tg: 'lats', sm: ['latissimus dorsi'] })).toEqual(['upper-back'])
+    expect(loadOf([{ id: 'inline', ex: { primaries: ['lats'] }, sets: 3 }])).toEqual({ 'upper-back': 3 })
+    expect(MUSCLE_NAME['upper-back']).toMatch(/\blats\b/i)
+  })
+
   it('falls back to the legacy body-part map when an optional multi-group field is empty', () => {
     expect(muscleGroupsOf({ bp: 'back', muscleGroups: [] })).toEqual(['upper-back', 'lower-back'])
     expect(matchesMuscleGroups({ bp: 'back', muscleGroups: [] }, ['lower-back'])).toBe(true)

@@ -610,7 +610,7 @@ export default {
   'Traps': 'กล้ามเนื้อบ่า',
   'Shoulders': 'ไหล่',
   'Chest': 'อก',
-  'Upper back': 'หลังส่วนบน',
+  'Lats & upper back': 'กล้ามปีกและหลังส่วนบน',
   'Serratus': 'กล้ามเนื้อซี่โครงด้านข้าง',
   'Biceps': 'ไบเซ็ป',
   'Triceps': 'ไทรเซ็ป',

@@ -692,7 +692,7 @@ export default {
   'Traps': 'ট্র্যাপস',
   'Shoulders': 'কাঁধ',
   'Chest': 'বুক',
-  'Upper back': 'পিঠের উপরের অংশ',
+  'Lats & upper back': 'ল্যাটস ও পিঠের উপরের অংশ',
   'Serratus': 'সেরাটাস',
   'Biceps': 'বাইসেপস',
   'Triceps': 'ট্রাইসেপস',

@@ -609,7 +609,7 @@ export default {
   'Traps': 'Trapèzes',
   'Shoulders': 'Épaules',
   'Chest': 'Pectoraux',
-  'Upper back': 'Haut du dos',
+  'Lats & upper back': 'Dorsaux et haut du dos',
   'Serratus': 'Dentelé',
   'Biceps': 'Biceps',
   'Triceps': 'Triceps',

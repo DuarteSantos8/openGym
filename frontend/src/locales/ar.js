@@ -499,7 +499,7 @@ export default {
   'Traps': 'الترابيس',
   'Shoulders': 'الأكتاف',
   'Chest': 'الصدر',
-  'Upper back': 'أعلى الظهر',
+  'Lats & upper back': 'الظهرية العريضة وأعلى الظهر',
   'Serratus': 'المنشارية',
   'Biceps': 'البايسبس',
   'Triceps': 'الترايسبس',

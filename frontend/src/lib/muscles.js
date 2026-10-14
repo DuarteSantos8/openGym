@@ -37,7 +37,7 @@ export const INERT = ['head', 'hair', 'neck', 'hands', 'feet', 'knees', 'ankles'
 // the cardio pseudo-muscle only under the dataset's own lowercase spelling, and every place
 // that shows it capitalises with CSS — a capitalised key here rendered English everywhere.
 export const MUSCLE_NAME = {
-  trapezius: 'Traps', deltoids: 'Shoulders', chest: 'Chest', 'upper-back': 'Upper back',
+  trapezius: 'Traps', deltoids: 'Shoulders', chest: 'Chest', 'upper-back': 'Lats & upper back',
   serratus: 'Serratus', biceps: 'Biceps', triceps: 'Triceps', forearm: 'Forearms',
   abs: 'Abs', obliques: 'Obliques', 'lower-back': 'Lower back', gluteal: 'Glutes',
   quadriceps: 'Quads', hamstring: 'Hamstrings', adductors: 'Adductors',

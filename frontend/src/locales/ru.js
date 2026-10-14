@@ -599,7 +599,7 @@ export default {
   'Traps': 'Трапеции',
   'Shoulders': 'Плечи',
   'Chest': 'Грудь',
-  'Upper back': 'Верх спины',
+  'Lats & upper back': 'Широчайшие и верх спины',
   'Serratus': 'Зубчатая мышца',
   'Biceps': 'Бицепс',
   'Triceps': 'Трицепс',

@@ -609,7 +609,7 @@ export default {
   'Traps': 'Trapez',
   'Shoulders': 'Omuzlar',
   'Chest': 'Göğüs',
-  'Upper back': 'Üst sırt',
+  'Lats & upper back': 'Kanat kası ve üst sırt',
   'Serratus': 'Serratus',
   'Biceps': 'Biseps',
   'Triceps': 'Triseps',

@@ -609,7 +609,7 @@ export default {
   'Traps': '승모근',
   'Shoulders': '어깨',
   'Chest': '가슴',
-  'Upper back': '등 상부',
+  'Lats & upper back': '광배근 및 등 상부',
   'Serratus': '전거근',
   'Biceps': '이두근',
   'Triceps': '삼두근',

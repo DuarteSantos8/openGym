@@ -628,7 +628,7 @@ export default {
   'Traps': 'Trapez',
   'Shoulders': 'Schultern',
   'Chest': 'Brust',
-  'Upper back': 'Oberer Rücken',
+  'Lats & upper back': 'Latissimus & oberer Rücken',
   'Serratus': 'Sägemuskel',
   'Biceps': 'Bizeps',
   'Triceps': 'Trizeps',

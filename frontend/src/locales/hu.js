@@ -610,7 +610,7 @@ export default {
   'Traps': 'Csuklyás izom',
   'Shoulders': 'Váll',
   'Chest': 'Mell',
-  'Upper back': 'Felső hát',
+  'Lats & upper back': 'Széles hátizom és felső hát',
   'Serratus': 'Fűrészizom',
   'Biceps': 'Bicepsz',
   'Triceps': 'Tricepsz',

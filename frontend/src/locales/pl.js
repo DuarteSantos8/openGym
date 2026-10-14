@@ -609,7 +609,7 @@ export default {
   'Traps': 'Czworoboczne',
   'Shoulders': 'Barki',
   'Chest': 'Klatka piersiowa',
-  'Upper back': 'Górna część pleców',
+  'Lats & upper back': 'Najszersze i górna część pleców',
   'Serratus': 'Zębaty',
   'Biceps': 'Biceps',
   'Triceps': 'Triceps',
