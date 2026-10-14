@@ -176,3 +176,21 @@ test('a long stretch with no names is cut by the rhythm of the picture’s cuts 
   assert.equal(harmonise([{ kind: 'stretch', rows: [one('x', 0, 300)] }], { cuts: [10, 37, 41, 150, 260] })[0].rows.length, 1)
   assert.deepEqual(cutsOf([0, 1, 2, 1, 80, 2, 1, 90, 85, 1]), [4, 7])
 })
+
+test('in a warm-up with no rests, a caption shown before the end of a move names the next one (B7-F2UcHmqk)', async () => {
+  const { harmonise } = await import('../src/classify.js')
+  // The real warm-up: cuts every ~30 s, the "next" preview 9–10 s before each cut.
+  const cuts = [82, 94, 100, 120, 130, 150, 160, 180, 189, 210, 219, 240, 249, 272, 282]
+  const cap = (name, start, dur) => ({ name, key: name, sec: dur, rest: 0, rounds: 1, occurrences: [{ start, dur }], thumbT: start })
+  const out = harmonise([{ kind: 'warmup', start: 82, end: 282, rows: [
+    cap('arm circles', 82, 11), cap('swing & step', 121, 8), cap('toe touch + reach', 151, 7),
+    cap('t-spine opener', 181, 7), cap('quad stretch', 211, 7), cap('jumping jacks', 240, 8)
+  ] }], { cuts })
+  assert.deepEqual(out[0].rows.map(r => [r.key, r.occurrences[0].start, r.sec]), [
+    ['arm circles', 82, 20], ['', 100, 30], ['swing & step', 130, 30], ['toe touch + reach', 160, 30],
+    ['t-spine opener', 189, 30], ['quad stretch', 219, 30], ['jumping jacks', 249, 35]
+  ])
+  // Captions shown at the start of each move (no previews) stay on their own move.
+  const own = harmonise([{ kind: 'stretch', rows: [cap('a', 100, 8), cap('b', 130, 8), cap('c', 160, 8), cap('d', 190, 25)] }], { cuts: [100, 130, 160, 190, 220] })
+  assert.deepEqual(own[0].rows.map(r => r.key), ['a', 'b', 'c', 'd'])
+})

@@ -67,7 +67,7 @@ export function previewLayout(bs) {
   if (pairs.length < MIN_INTERVALS || pairs.length < work.length * 0.6) return false
   for (const i of pairs) {
     const a = bs[i], g = bs[i + 1]
-    Object.assign(g, { kind: 'work', key: a.key, text: a.text, conf: a.conf, variants: a.variants, fromPreview: true })
+    Object.assign(g, { kind: 'work', key: a.key, text: a.text, conf: a.conf, variants: a.variants, fromPreview: true, captionAt: a.start })
     Object.assign(a, { kind: 'rest', next: a.key })
   }
   return true
@@ -193,6 +193,8 @@ function rowFrom(blocks, extra) {
     conf: Math.round(blocks.reduce((s, b) => s + (b.conf || 0), 0) / blocks.length * 100) / 100,
     occurrences: blocks.map(occurrence),
     thumbT: blocks[0].start + Math.floor(blocks[0].dur / 2),
+    // When the caption was on screen, where that differs from when the move ran (a "NEXT" screen).
+    ...(blocks[0].captionAt != null ? { captionAt: blocks[0].captionAt } : {}),
     ...extra
   }
 }
@@ -364,6 +366,8 @@ export function harmonise(sections, { cuts = [] } = {}) {
   const named = holds.length ? snapSec(median(holds)) : 0
   for (const s of sections) {
     if (s.kind !== 'warmup' && s.kind !== 'stretch') continue
+    const byCuts = movesByCuts(s, cuts)
+    if (byCuts) { s.rows = byCuts; continue }
     const hold = s.beat || named
     // A move lasts until the next one starts: a caption shown for part of a hold says when the
     // hold began, not how long it was.
@@ -451,3 +455,38 @@ function evenSplit(a, b, hold) {
 const CUT_MIN = 20
 const MAX_SPLIT = 20
 const MIN_SPLIT = 90   // seconds: shorter rows are left whole
+
+/**
+ * A warm-up or cool-down laid out by the picture: its moves are the periods of its cuts, and each
+ * caption is given to the move it names. With no rest between moves a follow-along announces the
+ * next one while the current one is still going ("NEXT: T-spine opener" ten seconds before the
+ * end): a caption that comes up in the second half of a move names the one after it. A caption
+ * at the start of a move names that move. Moves no caption named arrive unnamed, each with its
+ * own moment in the video. null when the cuts keep no rhythm, or the rows are not simple holds
+ * (left/right pairs, repeats): the caption-by-caption rows stand then.
+ */
+export function movesByCuts(section, cuts) {
+  const rows = section.rows || []
+  if (!rows.length || rows.some(r => r.side || (r.occurrences || []).length !== 1)) return null
+  const shown = r => r.captionAt ?? r.occurrences[0].start
+  const a = Math.min(...rows.map(r => Math.min(shown(r), r.occurrences[0].start)))
+  const b = Math.max(...rows.map(r => r.occurrences[0].start + r.occurrences[0].dur), section.end || 0)
+  const moves = periodicSplit(a, b, cuts)
+  if (!moves || moves.length < rows.length) return null
+  const owner = new Array(moves.length).fill(null)
+  for (const r of rows) {
+    if (!r.key) continue
+    const t = shown(r)
+    let k = moves.findIndex(([x, y]) => t >= x && t < y)
+    if (k < 0) k = t < moves[0][0] ? 0 : moves.length - 1
+    const [x, y] = moves[k]
+    if ((t - x) / (y - x) >= 0.5 && k + 1 < moves.length) k++
+    if (!owner[k]) owner[k] = r
+  }
+  return moves.map(([x, y], k) => {
+    const piece = { sec: snapSec(y - x), rounds: 1, rest: 0, side: false, occurrences: [{ start: x, dur: y - x }], thumbT: x + Math.max(1, Math.floor((y - x) / 3)) }
+    const r = owner[k]
+    if (r) { const { captionAt, ...rest } = r; return { ...rest, ...piece } }
+    return { name: '', key: '', variants: [], alt: null, conf: 0, unnamed: true, ...piece }
+  })
+}

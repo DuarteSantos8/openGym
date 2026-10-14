@@ -89,7 +89,9 @@ paste the link under **Plan → share icon → Import from a video**, check the 
    beat, so a 40 s exercise that OCR caught for 35 or 45 s is 40 s. A warm-up or cool-down with no
    names on screen is cut into moves by the picture itself: the video cuts at the same point of
    every move, and the rhythm of those cuts gives the length of a move, whatever it is in that
-   video. Each move then arrives with its own still for you to name. You can also add an exercise
+   video. A caption that comes up in the second half of a move names the next one (with no rest
+   between moves, follow-alongs announce the next move ten seconds or so before it starts). Moves
+   no caption named arrive with their own still for you to name. You can also add an exercise
    again (**+**), or split a long row by hand. A name that matches nothing in the library is never dropped. It becomes
    one of your own exercises (marked *new*), unless you pick an existing one. A row with no name
    at all is not saved until you pick its exercise or delete it. The percentage on a matched row is
