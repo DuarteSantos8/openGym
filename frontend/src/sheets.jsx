@@ -1,4 +1,6 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
+import { countsAsWork, sectionOf, sectionFields } from './lib/workout-sections.js'
+import { SectionHeading } from './components/WorkoutSections.jsx'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
@@ -55,7 +57,7 @@ import { buildSessionEntries, buildPlannedEntry, builtOutOfProgression } from '.
 import { finishCompare, finishCardio } from './lib/finish-compare.js'
 import { workoutFit, fitFileName } from './lib/fit-export.js'
 import { joinSessionNoProg } from './lib/session-noprog.js'
-import { buildCombinedEntries, deriveSessionName } from './lib/session-merge.js'
+import { buildCombinedEntries, deriveSessionName, appendSessionEntries } from './lib/session-merge.js'
 import { workoutsOn, backfillStart, backfillEnd, completeBackfill, historyAsOf, sessionHistory } from './lib/backfill.js'
 import { moveWorkout, sameWorkout, startTimeOf, durationMinOf, setWorkoutDuration, rebuildPrHistory, MAX_DURATION_MIN, endsInFuture } from './lib/workout-date.js'
 import { editCompletedSession, editLeftEmpty, editedRecord, editChangesNothing } from './lib/session-edit.js'
@@ -1418,7 +1420,8 @@ export function swapActiveWorkoutExercise(index) {
     // The picker is a chooser here, not a stack you keep adding from: one swap, then back to
     // the workout. (The add flow deliberately leaves it open.)
     picker.close()
-    const full = { ...cfg, id: ex.id }
+    const fields = sectionFields(active.entries[index], active)
+    const full = { ...cfg, ...fields, id: ex.id }
     const st = S()
     const current = st.active?.entries?.[index]
     if (!current) return
@@ -1435,10 +1438,10 @@ export function swapActiveWorkoutExercise(index) {
     // A freestyle swap logs dumbbell weights the way the exercise means them now, and starts
     // from last time read in that meaning (lib/dumbbells.js), as a planned one does.
     const built = freestyle
-      ? { target: withMeaning(st, cfg, ex.id), plan: null, sets: applyIntensifierPlan(buildSets(historyAs(past, ex.id, dbLoadFor(st, full)), full, { step: (modeOf(full) === 'reps' && ownedWeightsFor(st, full)) || step, preferLast: true }), full, dropGrid(st, full)) }
+      ? { target: withMeaning(st, { ...cfg, ...fields }, ex.id), plan: null, sets: applyIntensifierPlan(buildSets(historyAs(past, ex.id, dbLoadFor(st, full)), full, { step: (modeOf(full) === 'reps' && ownedWeightsFor(st, full)) || step, preferLast: true }), full, dropGrid(st, full)) }
       : buildPlannedEntry(past, full, slotRoutine, { noProg: builtOutOfProgression(current, slotRoutine) })
     const replacement = {
-      id: ex.id,
+      id: ex.id, ...fields,
       ...built,
       ...(current.rid ? { rid: current.rid } : {}),
       // A slot kept out of progression stays out once swapped. Replaced in place the entry keeps
@@ -2471,7 +2474,8 @@ function WorkoutDetail({ w, close }) {
   // curve it sits on, which is the question a past workout raises most often.
   const entryRow = (e, i) => {
     const ex = EXIDX[e.id]
-    return <div key={i} className="row wd-ex" style={{ alignItems: 'flex-start' }} {...tappable(() => exerciseHistorySheet(e.id))}>
+    return <div key={i}><SectionHeading section={sectionOf(e, w)} previous={sectionOf(w.entries[i - 1], w)} />
+      <div className="row wd-ex" style={{ alignItems: 'flex-start' }} {...tappable(() => exerciseHistorySheet(e.id))}>
       {ex && <Thumb ex={ex} />}
       <div className="grow"><div className={`tt ${exerciseNameClass(ex)}`} style={{ fontWeight: 600 }}>{nameOf(e)} {w.prs && w.prs.includes(e.id) && <span className="pr"><Icon name="trophy" />PR</span>}</div>
         <div className="ss">{e.sets.filter(hasCompletedWork).map(s => setLabel(e.id, s, e.target, speedUnitOf(st))).join('  ·  ') || t('no sets')}</div>
@@ -2479,7 +2483,7 @@ function WorkoutDetail({ w, close }) {
           {e.notePin && <Icon name="pin" style={{ fontSize: 12, marginInlineEnd: 4, verticalAlign: '-1px', color: 'var(--yellow)' }} />}{e.note}
         </div>}</div>
       <Icon name="chevronRight" className="chev" style={{ alignSelf: 'center' }} />
-    </div>
+    </div></div>
   }
   // Exercises done as a superset stay together under a "Superset" label and one bar, the way the
   // routine editor shows them (Discord: "supersets aren't shown at all"). Adjacent entries with
@@ -2775,7 +2779,7 @@ export function startFlow(routineIds) {
 }
 export function beginWorkout(routineIds, bw) {
   const st = S()
-  const { entries, routineIds: rids, routines } = buildCombinedEntries(st, routineIds)
+  const { entries, sections, routineIds: rids, routines } = buildCombinedEntries(st, routineIds)
   update(s => {
     s.active = {
       id: uid(), d: todayISO(), start: Date.now(),
@@ -2783,7 +2787,7 @@ export function beginWorkout(routineIds, bw) {
       // exercise came from. No top-level `excludeFromProgression` — per-entry `noProg` does it.
       routineIds: rids,
       name: routines.length ? deriveSessionName(routines.map(r => r.name)) : t('Freestyle'),
-      bw: bw || null, cur: 0, entries,
+      bw: bw || null, cur: 0, entries, ...(sections ? { sections } : {}),
       // Snapshot the layout at start so the header ⋮ can change it for this session only —
       // changing the saved default (Settings → Workout view) mid-session leaves it alone.
       workoutView: st.workoutView || 'cards',
@@ -2908,13 +2912,13 @@ function beginBackfill({ iso, time, durationMin, routineIds, replaceId }) {
   const st = S()
   const start = backfillStart(iso, time)
   const past = historyAsOf(st, { d: iso, start, replaceId })
-  const { entries, routineIds: rids, routines } = buildCombinedEntries(past, routineIds || [])
+  const { entries, sections, routineIds: rids, routines } = buildCombinedEntries(past, routineIds || [])
   update(s => {
     s.active = {
       id: uid(), d: iso, start,
       routineIds: rids,
       name: routines.length ? deriveSessionName(routines.map(r => r.name)) : t('Freestyle'),
-      bw: null, cur: 0, entries,
+      bw: null, cur: 0, entries, ...(sections ? { sections } : {}),
       backfill: { durationMin, replaceId: replaceId || null },
       // Same layout snapshot as a live session (see beginWorkout).
       workoutView: st.workoutView || 'cards',
@@ -2935,17 +2939,18 @@ function AddRoutineToSession({ close }) {
   if (!active) return null
   const inSession = new Set([].concat(active.routineIds || []))
   const add = r => {
-    const entries = buildSessionEntries(sessionHistory(st), r).map(e => ({ ...e, rid: r.id }))
-    update(s => {
+    const built = buildCombinedEntries(sessionHistory(st), [r.id])
+    try { update(s => {
       if (!s.active) return
       // A session kept out of progression as a whole (the header ⋮) keeps the routine's
       // exercises out too, the same as an exercise added on its own.
-      s.active.entries.push(...entries.map(e => joinSessionNoProg(s.active, e)))
+      built.entries = built.entries.map(e => joinSessionNoProg(s.active, e))
+      appendSessionEntries(s.active, built)
       s.active.routineIds = [...[].concat(s.active.routineIds || []), r.id]
       if (!s.active.customName) {
         s.active.name = deriveSessionName(s.active.routineIds.map(id => s.routines.find(x => x.id === id)?.name).filter(Boolean))
       }
-    })
+    }) } catch (error) { toast(t(error.message)); return }
     close()
     toast(t('{0} added ({1})', r.name, exCount(r.ex.length)))
   }
@@ -3368,19 +3373,24 @@ function doFinishWorkout() {
   const past = !!A.backfill
   const prs = []
   const e1prs = []
-  // A workout logged into the past is held against the history before it, the way an edit of a
-  // saved one is (rebuildPrHistory, below): it gains a badge it leads with, and a later session
-  // it outdoes loses its own. It used to report none at all while the editor's Save awarded them
-  // (QA 1.3.9). The confirmed weights are left alone either way.
-  if (!past) A.entries.forEach(e => {
-    const loads = e.sets.filter(s => s.done && !isWarmupRow(s)).map(s => s.w).filter(w => w > 0)
-    const mx = loads.length ? loads.reduce((a, b) => betterWeight(e.id, a, b)) : 0
-    // Held against history read the way this session logged a dumbbell weight (lib/dumbbells.js).
-    if (beatsWeight(e.id, mx, bestWeightFor(st, e.id, entryDbLoad(e)))) prs.push(e.id)
+  const entriesById = new Map()
+  A.entries.filter(e => countsAsWork(e, A)).forEach(entry => {
+    if (!entriesById.has(entry.id)) entriesById.set(entry.id, [])
+    entriesById.get(entry.id).push(entry)
+  })
+  // A workout logged into the past is reconciled by rebuildPrHistory below. Live PRs exclude
+  // non-training phases and keep each entry's dumbbell-weight meaning for the comparison.
+  if (!past) entriesById.forEach((entries, id) => {
+    if (entries.some(entry => {
+      const loads = entry.sets.filter(s => s.done && !isWarmupRow(s)).map(s => s.w).filter(w => w > 0)
+      const mx = loads.length ? loads.reduce((a, b) => betterWeight(id, a, b)) : 0
+      return beatsWeight(id, mx, bestWeightFor(st, id, entryDbLoad(entry)))
+    })) prs.push(id)
     // A heavier estimate without a heavier top set is its own kind of progress —
     // same weight for more reps. Reported separately so it can't be read as a load PR.
-    const rec = is1RMRecord(st, e.id, e)
-    if (rec && !prs.includes(e.id)) e1prs.push({ id: e.id, ...rec })
+    const rec = entries.map(entry => is1RMRecord(st, id, entry)).filter(Boolean)
+      .reduce((best, value) => !best || value.est > best.est ? value : best, null)
+    if (rec && !prs.includes(id)) e1prs.push({ id, ...rec })
   })
   const w = buildCompletedWorkout(A, {
     end: past ? backfillEnd(A) : sessionEnd(A),

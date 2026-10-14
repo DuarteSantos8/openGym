@@ -283,6 +283,13 @@ export function validateReview(data, plan, ctx = {}) {
     const target = c.target || {};
     const routine = target.routineId ? routines.get(target.routineId) : null;
 
+    if (routine?.sections?.length && ['add-exercise', 'reorder', 'superset'].includes(c.type)) {
+      errors.push(`${where}: use the manual phase editor for structural changes to phased routines`); return;
+    }
+    if (target.exId && (routine?.ex || []).filter(e => e.id === target.exId).length > 1) {
+      errors.push(`${where}: exercise target is ambiguous across occurrences`); return;
+    }
+
     // Targets: everything but add-routine and week must name a routine that exists; anything
     // touching an exercise must name one that is actually in it.
     if (!['add-routine', 'week'].includes(c.type)) {

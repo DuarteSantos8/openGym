@@ -1,6 +1,7 @@
 import { uid } from './format.js'
 import { modeOf, defaultConfig, isPerSide, entryRoutineId, setsFromRows } from './history.js'
 import { isSideSet, isWarmupRow } from './workout-model.js'
+import { cleanSections, remapSections } from './workout-sections.js'
 
 // A saved workout is evidence of what was logged, not a live routine. Copy only its flat
 // exercise setup on this explicit action; finishing a workout never calls this helper.
@@ -132,7 +133,8 @@ export function routineFromSession(session, name = session?.name, routines = [])
   const ex = groupIds(sessionEntries(session).filter(entry => entry?.sets?.length)
     .map(entry => copiedEntry(entry, byId.get(entryRoutineId(session, entry)))))
   if (!ex.length) throw new Error('no exercises')
-  return { id: uid(), name: String(name || 'Workout').trim() || 'Workout', ex }
+  return remapSections({ id: uid(), name: String(name || 'Workout').trim() || 'Workout',
+    ...(session?.sections?.length ? { sections: cleanSections(session.sections) } : {}), ex })
 }
 
 export function saveSessionAsRoutine(state, session, name) {

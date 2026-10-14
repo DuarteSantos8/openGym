@@ -1,3 +1,4 @@
+import { sectionFields } from './workout-sections.js'
 // The persisted boundary for a finished session. Keep this pure so compatibility tests can
 // exercise the exact shape the UI writes without mounting React or mutating store state.
 import { bestWeightForEntry, cleanupSg } from './history.js'
@@ -69,6 +70,7 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
   const entries = (active?.entries || []).map(entry => {
     const completed = {
       id: entry.id,
+      ...sectionFields(entry, active),
       // Only what was logged — the live-session bookkeeping on a row stays behind (finishedRow).
       sets: (entry.sets || []).map(finishedRow),
       topW: bestWeightForEntry(entry) || null,
@@ -122,6 +124,7 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
     name: active.name,
     bw: active.bw,
     entries,
+    ...(active.sections?.length ? { sections: structuredClone(active.sections) } : {}),
     prs,
     ...(allNoProg ? { excludeFromProgression: true } : {}),
     ...(sessionNote ? { note: sessionNote } : {}),

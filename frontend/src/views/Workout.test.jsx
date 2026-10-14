@@ -2318,6 +2318,29 @@ describe('the plan line', () => {
     expect(container.textContent).not.toContain('40×15')
   })
 
+  it('reads each repeated exercise occurrence from its own phase history', async () => {
+    const preparation = { id: 'prep', type: 'preparation', label: 'Preparation', countsAsWork: false }
+    const working = { id: 'work', type: 'work', label: 'Main work', countsAsWork: true }
+    const prior = { d: '2026-08-26', routineIds: ['A'], entries: [{
+      id: 'plain-bench', rid: 'A', occurrenceId: 'prep-slot', sectionId: preparation.id, section: preparation,
+      target: { reps: 8, weight: 20 }, sets: [{ w: 20, r: 8, done: true }],
+    }, {
+      id: 'plain-bench', rid: 'A', occurrenceId: 'work-slot', sectionId: working.id, section: working,
+      target: { reps: 5, weight: 60 }, sets: [{ w: 60, r: 5, done: true }],
+    }], sections: [preparation, working] }
+    await mount([
+      planned({ rid: 'A', occurrenceId: 'prep-slot', sectionId: preparation.id, section: preparation }),
+      planned({ rid: 'A', occurrenceId: 'work-slot', sectionId: working.id, section: working }),
+    ], 0, {
+      workoutView: 'list', workouts: [prior], active: { sections: [preparation, working] },
+    })
+
+    expect([...container.querySelectorAll('.refline')].map(line => line.textContent)).toEqual([
+      expect.stringContaining('20×8'),
+      expect.stringContaining('60×5'),
+    ])
+  })
+
   it('reads a pyramid as its targets, like the routine row (#367)', async () => {
     await mount([planned({ planned: { sets: 5, reps: 12 }, target: { mode: 'reps', sets: 5, reps: 12, pyramid: [12, 8, 6, 'max', 12] } })])
     expect(line()).toBe('Plan: 12 · 8 · 6 · Max · 12')

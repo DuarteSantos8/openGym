@@ -1,5 +1,6 @@
 import { EXIDX, isAssisted } from './exercises.js'
 import { workoutAt } from './history.js'
+import { countsAsWork } from './workout-sections.js'
 import { MUSCLES, musclesOf } from './muscles.js'
 import { isWarmupRow, dropsOf, isSideSet } from './workout-model.js'
 import { estimate1RM, REP_CAP } from './onerm.js'
@@ -480,7 +481,7 @@ export function strengthOf(workouts, now, opts = {}) {
     const timestamp = workoutTimestamp(workout)
     if (!Number.isFinite(timestamp)) continue
     for (const entry of workout.entries || []) {
-      if (!(entry.sets || []).some(set => set?.done === true && !isWarmupRow(set))) continue
+      if (!countsAsWork(entry, workout) || !(entry.sets || []).some(set => set?.done === true && !isWarmupRow(set))) continue
       for (const slug of Object.keys(musclesOf(exerciseFor(entry)))) {
         if (Object.prototype.hasOwnProperty.call(MUSCLES_BY_SLUG, slug) && timestamp > latest[slug]) {
           latest[slug] = timestamp
