@@ -60,15 +60,17 @@ export async function analyse(file, roi, { workDir, signal, hints = [], parts = 
     names.push(await readAll(crops.names[b], 'name', { workDir, signal, onProgress: f => progress('ocr', share * (b + f)) }))
   }
   const none = { readings: crops.timer.map(() => ({ text: '', conf: 0 })), unique: 0 }
-  const timer = hasTimer ? await readAll(crops.timer, 'timer', { workDir, signal, onProgress: f => progress('ocr', 0.7 + f * 0.15) }) : none
-  const timerB = hasTimer ? await readAll(crops.timerB, 'timer', { workDir, signal, onProgress: f => progress('ocr', 0.85 + f * 0.15) }) : none
+  const timer = hasTimer ? await readAll(crops.timer, 'timer', { workDir, signal, onProgress: f => progress('ocr', 0.7 + f * 0.1) }) : none
+  const timerB = hasTimer ? await readAll(crops.timerB, 'timer', { workDir, signal, onProgress: f => progress('ocr', 0.8 + f * 0.1) }) : none
+  const alt = hasTimer ? await readAll(crops.timerAlt, 'timer', { workDir, signal, onProgress: f => progress('ocr', 0.9 + f * 0.05) }) : none
+  const altB = hasTimer ? await readAll(crops.timerBAlt, 'timer', { workDir, signal, onProgress: f => progress('ocr', 0.95 + f * 0.05) }) : none
   // With several name boxes, each second takes the reading that looks most like a name: the
   // most letters, read with the most confidence. The other boxes are empty at that moment.
   const score = r => (r && r.text ? (String(r.text).match(/\p{L}/gu) || []).length * (r.conf || 0) : 0)
   const frames = []
   for (let t = 0; t < crops.seconds; t++) {
     const best = names.map(n => n.readings[t]).reduce((a, r) => (score(r) > score(a) ? r : a), { text: '', conf: 0 })
-    frames.push({ t, name: best.text, nameConf: best.conf, timer: timer.readings[t]?.text || '', timerB: timerB.readings[t]?.text || '', scene: crops.scene[t] || 0 })
+    frames.push({ t, name: best.text, nameConf: best.conf, timer: timer.readings[t]?.text || '', timerB: timerB.readings[t]?.text || '', timerC: alt.readings[t]?.text || '', timerD: altB.readings[t]?.text || '', scene: crops.scene[t] || 0 })
   }
   // The countdown first, where the video has one the OCR can follow: it knows every work, rest
   // and hold to the second. The captions alone otherwise.

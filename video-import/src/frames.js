@@ -6,7 +6,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import crypto from 'node:crypto'
 import { run } from './proc.js'
-import { binarize, pgm, blank, difference, timerMask, textMask } from './image.js'
+import { binarize, pgm, blank, difference, timerMasks, textMask } from './image.js'
 
 const even = n => Math.max(2, Math.round(n / 2) * 2)
 export const NEAR = 0.01   // share of differing pixels below which two name crops are one caption
@@ -97,7 +97,20 @@ export async function extractCrops(file, roi, { width, height, duration, workDir
     const seen = new Map()
     const dir = path.join(workDir, k)
     fs.mkdirSync(dir, { recursive: true })
+    fs.mkdirSync(dir + 'Alt', { recursive: true })
+    // Identical crops share one file, so a caption that sits still for 40 seconds is read once.
+    const keep = (px, into) => {
+      const hash = into + crypto.createHash('sha1').update(px).digest('hex')
+      let p = seen.get(hash)
+      if (!p) {
+        p = path.join(workDir, into, `${String(seen.size).padStart(5, '0')}.pgm`)
+        fs.writeFileSync(p, pgm(px, ow, oh))
+        seen.set(hash, p)
+      }
+      return p
+    }
     out[k] = []
+    out[k + 'Alt'] = []
     let last = null   // { px, path } of the crop the previous second used
     for (let i = 0; i < n; i++) {
       // The masks are plain JavaScript over every second of the video: hand the event loop back
@@ -106,10 +119,13 @@ export async function extractCrops(file, roi, { width, height, duration, workDir
       const gray = raw.subarray(i * size, (i + 1) * size)
       let px
       if (k.startsWith('timer')) {
-        // The timer is read as its digits alone, taken from the brightest (or darkest) marks:
-        // the ring round a countdown and a light wall behind white digits read as noise.
-        px = timerMask(gray, ow, oh)
-        if (!px) { out[k].push(null); last = null; continue }
+        // The timer is read as its digits alone, taken from the brightest (or the darkest)
+        // marks: the ring round a countdown and a light wall behind white digits read as noise.
+        // The other polarity's best guess goes along as a second reading.
+        const [a, b] = timerMasks(gray, ow, oh)
+        if (!a) { out[k].push(null); out[k + 'Alt'].push(null); last = null; continue }
+        px = a
+        out[k + 'Alt'].push(b ? keep(b, k + 'Alt') : null)
       } else {
         // Text-like marks first (white captions over a sky); the plain threshold where nothing
         // in the crop looks like text yet.
@@ -124,13 +140,7 @@ export async function extractCrops(file, roi, { width, height, duration, workDir
       // Within NEAR of the crop just read it is the same caption, and is not read again. The
       // timer changes every second by design, so it only shares exact copies.
       if (!k.startsWith('timer') && last && difference(px, last.px) < NEAR) { out[k].push(last.path); continue }
-      const hash = crypto.createHash('sha1').update(px).digest('hex')
-      let p = seen.get(hash)
-      if (!p) {
-        p = path.join(dir, `${String(seen.size).padStart(5, '0')}.pgm`)
-        fs.writeFileSync(p, pgm(px, ow, oh))
-        seen.set(hash, p)
-      }
+      const p = keep(px, k)
       last = { px, path: p }
       out[k].push(p)
     }
@@ -143,7 +153,9 @@ export async function extractCrops(file, roi, { width, height, duration, workDir
     scene: sceneChanges(sceneRaw, SCENE_W * SCENE_H).slice(0, len),
     names: boxes.map((_, i) => out['name' + i]),
     timer: out.timer || new Array(len).fill(null),
-    timerB: out.timerB || new Array(len).fill(null)
+    timerB: out.timerB || new Array(len).fill(null),
+    timerAlt: out.timerAlt || new Array(len).fill(null),
+    timerBAlt: out.timerBAlt || new Array(len).fill(null)
   }
 }
 

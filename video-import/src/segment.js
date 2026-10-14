@@ -198,7 +198,7 @@ function absorb(into, b, merge = false) {
  */
 export function countdownRuns(frames) {
   // Each second can carry two readings (taken half a second apart): a run takes whichever fits.
-  const both = (frames || []).map(f => [parseTimer(f.timer), parseTimer(f.timerB)].filter(x => x != null && x >= 0))
+  const both = (frames || []).map(f => [parseTimer(f.timer), parseTimer(f.timerB), parseTimer(f.timerC), parseTimer(f.timerD)].filter(x => x != null && x >= 0))
   const v = both.map(c => (c.length ? c[0] : null))
   const runs = []
   let cur = null
@@ -368,7 +368,7 @@ export function fillFromRounds(blocks) {
 export function timerTrack(frames) {
   let prev = null
   return (frames || []).map(f => {
-    const c = [parseTimer(f.timer), parseTimer(f.timerB)].filter(x => x != null && x >= 0)
+    const c = [parseTimer(f.timer), parseTimer(f.timerB), parseTimer(f.timerC), parseTimer(f.timerD)].filter(x => x != null && x >= 0)
     const pick = !c.length ? null : prev == null ? c[0] : c.reduce((a, b) => (Math.abs(b - (prev - 1)) < Math.abs(a - (prev - 1)) ? b : a))
     if (pick != null) prev = pick
     return pick

@@ -108,13 +108,14 @@ export function digitsOnly(px, w, h, { minHeight = 0.35 } = {}) {
  * lined up with them. The candidate with the most such characters wins.
  *   opts.digits: a timer — 1–4 characters of one height on one line, solid strokes (not blocks).
  */
-export function textMask(gray, w, h, { digits = false } = {}) {
+export function textMask(gray, w, h, { digits = false, both = false } = {}) {
   const sorted = Uint8Array.from(gray).sort()
   const at = q => sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))]
   const hi = at(0.995), lo = at(0.005)
   if (hi - lo < 40) return null
   const minH = digits ? 0.15 : 0.1, maxH = digits ? 0.8 : 0.7
   let best = null
+  const per = {}
   for (const bright of [true, false]) {
     // Thin digits a shade brighter than the wall behind them need a threshold close to white; on
     // a caption the same threshold breaks letters into pieces.
@@ -140,8 +141,10 @@ export function textMask(gray, w, h, { digits = false } = {}) {
         // A box drawn tight round a caption cuts its "p" and "g": letters may touch the top and the
         // bottom of a name's box. Digits keep clear of every edge (the ring touches them).
         const clear = digits ? c.y0 > 0 && c.y1 < h - 1 : true
-        return ch >= h * minH && ch <= h * maxH && cw <= ch * (digits ? 1.1 : 4) && fill >= 0.2 &&
-          (!digits || fill <= 0.7) && c.x0 > 0 && c.x1 < w - 1 && clear && standsOut(c)
+        // Block digits ("8" in a heavy sports font) fill most of their box and can be as wide as
+        // they are tall; a patch of shadow is told from them by its contrast (standsOut).
+        return ch >= h * minH && ch <= h * maxH && cw <= ch * (digits ? 1.7 : 4) && fill >= 0.2 &&
+          (!digits || fill <= 0.88) && c.x0 > 0 && c.x1 < w - 1 && clear && standsOut(c)
       })
       if (!chars.length) continue
       let line
@@ -173,16 +176,24 @@ export function textMask(gray, w, h, { digits = false } = {}) {
       } else if (line.length < 2) continue
       const score = Math.min(line.length, digits ? 3 : 40) * 10 + line.reduce((t, c) => t + c.n, 0) / gray.length
       if (!best || score > best.score) best = { score, line }
+      if (!per[bright] || score > per[bright].score) per[bright] = { score, line }
     }
   }
-  if (!best) return null
-  const out = new Uint8Array(gray.length).fill(255)
-  for (const c of best.line) for (const i of c.px) out[i] = 0
-  return out
+  const paint = b => {
+    const out = new Uint8Array(gray.length).fill(255)
+    for (const c of b.line) for (const i of c.px) out[i] = 0
+    return out
+  }
+  // both: the best candidate of each polarity, best first — light digits on a dark ring, or dark
+  // digits on a light floor, and only the count they read can tell which was the number.
+  if (both) return [per.true, per.false].filter(Boolean).sort((a, b) => b.score - a.score).map(paint)
+  return best ? paint(best) : null
 }
 
 /** The timer's digits (see textMask). */
 export const timerMask = (gray, w, h) => textMask(gray, w, h, { digits: true })
+/** Up to two readings of a timer crop, one per polarity, best first. */
+export const timerMasks = (gray, w, h) => textMask(gray, w, h, { digits: true, both: true })
 
 const median = a => { const s = a.slice().sort((x, y) => x - y); return s.length ? s[s.length >> 1] : 0 }
 
@@ -208,4 +219,23 @@ function components(ink, w, h) {
     out.push(c)
   }
   return out
+}
+
+/**
+ * A mask cut down to its ink with a white margin round it: Tesseract reads a number that fills
+ * its picture far better than one lost in the middle of a wide box. { px, w, h } or the input
+ * as it was when there is no ink.
+ */
+export function tightCrop(px, w, h, pad = 10) {
+  let x0 = w, y0 = h, x1 = -1, y1 = -1
+  for (let i = 0; i < px.length; i++) {
+    if (px[i] !== 0) continue
+    const x = i % w, y = (i - x) / w
+    if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y
+  }
+  if (x1 < 0) return { px, w, h }
+  const W = x1 - x0 + 1 + 2 * pad, H = y1 - y0 + 1 + 2 * pad
+  const out = new Uint8Array(W * H).fill(255)
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) out[(y - y0 + pad) * W + (x - x0 + pad)] = px[y * w + x]
+  return { px: out, w: W, h: H }
 }
