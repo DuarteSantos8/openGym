@@ -753,7 +753,8 @@ describe('estimate_1rm', () => {
         e => ({ code: e.code, text: String(e.message) })
       )
       expect(r.ok).not.toBe(true)
-      expect(String(r.code ?? r.text)).toContain('-32602')
+      if (r.code !== undefined) expect(r.code).toBe(-32602)
+      else expect(r.text).toMatch(/Input validation error/)
       expect(r.text).not.toContain('pr_table')
     } finally {
       await client.close()
@@ -1283,10 +1284,11 @@ describe('date arguments must be dates the calendar has', () => {
     ]) {
       const r = await shot(tool, args)
       const where = `${tool} ${JSON.stringify(args)}`
-      // The SDK answers an invalid-params rejection either as a throw or as an error result
-      // carrying the same code; both are the -32602 the client sees, neither runs the handler.
+      // SDK v2 may report schema validation as a tool error instead of a JSON-RPC rejection.
+      // Both must reject invalid dates before the handler runs.
       expect(r.ok, `${where} must be refused`).not.toBe(true)
-      expect(String(r.code ?? r.text), where).toContain('-32602')
+      if (r.rejected) expect(r.code, where).toBe(-32602)
+      else expect(r.text, where).toMatch(/Input validation error/)
       expect(String(r.message ?? r.text), where).toMatch(/not a date the calendar has|must be YYYY-MM-DD/)
     }
   })
