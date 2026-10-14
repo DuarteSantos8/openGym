@@ -193,7 +193,7 @@ export function textMask(gray, w, h, { digits = false, both = false } = {}) {
 /** The timer's digits (see textMask). */
 export const timerMask = (gray, w, h) => textMask(gray, w, h, { digits: true })
 /** Up to two readings of a timer crop, one per polarity, best first. */
-export const timerMasks = (gray, w, h) => textMask(gray, w, h, { digits: true, both: true })
+export const timerMasks = (gray, w, h) => textMask(gray, w, h, { digits: true, both: true }) || []
 
 const median = a => { const s = a.slice().sort((x, y) => x - y); return s.length ? s[s.length >> 1] : 0 }
 
