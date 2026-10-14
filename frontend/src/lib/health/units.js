@@ -106,6 +106,8 @@ export function fmtHealthDelta(type, delta, S) {
   if (!m || delta == null || !Number.isFinite(delta)) return ''
   const sign = delta > 0 ? '+' : delta < 0 ? '−' : ''
   if (m.levels) return ''
+  // A change too small for the decimals shown is no change ("−0 %" says nothing).
+  if (m.unit === 'min' ? Math.round(Math.abs(delta)) === 0 : !toDisplay(type, Math.abs(delta), S)) return ''
   if (m.unit === 'min') return sign + fmtMinutes(Math.abs(delta))
   if (type === 'height' && imperialMass(S)) {
     const inches = roundTo(Math.abs(delta) / CM_PER_IN, 1)
