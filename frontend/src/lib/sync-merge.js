@@ -29,6 +29,8 @@
  *     its neighbour there (unionByNeighbours); of an id that both have, the version
  *     edited last by its own `_ts` (stampRoutines), the newer copy's on a tie
  *   - bodyweight, measurements: union by day, the later-edited (`t`) entry of a day that both have
+ *   - health: union by id; of an id that both have, the record edited last (`_ts`) as a whole — a
+ *     reading is one value, so there is nothing to take field by field (stampHealth)
  *   - favEx: ordered set union, the newer copy first
  *   - exWeights: union by exercise, the better `w` for that exercise — larger for an ordinary
  *     lift, smaller on an assistance machine (a PR logged on the other device must not be
@@ -78,6 +80,7 @@ import { bestWeightForEntry } from './history.js'
 import { convertStateUnit, convertBodyWeight } from './units.js'
 import { sanitizeAccent } from './accent.js'
 import { readDayNote as readNote } from './day-notes.js'
+import { trimImported } from '../../../api/health/catalogue.js'
 
 const clone = o => JSON.parse(JSON.stringify(o))
 const list = v => (Array.isArray(v) ? v : [])
@@ -161,6 +164,21 @@ export function mergeWorkoutMedia(kept, other) {
   return kept
 }
 const byDayStart = (a, b) => (a.d === b.d ? (a.start || 0) - (b.start || 0) : a.d < b.d ? -1 : 1)
+
+/**
+ * Health records (lib/health/records.js) of both copies: one per id, the one edited last (`_ts`),
+ * the first copy's on a tie; in time order.
+ */
+export function mergeHealth(a = [], b = []) {
+  const byId = new Map()
+  for (const r of [...list(a), ...list(b)]) {
+    if (!r || r.id == null) continue
+    const cur = byId.get(r.id)
+    if (!cur || (Number(r._ts) || 0) > (Number(cur._ts) || 0)) byId.set(r.id, r)
+  }
+  // Within what a profile can hold, the same way on every copy (api/health/catalogue.js).
+  return trimImported([...byId.values()].sort((x, y) => (Number(x.t) || 0) - (Number(y.t) || 0)))
+}
 
 /** One entry per day; where both have a day, the one edited later (`t`); sorted by day. */
 export function mergeBodyweight(a = [], b = []) {
@@ -401,6 +419,7 @@ const bodyweightKey = e => `${e?.d}|${e?.t ?? ''}`
 const RESET_LISTS = {
   workouts: workoutKey, routines: x => x?.id, customEx: x => x?.id, bodyweight: bodyweightKey,
   measurements: bodyweightKey, gymCards: x => x?.id, equipProfiles: x => x?.id, favEx: x => x,
+  health: x => x?.id,
 }
 const RESET_MAPS = ['exNotes', 'barWeights', ...STAMPED_MAPS]
 /** An entry's name in resetIds: a workout's id (or day and start), a weigh-in's day and time, … */
@@ -456,6 +475,7 @@ export function sinceReset(S, at, ids) {
     out.customEx = list(S.customEx).filter(c => c && after(c._ts))
     out.bodyweight = list(S.bodyweight).filter(e => e && after(e.t))
     out.measurements = list(S.measurements).filter(e => e && after(e.t))
+    out.health = list(S.health).filter(r => r && after(r._ts))
     // No time of their own: taken for what they were before the reset, which cleared them.
     out.equipProfiles = []
     out.gymCards = []
@@ -498,6 +518,7 @@ export function sinceReset(S, at, ids) {
 const DEL_LISTS = {
   workouts: workoutKey, routines: x => x?.id, customEx: x => x?.id, bodyweight: e => e?.d,
   measurements: e => e?.d, gymCards: x => x?.id, equipProfiles: x => x?.id, favEx: x => x,
+  health: x => x?.id,
 }
 // When an entry was last edited, to hold against a removal. Entries with no time of their own
 // (favourites, and cards and profiles saved before they were stamped) count as older than any
@@ -506,6 +527,7 @@ const DEL_TIME = {
   workouts: workoutTime, routines: x => Number(x?._ts) || 0, customEx: x => Number(x?._ts) || 0,
   bodyweight: e => Number(e?.t) || 0, measurements: e => Number(e?.t) || 0,
   gymCards: x => Number(x?._ts) || 0, equipProfiles: x => Number(x?._ts) || 0,
+  health: x => Number(x?._ts) || 0,
 }
 // Per field, the most stamps kept; past it the oldest go first.
 export const DELETED_MAX = 5000
@@ -611,7 +633,7 @@ function applyDeletions(S, deleted) {
 // merge of their own are not stamped here; a field nobody stamped follows the newer copy, as before.
 const OWN_MERGE = new Set([
   '_ts', '_rev', '_wid', '_wids', '_unstamped', '_prior', 'active', 'unit', 'unitSet', 'resetAt', 'resetIds', 'deleted', 'edited', 'undone', 'routineOrder',
-  'workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', 'bodyweight', 'measurements', 'favEx',
+  'workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', 'bodyweight', 'measurements', 'favEx', 'health',
   'exWeights', 'balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'dayNotes',
 ])
 // Stamped per key instead of whole: one day of the plan, one exercise's note or bar.
@@ -820,6 +842,7 @@ export function mergeStates(a0, b0, { prefer } = {}) {
   out.bodyweight = mergeBodyweight(n.bodyweight, o.bodyweight).map(clone)
   // A day's body measurements are one check-in, kept and merged the way a weigh-in is.
   if (list(n.measurements).length || list(o.measurements).length) out.measurements = mergeBodyweight(n.measurements, o.measurements).map(clone)
+  if (list(n.health).length || list(o.health).length) out.health = mergeHealth(n.health, o.health).map(clone)
   if (list(n.favEx).length || list(o.favEx).length) out.favEx = [...new Set([...list(n.favEx), ...list(o.favEx)])]
   // What either device removed stays removed (the `deleted` section above). A workout taken out
   // this way leaves its exercises' kept loads to be read again, as an edit of it would: from the
@@ -1010,6 +1033,7 @@ export function highestStamp(S) {
   }
   for (const f of STAMPED_MAPS) if (isMap(S[f])) for (const v of Object.values(S[f])) see(stampOf(v))
   for (const e of [...list(S.bodyweight), ...list(S.measurements)]) if (e && typeof e === 'object') see(e.t)
+  for (const r of list(S.health)) if (r && typeof r === 'object') see(r._ts)
   return m
 }
 
@@ -1058,6 +1082,7 @@ export function stampChange(prev, next, wall = Date.now()) {
   stampCustomEx(prev?.customEx, next.customEx, now)
   stampEntries(prev?.equipProfiles, next.equipProfiles, now)
   stampEntries(prev?.gymCards, next.gymCards, now)
+  stampHealth(prev?.health, next.health, now)
   stampDeletions(prev, next, now)
   stampEdits(prev, next, now)
   return now
@@ -1095,6 +1120,21 @@ export function stampCustomEx(prev = [], next = [], now = Date.now()) {
     if (!c || typeof c !== 'object' || c.id == null) continue
     const old = before.get(c.id)
     if (!old || (old !== c && !sameEntry(old, c))) stampEntry(old, c, now)
+  }
+  return next
+}
+
+/**
+ * Every health record of `next` that is new or differs from its version in `prev` takes the
+ * change's time as its `_ts`: the stamp mergeHealth keeps the later one by, set after every stamp
+ * the copy carries (stampChange), whatever this device's clock says. Mutates and returns `next`.
+ */
+export function stampHealth(prev = [], next = [], now = Date.now()) {
+  const before = new Map(list(prev).filter(r => r?.id != null).map(r => [r.id, r]))
+  for (const r of list(next)) {
+    if (!r || typeof r !== 'object' || r.id == null) continue
+    const old = before.get(r.id)
+    if (!old || (old !== r && !sameEntry(old, r))) r._ts = now
   }
   return next
 }

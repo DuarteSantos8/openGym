@@ -8,6 +8,7 @@ import { rememberDefaultLang } from '../lib/default-lang.js'
 import { guestAllowed } from '../lib/guest.js'
 import { MOBILE, initReminderSync, nativeLoad, nativeSave, onAppActive, readJsonFile, syncReminder, writeAutoBackup, writeJsonFile } from '../lib/mobile.js'
 import { initHealthSync, syncHealth } from '../lib/health-sync.js'
+import { initHealthSources } from '../lib/health/sync.js'
 import { refillIfComplete } from '../lib/rotation.js'
 import { liftLegacy } from '../lib/sync-legacy.js'
 import { mergeStates, localExtras, stampChange, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
@@ -94,6 +95,9 @@ export const DEF = {
   // Body measurements (#82): one check-in per day, values in cm whatever the weight unit
   // (lib/measurements.js); merged across devices like weigh-ins (lib/sync-merge.js).
   measurements: [], measurementEnabled: null, customMeasurements: [],
+  // Health readings (lib/health/records.js): body composition, activity, heart, sleep — typed by
+  // hand or imported from a source such as Apple Health. One record per reading, merged by id.
+  health: [],
   queue: null,   // a planner's floating week (lib/queue.js) — via the API, or by this rotation feature (below)
   // The in-app rotation's reusable definition — { id, sequence, label } (lib/rotation.js). Never
   // a live queue: it only ever feeds `queue`, and `queue.rotationId` says the pass is managed here.
@@ -196,6 +200,12 @@ export const DEF = {
   // entries, Stats, imports and the separate pre-workout weigh-in flow keep working.
   // Defaults on; an older profile without the key reads as on (`!== false`).
   showWeightCard: true,
+  // The health widgets on Home (lib/health/widgets.js): which readings, in which order. null is
+  // the default set, an empty list none.
+  homeWidgets: null,
+  // Home's cards below the week (lib/home-layout.js, the pencil on Home): their order (null is the
+  // default) and the two switches that had none before; check-in and body weight keep their own.
+  homeOrder: null, showHealthCard: true, showStreakCard: true,
   // Whether Start opens the quick weigh-in first (sheets.jsx startFlow, issue #137). Off starts
   // the session straight away; weight can still be logged from Home/Stats. On here, so an
   // older profile without the key reads as on (`!== false`) and keeps the step it had; a profile
@@ -474,6 +484,7 @@ export const useStore = create((set, get) => {
 
   initReminderSync(() => get().S)
   initHealthSync(() => get().S)
+  initHealthSources(() => get().S, fn => get().update(fn))
 
   // Mobile build: the file mirror, and beside it whose copy it is and which one (its `_ts`) —
   // restoreFromMirror takes the file back only for that account, and only while the two agree,
