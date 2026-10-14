@@ -6,7 +6,7 @@ import {
 } from './records.js'
 import { readingsFromSamples, readingsFromDays, readingsFromSleep, APPLE_HEALTH } from './apple-health.js'
 import { applyReadings, readSince, FIRST_DAYS, OVERLAP_DAYS } from './sync.js'
-import { toDisplay, fromDisplay, displayUnit, fmtHealth, fmtMinutes, fmtFeetInches } from './units.js'
+import { toDisplay, fromDisplay, displayUnit, fmtHealth, fmtHealthDelta, fmtMinutes, fmtFeetInches } from './units.js'
 import { mergeHealth, mergeStates, stampChange, stampHealth } from '../sync-merge.js'
 
 const T = new Date('2026-10-10T07:30:00').getTime()
@@ -241,5 +241,13 @@ describe('sync merge of health records', () => {
     desk._ts = stampChange(base, desk, 30)
     const merged = mergeStates(phone, desk)
     expect(merged.health.map(r => r.id)).toEqual(['p'])
+  })
+})
+
+describe('a change too small to show', () => {
+  it('reads as no change rather than a signed zero', () => {
+    expect(fmtHealthDelta('spo2', -0.4, { unit: 'kg' })).toBe('')
+    expect(fmtHealthDelta('spo2', 2, { unit: 'kg' })).toBe('+2 %')
+    expect(fmtHealthDelta('sleep', 0.2, { unit: 'kg' })).toBe('')
   })
 })
