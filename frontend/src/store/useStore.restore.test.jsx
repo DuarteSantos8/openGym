@@ -95,6 +95,26 @@ describe('saved workout state sync and restore', () => {
     expect(JSON.parse(localStorage.getItem('gym_sync'))).toEqual({ rev: 4, ts: useStore.getState().S._ts })
   })
 
+  it.each([
+    ['infers Programme mode for two legacy copies', undefined, true],
+    ['preserves an explicit Programme mode choice', false, false],
+  ])('%s when a newer server copy has Programme records but no mode flag', async (_name, localMode, expected) => {
+    const programmes = { version: 1, definitions: [{ id: 'legacy-programme' }], cycles: [{ id: 'legacy-cycle' }] }
+    const local = { ...clone(DEF), _ts: 10, programmes }
+    if (localMode === undefined) delete local.programmeMode
+    else local.programmeMode = localMode
+    const remote = { _ts: 20, programmes, workouts: [], routines: [] }
+    localStorage.setItem('gym_dirty', '1')
+    useStore.setState({ S: local, user: { id: 'user-1' }, ready: true })
+    api.mockResolvedValueOnce({ state: remote, rev: 3 }).mockResolvedValueOnce({ ok: true, rev: 4 })
+
+    await useStore.getState().pullState()
+
+    expect(useStore.getState().S.programmeMode).toBe(expected)
+    expect(JSON.parse(api.mock.calls[1][1].body).state.programmeMode).toBe(expected)
+    expect(useStore.getState().S.programmes).toMatchObject(programmes)
+  })
+
   // A server from before revisions answers without one; then the old rule holds and the dirty
   // copy is pushed as it is.
   it('pushes a dirty local state as-is to a server without revisions', async () => {

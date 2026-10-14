@@ -79,7 +79,7 @@ export function ProgrammeImport({ bundle, close, onImported }) {
       })
       close()
       onImported?.()
-      ui().toast(t('Programme saved'))
+      ui().toast(t('Saved'))
     } catch {
       unreadable()
     }

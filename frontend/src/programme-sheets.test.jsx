@@ -92,6 +92,7 @@ it('confirmation adds an independent programme without replacing the week, cycle
   expect(next.bodyweight).toEqual(initial.bodyweight)
   expect(imported).toHaveBeenCalledOnce()
   expect(close).toHaveBeenCalledOnce()
+  expect(useUI.getState().toastMsg).toBe('Saved')
 })
 
 it('the file reader rejects an ordinary plan file without opening a programme import or changing data', async () => {

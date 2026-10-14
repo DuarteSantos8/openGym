@@ -797,6 +797,12 @@ export function mergeStates(a0, b0, { prefer } = {}) {
   const n = side === 'a' ? a : b
   const o = n === a ? b : a
   const out = clone(n)
+  // A copy written before Programme mode existed has no opinion about the switch. If the other
+  // copy does, keep that explicit choice; if neither does, leave it absent so normalizeState can
+  // infer the legacy-compatible value from the Programme records that survive this merge.
+  if (!Object.prototype.hasOwnProperty.call(n, 'programmeMode') && Object.prototype.hasOwnProperty.call(o, 'programmeMode')) {
+    out.programmeMode = o.programmeMode
+  }
   // The unit is the lead's by now; so is the record of choosing it.
   const unitBy = lead || (unitStamp(a) >= unitStamp(b) ? a : b)
   if (unitBy.unitSet) out.unitSet = clone(unitBy.unitSet)

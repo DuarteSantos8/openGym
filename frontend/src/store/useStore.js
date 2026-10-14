@@ -545,11 +545,11 @@ export const useStore = create((set, get) => {
     return tag === null || tag === (seenOwner || '')
   }
   const readSaved = () => {
-    try { const raw = localStorage.getItem(KEY); return raw ? Object.assign(clone(DEF), JSON.parse(raw)) : null } catch { return null }
+    try { const raw = localStorage.getItem(KEY); return raw ? normalizeState(JSON.parse(raw)) : null } catch { return null }
   }
   // Another tab's copy joined into `mine`; `touched` when this change set the running workout.
   const joinTabs = (mine, theirs, touched) => {
-    const merged = Object.assign(clone(DEF), mergeStates(mine, theirs))
+    const merged = normalizeState(mergeStates(mine, theirs))
     merged.active = touched ? carryActive(mine, merged) : carryActive(theirs, merged)
     return merged
   }
@@ -692,10 +692,10 @@ export const useStore = create((set, get) => {
     if (legacy && legacy.owner === get().user?.id) {
       const lifted = liftLegacy(local, remote, legacy.fp, Math.max(Date.now(), highestStamp(local) + 1, highestStamp(remote) + 1))
       if (!lifted.resolved) keepAside(local, t('This device, before the update'))
-      local = Object.assign(clone(DEF), lifted.state)
+      local = normalizeState(lifted.state)
     }
     if (legacy) clearLegacy()
-    const merged = Object.assign(clone(DEF), mergeStates(local, remote))
+    const merged = normalizeState(mergeStates(local, remote))
     merged.active = carryActive(local, merged)
     // A pass of this app's rotation that the merge left complete (each copy finished a session of
     // it, or one copy's refill lost to the other's older queue) starts its next pass here, as the
@@ -1465,7 +1465,7 @@ export const useStore = create((set, get) => {
       const others = mergeWith.local ? mergeStates(cur, mergeWith.state) : mergeWith.state
       // The merge keeps the backup's reset stamp (prefer); a later one this copy or the server's
       // holds stays, as it does on a replace.
-      const merged = keepReset(others, keepReset(cur, Object.assign(clone(DEF), mergeStates(next, others, { prefer: 'a' }))))
+      const merged = keepReset(others, keepReset(cur, normalizeState(mergeStates(next, others, { prefer: 'a' }))))
       stampRestore(merged, [cur, mergeWith.state, next], now)
       merged._ts = now
       merged.active = carryActive({ unit: next.unit, active: running }, merged)
