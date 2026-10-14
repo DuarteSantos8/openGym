@@ -58,6 +58,18 @@ describe('the service worker and the API', () => {
     expect(env.store.size).toBe(0)
   })
 
+  it('leaves the NutriTrace gateway and the hub alone, so one account’s diary is never replayed offline', async () => {
+    for (const base of ['https://gym.example.com/', 'https://example.com/myGym/']) {
+      const env = worker(base + 'sw.js')
+      env.net.body = { items: [{ uuid: 'a1', kcal: 420 }] }
+      expect((await env.get(base + 'nt/api/diary/2026-10-15')).intercepted).toBe(false)
+      expect((await env.get(base + 'nt/api/settings')).intercepted).toBe(false)
+      expect((await env.get(base + 'nt/api/proxy?url=x')).intercepted).toBe(false)
+      expect((await env.get(base + 'hub/api/sync/status')).intercepted).toBe(false)
+      expect(env.store.size).toBe(0)
+    }
+  })
+
   it('still serves the app itself from the cache under that subpath', async () => {
     const env = worker('https://example.com/myGym/sw.js')
     env.net.body = { app: true }
