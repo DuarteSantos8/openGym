@@ -3,6 +3,35 @@
 openGym — Copyright (C) 2026 Duarte Santos.
 openGym's own code is licensed under the **GNU AGPL v3.0** (see [LICENSE](LICENSE)).
 
+This fork ("Gains", <https://github.com/steradrian/gains>, with the nutrition app at
+<https://github.com/steradrian/gains-nutrition>) modifies openGym; its modifications are
+Copyright (C) 2026 steradrian and licensed under the same AGPL v3.0. The app shows these notices
+under Settings, About & updates, Licences.
+
+## Nutrition icons — Lucide
+
+The nutrition glyphs in `frontend/src/components/Icon.jsx` (`droplet`, `utensils`, `apple`,
+`cookingPot`, `scanBarcode`, `bookOpen`, `calendarCheck`) are copied from [**Lucide**](https://lucide.dev), under the
+**ISC License**; portions of Lucide are derived from Feather by Cole Bemis under the MIT License.
+
+```
+ISC License
+
+Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part of Feather (MIT).
+All other copyright (c) for Lucide are held by Lucide Contributors 2022.
+
+Permission to use, copy, modify, and/or distribute this software for any purpose with or without
+fee is hereby granted, provided that the above copyright notice and this permission notice appear
+in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE
+AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+THIS SOFTWARE.
+```
+
 ## App store exception
 
 As an additional permission under section 7 of the AGPL v3.0, the copyright holder permits

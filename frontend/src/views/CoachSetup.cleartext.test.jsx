@@ -65,7 +65,7 @@ describe('CoachSetup and an http:// endpoint', () => {
     expect(endpoint.querySelector('.sect-f')).toBeNull()
     type(input, 'http://192.168.1.20:11434')
     expect(endpoint.querySelector('.sect-f').textContent).toMatch(REFUSAL)
-    expect(endpoint.querySelector('.sect-f').textContent).toContain('Use my self-hosted openGym')
+    expect(endpoint.querySelector('.sect-f').textContent).toContain('Use my self-hosted Gains')
 
     await act(async () => { byText(page, 'button', 'List models').click() })
     expect(mocks.localModels).not.toHaveBeenCalled()

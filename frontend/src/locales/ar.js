@@ -1,5 +1,15 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- licences (Settings, About) ---
+  'Licences': 'التراخيص',
+  'It comes with no warranty, to the extent the law allows.': 'لا يأتي مع أي ضمان، بالقدر الذي يسمح به القانون.',
+  'Free software, licensed under the GNU Affero General Public License v3.0 or later. You may redistribute and modify it under those terms.': 'برنامج حر مرخّص بموجب رخصة GNU Affero العامة الإصدار 3.0 أو أحدث. يمكنك إعادة توزيعه وتعديله وفق هذه الشروط.',
+  'Full licence text': 'النص الكامل للرخصة',
+  'Built on {0} v{1} by {2}.': 'مبني على {0} v{1} من {2}.',
+  'Third-party notices': 'إشعارات الجهات الخارجية',
+  'Exercise media': 'وسائط التمارين',
+  'Exercise text': 'نصوص التمارين',
+  'Icons': 'الأيقونات',
   'Confirm': 'تأكيد',
   'Cancel': 'إلغاء',
   'Press back again to exit': 'اضغط زر الرجوع مرة أخرى للخروج',

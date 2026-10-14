@@ -1,5 +1,15 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- licences (Settings, About) ---
+  'Licences': 'Licencek',
+  'It comes with no warranty, to the extent the law allows.': 'Nem jár hozzá garancia, a jogszabályok által megengedett mértékben.',
+  'Free software, licensed under the GNU Affero General Public License v3.0 or later. You may redistribute and modify it under those terms.': 'Szabad szoftver a GNU Affero General Public License 3.0-s vagy újabb verziója alatt. Ezen feltételek szerint terjesztheted és módosíthatod.',
+  'Full licence text': 'A licenc teljes szövege',
+  'Built on {0} v{1} by {2}.': 'Az alapja: {0} v{1}, készítette: {2}.',
+  'Third-party notices': 'Harmadik felek közleményei',
+  'Exercise media': 'Gyakorlatok médiatartalma',
+  'Exercise text': 'Gyakorlatok szövege',
+  'Icons': 'Ikonok',
   // --- generic ---
   'Confirm': 'Megerősítés',
   'Cancel': 'Mégse',

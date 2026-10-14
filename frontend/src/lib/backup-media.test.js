@@ -103,7 +103,7 @@ describe('import', () => {
   // German QA: 'Import fehlgeschlagen: not-zip', '... not an openGym backup', 'Unexpected token ...'.
   it('says why an import failed in words, never the thrown developer text', async () => {
     const why = async (content, name) => { try { await readBackupFile(new File([content], name)) } catch (e) { return backupImportError(e) } }
-    const notOurs = 'That file isn’t an openGym backup.'
+    const notOurs = 'That file isn’t a Gains backup.'
     expect(await why('[1,2]', 'x.json')).toBe(notOurs)
     expect(await why('hello there', 'x.txt')).toBe(notOurs)
     expect(await why(new Uint8Array([0x50, 0x4b, 0x03, 0x04, 1, 2, 3, 4]), 'fake.zip')).toBe(notOurs)

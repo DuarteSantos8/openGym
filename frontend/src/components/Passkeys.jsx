@@ -19,7 +19,7 @@ import { Row, Button } from './ui.jsx'
 const ui = () => useUI.getState()
 const toast = m => ui().toast(m)
 const post = (path, body) => api(path, { method: 'POST', body: JSON.stringify(body) })
-const errStyle = { color: 'var(--red)', marginTop: 10 }
+const errStyle = { color: 'var(--red-ink)', marginTop: 10 }
 // A passkey prompt the person closed is their answer, not an error worth a line in red.
 const dismissed = e => e?.name === 'NotAllowedError' || e?.name === 'AbortError'
 // How long a code lives (api/device-link.js DEVICE_LINK_TTL_MS), for the sentence that says so.

@@ -157,6 +157,25 @@ describe('Settings — footer', () => {
   it('links the source code to its home on GitHub, on About & updates', () => {
     act(() => root.render(<Settings page="about" />))
     const link = [...host.querySelectorAll('a')].find(a => a.textContent === 'Source code')
-    expect(link.getAttribute('href')).toBe('https://github.com/DuarteSantos8/openGym')
+    expect(link.getAttribute('href')).toBe('https://github.com/steradrian/gains')
+  })
+
+  it('shows Gains\' own version, not upstream\'s', () => {
+    act(() => root.render(<Settings page="about" />))
+    expect(host.textContent).toContain('Gains v0.1.0 · free & open source (AGPL v3)')
+    expect(host.textContent).not.toContain(`v${globalThis.__APP_VERSION__} ·`)
+  })
+
+  it('keeps the Gym visual attribution word for word, still naming openGym, on About and Licences', () => {
+    const line = 'Exercise media © Aliaksandr Makatserchyk, Gym visual, gymvisual.com.Media licensed for use in openGym only; see NOTICE.md'
+    for (const page of ['about', 'licences']) {
+      act(() => root.render(<Settings page={page} />))
+      expect(host.textContent.replace(/\s+/g, ' ').replace('.Media', '. Media')).toContain(line.replace('.Media', '. Media'))
+    }
+  })
+
+  it('credits the upstream version on Licences', () => {
+    act(() => root.render(<Settings page="licences" />))
+    expect(host.textContent).toContain(`Built on openGym v${globalThis.__APP_VERSION__} by Duarte Santos.`)
   })
 })

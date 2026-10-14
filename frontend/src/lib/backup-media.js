@@ -24,19 +24,21 @@ import { sha256Hex } from './sha256.js'
 import { mediaStore } from './media-store.js'
 import { DEFAULT_LIMITS, MB } from './media-limits.js'
 import { t } from './i18n-core.js'
+import { BRAND } from '../brand.js'
 
 export const BACKUP_JSON = 'opengym-backup.json'
 const MEDIA_ENTRY = /^media\/([0-9a-f]{64})\.(jpg|png|webp|gif|mp4|mov|webm)$/
 
-const README = `openGym backup with photos and videos
-=====================================
+const README_TITLE = `${BRAND.name} backup with photos and videos`
+const README = `${README_TITLE}
+${'='.repeat(README_TITLE.length)}
 
 opengym-backup.json  your data - the same file "Export backup (JSON)" writes.
 media/               the photos, GIFs and videos of your own exercises and of your
                      workouts, each named by its SHA-256, plus the small previews
                      shown in lists.
 
-To bring it back: openGym -> Settings -> Data & backup -> Import backup, and pick this .zip as it is.
+To bring it back: ${BRAND.name} -> Settings -> Data & backup -> Import backup, and pick this .zip as it is.
 Do not unpack and re-zip it: the app reads zips that are stored, not compressed.
 `
 

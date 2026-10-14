@@ -32,11 +32,11 @@ const GOALS = [
   ['strength', () => [t('Get stronger'), t('Heavier lifts, lower reps.')], 'barbell'],
   ['muscle', () => [t('Build muscle'), t('Volume and progression.')], 'arm'],
   ['general', () => [t('General fitness'), t('Balanced, sustainable training.')], 'heart'],
-  ['fatloss', () => [t('Lose fat'), t('Keep strength while leaning out.')], 'flame'],
+  ['fatloss', () => [t('Lose fat'), t('Keep strength while leaning out.')], 'scale'],
   ['endurance', () => [t('Endurance'), t('Higher reps, less rest, cardio.')], 'figureRun']
 ]
 const EXPERIENCE = [
-  ['new', () => [t('New to lifting'), t('First months in the gym.')], 'sparkles'],
+  ['new', () => [t('New to lifting'), t('First months in the gym.')], 'star'],
   ['returning', () => [t('Coming back after a break'), t('You know the movements; the numbers need rebuilding.')], 'reset'],
   ['regular', () => [t('Training regularly'), t('Consistent for a while now.')], 'trophy']
 ]
@@ -229,7 +229,7 @@ export default function CoachIntake() {
     </div>
 
     {key !== 'consent' && <div className="ob-foot">
-      <Button variant="primary" style={{ flex: 1 }} disabled={!canNext || busy} icon={last ? 'sparkles' : undefined} onClick={next}>
+      <Button variant="primary" style={{ flex: 1 }} disabled={!canNext || busy} icon={last ? 'check' : undefined} onClick={next}>
         {last ? (editing ? t('Save') : t('Build my plan')) : t('Continue')}
       </Button>
     </div>}
@@ -268,7 +268,7 @@ function Consent({ onAgree, onDecline }) {
     <div className="ob-fine">
       <div>{who}</div>
       <div>{t('Your name, your sign-in details and everything else about your account stay here. Other people’s data is never included.')}</div>
-      <div style={{ color: 'var(--yellow)' }}>{t('The Coach is not a doctor or a physiotherapist. If something hurts, ask a professional.')}</div>
+      <div style={{ color: 'var(--yellow-ink)' }}>{t('The Coach is not a doctor or a physiotherapist. If something hurts, ask a professional.')}</div>
     </div>
     <div className="ob-foot" style={{ flexDirection: 'column' }}>
       <Button variant="primary" onClick={onAgree}>{t('I understand, let’s go')}</Button>

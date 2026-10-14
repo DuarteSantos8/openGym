@@ -1,5 +1,15 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- licences (Settings, About) ---
+  'Licences': '许可证',
+  'It comes with no warranty, to the extent the law allows.': '在法律允许的范围内，本软件不提供任何担保。',
+  'Free software, licensed under the GNU Affero General Public License v3.0 or later. You may redistribute and modify it under those terms.': '自由软件，依据 GNU Affero 通用公共许可证 3.0 版或更高版本授权。你可以按这些条款再分发和修改它。',
+  'Full licence text': '许可证全文',
+  'Built on {0} v{1} by {2}.': '基于 {2} 的 {0} v{1}。',
+  'Third-party notices': '第三方声明',
+  'Exercise media': '动作媒体',
+  'Exercise text': '动作文字说明',
+  'Icons': '图标',
   'Confirm': '确认',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回退出',

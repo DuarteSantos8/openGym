@@ -1,5 +1,15 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- licences (Settings, About) ---
+  'Licences': 'लाइसेंस',
+  'It comes with no warranty, to the extent the law allows.': 'क़ानून जितनी अनुमति देता है, उस सीमा तक इसके साथ कोई वारंटी नहीं है।',
+  'Free software, licensed under the GNU Affero General Public License v3.0 or later. You may redistribute and modify it under those terms.': 'GNU Affero जनरल पब्लिक लाइसेंस v3.0 या बाद के संस्करण के तहत लाइसेंस प्राप्त मुफ़्त सॉफ़्टवेयर। आप इन शर्तों के अनुसार इसे वितरित और संशोधित कर सकते हैं।',
+  'Full licence text': 'पूरा लाइसेंस पाठ',
+  'Built on {0} v{1} by {2}.': '{2} द्वारा बनाए गए {0} v{1} पर आधारित।',
+  'Third-party notices': 'तृतीय-पक्ष सूचनाएँ',
+  'Exercise media': 'व्यायाम मीडिया',
+  'Exercise text': 'व्यायाम पाठ',
+  'Icons': 'आइकन',
   'Confirm': 'पुष्टि करें',
   'Cancel': 'रद्द करें',
   'Press back again to exit': 'बाहर निकलने के लिए फिर से बैक दबाएँ',

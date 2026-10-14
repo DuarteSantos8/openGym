@@ -1,5 +1,15 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- licences (Settings, About) ---
+  'Licences': 'ใบอนุญาต',
+  'It comes with no warranty, to the extent the law allows.': 'ไม่มีการรับประกันใด ๆ ภายในขอบเขตที่กฎหมายอนุญาต',
+  'Free software, licensed under the GNU Affero General Public License v3.0 or later. You may redistribute and modify it under those terms.': 'ซอฟต์แวร์เสรีที่อนุญาตภายใต้ GNU Affero General Public License เวอร์ชัน 3.0 ขึ้นไป คุณแจกจ่ายและแก้ไขได้ตามเงื่อนไขดังกล่าว',
+  'Full licence text': 'ข้อความใบอนุญาตฉบับเต็ม',
+  'Built on {0} v{1} by {2}.': 'สร้างต่อจาก {0} v{1} โดย {2}',
+  'Third-party notices': 'ประกาศของบุคคลที่สาม',
+  'Exercise media': 'สื่อท่าออกกำลังกาย',
+  'Exercise text': 'ข้อความท่าออกกำลังกาย',
+  'Icons': 'ไอคอน',
   // --- generic ---
   'Confirm': 'ยืนยัน',
   'Cancel': 'ยกเลิก',

@@ -124,7 +124,7 @@ function CardFace({ card, index, count }) {
     <div className="ci-card-hd">
       <button className="iconbtn ci-card-btn" onClick={() => openEditCard(card)} aria-label={t('Edit')}><Icon name="pencil" /></button>
       <div className="ci-label">{card.label}</div>
-      <button className="iconbtn ci-card-btn" style={{ color: 'var(--red)' }} onClick={remove} aria-label={t('Remove')}><Icon name="trash" /></button>
+      <button className="iconbtn ci-card-btn" style={{ color: 'var(--red-ink)' }} onClick={remove} aria-label={t('Remove')}><Icon name="trash" /></button>
     </div>
     <div className="ci-qr-plate"><QrCanvas value={card.value} size={230} /></div>
     <div className="ci-value">{card.value}</div>

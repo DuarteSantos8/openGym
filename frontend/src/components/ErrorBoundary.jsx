@@ -1,6 +1,7 @@
 import { Component } from 'react'
 import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
+import { BRAND } from '../brand.js'
 import Icon from './Icon.jsx'
 import { Button } from './ui.jsx'
 
@@ -15,7 +16,7 @@ import { Button } from './ui.jsx'
 export default class ErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { failed: false } }
   static getDerivedStateFromError() { return { failed: true } }
-  componentDidCatch(err) { console.error('openGym render error:', err) }
+  componentDidCatch(err) { console.error(`${BRAND.name} render error:`, err) }
 
   render() {
     if (!this.state.failed) return this.props.children

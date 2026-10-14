@@ -1,5 +1,15 @@
 // Polish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- licences (Settings, About) ---
+  'Licences': 'Licencje',
+  'It comes with no warranty, to the extent the law allows.': 'Brak gwarancji w zakresie dozwolonym przez prawo.',
+  'Free software, licensed under the GNU Affero General Public License v3.0 or later. You may redistribute and modify it under those terms.': 'Wolne oprogramowanie na licencji GNU Affero General Public License v3.0 lub nowszej. Możesz je rozpowszechniać i zmieniać na tych warunkach.',
+  'Full licence text': 'Pełny tekst licencji',
+  'Built on {0} v{1} by {2}.': 'Oparte na {0} v{1} autorstwa {2}.',
+  'Third-party notices': 'Informacje o składnikach zewnętrznych',
+  'Exercise media': 'Materiały ćwiczeń',
+  'Exercise text': 'Opisy ćwiczeń',
+  'Icons': 'Ikony',
   'Confirm': 'Potwierdź',
   'Cancel': 'Anuluj',
   'Press back again to exit': 'Naciśnij wstecz ponownie, aby wyjść',

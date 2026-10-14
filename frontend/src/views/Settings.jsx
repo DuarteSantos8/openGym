@@ -44,6 +44,7 @@ import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } fro
 import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem } from '../components/Passkeys.jsx'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
 import { PAGES, ROOT_GROUPS, pageVisible, searchSettings, pageTrail } from './settings-pages.js'
+import { BRAND, LINKS } from '../brand.js'
 
 /* Settings (v1.3.11). The root is one screen: an account card, eleven rows that each open a page
    (/settings/<page>), and a search over every row. Rare things live one level further down
@@ -412,7 +413,7 @@ export default function Settings({ page = null, find = null, via = null }) {
     look: () => themeLabel + ' · ' + accentLabel(S),
     coach: () => (coachLocal?.mode === 'server' ? t('Your server') : coachLocal?.mode === 'byok' ? t('Your API key') : t('Off')),
     data: () => '',
-    about: () => 'v' + __APP_VERSION__,
+    about: () => 'v' + BRAND.version,
   }
 
   const open = id => {
@@ -806,19 +807,17 @@ export default function Settings({ page = null, find = null, via = null }) {
 
     about: () => <>
       {/* Updates. On Android the row is always there: it checks on demand and installs when a
-          release is newer (checksum verified, see onUpdateRowClick). On the web the app updates
-          with its server, so the row points at the APK for the phone instead. iOS has no APK. */}
-      <Section footer={MOBILE ? (android ? t('Releases are checked on GitHub. The download is verified against its checksum before the installer opens.') : null) : t('The web app updates together with your server. The Android app installs its own updates from here.')}>
-        <Row icon="info" iconTint="var(--grey)" title={t('Version')} value={'v' + __APP_VERSION__} />
+          release is newer (checksum verified, see onUpdateRowClick). Gains ships no APK, so the
+          web build shows only the version: it updates together with its server. */}
+      <Section footer={MOBILE && android ? t('Releases are checked on GitHub. The download is verified against its checksum before the installer opens.') : null}>
+        <Row icon="info" iconTint="var(--grey)" title={t('Version')} value={'v' + BRAND.version} />
         {MOBILE
           ? android && <Row icon="download" iconTint="var(--green)"
               title={updateInfo?.hasUpdate ? t('Update to openGym v{0}', updateInfo.latestVersion) : t('Check for updates')}
               subtitle={checking ? t('Checking…') : t('You have v{0}', __APP_VERSION__)}
               accessory="chevron"
               onClick={() => (updateInfo?.hasUpdate ? onUpdateRowClick() : checkNow())} />
-          : <Row icon="download" iconTint="var(--green)" title={t('Get the Android app')}
-              subtitle={t('Download the APK from opengym.ch')} accessory="chevron"
-              onClick={() => window.open('https://opengym.ch/#download', '_blank', 'noopener')} />}
+          : null}
       </Section>
       {/* "Add to Home screen": not inside the phone app, and not once it is installed. */}
       {!MOBILE && !standalone() && <Section title={t('Tip')}>
@@ -829,14 +828,56 @@ export default function Settings({ page = null, find = null, via = null }) {
       {/* The version, where the support template tells people to look for it. On the phone
           build there is no address bar and no about box, so without this there is no way to tell
           which build you are running, or whether an update actually installed. */}
+      <Section>
+        <Row icon="shield" iconTint="var(--grey)" title={t('Licences')} accessory="chevron" onClick={() => open('licences')} />
+      </Section>
       <div className="dim small sp-version">
-        openGym v{__APP_VERSION__} · {t('free & open source (AGPL v3)')}<br />
-        <a href="https://github.com/DuarteSantos8/openGym" target="_blank" rel="noopener">{t('Source code')}</a><br />
-        {/* Attribution the media licence asks for word for word (agreement §8c), so it is not translated */}
-        Exercise media © Aliaksandr Makatserchyk, <a href="https://gymvisual.com/" target="_blank" rel="noopener">Gym visual</a>, gymvisual.com.
-        Media licensed for use in openGym only; see <a href="https://github.com/DuarteSantos8/openGym/blob/main/NOTICE.md" target="_blank" rel="noopener">NOTICE.md</a>
+        {BRAND.name} v{BRAND.version} · {t('free & open source (AGPL v3)')}<br />
+        <a href={LINKS.source[0].url} target="_blank" rel="noopener">{t('Source code')}</a><br />
+        {/* Attribution the media licence asks for word for word (agreement §8c), so it is not translated
+            and not brand-substituted: it names openGym on purpose. */}
+        Exercise media © Aliaksandr Makatserchyk, <a href={LINKS.media.url} target="_blank" rel="noopener">Gym visual</a>, gymvisual.com.
+        Media licensed for use in {LINKS.upstream.name} only; see <a href={LINKS.upstream.notice} target="_blank" rel="noopener">NOTICE.md</a>
       </div>
     </>,
+
+    // AGPL-3.0 notices and the third-party attributions NOTICE.md carries. The legal wording is
+    // not translated; the media line is the one the Gym visual agreement (§8c) asks for word for word.
+    licences: () => <>
+      <Section footer={t('It comes with no warranty, to the extent the law allows.')}>
+        <p className="sp-lic">
+          <span className="sp-lic-title">{BRAND.name} v{BRAND.version}</span>
+          {LINKS.copyright.map(line => <span key={line}>{line}<br /></span>)}
+          {t('Free software, licensed under the GNU Affero General Public License v3.0 or later. You may redistribute and modify it under those terms.')}
+        </p>
+        <Row icon="bookOpen" iconTint="var(--grey)" title={t('Full licence text')} accessory="chevron"
+          onClick={() => window.open(LINKS.upstream.license, '_blank', 'noopener')} />
+      </Section>
+      <Section title={t('Source code')} footer={t('Built on {0} v{1} by {2}.', LINKS.upstream.name, __APP_VERSION__, LINKS.upstream.author)}>
+        {LINKS.source.map(l => <Row key={l.url} icon="link" iconTint="var(--grey)" title={l.label} accessory="chevron"
+          onClick={() => window.open(l.url, '_blank', 'noopener')} />)}
+        <Row icon="link" iconTint="var(--grey)" title={LINKS.upstream.name} accessory="chevron"
+          onClick={() => window.open(LINKS.upstream.url, '_blank', 'noopener')} />
+      </Section>
+      <Section title={t('Third-party notices')}>
+        <p className="sp-lic">
+          <b>{t('Exercise media')}</b><br />
+          Exercise media © Aliaksandr Makatserchyk, <a href={LINKS.media.url} target="_blank" rel="noopener">Gym visual</a>, gymvisual.com.
+          Media licensed for use in {LINKS.upstream.name} only; see <a href={LINKS.upstream.notice} target="_blank" rel="noopener">NOTICE.md</a>
+        </p>
+        <p className="sp-lic">
+          <b>{t('Body diagram')}</b><br />
+          <a href={LINKS.muscleMap.url} target="_blank" rel="noopener">{LINKS.muscleMap.name}</a> © 2026 Melih Colpan, MIT License.
+        </p>
+        <p className="sp-lic">
+          <b>{t('Exercise text')}</b><br />
+          <a href={LINKS.exerciseDb.url} target="_blank" rel="noopener">{LINKS.exerciseDb.name}</a> by AscendAPI, via hasaneyldrm/exercises-dataset © 2026 Hasan Emir Yıldırım, MIT License.
+        </p>
+        <p className="sp-lic">
+          <b>{t('Icons')}</b><br />
+          Nutrition icons derived from <a href={LINKS.lucide.url} target="_blank" rel="noopener">{LINKS.lucide.name}</a>, ISC License, © Lucide Contributors; portions © 2013-2022 Cole Bemis (Feather), MIT License.
+        </p>
+      </Section></>,
 
     account: () => <>
       {/* The server: which one, which account, how that stands, "Sync now". A paired phone's
@@ -962,7 +1003,7 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go }) {
             value={preview[id]?.() || null} accessory="chevron" onClick={() => open(id)} className="sp-root-row" />)}
         </Section>
       ))}
-      <div className="dim small sp-version">openGym v{__APP_VERSION__}</div>
+      <div className="dim small sp-version">{BRAND.name} v{BRAND.version}</div>
     </>}
   </div>
 }

@@ -34,7 +34,7 @@ export const looksLikeEmail = s => {
 const ui = () => useUI.getState()
 const toast = m => ui().toast(m)
 const length = s => [...String(s || '')].length
-const errStyle = { color: 'var(--red)', marginTop: 10 }
+const errStyle = { color: 'var(--red-ink)', marginTop: 10 }
 
 // "in 5 minutes" in the UI language, for how long a pause (429, Retry-After) still lasts.
 function fmtIn(sec) {

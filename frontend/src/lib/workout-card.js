@@ -12,6 +12,7 @@ import { isWarmupRow } from './workout-model.js'
 import { MUSCLES, INERT, levelsOf, loadOfWorkouts } from './muscles.js'
 import { fmtDate, fmtDur, fmtNum, fmtVol, capWords } from './format.js'
 import { t, exerciseNameClass } from './i18n-core.js'
+import { BRAND } from '../brand.js'
 
 export const CARD_WIDTH = 1080
 const PAD = 88
@@ -188,7 +189,7 @@ export function layoutWorkoutCard(model, { measure, rtl = false, width = CARD_WI
 
   y += 64
   const height = Math.max(MIN_HEIGHT, Math.round(y + 34 + PAD))
-  items.push({ kind: 'text', text: 'openGym', x: start, y: height - PAD, size: 34, weight: 700, color: 'acc' })
+  items.push({ kind: 'text', text: BRAND.name, x: start, y: height - PAD, size: 34, weight: 700, color: 'acc' })
   return { width, height, rtl, items }
 }
 

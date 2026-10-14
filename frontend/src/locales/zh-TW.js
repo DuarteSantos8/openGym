@@ -1,4 +1,14 @@
 export default {
+  // --- licences (Settings, About) ---
+  'Licences': '授權條款',
+  'It comes with no warranty, to the extent the law allows.': '在法律允許的範圍內，本軟體不提供任何保證。',
+  'Free software, licensed under the GNU Affero General Public License v3.0 or later. You may redistribute and modify it under those terms.': '自由軟體，依據 GNU Affero 通用公共授權條款第 3.0 版或更新版本授權。你可以依這些條款再散布與修改。',
+  'Full licence text': '授權條款全文',
+  'Built on {0} v{1} by {2}.': '基於 {2} 的 {0} v{1}。',
+  'Third-party notices': '第三方聲明',
+  'Exercise media': '動作媒體',
+  'Exercise text': '動作文字說明',
+  'Icons': '圖示',
   'Confirm': '確認',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回以退出',

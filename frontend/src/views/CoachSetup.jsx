@@ -162,7 +162,7 @@ export default function CoachSetup() {
       </Section>
 
       {meta.baseUrl && <Section title={t('Endpoint')}
-        footer={isCleartext(baseUrl) ? <span style={{ color: 'var(--red)' }}>{cleartextRefused()}</span> : null}>
+        footer={isCleartext(baseUrl) ? <span style={{ color: 'var(--red-ink)' }}>{cleartextRefused()}</span> : null}>
         <div style={{ padding: '8px 12px' }}>
           <TextField value={baseUrl} placeholder="https://ollama.example.com" inputMode="url" autoCapitalize="none" autoCorrect="off"
             onChange={e => setBaseUrl(e.target.value)} />
@@ -188,7 +188,7 @@ export default function CoachSetup() {
 
       {step >= 0 && <div className="card">
         {STEPS().map((s, i) => <div key={s} className="row" style={{ gap: 8, padding: '3px 0', opacity: i > step ? .4 : 1 }}>
-          <span style={{ color: i < step || step === 2 ? 'var(--green)' : i === step ? 'var(--acc)' : 'var(--dim)' }}><Icon name={i < step || step === 2 ? 'check' : 'hourglass'} /></span>
+          <span style={{ color: i < step || step === 2 ? 'var(--green-ink)' : i === step ? 'var(--acc-ink)' : 'var(--dim)' }}><Icon name={i < step || step === 2 ? 'check' : 'hourglass'} /></span>
           <span className="small">{s}</span>
         </div>)}
       </div>}
@@ -204,7 +204,7 @@ export default function CoachSetup() {
 
       <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
         {!models
-          ? <Button variant="primary" icon="sparkles" disabled={busy} onClick={prepare}>{t('List models')}</Button>
+          ? <Button variant="primary" icon="list" disabled={busy} onClick={prepare}>{t('List models')}</Button>
           : <Button variant="primary" icon="check" disabled={busy} onClick={save}>{t('Save and use the Coach')}</Button>}
         {models && <Button disabled={busy} onClick={prepare}>{t('List models')}</Button>}
       </div>

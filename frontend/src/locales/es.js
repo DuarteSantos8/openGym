@@ -1,5 +1,15 @@
 // Spanish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- licences (Settings, About) ---
+  'Licences': 'Licencias',
+  'It comes with no warranty, to the extent the law allows.': 'No ofrece ninguna garantía, en la medida que permita la ley.',
+  'Free software, licensed under the GNU Affero General Public License v3.0 or later. You may redistribute and modify it under those terms.': 'Software libre con licencia GNU Affero General Public License v3.0 o posterior. Puedes redistribuirlo y modificarlo bajo esos términos.',
+  'Full licence text': 'Texto completo de la licencia',
+  'Built on {0} v{1} by {2}.': 'Basado en {0} v{1} de {2}.',
+  'Third-party notices': 'Avisos de terceros',
+  'Exercise media': 'Medios de ejercicios',
+  'Exercise text': 'Texto de ejercicios',
+  'Icons': 'Iconos',
   'Confirm': 'Confirmar',
   'Cancel': 'Cancelar',
   'Press back again to exit': 'Pulsa atrás otra vez para salir',

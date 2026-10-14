@@ -3,8 +3,82 @@ import { describe, expect, it } from 'vitest'
 import { ACCENTS } from './format.js'
 import {
   cleanHex, sanitizeAccent, accentKey, accentValue, contrast, inkOn, readableIn, adjustedIn,
-  customAccentVars, accentPair, applyAccent, THEMES, isGrey, inkOnBoth, mix, GREY_TEXT, GREY_GAP,
+  customAccentVars, accentPair, applyAccent, THEMES, isGrey, inkOnBoth, mix, GREY_TEXT, GREY_GAP, tintOver,
 } from './accent.js'
+import { readFileSync } from 'node:fs'
+import { EFFORT_BANDS } from './effort.js'
+
+// The preset accents as index.css draws them (--blue, --green... per theme) and the --acc-ink it
+// sets for each. Read from the stylesheet, so a value edited there is the one measured here.
+const CSS = readFileSync('src/index.css', 'utf8') // vitest runs from frontend/
+const PRESET_FILL = {
+  dark: { lime: '#30d158', sky: '#0a84ff', orange: '#ff9f0a', violet: '#bf5af2', pink: '#ff375f', red: '#ff453a', teal: '#40c8e0', gold: '#ffd60a' },
+  light: { lime: '#34c759', sky: '#007aff', orange: '#ff9500', violet: '#af52de', pink: '#ff2d55', red: '#ff3b30', teal: '#30b0c7', gold: '#ffcc00' },
+}
+const inkOf = (theme, key) => {
+  const m = CSS.match(new RegExp(`:root${theme === 'light' ? '\\[data-theme="light"\\]' : ''}\\[data-accent="${key}"\\]\\s*\\{[^}]*--acc-ink:(#[0-9a-f]{6})`))
+  return m ? m[1] : PRESET_FILL[theme][key]
+}
+describe('--acc-ink of the preset accents (index.css)', () => {
+  for (const theme of ['dark', 'light']) for (const key of Object.keys(PRESET_FILL[theme])) {
+    it(`${key} in ${theme}: 4.5:1 on the page, the card, the nested fill and the tint over it`, () => {
+      const ink = inkOf(theme, key)
+      const th = THEMES[theme]
+      for (const bg of [...th.bgs, tintOver(PRESET_FILL[theme][key], th.surface2)]) {
+        expect(contrast(ink, bg), `${ink} on ${bg}`).toBeGreaterThanOrEqual(4.5)
+      }
+    })
+  }
+  it('the running-workout label (--live-ink) reads in light, also with an orange or gold accent', () => {
+    for (const ink of ['#a35800', '#c42d25']) for (const bg of THEMES.light.bgs) expect(contrast(ink, bg), `${ink} on ${bg}`).toBeGreaterThanOrEqual(4.5)
+    expect(CSS).toContain('--live-ink:#a35800')
+    expect(CSS).toContain('--live-ink:#c42d25')
+    expect(CSS).toMatch(/#tabbar button\.start\.rec span\{color:var\(--live-ink\)\}/)
+  })
+})
+
+describe('status colours as text (--yellow-ink, --orange-ink, --green-ink, --red-ink, --blue-ink)', () => {
+  const FILL = {
+    dark: { yellow: '#ffd60a', orange: '#ff9f0a', green: '#30d158', red: '#ff453a', blue: '#0a84ff', purple: '#bf5af2' },
+    light: { yellow: '#ffcc00', orange: '#ff9500', green: '#34c759', red: '#ff3b30', blue: '#007aff', purple: '#af52de' },
+  }
+  const inkAt = (theme, name) => {
+    const light = CSS.indexOf(':root[data-theme="light"] {')
+    const block = theme === 'light' ? CSS.slice(light, CSS.indexOf('}', light)) : CSS.slice(0, light)
+    const m = block.match(new RegExp(`--${name}-ink: ?(#[0-9a-f]{6})`))
+    // a dark ink that is not a hex reads the plain colour (var(--name))
+    return m ? m[1] : theme === 'dark' ? FILL.dark[name] : null
+  }
+  for (const theme of ['dark', 'light']) for (const name of Object.keys(FILL[theme])) {
+    it(`${name} in ${theme}: 4.5:1 on the page, the card and the 18% tint over the card`, () => {
+      const ink = inkAt(theme, name)
+      expect(ink, `--${name}-ink in ${theme}`).toBeTruthy()
+      const th = THEMES[theme]
+      for (const bg of [...th.bgs, mix(th.bgs[1], FILL[theme][name], 0.18)]) {
+        expect(contrast(ink, bg), `${name} ${ink} on ${bg}`).toBeGreaterThanOrEqual(4.5)
+      }
+    })
+    if (name !== 'blue') it(`${name} in ${theme}: 4.5:1 on the effort cell (20% tint over --surface-2)`, () => {
+      const th = THEMES[theme]
+      expect(contrast(inkAt(theme, name), mix(th.surface2, FILL[theme][name], 0.2))).toBeGreaterThanOrEqual(4.5)
+    })
+  }
+  it('every status effort band has the ink of its own colour', () => {
+    for (const b of EFFORT_BANDS.filter(b => b.color !== 'var(--acc-2)')) expect(b.ink, b.color).toBe(b.color.replace(/\)$/, '-ink)'))
+  })
+  it('the Easy band (accent tint) uses neutral text, since no accent ink clears 4.5:1 on every accent tint', () => {
+    expect(EFFORT_BANDS.find(b => b.color === 'var(--acc-2)').ink).toBe('var(--label)')
+  })
+})
+
+describe('focus ring and inline links', () => {
+  it('the focus ring is --acc-ink, which clears 4.5:1 (so 3:1 as a ring) on every fill for every preset', () => {
+    expect(CSS).toMatch(/:focus-visible\{outline:2\.5px solid var\(--acc-ink\)/)
+  })
+  it('links in running text are underlined, not told apart by colour alone', () => {
+    expect(CSS).toMatch(/\.sp-version a,\.sp-lic a\{text-decoration:underline/)
+  })
+})
 import { mergeStates, stampChange } from './sync-merge.js'
 
 describe('cleanHex', () => {
@@ -130,10 +204,19 @@ describe('readable on the theme', () => {
 
 describe('CSS for the own colour', () => {
   it('derives the accent, its pressed shade and its text', () => {
-    expect(customAccentVars('#0a84ff', 'dark')).toEqual({ '--acc': '#0a84ff', '--acc-2': '#0863bf', '--on-acc': '#000000', '--knob-ring': 'transparent' })
+    expect(customAccentVars('#0a84ff', 'dark')).toEqual({ '--acc': '#0a84ff', '--acc-2': '#0863bf', '--on-acc': '#000000', '--knob-ring': 'transparent', '--acc-ink': '#47a3ff' })
     const v = customAccentVars('#000033', 'dark')
     expect(v['--acc']).toBe(readableIn('#000033', 'dark'))
     expect(v['--on-acc']).toBe(inkOn(v['--acc']))
+  })
+  it('the accent as text or an icon (--acc-ink) clears 4.5:1 on the page, card, nested fill and tint in both themes', () => {
+    for (const hex of ['#34c759', '#ffcc00', '#30b0c7', '#ff9500', '#0a84ff', '#bf5af2', '#000033', '#ffffff']) {
+      for (const theme of ['dark', 'light']) {
+        const v = customAccentVars(hex, theme)
+        const ink = v['--acc-ink']
+        for (const bg of [...THEMES[theme].bgs, tintOver(v['--acc'], THEMES[theme].surface2)]) expect(contrast(ink, bg), `${hex} ${theme} ${bg}`).toBeGreaterThanOrEqual(4.5)
+      }
+    }
   })
   it('the button text reads on the pressed shade too, not only at rest', () => {
     // #eb0037 in dark mode: black reads on it at rest but only 2.9:1 on its pressed shade

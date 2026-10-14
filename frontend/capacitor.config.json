@@ -1,8 +1,8 @@
 {
   "appId": "ch.duartesantos.opengym",
-  "appName": "openGym",
+  "appName": "Gains",
   "webDir": "dist",
-  "backgroundColor": "#0c0e12",
+  "backgroundColor": "#0c0b0a",
   "android": {
     "allowMixedContent": true
   }

@@ -189,7 +189,7 @@ describe('Settings — vibrate', () => {
     expect(row.querySelector('.lrow-s').textContent).toBe('Not on iPhone')
     expect(switchIn(row).disabled).toBe(true)
     expect(switchIn(row).getAttribute('aria-checked')).toBe('false')
-    expect(host.textContent).toContain('iPhone doesn’t let openGym vibrate. A sound or a flash does the job.')
+    expect(host.textContent).toContain('iPhone doesn’t let Gains vibrate. A sound or a flash does the job.')
   })
 
   it('a desktop browser without vibration shows it disabled as not supported, with no iPhone footer', () => {
@@ -197,7 +197,7 @@ describe('Settings — vibrate', () => {
     Object.defineProperty(navigator, 'userAgent', { value: 'Mozilla/5.0 (X11; Linux x86_64) Gecko/20100101 Firefox/130.0', configurable: true })
     mount()
     expect(rowTitled('Vibrate').querySelector('.lrow-s').textContent).toBe('Not supported in this browser.')
-    expect(host.textContent).not.toContain('iPhone doesn’t let openGym vibrate')
+    expect(host.textContent).not.toContain('iPhone doesn’t let Gains vibrate')
   })
 })
 

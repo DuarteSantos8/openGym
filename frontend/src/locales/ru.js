@@ -1,5 +1,15 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- licences (Settings, About) ---
+  'Licences': 'Лицензии',
+  'It comes with no warranty, to the extent the law allows.': 'Гарантий нет в той мере, в какой это допускает закон.',
+  'Free software, licensed under the GNU Affero General Public License v3.0 or later. You may redistribute and modify it under those terms.': 'Свободное ПО под лицензией GNU Affero General Public License версии 3.0 или новее. Вы можете распространять и изменять его на этих условиях.',
+  'Full licence text': 'Полный текст лицензии',
+  'Built on {0} v{1} by {2}.': 'Основано на {0} v{1} (автор — {2}).',
+  'Third-party notices': 'Уведомления о сторонних компонентах',
+  'Exercise media': 'Медиа упражнений',
+  'Exercise text': 'Тексты упражнений',
+  'Icons': 'Значки',
   'Confirm': 'Подтвердить',
   'Cancel': 'Отмена',
   'Press back again to exit': 'Нажмите «Назад» ещё раз, чтобы выйти',

@@ -1,5 +1,15 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- licences (Settings, About) ---
+  'Licences': '라이선스',
+  'It comes with no warranty, to the extent the law allows.': '법이 허용하는 범위에서 어떠한 보증도 제공되지 않습니다.',
+  'Free software, licensed under the GNU Affero General Public License v3.0 or later. You may redistribute and modify it under those terms.': 'GNU Affero 일반 공중 사용 허가서 v3.0 이상에 따라 배포되는 자유 소프트웨어입니다. 이 조건에 따라 재배포하고 수정할 수 있습니다.',
+  'Full licence text': '라이선스 전문',
+  'Built on {0} v{1} by {2}.': '{2}의 {0} v{1}을(를) 바탕으로 합니다.',
+  'Third-party notices': '제3자 고지',
+  'Exercise media': '운동 미디어',
+  'Exercise text': '운동 설명 텍스트',
+  'Icons': '아이콘',
   'Confirm': '확인',
   'Cancel': '취소',
   'Press back again to exit': '뒤로를 한 번 더 누르면 종료됩니다',

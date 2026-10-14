@@ -184,19 +184,22 @@ export const isHardSet = s => { const r = rirOf(s); return r != null && r <= HAR
 // everything from 4 up shares one bucket — and fine near failure, where the difference between
 // 0, 0.5 and 1 actually changes the training. A typed value between presets still colours by
 // the band it falls in, so the flexibility of a free number is never lost.
+// `color` is for fills and tints; `ink` is the same hue as text, >= 4.5:1 in both themes (index.css).
 export const EFFORT_BANDS = [
-  { rir: 0, max: 0.25, color: 'var(--purple)', feel: 'Nothing left, went to failure' },
-  { rir: 0.5, max: 0.75, color: 'var(--red)', feel: 'Maybe half a rep left' },
-  { rir: 1, max: 1.5, color: 'var(--orange)', feel: 'One more rep in the tank' },
-  { rir: 2, max: 2.5, color: 'var(--yellow)', feel: 'Two more reps' },
-  { rir: 3, max: 3.5, color: 'var(--green)', feel: 'Three more reps' },
-  { rir: 4, max: Infinity, color: 'var(--acc-2)', feel: 'Easy, warm-up territory' }
+  { rir: 0, max: 0.25, color: 'var(--purple)', ink: 'var(--purple-ink)', feel: 'Nothing left, went to failure' },
+  { rir: 0.5, max: 0.75, color: 'var(--red)', ink: 'var(--red-ink)', feel: 'Maybe half a rep left' },
+  { rir: 1, max: 1.5, color: 'var(--orange)', ink: 'var(--orange-ink)', feel: 'One more rep in the tank' },
+  { rir: 2, max: 2.5, color: 'var(--yellow)', ink: 'var(--yellow-ink)', feel: 'Two more reps' },
+  { rir: 3, max: 3.5, color: 'var(--green)', ink: 'var(--green-ink)', feel: 'Three more reps' },
+  // The accent can be any colour, custom ones included, so no single accent ink clears 4.5:1 on
+  // its own 20% tint in every case; this label stays neutral and the tint carries the hue.
+  { rir: 4, max: Infinity, color: 'var(--acc-2)', ink: 'var(--label)', feel: 'Easy, warm-up territory' }
 ]
 // The presets shown in the picker, hardest first — the order they read on the scale and the
 // order the colours run. `tail` is the collapsed top bucket ("4+"): its value is the floor it
 // stands for, so a tap logs a concrete 4, not a range nothing downstream could average.
 export const EFFORT_PRESETS = EFFORT_BANDS.map((b, i) => ({
-  rir: b.rir, color: b.color, feel: b.feel, tail: i === EFFORT_BANDS.length - 1
+  rir: b.rir, color: b.color, ink: b.ink, feel: b.feel, tail: i === EFFORT_BANDS.length - 1
 }))
 
 /**
@@ -205,8 +208,8 @@ export const EFFORT_PRESETS = EFFORT_BANDS.map((b, i) => ({
  * (RIR 1.5) takes the band it sits within so it is never left uncoloured. null (unrated) has
  * no colour — the caller shows a neutral control, not a green one.
  */
-export const effortColor = rir => {
-  if (rir == null) return null
-  for (const b of EFFORT_BANDS) if (rir <= b.max) return b.color
-  return EFFORT_BANDS[EFFORT_BANDS.length - 1].color
-}
+const bandOf = rir => EFFORT_BANDS.find(b => rir <= b.max) || EFFORT_BANDS[EFFORT_BANDS.length - 1]
+export const effortColor = rir => (rir == null ? null : bandOf(rir).color)
+
+/** The same band as effortColor, as a text colour: use it for `color`, effortColor for fills. */
+export const effortInk = rir => (rir == null ? null : bandOf(rir).ink)

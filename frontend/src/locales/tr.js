@@ -1,5 +1,15 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- licences (Settings, About) ---
+  'Licences': 'Lisanslar',
+  'It comes with no warranty, to the extent the law allows.': 'Yasaların izin verdiği ölçüde hiçbir garanti verilmez.',
+  'Free software, licensed under the GNU Affero General Public License v3.0 or later. You may redistribute and modify it under those terms.': 'GNU Affero Genel Kamu Lisansı sürüm 3.0 veya sonrası kapsamında lisanslanmış özgür yazılım. Bu koşullar altında dağıtabilir ve değiştirebilirsiniz.',
+  'Full licence text': 'Lisansın tam metni',
+  'Built on {0} v{1} by {2}.': '{2} tarafından geliştirilen {0} v{1} üzerine kuruludur.',
+  'Third-party notices': 'Üçüncü taraf bildirimleri',
+  'Exercise media': 'Egzersiz medyası',
+  'Exercise text': 'Egzersiz metinleri',
+  'Icons': 'Simgeler',
   'Confirm': 'Onayla',
   'Cancel': 'İptal',
   'Press back again to exit': 'Çıkmak için geri tuşuna tekrar basın',

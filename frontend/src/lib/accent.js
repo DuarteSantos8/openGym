@@ -98,9 +98,11 @@ export function inkOn(hex) {
 // --label-2 makes every button look switched off. A grey goes further: to text contrast (4.5:1)
 // on the theme, and at least 2:1 away from --label-2.
 export const THEMES = {
-  dark: { bgs: ['#000000', '#1c1c1e'], min: 3, toward: '#ffffff', label2: ['#8d8d93', '#98989f'] },
-  light: { bgs: ['#f2f2f7', '#ffffff'], min: 3, toward: '#000000', label2: ['#85858b', '#8a8a8e'] },
+  dark: { bgs: ['#0c0b0a', '#1c1b19', '#2a2826'], min: 3, toward: '#ffffff', label2: ['#999590', '#9f9b96'], surface2: '#2a2826' },
+  light: { bgs: ['#f5f4f1', '#ffffff', '#eeece8'], min: 3, toward: '#000000', label2: ['#6b665f', '#6b665f'], surface2: '#eeece8' },
 }
+/** The --acc-soft tint of `acc` over `base` (index.css: 16% accent), what a tinted button or tag sits on. */
+export const tintOver = (acc, base) => mix(base, acc, 0.16)
 // Below this HSL saturation a colour counts as a grey (white, black, #808080, near-whites).
 export const GREY_SAT = 0.25
 export const GREY_TEXT = 4.5
@@ -132,12 +134,14 @@ export const isGrey = hex => toHsl(hex)[1] < GREY_SAT
  * (dark theme) or darker (light theme) in small steps of HSL lightness until it does, hue and
  * saturation kept. A grey has to clear the stricter grey bar (THEMES above).
  */
-export function readableIn(hex, theme) {
+export function readableIn(hex, theme, min, extraBgs = []) {
   const th = THEMES[theme] || THEMES.dark
   const grey = isGrey(hex)
+  const need = min ?? th.min
+  const bgs = [...th.bgs, ...extraBgs]
   const ok = c => grey
-    ? worst(c, th.bgs) >= GREY_TEXT && worst(c, th.label2) >= GREY_GAP
-    : worst(c, th.bgs) >= th.min
+    ? worst(c, bgs) >= Math.max(GREY_TEXT, need) && worst(c, th.label2) >= GREY_GAP
+    : worst(c, bgs) >= need
   if (ok(hex)) return hex
   const [h, s, l] = toHsl(hex)
   const up = th.toward === '#ffffff'
@@ -172,6 +176,7 @@ export function inkOnBoth(acc, acc2) {
 // A switch knob is white. On an accent nearly as light (white, pale yellow in dark mode) it would
 // vanish into the track, so it gets a hairline ring there (index.css .sw.on .knob).
 const KNOB_RING = 'rgba(0,0,0,.28)'
+const ACC_INK_MIN = 4.5
 
 /**
  * The CSS custom properties for the user's colour in `theme`, the same set a preset defines in
@@ -187,6 +192,9 @@ export function customAccentVars(hex, theme) {
   return {
     '--acc': acc, '--acc-2': acc2, '--on-acc': inkOnBoth(acc, acc2),
     '--knob-ring': contrast('#ffffff', acc) < 1.5 ? KNOB_RING : 'transparent',
+    // the colour as text or an icon: 4.5:1 on the page, card, nested fill and the tint over it,
+    // where the button fill only needs 3:1
+    '--acc-ink': readableIn(c, theme, ACC_INK_MIN, [tintOver(acc, (THEMES[theme] || THEMES.dark).surface2)]),
   }
 }
 
@@ -198,7 +206,7 @@ export function accentPair(v) {
   return { accent: ACCENTS[k], ink: ACCENT_INK[k] }
 }
 
-const CUSTOM_VARS = ['--acc', '--acc-2', '--on-acc', '--knob-ring']
+const CUSTOM_VARS = ['--acc', '--acc-2', '--on-acc', '--knob-ring', '--acc-ink']
 
 /**
  * Puts the accent on the page root: a preset by `data-accent` (index.css does the rest), the

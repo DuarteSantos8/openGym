@@ -58,7 +58,7 @@ describe('Login with password sign-in', () => {
     expect(page.textContent).toContain('Passkeys use your fingerprint. No passwords to remember.')
     mocks.webauthn = false
     const noPasskeys = mount(<Login />)
-    expect(noPasskeys.textContent).toContain("This browser doesn't do passkeys, but you can still use openGym locally on this device.")
+    expect(noPasskeys.textContent).toContain("This browser doesn't do passkeys, but you can still use Gains locally on this device.")
     expect(buttons(noPasskeys)).not.toContain('Sign in with password')
   })
 

@@ -116,10 +116,10 @@ describe('CoachSetup — where it runs at all', () => {
   })
 })
 
-describe('CoachSetup — "use my self-hosted openGym"', () => {
+describe('CoachSetup — "use my self-hosted Gains"', () => {
   it('hands the Coach to the server and leaves for the conversation', async () => {
     await mount()
-    await click(rowTitled('Use my self-hosted openGym'))
+    await click(rowTitled('Use my self-hosted Gains'))
     await settle()
     expect(mocks.setCoachLocal).toHaveBeenCalledWith({ mode: 'server' })
     expect(mocks.toast).toHaveBeenCalledWith('The Coach is on')
@@ -129,8 +129,8 @@ describe('CoachSetup — "use my self-hosted openGym"', () => {
   it('an unpaired phone is asked to connect first, and nothing is written', async () => {
     mocks.user = null; mocks.config = null
     await mount()
-    expect(rowTitled('Use my self-hosted openGym').textContent).toContain('Connect to my server')
-    await click(rowTitled('Use my self-hosted openGym'))
+    expect(rowTitled('Use my self-hosted Gains').textContent).toContain('Connect to my server')
+    await click(rowTitled('Use my self-hosted Gains'))
     expect(mocks.openSheet).toHaveBeenCalledTimes(1)
     expect(mocks.setCoachLocal).not.toHaveBeenCalled()
     expect(mocks.nav).not.toHaveBeenCalled()
@@ -139,7 +139,7 @@ describe('CoachSetup — "use my self-hosted openGym"', () => {
   it('a paired server with no Coach on it refuses, explains, and writes nothing', async () => {
     mocks.config = { coach: { enabled: false } }
     await mount()
-    const row = rowTitled('Use my self-hosted openGym')
+    const row = rowTitled('Use my self-hosted Gains')
     expect(row.textContent).toContain('Your server has no Coach enabled')
     await click(row)
     expect(mocks.setCoachLocal).not.toHaveBeenCalled()
@@ -150,7 +150,7 @@ describe('CoachSetup — "use my self-hosted openGym"', () => {
   it('says it is still asking while the server has not answered yet', async () => {
     mocks.config = null
     await mount()
-    expect(rowTitled('Use my self-hosted openGym').textContent).toContain('Loading…')
+    expect(rowTitled('Use my self-hosted Gains').textContent).toContain('Loading…')
   })
 
   it('Back returns to Settings', async () => {
@@ -429,7 +429,7 @@ describe('CoachSetup — turning it off', () => {
   it('says which way it is running now', async () => {
     mocks.coachLocal = { mode: 'server' }
     await mount()
-    expect(host.textContent).toContain('Runs on your openGym server')
+    expect(host.textContent).toContain('Runs on your Gains server')
     expect(rowTitled('Turn the Coach off on this phone')).toBeTruthy()
   })
 
