@@ -29,10 +29,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image: opengym-api
+          - image: gains-api
             context: ./api
             file: ./api/Dockerfile
-          - image: opengym-web
+          - image: gains-web
             context: .
             file: ./web/Dockerfile
     steps:
