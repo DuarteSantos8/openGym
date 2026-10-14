@@ -41,7 +41,7 @@ function SourceCard({ provider, st }) {
 
   const report = r => {
     if (r.ok) toast(r.added || r.updated ? t('{0}: {1} new readings', name, r.added + r.updated) : t('{0}: up to date', name))
-    else toast(r.error === 'unavailable' ? t('{0} is not available on this device', name) : t('Could not read from {0}', name))
+    else toast((r.error === 'unavailable' ? t('{0} is not available on this device', name) : t('Could not read from {0}', name)) + (r.detail ? ` — ${r.detail}` : ''))
   }
   const run = fn => async () => {
     setBusy(true)
@@ -80,7 +80,7 @@ function SourceCard({ provider, st }) {
       <Switch checked={!!st.on} disabled={busy} onChange={v => (v ? askConnect() : askOff())} />
     </Row>
     {st.on && st.error && <Row icon="warning" iconTint="var(--orange)" title={t('Could not read from {0}', name)}
-      subtitle={t('Tap to try again')} accessory="chevron" onClick={syncNow} />}
+      subtitle={st.detail ? `${st.detail} · ${t('Tap to try again')}` : t('Tap to try again')} accessory="chevron" onClick={syncNow} />}
     {st.on && <Row icon="repeat" iconTint="var(--blue)" title={t('Read now')} accessory="chevron" onClick={busy ? undefined : syncNow} />}
     {st.on && <Row icon="key" iconTint="var(--grey)" title={t('Manage permissions')} subtitle={t(provider.manageHint)}
       accessory="chevron" onClick={busy ? undefined : manage} />}

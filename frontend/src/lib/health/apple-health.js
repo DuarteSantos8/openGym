@@ -134,32 +134,61 @@ export const appleHealth = {
 
   getAvailableDataTypes() { return Object.keys(TYPES) },
 
+  // HealthKit refuses a whole request for one type it will not let this app read; the plugin asks
+  // again without the types it names. Should the request still fail, the core types alone are
+  // asked for, so weight, steps, heart rate and sleep come in whatever else is refused. Resolves
+  // { asked, skipped } — `skipped` the types left out — and throws with HealthKit's own words.
   async requestPermissions(types) {
     const p = await plugin()
     if (!p) return { asked: false }
-    const read = [...new Set((types || []).map(t => TYPES[t]?.hk).filter(Boolean))]
+    const ids = list => [...new Set((list || []).map(t => TYPES[t]?.hk).filter(Boolean))]
+    const read = ids(types)
     if (!read.length) return { asked: false }
-    await p.HK.requestAuthorization({ read })
-    return { asked: true }
+    const typeOf = id => Object.keys(TYPES).find(k => TYPES[k].hk === id)
+    try {
+      const r = await p.HK.requestAuthorization({ read })
+      return { asked: true, skipped: list(r?.skipped).map(typeOf).filter(Boolean) }
+    } catch (e) {
+      const core = (types || []).filter(t => TYPES[t]?.core)
+      if (!core.length || core.length === (types || []).length) throw e
+      await p.HK.requestAuthorization({ read: ids(core) })
+      return { asked: true, skipped: (types || []).filter(t => !TYPES[t]?.core) }
+    }
   },
 
-  async fetchMeasurements({ types, since, until = Date.now() }) {
+  // The core types first, then a group at a time; `onBatch` gets each batch's readings as soon as
+  // they are read, so a first read of years of a hundred kinds of data shows up as it goes and is
+  // not lost if the app goes to the background half way.
+  async fetchMeasurements({ types, since, until = Date.now(), onBatch }) {
     const p = await plugin()
     if (!p) throw Object.assign(new Error('unavailable'), { code: 'unavailable' })
-    const out = []
-    let asked = 0, failed = 0
-    for (const type of types || []) {
-      if (!TYPES[type]) continue
-      const start = Number(since?.[type] ?? since) || 0
-      asked++
-      // One type HealthKit does not have on this iOS (a newer one) or refuses is no reason to
-      // give up on the others: it reads as nothing. Every one failing is a failed read.
-      try { out.push(...await readType(p.HK, type, start, until)) } catch (e) {
-        if (e?.code === 'unavailable') throw e
-        failed++
-      }
+    const known = (types || []).filter(t => TYPES[t])
+    const batches = [known.filter(t => TYPES[t].core)]
+    for (const t of known) {
+      if (TYPES[t].core) continue
+      const last = batches[batches.length - 1]
+      if (last.length && TYPES[last[0]].group === TYPES[t].group && !TYPES[last[0]].core) last.push(t)
+      else batches.push([t])
     }
-    if (asked && failed === asked) throw new Error('failed')
+    const out = []
+    let asked = 0, failed = 0, firstError = null
+    for (const batch of batches) {
+      const got = []
+      for (const type of batch) {
+        const start = Number(since?.[type] ?? since) || 0
+        asked++
+        // One type HealthKit does not have on this iOS (a newer one) or refuses is no reason to
+        // give up on the others: it reads as nothing. Every one failing is a failed read.
+        try { got.push(...await readType(p.HK, type, start, until)) } catch (e) {
+          if (e?.code === 'unavailable') throw e
+          failed++
+          firstError = firstError || e
+        }
+      }
+      if (got.length && onBatch) onBatch(got)
+      out.push(...got)
+    }
+    if (asked && failed === asked) throw new Error(firstError?.message || 'failed')
     return out
   },
 }

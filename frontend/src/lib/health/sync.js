@@ -71,15 +71,24 @@ export function syncSource(id, getState, update, { full = false, now = Date.now(
     try {
       if (!(await provider.isAvailable())) throw Object.assign(new Error('unavailable'), { code: 'unavailable' })
       const since = readSince(full ? 0 : st.at, now)
-      const readings = await provider.fetchMeasurements({ types: st.types || provider.getAvailableDataTypes(), since, until: now })
-      let counts = { added: 0, updated: 0 }
-      if (readings.length && getState()) update(s => { counts = applyReadings(s, readings, { now, ignoreDeleted: full }) })
-      await saveSource(id, { at: now, error: null })
+      const counts = { added: 0, updated: 0 }
+      // Each batch goes into the profile as it is read (a first read can be long).
+      const take = readings => {
+        if (!readings.length || !getState()) return
+        update(s => { const c = applyReadings(s, readings, { now, ignoreDeleted: full }); counts.added += c.added; counts.updated += c.updated })
+      }
+      let streamed = false
+      const readings = await provider.fetchMeasurements({ types: st.types || provider.getAvailableDataTypes(), since, until: now,
+        onBatch: r => { streamed = true; take(r) } })
+      if (!streamed) take(readings)
+      await saveSource(id, { at: now, error: null, detail: null })
       return { ok: true, ...counts, error: null }
     } catch (e) {
       const error = e?.code === 'unavailable' ? 'unavailable' : 'failed'
-      await saveSource(id, { error })
-      return { ok: false, added: 0, updated: 0, error }
+      // HealthKit's own words, for Settings to show: "failed" alone says nothing to fix.
+      const detail = String(e?.message || '').slice(0, 300) || null
+      await saveSource(id, { error, detail })
+      return { ok: false, added: 0, updated: 0, error, detail }
     }
   })().finally(() => running.delete(id))
   running.set(id, job)
@@ -94,11 +103,14 @@ export async function connectSource(id, getState, update, types = null) {
   const provider = providerById(id)
   if (!provider || !(await provider.isAvailable())) return { ok: false, error: 'unavailable' }
   const want = (types || provider.getAvailableDataTypes()).filter(t => provider.getAvailableDataTypes().includes(t))
+  let skipped = []
   try {
     const r = await provider.requestPermissions(want)
     if (!r.asked) return { ok: false, error: 'unavailable' }
-  } catch { return { ok: false, error: 'denied' } }
-  await saveSource(id, { on: true, types: want, at: 0, error: null })
+    skipped = Array.isArray(r.skipped) ? r.skipped : []
+  } catch (e) { return { ok: false, error: 'denied', detail: String(e?.message || '').slice(0, 300) || null } }
+  // What the system would not let be asked for is not read (nor asked for again on every read).
+  await saveSource(id, { on: true, types: want.filter(t => !skipped.includes(t)), skipped, at: 0, error: null, detail: null })
   return syncSource(id, getState, update, { full: true })
 }
 
