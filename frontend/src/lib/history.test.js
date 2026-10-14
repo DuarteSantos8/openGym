@@ -1617,14 +1617,16 @@ describe('switching a row between warm-up and work', () => {
     expect(makeWarmupAt(rows, 0)).toBe(rows)
   })
 
-  it('makeWarmupAt leaves drop, rest-pause and per-side rows as they are', () => {
+  it('makeWarmupAt converts per-side rows to warm-up sets, and leaves drop and rest-pause rows unchanged', () => {
     const drop = [{ w: 60, r: 8, done: true }, { w: 100, r: 5, done: true, type: 'dropset', drops: [{ w: 80, r: 4 }] }]
     expect(makeWarmupAt(drop, 1)).toBe(drop)
     const rp = [{ w: 60, r: 8, done: true }, { w: 100, r: 12, done: true, type: 'restpause', clusters: [{ r: 4, rest: 15 }] }]
     expect(makeWarmupAt(rp, 1)).toBe(rp)
     const side = [{ w: 30, r: 6, done: true }, { w: 30, r: 11, done: false, sides: { L: { w: 30, r: 5, done: true }, R: { w: 0, r: 6, done: false } } }]
-    expect(makeWarmupAt(side, 1)).toBe(side)
-    expect([canBeWarmup(drop[1]), canBeWarmup(rp[1]), canBeWarmup(side[1]), canBeWarmup(drop[0])]).toEqual([false, false, false, true])
+    const warmed = makeWarmupAt(side, 1)
+    expect(warmed).not.toBe(side)
+    expect(warmed[0]).toEqual({ w: 30, r: 6, done: false, phase: 'warmup', warmup: true })
+    expect([canBeWarmup(drop[1]), canBeWarmup(rp[1]), canBeWarmup(side[1]), canBeWarmup(drop[0])]).toEqual([false, false, true, true])
   })
 
   it('a warm-up made one is left out of the best weight and the work-set count', () => {
