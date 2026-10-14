@@ -71,9 +71,12 @@ paste the link under **Plan → share icon → Import from a video**, check the 
 5. **The countdown first.** When the video shows a timer the OCR can follow, every countdown to
    zero is one phase (a work, a rest, a warm-up move), as long as it counts, and the captions only
    name the phases: a short countdown between two longer ones is a rest whose caption names the
-   next exercise; a caption that comes up late in a move announces the next one; one at the start
+   next exercise (with equal lengths, 30 s on and 30 s off, the captions decide: one shown over a
+   whole countdown between two shown at none is the announcement); a caption that comes up late in a move announces the next one; one at the start
    names its own. The timer is read from its brightest (or darkest) marks only, so white digits
-   over a light wall and the ring round a countdown do not get in the way. An exercise read two ways
+   over a light wall and the ring round a countdown do not get in the way, and it is read twice a
+   second, since many timers animate as their number changes. A move no caption named, exactly one
+   round after a named move of its length, gets that name (marked as a guess). An exercise read two ways
    in two rounds, exactly one round apart, is one exercise. Without a usable timer:
    **Blocks and rounds.** Seconds with the same name are one block. When the timer restarts, a new
    block begins, even if the name stays the same or no name is on screen at all. The timer is only
