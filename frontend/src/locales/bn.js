@@ -560,6 +560,8 @@ export default {
   'leverage machine': 'লিভারেজ মেশিন',
   'medicine ball': 'মেডিসিন বল',
   'olympic barbell': 'অলিম্পিক বারবেল',
+  'Olympic bar weight': 'অলিম্পিক বারের ওজন',
+  'Used for barbell and Olympic bar exercises unless an exercise has its own override.': 'কোনো ব্যায়ামের নিজস্ব ওভাররাইড না থাকলে বারবেল ও অলিম্পিক বার ব্যায়ামে এই ওজন ব্যবহার হবে।',
   'resistance band': 'রেজিস্ট্যান্স ব্যান্ড',
   'roller': 'রোলার',
   'rope': 'দড়ি',

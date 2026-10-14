@@ -517,7 +517,7 @@ export default {
   'bosu ball': 'บอลโบซู', 'cable': 'สายเคเบิล', 'dumbbell': 'ดัมเบล',
   'elliptical machine': 'เครื่องเอลลิปติคัล', 'ez barbell': 'อีซีบาร์', 'hammer': 'แฮมเมอร์',
   'kettlebell': 'เคทเทิลเบล', 'clubbell': 'คลับเบล', 'macebell': 'เมซเบล', 'leverage machine': 'เครื่องคานงัด', 'medicine ball': 'เมดิซินบอล',
-  'olympic barbell': 'บาร์เบลโอลิมปิก', 'resistance band': 'ยางยืดออกกำลังกาย', 'roller': 'ลูกกลิ้ง',
+  'olympic barbell': 'บาร์เบลโอลิมปิก', 'Olympic bar weight': 'น้ำหนักบาร์โอลิมปิก', 'Used for barbell and Olympic bar exercises unless an exercise has its own override.': 'ใช้กับท่าออกกำลังกายที่ใช้บาร์เบล เว้นแต่ท่านั้นจะกำหนดน้ำหนักบาร์ไว้เอง', 'resistance band': 'ยางยืดออกกำลังกาย', 'roller': 'ลูกกลิ้ง',
   'rope': 'เชือก', 'skierg machine': 'เครื่องสกีเอิร์ก', 'sled machine': 'สเลด',
   'smith machine': 'สมิธแมชชีน', 'stability ball': 'บอลออกกำลังกาย', 'stationary bike': 'จักรยานปั่นอยู่กับที่',
   'stepmill machine': 'เครื่องเดินขึ้นบันได', 'tire': 'ยางรถ', 'trap bar': 'แทร็ปบาร์',

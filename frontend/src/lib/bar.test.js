@@ -35,6 +35,10 @@ describe('per-unit defaults', () => {
     expect(defaultBarWeight('ez barbell', 'kg')).toBe(10)
     expect(defaultBarWeight('ez barbell', 'lb')).toBe(25)
     expect(defaultBarWeight('olympic barbell', 'kg')).toBe(20)
+    expect(defaultBarWeight('barbell', 'kg')).toBe(20)
+    expect(defaultBarWeight('olympic barbell', 'kg')).toBe(20)
+    expect(defaultBarWeight('barbell', 'kg', { olympicBarWeight: 15 })).toBe(15)
+    expect(defaultBarWeight('olympic barbell', 'lb', { olympicBarWeight: 33 })).toBe(33)
     // A lb profile gets the bar its gym actually racks, not a 44.1 lb conversion.
     expect(defaultBarWeight('barbell', 'lb')).toBe(45)
     expect(defaultBarWeight('dumbbell', 'kg')).toBeNull()
@@ -43,12 +47,17 @@ describe('per-unit defaults', () => {
 
 describe('barWeightFor', () => {
   const barbell = idOf('barbell')
+  const olympic = idOf('olympic barbell')
   const ez = idOf('ez barbell')
 
   test('falls back to the equipment default in the profile unit', () => {
     expect(barWeightFor({ unit: 'kg', barWeights: {} }, barbell)).toBe(20)
     expect(barWeightFor({ unit: 'lb', barWeights: {} }, barbell)).toBe(45)
     expect(barWeightFor({ unit: 'kg' }, ez)).toBe(10)
+    const customDefault = { unit: 'kg', olympicBarWeight: 15, barWeights: {} }
+    expect(barWeightFor(customDefault, barbell)).toBe(15)
+    expect(barWeightFor(customDefault, olympic)).toBe(15)
+    expect(barWeightFor({ ...customDefault, unit: 'lb', olympicBarWeight: 33 }, olympic)).toBe(33)
   })
 
   test('an explicit override wins over the default', () => {

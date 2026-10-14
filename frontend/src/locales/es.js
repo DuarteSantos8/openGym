@@ -517,7 +517,7 @@ export default {
   'bosu ball': 'bosu', 'cable': 'polea', 'dumbbell': 'mancuerna',
   'elliptical machine': 'elíptica', 'ez barbell': 'barra EZ', 'hammer': 'martillo',
   'kettlebell': 'kettlebell', 'clubbell': 'clubbell', 'macebell': 'macebell', 'leverage machine': 'máquina de palanca', 'medicine ball': 'balón medicinal',
-  'olympic barbell': 'barra olímpica', 'resistance band': 'banda de resistencia', 'roller': 'rodillo',
+  'olympic barbell': 'barra olímpica', 'Olympic bar weight': 'Peso de la barra olímpica', 'Used for barbell and Olympic bar exercises unless an exercise has its own override.': 'Se usa en ejercicios con barra y barra olímpica, salvo que el ejercicio tenga su propio ajuste.', 'resistance band': 'banda de resistencia', 'roller': 'rodillo',
   'rope': 'cuerda', 'skierg machine': 'SkiErg', 'sled machine': 'trineo',
   'smith machine': 'máquina Smith', 'stability ball': 'fitball', 'stationary bike': 'bici estática',
   'stepmill machine': 'escaladora', 'tire': 'neumático', 'trap bar': 'barra hexagonal',

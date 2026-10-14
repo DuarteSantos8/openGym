@@ -10,6 +10,7 @@ import { useUI } from '../store/useUI.js'
 import { ACCENTS, ACCENT_NAMES, todayISO, localTZ, weekStartOf, MONDAY, SUNDAY, fmtPlate } from '../lib/format.js'
 import { inventoryFor, ownsPlates } from '../lib/plates.js'
 import { dumbbellsOf } from '../lib/dumbbells.js'
+import { defaultBarWeight } from '../lib/bar.js'
 import { effortOf } from '../lib/history.js'
 import { figureOf } from '../lib/exercises.js'
 import { unlock, chime, playOnSilentSupported, vibrateSupported, appleTouchDevice } from '../lib/sound.js'
@@ -36,6 +37,7 @@ import { forgetCoach } from '../lib/coach-api.js'
 import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration } from '../lib/duration.js'
 import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, plateInventorySheet, dumbbellInventorySheet, menuSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
+import Stepper from '../components/Stepper.jsx'
 import { durationSheet } from '../components/DurationWheel.jsx'
 import { showsConnection, showsLocalLine } from '../components/SyncBanner.jsx'
 import BackupFolderRow, { useBackupFolder, autoBackupSubtitle } from '../components/BackupFolderRow.jsx'
@@ -1299,9 +1301,16 @@ function EquipmentCard({ S, update }) {
   const dumbbellSummary = bells.length
     ? bells.map(fmtPlate).join(' · ')
     : t('Any weight. Tap to list the ones you own.')
+  const olympicBarWeight = S.olympicBarWeight ?? defaultBarWeight('olympic barbell', S.unit)
   return <Section title={t('Equipment')} footer={t('Filters the exercise library and picker, and flags routine exercises that need something you don’t have in the active profile.')}>
     <Row icon="plate" iconTint="var(--orange)" title={t('Plates')} subtitle={plateSummary} accessory="chevron" onClick={() => plateInventorySheet()} />
     <Row icon="dumbbell" iconTint="var(--teal)" title={t('Dumbbells')} subtitle={dumbbellSummary} accessory="chevron" onClick={() => dumbbellInventorySheet()} />
+    <Row icon="barbell" iconTint="var(--orange)" title={t('Olympic bar weight')}
+      subtitle={t('Used for barbell and Olympic bar exercises unless an exercise has its own override.')}>
+      <Stepper ariaLabel={t('Olympic bar weight')} value={olympicBarWeight} min={1} max={100}
+        step={S.unit === 'lb' ? 0.5 : 0.25} unit={S.unit}
+        onChange={v => update(s => { s.olympicBarWeight = v })} />
+    </Row>
     {profiles.length > 0 && <Row icon="kettlebell" iconTint="var(--acc)" title={t('Filter by equipment')}>
       <Switch checked={!!S.equipFilterOn} onChange={v => update(s => { s.equipFilterOn = v })} />
     </Row>}

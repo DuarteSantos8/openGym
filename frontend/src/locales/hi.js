@@ -517,7 +517,7 @@ export default {
   'bosu ball': 'बोसु बॉल', 'cable': 'केबल', 'dumbbell': 'डम्बल',
   'elliptical machine': 'एलिप्टिकल मशीन', 'ez barbell': 'EZ बारबेल', 'hammer': 'हैमर',
   'kettlebell': 'केटलबेल', 'clubbell': 'क्लबबेल', 'macebell': 'मेसबेल', 'leverage machine': 'लीवरेज मशीन', 'medicine ball': 'मेडिसिन बॉल',
-  'olympic barbell': 'ओलंपिक बारबेल', 'resistance band': 'रेज़िस्टेंस बैंड', 'roller': 'रोलर',
+  'olympic barbell': 'ओलंपिक बारबेल', 'Olympic bar weight': 'ओलंपिक बार का वजन', 'Used for barbell and Olympic bar exercises unless an exercise has its own override.': 'इस्तेमाल बारबेल और ओलंपिक बार वाले व्यायामों में होगा, जब तक व्यायाम का अपना मान न हो।', 'resistance band': 'रेज़िस्टेंस बैंड', 'roller': 'रोलर',
   'rope': 'रस्सी', 'skierg machine': 'स्कीअर्ग', 'sled machine': 'स्लेड मशीन',
   'smith machine': 'स्मिथ मशीन', 'stability ball': 'स्टेबिलिटी बॉल', 'stationary bike': 'स्थिर साइकिल',
   'stepmill machine': 'स्टेपमिल', 'tire': 'टायर', 'trap bar': 'ट्रैप बार',

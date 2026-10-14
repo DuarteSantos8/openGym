@@ -208,7 +208,7 @@ export function baseWeightFor(S, exOrId) {
   if (!ex) return 0
   const own = S?.barWeights?.[ex.id]
   if (typeof own === 'number' && own >= 0) return own
-  return defaultBarWeight(ex.eq, S?.unit) ?? 0
+  return defaultBarWeight(ex.eq, S?.unit, S) ?? 0
 }
 
 /**

@@ -165,9 +165,11 @@ describe('loadKindFor', () => {
 })
 
 describe('baseWeightFor', () => {
-  const barbell = idOf('barbell'), sled = idOf('sled machine')
+  const barbell = idOf('barbell'), olympic = idOf('olympic barbell'), sled = idOf('sled machine')
   test('the bar for bar exercises, 0 for "no bar", the override or 0 for anything else', () => {
     expect(baseWeightFor({ unit: 'lb' }, barbell)).toBe(45)
+    expect(baseWeightFor({ unit: 'kg', olympicBarWeight: 15 }, barbell)).toBe(15)
+    expect(baseWeightFor({ unit: 'kg', olympicBarWeight: 15 }, olympic)).toBe(15)
     expect(baseWeightFor({ unit: 'lb', barWeights: { [barbell]: 0 } }, barbell)).toBe(0)
     expect(baseWeightFor({ unit: 'lb', barWeights: { [barbell]: 35 } }, barbell)).toBe(35)
     expect(baseWeightFor({ unit: 'lb' }, sled)).toBe(0)
