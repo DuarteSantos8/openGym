@@ -7,12 +7,11 @@
 //   mergeVideoRoutine(S, built)   into state: a second import of the same video replaces the
 //                                 routine it made the first time, it never adds a second copy
 //
-// How a block becomes a routine (the owner's call, not a modelling accident): an interval
-// exercise done once per round is ONE exercise of `rounds` timed sets, `sec` each, with its rest
-// as the rest between sets — 3 rounds of burpees, 40 s on and 20 s off, is "Burpees 3 × 0:40,
-// rest 0:20". The app has no rest between the members of a superset, so the video's A-B-C, A-B-C
-// order is traded for A-A-A, B-B-B with the right work and rest times. A warm-up and a stretch
-// are continuous, so each is one named group of single timed sets, done straight through.
+// How a block becomes a routine (the owner's call, not a modelling accident): the video's own
+// order, A B C D E, then A B C D E again. Each time an exercise is done is its own entry, one timed
+// set of `sec` with its rest after it, so the second round of a squat can carry a different weight
+// than the first. A warm-up and a stretch are continuous, so each is one named group of single
+// timed sets, done straight through.
 
 import { CATALOGUE, EXIDX, canonicalExId, normalizeStr } from './exercises.js'
 import { bpFromName, importId, matchExercise as matchImported } from './import-csv.js'
@@ -198,9 +197,15 @@ export function draftRows(result, S = {}) {
       let m = matchVideoName(shown, S, { kit })
       // A rest screen that named this exercise is a second reading worth trying.
       if (!m.id && r.alt) { const a = matchVideoName(r.alt, S, { kit }); if (a.id) m = a }
-      const first = (r.occurrences || [])[0] || { start: 0, dur: r.sec }
-      rows.push({
-        rid: r.id || 'v' + rows.length,
+      // Each time the video does an exercise is its own row, in the video's order: round two of
+      // a squat is a separate entry in the routine, with its own weight on the day.
+      const occ = (r.occurrences || []).length ? r.occurrences : [{ start: 0, dur: r.sec }]
+      // A row whose rounds the video does not show one by one (a chapter that says "x3") stays
+      // one row of that many sets: there is no moment to put the others at.
+      const each = s.kind === 'interval' && occ.length >= Math.max(1, r.rounds || 1) ? occ : [occ[0]]
+      each.forEach((first, k) => rows.push({
+        rid: (r.id || 'v' + rows.length) + (each.length > 1 ? '#' + (k + 1) : ''),
+        round: each.length > 1 ? k + 1 : 0,
         section: s.kind, sectionIdx: si, label: typeof s.label === 'string' ? s.label.slice(0, 60) : '',
         // Nothing on screen named it (a hold only the timer counted out): the user picks it.
         unnamed: !shown,
@@ -209,14 +214,14 @@ export function draftRows(result, S = {}) {
         exId: m.id, matchConf: m.conf, how: m.how, candidates: m.candidates,
         create: m.id ? null : { n: shown.toLowerCase(), bp: bpFromName(shown) || (s.kind === 'stretch' ? 'upper legs' : 'cardio') },
         sec: Math.max(1, Math.round(r.sec || 0)), rest: Math.max(0, Math.round(r.rest || 0)),
-        rounds: Math.max(1, Math.round(r.rounds || 1)), side: !!r.side,
-        start: first.start, dur: first.dur, occurrences: r.occurrences || [],
+        rounds: each.length > 1 ? 1 : Math.max(1, Math.round(r.rounds || 1)), side: !!r.side,
+        start: first.start, dur: first.dur, occurrences: each.length > 1 ? [first] : (r.occurrences || []),
         thumb: typeof r.thumb === 'string' && r.thumb.startsWith('data:image/') ? r.thumb : null,
         strip: Array.isArray(r.strip) ? r.strip.filter(x => x && typeof x.src === 'string' && x.src.startsWith('data:image/')).map(x => ({ t: Number(x.t) || 0, src: x.src })) : []
-      })
+      }))
     }
   })
-  return rows
+  return rows.sort((a, b) => a.sectionIdx - b.sectionIdx || a.start - b.start)
 }
 
 /** The confidence the table shows: the weaker of how well it was read and how well it matched. */
@@ -236,6 +241,17 @@ export function rowBadge(row) {
   if (row?.exId) return { kind: 'match', pct: Math.round(rowConfidence(row) * 100) }
   if (!String(row?.create?.n || '').trim()) return { kind: 'unnamed' }
   return { kind: 'new' }
+}
+
+/**
+ * A change to one round's exercise (a pick, a new name) goes to the other rounds of the same
+ * caption in the same section too — unless the user already set one of them on its own.
+ */
+export function applyToRounds(rows, rid, patch) {
+  const row = rows.find(r => r.rid === rid)
+  if (!row) return rows
+  const same = r => r.rid === rid || (r.sectionIdx === row.sectionIdx && r.text && r.text === row.text && r.how !== 'picked' && r.exId === row.exId)
+  return rows.map(r => (same(r) ? { ...r, ...patch } : r))
 }
 
 /** Rows that would be saved with no exercise at all: no match and no name to create one from. */
@@ -298,11 +314,11 @@ const MAX_SEC = 3600
  * The labels are the group names in the reader's language; the caller passes them through t().
  */
 /**
- * opts.order: 'grouped' (default) — an interval exercise is one entry of rounds × timed sets;
- * 'video' — the video's own order, round by round (A B C D E, A B C D E), one timed set per entry,
- * so the same exercise appears in the routine as many times as the video does it.
+ * The routine, in the video's order: every row is one entry (draftRows already gives each round
+ * its own row), so the same exercise appears as many times as the video does it. A row whose
+ * `rounds` the user raised becomes that many timed sets.
  */
-export function buildVideoRoutine(rows, { name, source = {}, labels = {}, customEx = [], order = 'grouped' } = {}) {
+export function buildVideoRoutine(rows, { name, source = {}, labels = {}, customEx = [] } = {}) {
   const created = []
   const idFor = row => {
     if (row.exId && (EXIDX[canonicalExId(row.exId)] || customEx.some(c => c.id === row.exId) || created.some(c => c.id === row.exId))) {
@@ -317,31 +333,19 @@ export function buildVideoRoutine(rows, { name, source = {}, labels = {}, custom
     return id
   }
   const ex = []
-  // The video's own order: its sections as they came (a warm-up, two interval blocks with a
-  // finisher between them, a stretch), and inside each the order it first did each exercise.
+  // The video's own order: its sections as they came, and inside each the moments it did each
+  // exercise, round after round.
   const ordered = rows.slice().sort((a, b) => a.sectionIdx - b.sectionIdx || a.start - b.start)
   const groups = new Map()
-  // In the video's order an interval section is laid out round by round once all its rows are in.
-  const pending = []
-  const flush = () => {
-    if (!pending.length) return
-    const most = Math.max(...pending.map(p => p.rounds))
-    for (let k = 0; k < most; k++) for (const p of pending) if (p.rounds > k) ex.push({ ...p.cfg, sets: 1 })
-    pending.length = 0
-  }
-  let lastSection = null
   for (const row of ordered) {
-    if (row.sectionIdx !== lastSection) { flush(); lastSection = row.sectionIdx }
     const id = idFor(row)
     if (!id) continue
     const sec = Math.min(MAX_SEC, Math.max(1, Math.round(row.sec) || 1))
     const cfg = { id, mode: 'time', sec, weight: 0 }
     if (row.section === 'interval') {
-      const rounds = Math.min(MAX_SETS, Math.max(1, Math.round(row.rounds) || 1))
-      cfg.sets = rounds
+      cfg.sets = Math.min(MAX_SETS, Math.max(1, Math.round(row.rounds) || 1))
       const rest = Math.round(row.rest) || 0
       if (rest > 0) cfg.restSec = rest
-      if (order === 'video') { pending.push({ cfg, rounds }); continue }
     } else {
       cfg.sets = 1
       if (row.side) cfg.side = true
@@ -353,7 +357,6 @@ export function buildVideoRoutine(rows, { name, source = {}, labels = {}, custom
     }
     ex.push(cfg)
   }
-  flush()
   // A group of one is just an exercise: no superset around a lone stretch.
   ex.forEach((e, i) => {
     if (e.sg && !(ex[i - 1]?.sg === e.sg || ex[i + 1]?.sg === e.sg)) { delete e.sg; delete e.sgName }

@@ -6,7 +6,7 @@ import fs from 'node:fs'
 import { probe, extractCrops, still, stillDataUrl } from './frames.js'
 import { readCrops } from './ocr.js'
 import { segment } from './segment.js'
-import { classify } from './classify.js'
+import { classify, cutsOf } from './classify.js'
 import { suggestRois } from './roi-suggest.js'
 import { run } from './proc.js'
 
@@ -68,10 +68,10 @@ export async function analyse(file, roi, { workDir, signal, hints = [], parts = 
   const frames = []
   for (let t = 0; t < crops.seconds; t++) {
     const best = names.map(n => n.readings[t]).reduce((a, r) => (score(r) > score(a) ? r : a), { text: '', conf: 0 })
-    frames.push({ t, name: best.text, nameConf: best.conf, timer: timer.readings[t]?.text || '' })
+    frames.push({ t, name: best.text, nameConf: best.conf, timer: timer.readings[t]?.text || '', scene: crops.scene[t] || 0 })
   }
   const blocks = segment(frames)
-  const draft = classify(blocks, { hints, parts })
+  const draft = classify(blocks, { hints, parts, cuts: cutsOf(frames.map(f => f.scene)) })
   progress('thumbs', 0)
   const rows = draft.sections.flatMap(s => s.rows)
   for (let i = 0; i < rows.length; i++) {

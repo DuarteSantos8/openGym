@@ -17,7 +17,7 @@ import { DEMO } from '../lib/demo.js'
 import { exOr } from '../lib/exercises.js'
 import { exerciseNameFor } from '../lib/i18n-core.js'
 import { fmtDuration } from '../lib/duration.js'
-import { draftRows, rowBadge, rowsMissingName, mergeRows, duplicateRow, splitRow, buildVideoRoutine, mergeVideoRoutine, videoLinkAt } from '../lib/import-video.js'
+import { draftRows, rowBadge, rowsMissingName, mergeRows, duplicateRow, splitRow, applyToRounds, buildVideoRoutine, mergeVideoRoutine, videoLinkAt } from '../lib/import-video.js'
 import { videoImportAvailable, startVideoImport, videoImportJob, submitVideoRoi, cancelVideoImport, stageText, videoImportError } from '../lib/video-import-api.js'
 import { exercisePicker } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
@@ -47,7 +47,6 @@ export default function VideoImport() {
   const [busy, setBusy] = useState(false)
   const [rows, setRows] = useState(null)
   const [name, setName] = useState('')
-  const [order, setOrder] = useState('grouped')
   const lastUrl = useRef('')
 
   useEffect(() => { if (user && !config) refreshConfig() }, [user])
@@ -115,7 +114,7 @@ export default function VideoImport() {
     const labels = { warmup: t('Warm-up'), stretch: t('Stretching'), other: t('Exercises') }
     let out
     update(s => {
-      const built = buildVideoRoutine(rows, { name, source, labels, customEx: s.customEx || [], order })
+      const built = buildVideoRoutine(rows, { name, source, labels, customEx: s.customEx || [] })
       out = mergeVideoRoutine(s, built)
     })
     toast(out?.updated ? t('Routine updated from the video') : t('Routine added from the video'))
@@ -164,7 +163,7 @@ export default function VideoImport() {
         try { setJob(await submitVideoRoi(jobId, { ...roi, remember: keep })) } catch (e) { toast(videoImportError(e.data?.code, e.message)) } finally { setBusy(false) }
       }} onCancel={cancel} busy={busy} />}
 
-    {rows && <Review rows={rows} setRows={setRows} result={job?.result} name={name} setName={setName} S={S} order={order} setOrder={setOrder}
+    {rows && <Review rows={rows} setRows={setRows} result={job?.result} name={name} setName={setName} S={S}
       onSave={save} onReset={reset}
       onReadVideo={() => start({ mode: 'video' })}
       onRedraw={() => start({ mode: 'video', redraw: true })} />}
@@ -258,14 +257,15 @@ function RoiStep({ job, onDone, onCancel, busy }) {
 
 /* ----------------------------------------------------------------- review */
 
-function Review({ rows, setRows, result, name, setName, S, order, setOrder, onSave, onReset, onReadVideo, onRedraw }) {
+function Review({ rows, setRows, result, name, setName, S, onSave, onReset, onReadVideo, onRedraw }) {
   const source = result?.source || {}
   const sections = result?.draft?.sections || []
   const patch = (rid, p) => setRows(rs => rs.map(r => (r.rid === rid ? { ...r, ...p } : r)))
   const remove = rid => setRows(rs => rs.filter(r => r.rid !== rid))
-  const pick = row => exercisePicker(ex => patch(row.rid, { exId: ex.id, matchConf: 1, how: 'picked', create: null }), { title: t('Pick the exercise'), like: row.exId || undefined })
-  const unmatched = rows.filter(r => !r.exId && String(r.create?.n || '').trim()).length
-  const hasRounds = rows.some(r => r.section === 'interval' && r.rounds > 1)
+  // A pick or a new name goes to every round of the same caption at once.
+  const pick = row => exercisePicker(ex => setRows(rs => applyToRounds(rs, row.rid, { exId: ex.id, matchConf: 1, how: 'picked', create: null })), { title: t('Pick the exercise'), like: row.exId || undefined })
+  const rename = (row, n) => setRows(rs => applyToRounds(rs, row.rid, { create: { ...(row.create || {}), n } }))
+  const unmatched = new Set(rows.filter(r => !r.exId && String(r.create?.n || '').trim()).map(r => r.create.n.trim().toLowerCase())).size
 
   const groups = []
   for (const r of rows) {
@@ -281,13 +281,6 @@ function Review({ rows, setRows, result, name, setName, S, order, setOrder, onSa
       </div>
     </Section>
 
-    {hasRounds && <Section title={t('Order')} footer={order === 'video'
-      ? t('Each round as in the video: A B C D E, then A B C D E again. The same exercise appears once per round.')
-      : t('Each exercise once, with its rounds as sets: A × 2, B × 2 … Shorter, but in a different order than the video.')}>
-      <div style={{ padding: '8px 12px' }}>
-        <Segmented value={order} onChange={setOrder} options={[{ value: 'grouped', label: t('Rounds as sets') }, { value: 'video', label: t('As in the video') }]} />
-      </div>
-    </Section>}
 
     {!rows.length && <div className="card"><div className="small muted">{t('No exercise names were found. Try marking the boxes again, or check that the video shows the names on screen.')}</div></div>}
 
@@ -299,7 +292,7 @@ function Review({ rows, setRows, result, name, setName, S, order, setOrder, onSa
       const roundRest = g.kind === 'interval' && s.roundRest > 0 ? t('The video also rests {0} between rounds; a routine has no place for that, so take it after the last exercise of each round.', fmtDuration(s.roundRest)) : null
       return <Section key={g.idx} title={[g.label, sectionTitle(g.kind)].filter(Boolean).join(' · ') + (summary ? ' · ' + summary : '')} footer={roundRest}>
         {g.rows.map((r, i) => <ReviewRow key={r.rid} row={r} S={S} kind={g.kind} sourceUrl={source.url}
-          onPatch={p => patch(r.rid, p)} onPick={() => pick(r)} onDelete={() => remove(r.rid)}
+          onPatch={p => patch(r.rid, p)} onRename={n => rename(r, n)} onPick={() => pick(r)} onDelete={() => remove(r.rid)}
           onDuplicate={() => setRows(rs => duplicateRow(rs, r.rid))}
           onSplit={r.sec >= 60 && r.rounds === 1 ? hold => setRows(rs => splitRow(rs, r.rid, hold)) : null}
           onMergeUp={i > 0 ? () => setRows(rs => mergeRows(rs, g.rows[i - 1].rid, r.rid)) : null} />)}
@@ -317,7 +310,7 @@ function Review({ rows, setRows, result, name, setName, S, order, setOrder, onSa
   </>
 }
 
-function ReviewRow({ row, S, kind, sourceUrl, onPatch, onPick, onDelete, onDuplicate, onSplit, onMergeUp }) {
+function ReviewRow({ row, S, kind, sourceUrl, onPatch, onRename, onPick, onDelete, onDuplicate, onSplit, onMergeUp }) {
   const badge = rowBadge(row)
   const tone = badge.kind === 'match' ? (badge.pct >= 75 ? 'good' : badge.pct >= 50 ? 'mid' : 'low') : badge.kind === 'new' ? 'new' : 'low'
   const [hold, setHold] = useState(30)
@@ -331,18 +324,18 @@ function ReviewRow({ row, S, kind, sourceUrl, onPatch, onPick, onDelete, onDupli
       <span>{clock(row.start)}</span>
     </a>
     <div className="vi-main">
-      <div className="vi-read small muted" title={row.variants.join(' · ')}>{row.text ? '“' + row.text + '”' : <i>{t('No name on screen')}</i>}{row.dur ? ' · ' + fmtDuration(row.dur) : ''}</div>
+      <div className="vi-read small muted" title={row.variants.join(' · ')}>{row.text ? '“' + row.text + '”' : <i>{t('No name on screen')}</i>}{row.round ? ' · ' + t('Round {0}', row.round) : ''}{row.dur ? ' · ' + fmtDuration(row.dur) : ''}</div>
       {ex
         ? <button className="vi-match" onClick={onPick}><span>{exName}</span><Icon name="chevronDown" /></button>
         : <div className="vi-new">
             <span className="small">{t('New exercise:')}</span>
-            <TextField value={row.create?.n || ''} maxLength={80} placeholder={t('Name it, or pick one')} onChange={e => onPatch({ create: { ...(row.create || {}), n: e.target.value } })} />
+            <TextField value={row.create?.n || ''} maxLength={80} placeholder={t('Name it, or pick one')} onChange={e => onRename(e.target.value)} />
             <button className="chip" onClick={onPick}>{t('Pick existing')}</button>
           </div>}
       <div className="vi-nums">
         <label><span className="small muted">{interval ? t('Work (s)') : t('Time (s)')}</span><NumberField decimal={false} value={row.sec} onChange={v => onPatch({ sec: v || 1 })} /></label>
         {interval && <label><span className="small muted">{t('Rest (s)')}</span><NumberField decimal={false} value={row.rest} onChange={v => onPatch({ rest: v || 0 })} /></label>}
-        {interval && <label><span className="small muted">{t('Rounds')}</span><NumberField decimal={false} value={row.rounds} onChange={v => onPatch({ rounds: v || 1 })} /></label>}
+        {interval && row.rounds > 1 && <label><span className="small muted">{t('Rounds')}</span><NumberField decimal={false} value={row.rounds} onChange={v => onPatch({ rounds: v || 1 })} /></label>}
         {!interval && <label className="vi-side"><Check checked={row.side} onChange={v => onPatch({ side: v })} label={t('Per side')} /><span className="small">{t('Per side')}</span></label>}
         <span className={'vi-conf ' + tone} title={badge.kind === 'match' ? t('How sure the reading and the match are') : badge.kind === 'new' ? t('Not in the library: it will be added as your own exercise') : t('Nothing on screen named this one: pick the exercise')}>
           {badge.kind === 'match' ? badge.pct + '%' : badge.kind === 'new' ? t('new') : '?'}

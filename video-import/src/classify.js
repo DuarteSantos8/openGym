@@ -93,7 +93,7 @@ function joinNeighbours(blocks) {
   return out
 }
 
-export function classify(blocks, { hints = [], parts = [] } = {}) {
+export function classify(blocks, { hints = [], parts = [], cuts = [] } = {}) {
   // The video's own parts, from its chapters ("Group 1: Lower body"): a block never runs across
   // two of them, and each section is named after the part it is in.
   const partOf = b => (parts || []).findIndex(p => b.start + b.dur / 2 >= p.start && b.start + b.dur / 2 < p.end)
@@ -171,7 +171,7 @@ export function classify(blocks, { hints = [], parts = [] } = {}) {
     const i = (parts || []).findIndex(p => (s.start + s.end) / 2 >= p.start && (s.start + s.end) / 2 < p.end)
     if (i >= 0) { s.part = i; s.label = parts[i].label }
   }
-  const out = mergeIntervals(built)
+  const out = harmonise(mergeIntervals(built), { cuts })
   // A section is as many rounds as its exercises were done.
   for (const s of out) if (s.kind === 'interval' && s.rows.length) s.rounds = Math.max(...s.rows.map(r => r.rounds))
   let n = 0
@@ -308,3 +308,146 @@ export function mergeIntervals(sections) {
   }
   return res
 }
+
+/* --------------------------------------------------------------- timing */
+
+const near = (x, target, frac = 0.25) => target > 0 && Math.abs(x - target) <= Math.max(3, target * frac)
+const onsets = rows => rows.flatMap(r => (r.occurrences || []).map(o => o.start)).sort((a, b) => a - b)
+const steps = list => list.slice(1).map((t, i) => t - list[i]).filter(d => d > 0)
+
+/**
+ * The timing a follow-along actually uses, from the whole section instead of each caption.
+ *
+ * A caption's own length drifts with where OCR first and last caught it (35 s, 45 s for a 40 s
+ * exercise). The video's beat does not: exercises start at a steady period (60 s = 40 on + 20
+ * off), and every work and rest that is close to the section's typical value is that value.
+ *
+ * In a warm-up or a cool-down the beat is the hold (30 s a move). A row much longer than it — a
+ * stretch of moves nobody could tell apart, with no names on screen — is cut into holds of that
+ * length: the first keeps its name, the rest arrive with no name for the review screen to ask
+ * about, each with its own moment in the video.
+ */
+export function harmonise(sections, { cuts = [] } = {}) {
+  const holds = []
+  for (const s of sections) {
+    if (s.kind === 'interval') {
+      const work = median(s.rows.flatMap(r => Array(r.rounds || 1).fill(r.sec)))
+      const rest = median(s.rows.filter(r => r.rest > 0).map(r => r.rest))
+      const period = median(steps(onsets(s.rows)))
+      // The beat decides the work when the rest is known: 60 s apart with 20 s off is 40 s on.
+      const beat = rest > 0 && period > rest ? snapSec(period - rest) : 0
+      const W = beat && near(beat, work, 0.3) ? beat : snapSec(work)
+      const R = rest > 0 ? snapSec(rest) : 0
+      // An exercise ends a rest before the next one starts. The last of a round runs into whatever
+      // comes next (the next group's intro, a longer break) and reads long without that limit;
+      // with no next start at all it is as long as the others.
+      const all = onsets(s.rows)
+      const room = o => { const n = all.find(t => t > o.start); return n == null ? W : n - o.start - R }
+      for (const r of s.rows) {
+        const most = median((r.occurrences || []).map(room))
+        if (most > 0 && r.sec > most) r.sec = snapSec(most)
+        if (near(r.sec, W)) r.sec = W
+        if (R && near(r.rest, R, 0.4)) r.rest = R
+      }
+      s.work = W
+      if (R) s.rest = R
+    } else if (s.kind === 'warmup' || s.kind === 'stretch') {
+      // A beat only when the moves really keep one: most starts the same distance apart.
+      delete s.beat
+      const d = steps(onsets(s.rows)).filter(x => x >= MIN_TIMED && x <= MAX_WORK)
+      const m = median(d)
+      if (d.length >= 3 && d.filter(x => Math.abs(x - m) <= 3).length >= d.length * 0.7) { holds.push(m); s.beat = snapSec(m) }
+    }
+  }
+  // The hold of the named moves, where some section keeps a beat: the fallback for a stretch
+  // with neither names nor cuts to go by.
+  const named = holds.length ? snapSec(median(holds)) : 0
+  for (const s of sections) {
+    if (s.kind !== 'warmup' && s.kind !== 'stretch') continue
+    const hold = s.beat || named
+    // A move lasts until the next one starts: a caption shown for part of a hold says when the
+    // hold began, not how long it was.
+    if (s.beat) s.rows.forEach((r, i) => {
+      const nx = s.rows[i + 1]
+      if (r.side || !nx || (r.occurrences || []).length !== 1 || (nx.occurrences || []).length < 1) return
+      const gap = nx.occurrences[0].start - r.occurrences[0].start
+      if (gap >= MIN_TIMED && gap <= hold * 1.5) r.sec = snapSec(gap)
+    })
+    const rows = []
+    for (const r of s.rows) {
+      const o = (r.occurrences || [])[0]
+      // A row much longer than a move: the picture's own cuts say where each move starts.
+      const bounds = !r.side && (r.occurrences || []).length === 1 && r.sec >= MIN_SPLIT
+        ? periodicSplit(o.start, o.start + r.sec, cuts) || (hold ? evenSplit(o.start, o.start + r.sec, hold) : null)
+        : null
+      if (!bounds) {
+        if (s.beat && !r.side && near(r.sec, hold)) r.sec = hold
+        rows.push(r)
+        continue
+      }
+      bounds.slice(0, MAX_SPLIT).forEach(([a, b], k) => {
+        const sec = snapSec(b - a)
+        // The still from the first third: the move itself, before the next one is announced.
+        const piece = { ...r, sec, rounds: 1, rest: 0, occurrences: [{ start: a, dur: b - a }], thumbT: a + Math.max(1, Math.floor((b - a) / 3)) }
+        rows.push(k === 0 ? piece : { ...piece, name: '', key: '', variants: [], alt: null, conf: 0, unnamed: true })
+      })
+    }
+    s.rows = rows
+  }
+  return sections
+}
+
+/** Seconds where the picture cuts: far bigger changes than the frames around them. */
+export function cutsOf(scene) {
+  const v = (scene || []).map(x => Number(x) || 0)
+  const base = median(v.filter(x => x > 0)) || 1
+  const level = Math.max(CUT_MIN, base * 4)
+  const out = []
+  v.forEach((x, t) => { if (x >= level && !(out.length && t - out[out.length - 1] <= 2)) out.push(t) })
+  return out
+}
+
+/**
+ * [a, b) cut into moves by the rhythm of its cuts, or null when they keep none. A follow-along
+ * changes the picture at the same moments every move (the move starts, its "next" preview comes
+ * up): the period is the distance that most cuts have another cut at. The pieces start at the
+ * cut that opens the longest stretch of each period — the move itself, not its announcement.
+ */
+export function periodicSplit(a, b, cuts) {
+  const cs = (cuts || []).filter(t => t > a - 2 && t < b + 2)
+  if (cs.length < 4) return null
+  const has = t => cs.some(c => Math.abs(c - t) <= 1)
+  // A period is real when cuts keep coming at it: a cut, another one P later, and another one P
+  // after that. Two cuts per move (the move, its preview) make half the move's length look as
+  // good on single pairs; only the true period chains. Its multiples chain too, so the smallest
+  // period that scores close to the best wins.
+  const chains = P => cs.filter(c => has(c + P) && has(c + 2 * P)).length
+  const scored = []
+  for (let P = MIN_TIMED; P <= Math.min(MAX_WORK, (b - a) / 2); P++) scored.push({ P, score: chains(P) })
+  const top = Math.max(0, ...scored.map(x => x.score))
+  if (top < 3) return null
+  const P = scored.find(x => x.score >= top * 0.8).P
+  const opening = cs.filter(c => has(c + P) && has(c + 2 * P))
+  const next = c => cs.find(x => x > c + 1) ?? b
+  const anchor = opening.slice(0, 3).reduce((x, c) => (next(c) - c > next(x) - x ? c : x), opening[0])
+  const starts = [anchor]
+  for (let t = anchor - P; t >= a - 2; t -= P) starts.unshift(cs.find(x => Math.abs(x - t) <= 2) ?? t)
+  for (let t = anchor + P; t < b - MIN_TIMED; t += P) {
+    const c = cs.find(x => Math.abs(x - t) <= 2)
+    starts.push(c ?? t)
+  }
+  const pieces = []
+  if (starts[0] - a >= MIN_TIMED) pieces.push([a, starts[0]])
+  starts.forEach((t, i) => pieces.push([Math.max(a, t), Math.min(b, starts[i + 1] ?? b)]))
+  return pieces.filter(([x, y]) => y - x >= MIN_TIMED).map(([x, y]) => [Math.round(x), Math.round(y)])
+}
+
+/** [a, b) cut into pieces of `hold` seconds: the last resort, a beat the video kept elsewhere. */
+function evenSplit(a, b, hold) {
+  const out = []
+  for (let t = a; t < b - MIN_TIMED; t += hold) out.push([t, Math.min(b, t + hold)])
+  return out
+}
+const CUT_MIN = 20
+const MAX_SPLIT = 20
+const MIN_SPLIT = 90   // seconds: shorter rows are left whole

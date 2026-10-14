@@ -148,3 +148,31 @@ test('the video’s parts from its chapters keep two blocks apart and name them 
   const iv = d.sections.filter(x => x.kind === 'interval')
   assert.deepEqual(iv.map(x => [x.label, x.rows.length, x.rounds]), [['Group 1: Lower body', 3, 2], ['Group 2: Upper body', 3, 2]])
 })
+
+test('the section keeps one beat: 35 s and 45 s readings of a 40 s exercise are 40 s (B7-F2UcHmqk)', async () => {
+  const { harmonise } = await import('../src/classify.js')
+  const row = (name, start, sec, rest = 20) => ({ name, key: name, sec, rest, rounds: 2, occurrences: [{ start, dur: sec }, { start: start + 300, dur: sec }] })
+  const s = harmonise([{ kind: 'interval', rows: [row('a', 0, 45), row('b', 60, 35), row('c', 120, 40), row('d', 180, 40), row('e', 240, 65)] }])
+  assert.deepEqual(s[0].rows.map(r => r.sec), [40, 40, 40, 40, 40], 'the last of a round reads long too: it runs into the next part')
+  assert.equal(s[0].work, 40)
+})
+
+test('a long stretch with no names is cut by the rhythm of the picture’s cuts (B7-F2UcHmqk)', async () => {
+  const { harmonise, periodicSplit, cutsOf } = await import('../src/classify.js')
+  // The real cuts of the cool-down: a move (20 s), its "next" preview (10 s), over and over.
+  const cuts = [3441, 3446, 3450, 3464, 3469, 3489, 3499, 3519, 3529, 3549, 3559, 3579, 3588, 3599, 3609, 3619, 3623, 3643, 3650, 3662]
+  assert.deepEqual(periodicSplit(3450, 3685, cuts).map(([x, y]) => y - x), [19, 30, 30, 30, 29, 31, 31, 35])
+  const one = (name, start, sec) => ({ name, key: name, sec, rest: 0, rounds: 1, occurrences: [{ start, dur: sec }], thumbT: start + 5 })
+  const out = harmonise([{ kind: 'stretch', rows: [one('snow angels', 3450, 235)] }], { cuts })
+  assert.equal(out[0].rows.length, 8)
+  assert.equal(out[0].rows[0].name, 'snow angels')
+  assert.ok(out[0].rows.slice(1).every(r => r.unnamed))
+  assert.equal(out[0].rows[1].thumbT, 3469 + 10, 'the still is from the move, not its announcement')
+  // A different video, a different hold: 45 s moves with one cut each.
+  const other = Array.from({ length: 8 }, (_, i) => 1000 + i * 45)
+  assert.deepEqual(periodicSplit(1000, 1360, other).map(([x, y]) => y - x), Array(8).fill(45))
+  // Cuts with no rhythm, and no other section keeping a beat: left whole for the user.
+  assert.equal(periodicSplit(0, 300, [10, 37, 41, 150, 260]), null)
+  assert.equal(harmonise([{ kind: 'stretch', rows: [one('x', 0, 300)] }], { cuts: [10, 37, 41, 150, 260] })[0].rows.length, 1)
+  assert.deepEqual(cutsOf([0, 1, 2, 1, 80, 2, 1, 90, 85, 1]), [4, 7])
+})

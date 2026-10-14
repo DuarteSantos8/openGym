@@ -85,17 +85,19 @@ paste the link under **Plan → share icon → Import from a video**, check the 
 7. **Review.** Each row shows a thumbnail, its time in the video (which links straight to that
    moment), the text as read, the exercise it matched, and a confidence score. You can re-pick the
    exercise, rename or delete a row, merge it into the row above, and change the work time, rest and
-   rounds. You can also add an exercise again (**+**). A long hold read as one exercise (a cool-down
-   with nothing on screen) can be split into 30-second holds, each with its own still, so you can
-   see which move it is. A name that matches nothing in the library is never dropped. It becomes
+   rounds. Timing comes from the whole section, not from each caption: exercises start at a steady
+   beat, so a 40 s exercise that OCR caught for 35 or 45 s is 40 s. A warm-up or cool-down with no
+   names on screen is cut into moves by the picture itself: the video cuts at the same point of
+   every move, and the rhythm of those cuts gives the length of a move, whatever it is in that
+   video. Each move then arrives with its own still for you to name. You can also add an exercise
+   again (**+**), or split a long row by hand. A name that matches nothing in the library is never dropped. It becomes
    one of your own exercises (marked *new*), unless you pick an existing one. A row with no name
    at all is not saved until you pick its exercise or delete it. The percentage on a matched row is
    how sure the reading and the match are.
-8. **The routine.** You choose the order. *Rounds as sets* (the default) makes each interval
-   exercise *rounds × timed sets* with its rest between the sets: three rounds of burpees at
-   40 s on / 20 s off is **Burpees 3 × 0:40, rest 0:20**, and you do A A A, B B B. *As in the
-   video* keeps the video's order, A B C D E, then A B C D E again: one timed set per entry, so the
-   same exercise appears once per round. The warm-up and the
+8. **The routine** keeps the video's order: A B C D E, then A B C D E again. Each round is its
+   own row on the review screen and its own entry in the routine (one timed set with its rest), so
+   the second round of a squat can carry a different weight than the first. Picking an exercise for
+   one round picks it for the other rounds of the same caption too. The warm-up and the
    stretch each become a named group of single timed holds, done straight through. A left/right
    stretch becomes one per-side hold. The routine keeps a link to the video, and importing the same
    video again replaces the routine instead of adding a second copy.

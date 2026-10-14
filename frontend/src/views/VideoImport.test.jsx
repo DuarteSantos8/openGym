@@ -26,8 +26,8 @@ const DONE = {
     source: SOURCE, method: 'video', roiSaved: false,
     draft: { sections: [
       { kind: 'interval', rounds: 3, work: 40, rest: 20, rows: [
-        { id: 'v1', name: 'Burpees', conf: 0.9, sec: 40, rest: 20, rounds: 3, occurrences: [{ start: 30, dur: 40 }] },
-        { id: 'v2', name: 'Turbo Frog Shuffle', conf: 0.8, sec: 40, rest: 20, rounds: 3, occurrences: [{ start: 90, dur: 40 }] }
+        { id: 'v1', name: 'Burpees', conf: 0.9, sec: 40, rest: 20, rounds: 3, occurrences: [{ start: 30, dur: 40 }, { start: 150, dur: 40 }, { start: 270, dur: 40 }] },
+        { id: 'v2', name: 'Turbo Frog Shuffle', conf: 0.8, sec: 40, rest: 20, rounds: 3, occurrences: [{ start: 90, dur: 40 }, { start: 210, dur: 40 }, { start: 330, dur: 40 }] }
       ] }
     ] }
   }
@@ -104,7 +104,8 @@ describe('import from a video', () => {
     // Then the draft.
     await poll(); await poll()
     expect(container.textContent).toMatch(/Intervals · 3 rounds/)
-    expect(container.querySelectorAll('.vi-row')).toHaveLength(2)
+    expect(container.querySelectorAll('.vi-row')).toHaveLength(6)   // every round its own row
+    expect(container.textContent).toMatch(/Round 2/)
     expect(container.textContent).toMatch(/New exercise:/)    // the unmatched name is kept, not dropped
 
     await act(async () => { button('Save routine').click() })
@@ -113,7 +114,7 @@ describe('import from a video', () => {
     expect(r).toBeTruthy()
     expect(r.name).toBe('Quick HIIT')
     expect(r.sourceUrl).toBe(SOURCE.url)
-    expect(r.ex.map(e => [e.mode, e.sets, e.sec, e.restSec])).toEqual([['time', 3, 40, 20], ['time', 3, 40, 20]])
+    expect(r.ex.map(e => [e.mode, e.sets, e.sec, e.restSec])).toEqual(Array(6).fill(['time', 1, 40, 20]))
     expect(S.customEx.some(c => c.n === 'turbo frog shuffle' && c.custom)).toBe(true)
   })
 
@@ -122,19 +123,18 @@ describe('import from a video', () => {
     sessionStorage.setItem('gym_video_import_job', JOB)   // a reload in the middle of an import resumes it
     render()
     await flush()
-    expect(container.querySelectorAll('.vi-row')).toHaveLength(2)
+    expect(container.querySelectorAll('.vi-row')).toHaveLength(6)
     await act(async () => { container.querySelectorAll('.vi-row')[1].querySelector('button[aria-label="Delete"]').click() })
     await act(async () => { button('Save routine').click() })
     const r = useStore.getState().S.routines.find(x => x.videoId === 'dQw4w9WgXcQ')
-    expect(r.ex).toHaveLength(1)
+    expect(r.ex).toHaveLength(5)
   })
 
-  it('"As in the video" saves each round in turn: the same exercise once per round', async () => {
+  it('saves each round in turn, as in the video: the same exercise once per round', async () => {
     jobAnswer = DONE
     sessionStorage.setItem('gym_video_import_job', JOB)
     render()
     await flush()
-    await act(async () => { button('As in the video').click() })
     await act(async () => { button('Save routine').click() })
     const r = useStore.getState().S.routines.find(x => x.videoId === 'dQw4w9WgXcQ')
     expect(r.ex).toHaveLength(6)

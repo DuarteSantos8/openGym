@@ -61,8 +61,11 @@ export async function extractCrops(file, roi, { width, height, duration, workDir
   const kinds = [...boxes.map((_, i) => 'name' + i), ...(roi.timer ? ['timer'] : [])]
   const geo = {}
   kinds.forEach(k => { geo[k] = cropGeometry(k === 'timer' ? roi.timer : boxes[+k.slice(4)], width, height, k === 'timer' ? 64 : 72) })
-  const split = kinds.length > 1 ? `split=${kinds.length}${kinds.map(k => `[${k}s]`).join('')}` : `null[${kinds[0]}s]`
+  // One more branch: the whole frame, tiny, for spotting cuts between moves (see sceneChanges).
+  const split = `split=${kinds.length + 1}${kinds.map(k => `[${k}s]`).join('')}[scene0]`
   parts.push(`[0:v]fps=1,${split}`)
+  parts.push(`[scene0]scale=${SCENE_W}:${SCENE_H}:flags=area,format=gray[scene]`)
+  maps.push('-map', '[scene]', '-f', 'rawvideo', path.join(workDir, 'scene.gray'))
   for (const k of kinds) {
     const g = geo[k]
     parts.push(`[${k}s]crop=${g.cw}:${g.ch}:${g.cx}:${g.cy},scale=${g.ow}:${g.oh}:flags=bicubic,format=gray[${k}]`)
@@ -110,9 +113,26 @@ export async function extractCrops(file, roi, { width, height, duration, workDir
     }
   }
   const len = Number.isFinite(seconds) ? seconds : 0
+  const sceneRaw = fs.readFileSync(path.join(workDir, 'scene.gray'))
+  fs.rmSync(path.join(workDir, 'scene.gray'), { force: true })
   return {
     seconds: len,
+    scene: sceneChanges(sceneRaw, SCENE_W * SCENE_H).slice(0, len),
     names: boxes.map((_, i) => out['name' + i]),
     timer: out.timer || new Array(len).fill(null)
   }
+}
+
+const SCENE_W = 64, SCENE_H = 36
+
+/** Per second, how much the whole picture changed since the second before (mean absolute grey difference, 0–255). */
+export function sceneChanges(raw, size) {
+  const n = Math.floor(raw.length / size)
+  const out = [0]
+  for (let i = 1; i < n; i++) {
+    let d = 0
+    for (let k = 0; k < size; k++) d += Math.abs(raw[i * size + k] - raw[(i - 1) * size + k])
+    out.push(Math.round(d / size))
+  }
+  return out
 }
