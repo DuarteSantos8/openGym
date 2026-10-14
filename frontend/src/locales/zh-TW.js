@@ -1,4 +1,8 @@
 export default {
+  "Skip phase": "跳過階段",
+  "Resume phase": "繼續階段",
+  "Skipped": "已跳過",
+  "Remaining work skipped. Completed sets are kept.": "已跳過剩餘訓練，已完成的組數會保留。",
   'Confirm': '確認',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回以退出',

@@ -1,5 +1,9 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Skip phase": "পর্ব বাদ দিন",
+  "Resume phase": "পর্ব আবার শুরু করুন",
+  "Skipped": "বাদ দেওয়া হয়েছে",
+  "Remaining work skipped. Completed sets are kept.": "বাকি ব্যায়াম বাদ দেওয়া হয়েছে। সম্পন্ন সেটগুলো রাখা হয়েছে।",
   'Confirm': 'নিশ্চিত করুন',
   'Cancel': 'বাতিল',
   'Press back again to exit': 'বের হতে আবার ব্যাক চাপুন',

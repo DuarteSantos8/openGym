@@ -1,5 +1,9 @@
 // German UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Skip phase": "Phase überspringen",
+  "Resume phase": "Phase fortsetzen",
+  "Skipped": "Übersprungen",
+  "Remaining work skipped. Completed sets are kept.": "Verbleibende Arbeit übersprungen. Abgeschlossene Sätze bleiben erhalten.",
   // --- generic ---
   'Confirm': 'Bestätigen',
   'Cancel': 'Abbrechen',

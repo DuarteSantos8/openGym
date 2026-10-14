@@ -1,5 +1,9 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Skip phase": "चरण छोड़ें",
+  "Resume phase": "चरण फिर शुरू करें",
+  "Skipped": "छोड़ा गया",
+  "Remaining work skipped. Completed sets are kept.": "बाकी अभ्यास छोड़ दिया गया है। पूरे किए गए सेट सुरक्षित हैं।",
   'Confirm': 'पुष्टि करें',
   'Cancel': 'रद्द करें',
   'Press back again to exit': 'बाहर निकलने के लिए फिर से बैक दबाएँ',

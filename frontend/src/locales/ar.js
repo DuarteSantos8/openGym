@@ -1,5 +1,9 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Skip phase": "تخطي المرحلة",
+  "Resume phase": "استئناف المرحلة",
+  "Skipped": "تم التخطي",
+  "Remaining work skipped. Completed sets are kept.": "تم تخطي العمل المتبقي. تم الاحتفاظ بالمجموعات المكتملة.",
   'Confirm': 'تأكيد',
   'Cancel': 'إلغاء',
   'Press back again to exit': 'اضغط زر الرجوع مرة أخرى للخروج',

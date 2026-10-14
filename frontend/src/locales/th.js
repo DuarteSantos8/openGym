@@ -1,5 +1,9 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Skip phase": "ข้ามช่วงนี้",
+  "Resume phase": "ทำช่วงนี้ต่อ",
+  "Skipped": "ข้ามแล้ว",
+  "Remaining work skipped. Completed sets are kept.": "ข้ามการฝึกที่เหลือแล้ว เซ็ตที่ทำเสร็จยังคงถูกบันทึกไว้",
   // --- generic ---
   'Confirm': 'ยืนยัน',
   'Cancel': 'ยกเลิก',

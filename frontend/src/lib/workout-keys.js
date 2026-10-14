@@ -60,6 +60,7 @@ export function nextOpenSet(entries, cur) {
   const pos = Math.max(0, unit.indexOf(at))
   const order = [...unit.slice(pos), ...unit.slice(0, pos), ...(nextUnfinishedUnit(entries, units, at) || [])]
   for (const idx of order) {
+    if (entries[idx]?.skipped === true) continue
     const sets = Array.isArray(entries[idx]?.sets) ? entries[idx].sets : []
     const i = sets.findIndex(s => !s?.done)
     if (i < 0) continue

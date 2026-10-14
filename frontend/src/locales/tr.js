@@ -1,5 +1,9 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Skip phase": "Aşamayı atla",
+  "Resume phase": "Aşamaya devam et",
+  "Skipped": "Atlandı",
+  "Remaining work skipped. Completed sets are kept.": "Kalan çalışma atlandı. Tamamlanan setler korunur.",
   'Confirm': 'Onayla',
   'Cancel': 'İptal',
   'Press back again to exit': 'Çıkmak için geri tuşuna tekrar basın',

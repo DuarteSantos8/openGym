@@ -1,5 +1,9 @@
 // Polish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Skip phase": "Pomiń fazę",
+  "Resume phase": "Wznów fazę",
+  "Skipped": "Pominięto",
+  "Remaining work skipped. Completed sets are kept.": "Pozostała część została pominięta. Ukończone serie zostają zachowane.",
   'Confirm': 'Potwierdź',
   'Cancel': 'Anuluj',
   'Press back again to exit': 'Naciśnij wstecz ponownie, aby wyjść',
