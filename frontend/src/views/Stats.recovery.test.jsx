@@ -31,7 +31,8 @@ const mocks = vi.hoisted(() => ({
 vi.mock('../store/useStore.js', () => ({
   useStore: selector => selector({ S: mocks.S }),
 }))
-vi.mock('react-router-dom', () => ({ useNavigate: () => () => {} }))
+vi.mock('react-router-dom', () => ({ useNavigate: () => () => {}, useLocation: () => ({ search: '', pathname: '/progress/load' }) }))
+vi.mock('../lib/use-tab-nav.js', () => ({ back: vi.fn(), isSwitching: () => false, switchTab: vi.fn(), popToRoot: vi.fn() }))
 vi.mock('../sheets.jsx', () => ({
   bwSheet: () => {}, goalSheet: () => {}, calendarSheet: () => {}, workoutDetailSheet: () => {},
   exerciseHistorySheet: mocks.exerciseHistorySheet,
@@ -168,9 +169,9 @@ function installDom() {
   root = createRoot(container)
 }
 
-async function mountStats() {
+async function mountStats(section = 'load') {
   installDom()
-  await act(async () => { root.render(React.createElement(React.Fragment, null, React.createElement(Stats), React.createElement(Modals))) })
+  await act(async () => { root.render(React.createElement(React.Fragment, null, React.createElement(Stats, { section }), React.createElement(Modals))) })
 }
 
 async function unmountStats() {
@@ -419,9 +420,9 @@ describe('Stats exercise progress picker', () => {
     resetFixture([workout('legacy-topw', BASE_NOW, [
       { id: '0025', target: { mode: 'reps' }, topW: 70, sets: [] },
     ])])
-    await mountStats()
+    await mountStats('strength')
 
-    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    const card =[...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
     expect(card.textContent).toContain('70 kg')
     const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 70))
     expect(progressChart?.points).toHaveLength(1)
@@ -433,9 +434,9 @@ describe('Stats exercise progress picker', () => {
       { id: '0025', target: { mode: 'reps' }, topW: 70, sets: [] },
       { id: '0025', target: { mode: 'reps' }, topW: 60, sets: [] },
     ])])
-    await mountStats()
+    await mountStats('strength')
 
-    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    const card =[...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
     expect(card.textContent).toContain('70 kg')
     const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 70))
     expect(progressChart?.points).toHaveLength(1)
@@ -447,9 +448,9 @@ describe('Stats exercise progress picker', () => {
       entry('0025', [set(true, { w: 50, r: 5 })]),
       { id: '0025', target: { mode: 'reps' }, topW: 70, sets: [] },
     ])])
-    await mountStats()
+    await mountStats('strength')
 
-    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    const card =[...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
     expect(card.textContent).toContain('70 kg')
     const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 70))
     expect(progressChart?.points).toHaveLength(1)
@@ -461,9 +462,9 @@ describe('Stats exercise progress picker', () => {
       entry('0025', [set(true, { w: 60, r: 5 })]),
       entry('0025', [set(true, { w: 80, r: 5 })]),
     ])])
-    await mountStats()
+    await mountStats('strength')
 
-    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    const card =[...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
     expect(card.textContent).toContain('80 kg')
     const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 80))
     expect(progressChart?.points).toHaveLength(1)
@@ -476,9 +477,9 @@ describe('Stats exercise progress picker', () => {
       entry('0017', [set(true, { w: 30, r: 8 })]),
       entry('0017', [set(true, { w: 20, r: 8 })]),
     ])])
-    await mountStats()
+    await mountStats('strength')
 
-    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    const card =[...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
     expect(card.textContent).toContain('20 kg')
     const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 20))
     expect(progressChart?.points).toHaveLength(1)
@@ -487,7 +488,7 @@ describe('Stats exercise progress picker', () => {
 
   it('filters with the shared exercise matcher and still selects from the mounted sheet', async () => {
     resetFixture(exercisePickerWorkouts())
-    await mountStats()
+    await mountStats('strength')
     expect(EXIDX[LEGACY_SNAPSHOT_ID]).toBeUndefined()
 
     const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')

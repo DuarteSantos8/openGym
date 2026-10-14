@@ -28,6 +28,7 @@ const mocks = vi.hoisted(() => ({
   camera: null,        // the props the browser CameraScan sheet was handed
   toast: vi.fn(),
   nav: vi.fn(),
+  back: vi.fn(),
   confirmSheet: vi.fn(),
   scanCode: vi.fn(),
   importCodeFromImage: vi.fn(),
@@ -56,6 +57,7 @@ vi.mock('../store/useUI.js', () => {
   return { useUI }
 })
 vi.mock('react-router-dom', () => ({ useNavigate: () => mocks.nav }))
+vi.mock('../lib/use-tab-nav.js', () => ({ back: (...a) => mocks.back(...a), isSwitching: () => false, switchTab: vi.fn(), popToRoot: vi.fn() }))
 vi.mock('../sheets.jsx', () => ({ confirmSheet: (...a) => mocks.confirmSheet(...a) }))
 vi.mock('../lib/scan.js', () => ({
   scanCode: (...a) => mocks.scanCode(...a),
@@ -217,10 +219,10 @@ describe('CheckIn — the rail reopens where you left it', () => {
     expect(host.querySelector('.ci-value').textContent).toBe('MEMBER-9931')
   })
 
-  it('the back button goes home', async () => {
+  it('the back button steps back through the tab', async () => {
     mount()
-    await tap(byLabel(host, 'Home')[0])
-    expect(mocks.nav).toHaveBeenCalledWith('/home')
+    await tap(byLabel(host, 'Back')[0])
+    expect(mocks.back).toHaveBeenCalled()
   })
 })
 

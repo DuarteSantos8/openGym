@@ -21,6 +21,7 @@ import { HTTP_PROVIDERS, HTTP_PROVIDER_IDS, baseUrlFor, validateBaseUrl } from '
 import { DATA_CATEGORIES } from '../../../api/coach/core/categories.js'
 import { ConnectSheet } from './MobileOnboarding.jsx'
 import Icon from '../components/Icon.jsx'
+import SubHeader from '../components/SubHeader.jsx'
 import { Section, Row, Button, TextField } from '../components/ui.jsx'
 
 // Literal t() calls, so check-source-strings sees the three lines; t(s) over a list of keys hid them.
@@ -55,7 +56,7 @@ export default function CoachSetup() {
   const [step, setStep] = useState(-1)                     // -1 idle, 0..2 running, 3 done
   const [busy, setBusy] = useState(false)
 
-  useEffect(() => { if (!MOBILE) nav('/settings', { replace: true }) }, [])
+  useEffect(() => { if (!MOBILE) nav('/me', { replace: true }) }, [])
   useEffect(() => { getApiKey().then(k => setHasKey(!!k)) }, [])
   // Ask the paired server afresh: the admin may have switched the Coach on since this phone booted.
   useEffect(() => { if (user) refreshConfig() }, [user])
@@ -69,7 +70,7 @@ export default function CoachSetup() {
     if (!user) return openSheet(close => <ConnectSheet close={close} />)
     await setCoachLocal({ mode: 'server' })
     toast(t('The Coach is on'))
-    nav('/coach')
+    nav('/train/coach')
   }
 
   // The lazy load, and the reachability check, as three real steps.
@@ -115,7 +116,7 @@ export default function CoachSetup() {
       await setCoachLocal({ mode: 'byok', provider, model: chosen, baseUrl: meta.baseUrl ? v.value : null })
       if (key.trim()) { await setApiKey(key.trim()); setHasKey(true); setKey('') }
       toast(t('The Coach is on'))
-      nav('/coach')
+      nav('/train/coach')
     } catch (e) {
       toast(e?.message || t('Could not connect'))
     } finally { setBusy(false) }
@@ -135,10 +136,7 @@ export default function CoachSetup() {
     : t('Off. Choose how the Coach should run.')
 
   return <div className="narrow">
-    <div className="hdr">
-      <button className="iconbtn" onClick={() => nav('/settings')} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
-      <div style={{ flex: 1, marginInlineStart: 10 }}><h1>{t('AI Coach')}</h1></div>
-    </div>
+    <SubHeader title={t('AI Coach')} />
 
     <Section title={t('How should the Coach run?')} footer={current}>
       <Row icon="rocket" iconTint="var(--indigo)" title={t('Use my self-hosted openGym')}

@@ -39,6 +39,7 @@ const mocks = vi.hoisted(() => {
     durationSheet: vi.fn(),
     workoutSettingsSheet: vi.fn(),
     nav: vi.fn(),
+    back: vi.fn(),
     setNoteSheet: vi.fn(),
   }
   state.stopRest = vi.fn(() => { state.timer = null })
@@ -82,6 +83,7 @@ vi.mock('../store/useUI.js', () => {
   return { useUI }
 })
 vi.mock('react-router-dom', () => ({ useNavigate: () => mocks.nav }))
+vi.mock('../lib/use-tab-nav.js', () => ({ back: mocks.back, isSwitching: () => false }))
 vi.mock('../sheets.jsx', () => ({
   startFlow: vi.fn(),
   exercisePicker: mocks.exercisePicker,
@@ -3350,8 +3352,9 @@ describe('the workout screen chrome (v1.3.11)', () => {
     expect(finishWorkoutSheet).toHaveBeenCalledOnce()
     finishWorkoutSheet.mock.calls[0][0].onDiscard()
     expect(mocks.confirmSheet.mock.calls.at(-1)[0].title).toBe('Discard workout?')
+    // ⌄ goes back to where the workout was opened from (lib/use-tab-nav.js back).
     await click(container.querySelector('button[aria-label="Minimize"]'))
-    expect(mocks.nav).toHaveBeenCalledWith('/home')
+    expect(mocks.back).toHaveBeenCalledOnce()
     expect(mocks.S.active).not.toBeNull()
   })
 

@@ -13,14 +13,20 @@ import { setNav } from './lib/nav.js'
 import { setSystemBarsLight } from './lib/system-bars.js'
 import { initBackButton } from './lib/back.js'
 import { useWakeLock } from './lib/wakelock.js'
+import { launchPath, legacyPath, tabOf, workoutRunning } from './lib/tab-route.js'
+import { useTabNav } from './lib/use-tab-nav.js'
+import { scrollAction } from './lib/scroll-restore.js'
+import { installKeyboardClass } from './lib/keyboard-open.js'
 import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
 import { MOBILE } from './lib/mobile.js'
 import { BRAND } from './brand.js'
-import { exitWorkoutEdit, startFlow } from './sheets.jsx'
+import { exitWorkoutEdit } from './sheets.jsx'
 import Icon from './components/Icon.jsx'
 import TabBar from './components/TabBar.jsx'
+import LiveDock from './components/LiveDock.jsx'
+import { openPlusSheet } from './components/PlusSheet.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import Modals from './components/Modals.jsx'
 import Toast from './components/Toast.jsx'
@@ -47,8 +53,12 @@ import CoachChat from './views/CoachChat.jsx'
 import Measurements from './views/Measurements.jsx'
 import CoachIntake from './views/CoachIntake.jsx'
 import CoachSetup from './views/CoachSetup.jsx'
+import TrainHub from './views/TrainHub.jsx'
+import FoodHub from './views/FoodHub.jsx'
+import ProgressHub from './views/ProgressHub.jsx'
+import './tab-shell.css'
 
-// last known scrollY per route, so back-navigation can put the page where it was
+// last known scrollY per tab and route, so back-navigation can put the page where it was
 const scrollPositions = new Map()
 
 bindUI(useUI)   // lets the shared controls open sheets without importing the store at module scope
@@ -84,6 +94,9 @@ function Shell() {
   const needsMobileOnboarding = useStore(s => s.needsMobileOnboarding)
   const langV = useLang()   // re-renders the whole shell when the language (pack) changes
   useEffect(() => { setNav(navigate) }, [navigate])
+  // The tab comes from the route; `shown` is the location on screen, which a tab switch holds
+  // still while it rebuilds the history underneath (lib/use-tab-nav.js).
+  const { tab, shown, switching } = useTabNav({ navigate, location: loc, navType })
   const lastEditPath = useRef(loc.pathname)
   // Any in-app route exit, browser back included, returns to the persisted draft and asks for a
   // save decision. Reload needs no prompt because the draft itself is already in local storage.
@@ -92,9 +105,9 @@ function Shell() {
     lastEditPath.current = loc.pathname
     // The live store, not this render's S: a save that just closed the editor may not have
     // reached this render yet, and asking again would offer to delete the workout it saved.
-    if (previous !== '/workout' || !useStore.getState().S.active?.editingWorkoutId || loc.pathname === '/workout') return
+    if (previous !== '/train/workout' || !useStore.getState().S.active?.editingWorkoutId || loc.pathname === '/train/workout') return
     const destination = loc.pathname + loc.search
-    navigate('/workout', { replace: true })
+    navigate('/train/workout', { replace: true })
     exitWorkoutEdit(() => navigate(destination, { replace: true }))
   }, [loc.pathname, loc.search, S.active?.editingWorkoutId, navigate])
   // A preset key, or the user's own colour as '#rrggbb' (lib/accent.js), already checked.
@@ -144,49 +157,69 @@ function Shell() {
     linkOffered.current = true
     openDeviceLinkRedeem()
   }, [ready, linkCode])
+  // The bar and the dock step aside while the on-screen keyboard is up (lib/keyboard-open.js).
+  useEffect(() => installKeyboardClass(), [])
+  // While a tab switch rebuilds the history the page on screen does not change, and a scroll
+  // event then (the browser clamping) is not a position anyone chose.
+  const switchingRef = useRef(false)
+  useLayoutEffect(() => { switchingRef.current = switching }, [switching])
   useEffect(() => {
     const onScroll = () => {
       // Modals pins the body while a sheet is open; scrollY is 0 then, not a position.
-      if (document.body.style.position === 'fixed') return
+      if (document.body.style.position === 'fixed' || switchingRef.current) return
       scrollPositions.set(pathRef.current, window.scrollY)
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+  // Arriving by a switch, not walking back later onto an entry a switch wrote.
+  const tabSwitch = !!shown.state?.tabSwitch && navType !== 'POP'
+  // A page any tab can open (Profile) keeps a scroll position per tab it is opened from.
+  const scrollKey = tab + ' ' + shown.pathname
   useLayoutEffect(() => {
+    if (switching) return
     const first = pathRef.current === null
-    const samePath = pathRef.current === loc.pathname
-    pathRef.current = loc.pathname
+    const samePath = pathRef.current === scrollKey
+    pathRef.current = scrollKey
+    const action = scrollAction({ first, samePath, navType, tabSwitch })
     // A fresh load arrives as a POP with nothing remembered. It goes to the top like any new
     // route — now, not a frame later: that frame landed on top of a scroll a view made on mount
     // (the superset card centring its row, views/Workout.jsx), and a smooth scroll cut off by a
     // scrollTo is simply gone.
-    if (navType !== 'POP' || first) { window.scrollTo(0, 0); return }
+    if (action === 'top') { window.scrollTo(0, 0); return }
     // A POP that stays on the route we are on is not a back-navigation: it is the history
     // entry a sheet pushed (Modals.jsx, #63) being unwound as the sheet closes. Nothing new
     // mounted, Modals puts the page back where it was itself, and a view that scrolled on
     // purpose because the sheet closed — the workout list going to the current exercise after
     // ⋯ → Layout → List (#224) — must not be dragged back to a position recorded before that
     // scroll's event had even been dispatched.
-    if (samePath) return
-    const y = scrollPositions.get(loc.pathname) || 0
+    if (action === 'keep') return
+    const y = scrollPositions.get(scrollKey) || 0
+    // Into another tab: its page goes back where it was left before it is first painted.
+    if (tabSwitch) window.scrollTo(0, y)
     // the restored view needs a layout pass before it is tall enough to scroll to y
     const frame = window.requestAnimationFrame(() => window.scrollTo(0, y))
     return () => window.cancelAnimationFrame(frame)
-  }, [loc.pathname, navType])
+  }, [scrollKey, navType, switching])
   // bound to the workout, not to the route — checking Stats mid-session keeps the screen on
   useWakeLock(!!S.active && !S.active.editingWorkoutId && S.keepAwake !== false)
   // A running workout has the whole screen (v1.3.11): no tab bar, and the rest bar docks to the
-  // bottom edge in its place. Its header's ⌄ goes back to the app, where the tab bar's Resume
-  // brings it back.
-  const inWorkout = loc.pathname === '/workout' && !!S.active
+  // bottom edge in its place. Its header's ⌄ goes back to where it was opened from, where the
+  // live dock brings it back.
+  const onWorkout = shown.pathname === '/train/workout'
+  const inWorkout = onWorkout && !!S.active
   useEffect(() => {
     document.body.classList.toggle('no-tabbar', inWorkout)
     return () => document.body.classList.remove('no-tabbar')
   }, [inWorkout])
   // The chat owns the bottom of the screen as well: its composer sits where the tabs would be.
   // The first-launch card has no tabs either: they changed the route behind it.
-  const noTabs = inWorkout || loc.pathname === '/coach' || needsMobileOnboarding
+  const noTabs = inWorkout || shown.pathname === '/train/coach' || needsMobileOnboarding
+  // One live dock while a workout runs and you are elsewhere (it takes the rest bar's place).
+  const docked = !noTabs && !onWorkout && workoutRunning(S)
+  // No route of its own (a launch, a home-screen icon): straight into a running workout, else
+  // Home. A route from before the tabs: where it lives now, query and fragment and all.
+  const fallback = legacyPath(shown.pathname, shown.search, shown.hash) || launchPath(workoutRunning(S))
 
   const authed = user || isGuest
   if (!ready && !authed) return (
@@ -199,37 +232,50 @@ function Shell() {
 
   return (
     <>
-      {/* keyed on the route: a view that throws is contained, and switching tabs
-          re-mounts the boundary, so the tab bar is always a way out */}
-      <div id="app" className="vfade" key={loc.pathname}>
+      {/* keyed on the route: a view that throws is contained, and switching tabs re-mounts the
+          boundary, so the tab bar is always a way out. Held still and out of reach while a tab
+          switch rebuilds the history under it (inert: no tap can start a navigation mid-walk). */}
+      <div id="app" className="vfade" key={shown.pathname} inert={switching || undefined}>
         <ErrorBoundary>
           {!authed ? <Login /> : needsMobileOnboarding ? <MobileOnboarding /> : (
-            <Routes>
+            <Routes location={shown}>
+              <Route path="/" element={<Navigate to={fallback} replace />} />
+              {/* Home */}
               <Route path="/home" element={<Home />} />
+              {/* Training */}
+              <Route path="/train" element={<TrainHub />} />
+              <Route path="/train/schedule" element={<Plan view="schedule" />} />
+              <Route path="/train/routines" element={<Plan view="routines" />} />
+              <Route path="/train/routines/:id" element={<RoutineEdit />} />
+              <Route path="/train/history" element={<History />} />
+              <Route path="/train/exercises" element={<Library />} />
+              <Route path="/train/exercises/muscles" element={<Muscles />} />
               {/* Gym check-in — switched off in Settings, the route falls through to the
                   catch-all redirect below. */}
-              {S.checkIn !== false && <Route path="/checkin" element={<CheckIn />} />}
-              <Route path="/plan" element={<Plan />} />
-              <Route path="/plan/r/:id" element={<RoutineEdit />} />
-              <Route path="/workout" element={<Workout />} />
-              <Route path="/stats" element={<Stats />} />
-              <Route path="/history" element={<History />} />
-              <Route path="/library" element={<Library />} />
-              <Route path="/muscles" element={<Muscles />} />
-              <Route path="/structural-balance" element={<StructuralBalance />} />
-              <Route path="/progress-photos" element={<ProgressPhotos />} />
-              <Route path="/measurements" element={<Measurements />} />
-              <Route path="/settings" element={<SettingsRoute />} />
-              <Route path="/settings/:page" element={<SettingsRoute />} />
+              {S.checkIn !== false && <Route path="/train/checkin" element={<CheckIn />} />}
               {/* The Coach screens gate themselves on the instance config; the routes exist
                   unconditionally so a deep link from a notification lands somewhere sane
                   rather than on the catch-all. */}
-              <Route path="/coach" element={<CoachChat />} />
-              <Route path="/coach/intake" element={<CoachIntake />} />
-              <Route path="/coach/proposal" element={<Navigate to="/coach" replace />} />
-              <Route path="/coach/setup" element={<CoachSetup />} />
-              <Route path="/admin" element={user?.admin ? <Admin /> : <Navigate to="/home" replace />} />
-              <Route path="*" element={<Navigate to="/home" replace />} />
+              <Route path="/train/coach" element={<CoachChat />} />
+              <Route path="/train/coach/intake" element={<CoachIntake />} />
+              <Route path="/train/coach/proposal" element={<Navigate to="/train/coach" replace />} />
+              <Route path="/train/coach/setup" element={<CoachSetup />} />
+              {/* Nutrition */}
+              <Route path="/food" element={<FoodHub />} />
+              {/* Progress */}
+              <Route path="/progress" element={<ProgressHub />} />
+              <Route path="/progress/body" element={<Stats section="body" />} />
+              <Route path="/progress/body/measurements" element={<Measurements />} />
+              <Route path="/progress/body/photos" element={<ProgressPhotos />} />
+              <Route path="/progress/strength" element={<Stats section="strength" />} />
+              <Route path="/progress/strength/balance" element={<StructuralBalance />} />
+              <Route path="/progress/load" element={<Stats section="load" />} />
+              {/* Opened from any tab, on top of it: the workout and Profile. */}
+              <Route path="/train/workout" element={<Workout />} />
+              <Route path="/me" element={<SettingsRoute />} />
+              <Route path="/me/admin" element={user?.admin ? <Admin /> : <Navigate to="/home" replace />} />
+              <Route path="/me/:page" element={<SettingsRoute />} />
+              <Route path="*" element={<Navigate to={fallback} replace />} />
             </Routes>
           )}
         </ErrorBoundary>
@@ -238,8 +284,10 @@ function Shell() {
           would ride along with the page for the length of it. Decides for itself when to show —
           including on the sign-in screen, when the server has just ended the session. */}
       <SyncBanner />
-      {!noTabs && <TabBar onStart={startFlow} />}
-      <RestTimer />
+      {/* The dock before the bar: it sits above the bar on screen, so it comes first in the
+          reading and tab order too. */}
+      {docked ? <LiveDock /> : <RestTimer />}
+      {!noTabs && <TabBar tab={tab} lit={tabOf(shown.pathname) === tab} onPlus={() => openPlusSheet(shown.pathname)} />}
       <Modals />
       <Toast />
       <TimerFlash />

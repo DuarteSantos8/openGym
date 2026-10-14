@@ -9,6 +9,7 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
+import { setNav } from '../lib/nav.js'
 import Plan from './Plan.jsx'
 
 const nav = vi.fn()
@@ -24,14 +25,13 @@ const routine = (id, name) => ({ id, name, emoji: null, ex: [{ id: '0025' }] })
 let host, root
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
-  localStorage.setItem('gym_plan_view', 'routines')
-  confirmSheet.mockClear(); nav.mockClear()
+  confirmSheet.mockClear(); nav.mockClear(); setNav(nav)
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
   useStore.setState(s => ({ S: { ...s.S, routines: [routine('a', 'Push A'), routine('b', 'Pull A'), routine('c', 'Legs A')], week: { 1: ['b'] }, dayPlan: {} }, user: null }))
 })
-afterEach(() => { act(() => root.unmount()); host.remove(); localStorage.removeItem('gym_plan_view') })
+afterEach(() => { act(() => root.unmount()); host.remove(); setNav(() => {}) })
 
-const mount = () => act(() => root.render(<Plan />))
+const mount = () => act(() => root.render(<Plan view="routines" />))
 const rows = () => [...host.querySelectorAll('.plan-routines .plan-routine')]
 const names = () => rows().map(e => e.querySelector('.tt').textContent)
 const stored = () => useStore.getState().S.routines.map(r => r.name)
@@ -142,6 +142,6 @@ describe('routine order', () => {
     click(add)
     const created = useStore.getState().S.routines.at(-1)
     expect(created.name).toBe('New routine')
-    expect(nav).toHaveBeenCalledWith('/plan/r/' + created.id)
+    expect(nav).toHaveBeenCalledWith('/train/routines/' + created.id)
   })
 })

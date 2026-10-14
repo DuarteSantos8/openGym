@@ -108,8 +108,8 @@ describe('exercise ids this build does not know', () => {
   it('Home, the plan, the routine editor and the Library draw it', () => {
     seed()
     expect(render(<Home />).textContent).toContain('Push')
-    render(<Plan />)
-    const edit = render(<Routes><Route path="/plan/r/:id" element={<RoutineEdit />} /></Routes>, '/plan/r/r1')
+    render(<Plan view="routines" />)
+    const edit = render(<Routes><Route path="/train/routines/:id" element={<RoutineEdit />} /></Routes>, '/train/routines/r1')
     expect(edit.textContent).toContain('Unknown exercise')
     render(<Library />)
     render(<StructuralBalance />)
@@ -123,7 +123,7 @@ describe('exercise ids this build does not know', () => {
       scheduleMode: 'rotation',
     })
     render(<Home />)
-    render(<Plan />)
+    render(<Plan view="schedule" />)
     expectKept(useStore.getState().S)
   })
 
@@ -150,7 +150,7 @@ describe('exercise ids this build does not know', () => {
 
   it('Stats draws it, and its exercise picker leaves out the id it has no name for', () => {
     seed()
-    const host = render(<Stats />)
+    const host = render(<Stats section="strength" />)
     // Exercise progress opens on the known lift: an id with no name to show is left out of
     // the picker (Stats.jsx exHist), not charted as a bare number.
     expect(host.textContent).toContain('Barbell Full Squat · 100 kg')

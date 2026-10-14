@@ -25,7 +25,7 @@ export function WorkoutSettings({ close }) {
   const wakeOK = wakeLockSupported()
   const layout = ['list', 'compact'].includes(S.active?.workoutView || S.workoutView) ? (S.active?.workoutView || S.workoutView) : 'cards'
   const gif = S.gifSize === 'mini' || S.gifSize === 'off' ? S.gifSize : 'full'
-  const allSettings = () => closeThenNav(close, '/settings/workout')
+  const allSettings = () => closeThenNav(close, '/me/workout')
   return <div className="ws-sheet">
     <div className="row between" style={{ marginBottom: 2 }}>
       <h3 style={{ margin: 0 }}>{t('Workout settings')}</h3>

@@ -16,9 +16,8 @@ import { workoutControls } from '../lib/workout-controls.js'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { useListReorder, moved } from '../lib/use-list-reorder.js'
 import { glyphOf, DEFAULT_GLYPH } from '../lib/glyphs.js'
-import { DEMO } from '../lib/demo.js'
-import { MOBILE } from '../lib/mobile.js'
-import { coachAvailable } from '../lib/coach.js'
+import { nav as navigateTo } from '../lib/nav.js'
+import SubHeader from '../components/SubHeader.jsx'
 import { queueOf, queueView } from '../lib/queue.js'
 import { deriveSessionName } from '../lib/session-merge.js'
 import { markUndone, undoMarks } from '../lib/sync-merge.js'
@@ -27,12 +26,11 @@ import {
   chooseRotation, chooseFixedWeek,
 } from '../lib/rotation.js'
 
-// Plan has two views (v1.3.11): Schedule (how you train, and when) and Routines (what you
-// train). The last one you looked at comes back: a per-device convenience, never synced, so it
-// lives in this browser's storage and not in S.
-export const PLAN_VIEW_KEY = 'gym_plan_view'
-const readView = () => {
-  try { return localStorage.getItem(PLAN_VIEW_KEY) === 'routines' ? 'routines' : 'schedule' } catch { return 'schedule' }
+// A new, empty routine, opened in the editor: the Routines page's "New routine" and the + sheet's.
+export function addRoutine() {
+  const r = { id: uid(), name: t('New routine'), emoji: DEFAULT_GLYPH, ex: [] }
+  useStore.getState().update(s => { s.routines.push(r) })
+  navigateTo('/train/routines/' + r.id)
 }
 
 /* Undo for Plan's two removals (v1.3.11). Both go through the store's normal update, so sync
@@ -121,28 +119,16 @@ export function undoTakeOut({ id, at, label, snap, mark, marks }) {
 // The flash a row lands with when a swipe brought it (a duplicate, an undo): one per new value.
 let flashSeq = 0
 
-export default function Plan() {
+// Training › Schedule (how you train, and when) and Training › Routines (what you train): what
+// used to be Plan's two views, now a page each. The Coach is a row on the Training hub.
+export default function Plan({ view = 'schedule' }) {
   const nav = useNavigate()
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
-  const config = useStore(s => s.config)
-  const coachMode = useStore(s => s.coachLocal?.mode)
-  const user = useStore(s => s.user)
   const fileRef = useRef(null)
-  const [view, setViewState] = useState(readView)
-  const setView = v => {
-    setViewState(v)
-    try { localStorage.setItem(PLAN_VIEW_KEY, v) } catch { /* private mode: the view just isn't remembered */ }
-  }
-
-  /* The Coach's way in from Plan: its own button in the header (a banner over the week was too
-     loud, the last entry of the share menu too hidden). Gated by the same predicate every other
-     Coach surface uses, so an instance without the feature sees exactly the header it would have
-     without it. */
-  const showCoach = coachAvailable(config, user, { demo: DEMO, mobile: MOBILE, coachMode })
 
   // Share, print, import and starter plans: one menu behind the header button, so the
-  // two views below are only about the plan itself.
+  // pages below are only about the plan itself.
   const openMenu = () => {
     const has = planHasRoutines(S)
     menuSheet({
@@ -161,16 +147,10 @@ export default function Plan() {
   const mode = scheduleModeOf(S)
 
   return <div className="narrow plan">
-    <div className="hdr">
-      <div><h1>{t('Plan')}</h1><div className="sub">{mode === 'rotation' ? t('Your routines in a loop') : t('Your weekly routine')}</div></div>
-      <div className="hdr-actions">
-        {showCoach && <Button size="sm" variant="tinted" icon="chat" onClick={() => nav('/coach')}>{t('Coach')}</Button>}
-        <button className="iconbtn" onClick={openMenu} aria-label={t('Plan options')} title={t('Plan options')}><Icon name="share" /></button>
-      </div>
-    </div>
+    <SubHeader title={view === 'routines' ? t('Routines') : t('Schedule')}
+      sub={view === 'routines' ? null : mode === 'rotation' ? t('Your routines in a loop') : t('Your weekly routine')}
+      action={<button className="iconbtn" onClick={openMenu} aria-label={t('Plan options')} title={t('Plan options')}><Icon name="share" /></button>} />
     <input ref={fileRef} type="file" accept="application/json,.json" onChange={pickFile} hidden />
-    <Segmented className="plan-views" value={view} onChange={setView}
-      options={[{ value: 'schedule', label: t('Schedule') }, { value: 'routines', label: t('Routines') }]} />
     {view === 'routines'
       ? <Routines S={S} update={update} nav={nav} />
       : <Schedule S={S} update={update} nav={nav} mode={mode} />}
@@ -369,8 +349,8 @@ function Schedule({ S, update, nav, mode }) {
     {/* Weekly muscle volume is analysis: it moved to Stats, next to Muscle balance. Stats only
         shows that card once there is a routine, so the link waits for one too. */}
     {S.routines.length > 0 && <Section className="plan-link">
-      <Row icon="chart" iconTint="var(--indigo)" title={t('Weekly muscle volume')} subtitle={t('Now in Stats, next to Muscle balance')}
-        accessory="chevron" onClick={() => nav('/stats?focus=weekly-volume')} />
+      <Row icon="chart" iconTint="var(--indigo)" title={t('Weekly muscle volume')} subtitle={t('In Progress, under Training load')}
+        accessory="chevron" onClick={() => nav('/progress/load?focus=weekly-volume')} />
     </Section>}
   </>
 }
@@ -391,11 +371,6 @@ function Routines({ S, update, nav }) {
     s.routines.splice(to, 0, m)
   }))
 
-  const addRoutine = () => {
-    const r = { id: uid(), name: t('New routine'), emoji: DEFAULT_GLYPH, ex: [] }
-    update(s => { s.routines.push(r) })
-    nav('/plan/r/' + r.id)
-  }
   // The same delete as RoutineEdit's "Delete routine" button (lib/routines.js), with an Undo in
   // place of its confirm (v1.3.11): the swipe and the edit-mode minus both land here.
   const remove = r => deleteRoutineWithUndo(r.id)
@@ -437,7 +412,7 @@ function Routines({ S, update, nav }) {
               {...reorder.handle(i)}><Icon name="chevronsUpDown" /></button>}
           </div>)}</div>
         : <div className="list routine-list plan-routines">{routines.map(r => {
-          const row = <div key={r.id} className="item plan-routine" {...tappable(() => nav('/plan/r/' + r.id))}>
+          const row = <div key={r.id} className="item plan-routine" {...tappable(() => nav('/train/routines/' + r.id))}>
             <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
             <div className="grow"><div className="tt">{r.name}</div><div className="ss">{sub(r)}</div></div>
             <Icon name="chevronRight" className="chev" /></div>

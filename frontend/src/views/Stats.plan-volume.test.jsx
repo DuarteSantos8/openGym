@@ -8,7 +8,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({ S: null }))
 vi.mock('../store/useStore.js', () => ({ useStore: selector => selector({ S: mocks.S }) }))
-vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }))
+vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn(), useLocation: () => ({ search: '', pathname: '/progress/load' }) }))
+vi.mock('../lib/use-tab-nav.js', () => ({ back: vi.fn(), isSwitching: () => false, switchTab: vi.fn(), popToRoot: vi.fn() }))
 vi.mock('../sheets.jsx', () => ({
   bwSheet: vi.fn(), goalSheet: vi.fn(), calendarSheet: vi.fn(), workoutDetailSheet: vi.fn(),
   exerciseHistorySheet: vi.fn(), WorkoutRow: () => React.createElement('div'), bwDeltaColor: () => '', weighInsSheet: vi.fn(),
@@ -81,25 +82,25 @@ describe('Stats — weekly muscle volume from the plan', () => {
 
   it('sits on Stats right after Muscle balance, and only once there are routines', () => {
     mocks.S = state()
-    act(() => root.render(<Stats />))
+    act(() => root.render(<Stats section="load" />))
     const balance = [...host.querySelectorAll('.card h2')].find(h => h.textContent.startsWith('Muscle balance'))?.closest('.card')
     expect(balance).toBeTruthy()
     expect(balance.nextElementSibling).toBe(card())
     expect(card().id).toBe('weekly-volume')
     mocks.S = state({ routines: [], week: {} })
-    act(() => root.render(<Stats />))
+    act(() => root.render(<Stats section="load" />))
     expect(card()).toBeNull()
   })
 
   it('scrolls itself into view when Plan links here', () => {
     vi.useFakeTimers()
     try {
-      window.location.hash = '#/stats?focus=weekly-volume'
+      window.location.hash = '#/progress/load?focus=weekly-volume'
       mocks.S = state()
       const scroll = vi.fn()
       const orig = Element.prototype.scrollIntoView
       Element.prototype.scrollIntoView = scroll
-      act(() => root.render(<Stats />))
+      act(() => root.render(<Stats section="load" />))
       act(() => { vi.advanceTimersByTime(50) })
       Element.prototype.scrollIntoView = orig
       expect(scroll).toHaveBeenCalledTimes(1)

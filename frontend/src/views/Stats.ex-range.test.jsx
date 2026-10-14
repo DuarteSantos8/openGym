@@ -9,7 +9,8 @@ import Stats from './Stats.jsx'
 
 const mocks = vi.hoisted(() => ({ charts: [], S: null }))
 vi.mock('../store/useStore.js', () => ({ useStore: selector => selector({ S: mocks.S }) }))
-vi.mock('react-router-dom', () => ({ useNavigate: () => () => {} }))
+vi.mock('react-router-dom', () => ({ useNavigate: () => () => {}, useLocation: () => ({ search: '', pathname: '/progress/strength' }) }))
+vi.mock('../lib/use-tab-nav.js', () => ({ back: vi.fn(), isSwitching: () => false, switchTab: vi.fn(), popToRoot: vi.fn() }))
 vi.mock('../sheets.jsx', () => ({
   bwSheet: () => {}, goalSheet: () => {}, calendarSheet: () => {}, workoutDetailSheet: () => {}, exerciseHistorySheet: () => {},
   WorkoutRow: () => null, bwDeltaColor: () => 'inherit',
@@ -32,12 +33,12 @@ const session = (ago, w) => {
 let root, host
 afterEach(() => { act(() => root.unmount()); host.remove(); mocks.charts = [] })
 
-function mount(workouts) {
+function mount(workouts, section = 'strength') {
   mocks.S = { body: 'male', effort: 'none', unit: 'kg', targetW: null, bodyweight: [], routines: [], exWeights: {}, workouts }
   host = document.createElement('div')
   document.body.appendChild(host)
   root = createRoot(host)
-  act(() => root.render(<Stats />))
+  act(() => root.render(<Stats section={section} />))
 }
 // The exercise card's chart is the last one drawn; the body weight chart has no colour of its own.
 const exChart = () => mocks.charts.filter(c => c.color === 'var(--blue)' || c.series).at(-1)
@@ -83,10 +84,14 @@ describe('Stats: exercise progress date range', () => {
     expect(exChart().points.map(p => p.y)).toEqual([90, 80])
   })
 
-  it('leaves the body weight range alone', () => {
-    mount([session(400, 100), session(200, 90), session(5, 80)])
-    const bwCard = [...host.querySelectorAll('.card')].find(c => c.querySelector('h2')?.textContent === 'Body weight')
+  it('leaves the body weight range alone (it lives on the Body page, with its own 3M default)', () => {
+    const workouts = [session(400, 100), session(200, 90), session(5, 80)]
+    mount(workouts)
+    expect(host.textContent).not.toContain('Body weight')
     press(exCard(), '1M')
+    act(() => root.unmount()); host.remove()
+    mount(workouts, 'body')
+    const bwCard = [...host.querySelectorAll('.card')].find(c => c.querySelector('h2')?.textContent === 'Body weight')
     expect([...bwCard.querySelectorAll('.seg button.on')].map(b => b.textContent)).toEqual(['3M'])
   })
 })

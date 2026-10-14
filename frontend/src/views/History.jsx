@@ -1,5 +1,5 @@
-import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
+import SubHeader from '../components/SubHeader.jsx'
 import { t, tn } from '../lib/i18n.js'
 import { WorkoutRow, DayNoteRow, workoutDetailSheet, logPastWorkoutSheet } from '../sheets.jsx'
 import { Button } from '../components/ui.jsx'
@@ -17,12 +17,10 @@ export function historyRows(S) {
 }
 
 export default function History() {
-  const nav = useNavigate()
   const S = useStore(s => s.S)
   const rows = historyRows(S)
   return <>
-    <div className="hdr"><button className="iconbtn" onClick={() => nav('/stats')} aria-label={t('Stats')}><Icon name="chevronLeft" /></button>
-      <div style={{ flex: 1, marginInlineStart: 12 }}><h1>{t('History')}</h1><div className="sub">{tn('{0} workout', '{0} workouts', S.workouts.length)}</div></div></div>
+    <SubHeader title={t('History')} sub={tn('{0} workout', '{0} workouts', S.workouts.length)} />
     <Button icon="plus" onClick={logPastWorkoutSheet} style={{ marginBottom: 12 }}>{t('Log a past workout')}</Button>
     {rows.length ? <div className="list">{rows.map(r => r.w
       ? <WorkoutRow key={r.w.id} w={r.w} onClick={() => workoutDetailSheet(r.w)} />

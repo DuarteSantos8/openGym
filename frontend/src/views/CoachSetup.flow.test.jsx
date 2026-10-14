@@ -25,7 +25,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const mocks = vi.hoisted(() => {
   const state = {
     mobile: true, user: null, config: null, coachLocal: null,
-    nav: vi.fn(), toast: vi.fn(), openSheet: vi.fn(), setCoachLocal: vi.fn(), refreshConfig: vi.fn(),
+    nav: vi.fn(), back: vi.fn(), toast: vi.fn(), openSheet: vi.fn(), setCoachLocal: vi.fn(), refreshConfig: vi.fn(),
   }
   state.snapshot = () => ({
     user: state.user, config: state.config, coachLocal: state.coachLocal,
@@ -46,6 +46,7 @@ vi.mock('../store/useUI.js', () => {
   return { useUI }
 })
 vi.mock('react-router-dom', () => ({ useNavigate: () => mocks.nav }))
+vi.mock('../lib/use-tab-nav.js', () => ({ back: (...a) => mocks.back(...a), isSwitching: () => false, switchTab: vi.fn(), popToRoot: vi.fn() }))
 // A getter, so one test can be the web build and the rest the phone.
 vi.mock('../lib/mobile.js', () => ({ get MOBILE() { return mocks.mobile } }))
 vi.mock('../lib/coach-secrets.js', () => ({
@@ -65,7 +66,7 @@ beforeEach(() => {
   mocks.user = { uid: 'u1', name: 'Ana' }
   mocks.config = { coach: { enabled: true } }
   mocks.coachLocal = null
-  mocks.nav.mockReset(); mocks.toast.mockReset(); mocks.openSheet.mockReset()
+  mocks.nav.mockReset(); mocks.back.mockReset(); mocks.toast.mockReset(); mocks.openSheet.mockReset()
   mocks.setCoachLocal.mockReset().mockResolvedValue(undefined)
   mocks.refreshConfig.mockReset()
   vi.mocked(getApiKey).mockReset().mockResolvedValue(null)
@@ -101,7 +102,7 @@ describe('CoachSetup — where it runs at all', () => {
   it('is a phone screen: the web build is sent straight back to Settings', async () => {
     mocks.mobile = false
     await mount()
-    expect(mocks.nav).toHaveBeenCalledWith('/settings', { replace: true })
+    expect(mocks.nav).toHaveBeenCalledWith('/me', { replace: true })
   })
 
   it('re-asks the paired server what it can do, because the admin may have switched it on', async () => {
@@ -123,7 +124,7 @@ describe('CoachSetup — "use my self-hosted Gains"', () => {
     await settle()
     expect(mocks.setCoachLocal).toHaveBeenCalledWith({ mode: 'server' })
     expect(mocks.toast).toHaveBeenCalledWith('The Coach is on')
-    expect(mocks.nav).toHaveBeenCalledWith('/coach')
+    expect(mocks.nav).toHaveBeenCalledWith('/train/coach')
   })
 
   it('an unpaired phone is asked to connect first, and nothing is written', async () => {
@@ -153,10 +154,10 @@ describe('CoachSetup — "use my self-hosted Gains"', () => {
     expect(rowTitled('Use my self-hosted Gains').textContent).toContain('Loading…')
   })
 
-  it('Back returns to Settings', async () => {
+  it('Back steps back through the tab', async () => {
     await mount()
     await click(host.querySelector('.hdr .iconbtn'))
-    expect(mocks.nav).toHaveBeenCalledWith('/settings')
+    expect(mocks.back).toHaveBeenCalled()
   })
 })
 
@@ -340,7 +341,7 @@ describe('CoachSetup — saving', () => {
     expect(mocks.setCoachLocal).toHaveBeenCalledWith({ mode: 'byok', provider: 'anthropic', model: 'claude-opus-5', baseUrl: null })
     expect(setApiKey).toHaveBeenCalledWith('sk-1')
     expect(mocks.toast).toHaveBeenCalledWith('The Coach is on')
-    expect(mocks.nav).toHaveBeenCalledWith('/coach')
+    expect(mocks.nav).toHaveBeenCalledWith('/train/coach')
   })
 
   it('normalises the endpoint it saves for a compatible provider, and saves the model you pick', async () => {
@@ -360,7 +361,7 @@ describe('CoachSetup — saving', () => {
     await click(btn('List models')); await settle()
     await click(btn('Save and use the Coach')); await settle()
     expect(setApiKey).not.toHaveBeenCalled()
-    expect(mocks.nav).toHaveBeenCalledWith('/coach')
+    expect(mocks.nav).toHaveBeenCalledWith('/train/coach')
   })
 
   it('refuses to save a provider with no model picked and no default to fall back on', async () => {

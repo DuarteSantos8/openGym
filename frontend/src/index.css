@@ -297,13 +297,12 @@ button.conn:active{filter:brightness(1.12)}
 .hdr h1{font-size:34px;line-height:1.06;font-weight:700;letter-spacing:-.028em;overflow-wrap:break-word}
 @media (max-width:420px){.hdr h1{font-size:30px}}
 .hdr .sub{color:var(--label-2);font-size:15px;letter-spacing:-.006em;margin-top:4px}
-/* Library: the count line runs under the title row at full width instead of beside the "By muscle"
+/* Library: the count line runs under the header at full width instead of beside the "By muscle"
    button, which left it ~200px on a phone: the catalogue count plus your own exercises stays one
    line in every language. The ellipsis is only the safety net (the strings are kept short), and
    text-overflow follows the text direction, so Arabic clips on its own end. */
-.hdr.lib-hdr{flex-wrap:wrap;align-items:center;row-gap:0}
-.hdr.lib-hdr>.sub.lib-count{flex:1 0 100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-@media (max-width:360px){.hdr.lib-hdr>.sub.lib-count{white-space:normal;overflow:visible;text-overflow:clip}}
+.sub.lib-count{margin:-12px 0 14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:360px){.sub.lib-count{white-space:normal;overflow:visible;text-overflow:clip}}
 
 .iconbtn{
   width:36px;height:36px;border-radius:50%;flex:none;
@@ -474,7 +473,7 @@ h4.sec{
 #tabbar button.on{color:var(--acc-ink)}
 #tabbar button.on .icn{--icon-stroke:2;color:inherit;opacity:1}
 /* A connection problem while the banner is switched off (Settings → Show connection status):
-   a dot on the Home tab and on the Settings gear. */
+   a dot on the avatar every tab's root carries (components/AvatarButton.jsx). */
 #tabbar .tab-ic{position:relative;display:inline-flex}
 .tab-dot{
   position:absolute;top:-1px;right:-3px;width:8px;height:8px;border-radius:50%;
@@ -490,20 +489,8 @@ h4.sec{
 }
 #tabbar button.start:active .cir{transform:scale(.93)}
 #tabbar button.start .cir .icn{font-size:26px;--icon-stroke:2;color:inherit;opacity:1}
-#tabbar button.start span{color:var(--acc-ink);font-weight:600}
-#tabbar button.start .tab-time{font-variant-numeric:tabular-nums}
-/* `.cir` is itself a <span>, so the label rules above and below reach it too and
-   outrank the `.cir` block — which is how the running state ended up painting an
-   orange play glyph onto an orange disc. Both states restate their own colour.
-   The disc is orange in either theme, so its glyph is black, not `--on-acc`. */
-#tabbar button.start .cir{color:var(--on-acc)}
-#tabbar button.start.rec .cir{background:var(--live);color:#000;box-shadow:0 6px 18px -4px color-mix(in srgb,var(--live) 55%,transparent)}
-#tabbar button.start.rec span{color:var(--live-ink)}
-#tabbar button.start.rec .cir::after{
-  content:'';position:absolute;inset:0;border-radius:50%;
-  border:2px solid var(--live);animation:ping 1.9s var(--ease) infinite;
-}
-@keyframes ping{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.45);opacity:0}}
+/* The centre + (components/TabBar.jsx): the accent disc in every state. A running workout shows
+   in the live dock and the dot on the Training tab, not on the disc. */
 
 /* NOTE on every backdrop-filter pair in this file: the -webkit- line comes first and the
    standard property last, which is the order a prefixed/standard pair wants — whichever is
@@ -1946,7 +1933,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   transition:background var(--fast);width:100%;text-align: start;cursor:pointer;
 }
 .today-row:active{background:var(--surface-3)}
-.today-row .lbl2{font-size:11px;font-weight:500;letter-spacing:.03em;text-transform:uppercase;color:var(--label-3)}
+.today-row .lbl2{font-size:11px;font-weight:500;letter-spacing:.03em;text-transform:uppercase;color:var(--label-2)}   /* --label-3 was 1.7:1 on the row in light */
 .today-row .ttl{
   font-weight:500;font-size:17px;line-height:1.25;text-transform:capitalize;
   letter-spacing:-.012em;margin-top:2px;
@@ -2048,9 +2035,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .cam-wrap video{width:100%;height:100%;object-fit:cover;display:block}
 .cam-frame{position:absolute;inset:0;margin:auto;width:62%;aspect-ratio:1;border:2px dashed rgba(255,255,255,.75);border-radius:14px;pointer-events:none}
 /* ---------------------------------------------------------------- Plan -- */
-/* Schedule | Routines (views/Plan.jsx). A settings-like page, one column at every width. */
-.plan-views{margin-bottom:18px}
-.plan-views button{min-height:34px;font-size:15px}
+/* Schedule and Routines (views/Plan.jsx). Settings-like pages, one column at every width. */
 .plan .plan-mode .lrow-t{white-space:nowrap}
 /* The control takes the rest of the row when it fits, and a full line of its own when it does
    not, rather than squeezing "Fixed Week" onto two lines. */

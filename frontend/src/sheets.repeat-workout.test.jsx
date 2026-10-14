@@ -56,7 +56,7 @@ describe('WorkoutDetail — repeat today', () => {
     expect(active.entries.map(e => e.id)).toEqual([A, B])
     expect(active.entries[0].sets.map(s => [s.w, s.r, s.done])).toEqual([[45, 8, false], [45, 7, false]])
     expect(active.entries.some(e => 'rid' in e)).toBe(false)
-    expect(navigated).toBe('/workout')
+    expect(navigated).toBe('/train/workout')
     expect(useStore.getState().S.workouts[0]).toEqual(saved)
     expect(useUI.getState().toastMsg).toMatch(/1 exercise no longer exists/)
   })

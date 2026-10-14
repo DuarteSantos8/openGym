@@ -103,7 +103,7 @@ describe('the in-workout settings sheet', () => {
   it('goes to Settings → Workout from All settings, closing the sheet', () => {
     act(() => row('All settings').click())
     expect(close).toHaveBeenCalled()
-    expect(navTo).toHaveBeenCalledWith('/settings/workout')
+    expect(navTo).toHaveBeenCalledWith('/me/workout')
   })
 
   // The sheet's own history entry used to stay behind: back from Settings went to the workout, and
@@ -111,7 +111,7 @@ describe('the in-workout settings sheet', () => {
   it('Settings takes the sheet\'s history entry instead of leaving it behind', () => {
     history.pushState({ openGymSheet: true }, '')
     act(() => row('All settings').click())
-    expect(navTo).toHaveBeenCalledWith('/settings/workout', { replace: true })
+    expect(navTo).toHaveBeenCalledWith('/me/workout', { replace: true })
     history.replaceState(null, '')
   })
 })

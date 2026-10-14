@@ -44,7 +44,7 @@ describe('closing the saved-workout editor', () => {
 
   it('a second ask while the prompt is open joins it: one prompt, one save, the latest way out', () => {
     exitWorkoutEdit()
-    exitWorkoutEdit(() => navigated.push('/stats'))   // the route exit that raced the X
+    exitWorkoutEdit(() => navigated.push('/progress'))   // the route exit that raced the X
     expect(useUI.getState().sheets.length).toBe(1)
     const host = renderTop()
     act(() => { button(host, 'Save changes').click() })
@@ -53,20 +53,20 @@ describe('closing the saved-workout editor', () => {
     expect(useUI.getState().toastMsg).toBe('Workout updated')
     expect(useUI.getState().sheets.length).toBe(0)
     expect(useStore.getState().S.workouts).toHaveLength(1)
-    expect(navigated).toEqual(['/stats'])
+    expect(navigated).toEqual(['/progress'])
   })
 
   it('a stale prompt left open after the editor closed only leaves: no delete offer, no false toast', () => {
     exitWorkoutEdit()
     const stale = renderTop()
     // The editor closes some other way (a save from the bottom button) while the prompt is up.
-    act(() => { saveWorkoutEdits(() => navigated.push('/history')) })
+    act(() => { saveWorkoutEdits(() => navigated.push('/train/history')) })
     expect(useUI.getState().toastMsg).toBe('Workout updated')
     act(() => { button(stale, 'Save changes').click() })
     expect(useUI.getState().sheets.length).toBe(0)
     expect(useUI.getState().toastMsg).toBe('Workout updated')
     expect(useStore.getState().S.workouts).toHaveLength(1)
-    expect(navigated).toEqual(['/history', '/history'])
+    expect(navigated).toEqual(['/train/history', '/train/history'])
   })
 
   it('after a prompt was answered, the next close asks afresh', () => {
@@ -83,6 +83,6 @@ describe('closing the saved-workout editor', () => {
     exitWorkoutEdit()
     saveWorkoutEdits()
     expect(useUI.getState().sheets.length).toBe(0)
-    expect(navigated).toEqual(['/history', '/history'])
+    expect(navigated).toEqual(['/train/history', '/train/history'])
   })
 })

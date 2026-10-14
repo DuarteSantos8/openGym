@@ -79,7 +79,7 @@ export default function CoachIntake() {
   }))
   const set = patch => setP(v => ({ ...v, ...patch }))
 
-  if (!coachAvailable(config, user, { demo: DEMO, mobile: MOBILE, coachMode })) { nav('/home', { replace: true }); return null }
+  if (!coachAvailable(config, user, { demo: DEMO, mobile: MOBILE, coachMode })) { nav('/home',{ replace: true }); return null }
 
   const key = STEPS[step]
   const last = step === STEPS.length - 1
@@ -87,11 +87,11 @@ export default function CoachIntake() {
   const optional = ['equipment', 'limits', 'extras'].includes(key)
 
   const next = () => (last ? finish() : setStep(step + 1))
-  const back = () => (step ? setStep(step - 1) : nav(editing ? '/coach' : '/plan'))
+  const back = () => (step ? setStep(step - 1) : nav(editing ? '/train/coach' : '/train/routines'))
 
   const agree = () => {
     update(s => { s.coach = { ...(s.coach || emptyCoach()), consent: { agreedAt: new Date().toISOString(), version: CONSENT_VERSION } } })
-    if (reconsentOnly) nav('/coach', { replace: true })
+    if (reconsentOnly) nav('/train/coach', { replace: true })
     else setStep(step + 1)
   }
 
@@ -108,11 +108,11 @@ export default function CoachIntake() {
       // the questionnaire twice.
       if (!(c.chat || []).some(m => m.kind === 'intake')) appendChat(s, { role: 'user', kind: 'intake' })
     })
-    if (editing) { toast(t('Saved')); nav('/coach'); return }
+    if (editing) { toast(t('Saved')); nav('/train/coach'); return }
     setBusy(true)
     try {
       await requestPlan(profile)
-      nav('/coach', { replace: true })
+      nav('/train/coach', { replace: true })
     } catch (e) {
       // The server's refusal is English with its class beside it; the class picks the line.
       toast(JOB_ERRORS[e.data?.code] || e.message || t('Could not ask the Coach')); setBusy(false)
@@ -139,7 +139,7 @@ export default function CoachIntake() {
     </div>
 
     <div className="ob-body">
-      {key === 'consent' && <Consent onAgree={agree} onDecline={() => nav('/plan')} />}
+      {key === 'consent' && <Consent onAgree={agree} onDecline={() => nav('/train/routines')} />}
 
       {key === 'goal' && <>
         <div className="ob-eyebrow">{t('Your goal')}</div>

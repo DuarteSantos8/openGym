@@ -137,7 +137,7 @@ describe('a Coach run that fails before the first poll', () => {
 
   it('the plan the intake asked for, failed before the chat opened, is answered when it opens', async () => {
     mocks.S = state([])
-    await requestPlan(mocks.S.coach.profile)                 // CoachIntake's finish(), then nav('/coach')
+    await requestPlan(mocks.S.coach.profile)                 // CoachIntake's finish(), then nav('/train/coach')
     await mount()
     expect(replies()).toHaveLength(1)
     expect(replies()[0]).toMatchObject({ kind: 'error', text: FAILED })

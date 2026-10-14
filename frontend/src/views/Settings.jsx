@@ -6,6 +6,7 @@ import { workoutControls } from '../lib/workout-controls.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { formulaOf, FORMULA_NAMES } from '../lib/onerm.js'
 import { copyText } from '../lib/clipboard.js'
+import { back as tabBack } from '../lib/use-tab-nav.js'
 import { useUI } from '../store/useUI.js'
 import { ACCENTS, ACCENT_NAMES, todayISO, localTZ, weekStartOf, MONDAY, SUNDAY, fmtPlate } from '../lib/format.js'
 import { inventoryFor, ownsPlates } from '../lib/plates.js'
@@ -64,8 +65,8 @@ export function SettingsRoute() {
   const { page } = useParams()
   const loc = useLocation()
   const ctx = { user: useStore(s => s.user), mobile: MOBILE }
-  if (page && (!PAGES[page] || !pageVisible(PAGES[page].parent || page, ctx))) return <Navigate to="/settings" replace />
-  if (page === 'coach') return <Navigate to="/coach/setup" replace />
+  if (page && (!PAGES[page] || !pageVisible(PAGES[page].parent || page, ctx))) return <Navigate to="/me" replace />
+  if (page === 'coach') return <Navigate to="/train/coach/setup" replace />
   return <Settings key={page || 'root'} page={page || null} find={loc.state?.find || null} via={loc.state?.via || null} />
 }
 
@@ -417,16 +418,12 @@ export default function Settings({ page = null, find = null, via = null }) {
   }
 
   const open = id => {
-    if (id === 'coach') { nav('/coach/setup'); return }
-    nav('/settings/' + id)
+    if (id === 'coach') { nav('/train/coach/setup'); return }
+    nav('/me/' + id)
   }
-  // Back the way you came when there is a way (the browser's back, Android's back, this button
-  // all do the same); a page opened from a link with nothing behind it goes up to its parent.
-  const back = () => {
-    const up = PAGES[page]?.parent ? '/settings/' + PAGES[page].parent : '/settings'
-    if ((window.history.state?.idx || 0) > 0) nav(-1)
-    else nav(up, { replace: true })
-  }
+  // The tab's back (lib/use-tab-nav.js), with this page's own parent for a page opened from a
+  // link with nothing behind it.
+  const back = () => tabBack(PAGES[page]?.parent ? '/me/' + PAGES[page].parent : '/me')
 
   /* ---------------- the pages ---------------- */
   const restRow = <Row icon="timer" iconTint="var(--orange)" title={t('Rest timer')} value={fmtRest(S.restSec)} accessory="chevron"
@@ -630,7 +627,7 @@ export default function Settings({ page = null, find = null, via = null }) {
         </Row>
         {/* Rotation chosen with no loop running yet: the loop is built on Plan. */}
         {mode === 'rotation' && !liveQ && <Row icon="calendar" iconTint="var(--orange)" title={t('Build your loop in Plan')}
-          accessory="chevron" onClick={() => nav('/plan')} />}
+          accessory="chevron" onClick={() => nav('/train/schedule')} />}
         {/* Monday or Sunday: the Plan list, the Home strip, the calendar grid and every "this
             week" total follow it. Stored as a getDay() index (see lib/format.js). */}
         <Row icon="calendar" iconTint="var(--orange)" title={t('Week starts on')}>
@@ -884,7 +881,7 @@ export default function Settings({ page = null, find = null, via = null }) {
           Admin and Disconnect sit in the same block; a browser's account rows follow in their own. */}
       {user && !DEMO && <ServerSyncSection>
         {MOBILE && <>
-          {user.admin && <Row icon="crown" iconTint="var(--indigo)" title={t('Admin dashboard')} accessory="chevron" onClick={() => nav('/admin')} />}
+          {user.admin && <Row icon="crown" iconTint="var(--indigo)" title={t('Admin dashboard')} accessory="chevron" onClick={() => nav('/me/admin')} />}
           <AccountIdRow id={user.id} />
           <Row icon="signOut" iconTint="var(--red)" title={t('Disconnect')} danger onClick={disconnect} />
         </>}
@@ -904,7 +901,7 @@ export default function Settings({ page = null, find = null, via = null }) {
           <Row icon="rocket" iconTint="var(--indigo)" title={t('Self-host openGym')} subtitle={t('Passkey sign-in, sync across your devices, your own data.')} accessory="chevron"
             onClick={() => window.open(REPO, '_blank', 'noopener')} />
         </> : user ? <>
-          {user.admin && <Row icon="crown" iconTint="var(--indigo)" title={t('Admin dashboard')} accessory="chevron" onClick={() => nav('/admin')} />}
+          {user.admin && <Row icon="crown" iconTint="var(--indigo)" title={t('Admin dashboard')} accessory="chevron" onClick={() => nav('/me/admin')} />}
           <PasskeysRow state={passkeys.st} changed={credsChanged} />
           <DeviceLinkRow state={passkeys.st} />
           <Row icon="qr" iconTint="var(--blue)" title={t('Pair the mobile app')} subtitle={t('Connect the openGym app on your phone to this account.')} accessory="chevron"
@@ -955,9 +952,9 @@ export default function Settings({ page = null, find = null, via = null }) {
 
   /* ---------------- the root ---------------- */
   return <SettingsRoot ctx={ctx} preview={preview} open={open} user={user} sync={sync}
-    home={() => nav('/home')} go={(hit) => {
-      if (hit.page === 'coach') { nav('/coach/setup'); return }
-      nav('/settings/' + hit.page, hit.isPage ? undefined : { state: hit.via ? { find: hit.title, via: hit.via } : { find: hit.title } })
+    home={tabBack} go={(hit) => {
+      if (hit.page === 'coach') { nav('/train/coach/setup'); return }
+      nav('/me/' + hit.page, hit.isPage ? undefined : { state: hit.via ? { find: hit.title, via: hit.via } : { find: hit.title } })
     }} />
 }
 
@@ -978,7 +975,8 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go }) {
   const initial = user && !DEMO ? String(user.name || '?').trim().charAt(0).toUpperCase() : null
   return <div className="narrow">
     <div className="sp-nav">
-      <button className="sp-back" onClick={home} aria-label={t('Home')}><Icon name="chevronLeft" /><span>{t('Home')}</span></button>
+      {/* Me opens from the avatar in either mode, so back is back, not a fixed Home. */}
+      <button className="sp-back" onClick={home}><Icon name="chevronLeft" /><span>{t('Back')}</span></button>
     </div>
     <h1 className="sp-root-title">{t('Settings')}</h1>
     <div className="sp-search">

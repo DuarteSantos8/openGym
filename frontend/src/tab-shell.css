@@ -1,0 +1,111 @@
+/* The tab shell: the four-tab bar with its sliding pill and centre +, the headers of a tab's root
+   and of the pages under it, the hubs' targets, the + sheet and the live dock. Kept out of
+   index.css so the design tokens there can move independently; it only reads them.
+   This file loads before index.css (App.jsx is imported first), so a rule here that has to win
+   over one there is written one step more specific. */
+
+/* A workout is running: its dot, on the Training tab, in the dock and in the + sheet. */
+.live-dot{
+  flex:none;width:8px;height:8px;border-radius:50%;background:var(--live);
+  animation:livepulse 1.6s ease-in-out infinite alternate;
+}
+/* It breathes, but never fades below what still reads as a dot. */
+@keyframes livepulse{from{opacity:1}to{opacity:.7}}
+
+/* The lit tab's pill tint: the accent's soft tint, a step stronger in light, where gold and lime
+   would otherwise wash out. */
+:root{--tab-pill:var(--acc-soft)}
+:root[data-theme="light"]{--tab-pill:color-mix(in srgb,var(--acc) 20%,transparent)}
+
+/* --- headers --- */
+/* A tab's root: the large title and the avatar (the way into Profile, and the sync dot). */
+.hdr.root-hdr{align-items:center}
+.avatar-btn{position:relative;flex:none;width:44px;height:44px;display:flex;align-items:center;justify-content:center}
+.avatar-c{
+  width:36px;height:36px;border-radius:50%;background:var(--surface-2);color:var(--label);
+  display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;
+}
+.avatar-c .icn{font-size:20px}
+:root[data-theme="light"] .avatar-c{background:var(--surface);box-shadow:var(--shadow-card)}
+.avatar-btn:active .avatar-c{opacity:.6}
+.avatar-btn .tab-dot{top:3px;right:3px;box-shadow:0 0 0 2px var(--bg)}
+/* The only sync indicator: --orange is 2:1 on the light ground, its ink 5.7:1. */
+:root[data-theme="light"] .avatar-btn .tab-dot{background:var(--orange-ink)}
+/* Every other page: back · title · the page's own action. */
+.hdr.sub-hdr{align-items:center;justify-content:flex-start}
+.sub-hdr-t{flex:1;min-width:0;margin-inline-start:6px}
+.hdr.sub-hdr>.hdr-actions{margin-inline-start:auto}
+
+/* --- hubs --- */
+.hub-tiles{margin-bottom:16px}
+.tile.hub-tile{cursor:pointer;display:flex;flex-direction:column;gap:2px;min-height:96px}
+.hub-tile-i{font-size:22px;color:var(--acc-ink);margin-bottom:6px}
+.hub-tile-t{font-size:17px;font-weight:600;letter-spacing:-.012em}
+.hub-tile-s{font-size:13px;color:var(--label-2)}
+/* Progress cards: what the card is, the number, then its context. */
+.hub-card{cursor:pointer}
+.hub-card .hub-card-t{font-size:13px;color:var(--label-2)}
+.hub-card .hub-card-v{font-size:17px;font-weight:600;letter-spacing:-.012em;margin-top:1px}
+.hub-card .hub-card-n{font-size:13px;color:var(--label-2);margin-top:1px}
+.iconbtn.wk-nav{width:32px;height:32px;font-size:15px}
+/* "Resume · 12:34" on the Today card stays one tag, never broken over two lines. */
+.today-row .tag{white-space:nowrap;flex:none}
+.empty strong{display:block;color:var(--label);font-weight:600;margin-bottom:4px}
+
+/* --- bottom bar --- */
+/* Five equal slots (every button flex:1), the centre one the +, raised as the Start disc was. */
+#tabbar>button:not(.start){position:relative;z-index:1;color:var(--label-2);font-size:12px}
+#tabbar>button.on:not(.start){color:var(--acc-ink)}
+#tabbar>button.start{position:relative;z-index:1;margin-bottom:18px}
+#tabbar .tab-ic .live-dot{position:absolute;top:-1px;right:-5px;box-shadow:0 0 0 2px var(--bg-el)}
+
+/* The lit tab's pill. The track is the bar's content box (its padding mirrored here), one slot
+   of it moved by transform only. Static until it has painted twice (TabBar's `ready`). */
+#tabbar .tab-pill-track{position:absolute;z-index:0;top:7px;bottom:calc(6px + var(--sab));inset-inline:6px;pointer-events:none}
+@media (min-width:1000px){#tabbar .tab-pill-track{bottom:9px;inset-inline:10px}}
+#tabbar .tab-pill-slot{
+  position:absolute;top:0;bottom:0;inset-inline-start:0;width:20%;
+  transform:translateX(calc(100% * var(--slot)));transition:opacity var(--fast);
+}
+#tabbar .tab-pill-track.ready .tab-pill-slot{transition:transform var(--med) var(--ease),opacity var(--fast)}
+[dir="rtl"] #tabbar .tab-pill-slot{transform:translateX(calc(-100% * var(--slot)))}
+#tabbar .tab-pill-slot.off{opacity:0}
+/* Behind the icon only, so the label reads against the bar rather than the tint. */
+#tabbar .tab-pill{
+  position:absolute;top:3px;height:32px;left:50%;width:56px;margin-left:-28px;
+  border-radius:99px;background:var(--tab-pill);
+}
+/* Between the two halves of the bar the pill does not travel under the +: it fades in at its new
+   slot instead (TabBar's `jump`). */
+@keyframes pillfade{from{opacity:0}to{opacity:1}}
+#tabbar .tab-pill-track.ready .tab-pill-slot.jump{transition:opacity var(--fast)}
+#tabbar .tab-pill-slot.jump .tab-pill{animation:pillfade var(--fast) var(--ease)}
+
+/* --- the live dock --- */
+/* The rest bar's own box (#timer), above the tab bar, holding the session as well. */
+#timer.dock{padding:10px 10px 10px 14px;gap:8px}
+#timer.dock .dock-main{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:10px;text-align:start;padding:2px 0}
+#timer.dock .dock-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column}
+#timer.dock .dock-name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#timer.dock .dock-sub{font-size:13px;color:var(--live-ink);font-weight:500;font-variant-numeric:tabular-nums}
+#timer.dock .t{flex:none;font-size:20px}
+#timer.dock .acts{flex:none;gap:6px}
+#timer.dock .acts .btn.skip{min-width:0;padding-inline:14px}
+/* The routine's name gives way first; nothing in the button ever runs under the buttons. */
+#timer.dock .dock-main{overflow:hidden}
+/* Sweaty hands: every target in the dock is at least 44px. */
+#timer.dock .acts .btn,#timer.dock .dock-main{min-height:44px}
+/* Skip's white label is under 4.5:1 on these accents' own colour; on their darker partner it reads. */
+:root[data-accent="sky"] #timer.dock .acts .btn.skip,:root[data-accent="violet"] #timer.dock .acts .btn.skip,
+:root[data-accent="pink"] #timer.dock .acts .btn.skip,:root[data-accent="red"] #timer.dock .acts .btn.skip{background:var(--acc-2)}
+/* The countdown bar shrinks by transform, so it is not a layout every second. */
+#timer.dock .bar i{width:100%;transform-origin:left center;transition:transform 1s linear}
+[dir="rtl"] #timer.dock .bar i{transform-origin:right center}
+body.live-docked #app{padding-bottom:calc(160px + var(--sab))}
+
+/* The on-screen keyboard is up (lib/keyboard-open.js): the bar and the dock step aside. */
+body.kb-open #tabbar,body.kb-open #timer.dock{display:none}
+
+/* --- the + sheet --- */
+.plus-sheet .lrow-v{font-size:15px}
+.plus-sheet-live{display:inline-flex;align-items:center;gap:6px;font-size:15px;font-variant-numeric:tabular-nums}

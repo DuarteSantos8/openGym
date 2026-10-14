@@ -146,7 +146,7 @@ describe('CoachIntake — the consent screen', () => {
     mount()
     tap('button', 'Not now')
     expect(mocks.S.coach).toBeUndefined()
-    expect(mocks.nav).toHaveBeenCalledWith('/plan')
+    expect(mocks.nav).toHaveBeenCalledWith('/train/routines')
   })
 
   it('a returning athlete whose consent is out of date reads the new terms only, then goes back to the Coach', () => {
@@ -159,7 +159,7 @@ describe('CoachIntake — the consent screen', () => {
     tap('button', 'I understand')
     expect(mocks.S.coach.consent.version).toBe(CONSENT_VERSION)
     expect(mocks.S.coach.profile.goal).toBe('strength')            // the answers stay as they were
-    expect(mocks.nav).toHaveBeenCalledWith('/coach', { replace: true })
+    expect(mocks.nav).toHaveBeenCalledWith('/train/coach', { replace: true })
     expect(vi.mocked(requestPlan)).not.toHaveBeenCalled()
   })
 
@@ -316,7 +316,7 @@ describe('CoachIntake — moving around', () => {
     act(() => host.querySelector('.iconbtn').click())
     expect(eyebrow()).toBe('Before we start')
     act(() => host.querySelector('.iconbtn').click())
-    expect(mocks.nav).toHaveBeenCalledWith('/plan')
+    expect(mocks.nav).toHaveBeenCalledWith('/train/routines')
   })
 
   it('Back from the first screen of the editor goes to the conversation, not the plan', () => {
@@ -324,7 +324,7 @@ describe('CoachIntake — moving around', () => {
     mount()
     expect(eyebrow()).toBe('Your goal')
     act(() => host.querySelector('.iconbtn').click())
-    expect(mocks.nav).toHaveBeenCalledWith('/coach')
+    expect(mocks.nav).toHaveBeenCalledWith('/train/coach')
   })
 
   it('Skip is offered only on the three optional screens, and never on the last one', () => {
@@ -418,7 +418,7 @@ describe('CoachIntake — building the plan', () => {
     expect(mocks.nav).not.toHaveBeenCalled()
 
     await act(async () => { resolve({}); await Promise.resolve() })
-    expect(mocks.nav).toHaveBeenCalledWith('/coach', { replace: true })
+    expect(mocks.nav).toHaveBeenCalledWith('/train/coach', { replace: true })
   })
 
   it('a failed request keeps the answers, says why, and lets you press it again without a second intake line', async () => {
@@ -512,8 +512,8 @@ describe('CoachIntake — the editor behind ?edit=1', () => {
 
     expect(requestPlan).not.toHaveBeenCalled()
     expect(mocks.toast).toHaveBeenCalledWith('Saved')
-    expect(mocks.nav).toHaveBeenCalledWith('/coach')
-    expect(mocks.nav).not.toHaveBeenCalledWith('/coach', { replace: true })
+    expect(mocks.nav).toHaveBeenCalledWith('/train/coach')
+    expect(mocks.nav).not.toHaveBeenCalledWith('/train/coach', { replace: true })
     expect(mocks.S.coach.profile.goal).toBe('endurance')
     expect(mocks.S.coach.chat).toHaveLength(1)
   })

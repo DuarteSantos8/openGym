@@ -12,29 +12,34 @@
 import { MOBILE } from './mobile.js'
 import { useUI } from '../store/useUI.js'
 import { t } from './i18n.js'
+import { back, isSwitching } from './use-tab-nav.js'
+import { isTabRoot } from './tab-route.js'
 
 // How long a first back press stays armed as "press again to exit" (the toast shows 2.2s).
 export const EXIT_WINDOW = 2000
 
 // What a back press means, given what is on screen. Pure, so the table below is testable.
-export function decideBack({ top, canGoBack, exitArmed }) {
+export function decideBack({ top, canGoBack, canGoUp = false, exitArmed }) {
   if (top) return top.locked ? 'ignore' : 'sheet'   // a locked sheet swallows back on purpose
   if (canGoBack) return 'history'                   // a page/tab we pushed ourselves
+  if (canGoUp) return 'up'                          // a sub-page opened cold: to its parent
   return exitArmed ? 'exit' : 'arm-exit'
 }
 
-export function makeBackHandler({ getSheets, closeSheet, toast, goBack, exit, now = Date.now }) {
+export function makeBackHandler({ getSheets, closeSheet, toast, goBack, goUp = () => {}, canGoUp = () => false, exit, now = Date.now }) {
   let armedAt = -Infinity
   return (ev = {}) => {
     const sheets = getSheets()
     const action = decideBack({
       top: sheets[sheets.length - 1],
       canGoBack: !!ev.canGoBack,
+      canGoUp: canGoUp(),
       exitArmed: now() - armedAt < EXIT_WINDOW,
     })
     if (action !== 'arm-exit') armedAt = -Infinity
     if (action === 'sheet') closeSheet(sheets[sheets.length - 1].id)
     else if (action === 'history') goBack()
+    else if (action === 'up') goUp()
     else if (action === 'arm-exit') { armedAt = now(); toast(t('Press back again to exit')) }
     else if (action === 'exit') exit()
     return action
@@ -51,7 +56,13 @@ export async function initBackButton() {
       getSheets: () => useUI.getState().sheets,
       closeSheet: id => useUI.getState().closeSheet(id),
       toast: msg => useUI.getState().toast(msg),
-      goBack: () => window.history.back(),
+      // Not while a tab switch is rebuilding the history (lib/use-tab-nav.js): a back step in
+      // the middle of it would land the switch on the wrong entry.
+      goBack: () => { if (!isSwitching()) window.history.back() },
+      // Nothing under a sub-page opened cold (a notification, a reload): back goes up to its
+      // parent, as the page's own back button does, instead of arming the exit.
+      canGoUp: () => !isTabRoot(String(window.location.hash || '').replace(/^#/, '').split('?')[0] || '/home'),
+      goUp: back,
       exit: () => App.exitApp(),
     })
     const sub = await App.addListener('backButton', handler)

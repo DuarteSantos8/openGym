@@ -48,15 +48,14 @@ const baseS = over => ({ routines, week: { 1: ['c'] }, dayPlan: {}, workouts: []
 
 let host, root
 beforeEach(() => {
-  localStorage.removeItem('gym_plan_view')
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
   menuSheet.mockClear(); confirmSheet.mockClear(); mocks.nav = vi.fn()
 })
 afterEach(() => { act(() => root.unmount()); host.remove() })
 
 // the mocked store is not reactive: re-mount to see a write render
-const mount = over => { mocks.S = baseS(over); act(() => root.render(<Plan />)) }
-const remount = () => act(() => root.render(<Plan key={Math.random()} />))
+const mount = over => { mocks.S = baseS(over); act(() => root.render(<Plan view="schedule" />)) }
+const remount = () => act(() => root.render(<Plan view="schedule" key={Math.random()} />))
 const rows = () => [...host.querySelectorAll('.rotation-row')]
 const names = () => rows().map(r => r.querySelector('.tt').textContent)
 const click = el => act(() => el.dispatchEvent(new MouseEvent('click', { bubbles: true })))
@@ -328,7 +327,7 @@ describe('Plan — Schedule extras', () => {
   it('links to the weekly muscle volume in Stats', () => {
     mount()
     click(byLabel('Weekly muscle volume') || [...host.querySelectorAll('.plan-link button')][0])
-    expect(mocks.nav).toHaveBeenCalledWith('/stats?focus=weekly-volume')
+    expect(mocks.nav).toHaveBeenCalledWith('/progress/load?focus=weekly-volume')
   })
 
   it('has no volume link before there is a routine (Stats has no card to show then)', () => {
@@ -336,19 +335,18 @@ describe('Plan — Schedule extras', () => {
     expect(host.querySelector('.plan-link')).toBe(null)
   })
 
-  it('switches to Routines and remembers it for next time', () => {
+  it('is one page per view, with no Schedule | Routines switch', () => {
     mount()
-    const seg = label => [...host.querySelectorAll('.plan-views button')].find(b => b.textContent === label)
-    click(seg('Routines'))
-    expect(localStorage.getItem('gym_plan_view')).toBe('routines')
+    expect(host.querySelector('.plan-views')).toBe(null)
+    expect(host.querySelector('.plan-mode')).toBeTruthy()
+    expect(host.querySelector('.plan-routines')).toBe(null)
+    expect(host.querySelector('h1').textContent).toBe('Schedule')
+    act(() => root.unmount()); root = createRoot(host)
+    act(() => root.render(<Plan view="routines" />))
+    expect(host.querySelector('.plan-views')).toBe(null)
     expect(host.querySelector('.plan-mode')).toBe(null)
     expect(host.querySelector('.plan-routines')).toBeTruthy()
-    act(() => root.unmount()); root = createRoot(host)
-    act(() => root.render(<Plan />))
-    expect(seg('Routines').className).toContain('on')
-    click(seg('Schedule'))
-    expect(localStorage.getItem('gym_plan_view')).toBe('schedule')
-    expect(host.querySelector('.plan-mode')).toBeTruthy()
+    expect(host.querySelector('h1').textContent).toBe('Routines')
   })
 
   it('one Plan menu holds share, print, import and the starter plans', () => {

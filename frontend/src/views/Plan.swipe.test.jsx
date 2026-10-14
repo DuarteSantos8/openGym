@@ -28,7 +28,6 @@ const routine = (id, name) => ({ id, name, emoji: null, ex: [{ id: '0025' }] })
 let host, root, widthSpy
 
 function mount(view, extra = {}) {
-  localStorage.setItem('gym_plan_view', view)
   const S = clone(DEF)
   Object.assign(S, {
     routines: [routine('a', 'Push A'), routine('b', 'Pull A'), routine('c', 'Legs')],
@@ -36,7 +35,7 @@ function mount(view, extra = {}) {
   }, extra)
   useStore.setState({ S, user: null })
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
-  act(() => root.render(<Plan />))
+  act(() => root.render(<Plan view={view} />))
 }
 const S = () => useStore.getState().S
 const swrows = () => [...host.querySelectorAll('.swrow')]
@@ -68,7 +67,6 @@ beforeEach(() => {
 afterEach(() => {
   closeOpenRow(true)
   act(() => root.unmount()); host.remove()
-  localStorage.removeItem('gym_plan_view')
   widthSpy.mockRestore()
   vi.clearAllTimers(); vi.useRealTimers()
 })
@@ -81,9 +79,9 @@ describe('the routines list', () => {
     expect(r.getAttribute('role')).toBe('button')
     expect(r.tabIndex).toBe(0)
     act(() => { r.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })) })
-    expect(nav).toHaveBeenLastCalledWith('/plan/r/b')
+    expect(nav).toHaveBeenLastCalledWith('/train/routines/b')
     click(rowOf('Push A').querySelector('.item'))
-    expect(nav).toHaveBeenLastCalledWith('/plan/r/a')
+    expect(nav).toHaveBeenLastCalledWith('/train/routines/a')
     const panes = rowOf('Push A').querySelectorAll('.swpane')
     expect(panes).toHaveLength(2)
     for (const pane of panes) {

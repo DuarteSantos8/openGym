@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useUI } from '../store/useUI.js'
 import { keyboardOpen } from '../lib/viewport-guard.js'
+import { noteSheetEntries, onSheetEntry } from '../lib/nav.js'
 
 // Putting the page back after a sheet closes takes up to three goes (see the un-pin below): now,
 // next frame, and once the keyboard's dismiss animation is over. Anything else that wants to
@@ -164,7 +165,13 @@ export default function Modals() {
     if (sheets.length > prev) {
       for (let i = prev; i < sheets.length; i++) {
         sheetEntries.current.push({ openedAt: location.href, live: true })
-        history.pushState({ openGymSheet: true }, '')
+        // The page's own router state rides along (its key: the entry is the same page with a
+        // sheet over it), with the position this entry really has, one past the page's. A page
+        // the router pushes or replaces from here (closeThenNav) counts on from it, so the
+        // router's `idx` stays the true distance to the first entry (lib/tab-history.js).
+        const state = history.state || {}
+        const at = Number.isInteger(state.idx) ? state.idx + 1 : 1
+        history.pushState({ ...state, idx: at, openGymSheet: true }, '')
         pushedEntries.current++
       }
     } else if (sheets.length < prev) {
@@ -179,7 +186,17 @@ export default function Modals() {
       // Entries skipped because the app moved on remain in pushedEntries as deliberate
       // leaks until a later popstate consumes them with no corresponding active sheet.
     }
+    noteSheetEntries(sheetEntries.current.filter(e => e.live).length)
   }, [sheets.length])
+
+  // A page loaded on a sheet's entry with no sheet open (a reload, a restored tab): nothing will
+  // ever walk that entry off, and back from it would land on the same page. Step off it once.
+  const staleChecked = useRef(false)
+  useEffect(() => {
+    if (staleChecked.current) return
+    staleChecked.current = true
+    if (onSheetEntry() && !useUI.getState().sheets.length) history.back()
+  }, [])
 
   useEffect(() => {
     const onPop = () => {
@@ -195,6 +212,7 @@ export default function Modals() {
           break
         }
       }
+      noteSheetEntries(sheetEntries.current.filter(e => e.live).length)
       const top = sheets[sheets.length - 1]
       if (top && !top.locked) closeSheet(top.id)
     }

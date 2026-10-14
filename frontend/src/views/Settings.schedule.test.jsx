@@ -145,7 +145,7 @@ describe('Settings — How you train (Plan & schedule)', () => {
     expect(mocks.nav).not.toHaveBeenCalled()
     act(() => root.render(<Settings page="plan" key="again" />))
     act(() => buildRow().click())
-    expect(mocks.nav).toHaveBeenCalledWith('/plan')
+    expect(mocks.nav).toHaveBeenCalledWith('/train/schedule')
   })
 
   it('a malformed queue is not started over; the row leads to Plan, which does the recovery', () => {

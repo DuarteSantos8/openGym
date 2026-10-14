@@ -8,14 +8,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import TabBar from './TabBar.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 
-vi.mock('react-router-dom', () => ({
-  useNavigate: () => () => {},
-  useLocation: () => ({ pathname: '/home' }),
+const nav = vi.hoisted(() => ({ switchTab: vi.fn(), popToRoot: vi.fn(), switching: false }))
+vi.mock('../lib/use-tab-nav.js', () => ({
+  switchTab: nav.switchTab, popToRoot: nav.popToRoot, isSwitching: () => nav.switching,
 }))
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
-let host, root, originalS, originalUser
+let host, root, originalS, originalUser, frames
 
 beforeEach(() => {
   const store = useStore.getState()
@@ -25,6 +25,11 @@ beforeEach(() => {
   host = document.createElement('div')
   document.body.appendChild(host)
   root = createRoot(host)
+  nav.switchTab.mockClear(); nav.popToRoot.mockClear(); nav.switching = false
+  // Frames run only when a test says so: what the first paint looks like stays observable.
+  frames = []
+  window.requestAnimationFrame = vi.fn(cb => { frames.push(cb); return frames.length })
+  window.cancelAnimationFrame = vi.fn()
 })
 
 afterEach(() => {
@@ -33,85 +38,111 @@ afterEach(() => {
   useStore.setState({ S: originalS, user: originalUser })
 })
 
-const tabs = () => [...host.querySelectorAll('#tabbar button')]
+const buttons = () => [...host.querySelectorAll('#tabbar button')]
+const bar = props => <TabBar tab="home" lit onPlus={() => {}} {...props} />
+const runFrames = () => act(() => { const due = frames; frames = []; due.forEach(cb => cb()) })
+const pillSlot = () => host.querySelector('.tab-pill-slot')
+const slot = () => pillSlot().style.getPropertyValue('--slot')
+const running = () => useStore.getState().update(s => { s.active = { id: 'a', name: 'Push A', entries: [], cur: 0, start: Date.now() - 60_000 } }, false)
 
-describe('the tab bar across a store write', () => {
-  it('keeps the very same buttons instead of rebuilding them every tick', () => {
-    act(() => { root.render(<TabBar onStart={() => {}} />) })
-    const before = tabs()
-    expect(before).toHaveLength(5)
+describe('the bar', () => {
+  it('is Home · Training · + · Nutrition · Progress', () => {
+    act(() => { root.render(bar()) })
+    const icon = el => el.querySelector('svg')?.getAttribute('data-icon')
+    expect(buttons().map(b => b.textContent)).toEqual(['Home', 'Training', '', 'Nutrition', 'Progress'])
+    expect(buttons().map(icon)).toEqual(['house', 'dumbbell', 'plus', 'utensils', 'chart'])
+    expect(buttons()[2].getAttribute('aria-label')).toBe('Add')
+    expect(buttons()[2].getAttribute('aria-haspopup')).toBe('dialog')
+  })
 
-    // What a rest does once a second: S is replaced, so everything reading it re-renders.
+  it('keeps the very same buttons across a store write', () => {
+    act(() => { root.render(bar()) })
+    const before = buttons()
     act(() => { useStore.getState().update(s => { s.restSec = 91 }, false) })
-
-    const after = tabs()
-    expect(after).toHaveLength(before.length)
-    after.forEach((el, i) => expect(el).toBe(before[i]))
+    buttons().forEach((el, i) => expect(el).toBe(before[i]))
   })
 
-  it('still lights the tab for the route it is on, and follows a change of state', () => {
-    act(() => { root.render(<TabBar onStart={() => {}} />) })
-    expect(tabs()[0].className).toBe('on')
-    expect(tabs()[1].className).toBe('')
-    expect(tabs()[2].className).toBe('start')
+  it('lights the tab on screen, and none on a page every tab can open', () => {
+    act(() => { root.render(bar({ tab: 'progress' })) })
+    expect(buttons().map(b => b.getAttribute('aria-current'))).toEqual([null, null, null, null, 'page'])
+    act(() => { root.render(bar({ tab: 'progress', lit: false })) })
+    expect(buttons().every(b => !b.getAttribute('aria-current'))).toBe(true)
+  })
 
-    act(() => { useStore.getState().update(s => { s.active = { id: 'a', entries: [], cur: 0 } }, false) })
-    expect(tabs()[2].className).toBe('start rec')
-    expect(tabs()[0].className).toBe('on')
+  it('switches to another tab, and takes the tab on screen back to its root', () => {
+    act(() => { root.render(bar({ tab: 'train' })) })
+    act(() => { buttons()[3].click() })
+    expect(nav.switchTab).toHaveBeenCalledWith('food')
+    act(() => { buttons()[1].click() })
+    expect(nav.popToRoot).toHaveBeenCalledWith('train')
+  })
+
+  it('does nothing while a switch is rebuilding the history: tabs and + both', () => {
+    const onPlus = vi.fn()
+    act(() => { root.render(bar({ onPlus })) })
+    nav.switching = true
+    act(() => { buttons()[1].click(); buttons()[2].click() })
+    expect(nav.switchTab).not.toHaveBeenCalled()
+    expect(onPlus).not.toHaveBeenCalled()
+    nav.switching = false
+    act(() => { buttons()[2].click() })
+    expect(onPlus).toHaveBeenCalledOnce()
+  })
+
+  it('shows the live dot on Training while a workout runs, and names it', () => {
+    act(() => { root.render(bar()) })
+    expect(host.querySelector('.live-dot')).toBeNull()
+    act(() => { running() })
+    expect(buttons()[1].querySelector('.live-dot')).not.toBeNull()
+    expect(buttons()[1].getAttribute('aria-label')).toBe('Training, workout in progress')
+    // The + stays the +: it is never a Resume button.
+    expect(buttons()[2].className).toBe('start')
   })
 })
 
-// Settings → "Show connection status" off (#369, #330): a stuck sync shows as a dot on Home, the
-// tab Settings opens from, and the tab's name says it.
-describe('the connection dot on Home', () => {
-  const home = () => tabs()[0]
-  it('is there for a sync problem only while the banner is switched off', () => {
-    const original = useStore.getState().sync
-    try {
-      useStore.setState({ sync: { status: 'error', lastError: { status: 502 }, pending: true } })
-      act(() => { root.render(<TabBar onStart={() => {}} />) })
-      expect(home().querySelector('.tab-dot')).toBeNull()
-      act(() => { useStore.getState().update(s => { s.connStatus = false }, false) })
-      expect(home().querySelector('.tab-dot')).not.toBeNull()
-      expect(home().getAttribute('aria-label')).toBe('Home, Connection problem')
-      act(() => { useStore.setState({ sync: { status: 'ok', lastError: null, pending: false } }) })
-      expect(home().querySelector('.tab-dot')).toBeNull()
-      expect(home().getAttribute('aria-label')).toBeNull()
-    } finally { useStore.setState({ sync: original }) }
-  })
-})
-
-// v1.3.11 icon sweep: one icon per concept. Every tab carries its name under the icon, Start is a
-// play button whether or not a session runs, and Exercises is the dumbbell (no more generic list).
-describe('the tab icons and labels', () => {
-  const icon = el => el.querySelector('svg')?.getAttribute('data-icon')
-  const label = el => el.querySelector('span:last-child').textContent
-  it('labels every tab and uses one icon per concept', () => {
-    act(() => { root.render(<TabBar onStart={() => {}} />) })
-    expect(tabs().map(icon)).toEqual(['house', 'calendar', 'play', 'chart', 'dumbbell'])
-    expect(tabs().map(label)).toEqual(['Home', 'Plan', 'Start', 'Stats', 'Exercises'])
-
-    act(() => { useStore.getState().update(s => { s.active = { id: 'a', entries: [], cur: 0 } }, false) })
-    expect(icon(tabs()[2])).toBe('play')
-    expect(label(tabs()[2])).toBe('Resume')
+describe('the sliding pill', () => {
+  it('maps the four tabs onto the five slots, skipping the +', () => {
+    const want = { home: '0', train: '1', food: '3', progress: '4' }
+    for (const [tab, s] of Object.entries(want)) {
+      act(() => { root.render(bar({ tab })) })
+      expect(slot(), tab).toBe(s)
+    }
   })
 
-  it('shows a minimized session’s running time, still named Resume', () => {
-    vi.useFakeTimers()
-    try {
-      vi.setSystemTime(new Date(2026, 9, 5, 18, 0, 0))
-      act(() => { useStore.getState().update(s => { s.active = { id: 'a', entries: [], cur: 0, start: Date.now() - 754_000 } }, false) })
-      act(() => { root.render(<TabBar onStart={() => {}} />) })
-      const start = tabs()[2]
-      expect(label(start)).toBe('12:34')
-      expect(start.getAttribute('aria-label')).toBe('Resume')
-      act(() => { vi.advanceTimersByTime(2000) })
-      expect(label(start)).toBe('12:36')
-      expect(tabs()[2]).toBe(start)   // the same button, only its text ticks
+  it('does not slide on its first paint, only once two frames have gone by', () => {
+    act(() => { root.render(bar({ tab: 'food' })) })
+    const track = () => host.querySelector('.tab-pill-track')
+    expect(track().className).toBe('tab-pill-track')
+    runFrames()
+    expect(track().className).toBe('tab-pill-track')
+    runFrames()
+    expect(track().className).toBe('tab-pill-track ready')
+  })
 
-      // a past workout being edited has no clock running
-      act(() => { useStore.getState().update(s => { s.active.editingWorkoutId = 'w1' }, false) })
-      expect(label(tabs()[2])).toBe('Edit workout')
-    } finally { vi.useRealTimers() }
+  it('slides within one side of the +, and jumps across it rather than passing under it', () => {
+    act(() => { root.render(bar({ tab: 'home' })) })
+    const pill = () => host.querySelector('.tab-pill')
+    const first = pill()
+    act(() => { root.render(bar({ tab: 'train' })) })
+    expect(pillSlot().classList.contains('jump')).toBe(false)
+    expect(pill()).toBe(first)               // the same pill, slid
+    act(() => { root.render(bar({ tab: 'food' })) })
+    expect(pillSlot().classList.contains('jump')).toBe(true)
+    expect(pill()).not.toBe(first)           // a fresh one, fading in at Nutrition
+  })
+
+  it('with no tab lit fades out where it is, and comes back from there', () => {
+    act(() => { root.render(bar({ tab: 'progress' })) })
+    act(() => { root.render(bar({ tab: 'progress', lit: false })) })
+    expect(pillSlot().classList.contains('off')).toBe(true)
+    expect(slot()).toBe('4')                 // not flashed over to the first slot
+    act(() => { root.render(bar({ tab: 'progress' })) })
+    expect(pillSlot().classList.contains('off')).toBe(false)
+    expect(slot()).toBe('4')
+  })
+
+  it('is decorative', () => {
+    act(() => { root.render(bar()) })
+    expect(host.querySelector('.tab-pill-track').getAttribute('aria-hidden')).toBe('true')
   })
 })

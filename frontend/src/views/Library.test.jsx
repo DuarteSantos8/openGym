@@ -111,7 +111,7 @@ describe('Library exercise-name casing per language', () => {
 // request for v1.3.10): "1324 animated exercises + 5 of your own". It has to stay one line on a
 // phone, so it runs under the title row at full width, never wraps, and ellipsizes as a last resort.
 describe('Library header count', () => {
-  const sub = host => host.querySelector('.hdr .sub').textContent
+  const sub = host => host.querySelector('.lib-count').textContent
   const own = n => Array.from({ length: n }, (_, i) => ({ id: 'c' + i, n: 'my move ' + i, bp: 'chest', eq: '', custom: true }))
   afterEach(() => _setLangState('en', {}, null, null))
 
@@ -146,16 +146,14 @@ describe('Library header count', () => {
 
   it('keeps the subtitle on one line on wider screens, clipping with an ellipsis', () => {
     expect(sub(render())).toBeTruthy()
-    const rule = cssSource.match(/^\.hdr\.lib-hdr>\.sub\.lib-count\{([^}]*)\}/m)?.[1] || ''
+    const rule = cssSource.match(/^\.sub\.lib-count\{([^}]*)\}/m)?.[1] || ''
     expect(rule).toContain('white-space:nowrap')
     expect(rule).toContain('overflow:hidden')
     expect(rule).toContain('text-overflow:ellipsis')
-    expect(rule).toContain('flex:1 0 100%')
-    expect(cssSource).toMatch(/^\.hdr\.lib-hdr\{[^}]*flex-wrap:wrap/m)
   })
 
   it('lets the subtitle wrap on narrow phones so nothing is cut at 320 px', () => {
-    const narrow = cssSource.match(/@media \(max-width:360px\)\{\.hdr\.lib-hdr>\.sub\.lib-count\{([^}]*)\}\}/)?.[1] || ''
+    const narrow = cssSource.match(/@media \(max-width:360px\)\{\.sub\.lib-count\{([^}]*)\}\}/)?.[1] || ''
     expect(narrow).toContain('white-space:normal')
     expect(narrow).toContain('overflow:visible')
   })

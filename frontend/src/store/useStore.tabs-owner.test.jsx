@@ -218,7 +218,7 @@ describe('a guest tab while the other tab signs in or creates a profile', () => 
   const guestCopy = active => ({ ...clone(DEF), _ts: Date.now(), workouts: [w('gW1', '2026-09-04')], active })
   // The tab shows the workout (HashRouter). RC verify 2026-10-07: the toast also came up in a tab
   // on another screen that never showed it, and told the workout tab to go elsewhere.
-  beforeEach(() => { location.hash = '#/workout' })
+  beforeEach(() => { location.hash = '#/train/workout' })
   afterEach(() => { location.hash = '' })
 
   it('a profile created in the other tab shows in the guest tab at once, and the workout with it', async () => {
@@ -268,7 +268,7 @@ describe('a guest tab while the other tab signs in or creates a profile', () => 
     server(null)
     localStorage.setItem('gym_state_v1', JSON.stringify(guestCopy(running())))
     localStorage.setItem('gym_guest', '1')
-    location.hash = '#/stats'
+    location.hash = '#/progress'
     const A = await openTab(null)
     const B = await openTab(null)
     h.toasts = []

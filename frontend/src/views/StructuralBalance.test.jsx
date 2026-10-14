@@ -10,18 +10,23 @@ import { buildDemoState } from '../lib/demoSeed.js'
 import { TEMPLATE_LIST } from '../lib/structuralBalanceTemplates.js'
 
 const navSpy = vi.fn()
-vi.mock('react-router-dom', () => ({ useNavigate: () => navSpy }))
+const backSpy = vi.hoisted(() => vi.fn())
+vi.mock('react-router-dom', () => ({
+  useNavigate: () => navSpy,
+  useLocation: () => ({ search: '', pathname: '/progress/strength' }),
+}))
+vi.mock('../lib/use-tab-nav.js', () => ({ back: backSpy, isSwitching: () => false, switchTab: vi.fn(), popToRoot: vi.fn() }))
 
 const clone = value => JSON.parse(JSON.stringify(value))
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const mounted = []
-function render(View = StructuralBalance) {
+function render(View = StructuralBalance, props = {}) {
   const host = document.createElement('div')
   document.body.appendChild(host)
   const root = createRoot(host)
   mounted.push(root)
-  act(() => root.render(<View />))
+  act(() => root.render(<View {...props} />))
   return host
 }
 
@@ -31,7 +36,7 @@ function workoutAt(id, start, sets) {
 }
 
 beforeEach(() => {
-  navSpy.mockClear()
+  navSpy.mockClear(); backSpy.mockClear()
   localStorage.clear()
   useUI.setState({ sheets: [] })
   const S = clone(DEF)
@@ -161,10 +166,10 @@ describe('StructuralBalance view', () => {
     expect(host.querySelector('[data-role-id="frontSquat"] [data-needs-anchor]')).toBe(null)   // not logged either
   })
 
-  it('the back chevron navigates to /stats', () => {
+  it('the back chevron steps back through the tab', () => {
     const host = render()
     act(() => host.querySelector('.iconbtn').click())
-    expect(navSpy).toHaveBeenCalledWith('/stats')
+    expect(backSpy).toHaveBeenCalled()
   })
 
   it('changing a role\'s exercise via the picker saves an override and marks it custom', () => {
@@ -201,18 +206,18 @@ describe('StructuralBalance view', () => {
 
 describe('the way in from Stats', () => {
   it('is a card like the others that opens the screen, once there is a workout to read', () => {
-    const host = render(Stats)
+    const host = render(Stats, { section: 'strength' })
     const card = [...host.querySelectorAll('.card')].find(c => c.querySelector('h2')?.textContent === 'Structural balance')
     expect(card).toBeTruthy()
     expect(card.textContent).toContain('See which lift is holding back the rest.')
     const open = [...card.querySelectorAll('button')].find(b => b.textContent.includes('Open'))
     act(() => open.click())
-    expect(navSpy).toHaveBeenCalledWith('/structural-balance')
+    expect(navSpy).toHaveBeenCalledWith('/progress/strength/balance')
   })
 
   it('is not offered before the first workout', () => {
     useStore.setState({ S: clone(DEF), user: null })
-    const host = render(Stats)
+    const host = render(Stats, { section: 'strength' })
     expect(host.textContent).not.toContain('Structural balance')
   })
 })

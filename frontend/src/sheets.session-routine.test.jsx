@@ -60,6 +60,6 @@ describe('WorkoutDetail — save as routine', () => {
     expect(routine.ex[0].side).toBe(true)
     expect(routine.ex[0].warmupSets).toBe(1)
     expect(useStore.getState().S.workouts[0]).toEqual(saved)
-    expect(navigated).toBe('/plan/r/' + routine.id)
+    expect(navigated).toBe('/train/routines/' + routine.id)
   })
 })

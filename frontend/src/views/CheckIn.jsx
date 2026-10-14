@@ -1,5 +1,4 @@
 import { useLayoutEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { uid } from '../lib/format.js'
@@ -8,6 +7,7 @@ import { canRenderFmt } from '../lib/qr.js'
 import { scanCode, importCodeFromImage } from '../lib/scan.js'
 import { MOBILE } from '../lib/mobile.js'
 import Icon from '../components/Icon.jsx'
+import SubHeader from '../components/SubHeader.jsx'
 import QrCanvas from '../components/QrCanvas.jsx'
 import CameraScan from '../components/CameraScan.jsx'
 import { Button, TextField } from '../components/ui.jsx'
@@ -37,7 +37,6 @@ export function moveGymCard(cards, from, to) {
 // code that silently fails at the turnstile. An existing card can be edited (rename, re-scan), and
 // with more than one card each carries ◀ ▶ buttons to nudge its position along the rail.
 export default function CheckIn() {
-  const nav = useNavigate()
   const cards = useStore(s => s.S.gymCards) || []
   const lastId = useStore(s => s.S.lastGymCardId)
   const update = useStore(s => s.update)
@@ -69,13 +68,7 @@ export default function CheckIn() {
   }
 
   return <div className="narrow">
-    <div className="hdr">
-      <button className="iconbtn" onClick={() => nav('/home')} aria-label={t('Home')}><Icon name="chevronLeft" /></button>
-      <div style={{ flex: 1 }}>
-        <h1 style={{ fontSize: 28 }}>{t('Check in')}</h1>
-        <div className="sub">{cards.length ? t('Show this at the gym') : t('Add your gym card')}</div>
-      </div>
-    </div>
+    <SubHeader title={t('Check in')} sub={cards.length ? t('Show this at the gym') : t('Add your gym card')} />
 
     <div className="ci-rail" ref={railRef} onScroll={onScroll}>
       {cards.map((card, i) => <CardFace

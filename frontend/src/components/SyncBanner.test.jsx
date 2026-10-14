@@ -238,7 +238,7 @@ describe('no server at all', () => {
     render()
     expect(text()).toBe('Guest mode: your data lives only in this browser.')
     act(() => button().click())
-    expect(mocks.navs).toEqual(['/settings/account'])
+    expect(mocks.navs).toEqual(['/me/account'])
     expect(mocks.passkeyLogin).not.toHaveBeenCalled()
   })
 

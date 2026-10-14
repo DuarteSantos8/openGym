@@ -41,7 +41,6 @@ vi.mock('../sheets.jsx', () => ({
 let host, root
 beforeEach(() => {
   vi.clearAllMocks()
-  localStorage.removeItem('gym_plan_view')
   mocks.coach = false
   mocks.nav = vi.fn()
   mocks.S = {
@@ -57,7 +56,7 @@ afterEach(() => {
   host.remove()
 })
 
-const mount = () => act(() => root.render(<Plan />))
+const mount = () => act(() => root.render(<Plan view="schedule" />))
 const day = name => host.querySelector(`.plan-day[aria-label="${name}"]`)
 
 describe('Plan — the weekday rows', () => {
@@ -94,13 +93,12 @@ describe('Plan — the menu', () => {
 
   const coachButton = () => [...host.querySelectorAll('.hdr button')].find(b => b.textContent === 'Coach')
 
-  it('has its own Coach button in the header when the Coach is available, not a menu entry', () => {
+  it('has no Coach button in the header nor a menu entry, even when the Coach is available (it is a row on the Training hub)', () => {
     mocks.coach = true
     mount()
     expect(host.textContent).not.toContain('Plan design and reviews')
+    expect(coachButton()).toBeUndefined()
     expect(openMenu().items.filter(Boolean).map(i => i.label)).not.toContain('Coach')
-    act(() => coachButton().click())
-    expect(mocks.nav).toHaveBeenCalledWith('/coach')
   })
 
   it('leaves the Coach out where it is not available', () => {

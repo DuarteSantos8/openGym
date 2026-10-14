@@ -10,7 +10,8 @@ const press = { id: 'press', n: 'Press', primaries: ['chest'], secondaries: ['tr
 const mocks = vi.hoisted(() => ({ S: null, bodyMaps: [] }))
 
 vi.mock('../store/useStore.js', () => ({ useStore: selector => selector({ S: mocks.S }) }))
-vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }))
+vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn(), useLocation: () => ({ search: '', pathname: '/progress/load' }) }))
+vi.mock('../lib/use-tab-nav.js', () => ({ back: vi.fn(), isSwitching: () => false, switchTab: vi.fn(), popToRoot: vi.fn() }))
 vi.mock('../sheets.jsx', () => ({
   bwSheet: vi.fn(), goalSheet: vi.fn(), calendarSheet: vi.fn(), workoutDetailSheet: vi.fn(),
   exerciseHistorySheet: vi.fn(), WorkoutRow: () => React.createElement('div'), bwDeltaColor: () => '', weighInsSheet: vi.fn(),
@@ -46,7 +47,7 @@ beforeEach(() => {
 })
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.useRealTimers() })
 
-const mount = () => act(() => root.render(<Stats />))
+const mount = () => act(() => root.render(<Stats section="load" />))
 const comparison = () => host.querySelector('[data-weekly-volume-comparison]')
 const button = label => host.querySelector(`button[aria-label="${label}"]`)
 const weeklyToggle = () => comparison().querySelector('.weekly-volume-toggle')

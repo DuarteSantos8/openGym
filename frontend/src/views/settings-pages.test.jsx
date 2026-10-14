@@ -11,7 +11,7 @@ import { PAGES, PAGE_IDS, ROOT_GROUPS, SEARCH, pageVisible, searchSettings, page
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const mocks = vi.hoisted(() => {
-  const state = { S: null, user: null, sync: null, MOBILE: false, push: false, sheets: [], navs: [], toast: null }
+  const state = { S: null, user: null, sync: null, MOBILE: false, push: false, sheets: [], navs: [], backs: [], toast: null }
   state.snapshot = () => ({
     S: state.S, user: state.user, coachLocal: null, sync: state.sync, config: null,
     update: mut => { const next = structuredClone(state.S); mut(next); state.S = next },
@@ -32,6 +32,8 @@ vi.mock('../store/useUI.js', () => {
   return { useUI }
 })
 vi.mock('react-router-dom', () => ({ useNavigate: () => (...a) => mocks.navs.push(a) }))
+// A page's back is the tab's back, handed the page's own parent for a cold entry.
+vi.mock('../lib/use-tab-nav.js', () => ({ back: parent => mocks.backs.push(parent), isSwitching: () => false }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(path => Promise.resolve(path === '/api/account/passkeys' ? { passkeys: [] } : {})), webauthnOK: () => false, passkeyLogin: vi.fn(), passkeyRegister: vi.fn(), IS_ANDROID: false }))
 vi.mock('../lib/push.js', () => ({ pushSupported: () => mocks.push, enablePush: vi.fn(), disablePush: vi.fn(), sendTestPush: vi.fn(), syncPushSubscription: vi.fn(() => Promise.resolve(mocks.pushOn)) }))
 vi.mock('../lib/wakelock.js', () => ({ wakeLockSupported: () => true }))
@@ -144,7 +146,7 @@ describe('the root', () => {
     act(() => rowTitled('Timer alerts').click())
     act(() => rowTitled('AI Coach').click())
     act(() => host.querySelector('.sp-acct').click())
-    expect(mocks.navs).toEqual([['/settings/alerts'], ['/coach/setup'], ['/settings/account']])
+    expect(mocks.navs).toEqual([['/me/alerts'], ['/train/coach/setup'], ['/me/account']])
   })
 
   it('searches every setting and a hit goes to its page with the row to flash', () => {
@@ -159,7 +161,7 @@ describe('the root', () => {
     expect(titles()).toEqual(['Vibrate'])
     expect(host.querySelector('.lrow .lrow-s').textContent).toBe('Timer alerts')
     act(() => rowTitled('Vibrate').click())
-    expect(mocks.navs.at(-1)).toEqual(['/settings/alerts', { state: { find: 'Vibrate' } }])
+    expect(mocks.navs.at(-1)).toEqual(['/me/alerts', { state: { find: 'Vibrate' } }])
     type('zzzz')
     expect(host.querySelector('.sp-empty').textContent).toBe('No setting matches “zzzz”.')
   })
@@ -315,7 +317,7 @@ describe('the pages', () => {
     mount('advanced')
     expect(host.querySelector('.sp-back').textContent).toBe('Workout')
     act(() => host.querySelector('.sp-back').click())
-    expect(mocks.navs.at(-1)).toEqual(['/settings/workout', { replace: true }])
+    expect(mocks.backs.at(-1)).toBe('/me/workout')
   })
 
   it('a search hit flashes its row', () => {

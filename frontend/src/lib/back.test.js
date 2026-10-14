@@ -22,6 +22,11 @@ describe('decideBack', () => {
     expect(decideBack({ top: undefined, canGoBack: false, exitArmed: false })).toBe('arm-exit')
     expect(decideBack({ top: undefined, canGoBack: false, exitArmed: true })).toBe('exit')
   })
+
+  it('on a sub-page with nothing under it (opened cold) goes up to its parent, not out', () => {
+    expect(decideBack({ top: undefined, canGoBack: false, canGoUp: true, exitArmed: true })).toBe('up')
+    expect(decideBack({ top: undefined, canGoBack: true, canGoUp: true, exitArmed: false })).toBe('history')
+  })
 })
 
 function harness() {
