@@ -17,6 +17,7 @@ export const PAGES = {
   equipment: { title: 'Equipment', icon: 'kettlebell', tint: 'var(--indigo)' },
   look: { title: 'Look & Home', icon: 'palette', tint: 'var(--purple)' },
   coach: { title: 'AI Coach', icon: 'sparkles', tint: 'var(--green)' },
+  health: { title: 'Health', icon: 'heart', tint: 'var(--red)' },
   data: { title: 'Data & backup', icon: 'folder', tint: 'var(--blue)' },
   about: { title: 'About & updates', icon: 'info', tint: 'var(--grey)' },
   account: { title: 'Account', icon: 'personCircle', tint: 'var(--grey)' },
@@ -25,7 +26,7 @@ export const PAGES = {
 export const PAGE_IDS = Object.keys(PAGES)
 
 // The root, top to bottom. Whether a row shows is pageVisible's call.
-export const ROOT_GROUPS = [['workout', 'alerts', 'reminders'], ['plan', 'units', 'equipment'], ['look', 'coach'], ['data', 'about']]
+export const ROOT_GROUPS = [['workout', 'alerts', 'reminders'], ['plan', 'units', 'equipment'], ['look', 'health', 'coach'], ['data', 'about']]
 
 /**
  * Whether a page exists for this device and profile. Reminders need a push server (signed in) or
@@ -111,6 +112,7 @@ export const SEARCH = [
   { page: 'look', title: 'Body weight', icon: 'scale', tint: 'var(--green)', kw: 'weight card home' },
   { page: 'look', title: 'Show connection status', icon: 'cloud', tint: 'var(--blue)', kw: 'sync offline banner bar connection', when: c => !c.demo },
   // Data & backup
+  { page: 'health', title: 'Open Health', icon: 'heart', tint: 'var(--red)', kw: 'health body composition bia scale fat muscle water steps heart rate sleep apple health healthkit' },
   { page: 'data', title: 'Export backup (JSON)', icon: 'share', tint: 'var(--blue)', kw: 'export backup json download save' },
   { page: 'data', title: 'Export with photos & videos (.zip)', icon: 'share', tint: 'var(--blue)', kw: 'zip media export backup', when: c => c.hasMedia },
   { page: 'data', title: 'Auto-backup on changes', icon: 'folder', tint: 'var(--blue)', kw: 'auto backup automatic', when: c => c.mobile },

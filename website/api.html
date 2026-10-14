@@ -222,6 +222,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <a class="side-link" href="#activity"><b>Activity</b><span>Live presence</span></a>
   <a class="side-link" href="#media"><b>Media</b><span>Photos &amp; videos of your exercises &amp; workouts</span></a>
   <a class="side-link" href="#coach"><b>AI Coach</b><span>Plans, reviews, debriefs</span></a>
+  <a class="side-link" href="#health"><b>Health</b><span>Apple Health readings from an iPhone Shortcut</span></a>
   <a class="side-link" href="#admin"><b>Admin</b><span>Users, invites, audit log, Coach</span></a>
   <a class="side-link" href="#schemas"><b>Schemas</b><span>The state blob, the error shape &amp; co.</span></a>
   <p class="side-label">More</p>
@@ -245,7 +246,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.1</span>
-    <span>69 endpoints</span>
+    <span>73 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -2466,6 +2467,145 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">401</span>
     <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+  </div>
+</section>
+
+<section class="api-sec" id="health">
+  <h2>Health</h2>
+  <p class="sub">Health readings an iPhone Shortcut read from Apple Health, which no website can read itself. The Shortcut signs in with a key of its own, made in Settings → Health.</p>
+  <div class="eps">
+
+<details class="ep" id="op-getHealthKey">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/health/key</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Whether the profile has a Shortcut key</span>
+  </summary>
+  <div class="ep-body">
+<p>The state of the key an iPhone Shortcut uses for <code>POST /api/health/samples</code>, never the key itself: whether there is one, when it was made and when it was last used (ms), and the instance's ready-made Shortcut (<code>HEALTH_SHORTCUT_URL</code>, an iCloud link) or null.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The key's state.<span class="r-sig">{ exists: boolean, created: integer | null, used: integer | null, shortcut: string <span class="p-hint">(uri)</span> | null }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postHealthKey">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/health/key</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Make a new Shortcut key</span>
+  </summary>
+  <div class="ep-body">
+<p>A new key for <code>POST /api/health/samples</code>, replacing any earlier one. This answer is the only time the key is sent; the server keeps its SHA-256 hash. The key opens no other route.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The new key.<span class="r-sig">{ key: string }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-deleteHealthKey">
+  <summary>
+    <span class="m delete">DELETE</span>
+    <span class="ep-path"><code>/api/health/key</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Revoke the Shortcut key</span>
+  </summary>
+  <div class="ep-body">
+
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Revoked.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postHealthSamples">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/health/samples</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Readings an iPhone Shortcut or Health Auto Export read from Apple Health</span>
+  </summary>
+  <div class="ep-body">
+<p>Authenticated by the profile's Shortcut key (<code>Authorization: Bearer ogh_…</code>), not by a session. The readings are folded into the profile the way the app's own Apple Health import folds them (one reading per sample, one per day for a day's total, heart rate as the day's mean, lowest and highest, sleep as the night's asleep time) and written as a new revision, which the app's revision check picks up. A second send of the same readings changes nothing; a reading the user deleted is not brought back; nothing the user typed is touched. At most 60 requests an hour and 20,000 values a request.</p>
+<p>Two bodies are taken, told apart by their shape: a Shortcut's <code>metrics</code> object, or what the Health Auto Export app's REST API automation posts (JSON, Health Metrics) under <code>data.metrics</code>. Both give the same readings the same ids, so a day sent both ways is one.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public: no authentication required.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">metrics</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">By type — any measurement or day's total of <code>api/health/catalogue.js</code> (<code>weight</code>, <code>bodyFat</code>, <code>steps</code>, <code>heartRate</code>, <code>spo2</code>, <code>dietWater</code>, …): <code>values</code> and <code>dates</code>, parallel lists or the same as text with one item per line, and an optional <code>unit</code> (kg, lb, st, %, cm, m, in, ft, km, mi, kcal, kJ), once or once per value. Dates are ISO 8601 with their offset; a day's total takes the day. <code>sleep</code> takes <code>starts</code>, <code>ends</code> and <code>values</code> (the stage of each span; in-bed and awake spans are left out). Unknown metrics are skipped.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">data</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">Health Auto Export's body: <code>metrics</code> is a list of <code>{ name, units, data }</code>, each point <code>{ qty, date }</code> with <code>date</code> as <code>yyyy-MM-dd HH:mm:ss Z</code>; <code>heart_rate</code> points are <code>{ Min, Avg, Max, date }</code>; <code>blood_pressure</code> points <code>{ systolic, diastolic, date }</code>; <code>sleep_analysis</code> is a night <code>{ date, totalSleep, sleepEnd }</code> in hours, or single stages <code>{ startDate, endDate, value }</code>. <code>workouts</code> are <code>{ name, start, end, duration, activeEnergyBurned, distance }</code>. Every type of <code>api/health/catalogue.js</code> is read, by Health Auto Export's name or its label; a symptom's or a test's answer, and anything unknown, is skipped.</span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Folded in.<span class="r-sig">{ ok: boolean, added: integer, updated: integer, skipped: integer }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Neither <code>metrics</code> nor <code>data.metrics</code></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No key</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">The profile has never synced; open the app once</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Too many requests this hour; <code>Retry-After</code> says when to try again.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">The profile's file cannot be read.</span>
   </div>
     </div>
   </div>

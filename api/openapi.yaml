@@ -153,6 +153,10 @@ tags:
       attached to a logged workout. Stored per profile (one quota for both) and named
       by the SHA-256 of its bytes; the state only carries a `MediaRef`. Every route here is a
       404 when the instance runs with `MEDIA_UPLOADS=0`.
+  - name: health
+    description: >-
+      Health readings an iPhone Shortcut read from Apple Health, which no website can read
+      itself. The Shortcut signs in with a key of its own, made in Settings → Health.
   - name: coach
     description: >-
       AI Coach: plans, reviews and debriefs. Every route here answers 503 unless the
@@ -2564,6 +2568,118 @@ paths:
         '409': { $ref: '#/components/responses/CoachRefused' }
         '429': { $ref: '#/components/responses/CoachRefused' }
         '503': { $ref: '#/components/responses/CoachOff' }
+
+  /api/health/key:
+    get:
+      tags: [health]
+      operationId: getHealthKey
+      summary: Whether the profile has a Shortcut key
+      description: |
+        The state of the key an iPhone Shortcut uses for `POST /api/health/samples`, never the key
+        itself: whether there is one, when it was made and when it was last used (ms), and the
+        instance's ready-made Shortcut (`HEALTH_SHORTCUT_URL`, an iCloud link) or null.
+      responses:
+        '200':
+          description: The key's state.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  exists: { type: boolean }
+                  created: { oneOf: [{ type: integer }, { type: 'null' }] }
+                  used: { oneOf: [{ type: integer }, { type: 'null' }] }
+                  shortcut: { oneOf: [{ type: string, format: uri }, { type: 'null' }] }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [health]
+      operationId: postHealthKey
+      summary: Make a new Shortcut key
+      description: |
+        A new key for `POST /api/health/samples`, replacing any earlier one. This answer is the only
+        time the key is sent; the server keeps its SHA-256 hash. The key opens no other route.
+      responses:
+        '200':
+          description: The new key.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key: { type: string, description: '`ogh_` and 32 base64url characters.' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    delete:
+      tags: [health]
+      operationId: deleteHealthKey
+      summary: Revoke the Shortcut key
+      responses:
+        '200': { description: Revoked. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/health/samples:
+    post:
+      tags: [health]
+      operationId: postHealthSamples
+      summary: Readings an iPhone Shortcut or Health Auto Export read from Apple Health
+      description: |
+        Authenticated by the profile's Shortcut key (`Authorization: Bearer ogh_…`), not by a
+        session. The readings are folded into the profile the way the app's own Apple Health import
+        folds them (one reading per sample, one per day for a day's total, heart rate as the day's
+        mean, lowest and highest, sleep as the night's asleep time) and written as a new revision,
+        which the app's revision check picks up. A second send of the same readings changes
+        nothing; a reading the user deleted is not brought back; nothing the user typed is
+        touched. At most 60 requests an hour and 20,000 values a request.
+
+        Two bodies are taken, told apart by their shape: a Shortcut's `metrics` object, or what
+        the Health Auto Export app's REST API automation posts (JSON, Health Metrics) under
+        `data.metrics`. Both give the same readings the same ids, so a day sent both ways is one.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Either `metrics` (a Shortcut) or `data.metrics` (Health Auto Export).
+              properties:
+                metrics:
+                  type: object
+                  description: |
+                    By type — any measurement or day's total of `api/health/catalogue.js` (`weight`,
+                    `bodyFat`, `steps`, `heartRate`, `spo2`, `dietWater`, …): `values` and
+                    `dates`, parallel lists or the same as text with one item per line, and an
+                    optional `unit` (kg, lb, st, %, cm, m, in, ft, km, mi, kcal, kJ), once or once per value. Dates are ISO 8601
+                    with their offset; a day's total takes the day. `sleep` takes `starts`, `ends`
+                    and `values` (the stage of each span; in-bed and awake spans are left out).
+                    Unknown metrics are skipped.
+                data:
+                  type: object
+                  description: |
+                    Health Auto Export's body: `metrics` is a list of `{ name, units, data }`, each
+                    point `{ qty, date }` with `date` as `yyyy-MM-dd HH:mm:ss Z`; `heart_rate` points
+                    are `{ Min, Avg, Max, date }`; `blood_pressure` points `{ systolic, diastolic,
+                    date }`; `sleep_analysis` is a night `{ date, totalSleep, sleepEnd }` in hours,
+                    or single stages `{ startDate, endDate, value }`. `workouts` are `{ name, start,
+                    end, duration, activeEnergyBurned, distance }`. Every type of
+                    `api/health/catalogue.js` is read, by Health Auto Export's name or its label;
+                    a symptom's or a test's answer, and anything unknown, is skipped.
+      responses:
+        '200':
+          description: Folded in.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  added: { type: integer }
+                  updated: { type: integer }
+                  skipped: { type: integer }
+        '400': { description: Neither `metrics` nor `data.metrics`, or more than 20,000 values. }
+        '401': { description: No key, or not this server's. }
+        '409': { description: The profile has never synced; open the app once, signed in. }
+        '429': { description: Too many requests this hour; `Retry-After` says when to try again. }
+        '503': { description: The profile's file cannot be read. }
 
   /api/coach/debrief:
     post:

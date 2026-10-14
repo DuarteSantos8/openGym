@@ -417,6 +417,10 @@ h4.sec{
 /* A connection problem while the banner is switched off (Settings → Show connection status):
    a dot on the Home tab and on the Settings gear. */
 #tabbar .tab-ic{position:relative;display:inline-flex}
+/* Six tabs since Health joined them: on a narrow phone a long word (Thai "Exercises", Russian
+   "Resume") is cut with an ellipsis rather than spilling into the tab beside it. */
+#tabbar button{min-width:0}
+#tabbar button>span:last-child{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tab-dot{
   position:absolute;top:-1px;right:-3px;width:8px;height:8px;border-radius:50%;
   background:var(--orange);box-shadow:0 0 0 2px var(--bg-el);pointer-events:none;
@@ -646,6 +650,13 @@ body.chips-dragging *{cursor:inherit}
 .measure-preview{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:11px;padding-top:10px;border-top:1px solid var(--sep);font-size:12px;color:var(--label-2)}
 .measure-preview b{color:var(--label);font-weight:500}
 .measure-home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+/* Health area (views/Health.jsx): a metric per card, two to a row; a card and a measurement open on tap. */
+.health-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.health-grid .card{margin:0}
+.health-card,button.measure-history{display:block;width:100%;text-align:start;color:inherit;font:inherit;border:0;cursor:pointer;min-width:0}
+.health-card .l{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--label-2);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.health-card .v{font-size:22px;font-weight:600;letter-spacing:-.02em;margin:6px 0 2px;line-height:1.15}
+.health-spark{margin-top:6px;pointer-events:none}
 .measure-home-grid button{background:var(--surface-2);border-radius:10px;padding:10px;text-align:left;min-width:0}
 .measure-home-grid span,.measure-home-grid i{display:block;font-size:11px;color:var(--label-2);font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .measure-home-grid b{display:block;font-size:16px;margin:3px 0;white-space:nowrap}
