@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { tempData, sampleState } from './helpers.mjs';
+import { tempData, sampleState, daysAgo } from './helpers.mjs';
 
 tempData();
 const payload = await import('../coach/core/payload.js');
@@ -401,7 +401,7 @@ test('a session note reaches the model whole, bounded only at the app\'s own cap
     id: 'w' + d, d, name: 'A', start: 0, end: 60000, prs: [], note,
     entries: [{ id: '0001', target: { sets: 3, reps: 10, weight: 20 }, sets: [{ w: 20, r: 10, done: true }] }]
   });
-  S.workouts = [mk('2026-09-02', whole), mk('2026-09-03', 'y'.repeat(payload.NOTE_MAX + 100))];   // only a document edited outside the app carries the second
+  S.workouts = [mk(daysAgo(3), whole), mk(daysAgo(2), 'y'.repeat(payload.NOTE_MAX + 100))];   // only a document edited outside the app carries the second
   const p = payload.build(S, { handle: handleFor('u1'), kind: 'review' });
   const [full, edited] = p.window.workouts;
   assert.equal(full.compact, undefined, 'both sessions are in full detail');
