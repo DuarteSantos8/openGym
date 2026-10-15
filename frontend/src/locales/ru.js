@@ -1,5 +1,11 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "Соответствующая тренировка, сохранённая openGym в Apple Здоровье, также будет удалена.",
+  "Sync with Apple Health": "Синхронизация с Apple Здоровье",
+  "Sync body weight both ways and save finished workouts to Health.": "Синхронизируйте вес в обоих направлениях и сохраняйте завершённые тренировки в Здоровье.",
+  "Apple Health: {0}": "Apple Здоровье: {0}",
+  "Sync Apple Health now": "Синхронизировать Apple Здоровье сейчас",
+
   'Confirm': 'Подтвердить',
   'Cancel': 'Отмена',
   'Press back again to exit': 'Нажмите «Назад» ещё раз, чтобы выйти',
@@ -2246,4 +2252,13 @@ export default {
   'Your sports watch, calling you back.': 'Ваши спортивные часы зовут вас обратно.',
   'Coach wants you back on the bar.': 'Тренер ждёт вас обратно у штанги.',
   'Gentle, for headphones or a quiet room.': 'Тихий, для наушников или спокойного зала.',
+  'Apple Health': 'Apple Health',
+  'Manual': 'Вручную',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'Apple Health всё ещё ищет вес. Введите свой вес, чтобы начать.',
+  'Apple Health is unavailable on this device. Enter your weight to start.': 'Apple Health недоступно на этом устройстве. Введите свой вес, чтобы начать.',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'В Apple Health нет веса, который можно прочитать. Проверьте доступ к Health в Настройках или введите вес здесь.',
+  'Apple Health could not load your weight. Enter your weight to start.': 'Apple Health не удалось загрузить ваш вес. Введите свой вес, чтобы начать.',
+  "Workout weather": "Погода во время тренировки",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "Сохранять наружную температуру и влажность в Apple Здоровье. Примерное местоположение отправляется в Open-Meteo один раз за тренировку; оно не сохраняется и не отправляется на ваш сервер openGym.",
+  "Weather data by Open-Meteo (CC BY 4.0)": "Погодные данные Open-Meteo (CC BY 4.0)",
 }

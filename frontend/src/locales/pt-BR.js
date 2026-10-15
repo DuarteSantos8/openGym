@@ -4,6 +4,12 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "O treino correspondente salvo pelo openGym no Saúde da Apple também será excluído.",
+  "Sync with Apple Health": "Sincronizar com o Saúde da Apple",
+  "Sync body weight both ways and save finished workouts to Health.": "Sincroniza o peso nos dois sentidos e salva os treinos concluídos no Saúde.",
+  "Apple Health: {0}": "Saúde da Apple: {0}",
+  "Sync Apple Health now": "Sincronizar com o Saúde da Apple agora",
+
   '{0} set brings an {1} with it. Switch on Effort per set in Settings to see it.': '{0} série traz um {1} junto. Ative “Esforço por série” nas Configurações para ver.',
   'Add to this set': 'Adicionar a esta série',
   'Copy this exercise’s warm-up sets, and the rest and note from its Exercise settings, into the routine. A note added for today stays with this workout. Your workout history is kept.': 'Copia para a rotina as séries de aquecimento deste exercício, e o descanso e a anotação das Configurações do exercício dele. Uma anotação adicionada para hoje fica com este treino. Seu histórico de treinos é mantido.',
@@ -24,6 +30,12 @@ export const PT_BR_OVERRIDES = {
   'Paused': 'Pausado',
   'Scroll to 0:00 to end the rest now.': 'Role até 0:00 para encerrar o descanso agora.',
   'Time left': 'Tempo restante',
+  'Apple Health': 'Apple Saúde',
+  'Manual': 'Manual',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'O Apple Saúde ainda está procurando um peso. Informe seu peso para começar.',
+  'Apple Health is unavailable on this device. Enter your weight to start.': 'O Apple Saúde não está disponível neste dispositivo. Informe seu peso para começar.',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'O Apple Saúde não tem nenhum peso legível. Você pode verificar o acesso ao Saúde em Ajustes ou informar seu peso aqui.',
+  'Apple Health could not load your weight. Enter your weight to start.': 'O Apple Saúde não conseguiu carregar seu peso. Informe seu peso para começar.',
   '{0} workouts and {1} weigh-ins were logged on this device while signed out. Add them to your profile, or keep the profile exactly as it is on the server.': '{0} treinos e {1} pesagens foram registrados neste dispositivo sem login. Adicione-os ao seu perfil ou mantenha o perfil exatamente como está no servidor.',
   '{0} workout and {1} weigh-in were logged on this device while signed out. Add them to your profile, or keep the profile exactly as it is on the server.': '{0} treino e {1} pesagem foram registrados neste dispositivo sem login. Adicione-os ao seu perfil ou mantenha o perfil exatamente como está no servidor.',
   '{0} workout and {1} weigh-ins were logged on this device while signed out. Add them to your profile, or keep the profile exactly as it is on the server.': '{0} treino e {1} pesagens foram registrados neste dispositivo sem login. Adicione-os ao seu perfil ou mantenha o perfil exatamente como está no servidor.',
@@ -1403,6 +1415,20 @@ export const PT_BR_OVERRIDES = {
   'Gentle, for headphones or a quiet room.': 'Suave, para fones de ouvido ou um lugar silencioso.',
   'Fewer than two workouts in this period. Pick a longer one.': 'Menos de dois treinos neste período. Escolha um mais longo.',
   'Releases are checked on GitHub. The download is verified against its checksum before the installer opens.': 'As versões são verificadas no GitHub. O download é conferido pela soma de verificação antes de abrir o instalador.',
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "O treino correspondente salvo pelo openGym no Saúde da Apple também será excluído.",
+  "Sync with Apple Health": "Sincronizar com o Saúde da Apple",
+  "Sync body weight both ways and save finished workouts to Health.": "Sincroniza o peso nos dois sentidos e salva os treinos concluídos no Saúde.",
+  "Apple Health: {0}": "Saúde da Apple: {0}",
+  "Sync Apple Health now": "Sincronizar com o Saúde da Apple agora",
+  "Apple Health": "Apple Saúde",
+  "Manual": "Manual",
+  "Apple Health is still checking for a weight. Enter your weight to start.": "O Apple Saúde ainda está procurando um peso. Informe seu peso para começar.",
+  "Apple Health is unavailable on this device. Enter your weight to start.": "O Apple Saúde não está disponível neste dispositivo. Informe seu peso para começar.",
+  "Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.": "O Apple Saúde não tem nenhum peso legível. Você pode verificar o acesso ao Saúde em Ajustes ou informar seu peso aqui.",
+  "Apple Health could not load your weight. Enter your weight to start.": "O Apple Saúde não conseguiu carregar seu peso. Informe seu peso para começar.",
+  "Workout weather": "Clima do treino",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "Salva a temperatura e umidade externas no Apple Saúde. Sua localização aproximada é enviada uma vez por treino ao Open-Meteo; ela não é armazenada nem enviada ao seu servidor openGym.",
+  "Weather data by Open-Meteo (CC BY 4.0)": "Dados meteorológicos do Open-Meteo (CC BY 4.0)",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

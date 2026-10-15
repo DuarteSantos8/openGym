@@ -1,3 +1,4 @@
+import { workoutEnergy } from './workout-energy.js'
 // The persisted boundary for a finished session. Keep this pure so compatibility tests can
 // exercise the exact shape the UI writes without mounting React or mutating store state.
 import { bestWeightForEntry, cleanupSg } from './history.js'
@@ -123,6 +124,7 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
     bw: active.bw,
     entries,
     prs,
+    ...(workoutEnergy(active.healthMetrics) ? { healthMetrics: workoutEnergy(active.healthMetrics) } : {}),
     ...(allNoProg ? { excludeFromProgression: true } : {}),
     ...(sessionNote ? { note: sessionNote } : {}),
   }

@@ -1,5 +1,11 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "openGym द्वारा Apple Health में सहेजा गया संबंधित वर्कआउट भी हटा दिया जाएगा।",
+  "Sync with Apple Health": "Apple Health के साथ सिंक करें",
+  "Sync body weight both ways and save finished workouts to Health.": "वज़न दोनों दिशाओं में सिंक करें और पूरे हुए वर्कआउट Health में सहेजें।",
+  "Apple Health: {0}": "Apple Health: {0}",
+  "Sync Apple Health now": "अभी Apple Health सिंक करें",
+
   'Confirm': 'पुष्टि करें',
   'Cancel': 'रद्द करें',
   'Press back again to exit': 'बाहर निकलने के लिए फिर से बैक दबाएँ',
@@ -2242,4 +2248,13 @@ export default {
   'Your sports watch, calling you back.': 'आपकी स्पोर्ट्स घड़ी आपको वापस बुला रही है।',
   'Coach wants you back on the bar.': 'कोच आपको बार पर वापस चाहते हैं।',
   'Gentle, for headphones or a quiet room.': 'धीमी, हेडफ़ोन या शांत कमरे के लिए।',
+  'Apple Health': 'Apple Health',
+  'Manual': 'मैन्युअल',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'Apple Health अभी वज़न खोज रहा है। शुरू करने के लिए अपना वज़न दर्ज करें।',
+  'Apple Health is unavailable on this device. Enter your weight to start.': 'इस डिवाइस पर Apple Health उपलब्ध नहीं है। शुरू करने के लिए अपना वज़न दर्ज करें।',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'Apple Health में पढ़ने लायक कोई वज़न नहीं है। आप सेटिंग्स में Health की अनुमति जाँच सकते हैं या यहाँ अपना वज़न दर्ज कर सकते हैं।',
+  'Apple Health could not load your weight. Enter your weight to start.': 'Apple Health आपका वज़न लोड नहीं कर सका। शुरू करने के लिए अपना वज़न दर्ज करें।',
+  "Workout weather": "वर्कआउट का मौसम",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "बाहर का तापमान और आर्द्रता Apple Health में सहेजें। आपका अनुमानित स्थान हर वर्कआउट में एक बार Open-Meteo को भेजा जाता है; इसे न सहेजा जाता है, न आपके openGym सर्वर को भेजा जाता है।",
+  "Weather data by Open-Meteo (CC BY 4.0)": "Open-Meteo के मौसम डेटा (CC BY 4.0)",
 }

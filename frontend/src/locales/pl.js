@@ -1,5 +1,11 @@
 // Polish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "Odpowiedni trening zapisany przez openGym w Apple Zdrowie również zostanie usunięty.",
+  "Sync with Apple Health": "Synchronizuj z Apple Zdrowie",
+  "Sync body weight both ways and save finished workouts to Health.": "Synchronizuj masę ciała w obu kierunkach i zapisuj ukończone treningi w Zdrowiu.",
+  "Apple Health: {0}": "Apple Zdrowie: {0}",
+  "Sync Apple Health now": "Synchronizuj Apple Zdrowie teraz",
+
   'Confirm': 'Potwierdź',
   'Cancel': 'Anuluj',
   'Press back again to exit': 'Naciśnij wstecz ponownie, aby wyjść',
@@ -2242,4 +2248,13 @@ export default {
   'Your sports watch, calling you back.': 'Zegarek sportowy wzywa z powrotem.',
   'Coach wants you back on the bar.': 'Trener czeka przy sztandze.',
   'Gentle, for headphones or a quiet room.': 'Cichy, do słuchawek albo spokojnego pomieszczenia.',
+  'Apple Health': 'Apple Health',
+  'Manual': 'Ręcznie',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'Apple Health wciąż szuka wagi. Podaj swoją wagę, aby zacząć.',
+  'Apple Health is unavailable on this device. Enter your weight to start.': 'Apple Health jest niedostępne na tym urządzeniu. Podaj swoją wagę, aby zacząć.',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'Apple Health nie ma wagi, którą można odczytać. Możesz sprawdzić dostęp do Health w Ustawieniach albo podać wagę tutaj.',
+  'Apple Health could not load your weight. Enter your weight to start.': 'Apple Health nie mogło wczytać twojej wagi. Podaj swoją wagę, aby zacząć.',
+  "Workout weather": "Pogoda podczas treningu",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "Zapisuj temperaturę i wilgotność na zewnątrz w Apple Zdrowie. Przybliżona lokalizacja jest wysyłana raz na trening do Open-Meteo; nie jest przechowywana ani wysyłana na Twój serwer openGym.",
+  "Weather data by Open-Meteo (CC BY 4.0)": "Dane pogodowe od Open-Meteo (CC BY 4.0)",
 }

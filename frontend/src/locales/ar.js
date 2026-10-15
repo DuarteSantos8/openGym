@@ -1,5 +1,11 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "سيُحذف أيضًا التمرين المطابق الذي حفظه openGym في صحة Apple.",
+  "Sync with Apple Health": "المزامنة مع صحة Apple",
+  "Sync body weight both ways and save finished workouts to Health.": "مزامنة وزن الجسم في الاتجاهين وحفظ التمارين المكتملة في تطبيق الصحة.",
+  "Apple Health: {0}": "صحة Apple: {0}",
+  "Sync Apple Health now": "المزامنة مع صحة Apple الآن",
+
   'Confirm': 'تأكيد',
   'Cancel': 'إلغاء',
   'Press back again to exit': 'اضغط زر الرجوع مرة أخرى للخروج',
@@ -2297,4 +2303,13 @@ export default {
   'Your sports watch, calling you back.': 'ساعتك الرياضية تناديك للعودة.',
   'Coach wants you back on the bar.': 'المدرب يريدك أن تعود إلى البار.',
   'Gentle, for headphones or a quiet room.': 'هادئ، للسماعات أو لغرفة هادئة.',
+  'Apple Health': 'Apple Health',
+  'Manual': 'يدوي',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'ما زال Apple Health يبحث عن وزن. أدخل وزنك للبدء.',
+  'Apple Health is unavailable on this device. Enter your weight to start.': 'Apple Health غير متاح على هذا الجهاز. أدخل وزنك للبدء.',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'لا يوجد في Apple Health وزن يمكن قراءته. يمكنك التحقق من صلاحية الوصول إلى Health في الإعدادات أو إدخال وزنك هنا.',
+  'Apple Health could not load your weight. Enter your weight to start.': 'تعذّر على Apple Health تحميل وزنك. أدخل وزنك للبدء.',
+  "Workout weather": "طقس التمرين",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "احفظ درجة الحرارة والرطوبة الخارجية في Apple Health. يُرسل موقعك التقريبي مرة واحدة لكل تمرين إلى Open-Meteo؛ ولا يُخزّن أو يُرسل إلى خادم openGym الخاص بك.",
+  "Weather data by Open-Meteo (CC BY 4.0)": "بيانات الطقس من Open-Meteo (CC BY 4.0)",
 }

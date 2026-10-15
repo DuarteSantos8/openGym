@@ -1,5 +1,11 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "Відповідне тренування, збережене openGym в Apple Здоров’ї, також буде видалено.",
+  "Sync with Apple Health": "Синхронізація з Apple Здоров’я",
+  "Sync body weight both ways and save finished workouts to Health.": "Синхронізуйте вагу в обох напрямках і зберігайте завершені тренування у Здоров’ї.",
+  "Apple Health: {0}": "Apple Здоров’я: {0}",
+  "Sync Apple Health now": "Синхронізувати Apple Здоров’я зараз",
+
   'Confirm': 'Підтвердити',
   'Cancel': 'Скасувати',
   'Press back again to exit': 'Натисни «Назад» ще раз, щоб вийти',
@@ -2239,4 +2245,13 @@ export default {
   'Your sports watch, calling you back.': 'Ваш спортивний годинник кличе вас назад.',
   'Coach wants you back on the bar.': 'Тренер чекає вас назад біля штанги.',
   'Gentle, for headphones or a quiet room.': 'Тихий, для навушників або спокійної кімнати.',
+  'Apple Health': 'Apple Health',
+  'Manual': 'Вручну',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'Apple Health ще шукає вагу. Введи свою вагу, щоб почати.',
+  'Apple Health is unavailable on this device. Enter your weight to start.': 'Apple Health недоступне на цьому пристрої. Введи свою вагу, щоб почати.',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'В Apple Health немає ваги, яку можна прочитати. Перевір доступ до Health у Налаштуваннях або введи вагу тут.',
+  'Apple Health could not load your weight. Enter your weight to start.': 'Apple Health не вдалося завантажити твою вагу. Введи свою вагу, щоб почати.',
+  "Workout weather": "Погода під час тренування",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "Зберігати зовнішню температуру й вологість в Apple Здоров’я. Приблизне місцезнаходження надсилається до Open-Meteo раз за тренування; воно не зберігається й не надсилається на ваш сервер openGym.",
+  "Weather data by Open-Meteo (CC BY 4.0)": "Погодні дані Open-Meteo (CC BY 4.0)",
 }

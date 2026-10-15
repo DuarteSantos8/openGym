@@ -1,5 +1,11 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "openGym이 Apple 건강에 저장한 해당 운동도 삭제됩니다.",
+  "Sync with Apple Health": "Apple 건강과 동기화",
+  "Sync body weight both ways and save finished workouts to Health.": "체중을 양방향으로 동기화하고 완료한 운동을 건강 앱에 저장합니다.",
+  "Apple Health: {0}": "Apple 건강: {0}",
+  "Sync Apple Health now": "지금 Apple 건강 동기화",
+
   'Confirm': '확인',
   'Cancel': '취소',
   'Press back again to exit': '뒤로를 한 번 더 누르면 종료됩니다',
@@ -2242,4 +2248,13 @@ export default {
   'Your sports watch, calling you back.': '스포츠 시계가 다시 부르고 있어요.',
   'Coach wants you back on the bar.': '코치가 바 앞으로 돌아오래요.',
   'Gentle, for headphones or a quiet room.': '이어폰이나 조용한 곳에 어울려요.',
+  'Apple Health': 'Apple 건강',
+  'Manual': '직접 입력',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'Apple 건강에서 아직 체중을 확인하는 중입니다. 시작하려면 체중을 입력하세요.',
+  'Apple Health is unavailable on this device. Enter your weight to start.': '이 기기에서는 Apple 건강을 사용할 수 없습니다. 시작하려면 체중을 입력하세요.',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'Apple 건강에 읽을 수 있는 체중이 없습니다. 설정에서 건강 접근 권한을 확인하거나 여기에 체중을 입력하세요.',
+  'Apple Health could not load your weight. Enter your weight to start.': 'Apple 건강에서 체중을 불러오지 못했습니다. 시작하려면 체중을 입력하세요.',
+  "Workout weather": "운동 날씨",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "실외 온도와 습도를 Apple 건강에 저장합니다. 대략적인 위치는 운동당 한 번 Open-Meteo로 전송되며, 저장되거나 openGym 서버로 전송되지 않습니다.",
+  "Weather data by Open-Meteo (CC BY 4.0)": "Open-Meteo 날씨 데이터 (CC BY 4.0)",
 }

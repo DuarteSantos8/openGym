@@ -3971,6 +3971,31 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-desc">Total volume (Σ weight × reps).</span>
   </div>
   <div class="prow">
+    <span class="p-name">healthMetrics</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">Optional measured energy; absent when no measurement is available. No estimated effort score.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">healthMetrics.activeKcal<em class="p-req" title="required">required</em></span>
+    <span class="p-type">number <span class="p-hint">(0&ndash;)</span></span>
+    <span class="p-desc">Measured active kilocalories.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">healthMetrics.basalKcal</span>
+    <span class="p-type">number <span class="p-hint">(0&ndash;)</span></span>
+    <span class="p-desc">Measured resting kilocalories; absent when unavailable.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">healthMetrics.sampledAt<em class="p-req" title="required">required</em></span>
+    <span class="p-type">number</span>
+    <span class="p-desc">Measurement timestamp in milliseconds.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">healthMetrics.final<em class="p-req" title="required">required</em></span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">Only finalized measurements are exported to Health.</span>
+  </div>
+  <div class="prow">
     <span class="p-name">prs</span>
     <span class="p-type">string[]</span>
     <span class="p-desc">Exercise ids that hit a personal record.</span>
@@ -4089,7 +4114,17 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow">
     <span class="p-name">t</span>
     <span class="p-type">number</span>
-    <span class="p-desc">Timestamp (ms).</span>
+    <span class="p-desc">Timestamp (ms) the entry was last saved.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">src</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Health store the weight was read from, e.g. &quot;apple-health&quot;. Absent on a typed weigh-in.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">m</span>
+    <span class="p-type">number</span>
+    <span class="p-desc">Timestamp (ms) of the Health measurement; retained after a manual correction to avoid applying it again.</span>
   </div>
 </div>
   </div>

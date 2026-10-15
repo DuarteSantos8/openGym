@@ -1,5 +1,11 @@
 // French UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "L’entraînement correspondant enregistré par openGym dans Apple Santé sera également supprimé.",
+  "Sync with Apple Health": "Synchroniser avec Apple Santé",
+  "Sync body weight both ways and save finished workouts to Health.": "Synchroniser le poids dans les deux sens et enregistrer les entraînements terminés dans Santé.",
+  "Apple Health: {0}": "Apple Santé : {0}",
+  "Sync Apple Health now": "Synchroniser Apple Santé maintenant",
+
   'Confirm': 'Confirmer',
   'Cancel': 'Annuler',
   'Press back again to exit': 'Appuie de nouveau pour quitter',
@@ -2242,4 +2248,13 @@ export default {
   'Your sports watch, calling you back.': 'Ta montre de sport te rappelle.',
   'Coach wants you back on the bar.': 'Le coach te veut de retour à la barre.',
   'Gentle, for headphones or a quiet room.': 'Tout doux, pour un casque ou une pièce calme.',
+  'Apple Health': 'Apple Santé',
+  'Manual': 'Manuel',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'Apple Santé cherche encore un poids. Entre ton poids pour commencer.',
+  'Apple Health is unavailable on this device. Enter your weight to start.': 'Apple Santé n\'est pas disponible sur cet appareil. Entre ton poids pour commencer.',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'Apple Santé n\'a aucun poids lisible. Tu peux vérifier l\'accès à Santé dans Réglages ou entrer ton poids ici.',
+  'Apple Health could not load your weight. Enter your weight to start.': 'Apple Santé n\'a pas pu charger ton poids. Entre ton poids pour commencer.',
+  "Workout weather": "Météo de la séance",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "Enregistre la température et l’humidité extérieures dans Apple Santé. Votre position approximative est envoyée une fois par séance à Open-Meteo ; elle n’est ni conservée ni envoyée à votre serveur openGym.",
+  "Weather data by Open-Meteo (CC BY 4.0)": "Données météo par Open-Meteo (CC BY 4.0)",
 }

@@ -1,5 +1,11 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "openGym tarafından Apple Sağlık’a kaydedilen ilgili antrenman da silinecek.",
+  "Sync with Apple Health": "Apple Sağlık ile eşitle",
+  "Sync body weight both ways and save finished workouts to Health.": "Vücut ağırlığını iki yönde eşitle ve tamamlanan antrenmanları Sağlık’a kaydet.",
+  "Apple Health: {0}": "Apple Sağlık: {0}",
+  "Sync Apple Health now": "Apple Sağlık’ı şimdi eşitle",
+
   'Confirm': 'Onayla',
   'Cancel': 'İptal',
   'Press back again to exit': 'Çıkmak için geri tuşuna tekrar basın',
@@ -2242,4 +2248,13 @@ export default {
   'Your sports watch, calling you back.': 'Spor saatin seni geri çağırıyor.',
   'Coach wants you back on the bar.': 'Koç seni bara geri bekliyor.',
   'Gentle, for headphones or a quiet room.': 'Sakin, kulaklık ya da sessiz bir oda için.',
+  'Apple Health': 'Apple Health',
+  'Manual': 'Manuel',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'Apple Health hâlâ bir ağırlık arıyor. Başlamak için ağırlığını gir.',
+  'Apple Health is unavailable on this device. Enter your weight to start.': 'Apple Health bu cihazda kullanılamıyor. Başlamak için ağırlığını gir.',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'Apple Health\'te okunabilir bir ağırlık yok. Ayarlar\'dan Health erişimini kontrol edebilir veya ağırlığını buraya girebilirsin.',
+  'Apple Health could not load your weight. Enter your weight to start.': 'Apple Health ağırlığını yükleyemedi. Başlamak için ağırlığını gir.',
+  "Workout weather": "Antrenman havası",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "Dış sıcaklık ve nemi Apple Sağlık’a kaydet. Yaklaşık konumun antrenman başına bir kez Open-Meteo’ya gönderilir; saklanmaz veya openGym sunucuna gönderilmez.",
+  "Weather data by Open-Meteo (CC BY 4.0)": "Open-Meteo hava durumu verileri (CC BY 4.0)",
 }

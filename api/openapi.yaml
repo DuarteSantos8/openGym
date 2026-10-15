@@ -3456,6 +3456,16 @@ components:
         name: { type: string }
         bw: { type: number, description: 'Body weight that day, in `unit`.' }
         vol: { type: number, description: Total volume (Σ weight × reps). }
+        healthMetrics:
+          type: object
+          description: Optional measured energy; absent when no measurement is available. No estimated effort score.
+          required: [activeKcal, sampledAt, final]
+          properties:
+            activeKcal: { type: number, minimum: 0, description: Measured active kilocalories. }
+            basalKcal: { type: number, minimum: 0, description: Measured resting kilocalories; absent when unavailable. }
+            sampledAt: { type: number, exclusiveMinimum: 0, description: Measurement timestamp in milliseconds. }
+            final: { type: boolean, description: Only finalized measurements are exported to Health. }
+          additionalProperties: false
         prs:
           type: array
           items: { type: string }
@@ -3510,7 +3520,9 @@ components:
       properties:
         d: { type: string, format: date }
         w: { type: number, description: Weight in `unit`. }
-        t: { type: number, description: Timestamp (ms). }
+        t: { type: number, description: Timestamp (ms) the entry was last saved. }
+        src: { type: string, description: 'Health store the weight was read from, e.g. "apple-health". Absent on a typed weigh-in.' }
+        m: { type: number, description: Timestamp (ms) of the Health measurement; retained after a manual correction to avoid applying it again. }
       additionalProperties: true
 
     # ------------------------------------------------------------------ push

@@ -1,4 +1,10 @@
 export default {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "openGym 儲存在 Apple 健康中的對應訓練也會一併刪除。",
+  "Sync with Apple Health": "與 Apple 健康同步",
+  "Sync body weight both ways and save finished workouts to Health.": "雙向同步體重，並將完成的訓練儲存至健康 App。",
+  "Apple Health: {0}": "Apple 健康：{0}",
+  "Sync Apple Health now": "立即同步 Apple 健康",
+
   'Confirm': '確認',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回以退出',
@@ -2235,4 +2241,13 @@ export default {
   'Your sports watch, calling you back.': '你的運動手錶在叫你回來。',
   'Coach wants you back on the bar.': '教練等你回到槓鈴前。',
   'Gentle, for headphones or a quiet room.': '輕柔，適合耳機或安靜的房間。',
+  'Apple Health': 'Apple 健康',
+  'Manual': '手動',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'Apple 健康仍在尋找體重。請輸入體重以開始。',
+  'Apple Health is unavailable on this device. Enter your weight to start.': '此裝置無法使用 Apple 健康。請輸入體重以開始。',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'Apple 健康中沒有可讀取的體重。你可以在「設定」中檢查健康取用權限，或在此輸入體重。',
+  'Apple Health could not load your weight. Enter your weight to start.': 'Apple 健康無法載入你的體重。請輸入體重以開始。',
+  "Workout weather": "訓練天氣",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "將室外溫度和濕度儲存至 Apple 健康。每次訓練會向 Open-Meteo 傳送一次大概位置；位置不會被儲存，也不會傳送至你的 openGym 伺服器。",
+  "Weather data by Open-Meteo (CC BY 4.0)": "天氣資料來自 Open-Meteo（CC BY 4.0）",
 }

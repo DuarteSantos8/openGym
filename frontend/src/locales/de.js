@@ -1,5 +1,11 @@
 // German UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "Das entsprechende von openGym in Apple Health gespeicherte Training wird ebenfalls gelöscht.",
+  "Sync with Apple Health": "Mit Apple Health synchronisieren",
+  "Sync body weight both ways and save finished workouts to Health.": "Körpergewicht in beide Richtungen synchronisieren und abgeschlossene Trainings in Health speichern.",
+  "Apple Health: {0}": "Apple Health: {0}",
+  "Sync Apple Health now": "Apple Health jetzt synchronisieren",
+
   // --- generic ---
   'Confirm': 'Bestätigen',
   'Cancel': 'Abbrechen',
@@ -2262,4 +2268,13 @@ export default {
   'Your sports watch, calling you back.': 'Deine Sportuhr ruft dich zurück.',
   'Coach wants you back on the bar.': 'Der Coach will dich zurück an der Stange.',
   'Gentle, for headphones or a quiet room.': 'Leise, für Kopfhörer oder einen ruhigen Raum.',
+  'Apple Health': 'Apple Health',
+  'Manual': 'Manuell',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'Apple Health sucht noch nach einem Gewicht. Gib dein Gewicht ein, um zu starten.',
+  'Apple Health is unavailable on this device. Enter your weight to start.': 'Apple Health ist auf diesem Gerät nicht verfügbar. Gib dein Gewicht ein, um zu starten.',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'Apple Health hat kein lesbares Gewicht. Du kannst den Health-Zugriff in den Einstellungen prüfen oder dein Gewicht hier eingeben.',
+  'Apple Health could not load your weight. Enter your weight to start.': 'Apple Health konnte dein Gewicht nicht laden. Gib dein Gewicht ein, um zu starten.',
+  "Workout weather": "Wetter beim Training",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "Außentemperatur und Luftfeuchtigkeit in Apple Health speichern. Dein ungefährer Standort wird einmal pro Training an Open-Meteo gesendet; er wird weder gespeichert noch an deinen openGym-Server gesendet.",
+  "Weather data by Open-Meteo (CC BY 4.0)": "Wetterdaten von Open-Meteo (CC BY 4.0)",
 }

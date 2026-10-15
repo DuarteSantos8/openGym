@@ -16,7 +16,9 @@ import { pendingRefCount, settleMedia, loadPending } from '../lib/media-owed.js'
 import { referencedHashes } from '../lib/media-refs.js'
 import { mediaStore, mediaStoreInUse } from '../lib/media-store.js'
 import { countChanges, syncFingerprint } from '../lib/sync-changes.js'
-import { saveWorkoutEdit, deleteEditedWorkout } from '../lib/session-edit.js'
+import { invalidateAppleHealth, queueAppleHealthWorkoutDeletion } from '../lib/apple-health.js'
+import { sameWorkout } from '../lib/workout-date.js'
+import { saveWorkoutEdit, deleteEditedWorkout, editedRecord } from '../lib/session-edit.js'
 import { appBase } from '../lib/app-base.js'
 import { linkTokenFromSearch, stripLinkFromUrl } from '../lib/device-link.js'
 import { loadRemote, chooseLocal, forgetRemote, connect, normalizeServerUrl, renewToken } from '../lib/remote.js'
@@ -470,6 +472,13 @@ export const useStore = create((set, get) => {
   const serverBase = () => {
     if (MOBILE) return pairedBase
     try { return location.origin && location.origin !== 'null' ? location.origin + appBase().replace(/\/$/, '') : null } catch { return null }
+  }
+  // Sign-out and pairing swap the profile under an Apple Health read: the read in flight is
+  // dropped and no new one starts (syncAppleHealth waits for `ready`) until the swap is over.
+  const pauseHealth = async work => {
+    invalidateAppleHealth()
+    set({ ready: false, healthWeightStatus: 'pending' })
+    try { return await work() } finally { set({ ready: true }) }
   }
 
   initReminderSync(() => get().S)
@@ -1302,6 +1311,7 @@ export const useStore = create((set, get) => {
     ready: false,
     // The connection as the screens show it — see statusOf above for every field.
     sync: sync0,
+    healthWeightStatus: 'pending',
     /* Instance capabilities from GET /api/config. `config.coach` is present only when the owner
        has both enabled the Coach and connected a provider — every Coach entry point in the app
        hangs off it via coachAvailable(), so an unconfigured instance renders exactly what it
@@ -1320,10 +1330,14 @@ export const useStore = create((set, get) => {
 
     // Mutate a draft of S via producer fn, then persist + schedule sync. Every routine the change
     // touched carries the time of it, for a conflict to keep the version edited last.
-    update(mut, push = true) {
+    update(mut, push = true, { deletedHealthWorkout = null } = {}) {
       const prev = get().S
       const S = clone(prev)
       mut(S)
+      const deleted = deletedHealthWorkout && prev.workouts.find(w => sameWorkout(w, deletedHealthWorkout))
+      if (deleted && !S.workouts.some(w => sameWorkout(w, deleted))) {
+        queueAppleHealthWorkoutDeletion({ getState: get }, deleted)
+      }
       // What the change removed, and which routines, workouts, settings and plan days it touched,
       // each with one time that comes after every stamp the copy already carries: a conflict then
       // keeps a removal and the edit made last, even from a device whose clock runs behind
@@ -1351,7 +1365,7 @@ export const useStore = create((set, get) => {
     // An edit that took out every set deletes the workout rather than saving it empty.
     deleteHistoryEdit() {
       let removed = false
-      get().update(S => { removed = deleteEditedWorkout(S) })
+      get().update(S => { removed = deleteEditedWorkout(S) }, true, { deletedHealthWorkout: editedRecord(get().S) })
       return removed
     },
     // Settings → unit. `convert` walks every stored weight into the new unit (lib/units.js); off,
@@ -1477,8 +1491,9 @@ export const useStore = create((set, get) => {
     isGuest: () => localStorage.getItem('gym_guest') === '1',
     // Choosing to go on without a server ends whatever was said about the last one.
     setGuest(v) {
+      invalidateAppleHealth()
       if (v) localStorage.setItem('gym_guest', '1'); else localStorage.removeItem('gym_guest')
-      set({})
+      set({ healthWeightStatus: 'pending' })
       if (v) setSync({ auth: false, offline: false, lastError: null })
     },
 
@@ -1507,6 +1522,7 @@ export const useStore = create((set, get) => {
     // `adopt` (a sign-in, a pairing — { alwaysAsk } for a device link): adoptProfile follows and
     // decides what becomes of this copy; until it has, nothing is pulled or pushed (ADOPT_KEY).
     setUser(u, { adopt } = {}) {
+      invalidateAppleHealth()
       if (u) {
         // The local copy belongs to whoever last signed in here. When a session expires or is
         // revoked elsewhere, boot() only drops the user and the data stays; a different profile
@@ -1572,7 +1588,7 @@ export const useStore = create((set, get) => {
         // session and is already the right answer, Coach or no Coach.
         if (get().config && !('coach' in get().config)) get().refreshConfig()
       } else { rejoined = false; adoptHold = false; localStorage.removeItem('gym_user') }
-      set({ user: u })
+      set({ user: u, healthWeightStatus: 'pending' })
       setSync({ held: adoptHold })
     },
 
@@ -1761,11 +1777,13 @@ export const useStore = create((set, get) => {
       await stopTimers()
       if (left.owed && !(await stashOwed())) return owedResult(left, { stashed: false })
       if (!left.owed && !(await stashActive())) return { owed: true, count: 0, stashed: false }
-      // The device is signed out either way. A request that did not get through leaves the cookie
-      // behind, still valid, so the logout is owed until the server answers it (see boot).
-      try { await api('/api/logout', { method: 'POST', body: '{}' }) } catch (e) { if (!MOBILE) logoutOwed(true) }
-      await clearLocalSession()
-      return left.owed ? owedResult(left, { stashed: true }) : { owed: false }
+      return pauseHealth(async () => {
+        // The device is signed out either way. A request that did not get through leaves the cookie
+        // behind, still valid, so the logout is owed until the server answers it (see boot).
+        try { await api('/api/logout', { method: 'POST', body: '{}' }) } catch (e) { if (!MOBILE) logoutOwed(true) }
+        await clearLocalSession()
+        return left.owed ? owedResult(left, { stashed: true }) : { owed: false }
+      })
     },
 
     // Mobile-only ("connect to my server" onboarding, see App.jsx's needsMobileOnboarding).
@@ -1779,17 +1797,19 @@ export const useStore = create((set, get) => {
     // switches this device over to that account, same as signing in on the web does — the same
     // account pairing again merges what the phone kept (adoptProfile).
     async connectToServer(url, code, ask) {
-      const user = await connect(url, code)   // throws on a bad URL/expired code — caller shows it
-      // The account first, the address after: a copy another account still owed is kept aside
-      // for it under the server it belongs to, not the one being paired.
-      get().setUser(user, { adopt: true })
-      if (keeping) { await keeping; keeping = null }
-      pairedBase = normalizeServerUrl(url)
-      setSync({ server: pairedBase })
-      await get().refreshConfig()   // what this server offers (the Coach, guest mode) — see boot()
-      await get().adoptProfile(ask)
-      await nativePersist(true)   // the file holds this account's copy before anything else can happen
-      set({ needsMobileOnboarding: false })
+      await pauseHealth(async () => {
+        const user = await connect(url, code)   // throws on a bad URL/expired code — caller shows it
+        // The account first, the address after: a copy another account still owed is kept aside
+        // for it under the server it belongs to, not the one being paired.
+        get().setUser(user, { adopt: true })
+        if (keeping) { await keeping; keeping = null }
+        pairedBase = normalizeServerUrl(url)
+        setSync({ server: pairedBase })
+        await get().refreshConfig()   // what this server offers (the Coach, guest mode) — see boot()
+        await get().adoptProfile(ask)
+        await nativePersist(true)   // the file holds this account's copy before anything else can happen
+        set({ needsMobileOnboarding: false })
+      })
     },
     // Leaves remote mode and drops back to local-only, the way signOut does: never with changes
     // the server has not seen, unless `force` keeps them aside first. Same result as signOut;
@@ -1816,11 +1836,13 @@ export const useStore = create((set, get) => {
       const left = get().unsyncedChanges()
       if (left.owed && !force) return owedResult(left)
       await stopTimers()
-      await api('/api/logout/all', { method: 'POST', body: '{}' })
-      if (left.owed && !(await stashOwed())) return owedResult(left, { stashed: false })
-      if (!left.owed && !(await stashActive())) return { owed: true, count: 0, stashed: false }
-      await clearLocalSession()
-      return left.owed ? owedResult(left, { stashed: true }) : { owed: false }
+      return pauseHealth(async () => {
+        await api('/api/logout/all', { method: 'POST', body: '{}' })
+        if (left.owed && !(await stashOwed())) return owedResult(left, { stashed: false })
+        if (!left.owed && !(await stashActive())) return { owed: true, count: 0, stashed: false }
+        await clearLocalSession()
+        return left.owed ? owedResult(left, { stashed: true }) : { owed: false }
+      })
     },
 
     // Demo build only: drop the seeded example profile back in (Settings → "Reset demo data").

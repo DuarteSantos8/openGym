@@ -1,5 +1,11 @@
 // Portuguese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "O treino correspondente guardado pelo openGym na Saúde da Apple também será eliminado.",
+  "Sync with Apple Health": "Sincronizar com a Saúde da Apple",
+  "Sync body weight both ways and save finished workouts to Health.": "Sincroniza o peso nos dois sentidos e guarda os treinos concluídos na Saúde.",
+  "Apple Health: {0}": "Saúde da Apple: {0}",
+  "Sync Apple Health now": "Sincronizar com a Saúde da Apple agora",
+
   'Confirm': 'Confirmar',
   'Cancel': 'Cancelar',
   'Press back again to exit': 'Prima novamente para sair',
@@ -2242,4 +2248,13 @@ export default {
   'Your sports watch, calling you back.': 'O teu relógio desportivo a chamar-te de volta.',
   'Coach wants you back on the bar.': 'O coach quer-te de volta à barra.',
   'Gentle, for headphones or a quiet room.': 'Suave, para auscultadores ou uma sala sossegada.',
+  'Apple Health': 'Apple Saúde',
+  'Manual': 'Manual',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'A Apple Saúde ainda está à procura de um peso. Introduz o teu peso para começar.',
+  'Apple Health is unavailable on this device. Enter your weight to start.': 'A Apple Saúde não está disponível neste dispositivo. Introduz o teu peso para começar.',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'A Apple Saúde não tem nenhum peso legível. Podes verificar o acesso à Saúde nas Definições ou introduzir o teu peso aqui.',
+  'Apple Health could not load your weight. Enter your weight to start.': 'A Apple Saúde não conseguiu carregar o teu peso. Introduz o teu peso para começar.',
+  "Workout weather": "Meteorologia do treino",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "Guarda a temperatura e humidade exteriores na app Saúde. A localização aproximada é enviada uma vez por treino ao Open-Meteo; não é guardada nem enviada para o teu servidor openGym.",
+  "Weather data by Open-Meteo (CC BY 4.0)": "Dados meteorológicos do Open-Meteo (CC BY 4.0)",
 }

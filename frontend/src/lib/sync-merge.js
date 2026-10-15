@@ -162,13 +162,27 @@ export function mergeWorkoutMedia(kept, other) {
 }
 const byDayStart = (a, b) => (a.d === b.d ? (a.start || 0) - (b.start || 0) : a.d < b.d ? -1 : 1)
 
-/** One entry per day; where both have a day, the one edited later (`t`); sorted by day. */
+// A recent import is not a recent measurement. A manual correction made after that
+// measurement wins even if the other device imported the sample later. Consumed measurement
+// metadata follows the correction so re-reading does not turn it back into an import.
+function preferredDailyWeight(a, b) {
+  const measured = e => e.src === 'apple-health' && Number.isFinite(e.m) && e.m > 0
+  let winner
+  if (measured(a) && measured(b) && a.m !== b.m) winner = a.m > b.m ? a : b
+  else if (measured(a) && !b.src && Number(b.t) >= a.m) winner = b
+  else if (measured(b) && !a.src && Number(a.t) >= b.m) winner = a
+  else winner = (Number(b.t) || 0) > (Number(a.t) || 0) ? b : a
+  const consumed = Math.max(Number(a.m) || 0, Number(b.m) || 0)
+  return !winner.src && consumed > 0 ? { ...winner, m: consumed } : winner
+}
+
+/** One entry per day; later edits win, with manual corrections protected from delayed Health imports. */
 export function mergeBodyweight(a = [], b = []) {
   const byDay = new Map()
   for (const e of [...list(a), ...list(b)]) {
     if (!e || e.d == null) continue
     const cur = byDay.get(e.d)
-    if (!cur || (e.t || 0) > (cur.t || 0)) byDay.set(e.d, e)
+    byDay.set(e.d, cur ? preferredDailyWeight(cur, e) : e)
   }
   return [...byDay.values()].sort((x, y) => (x.d < y.d ? -1 : 1))
 }

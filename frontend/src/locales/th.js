@@ -1,5 +1,11 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "การออกกำลังกายที่ตรงกันซึ่ง openGym บันทึกไว้ในสุขภาพของ Apple จะถูกลบด้วย",
+  "Sync with Apple Health": "ซิงค์กับสุขภาพของ Apple",
+  "Sync body weight both ways and save finished workouts to Health.": "ซิงค์น้ำหนักทั้งสองทิศทางและบันทึกการออกกำลังกายที่เสร็จแล้วในแอปสุขภาพ",
+  "Apple Health: {0}": "สุขภาพของ Apple: {0}",
+  "Sync Apple Health now": "ซิงค์สุขภาพของ Apple ตอนนี้",
+
   // --- generic ---
   'Confirm': 'ยืนยัน',
   'Cancel': 'ยกเลิก',
@@ -2253,4 +2259,13 @@ export default {
   'Your sports watch, calling you back.': 'นาฬิกาสปอร์ตเรียกคุณกลับมาแล้ว',
   'Coach wants you back on the bar.': 'โค้ชอยากให้คุณกลับมาที่บาร์',
   'Gentle, for headphones or a quiet room.': 'เบา ๆ สำหรับหูฟังหรือห้องที่เงียบ',
+  'Apple Health': 'Apple Health',
+  'Manual': 'ป้อนเอง',
+  'Apple Health is still checking for a weight. Enter your weight to start.': 'Apple Health ยังค้นหาน้ำหนักอยู่ กรอกน้ำหนักของคุณเพื่อเริ่ม',
+  'Apple Health is unavailable on this device. Enter your weight to start.': 'Apple Health ใช้งานไม่ได้บนอุปกรณ์นี้ กรอกน้ำหนักของคุณเพื่อเริ่ม',
+  'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'Apple Health ไม่มีน้ำหนักที่อ่านได้ คุณสามารถตรวจสอบสิทธิ์การเข้าถึง Health ในการตั้งค่า หรือกรอกน้ำหนักที่นี่',
+  'Apple Health could not load your weight. Enter your weight to start.': 'Apple Health โหลดน้ำหนักของคุณไม่ได้ กรอกน้ำหนักของคุณเพื่อเริ่ม',
+  "Workout weather": "สภาพอากาศขณะออกกำลังกาย",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "บันทึกอุณหภูมิและความชื้นภายนอกลงใน Apple Health ตำแหน่งโดยประมาณจะถูกส่งไปยัง Open-Meteo หนึ่งครั้งต่อการออกกำลังกาย โดยไม่จัดเก็บหรือส่งไปยังเซิร์ฟเวอร์ openGym ของคุณ",
+  "Weather data by Open-Meteo (CC BY 4.0)": "ข้อมูลสภาพอากาศจาก Open-Meteo (CC BY 4.0)",
 }
