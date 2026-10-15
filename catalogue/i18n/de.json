@@ -2855,37 +2855,119 @@
     ]
   },
   "1458": {
-    "name": "Sitzender Bizeps-Curl mit SZ-Stange"
+    "name": "Sitzender Bizeps-Curl mit SZ-Stange",
+    "instructions": [
+      "Setz dich auf eine Bank, stell die Füße flach auf den Boden und halte den Rücken gerade.",
+      "Greif die SZ-Stange schulterbreit im Untergriff, die Handflächen zeigen nach oben.",
+      "Leg die Oberarme auf den Oberschenkeln ab und lass die SZ-Stange vor dir nach unten hängen.",
+      "Halte die Oberarme ruhig, atme aus und beug die Arme, um die SZ-Stange zu den Schultern hochzuführen.",
+      "Halte oben kurz inne und spann den Bizeps an.",
+      "Atme ein und senk die SZ-Stange langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1459": {
-    "name": "Rumänisches Kreuzheben mit Kurzhanteln"
+    "name": "Rumänisches Kreuzheben mit Kurzhanteln",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte in jeder Hand eine Kurzhantel im Obergriff.",
+      "Halte den Rücken gerade, spann den Rumpf an, beug dich aus der Hüfte nach vorn und senk die Kurzhanteln Richtung Boden. Die Knie dürfen sich dabei leicht beugen.",
+      "Senk die Kurzhanteln, bis du eine Dehnung in der hinteren Oberschenkelmuskulatur spürst. Drück dich dann über die Fersen hoch und spann das Gesäß an, um in die Ausgangsposition zurückzukommen.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1460": {
-    "name": "Gehender Ausfallschritt"
+    "name": "Gehender Ausfallschritt",
+    "instructions": [
+      "Stell dich schulterbreit hin.",
+      "Mach mit dem rechten Bein einen Schritt nach vorn und senk den Körper in den Ausfallschritt.",
+      "Halte den Oberkörper aufrecht und das vordere Knie über dem Sprunggelenk.",
+      "Drück dich mit dem rechten Fuß ab, bring den linken Fuß nach vorn und geh mit dem linken Bein in den Ausfallschritt.",
+      "Wechsle weiter die Beine und geh dabei in ruhigem, kontrolliertem Tempo vorwärts.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1461": {
-    "name": "Volle Kniebeuge mit Langhantel, Rückenansicht"
+    "name": "Volle Kniebeuge mit Langhantel, Rückenansicht",
+    "instructions": [
+      "Stell dich schulterbreit hin, die Zehen zeigen leicht nach außen.",
+      "Halte die Langhantel quer über dem oberen Rücken, sodass sie auf dem Trapezmuskel oder den hinteren Schultern aufliegt.",
+      "Spann den Rumpf an, halte die Brust oben und fang an, dich abzusenken.",
+      "Beug Knie und Hüfte und schieb die Hüfte nach hinten unten, als würdest du dich auf einen Stuhl setzen.",
+      "Senk dich ab, bis die Oberschenkel parallel zum Boden sind oder etwas tiefer.",
+      "Halte die Knie in einer Linie mit den Zehen und das Gewicht auf den Fersen.",
+      "Drück dich über die Fersen wieder hoch und streck dabei Hüfte und Knie.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1462": {
-    "name": "Volle Kniebeuge mit Langhantel, Seitenansicht"
+    "name": "Volle Kniebeuge mit Langhantel, Seitenansicht",
+    "instructions": [
+      "Stell dich schulterbreit hin, die Zehen zeigen leicht nach außen.",
+      "Halte die Langhantel quer über dem oberen Rücken, sodass sie auf dem Trapezmuskel oder den hinteren Schultern aufliegt.",
+      "Spann den Rumpf an, halte die Brust oben und fang an, dich abzusenken.",
+      "Beug Knie und Hüfte und schieb die Hüfte nach hinten unten, als würdest du dich auf einen Stuhl setzen.",
+      "Senk dich ab, bis die Oberschenkel parallel zum Boden sind oder etwas tiefer.",
+      "Halte die Knie in einer Linie mit den Zehen und das Gewicht auf den Fersen.",
+      "Drück dich über die Fersen wieder hoch und streck dabei Hüfte und Knie.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1463": {
-    "name": "Beinpresse in 45 Grad mit Schlitten, Seitenansicht"
+    "name": "Beinpresse in 45 Grad mit Schlitten, Seitenansicht",
+    "instructions": [
+      "Stell den Sitz der Beinpresse so ein, dass deine Knie einen Winkel von 90 Grad bilden, wenn die Füße auf der Fußplatte stehen.",
+      "Setz dich in die Beinpresse, den Rücken flach an der Rückenlehne, und stell die Füße schulterbreit auf die Fußplatte.",
+      "Greif zur Stabilisierung die Griffe seitlich am Sitz.",
+      "Drück gegen die Fußplatte und streck die Beine vollständig.",
+      "Halte oben kurz inne, beug dann langsam die Knie und senk die Fußplatte zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1464": {
-    "name": "Beinpresse in 45 Grad mit Schlitten Rückenansicht"
+    "name": "Beinpresse in 45 Grad mit Schlitten Rückenansicht",
+    "instructions": [
+      "Stell den Sitz der Beinpresse so ein, dass deine Knie einen Winkel von 45 Grad bilden.",
+      "Setz dich in die Beinpresse, den Rücken an der Rückenlehne, und stell die Füße schulterbreit auf die Fußplatte.",
+      "Greif zur Stabilisierung die Griffe seitlich am Sitz.",
+      "Streck die Beine und drück die Fußplatte von dir weg. Die Fersen bleiben dabei auf der Fußplatte.",
+      "Halte mit gestreckten Beinen kurz inne.",
+      "Beug langsam die Knie und führ die Fußplatte kontrolliert zurück zu dir.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1465": {
     "name": "Hyperextension in 45 Grad (Arme vor der Brust) (Ansicht von der Seite)"
   },
   "1466": {
-    "name": "Hüftheben mit Drehung"
+    "name": "Hüftheben mit Drehung",
+    "instructions": [
+      "Leg dich auf den Rücken, beug die Knie und stell die Füße flach auf den Boden.",
+      "Leg die Hände zur Stütze neben den Körper.",
+      "Spann das Gesäß an und heb die Hüfte vom Boden, bis Knie, Hüfte und Schultern eine gerade Linie bilden.",
+      "Halte die Hüfte oben und dreh den Unterkörper nach rechts, sodass die Knie Richtung Boden gehen.",
+      "Kehr in die Ausgangsposition zurück und dreh dich dann nach links.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "1467": {
-    "name": "Liegestütz auf den Unterarmen"
+    "name": "Liegestütz auf den Unterarmen",
+    "instructions": [
+      "Geh in den Unterarmstütz, die Unterarme auf dem Boden und die Ellbogen direkt unter den Schultern.",
+      "Spann den Rumpf an und halte den Körper von Kopf bis Fuß in einer geraden Linie.",
+      "Beug die Ellbogen und senk die Brust Richtung Boden. Halte die Ellbogen dabei nah am Körper.",
+      "Halte unten kurz inne und drück dich dann wieder hoch in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1468": {
-    "name": "Krabbe mit Drehung und Zehenberührung"
+    "name": "Krabbe mit Drehung und Zehenberührung",
+    "instructions": [
+      "Setz dich auf den Boden, beug die Knie und stell die Füße flach auf.",
+      "Stütz die Hände hinter dir auf, die Finger zeigen zu den Füßen, und heb die Hüfte vom Boden.",
+      "Streck ein Bein gerade nach vorn und führ gleichzeitig die gegenüberliegende Hand zu den Zehen.",
+      "Kehr in die Ausgangsposition zurück und wiederhole die Bewegung auf der anderen Seite.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "1469": {
     "name": "Seitlicher Unterarmstütz (gebeugtes Bein)"
@@ -2894,22 +2976,60 @@
     "name": "Seitlicher Unterarmstütz"
   },
   "1471": {
-    "name": "Inchworm"
+    "name": "Inchworm",
+    "instructions": [
+      "Stell dich hüftbreit hin.",
+      "Beug dich aus der Hüfte nach vorn und setz die Hände vor dir auf den Boden.",
+      "Geh mit den Händen nach vorn, bis du im hohen Stütz bist und dein Körper von Kopf bis Fuß eine gerade Linie bildet.",
+      "Halte kurz inne und geh dann mit den Händen zurück zu den Füßen. Halte die Beine dabei so gerade wie möglich.",
+      "Sobald die Hände bei den Füßen sind, richte dich wieder in die Ausgangsposition auf.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1472": {
-    "name": "Sprung nach vorn"
+    "name": "Sprung nach vorn",
+    "instructions": [
+      "Stell dich schulterbreit hin.",
+      "Beug die Knie und geh in die Hocke.",
+      "Schwing die Arme nach hinten, um Schwung zu holen.",
+      "Spring explosiv nach vorn und streck dabei Hüfte, Knie und Sprunggelenke.",
+      "Lande weich auf den Fußballen und geh sofort in den nächsten Sprung.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1473": {
-    "name": "Sprung nach hinten"
+    "name": "Sprung nach hinten",
+    "instructions": [
+      "Stell dich schulterbreit hin.",
+      "Beug die Knie leicht, drück dich mit beiden Füßen ab und spring nach hinten.",
+      "Lande weich auf den Fußballen und beug die Knie, um die Landung abzufedern.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1476": {
-    "name": "Einbeinige Kniebeuge"
+    "name": "Einbeinige Kniebeuge",
+    "instructions": [
+      "Stell dich schulterbreit hin.",
+      "Streck ein Bein nach vorn, ohne dass es den Boden berührt.",
+      "Beug das Standbein und senk den Körper ab, als würdest du dich nach hinten auf einen Stuhl setzen.",
+      "Halte die Brust oben und den Rücken gerade.",
+      "Drück dich über die Ferse zurück in die Ausgangsposition.",
+      "Wiederhole die Übung mit dem anderen Bein."
+    ]
   },
   "1478": {
     "name": "Jack Plank"
   },
   "1479": {
-    "name": "Schrägbank-Brustdrücken an der Hebelmaschine v. 2"
+    "name": "Schrägbank-Brustdrücken an der Hebelmaschine v. 2",
+    "instructions": [
+      "Stell Sitzhöhe und Neigung der Rückenlehne an der Hebelmaschine so ein, dass es für dich angenehm ist.",
+      "Setz dich in die Maschine, den Rücken an der Rückenlehne und die Füße flach auf dem Boden.",
+      "Greif die Griffe im Obergriff, die Hände etwas breiter als schulterbreit.",
+      "Drück die Griffe nach vorn von dir weg, bis die Arme gestreckt sind, ohne die Ellbogen durchzudrücken.",
+      "Halte mit gestreckten Armen kurz inne, beug dann langsam die Ellbogen und führ die Griffe zurück zur Brust.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1480": {
     "name": "Bizeps-Dehnung hinter dem Rücken"
@@ -2939,10 +3059,25 @@
     "name": "Schulterdehnung hinter dem Rücken"
   },
   "1489": {
-    "name": "Sissy-Kniebeuge"
+    "name": "Sissy-Kniebeuge",
+    "instructions": [
+      "Stell dich schulterbreit hin, die Zehen zeigen leicht nach außen.",
+      "Halte dich bei Bedarf an etwas Stabilem fest, um das Gleichgewicht zu halten.",
+      "Beug langsam die Knie und lehn dich nach hinten, um den Körper abzusenken. Halte den Oberkörper dabei gerade.",
+      "Senk dich weiter ab, bis die Oberschenkel parallel zum Boden sind oder so weit, wie es angenehm geht.",
+      "Halte kurz inne und drück dich dann über die Fersen zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1490": {
-    "name": "Wadenheben im Stand auf einer Treppenstufe"
+    "name": "Wadenheben im Stand auf einer Treppenstufe",
+    "instructions": [
+      "Stell dich mit den Zehen auf die Kante einer Stufe oder einer stabilen Plattform, die Fersen ragen über die Kante hinaus.",
+      "Halte dich bei Bedarf an einem Geländer oder an der Wand fest, um das Gleichgewicht zu halten.",
+      "Heb die Fersen langsam so hoch wie möglich und bring dein Körpergewicht auf die Fußballen.",
+      "Halte oben kurz inne und senk die Fersen dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1491": {
     "name": "Rückenlage-Wirbelsäulendrehung Yogahaltung"
@@ -2954,13 +3089,37 @@
     "name": "Rad-Yogahaltung"
   },
   "1494": {
-    "name": "Schmetterlings-Yogahaltung"
+    "name": "Schmetterlings-Yogahaltung",
+    "instructions": [
+      "Setz dich auf den Boden und streck die Beine vor dir aus.",
+      "Beug die Knie, leg die Fußsohlen aneinander und lass die Knie nach außen fallen.",
+      "Fass mit den Händen deine Knöchel oder Füße.",
+      "Setz dich aufrecht hin und streck die Wirbelsäule lang.",
+      "Drück die Knie sanft Richtung Boden, bis du eine Dehnung an der Innenseite der Oberschenkel spürst.",
+      "Halte die Position einige Atemzüge lang.",
+      "Zum Lösen heb die Knie langsam wieder an und streck die Beine aus."
+    ]
   },
   "1495": {
-    "name": "Schräger Crunch v. 2"
+    "name": "Schräger Crunch v. 2",
+    "instructions": [
+      "Leg dich auf den Rücken, beug die Knie und stell die Füße flach auf den Boden.",
+      "Leg die Hände hinter den Kopf oder kreuz sie vor der Brust.",
+      "Spann die Bauchmuskeln an, heb die Schulterblätter vom Boden und dreh den Oberkörper zu einer Seite.",
+      "Halte kurz inne und senk die Schulterblätter dann zurück in die Ausgangsposition.",
+      "Wiederhole die Bewegung zur anderen Seite.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "1496": {
-    "name": "Vorschlaghammer-Schläge"
+    "name": "Vorschlaghammer-Schläge",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte den Vorschlaghammer mit beiden Händen.",
+      "Spann den Rumpf an und halte den Rücken gerade.",
+      "Schwing den Vorschlaghammer mit der Kraft aus Rumpf und Oberkörper nach unten Richtung Boden.",
+      "Dreh beim Abwärtsschwung die Hüfte ein und übertrag die Kraft auf den Hammer.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1497": {
     "name": "Bankdrücken mit Langhantel gegen Band, umgekehrt"
@@ -3005,10 +3164,24 @@
     "name": "Überkreuz-Ausfallschritt rückwärts"
   },
   "1511": {
-    "name": "Beinbeuger-Dehnung"
+    "name": "Beinbeuger-Dehnung",
+    "instructions": [
+      "Stell dich schulterbreit hin.",
+      "Mach mit dem rechten Fuß einen Schritt nach vorn und bring dein Gewicht auf das rechte Bein.",
+      "Halte den Rücken gerade, beug dich langsam aus der Hüfte nach vorn und streck beide Hände zum rechten Fuß.",
+      "Halte die Dehnung 20 bis 30 Sekunden und kehr dann in die Ausgangsposition zurück.",
+      "Wiederhole die Übung auf der anderen Seite."
+    ]
   },
   "1512": {
-    "name": "Quadrizeps-Dehnung im Vierfüßlerstand"
+    "name": "Quadrizeps-Dehnung im Vierfüßlerstand",
+    "instructions": [
+      "Geh in den Vierfüßlerstand, die Hände direkt unter den Schultern und die Knie direkt unter der Hüfte.",
+      "Bring ein Bein nach hinten, lass das Knie dabei gebeugt und zieh die Fußspitze an.",
+      "Senk die Hüfte langsam Richtung Boden, bis du eine Dehnung im Quadrizeps spürst.",
+      "Halte die Position 20 bis 30 Sekunden.",
+      "Wechsle das Bein und wiederhole die Dehnung auf der anderen Seite."
+    ]
   },
   "1513": {
     "name": "Good Morning mit Band"
@@ -3107,7 +3280,16 @@
     "name": "Steifbeiniges Kreuzheben mit weitem Stand mit Langhantel"
   },
   "1545": {
-    "name": "Volle Zercher-Kniebeuge mit Langhantel"
+    "name": "Volle Zercher-Kniebeuge mit Langhantel",
+    "instructions": [
+      "Stell dich schulterbreit hin, die Zehen zeigen leicht nach außen.",
+      "Halte die Langhantel in den Ellenbeugen und umgreif sie mit den Händen, damit sie stabil liegt.",
+      "Spann den Rumpf an, halte die Brust oben und schieb die Hüfte nach hinten unten in die Kniebeuge.",
+      "Halte die Knie in einer Linie mit den Zehen und das Gewicht auf den Fersen.",
+      "Senk dich ab, bis die Oberschenkel parallel zum Boden sind oder so tief, wie es angenehm geht.",
+      "Drück dich über die Fersen wieder hoch und spann oben das Gesäß an.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1546": {
     "name": "Wandsitz mit Körpergewicht"
@@ -3116,7 +3298,14 @@
     "name": "Stehendes Beincurl am Kabelzug"
   },
   "1548": {
-    "name": "Dehnung mit gestrecktem Bein auf dem Stuhl"
+    "name": "Dehnung mit gestrecktem Bein auf dem Stuhl",
+    "instructions": [
+      "Setz dich auf die Kante eines Stuhls, halte den Rücken gerade und stell die Füße flach auf den Boden.",
+      "Streck ein Bein gerade nach vorn aus, die Ferse bleibt auf dem Boden.",
+      "Lehn dich leicht nach vorn, bis du eine Dehnung im Oberschenkel spürst.",
+      "Halte die Position 20 bis 30 Sekunden.",
+      "Wechsle das Bein und wiederhole die Dehnung."
+    ]
   },
   "1549": {
     "name": "Doppelter Fersenkick zum Gesäß"
@@ -3149,10 +3338,26 @@
     "name": "Wandsitz mit Kurzhanteln"
   },
   "1559": {
-    "name": "Hüftbeuger-Dehnung auf dem Gymnastikball"
+    "name": "Hüftbeuger-Dehnung auf dem Gymnastikball",
+    "instructions": [
+      "Leg den Gymnastikball auf den Boden und knie dich davor.",
+      "Stell den rechten Fuß auf den Gymnastikball, das Knie ist im 90-Grad-Winkel gebeugt.",
+      "Streck das linke Bein gerade nach hinten aus.",
+      "Lehn dich nach vorn und schieb die Hüfte Richtung Ball, bis du eine Dehnung im Hüftbeuger spürst.",
+      "Halte die Dehnung 20 bis 30 Sekunden, dann wechsle die Seite und wiederhole die Übung."
+    ]
   },
   "1560": {
-    "name": "Sitzende Beinbeuger-Dehnung am Gymnastikball"
+    "name": "Sitzende Beinbeuger-Dehnung am Gymnastikball",
+    "instructions": [
+      "Setz dich auf den Gymnastikball, die Füße flach auf dem Boden und die Knie im 90-Grad-Winkel gebeugt.",
+      "Geh mit den Füßen langsam nach vorn und lass den Ball mitrollen, bis dein oberer Rücken auf dem Ball liegt und deine Beine gestreckt vor dir sind.",
+      "Leg die Hände zur Stütze auf die Hüften.",
+      "Spann den Rumpf an und senk den Oberkörper langsam Richtung Boden. Halte dabei den Rücken gerade und die Brust oben.",
+      "Hör auf, sobald du eine Dehnung in der hinteren Oberschenkelmuskulatur spürst, und halte die Position 20 bis 30 Sekunden.",
+      "Kehr langsam in die Ausgangsposition zurück: Drück dich über die Fersen ab und zieh dich mit der hinteren Oberschenkelmuskulatur wieder hoch.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1561": {
     "name": "Sitzende Quadrizeps-Dehnung auf dem Gymnastikball"
@@ -3164,7 +3369,15 @@
     "name": "Beinheben vor und zurück"
   },
   "1564": {
-    "name": "Fortgeschrittene Dehnung von Hüftbeuger und Beinstrecker mit Seil"
+    "name": "Fortgeschrittene Dehnung von Hüftbeuger und Beinstrecker mit Seil",
+    "instructions": [
+      "Stell dich aufrecht hin, die Füße schulterbreit auseinander.",
+      "Halte dich zur Stütze an einem stabilen Gegenstand fest.",
+      "Beug das rechte Knie, führ den rechten Fuß Richtung Gesäß und greif das Seil mit der rechten Hand.",
+      "Zieh den rechten Fuß langsam zum Gesäß, bis du eine Dehnung vorn im rechten Oberschenkel spürst.",
+      "Halte die Dehnung 20 bis 30 Sekunden.",
+      "Lös die Dehnung und wiederhole sie auf der linken Seite."
+    ]
   },
   "1565": {
     "name": "Dead Clean mit Kettlebell"
@@ -3200,7 +3413,14 @@
     "name": "Beinpresse in 45 Grad mit engem Stand am Schlitten"
   },
   "1576": {
-    "name": "Beinbeuger-Dehnung mit Bein nach oben"
+    "name": "Beinbeuger-Dehnung mit Bein nach oben",
+    "instructions": [
+      "Leg dich flach auf den Rücken, die Beine gestreckt.",
+      "Beug ein Knie, zieh es zur Brust und halte dich am Oberschenkel oder Schienbein fest.",
+      "Streck das Bein so weit wie möglich und lass es dabei oben.",
+      "Halte die Dehnung 20 bis 30 Sekunden.",
+      "Wiederhole das mit dem anderen Bein."
+    ]
   },
   "1577": {
     "name": "Liegende Hüftbeuger-Dehnung"
@@ -3218,7 +3438,15 @@
     "name": "Ausfallschritt rückwärts mit Körpergewicht"
   },
   "1582": {
-    "name": "Liegende Großzehen-Haltung mit Seil"
+    "name": "Liegende Großzehen-Haltung mit Seil",
+    "instructions": [
+      "Leg dich auf den Rücken, die Beine gestreckt und die Arme neben dem Körper.",
+      "Leg das Seil um den rechten Fußballen und halte die Enden mit den Händen fest.",
+      "Heb das rechte Bein langsam Richtung Brust. Lass das Knie gestreckt und zieh die Fußspitze an.",
+      "Halte die Dehnung ein paar Sekunden und senk das Bein dann langsam zurück in die Ausgangsposition.",
+      "Wiederhole das mit dem linken Bein.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "1583": {
     "name": "Umgekehrte Hackenschmidt-Kniebeuge am Schlitten"
@@ -3227,13 +3455,30 @@
     "name": "Raketensprung"
   },
   "1585": {
-    "name": "Läuferdehnung"
+    "name": "Läuferdehnung",
+    "instructions": [
+      "Stell dich hin, die Füße hüftbreit auseinander.",
+      "Mach mit dem rechten Fuß einen Schritt nach vorn, der linke Fuß bleibt fest am Boden.",
+      "Beug das rechte Knie und senk den Körper ab, das linke Bein bleibt gestreckt.",
+      "Stütz die Hände auf dem rechten Oberschenkel ab.",
+      "Halte die Dehnung 20 bis 30 Sekunden, dann wechsle die Seite und wiederhole sie."
+    ]
   },
   "1586": {
     "name": "Sitzendes einbeiniges Beincurl an der Hebelmaschine"
   },
   "1587": {
-    "name": "Abfolge in der sitzenden Grätsche"
+    "name": "Abfolge in der sitzenden Grätsche",
+    "instructions": [
+      "Setz dich auf den Boden und streck die Beine weit gegrätscht aus.",
+      "Zieh die Fußspitzen an und spann die vorderen Oberschenkel an.",
+      "Stütz die Hände hinter dir auf dem Boden ab.",
+      "Halte den Rücken gerade und neig dich aus der Hüfte nach vorn.",
+      "Neig dich weiter nach vorn, bis du eine Dehnung in der hinteren Oberschenkelmuskulatur spürst.",
+      "Halte die Position ein paar Atemzüge lang.",
+      "Lös die Dehnung langsam und kehr in die Ausgangsposition zurück.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1588": {
     "name": "Seitliches Kastenshuffle"
@@ -3269,7 +3514,16 @@
     "name": "Zercher-Kniebeuge in der Multipresse"
   },
   "1599": {
-    "name": "Stehende Dehnung der Beinbeuger und Waden mit dem Seil"
+    "name": "Stehende Dehnung der Beinbeuger und Waden mit dem Seil",
+    "instructions": [
+      "Stell dich aufrecht hin, die Füße schulterbreit auseinander.",
+      "Halte das Seil mit beiden Händen und leg es um einen Fußballen.",
+      "Lass das Bein gestreckt und neig dich mit geradem Rücken langsam aus der Hüfte nach vorn.",
+      "Spür die Dehnung in der hinteren Oberschenkelmuskulatur und in der Wade.",
+      "Halte die Dehnung 20 bis 30 Sekunden.",
+      "Lös die Dehnung und wiederhole sie mit dem anderen Bein.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1600": {
     "name": "Standweitsprung"
@@ -3284,7 +3538,15 @@
     "name": "Wandkniebeuge mit Zusatzgewicht auf dem Gymnastikball"
   },
   "1604": {
-    "name": "World's Greatest Stretch"
+    "name": "World's Greatest Stretch",
+    "instructions": [
+      "Geh in einen Ausfallschritt, der rechte Fuß vorn, der linke hinten.",
+      "Setz die Hände links und rechts neben dem rechten Fuß auf den Boden.",
+      "Senk das linke Knie auf den Boden und streck das rechte Bein, der rechte Fuß bleibt flach am Boden.",
+      "Dreh den Oberkörper nach rechts und streck den rechten Arm zur Decke.",
+      "Halte die Position ein paar Sekunden und kehr dann in die Ausgangsposition zurück.",
+      "Wechsle die Seite und wiederhole die Dehnung mit dem linken Fuß vorn."
+    ]
   },
   "1605": {
     "name": "Trizeps-Pushdown am Kabelzug (SZ-Stange)"
@@ -3311,205 +3573,767 @@
     "name": "Swimmer-Hüfte"
   },
   "1614": {
-    "name": "Scott-Curl an der Hebelmaschine v. 2"
+    "name": "Scott-Curl an der Hebelmaschine v. 2",
+    "instructions": [
+      "Stell die Sitzhöhe ein und setz dich so an die Maschine, dass die Oberarme auf dem Polster liegen und die Brust an der Stütze anliegt.",
+      "Greif die Griffe im Untergriff, etwas breiter als schulterbreit.",
+      "Halte die Oberarme ruhig, atme aus und zieh die Griffe mit dem Bizeps Richtung Schultern.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk die Griffe langsam zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1615": {
-    "name": "Hammer-Scott-Curl an der Hebelmaschine"
+    "name": "Hammer-Scott-Curl an der Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe ein und setz dich an die Hebelmaschine.",
+      "Leg die Oberarme auf das Scott-Polster, die Brust liegt fest daran an.",
+      "Greif die Griffe im Hammergriff, die Handflächen zeigen zueinander.",
+      "Halte die Oberarme ruhig, atme aus und zieh die Griffe Richtung Schultern.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk die Griffe langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1616": {
-    "name": "Scott-Curl im Umkehrgriff an der Hebelmaschine"
+    "name": "Scott-Curl im Umkehrgriff an der Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe ein und setz dich an die Hebelmaschine.",
+      "Greif die Griffe im Untergriff, die Handflächen zeigen nach oben.",
+      "Leg die Oberarme auf das Scott-Polster, die Ellbogen sind ganz gestreckt.",
+      "Halte die Oberarme ruhig, atme aus und zieh die Griffe Richtung Schultern.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk die Griffe langsam zurück in die Ausgangsposition, bis die Ellbogen ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1617": {
-    "name": "Einarmiges Hammer-Drücken auf der Negativbank mit Kurzhantel"
+    "name": "Einarmiges Hammer-Drücken auf der Negativbank mit Kurzhantel",
+    "instructions": [
+      "Leg dich mit einer Kurzhantel in einer Hand auf die Negativbank, die Hantel liegt auf der Brust.",
+      "Streck den Arm gerade nach oben, der Ellbogen bleibt leicht gebeugt.",
+      "Senk die Kurzhantel Richtung Schulter, der Ellbogen bleibt nah am Körper.",
+      "Drück die Kurzhantel zurück nach oben in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
+    ]
   },
   "1618": {
-    "name": "Schräges Hammer-Drücken auf dem Gymnastikball mit Kurzhanteln"
+    "name": "Schräges Hammer-Drücken auf dem Gymnastikball mit Kurzhanteln",
+    "instructions": [
+      "Setz dich mit einer Kurzhantel in jeder Hand auf einen Gymnastikball, die Handflächen zeigen zueinander.",
+      "Geh mit den Füßen nach vorn und roll dich auf dem Ball nach unten, bis Kopf, Nacken und oberer Rücken auf dem Ball liegen.",
+      "Halte die Kurzhanteln auf Schulterhöhe, die Ellbogen gebeugt und nach außen gerichtet.",
+      "Drück die Kurzhanteln nach oben und leicht nach innen, die Handflächen zeigen weiter zueinander.",
+      "Streck die Arme ganz durch und spann oben den Trizeps an.",
+      "Senk die Kurzhanteln langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1619": {
-    "name": "Einarmiges Hammer-Drücken auf der Schrägbank mit Kurzhantel"
+    "name": "Einarmiges Hammer-Drücken auf der Schrägbank mit Kurzhantel",
+    "instructions": [
+      "Setz dich mit einer Kurzhantel in einer Hand auf die Schrägbank, die Hantel liegt auf dem Oberschenkel.",
+      "Lehn dich auf der Bank zurück und nimm den Oberschenkel zu Hilfe, um die Kurzhantel auf Schulterhöhe zu bringen.",
+      "Dreh das Handgelenk, sodass die Handfläche nach innen zum Körper zeigt.",
+      "Drück die Kurzhantel nach oben vom Körper weg, bis der Arm ganz gestreckt ist.",
+      "Halte oben kurz inne und senk die Kurzhantel dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
+    ]
   },
   "1620": {
-    "name": "Einarmiges schräges Hammer-Drücken auf dem Gymnastikball mit Kurzhantel"
+    "name": "Einarmiges schräges Hammer-Drücken auf dem Gymnastikball mit Kurzhantel",
+    "instructions": [
+      "Setz dich mit einer Kurzhantel in einer Hand auf einen Gymnastikball.",
+      "Geh mit den Füßen nach vorn und roll dich auf dem Ball nach unten, bis Kopf, Nacken und oberer Rücken auf dem Ball liegen.",
+      "Halte die Kurzhantel so, dass die Handfläche nach innen zeigt und der Ellbogen im 90-Grad-Winkel gebeugt ist.",
+      "Drück die Kurzhantel zur Decke, bis der Arm gestreckt ist.",
+      "Senk die Kurzhantel zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
+    ]
   },
   "1621": {
-    "name": "Einarmiges Hammer-Drücken auf dem Gymnastikball mit Kurzhantel"
+    "name": "Einarmiges Hammer-Drücken auf dem Gymnastikball mit Kurzhantel",
+    "instructions": [
+      "Setz dich auf einen Gymnastikball, die Füße flach auf dem Boden und den Rücken gerade.",
+      "Halte eine Kurzhantel in einer Hand, die Handfläche zeigt nach innen und der Ellbogen ist im 90-Grad-Winkel gebeugt.",
+      "Leg die andere Hand für mehr Halt auf die Hüfte.",
+      "Drück die Kurzhantel nach oben, bis der Arm ganz gestreckt ist.",
+      "Halte oben kurz inne und senk die Kurzhantel dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
+    ]
   },
   "1622": {
-    "name": "Einarmiges Kurzhantel-Drücken mit Umkehrgriff"
+    "name": "Einarmiges Kurzhantel-Drücken mit Umkehrgriff",
+    "instructions": [
+      "Setz dich mit einer Kurzhantel in einer Hand auf eine Flachbank, die Handfläche zeigt zum Körper.",
+      "Stell die Füße flach auf den Boden und halte den Rücken gerade.",
+      "Heb die Kurzhantel auf Schulterhöhe, der Ellbogen bleibt nah am Körper.",
+      "Drück die Kurzhantel nach oben, bis der Arm ganz gestreckt ist.",
+      "Halte oben kurz inne und senk die Kurzhantel dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
+    ]
   },
   "1623": {
-    "name": "Kurzhanteldrücken auf Schrägbank mit Handflächen nach innen"
+    "name": "Kurzhanteldrücken auf Schrägbank mit Handflächen nach innen",
+    "instructions": [
+      "Stell eine Schrägbank auf 45 Grad ein.",
+      "Setz dich auf die Bank, den Rücken an der Lehne und die Füße flach auf dem Boden.",
+      "Halte in jeder Hand eine Kurzhantel, die Handflächen zeigen nach innen.",
+      "Streck die Arme über der Brust gerade nach oben, die Ellbogen bleiben leicht gebeugt.",
+      "Senk die Kurzhanteln langsam Richtung Schultern, die Ellbogen bleiben nah am Körper.",
+      "Halte unten kurz inne und drück die Kurzhanteln dann zurück nach oben in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1624": {
-    "name": "Umgekehrtes Bankdrücken mit Kurzhantel"
+    "name": "Umgekehrtes Bankdrücken mit Kurzhantel",
+    "instructions": [
+      "Leg dich flach auf eine Bank, die Füße flach auf dem Boden und die Knie gebeugt.",
+      "Halte in jeder Hand eine Kurzhantel im Obergriff, die Handflächen zeigen Richtung Füße.",
+      "Streck die Arme gerade zur Decke, die Ellbogen bleiben leicht gebeugt.",
+      "Senk die Kurzhanteln langsam Richtung Brust, die Ellbogen gehen dabei seitlich nach außen.",
+      "Halte unten kurz inne und drück die Kurzhanteln dann zurück nach oben in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1625": {
-    "name": "Bankdrücken mit engem Griff an der Negativbank in der Multipresse"
+    "name": "Bankdrücken mit engem Griff an der Negativbank in der Multipresse",
+    "instructions": [
+      "Stell die Bank in der Multipresse als Negativbank ein.",
+      "Leg dich auf die Bank, die Füße fest auf dem Boden.",
+      "Greif die Stange eng, etwas enger als schulterbreit.",
+      "Hak die Stange aus und senk sie langsam Richtung Brust, die Ellbogen bleiben nah am Körper.",
+      "Halte kurz inne, wenn die Stange knapp über der Brust ist.",
+      "Drück die Stange zurück nach oben in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1626": {
-    "name": "Enges Bankdrücken an der Multipresse auf Negativbank"
+    "name": "Enges Bankdrücken an der Multipresse auf Negativbank",
+    "instructions": [
+      "Stell die Bank in der Multipresse als Negativbank ein.",
+      "Leg dich auf die Bank und hak die Füße unter die Fußpolster.",
+      "Greif die Stange eng, etwas enger als schulterbreit.",
+      "Hak die Stange aus und senk sie langsam Richtung Brust, die Ellbogen bleiben eng am Körper.",
+      "Halte unten kurz inne und drück die Stange dann zurück nach oben in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1627": {
-    "name": "Enger Scott-Curl mit SZ-Stange"
+    "name": "Enger Scott-Curl mit SZ-Stange",
+    "instructions": [
+      "Setz dich an die Scott-Bank, leg die Oberarme auf das Polster und greif die SZ-Stange im Untergriff.",
+      "Leg die Rückseite der Oberarme auf das Polster und streck die Arme ganz durch, der Rücken bleibt gerade.",
+      "Zieh die Stange langsam mit dem Bizeps Richtung Schultern.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Senk die Stange zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1628": {
-    "name": "Spider-Curl mit SZ-Stange"
+    "name": "Spider-Curl mit SZ-Stange",
+    "instructions": [
+      "Stell dich mit schulterbreiten Füßen hin und halte die SZ-Stange im Untergriff, die Handflächen zeigen nach oben.",
+      "Leg die Oberarme auf eine Scott-Bank oder einen Gymnastikball und lass die Ellbogen nach unten hängen.",
+      "Halte die Oberarme ruhig, atme aus und zieh die Stange Richtung Schultern.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk die Stange langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1629": {
-    "name": "Bizeps-Curl stehend mit weitem Griff und Langhantel"
+    "name": "Bizeps-Curl stehend mit weitem Griff und Langhantel",
+    "instructions": [
+      "Stell dich mit schulterbreiten Füßen hin und halte eine Langhantel im Untergriff, die Hände weiter als schulterbreit.",
+      "Halte den Rücken gerade und die Ellbogen nah am Oberkörper.",
+      "Atme aus und zieh die Langhantel Richtung Schultern, die Oberarme bleiben ruhig.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk die Langhantel langsam zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1630": {
-    "name": "Enger Curl am Kabelzug"
+    "name": "Enger Curl am Kabelzug",
+    "instructions": [
+      "Häng eine gerade Stange an die untere Rolle des Kabelzugs.",
+      "Stell dich mit dem Gesicht zur Maschine, die Füße schulterbreit auseinander und die Knie leicht gebeugt.",
+      "Greif die Stange im Untergriff, die Hände schulterbreit.",
+      "Halte die Ellbogen während der ganzen Übung nah am Körper und die Oberarme ruhig.",
+      "Atme aus und zieh die Stange mit dem Bizeps Richtung Schultern.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk die Stange langsam zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1631": {
-    "name": "Konzentrations-Curl am Kabelzug"
+    "name": "Konzentrations-Curl am Kabelzug",
+    "instructions": [
+      "Setz dich auf eine Bank oder einen Stuhl, die Füße flach am Boden und die Knie leicht gebeugt.",
+      "Nimm den Griff am Kabelzug im Untergriff und leg den Ellbogen an die Innenseite deines Oberschenkels.",
+      "Halte den Oberarm ruhig, atme aus und zieh den Griff zur Schulter, indem du den Bizeps anspannst.",
+      "Halte oben kurz inne, atme dann ein und senk den Griff langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann den Arm."
+    ]
   },
   "1632": {
-    "name": "Drag Curl am Kabelzug"
+    "name": "Drag Curl am Kabelzug",
+    "instructions": [
+      "Stell dich mit dem Gesicht zum Kabelzug, die Füße schulterbreit auseinander.",
+      "Nimm den Griff im Untergriff, die Handflächen zeigen nach oben und die Arme sind ganz gestreckt.",
+      "Halte die Oberarme ruhig, atme aus und zieh den Griff zu den Schultern, indem du den Bizeps anspannst.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk den Griff langsam zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1633": {
-    "name": "Einarmiger Scott-Curl am Kabelzug"
+    "name": "Einarmiger Scott-Curl am Kabelzug",
+    "instructions": [
+      "Stell den Kabelzug so ein, dass das Polster der Scott-Bank auf Brusthöhe ist.",
+      "Stell dich mit dem Gesicht zum Kabelzug, die Füße schulterbreit auseinander.",
+      "Nimm den Griff im Untergriff und leg den Oberarm auf das Polster der Scott-Bank.",
+      "Halte den Rücken gerade und spann den Rumpf an.",
+      "Zieh den Griff langsam zur Schulter und lass den Oberarm dabei auf dem Polster.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Senk den Griff langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht.",
+      "Wechsle den Arm und wiederhole die Übung."
+    ]
   },
   "1634": {
-    "name": "Liegender Bizeps-Curl am Kabelzug"
+    "name": "Liegender Bizeps-Curl am Kabelzug",
+    "instructions": [
+      "Häng eine gerade Stange an die untere Rolle des Kabelzugs.",
+      "Leg dich mit dem Rücken auf eine Flachbank, die Füße flach am Boden.",
+      "Greif die Stange im Untergriff, die Hände schulterbreit auseinander.",
+      "Streck die Arme ganz und halte die Ellbogen nah am Körper.",
+      "Halte die Oberarme ruhig, atme aus und zieh die Stange zu den Schultern hoch.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk die Stange langsam zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1635": {
-    "name": "Einarmiger Scott-Curl mit Umkehrgriff am Kabelzug"
+    "name": "Einarmiger Scott-Curl mit Umkehrgriff am Kabelzug",
+    "instructions": [
+      "Stell die Rolle des Kabelzugs ganz nach unten.",
+      "Stell dich mit dem Gesicht zum Kabelzug, die Füße schulterbreit auseinander.",
+      "Nimm den Griff im Untergriff und leg den Oberarm auf das Polster der Scott-Bank.",
+      "Halte während der ganzen Übung den Rücken gerade und den Rumpf angespannt.",
+      "Beug den Unterarm langsam in Richtung Bizeps und lass den Oberarm dabei ruhig auf dem Polster liegen.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Senk den Griff langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht.",
+      "Wechsle den Arm und wiederhole die Übung."
+    ]
   },
   "1636": {
-    "name": "Überkopf-Curl am Kabelzug"
+    "name": "Überkopf-Curl am Kabelzug",
+    "instructions": [
+      "Häng eine gerade Stange an die obere Rolle des Kabelzugs.",
+      "Stell dich mit dem Gesicht zum Gerät, die Füße schulterbreit auseinander.",
+      "Greif die Stange im Untergriff, die Hände schulterbreit auseinander.",
+      "Halte die Ellbogen nah am Körper und die Oberarme ruhig.",
+      "Atme aus und zieh die Stange nach unten zur Stirn, die Oberarme bleiben dabei ruhig.",
+      "Halte unten kurz inne und spann den Bizeps fest an.",
+      "Atme ein und führ die Stange langsam zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1637": {
-    "name": "Überkopf-Curl am Kabelzug auf Gymnastikball"
+    "name": "Überkopf-Curl am Kabelzug auf Gymnastikball",
+    "instructions": [
+      "Setz dich auf einen Gymnastikball und nimm den Griff am Kabelzug im Untergriff.",
+      "Streck die Arme ganz über den Kopf und halte die Ellbogen nah an den Ohren.",
+      "Zieh das Kabel langsam nach unten zur Stirn, die Oberarme bleiben dabei ruhig.",
+      "Halte unten kurz inne und kehr dann langsam in die Ausgangsposition zurück.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1638": {
-    "name": "Latzug-Bizeps-Curl am Kabelzug"
+    "name": "Latzug-Bizeps-Curl am Kabelzug",
+    "instructions": [
+      "Häng eine gerade Stange ganz oben an den Kabelzug.",
+      "Stell dich mit dem Gesicht zum Gerät, die Füße schulterbreit auseinander.",
+      "Greif die Stange im Untergriff, die Hände schulterbreit auseinander.",
+      "Halte die Ellbogen nah am Körper und die Oberarme ruhig.",
+      "Atme aus und zieh die Stange langsam nach unten zu den Oberschenkeln, die Handgelenke bleiben gerade.",
+      "Halte unten kurz inne und spann den Bizeps fest an.",
+      "Atme ein und führ die Stange langsam zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1639": {
-    "name": "Hammer-Scott-Curl mit Seil am Kabelzug"
+    "name": "Hammer-Scott-Curl mit Seil am Kabelzug",
+    "instructions": [
+      "Häng ein Seil an die untere Rolle des Kabelzugs.",
+      "Stell dich mit dem Gesicht zum Gerät, die Füße schulterbreit auseinander.",
+      "Greif das Seil im Neutralgriff (die Handflächen zeigen zueinander).",
+      "Leg die Oberarme auf das Polster der Scott-Bank, die Ellbogen leicht gebeugt.",
+      "Halte die Oberarme ruhig, atme aus und zieh das Seil zu den Schultern, indem du den Bizeps anspannst.",
+      "Halte kurz inne und spann dabei den Bizeps fest an.",
+      "Atme ein und senk das Seil langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1640": {
-    "name": "Einarmiger Hammer-Scott-Curl am Kabelzug mit Seil"
+    "name": "Einarmiger Hammer-Scott-Curl am Kabelzug mit Seil",
+    "instructions": [
+      "Häng ein Seil an die untere Rolle des Kabelzugs.",
+      "Stell dich mit dem Gesicht zum Gerät, die Füße schulterbreit auseinander.",
+      "Greif das Seil im Untergriff, die Handflächen zeigen nach oben.",
+      "Leg den Oberarm auf das Polster der Scott-Bank, der Ellbogen bleibt leicht gebeugt.",
+      "Halte während der ganzen Übung den Rücken gerade und den Rumpf angespannt.",
+      "Zieh das Seil langsam zur Schulter, der Oberarm bleibt dabei ruhig.",
+      "Spann oben den Bizeps fest an und senk das Seil dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann den Arm."
+    ]
   },
   "1641": {
-    "name": "Sitzender Curl am Kabelzug"
+    "name": "Sitzender Curl am Kabelzug",
+    "instructions": [
+      "Setz dich an den Kabelzug, die Füße flach am Boden und den Rücken gerade.",
+      "Nimm den Griff im Untergriff, die Handflächen zeigen nach oben und die Arme sind ganz gestreckt.",
+      "Halte die Oberarme ruhig, atme aus und zieh den Griff zu den Schultern, indem du den Bizeps anspannst.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk den Griff langsam zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1642": {
-    "name": "Einarmiger Konzentrations-Curl am Kabelzug sitzend"
+    "name": "Einarmiger Konzentrations-Curl am Kabelzug sitzend",
+    "instructions": [
+      "Setz dich auf eine Bank, die Füße flach am Boden und den Rücken gerade.",
+      "Nimm einen Griff am Kabelzug in eine Hand und leg den Ellbogen knapp über dem Knie an die Innenseite des Oberschenkels.",
+      "Halte den Oberarm ruhig und zieh den Griff beim Ausatmen zur Schulter.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Senk den Griff beim Einatmen langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann den Arm."
+    ]
   },
   "1643": {
-    "name": "Überkopf-Curl am Kabelzug sitzend"
+    "name": "Überkopf-Curl am Kabelzug sitzend",
+    "instructions": [
+      "Setz dich mit dem Gesicht zum Kabelzug auf eine Bank, die Füße flach am Boden.",
+      "Nimm den Griff im Untergriff, die Handflächen zeigen nach oben und die Hände sind schulterbreit auseinander.",
+      "Halte die Oberarme ruhig und die Ellbogen nah am Körper.",
+      "Atme aus und zieh den Griff zu den Schultern, indem du den Bizeps anspannst.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk den Griff langsam zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1644": {
-    "name": "Curl im Kniebeugen-Stand am Kabelzug"
+    "name": "Curl im Kniebeugen-Stand am Kabelzug",
+    "instructions": [
+      "Häng einen Griff ganz unten an den Kabelzug.",
+      "Stell dich mit dem Gesicht zum Gerät, die Füße schulterbreit auseinander.",
+      "Nimm den Griff im Untergriff, die Handflächen zeigen nach oben und die Arme sind ganz gestreckt.",
+      "Geh in die Kniebeuge, halte den Rücken gerade und die Knie hinter den Zehen.",
+      "Zieh den Griff beim Absenken zu den Schultern und halte die Ellbogen nah am Körper.",
+      "Halte oben im Curl kurz inne und spann den Bizeps fest an.",
+      "Senk den Griff langsam zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1645": {
-    "name": "Beidarmiger Curl an der Schrägbank am Kabelzug"
+    "name": "Beidarmiger Curl an der Schrägbank am Kabelzug",
+    "instructions": [
+      "Setz dich auf eine Schrägbank, den Rücken am Polster und die Füße flach am Boden.",
+      "Nimm die Griffe am Kabelzug im Untergriff, die Handflächen zeigen nach oben und die Arme sind ganz gestreckt.",
+      "Halte die Oberarme ruhig, atme aus und zieh die Griffe zu den Schultern, indem du den Bizeps anspannst.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk die Griffe langsam zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1646": {
-    "name": "Abwechselnder Hammer-Scott-Curl mit Kurzhantel"
+    "name": "Abwechselnder Hammer-Scott-Curl mit Kurzhantel",
+    "instructions": [
+      "Setz dich mit einer Kurzhantel in jeder Hand an die Scott-Bank, die Handflächen zeigen zum Oberkörper und die Arme sind ganz gestreckt.",
+      "Halte die Oberarme ruhig, atme aus und heb die Hanteln, indem du den Bizeps anspannst.",
+      "Heb die Kurzhanteln weiter, bis der Bizeps ganz angespannt ist und die Hanteln auf Schulterhöhe sind.",
+      "Halte kurz inne und spann dabei den Bizeps fest an.",
+      "Atme ein und senk die Kurzhanteln langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1647": {
-    "name": "Abwechselnder Scott-Curl mit Kurzhantel"
+    "name": "Abwechselnder Scott-Curl mit Kurzhantel",
+    "instructions": [
+      "Setz dich mit einer Kurzhantel in jeder Hand an die Scott-Bank, die Handflächen zeigen nach oben.",
+      "Leg die Oberarme auf das Polster der Scott-Bank und streck die Arme ganz.",
+      "Halte die Oberarme ruhig, atme aus und heb die Kurzhantel in der rechten Hand, indem du den Bizeps anspannst.",
+      "Heb die Kurzhantel weiter, bis der Bizeps ganz angespannt ist und die Hantel auf Schulterhöhe ist.",
+      "Halte kurz inne, atme dann ein und senk die Kurzhantel langsam zurück in die Ausgangsposition.",
+      "Mach die gleiche Bewegung mit dem linken Arm.",
+      "Wechsle weiter die Arme, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "1648": {
-    "name": "Abwechselnder sitzender Hammer-Curl mit Kurzhantel"
+    "name": "Abwechselnder sitzender Hammer-Curl mit Kurzhantel",
+    "instructions": [
+      "Setz dich mit einer Kurzhantel in jeder Hand auf eine Bank, die Handflächen zeigen zum Oberkörper und die Arme hängen gestreckt nach unten.",
+      "Halte den Rücken gerade und die Ellbogen nah am Oberkörper.",
+      "Atme aus und heb die Kurzhantel in der rechten Hand zur Schulter, der Oberarm bleibt dabei ruhig.",
+      "Heb die Kurzhantel weiter, bis der Bizeps ganz angespannt ist und die Hantel auf Schulterhöhe ist.",
+      "Halte kurz inne, atme dann ein und senk die Kurzhantel langsam zurück in die Ausgangsposition.",
+      "Mach die gleiche Bewegung mit dem linken Arm.",
+      "Wechsle weiter die Arme, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "1649": {
-    "name": "Abwechselnder Bizeps-Curl mit Kurzhantel und erhobenem Bein auf Gymnastikball"
+    "name": "Abwechselnder Bizeps-Curl mit Kurzhantel und erhobenem Bein auf Gymnastikball",
+    "instructions": [
+      "Stell dich mit schulterbreit auseinanderstehenden Füßen hin und nimm in jede Hand eine Kurzhantel, die Handflächen zeigen nach vorn.",
+      "Leg einen Gymnastikball hinter dich und stell einen Fuß darauf, ohne das Gleichgewicht zu verlieren.",
+      "Streck die Arme ganz, halte die Ellbogen nah am Körper und heb eine Kurzhantel zur Schulter, der Oberarm bleibt dabei ruhig.",
+      "Senk die Kurzhantel zurück in die Ausgangsposition und wiederhole die Bewegung mit dem anderen Arm.",
+      "Wechsle weiter die Arme, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "1650": {
-    "name": "Abwechselnder sitzender Bizeps-Curl mit Kurzhantel auf Gymnastikball"
+    "name": "Abwechselnder sitzender Bizeps-Curl mit Kurzhantel auf Gymnastikball",
+    "instructions": [
+      "Setz dich auf einen Gymnastikball, die Füße flach am Boden und den Rücken gerade.",
+      "Nimm in jede Hand eine Kurzhantel, die Handflächen zeigen nach vorn und die Arme sind ganz gestreckt.",
+      "Halte die Oberarme ruhig, atme aus und heb eine Kurzhantel. Dreh dabei den Unterarm, bis die Handfläche zur Schulter zeigt.",
+      "Atme ein und senk die Kurzhantel langsam zurück in die Ausgangsposition.",
+      "Mach den Curl mit dem anderen Arm.",
+      "Wechsle weiter die Arme, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "1651": {
-    "name": "Bizeps-Curl Ausfallschritt mit Kurzhanteln und Bowling-Bewegung"
+    "name": "Bizeps-Curl Ausfallschritt mit Kurzhanteln und Bowling-Bewegung",
+    "instructions": [
+      "Stell dich mit schulterbreit auseinanderstehenden Füßen hin, in jeder Hand eine Kurzhantel, die Handflächen zeigen nach vorn.",
+      "Mach mit dem rechten Fuß einen Schritt nach vorn, beug das rechte Knie und senk den Körper in den Ausfallschritt.",
+      "Heb beim Ausfallschritt die Kurzhanteln zu den Schultern und halte die Ellbogen nah am Körper.",
+      "Dreh unten im Ausfallschritt den Oberkörper nach rechts, als würdest du eine Bowlingkugel werfen.",
+      "Kehr die Bewegung um: Geh mit dem rechten Fuß zurück in die Ausgangsposition und senk dabei die Kurzhanteln.",
+      "Mach Ausfallschritt und Curl noch einmal und dreh den Oberkörper diesmal nach links.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "1652": {
-    "name": "Bizeps-Curl mit Kurzhanteln auf Gymnastikball mit erhobenem Bein"
+    "name": "Bizeps-Curl mit Kurzhanteln auf Gymnastikball mit erhobenem Bein",
+    "instructions": [
+      "Setz dich auf einen Gymnastikball, die Füße flach am Boden und den Rücken gerade.",
+      "Nimm in jede Hand eine Kurzhantel, die Handflächen zeigen nach vorn und die Arme sind ganz gestreckt.",
+      "Heb die Kurzhanteln langsam zu den Schultern und halte die Ellbogen nah am Körper.",
+      "Halte oben kurz inne und senk die Kurzhanteln dann langsam zurück in die Ausgangsposition.",
+      "Heb während der Curls ein Bein vom Boden und halte es die ganze Übung über in der Luft.",
+      "Mach so viele Wiederholungen wie gewünscht, wechsle dann das Bein und wiederhole die Übung."
+    ]
   },
   "1653": {
-    "name": "Bizeps-Curl mit Kurzhantel im Reiherstand"
+    "name": "Bizeps-Curl mit Kurzhantel im Reiherstand",
+    "instructions": [
+      "Stell dich mit schulterbreit auseinanderstehenden Füßen hin und nimm in jede Hand eine Kurzhantel, die Handflächen zeigen nach vorn.",
+      "Streck ein Bein nach hinten und setz nur die Zehen dieses Fußes auf, um das Gleichgewicht zu halten.",
+      "Halte die Oberarme ruhig, atme aus und heb die Hanteln, indem du den Bizeps anspannst.",
+      "Heb die Kurzhanteln weiter, bis der Bizeps ganz angespannt ist und die Hanteln auf Schulterhöhe sind.",
+      "Halte kurz inne und spann dabei den Bizeps fest an.",
+      "Atme ein und senk die Kurzhanteln langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht, wechsle dann das Bein und wiederhole die Übung."
+    ]
   },
   "1654": {
-    "name": "Umgekehrter Bizeps-Curl mit Kurzhantel"
+    "name": "Umgekehrter Bizeps-Curl mit Kurzhantel",
+    "instructions": [
+      "Stell dich aufrecht hin, in jeder Hand eine Kurzhantel, die Handflächen zeigen nach unten und die Arme sind ganz gestreckt.",
+      "Halte die Oberarme ruhig, atme aus und heb die Hanteln, indem du den Bizeps anspannst.",
+      "Heb die Kurzhanteln weiter, bis der Bizeps ganz angespannt ist und die Hanteln auf Schulterhöhe sind.",
+      "Halte kurz inne und spann dabei den Bizeps fest an.",
+      "Atme ein und senk die Kurzhanteln langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1655": {
-    "name": "Bizeps-Curl mit Kurzhantel in der Kniebeuge"
+    "name": "Bizeps-Curl mit Kurzhantel in der Kniebeuge",
+    "instructions": [
+      "Stell dich mit schulterbreit auseinanderstehenden Füßen hin, in jeder Hand eine Kurzhantel, die Handflächen zeigen nach vorn.",
+      "Halte den Rücken gerade und die Ellbogen nah am Körper, atme aus und heb die Kurzhanteln zu den Schultern.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk die Kurzhanteln langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1656": {
-    "name": "Bizeps-Curl mit Kurzhantel im V-Sit auf dem Bosu-Ball"
+    "name": "Bizeps-Curl mit Kurzhantel im V-Sit auf dem Bosu-Ball",
+    "instructions": [
+      "Setz dich auf einen Bosu-Ball, die Füße flach auf dem Boden und die Knie im 90-Grad-Winkel gebeugt.",
+      "Nimm in jede Hand eine Kurzhantel, die Handflächen zeigen nach vorn und die Arme hängen gestreckt neben dem Körper.",
+      "Halte die Oberarme ruhig, atme aus und beug die Arme, indem du den Bizeps anspannst.",
+      "Heb die Kurzhanteln weiter an, bis der Bizeps voll angespannt ist und die Hanteln auf Schulterhöhe sind.",
+      "Halte kurz inne und spann den Bizeps dabei fest an.",
+      "Atme ein und senk die Kurzhanteln langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1657": {
-    "name": "Hammer-Curl über den Körper mit Kurzhantel v. 2"
+    "name": "Hammer-Curl über den Körper mit Kurzhantel v. 2",
+    "instructions": [
+      "Stell dich aufrecht hin, in jeder Hand eine Kurzhantel, die Handflächen zeigen zum Körper.",
+      "Halte die Ellbogen nah am Oberkörper und die Oberarme ruhig.",
+      "Atme aus und beug die Arme mit angespanntem Bizeps, führ die Kurzhanteln dabei so nah wie möglich zur gegenüberliegenden Schulter.",
+      "Halte kurz inne und spann den Bizeps dabei fest an.",
+      "Atme ein und senk die Kurzhanteln langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1658": {
-    "name": "Ausfallschritt mit Bizeps-Curl und Kurzhantel"
+    "name": "Ausfallschritt mit Bizeps-Curl und Kurzhantel",
+    "instructions": [
+      "Stell dich schulterbreit hin, in jeder Hand eine Kurzhantel, die Handflächen zeigen nach vorn.",
+      "Mach mit dem rechten Fuß einen Schritt nach vorn und senk den Körper in den Ausfallschritt. Das rechte Knie ist im 90-Grad-Winkel gebeugt, das linke Knie schwebt knapp über dem Boden.",
+      "Zieh die Kurzhanteln während des Ausfallschritts gleichzeitig zu den Schultern hoch, die Ellbogen bleiben dabei nah am Körper.",
+      "Halte unten kurz inne, drück dich dann über die rechte Ferse zurück in die Ausgangsposition und senk die Kurzhanteln wieder neben den Körper.",
+      "Wiederhole Ausfallschritt und Bizeps-Curl auf der anderen Seite, diesmal mit dem linken Fuß nach vorn.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "1659": {
-    "name": "Hammer-Curl auf dem Gymnastikball mit Kurzhantel"
+    "name": "Hammer-Curl auf dem Gymnastikball mit Kurzhantel",
+    "instructions": [
+      "Setz dich auf einen Gymnastikball, die Füße flach auf dem Boden und den Rücken gerade.",
+      "Nimm in jede Hand eine Kurzhantel, die Handflächen zeigen zum Körper und die Arme sind ganz gestreckt.",
+      "Halte die Oberarme ruhig, atme aus und beug die Arme, indem du den Bizeps anspannst.",
+      "Heb die Kurzhanteln weiter an, bis der Bizeps voll angespannt ist und die Hanteln auf Schulterhöhe sind.",
+      "Halte kurz inne und spann den Bizeps dabei fest an.",
+      "Atme ein und senk die Kurzhanteln langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1660": {
-    "name": "Bizeps-Curl kniend am Gymnastikball mit Kurzhanteln"
+    "name": "Bizeps-Curl kniend am Gymnastikball mit Kurzhanteln",
+    "instructions": [
+      "Knie dich auf den Boden, vor dir liegt ein Gymnastikball.",
+      "Leg die Ellbogen oben auf den Gymnastikball und halte in jeder Hand eine Kurzhantel, die Handflächen zeigen nach oben.",
+      "Halte die Oberarme ruhig, atme aus und beug die Arme, indem du den Bizeps anspannst.",
+      "Heb die Kurzhanteln weiter an, bis der Bizeps voll angespannt ist und die Hanteln auf Schulterhöhe sind.",
+      "Halte kurz inne und spann den Bizeps dabei fest an.",
+      "Atme ein und senk die Kurzhanteln langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1661": {
-    "name": "Liegender Bizeps-Curl mit Kurzhantel"
+    "name": "Liegender Bizeps-Curl mit Kurzhantel",
+    "instructions": [
+      "Leg dich flach auf eine Bank, Rücken und Kopf liegen auf und die Füße stehen flach auf dem Boden.",
+      "Nimm in jede Hand eine Kurzhantel, die Handflächen zeigen nach oben und die Arme sind ganz gestreckt.",
+      "Halte die Oberarme ruhig, atme aus und beug die Arme, indem du den Bizeps anspannst.",
+      "Heb die Gewichte weiter an, bis der Bizeps voll angespannt ist und die Kurzhanteln auf Schulterhöhe sind.",
+      "Halte kurz inne und spann den Bizeps dabei fest an.",
+      "Atme ein und senk die Kurzhanteln langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1662": {
-    "name": "Liegender breiter Bizeps-Curl mit Kurzhantel"
+    "name": "Liegender breiter Bizeps-Curl mit Kurzhantel",
+    "instructions": [
+      "Leg dich flach auf eine Bank, in jeder Hand eine Kurzhantel, die Handflächen zeigen nach oben und die Arme sind ganz gestreckt.",
+      "Halte die Oberarme ruhig, atme aus und beug die Arme, indem du den Bizeps anspannst.",
+      "Heb die Gewichte weiter an, bis der Bizeps voll angespannt ist und die Kurzhanteln auf Schulterhöhe sind.",
+      "Halte kurz inne und spann den Bizeps dabei fest an.",
+      "Atme ein und senk die Kurzhanteln langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1663": {
-    "name": "Einarmiger Hammer-Scott-Curl mit Kurzhantel"
+    "name": "Einarmiger Hammer-Scott-Curl mit Kurzhantel",
+    "instructions": [
+      "Setz dich an eine Scott-Bank, nimm eine Kurzhantel in eine Hand und leg den Oberarm auf das Polster.",
+      "Halte die Kurzhantel im neutralen Griff, die Handfläche zeigt zum Körper.",
+      "Halte den Oberarm ruhig, atme aus und zieh die Kurzhantel zur Schulter hoch.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk die Kurzhantel langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
+    ]
   },
   "1664": {
-    "name": "Hoher Curl mit Kurzhantel"
+    "name": "Hoher Curl mit Kurzhantel",
+    "instructions": [
+      "Stell dich aufrecht hin, in jeder Hand eine Kurzhantel, die Handflächen zeigen nach vorn.",
+      "Halte die Oberarme ruhig und zieh die Kurzhanteln mit angespanntem Bizeps so hoch wie möglich.",
+      "Halte oben kurz inne und senk die Kurzhanteln dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1665": {
-    "name": "Einarmiger liegender Bizeps-Curl mit Kurzhantel"
+    "name": "Einarmiger liegender Bizeps-Curl mit Kurzhantel",
+    "instructions": [
+      "Leg dich in Bauchlage auf eine Flachbank und nimm eine Kurzhantel in eine Hand, die Handfläche zeigt nach unten.",
+      "Streck den Arm ganz und lass ihn senkrecht zum Boden hängen.",
+      "Halte den Oberarm ruhig und zieh die Kurzhantel mit angespanntem Bizeps zur Schulter hoch.",
+      "Halte oben kurz inne und senk die Kurzhantel dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
+    ]
   },
   "1666": {
-    "name": "Einarmiger Hammer-Curl in Bauchlage mit Kurzhantel"
+    "name": "Einarmiger Hammer-Curl in Bauchlage mit Kurzhantel",
+    "instructions": [
+      "Leg dich in Bauchlage auf eine Flachbank und nimm eine Kurzhantel in eine Hand. Die Handfläche zeigt zum Körper, der Arm ist ganz gestreckt.",
+      "Halte den Oberarm ruhig und zieh die Kurzhantel mit angespanntem Bizeps zur Schulter hoch.",
+      "Halte oben kurz inne und senk die Kurzhantel dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
+    ]
   },
   "1667": {
-    "name": "Einarmiger Spider-Curl mit Umkehrgriff mit Kurzhantel"
+    "name": "Einarmiger Spider-Curl mit Umkehrgriff mit Kurzhantel",
+    "instructions": [
+      "Stell dich aufrecht hin, eine Kurzhantel in einer Hand, die Handfläche zeigt nach unten und der Arm ist ganz gestreckt.",
+      "Halte den Oberarm ruhig, beug den Ellbogen und führ die Kurzhantel zur Schulter.",
+      "Halte oben kurz inne und senk die Kurzhantel dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
+    ]
   },
   "1668": {
-    "name": "Einarmiger sitzender Kurzhantel-Bizeps-Curl auf Gymnastikball"
+    "name": "Einarmiger sitzender Kurzhantel-Bizeps-Curl auf Gymnastikball",
+    "instructions": [
+      "Setz dich auf einen Gymnastikball, die Füße flach auf dem Boden und den Rücken gerade.",
+      "Nimm eine Kurzhantel in eine Hand, die Handfläche zeigt nach oben und der Arm ist ganz gestreckt.",
+      "Halte den Oberarm ruhig und zieh die Kurzhantel mit angespanntem Bizeps zur Schulter hoch.",
+      "Halte oben kurz inne und senk die Kurzhantel dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
+    ]
   },
   "1669": {
-    "name": "Einarmiger sitzender Kurzhantel-Hammer-Curl"
+    "name": "Einarmiger sitzender Kurzhantel-Hammer-Curl",
+    "instructions": [
+      "Setz dich auf eine Bank, den Rücken gerade und die Füße flach auf dem Boden.",
+      "Nimm eine Kurzhantel im neutralen Griff in eine Hand, die Handfläche zeigt nach innen.",
+      "Stütz den Ellbogen an der Innenseite des Oberschenkels ab, knapp über dem Knie.",
+      "Halte den Oberarm ruhig, atme aus und zieh die Kurzhantel zur Schulter hoch.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk die Kurzhantel langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
+    ]
   },
   "1670": {
-    "name": "Einarmiger stehender Kurzhantel-Curl"
+    "name": "Einarmiger stehender Kurzhantel-Curl",
+    "instructions": [
+      "Stell dich aufrecht hin, eine Kurzhantel in einer Hand, die Handfläche zeigt nach vorn und der Arm ist ganz gestreckt.",
+      "Halte den Oberarm ruhig, atme aus und zieh das Gewicht mit angespanntem Bizeps nach oben.",
+      "Heb die Kurzhantel weiter an, bis der Bizeps voll angespannt ist und die Hantel auf Schulterhöhe ist.",
+      "Halte kurz inne und spann den Bizeps dabei fest an.",
+      "Atme ein und senk die Kurzhantel langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
+    ]
   },
   "1671": {
-    "name": "Einarmiger stehender Kurzhantel-Hammer-Curl"
+    "name": "Einarmiger stehender Kurzhantel-Hammer-Curl",
+    "instructions": [
+      "Stell dich aufrecht hin, in jeder Hand eine Kurzhantel, die Handflächen zeigen zum Oberkörper.",
+      "Halte die Ellbogen nah am Oberkörper und die Oberarme ruhig.",
+      "Atme aus und beug die Arme, indem du den Bizeps anspannst.",
+      "Heb die Gewichte weiter an, bis der Bizeps voll angespannt ist und die Kurzhanteln auf Schulterhöhe sind.",
+      "Halte kurz inne und spann den Bizeps dabei fest an.",
+      "Atme ein und senk die Kurzhanteln langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1672": {
-    "name": "Einarmiger Kurzhantel-Zottman-Scott-Curl"
+    "name": "Einarmiger Kurzhantel-Zottman-Scott-Curl",
+    "instructions": [
+      "Setz dich an eine Scott-Bank und nimm eine Kurzhantel im Untergriff in eine Hand.",
+      "Leg den Oberarm auf das Polster der Scott-Bank, sodass der Arm ganz gestreckt ist.",
+      "Zieh die Kurzhantel zur Schulter hoch, der Oberarm bleibt ruhig.",
+      "Dreh oben das Handgelenk so, dass die Handfläche nach unten zeigt.",
+      "Senk die Kurzhantel langsam zurück in die Ausgangsposition und dreh das Handgelenk dabei wieder zurück.",
+      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
+    ]
   },
   "1673": {
-    "name": "Scott-Curl über Gymnastikball mit Kurzhantel"
+    "name": "Scott-Curl über Gymnastikball mit Kurzhantel",
+    "instructions": [
+      "Setz dich auf einen Gymnastikball, die Füße flach auf dem Boden und den Rücken gerade.",
+      "Nimm eine Kurzhantel im Untergriff in eine Hand und stütz den Ellbogen auf dem Gymnastikball ab.",
+      "Halte den Oberarm ruhig, atme aus und zieh die Kurzhantel zur Schulter hoch.",
+      "Halte oben kurz inne, atme dann ein und senk die Kurzhantel langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
+    ]
   },
   "1674": {
-    "name": "Hammer-Curl in Bauchlage auf der Schrägbank mit Kurzhantel"
+    "name": "Hammer-Curl in Bauchlage auf der Schrägbank mit Kurzhantel",
+    "instructions": [
+      "Stell die Bank auf eine Neigung von 45 Grad ein.",
+      "Leg dich in Bauchlage auf die Bank, in jeder Hand eine Kurzhantel, die Handflächen zeigen zueinander.",
+      "Lass die Arme senkrecht zum Boden hängen, die Ellbogen bleiben leicht gebeugt.",
+      "Halte die Oberarme ruhig, atme aus und beug die Arme, indem du den Bizeps anspannst.",
+      "Heb die Kurzhanteln weiter an, bis der Bizeps voll angespannt ist und die Hanteln auf Schulterhöhe sind.",
+      "Halte kurz inne und spann den Bizeps dabei fest an.",
+      "Atme ein und senk die Kurzhanteln langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1675": {
-    "name": "Spider-Curl mit Umkehrgriff mit Kurzhantel"
+    "name": "Spider-Curl mit Umkehrgriff mit Kurzhantel",
+    "instructions": [
+      "Stell dich aufrecht hin, in jeder Hand eine Kurzhantel, die Handflächen zeigen zum Körper und die Arme sind ganz gestreckt.",
+      "Halte die Oberarme ruhig, atme aus und beug die Arme, indem du den Bizeps anspannst.",
+      "Heb die Kurzhanteln weiter an, bis der Bizeps voll angespannt ist und die Hanteln auf Schulterhöhe sind.",
+      "Halte kurz inne und spann den Bizeps dabei fest an.",
+      "Atme ein und senk die Kurzhanteln langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1676": {
-    "name": "Abwechselnder Hammer-Curl im Sitzen auf dem Gymnastikball mit Kurzhantel"
+    "name": "Abwechselnder Hammer-Curl im Sitzen auf dem Gymnastikball mit Kurzhantel",
+    "instructions": [
+      "Setz dich auf einen Gymnastikball, die Füße flach auf dem Boden und den Rücken gerade.",
+      "Nimm in jede Hand eine Kurzhantel, die Handflächen zeigen zum Körper und die Arme sind ganz gestreckt.",
+      "Halte die Oberarme ruhig, atme aus und zieh eine Kurzhantel zur Schulter hoch, die Handfläche zeigt dabei weiter zum Körper.",
+      "Heb die Kurzhantel weiter an, bis der Bizeps voll angespannt ist und die Hantel auf Schulterhöhe ist.",
+      "Halte kurz inne und spann den Bizeps dabei fest an.",
+      "Atme ein und senk die Kurzhantel langsam zurück in die Ausgangsposition.",
+      "Wiederhole die Bewegung mit dem anderen Arm.",
+      "Wechsle weiter die Arme, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "1677": {
-    "name": "Bizeps-Curl im Sitzen mit Kurzhantel"
+    "name": "Bizeps-Curl im Sitzen mit Kurzhantel",
+    "instructions": [
+      "Setz dich auf eine Bank, die Füße flach auf dem Boden, und nimm in jede Hand eine Kurzhantel, die Handflächen zeigen nach oben.",
+      "Halte den Rücken gerade und die Ellbogen nah am Oberkörper.",
+      "Atme aus und zieh die Kurzhanteln mit angespanntem Bizeps zu den Schultern hoch.",
+      "Halte oben kurz inne, atme dann ein und senk die Kurzhanteln langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1678": {
-    "name": "Sitzender Hammer-Curl mit Kurzhantel"
+    "name": "Sitzender Hammer-Curl mit Kurzhantel",
+    "instructions": [
+      "Setz dich auf eine Bank, in jeder Hand eine Kurzhantel, die Handflächen zeigen zum Oberkörper und die Arme hängen gestreckt nach unten.",
+      "Halte die Oberarme ruhig, atme aus und beug die Arme, indem du den Bizeps anspannst.",
+      "Heb die Kurzhanteln weiter an, bis der Bizeps voll angespannt ist und die Hanteln auf Schulterhöhe sind.",
+      "Halte kurz inne und spann den Bizeps dabei fest an.",
+      "Atme ein und senk die Kurzhanteln langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "1679": {
-    "name": "Sitzender einarmiger Bizeps-Curl mit Kurzhantel auf Gymnastikball mit erhobenem Bein"
+    "name": "Sitzender einarmiger Bizeps-Curl mit Kurzhantel auf Gymnastikball mit erhobenem Bein",
+    "instructions": [
+      "Setz dich auf einen Gymnastikball, die Füße flach auf dem Boden und den Rücken gerade.",
+      "Nimm eine Kurzhantel in eine Hand, die Handfläche zeigt nach oben und der Arm ist ganz gestreckt.",
+      "Leg die andere Hand zur Stabilisierung auf die Hüfte.",
+      "Zieh die Kurzhantel langsam zur Schulter hoch, der Oberarm bleibt ruhig.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Senk die Kurzhantel langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht.",
+      "Wechsle den Arm und wiederhole die Übung."
+    ]
   },
   "1680": {
-    "name": "Einarmiger Curl über Schrägbank stehend mit Kurzhantel"
+    "name": "Einarmiger Curl über Schrägbank stehend mit Kurzhantel",
+    "instructions": [
+      "Stell dich schulterbreit hin und nimm eine Kurzhantel in eine Hand.",
+      "Stütz die andere Hand auf einer Schrägbank ab.",
+      "Halte den Oberarm ruhig und zieh die Kurzhantel mit angespanntem Bizeps zur Schulter hoch.",
+      "Halte oben kurz inne und senk die Kurzhantel dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
+    ]
   },
   "1681": {
     "name": "Beidarmiger sitzender Hammer-Curl auf dem Gymnastikball mit Kurzhanteln"
