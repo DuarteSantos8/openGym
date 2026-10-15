@@ -7,6 +7,15 @@
 import { run } from './spawn.js';
 
 const CLI = 'codex';
+// A Coach only returns text. A refreshable ChatGPT cache must not become readable through
+// an agent tool, plugin or child agent prompted by training data. Pinned with the CLI image.
+export const DISABLED_FEATURES = [
+  'auth_elicitation', 'shell_tool', 'unified_exec', 'shell_snapshot', 'view_image',
+  'browser_use', 'browser_use_external', 'browser_use_full_cdp_access', 'in_app_browser',
+  'computer_use', 'apps', 'plugins', 'plugin_sharing', 'remote_plugin', 'multi_agent',
+  'skill_search', 'skill_mcp_dependency_install', 'workspace_dependencies', 'image_generation',
+  'hooks', 'code_mode_host', 'tool_suggest'
+];
 
 /**
  * The exact argv every Codex job runs with.
@@ -22,6 +31,8 @@ export function argvFor(model) {
     '--ephemeral',            // do not write session files; the job dir dies with the job anyway
     '--ignore-user-config'    // $CODEX_HOME/config.toml would be an admin-invisible input to every job
   ];
+  for (const feature of DISABLED_FEATURES) argv.push('--disable', feature);
+  argv.push('-c', 'web_search="disabled"');
   if (model) argv.push('--model', model);
   return argv;
 }

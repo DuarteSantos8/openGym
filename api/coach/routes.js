@@ -6,6 +6,7 @@
  */
 import * as cfgStore from './config.js';
 import * as jobs from './jobs.js';
+import { codexLogin } from './codex-login.js';
 import { computeCohort } from './cohort.js';
 import { adapterFor } from './adapters/index.js';
 import { canDropPrivileges } from './adapters/spawn.js';
@@ -160,7 +161,7 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
           http: !!p.http, baseUrl: !!p.baseUrl, keyOptional: !!p.keyOptional, keyPlaceholder: p.keyPlaceholder || null,
           defaultModel: p.defaultModel || null,
           // Which providers already hold a key — so switching chips is visibly not a reset.
-          connected: !!(cfgStore.authFor(cfg, id) && cfgStore.authFor(cfg, id).data)
+          connected: cfgStore.authFor(cfg, id)?.type === 'chatgpt-cli' ? cfgStore.hasCodexAuth() : !!cfgStore.authFor(cfg, id)?.data
         })),
         model: cfgStore.modelFor(cfg),
         models: cfg.models,
@@ -184,6 +185,7 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
         auth: (() => {
           const meta = cfgStore.providerMeta(cfg);
           const rec = cfgStore.authFor(cfg);
+          if (cfg.provider === 'codex' && rec?.type === 'chatgpt-cli') return { state: cfgStore.hasCodexAuth() ? 'connected' : 'expired', type: rec.type, connectedAt: rec.connectedAt };
           if (!meta.oauthEnv && !meta.apiKeyEnv) return { state: 'not-required' };
           if (!rec || !rec.data) return { state: meta.keyOptional ? 'optional' : 'none' };
           if (!cfgStore.decrypt(rec.data)) return { state: 'unreadable' };
@@ -211,6 +213,7 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       const patch = {};
       if (body.enabled !== undefined) patch.enabled = !!body.enabled;
       const current = cfgStore.load();
+      if ((body.provider !== undefined && body.provider !== current.provider) || body.enabled === false) await codexLogin.stop();
       if (body.provider !== undefined) {
         if (!cfgStore.PROVIDERS[body.provider]) return json(res, 400, { error: 'unknown provider' });
         // Credentials, model and endpoint are all keyed by provider — switching never drops them.
@@ -265,8 +268,8 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
     },
 
     'POST /api/admin/coach/test': async (req, res) => {
-      if (!requireAdmin(req, res)) return;
-      const r = await jobs.testRun();
+      const user = requireAdmin(req, res); if (!user) return;
+      const r = await jobs.testRun(user.id);
       json(res, 200, r);
     },
 
@@ -298,6 +301,7 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       // prepared ahead of switching; by default it is the active provider's.
       const provider = body.provider !== undefined ? String(body.provider) : cfg.provider;
       if (!cfgStore.PROVIDERS[provider]) return json(res, 400, { error: 'unknown provider' });
+      if (provider === 'codex' && (codexLogin.active() || cfgStore.authFor(cfg, provider)?.type === 'chatgpt-cli')) return json(res, 409, { error: 'disconnect ChatGPT before adding a Codex API key' });
       const meta = cfgStore.PROVIDERS[provider];
       const type = String(body.type || '');
       const envVar = (type === 'cli-token' || type === 'oauth') ? meta.oauthEnv
@@ -318,8 +322,29 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       const body = await readBody(req);
       const provider = body.provider !== undefined ? String(body.provider) : cfgStore.load().provider;
       if (!cfgStore.PROVIDERS[provider]) return json(res, 400, { error: 'unknown provider' });
+      if (provider === 'codex') {
+        try { await codexLogin.disconnect(); }
+        catch { return json(res, 500, { error: 'could not clear the Codex credential cache' }); }
+      }
       cfgStore.saveAuth(provider, null);
       json(res, 200, { ok: true });
+    },
+
+    'POST /api/admin/coach/auth/chatgpt/device': async (req, res) => {
+      const user = requireAdmin(req, res); if (!user) return;
+      try { json(res, 200, codexLogin.start(user.id)); }
+      catch (e) { json(res, e.status || 500, { error: e.status ? e.message : 'could not start ChatGPT sign-in' }); }
+    },
+    'GET /api/admin/coach/auth/chatgpt/status': async (req, res) => {
+      const user = requireAdmin(req, res); if (!user) return;
+      try { json(res, 200, codexLogin.status(user.id)); }
+      catch (e) { json(res, e.status || 500, { error: 'sign-in belongs to another administrator' }); }
+    },
+    'POST /api/admin/coach/auth/chatgpt/cancel': async (req, res) => {
+      const user = requireAdmin(req, res); if (!user) return;
+      const body = await readBody(req);
+      try { json(res, 200, await codexLogin.cancel(user.id, body.id)); }
+      catch (e) { json(res, e.status || 500, { error: e.status ? e.message : 'could not cancel ChatGPT sign-in' }); }
     },
 
     /* Still absent: `authMode`, and with it the per-profile credential routes. Instance mode is

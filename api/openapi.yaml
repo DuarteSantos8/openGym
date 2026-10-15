@@ -2953,6 +2953,52 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  /api/admin/coach/auth/chatgpt/device:
+    post:
+      tags: [admin, coach]
+      operationId: startChatGPTDeviceLogin
+      summary: 'Admin: start Codex ChatGPT device-code sign-in'
+      description: Requires enabled Codex in instance mode and no saved credential. Returns an attempt id, state and, when ready, verificationUrl and userCode. Only the initiating admin can poll or cancel. Never returns OAuth tokens or raw CLI output. The completed subscription binds to that profile.
+      responses:
+        '200': { description: Sign-in started or existing attempt returned. }
+        '400': { description: Codex is not enabled in instance mode. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: Another sign-in or saved credential prevents starting. }
+        '503': { description: The runtime cannot drop privileges. }
+
+  /api/admin/coach/auth/chatgpt/status:
+    get:
+      tags: [admin, coach]
+      operationId: getChatGPTDeviceLogin
+      summary: 'Admin: poll the initiating profile’s Codex sign-in'
+      description: States are idle, starting, pending, stopping, connected, failed, expired or cancelled. Device instructions disappear when the attempt ends. A server restart terminates pending polling and does not grant access from an unclaimed cache.
+      responses:
+        '200': { description: Current status; never tokens or raw runtime output. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: The attempt belongs to another administrator. }
+
+  /api/admin/coach/auth/chatgpt/cancel:
+    post:
+      tags: [admin, coach]
+      operationId: cancelChatGPTDeviceLogin
+      summary: 'Admin: cancel a pending Codex sign-in'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id: { type: string, description: The id returned when this profile started sign-in. }
+      responses:
+        '200': { description: Cancelled, or already finished. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: The profile or attempt id does not match. }
+
 components:
   securitySchemes:
     cookieAuth:

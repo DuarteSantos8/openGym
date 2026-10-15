@@ -66,7 +66,26 @@ const PROVIDERS = [
   { id: 'compatible', label: 'OpenAI-compatible', runtime: false, setupToken: false, deviceLogin: false, apiKey: true, http: true, baseUrl: true, keyOptional: true, keyPlaceholder: null, defaultModel: null, connected: false },
   { id: 'claude', label: 'Claude Code', runtime: true, setupToken: true, deviceLogin: false, apiKey: false, http: false, baseUrl: false, keyOptional: false, keyPlaceholder: null, defaultModel: null, connected: false },
   { id: 'fixture', label: 'Built-in fixture', runtime: false, setupToken: false, deviceLogin: false, apiKey: false, http: false, baseUrl: false, keyOptional: false, keyPlaceholder: null, defaultModel: null, connected: false },
+  { id: 'codex', label: 'Codex (OpenAI)', runtime: true, deviceLogin: true, apiKey: true },
 ]
+
+it('offers ChatGPT device login on Codex without inheriting a fixture success', async () => {
+  mocks.routes['/api/admin/coach'] = status({ provider: 'codex', auth: { state: 'none' }, model: null })
+  await mount()
+  expect(btn('Sign in with ChatGPT')).toBeTruthy()
+  expect(btn('Sign in with ChatGPT').disabled).toBe(false)
+  expect(host.textContent).not.toContain('Testpassed')
+  await tap(btn('Sign in with ChatGPT'))
+  expect(mocks.sheets).toHaveLength(1)
+  expect(sent('/api/admin/coach/connect')).toHaveLength(0)
+})
+
+it('disables ChatGPT sign-in when the CLI runtime is missing', async () => {
+  mocks.routes['/api/admin/coach'] = status({ provider:'codex',auth:{state:'none'},runtime:{ok:false,error:'not installed'} })
+  await mount()
+  expect(btn('Sign in with ChatGPT').disabled).toBe(true)
+  expect(host.textContent).toContain('--target coach')
+})
 
 const status = (over = {}) => ({
   disabledByEnv: false,

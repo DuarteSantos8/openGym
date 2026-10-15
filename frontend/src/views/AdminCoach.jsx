@@ -5,6 +5,7 @@ import { api } from '../lib/api.js'
 import Icon from '../components/Icon.jsx'
 import { Button, Switch, TextArea, TextField } from '../components/ui.jsx'
 import { confirmSheet } from '../sheets.jsx'
+import ChatGPTLoginSheet from './ChatGPTLoginSheet.jsx'
 
 /* The operator's side of the Coach, laid out as a guided setup: one master switch, numbered
    steps that each say what they are for, and everything an owner rarely needs folded away
@@ -141,7 +142,7 @@ export default function AdminCoach() {
     { title: 'Testing', hint: 'A built-in fake that answers instantly, so the whole loop can be tried without an account.', items: d.providers.filter(p => TESTING_IDS.includes(p.id)) }
   ]
 
-  const hasCredentialStep = !!(meta.setupToken || meta.apiKey)
+  const hasCredentialStep = !!(meta.setupToken || meta.apiKey || meta.deviceLogin)
   // The model this provider was explicitly GIVEN — as opposed to `d.model`, which falls back to
   // the provider's own default. Both halves of the Model step (the dropdown and the free-text
   // box) read this one value, so they cannot disagree about what is configured.
@@ -150,7 +151,7 @@ export default function AdminCoach() {
   const step2Done = hasEndpoint
   const step3Done = authed
   const step4Done = !!d.model
-  const step5Done = !!testResult?.ok || !!d.lastSuccess
+  const step5Done = !!testResult?.ok || (!meta.deviceLogin && !!d.lastSuccess)
   // Step numbers only count the steps this provider actually shows — and like any wizard,
   // only the first unfinished step stands open; everything done folds to its summary line.
   const flags = [step1Done, ...(needsEndpoint ? [step2Done] : []), ...(hasCredentialStep ? [step3Done] : []), step4Done, step5Done]
@@ -236,16 +237,16 @@ export default function AdminCoach() {
           <CredentialPill auth={d.auth} />
         </div>
         {authState === 'connected' ? <>
-          <div className="adm-hint">Connected{d.auth.account ? ' as ' + d.auth.account : ''} via {credentialLabel(d.auth.type)}{d.auth.connectedAt ? ' · added ' + rel(d.auth.connectedAt) : ''}. The key is stored encrypted and is never shown again.</div>
+          <div className="adm-hint">Connected{d.auth.account ? ' as ' + d.auth.account : ''} via {credentialLabel(d.auth.type)}{d.auth.connectedAt ? ' · added ' + rel(d.auth.connectedAt) : ''}. {d.auth.type === 'chatgpt-cli' ? 'Codex manages the private login cache on this server. Only the profile that signed in may use this subscription.' : 'The key is stored encrypted and is never shown again.'}</div>
           <div className="adm-actions">
-            {meta.apiKey && <Button size="sm" variant="tinted" icon="lock" disabled={busy}
+            {meta.apiKey && d.auth.type !== 'chatgpt-cli' && <Button size="sm" variant="tinted" icon="lock" disabled={busy}
               onClick={() => openSheet(close => <ApiKeySheet close={close} onDone={load} label={meta.label} placeholder={meta.keyPlaceholder} optional={meta.keyOptional} />)}>Replace key</Button>}
             {/* The key is encrypted at rest and never shown again, so this is the one action on the
                 card that cannot be walked back. Every other irreversible action in the app asks first;
                 until 2026-09-22 this one did not. */}
             <Button size="sm" danger disabled={busy} onClick={() => confirmSheet({
               title: 'Remove this credential?',
-              message: 'The Coach stops working for everyone on this instance until a new key is added. The stored key cannot be recovered.',
+              message: d.auth.type === 'chatgpt-cli' ? 'Codex will sign out of ChatGPT on this server. Sign in again to reconnect.' : 'The Coach stops working for everyone on this instance until a new key is added. The stored key cannot be recovered.',
               confirmText: 'Remove', danger: true, onConfirm: disconnect,
             })}>Remove</Button>
           </div>
@@ -256,11 +257,17 @@ export default function AdminCoach() {
           {authState === 'optional' && <div className="adm-hint">This endpoint works without a key. Add one only if your server asks for it (OpenRouter does; a model on your own network usually does not).</div>}
           {authState === 'none' && <div className="adm-hint">{meta.setupToken
             ? 'Paste either a Claude Code setup token (your subscription) or an Anthropic API key (pay per use).'
-            : 'Paste an API key from the provider\'s console. It is stored encrypted on this server and sent to the provider only while a job runs.'}</div>}
+            : meta.deviceLogin ? 'Sign in with ChatGPT to use your Codex subscription allowance, or add a separately billed API key.'
+              : 'Paste an API key from the provider\'s console. It is stored encrypted on this server and sent to the provider only while a job runs.'}</div>}
+          {authState === 'expired' && <div className="adm-hint">The ChatGPT login cache is missing. Remove the connection, then sign in again.</div>}
           <div className="adm-actions">
+            {meta.deviceLogin && authState !== 'expired' && <Button size="sm" variant="primary" icon="key" disabled={busy || !d.runtime.ok}
+              onClick={() => openSheet(close => <ChatGPTLoginSheet close={close} onDone={load} />)}>Sign in with ChatGPT</Button>}
+            {authState === 'expired' && <Button size="sm" disabled={busy} onClick={disconnect}>Remove connection</Button>}
+            {meta.deviceLogin && !d.runtime.ok && <div className="adm-hint">Build the API image with <code>--target coach</code> to enable ChatGPT sign-in.</div>}
             {meta.setupToken && <Button size="sm" variant="primary" icon="key" disabled={busy}
               onClick={() => openSheet(close => <SetupTokenSheet close={close} onDone={load} label={meta.label} />)}>Add Claude Code token</Button>}
-            {meta.apiKey && <Button size="sm" variant={meta.setupToken ? undefined : 'primary'} icon="lock" disabled={busy}
+            {meta.apiKey && authState !== 'expired' && <Button size="sm" variant={meta.setupToken || meta.deviceLogin ? undefined : 'primary'} icon="lock" disabled={busy}
               onClick={() => openSheet(close => <ApiKeySheet close={close} onDone={load} label={meta.label} placeholder={meta.keyPlaceholder} optional={meta.keyOptional} />)}>
               {meta.keyOptional ? 'Add API key (optional)' : 'Add API key'}</Button>}
           </div>
@@ -417,7 +424,8 @@ const credentialHint = (auth, meta) => {
   if (s === 'not-required') return 'Not needed'
   if (s === 'optional') return 'Optional for this endpoint'
   if (s === 'unreadable') return 'Stored key can\'t be read. Add it again'
-  return meta.setupToken ? 'Token or API key needed' : 'API key needed'
+  if (s === 'expired') return 'Sign in again'
+  return meta.deviceLogin ? 'ChatGPT sign-in or API key needed' : meta.setupToken ? 'Token or API key needed' : 'API key needed'
 }
 
 const credentialLabel = type => ({
