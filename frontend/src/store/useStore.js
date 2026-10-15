@@ -1,3 +1,4 @@
+import { registerExerciseAliases } from '../lib/exercise-aliases.js'
 import { create } from 'zustand'
 import { api, setRemoteAuth } from '../lib/api.js'
 import { localTZ } from '../lib/format.js'
@@ -139,7 +140,7 @@ export const DEF = {
   // Standing per-exercise notes, keyed by exercise id: the gym-specific facts that are true
   // every time you do the movement ("seat 4, pin 7"). Distinct from a routine's `note`, which
   // belongs to one exercise in one plan, and from a session note, which belongs to one day.
-  exNotes: {},
+  exNotes: {}, exAliases: {},
   // Favourite exercise ids (issue #6) — sorted to the top of the picker/Library. Personal, so
   // it syncs with the profile but is never part of a shared plan bundle (lib/favourites.js).
   favEx: [],
@@ -293,7 +294,7 @@ function loadState() {
 // weigh-ins and custom exercises. A custom exercise is all a new guest may have made — with its
 // photo or video, which the server counts as unreferenced until the state that names it lands —
 // so a profile created from such a copy takes it at once, like one holding a workout.
-const hasData = st => !!((st.workouts || []).length || (st.routines || []).length || (st.bodyweight || []).length || (st.customEx || []).length || (st.measurements || []).length)
+const hasData = st => !!((st.workouts || []).length || (st.routines || []).length || (st.bodyweight || []).length || (st.customEx || []).length || (st.measurements || []).length || Object.values(st.exAliases || {}).some(v => Array.isArray(v) && v.length))
 
 // Decide whether a pulled account state may replace the local saved state. A local active workout
 // is deliberately carried forward: the server stores completed/saved state, while the in-progress
@@ -574,6 +575,7 @@ export const useStore = create((set, get) => {
     // goes out with it on the next push, without a stamp of its own (healCustomEx).
     S.customEx = healCustomEx(S.customEx)
     registerCustom(S.customEx)
+    registerExerciseAliases(S.exAliases)
     // A refused write used to take the change with it — Finish looked like it simply did
     // nothing. The copy is kept in memory either way and marked as owed to the server, so a
     // signed-in device still gets it there; and it is said out loud once, because a change that
@@ -852,6 +854,7 @@ export const useStore = create((set, get) => {
     handedOver = false
     meta.set(S, { base: readStoredSync(), owed: storedOwed() })
     registerCustom(S.customEx)
+    registerExerciseAliases(S.exAliases)
     set({ S })
     followSignIn()
     return true
@@ -897,6 +900,7 @@ export const useStore = create((set, get) => {
       merged._ts = Math.max(Number(theirs._ts) || 0, Number(mine._ts) || 0)
       meta.set(merged, { base: readStoredSync(), owed: storedOwed() })
       registerCustom(merged.customEx)
+      registerExerciseAliases(merged.exAliases)
       set({ S: merged })
       return
     }
@@ -1287,6 +1291,7 @@ export const useStore = create((set, get) => {
   const S0 = loadState()
   S0.customEx = healCustomEx(S0.customEx)
   registerCustom(S0.customEx)
+  registerExerciseAliases(S0.exAliases)
   // Which photos and videos are still waiting for the server, known before the first sign-out
   // check has to ask (lib/media-owed.js). A copy without any leaves the media store unopened.
   if (referencedHashes(S0).size) loadPending()

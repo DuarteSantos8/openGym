@@ -1,5 +1,8 @@
 // Italian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Aliases": "Nomi alternativi",
+  "Alternative names for search. Separate with commas.": "Nomi alternativi per la ricerca. Separali con virgole.",
+  "Save aliases": "Salva nomi alternativi",
   'Confirm': 'Conferma',
   'Cancel': 'Annulla',
   'Press back again to exit': 'Premi di nuovo indietro per uscire',

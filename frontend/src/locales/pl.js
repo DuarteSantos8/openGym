@@ -1,5 +1,8 @@
 // Polish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Aliases": "Alternatywne nazwy",
+  "Alternative names for search. Separate with commas.": "Alternatywne nazwy do wyszukiwania. Oddziel je przecinkami.",
+  "Save aliases": "Zapisz alternatywne nazwy",
   'Confirm': 'Potwierdź',
   'Cancel': 'Anuluj',
   'Press back again to exit': 'Naciśnij wstecz ponownie, aby wyjść',
