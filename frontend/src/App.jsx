@@ -170,7 +170,7 @@ function Shell() {
   }, [])
   // The edge swipe back (lib/edge-swipe-back.js) asks for the page it goes back to underneath
   // while the finger moves (`preview`), and says where it is going as it lets go (`returning`):
-  // that page comes back where it was scrolled to, as the back button's push would not.
+  // that page comes back where it was scrolled to.
   const [preview, setPreview] = useState(null)
   const returning = useRef(null)
   useEffect(() => {
@@ -181,6 +181,18 @@ function Shell() {
     }
     window.addEventListener(BACK_PREVIEW_EVENT, on)
     return () => window.removeEventListener(BACK_PREVIEW_EVENT, on)
+  }, [])
+  // A tap on the page's own back button lands the same way. Its push used to open the page at the
+  // top, so Stats scrolled down, then Structural balance and back, started over, while the swipe,
+  // which presses this very button, came back to where it was. Capture phase, so this is known
+  // before the button's own handler navigates.
+  useEffect(() => {
+    const onClick = e => {
+      const to = e.target.closest?.('#app > .page:not(.under) [data-back]')?.getAttribute('data-back')
+      if (to) returning.current = to
+    }
+    document.addEventListener('click', onClick, true)
+    return () => document.removeEventListener('click', onClick, true)
   }, [])
   // Any navigation ends a preview: promoted (it is the page now) or not needed any more.
   useEffect(() => { setPreview(null) }, [loc.pathname])
@@ -203,7 +215,9 @@ function Shell() {
     // route — now, not a frame later: that frame landed on top of a scroll a view made on mount
     // (the superset card centring its row, views/Workout.jsx), and a smooth scroll cut off by a
     // scrollTo is simply gone.
-    if (navType !== 'POP' || first) { window.scrollTo(0, 0); return }
+    // Remembered as the top too. When the window is at the top already no scroll event comes, and
+    // a back to this page would land where an earlier visit had left it.
+    if (navType !== 'POP' || first) { window.scrollTo(0, 0); scrollPositions.set(loc.pathname, 0); return }
     // A POP that stays on the route we are on is not a back-navigation: it is the history
     // entry a sheet pushed (Modals.jsx, #63) being unwound as the sheet closes. Nothing new
     // mounted, Modals puts the page back where it was itself, and a view that scrolled on
