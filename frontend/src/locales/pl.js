@@ -2357,4 +2357,6 @@ export default {
   "Programme file saved. Send it to a friend!": "Plik programu zapisany. Wyślij go znajomemu!",
   "this isn’t an openGym programme file": "to nie jest plik programu openGym",
   "Couldn’t export that programme.": "Nie udało się wyeksportować tego programu.",
+  "Shared programmes": "Udostępnione programy",
+  "Could not load shared programmes.": "Nie udało się wczytać udostępnionych programów.",
 }

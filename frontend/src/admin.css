@@ -153,3 +153,7 @@
 
 /* a finished step's summary reads as a receipt, not a control */
 .adm-step.done>summary .adm-step-t span{color:var(--acc)}
+
+.adm-shared-list { list-style: none; padding: 0; }
+.adm-shared-list li { gap: 12px; padding-block: 12px; border-bottom: 1px solid var(--sep); }
+.adm-shared-name { min-width: 0; overflow-wrap: anywhere; }

@@ -20,6 +20,7 @@ import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
 import ReadyProgrammeDetail from '../components/ReadyProgrammeDetail.jsx'
 import { programmeShareSheet, importProgrammeFile } from '../programme-sheets.jsx'
+import SharedProgrammes from '../components/SharedProgrammes.jsx'
 import CompletedProgrammeRow from '../components/CompletedProgrammeRow.jsx'
 import { ReadyProgrammeRow } from '../components/ProgrammeCard.jsx'
 import { effortOf } from '../lib/history.js'
@@ -183,6 +184,7 @@ export default function Plan() {
       importProgrammeFile(file, () => setView('programmes'))
     }} hidden />
     <Segmented className="plan-views" value={currentView} onChange={setView} options={viewOptions} />
+    {(!S.programmeMode || currentView === 'programmes') && <SharedProgrammes onImported={() => setView('programmes')} />}
     {currentView === 'routines' ? <Routines S={S} update={update} nav={nav} />
       : currentView === 'programmes' ? <Programmes S={S} nav={nav} />
         : <Schedule S={S} update={update} nav={nav} mode={mode} />}

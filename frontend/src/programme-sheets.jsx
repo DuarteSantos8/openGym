@@ -68,10 +68,11 @@ export function importProgrammeFile(file, onImported) {
   reader.readAsText(file)
 }
 
-export function ProgrammeImport({ bundle, close, onImported }) {
+export function ProgrammeImport({ bundle, close, onImported, userId }) {
   const sessions = bundle.programme.weeks.reduce((n, week) =>
     n + week.days.reduce((count, day) => count + day.sessions.length, 0), 0)
   const apply = () => {
+    if (userId !== undefined && useStore.getState().user?.id !== userId) { close(); return }
     try {
       useStore.getState().update(s => {
         const result = mergeProgramme(s, bundle)

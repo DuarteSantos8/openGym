@@ -1518,6 +1518,8 @@ export const PT_BR_OVERRIDES = {
   "Programme file saved. Send it to a friend!": "Arquivo do programa salvo. Envie-o a um amigo!",
   "this isn’t an openGym programme file": "este não é um arquivo de programa do openGym",
   "Couldn’t export that programme.": "Não foi possível exportar esse programa.",
+  "Shared programmes": "Programas compartilhados",
+  "Could not load shared programmes.": "Não foi possível carregar os programas compartilhados.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

@@ -2360,4 +2360,6 @@ export default {
   "Programme file saved. Send it to a friend!": "A programfájl mentve. Küldd el egy barátodnak!",
   "this isn’t an openGym programme file": "ez nem openGym-programfájl",
   "Couldn’t export that programme.": "Nem sikerült exportálni ezt a programot.",
+  "Shared programmes": "Megosztott programok",
+  "Could not load shared programmes.": "Nem sikerült betölteni a megosztott programokat.",
 }

@@ -2282,3 +2282,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .pickup-weeks .week-mode-toggle{padding:8px;gap:5px}
 .pickup-weeks .week-mode-toggle strong{font-size:12px;white-space:nowrap}
 .pickup-weeks .week-mode-toggle .tag{font-size:10px}
+
+.shared-programme-list { list-style: none; padding: 0; }
+.shared-programme-list li { gap: 12px; padding-block: 12px; border-bottom: 1px solid var(--sep); }
+.shared-programme-name { min-width: 0; overflow-wrap: anywhere; }

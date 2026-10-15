@@ -2368,4 +2368,6 @@ export default {
   "Programme file saved. Send it to a friend!": "บันทึกไฟล์โปรแกรมแล้ว ส่งให้เพื่อนได้เลย!",
   "this isn’t an openGym programme file": "นี่ไม่ใช่ไฟล์โปรแกรมของ openGym",
   "Couldn’t export that programme.": "ไม่สามารถส่งออกโปรแกรมนี้ได้",
+  "Shared programmes": "โปรแกรมที่แชร์",
+  "Could not load shared programmes.": "โหลดโปรแกรมที่แชร์ไม่สำเร็จ",
 }

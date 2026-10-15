@@ -2357,4 +2357,6 @@ export default {
   "Programme file saved. Send it to a friend!": "कार्यक्रम फ़ाइल सहेज दी गई। इसे किसी मित्र को भेजें!",
   "this isn’t an openGym programme file": "यह openGym कार्यक्रम फ़ाइल नहीं है",
   "Couldn’t export that programme.": "इस कार्यक्रम को निर्यात नहीं किया जा सका।",
+  "Shared programmes": "साझा प्रोग्राम",
+  "Could not load shared programmes.": "साझा प्रोग्राम लोड नहीं हो सके।",
 }

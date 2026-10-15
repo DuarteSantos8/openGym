@@ -2357,4 +2357,6 @@ export default {
   "Programme file saved. Send it to a friend!": "프로그램 파일을 저장했습니다. 친구에게 보내세요!",
   "this isn’t an openGym programme file": "openGym 프로그램 파일이 아닙니다",
   "Couldn’t export that programme.": "프로그램을 내보낼 수 없습니다.",
+  "Shared programmes": "공유 프로그램",
+  "Could not load shared programmes.": "공유 프로그램을 불러오지 못했습니다.",
 }

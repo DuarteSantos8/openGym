@@ -14,6 +14,8 @@ import { dateLocale } from './i18n-core.js'
 export const auditCat = ev => String(ev || '').split('.')[0]
 
 const LABELS = {
+  'admin.programme.share': 'Published a shared programme',
+  'admin.programme.unshare': 'Unshared a programme',
   'auth.login.ok': 'Signed in',
   'auth.login.fail': 'Sign-in failed',
   'auth.register.ok': 'Created a profile',

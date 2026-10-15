@@ -2361,4 +2361,6 @@ export default {
   "Programme file saved. Send it to a friend!": "Файл программы сохранён. Отправьте его другу!",
   "this isn’t an openGym programme file": "это не файл программы openGym",
   "Couldn’t export that programme.": "Не удалось экспортировать эту программу.",
+  "Shared programmes": "Общие программы",
+  "Could not load shared programmes.": "Не удалось загрузить общие программы.",
 }

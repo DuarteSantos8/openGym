@@ -2350,4 +2350,6 @@ export default {
   "Programme file saved. Send it to a friend!": "訓練計畫檔案已儲存，傳給朋友吧！",
   "this isn’t an openGym programme file": "這不是 openGym 訓練計畫檔案",
   "Couldn’t export that programme.": "無法匯出此訓練計畫。",
+  "Shared programmes": "共享訓練計畫",
+  "Could not load shared programmes.": "無法載入共享訓練計畫。",
 }
