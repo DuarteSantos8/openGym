@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import vm from 'node:vm'
 import { describe, expect, it } from 'vitest'
-import { lazyAssets, stampSw } from '../../scripts/sw-stamp.mjs'
+import { lazyAssets, stampHtml, stampSw } from '../../scripts/sw-stamp.mjs'
 
 const source = readFileSync(fileURLToPath(new URL('../../public/sw.js', import.meta.url)), 'utf8')
 const shell = '<html><head><script src="./assets/index-new.js"></script></head></html>'
@@ -78,7 +78,18 @@ describe('the worker keeps the on-demand code too', () => {
     expect(vite).toMatch(/generateBundle\(_, bundle\) \{ lazy = lazyAssets\(bundle\) \}/)
     expect(vite).toMatch(/stampSw\(readFileSync\(sw, 'utf8'\), \{ stamp, lazy \}\)/)
     const sw = stampSw(source, { stamp: 'abc', lazy: ["./assets/it's.js"] })
-    expect(sw).toContain("const CACHE = 'opengym-rt-abc'")
+    expect(sw).toContain("const PREFIX = 'gains-'")
+    expect(sw).toContain("const BUILD = 'abc'")
     expect(sw).not.toContain('__LAZY__')
+    expect(sw).not.toContain('__BUILD__')
+  })
+
+  it('the build writes the same stamp into index.html, where the page reads its own build', () => {
+    const vite = readFileSync(fileURLToPath(new URL('../../vite.config.js', import.meta.url)), 'utf8')
+    expect(vite).toMatch(/writeFileSync\(html, stampHtml\(readFileSync\(html, 'utf8'\), stamp\)\)/)
+    const html = stampHtml('<html><head><title>x</title>\n  </head><body></body></html>', 'abc')
+    expect(html).toContain('<meta name="gains-build" content="abc">')
+    expect(html.indexOf('gains-build')).toBeLessThan(html.indexOf('</head>'))
+    expect(html.match(/gains-build/g)).toHaveLength(1)
   })
 })

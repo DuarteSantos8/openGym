@@ -22,9 +22,19 @@ const COPY = {
 
 const copyFor = lang => COPY[lang] || COPY.en;
 
+// Where a tap on each notification goes: a hash route of the app (frontend lib/tab-route.js), which
+// the service worker accepts only as such (public/sw.js notificationTarget). The rest-timer alert
+// is about the workout under way, the day reminder is Home's plan for today, and the missed-workout
+// nudge opens the week's schedule where the skipped session sits.
+export const PUSH_URL = {
+  rest: '#/train/workout',
+  day: '#/home',
+  nudge: '#/train/schedule',
+};
+
 export function restTimerPush(lang) {
   const copy = copyFor(lang);
-  return { title: copy.restTitle, body: copy.restBody, tag: 'rest-timer' };
+  return { title: copy.restTitle, body: copy.restBody, tag: 'rest-timer', url: PUSH_URL.rest };
 }
 
 export function testPush(lang) {
@@ -39,6 +49,7 @@ export function dayReminderPush(lang, routine) {
       : copy.dayFallbackTitle,
     body: copy.dayBody,
     tag: 'day-reminder',
+    url: PUSH_URL.day,
   };
 }
 
@@ -57,5 +68,5 @@ export function nudgePush(lang, tone, routine, iso) {
   const copy = nudgeCopyFor(lang)[NUDGE_COPY.en[tone] ? tone : 'friendly'];
   const line = copy.lines[lineIndex(iso, copy.lines.length)];
   const name = routine?.name || 'openGym';
-  return { title: copy.title, body: line.replace('{0}', () => name), tag: 'nudge' };
+  return { title: copy.title, body: line.replace('{0}', () => name), tag: 'nudge', url: PUSH_URL.nudge };
 }

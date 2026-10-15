@@ -22,7 +22,7 @@ class FakeCaches {
   async match(req) { for (const c of this.c.values()) { const hit = await c.match(req); if (hit) return hit } return undefined }
 }
 
-const CACHE = 'opengym-rt-__BUILD__'   // the placeholder the build rewrites (vite.config.js swStamp)
+const CACHE = 'gains-rt-__BUILD__'   // the placeholder the build rewrites (vite.config.js swStamp)
 const handlers = {}
 let skipWaiting = 0
 
@@ -179,9 +179,14 @@ describe('sw.js re-registers a rotated push subscription with the page\'s device
   }
   // The same cache name and key on both sides, read out of the two files, so the page and the
   // worker cannot drift apart without this failing.
-  const constant = (src, name) => src.match(new RegExp('const ' + name + " = '([^']+)'"))?.[1]
+  // The worker builds its cache names from a prefix (`PREFIX + 'device'`); the page spells them out.
   const pageSrc = readFileSync(new URL('./push.js', import.meta.url), 'utf8')
   const swSrc = readFileSync(new URL('../../public/sw.js', import.meta.url), 'utf8')
+  const prefix = swSrc.match(/const PREFIX = '([^']+)'/)?.[1]
+  const constant = (src, name) => {
+    const m = src.match(new RegExp('const ' + name + " = (PREFIX \\+ )?'([^']+)'"))
+    return m ? (m[1] ? prefix : '') + m[2] : undefined
+  }
   const DEVICE_CACHE = constant(pageSrc, 'DEVICE_CACHE')
   const DEVICE_URL = constant(pageSrc, 'DEVICE_URL')
 

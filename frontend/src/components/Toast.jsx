@@ -14,7 +14,7 @@ export default function Toast() {
     onPointerUp={live ? (e => { if (e.pointerType !== 'mouse') resumeToast() }) : undefined}>
     <span className="toast-msg">{msg}</span>
     {live && <button type="button" className="toast-act" key={action.id} onClick={runToastAction}>
-      <Icon name="undo" />{action.label}
+      <Icon name={action.icon} />{action.label}
     </button>}
   </div>
 }

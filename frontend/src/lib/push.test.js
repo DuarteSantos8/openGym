@@ -212,13 +212,13 @@ describe('the device id the worker re-registers with', () => {
     const { syncPushSubscription, deviceId } = await import('./push.js')
     sub = makeSub(KEY)
     expect(await syncPushSubscription()).toBe(true)
-    expect(stored).toEqual([['opengym-device', '/opengym-device-id', deviceId()]])
+    expect(stored).toEqual([['gains-device', '/opengym-device-id', deviceId()]])
   })
 
   it('and when the switch is turned on', async () => {
     const { enablePush, deviceId } = await import('./push.js')
     await enablePush()
-    expect(stored).toEqual([['opengym-device', '/opengym-device-id', deviceId()]])
+    expect(stored).toEqual([['gains-device', '/opengym-device-id', deviceId()]])
   })
 
   it('is not left where the browser holds no subscription', async () => {

@@ -26,6 +26,13 @@ export function lazyAssets(bundle) {
   return out.sort()
 }
 
+/** index.html with the build's stamp as <meta name="gains-build">, the page's way of knowing which
+ *  build it is (lib/sw-update.js). The stamp is a hash of the html before this tag, so the tag
+ *  cannot change the value it carries. */
+export function stampHtml(html, stamp) {
+  return html.replace('</head>', () => `<meta name="gains-build" content="${stamp}">\n  </head>`)
+}
+
 /** The worker with its build stamp and its list in place of the two placeholders. */
 export function stampSw(source, { stamp, lazy = [] }) {
   return source

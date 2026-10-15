@@ -5,6 +5,7 @@ import { MOBILE } from './lib/mobile.js'
 import { useStore } from './store/useStore.js'
 import { startMediaSync } from './lib/media-sync.js'
 import { startNativeKeyboard } from './lib/native-keyboard.js'
+import { startSwMessages } from './lib/sw-update.js'
 import './index.css'
 import './ui-kit.css'
 
@@ -25,6 +26,7 @@ startNativeKeyboard()
 
 // Not in the mobile build: the native shell already serves everything from disk.
 if (!MOBILE && 'serviceWorker' in navigator && location.protocol === 'https:') {
+  startSwMessages()
   navigator.serviceWorker.register('sw.js').catch(() => {})
   // The plan's exercise media, kept by the worker for a workout opened without a network (#281).
   // It only fetches ahead while the page runs as the installed app; a tab keeps what it has shown.

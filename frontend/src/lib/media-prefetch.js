@@ -22,7 +22,7 @@ import { EXIDX, imgSrc, gifSrc, isCustomEx, figureOf } from './exercises.js'
 
 // The worker's media cache, public/sw.js MEDIA. Duplicated because the worker is not bundled;
 // sw-media.test.js pins the two together.
-export const MEDIA_CACHE = 'opengym-media-v1'
+export const MEDIA_CACHE = 'gains-media-v1'
 // Long enough after boot or an edit that the app's own requests go first.
 export const PREFETCH_DELAY_MS = 8000
 const CONCURRENCY = 2

@@ -4,7 +4,7 @@ import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { lazyAssets, stampSw } from './scripts/sw-stamp.mjs'
+import { lazyAssets, stampHtml, stampSw } from './scripts/sw-stamp.mjs'
 
 const backend = process.env.API_TARGET || 'http://127.0.0.1:3000'
 // The API refuses a state-changing request that a browser sent from anywhere other than its own
@@ -72,6 +72,7 @@ const swStamp = {
     const html = join(outDir, 'index.html'), sw = join(outDir, 'sw.js')
     if (!existsSync(html) || !existsSync(sw)) return
     const stamp = createHash('sha256').update(readFileSync(html)).digest('hex').slice(0, 10)
+    writeFileSync(html, stampHtml(readFileSync(html, 'utf8'), stamp))
     writeFileSync(sw, stampSw(readFileSync(sw, 'utf8'), { stamp, lazy }))
   }
 }

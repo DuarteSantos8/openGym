@@ -11,8 +11,8 @@ import { fileURLToPath } from 'node:url'
 import { MEDIA_CACHE } from './media-prefetch.js'
 
 const SW = readFileSync(fileURLToPath(new URL('../../public/sw.js', import.meta.url)), 'utf8')
-const BUILD = 'opengym-rt-__BUILD__'
-const MEDIA = 'opengym-media-v1'
+const BUILD = 'gains-rt-__BUILD__'
+const MEDIA = 'gains-media-v1'
 const ORIGIN = 'https://gym.test'
 const keyOf = r => (typeof r === 'string' ? new URL(r, ORIGIN + '/').href : r.url)
 
@@ -207,7 +207,10 @@ describe('sw.js exercise media', () => {
   })
 
   it('names the same cache as the page-side prefetch', () => {
-    expect(SW).toContain(`const MEDIA = '${MEDIA_CACHE}'`)
+    // The worker builds the name from its prefix; the page spells it out. Both must come to the same.
+    expect(SW).toContain("const PREFIX = 'gains-'")
+    expect(SW).toContain("const MEDIA = PREFIX + 'media-v1'")
+    expect(MEDIA_CACHE).toBe('gains-media-v1')
     expect(MEDIA_CACHE).toBe(MEDIA)
   })
 })
