@@ -46,6 +46,16 @@ describe('insightsFor', () => {
     expect(i.bodyweight.goal).toBe(80)
     expect(i.bodyweight.last).toBe(83)
   })
+  it('places each weigh-in at its own date, not at the change stamp an import left on it (issue #632)', () => {
+    const stamped = Date.now()   // what the store's stampChange leaves on a fresh import
+    const i = insightsFor({
+      ...S(),
+      bodyweight: [{ d: '2026-08-02', w: 84, t: stamped }, { d: '2026-08-10', w: 83, t: stamped }],
+    }, win)
+    expect(i.bodyweight.points.map(p => p.t)).toEqual([
+      new Date('2026-08-02T12:00:00').getTime(), new Date('2026-08-10T12:00:00').getTime(),
+    ])
+  })
   it('tracks estimated 1RM first → last for exercises with two or more sessions, most-trained first', () => {
     const i = insightsFor(S(), win, { topN: 1 })
     expect(i.strength).toHaveLength(1)
