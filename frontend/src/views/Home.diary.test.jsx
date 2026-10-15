@@ -287,7 +287,7 @@ describe('logging a food', () => {
 })
 
 describe('the + sheet', () => {
-  it('names where it logs, lists Anytime in order and offers Log food, with no Scan', async () => {
+  it('names where it logs, lists Anytime in order and offers Log food and Scan', async () => {
     vi.useFakeTimers({ toFake: ['Date'] })
     vi.setSystemTime(new Date(`${TODAY}T12:10:00`))
     await useNutrition.getState().loadSettings()
@@ -299,7 +299,7 @@ describe('the + sheet', () => {
     const rows = [...sheet.querySelectorAll('.sect')].at(-1).querySelectorAll('.lrow-t')
     expect([...rows].map(r => r.textContent)).toEqual(['Quick kcal', 'Weigh in', 'Start workout', 'Water'])
     expect(button('Log food', sheet)).toBeTruthy()
-    expect(sheet.textContent).not.toContain('Scan')
+    expect(button('Scan', sheet)).toBeTruthy()
     vi.useRealTimers()
   })
 

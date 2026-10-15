@@ -58,6 +58,7 @@ import FoodHub from './views/FoodHub.jsx'
 import MealCatalog from './views/MealCatalog.jsx'
 import Foods from './views/Foods.jsx'
 import NutritionGoals from './views/NutritionGoals.jsx'
+import Fasting from './views/Fasting.jsx'
 import ProgressHub from './views/ProgressHub.jsx'
 import './tab-shell.css'
 import './nutrition.css'
@@ -270,6 +271,7 @@ function Shell() {
               <Route path="/food/recipes" element={<MealCatalog recipes />} />
               <Route path="/food/foods" element={<Foods />} />
               <Route path="/food/goals" element={<NutritionGoals />} />
+              <Route path="/food/fasting" element={<Fasting />} />
               {/* Progress */}
               <Route path="/progress" element={<ProgressHub />} />
               <Route path="/progress/body" element={<Stats section="body" />} />

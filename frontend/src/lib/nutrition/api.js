@@ -5,7 +5,7 @@
 // Every shape here is NutriTrace's own (server/routes/*.js, src/lib/api.js, src/stores/diary.js).
 import { appBase } from '../app-base.js'
 import { MOBILE } from '../mobile.js'
-import { offSearchUrl } from './off.js'
+import { offProductUrl, offSearchUrl } from './off.js'
 
 /**
  * Per-serving nutrients keyed by NutriTrace nutrient id: calories (kcal), proteins,
@@ -57,6 +57,11 @@ import { offSearchUrl } from './off.js'
  *   source: string, external_id?: string|null, covered_by: string|null }} ActivityRow
  */
 /** @typedef {{ date: string, manual: number, wearable: number, effective: number, covered_by: string|null, policy: string }} ActivitySum */
+/**
+ * A fast (server/routes/fasts.js). `start_at` and `end_at` are ISO instants; `end_at` is null
+ * while it runs. `goal_hours` is 0-168 (the server rounds to a tenth, 16 when it is out of range).
+ * @typedef {{ id: number, start_at: string, end_at: string|null, goal_hours: number, notes: string|null }} Fast
+ */
 /**
  * GET /api/settings: the user's settings by key. The diary reads mealNames, goals,
  * calorieGoalMode ('fixed'|'dynamic'|'adaptive'), calorieGoalFactor, waterGoalMl,
@@ -212,6 +217,23 @@ export const NtApi = {
    *  30 a minute per person). Raw OFF answer: map it with off.js offResults. */
   searchOnline: (query, { page = 1, pageSize = 20, lang = 'en', signal } = {}) =>
     nt('GET', '/api/proxy?url=' + encodeURIComponent(offSearchUrl(query, { page, pageSize, lang })), undefined, { signal }),
+  /** One Open Food Facts product by barcode, through the same proxy (the hub lets this second URL
+   *  shape by, under the same cap). Raw OFF answer: map it with off.js offProduct. An unknown
+   *  barcode is a 404 (`status` 404 on the NtError). */
+  lookupProduct: (code, { lang = 'en', signal } = {}) =>
+    nt('GET', '/api/proxy?url=' + encodeURIComponent(offProductUrl(code, lang)), undefined, { signal }),
+
+  /** The running fast, or null. @returns {Promise<Fast|null>} */
+  getActiveFast: () => nt('GET', '/api/fasts/active', undefined, { nullable: true }),
+  /** Newest first, completed and running. @returns {Promise<Fast[]>} */
+  getFasts: (limit = 60) => nt('GET', `/api/fasts?limit=${limit}`),
+  /** Starts a fast; 409 while one is running. `startAt` back-dates it (at most 24 h). @returns {Promise<Fast>} */
+  startFast: (goalHours, startAt) => nt('POST', '/api/fasts/start', startAt ? { goal_hours: goalHours, start_at: startAt } : { goal_hours: goalHours }),
+  /** @returns {Promise<Fast>} */
+  endFast: id => nt('POST', `/api/fasts/${encodeURIComponent(id)}/end`, {}),
+  /** Moves the start of a fast (the person forgot to start it on time). @returns {Promise<Fast>} */
+  editFastStart: (id, startAt) => nt('PATCH', `/api/fasts/${encodeURIComponent(id)}`, { start_at: startAt }),
+  deleteFast: id => nt('DELETE', `/api/fasts/${encodeURIComponent(id)}`),
 }
 
 export const HubSync = {

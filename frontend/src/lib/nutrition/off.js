@@ -4,6 +4,14 @@
 import { deriveSodiumSalt, newUuid } from './diary.js'
 
 export const OFF_SEARCH_BASE = 'https://search.openfoodfacts.org/search'
+export const OFF_PRODUCT_BASE = 'https://world.openfoodfacts.org/api/v3/product'
+
+/** The product URL NutriTrace's proxy fetches for a barcode (src/lib/api.js lookupBarcode):
+ *  `https://world.openfoodfacts.org/api/v3/product/<8-14 digits>?lc=<2 letters>`, nothing else.
+ *  The hub accepts exactly this shape. */
+export function offProductUrl(code, lang = 'en') {
+  return `${OFF_PRODUCT_BASE}/${code}?lc=${/^[a-z]{2}$/.test(lang) ? lang : 'en'}`
+}
 
 function luceneEscape(s) {
   return String(s || '')
@@ -130,4 +138,15 @@ export function mapOffProduct(p, lang = 'en') {
 export function offResults(data, lang = 'en') {
   const list = Array.isArray(data?.hits) ? data.hits : Array.isArray(data?.products) ? data.products : []
   return list.map(p => mapOffProduct(p, lang)).filter(Boolean)
+}
+
+/** A product lookup's answer (v3 says `status: 'success'`, a local mirror `status: 1`) as the
+ *  food it describes, an unsaved one carrying `code`; null when OFF has the product but not
+ *  enough nutrition to log it (mapOffProduct), `undefined` when it has no such product. */
+export function offProduct(data, code, lang = 'en') {
+  if (!data || typeof data !== 'object') return undefined
+  const ok = data.status === 'success' || data.status === 1
+  if (!ok || !data.product || typeof data.product !== 'object') return undefined
+  const food = mapOffProduct(data.product, lang)
+  return food ? { ...food, barcode: food.barcode || code } : null
 }

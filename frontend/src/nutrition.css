@@ -72,6 +72,9 @@
 
 /* --- food picker and amount sheets --- */
 .food-picker .searchf{margin-bottom:8px}
+.fp-search{display:flex;align-items:flex-start;gap:4px}
+.fp-search .searchf{flex:1;min-width:0}
+.fp-scan{flex:none;min-width:44px;min-height:44px;color:var(--acc-ink)}
 .food-row .grow{min-width:0}
 .food-kcal{white-space:nowrap;color:var(--label-2)}
 .fp-note{padding:6px 2px}
@@ -86,6 +89,36 @@
 .logging-to{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:6px 0 10px;min-height:44px;text-align:start}
 .logging-to-v{font-weight:600;color:var(--acc-ink)}
 .logging-to .icn{font-size:12px;color:var(--acc-ink)}
+
+/* --- barcode scan sheet --- */
+.scan-sheet .cam-frame.wide{width:84%;aspect-ratio:2.4}
+.cam-note{margin:12px 0}
+.cam-note.center{text-align:center}
+.scan-type{display:flex;gap:8px;align-items:center;margin-top:12px}
+.scan-type .field{flex:1;min-width:0}
+.scan-hit{display:flex;flex-direction:column;gap:2px;margin:8px 0 14px}
+.scan-hit .tt{font-size:17px;font-weight:600}
+.scan-actions{display:flex;flex-direction:column;gap:8px}
+
+/* --- fasting: the Today card row, the Fasting page --- */
+.today-fast{display:flex;align-items:center;gap:9px;margin-top:10px;padding-top:10px;border-top:var(--hair) solid var(--sep);cursor:pointer}
+.today-fast .grow{min-width:0}
+.today-fast .chev{color:var(--label-3)}
+.fast-card{display:flex;flex-direction:column;gap:8px}
+.fast-clock{font-variant-numeric:tabular-nums}
+.fast-track{height:8px;border-radius:4px;margin-top:4px}
+.fast-track>i{border-radius:4px}
+.fast-card.reached .fast-track>i{background:var(--green)}
+.fast-remove{width:44px;height:44px}
+.fast-insights{display:flex;flex-direction:column;gap:12px}
+.fast-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fast-stats .big{font-size:22px}
+.fast-bars{display:flex;align-items:flex-end;gap:3px;height:96px}
+.fast-bar-col{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;align-items:center;gap:4px}
+.fast-bar-wrap{flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center}
+.fast-bar-wrap>i{display:block;width:70%;min-height:2px;border-radius:3px;background:var(--acc)}
+.fast-bar-day{line-height:1}
+.fast-off{display:flex;flex-direction:column;align-items:center;margin-top:12px}
 
 /* --- training on another day, weight --- */
 .day-session .list{margin-top:6px}

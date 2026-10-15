@@ -45,7 +45,7 @@ export default function Home() {
 
     <DiaryDateStrip date={date} left={day.on && kcalGone && day.status === 'ready' ? day.left : null} />
 
-    {isToday ? <TodayCard /> : <DaySessionCard date={date} />}
+    {isToday ? <TodayCard fasting /> : <DaySessionCard date={date} />}
 
     {/* Jump to the gym check-in cards (QR membership codes). Shown here as a quick tap on
         arrival at the gym; folds away per user via the "Gym check-in" switch in Settings. */}

@@ -180,6 +180,13 @@ photo uses [**jsQR**](https://github.com/cozmo/jsQR) by Cosmo Wolfe, under the *
 Where the browser has a native `BarcodeDetector`, that is tried first and jsQR is the fallback.
 Video frames are decoded in memory and never uploaded or stored.
 
+### Product barcode scan in the browser — `@zxing/library`
+
+Scanning a food's EAN or UPC barcode in a browser uses [**@zxing/library**](https://github.com/zxing-js/library)
+(the TypeScript port of ZXing), under the **MIT License**; ZXing itself is under the **Apache License
+2.0**. It is loaded only when someone scans a product, and only where the browser has no native
+`BarcodeDetector`. Video frames are decoded in memory and never uploaded or stored.
+
 ### Camera scan & photo decode in the app — `@capacitor-mlkit/barcode-scanning`
 
 In the Android/iOS app, reading a code — from the camera or from an imported photo — uses the

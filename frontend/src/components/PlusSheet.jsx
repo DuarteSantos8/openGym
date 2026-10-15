@@ -15,6 +15,8 @@ import Elapsed from './Elapsed.jsx'
 import LoggingTo, { useSheetTarget } from './LoggingTo.jsx'
 import { quickKcalSheet } from './QuickKcalSheet.jsx'
 import { foodPickerSheet } from './FoodPickerSheet.jsx'
+import { scanSheet } from './ScanSheet.jsx'
+import PlusFastRow from './PlusFastRow.jsx'
 import { addWater, WATER_STEP_ML } from './WaterCard.jsx'
 import { useUnits } from '../lib/nutrition/use-units.js'
 
@@ -72,10 +74,13 @@ function PlusSheet({ close, pathname }) {
           <Button size="sm" variant="tinted" icon="plus" onClick={water} disabled={watering}
             aria-label={t('Add a glass of water, {0}', units.water(WATER_STEP_ML))}>{units.water(WATER_STEP_ML)}</Button>
         </Row>}
+        {food && <PlusFastRow close={close} />}
         {S.checkIn !== false && <Row icon="qr" iconTint="var(--blue)" title={t('Gym check-in')} accessory="chevron" onClick={() => closeThenNav(close, '/train/checkin')} />}
       </Section>
       {food && <div className="plus-tiles">
         <Button variant="primary" icon="utensils" onClick={() => { close(); foodPickerSheet() }}>{t('Log food')}</Button>
+        <Button variant="tinted" icon="scanBarcode"
+          onClick={() => { close(); scanSheet({ date: target.date, meal: target.meal, mealName: target.mealName, onSearch: foodPickerSheet }) }}>{t('Scan')}</Button>
       </div>}
     </div>
   )

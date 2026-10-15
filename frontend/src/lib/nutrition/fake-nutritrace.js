@@ -92,6 +92,18 @@ export const fixtureOffSearch = () => ({
   ],
 })
 
+/** The proxy's answer for an Open Food Facts product lookup (api/v3/product/<code>). */
+export const fixtureOffProduct = (code = '3017620422003') => ({
+  code, status: 'success', status_verbose: 'product found',
+  product: { code, product_name: 'Nutella', brands: 'Ferrero', lang: 'fr', nutrition_data_per: '100g', serving_size: '15 g', serving_quantity: 15, nutriments: { 'energy-kcal_100g': 539, energy_100g: 2255, proteins_100g: 6.3, carbohydrates_100g: 57.5, sugars_100g: 56.3, fat_100g: 30.9, 'saturated-fat_100g': 10.6, salt_100g: 0.107, fiber_100g: 0 } },
+})
+
+/** A completed fast as GET /api/fasts answers it (server/routes/fasts.js _row). */
+export const fixtureFast = (id, startAt, endAt, goalHours = 16) => ({
+  id, user_id: 3, start_at: startAt, end_at: endAt, goal_hours: goalHours, notes: null,
+  created_at: startAt.slice(0, 19).replace('T', ' '), updated_at: (endAt || startAt).slice(0, 19).replace('T', ' '),
+})
+
 /** GET /hub/api/sync/status when all is well. Pass `syncStatus: null` for a person the hub has
  *  not stored yet (it answers JSON null). */
 export const fixtureSyncStatus = (state = 'ok') => ({ state, pending: 0, held: 0, last_synced_at: 1760464800000, next_retry_at: null, suspended: null, problems: [] })
@@ -143,7 +155,32 @@ export function isOffSearchQuery(params) {
   return boundedInt(s.get('page'), 100) && boundedInt(s.get('page_size'), 50)
 }
 
+// fitness-hub src/nt-routes.ts isOffProductQuery: the barcode lookup, matched on the raw string.
+const OFF_PRODUCT_URL = /^https:\/\/world\.openfoodfacts\.org\/api\/v3\/product\/\d{8,14}(?:\?lc=[a-z]{2})?$/
+export function isOffProductQuery(params) {
+  if (!onlyKeys(params, new Set(['url']))) return false
+  const raw = params.get('url')
+  return raw !== null && OFF_PRODUCT_URL.test(raw)
+}
+
 const isObject = v => typeof v === 'object' && v !== null && !Array.isArray(v)
+
+// fitness-hub src/nt-body-checks.ts, fasts: an instant as toISOString writes it (or with an offset),
+// never later than now plus 5 minutes of clock skew, and no earlier than maxAgeMs ago.
+const ISO_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})$/
+const instantUpToNow = maxAgeMs => v => {
+  if (typeof v !== 'string' || !ISO_INSTANT.test(v) || Number.isNaN(Date.parse(v))) return false
+  const at = Date.parse(v)
+  return at <= Date.now() + 5 * 60_000 && at >= Date.now() - maxAgeMs
+}
+const FAST_START_FIELDS = {
+  goal_hours: v => typeof v === 'number' && Number.isFinite(v) && v >= 1 && v <= 168,
+  start_at: instantUpToNow(Number.POSITIVE_INFINITY),
+}
+// (hasOnly, below, is the hub's: every key named in the fields and its value passing.)
+const isFastStart = b => hasOnly(b, FAST_START_FIELDS)
+const isFastStartEdit = b => isObject(b) && Object.keys(b).length === 1 && hasOnly(b, { start_at: instantUpToNow(7 * 24 * 3600_000) })
+const isEmptyObject = b => isObject(b) && Object.keys(b).length === 0
 // fitness-hub isPrivateFoodWithoutImage
 const isPrivateFoodWithoutImage = b => isObject(b) && !('img_url' in b) && !('imgUrl' in b) && b.visibility === 'private'
 // The meals routes' allow-lists with the type of each field, as the hub checks them (fitness-hub
@@ -213,11 +250,12 @@ function merge(server, client, deleted, tombstoned) {
 export function createFakeNutriTrace({
   days = {}, settings = fixtureSettings(), foods = fixtureFoods(), meals = fixtureMeals(), activity = {}, activitySum = {},
   caloriesOut = {}, adaptiveTdee = { ready: false }, offSearch = fixtureOffSearch(),
-  syncStatus = fixtureSyncStatus(), workouts = {},
+  syncStatus = fixtureSyncStatus(), workouts = {}, fasts = [], offProducts = { '3017620422003': fixtureOffProduct() },
 } = {}) {
   const state = {
     days: structuredClone(days), settings: structuredClone(settings), foods: structuredClone(foods), meals: structuredClone(meals),
     activity, activitySum, caloriesOut, adaptiveTdee, offSearch, syncStatus, workouts,
+    fasts: structuredClone(fasts), offProducts,
     // date → [{ kind: 'item'|'water', uuid, deleted_at }]
     tombstones: {},
   }
@@ -225,6 +263,7 @@ export function createFakeNutriTrace({
   const failures = []
   const holds = []
   let nextFoodId = Math.max(100, ...state.foods.map(f => f.id + 1))
+  let nextFastId = Math.max(1, ...state.fasts.map(f => f.id + 1))
   let nextMealId = Math.max(100, ...state.meals.map(m => m.id + 1))
 
   const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json' } })
@@ -282,6 +321,54 @@ export function createFakeNutriTrace({
       if (!check || !check(body.value)) return json({ error: 'request body refused' }, 400)
       state.settings[body.key] = structuredClone(body.value)
       return json({ ok: true })
+    }
+    // Fasting (fitness-hub nt-routes.ts): GET /api/fasts takes `limit` only; every other fast route
+    // takes no query (403). Start, end and PATCH bodies are checked (400); DELETE takes no body.
+    if (res === 'fasts') {
+      const active = () => state.fasts.find(f => !f.end_at)
+      const stamp = iso => iso.slice(0, 19).replace('T', ' ')
+      if (n > 3 && [...query.keys()].length) return json({ error: 'forbidden' }, 403)
+      if (method === 'DELETE' && body !== undefined) return json({ error: 'request body refused' }, 400)
+      if (method === 'GET' && n === 3) {
+        const limit = query.get('limit')
+        if ([...query.keys()].some(k => k !== 'limit') || (limit !== null && !(/^[1-9]\d{0,2}$/.test(limit) && Number(limit) <= 365))) return json({ error: 'forbidden' }, 403)
+        return json([...state.fasts].sort((x, y) => y.start_at.localeCompare(x.start_at)).slice(0, limit === null ? 30 : Number(limit)))
+      }
+      if (method === 'GET' && n === 4 && a === 'active') return json(active() || null)
+      if (method === 'POST' && n === 4 && a === 'start') {
+        if (!isFastStart(body)) return json({ error: 'request body refused' }, 400)
+        if (active()) return json({ error: 'A fast is already in progress. End it before starting a new one.' }, 409)
+        const goal = Number(body.goal_hours)
+        let start = new Date(Date.now()).toISOString()
+        const asked = body.start_at ? new Date(body.start_at) : null
+        if (asked && !isNaN(asked.getTime()) && asked.getTime() <= Date.now() && asked.getTime() > Date.now() - 24 * 3600 * 1000) start = asked.toISOString()
+        const fast = { id: nextFastId++, user_id: 3, start_at: start, end_at: null, goal_hours: Number.isFinite(goal) && goal > 0 && goal <= 168 ? Math.round(goal * 10) / 10 : 16, notes: null, created_at: stamp(start), updated_at: stamp(start) }
+        state.fasts.push(fast)
+        return json(fast, 201)
+      }
+      if (n >= 4 && /^[1-9]\d{0,11}$/.test(a)) {
+        const fast = state.fasts.find(f => String(f.id) === a)
+        if (method === 'POST' && n === 5 && b === 'end') {
+          if (!isEmptyObject(body)) return json({ error: 'request body refused' }, 400)
+          if (!fast) return json({ error: 'Fast not found' }, 404)
+          if (fast.end_at) return json({ error: 'Fast is already ended' }, 400)
+          fast.end_at = new Date(Date.now()).toISOString()
+          return json(fast)
+        }
+        if (method === 'PATCH' && n === 4) {
+          if (!isFastStartEdit(body)) return json({ error: 'request body refused' }, 400)
+          if (!fast) return json({ error: 'Fast not found' }, 404)
+          const at = new Date(body.start_at)
+          if (!isNaN(at.getTime())) fast.start_at = at.toISOString()
+          return json(fast)
+        }
+        if (method === 'DELETE' && n === 4) {
+          if (!fast) return json({ error: 'Fast not found' }, 404)
+          state.fasts = state.fasts.filter(f => f !== fast)
+          return json({ ok: true })
+        }
+      }
+      return notFound()
     }
     if (res === 'foods') {
       if (method === 'GET' && n === 3) return [...query.keys()].length ? json({ error: 'forbidden' }, 403) : json(state.foods)
@@ -365,7 +452,12 @@ export function createFakeNutriTrace({
     }
     if (res === 'wellness' && a === 'calories-out' && method === 'GET' && n === 4) return json({ calories_out: state.caloriesOut[query.get('date')] ?? null })
     if (res === 'goals' && a === 'adaptive-tdee' && method === 'GET' && n === 4) return json(state.adaptiveTdee)
-    if (res === 'proxy' && method === 'GET' && n === 3) return isOffSearchQuery(query) ? json(state.offSearch) : json({ error: 'forbidden' }, 403)
+    if (res === 'proxy' && method === 'GET' && n === 3) {
+      if (isOffSearchQuery(query)) return json(state.offSearch)
+      if (!isOffProductQuery(query)) return json({ error: 'forbidden' }, 403)
+      const answer = state.offProducts[new URL(query.get('url')).pathname.split('/').pop()]
+      return answer ? json(answer) : json({ error: 'Upstream 404' }, 404)
+    }
     return notFound()
   }
 

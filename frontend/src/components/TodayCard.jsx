@@ -14,11 +14,13 @@ import { dayNoteOf } from '../lib/day-notes.js'
 import Icon from './Icon.jsx'
 import QueueRow from './QueueRow.jsx'
 import Elapsed from './Elapsed.jsx'
+import TodayFastRow from './TodayFastRow.jsx'
 import { Button } from './ui.jsx'
 
 // Today's session with the week around it: Start / Resume (with the time it has run) / Done /
-// Rest day, one tap. The same card leads Home and the Training hub.
-export default function TodayCard() {
+// Rest day, one tap. The same card leads Home and the Training hub. `fasting` adds the running
+// fast to Home's (ia-proposal §2).
+export default function TodayCard({ fasting = false }) {
   const nav = useNavigate()
   const S = useStore(s => s.S)
   const [weekOffset, setWeekOffset] = useState(0)
@@ -132,6 +134,7 @@ export default function TodayCard() {
         : routine ? <span className="tag acc">{t('Start')}</span>
         : <Icon name="plus" className="chev" />}
     </div>
+    {fasting && <TodayFastRow />}
     {/* The row above starts today's plan in one tap, and so does Start / Resume on the +. Both
         jump straight into the planned session whenever there is one, so the Start screen (a
         freestyle session, and your other routines) is only reachable on a day with nothing

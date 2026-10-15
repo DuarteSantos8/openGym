@@ -1,10 +1,12 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { todayISO } from '../lib/format.js'
+import { fmtDur, todayISO } from '../lib/format.js'
 import { dateLocale, t, tn } from '../lib/i18n.js'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { useDiarySelection, useDiaryTarget } from '../lib/nutrition/selection.js'
+import { progressOf } from '../lib/nutrition/fasting.js'
 import { useNutrition } from '../lib/nutrition/store.js'
+import { useFasting, useNow } from '../lib/nutrition/use-fasting.js'
 import { useDiaryDay } from '../lib/nutrition/use-diary-day.js'
 import { useUnits } from '../lib/nutrition/use-units.js'
 import { Card, EmptyState, Stat, StatTile, Tiles } from '../components/blocks.jsx'
@@ -31,6 +33,10 @@ export default function FoodHub() {
   const recipes = useNutrition(s => s.recipes)
   const { meal } = useDiaryTarget(settings)
 
+  const fastingOn = on && settings?.fastingEnabled === true
+  const fasting = useFasting()
+  const now = useNow(!!fasting.active, 30_000)
+
   useEffect(() => {
     if (!on) return
     const n = useNutrition.getState()
@@ -38,6 +44,9 @@ export default function FoodHub() {
     n.loadMeals({ recipes: false })
     n.loadMeals({ recipes: true })
   }, [on])
+  useEffect(() => {
+    if (fastingOn) useFasting.getState().load()
+  }, [fastingOn])
 
   if (!on) {
     return <Page root title={t('Nutrition')}>
@@ -47,12 +56,18 @@ export default function FoodHub() {
     </Page>
   }
 
+  const fastingSub = !settings ? t('Loading…')
+    : !fastingOn ? t('Off')
+    : fasting.active ? fmtDur(progressOf(fasting.active, now).elapsedMs) : t('Start a fast')
+
   // One entry per page that exists.
   const targets = [
     { path: '/food/foods', icon: 'apple', title: t('Foods'), sub: foods.status === 'ready' ? tn('{0} food', '{0} foods', foods.list.length) : t('Your own foods') },
     { path: '/food/meals', icon: 'bookOpen', title: t('Saved meals'), sub: meals.status === 'ready' ? tn('{0} meal', '{0} meals', meals.list.length) : t('Loading…') },
     { path: '/food/recipes', icon: 'cookingPot', title: t('Recipes'), sub: recipes.status === 'ready' ? tn('{0} recipe', '{0} recipes', recipes.list.length) : t('Loading…') },
     { path: '/food/goals', icon: 'target', title: t('Goals'), sub: status === 'ready' ? units.energy(target.base) : t('Daily target') },
+    // Always there: the Fasting page is where fasting is switched on, so the way in cannot depend on it.
+    { path: '/food/fasting', icon: 'timer', title: t('Fasting'), sub: fastingSub },
   ]
 
   // The card says today, so it opens Home on today, whichever date Home was left on.

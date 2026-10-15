@@ -26,14 +26,15 @@ function NutrientField({ id, unit, sub, value, onChange }) {
   </label>
 }
 
-// Create (no `food`) or edit (a saved food, with an id). Nothing is sent until Save; a failed
+// Create (no `food`, or one without an id, whose fields start the form: a scanned barcode) or edit
+// (a saved food, with an id). Nothing is sent until Save; a failed
 // save keeps everything typed. A new food carries one key for as long as the sheet is open, so a
 // retry after a lost answer saves it once. Energy is in the person's unit, taken when the sheet
 // opens so the field does not change unit under what was typed; it is stored as kcal.
 export function FoodEditSheet({ food = null, settings = null, close }) {
   const editing = typeof food?.id === 'number'
   const [energyUnit] = useState(() => editorEnergyUnit(settings))
-  const [form, setForm] = useState(() => formOf(editing ? food : null, { energyUnit }))
+  const [form, setForm] = useState(() => formOf(food, { energyUnit }))
   const [more, setMore] = useState(false)
   const [busy, setBusy] = useState(false)
   const [problem, setProblem] = useState('')

@@ -5,6 +5,7 @@ import { foodKcal, matchesFood, recentFoods } from '../lib/nutrition/diary.js'
 import { useUnits } from '../lib/nutrition/use-units.js'
 import { portionSheet } from './PortionSheet.jsx'
 import { quickKcalSheet } from './QuickKcalSheet.jsx'
+import { scanSheet } from './ScanSheet.jsx'
 import Icon from './Icon.jsx'
 import { SearchField } from './ui.jsx'
 import { ItemRow, SectionTitle } from './blocks.jsx'
@@ -56,8 +57,12 @@ export default function FoodPicker({ date, meal, mealName, autoFocus = false, on
   const own = q ? foods.list.filter(f => matchesFood(f, q)).slice(0, OWN_MAX) : []
 
   return <div className="food-picker">
-    <SearchField value={query} onChange={e => setQuery(e.target.value)} onClear={() => setQuery('')}
-      placeholder={t('Search foods')} aria-label={t('Search foods')} autoFocus={autoFocus} enterKeyHint="search" />
+    <div className="fp-search">
+      <SearchField value={query} onChange={e => setQuery(e.target.value)} onClear={() => setQuery('')}
+        placeholder={t('Search foods')} aria-label={t('Search foods')} autoFocus={autoFocus} enterKeyHint="search" />
+      <button type="button" className="iconbtn fp-scan" aria-label={t('Scan a barcode')}
+        onClick={() => scanSheet({ date, meal, mealName, onLogged })}><Icon name="scanBarcode" /></button>
+    </div>
 
     {!q && <>
       <SectionTitle>{t('Recent')}</SectionTitle>
