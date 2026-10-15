@@ -11,8 +11,10 @@ import { fmtDate, fmtNum, todayISO, uid } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
-import SubHeader from '../components/SubHeader.jsx'
-import { Button, NumberField, Section, Segmented, SelectRow, Switch, TextField } from '../components/ui.jsx'
+import { Page, Inline, Spacer } from '../components/layout.jsx'
+import { Card, EmptyState, SectionTitle } from '../components/blocks.jsx'
+import { SheetHeader, SheetActions } from '../components/sheet-layout.jsx'
+import { Button, NumberField, Row, Section, Segmented, SelectRow, Switch, TextField } from '../components/ui.jsx'
 import { confirmSheet } from '../sheets.jsx'
 
 // Every write leaves the list in its one-entry-per-day shape (normalizeMeasurementsState).
@@ -76,8 +78,8 @@ function MeasurementLog({ sourceDate, close }) {
   }
 
   return <>
-    <h3>{source ? t('Edit measurements') : t('Log measurements')}</h3>
-    <div className="muted small" style={{ marginBottom: 12 }}>{t('Fill only what you measured today. Empty fields stay empty.')}</div>
+    <SheetHeader title={source ? t('Edit measurements') : t('Log measurements')} />
+    <div className="muted small mb-6">{t('Fill only what you measured today. Empty fields stay empty.')}</div>
     <label className="measure-date">
       <span>{t('Date')}</span>
       <input className="field" type="date" value={date} max={todayISO()} onChange={e => setDate(e.target.value)} />
@@ -90,11 +92,11 @@ function MeasurementLog({ sourceDate, close }) {
           <i>{fieldUnit(field, S.unit)}</i>
         </span>
       </label>)}
-    </div> : <div className="empty small">{t('Choose at least one measurement first.')}</div>}
-    <div style={{ height: 14 }} />
-    <Button variant="primary" onClick={save} disabled={!fields.length}>{t('Save')}</Button>
-    <div style={{ height: 8 }} />
-    <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
+    </div> : <EmptyState className="small">{t('Choose at least one measurement first.')}</EmptyState>}
+    <SheetActions>
+      <Button variant="primary" onClick={save} disabled={!fields.length}>{t('Save')}</Button>
+      <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
+    </SheetActions>
   </>
 }
 
@@ -126,24 +128,23 @@ function ManageMeasurements({ close }) {
     setName('')
   }
   return <>
-    <h3>{t('Choose measurements')}</h3>
-    <div className="muted small" style={{ marginBottom: 12 }}>{t('Keep the logging form focused on the measurements you actually track.')}</div>
+    <SheetHeader title={t('Choose measurements')} />
+    <div className="muted small mb-6">{t('Keep the logging form focused on the measurements you actually track.')}</div>
     {groups.map(group => <Section title={t(group)} key={group} className="measure-options">
-      {MEASUREMENT_FIELDS.filter(f => f.group === group).map(field => <div className="lrow" key={field.key}>
-        <span className="lrow-m"><span className="lrow-t">{t(field.label)}</span></span>
+      {MEASUREMENT_FIELDS.filter(f => f.group === group).map(field => <Row key={field.key} title={t(field.label)}>
         <Switch checked={(S.measurementEnabled || []).includes(field.key)} onChange={on => toggleBuiltin(field.key, on)} />
-      </div>)}
-      {group === 'Other' && S.customMeasurements.map(field => <div className="lrow" key={field.id}>
-        <span className="lrow-m"><span className="lrow-t">{field.name}</span><span className="lrow-s">{t('Custom')}</span></span>
+      </Row>)}
+      {group === 'Other' && S.customMeasurements.map(field => <Row key={field.id} title={field.name} subtitle={t('Custom')}>
         <Switch checked={field.enabled !== false} onChange={on => toggleCustom(field.id, on)} />
-      </div>)}
+      </Row>)}
     </Section>)}
-    <div className="row" style={{ gap: 8, alignItems: 'stretch' }}>
+    <Inline gap={4} align="stretch">
       <TextField value={name} maxLength={60} placeholder={t('Custom measurement')} onChange={e => setName(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') add() }} />
       <Button icon="plus" onClick={add} disabled={!name.trim()}>{t('Add')}</Button>
-    </div>
-    <div style={{ height: 14 }} />
-    <Button variant="primary" onClick={close}>{t('Done')}</Button>
+    </Inline>
+    <SheetActions>
+      <Button variant="primary" onClick={close}>{t('Done')}</Button>
+    </SheetActions>
   </>
 }
 
@@ -185,18 +186,19 @@ export default function Measurements() {
   })
 
   return <div>
-    <SubHeader title={t('Body measurements')} sub={t('Circumference & composition')}
+    <Page title={t('Body measurements')} sub={t('Circumference & composition')}
       action={<button className="iconbtn" onClick={manageMeasurementsSheet} aria-label={t('Choose measurements')}><Icon name="gear" /></button>} />
 
-    <div className="card">
-      <div className="row between" style={{ marginBottom: 10 }}>
+    <Card>
+      <Inline justify="between" className="mb-5">
         <div>
           <div className="muted small">{field ? t(field.label) : t('Body measurements')}</div>
-          <div className="big" style={{ marginTop: 3 }}>{latest ? <>{fmtNum(latest.y)} <span className="muted" style={{ fontSize: '1rem' }}>{unit}</span></> : '–'}</div>
-          {delta != null && delta !== 0 && <div className="small" style={{ marginTop: 3, color: 'var(--label-2)' }}>{delta > 0 ? '+' : ''}{fmtNum(delta)} {unit} {t('since previous')}</div>}
+          {/* Stat takes no className, so the 3px top margin keeps this .big by hand. */}
+          <div className="big" style={{ marginTop: 3 }}>{latest ? <>{fmtNum(latest.y)} <span className="muted fs-callout">{unit}</span></> : '–'}</div>
+          {delta != null && delta !== 0 && <div className="small muted" style={{ marginTop: 3 }}>{delta > 0 ? '+' : ''}{fmtNum(delta)} {unit} {t('since previous')}</div>}
         </div>
         <Button size="sm" icon="plus" onClick={() => measurementLogSheet()}>{t('Log')}</Button>
-      </div>
+      </Inline>
       {available.length > 0 && <div className="sect-b measure-select"><SelectRow
         title={t('Measurement')} sheetTitle={t('Choose measurement')} value={key} onChange={setSelected}
         options={available.map(f => ({ value: f.key, label: t(f.label) }))} />
@@ -204,30 +206,31 @@ export default function Measurements() {
       <Segmented className="seg-range" value={range} onChange={setRange}
         options={[{ value: 30, label: '1M' }, { value: 90, label: '3M' }, { value: 365, label: '1Y' }, { value: 0, label: t('All') }]} />
       <div className="chart"><LineChart points={points} h={170} unit={unit} color="var(--teal)" /></div>
-    </div>
+    </Card>
 
-    {!available.length && <div className="card">
+    {!available.length && <Card>
       <div className="muted small">{t('Choose the measurements you want to track, then log your first check-in.')}</div>
-      <div style={{ height: 10 }} /><Button onClick={manageMeasurementsSheet}>{t('Choose measurements')}</Button>
-    </div>}
+      <Spacer size={5} /><Button onClick={manageMeasurementsSheet}>{t('Choose measurements')}</Button>
+    </Card>}
 
-    <div className="row between" style={{ margin: '18px 2px 10px' }}>
-      <h4 className="sec" style={{ margin: 0 }}>{t('Measurement history')}</h4>
+    {/* 18px / 2px / 10px: the kit has no inline-margin class, so the shorthand stays inline. */}
+    <Inline justify="between" style={{ margin: '18px 2px 10px' }}>
+      <SectionTitle className="m-0">{t('Measurement history')}</SectionTitle>
       <Button size="sm" variant="ghost" icon="gear" onClick={manageMeasurementsSheet}>{t('Fields')}</Button>
-    </div>
+    </Inline>
     {recent.length ? <div className="list">{recent.map(entry => {
       const count = MEASUREMENT_KEYS.filter(k => entry[k] != null).length + (entry.other || []).filter(o => o.value != null).length
       const previewFields = enabledMeasurementFields(S).map(f => ({ field: f, value: shownValue(entry, f, S.unit) })).filter(x => x.value != null).slice(0, 3)
-      return <div className="card measure-history" key={entry.d}>
-        <div className="row between">
-          <div><b>{fmtDate(entry.d, true)}</b><div className="small dim" style={{ marginTop: 2 }}>{t(count === 1 ? '{0} measurement' : '{0} measurements', count)}</div></div>
-          <div className="row" style={{ gap: 4 }}>
+      return <Card className="measure-history" key={entry.d}>
+        <Inline justify="between">
+          <div><b>{fmtDate(entry.d, true)}</b><div className="small dim mt-1">{t(count === 1 ? '{0} measurement' : '{0} measurements', count)}</div></div>
+          <Inline gap={2}>
             <button className="iconbtn" onClick={() => measurementLogSheet(entry.d)} aria-label={t('Edit')}><Icon name="pencil" /></button>
-            <button className="iconbtn" style={{ color: 'var(--red-ink)' }} onClick={() => remove(entry)} aria-label={t('Delete')}><Icon name="trash" /></button>
-          </div>
-        </div>
+            <button className="iconbtn ink-danger" onClick={() => remove(entry)} aria-label={t('Delete')}><Icon name="trash" /></button>
+          </Inline>
+        </Inline>
         {previewFields.length > 0 && <div className="measure-preview">{previewFields.map(({ field: f, value }) => <span key={f.key}>{t(f.label)} <b>{fmtNum(value)} {fieldUnit(f, S.unit)}</b></span>)}</div>}
-      </div>
-    })}</div> : <div className="empty small">{t('No measurements yet')}</div>}
+      </Card>
+    })}</div> : <EmptyState className="small">{t('No measurements yet')}</EmptyState>}
   </div>
 }

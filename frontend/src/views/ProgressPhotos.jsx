@@ -22,7 +22,8 @@ import { useMediaPicker } from '../components/CustomMediaField.jsx'
 import { CustomThumb, MediaView, useMediaUrl } from '../components/CustomMedia.jsx'
 import { Button } from '../components/ui.jsx'
 import Icon from '../components/Icon.jsx'
-import SubHeader from '../components/SubHeader.jsx'
+import { Page, Inline } from '../components/layout.jsx'
+import { EmptyState } from '../components/blocks.jsx'
 
 const toast = m => useUI.getState().toast(m)
 
@@ -171,31 +172,31 @@ export default function ProgressPhotos() {
   }
 
   return <>
-    <SubHeader title={t('Progress photos')} sub={tn('{0} photo', '{0} photos', photos.length)}
+    <Page title={t('Progress photos')} sub={tn('{0} photo', '{0} photos', photos.length)}
       action={photos.length >= 2 && (comparing
         ? <Button size="sm" variant="ghost" onClick={cancelCompare}>{t('Cancel')}</Button>
         : <Button size="sm" variant="tinted" onClick={() => setComparing(true)}>{t('Compare')}</Button>)} />
 
-    {!comparing && showAdd && <div className="row" style={{ marginBottom: 16 }}>
+    {!comparing && showAdd && <Inline className="mb-8">
       {today
         ? <Button icon={busy ? 'image' : 'camera'} disabled={!canAdd} onClick={() => fileRef.current?.click()}>
             {busy ? t('Loading…') : t('Add a photo to today')}
           </Button>
         : <Button icon="dumbbell" onClick={() => nav('/train/workout')}>{t('Log today’s workout to add a photo')}</Button>}
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
-    </div>}
+    </Inline>}
 
-    {comparing && <div className="small dim" style={{ margin: '0 0 12px' }}>
+    {comparing && <div className="small dim mb-6">
       {picked.length < 2 ? t('Pick two photos to compare.') : t('Ready! Open the comparison.')}
     </div>}
 
     {!photos.length
-      ? <div className="empty"><div className="ico"><Icon name="image" /></div>
+      ? <EmptyState icon="image">
           {t('No progress photos yet. The button above adds one to today, once today has a logged workout.')}
-        </div>
+        </EmptyState>
       : groups.map(g => (
-        <div key={g.d} style={{ marginBottom: 18 }}>
-          <div className="small muted" style={{ marginBottom: 6 }}>{fmtDate(g.d, true, true)}</div>
+        <div key={g.d} className="mb-9">
+          <div className="small muted mb-3">{fmtDate(g.d, true, true)}</div>
           <div className="wmedia-grid">
             {g.items.map(p => {
               const selected = picked.includes(p.key)

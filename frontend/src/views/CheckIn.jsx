@@ -7,7 +7,8 @@ import { canRenderFmt } from '../lib/qr.js'
 import { scanCode, importCodeFromImage } from '../lib/scan.js'
 import { MOBILE } from '../lib/mobile.js'
 import Icon from '../components/Icon.jsx'
-import SubHeader from '../components/SubHeader.jsx'
+import { Page, Inline } from '../components/layout.jsx'
+import { SheetHeader } from '../components/sheet-layout.jsx'
 import QrCanvas from '../components/QrCanvas.jsx'
 import CameraScan from '../components/CameraScan.jsx'
 import { Button, TextField } from '../components/ui.jsx'
@@ -68,7 +69,7 @@ export default function CheckIn() {
   }
 
   return <div>
-    <SubHeader title={t('Check in')} sub={cards.length ? t('Show this at the gym') : t('Add your gym card')} />
+    <Page title={t('Check in')} sub={cards.length ? t('Show this at the gym') : t('Add your gym card')} />
 
     <div className="ci-rail" ref={railRef} onScroll={onScroll}>
       {cards.map((card, i) => <CardFace
@@ -89,7 +90,8 @@ export default function CheckIn() {
       <span className={'ci-dot' + (active >= cards.length ? ' on' : '')} />
     </div>}
 
-    {!cards.length && <div className="muted small" style={{ textAlign: 'center', marginTop: 18, lineHeight: 1.5 }}>
+    {/* line-height 1.5 has no kit token, so it stays inline */}
+    {!cards.length && <div className="muted small ta-center mt-9" style={{ lineHeight: 1.5 }}>
       {t('Import a photo of your membership card or scan it with the camera. No extra app needed at the gym, just open this screen.')}
     </div>}
   </div>
@@ -117,7 +119,7 @@ function CardFace({ card, index, count }) {
     <div className="ci-card-hd">
       <button className="iconbtn ci-card-btn" onClick={() => openEditCard(card)} aria-label={t('Edit')}><Icon name="pencil" /></button>
       <div className="ci-label">{card.label}</div>
-      <button className="iconbtn ci-card-btn" style={{ color: 'var(--red-ink)' }} onClick={remove} aria-label={t('Remove')}><Icon name="trash" /></button>
+      <button className="iconbtn ci-card-btn ink-danger" onClick={remove} aria-label={t('Remove')}><Icon name="trash" /></button>
     </div>
     <div className="ci-qr-plate"><QrCanvas value={card.value} size={230} /></div>
     <div className="ci-value">{card.value}</div>
@@ -226,18 +228,19 @@ function CardSheet({ close, card }) {
   }
 
   return <>
-    <h3>{editing ? t('Edit card') : t('Add a card')}</h3>
-    <div className="muted small" style={{ marginBottom: 14 }}>{t('Scan it with the camera or import a photo.')}</div>
+    <SheetHeader title={editing ? t('Edit card') : t('Add a card')} />
+    <div className="muted small mb-7">{t('Scan it with the camera or import a photo.')}</div>
 
-    <div className="row" style={{ gap: 8, marginBottom: 16 }}>
+    <Inline gap={4} className="mb-8">
       <Button variant="tinted" icon="camera" onClick={doScan} disabled={busy}>{editing ? t('Re-scan') : t('Scan')}</Button>
       <Button variant="tinted" icon="image" onClick={() => fileRef.current?.click()} disabled={busy}>{t('Import photo')}</Button>
-    </div>
+    </Inline>
 
     <label className="sect-t">{t('Label')}</label>
-    <TextField value={label} onChange={e => setLabel(e.target.value)} placeholder={t('e.g. FitZone downtown')} style={{ marginBottom: 16 }} />
+    <TextField value={label} onChange={e => setLabel(e.target.value)} placeholder={t('e.g. FitZone downtown')} className="mb-8" />
 
-    {value.trim() && <div className="ci-qr-plate" style={{ alignSelf: 'center', marginBottom: 16 }}><QrCanvas value={value.trim()} size={150} /></div>}
+    {/* align-self has no kit class, so it stays inline */}
+    {value.trim() && <div className="ci-qr-plate mb-8" style={{ alignSelf: 'center' }}><QrCanvas value={value.trim()} size={150} /></div>}
 
     <Button variant="primary" onClick={commit} disabled={busy || !value.trim()}>{editing ? t('Save card') : t('Save card')}</Button>
 

@@ -139,7 +139,7 @@ describe('StructuralBalance view', () => {
     const log = [...rdl.querySelectorAll('button')].find(b => b.textContent.includes('Log body weight'))
     // Two buttons side by side squeeze each other's labels onto two lines at 360 px (Hungarian):
     // the row wraps them instead.
-    expect(log.parentElement.style.flexWrap).toBe('wrap')
+    expect(log.parentElement.classList.contains('wrap')).toBe(true)   // ui-kit.css: .wrap → flex-wrap: wrap
     act(() => log.click())
     expect(useUI.getState().sheets.length).toBe(1)
 

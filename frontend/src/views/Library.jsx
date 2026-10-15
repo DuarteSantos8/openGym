@@ -10,7 +10,8 @@ import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { Thumb } from '../components/Media.jsx'
 import { exerciseDetailSheet, addToRoutineSheet, customExSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
-import SubHeader from '../components/SubHeader.jsx'
+import { Page, Inline, Spacer } from '../components/layout.jsx'
+import { ChipRow, Chip, EmptyState, ItemRow, SectionTitle, Tag } from '../components/blocks.jsx'
 import ExerciseViewToggle from '../components/ExerciseViewToggle.jsx'
 import { Button } from '../components/ui.jsx'
 import { tappable, useRevealActiveChip } from '../lib/use-sheet-keyboard.js'
@@ -60,58 +61,63 @@ export default function Library() {
     : []
   const row = e => {
     const best = bestWeightFor(S, e.id)
+    // Stays a hand-built .item: ItemRow warns (in development, once per row) about the Plan button a
+    // tappable row holds, and that button, with its stopPropagation, is this row's existing behaviour.
     return <div key={e.id} className="item" {...tappable(() => exerciseDetailSheet(e))}>
       <Thumb ex={e} />
       <div className="grow"><div className={`tt ${exerciseNameClass(e)}`}>{isFav(S, e.id) && <Icon name="starFill" className="fav-star" />}{exerciseNameFor(e)}</div><div className="ss capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</div></div>
-      {best > 0 && <span className="tag acc">{fmtNum(best)}</span>}
+      {best > 0 && <Tag tone="acc">{fmtNum(best)}</Tag>}
       <Button size="sm" variant="tinted" icon="plus" onClick={ev => { ev.stopPropagation(); addToRoutineSheet(e) }}>{t('Plan')}</Button>
     </div>
   }
 
   return <>
-    <SubHeader title={t('Exercises')}
+    <Page title={t('Exercises')}
       action={<Button size="sm" variant="tinted" icon="figureStrength" onClick={() => nav('/train/exercises/muscles')}>{t('By muscle')}</Button>} />
     <div className="sub lib-count">{ownCount
       ? tn('{1} animated exercises + 1 of your own', '{1} animated exercises + {0} of your own', ownCount, EXDB.length)
       : t('{0} exercises with animations', EXDB.length)}</div>
-    <div className="search-row" style={{ marginBottom: 10 }}><div className={'search' + (narrowed ? ' has-count' : '') + (q ? ' has-clear' : '')}><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+    <div className="search-row mb-5"><div className={'search' + (narrowed ? ' has-count' : '') + (q ? ' has-clear' : '')}><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
       <input className="input" placeholder={t('Search…')} value={q} onChange={e => { setQ(e.target.value); setShown(40) }} />
       {narrowed && <span className="search-count" role="status" aria-label={exCount(f.length)}>{fmtNum(f.length)}</span>}
       {q && <button className="clear" onClick={() => { setQ(''); setShown(40) }} aria-label={t('Clear')}><Icon name="xmark" /></button>}</div>
       <ExerciseViewToggle /></div>
-    {profile && <div className="small dim row" style={{ margin: '-4px 2px 10px', gap: 6, alignItems: 'center' }}>
-      <Icon name="kettlebell" style={{ fontSize: 13 }} />
+    {/* The negative margin shorthand and the chip's margin/padding have no kit class, so they stay inline. */}
+    {profile && <Inline gap={3} className="small dim" style={{ margin: '-4px 2px 10px' }}>
+      <Icon name="kettlebell" className="fs-footnote" />
       {showAll ? t('Showing all equipment') : t('Showing what you have in "{0}"', profile.name)}
-      <button className="chip nocap" style={{ marginInlineStart: 'auto', padding: '3px 10px', fontSize: 12 }} onClick={() => setShowAll(v => !v)}>
+      <Chip nocap className="fs-caption" style={{ marginInlineStart: 'auto', padding: '3px 10px' }} onClick={() => setShowAll(v => !v)}>
         {showAll ? t('Filter by "{0}"', profile.name) : t('Show all equipment')}
-      </button>
-    </div>}
+      </Chip>
+    </Inline>}
     {/* Changing body part keeps the equipment filter (issue #71): the eqOn fallback above drops
         it only for the current view if the new body part has nothing under it, without forgetting
         the choice. "All" clears it, since it spans every body part. */}
-    <div className="chips" ref={bpStrip} style={{ marginBottom: eqOpts.length > 1 || catOpts.length > 1 ? 8 : 12 }}>
-      <button className={'chip nocap' + (!bp ? ' on' : '')} onClick={() => { setBp(''); setEq(''); setShown(40) }}>{t('All')}</button>
-      {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} onClick={() => { setBp(b); setShown(40) }}>{t(b)}</button>)}
-    </div>
-    {catOpts.length > 1 && <div className="chips" ref={catStrip} style={{ marginBottom: 8 }}>
-      <button className={'chip nocap' + (!catOn ? ' on' : '')} onClick={() => { setCat(''); setShown(40) }}>{t('Any type')}</button>
-      {catOpts.map(x => <button key={x} className={'chip' + (catOn === x ? ' on' : '')} onClick={() => { setCat(x); setShown(40) }}>{t(x)}</button>)}
-    </div>}
-    {eqOpts.length > 1 && <div className="chips" ref={eqStrip} style={{ marginBottom: 12 }}>
-      <button className={'chip nocap' + (!eqOn ? ' on' : '')} onClick={() => { setEq(''); setShown(40) }}>{t('Any equipment')}</button>
-      {eqOpts.map(x => <button key={x} className={'chip' + (eqOn === x ? ' on' : '')} onClick={() => { setEq(x); setShown(40) }}>{t(x)}</button>)}
-    </div>}
+    <ChipRow ref={bpStrip} className={eqOpts.length > 1 || catOpts.length > 1 ? 'mb-4' : 'mb-6'}>
+      <Chip nocap on={!bp} onClick={() => { setBp(''); setEq(''); setShown(40) }}>{t('All')}</Chip>
+      {BODYPARTS.map(b => <Chip key={b} on={bp === b} onClick={() => { setBp(b); setShown(40) }}>{t(b)}</Chip>)}
+    </ChipRow>
+    {catOpts.length > 1 && <ChipRow ref={catStrip} className="mb-4">
+      <Chip nocap on={!catOn} onClick={() => { setCat(''); setShown(40) }}>{t('Any type')}</Chip>
+      {catOpts.map(x => <Chip key={x} on={catOn === x} onClick={() => { setCat(x); setShown(40) }}>{t(x)}</Chip>)}
+    </ChipRow>}
+    {eqOpts.length > 1 && <ChipRow ref={eqStrip} className="mb-6">
+      <Chip nocap on={!eqOn} onClick={() => { setEq(''); setShown(40) }}>{t('Any equipment')}</Chip>
+      {eqOpts.map(x => <Chip key={x} on={eqOn === x} onClick={() => { setEq(x); setShown(40) }}>{t(x)}</Chip>)}
+    </ChipRow>}
     <div className={'list' + (S.exerciseView === 'cards' ? ' ex-grid' : '')}>
-      <div className="item ex-new" {...tappable(() => customExSheet(null, ex => exerciseDetailSheet(ex), q.trim()))}>
-        <div className="thumb thumb-x"><Icon name="plusCircle" /></div>
-        <div className="grow"><div className="tt">{t('Create your own exercise')}</div><div className="ss">{t('name + body part, and a photo or video if you like')}</div></div><Icon name="plus" className="chev" />
-      </div>
+      <ItemRow className="ex-new"
+        lead={<div className="thumb thumb-x"><Icon name="plusCircle" /></div>}
+        title={t('Create your own exercise')}
+        subtitle={t('name + body part, and a photo or video if you like')}
+        trailing={<Icon name="plus" className="chev" />}
+        onClick={() => customExSheet(null, ex => exerciseDetailSheet(ex), q.trim())} />
       {f.slice(0, shown).map(row)}
-      {f.length === 0 && !similar.length && <div className="empty"><div className="ico"><Icon name="magnifier" /></div>{t('No match')}</div>}
-      {similar.length > 0 && <h4 className="sec similar-label">{f.length ? t('Similar exercises') : t('No exact match. These come close:')}</h4>}
+      {f.length === 0 && !similar.length && <EmptyState icon="magnifier">{t('No match')}</EmptyState>}
+      {similar.length > 0 && <SectionTitle className="similar-label">{f.length ? t('Similar exercises') : t('No exact match. These come close:')}</SectionTitle>}
       {similar.map(row)}
     </div>
-    {f.length > shown && <><div style={{ height: 10 }} /><Button ref={moreRef} onClick={() => setShown(s => s + 40)}>{t('Show more')}</Button></>}
+    {f.length > shown && <><Spacer size={5} /><Button ref={moreRef} onClick={() => setShown(s => s + 40)}>{t('Show more')}</Button></>}
   </>
 }
 

@@ -2,7 +2,8 @@ import { useMemo } from 'react'
 import { useStore } from '../store/useStore.js'
 import { exOr } from '../lib/exercises.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
-import SubHeader from '../components/SubHeader.jsx'
+import { Page, Inline, Stack } from '../components/layout.jsx'
+import { Card } from '../components/blocks.jsx'
 import { Button, Segmented } from '../components/ui.jsx'
 import { exercisePicker, bwSheet } from '../sheets.jsx'
 import { computeBalance, overrideKey, withOverride } from '../lib/structuralBalance.js'
@@ -40,13 +41,13 @@ export default function StructuralBalance() {
   }
 
   return <>
-    <SubHeader title={t('Structural balance')} sub={t('Compare your lifts against a published ratio table to find the weak link.')} />
+    <Page title={t('Structural balance')} sub={t('Compare your lifts against a published ratio table to find the weak link.')} />
 
     <Segmented className="seg-range" value={templateId}
       onChange={id => update(s => { s.balanceTemplate = id })}
       options={TEMPLATE_LIST.map(tpl => ({ value: tpl.id, label: t(tpl.label) }))} />
 
-    <div className="card">
+    <Card>
       {results.map(r => {
         const role = template.roles.find(role => role.id === r.roleId)
         const view = balanceStatusView(r.status, r.needsAnchor)
@@ -58,37 +59,39 @@ export default function StructuralBalance() {
         const actual = r.status === 'no-data' ? '–' : reps ? r.current.r : `${Math.round(r.actualPct)}%`
         const valueText = `${actual} / ${r.targetPct}${reps ? '' : '%'}`
         return (
-          <div key={r.roleId} className="mrow" data-role-id={r.roleId} data-status={r.status}
-            style={{ flexDirection: 'column', alignItems: 'stretch', gap: 6, paddingBlock: 10 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+          // paddingBlock has no kit class, so it stays inline.
+          <Stack key={r.roleId} gap={3} className="mrow ai-stretch" data-role-id={r.roleId} data-status={r.status}
+            style={{ paddingBlock: 10 }}>
+            <Inline justify="between" gap={6} align="stretch">
               {/* `.mrow .nm` keeps to one line, and its ellipsis never reaches these block lines:
                   a label is cut off mid-word instead, and what goes is its reps and "each hand" —
-                  what the standard asks for. So here the name wraps. */}
-              <span className="nm" style={{ minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere' }}>
+                  what the standard asks for. So here the name wraps. White-space, overflow-wrap and
+                  display have no kit class, so they stay inline (the wrap test reads them). */}
+              <span className="nm" style={{ whiteSpace: 'normal', overflowWrap: 'anywhere' }}>
                 <span style={{ display: 'block' }}>{t(role.label)}</span>
                 <span className="small dim" style={{ display: 'block' }}>
                   <span className={exId ? exerciseNameClass(exOr(exId)) : ''} data-exercise-name>{name}</span>{r.isOverridden ? ` · ${t('Custom')}` : ''}
                 </span>
-                {r.needsBodyweight && <span className="small" data-needs-bodyweight style={{ display: 'block', color: 'var(--label-2)' }}>
+                {r.needsBodyweight && <span className="small muted" data-needs-bodyweight style={{ display: 'block' }}>
                   {t('Log your body weight to score this lift.')}
                 </span>}
-                {r.needsAnchor && <span className="small" data-needs-anchor style={{ display: 'block', color: 'var(--label-2)' }}>
+                {r.needsAnchor && <span className="small muted" data-needs-anchor style={{ display: 'block' }}>
                   {t('Log the anchor lift to score this one.')}
                 </span>}
               </span>
-              <span className="v" style={{ textAlign: 'end', flexShrink: 0 }}>
+              <span className="v">
                 <span style={{ color: STATUS_COLOR[r.status] }}>{t(view.label)}</span>
                 <span className="dim small" style={{ display: 'block' }}>{valueText}</span>
               </span>
-            </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            </Inline>
+            <Inline wrap gap={4} align="stretch">
               {r.needsBodyweight && <Button size="sm" variant="ghost" icon="plus" onClick={() => bwSheet()}>{t('Log body weight')}</Button>}
               <Button size="sm" variant="ghost" icon="pencil" onClick={() => changeExercise(role)}>{t('Change exercise')}</Button>
               {r.isOverridden && <Button size="sm" variant="ghost" onClick={() => clearOverride(role)}>{t('Use default exercise')}</Button>}
-            </div>
-          </div>
+            </Inline>
+          </Stack>
         )
       })}
-    </div>
+    </Card>
   </>
 }
