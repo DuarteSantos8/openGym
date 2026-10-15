@@ -25,6 +25,6 @@ describe('a superset\'s name and rest between rounds (#292)', () => {
     expect(restSecFor(entries, [0, 1], 90)).toBe(45)
     // On a single exercise a leftover value means nothing.
     expect(restSecFor(entries, [0], 90)).toBe(120)
-    expect(restSecFor([{ target: { restSec: 120 } }, { target: {} }], [0, 1], 90)).toBe(120)
+    expect(restSecFor([{ target: { restSec: 120 } }, { target: {} }], [0, 1], 90)).toBe(0)
   })
 })

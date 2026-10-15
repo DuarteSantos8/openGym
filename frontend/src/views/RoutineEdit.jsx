@@ -455,7 +455,7 @@ export default function RoutineEdit() {
   const editSuperset = i => {
     const sg = r.ex[i]?.sg
     if (!sg) return
-    supersetSheet(supersetMeta(r.ex, unitOf.get(i)), meta => edit(ex => { setSupersetMeta(ex, sg, meta) }))
+    supersetSheet(supersetMeta(r.ex, unitOf.get(i)), meta => edit(ex => { setSupersetMeta(ex, sg, meta); if (meta.mode === 'interval') for (const e of ex) if (e.sg === sg) { e.mode = 'time'; e.sec = meta.work } }))
   }
   const inSS = new Set(units.filter(u => u.length > 1).flat())
   const profile = activeProfile(S)
@@ -526,7 +526,7 @@ export default function RoutineEdit() {
       // screen reader would lose inside one): the name is, a real <button> a click bubbles up
       // from. The long press treats it as the row (data-row-open, useRoutineReorder).
       const item = <div className={'item' + (inSS.has(i) ? ' in-ss' : '')} onClick={() => {
-          exConfigSheet(ex, e, cfg => edit(x => { x[i] = { id: x[i].id, sg: x[i].sg, ...(x[i].sg ? { sgName: x[i].sgName, sgRest: x[i].sgRest } : {}), ...cfg }; cleanupSg(x) }), removeHere, r, null, () => replace(i))
+          exConfigSheet(ex, e, cfg => edit(x => { x[i] = { id: x[i].id, sg: x[i].sg, ...(x[i].sg ? { sgName: x[i].sgName, sgRest: x[i].sgRest, sgMode: x[i].sgMode, sgIntervalRest: x[i].sgIntervalRest, sgWork: x[i].sgWork, sgPrep: x[i].sgPrep, sgRoundRest: x[i].sgRoundRest } : {}), ...cfg }; cleanupSg(x) }), removeHere, r, null, () => replace(i))
         }}>
           {/* Shown on pointer devices only (index.css .routine-grip); the Move buttons and the
               long press stay the way in for a keyboard and a finger. */}
@@ -550,7 +550,7 @@ export default function RoutineEdit() {
         {unitFirst.has(i) && (() => {
           const meta = supersetMeta(r.ex, unitOf.get(i))
           return <button type="button" className="ss-label ss-label-btn" onClick={() => editSuperset(i)} title={t('Name and rest of this superset')}>
-            <Icon name="link" /><span className="ss-label-name">{meta.name || t('Superset')}</span>
+            <Icon name={meta.mode === 'interval' ? 'timer' : 'link'} /><span className="ss-label-name">{meta.name || (meta.mode === 'interval' ? t('Interval') : t('Superset'))}</span>
             {meta.rest > 0 && <span className="dim">· {t('{0} rest after each round', fmtRest(meta.rest))}</span>}
             <Icon name="pencil" />
           </button>
