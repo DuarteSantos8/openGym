@@ -159,3 +159,25 @@ describe('Strong Set Order markers', () => {
     expect(parsed.workouts[0].vol).toBe(60 * 10 + 60 * 7)
   })
 })
+
+describe('Strong Note rows', () => {
+  const csv = [
+    '"Workout #";"Date";"Workout Name";"Duration (sec)";"Exercise Name";"Set Order";"Weight (kg)";"Reps";"RPE";"Distance (meters)";"Seconds";"Notes";"Workout Notes"',
+    '1;"2026-09-01 18:00:00";"Push";3720;"Bench Press (Barbell)";"Note";;;;;;"Elbows in";""',
+    '1;"2026-09-01 18:00:00";"Push";3720;"Bench Press (Barbell)";1;60;10;;;;"";""',
+    '1;"2026-09-01 18:00:00";"Push";3720;"Bench Press (Barbell)";2;60;8;;;;"Grip slipped";""',
+    '1;"2026-09-01 18:00:00";"Push";3720;"Overhead Press (Barbell)";1;40;8;;;;"";""',
+    '1;"2026-09-01 18:00:00";"Push";3720;"Overhead Press (Barbell)";"Note";;;;;;"Strict, no leg drive";""',
+    '1;"2026-09-01 18:00:00";"Push";3720;"Dips";"Note";;;;;;"Skipped today";""',
+  ].join('\n')
+
+  it("puts the exercise's note in its entry, before the set notes, and makes no set of it", () => {
+    const parsed = parseWorkoutCSV(csv, { unit: 'kg' })
+    const [bench, ohp] = parsed.workouts[0].entries
+    expect(bench.note).toBe('Elbows in · Grip slipped')
+    expect(ohp.note).toBe('Strict, no leg drive')
+    expect(parsed.workouts[0].entries).toHaveLength(2)
+    expect(parsed.sets).toBe(3)
+    expect(parsed.skipped).toBe(0)
+  })
+})
