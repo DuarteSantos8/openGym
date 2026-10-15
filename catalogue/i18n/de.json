@@ -19678,55 +19678,179 @@
     ]
   },
   "0593": {
-    "name": "Umgekehrte Hyperextension an der Hebelmaschine"
+    "name": "Umgekehrte Hyperextension an der Hebelmaschine",
+    "instructions": [
+      "Stell die Hebelmaschine passend zu deinem Körper ein und fixier die Füße in den Fußpolstern.",
+      "Leg dich in Bauchlage auf die Maschine, die Hüfte liegt auf dem Polster und die Beine hängen über die Kante.",
+      "Verschränk die Arme vor der Brust oder leg die Hände hinter den Kopf.",
+      "Spann Gesäß und hintere Oberschenkelmuskulatur an und heb die Beine, bis sie parallel zum Boden sind.",
+      "Halte oben kurz inne und senk die Beine dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0594": {
-    "name": "Sitzendes Wadenheben an der Hebelmaschine"
+    "name": "Sitzendes Wadenheben an der Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe so ein, dass die Knie leicht gebeugt sind und die Füße flach auf der Fußplatte stehen.",
+      "Stell die Zehen auf die Fußplatte, die Fersen hängen über die Kante.",
+      "Halte dich an den Griffen oder seitlich am Sitz fest.",
+      "Drück über die Fußballen und heb die Fersen so hoch wie möglich.",
+      "Halte oben kurz inne und senk die Fersen dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0595": {
-    "name": "Sitzender Crunch am Brustpolster der Hebelmaschine"
+    "name": "Sitzender Crunch am Brustpolster der Hebelmaschine",
+    "instructions": [
+      "Stell Sitzhöhe und Brustpolster so ein, dass du bequem sitzt.",
+      "Setz dich an die Maschine, die Brust am Brustpolster und die Füße flach auf dem Boden.",
+      "Halte dich an den Griffen oder den seitlichen Stangen fest.",
+      "Spann die Bauchmuskeln an und roll den Oberkörper langsam nach vorne ein, das Brustpolster geht dabei mit.",
+      "Halte am Punkt der stärksten Anspannung kurz inne und spür die Spannung im Bauch.",
+      "Komm langsam in die Ausgangsposition zurück und halte dabei den Bauch angespannt.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0596": {
-    "name": "Sitzende Fliegende an der Hebelmaschine"
+    "name": "Sitzende Fliegende an der Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe ein und setz dich an die Maschine, den Rücken am Polster.",
+      "Greif die Griffe im Obergriff und halte die Ellbogen leicht gebeugt.",
+      "Atme aus und drück die Griffe nach vorne, bis sie sich vor der Brust treffen.",
+      "Halte kurz inne und spann die Brustmuskeln fest an.",
+      "Atme ein und führ die Griffe langsam zurück in die Ausgangsposition, dabei dehnt sich die Brust.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0597": {
-    "name": "Sitzende Hüftabduktion an der Hebelmaschine"
+    "name": "Sitzende Hüftabduktion an der Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe so ein, dass die Knie im 90-Grad-Winkel gebeugt sind.",
+      "Setz dich an die Maschine, den Rücken an der Lehne und die Füße auf den Fußstützen.",
+      "Halte dich an den seitlichen Griffen fest.",
+      "Spann die Abduktoren an und drück die Beine langsam auseinander, weg von der Körpermitte.",
+      "Halte am Endpunkt kurz inne und führ die Beine dann langsam wieder zusammen in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0598": {
-    "name": "Sitzende Hüftadduktion an der Hebelmaschine"
+    "name": "Sitzende Hüftadduktion an der Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe ein und setz dich an die Maschine, den Rücken an der Lehne.",
+      "Stell die Füße auf die Fußstützen und halte dich an den Griffen fest.",
+      "Spann die Adduktoren an, führ die Beine langsam zusammen und spann dabei die Innenseiten der Oberschenkel fest an.",
+      "Halte am Punkt der stärksten Anspannung kurz inne und komm dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0599": {
-    "name": "Sitzendes Beinbeugen an der Hebelmaschine"
+    "name": "Sitzendes Beinbeugen an der Hebelmaschine",
+    "instructions": [
+      "Stell die Maschine passend zu deinem Körper ein und setz dich mit dem Rücken an die Lehne.",
+      "Leg die Unterschenkel knapp über den Knöcheln an das Hebelpolster.",
+      "Halte dich an den seitlichen Griffen der Maschine fest.",
+      "Lass die Oberschenkel ruhig, atme aus und beug die Beine so weit wie möglich.",
+      "Halte kurz inne und spann dabei die hintere Oberschenkelmuskulatur fest an.",
+      "Atme ein und führ den Hebel langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0600": {
-    "name": "Sitzender Beinheben Crunch an der Hebelmaschine"
+    "name": "Sitzender Beinheben Crunch an der Hebelmaschine",
+    "instructions": [
+      "Setz dich an die Hebelmaschine, den Rücken an der Lehne und die Füße auf den Fußstützen.",
+      "Halte dich an den Griffen oder den seitlichen Stangen fest.",
+      "Spann die Bauchmuskeln an, zieh die Beine langsam zur Brust und roll gleichzeitig den Oberkörper nach vorne ein.",
+      "Halte oben kurz inne und führ Beine und Oberkörper dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0601": {
-    "name": "Sitzende rückwärtige Fliegende im Parallelgriff an der Hebelmaschine"
+    "name": "Sitzende rückwärtige Fliegende im Parallelgriff an der Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe ein und setz dich an die Maschine, die Brust am Polster und die Füße flach auf dem Boden.",
+      "Greif die Griffe im Parallelgriff, die Handflächen zeigen zueinander, und halte die Arme leicht gebeugt.",
+      "Atme aus, zieh die Griffe nach hinten und außen, weg vom Körper, und zieh dabei die Schulterblätter zusammen.",
+      "Halte am Punkt der stärksten Anspannung kurz inne, atme dann ein und komm langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0602": {
-    "name": "Sitzende rückwärtige Fliegende an der Hebelmaschine"
+    "name": "Sitzende rückwärtige Fliegende an der Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe ein und setz dich an die Maschine, die Brust am Polster und die Füße flach auf dem Boden.",
+      "Greif die Griffe im Obergriff und halte die Arme leicht gebeugt.",
+      "Atme aus, zieh die Griffe nach hinten und außen, weg vom Körper, und zieh dabei die Schulterblätter zusammen.",
+      "Halte am Punkt der stärksten Anspannung kurz inne, atme dann ein und komm langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0603": {
-    "name": "Schulterdrücken an der Hebelmaschine"
+    "name": "Schulterdrücken an der Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe ein und setz dich an die Maschine, den Rücken an der Lehne.",
+      "Greif die Griffe im Obergriff, die Hände auf Schulterhöhe.",
+      "Drück die Griffe nach oben, bis die Arme gestreckt sind, ohne die Ellbogen durchzudrücken.",
+      "Halte oben kurz inne und senk die Griffe dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0604": {
-    "name": "Shrugs an der Hebelmaschine"
+    "name": "Shrugs an der Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe ein und setz dich an die Hebelmaschine, den Rücken am Polster.",
+      "Greif die Griffe im Obergriff und lass die Arme gestreckt.",
+      "Halte den Rücken gerade und zieh die Schultern so hoch wie möglich Richtung Ohren.",
+      "Halte kurz inne und senk die Schultern dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0605": {
-    "name": "Stehendes Wadenheben an der Hebelmaschine"
+    "name": "Stehendes Wadenheben an der Hebelmaschine",
+    "instructions": [
+      "Stell die Maschine auf deine Größe ein und stell dich schulterbreit hin.",
+      "Bring die Schultern unter die Polster und halte dich an den Griffen fest.",
+      "Streck die Fußgelenke und heb die Fersen so hoch wie möglich.",
+      "Halte oben kurz inne und senk die Fersen dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0606": {
-    "name": "T-Bar Rudern an der Hebelmaschine"
+    "name": "T-Bar Rudern an der Hebelmaschine",
+    "instructions": [
+      "Stell Sitzhöhe und Fußplatte passend zu deinem Körper ein.",
+      "Setz dich an die Maschine, die Brust am Polster und die Füße flach auf der Fußplatte.",
+      "Greif die Griffe im Obergriff, etwas breiter als schulterbreit.",
+      "Halte den Rücken gerade und spann den Rumpf an.",
+      "Zieh die Griffe zum Oberkörper und zieh dabei die Schulterblätter zusammen.",
+      "Halte am Punkt der stärksten Anspannung kurz inne und führ die Griffe dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0607": {
-    "name": "Trizeps-Strecken an der Hebelmaschine"
+    "name": "Trizeps-Strecken an der Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe ein und setz dich an die Maschine, den Rücken am Polster.",
+      "Greif die Griffe im Obergriff und streck die Arme ganz nach vorne aus.",
+      "Lass die Oberarme ruhig, beug die Ellbogen und senk die Griffe langsam Richtung Stirn.",
+      "Halte unten kurz inne, streck dann die Arme und drück die Griffe zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0608": {
     "name": "Twist an der Hebelmaschine"
   },
   "0609": {
-    "name": "London-Bridge am Seil"
+    "name": "London-Bridge am Seil",
+    "instructions": [
+      "Befestige das Seil an einem hohen Ankerpunkt.",
+      "Stell dich mit dem Rücken zum Ankerpunkt hin, die Füße schulterbreit auseinander.",
+      "Greif das Seil im Obergriff, die Handflächen zeigen nach unten.",
+      "Lehn dich leicht nach vorne, halte den Rücken gerade und spann den Rumpf an.",
+      "Zieh das Seil zum Körper und zieh dabei die Schulterblätter zusammen.",
+      "Halte am Endpunkt der Bewegung kurz inne, lass dann langsam nach und komm zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0610": {
     "name": "Low Jacks"
@@ -19738,7 +19862,14 @@
     "name": "Ausfallschritt"
   },
   "0613": {
-    "name": "Quadrizeps-Dehnung im Seitliegen"
+    "name": "Quadrizeps-Dehnung im Seitliegen",
+    "instructions": [
+      "Leg dich mit gestreckten Beinen auf die Seite.",
+      "Beug das obere Bein und greif mit der Hand den Knöchel oder den Fuß.",
+      "Zieh den Knöchel oder Fuß sanft Richtung Gesäß, bis du eine Dehnung im Quadrizeps spürst.",
+      "Halte die Dehnung 20 bis 30 Sekunden.",
+      "Lös die Dehnung und wiederhole das Ganze auf der anderen Seite."
+    ]
   },
   "0614": {
     "name": "Liegendes abwechselndes Hüftstrecken"
@@ -19756,7 +19887,14 @@
     "name": "Liegendes Hüft-Beinheben mit gestrecktem Bein"
   },
   "0620": {
-    "name": "Liegendes Beinheben auf der Flachbank"
+    "name": "Liegendes Beinheben auf der Flachbank",
+    "instructions": [
+      "Leg dich auf eine Flachbank, der Rücken liegt fest auf.",
+      "Schieb die Hände zur Stütze unter das Gesäß.",
+      "Halte die Beine gestreckt und geschlossen und heb sie Richtung Decke.",
+      "Halte oben kurz inne und senk die Beine dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0621": {
     "name": "Liegender Scheren-Crunch"
@@ -19768,25 +19906,62 @@
     "name": "Liegendes gleichzeitiges abwechselndes Beinheben"
   },
   "0624": {
-    "name": "Wandsitz mit Marschieren"
+    "name": "Wandsitz mit Marschieren",
+    "instructions": [
+      "Stell dich mit dem Rücken an eine Wand, die Füße hüftbreit auseinander.",
+      "Rutsch mit dem Rücken langsam an der Wand nach unten, bis die Knie im 90-Grad-Winkel gebeugt sind.",
+      "Heb den rechten Fuß vom Boden und zieh das Knie zur Brust.",
+      "Stell den rechten Fuß wieder ab, heb den linken Fuß vom Boden und zieh das Knie zur Brust.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0625": {
     "name": "Sit-up mit Medizinball (Wand)"
   },
   "0627": {
-    "name": "Klimmzug im Wechselgriff"
+    "name": "Klimmzug im Wechselgriff",
+    "instructions": [
+      "Greif die Klimmzugstange im Wechselgriff, eine Hand im Untergriff mit der Handfläche zu dir und die andere im Obergriff, die Hände etwas breiter als schulterbreit.",
+      "Häng dich mit ganz gestreckten Armen an die Stange, die Füße sind in der Luft.",
+      "Spann die Rückenmuskeln an und zieh dich mit der Brust voran zur Stange hoch.",
+      "Zieh weiter, bis das Kinn über der Stange ist.",
+      "Halte oben kurz inne und senk dich dann langsam und kontrolliert zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0628": {
-    "name": "Monster Walk"
+    "name": "Monster Walk",
+    "instructions": [
+      "Leg dir ein Band um die Knöchel.",
+      "Stell dich schulterbreit hin und beug die Knie leicht.",
+      "Mach mit dem rechten Fuß einen Schritt zur Seite und halte das Band dabei auf Spannung.",
+      "Zieh den linken Fuß zur Seite nach, bis du wieder in der Ausgangsposition stehst.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
+    ]
   },
   "0629": {
     "name": "Mountain-Climber-Ausfallschritt"
   },
   "0630": {
-    "name": "Mountain Climber"
+    "name": "Mountain Climber",
+    "instructions": [
+      "Geh in die Liegestützposition, die Hände direkt unter den Schultern und der Körper in einer geraden Linie.",
+      "Spann den Rumpf an und zieh das rechte Knie zur Brust, dann wechsle schnell und zieh das linke Knie zur Brust.",
+      "Wechsle weiter die Beine wie beim Laufen, halte die Hüfte tief und den Rumpf angespannt.",
+      "Halte ein gleichmäßiges Tempo und atme während der ganzen Übung gleichmäßig.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0631": {
-    "name": "Muscle-up"
+    "name": "Muscle-up",
+    "instructions": [
+      "Häng dich mit ganz gestreckten Armen an die Klimmzugstange, die Handflächen zeigen von dir weg.",
+      "Spann den Rumpf an und zieh dich mit der Brust voran zur Stange hoch.",
+      "Wenn du oben ankommst, wechsle den Griff, sodass die Handflächen zu dir zeigen.",
+      "Zieh dich weiter hoch, bis die Brust über der Stange ist und die Arme ganz gebeugt sind.",
+      "Kehr die Bewegung um und senk dich langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0632": {
     "name": "Brücke auf der Bank mit engen Beinen"
@@ -19795,130 +19970,393 @@
     "name": "Nackenbrücke in Bauchlage"
   },
   "0634": {
-    "name": "Negativer Crunch"
+    "name": "Negativer Crunch",
+    "instructions": [
+      "Leg dich flach auf den Rücken, beug die Knie und stell die Füße flach auf den Boden.",
+      "Leg die Hände hinter den Kopf, die Ellbogen zeigen nach außen.",
+      "Spann die Bauchmuskeln an und roll den Oberkörper langsam nach vorne vom Boden hoch, bis er in einem Winkel von 45 Grad steht.",
+      "Halte oben kurz inne und senk den Oberkörper dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0635": {
-    "name": "Schräge Crunches am Boden"
+    "name": "Schräge Crunches am Boden",
+    "instructions": [
+      "Leg dich auf den Rücken, beug die Knie und stell die Füße flach auf den Boden.",
+      "Leg die Hände hinter den Kopf oder verschränk die Arme vor der Brust.",
+      "Spann die Bauchmuskeln an, heb die Schulterblätter vom Boden und dreh den Oberkörper dabei zu einer Seite.",
+      "Halte kurz inne und senk die Schulterblätter dann wieder auf den Boden.",
+      "Mach das Gleiche zur anderen Seite und wechsle bei jeder Wiederholung die Seite."
+    ]
   },
   "0636": {
-    "name": "Hammer-Curl mit Olympia-Langhantel"
+    "name": "Hammer-Curl mit Olympia-Langhantel",
+    "instructions": [
+      "Stell dich aufrecht hin, die Füße schulterbreit auseinander, und halte eine Olympia-Langhantel im Obergriff.",
+      "Lass die Langhantel mit gestreckten Armen vor den Oberschenkeln hängen, die Handflächen zeigen zu deinem Körper.",
+      "Halte die Oberarme ruhig, atme aus und beug die Arme, indem du den Bizeps anspannst.",
+      "Heb die Langhantel weiter an, bis der Bizeps ganz angespannt ist und die Stange Schulterhöhe erreicht.",
+      "Halte kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk die Langhantel langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0637": {
-    "name": "Trizeps-Strecken mit Olympia-Langhantel"
+    "name": "Trizeps-Strecken mit Olympia-Langhantel",
+    "instructions": [
+      "Stell dich hin, die Füße schulterbreit auseinander, und halte die Langhantel im Obergriff.",
+      "Heb die Langhantel über den Kopf und streck die Arme ganz durch.",
+      "Halte die Oberarme nah am Kopf, beug die Ellbogen und senk die Langhantel langsam hinter den Kopf.",
+      "Halte kurz inne und streck die Arme dann wieder in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0638": {
-    "name": "Einarmiger Klimmzug im Untergriff"
+    "name": "Einarmiger Klimmzug im Untergriff",
+    "instructions": [
+      "Stell dich vor eine Klimmzugstange, die Füße schulterbreit auseinander.",
+      "Greif mit einer Hand im Untergriff nach oben an die Stange und halte mit der anderen Hand zur Unterstützung dein Handgelenk.",
+      "Häng dich mit gestrecktem Arm an die Stange, halte den Körper gerade und spann den Rumpf an.",
+      "Zieh dich zur Stange hoch, indem du den Ellbogen beugst und die Rückenmuskeln anspannst.",
+      "Zieh weiter, bis dein Kinn über der Stange ist, und senk dich dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht, wechsle dann den Arm und wiederhole die Übung."
+    ]
   },
   "0639": {
-    "name": "Einarmiger Dip"
+    "name": "Einarmiger Dip",
+    "instructions": [
+      "Stell dich mit dem Rücken zu einer Bank oder einem Stuhl, die Füße schulterbreit auseinander.",
+      "Stütz eine Hand hinter dir auf die Bank oder den Stuhl, die Finger zeigen zu deinem Körper.",
+      "Streck die Beine nach vorn aus, die Fersen bleiben am Boden.",
+      "Beug den Ellbogen und senk den Körper Richtung Boden, der Rücken bleibt nah an der Bank oder am Stuhl.",
+      "Halte unten kurz inne, drück dich dann über die Handfläche hoch, bis der Arm gestreckt ist, und kehr in die Ausgangsposition zurück.",
+      "Mach so viele Wiederholungen wie gewünscht, wechsle dann die Seite und wiederhole die Übung mit dem anderen Arm."
+    ]
   },
   "0640": {
-    "name": "Einarmiger Slam mit Medizinball"
+    "name": "Einarmiger Slam mit Medizinball",
+    "instructions": [
+      "Stell dich hin, die Füße schulterbreit auseinander, und halte den Medizinball mit einer Hand vor der Taille.",
+      "Beug die Knie leicht und spann den Rumpf an.",
+      "Heb den Medizinball über den Kopf und streck den Arm ganz durch.",
+      "Schmettere den Medizinball kraftvoll auf den Boden und hol die Kraft dabei aus Rumpf und Schultern.",
+      "Fang den Medizinball nach dem Aufprall auf und mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0641": {
-    "name": "Otis-up"
+    "name": "Otis-up",
+    "instructions": [
+      "Leg dich flach auf den Rücken, beug die Knie und stell die Füße flach auf den Boden.",
+      "Leg die Hände hinter den Kopf, die Ellbogen zeigen nach außen.",
+      "Spann die Bauchmuskeln an, heb den Oberkörper langsam vom Boden ab und roll dich nach vorn ein, bis der Oberkörper einen Winkel von 45 Grad erreicht.",
+      "Halte oben kurz inne und senk den Oberkörper dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0642": {
-    "name": "Liegestütz mit Beinkick nach außen"
+    "name": "Liegestütz mit Beinkick nach außen",
+    "instructions": [
+      "Geh in die Liegestützposition, die Hände etwas breiter als schulterbreit, die Füße zusammen.",
+      "Beug die Ellbogen und senk den Körper Richtung Boden, halte den Rücken gerade und den Rumpf angespannt.",
+      "Während du dich wieder hochdrückst, kick ein Bein zur Seite, streck es ganz durch und spann das Gesäß an.",
+      "Bring das Bein zurück in die Ausgangsposition und mach den nächsten Liegestütz, bei jeder Wiederholung mit dem anderen Bein.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0643": {
-    "name": "Trizeps-Dehnung über Kopf"
+    "name": "Trizeps-Dehnung über Kopf",
+    "instructions": [
+      "Stell oder setz dich aufrecht hin, die Füße schulterbreit auseinander.",
+      "Streck einen Arm über den Kopf und beug ihn im Ellbogen, sodass die Hand zum gegenüberliegenden Schulterblatt reicht.",
+      "Zieh mit der anderen Hand den Ellbogen des gebeugten Arms sanft zur anderen Kopfseite, bis du eine Dehnung im Trizeps spürst.",
+      "Halte die Dehnung 15 bis 30 Sekunden und lass dann los.",
+      "Wiederhole die Übung auf der anderen Seite."
+    ]
   },
   "0647": {
     "name": "Plyo-Wandsitz"
   },
   "0648": {
-    "name": "Power-Umsetzen mit Langhantel"
+    "name": "Power-Umsetzen mit Langhantel",
+    "instructions": [
+      "Stell dich vor die Langhantel, die auf dem Boden liegt, die Füße schulterbreit auseinander.",
+      "Geh in die Knie und greif die Langhantel im Obergriff, etwas breiter als schulterbreit.",
+      "Halte den Rücken gerade und die Brust oben, während du die Langhantel vom Boden hebst und dabei Hüfte und Knie streckst.",
+      "Sobald die Stange die Mitte der Oberschenkel erreicht, zieh sie explosiv nach oben, heb dabei die Schultern an und führ die Ellbogen hoch und nach außen.",
+      "Wenn die Stange ihren höchsten Punkt erreicht, tauch schnell darunter ab, dreh die Ellbogen nach vorn und fang die Stange in der Position der Frontkniebeuge auf den Schultern auf.",
+      "Steh mit der Langhantel auf und streck Hüfte und Knie ganz durch.",
+      "Senk die Langhantel zurück in die Ausgangsposition und behalte das Gewicht während der ganzen Bewegung unter Kontrolle.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0649": {
     "name": "Pretzel-Dehnung"
   },
   "0650": {
-    "name": "Einziehen auf Gymnastikball"
+    "name": "Einziehen auf Gymnastikball",
+    "instructions": [
+      "Setz dich auf den Gymnastikball, die Füße flach auf dem Boden und die Knie im 90-Grad-Winkel gebeugt.",
+      "Leg die Hände zur Stütze seitlich an den Gymnastikball.",
+      "Spann die Bauchmuskeln an und roll die Hüfte langsam nach vorn, dabei ziehst du die Knie zur Brust.",
+      "Halte am höchsten Punkt kurz inne und streck die Beine dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0651": {
-    "name": "Klimmzug mit neutralem Griff"
+    "name": "Klimmzug mit neutralem Griff",
+    "instructions": [
+      "Häng dich im neutralen Griff (die Handflächen zeigen zueinander) an eine Klimmzugstange, die Arme ganz gestreckt.",
+      "Spann den Rumpf an und zieh die Schulterblätter zusammen.",
+      "Zieh dich zur Stange hoch, indem du die Ellbogen beugst und sie nach unten Richtung Hüfte führst.",
+      "Zieh weiter, bis dein Kinn über der Stange ist.",
+      "Halte oben kurz inne und senk den Körper dann langsam und kontrolliert zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0652": {
-    "name": "Klimmzug"
+    "name": "Klimmzug",
+    "instructions": [
+      "Häng dich an eine Klimmzugstange, die Handflächen zeigen von dir weg, die Arme ganz gestreckt.",
+      "Spann den Rumpf an und zieh die Schulterblätter zusammen.",
+      "Zieh dich zur Stange hoch, indem du die Ellbogen beugst und die Brust zur Stange bringst.",
+      "Halte oben kurz inne und senk den Körper dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0653": {
-    "name": "Liegestütz auf dem Bosu-Ball"
+    "name": "Liegestütz auf dem Bosu-Ball",
+    "instructions": [
+      "Leg den Bosu-Ball mit der flachen Seite nach oben auf den Boden.",
+      "Geh in die Liegestützposition und setz die Hände auf die Außenkanten des Bosu-Balls.",
+      "Spann den Rumpf an, beug die Ellbogen und senk den Körper Richtung Bosu-Ball.",
+      "Streck die Arme und drück dich zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0654": {
     "name": "Liegestütz (Knie zur Brust)"
   },
   "0655": {
-    "name": "Liegestütz auf Gymnastikball"
+    "name": "Liegestütz auf Gymnastikball",
+    "instructions": [
+      "Leg den Gymnastikball auf den Boden und stütz dich mit dem Gesicht zum Boden darauf ab, die Hände schulterbreit auf dem Ball.",
+      "Streck die Beine gerade nach hinten aus und halte das Gleichgewicht auf den Zehenspitzen.",
+      "Spann den Rumpf an, beug die Ellbogen und senk die Brust Richtung Ball, der Körper bleibt in einer geraden Linie.",
+      "Halte unten kurz inne und drück dich dann zurück in die Ausgangsposition, indem du die Arme streckst.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0656": {
-    "name": "Liegestütz auf Gymnastikball"
+    "name": "Liegestütz auf Gymnastikball",
+    "instructions": [
+      "Leg den Gymnastikball auf den Boden und stütz dich mit dem Gesicht zum Boden darauf ab, die Hände schulterbreit auf dem Ball.",
+      "Streck die Beine gerade nach hinten aus und halte das Gleichgewicht auf den Zehenspitzen.",
+      "Spann den Rumpf an, beug die Ellbogen und senk die Brust Richtung Ball, der Körper bleibt in einer geraden Linie.",
+      "Halte unten kurz inne und drück dich dann zurück in die Ausgangsposition, indem du die Arme streckst.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0657": {
     "name": "Liegestütz (ein Arm auf dem Gymnastikball)"
   },
   "0658": {
-    "name": "Liegestütz an der Wand v. 2"
+    "name": "Liegestütz an der Wand v. 2",
+    "instructions": [
+      "Stell dich etwa eine Armlänge vor eine Wand, das Gesicht zur Wand.",
+      "Leg die Hände auf Schulterhöhe an die Wand, etwas breiter als schulterbreit.",
+      "Geh mit den Füßen ein Stück zurück und stell sie hüftbreit auseinander.",
+      "Spann den Rumpf an und halte den Körper vom Kopf bis zu den Fersen in einer geraden Linie.",
+      "Beug die Ellbogen und senk die Brust Richtung Wand, der Körper bleibt gerade.",
+      "Halte kurz inne und drück dich dann zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0659": {
-    "name": "Liegestütz an der Wand"
+    "name": "Liegestütz an der Wand",
+    "instructions": [
+      "Stell dich etwa eine Armlänge vor eine Wand, das Gesicht zur Wand.",
+      "Leg die Hände auf Schulterhöhe an die Wand, etwas breiter als schulterbreit.",
+      "Geh ein paar Schritte zurück, halte den Körper gerade, die Füße hüftbreit auseinander.",
+      "Beug die Ellbogen und senk die Brust Richtung Wand, der Körper bleibt in einer geraden Linie.",
+      "Drück dich zurück in die Ausgangsposition und streck dabei die Arme.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0660": {
-    "name": "Liegestütz mit engem Griff an Kurzhantel"
+    "name": "Liegestütz mit engem Griff an Kurzhantel",
+    "instructions": [
+      "Geh in die Liegestützposition, die Hände eng beieinander direkt unter den Schultern.",
+      "Halte in jeder Hand eine Kurzhantel, die Hanteln liegen auf dem Boden.",
+      "Beug die Ellbogen und senk den Körper Richtung Boden, die Ellbogen bleiben nah am Körper.",
+      "Drück dich über die Handflächen hoch, streck die Arme und kehr in die Ausgangsposition zurück.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0661": {
-    "name": "Liegestütz mit Beinkick nach innen"
+    "name": "Liegestütz mit Beinkick nach innen",
+    "instructions": [
+      "Geh in die Liegestützposition, die Hände etwas breiter als schulterbreit, die Füße zusammen.",
+      "Beug die Ellbogen und senk den Körper Richtung Boden, halte den Rücken gerade und den Rumpf angespannt.",
+      "Während du dich wieder hochdrückst, heb ein Bein vom Boden und kick es gestreckt zur Seite.",
+      "Setz das Bein wieder ab, mach den nächsten Liegestütz und wechsle dann zum anderen Bein.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0662": {
-    "name": "Liegestütz"
+    "name": "Liegestütz",
+    "instructions": [
+      "Geh in die Liegestützposition, die Hände etwas breiter als schulterbreit, die Füße zusammen.",
+      "Spann den Rumpf an, beug die Ellbogen und senk dich Richtung Boden, der Körper bleibt in einer geraden Linie.",
+      "Halte kurz inne, wenn die Brust knapp über dem Boden ist, und drück dich dann zurück in die Ausgangsposition, indem du die Arme streckst.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0663": {
-    "name": "Liegestütz am Medizinball"
+    "name": "Liegestütz am Medizinball",
+    "instructions": [
+      "Geh in die Liegestützposition, die Hände schulterbreit auf dem Medizinball.",
+      "Spann den Rumpf an, beug die Ellbogen und senk den Körper Richtung Boden, der Rücken bleibt gerade.",
+      "Drück dich über die Handflächen hoch, streck die Arme und kehr in die Ausgangsposition zurück.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0664": {
-    "name": "Liegestütz in den Seitstütz"
+    "name": "Liegestütz in den Seitstütz",
+    "instructions": [
+      "Geh in die Liegestützposition, die Hände schulterbreit, der Körper in einer geraden Linie.",
+      "Beug die Ellbogen und senk den Körper Richtung Boden, der Rumpf bleibt angespannt.",
+      "Drück dich zurück in die Ausgangsposition.",
+      "Verlagere das Gewicht auf die linke Hand, dreh den Körper nach rechts und streck den rechten Arm zur Decke.",
+      "Halte den Seitstütz ein paar Sekunden und kehr dann in die Ausgangsposition zurück.",
+      "Mach wieder einen Liegestütz und dann den Seitstütz zur anderen Seite.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0665": {
     "name": "W-Liegestütz"
   },
   "0666": {
-    "name": "Liegestütz mit Armheben"
+    "name": "Liegestütz mit Armheben",
+    "instructions": [
+      "Geh in die Liegestützposition, die Hände etwas breiter als schulterbreit, die Füße zusammen.",
+      "Streck einen Arm gerade zur Seite aus, parallel zum Boden.",
+      "Beug den Stützarm und senk den Körper Richtung Boden, halte den Rücken gerade und den Rumpf angespannt.",
+      "Drück dich mit der Kraft der Brustmuskeln zurück in die Ausgangsposition.",
+      "Wiederhole die Übung und streck dabei den anderen Arm aus."
+    ]
   },
   "0667": {
     "name": "Liegestütz mit einbeinigem Beinheben"
   },
+  "0668": {
+    "instructions": [
+      "Leg dich auf den Rücken, beug die Knie und stell die Füße flach auf den Boden.",
+      "Leg die Arme neben den Körper, die Handflächen zeigen nach unten.",
+      "Spann Gesäß und hintere Oberschenkelmuskulatur an und heb die Hüfte vom Boden, bis dein Körper von den Knien bis zu den Schultern eine gerade Linie bildet.",
+      "Halte die Position ein paar Sekunden und senk die Hüfte dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
+  },
   "0669": {
-    "name": "Dehnung der hinteren Schulter"
+    "name": "Dehnung der hinteren Schulter",
+    "instructions": [
+      "Stell dich aufrecht hin, die Füße schulterbreit auseinander.",
+      "Führ den rechten Arm quer vor die Brust und leg die linke Hand an den rechten Ellbogen.",
+      "Zieh den rechten Arm sanft Richtung linke Schulter, bis du eine Dehnung in der rechten Schulter spürst.",
+      "Halte die Dehnung 15 bis 30 Sekunden und lass dann los.",
+      "Wiederhole die Übung auf der anderen Seite."
+    ]
   },
   "0670": {
-    "name": "Klimmzug hinter den Nacken"
+    "name": "Klimmzug hinter den Nacken",
+    "instructions": [
+      "Greif die Klimmzugstange im Obergriff, etwas breiter als schulterbreit.",
+      "Häng dich mit gestreckten Armen und geradem Körper an die Stange.",
+      "Spann die Rückenmuskulatur an und zieh dich zur Stange hoch, die Ellbogen bleiben nah am Körper.",
+      "Zieh weiter, bis dein Kinn über der Stange ist.",
+      "Halte oben kurz inne und senk dich dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0672": {
-    "name": "Umgekehrter Dip"
+    "name": "Umgekehrter Dip",
+    "instructions": [
+      "Stütz dich zwischen den Holmen eines Barrens mit gestreckten Armen ab, der Körper bleibt gerade.",
+      "Beug die Ellbogen und senk den Körper ab, bis deine Oberarme parallel zum Boden sind.",
+      "Halte kurz inne, streck dann die Arme und drück dich zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0673": {
-    "name": "Latzug mit Umkehrgriff an Hebelmaschine"
+    "name": "Latzug mit Umkehrgriff an Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe ein und setz dich so an die Maschine, dass die Knie unter den Polstern liegen und die Füße flach auf dem Boden stehen.",
+      "Greif die Griffe im Untergriff, etwas breiter als schulterbreit.",
+      "Sitz aufrecht, Brust raus und Schultern zurück, und behalte im unteren Rücken ein leichtes Hohlkreuz.",
+      "Zieh die Griffe zur Brust herunter und drück dabei die Schulterblätter zusammen.",
+      "Halte unten kurz inne und führ die Griffe dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0674": {
-    "name": "Klimmzug im Untergriff"
+    "name": "Klimmzug im Untergriff",
+    "instructions": [
+      "Greif die Klimmzugstange im Untergriff, die Hände schulterbreit auseinander.",
+      "Häng dich mit gestreckten Armen und geradem Körper an die Stange.",
+      "Spann die Rückenmuskulatur an und zieh dich mit der Brust voran zur Stange hoch.",
+      "Zieh weiter, bis dein Kinn über der Stange ist.",
+      "Halte oben kurz inne und senk dich dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0675": {
-    "name": "Umgekehrte Hyperstreckung auf Gymnastikball"
+    "name": "Umgekehrte Hyperstreckung auf Gymnastikball",
+    "instructions": [
+      "Leg dich in Bauchlage so auf den Gymnastikball, dass deine Hüfte auf dem Ball liegt, und streck die Beine gerade nach hinten.",
+      "Stütz die Hände vor dir auf dem Boden ab, damit du stabil liegst.",
+      "Spann Gesäß und hintere Oberschenkelmuskulatur an und heb die Beine so hoch wie möglich Richtung Decke.",
+      "Halte oben kurz inne und senk die Beine dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0676": {
     "name": "Rückwärts-Ausfallschritt (mit Beinkick)"
   },
   "0677": {
-    "name": "Dips an den Ringen"
+    "name": "Dips an den Ringen",
+    "instructions": [
+      "Stütz dich mit gestreckten Armen an den Ringen ab, der Körper bleibt gerade.",
+      "Beug die Ellbogen und senk den Körper ab, bis deine Schultern tiefer als die Ellbogen sind.",
+      "Streck die Arme und drück dich zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0678": {
-    "name": "Rocky-Klimmzug-Latzug"
+    "name": "Rocky-Klimmzug-Latzug",
+    "instructions": [
+      "Stell dich vor eine Klimmzugstange, die Füße schulterbreit auseinander.",
+      "Greif nach oben und fass die Stange im Obergriff, etwas breiter als schulterbreit.",
+      "Häng dich mit gestreckten Armen und geradem Körper an die Stange.",
+      "Spann die Rückenmuskulatur an und zieh dich mit der Brust voran zur Stange hoch.",
+      "Halte oben kurz inne und senk dich dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0679": {
     "name": "Rollende Brücke"
   },
   "0680": {
-    "name": "Seilklettern"
+    "name": "Seilklettern",
+    "instructions": [
+      "Stell dich mit dem Gesicht zum Seil, die Füße schulterbreit auseinander.",
+      "Greif das Seil mit beiden Händen, die Handflächen zeigen zu dir.",
+      "Beug die Knie leicht und spann den Rumpf an.",
+      "Zieh dich am Seil hoch, indem du abwechselnd eine Hand über die andere setzt.",
+      "Nimm die Beine zu Hilfe, um dich nach oben zu schieben.",
+      "Klettere weiter, bis du die gewünschte Höhe oder das obere Ende des Seils erreicht hast.",
+      "Klettere kontrolliert wieder hinunter und greif dabei Hand für Hand nach unten.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0681": {
     "name": "Rotations-Liegestütz (auf den Knien)"
@@ -19927,28 +20365,81 @@
     "name": "Rotations-Jacks"
   },
   "0684": {
-    "name": "Laufen am Gerät"
+    "name": "Laufen am Gerät",
+    "instructions": [
+      "Stell dich aufrecht hin, die Füße hüftbreit auseinander.",
+      "Spann den Rumpf an und lass den Oberkörper locker.",
+      "Lauf auf der Stelle, zieh die Knie Richtung Brust und lande sanft auf den Fußballen.",
+      "Halte ein gleichmäßiges Tempo und lauf weiter, bis du die gewünschte Dauer oder Strecke geschafft hast.",
+      "Atme während der ganzen Übung tief und achte auf eine gute Haltung."
+    ]
   },
   "0685": {
-    "name": "Laufen"
+    "name": "Laufen",
+    "instructions": [
+      "Stell dich aufrecht hin, die Füße hüftbreit auseinander.",
+      "Spann den Rumpf an und lass den Oberkörper locker.",
+      "Lauf auf der Stelle, zieh die Knie Richtung Brust und lande sanft auf den Fußballen.",
+      "Halte ein gleichmäßiges Tempo und lauf weiter, bis du die gewünschte Dauer oder Strecke geschafft hast.",
+      "Atme während der ganzen Übung tief und achte auf eine gute Haltung."
+    ]
   },
   "0686": {
     "name": "Russian Twist (auf dem Gymnastikball, Arme gestreckt)"
   },
   "0687": {
-    "name": "Russian Twist"
+    "name": "Russian Twist",
+    "instructions": [
+      "Setz dich auf den Boden, die Knie gebeugt und die Füße flach auf dem Boden.",
+      "Lehn dich leicht zurück, halte den Rücken gerade und den Rumpf angespannt.",
+      "Leg die Hände vor der Brust zusammen oder halte ein Gewicht, wenn du möchtest.",
+      "Heb die Füße vom Boden ab und halte das Gleichgewicht auf den Sitzbeinhöckern.",
+      "Dreh den Oberkörper nach rechts und führ die Hände oder das Gewicht zur rechten Körperseite.",
+      "Halte kurz inne, dreh dann den Oberkörper nach links und führ die Hände oder das Gewicht zur linken Körperseite.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0688": {
-    "name": "Skapula-Klimmzug"
+    "name": "Skapula-Klimmzug",
+    "instructions": [
+      "Häng dich mit gestreckten Armen an eine Klimmzugstange, die Handflächen zeigen von dir weg.",
+      "Zieh die Schulterblätter nach unten und hinten.",
+      "Spann die Rückenmuskulatur an, zieh dich Richtung Stange hoch und drück dabei bewusst die Schulterblätter zusammen.",
+      "Halte oben kurz inne und senk dich dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0689": {
-    "name": "Beinheben sitzend"
+    "name": "Beinheben sitzend",
+    "instructions": [
+      "Setz dich mit geradem Rücken auf eine Flachbank, die Füße flach auf dem Boden.",
+      "Stütz dich mit den Händen seitlich an der Bank ab.",
+      "Heb die gestreckten Beine langsam vor dir an, bis sie parallel zum Boden sind.",
+      "Halte oben kurz inne und senk die Beine dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0690": {
-    "name": "Dehnung des unteren Rückens im Sitzen"
+    "name": "Dehnung des unteren Rückens im Sitzen",
+    "instructions": [
+      "Setz dich auf die Vorderkante eines Stuhls, die Füße flach auf dem Boden.",
+      "Stütz die Hände auf die Oberschenkel oder halte dich seitlich am Stuhl fest.",
+      "Beug dich mit geradem Rücken langsam aus der Hüfte nach vorn.",
+      "Spür die Dehnung im unteren Rücken und halte sie 20 bis 30 Sekunden.",
+      "Komm langsam zurück in die Ausgangsposition und mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0691": {
-    "name": "Seitlicher Crunch im Sitzen an der Wand"
+    "name": "Seitlicher Crunch im Sitzen an der Wand",
+    "instructions": [
+      "Setz dich mit dem Rücken an eine Wand auf den Boden und streck die Beine vor dir aus.",
+      "Beug die Knie und stell die Füße hüftbreit flach auf den Boden.",
+      "Leg die Hände hinter den Kopf, die Ellbogen zeigen nach außen.",
+      "Spann die Bauchmuskeln an, neig dich zu einer Seite und führ den Ellbogen Richtung Hüfte.",
+      "Halte kurz inne und kehr dann in die Ausgangsposition zurück.",
+      "Wiederhole die Bewegung zur anderen Seite.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0692": {
     "name": "Sitzende einbeinige Beinbeuger-Dehnung"
@@ -19960,16 +20451,41 @@
     "name": "Sitzende Drehung (auf dem Gymnastikball)"
   },
   "0696": {
-    "name": "Selbstassistierter inverser Beincurl am Boden"
+    "name": "Selbstassistierter inverser Beincurl am Boden",
+    "instructions": [
+      "Leg dich flach auf den Rücken, die Beine gestreckt und die Arme neben dem Körper.",
+      "Beug die Knie und stell die Füße hüftbreit flach auf den Boden.",
+      "Heb die Hüfte vom Boden ab und spann dabei Gesäß und hintere Oberschenkelmuskulatur an.",
+      "Zieh die Fersen langsam Richtung Gesäß, die Hüfte bleibt oben.",
+      "Halte kurz inne und streck die Beine dann langsam zurück in die Ausgangsposition.",
+      "Senk die Hüfte wieder auf den Boden ab.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0697": {
-    "name": "Selbstassistierter inverser Beincurl"
+    "name": "Selbstassistierter inverser Beincurl",
+    "instructions": [
+      "Leg dich flach auf den Rücken auf eine Matte oder Bank, die Beine gestreckt.",
+      "Leg die Hände zur Stütze neben den Körper oder unter das Gesäß.",
+      "Beug die Knie, heb die Füße vom Boden ab und zieh die Oberschenkel Richtung Brust.",
+      "Halte oben kurz inne und senk die Beine dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0698": {
     "name": "Schulterdrücken (mit Band)"
   },
   "0699": {
-    "name": "Liegestütz mit Schulter-Tippen"
+    "name": "Liegestütz mit Schulter-Tippen",
+    "instructions": [
+      "Geh in die Liegestützposition, die Hände etwas breiter als schulterbreit und der Körper in einer geraden Linie vom Kopf bis zu den Fersen.",
+      "Beug die Ellbogen und senk den Körper Richtung Boden ab, die Ellbogen bleiben nah am Körper.",
+      "Wenn du dich wieder hochdrückst, heb die rechte Hand vom Boden und tipp dir auf die linke Schulter.",
+      "Setz die rechte Hand wieder ab und mach den nächsten Liegestütz. Diesmal hebst du die linke Hand und tippst auf die rechte Schulter.",
+      "Wechsle bei jedem Liegestütz die Hand, mit der du tippst.",
+      "Halte den Rumpf die ganze Übung über stabil und lass die Hüfte nicht stark mitdrehen.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0700": {
     "name": "Seitbeugen (auf dem Gymnastikball)"
@@ -19984,7 +20500,15 @@
     "name": "Seitstütz mit Hüftabduktion (Stern)"
   },
   "0705": {
-    "name": "Seitstütz v. 2"
+    "name": "Seitstütz v. 2",
+    "instructions": [
+      "Leg dich auf die Seite, die Beine gestreckt und übereinander.",
+      "Stütz den Unterarm direkt unter der Schulter auf den Boden, der Ellbogen ist im 90-Grad-Winkel gebeugt.",
+      "Spann den Rumpf an und heb die Hüfte vom Boden ab, sodass dein Körper vom Kopf bis zu den Füßen eine gerade Linie bildet.",
+      "Halte diese Position so lange wie gewünscht.",
+      "Senk die Hüfte zurück in die Ausgangsposition.",
+      "Wiederhole die Übung auf der anderen Seite."
+    ]
   },
   "0706": {
     "name": "Seitstütz"
@@ -19996,10 +20520,24 @@
     "name": "Seitlicher Crunch"
   },
   "0709": {
-    "name": "Seitliches Beinheben am Barren"
+    "name": "Seitliches Beinheben am Barren",
+    "instructions": [
+      "Stell dich zwischen die Holme eines Barrens, die Füße schulterbreit auseinander.",
+      "Leg die Hände auf die Holme und stütz dich hoch, sodass dein Gewicht auf den Armen liegt.",
+      "Spann die Bauchmuskeln an und heb die gestreckten Beine langsam zur Seite.",
+      "Halte oben kurz inne und senk die Beine dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0710": {
-    "name": "Seitliche Hüftabduktion"
+    "name": "Seitliche Hüftabduktion",
+    "instructions": [
+      "Stell dich hin, die Füße schulterbreit auseinander und die Hände an den Hüften.",
+      "Verlagere das Gewicht auf ein Bein und heb das andere gestreckt zur Seite.",
+      "Halte oben kurz inne und senk das Bein dann langsam zurück in die Ausgangsposition.",
+      "Wiederhole die Bewegung mit dem anderen Bein.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0711": {
     "name": "Seitliche Ausfallschritt-Dehnung"
@@ -20017,10 +20555,26 @@
     "name": "Seitstütz"
   },
   "0716": {
-    "name": "Seitliche Nackendehnung mit Handdruck"
+    "name": "Seitliche Nackendehnung mit Handdruck",
+    "instructions": [
+      "Stell dich hin oder setz dich aufrecht, die Schultern locker.",
+      "Neig den Kopf nach rechts, das rechte Ohr geht Richtung rechte Schulter.",
+      "Leg die rechte Hand auf die linke Kopfseite und drück sanft, um die Dehnung zu verstärken.",
+      "Halte die Dehnung 15 bis 30 Sekunden.",
+      "Wiederhole die Dehnung auf der anderen Seite: Neig den Kopf nach links und drück mit der linken Hand.",
+      "Mach die Dehnung 2 bis 3 Mal pro Seite."
+    ]
   },
   "0717": {
-    "name": "Seitlicher Liegestütz"
+    "name": "Seitlicher Liegestütz",
+    "instructions": [
+      "Leg dich auf die Seite, die Beine gestreckt und übereinander.",
+      "Setz die untere Hand direkt unter der Schulter auf den Boden, die Finger zeigen nach vorn.",
+      "Drück dich über die untere Hand vom Boden hoch, die Beine bleiben gestreckt und der Rumpf angespannt.",
+      "Streck den oberen Arm gerade zur Decke, sodass dein Körper vom Kopf bis zu den Fersen eine gerade Linie bildet.",
+      "Senk den Körper kontrolliert zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
+    ]
   },
   "0718": {
     "name": "Seitlicher Sit-up"
@@ -20029,10 +20583,25 @@
     "name": "Seitliche Dehnung mit Crunch"
   },
   "0720": {
-    "name": "Klimmzug von Seite zu Seite"
+    "name": "Klimmzug von Seite zu Seite",
+    "instructions": [
+      "Stell dich hin, die Füße schulterbreit auseinander und die Knie leicht gebeugt.",
+      "Greif eine Klimmzugstange im Obergriff, die Hände etwas breiter als schulterbreit.",
+      "Häng dich mit gestreckten Armen und lockerem Körper an die Stange.",
+      "Beug die Ellbogen, zieh dich hoch und bring das Kinn Richtung Stange, der Körper bleibt dabei gerade.",
+      "Sobald dein Kinn über der Stange ist, senk dich zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0721": {
-    "name": "Handgelenkdehnung mit seitlichem Zug"
+    "name": "Handgelenkdehnung mit seitlichem Zug",
+    "instructions": [
+      "Stell dich hin, die Füße schulterbreit auseinander und die Arme vor dir ausgestreckt.",
+      "Streck den rechten Arm parallel zum Boden zur Seite aus, die Handfläche zeigt nach unten.",
+      "Greif mit der linken Hand die rechte Hand und zieh sie sanft zum Körper, bis du eine Dehnung im rechten Unterarm spürst.",
+      "Halte die Dehnung 15 bis 30 Sekunden und lös sie dann.",
+      "Wiederhole die Dehnung auf der anderen Seite."
+    ]
   },
   "0722": {
     "name": "Seitliche Beinbrücke"
@@ -20044,19 +20613,40 @@
     "name": "Seitliches vertikales Heben mit Drehung (gestreckte Beine)"
   },
   "0725": {
-    "name": "Einarmiger Liegestütz"
+    "name": "Einarmiger Liegestütz",
+    "instructions": [
+      "Geh in die Liegestützposition, die Hände schulterbreit, eine Hand etwas weiter außen als die andere.",
+      "Spann den Rumpf an und senk den Körper Richtung Boden, indem du die Ellbogen beugst. Halte den Rücken gerade.",
+      "Verlagere beim Absenken das Gewicht auf eine Seite, heb den anderen Arm vom Boden und streck ihn gerade zur Seite aus.",
+      "Drück dich mit Brust und Trizeps zurück in die Ausgangsposition und setz dabei den ausgestreckten Arm wieder auf dem Boden ab.",
+      "Wechsle bei jeder Wiederholung den Arm, den du ausstreckst, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0726": {
     "name": "Einbeinige Brücke"
   },
   "0727": {
-    "name": "Einbeiniges Wadenheben mit Kurzhantel"
+    "name": "Einbeiniges Wadenheben mit Kurzhantel",
+    "instructions": [
+      "Stell dich hüftbreit hin und halte eine Kurzhantel in einer Hand.",
+      "Heb einen Fuß vom Boden und halte das Gleichgewicht auf dem anderen Fuß.",
+      "Heb die Ferse langsam so hoch wie möglich, die Kraft kommt aus der Wade.",
+      "Halte oben kurz inne und senk die Ferse dann langsam wieder ab.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann das Bein."
+    ]
   },
   "0728": {
     "name": "Einbeiniges Strecken (auf dem Gymnastikball)"
   },
   "0730": {
-    "name": "Einbeiniges Gleiten auf der Plattform"
+    "name": "Einbeiniges Gleiten auf der Plattform",
+    "instructions": [
+      "Stell dich hin, ein Fuß steht auf einer Plattform oder einem Gleitbrett.",
+      "Beug das Knie leicht und lass den Fuß auf der Plattform nach hinten gleiten, sodass sich das Bein streckt.",
+      "Halte den Rumpf angespannt und den Oberkörper während der ganzen Bewegung aufrecht.",
+      "Lass den Fuß langsam wieder nach vorn gleiten, zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann das Bein."
+    ]
   },
   "0731": {
     "name": "Einbeiniger Wandsitz"
@@ -20068,73 +20658,261 @@
     "name": "Wandsitz"
   },
   "0735": {
-    "name": "Sit-up v. 2"
+    "name": "Sit-up v. 2",
+    "instructions": [
+      "Leg dich flach auf den Rücken, beug die Knie und stell die Füße flach auf den Boden.",
+      "Leg die Hände hinter den Kopf, die Ellbogen zeigen nach außen.",
+      "Spann die Bauchmuskeln an und roll den Oberkörper langsam nach vorn vom Boden hoch, bis er in einem Winkel von 45 Grad steht.",
+      "Halte oben kurz inne und senk den Oberkörper dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0736": {
     "name": "Sit-up"
   },
   "0738": {
-    "name": "Wadenpresse in 45 Grad mit Schlitten"
+    "name": "Wadenpresse in 45 Grad mit Schlitten",
+    "instructions": [
+      "Stell die Maschine auf einen Winkel von 45 Grad ein.",
+      "Stell die Füße auf die Plattform des Schlittens, die Zehen zeigen nach vorn.",
+      "Drück die Plattform von dir weg, indem du die Füße im Sprunggelenk streckst und die Waden anspannst.",
+      "Halte oben kurz inne und führ die Plattform dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0739": {
-    "name": "Beinpresse in 45 Grad mit Schlitten"
+    "name": "Beinpresse in 45 Grad mit Schlitten",
+    "instructions": [
+      "Stell Sitz und Fußplatte der Maschine so ein, dass es für dich bequem ist.",
+      "Setz dich in die Maschine, den Rücken an der Lehne, und stell die Füße schulterbreit auf die Fußplatte.",
+      "Greif die Griffe seitlich am Sitz, um dich zu stabilisieren.",
+      "Drück die Fußplatte von dir weg, indem du die Beine streckst. Die Fersen bleiben auf der Platte.",
+      "Drück weiter, bis die Beine fast gestreckt sind, ohne die Knie durchzudrücken.",
+      "Halte oben kurz inne und lass die Fußplatte dann langsam zu dir zurückkommen, indem du die Knie beugst.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0740": {
-    "name": "Beinpresse mit weitem Stand in 45 Grad mit Schlitten"
+    "name": "Beinpresse mit weitem Stand in 45 Grad mit Schlitten",
+    "instructions": [
+      "Stell die Maschine auf einen Winkel von 45 Grad ein.",
+      "Setz dich in die Maschine, den Rücken am Polster, und stell die Füße auf die Fußplatte.",
+      "Stell die Füße weiter als schulterbreit auseinander.",
+      "Drück gegen die Fußplatte und streck die Beine, bis die Knie gerade sind.",
+      "Halte am Ende der Bewegung kurz inne und beug dann langsam die Knie, um zurück in die Ausgangsposition zu kommen.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0741": {
-    "name": "Hackenschmidt-Kniebeuge mit engem Stand am Schlitten"
+    "name": "Hackenschmidt-Kniebeuge mit engem Stand am Schlitten",
+    "instructions": [
+      "Stell an der Maschine ein passendes Gewicht ein und stell dich mit dem Rücken ans Polster.",
+      "Stell die Füße schulterbreit auf die Plattform, die Zehen zeigen leicht nach außen.",
+      "Greif die Griffe seitlich an der Maschine, um dich zu stabilisieren.",
+      "Spann den Rumpf an und senk den Körper langsam ab, indem du Knie und Hüfte beugst. Halte den Rücken gerade.",
+      "Geh so weit runter, bis die Oberschenkel parallel zum Boden sind oder etwas tiefer.",
+      "Halte unten kurz inne, drück dich dann über die Fersen hoch und streck die Beine, bis du wieder in der Ausgangsposition bist.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0742": {
-    "name": "Wadenheben nach vorn geneigt am Schlitten"
+    "name": "Wadenheben nach vorn geneigt am Schlitten",
+    "instructions": [
+      "Stell an der Maschine ein passendes Gewicht ein und stell dich so hinein, dass die Fußballen auf der Plattform stehen und die Fersen überstehen.",
+      "Leg die Hände zum Abstützen an die Griffe oder seitlich an die Maschine.",
+      "Spann die Waden an und heb die Fersen langsam so hoch wie möglich, gegen den Widerstand des Schlittens.",
+      "Halte oben kurz inne und senk die Fersen dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0743": {
-    "name": "Hackenschmidt-Kniebeuge am Schlitten"
+    "name": "Hackenschmidt-Kniebeuge am Schlitten",
+    "instructions": [
+      "Stell die Maschine passend zu deiner Körpergröße ein.",
+      "Stell die Füße schulterbreit auf die Plattform, die Zehen zeigen leicht nach außen.",
+      "Halte dich an den Griffen oder Stangen fest, um stabil zu stehen.",
+      "Senk den Körper ab, indem du Knie und Hüfte beugst. Halte den Rücken gerade und die Brust oben.",
+      "Geh so weit runter, bis die Oberschenkel parallel zum Boden sind oder etwas tiefer.",
+      "Halte kurz inne und drück dich dann über die Fersen zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0744": {
-    "name": "Liegende Kniebeuge mit Schlitten"
+    "name": "Liegende Kniebeuge mit Schlitten",
+    "instructions": [
+      "Stell an der Maschine ein passendes Gewicht ein.",
+      "Leg dich in der Maschine auf den Rücken und stell die Füße auf die Fußplatte.",
+      "Stell die Füße schulterbreit und leicht nach außen gedreht auf.",
+      "Greif die Griffe der Maschine, um dich zu stabilisieren.",
+      "Spann Gesäß und Rumpf an.",
+      "Drück dich über die Fersen ab und streck die Beine, um den Schlitten anzuheben.",
+      "Senk den Schlitten wieder ab, indem du Knie und Hüfte beugst.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0746": {
-    "name": "Shrugs am Rücken in der Multipresse"
+    "name": "Shrugs am Rücken in der Multipresse",
+    "instructions": [
+      "Stell dich schulterbreit hin, die Knie leicht gebeugt.",
+      "Greif die Stange im Obergriff, die Hände etwas breiter als schulterbreit.",
+      "Halte die Arme gestreckt und lass die Stange vor den Oberschenkeln hängen.",
+      "Zieh die Schultern gerade nach oben Richtung Ohren und spann oben den Trapezmuskel fest an.",
+      "Halte kurz inne und senk die Schultern dann zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0747": {
-    "name": "Nackendrücken hinter dem Kopf in der Multipresse"
+    "name": "Nackendrücken hinter dem Kopf in der Multipresse",
+    "instructions": [
+      "Stell die Multipresse so ein, dass die Stange auf Schulterhöhe ist.",
+      "Stell dich schulterbreit hin, die Knie leicht gebeugt.",
+      "Greif die Stange im Obergriff, etwas breiter als schulterbreit.",
+      "Heb die Stange aus der Ablage und geh einen Schritt zurück, sodass du stabil stehst.",
+      "Senk die Stange hinter dem Kopf bis in den Nacken ab, die Ellbogen zeigen nach vorn.",
+      "Drück die Stange nach oben über den Kopf, bis die Arme ganz gestreckt sind.",
+      "Halte oben kurz inne und senk die Stange dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0748": {
-    "name": "Bankdrücken in der Multipresse"
+    "name": "Bankdrücken in der Multipresse",
+    "instructions": [
+      "Stell die Stange der Multipresse auf Brusthöhe ein.",
+      "Leg dich flach auf die Bank, die Füße fest auf dem Boden.",
+      "Greif die Stange im Obergriff, etwas breiter als schulterbreit.",
+      "Heb die Stange aus der Ablage und senk sie zur Brust, die Ellbogen bleiben nah am Körper.",
+      "Halte kurz inne, wenn die Stange die Brust berührt.",
+      "Drück die Stange zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0749": {
-    "name": "Good Morning mit gebeugten Knien in der Multipresse"
+    "name": "Good Morning mit gebeugten Knien in der Multipresse",
+    "instructions": [
+      "Stell dich schulterbreit hin, die Zehen zeigen nach vorn.",
+      "Leg die Stange quer über den oberen Rücken, sodass sie auf dem Trapezmuskel liegt.",
+      "Beug die Knie leicht und kipp den Oberkörper aus der Hüfte nach vorn, der Rücken bleibt gerade.",
+      "Senk den Oberkörper, bis er parallel zum Boden ist und du eine Dehnung in der hinteren Oberschenkelmuskulatur spürst.",
+      "Spann Gesäß und hintere Oberschenkelmuskulatur an und richte den Oberkörper wieder auf, zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0750": {
-    "name": "Stuhl-Kniebeuge in der Multipresse"
+    "name": "Stuhl-Kniebeuge in der Multipresse",
+    "instructions": [
+      "Stell die Stange der Multipresse auf eine passende Höhe ein.",
+      "Stell dich schulterbreit hin, die Zehen zeigen leicht nach außen.",
+      "Leg die Stange quer über den oberen Rücken, sodass sie auf dem Trapezmuskel liegt.",
+      "Spann den Rumpf an, halte die Brust oben und senk den Körper langsam ab, indem du Knie und Hüfte beugst.",
+      "Geh so weit runter, bis die Oberschenkel parallel zum Boden sind, oder so tief, wie es für dich angenehm ist.",
+      "Halte kurz inne und drück dich dann über die Fersen zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0751": {
-    "name": "Bankdrücken mit engem Griff in der Multipresse"
+    "name": "Bankdrücken mit engem Griff in der Multipresse",
+    "instructions": [
+      "Stell die Bank passend ein und leg dich darauf, die Füße flach auf dem Boden.",
+      "Greif die Stange eng, die Hände etwas enger als schulterbreit.",
+      "Senk die Stange zur Brust, die Ellbogen bleiben nah am Körper.",
+      "Halte unten kurz inne und drück die Stange dann zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0752": {
-    "name": "Kreuzheben in der Multipresse"
+    "name": "Kreuzheben in der Multipresse",
+    "instructions": [
+      "Stell die Stange der Multipresse auf Hüfthöhe ein.",
+      "Stell dich schulterbreit hin, die Zehen zeigen leicht nach außen.",
+      "Beug Hüfte und Knie, halte den Rücken gerade und die Brust oben und greif die Stange im Obergriff, etwas breiter als schulterbreit.",
+      "Spann den Rumpf an und heb die Stange, indem du Hüfte und Knie streckst. Führ die Stange dabei nah am Körper.",
+      "Richte dich ganz auf, bis Hüfte und Knie vollständig gestreckt sind.",
+      "Senk die Stange kontrolliert wieder ab, indem du Hüfte und Knie beugst. Der Rücken bleibt gerade.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0753": {
-    "name": "Bankdrücken an der Negativbank in der Multipresse"
+    "name": "Bankdrücken an der Negativbank in der Multipresse",
+    "instructions": [
+      "Stell die Negativbank auf den gewünschten Winkel ein.",
+      "Leg dich auf die Bank und hak die Füße unter den Fußpolstern ein.",
+      "Greif die Stange im Obergriff, etwas breiter als schulterbreit.",
+      "Heb die Stange aus der Ablage und senk sie langsam zur Brust, die Ellbogen bleiben nah am Körper.",
+      "Halte unten kurz inne und drück die Stange dann zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0754": {
-    "name": "Drücken mit umgekehrtem Griff an der Negativbank in der Multipresse"
+    "name": "Drücken mit umgekehrtem Griff an der Negativbank in der Multipresse",
+    "instructions": [
+      "Stell die Bank in der Multipresse als Negativbank ein.",
+      "Leg dich auf die Bank und hak die Füße unter den Fußpolstern ein.",
+      "Greif die Stange im Untergriff, die Hände etwas breiter als schulterbreit.",
+      "Heb die Stange aus der Ablage und senk sie zur Brust, die Ellbogen bleiben nah am Körper.",
+      "Halte unten kurz inne und drück die Stange dann zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0755": {
-    "name": "Hackenschmidt-Kniebeuge in der Multipresse"
+    "name": "Hackenschmidt-Kniebeuge in der Multipresse",
+    "instructions": [
+      "Stell die Stange der Multipresse auf eine Höhe ein, die zu deinem Körper passt.",
+      "Stell dich schulterbreit hin, die Zehen zeigen leicht nach außen.",
+      "Stell dich unter die Stange, sodass sie auf dem oberen Trapezmuskel und den Schultern liegt.",
+      "Greif die Stange im Obergriff, etwas breiter als schulterbreit.",
+      "Spann den Rumpf an und halte die Brust oben, während du die Stange aus der Ablage hebst.",
+      "Geh einen Schritt zurück und stell die Füße etwas weiter als schulterbreit auseinander.",
+      "Beug die Knie und senk den Körper ab, die Brust bleibt oben und der Rücken gerade.",
+      "Geh so weit runter, bis die Oberschenkel parallel zum Boden sind oder etwas tiefer.",
+      "Halte unten kurz inne und drück dich dann über die Fersen zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0756": {
-    "name": "Hüftheben in der Multipresse"
+    "name": "Hüftheben in der Multipresse",
+    "instructions": [
+      "Setz dich in der Multipresse mit dem Rücken ans Polster, die Füße stehen schulterbreit.",
+      "Leg die Hände auf die Stange, etwas breiter als schulterbreit.",
+      "Spann Rumpf und Gesäß an und drück dich über die Fersen ab, um die Hüfte vom Boden zu heben.",
+      "Heb die Hüfte weiter, bis dein Körper von den Knien bis zu den Schultern eine gerade Linie bildet.",
+      "Halte oben kurz inne und senk die Hüfte dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0757": {
-    "name": "Schrägbankdrücken in der Multipresse"
+    "name": "Schrägbankdrücken in der Multipresse",
+    "instructions": [
+      "Stell die Bank auf eine Neigung von 30 bis 45 Grad ein.",
+      "Setz dich auf die Bank, den Rücken flach am Polster und die Füße fest auf dem Boden.",
+      "Greif die Stange im Obergriff, etwas breiter als schulterbreit.",
+      "Heb die Stange aus der Ablage und senk sie langsam zur oberen Brust, die Ellbogen leicht zum Körper gezogen.",
+      "Halte unten kurz inne und drück die Stange dann zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0758": {
-    "name": "Drücken mit umgekehrtem Griff an der Schrägbank in der Multipresse"
+    "name": "Drücken mit umgekehrtem Griff an der Schrägbank in der Multipresse",
+    "instructions": [
+      "Stell die Bank in der Multipresse auf eine angenehme Schräge ein.",
+      "Setz dich auf die Bank, den Rücken am Polster und die Füße flach auf dem Boden.",
+      "Greif die Stange im Obergriff, etwas breiter als schulterbreit.",
+      "Heb die Stange aus der Ablage und senk sie langsam zur Brust, die Ellbogen bleiben nah am Körper.",
+      "Halte kurz inne, wenn die Stange knapp über der Brust ist.",
+      "Drück die Stange zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0759": {
-    "name": "Schrägbank-Schulterheben in der Multipresse"
+    "name": "Schrägbank-Schulterheben in der Multipresse",
+    "instructions": [
+      "Stell die Multipresse auf eine schräge Position ein.",
+      "Stell dich mit dem Gesicht zur Maschine hin, die Füße schulterbreit.",
+      "Greif die Stange im Obergriff, etwas breiter als schulterbreit.",
+      "Halte den Rücken gerade und den Rumpf angespannt.",
+      "Heb die Stange Richtung Decke, die Ellbogen führen die Bewegung.",
+      "Halte oben kurz inne und senk die Stange dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0760": {
     "name": "Beinpresse in der Multipresse"
