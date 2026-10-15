@@ -6,6 +6,7 @@ import { useStore } from '../store/useStore.js'
 import { todayISO } from '../lib/format.js'
 import { useNutrition } from '../lib/nutrition/store.js'
 import { createFakeNutriTrace, fixtureSettings } from '../lib/nutrition/fake-nutritrace.js'
+import { draftOf } from '../lib/nutrition/goals.js'
 import { bindUI } from '../components/ui.jsx'
 import NutritionGoals from './NutritionGoals.jsx'
 
@@ -102,6 +103,17 @@ describe('Nutrition › Goals', () => {
     await settle()
     expect(nt.state.settings).toMatchObject({ calorieGoalMode: 'adaptive', calorieGoalFactor: 0.8 })
     expect(goalWrites().map(w => w.body.key).sort()).toEqual(['calorieGoalFactor', 'calorieGoalMode'])
+  })
+
+  it('offers the lean gain the onboarding sets, and keeps it when it is the saved factor', async () => {
+    await open()
+    clickText('Adaptive')
+    clickText('Lean gain +10%')
+    await click(saveButton())
+    await settle()
+    expect(nt.state.settings.calorieGoalFactor).toBe(1.1)
+    // Read back as itself, not as "Maintain": saving an unrelated change leaves it alone.
+    expect(draftOf({ calorieGoalFactor: 1.1 }).factor).toBe(1.1)
   })
 
   it('shows how far the adaptive estimate has got, and the estimate once it is ready', async () => {

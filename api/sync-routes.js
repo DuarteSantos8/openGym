@@ -18,7 +18,9 @@
  * instance with no hub configured, which must never read as a deletion.
  *
  * Reads (workouts changed since the last pass, body weight by date) are sync-data.js over the stored
- * document. Writes are one weigh-in at a time, read-modify-written here the way PUT /api/data
+ * document. The onboarding seed (sync-seed.js) is the one write besides weigh-ins; it fills in only
+ * what the profile has not decided, so it needs no precondition. Weigh-ins are written one at a
+ * time, read-modify-written here the way PUT /api/data
  * writes: the stored document read, changed, stamped (sync-stamps.js stampPut) and written with
  * nothing awaited in between, so a browser's save can never land inside it and be lost. Each write
  * names the version it was decided on (`If-Match`, revision and write id), and one made over any
@@ -31,6 +33,7 @@
 import { verifyHubToken, replayCache, HUB_AUDIENCE, HUB_USERS_AUDIENCE, HUB_USERS_SCOPE, HUB_SERVICE_SUB } from './hub-token.js';
 import { createWindow } from './rate-limit.js';
 import { stampPut } from './sync-stamps.js';
+import { parseSeed, seedState, seedView } from './sync-seed.js';
 import {
   isSyncDate, workoutItems, trackWorkouts, changesSince, decodeCursor, bodyweightView, weighInOf, withWeighIn, withoutWeighIn, unitOf,
   usersPage, USER_ID, USERS_LIMIT_MAX, USERS_LIMIT_DEFAULT
@@ -55,6 +58,11 @@ const KG_MIN = 20;
 const KG_MAX = 400;
 // A weigh-in's body is a few dozen bytes.
 const BODY_MAX = 4096;
+// An onboarding seed is at most seven routines of twenty exercises: a few KB.
+const SEED_BODY_MAX = 32 * 1024;
+// A profile this new may get its first document from the onboarding write (see the route). One
+// older than that with no document is the empty data volume the `no-state` answer exists for.
+const NEW_PROFILE_MS = 30 * 86400000;
 // How many profiles' workout change logs are kept (sync-data.js trackWorkouts), a few dozen bytes per
 // workout each. One that is dropped is rebuilt on its next read, and costs that hub a full pass, so
 // this sits far above the number of profiles one instance syncs at once.
@@ -259,6 +267,46 @@ export function syncRoutes({ hub, json, findUser, listProfiles, stateVersion, re
     'DELETE /api/sync/bodyweight/{date}': writeWeighIn({
       read: async () => ({}),
       apply: (cur, date) => withoutWeighIn(cur, date)
+    }),
+
+    // What the profile has already answered, for the hub's onboarding to skip those questions
+    // (sync-seed.js seedView). A profile with no document yet answers too: with nothing answered.
+    'GET /api/sync/onboarding': authed(async (req, res, user) => {
+      const S = readStateStrict(user.id);
+      if (S === UNREADABLE) {
+        console.error('state file unreadable for', user.id);
+        return json(res, 503, { error: 'state unreadable', code: 'state-unreadable' });
+      }
+      json(res, 200, { ...revOf(S), ...seedView(S || {}) }, { ETag: etagOf(S) });
+    }),
+
+    // The hub's onboarding answers, written once into the profile: the unit, the first weigh-in,
+    // the Coach intake answers, a starter plan and the check-in switch (sync-seed.js). Every field
+    // goes in only where the profile has not decided it already, so the same write sent again
+    // changes nothing: no If-Match, since the hub decides nothing on a version it read. The
+    // decision is made here, on the stored document, read and written with nothing awaited in
+    // between, like the weigh-in writes. A profile with no document yet gets its first one only
+    // while it is new (NEW_PROFILE_MS): its devices then merge it like another device's copy.
+    'POST /api/sync/onboarding': authed(async (req, res, user) => {
+      const parsed = parseSeed(await readBody(req, SEED_BODY_MAX));
+      if (!parsed.ok) return bad(json, res, parsed.code, parsed.error);
+      const again = findUser(user.id);
+      if (!again) return json(res, 404, { error: 'no such user', code: 'user-gone' });
+      if (again.disabled) return json(res, 401, { error: 'this account has been disabled', code: 'disabled' });
+      const cur = readStateStrict(user.id);
+      if (cur === UNREADABLE) {
+        console.error('state file unreadable for', user.id);
+        return json(res, 503, { error: 'state unreadable', code: 'state-unreadable' });
+      }
+      const newProfile = Date.now() - Date.parse(again.created) < NEW_PROFILE_MS;
+      if (!cur && !newProfile) {
+        return json(res, 409, { error: 'this profile has no data on this server yet', code: 'no-state', rev: 0 });
+      }
+      const { next, applied, skipped } = seedState(cur, parsed.seed, { newProfile });
+      if (!next) return json(res, 200, { ok: true, changed: false, applied, skipped, ...revOf(cur) }, { ETag: etagOf(cur) });
+      stampPut(cur, next, { overRead: true, stamped: true });
+      const done = commitState(user.id, cur, next);
+      json(res, 200, { ok: true, changed: true, applied, skipped, ...done }, { ETag: etagOf(next) });
     })
   };
 }

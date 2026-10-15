@@ -322,9 +322,64 @@ paths:
               schema:
                 type: object
                 properties:
-                  user: { $ref: '#/components/schemas/SessionUser' }
+                  user:
+                    allOf:
+                      - $ref: '#/components/schemas/SessionUser'
+                      - type: object
+                        properties:
+                          synced:
+                            oneOf: [{ type: boolean }, { type: 'null' }]
+                            description: >-
+                              Whether any passkey of the profile is backed up (WebAuthn BS): true
+                              when one is, false when every one is known not to be, null while any is
+                              unknown (made before the flag was kept, and not used since) or there is
+                              none. What the app's second-passkey reminder is decided on.
                   token: { type: string, description: 'Bearer sessions past half their lifetime only: the renewed token.' }
+              example: { user: { id: "Zk3q9XyPbA2LmN0v", name: "Ada", admin: false, synced: true } }
         '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/invites/{code}:
+    get:
+      tags: [auth]
+      operationId: inviteCheck
+      summary: Check an invite without using it
+      description: |
+        For the invite landing page, before anyone signs up: whether the code can still be used,
+        and, only while it can, the display name of whoever made it and the name they typed for the
+        person invited. A used, revoked or expired code names nobody. Nothing else: never the note,
+        who used it, when, or an id. It
+        never uses the invite up. An invite works once and for 14 days after it was made.
+
+        No session needed. Counted per address (30 a minute) and for everyone together (600 a
+        minute); behind a proxy the address is the one TRUST_PROXY makes the server believe.
+      security: []
+      parameters:
+        - { name: code, in: path, required: true, schema: { type: string }, description: 'The invite code, any case.' }
+      responses:
+        '200':
+          description: The code names an invite.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, inviterName, suggestedName]
+                properties:
+                  status: { type: string, enum: [valid, used, revoked, expired] }
+                  inviterName: { oneOf: [{ type: string }, { type: 'null' }], description: 'Only while `valid`; null too when the inviter''s profile is gone.' }
+                  suggestedName: { oneOf: [{ type: string }, { type: 'null' }], description: 'Only while `valid`.' }
+              example: { status: valid, inviterName: "Adrian", suggestedName: "Ana" }
+        '404':
+          description: No invite has this code (or it is not a code at all).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "no such invite", code: "not-found" }
+        '429':
+          description: Too many checks from this address, or from everyone.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "too many invite checks, try again shortly", code: "rate-limited", retryAfter: 12 }
 
   /api/register/options:
     post:
@@ -2302,7 +2357,7 @@ paths:
       description: >-
         Creates a fresh single-use invite code (16 hex chars = 64 bits; the code
         itself is the thing that isn't worth guessing; rate limiting is the reverse
-        proxy's job). Audited.
+        proxy's job). It works once, for 14 days. Audited.
       requestBody:
         required: false
         content:
@@ -2314,6 +2369,10 @@ paths:
                   type: string
                   maxLength: 60
                   description: Free-form label ("for Alex").
+                name:
+                  type: string
+                  maxLength: 40
+                  description: 'The invitee''s name, which the invite landing page prefills (GET /api/invites/{code} `suggestedName`).'
       responses:
         '200':
           description: The new invite.
@@ -2331,7 +2390,10 @@ paths:
       tags: [admin]
       operationId: adminInviteRevoke
       summary: 'Admin: revoke an unused invite code'
-      description: Deletes an unused code. A code that was already redeemed cannot be revoked.
+      description: >-
+        Revokes an unused code: it no longer signs anyone up, and leaves the admin list. It stays
+        on record so the invite check (GET /api/invites/{code}) can say `revoked`. A code that
+        was already redeemed cannot be revoked.
       requestBody:
         required: true
         content:
@@ -3322,6 +3384,183 @@ paths:
         '428': { $ref: '#/components/responses/SyncPreconditionRequired' }
         '503': { $ref: '#/components/responses/SyncStateUnreadable' }
 
+  /api/sync/onboarding:
+    get:
+      tags: [sync]
+      operationId: syncOnboardingView
+      summary: 'Sync: what the profile has already answered, for the onboarding'
+      description: |
+        What the hub's first-run onboarding may skip asking: the unit (and whether it was chosen or
+        is held by stored weights), the latest weigh-in, how many routines and planned weekdays there
+        are, the Coach intake answers, and whether gym check-in is on. Nothing else of the profile.
+        A profile with no document yet answers with nothing answered (`rev` 0).
+      security:
+        - hubToken: []
+      responses:
+        '200':
+          description: The summary.
+          headers:
+            ETag: { $ref: '#/components/headers/SyncETag' }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rev: { type: integer }
+                  wid: { type: string }
+                  unit: { type: string, enum: [kg, lb] }
+                  unitChosen: { type: boolean }
+                  latestWeight:
+                    oneOf:
+                      - { type: 'null' }
+                      - { type: object, properties: { date: { type: string, format: date }, kg: { type: number } } }
+                  routines: { type: integer }
+                  plannedDays: { type: integer }
+                  coachProfile:
+                    oneOf:
+                      - { type: 'null' }
+                      - type: object
+                        properties:
+                          goal: { oneOf: [{ type: string }, { type: 'null' }] }
+                          experience: { oneOf: [{ type: string }, { type: 'null' }] }
+                          daysPerWeek: { oneOf: [{ type: integer }, { type: 'null' }] }
+                          preferredDays: { type: array, items: { type: integer } }
+                  checkIn: { type: boolean }
+              example: { rev: 4, wid: "9f2c01ab33de4e10", unit: kg, unitChosen: true, latestWeight: { date: "2026-10-14", kg: 81.2 }, routines: 3, plannedDays: 3, coachProfile: null, checkIn: false }
+        '401': { $ref: '#/components/responses/SyncUnauthorized' }
+        '404': { $ref: '#/components/responses/SyncUserGone' }
+        '503': { $ref: '#/components/responses/SyncStateUnreadable' }
+    post:
+      tags: [sync]
+      operationId: syncOnboardingSeed
+      summary: 'Sync: write the onboarding answers into the profile'
+      description: |
+        The hub's first-run onboarding, written once: the unit, the first weigh-in, the Coach
+        intake answers, a starter plan (routines and the weekdays they go on) and the gym check-in
+        switch. Every field is optional, and each goes in only where the profile has not decided it
+        already; one it has is left as it is and listed in `skipped` with why:
+
+        - `unit`: `same`; `chosen` (a unit switch on record); `has-data` (stored weights a switch would convert).
+        - `bodyweight`: `has-entry` (the date has a weigh-in).
+        - `coachProfile`: `answered` (the Coach intake has answers).
+        - `plan`: `has-plan` (the profile has routines or planned weekdays).
+        - `checkIn`: `same`; `existing-profile` (only a profile under 30 days old with no training gets check-in off); `chosen` (the switch was changed on a device); `in-use` (a gym card is saved).
+
+        So the same write sent again changes nothing, and needs no `If-Match`: the decision is made
+        here, on the stored document, read and written with nothing in between. Each change is
+        stamped later than anything the profile holds, as the app stamps its own, so every device
+        merges it as the newest change. A profile with no document yet gets its first one while it
+        is less than 30 days old; an older one answers 409 `no-state`. The body is at most 32 KB.
+      security:
+        - hubToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                unit: { type: string, enum: [kg, lb] }
+                bodyweight:
+                  type: object
+                  required: [date, kg]
+                  properties:
+                    date: { type: string, format: date, description: '1900-01-01 to tomorrow.' }
+                    kg: { type: number, minimum: 20, maximum: 400 }
+                coachProfile:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    goal: { type: string, enum: [strength, muscle, general, fatloss, endurance] }
+                    experience: { type: string, enum: [new, returning, regular] }
+                    daysPerWeek: { type: integer, minimum: 1, maximum: 7 }
+                    preferredDays: { type: array, maxItems: 7, items: { type: integer, minimum: 0, maximum: 6 } }
+                plan:
+                  type: object
+                  required: [routines, schedule]
+                  properties:
+                    routines:
+                      type: array
+                      minItems: 1
+                      maxItems: 7
+                      items:
+                        type: object
+                        required: [name, ex]
+                        properties:
+                          name: { type: string, maxLength: 60 }
+                          emoji: { type: string, maxLength: 32, description: 'The routine icon key.' }
+                          ex:
+                            type: array
+                            minItems: 1
+                            maxItems: 20
+                            items:
+                              type: object
+                              required: [id, sets, reps]
+                              properties:
+                                id: { type: string, description: 'Exercise id.' }
+                                sets: { type: integer, minimum: 1, maximum: 20 }
+                                reps: { type: integer, minimum: 1, maximum: 100 }
+                    schedule:
+                      type: array
+                      maxItems: 7
+                      description: 'One entry per weekday (0 = Sunday), each naming a routine by its index.'
+                      items:
+                        type: object
+                        required: [day, routine]
+                        properties:
+                          day: { type: integer, minimum: 0, maximum: 6 }
+                          routine: { type: integer, minimum: 0 }
+                checkIn: { type: boolean }
+            example:
+              unit: kg
+              bodyweight: { date: "2026-10-15", kg: 78.4 }
+              coachProfile: { goal: muscle, experience: new, daysPerWeek: 3, preferredDays: [1, 3, 5] }
+              plan:
+                routines: [{ name: "Full Body A", emoji: figureStrength, ex: [{ id: "0043", sets: 3, reps: 8 }] }]
+                schedule: [{ day: 1, routine: 0 }, { day: 4, routine: 0 }]
+              checkIn: false
+      responses:
+        '200':
+          description: Applied, or nothing to change (`changed` false, same revision).
+          headers:
+            ETag: { $ref: '#/components/headers/SyncETag' }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  changed: { type: boolean }
+                  applied: { type: array, items: { type: string } }
+                  skipped:
+                    type: array
+                    items: { type: object, properties: { field: { type: string }, reason: { type: string } } }
+                  rev: { type: integer }
+                  wid: { type: string }
+              example: { ok: true, changed: true, applied: [bodyweight, plan, checkIn], skipped: [{ field: unit, reason: same }], rev: 5, wid: "77a0c3d2e91b4f08" }
+        '400':
+          description: 'A field is malformed or unknown (`bad-field`, `bad-unit`, `bad-date`, `bad-weight`, `bad-coach-profile`, `bad-plan`, `bad-check-in`).'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "unknown field units", code: "bad-field" }
+        '401': { $ref: '#/components/responses/SyncUnauthorized' }
+        '404': { $ref: '#/components/responses/SyncUserGone' }
+        '409':
+          description: The profile has no document and is more than 30 days old.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "this profile has no data on this server yet", code: "no-state", rev: 0 }
+        '413':
+          description: The body is over 32 KB.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "body too large" }
+        '503': { $ref: '#/components/responses/SyncStateUnreadable' }
+
 components:
   headers:
     SyncETag:
@@ -3618,6 +3857,12 @@ components:
               created: { oneOf: [{ type: string }, { type: 'null' }], description: ISO timestamp. }
               lastUsed: { oneOf: [{ type: string }, { type: 'null' }], description: 'ISO timestamp of the last sign-in or confirmation with it.' }
               transports: { type: array, items: { type: string } }
+              synced:
+                oneOf: [{ type: boolean }, { type: 'null' }]
+                description: >-
+                  The authenticator's backed-up flag (WebAuthn BS), as last reported at
+                  registration or a sign-in. Null for a passkey made before it was kept and not
+                  used since.
         password:
           type: boolean
           description: >-
@@ -3627,7 +3872,7 @@ components:
           type: boolean
           description: Removing any one passkey would be refused (409 `last-way-in`).
       example:
-        passkeys: [{ id: "g3Xq…", name: "Laptop", created: "2026-09-23T10:00:00.000Z", lastUsed: "2026-09-23T10:00:00.000Z", transports: [internal] }]
+        passkeys: [{ id: "g3Xq…", name: "Laptop", created: "2026-09-23T10:00:00.000Z", lastUsed: "2026-09-23T10:00:00.000Z", transports: [internal], synced: true }]
         password: false
         lastWayIn: true
 
@@ -4136,9 +4381,15 @@ components:
       type: object
       properties:
         code: { type: string, description: 16 hex chars. }
-        note: { type: string }
+        note: { type: string, description: 'The inviter''s own label. Never shown to the person invited.' }
+        name: { type: string, description: 'The name the invite landing page prefills for the new profile (optional).' }
         createdBy: { type: string, description: Admin user id. }
         created: { type: string, description: ISO timestamp. }
+        expiresAt: { type: string, description: 'ISO timestamp, 14 days after `created`. Invites from before expiry was kept got 14 days from the first boot that kept it.' }
+        status:
+          type: string
+          enum: [valid, used, expired]
+          description: 'Only in GET /api/admin/invites. Revoked invites are left out of that list.'
         usedBy:
           oneOf: [{ type: string }, { type: 'null' }]
           description: User id that redeemed the code (absent/null while unused).

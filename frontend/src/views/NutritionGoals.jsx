@@ -33,6 +33,7 @@ const modeOptions = () => [
 const factorOptions = () => [
   { value: 0.8, label: t('Lose −20%') },
   { value: 1, label: t('Maintain') },
+  { value: 1.1, label: t('Lean gain +10%') },
   { value: 1.2, label: t('Gain +20%') },
 ]
 const presetOptions = () => [

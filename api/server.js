@@ -27,8 +27,10 @@ import {
 } from './password.js';
 import { createBackoff, createWindow } from './rate-limit.js';
 import {
-  listPasskeys, addPasskeyRecord, renamePasskeyRecord, removePasskeyRecord, passkeyRemovalRefused, MAX_PASSKEYS
+  listPasskeys, addPasskeyRecord, renamePasskeyRecord, removePasskeyRecord, passkeyRemovalRefused, MAX_PASSKEYS,
+  backupFlagsOf, notePasskeyFlags, passkeysSynced
 } from './passkeys-store.js';
+import { usableInvite, newInvite, migrateInvites, revokeInvite, inviteCheck, inviteStatus, codeHint } from './invites.js';
 import { createDeviceLink, findDeviceLink, burnDeviceLink, dropDeviceLinks } from './device-link.js';
 import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from './media.js';
 import { effectiveRoutineId } from './queue.js';
@@ -161,6 +163,10 @@ db.subs = db.subs || [];
 db.invites = db.invites || [];
 db.deviceLinks = db.deviceLinks || [];   // unused one-time device links, hashed (device-link.js)
 db.gone = db.gone || [];                 // { id, at } of deleted profiles, for the sync hub's listing
+// Invites from before they expired get the full fourteen days from now (invites.js).
+if (migrateInvites(db.invites)) {
+  try { saveDb(); } catch (e) { console.error('db save failed (invite expiry)', e.message); }
+}
 // A deleted profile leaves its id and the time behind, and nothing else (GET /api/sync/users says
 // `gone` for it, so a hub that was syncing it can stop, not guess). Kept for 90 days and at most
 // GONE_MAX of them: long enough for any hub that polls to see it, short enough that the file does
@@ -1001,7 +1007,12 @@ const ACCOUNT_FAILS = createBackoff({
   // At most one per profile with a password, so this cannot grow without bound.
   keep: k => k.startsWith('acct:') && hasPassword(db.users.find(u => u.id === k.slice(5)))
 });
-setInterval(() => { AUTH_BURST.sweep(); ADDR_FAILS.sweep(); ACCOUNT_FAILS.sweep(); }, 60000).unref();
+// GET /api/invites/{code}, the invite landing page's check: 30 a minute per address, 600 for
+// everyone together. Behind the hub every check arrives from the hub's address, carrying the
+// visitor's in X-Forwarded-For, which only TRUST_PROXY makes this count by.
+const INVITE_CHECKS = createWindow({ max: 30, windowMs: 60000 });
+const INVITE_CHECKS_ALL = createWindow({ max: 600, windowMs: 60000, maxKeys: 1 });
+setInterval(() => { AUTH_BURST.sweep(); ADDR_FAILS.sweep(); ACCOUNT_FAILS.sweep(); INVITE_CHECKS.sweep(); INVITE_CHECKS_ALL.sweep(); }, 60000).unref();
 
 // Route -> the kind of failure it can count. Every route listed here also spends the burst
 // budget; `null` spends only that.
@@ -1213,6 +1224,7 @@ async function passkeyStepUp(user, body) {
     if (!v.verified) return false;
     cred.counter = v.authenticationInfo.newCounter;
     cred.lastUsed = new Date().toISOString();
+    notePasskeyFlags(cred, v.authenticationInfo);
     return true;
   } catch { return false; }
 }
@@ -1365,7 +1377,7 @@ const passwordRoutes = {
     const name = text(body.name).trim().slice(0, 40);
     if (!name) return json(res, 400, { error: 'name required', code: 'missing' });
     const code = text(body.code).trim().toUpperCase();
-    const invite = () => db.invites.find(i => i.code === code && !i.usedBy && !i.revoked);
+    const invite = () => usableInvite(db.invites, code);
     if (INVITE_ONLY && addressPaused(req, res, 'signup')) return;
     if (INVITE_ONLY && !invite()) {
       audit(req, 'auth.register.denied', { ok: false, name, msg: 'invite-rejected' });
@@ -1657,7 +1669,8 @@ async function newPasskey(req, res, c, body, ev, user) {
     publicKey: Buffer.from(credential.publicKey).toString('base64url'),
     counter: credential.counter || 0,
     transports: body.credential?.response?.transports,
-    name: body.name
+    name: body.name,
+    ...backupFlagsOf(verification.registrationInfo)
   };
 }
 
@@ -2037,7 +2050,25 @@ const routes = {
     if (!s) return json(res, 401, { error: 'not signed in' });
     const { user } = s;
     const renew = s.bearer && s.exp - Date.now() < SESSION_DAYS * 86400000 / 2;
-    json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) }, ...(renew ? { token: makeSession(user) } : {}) });
+    // `synced`: whether any passkey of the profile is backed up (passkeys-store.js passkeysSynced),
+    // null while unknown. What the app's second-passkey reminder is decided on.
+    json(res, 200, {
+      user: { id: user.id, name: user.name, admin: isAdmin(user), synced: passkeysSynced(db, user.id) },
+      ...(renew ? { token: makeSession(user) } : {})
+    });
+  },
+
+  // The invite landing page's check (invites.js): whether the code still works and who sent it,
+  // without using it up and without a session. Answered for an unknown code exactly as for a
+  // malformed one. Counted per address and for everyone together (INVITE_CHECKS below), since it
+  // is reachable by anyone; a code is 64 random bits, so the count is about load, not guessing.
+  'GET /api/invites/{code}': async (req, res) => {
+    const addr = limitAddress(req);
+    const wait = INVITE_CHECKS.take(addr) || INVITE_CHECKS_ALL.take('all');
+    if (wait) return json(res, 429, { error: 'too many invite checks, try again shortly', code: 'rate-limited', retryAfter: wait }, { 'Retry-After': String(wait) });
+    const found = inviteCheck(db.invites, db.users, req.inviteCode);
+    if (!found) return json(res, 404, { error: 'no such invite', code: 'not-found' });
+    json(res, 200, found);
   },
 
   'POST /api/register/options': async (req, res) => {
@@ -2045,7 +2076,7 @@ const routes = {
     const name = text(body.name).trim().slice(0, 40);
     if (!name) return json(res, 400, { error: 'name required' });
     const code = text(body.code).trim().toUpperCase();
-    if (INVITE_ONLY && !db.invites.some(i => i.code === code && !i.usedBy && !i.revoked)) {
+    if (INVITE_ONLY && !usableInvite(db.invites, code)) {
       // The rejected code itself is never recorded — a near-miss guess in the log is a liability.
       audit(req, 'auth.register.denied', { ok: false, name, msg: 'invite-rejected' });
       return json(res, 403, { error: 'a valid invite code is required', code: 'invite' });
@@ -2095,7 +2126,7 @@ const routes = {
     // Re-check the invite at the last moment (it may have been used/revoked since options), then burn it.
     let invite = null;
     if (INVITE_ONLY) {
-      invite = db.invites.find(i => i.code === c.code && !i.usedBy && !i.revoked);
+      invite = usableInvite(db.invites, c.code);
       if (!invite) {
         audit(req, 'auth.register.fail', { ok: false, name: c.name, msg: 'invite-invalid' });
         return json(res, 403, { error: 'invite code is no longer valid, ask for a new one', code: 'invite' });
@@ -2111,7 +2142,8 @@ const routes = {
       counter: credential.counter || 0,
       transports: body.credential?.response?.transports || [],
       // What Settings → Passkeys shows (#95); a passkey from before then has neither.
-      created: user.created, lastUsed: user.created
+      created: user.created, lastUsed: user.created,
+      ...backupFlagsOf(verification.registrationInfo)
     });
     saveDb();
     audit(req, 'auth.register.ok', { user, msg: invite ? invite.code : null });
@@ -2166,6 +2198,7 @@ const routes = {
     }
     cred.counter = verification.authenticationInfo.newCounter;
     cred.lastUsed = new Date().toISOString();
+    notePasskeyFlags(cred, verification.authenticationInfo);
     saveDb();
     const user = db.users.find(u => u.id === cred.userId);
     if (!user) {
@@ -2579,9 +2612,11 @@ const routes = {
 
   'GET /api/admin/invites': async (req, res) => {
     if (!requireAdmin(req, res)) return;
-    // resolve usedBy uid → name for display
-    const invites = db.invites.map(i => ({
-      ...i, usedByName: i.usedBy ? (db.users.find(u => u.id === i.usedBy) || {}).name || null : null
+    // resolve usedBy uid → name for display. A revoked invite stays on record for the public
+    // check (invites.js) and is left out here, as it was when revoking deleted it.
+    const invites = db.invites.filter(i => !i.revoked).map(i => ({
+      ...i, status: inviteStatus(i),
+      usedByName: i.usedBy ? (db.users.find(u => u.id === i.usedBy) || {}).name || null : null
     }));
     json(res, 200, { invites, invite_only: INVITE_ONLY });
   },
@@ -2595,10 +2630,13 @@ const routes = {
     // code is good, so the code itself has to be the thing that isn't worth guessing. Codes already
     // in db.json keep working — validation is an exact string compare, never a length or format check.
     do { code = crypto.randomBytes(8).toString('hex').toUpperCase(); } while (db.invites.some(i => i.code === code));
-    const invite = { code, note: text(body.note).slice(0, 60), createdBy: admin.id, created: new Date().toISOString() };
+    // `name`: what the invite landing page prefills as the new profile's name. The note stays the
+    // inviter's own label and is never shown to the person invited.
+    const invite = newInvite({ code, note: text(body.note).slice(0, 60), name: body.name, createdBy: admin.id });
     db.invites.push(invite);
     saveDb();
-    audit(req, 'admin.invite.create', { user: admin, msg: code });
+    // A hint, never the code: the audit log outlives the invite and is read by more than its maker.
+    audit(req, 'admin.invite.create', { user: admin, msg: codeHint(code) });
     json(res, 200, { invite });
   },
 
@@ -2606,11 +2644,11 @@ const routes = {
     const admin = requireAdmin(req, res); if (!admin) return;
     const body = await readBody(req);
     const inv = db.invites.find(i => i.code === text(body.code).toUpperCase());
-    if (!inv) return json(res, 404, { error: 'no such code' });
+    if (!inv || inv.revoked) return json(res, 404, { error: 'no such code' });
     if (inv.usedBy) return json(res, 400, { error: 'already used, cannot revoke' });
-    db.invites = db.invites.filter(i => i.code !== inv.code);
+    revokeInvite(inv);
     saveDb();
-    audit(req, 'admin.invite.revoke', { user: admin, msg: inv.code });
+    audit(req, 'admin.invite.revoke', { user: admin, msg: codeHint(inv.code) });
     json(res, 200, { ok: true });
   },
 
@@ -2772,6 +2810,8 @@ const server = http.createServer(async (req, res) => {
   if (mm) { key = req.method + ' /api/media/{hash}'; req.mediaHash = mm[1]; }
   const sd = /^\/api\/sync\/bodyweight\/([^/]+)$/.exec(url.pathname);
   if (sd) { key = req.method + ' /api/sync/bodyweight/{date}'; req.syncDate = sd[1]; }
+  const ic = /^\/api\/invites\/([^/]+)$/.exec(url.pathname);
+  if (ic) { key = req.method + ' /api/invites/{code}'; req.inviteCode = ic[1]; }
   const handler = routes[key];
   if (!handler) return json(res, 404, { error: 'not found' });
   if (!csrfOk(req, key)) {

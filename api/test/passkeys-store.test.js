@@ -3,7 +3,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  addPasskeyRecord, listPasskeys, removePasskeyRecord, passkeyRemovalRefused, renamePasskeyRecord, passkeyName, MAX_PASSKEYS
+  addPasskeyRecord, listPasskeys, removePasskeyRecord, passkeyRemovalRefused, renamePasskeyRecord, passkeyName, MAX_PASSKEYS,
+  backupFlagsOf, notePasskeyFlags, passkeysSynced
 } from '../passkeys-store.js';
 
 const cred = (id, userId = 'u1') => ({
@@ -50,8 +51,45 @@ describe('listPasskeys', () => {
     const list = listPasskeys(db, 'u1');
     assert.deepEqual(list.map(c => c.id), ['a', 'c']);
     for (const c of list) assert.equal(c.publicKey, undefined);
-    assert.deepEqual(list[0], { id: 'a', name: null, created: null, lastUsed: null, transports: ['internal'] });
-    assert.deepEqual(list[1], { id: 'c', name: 'Laptop', created: 'x', lastUsed: 'y', transports: ['internal'] });
+    assert.deepEqual(list[0], { id: 'a', name: null, created: null, lastUsed: null, transports: ['internal'], synced: null });
+    assert.deepEqual(list[1], { id: 'c', name: 'Laptop', created: 'x', lastUsed: 'y', transports: ['internal'], synced: null });
+  });
+
+  it('says whether each passkey is synced, and null for one made before the flags were kept', () => {
+    const db = { creds: [{ ...cred('a'), backedUp: true }, { ...cred('b'), backedUp: false }, cred('c')] };
+    assert.deepEqual(listPasskeys(db, 'u1').map(c => c.synced), [true, false, null]);
+  });
+});
+
+describe('the backup flags (BE/BS)', () => {
+  it('reads them off a registration or a sign-in, only the ones it reports', () => {
+    assert.deepEqual(backupFlagsOf({ credentialDeviceType: 'multiDevice', credentialBackedUp: true }), { backupEligible: true, backedUp: true });
+    assert.deepEqual(backupFlagsOf({ credentialDeviceType: 'singleDevice', credentialBackedUp: false }), { backupEligible: false, backedUp: false });
+    assert.deepEqual(backupFlagsOf({}), {});
+    assert.deepEqual(backupFlagsOf(undefined), {});
+  });
+
+  it('are stored with a new passkey, and a sign-in updates the backed-up flag', () => {
+    const db = { creds: [] };
+    addPasskeyRecord(db, 'u1', { ...cred('a'), backupEligible: true, backedUp: false });
+    addPasskeyRecord(db, 'u1', { ...cred('b'), backupEligible: 'yes', backedUp: 1 });
+    assert.equal(db.creds[0].backupEligible, true);
+    assert.equal(db.creds[0].backedUp, false);
+    assert.ok(!('backupEligible' in db.creds[1]) && !('backedUp' in db.creds[1]), 'only booleans are kept');
+    notePasskeyFlags(db.creds[0], { credentialDeviceType: 'multiDevice', credentialBackedUp: true });
+    assert.equal(db.creds[0].backedUp, true);
+    notePasskeyFlags(db.creds[0], {});
+    assert.equal(db.creds[0].backedUp, true, 'a sign-in that reports nothing changes nothing');
+  });
+
+  it('make a profile synced when any passkey is backed up, not synced when none is, unknown otherwise', () => {
+    const with_ = (...creds) => ({ creds });
+    assert.equal(passkeysSynced(with_({ ...cred('a'), backedUp: false }, { ...cred('b'), backedUp: true }), 'u1'), true);
+    assert.equal(passkeysSynced(with_({ ...cred('a'), backedUp: false }, { ...cred('b'), backedUp: false }), 'u1'), false);
+    assert.equal(passkeysSynced(with_({ ...cred('a'), backedUp: false }, cred('b')), 'u1'), null);
+    assert.equal(passkeysSynced(with_(cred('a')), 'u1'), null, 'a passkey from before the flags');
+    assert.equal(passkeysSynced(with_({ ...cred('x', 'u2'), backedUp: true }), 'u1'), null, 'another profile’s passkey counts for nothing');
+    assert.equal(passkeysSynced({}, 'u1'), null);
   });
 });
 

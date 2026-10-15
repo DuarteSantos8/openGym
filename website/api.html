@@ -246,7 +246,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.1</span>
-    <span>76 endpoints</span>
+    <span>79 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -373,11 +373,48 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">A valid session.<span class="r-sig">{ user: <a href="#schema-SessionUser">SessionUser</a>, token: string }</span></span>
+    <span class="p-desc">A valid session.<span class="r-sig">{ user: object, token: string }</span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
     <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-inviteCheck">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/invites/{code}</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Check an invite without using it</span>
+  </summary>
+  <div class="ep-body">
+<p>For the invite landing page, before anyone signs up: whether the code can still be used, and, only while it can, the display name of whoever made it and the name they typed for the person invited. A used, revoked or expired code names nobody. Nothing else: never the note, who used it, when, or an id. It never uses the invite up. An invite works once and for 14 days after it was made.</p>
+<p>No session needed. Counted per address (30 a minute) and for everyone together (600 a minute); behind a proxy the address is the one TRUST_PROXY makes the server believe.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public: no authentication required.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">code <span class="p-hint">(path)</span><em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The invite code, any case.</span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The code names an invite.<span class="r-sig">{ status: &quot;valid&quot; | &quot;used&quot; | &quot;revoked&quot; | &quot;expired&quot;, inviterName: string | null, suggestedName: string | null }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No invite has this code (or it is not a code at all).<span class="r-sig"><code>{&quot;error&quot;:&quot;no such invite&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Too many checks from this address, or from everyone.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many invite checks, try again shortly&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -2728,7 +2765,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Mint an invite code</span>
   </summary>
   <div class="ep-body">
-<p>Creates a fresh single-use invite code (16 hex chars = 64 bits; the code itself is the thing that isn't worth guessing; rate limiting is the reverse proxy's job). Audited.</p>
+<p>Creates a fresh single-use invite code (16 hex chars = 64 bits; the code itself is the thing that isn't worth guessing; rate limiting is the reverse proxy's job). It works once, for 14 days. Audited.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span> <span class="p-hint">(optional)</span></p><div class="ptab">
@@ -2736,6 +2773,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">note</span>
     <span class="p-type">string <span class="p-hint">(&le; 60 chars)</span></span>
     <span class="p-desc">Free-form label (&quot;for Alex&quot;).</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">name</span>
+    <span class="p-type">string <span class="p-hint">(&le; 40 chars)</span></span>
+    <span class="p-desc">The invitee's name, which the invite landing page prefills (GET /api/invites/{code} <code>suggestedName</code>).</span>
   </div>
 </div>
     <p class="ep-h">Responses</p>
@@ -2764,7 +2806,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Revoke an unused invite code</span>
   </summary>
   <div class="ep-body">
-<p>Deletes an unused code. A code that was already redeemed cannot be revoked.</p>
+<p>Revokes an unused code: it no longer signs anyone up, and leaves the admin list. It stays on record so the invite check (GET /api/invites/{code}) can say <code>revoked</code>. A code that was already redeemed cannot be revoked.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
@@ -3519,6 +3561,222 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     </div>
   </div>
 </details>
+
+<details class="ep" id="op-syncOnboardingView">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/sync/onboarding</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Sync: what the profile has already answered, for the onboarding</span>
+  </summary>
+  <div class="ep-body">
+<p>What the hub's first-run onboarding may skip asking: the unit (and whether it was chosen or is held by stored weights), the latest weigh-in, how many routines and planned weekdays there are, the Coach intake answers, and whether gym check-in is on. Nothing else of the profile. A profile with no document yet answers with nothing answered (<code>rev</code> 0).</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Hub token only: <code>Authorization: Bearer &lt;ES256 JWS&gt;</code> signed by a key in <code>HUB_JWKS</code>. A session cookie or a paired token is refused.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The summary.<span class="r-sig">{ rev: integer, wid: string, unit: &quot;kg&quot; | &quot;lb&quot;, unitChosen: boolean, latestWeight: null | object, routines: integer, plannedDays: integer, coachProfile: null | object, checkIn: boolean } &middot; sets <code>ETag</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No hub token (<code>not signed in</code>; a cookie or a paired token counts as none), a token that fails verification (<code>code: token-invalid</code>), a token used before (<code>code: replay</code>), or a disabled profile (<code>code: disabled</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;invalid sync token&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;sync token already used&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;this account has been disabled&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">The token is good but its <code>sub</code> names no profile any more: it was deleted. Only this body (<code>code: user-gone</code>) means that; a plain <code>{&quot;error&quot;:&quot;not found&quot;}</code> is an instance without <code>HUB_JWKS</code>, and says nothing about the profile.<span class="r-sig"><code>{&quot;error&quot;:&quot;no such user&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">The profile's state file exists but cannot be read. Transient for the hub: back off and retry, and never take it for an empty profile.<span class="r-sig"><code>{&quot;error&quot;:&quot;state unreadable&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-syncOnboardingSeed">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/sync/onboarding</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Sync: write the onboarding answers into the profile</span>
+  </summary>
+  <div class="ep-body">
+<p>The hub's first-run onboarding, written once: the unit, the first weigh-in, the Coach intake answers, a starter plan (routines and the weekdays they go on) and the gym check-in switch. Every field is optional, and each goes in only where the profile has not decided it already; one it has is left as it is and listed in <code>skipped</code> with why:</p>
+<ul><li><code>unit</code>: <code>same</code>; <code>chosen</code> (a unit switch on record); <code>has-data</code> (stored weights a switch would convert).</li><li><code>bodyweight</code>: <code>has-entry</code> (the date has a weigh-in).</li><li><code>coachProfile</code>: <code>answered</code> (the Coach intake has answers).</li><li><code>plan</code>: <code>has-plan</code> (the profile has routines or planned weekdays).</li><li><code>checkIn</code>: <code>same</code>; <code>existing-profile</code> (only a profile under 30 days old with no training gets check-in off); <code>chosen</code> (the switch was changed on a device); <code>in-use</code> (a gym card is saved).</li></ul>
+<p>So the same write sent again changes nothing, and needs no <code>If-Match</code>: the decision is made here, on the stored document, read and written with nothing in between. Each change is stamped later than anything the profile holds, as the app stamps its own, so every device merges it as the newest change. A profile with no document yet gets its first one while it is less than 30 days old; an older one answers 409 <code>no-state</code>. The body is at most 32 KB.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Hub token only: <code>Authorization: Bearer &lt;ES256 JWS&gt;</code> signed by a key in <code>HUB_JWKS</code>. A session cookie or a paired token is refused.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">unit</span>
+    <span class="p-type">&quot;kg&quot; | &quot;lb&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">bodyweight</span>
+    <span class="p-type">object</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">bodyweight.date<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string <span class="p-hint">(date)</span></span>
+    <span class="p-desc">1900-01-01 to tomorrow.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">bodyweight.kg<em class="p-req" title="required">required</em></span>
+    <span class="p-type">number <span class="p-hint">(20&ndash;400)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">coachProfile</span>
+    <span class="p-type">object</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">coachProfile.goal</span>
+    <span class="p-type">&quot;strength&quot; | &quot;muscle&quot; | &quot;general&quot; | &quot;fatloss&quot; | &quot;endurance&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">coachProfile.experience</span>
+    <span class="p-type">&quot;new&quot; | &quot;returning&quot; | &quot;regular&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">coachProfile.daysPerWeek</span>
+    <span class="p-type">integer <span class="p-hint">(1&ndash;7)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">coachProfile.preferredDays</span>
+    <span class="p-type">(integer <span class="p-hint">(0&ndash;6)</span>)[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">plan</span>
+    <span class="p-type">object</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">plan.routines<em class="p-req" title="required">required</em></span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">plan.routines[].name<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string <span class="p-hint">(&le; 60 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">plan.routines[].emoji</span>
+    <span class="p-type">string <span class="p-hint">(&le; 32 chars)</span></span>
+    <span class="p-desc">The routine icon key.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">plan.routines[].ex<em class="p-req" title="required">required</em></span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">plan.schedule<em class="p-req" title="required">required</em></span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc">One entry per weekday (0 = Sunday), each naming a routine by its index.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">plan.schedule[].day<em class="p-req" title="required">required</em></span>
+    <span class="p-type">integer <span class="p-hint">(0&ndash;6)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">plan.schedule[].routine<em class="p-req" title="required">required</em></span>
+    <span class="p-type">integer <span class="p-hint">(0&ndash;)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">checkIn</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+<pre><code>{
+  &quot;unit&quot;: &quot;kg&quot;,
+  &quot;bodyweight&quot;: {
+    &quot;date&quot;: &quot;2026-10-15&quot;,
+    &quot;kg&quot;: 78.4
+  },
+  &quot;coachProfile&quot;: {
+    &quot;goal&quot;: &quot;muscle&quot;,
+    &quot;experience&quot;: &quot;new&quot;,
+    &quot;daysPerWeek&quot;: 3,
+    &quot;preferredDays&quot;: [
+      1,
+      3,
+      5
+    ]
+  },
+  &quot;plan&quot;: {
+    &quot;routines&quot;: [
+      {
+        &quot;name&quot;: &quot;Full Body A&quot;,
+        &quot;emoji&quot;: &quot;figureStrength&quot;,
+        &quot;ex&quot;: [
+          {
+            &quot;id&quot;: &quot;0043&quot;,
+            &quot;sets&quot;: 3,
+            &quot;reps&quot;: 8
+          }
+        ]
+      }
+    ],
+    &quot;schedule&quot;: [
+      {
+        &quot;day&quot;: 1,
+        &quot;routine&quot;: 0
+      },
+      {
+        &quot;day&quot;: 4,
+        &quot;routine&quot;: 0
+      }
+    ]
+  },
+  &quot;checkIn&quot;: false
+}</code></pre>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Applied, or nothing to change (<code>changed</code> false, same revision).<span class="r-sig">{ ok: always true, changed: boolean, applied: string[], skipped: object[], rev: integer, wid: string } &middot; sets <code>ETag</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">A field is malformed or unknown (<code>bad-field</code>, <code>bad-unit</code>, <code>bad-date</code>, <code>bad-weight</code>, <code>bad-coach-profile</code>, <code>bad-plan</code>, <code>bad-check-in</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;unknown field units&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No hub token (<code>not signed in</code>; a cookie or a paired token counts as none), a token that fails verification (<code>code: token-invalid</code>), a token used before (<code>code: replay</code>), or a disabled profile (<code>code: disabled</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;invalid sync token&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;sync token already used&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;this account has been disabled&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">The token is good but its <code>sub</code> names no profile any more: it was deleted. Only this body (<code>code: user-gone</code>) means that; a plain <code>{&quot;error&quot;:&quot;not found&quot;}</code> is an instance without <code>HUB_JWKS</code>, and says nothing about the profile.<span class="r-sig"><code>{&quot;error&quot;:&quot;no such user&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">The profile has no document and is more than 30 days old.<span class="r-sig"><code>{&quot;error&quot;:&quot;this profile has no data on this server yet&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">413</span>
+    <span class="p-desc">The body is over 32 KB.<span class="r-sig"><code>{&quot;error&quot;:&quot;body too large&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">The profile's state file exists but cannot be read. Transient for the hub: back off and retry, and never take it for an empty profile.<span class="r-sig"><code>{&quot;error&quot;:&quot;state unreadable&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
   </div>
 </section>
 
@@ -3613,6 +3871,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">passkeys[].transports</span>
     <span class="p-type">string[]</span>
     <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">passkeys[].synced</span>
+    <span class="p-type">boolean | null</span>
+    <span class="p-desc">The authenticator's backed-up flag (WebAuthn BS), as last reported at registration or a sign-in. Null for a passkey made before it was kept and not used since.</span>
   </div>
   <div class="prow">
     <span class="p-name">password</span>
@@ -4868,7 +5131,12 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow">
     <span class="p-name">note</span>
     <span class="p-type">string</span>
-    <span class="p-desc"></span>
+    <span class="p-desc">The inviter's own label. Never shown to the person invited.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">name</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The name the invite landing page prefills for the new profile (optional).</span>
   </div>
   <div class="prow">
     <span class="p-name">createdBy</span>
@@ -4879,6 +5147,16 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">created</span>
     <span class="p-type">string</span>
     <span class="p-desc">ISO timestamp.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">expiresAt</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">ISO timestamp, 14 days after <code>created</code>. Invites from before expiry was kept got 14 days from the first boot that kept it.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">status</span>
+    <span class="p-type">&quot;valid&quot; | &quot;used&quot; | &quot;expired&quot;</span>
+    <span class="p-desc">Only in GET /api/admin/invites. Revoked invites are left out of that list.</span>
   </div>
   <div class="prow">
     <span class="p-name">usedBy</span>

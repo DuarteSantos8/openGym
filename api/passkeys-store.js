@@ -30,6 +30,43 @@ export const passkeyName = v => (typeof v === 'string' ? v : '')
 // is handed back to browsers as a hint, so only a short list of short words is kept.
 const transportsOf = v => (Array.isArray(v) ? v.filter(x => typeof x === 'string' && x.length <= 16).slice(0, 8) : []);
 
+/* Whether a passkey is synced (WebAuthn's backup flags, authenticator data bits 3 and 4).
+ *
+ * BE, backup eligible: the authenticator can sync this credential (a password manager, iCloud
+ * Keychain, Google Password Manager). It never changes for a credential. BS, backed up: it is
+ * synced now. It can change, so it is read again at every sign-in. A passkey made before these
+ * were kept has neither until its next use; the app then says nothing either way about it.
+ *
+ * The flags are the authenticator's own claim, unattested (attestation is `none`): they decide
+ * which reminder the app shows, never what anyone may do. */
+const flag = v => (typeof v === 'boolean' ? v : null);
+
+/** The flags a registration or an authentication reported (SimpleWebAuthn's registrationInfo or
+ *  authenticationInfo), only the ones it did report. */
+export function backupFlagsOf(info) {
+  const type = info?.credentialDeviceType;
+  const eligible = type === 'multiDevice' ? true : type === 'singleDevice' ? false : null;
+  const backedUp = flag(info?.credentialBackedUp);
+  return { ...(eligible != null ? { backupEligible: eligible } : {}), ...(backedUp != null ? { backedUp } : {}) };
+}
+
+/** Records what a sign-in reported about `row`'s flags. Mutates `row`. */
+export function notePasskeyFlags(row, info) {
+  Object.assign(row, backupFlagsOf(info));
+}
+
+/**
+ * Whether the profile can be reached from a device other than the one a passkey was made on:
+ * true when any passkey is backed up, false when every one is known not to be, null while any
+ * is unknown (made before the flags were kept, and not used since) or there is none.
+ */
+export function passkeysSynced(db, userId) {
+  const mine = (db.creds || []).filter(c => c.userId === userId);
+  if (mine.some(c => c.backedUp === true)) return true;
+  if (mine.length && mine.every(c => c.backedUp === false)) return false;
+  return null;
+}
+
 // What the owner sees of their passkeys: never the public key, which nothing on screen needs.
 export function listPasskeys(db, userId) {
   return (db.creds || [])
@@ -40,7 +77,9 @@ export function listPasskeys(db, userId) {
       // Passkeys made before these fields existed have neither; the list leaves the line out.
       created: c.created || null,
       lastUsed: c.lastUsed || null,
-      transports: transportsOf(c.transports)
+      transports: transportsOf(c.transports),
+      // Null: not known yet (see passkeysSynced).
+      synced: flag(c.backedUp)
     }));
 }
 
@@ -60,6 +99,8 @@ export function addPasskeyRecord(db, userId, cred) {
   };
   const name = passkeyName(cred.name);
   if (name) row.name = name;
+  if (flag(cred.backupEligible) != null) row.backupEligible = cred.backupEligible;
+  if (flag(cred.backedUp) != null) row.backedUp = cred.backedUp;
   db.creds.push(row);
   return { ok: true, row };
 }

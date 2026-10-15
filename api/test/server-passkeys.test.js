@@ -3,8 +3,7 @@
    link redemption and the audit trail.
    Real server.js in a child, the same harness as server-password.test.js; every test talks from
    its own X-Forwarded-For address (TRUST_PROXY=1), so one test's failures never pause another's.
-   The authenticator is software: a P-256 key that makes attestations ("none") and assertions the
-   way a browser's would. */
+   The authenticator is software (soft-passkey.mjs). */
 import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
@@ -17,63 +16,15 @@ import { hashPassword } from '../password.js';
 import { hashLinkCode } from '../device-link.js';
 import { MAX_PASSKEYS } from '../passkeys-store.js';
 import { boundPort } from './helpers.mjs';
+import { softPasskey, ORIGIN } from './soft-passkey.mjs';
 
 const API = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SECRET = crypto.randomBytes(32).toString('hex');
-const ORIGIN = 'http://localhost:8080';
-const b64u = b => Buffer.from(b).toString('base64url');
-const sha = b => crypto.createHash('sha256').update(b).digest();
 
 const mintSession = (uid, sv = 0) => {
   const payload = `${uid}:${Date.now() + 86400000}:${sv}`;
   return 'gymsid=' + payload + '.' + crypto.createHmac('sha256', SECRET).update(payload).digest('base64url');
 };
-
-// Just enough CBOR for an attestation object: a map of text keys to text, bytes or an empty map.
-const cborHead = (major, n) => n < 24 ? Buffer.from([(major << 5) | n])
-  : n < 256 ? Buffer.from([(major << 5) | 24, n]) : Buffer.from([(major << 5) | 25, n >> 8, n & 255]);
-const cborText = s => Buffer.concat([cborHead(3, Buffer.byteLength(s)), Buffer.from(s)]);
-const cborBytes = b => Buffer.concat([cborHead(2, b.length), b]);
-
-function softPasskey() {
-  const { privateKey, publicKey } = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' });
-  const jwk = publicKey.export({ format: 'jwk' });
-  const cose = Buffer.concat([
-    Buffer.from([0xa5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20]), Buffer.from(jwk.x, 'base64url'),
-    Buffer.from([0x22, 0x58, 0x20]), Buffer.from(jwk.y, 'base64url')
-  ]);
-  const raw = crypto.randomBytes(16);
-  const id = b64u(raw);
-  let counter = 0;
-  return {
-    id,
-    row: (userId, extra = {}) => ({ id, userId, publicKey: cose.toString('base64url'), counter: 0, transports: ['internal'], ...extra }),
-    // What navigator.credentials.create() hands back, serialised the way lib/api.js does.
-    attestation(challenge, { origin = ORIGIN } = {}) {
-      const clientDataJSON = Buffer.from(JSON.stringify({ type: 'webauthn.create', challenge, origin, crossOrigin: false }));
-      const len = Buffer.from([raw.length >> 8, raw.length & 255]);
-      const authData = Buffer.concat([sha('localhost'), Buffer.from([0x45]), Buffer.alloc(4), Buffer.alloc(16), len, raw, cose]);
-      const attestationObject = Buffer.concat([
-        Buffer.from([0xa3]), cborText('fmt'), cborText('none'), cborText('attStmt'), Buffer.from([0xa0]),
-        cborText('authData'), cborBytes(authData)
-      ]);
-      return {
-        id, rawId: id, type: 'public-key', clientExtensionResults: {}, authenticatorAttachment: 'platform',
-        response: { clientDataJSON: b64u(clientDataJSON), attestationObject: b64u(attestationObject), transports: ['internal', 'hybrid'] }
-      };
-    },
-    assertion(challenge) {
-      const clientDataJSON = Buffer.from(JSON.stringify({ type: 'webauthn.get', challenge, origin: ORIGIN, crossOrigin: false }));
-      const c = Buffer.alloc(4); c.writeUInt32BE(++counter);
-      const authData = Buffer.concat([sha('localhost'), Buffer.from([0x05]), c]);
-      const signature = crypto.sign('sha256', Buffer.concat([authData, sha(clientDataJSON)]), privateKey);
-      return {
-        id, rawId: id, type: 'public-key', clientExtensionResults: {}, authenticatorAttachment: 'platform',
-        response: { clientDataJSON: b64u(clientDataJSON), authenticatorData: b64u(authData), signature: b64u(signature), userHandle: null }
-      };
-    }
-  };
-}
 
 const GOOD = 'correct horse battery staple';
 let pwHash;
@@ -129,7 +80,7 @@ test('the list is the caller’s own passkeys, without key material, and says wh
   const r = await h.req('GET', '/api/account/passkeys', { cookie: mintSession('u1') });
   assert.equal(r.status, 200);
   assert.deepEqual(r.body.passkeys.map(p => p.id), [a.id, c.id]);
-  assert.deepEqual(r.body.passkeys[0], { id: a.id, name: 'Laptop', created: '2026-09-01T00:00:00.000Z', lastUsed: null, transports: ['internal'] });
+  assert.deepEqual(r.body.passkeys[0], { id: a.id, name: 'Laptop', created: '2026-09-01T00:00:00.000Z', lastUsed: null, transports: ['internal'], synced: null });
   assert.ok(r.body.passkeys.every(p => !('publicKey' in p) && !('userId' in p) && !('counter' in p)));
   assert.equal(r.body.lastWayIn, false);
   assert.equal(r.body.password, false);
@@ -149,7 +100,7 @@ test('adding a passkey needs proof, excludes the ones the profile has, and the n
   const opt = await h.req('POST', '/api/account/passkeys/options', { body: await h.stepUp(key, ip), cookie, ip });
   assert.equal(opt.status, 200);
   assert.deepEqual(opt.body.options.excludeCredentials.map(c => c.id), [key.id]);
-  assert.equal(opt.body.options.user.id, b64u('u1'));   // the profile's own user handle, as at sign-up
+  assert.equal(opt.body.options.user.id, Buffer.from('u1').toString('base64url'));   // the profile's own user handle, as at sign-up
   const ver = await h.req('POST', '/api/account/passkeys/verify', {
     body: { cid: opt.body.cid, credential: fresh.attestation(opt.body.options.challenge), name: ' Phone\n' }, cookie, ip
   });

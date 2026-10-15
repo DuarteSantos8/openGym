@@ -10,7 +10,8 @@ import { WATER_UNITS, calorieTarget, waterGoalOf } from './diary.js'
 export const MACROS = ['proteins', 'carbohydrates', 'fat']
 export const DENSITY = { proteins: 4, carbohydrates: 4, fat: 9 }
 export const MODES = ['fixed', 'adaptive', 'dynamic']
-export const FACTORS = [0.8, 1, 1.2]
+// 1.1 is the onboarding's lean gain (owner, 2026-10-15), which the hub writes for "build muscle".
+export const FACTORS = [0.8, 1, 1.1, 1.2]
 
 // Macro splits NutriTrace offers, as shares of calories (Goals.svelte MACRO_PRESETS).
 export const MACRO_PRESETS = {

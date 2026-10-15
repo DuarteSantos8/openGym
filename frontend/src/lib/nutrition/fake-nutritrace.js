@@ -117,7 +117,7 @@ const ID = /^[A-Za-z0-9_-]{1,64}$/
 const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v)
 const WRITABLE_SETTINGS = {
   calorieGoalMode: v => ['fixed', 'adaptive', 'dynamic'].includes(v),
-  calorieGoalFactor: v => [0.8, 1, 1.2].includes(v),
+  calorieGoalFactor: v => [0.8, 1, 1.1, 1.2].includes(v),
   goals: v => isObj(v) && Object.keys(v).length <= 100 && Object.values(v).every(isObj),
   goalTemplates: v => Array.isArray(v) && v.length <= 30 && v.every(isObj),
   waterGoalMl: v => typeof v === 'number' && v >= 1 && v <= 50000,

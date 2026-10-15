@@ -2520,6 +2520,7 @@ export default {
   'Fallback target': 'Fallback target',
   'Fixed': 'Fixed',
   'Gain +20%': 'Gain +20%',
+  'Lean gain +10%': 'Lean gain +10%',
   'Goal factor': 'Goal factor',
   'Goals': 'Goals',
   'Goals did not load.': 'Goals did not load.',
