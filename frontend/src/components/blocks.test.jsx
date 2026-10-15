@@ -83,6 +83,15 @@ describe('ItemRow', () => {
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(/^ItemRow: a tappable row/))
   })
 
+  it('opens from its text when it holds a control (RoutineEdit.jsx\'s exercise row)', () => {
+    same(<ItemRow onOpen={go} title="Bench press" subtitle="3 × 8" trailing={<Button size="sm" onClick={go}>Save</Button>} />,
+      <div className="item">
+        <button type="button" className="grow item-open" onClick={go}><span className="tt">Bench press</span><span className="ss">3 × 8</span></button>
+        <Button size="sm" onClick={go}>Save</Button>
+      </div>)
+    expect(() => html(<ItemRow onOpen={go} onClick={go} title="a" />)).toThrow(/not both/)
+  })
+
   it('does not warn for a row whose children are not controls, or a row that is not tappable', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     html(<ItemRow onClick={go} title="a" trailing={<span className="tag">b</span>} chevron />)

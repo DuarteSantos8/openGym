@@ -122,6 +122,9 @@ async function call(method, path, body, { signal, nullable = false } = {}) {
 
 const nt = (method, path, body, opts) => call(method, '/nt' + path, body, opts)
 
+// What PUT /api/foods/:id may carry (the hub's isFoodEdit), picked by name: never a spread.
+const FOOD_EDIT_FIELDS = ['name', 'brand', 'barcode', 'portion', 'unit', 'category', 'notes', 'favorite', 'nutrition']
+
 export const NtApi = {
   /** @returns {Promise<DiaryDay>} */
   getDiaryDate: date => nt('GET', `/api/diary/${date}`),
@@ -144,6 +147,14 @@ export const NtApi = {
     const { img_url: _img, imgUrl: _imgUrl, visibility: _vis, id: _id, ...rest } = food
     return nt('POST', '/api/foods', { ...rest, visibility: 'private' })
   },
+  /** Edits one of your foods. The body is the fields to change (NutriTrace keeps what is left
+   *  out); `nutrition` replaces the whole object. Only FOOD_EDIT_FIELDS are sent: the hub refuses
+   *  any other key (an image, a visibility, an id) with a 400.
+   *  @returns {Promise<Food>} */
+  updateFood: (id, food) =>
+    nt('PUT', `/api/foods/${encodeURIComponent(id)}`, Object.fromEntries(FOOD_EDIT_FIELDS.filter(k => food[k] !== undefined).map(k => [k, food[k]]))),
+  /** Removes one of your foods (NutriTrace keeps a tombstone). Past diary entries keep their copy. */
+  deleteFood: id => nt('DELETE', `/api/foods/${encodeURIComponent(id)}`),
   /** Orders recents (usage_count, last_used_at = the diary date). */
   markFoodUsed: (id, date) => nt('POST', `/api/foods/${encodeURIComponent(id)}/used`, { date }),
   /** @returns {Promise<ActivityRow[]>} */

@@ -36,17 +36,25 @@ const interactive = node => {
 // A floating list row: lead (a thumb or an icon), the title over its subtitle, then what trails
 // it. `onClick` makes the whole row a keyboard-reachable role=button; such a row must hold no
 // button, link or field of its own (a control inside a button is unreachable for a screen reader),
-// and in development it warns when it does.
-export function ItemRow({ lead, title, subtitle, trailing, chevron = false, onClick, className, titleClassName, subtitleClassName, ...rest }) {
+// and in development it warns when it does. A row that holds a control of its own takes `onOpen`
+// instead: the title and subtitle become one real button (.item-open, RoutineEdit.jsx's exercise
+// name), so the text block opens the row and the control beside it stays reachable.
+export function ItemRow({ lead, title, subtitle, trailing, chevron = false, onClick, onOpen, className, titleClassName, subtitleClassName, ...rest }) {
+  if (import.meta.env.DEV && onClick && onOpen) throw new Error('ItemRow: onClick (the row) or onOpen (its text), not both')
   if (import.meta.env.DEV && onClick && interactive([lead, title, subtitle, trailing])) {
     console.warn('ItemRow: a tappable row (role=button) holds an interactive child. Give the row no onClick and make the child the control, or move the control out of the row.')
   }
   return <div className={cx('item', className)} {...tappable(onClick)} {...rest}>
     {lead}
-    <div className="grow">
-      <div className={cx('tt', titleClassName)}>{title}</div>
-      {subtitle != null && <div className={cx('ss', subtitleClassName)}>{subtitle}</div>}
-    </div>
+    {onOpen
+      ? <button type="button" className="grow item-open" onClick={onOpen}>
+        <span className={cx('tt', titleClassName)}>{title}</span>
+        {subtitle != null && <span className={cx('ss', subtitleClassName)}>{subtitle}</span>}
+      </button>
+      : <div className="grow">
+        <div className={cx('tt', titleClassName)}>{title}</div>
+        {subtitle != null && <div className={cx('ss', subtitleClassName)}>{subtitle}</div>}
+      </div>}
     {trailing}
     {chevron && <Icon name="chevronRight" className="chev" />}
   </div>

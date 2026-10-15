@@ -106,4 +106,14 @@ describe('tn() — plural forms from the pack', () => {
     expect(tn('{0} day a week', '{0} days a week', 3)).toBe('3 дні на тиждень')
     expect(tn('{0} day a week', '{0} days a week', 5)).toBe('5 днів на тиждень')
   })
+
+  it('counts foods in the language, not in English (the Nutrition hub and Foods)', () => {
+    const foods = n => tn('{0} food', '{0} foods', n)
+    _setLangState('ru', ru, null, null)
+    expect([1, 3, 5, 11, 21].map(foods)).toEqual(['1 продукт', '3 продукта', '5 продуктов', '11 продуктов', '21 продукт'])
+    _setLangState('uk', uk, null, null)
+    expect([1, 3, 5, 22].map(foods)).toEqual(['1 продукт', '3 продукти', '5 продуктів', '22 продукти'])
+    _setLangState('pl', pl, null, null)
+    expect([1, 3, 5, 22].map(foods)).toEqual(['1 produkt', '3 produkty', '5 produktów', '22 produkty'])
+  })
 })
