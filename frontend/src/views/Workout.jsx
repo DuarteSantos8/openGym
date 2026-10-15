@@ -33,6 +33,10 @@ import { effortColor, effortInk } from '../lib/effort.js'
 import Elapsed from '../components/Elapsed.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
+import { Card, Chip, EmptyState, SectionTitle, Stat, Tag } from '../components/blocks.jsx'
+import { Inline, Spacer } from '../components/layout.jsx'
+import { SheetHeader } from '../components/sheet-layout.jsx'
+import { cx } from '../lib/ui-kit.js'
 import { defaultIncrement, weightIncrement, stepWeight } from '../lib/progression.js'
 import { progressionGuidance } from '../lib/progression-copy.js'
 import { buildPlannedEntry, plannedConfigOf, builtOutOfProgression } from '../lib/session-start.js'
@@ -65,22 +69,22 @@ function StartChooser() {
   const others = S.routines.filter(r => !idSet.has(r.id))
   return <div>
     <div className="hdr"><div><h1>{t('Start workout')}</h1><div className="sub">{t(DAYN[new Date().getDay()])} · {todayRoutines.length ? t('today is {0}', todayName) : t('rest day, but no one’s stopping you')}</div></div></div>
-    {todayRoutines.length > 0 && <div className="card" style={{ borderColor: 'var(--acc)' }}>
+    {todayRoutines.length > 0 && <Card>
       <h2 className="accent">{t("Today's plan")}{todayOvr ? ' · ' + t('rescheduled') : ''}</h2>
-      <div className="row between" style={{ marginBottom: 12 }}>
-        <div><div className="big">{todayName}</div><div className="muted small">{exCount(todayRoutines.reduce((n, r) => n + r.ex.length, 0))}</div></div>
-        <span className="lrow-i" style={{ width: 38, height: 38, borderRadius: 9, fontSize: 22 }}><Icon name={glyphOf(todayRoutines[0].emoji)} /></span>
-      </div>
+      <Inline justify="between" className="mb-6">
+        <div><Stat value={todayName} /><div className="muted small">{exCount(todayRoutines.reduce((n, r) => n + r.ex.length, 0))}</div></div>
+        <span className="lrow-i fs-title2" style={{ width: 38, height: 38, borderRadius: 9 }}><Icon name={glyphOf(todayRoutines[0].emoji)} /></span>
+      </Inline>
       <Button variant="primary" icon="play" onClick={() => startFlow(todayIds)}>{t('Start {0}', todayName)}</Button>
-    </div>}
-    {others.length > 0 && <><h4 className="sec">{t('Other routines')}</h4>
+    </Card>}
+    {others.length > 0 && <><SectionTitle>{t('Other routines')}</SectionTitle>
       <div className="list">{others.map(r => <div key={r.id} className="item" onClick={() => startFlow([r.id])}>
         <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
         <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
-        <span className="tag acc">{t('Start')}</span></div>)}</div></>}
-    <div style={{ height: 14 }} />
+        <Tag tone="acc">{t('Start')}</Tag></div>)}</div></>}
+    <Spacer size={7} />
     <Button icon="shuffle" onClick={() => startFlow([])}>{t('Freestyle workout (pick as you go)')}</Button>
-    {!S.routines.length && <><div style={{ height: 10 }} /><Button variant="primary" onClick={() => nav('/train/routines')}>{t('Build a plan first')}</Button></>}
+    {!S.routines.length && <><Spacer size={5} /><Button variant="primary" onClick={() => nav('/train/routines')}>{t('Build a plan first')}</Button></>}
   </div>
 }
 
@@ -220,7 +224,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     const today = entry.target || {}
     // A pyramid reads as its targets, as on the routine row: "12 · 8 · 6 · Max · 12", never the
     // set count times the first target (#367). Its rows are the plan; nothing moves them.
-    if (isPyramid(today)) return <div className="small dim planline" style={{ marginBottom: 4 }}>{t('Plan: {0}', pyramidLabel(today.pyramid))}</div>
+    if (isPyramid(today)) return <div className="small dim planline mb-2">{t('Plan: {0}', pyramidLabel(today.pyramid))}</div>
     const todaySets = today.sets || planned.sets || 1
     const inPlan = timed
       ? today.sec == null || today.sec === planned.sec
@@ -228,7 +232,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     const note = todaySets !== (planned.sets || 1) || !inPlan
       ? t('today {0}', setsRepsOf({ mode, sets: todaySets, reps: today.reps, sec: today.sec }))
       : entry.carried ? t('reps from your last session') : null
-    return <div className="small dim planline" style={{ marginBottom: 4 }}>
+    return <div className="small dim planline mb-2">
       {t('Plan: {0}', setsRepsOf({ ...planned, mode }))}{note ? ' · ' + note : ''}
     </div>
   })()
@@ -631,50 +635,50 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     {/* Animations set to Small: a thumbnail beside the name instead of a strip above it, so the
         first set is on screen without scrolling; a tap brings the full animation back. */}
     {!dense && !thumb && <Media ex={ex} key={entry.id} compact={compact} minimizable />}
-    <div className="row between exhd" style={{ marginBottom: 6 }}>
+    <Inline justify="between" className="exhd mb-3">
       {thumb && <WorkoutThumb ex={ex} onExpand={() => update(s => { s.gifSize = 'full' })} />}
-      <div style={{ flex: 1, minWidth: 0, fontSize: (compact || dense) ? 17 : 20, fontWeight: 600, letterSpacing: '-.02em', lineHeight: 1.2 }} className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</div>
-      <div className="row" style={{ gap: 2, flex: 'none' }}>
-        {entry.note && <button className="iconbtn" aria-label={t('Note')} title={t('Note')} style={{ color: 'var(--acc-ink)' }}
+      <div style={{ flex: 1, minWidth: 0, letterSpacing: '-.02em', lineHeight: 1.2 }} className={cx('fw-semibold', (compact || dense) ? 'fs-body' : 'fs-title3', exerciseNameClass(ex))}>{exerciseNameFor(ex)}</div>
+      <Inline gap={1} style={{ flex: 'none' }}>
+        {entry.note && <button className="iconbtn ink-acc" aria-label={t('Note')} title={t('Note')}
           onClick={() => exerciseNoteSheet(entryIdx)}><Icon name="note" /></button>}
         <button className="iconbtn" aria-label={t('More')} title={t('More')} onClick={openMore}><Icon name="more" /></button>
-      </div>
-    </div>
+      </Inline>
+    </Inline>
     {/* Kept out of progression: by hand for this session (the ⋯ menu, with its undo right here),
         or by a deload or rehab routine, which owns that choice and offers no undo. On in every
         view, compact included: it changes what the next session is built from. */}
     {entry.noProg === true && <div className="noprog">
       <Icon name="chartLineSlash" /><span>{t('Not counted for progression')}</span>
-      {onNoProg && <button type="button" className="chip" onClick={() => onNoProg(false)}>{t('Undo')}</button>}
+      {onNoProg && <Chip onClick={() => onNoProg(false)}>{t('Undo')}</Chip>}
     </div>}
     {/* compact view keeps the plan line: it is what the rows are measured against */}
     {dense && planLine}
-    {wc.pairButtons && !compact && !dense && (onPairPrev || onPairNext) && <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+    {wc.pairButtons && !compact && !dense && (onPairPrev || onPairNext) && <Inline gap={3} wrap className="mb-4">
       {onPairPrev && <Button size="xs" variant="tinted" icon="link" title={t('Make superset with previous')} onClick={onPairPrev}>{t('Make superset with previous')}</Button>}
       {onPairNext && <Button size="xs" variant="tinted" icon="link" title={t('Make superset with next')} onClick={onPairNext}>{t('Make superset with next')}</Button>}
-    </div>}
+    </Inline>}
     {/* compact view drops everything from here to the sets card — it is all still on the ⋯ menu
         (note, details, history, bar weight, progression) or is display-only (tags, "last time"). */}
     {!dense && <>
-    <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-      {cardio && <span className="tag acc"><Icon name="figureRun" />{t('Cardio')}</span>}
+    <Inline gap={3} wrap className="mb-4">
+      {cardio && <Tag tone="acc" icon="figureRun">{t('Cardio')}</Tag>}
       {/* A unilateral exercise is logged per side directly (the L/R rows below for reps, a
           "Left"/"Right" tag on each doubled row for a timed hold), so the old "{n} per side"
           chip — which halved the combined total for display — is gone: the split is no longer
           derived, it is what you enter. The tag only flags that this is per-side. */}
-      {!cardio && isPerSide(cfg) && <span className="tag acc nocap"><Icon name="sides" />{t('Per side')}</span>}
-      {(ex.tg || ex.bp) && <span className="tag">{t(MUSCLE_NAME[ex.tg] || ex.tg || ex.bp)}</span>}
-      {ex.eq && <span className="tag">{t(ex.eq)}</span>}
-      {best > 0 && <span className="tag nocap">{t('Best:')} {fmtNum(best)} {S.unit}</span>}
-    </div>
+      {!cardio && isPerSide(cfg) && <Tag tone="acc" nocap icon="sides">{t('Per side')}</Tag>}
+      {(ex.tg || ex.bp) && <Tag>{t(MUSCLE_NAME[ex.tg] || ex.tg || ex.bp)}</Tag>}
+      {ex.eq && <Tag>{t(ex.eq)}</Tag>}
+      {best > 0 && <Tag nocap>{t('Best:')} {fmtNum(best)} {S.unit}</Tag>}
+    </Inline>
     {/* Three notes can apply to one exercise and they are not interchangeable, so each keeps its
         own line and its own icon: the plan's instruction (cfg.note, from the routine), the
         standing fact about the movement (exNotes), and the message you pinned to yourself last
         session. Today's own note is edited through the button in the header and shown last. */}
     {cfg.note && <div className="exnote">{cfg.note}</div>}
-    {standingNote && <div className="exnote"><Icon name="info" style={{ fontSize: 13, marginInlineEnd: 5, verticalAlign: '-2px' }} />{standingNote}</div>}
-    {pinnedNote && <div className="exnote" style={{ color: 'var(--yellow-ink)' }}>
-      <Icon name="pin" style={{ fontSize: 13, marginInlineEnd: 5, verticalAlign: '-2px' }} />
+    {standingNote && <div className="exnote"><Icon name="info" className="fs-footnote" style={{ marginInlineEnd: 5, verticalAlign: '-2px' }} />{standingNote}</div>}
+    {pinnedNote && <div className="exnote ink-warn">
+      <Icon name="pin" className="fs-footnote" style={{ marginInlineEnd: 5, verticalAlign: '-2px' }} />
       {t('From {0}:', fmtDate(pinnedNote.d, true))} {pinnedNote.note}
     </div>}
     {entry.note && <div className="exnote">{entry.note}</div>}
@@ -686,7 +690,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       <span><strong>{t(guidance.policyLabel)}</strong> · {t(...guidance.why)}</span>
     </button>}
     </>}
-    <div className="card" style={{ marginTop: 10, marginBottom: 0 }}>
+    <Card className="mt-5 mb-0">
       {/* the header carries the same eff3/timed sizing as the rows, or the labels drift off their
           columns; over L/R rows it also has to skip the side badge that sits in front of the weight cell */}
       <div className={'sethead' + (col3 ? ' eff3' : '') + (timed ? ' timed' : '') + (perSide ? ' per-side' : '') + (wc.steppers ? '' : ' plain')}><span className="n-sp" /><span className="w-sp">{col1.hd}</span>{col2 && <span className="r-sp">{col2.hd}</span>}{col3 && <span className={col3.eff ? 'eff-sp' : 'r-sp'}>{col3.hd}</span>}{timed && <span className="ck-sp" />}<span className="ck-sp" /></div>
@@ -753,19 +757,19 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
               </div>
             ))}
             {wc.setShortcuts && <div className="setextra">
-              {!isRestPauseSet(s) && <button className="chip add" onClick={() => addDropRow(i)}><Icon name="arrowDown" />{t('+ Drop')}</button>}
-              {!isDropSet(s) && <button className="chip add" onClick={() => addBurstRow(i)}><Icon name="bolt" />{t('+ Burst')}</button>}
+              {!isRestPauseSet(s) && <Chip className="add" onClick={() => addDropRow(i)}><Icon name="arrowDown" />{t('+ Drop')}</Chip>}
+              {!isDropSet(s) && <Chip className="add" onClick={() => addBurstRow(i)}><Icon name="bolt" />{t('+ Burst')}</Chip>}
             </div>}
           </>}
         </div>
       })}
-      <div style={{ height: 8 }} />
-      {wc.setShortcuts ? <div className="row" style={{ flexWrap: 'wrap' }}>
+      <Spacer size={4} />
+      {wc.setShortcuts ? <Inline wrap>
         <Button size="sm" icon="sunrise" onClick={onAddWarmup}>{t('Add warm-up set')}</Button>
         <Button size="sm" icon="minus" disabled={entry.sets.length <= setSpanAt(entry.sets, entry.sets.length - 1)[1]} onClick={onRemoveSet}>{t('Remove set')}</Button>
         <Button size="sm" icon="plus" onClick={onAddSet}>{t('Add set')}</Button>
-      </div> : <Button size="sm" icon="plus" onClick={onAddSet}>{t('Add set')}</Button>}
-    </div>
+      </Inline> : <Button size="sm" icon="plus" onClick={onAddSet}>{t('Add set')}</Button>}
+    </Card>
   </>
 }
 
@@ -1548,8 +1552,8 @@ function ActiveWorkout() {
     if (unit.length > 1) {
       useUI.getState().openSheet(close => (
         <div>
-          <h3>{t('Remove exercise')}</h3>
-          <div className="muted small" style={{ marginBottom: 12 }}>{t('Which exercise in this superset do you want to remove?')}</div>
+          <SheetHeader title={t('Remove exercise')} />
+          <div className="muted small mb-6">{t('Which exercise in this superset do you want to remove?')}</div>
           <div className="list">
             {unit.map(idx => <div key={idx} className="item" onClick={() => { close(); confirmRemoveExercise(idx) }}>
               <div className="grow"><div className={`tt ${exerciseNameClass(exOr(A.entries[idx]?.id))}`}>{exerciseNameFor(exOr(A.entries[idx]?.id))}</div></div>
@@ -1928,7 +1932,7 @@ function ActiveWorkout() {
     {listMode && chipRow}
     </div>
     {editing && <p className="muted small">{t('Editing a saved workout. Date and duration stay unchanged.')}</p>}
-    {A.backfill && <div className="muted small" style={{ marginBottom: 8 }}>{t('Logging a past workout, so no rest timers.')}</div>}
+    {A.backfill && <div className="muted small mb-4">{t('Logging a past workout, so no rest timers.')}</div>}
 
     {A.entries.length ? (listMode ? (
       <div className="workout-list" data-testid="workout-list" ref={listRef}>
@@ -1941,29 +1945,29 @@ function ActiveWorkout() {
           return <section key={u.join('-')} className={'wl-unit' + (isCur ? ' cur' : '')} data-exidx={u[0]} data-unit-key={u.join('-')}>
             <div className="wl-hd">
               <span className="muted small">{multi ? t('Superset {0} / {1}', ui + 1, units.length) : t('Exercise {0} / {1}', ui + 1, units.length)}</span>
-              <span className="row" style={{ gap: 6 }}>
-                {reopened && <button className="chip" aria-expanded="true" aria-controls={'workout-unit-' + u.join('-')}
-                  onClick={() => setUnitOpen(u.join('-'), false)}>{t('Fold away')}</button>}
+              <Inline as="span" gap={3}>
+                {reopened && <Chip aria-expanded="true" aria-controls={'workout-unit-' + u.join('-')}
+                  onClick={() => setUnitOpen(u.join('-'), false)}>{t('Fold away')}</Chip>}
                 {isCur
-                  ? <span className="tag acc">{t('Current')}</span>
-                  : <button className="chip" onClick={() => focusUnit(u[0])}>{t('Set current')}</button>}
-              </span>
+                  ? <Tag tone="acc">{t('Current')}</Tag>
+                  : <Chip onClick={() => focusUnit(u[0])}>{t('Set current')}</Chip>}
+              </Inline>
             </div>
             <div id={'workout-unit-' + u.join('-')}>
             {/* One line per exercise, and the line is the way back in: a tap opens the sets again
                 to fix a number, without making it the current exercise. */}
             {isCollapsed ? <button type="button" className="wl-summary" aria-expanded="false" title={t('Show the sets')}
               onClick={() => setUnitOpen(u.join('-'), true)}>
-              {u.map(idx => <span key={idx} className="row between" style={{ gap: 8 }}>
-                <span style={{ fontWeight: 600, textTransform: 'capitalize' }}>{exerciseNameFor(exOr(A.entries[idx].id))}</span>
-                <span className="tag acc nocap"><Icon name="check" />{t('{0} sets', A.entries[idx].sets.length)}</span>
-              </span>)}
+              {u.map(idx => <Inline as="span" key={idx} justify="between" gap={4}>
+                <span className="fw-semibold capitalize">{exerciseNameFor(exOr(A.entries[idx].id))}</span>
+                <Tag tone="acc" nocap icon="check">{t('{0} sets', A.entries[idx].sets.length)}</Tag>
+              </Inline>)}
             </button> : multi ? (
               <div className="ss-card">
-                <div className="ss-hd" style={{ justifyContent: 'space-between' }}>
-                  <span className="row" style={{ gap: 5 }}><Icon name="link" />{ssTitle(u)}</span>
+                <Inline justify="between" className="ss-hd">
+                  <Inline as="span" gap={2.5}><Icon name="link" />{ssTitle(u)}</Inline>
                   <Button size="xs" variant="ghost" icon="link" title={t('Unpair')} onClick={() => unpairAt(u[0])}>{t('Unpair')}</Button>
-                </div>
+                </Inline>
                 {u.map((idx, k) => {
                   const entry = A.entries[idx]
                   return <div key={idx} ref={el => bindExRef(entry, el)} className="ss-ex" data-exidx={idx}>
@@ -1986,7 +1990,7 @@ function ActiveWorkout() {
     ) : <>
       {/* The chips stand in for "Exercise 2 / 5": the number is on the current chip, and the
           others say what is done and what is waiting (#323). */}
-      {chipRow || <div className="muted small" style={{ marginBottom: 6 }}>{isSuperset ? t('Superset {0} / {1}', unitIdx + 1, units.length) : t('Exercise {0} / {1}', unitIdx + 1, units.length)}</div>}
+      {chipRow || <div className="muted small mb-3">{isSuperset ? t('Superset {0} / {1}', unitIdx + 1, units.length) : t('Exercise {0} / {1}', unitIdx + 1, units.length)}</div>}
       <SwipeCards index={unitIdx} count={units.length} revision={A}
         timerKey={timer && `${timer.endsAt}:${timer.forIdx ?? ''}`} workKey={work?.endsAt}
         onNavigate={navigateUnit} renderPreview={direction => {
@@ -2000,10 +2004,10 @@ function ActiveWorkout() {
           if (!adjacent.length) return null
           return adjacent.length > 1 ? (
             <div className="ss-card">
-              <div className="ss-hd" style={{ justifyContent: 'space-between' }}>
-                <span className="row" style={{ gap: 5 }}><Icon name="link" />{ssTitle(adjacent)}</span>
+              <Inline justify="between" className="ss-hd">
+                <Inline as="span" gap={2.5}><Icon name="link" />{ssTitle(adjacent)}</Inline>
                 <Button size="xs" variant="ghost" icon="link" title={t('Unpair')} onClick={() => unpairAt(adjacent[0])}>{t('Unpair')}</Button>
-              </div>
+              </Inline>
               {adjacent.map((idx, k) => <div key={idx} className="ss-ex" data-exidx={idx}>
                 {k > 0 && <div className="ss-amp">+</div>}
                 <ExerciseBlock entryIdx={idx} compact {...blockProps(idx)} />
@@ -2021,10 +2025,10 @@ function ActiveWorkout() {
           {...blockProps(cur)} />
       ) : isSuperset ? (
         <div className="ss-card">
-          <div className="ss-hd" style={{ justifyContent: 'space-between' }}>
-            <span className="row" style={{ gap: 5 }}><Icon name="link" />{ssTitle(unit)}</span>
+          <Inline justify="between" className="ss-hd">
+            <Inline as="span" gap={2.5}><Icon name="link" />{ssTitle(unit)}</Inline>
             <Button size="xs" variant="ghost" icon="link" title={t('Unpair')} onClick={() => unpairAt(cur)}>{t('Unpair')}</Button>
-          </div>
+          </Inline>
           {unit.map((idx, k) => {
             const entry = A.entries[idx]
             return <div key={idx} ref={el => bindExRef(entry, el)} className="ss-ex" data-exidx={idx}>
@@ -2038,38 +2042,38 @@ function ActiveWorkout() {
         <ExerciseBlock entryIdx={cur} onPairPrev={onPairPrev} onPairNext={onPairNext} {...blockProps(cur)} />
       )}
       </SwipeCards>
-    </>) : <div className="empty"><div className="ico"><Icon name="shuffle" /></div>{t('Freestyle workout. Add your first exercise and off you go.')}</div>}
+    </>) : <EmptyState icon="shuffle">{t('Freestyle workout. Add your first exercise and off you go.')}</EmptyState>}
 
-    <div style={{ height: 12 }} />
-    {!listMode && <div className="row">
+    <Spacer size={6} />
+    {!listMode && <Inline>
       <Button icon="chevronLeft" disabled={unitIdx <= 0} onClick={() => navigateUnit(-1)}>{t('Prev')}</Button>
       <Button trailingIcon="chevronRight" disabled={unitIdx < 0 || unitIdx >= units.length - 1} onClick={() => navigateUnit(1)}>{t('Next')}</Button>
-    </div>}
-    {!listMode && <div style={{ height: 10 }} />}
-    {wc.exerciseButtons && listMode && A.entries.length > 0 && <div className="muted small" style={{ marginBottom: 6 }}>{t('Move, swap and remove below act on the exercise marked {0}.', t('Current'))}</div>}
+    </Inline>}
+    {!listMode && <Spacer size={5} />}
+    {wc.exerciseButtons && listMode && A.entries.length > 0 && <div className="muted small mb-3">{t('Move, swap and remove below act on the exercise marked {0}.', t('Current'))}</div>}
     <Button onClick={addExercise} icon="plus">{t('Add exercise')}</Button>
     {wc.exerciseButtons && A.entries.length > 0 && <>
-      <div style={{ height: 6 }} />
-      <div className="row">
+      <Spacer size={3} />
+      <Inline>
         <Button size="sm" icon="chevronUp" aria-label={t('Move up')}
           disabled={!!work || !canMoveActiveWorkoutUnit(A, cur, -1)} onClick={() => moveCurrentUnit(-1)}>{t('Move up')}</Button>
         <Button size="sm" trailingIcon="chevronDown" aria-label={t('Move down')}
           disabled={!!work || !canMoveActiveWorkoutUnit(A, cur, 1)} onClick={() => moveCurrentUnit(1)}>{t('Move down')}</Button>
-      </div>
-      <div style={{ height: 6 }} />
+      </Inline>
+      <Spacer size={3} />
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <Button size="sm" icon="swap" aria-label={t('Swap exercise')} disabled={!!work}
           onClick={() => swapExercise(cur)}>{t('Swap exercise')}</Button>
       </div>
-      <div style={{ height: 6 }} />
+      <Spacer size={3} />
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <Button size="sm" icon="minus" style={{ color: 'var(--red-ink)' }} disabled={!!work} onClick={removeExerciseSheet}>{t('Remove exercise')}</Button>
+        <Button size="sm" icon="minus" className="ink-danger" disabled={!!work} onClick={removeExerciseSheet}>{t('Remove exercise')}</Button>
       </div>
     </>}
-    <div style={{ height: 10 }} />
+    <Spacer size={5} />
     {/* Wrapping up is when you know how the session went, so the note sits with the finish
         button rather than somewhere in the header. */}
-    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
+    <div className="mb-5" style={{ display: 'flex', justifyContent: 'center' }}>
       <Button size="sm" icon="note" variant={A.note ? 'tinted' : undefined} onClick={sessionNoteSheet}>
         {A.note ? t('Edit session note') : t('Add session note')}
       </Button>

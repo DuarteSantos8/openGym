@@ -3,7 +3,7 @@
     "App.jsx": 5,
     "components/DurationWheel.jsx": 1,
     "components/Heatmap.jsx": 1,
-    "components/MuscleExplorer.jsx": 13,
+    "components/MuscleExplorer.jsx": 3,
     "components/Passkeys.jsx": 2,
     "components/QueueRow.jsx": 7,
     "components/ServerSync.jsx": 2,
@@ -23,11 +23,11 @@
     "views/Plan.jsx": 1,
     "views/ProgressHub.jsx": 3,
     "views/ProgressPhotos.jsx": 6,
-    "views/RoutineEdit.jsx": 38,
+    "views/RoutineEdit.jsx": 14,
     "views/Settings.jsx": 26,
     "views/Stats.jsx": 34,
     "views/StructuralBalance.jsx": 22,
-    "views/Workout.jsx": 64
+    "views/Workout.jsx": 18
   },
   "G2css": {
     "admin.css": 1,
@@ -48,7 +48,7 @@
   },
   "G3": {
     "components/DurationWheel.jsx": 1,
-    "components/MuscleExplorer.jsx": 17,
+    "components/MuscleExplorer.jsx": 1,
     "components/PlusSheet.jsx": 1,
     "components/QueueRow.jsx": 3,
     "components/ServerSync.jsx": 1,
@@ -66,12 +66,12 @@
     "views/Plan.jsx": 1,
     "views/ProgressHub.jsx": 3,
     "views/ProgressPhotos.jsx": 2,
-    "views/RoutineEdit.jsx": 9,
+    "views/RoutineEdit.jsx": 2,
     "views/Settings.jsx": 2,
     "views/Stats.jsx": 3,
     "views/StructuralBalance.jsx": 1,
     "views/TrainHub.jsx": 2,
-    "views/Workout.jsx": 35
+    "views/Workout.jsx": 3
   },
   "G4": [
     "CheckIn",

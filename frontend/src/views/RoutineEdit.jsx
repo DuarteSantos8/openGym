@@ -13,6 +13,8 @@ import { supersetMeta, setSupersetMeta } from '../lib/superset-meta.js'
 import { fmtRest } from '../lib/duration.js'
 import Icon from '../components/Icon.jsx'
 import SubHeader from '../components/SubHeader.jsx'
+import { Card, EmptyState, SectionTitle } from '../components/blocks.jsx'
+import { Inline, Spacer, Stack } from '../components/layout.jsx'
 import { glyphOf } from '../lib/glyphs.js'
 import { Button, Row, SelectRow, Switch } from '../components/ui.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
@@ -465,11 +467,11 @@ export default function RoutineEdit() {
 
   return <div>
     <SubHeader action={<button className="iconbtn" aria-label={t('Pick an icon')} onClick={() => glyphPicker(r.emoji, g => update(s => { s.routines.find(x => x.id === id).emoji = g }))}><Icon name={glyphOf(r.emoji)} /></button>}>
-      <input className="input" defaultValue={r.name} aria-label={t('Routine name')} style={{ fontWeight: 600, fontSize: 20, letterSpacing: '-.021em' }}
+      <input className="input fw-semibold fs-title3" defaultValue={r.name} aria-label={t('Routine name')} style={{ letterSpacing: '-.021em' }}
         onChange={e => update(s => { s.routines.find(x => x.id === id).name = e.target.value.trim() || t('Routine') })} />
     </SubHeader>
 
-    <div className="sect-b" style={{ marginBottom: 16 }}>
+    <div className="sect-b mb-8">
       <SelectRow icon="chartLine" title={t('Progression')} sheetTitle={t('Progression')}
         value={r.prog || 'linear'} onChange={v => update(s => { s.routines.find(x => x.id === id).prog = v })}
         options={POLICIES_FOR.reps.map(p => ({ value: p, label: t(POLICY_NAME[p]), subtitle: t(POLICY_DESC[p]) }))} />
@@ -493,19 +495,19 @@ export default function RoutineEdit() {
         : t(POLICY_DESC[r.prog || 'linear'] || POLICY_DESC.linear) + ' ' + t('Applies to every exercise in this routine that does not set its own rule.')}
     </div>
 
-    {missingCount > 0 && <div className="card" style={{ marginBottom: 16, borderColor: 'var(--orange)' }}>
-      <div className="row" style={{ gap: 8, alignItems: 'center' }}>
-        <Icon name="warning" style={{ color: 'var(--orange-ink)' }} />
+    {missingCount > 0 && <Card className="mb-8">
+      <Inline gap={4}>
+        <Icon name="warning" className="ink-orange" />
         <div className="small">{t('{0} of {1} exercises need equipment outside "{2}"', missingCount, r.ex.length, profile.name)}</div>
-      </div>
-    </div>}
+      </Inline>
+    </Card>}
 
     {/* "Add exercise" heads the list (v1.3.11): with it under the last exercise, a long routine
         had to be scrolled to the bottom before anything could be added. */}
-    <div className="row between plan-sec-h routine-ex-h">
-      <h4 className="sec">{t('Exercises')}</h4>
+    <Inline justify="between" className="plan-sec-h routine-ex-h">
+      <SectionTitle>{t('Exercises')}</SectionTitle>
       <Button size="sm" variant="tinted" icon="plus" onClick={addExercise}>{t('Add exercise')}</Button>
-    </div>
+    </Inline>
     {r.ex.length ? <div ref={reorder.listRef} onClickCapture={reorder.onClickCapture}
       className={'list routine-list' + (reorder.drag ? ' is-reordering' : '')}>{r.ex.map((e, i) => {
       // An unresolvable id is shown rather than skipped — hiding it left an entry you
@@ -531,15 +533,15 @@ export default function RoutineEdit() {
           {ssPos.has(i) && <span className="ss-pos" aria-label={t('Superset position {0}', ssPos.get(i))}>{ssPos.get(i)}</span>}
           <Thumb ex={ex} />
           <button type="button" className="grow item-open" data-row-open><span className={`tt ${exerciseNameClass(ex)}`}>{exerciseNameFor(ex)}</span><span className="ss">{exLine(e, S.unit, speedUnitOf(S))}</span>
-            {e.note && <span className="small dim" style={{ marginTop: 2 }}>{e.note}</span>}</button>
-          {noEquip && <span className="tag" style={{ color: 'var(--orange-ink)', borderColor: 'var(--orange)' }} title={t('Needs {0}, which isn’t in your active profile', t(ex.eq))}><Icon name="warning" /></span>}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 'none', alignItems: 'center' }}>
-            {i > 0 && <button className={'iconbtn' + (linkedPrev ? ' on-ss' : '')} title={t('Superset with exercise above')} style={{ width: 32, height: 28, borderRadius: 8, fontSize: 15 }} onClick={ev => { ev.stopPropagation(); toggleLink(i) }}><Icon name="link" /></button>}
-            <div style={{ display: 'flex', gap: 2 }}>
-              <button className="iconbtn" aria-label={t('Move up')} title={leavesUp ? t('Move out of the superset') : t('Move up')} disabled={!moveRoutineEntry(r.ex, i, -1)} style={{ width: 28, height: 24, borderRadius: 7, fontSize: 12 }} onClick={ev => { ev.stopPropagation(); move(i, -1) }}><Icon name="chevronUp" /></button>
-              <button className="iconbtn" aria-label={t('Move down')} title={leavesDown ? t('Move out of the superset') : t('Move down')} disabled={!moveRoutineEntry(r.ex, i, 1)} style={{ width: 28, height: 24, borderRadius: 7, fontSize: 12 }} onClick={ev => { ev.stopPropagation(); move(i, 1) }}><Icon name="chevronDown" /></button>
-            </div>
-          </div>
+            {e.note && <span className="small dim mt-1">{e.note}</span>}</button>
+          {noEquip && <span className="tag ink-orange" title={t('Needs {0}, which isn’t in your active profile', t(ex.eq))}><Icon name="warning" /></span>}
+          <Stack gap={1} style={{ flex: 'none', alignItems: 'center' }}>
+            {i > 0 && <button className={'iconbtn fs-subhead' + (linkedPrev ? ' on-ss' : '')} title={t('Superset with exercise above')} style={{ width: 32, height: 28, borderRadius: 8 }} onClick={ev => { ev.stopPropagation(); toggleLink(i) }}><Icon name="link" /></button>}
+            <Inline gap={1} align="stretch">
+              <button className="iconbtn fs-caption" aria-label={t('Move up')} title={leavesUp ? t('Move out of the superset') : t('Move up')} disabled={!moveRoutineEntry(r.ex, i, -1)} style={{ width: 28, height: 24, borderRadius: 7 }} onClick={ev => { ev.stopPropagation(); move(i, -1) }}><Icon name="chevronUp" /></button>
+              <button className="iconbtn fs-caption" aria-label={t('Move down')} title={leavesDown ? t('Move out of the superset') : t('Move down')} disabled={!moveRoutineEntry(r.ex, i, 1)} style={{ width: 28, height: 24, borderRadius: 7 }} onClick={ev => { ev.stopPropagation(); move(i, 1) }}><Icon name="chevronDown" /></button>
+            </Inline>
+          </Stack>
         </div>
       return <div key={i} data-routine-row data-ex-index={i}
         className={'routine-drag-row' + (isDragging ? ' is-dragging' : '')}
@@ -562,31 +564,30 @@ export default function RoutineEdit() {
           : item}
       </div>
     })}{reorder.drag && <div className="routine-drop-indicator" data-testid="routine-drop-indicator"
-      aria-hidden="true" style={{ top: `${reorder.drag.indicatorTop}px` }} />}</div> : <div className="empty"><div className="ico"><Icon name="dumbbell" /></div>{t('No exercises yet. Add your first one!')}</div>}
+      aria-hidden="true" style={{ top: `${reorder.drag.indicatorTop}px` }} />}</div> : <EmptyState icon="dumbbell">{t('No exercises yet. Add your first one!')}</EmptyState>}
 
     {/* Coverage of the routine as planned, so a gap shows up while you're building it
         rather than after a month of training around it. */}
     {r.ex.length > 0 && (() => {
       const load = loadOfRoutine(r)
       const { worked } = rankOf(load)
-      return <div className="card" style={{ marginTop: 12 }}>
-        <h2>{t('What this session hits')}</h2>
+      return <Card title={t('What this session hits')} className="mt-6">
         <BodyMap load={load} body={S.body} />
         <div className="mchips">
           {worked.slice(0, 6).map(m => <span key={m} className="mchip">{t(MUSCLE_NAME[m])}</span>)}
         </div>
-      </div>
+      </Card>
     })()}
 
-    <div className="small dim row" style={{ margin: '10px 2px', gap: 5 }}><Icon name="link" style={{ fontSize: 13 }} />{t('Tap the link button on an exercise to superset it with the one above. You’ll do them back-to-back.')}</div>
+    <Inline gap={2.5} className="small dim" style={{ margin: '10px 2px' }}><Icon name="link" className="fs-footnote" />{t('Tap the link button on an exercise to superset it with the one above. You’ll do them back-to-back.')}</Inline>
     <Button onClick={() => {
       const copy = copyRoutine(r, t('Copy'))
       update(s => { s.routines.push(copy) })
       nav('/train/routines/' + copy.id)
     }}>{t('Copy routine')}</Button>
-    <div style={{ height: 10 }} />
+    <Spacer size={5} />
     <Button disabled={!r.ex.length} onClick={printRoutine}>{t('Print / Save as PDF')}</Button>
-    <div style={{ height: 10 }} />
+    <Spacer size={5} />
     <Button variant="danger" onClick={() => confirmSheet({
       title: t('Delete routine?'), message: t('“{0}” and its exercises will be removed.', r.name), confirmText: t('Delete'), danger: true,
       onConfirm: () => {
