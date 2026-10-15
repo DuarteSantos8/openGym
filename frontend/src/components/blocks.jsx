@@ -65,11 +65,12 @@ export function Tiles({ className, children }) {
 }
 
 // One tile: its label over its value. size: 'sm' | 'xs' below the 26px default; tone colours the
-// value with its .ink-* class.
-export function StatTile({ label, icon, value, unit, size, tone, onClick, className }) {
+// value with its .ink-* class. `pressed` (a tile that picks one of several) says which is picked
+// to a screen reader; leave it out for a tile that is not a toggle.
+export function StatTile({ label, icon, value, unit, size, tone, onClick, pressed, className }) {
   oneOf('StatTile', 'size', size, ['sm', 'xs'])
   oneOf('StatTile', 'tone', tone, INKS)
-  return <div className={cx('tile', onClick && 'tappable', className)} {...tappable(onClick)}>
+  return <div className={cx('tile', onClick && 'tappable', className)} {...tappable(onClick)} aria-pressed={onClick ? pressed : undefined}>
     <div className="l">{icon && <Icon name={icon} />}{label}</div>
     <div className={cx('v', size && 'v-' + size, tone && 'ink-' + tone)}>{value}{unit != null && <> <span className="muted stat-unit">{unit}</span></>}</div>
   </div>

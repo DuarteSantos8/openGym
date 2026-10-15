@@ -8,10 +8,12 @@ const BAR_FLOOR_HOURS = 16
 
 // Fasting insights (FastingInsights.svelte): average and longest fast, the streaks, and the last
 // 14 days as bars. A day's bar is its longest fast, the running one counting for today.
-export default function FastInsights() {
-  const history = useFasting(s => s.history)
+// `since` (ms, 0 = all) keeps the numbers to the fasts that ended from then on, for Progress's range.
+export default function FastInsights({ since = 0 }) {
+  const all = useFasting(s => s.history)
   const active = useFasting(s => s.active)
   const now = useNow(!!active, 60000)
+  const history = since ? all.filter(f => Date.parse(f.end_at) >= since) : all
   const stats = fastingStats(history, active, now)
   const days = recentDays(history, active, now)
   const top = Math.max(BAR_FLOOR_HOURS, ...days.map(d => d.hours))

@@ -1,6 +1,50 @@
-import { describe, expect, it } from 'vitest'
-import { createFakeNutriTrace, isOffProductQuery, isOffSearchQuery } from './fake-nutritrace.js'
+import { describe, expect, it, vi } from 'vitest'
+import { NtApi } from './api.js'
+import { createFakeNutriTrace, isOffProductQuery, isOffSearchQuery, isWellnessDataQuery } from './fake-nutritrace.js'
 import { offProductUrl, offSearchUrl } from './off.js'
+
+describe('the wearable data routes', () => {
+  const q = s => new URLSearchParams(s)
+
+  it('take exactly a from and a to, both dates, in order, within a year', () => {
+    expect(isWellnessDataQuery(q('from=2026-01-01&to=2026-10-15'))).toBe(true)
+    expect(isWellnessDataQuery(q('from=2026-10-15&to=2026-10-15'))).toBe(true)
+    expect(isWellnessDataQuery(q('from=2025-10-15&to=2026-10-15'))).toBe(true) // 365 days apart
+    expect(isWellnessDataQuery(q(''))).toBe(false) // NutriTrace would fall back to its own 30 days
+    expect(isWellnessDataQuery(q('from=2026-01-01'))).toBe(false)
+    expect(isWellnessDataQuery(q('date=2026-10-15'))).toBe(false)
+    expect(isWellnessDataQuery(q('from=2026-01-01&to=2026-10-15&source=x'))).toBe(false)
+    expect(isWellnessDataQuery(q('from=2026-01-01&from=2026-01-02&to=2026-10-15'))).toBe(false)
+    expect(isWellnessDataQuery(q('from=2026-10-15&to=2026-01-01'))).toBe(false)
+    expect(isWellnessDataQuery(q('from=2020-01-01&to=2026-10-15'))).toBe(false)
+    expect(isWellnessDataQuery(q('from=yesterday&to=2026-10-15'))).toBe(false)
+    expect(isWellnessDataQuery(q('from=2026-1-1&to=2026-10-15'))).toBe(false)
+  })
+
+  it('are sent by the client in that shape, and the diary and fasts routes it reads are open', async () => {
+    const nt = createFakeNutriTrace({ wellness: { fitbit: { '2026-10-14': { resting_hr: 55 } }, garmin: {} } })
+    vi.stubGlobal('fetch', nt.fetch)
+    try {
+      expect(await NtApi.getWellness('fitbit', '2026-10-01', '2026-10-15')).toEqual({ '2026-10-14': { resting_hr: 55 } })
+      expect(await NtApi.getWellness('garmin', '2026-10-01', '2026-10-15')).toEqual({})
+      expect(await NtApi.getWellness('anything else', '2026-10-01', '2026-10-15')).toEqual({ '2026-10-14': { resting_hr: 55 } }) // fitbit: never a free path segment
+      expect(await NtApi.getAllDiary()).toEqual([])
+      expect(await NtApi.getFasts(365)).toEqual([])
+      expect(nt.requests.map(r => r.path)).toEqual(['/nt/api/wellness/fitbit/data', '/nt/api/wellness/garmin/data', '/nt/api/wellness/fitbit/data', '/nt/api/diary', '/nt/api/fasts'])
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+
+  it('answer 403 to a query the hub would refuse, and 404 for another source', async () => {
+    const nt = createFakeNutriTrace()
+    const get = async path => (await nt.fetch(path)).status
+    expect(await get('/nt/api/wellness/fitbit/data')).toBe(403)
+    expect(await get('/nt/api/wellness/garmin/data?date=2026-10-14')).toBe(403)
+    expect(await get('/nt/api/wellness/withings/data?from=2026-10-01&to=2026-10-15')).toBe(404)
+    expect(await get('/nt/api/wellness/fitbit/sync')).toBe(404)
+  })
+})
 
 // The routes this feature asks the hub to allow (PR body, "Hub routes needed"), held to the shapes
 // the client really sends: the fake applies the proposed rules, and these tests fail if the client

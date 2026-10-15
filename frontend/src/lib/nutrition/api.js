@@ -213,6 +213,10 @@ export const NtApi = {
    *  @returns {Promise<{ ready: boolean, daysAvailable?: number, daysRequired?: number, tdee?: number|null,
    *    trendKgPerWeek?: number|null, confidence?: number|null }>} */
   getAdaptiveTdee: () => nt('GET', '/api/goals/adaptive-tdee'),
+  /** What a wearable reported, by day: `{ 'YYYY-MM-DD': { metric_type: value } }`, `{}` with nothing.
+   *  'fitbit' also answers for Google Health and Health Connect (the server merges them), 'garmin'
+   *  for Garmin. Both dates are required: the hub takes exactly `from` and `to`. */
+  getWellness: (source, from, to) => nt('GET', `/api/wellness/${source === 'garmin' ? 'garmin' : 'fitbit'}/data?from=${from}&to=${to}`),
   /** Open Food Facts text search through NutriTrace's proxy (the hub lets this one URL shape by,
    *  30 a minute per person). Raw OFF answer: map it with off.js offResults. */
   searchOnline: (query, { page = 1, pageSize = 40, lang = 'en', signal } = {}) =>

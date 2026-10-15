@@ -40,6 +40,15 @@ is not on the list needs a hub PR first.
 - `sync.js`: `syncNow()` pushes openGym first, coalesces concurrent calls, keeps at least 5 s
   between runs, and never throws. Also `refreshHubStatus()`, `useHubTrouble()` and
   `workoutSyncRow(id)`. The status is `null` until the hub has stored the person.
+- `trends.js` and `use-trends.js` (Progress › Trends): `useTrends` holds every diary day
+  (`GET /api/diary`, read once); `trends.js` turns them into a metric's series over the hub's range
+  (`windowOf` ends yesterday: today is still being logged), its summary, and the goal line
+  (`goalOf`: none for a Dynamic or Adaptive calorie target, which is worked out per day). Fasting
+  insights are `components/FastInsights.jsx` with `since`.
+- `wellness.js` and `useWellness` (Progress › Recovery): the last year of `GET /api/wellness/fitbit/data`
+  (Fitbit, Google Health, Health Connect) and `.../garmin/data`, read only for a wearable the
+  settings say is connected, merged with Garmin winning. A source that fails does not hide the
+  other. The hub's Recovery card shows only when something was reported.
 
 ## Tests
 

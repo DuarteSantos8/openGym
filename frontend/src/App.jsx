@@ -60,6 +60,8 @@ import Foods from './views/Foods.jsx'
 import NutritionGoals from './views/NutritionGoals.jsx'
 import Fasting from './views/Fasting.jsx'
 import ProgressHub from './views/ProgressHub.jsx'
+import Trends from './views/Trends.jsx'
+import Recovery from './views/Recovery.jsx'
 import './tab-shell.css'
 import './nutrition.css'
 
@@ -280,6 +282,8 @@ function Shell() {
               <Route path="/progress/strength" element={<Stats section="strength" />} />
               <Route path="/progress/strength/balance" element={<StructuralBalance />} />
               <Route path="/progress/load" element={<Stats section="load" />} />
+              <Route path="/progress/trends" element={<Trends />} />
+              <Route path="/progress/recovery" element={<Recovery />} />
               {/* Opened from any tab, on top of it: the workout and Profile. */}
               <Route path="/train/workout" element={<Workout />} />
               <Route path="/me" element={<SettingsRoute />} />

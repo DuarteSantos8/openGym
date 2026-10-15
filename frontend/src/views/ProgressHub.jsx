@@ -1,9 +1,16 @@
+import { useEffect, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { doneUnits, setsDone, streakWeeks, workoutDay } from '../lib/history.js'
 import { fmtNum } from '../lib/format.js'
 import { weighInTime } from '../lib/bodyweight.js'
 import { t, tn } from '../lib/i18n.js'
+import { nutritionAvailable } from '../lib/nutrition/api.js'
+import { useNutrition } from '../lib/nutrition/store.js'
+import { seriesOf, summaryOf, unitOf, windowOf } from '../lib/nutrition/trends.js'
+import { useFresh, useToday } from '../lib/nutrition/use-freshness.js'
+import { useTrends, useWellness } from '../lib/nutrition/use-trends.js'
+import { headlines, presentMetrics, recoveryWindow } from '../lib/nutrition/wellness.js'
 import { bwDeltaColor } from '../sheets.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import Icon from '../components/Icon.jsx'
@@ -33,13 +40,49 @@ function HubCard({ icon, tint, title, value, note, onOpen }) {
   )
 }
 
+// What the Nutrition trends card says: the daily calorie average over the range and the protein
+// next to it, or why there is none yet.
+function trendsLine(status, summary, protein, unit, proteinUnit) {
+  if (status === 'error') return { value: t('Nutrition did not load'), note: t('Open to try again') }
+  if (status !== 'ready') return { value: t('Loading…'), note: null }
+  if (!summary) return { value: t('No food logged yet'), note: t('Calories, macros and any nutrient over time') }
+  return {
+    value: t('{0} {1} a day', fmtNum(summary.avg), unit),
+    note: protein
+      ? tn('{0} day logged · protein {1} {2}', '{0} days logged · protein {1} {2}', summary.count, fmtNum(protein.avg), proteinUnit)
+      : tn('{0} day logged', '{0} days logged', summary.count),
+  }
+}
+
+const readout = h => (h.unit ? t('{0} {1} {2}', h.label, fmtNum(h.avg), h.unit) : t('{0} {1}', h.label, fmtNum(h.avg)))
+
 // The Progress tab's root: one range for the whole page, and a card per area — Body, Strength,
-// Training load — each opening its page at the same range.
+// Training load, Nutrition trends, Recovery — each opening its page at the same range. The last
+// two are the web app's: Nutrition trends needs NutriTrace, and Recovery shows only when a wearable
+// has reported something.
 export default function ProgressHub() {
   const nav = useNavigate()
   const { search } = useLocation()
   const S = useStore(s => s.S)
+  const user = useStore(s => s.user)
+  const nutrition = nutritionAvailable(user)
+  const settings = useNutrition(s => s.settings.data)
+  const trends = useTrends()
+  const wellness = useWellness()
   const range = rangeFrom(search, 90)
+
+  const today = useToday()
+  useEffect(() => {
+    if (nutrition) useNutrition.getState().loadSettings({ force: true })
+  }, [nutrition, today])
+  useFresh(useTrends, nutrition, today)
+  useFresh(useWellness, nutrition, today)
+  const win = useMemo(() => windowOf(range, trends.days, today), [range, trends.days, today])
+  const calories = useMemo(() => summaryOf(seriesOf(trends.days, 'calories', win, settings)), [trends.days, win, settings])
+  const protein = useMemo(() => summaryOf(seriesOf(trends.days, 'proteins', win, settings)), [trends.days, win, settings])
+  const recovery = useMemo(() => headlines(wellness.byDate, recoveryWindow(range, today)), [wellness.byDate, range, today])
+  const hasWearable = wellness.status === 'ready' && presentMetrics(wellness.byDate).length > 0
+  const trendsText = trendsLine(trends.status, calories, protein, unitOf('calories', settings), unitOf('proteins', settings))
   // Kept in the address, so the tab's stack (and a reload) comes back to the range it was left on.
   const setRange = v => nav('/progress?range=' + v, { replace: true })
   const from = range ? Date.now() - range * DAY : 0
@@ -70,5 +113,12 @@ export default function ProgressHub() {
       value={tn('{0} workout', '{0} workouts', inRange.length)}
       note={tn('{0} set', '{0} sets', sets) + ' · ' + t('{0} week streak', streakWeeks(S))}
       onOpen={() => open('/progress/load')} />
+    {nutrition && <HubCard icon="utensils" tint="var(--green)" title={t('Nutrition trends')}
+      value={trendsText.value} note={trendsText.note}
+      onOpen={() => open('/progress/trends')} />}
+    {nutrition && hasWearable && <HubCard icon="heart" tint="var(--pink)" title={t('Recovery')}
+      value={recovery.length ? readout(recovery[0]) : t('No readings in this range')}
+      note={recovery[1] ? readout(recovery[1]) : t('From your wearable')}
+      onOpen={() => open('/progress/recovery')} />}
   </div>
 }

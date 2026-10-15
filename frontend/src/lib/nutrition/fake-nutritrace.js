@@ -163,6 +163,18 @@ export function isOffProductQuery(params) {
   return raw !== null && OFF_PRODUCT_URL.test(raw)
 }
 
+// GET /api/wellness/fitbit/data and /api/wellness/garmin/data (proposed hub rule, PR body "Hub
+// routes needed"): exactly `from` and `to`, once each, both dates, `from` not after `to`, and no
+// more than 366 days between them. Without them NutriTrace falls back to its own 30-day window
+// and `date` reads one day; the app sends neither.
+export function isWellnessDataQuery(params) {
+  if (!onlyKeys(params, new Set(['from', 'to']))) return false
+  const from = params.get('from')
+  const to = params.get('to')
+  if (from === null || to === null || !DATE.test(from) || !DATE.test(to) || from > to) return false
+  return (Date.parse(to + 'T12:00:00Z') - Date.parse(from + 'T12:00:00Z')) / 86400000 <= 366
+}
+
 const isObject = v => typeof v === 'object' && v !== null && !Array.isArray(v)
 
 // fitness-hub src/nt-body-checks.ts, fasts: an instant as toISOString writes it (or with an offset),
@@ -251,11 +263,14 @@ export function createFakeNutriTrace({
   days = {}, settings = fixtureSettings(), foods = fixtureFoods(), meals = fixtureMeals(), activity = {}, activitySum = {},
   caloriesOut = {}, adaptiveTdee = { ready: false }, offSearch = fixtureOffSearch(),
   syncStatus = fixtureSyncStatus(), workouts = {}, fasts = [], offProducts = { '3017620422003': fixtureOffProduct() },
+  wellness = {},
 } = {}) {
   const state = {
     days: structuredClone(days), settings: structuredClone(settings), foods: structuredClone(foods), meals: structuredClone(meals),
     activity, activitySum, caloriesOut, adaptiveTdee, offSearch, syncStatus, workouts,
     fasts: structuredClone(fasts), offProducts,
+    // { fitbit: { date: { metric_type: value } }, garmin: { ... } }, as the two /data routes answer.
+    wellness: structuredClone(wellness),
     // date → [{ kind: 'item'|'water', uuid, deleted_at }]
     tombstones: {},
   }
@@ -451,6 +466,12 @@ export function createFakeNutriTrace({
       return notFound()
     }
     if (res === 'wellness' && a === 'calories-out' && method === 'GET' && n === 4) return json({ calories_out: state.caloriesOut[query.get('date')] ?? null })
+    if (res === 'wellness' && (a === 'fitbit' || a === 'garmin') && b === 'data' && method === 'GET' && n === 5) {
+      if (!isWellnessDataQuery(query)) return json({ error: 'forbidden' }, 403)
+      const from = query.get('from')
+      const to = query.get('to')
+      return json(Object.fromEntries(Object.entries(state.wellness[a] || {}).filter(([date]) => date >= from && date <= to)))
+    }
     if (res === 'goals' && a === 'adaptive-tdee' && method === 'GET' && n === 4) return json(state.adaptiveTdee)
     if (res === 'proxy' && method === 'GET' && n === 3) {
       if (isOffSearchQuery(query)) return json(state.offSearch)
