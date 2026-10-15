@@ -24,10 +24,10 @@ const user = (id, name, extra = {}) => ({ id, name, created: new Date().toISOStr
 const USERS = [user('u1', 'Ana'), user('u2', 'Bea', { disabled: true }), user('adm', 'Root', { admin: true })];
 const STATES = { u1: { unit: 'kg', workouts: [], _rev: 7, _wid: '0123456789abcdef' } };
 
-async function startServer(t, { env = { HUB_JWKS: jwks(KEY), HUB_ISSUER: ISSUER }, users = USERS, states = STATES } = {}) {
+async function startServer(t, { env = { HUB_JWKS: jwks(KEY), HUB_ISSUER: ISSUER }, users = USERS, states = STATES, gone = [] } = {}) {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gym-sync-'));
   fs.writeFileSync(path.join(dataDir, 'secret'), SECRET, { mode: 0o600 });
-  fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({ users, creds: [], subs: [], invites: [] }));
+  fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({ users, creds: [], subs: [], invites: [], gone }));
   for (const [uid, S] of Object.entries(states)) fs.writeFileSync(path.join(dataDir, `state-${uid}.json`), JSON.stringify(S));
   const child = spawn(process.execPath, ['server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
@@ -87,6 +87,172 @@ test('every way a token can be wrong is a 401, audited by reason and never with 
     assert.ok(!h.log.includes(token), 'nor the container log');
   }
   assert.equal(h.log.split('\n').filter(l => /^\s+at /.test(l)).length, 0, `no stack traces:\n${h.log}`);
+});
+
+/* GET /api/sync/users: the one route about no single profile. Its token has its own audience,
+   scope and `sub` (hub-token.js); docs/SYNC_USERS.md says why. */
+const LIST = '/api/sync/users';
+const listToken = (claims = {}, sub = 'hub') => mint(KEY, { sub, claims: { aud: 'opengym-sync-users', scope: 'sync-list', ...claims } });
+const REFUSED = { status: 401, body: { error: 'invalid sync token', code: 'token-invalid' } };
+
+test('a valid listing token lists every profile: id, state and revision, in id order, and nothing else', async t => {
+  const goneAt = Date.now() - 86400000;
+  const h = await startServer(t, { gone: [{ id: 'old1', at: goneAt }] });
+  const r = await h.req('GET', LIST, { token: listToken() });
+  assert.deepEqual(r, {
+    status: 200,
+    body: {
+      users: [
+        { id: 'adm', state: 'active', rev: 0 },
+        { id: 'old1', state: 'gone', rev: 0, gone_at: goneAt },
+        { id: 'u1', state: 'active', rev: 7, wid: '0123456789abcdef' },
+        { id: 'u2', state: 'disabled', rev: 0 }
+      ],
+      next_after: null
+    }
+  });
+  const text = JSON.stringify(r.body);
+  for (const secret of ['Ana', 'Bea', 'Root', 'created', 'name']) assert.ok(!text.includes(secret), `${secret} never leaves`);
+});
+
+test('the listing is paged by key: limit and after walk every profile once', async t => {
+  const h = await startServer(t);
+  const ids = [];
+  let after = null;
+  for (let i = 0; i < 5; i++) {
+    const r = await h.req('GET', `${LIST}?limit=1${after ? '&after=' + after : ''}`, { token: listToken() });
+    assert.equal(r.status, 200);
+    assert.equal(r.body.users.length, 1);
+    ids.push(r.body.users[0].id);
+    after = r.body.next_after;
+    if (!after) break;
+  }
+  assert.deepEqual(ids, ['adm', 'u1', 'u2']);
+  for (const q of ['limit=0', 'limit=65', 'limit=501', 'limit=x', 'limit=1.5', 'limit=-1']) {
+    assert.deepEqual(await h.req('GET', `${LIST}?${q}`, { token: listToken() }), { status: 400, body: { error: 'limit must be 1 to 64', code: 'bad-limit' } }, q);
+  }
+  assert.equal((await h.req('GET', `${LIST}?limit=64`, { token: listToken() })).status, 200);
+  for (const q of ['after=a%20b', 'after=..%2Fx', 'after=' + 'a'.repeat(65)]) {
+    assert.equal((await h.req('GET', `${LIST}?${q}`, { token: listToken() })).body.code, 'bad-cursor', q);
+  }
+});
+
+test('a profile deleted by an admin is listed as gone, with when, and the delete is the only thing recorded', async t => {
+  const h = await startServer(t);
+  const before = Date.now();
+  const del = await fetch(`${h.api}/api/admin/user/delete`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', Cookie: 'gymsid=' + session('adm'), Origin: ORIGIN }, body: JSON.stringify({ id: 'u1' })
+  });
+  assert.equal(del.status, 200);
+  const r = await h.req('GET', LIST, { token: listToken() });
+  const gone = r.body.users.find(u => u.id === 'u1');
+  assert.deepEqual({ ...gone, gone_at: typeof gone.gone_at }, { id: 'u1', state: 'gone', rev: 0, gone_at: 'number' });
+  assert.ok(gone.gone_at >= before && gone.gone_at <= Date.now());
+  assert.deepEqual(h.db().gone.map(g => Object.keys(g).sort()), [['at', 'id']]);
+  assert.deepEqual(r.body.users.filter(u => u.id !== 'u1').map(u => u.state), ['active', 'disabled']);
+});
+
+test('the listing token is not a per-profile token and a per-profile token is not a listing token', async t => {
+  const h = await startServer(t);
+  // A listing token on a per-profile route, with the profile it would need to name or without.
+  for (const sub of ['hub', 'u1']) {
+    assert.deepEqual(await h.req('GET', '/api/sync/ping', { token: listToken({}, sub) }), REFUSED, `list token, sub ${sub}, on ping`);
+    assert.deepEqual(await h.req('GET', '/api/sync/rev', { token: listToken({}, sub) }), REFUSED, `list token, sub ${sub}, on rev`);
+  }
+  // A per-profile token on the listing: its own audience and scope, and the one a profile's `sub`.
+  assert.deepEqual(await h.req('GET', LIST, { token: mint(KEY, { sub: 'u1' }) }), REFUSED, 'per-profile token');
+  assert.deepEqual(await h.req('GET', LIST, { token: mint(KEY, { sub: 'hub' }) }), REFUSED, 'per-profile token with sub hub');
+  // One thing wrong at a time.
+  assert.deepEqual(await h.req('GET', LIST, { token: listToken({ aud: 'opengym-sync' }) }), REFUSED, 'wrong audience, right scope');
+  assert.deepEqual(await h.req('GET', LIST, { token: listToken({ scope: 'sync' }) }), REFUSED, 'right audience, wrong scope');
+  assert.deepEqual(await h.req('GET', LIST, { token: listToken({ aud: ['opengym-sync-users'] }) }), REFUSED, 'audience as an array');
+  assert.deepEqual(await h.req('GET', LIST, { token: listToken({}, 'u1') }), REFUSED, 'a profile id for sub');
+  assert.deepEqual(await h.req('GET', LIST, { token: listToken({}, 'someone-else') }), REFUSED, 'anyone else for sub');
+  assert.deepEqual(await h.req('GET', LIST, { token: listToken({ iss: 'https://evil.example.test/hub' }) }), REFUSED, 'wrong issuer');
+  const t0 = Math.floor(Date.now() / 1000);
+  assert.deepEqual(await h.req('GET', LIST, { token: listToken({ iat: t0 - 120, exp: t0 - 60 }) }), REFUSED, 'expired');
+  assert.deepEqual(await h.req('GET', LIST, { token: listToken({ iat: t0, exp: t0 + 61 }) }), REFUSED, 'lives over 60 s');
+  assert.deepEqual(await h.req('GET', LIST, { token: listToken({ jti: 'short' }) }), REFUSED, 'short jti');
+  // No credential at all, and a session or a paired token, which count as none.
+  assert.deepEqual(await h.req('GET', LIST), { status: 401, body: { error: 'not signed in' } });
+  assert.deepEqual(await h.req('GET', LIST, { cookie: session('adm') }), { status: 401, body: { error: 'not signed in' } });
+  assert.equal((await h.req('GET', LIST, { bearer: session('adm') })).status, 401);
+  assert.match(h.auditText(), /"ev":"sync\.token\.fail"/);
+  assert.ok(!h.auditText().includes('opengym-sync-users'), 'the token itself is not logged');
+});
+
+test('a listing token is good for one call, and its jti is spent on every route', async t => {
+  const h = await startServer(t);
+  const once = listToken();
+  assert.equal((await h.req('GET', LIST, { token: once })).status, 200);
+  assert.deepEqual(await h.req('GET', LIST, { token: once }), { status: 401, body: { error: 'sync token already used', code: 'replay' } });
+  assert.match(h.auditText(), /"msg":"replay"/);
+  // One jti on two routes: the second, whichever it is, is a replay. A per-profile token that
+  // reuses a spent listing token's jti is refused for its audience and scope first, so the cache
+  // is shared only by tokens that could have passed.
+  const jti = 'A'.repeat(22);
+  assert.equal((await h.req('GET', '/api/sync/ping', { token: mint(KEY, { sub: 'u1', claims: { jti } }) })).status, 200);
+  assert.equal((await h.req('GET', LIST, { token: listToken({ jti }) })).body.code, 'replay');
+});
+
+test('a bad listing token is a 401 and is audited through the aggregated sync failure row, never the token', async t => {
+  const h = await startServer(t);
+  // Three of one reason and one of another: the first of each is written at once and the repeats
+  // are held to a counted row an hour later (audit-aggregate.js), so two rows, not four.
+  for (let i = 0; i < 3; i++) assert.deepEqual(await h.req('GET', LIST, { token: 'not-a-token' }), REFUSED);
+  assert.deepEqual(await h.req('GET', LIST, { token: listToken({}, 'u1') }), REFUSED);
+  const rows = h.auditText().split('\n').filter(Boolean).map(l => JSON.parse(l)).filter(r => r.ev === 'sync.token.fail');
+  assert.deepEqual(rows.map(r => r.msg).sort(), ['malformed', 'sub']);
+  assert.ok(rows.every(r => r.ok === false && r.n === undefined));
+  assert.ok(!h.log.includes('server error'), 'a refusal is never a 500');
+  assert.ok(!h.auditText().includes('not-a-token'));
+  // The replay of a spent listing token takes the same path.
+  const once = listToken();
+  assert.equal((await h.req('GET', LIST, { token: once })).status, 200);
+  assert.equal((await h.req('GET', LIST, { token: once })).body.code, 'replay');
+  assert.match(h.auditText(), /"msg":"replay"/);
+});
+
+test('the listing carries the write id, and a restored backup that reuses a revision shows as a different row', async t => {
+  const h = await startServer(t);
+  const rowOf = async () => (await h.req('GET', LIST, { token: listToken() })).body.users.find(u => u.id === 'u1');
+  assert.deepEqual(await rowOf(), { id: 'u1', state: 'active', rev: 7, wid: '0123456789abcdef' });
+  // Same revision, other contents and write id, as after a restore: the rows must differ.
+  fs.writeFileSync(path.join(h.dataDir, 'state-u1.json'), JSON.stringify({ unit: 'lb', workouts: [], _rev: 7, _wid: 'fedcba9876543210' }));
+  assert.deepEqual(await rowOf(), { id: 'u1', state: 'active', rev: 7, wid: 'fedcba9876543210' });
+  // And it is what /api/sync/rev says for the profile.
+  assert.deepEqual((await h.req('GET', '/api/sync/rev', { token: mint(KEY, { sub: 'u1' }) })).body, { rev: 7, wid: 'fedcba9876543210' });
+});
+
+test('records of deleted profiles older than 90 days are dropped when the listing is read, not listed and not kept', async t => {
+  const day = 86400000;
+  const h = await startServer(t, { gone: [{ id: 'old1', at: Date.now() - 91 * day }, { id: 'new1', at: Date.now() - 89 * day }] });
+  const r = await h.req('GET', LIST, { token: listToken() });
+  assert.deepEqual(r.body.users.filter(u => u.state === 'gone').map(u => u.id), ['new1']);
+  assert.deepEqual(h.db().gone.map(g => g.id), ['new1']);
+});
+
+test('the listing is rate limited per minute, counting only calls that carry a valid token', async t => {
+  const h = await startServer(t);
+  // Junk spends nothing: a hundred and fifty refused calls leave the whole allowance.
+  for (let i = 0; i < 150; i++) assert.equal((await h.req('GET', LIST, { token: 'not-a-token' })).status, 401);
+  for (let i = 0; i < 120; i++) assert.equal((await h.req('GET', LIST, { token: listToken() })).status, 200, `call ${i + 1}`);
+  const over = await h.send('GET', LIST, { token: listToken() });
+  assert.equal(over.status, 429);
+  assert.equal(over.body.code, 'rate-limited');
+  assert.ok(over.body.retryAfter >= 1 && over.body.retryAfter <= 60);
+  // The per-profile routes are not held by it.
+  assert.equal((await h.req('GET', '/api/sync/ping', { token: mint(KEY, { sub: 'u1' }) })).status, 200);
+});
+
+test('a disabled profile and one with no state yet are listed, not errors', async t => {
+  const h = await startServer(t, { users: [user('only', 'Solo', { disabled: true })], states: {} });
+  assert.deepEqual((await h.req('GET', LIST, { token: listToken() })).body, { users: [{ id: 'only', state: 'disabled', rev: 0 }], next_after: null });
+});
+
+test('an instance with no hub answers the listing with the plain 404', async t => {
+  const h = await startServer(t, { env: {} });
+  assert.deepEqual(await h.req('GET', LIST, { token: listToken() }), { status: 404, body: { error: 'not found' } });
 });
 
 test('the profile is checked on every call: disabled is 401, deleted is 404 user-gone', async t => {

@@ -19,6 +19,20 @@
 import crypto from 'node:crypto';
 
 export const HUB_AUDIENCE = 'opengym-sync';
+
+// The one route that is about no single profile, GET /api/sync/users, has a credential of its own
+// rather than a per-profile token with a wildcard in it. Three things set it apart, and a route
+// of either kind refuses the other on each of them:
+//   - the audience is HUB_USERS_AUDIENCE, not HUB_AUDIENCE, so a token for the per-profile routes
+//     fails `aud` here and this one fails it there;
+//   - the scope is HUB_USERS_SCOPE, which no per-profile route lists (and 'sync' is not listed here);
+//   - `sub` is HUB_SERVICE_SUB, the hub itself acting as a service, never a profile id: this route
+//     reads no profile, so a token naming one is a token minted for something else.
+// Same key, issuer, lifetime, `jti` and replay rules as every hub token (decision and reasons:
+// docs/SYNC_USERS.md).
+export const HUB_USERS_AUDIENCE = 'opengym-sync-users';
+export const HUB_USERS_SCOPE = 'sync-list';
+export const HUB_SERVICE_SUB = 'hub';
 const MAX_LIFETIME_S = 60;
 const SKEW_S = 30;
 // A real token is a few hundred bytes; this only stops a megabyte header being decoded.

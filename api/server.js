@@ -160,6 +160,26 @@ db.creds = db.creds || [];
 db.subs = db.subs || [];
 db.invites = db.invites || [];
 db.deviceLinks = db.deviceLinks || [];   // unused one-time device links, hashed (device-link.js)
+db.gone = db.gone || [];                 // { id, at } of deleted profiles, for the sync hub's listing
+// A deleted profile leaves its id and the time behind, and nothing else (GET /api/sync/users says
+// `gone` for it, so a hub that was syncing it can stop, not guess). Kept for 90 days and at most
+// GONE_MAX of them: long enough for any hub that polls to see it, short enough that the file does
+// not grow for ever.
+const GONE_KEEP_MS = 90 * 86400000;
+const GONE_MAX = 1000;
+function noteGone(id) {
+  const cut = Date.now() - GONE_KEEP_MS;
+  db.gone = [...(db.gone || []).filter(g => g && g.id !== id && g.at >= cut), { id, at: Date.now() }].slice(-GONE_MAX);
+}
+// Dropped when the listing is read, not only at the next deletion: an instance that deletes nobody
+// for months would otherwise list, and keep in db.json, records past their 90 days.
+function pruneGone() {
+  const cut = Date.now() - GONE_KEEP_MS;
+  const kept = (db.gone || []).filter(g => g && g.at >= cut);
+  if (kept.length === (db.gone || []).length) return;
+  db.gone = kept;
+  saveDb();
+}
 const isAdmin = user => !!user && (user.admin === true || ADMIN_UIDS.includes(user.id));
 // 0600: db.json holds passkey credential material. It used to be covered by a blanket 0700 on
 // the whole directory; now that the directory stays traversable, the file carries its own mode.
@@ -493,6 +513,27 @@ function readStateCached(uid) {
   stateCache.set(uid, { mtimeMs: st.mtimeMs, size: st.size, hitAt: now, S });
   while (stateCache.size > STATE_CACHE_MAX) stateCache.delete(stateCache.keys().next().value);
   return S;
+}
+// The revision and write id of each profile's stored state, for GET /api/sync/users (one profile per
+// listed row, up to a page of them a call). It is a cache of its own, a few bytes an entry, and not
+// stateCache: a listing that went through that one would parse and evict the states the reminder
+// tick and the rev polls keep warm, a page's worth at a time. Same key as stateCache (mtime and
+// size): a stat when the file is unchanged, one parse when it is not, and the parsed document is
+// not kept. A profile with no state file, or a file that cannot be read, is rev 0 and is not kept.
+const VERSION_MAX = 5000;
+const versionIndex = new Map(); // uid -> { mtimeMs, size, v }
+function stateVersion(uid) {
+  let st;
+  try { st = fs.statSync(stateFile(uid)); } catch { versionIndex.delete(uid); return { rev: 0 }; }
+  const hit = versionIndex.get(uid);
+  if (hit && hit.mtimeMs === st.mtimeMs && hit.size === st.size) return hit.v;
+  const S = readState(uid);
+  if (!S) return { rev: 0 };
+  const v = { rev: S._rev || 0, ...(S._wid ? { wid: S._wid } : {}) };
+  versionIndex.delete(uid);
+  versionIndex.set(uid, { mtimeMs: st.mtimeMs, size: st.size, v });
+  while (versionIndex.size > VERSION_MAX) versionIndex.delete(versionIndex.keys().next().value);
+  return v;
 }
 // Missed-workout nudge (nudge.js): opt-in on top of the reminder, so it needs everything the
 // reminder does (a push subscription, the reminder on, a zone). Owed from 20:00 — or 2 h after the
@@ -2520,6 +2561,7 @@ const routes = {
     if (isAdmin(u) && db.users.filter(isAdmin).length <= 1) return json(res, 400, { error: 'cannot delete the last admin' });
     const name = u.name;
     db.users = db.users.filter(x => x.id !== u.id);
+    noteGone(u.id);
     db.creds = (db.creds || []).filter(c => c.userId !== u.id);
     db.subs = (db.subs || []).filter(x => x.userId !== u.id);
     dropDeviceLinks(db, u.id);
@@ -2623,7 +2665,9 @@ const routes = {
   // Absent unless HUB_JWKS is set. Its own credential, checked there: never sessionOf.
   ...(HUB ? syncRoutes({
     hub: HUB, json, findUser: id => db.users.find(u => u.id === id) || null,
-    readStateCached, readStateStrict, UNREADABLE, readBody, commitState, auditSyncFail
+    readStateCached, stateVersion, readStateStrict, UNREADABLE, readBody, commitState, auditSyncFail,
+    // Last: server-state-read-cost.test.js reads this call's text up to the first `}`.
+    listProfiles: () => { pruneGone(); return { users: db.users, gone: db.gone }; }
   }) : {})
 };
 

@@ -28,10 +28,12 @@
  * browser never attaches by itself.
  *
  * Handed its helpers by server.js, like coach/routes.js, so it closes over nothing of the server. */
-import { verifyHubToken, replayCache, HUB_AUDIENCE } from './hub-token.js';
+import { verifyHubToken, replayCache, HUB_AUDIENCE, HUB_USERS_AUDIENCE, HUB_USERS_SCOPE, HUB_SERVICE_SUB } from './hub-token.js';
+import { createWindow } from './rate-limit.js';
 import { stampPut } from './sync-stamps.js';
 import {
-  isSyncDate, workoutItems, trackWorkouts, changesSince, decodeCursor, bodyweightView, weighInOf, withWeighIn, withoutWeighIn, unitOf
+  isSyncDate, workoutItems, trackWorkouts, changesSince, decodeCursor, bodyweightView, weighInOf, withWeighIn, withoutWeighIn, unitOf,
+  usersPage, USER_ID, USERS_LIMIT_MAX, USERS_LIMIT_DEFAULT
 } from './sync-data.js';
 
 // The answer GET /api/data/rev gives, from the same state document. That route in server.js keeps
@@ -46,6 +48,7 @@ const etagOf = doc => `"${doc?._rev || 0}${doc?._wid ? ':' + doc._wid : ''}"`;
 const IF_MATCH = /^\s*"?(\d{1,15})(?::([0-9a-f]{1,64}))?"?\s*$/;
 const LIMIT_MAX = 500;
 const LIMIT_DEFAULT = 100;
+const LIST_BURST_MAX = 120;
 // A body weight a person weighs, in kg: anything outside is a mistake (a value in grams, a unit
 // mix-up, one that would round to nothing in the stored unit and vanish without a removal on record).
 const KG_MIN = 20;
@@ -59,8 +62,12 @@ const LOGS_MAX = 1000;
 
 const bad = (json, res, code, error) => json(res, 400, { error, code });
 
-export function syncRoutes({ hub, json, findUser, readStateCached, readStateStrict, UNREADABLE, readBody, commitState, auditSyncFail }) {
+export function syncRoutes({ hub, json, findUser, listProfiles, stateVersion, readStateCached, readStateStrict, UNREADABLE, readBody, commitState, auditSyncFail }) {
   const replays = replayCache();
+  // The listing is the hub's alone and a page of it costs a stat per profile, so this is generous:
+  // 120 a minute against the one call a scheduler makes per page. It counts only calls that carry a
+  // valid, unspent token (serviceAuthed), so junk from anywhere cannot spend the hub's allowance.
+  const listBurst = createWindow({ max: LIST_BURST_MAX, windowMs: 60000, maxKeys: 1 });
   const logs = new Map();
   const logOf = (uid, S, items) => {
     const log = trackWorkouts(logs.get(uid), S, items);
@@ -70,27 +77,54 @@ export function syncRoutes({ hub, json, findUser, readStateCached, readStateStri
     return log;
   };
 
-  // Every route below is wrapped in this; there is no other way to reach one.
-  const authed = handler => async (req, res) => {
+  // The credential every route here starts from: a hub token for `audience` with one of `scopes`,
+  // seen for the first time. Answers 401 itself and returns null when it is not; otherwise the
+  // verified claims. One cache of used `jti`s for all of them, so a token cannot be replayed on
+  // another route either.
+  const credential = (req, res, audience, scopes) => {
     const auth = req.headers.authorization || '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
-    if (!token) return json(res, 401, { error: 'not signed in' });
-    const v = verifyHubToken(hub, token, { audience: HUB_AUDIENCE, scopes: ['sync'] });
+    if (!token) { json(res, 401, { error: 'not signed in' }); return null; }
+    const v = verifyHubToken(hub, token, { audience, scopes });
     if (!v.ok) {
       // The reason only, never the token. auditSyncFail folds a storm of the same reason into
       // one counted row an hour (server.js), so a misconfigured hub cannot fill the log.
       auditSyncFail(req, v.reason);
-      return json(res, 401, { error: 'invalid sync token', code: 'token-invalid' });
+      json(res, 401, { error: 'invalid sync token', code: 'token-invalid' });
+      return null;
     }
     // After the signature: only a token the hub signed can take a place in the cache.
     if (replays.seen(v.claims)) {
       auditSyncFail(req, 'replay');
-      return json(res, 401, { error: 'sync token already used', code: 'replay' });
+      json(res, 401, { error: 'sync token already used', code: 'replay' });
+      return null;
     }
-    const user = findUser(v.claims.sub);
+    return v.claims;
+  };
+
+  // Every per-profile route below is wrapped in this; there is no other way to reach one.
+  const authed = handler => async (req, res) => {
+    const claims = credential(req, res, HUB_AUDIENCE, ['sync']);
+    if (!claims) return;
+    const user = findUser(claims.sub);
     if (!user) return json(res, 404, { error: 'no such user', code: 'user-gone' });
     if (user.disabled) return json(res, 401, { error: 'this account has been disabled', code: 'disabled' });
-    return handler(req, res, user, v.claims);
+    return handler(req, res, user, claims);
+  };
+
+  // The route that is about no one profile: its own audience, scope and `sub` (hub-token.js), and no
+  // profile looked up, since there is none to find. A token with any other audience or scope is
+  // refused by verifyHubToken before this runs, and one that names a profile by `sub` is refused
+  // here: it was minted for a per-profile route and does not become a listing credential by being
+  // re-aimed. Same refusals, same codes and same audit as every other route.
+  const serviceAuthed = handler => async (req, res) => {
+    const claims = credential(req, res, HUB_USERS_AUDIENCE, [HUB_USERS_SCOPE]);
+    if (!claims) return;
+    if (claims.sub !== HUB_SERVICE_SUB) {
+      auditSyncFail(req, 'sub');
+      return json(res, 401, { error: 'invalid sync token', code: 'token-invalid' });
+    }
+    return handler(req, res);
   };
 
   // The stored document, or null once answered: 503 for a file that cannot be read, 409 no-state
@@ -140,6 +174,31 @@ export function syncRoutes({ hub, json, findUser, readStateCached, readStateStri
   });
 
   return {
+    // Who the hub may sync: every profile's id, whether it is active, disabled or gone, and its
+    // revision, a page at a time, after the id a page's `next_after` gave. This is how the hub finds
+    // a person who has logged a workout somewhere else without opening this app here.
+    //
+    // PRIVACY: ids, states, revisions and write ids only. Never a name, an e-mail address, a
+    // credential, a device, or anything from a profile's data. An id is what the hub already signs
+    // per-profile tokens with, and the revision and write id are what /api/sync/rev gives for that
+    // profile. Keep it that way: this answers for every profile on the instance to a caller that
+    // holds no profile's token.
+    //
+    // Reading the versions stats each profile's state file (stateVersion in server.js) and parses
+    // none of them that has not changed, without touching the cache the polling routes share.
+    'GET /api/sync/users': serviceAuthed(async (req, res) => {
+      const wait = listBurst.take('list');
+      if (wait) return json(res, 429, { error: 'too many listings, try again shortly', code: 'rate-limited', retryAfter: wait }, { 'Retry-After': String(wait) });
+      const q = new URL(req.url, 'http://x').searchParams;
+      const after = q.get('after'), limit = q.get('limit');
+      if (limit != null && !(/^\d{1,4}$/.test(limit) && +limit >= 1 && +limit <= USERS_LIMIT_MAX)) return bad(json, res, 'bad-limit', `limit must be 1 to ${USERS_LIMIT_MAX}`);
+      if (after != null && !USER_ID.test(after)) return bad(json, res, 'bad-cursor', 'after must be the next_after of a previous page');
+      const { users, gone } = listProfiles();
+      json(res, 200, usersPage({
+        users, gone, after, limit: limit == null ? USERS_LIMIT_DEFAULT : +limit, versionOf: stateVersion
+      }));
+    }),
+
     // The hub's check that a profile is still there and syncable, before it starts a run.
     'GET /api/sync/ping': authed(async (req, res, user) => json(res, 200, { ok: true, user: { id: user.id, name: user.name } })),
 

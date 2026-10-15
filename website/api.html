@@ -246,7 +246,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.1</span>
-    <span>75 endpoints</span>
+    <span>76 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -3190,6 +3190,55 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">404</span>
     <span class="p-desc">The token is good but its <code>sub</code> names no profile any more: it was deleted. Only this body (<code>code: user-gone</code>) means that; a plain <code>{&quot;error&quot;:&quot;not found&quot;}</code> is an instance without <code>HUB_JWKS</code>, and says nothing about the profile.<span class="r-sig"><code>{&quot;error&quot;:&quot;no such user&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-syncUsers">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/sync/users</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Sync: the profiles the hub may sync</span>
+  </summary>
+  <div class="ep-body">
+<p>Every profile on this instance, as an id, a state, a revision and a write id, in id order, a page at a time. It is how the hub finds a person who logged a workout on another device, or came back after a while, without that person opening the app here first.</p>
+<p><code>state</code> is <code>active</code>, <code>disabled</code> (the hub should stop syncing it, as <code>disabled</code> does on the per-profile routes) or <code>gone</code> (deleted; <code>gone_at</code> says when, in ms, and the record is kept 90 days). <code>rev</code> and <code>wid</code> are what <code>GET /api/sync/rev</code> gives for that profile (<code>rev</code> 0 and no <code>wid</code> when it has no state yet). The hub reads a profile's own routes only when the pair moved: compare both, because a restored backup can bring a revision back with other contents and another <code>wid</code>. Nothing else about a profile is returned: no name, e-mail, credential or data.</p>
+<p>Paged by key: send a page's <code>next_after</code> as <code>after</code>. A profile created, disabled or deleted between two pages never makes another repeat or go missing. One created behind the cursor after the pass went by is in the next pass.</p>
+<p>This route takes its own token, not a per-profile one: audience <code>opengym-sync-users</code>, scope <code>sync-list</code>, and <code>sub</code> = <code>hub</code> (the hub acting as a service, never a profile id). Every other check is the same as for any hub token, including one use per <code>jti</code>, so every page needs a token of its own. It is refused everywhere else, and a per-profile token is refused here.</p>
+<p>At most 120 listings a minute are answered (429, <code>code: rate-limited</code>, with <code>Retry-After</code>); only calls with a valid, unspent token count.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Hub token only: <code>Authorization: Bearer &lt;ES256 JWS&gt;</code> signed by a key in <code>HUB_JWKS</code>. A session cookie or a paired token is refused.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">after</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The <code>next_after</code> of the page before. Absent: the first page.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">limit</span>
+    <span class="p-type">integer <span class="p-hint">(1&ndash;64, default 64)</span></span>
+    <span class="p-desc">Profiles per page</span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">One page of profiles.<span class="r-sig">{ users: object[], next_after: string | null }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>limit</code> or <code>after</code> is malformed (<code>code</code>: <code>bad-limit</code>, <code>bad-cursor</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;limit must be 1 to 64&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No hub token (<code>not signed in</code>), a token that fails verification (<code>code: token-invalid</code>), including a per-profile token, a wrong audience or scope, or a <code>sub</code> that is not <code>hub</code>, or a token used before (<code>code: replay</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;invalid sync token&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">More than 120 listings in a minute from a valid hub token (<code>code: rate-limited</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;too many listings, try again shortly&quot;}</code></span></span>
   </div>
     </div>
   </div>

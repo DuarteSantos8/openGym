@@ -37,6 +37,7 @@ All settings live in `.env`; [`.env.example`](../.env.example) explains each one
 | [Contributing](../CONTRIBUTING.md) | Before your first pull request: setup, guidelines, what CI checks |
 | [CLAUDE.md](../CLAUDE.md) | You want the architecture in one page (written for Claude Code, useful for people too) |
 | [HTTP API](API.md) | You're touching routes; the OpenAPI spec is the source of truth |
+| [Sync: listing profiles](SYNC_USERS.md) | You run the hub next to this instance: `GET /api/sync/users`, its token and why it is separate |
 | [Roadmap](../ROADMAP.md) | You want to know what's planned and where your idea fits |
 | [Changelog](../CHANGELOG.md) | You want to know what changed in a release |
 

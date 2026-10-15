@@ -2989,6 +2989,90 @@ paths:
         '401': { $ref: '#/components/responses/SyncUnauthorized' }
         '404': { $ref: '#/components/responses/SyncUserGone' }
 
+  /api/sync/users:
+    get:
+      tags: [sync]
+      operationId: syncUsers
+      summary: 'Sync: the profiles the hub may sync'
+      description: |
+        Every profile on this instance, as an id, a state, a revision and a write id, in id order, a
+        page at a time. It is how the hub finds a person who logged a workout on another device, or
+        came back after a while, without that person opening the app here first.
+
+        `state` is `active`, `disabled` (the hub should stop syncing it, as `disabled` does on
+        the per-profile routes) or `gone` (deleted; `gone_at` says when, in ms, and the record is
+        kept 90 days). `rev` and `wid` are what `GET /api/sync/rev` gives for that profile (`rev` 0
+        and no `wid` when it has no state yet). The hub reads a profile's own routes only when the
+        pair moved: compare both, because a restored backup can bring a revision back with other
+        contents and another `wid`. Nothing else about a profile is returned: no name, e-mail,
+        credential or data.
+
+        Paged by key: send a page's `next_after` as `after`. A profile created, disabled or deleted
+        between two pages never makes another repeat or go missing. One created behind the cursor
+        after the pass went by is in the next pass.
+
+        This route takes its own token, not a per-profile one: audience `opengym-sync-users`,
+        scope `sync-list`, and `sub` = `hub` (the hub acting as a service, never a profile id).
+        Every other check is the same as for any hub token, including one use per `jti`, so every
+        page needs a token of its own. It is refused everywhere else, and a per-profile token is
+        refused here.
+
+        At most 120 listings a minute are answered (429, `code: rate-limited`, with `Retry-After`);
+        only calls with a valid, unspent token count.
+      security:
+        - hubListToken: []
+      parameters:
+        - { name: after, in: query, schema: { type: string }, description: 'The `next_after` of the page before. Absent: the first page.' }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 64, default: 64 }, description: Profiles per page, at most. }
+      responses:
+        '200':
+          description: One page of profiles.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+                        state: { type: string, enum: [active, disabled, gone] }
+                        rev: { type: integer, description: 'The revision of the profile''s stored state; 0 when it has none yet, and for a profile that is gone.' }
+                        wid: { type: string, description: 'The write id (`_wid`) of the stored state; absent before its first write and for a profile that is gone.' }
+                        gone_at: { type: [integer, 'null'], description: 'Only when `state` is `gone`: when it was deleted, ms.' }
+                  next_after: { type: [string, 'null'], description: 'The `after` of the next page; null on the last.' }
+              example:
+                users:
+                  - { id: "Vh3kQ9w2ZbYc0aLm", state: active, rev: 412, wid: "9f2c41ab07d3e856" }
+                  - { id: "Wk8pD1x4NfR7sTq2", state: disabled, rev: 37, wid: "3be07a91c4d2f6a8" }
+                  - { id: "Zr2mC6y0LgH3vBn9", state: gone, rev: 0, gone_at: 1760430999000 }
+                next_after: null
+        '400':
+          description: '`limit` or `after` is malformed (`code`: `bad-limit`, `bad-cursor`).'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "limit must be 1 to 64", code: "bad-limit" }
+        '401':
+          description: >-
+            No hub token (`not signed in`), a token that fails verification (`code: token-invalid`),
+            including a per-profile token, a wrong audience or scope, or a `sub` that is not `hub`,
+            or a token used before (`code: replay`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "invalid sync token", code: "token-invalid" }
+        '429':
+          description: 'More than 120 listings in a minute from a valid hub token (`code: rate-limited`).'
+          headers:
+            Retry-After: { schema: { type: integer }, description: Seconds until the allowance is back. }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "too many listings, try again shortly", code: "rate-limited", retryAfter: 12 }
+
   /api/sync/rev:
     get:
       tags: [sync]
@@ -3279,6 +3363,17 @@ components:
         for one call: the same `jti` again while the token is in date is refused with
         `401 {"code":"replay"}`, so sign one per call. Failures are audited as `sync.token.fail`
         with a reason code; the token itself is never logged.
+    hubListToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        The hub token for `GET /api/sync/users`, the one route about no single profile. The same
+        key (`HUB_JWKS`), issuer, signature, lifetime, `jti` and replay rules as `hubToken`, with
+        three differences: `aud` = `opengym-sync-users`, `scope` = `sync-list`, and `sub` = `hub`
+        (a service principal, never a profile id). A `hubToken` is refused on this route and this
+        token on every other, on audience and scope alike. See `docs/SYNC_USERS.md` for why it is a
+        separate credential.
 
   responses:
     Unauthorized:
