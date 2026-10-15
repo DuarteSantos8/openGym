@@ -42,6 +42,15 @@ import { offSearchUrl } from './off.js'
  *   density_g_ml?: number|null, imgUrl?: string, usage_count?: number, last_used_at?: string|null }} Food
  */
 /**
+ * A saved meal or a recipe (GET/POST /api/meals). `items` are its ingredients: foods saved at
+ * the amount used (`portion` + `unit` the total, `quantity` 1) with `nutrition` for that amount.
+ * A meal's `nutrition` is the total of its items. A recipe's `nutrition` and `portion` are per
+ * serving, `servings` the number it makes (null on a recipe saved before servings existed: one).
+ * @typedef {{ id: number, name: string, is_recipe: boolean, items: Food[], nutrition: Nutrition,
+ *   portion: number, unit: string, servings?: number|null, notes?: string|null, img_url?: string|null,
+ *   usage_count?: number, last_used_at?: string|null }} Meal
+ */
+/**
  * GET /api/activity/:date rows. `source: 'opengym'` rows are the hub's workout entries;
  * `covered_by` names the wearable whose active kcal count instead that day (else null).
  * @typedef {{ id: number, date: string, name: string, kcal: number, duration_min: number|null,
@@ -122,6 +131,25 @@ async function call(method, path, body, { signal, nullable = false } = {}) {
 
 const nt = (method, path, body, opts) => call(method, '/nt' + path, body, opts)
 
+// What the hub lets a meal body carry (fitness-hub nt-body-checks.ts MEAL_EDIT_FIELDS,
+// INGREDIENT_FIELDS, ALT_UNIT_FIELDS): picked by name, because a meal saved in NutriTrace's own UI
+// holds more (img_url and others) and the hub refuses a body with a key it does not list.
+const MEAL_FIELDS = ['name', 'notes', 'items', 'is_recipe', 'nutrition', 'portion', 'unit', 'servings']
+const INGREDIENT_FIELDS = ['id', 'name', 'brand', 'portion', 'unit', 'quantity', 'nutrition', 'nutrition_basis', 'alt_units', 'density_g_ml', 'is_recipe']
+const pick = (from, keys) => Object.fromEntries(keys.filter(k => from[k] !== undefined).map(k => [k, from[k]]))
+const ingredientBody = item => {
+  const body = pick(item, INGREDIENT_FIELDS)
+  if (Array.isArray(body.alt_units)) body.alt_units = body.alt_units.map(u => pick(u, ['abbr', 'grams']))
+  if ('is_recipe' in body) body.is_recipe = !!body.is_recipe
+  return body
+}
+/** The meal fields the hub allows, its ingredients cut the same way. */
+export const mealBody = meal => {
+  const body = pick(meal, MEAL_FIELDS)
+  if (Array.isArray(body.items)) body.items = body.items.map(ingredientBody)
+  return body
+}
+
 // What PUT /api/foods/:id may carry (the hub's isFoodEdit), picked by name: never a spread.
 const FOOD_EDIT_FIELDS = ['name', 'brand', 'barcode', 'portion', 'unit', 'category', 'notes', 'favorite', 'nutrition']
 
@@ -157,6 +185,19 @@ export const NtApi = {
   deleteFood: id => nt('DELETE', `/api/foods/${encodeURIComponent(id)}`),
   /** Orders recents (usage_count, last_used_at = the diary date). */
   markFoodUsed: (id, date) => nt('POST', `/api/foods/${encodeURIComponent(id)}/used`, { date }),
+  /** Your saved meals (`recipes` false) or your recipes (true), by name. A recipe is a meal with
+   *  `is_recipe`; both lists come with their ingredients. @returns {Promise<Meal[]>} (img_url, not imgUrl) */
+  getMeals: ({ recipes = false } = {}) => nt('GET', recipes ? '/api/meals?recipes=1' : '/api/meals'),
+  /** Saves a meal or recipe as yours: always private, never with an image. `client_key` makes a
+   *  retry return the one made the first time. @returns {Promise<Meal>} */
+  createMeal: meal => nt('POST', '/api/meals', { ...mealBody(meal), ...(meal.client_key ? { client_key: meal.client_key } : {}), visibility: 'private' }),
+  /** Edits one of your meals or recipes: the fields to change (NutriTrace keeps what is left
+   *  out), never an image or a visibility. @returns {Promise<Meal>} */
+  updateMeal: (id, meal) => nt('PUT', `/api/meals/${encodeURIComponent(id)}`, mealBody(meal)),
+  /** Removes a meal or recipe (NutriTrace keeps a tombstone). Days that logged it keep their copy. */
+  deleteMeal: id => nt('DELETE', `/api/meals/${encodeURIComponent(id)}`),
+  /** Orders "most used" and "recent" for a meal or recipe (usage_count, last_used_at = the diary date). */
+  markMealUsed: (id, date) => nt('POST', `/api/meals/${encodeURIComponent(id)}/used`, { date }),
   /** @returns {Promise<ActivityRow[]>} */
   getActivity: date => nt('GET', `/api/activity/${date}`),
   /** @returns {Promise<ActivitySum>} */

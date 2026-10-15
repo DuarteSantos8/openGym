@@ -47,6 +47,8 @@ async function openHub() {
       <Routes>
         <Route path="/food" element={<FoodHub />} />
         <Route path="/food/foods" element={<div>FOODS PAGE</div>} />
+        <Route path="/food/meals" element={<div>MEALS PAGE</div>} />
+        <Route path="/food/recipes" element={<div>RECIPES PAGE</div>} />
         <Route path="/food/goals" element={<div>GOALS PAGE</div>} />
         <Route path="/home" element={<div>HOME PAGE</div>} />
       </Routes>
@@ -218,10 +220,26 @@ describe('the places', () => {
 
   it('has a Goals tile with the daily target, and opens Goals', async () => {
     await openHub()
-    expect([...host.querySelectorAll('.hub-tile .l')].map(l => l.textContent)).toEqual(['Foods', 'Goals'])
+    expect([...host.querySelectorAll('.hub-tile .l')].map(l => l.textContent)).toEqual(['Foods', 'Saved meals', 'Recipes', 'Goals'])
     await settle(() => expect(tile('Goals').querySelector('.v').textContent).toBe('2,200 kcal'))
     tap(tile('Goals'))
     expect(host.textContent).toBe('GOALS PAGE')
+  })
+
+  it('has Saved meals and Recipes tiles with their counts, and opens each', async () => {
+    await openHub()
+    await settle(() => {
+      expect(tile('Saved meals').querySelector('.v').textContent).toBe('1 meal')
+      expect(tile('Recipes').querySelector('.v').textContent).toBe('1 recipe')
+    })
+    tap(tile('Saved meals'))
+    expect(host.textContent).toBe('MEALS PAGE')
+  })
+
+  it('opens Recipes from its tile', async () => {
+    await openHub()
+    tap(tile('Recipes'))
+    expect(host.textContent).toBe('RECIPES PAGE')
   })
 
   it('says nutrition is in the web app for someone with no session, and asks for nothing', async () => {

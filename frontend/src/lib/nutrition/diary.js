@@ -102,6 +102,20 @@ function toCanonicalAmount(portion, unit, food) {
   return basis === 'g' ? portion * baseG * d : portion * baseG / d
 }
 
+/** The grams in `portion` of `unit`, or null when the unit has no weight (a piece or slice with no
+ *  household size). The food's own household units come first (a slice of this bread is 36 g),
+ *  then the mass table; a volume counts as water (1 g/ml) unless the food carries a density. */
+export function gramsOfPortion(portion, unit, food = null) {
+  const amount = Number(portion)
+  if (!Number.isFinite(amount)) return null
+  const alt = food ? altUnitGrams(food.alt_units, unit) : null
+  if (alt != null) return amount * alt
+  const baseG = unitToGrams(unit)
+  if (baseG == null) return null
+  const d = Number(food?.density_g_ml)
+  return VOLUME_UNITS.has(String(unit).toLowerCase()) && Number.isFinite(d) && d > 0 ? amount * baseG * d : amount * baseG
+}
+
 /** How much the nutrients scale going from (origPortion, origUnit) to (newPortion, newUnit):
  *  per-food household units first, then the mass/volume table (density across systems), else
  *  the plain ratio of the two numbers. */

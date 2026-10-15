@@ -27,10 +27,16 @@ export default function FoodHub() {
   const { on, status, settings, totals, target, macros, left, reload } = useDiaryDay(todayISO())
   const units = useUnits()
   const foods = useNutrition(s => s.foods)
+  const meals = useNutrition(s => s.meals)
+  const recipes = useNutrition(s => s.recipes)
   const { meal } = useDiaryTarget(settings)
 
   useEffect(() => {
-    if (on) useNutrition.getState().loadFoods()
+    if (!on) return
+    const n = useNutrition.getState()
+    n.loadFoods()
+    n.loadMeals({ recipes: false })
+    n.loadMeals({ recipes: true })
   }, [on])
 
   if (!on) {
@@ -41,9 +47,11 @@ export default function FoodHub() {
     </Page>
   }
 
-  // One entry per page that exists. Saved meals and Recipes add theirs with their pages.
+  // One entry per page that exists.
   const targets = [
     { path: '/food/foods', icon: 'apple', title: t('Foods'), sub: foods.status === 'ready' ? tn('{0} food', '{0} foods', foods.list.length) : t('Your own foods') },
+    { path: '/food/meals', icon: 'bookOpen', title: t('Saved meals'), sub: meals.status === 'ready' ? tn('{0} meal', '{0} meals', meals.list.length) : t('Loading…') },
+    { path: '/food/recipes', icon: 'cookingPot', title: t('Recipes'), sub: recipes.status === 'ready' ? tn('{0} recipe', '{0} recipes', recipes.list.length) : t('Loading…') },
     { path: '/food/goals', icon: 'target', title: t('Goals'), sub: status === 'ready' ? units.energy(target.base) : t('Daily target') },
   ]
 

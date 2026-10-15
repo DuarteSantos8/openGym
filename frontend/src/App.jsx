@@ -55,6 +55,7 @@ import CoachIntake from './views/CoachIntake.jsx'
 import CoachSetup from './views/CoachSetup.jsx'
 import TrainHub from './views/TrainHub.jsx'
 import FoodHub from './views/FoodHub.jsx'
+import MealCatalog from './views/MealCatalog.jsx'
 import Foods from './views/Foods.jsx'
 import NutritionGoals from './views/NutritionGoals.jsx'
 import ProgressHub from './views/ProgressHub.jsx'
@@ -265,6 +266,8 @@ function Shell() {
               <Route path="/train/coach/setup" element={<CoachSetup />} />
               {/* Nutrition */}
               <Route path="/food" element={<FoodHub />} />
+              <Route path="/food/meals" element={<MealCatalog recipes={false} />} />
+              <Route path="/food/recipes" element={<MealCatalog recipes />} />
               <Route path="/food/foods" element={<Foods />} />
               <Route path="/food/goals" element={<NutritionGoals />} />
               {/* Progress */}

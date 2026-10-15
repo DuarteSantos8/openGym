@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { NtApi } from './api.js'
 import { atPortion, dayWrite, foodItem, invalid, quickCaloriesItem, waterLog } from './diary.js'
+import { sortedByName } from './meals.js'
 import { offResults } from './off.js'
 import { useDiarySelection } from './selection.js'
 import { useHubSync } from './sync.js'
@@ -29,6 +30,8 @@ const initial = () => ({
   activity: {},
   goalInputs: {},
   foods: { status: 'idle', list: [], error: null },
+  meals: { status: 'idle', list: [], error: null },
+  recipes: { status: 'idle', list: [], error: null },
   logged: { days: new Set(), checked: new Set() },
 })
 
@@ -279,15 +282,68 @@ export const useNutrition = create((set, get) => {
       return item
     },
 
-    /** Logs finished items (each with its uuid; foods of yours or quick entries) to the date in
-     *  one write, so they are all logged or none is. Throws when the answer leaves any out (a
-     *  uuid NutriTrace has tombstoned stays out). Resolves to the items. */
+    /** Your saved meals (`recipes` false) or recipes (true). Keeps the last list on failure. */
+    async loadMeals({ recipes = false, force = false } = {}) {
+      const key = recipes ? 'recipes' : 'meals'
+      const cur = get()[key]
+      if (!force && (cur.status === 'ready' || cur.status === 'loading')) return
+      const g = gen
+      set({ [key]: { ...cur, status: 'loading' } })
+      try {
+        const rows = await NtApi.getMeals({ recipes })
+        if (g === gen) set({ [key]: { status: 'ready', list: sortedByName((Array.isArray(rows) ? rows : []).map(withImg)), error: null } })
+      } catch (e) {
+        if (g === gen) set({ [key]: { ...get()[key], status: 'error', error: e } })
+      }
+    },
+
+    /** Creates a meal or recipe (no `id`; keep the body, with its `client_key`, and send the same
+     *  one on a retry) or edits one (`id`). Resolves to it as saved. Throws an NtError. */
+    async saveMeal(meal) {
+      const g = gen
+      const saved = withImg(typeof meal.id === 'number' ? await NtApi.updateMeal(meal.id, meal) : await NtApi.createMeal(meal))
+      if (g === gen) {
+        const key = saved.is_recipe ? 'recipes' : 'meals'
+        set(s => ({ [key]: { ...s[key], list: sortedByName([...s[key].list.filter(m => m.id !== saved.id), saved]) } }))
+      }
+      return saved
+    },
+
+    /** Removes a meal or recipe from NutriTrace and from its list. Days that logged it keep it. */
+    async deleteMeal(id) {
+      const g = gen
+      // 404: already gone (a retry after a lost answer).
+      await NtApi.deleteMeal(id).catch(e => { if (e?.status !== 404) throw e })
+      if (g === gen) set(s => ({ meals: { ...s.meals, list: s.meals.list.filter(m => m.id !== id) }, recipes: { ...s.recipes, list: s.recipes.list.filter(m => m.id !== id) } }))
+    },
+
+    /** Logs finished items (each with its uuid; foods of yours, recipes or quick entries) to the date
+     *  in one write, so they are all logged or none is. Throws when the answer leaves any out (a
+     *  uuid NutriTrace has tombstoned stays out). Orders recents for what they point at: a food's
+     *  count, or a recipe's (`is_recipe`), as NutriTrace's addDiaryItem does. Resolves to the items. */
     async logItems(date, items) {
       if (!items?.length || !items.every(i => i?.uuid)) throw invalid('logItems takes items with uuids')
       const entry = await write(date, { addItems: items })
       const have = new Set((entry?.items || []).map(i => i?.uuid))
       if (!items.every(i => have.has(i.uuid))) throw invalid('the day did not take every item')
-      for (const id of new Set(items.map(i => i.food_server_id).filter(id => typeof id === 'number'))) markUsed(id, date)
+      const used = new Map(items.filter(i => typeof i.food_server_id === 'number').map(i => [`${i.is_recipe ? 'r' : 'f'}${i.food_server_id}`, i]))
+      for (const i of used.values()) {
+        if (i.is_recipe) NtApi.markMealUsed(i.food_server_id, date).catch(() => {})
+        else markUsed(i.food_server_id, date)
+      }
+      return items
+    },
+
+    /** Logs a meals.js mealDraft draft to the date: all of its entries in one write (logItems), and
+     *  the meal's own count. Resolves to the items logged (undo with removeItems). */
+    async logMeal(date, draft) {
+      if (!draft?.meal || !Array.isArray(draft.items)) throw invalid('logMeal takes a draftMeal draft')
+      const items = await get().logItems(date, draft.items)
+      const { meal } = draft
+      // A recipe's own count was bumped with its entry; a saved meal is not an entry, so it is here.
+      if (!meal.is_recipe) NtApi.markMealUsed(meal.id, date).catch(() => {})
+      const key = meal.is_recipe ? 'recipes' : 'meals'
+      set(s => ({ [key]: { ...s[key], list: s[key].list.map(m => (m.id === meal.id ? { ...m, usage_count: (m.usage_count || 0) + 1, last_used_at: m.last_used_at && m.last_used_at > date ? m.last_used_at : date } : m)) } }))
       return items
     },
 
