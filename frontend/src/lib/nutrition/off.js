@@ -133,11 +133,19 @@ export function mapOffProduct(p, lang = 'en') {
   }
 }
 
+/** Products sold in Romania come first (the owner's rule). The hub lets a search carry only q,
+ *  page, page_size and langs, so Open Food Facts cannot be asked to rank by country: the hits'
+ *  `countries_tags` are read here instead. */
+export const RANK_FIRST_COUNTRY = 'en:romania'
+
+const soldInRankedCountry = p => Array.isArray(p?.countries_tags) && p.countries_tags.includes(RANK_FIRST_COUNTRY)
+
 /** The search answer in either envelope NutriTrace's proxy sends: `hits` (a local OFF mirror) or
- *  `products` (the public API). */
+ *  `products` (the public API), Romanian products first, each group in Open Food Facts' order. */
 export function offResults(data, lang = 'en') {
   const list = Array.isArray(data?.hits) ? data.hits : Array.isArray(data?.products) ? data.products : []
-  return list.map(p => mapOffProduct(p, lang)).filter(Boolean)
+  const ranked = [...list.filter(soldInRankedCountry), ...list.filter(p => !soldInRankedCountry(p))]
+  return ranked.map(p => mapOffProduct(p, lang)).filter(Boolean)
 }
 
 /** A product lookup's answer (v3 says `status: 'success'`, a local mirror `status: 1`) as the

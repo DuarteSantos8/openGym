@@ -24,7 +24,13 @@ is not on the list needs a hub PR first.
 - `diary.js`: NutriTrace's arithmetic (`totalsOf`, `atPortion`, `calorieTarget`, `macroTarget`),
   units (`energyOf` for kcal or kJ, `waterOf`), `mealsOf` (`isDefault` names are English: translate
   them; saved names show as saved), `recentFoods` and `matchesFood`.
-- `off.js`: Open Food Facts search URL and hit-to-food mapping.
+- `off.js`: Open Food Facts search URL and hit-to-food mapping. `offResults` ranks products sold
+  in Romania first (`countries_tags`, client side: the hub's search URL takes only q, page,
+  page_size and langs).
+- `use-food-search.js`: `useFoodSearch(query)` is the one search behind every food picker
+  (recents, your foods, Open Food Facts; `components/FoodSearch.jsx` renders it). Online results
+  have no `id`: a place that needs a saved food calls `saveFood` first (the result's `client_key`
+  makes a retry one food). Do not write another search; the Foods online tab uses `use-online-search.js`.
 - `selection.js`: `useDiarySelection` is the one date and meal everything logs to. In
   components use `useDiaryTarget(settings)`, which updates on a pick, at midnight and as the
   clock moves the meal. A sheet that logs takes `{ date, meal }` once when it opens and keeps

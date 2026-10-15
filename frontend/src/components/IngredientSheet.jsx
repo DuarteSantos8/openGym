@@ -1,29 +1,30 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
-import { energyOf, foodKcal, matchesFood, unitsFor } from '../lib/nutrition/diary.js'
-import { ingredientOf, mealLoadErrorText, rescaleIngredient } from '../lib/nutrition/meals.js'
+import { unitsFor } from '../lib/nutrition/diary.js'
+import { writeErrorText } from '../lib/nutrition/log-feedback.js'
+import { ingredientOf, rescaleIngredient } from '../lib/nutrition/meals.js'
 import { useNutrition } from '../lib/nutrition/store.js'
-import { Chip, ChipRow, EmptyState, ItemRow, Tag } from './blocks.jsx'
+import { Chip, ChipRow } from './blocks.jsx'
+import FoodSearch from './FoodSearch.jsx'
 import MealNutrition from './MealNutrition.jsx'
 import { SheetActions, SheetHeader } from './sheet-layout.jsx'
-import { Button, NumberField, SearchField } from './ui.jsx'
+import { Button, NumberField } from './ui.jsx'
 
-const SHOWN = 50
-
-// One ingredient of a meal or recipe: pick one of your foods and say how much, or (with `item`)
-// change the amount of one already in it, or take it out (`onRemove`). Hands the ingredient to
-// `onDone` and closes.
+// One ingredient of a meal or recipe: search or scan a food (yours or Open Food Facts) and say how
+// much, or (with `item`) change the amount of one already in it, or take it out (`onRemove`).
+// Hands the ingredient to `onDone` and closes.
 export function IngredientSheet({ item = null, onDone, onRemove = null, close }) {
-  const foods = useNutrition(s => s.foods)
   const settings = useNutrition(s => s.settings.data)
-  const [q, setQ] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [failed, setFailed] = useState(null)
+  const alive = useRef(true)
   const [picked, setPicked] = useState(item)
   const [amount, setAmount] = useState(item ? (parseFloat(item.portion) || 0) * (parseFloat(item.quantity) || 1) : 0)
   const [unit, setUnit] = useState(item?.unit || 'g')
 
   useEffect(() => { useNutrition.getState().loadSettings() }, [])
-  useEffect(() => { if (!item) useNutrition.getState().loadFoods() }, [item])
+  useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
 
   const ingredient = useMemo(() => {
     if (!picked) return null
@@ -34,6 +35,24 @@ export function IngredientSheet({ item = null, onDone, onRemove = null, close })
     setPicked(food)
     setAmount(Number(food.portion) || 100)
     setUnit(food.unit || 'g')
+  }
+
+  // A food from Open Food Facts or a barcode is saved first (its client_key makes a retry after a
+  // lost answer one food), then used: an ingredient points at a saved food.
+  // A save that failed keeps its food, key included: Try again sends that same one, since the
+  // failed POST may have been saved with its answer lost (a rescan would mint a new key).
+  const choose = async food => {
+    if (saving) return
+    if (typeof food.id === 'number') { pick(food); return }
+    setSaving(true)
+    setFailed(null)
+    try {
+      const saved = await useNutrition.getState().saveFood(food)
+      if (alive.current) pick(saved)
+    } catch (e) {
+      if (alive.current) setFailed({ food, text: writeErrorText(e) })
+    }
+    if (alive.current) setSaving(false)
   }
 
   const done = () => {
@@ -48,30 +67,14 @@ export function IngredientSheet({ item = null, onDone, onRemove = null, close })
   }
 
   if (!picked) {
-    const list = foods.list.filter(f => matchesFood(f, q)).slice(0, SHOWN)
-    let body
-    if (foods.status === 'error' && !foods.list.length) {
-      body = <EmptyState>
-        <div role="alert">{mealLoadErrorText(foods.error)}</div>
-        <Button size="sm" variant="tinted" onClick={() => useNutrition.getState().loadFoods({ force: true })}>{t('Try again')}</Button>
-      </EmptyState>
-    } else if (foods.status !== 'ready' && !foods.list.length) {
-      body = <EmptyState><div role="status">{t('Loading…')}</div></EmptyState>
-    } else if (!foods.list.length) {
-      body = <EmptyState icon="apple">{t('No foods yet. Save some under Foods first.')}</EmptyState>
-    } else if (!list.length) {
-      body = <EmptyState icon="magnifier">{t('No match')}</EmptyState>
-    } else {
-      body = <div className="list">{list.map(f => {
-        const kcal = energyOf(foodKcal(f), settings)
-        return <ItemRow key={f.id} title={f.name} onClick={() => pick(f)} trailing={<Tag>{kcal.value} {kcal.unit}</Tag>}
-          subtitle={[f.brand, `${Math.round((Number(f.portion) || 100) * 100) / 100} ${f.unit || 'g'}`].filter(Boolean).join(' · ')} />
-      })}</div>
-    }
     return <>
       <SheetHeader title={t('Add ingredient')} onClose={close} />
-      <SearchField value={q} placeholder={t('Search your foods')} autoFocus onChange={e => setQ(e.target.value)} onClear={() => setQ('')} />
-      {body}
+      {saving && <div className="muted small" role="status">{t('Saving…')}</div>}
+      {failed && <>
+        <div className="nt-error small" role="alert">{failed.text}</div>
+        <Button size="sm" variant="tinted" onClick={() => choose(failed.food)}>{t('Try again')}</Button>
+      </>}
+      <FoodSearch onPick={choose} scan={{ onPick: choose }} autoFocus disabled={saving} />
     </>
   }
 

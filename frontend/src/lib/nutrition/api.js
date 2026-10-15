@@ -215,7 +215,7 @@ export const NtApi = {
   getAdaptiveTdee: () => nt('GET', '/api/goals/adaptive-tdee'),
   /** Open Food Facts text search through NutriTrace's proxy (the hub lets this one URL shape by,
    *  30 a minute per person). Raw OFF answer: map it with off.js offResults. */
-  searchOnline: (query, { page = 1, pageSize = 20, lang = 'en', signal } = {}) =>
+  searchOnline: (query, { page = 1, pageSize = 40, lang = 'en', signal } = {}) =>
     nt('GET', '/api/proxy?url=' + encodeURIComponent(offSearchUrl(query, { page, pageSize, lang })), undefined, { signal }),
   /** One Open Food Facts product by barcode, through the same proxy (the hub lets this second URL
    *  shape by, under the same cap). Raw OFF answer: map it with off.js offProduct. An unknown

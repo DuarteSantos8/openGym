@@ -29,7 +29,9 @@ function lookupErrorText(e) {
 //   miss     no product for the code, or no energy value to log it with: search or Quick kcal
 //   error    the lookup itself failed: Try again
 // `onSearch` runs after the sheet closes when the person chooses Search foods.
-export default function ScanSheet({ date, meal, mealName, onLogged, onSearch, close }) {
+// With `onPick` (a picker that wants the food, not a log: a recipe's ingredient) the found product
+// is handed to it after the sheet closes, and the sheet logs and saves nothing itself.
+export default function ScanSheet({ date, meal, mealName, onLogged, onSearch, onPick, close }) {
   const units = useUnits()
   const lang = useNutrition(s => s.settings.data?.offSearchLanguage)
   const [step, setStep] = useState({ id: 'scan' })
@@ -68,11 +70,11 @@ export default function ScanSheet({ date, meal, mealName, onLogged, onSearch, cl
   const onFound = useCallback(hit => submitRef.current(hit.value), [])
 
   const again = () => { setNotice(null); setTyped(''); setStep({ id: 'scan' }) }
-  const log = food => { close(); portionSheet({ food, date, meal, mealName, onLogged }) }
+  const log = food => { close(); if (onPick) onPick(food); else portionSheet({ food, date, meal, mealName, onLogged }) }
   const search = () => { close(); if (onSearch) onSearch() }
   const quick = () => { close(); quickKcalSheet({ date, meal, mealName, onLogged }) }
   // Foods' create flow, with the scanned code in its Barcode field (no id, so it creates).
-  const create = code => { close(); foodEditSheet({ food: { barcode: code }, settings: useNutrition.getState().settings.data }) }
+  const create = code => { close(); foodEditSheet({ food: { barcode: code }, settings: useNutrition.getState().settings.data, onSaved: onPick }) }
   const save = async food => {
     if (busy) return
     setBusy(true)
@@ -124,8 +126,8 @@ export default function ScanSheet({ date, meal, mealName, onLogged, onSearch, cl
       </div>
       {saveError && <div className="nt-error small" role="alert">{saveError}</div>}
       <div className="scan-actions">
-        <Button variant="primary" onClick={() => log(step.food)}>{t('Log')}</Button>
-        {step.kind === 'online' && <Button variant="tinted" onClick={() => save(step.food)} disabled={busy || saved}>
+        <Button variant="primary" onClick={() => log(step.food)}>{onPick ? t('Use') : t('Log')}</Button>
+        {step.kind === 'online' && !onPick && <Button variant="tinted" onClick={() => save(step.food)} disabled={busy || saved}>
           {saved ? t('Saved') : busy ? t('Saving…') : t('Save to my foods')}</Button>}
         <Button variant="ghost" onClick={again}>{t('Scan another')}</Button>
       </div>
@@ -141,7 +143,7 @@ export default function ScanSheet({ date, meal, mealName, onLogged, onSearch, cl
       <div className="scan-actions">
         <Button variant="primary" onClick={search}>{t('Search foods')}</Button>
         <Button variant="tinted" onClick={() => create(step.code)}>{t('New food')}</Button>
-        <Button variant="tinted" onClick={quick}>{t('Quick kcal')}</Button>
+        {!onPick && <Button variant="tinted" onClick={quick}>{t('Quick kcal')}</Button>}
         <Button variant="ghost" onClick={again}>{t('Scan another')}</Button>
       </div>
     </>}

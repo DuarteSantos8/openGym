@@ -208,7 +208,7 @@ describe('Home is the diary', () => {
     await mount(<Home />)
     await click(button('Add to Lunch'))
     const picker = host.querySelector('.meal-picker')
-    expect([...picker.querySelectorAll('.food-row .tt')].map(n => n.textContent)).toEqual(['Rolled oats', 'Wholemeal bread', 'Quick kcal'])
+    expect([...picker.querySelectorAll('.food-row .tt')].map(n => n.textContent)).toEqual(['Create food', 'Rolled oats', 'Wholemeal bread', 'Crème fraîche', 'Quick kcal'])
     await typeInto(picker.querySelector('input'), 'nut')
     await settle(150)
     await vi.waitFor(() => expect(picker.textContent).toContain('Nutella'), { timeout: 2000 })

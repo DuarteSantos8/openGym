@@ -1504,6 +1504,12 @@ export const PT_BR_OVERRIDES = {
   '“{0}” is removed from your foods. Meals you already logged keep it.': '“{0}” is removed from your foods. Meals you already logged keep it.',
   '{0} food': '{0} food',
   '{0} foods': '{0} foods',
+  // --- nutrition: one food search ---
+  'Open Food Facts': 'Open Food Facts',
+  'Create food': 'Create food',
+  'Use': 'Use',
+  'Results: {0}': 'Results: {0}',
+  'No results': 'No results',
   'Gentle, for headphones or a quiet room.': 'Suave, para fones de ouvido ou um lugar silencioso.',
   'Fewer than two workouts in this period. Pick a longer one.': 'Menos de dois treinos neste período. Escolha um mais longo.',
   'Releases are checked on GitHub. The download is verified against its checksum before the installer opens.': 'As versões são verificadas no GitHub. O download é conferido pela soma de verificação antes de abrir o instalador.',

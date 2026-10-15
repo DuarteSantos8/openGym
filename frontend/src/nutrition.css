@@ -78,6 +78,8 @@
 .food-row .grow{min-width:0}
 .food-kcal{white-space:nowrap;color:var(--label-2)}
 .fp-note{padding:6px 2px}
+.fp-live:empty{padding:0}
+.food-row[aria-disabled="true"]{opacity:.5}
 .fp-quick{margin-top:12px}
 .portion-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px;margin-bottom:8px}
 .portion-f{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
