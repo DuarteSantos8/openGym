@@ -367,6 +367,16 @@ export function estimateMs(S) {
   return Math.min(sorted[Math.floor(sorted.length / 2)], raw[raw.length - 1])
 }
 
+// The weekdays the intake pre-selects for each day count (0 = Sunday, as in `week`): the usual
+// spread for that many sessions, Mon/Wed/Fri for three, Mon/Tue/Thu/Fri for four.
+const DEFAULT_DAYS = [[1], [1, 4], [1, 3, 5], [1, 2, 4, 5], [1, 2, 3, 4, 5], [1, 2, 3, 4, 5, 6], [0, 1, 2, 3, 4, 5, 6]]
+
+/** The weekdays the intake pre-selects for `count` training days a week, clamped to 1–7. */
+export function defaultTrainingDays(count) {
+  const n = Math.round(Number(count ?? 3))
+  return [...DEFAULT_DAYS[Math.min(7, Math.max(1, Number.isFinite(n) ? n : 3)) - 1]]
+}
+
 /** The questionnaire, as the lines the chat shows back to the user. */
 export function profileLines(p) {
   if (!p) return []

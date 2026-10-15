@@ -3,7 +3,7 @@ import {
   canonicalPlan, planHash, hashPlan, markStale, applicable, currentValue, ROUTINE_NAME_SEEN,
   pushSnapshot, revertLast, canRevert, appendLog, applyChangeSet, applyCreatedPlan,
   recordDismissal, validateProposal, coachAvailable, hasConsent,
-  recordDebrief, logEntry, lightBundle, changeValues,
+  recordDebrief, logEntry, lightBundle, changeValues, defaultTrainingDays,
   CHANGE_TYPES, SNAPSHOT_MAX, LOG_MAX, CONSENT_VERSION
 } from './coach.js'
 import { registerCustom } from './exercises.js'
@@ -694,5 +694,26 @@ describe('what the log keeps, so a decision never makes a proposal vanish', () =
     expect(b.basedOn).toBeUndefined()
     expect(Object.keys(b.routines[0].ex[0])).not.toContain('secret')
     expect(lightBundle(null)).toBeNull()
+  })
+})
+
+describe('defaultTrainingDays (the intake pre-selection, #620)', () => {
+  it('pre-selects as many weekdays as the count asks for', () => {
+    for (let n = 1; n <= 7; n++) expect(defaultTrainingDays(n)).toHaveLength(n)
+    expect(defaultTrainingDays(3)).toEqual([1, 3, 5])
+    expect(defaultTrainingDays(4)).toEqual([1, 2, 4, 5])
+    expect(defaultTrainingDays(7)).toEqual([0, 1, 2, 3, 4, 5, 6])
+  })
+
+  it('clamps a count the screen never offers, and reads a missing one as three', () => {
+    expect(defaultTrainingDays(99)).toEqual([0, 1, 2, 3, 4, 5, 6])
+    expect(defaultTrainingDays(0)).toEqual([1])
+    expect(defaultTrainingDays(null)).toEqual([1, 3, 5])
+    expect(defaultTrainingDays('many')).toEqual([1, 3, 5])
+  })
+
+  it('hands out a copy, so editing one selection never changes the next default', () => {
+    defaultTrainingDays(3).push(0)
+    expect(defaultTrainingDays(3)).toEqual([1, 3, 5])
   })
 })
