@@ -301,9 +301,14 @@ export function timerPhases(frames) {
   // "get ready" before a warm-up's first move). Its caption, however long OCR caught it, names
   // what comes next.
   const restAt = i => {
-    const r = runs[i], p = runs[i - 1], n = runs[i + 1]
-    const pl = p && r.start - p.end <= 2 ? len(p) : null
-    const nl = n && n.start - r.end <= 2 ? len(n) : null
+    const r = runs[i]
+    // The neighbours that count are moves: past any few seconds of "3, 2, 1" either side.
+    let a = i - 1, z = i + 1
+    while (runs[a] && len(runs[a]) < MIN_EXERCISE && runs[a + 1].start - runs[a].end <= 2) a--
+    while (runs[z] && len(runs[z]) < MIN_EXERCISE && runs[z].start - runs[z - 1].end <= 2) z++
+    const p = runs[a], n = runs[z]
+    const pl = p && r.start - p.end <= 2 + (i - 1 - a) * MIN_EXERCISE ? len(p) : null
+    const nl = n && n.start - r.end <= 2 + (z - i - 1) * MIN_EXERCISE ? len(n) : null
     if (pl == null && nl == null) return false
     return (pl == null || len(r) <= pl * 0.7) && (nl == null || len(r) <= nl * 0.7)
   }
