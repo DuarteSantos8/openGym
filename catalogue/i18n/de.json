@@ -15206,76 +15206,257 @@
     ]
   },
   "0107": {
-    "name": "Frontheben über Kopf stehend mit Langhantel"
+    "name": "Frontheben über Kopf stehend mit Langhantel",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Langhantel im Obergriff vor deinen Oberschenkeln.",
+      "Halte den Rücken gerade und spann den Rumpf an.",
+      "Heb die Langhantel langsam vor dir an, die Arme bleiben gestreckt und die Handflächen zeigen nach unten.",
+      "Heb weiter, bis die Langhantel etwas über Schulterhöhe ist.",
+      "Halte oben kurz inne und senk die Langhantel dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0108": {
-    "name": "Bein-Wadenheben stehend mit Langhantel"
+    "name": "Bein-Wadenheben stehend mit Langhantel",
+    "instructions": [
+      "Stell dich schulterbreit hin und leg dir eine Langhantel auf den oberen Rücken.",
+      "Heb die Fersen mit der Kraft deiner Waden so weit wie möglich vom Boden ab.",
+      "Halte oben kurz inne und senk die Fersen dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0109": {
-    "name": "Trizeps-Strecken über Kopf stehend mit Langhantel"
+    "name": "Trizeps-Strecken über Kopf stehend mit Langhantel",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Langhantel im Obergriff.",
+      "Bring die Langhantel über den Kopf und streck die Arme ganz durch.",
+      "Halte die Oberarme nah am Kopf und senk die Langhantel langsam hinter den Kopf, indem du die Ellbogen beugst.",
+      "Halte kurz inne, streck dann die Arme und bring die Langhantel zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0110": {
-    "name": "Curl im Umkehrgriff stehend mit Langhantel"
+    "name": "Curl im Umkehrgriff stehend mit Langhantel",
+    "instructions": [
+      "Stell dich aufrecht und schulterbreit hin und halte eine Langhantel im Untergriff, die Handflächen zeigen nach oben.",
+      "Halte die Ellbogen nah am Oberkörper und die Oberarme still.",
+      "Atme aus und beug die Arme mit Kraft aus dem Bizeps, bis die Langhantel so nah wie möglich an den Schultern ist.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk die Langhantel langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0111": {
-    "name": "Schaukelndes Wadenheben stehend mit Langhantel"
+    "name": "Schaukelndes Wadenheben stehend mit Langhantel",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Langhantel auf dem oberen Rücken.",
+      "Heb die Fersen so weit wie möglich vom Boden ab und halte dabei das Gleichgewicht auf den Fußballen.",
+      "Senk die Fersen langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0112": {
-    "name": "Stehende Drehung mit Langhantel"
+    "name": "Stehende Drehung mit Langhantel",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Langhantel mit beiden Händen vor der Brust, die Handflächen zeigen nach unten.",
+      "Spann den Rumpf an und halte den Rücken während der ganzen Übung gerade.",
+      "Dreh den Oberkörper langsam nach rechts und dreh dabei Füße und Hüfte mit, der Unterkörper bleibt aber stabil.",
+      "Halte am Ende der Drehung kurz inne und dreh dich dann langsam zurück in die Ausgangsposition.",
+      "Mach die gleiche Drehung nach links.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0113": {
-    "name": "Bizeps-Curl mit weitem Griff stehend mit Langhantel"
+    "name": "Bizeps-Curl mit weitem Griff stehend mit Langhantel",
+    "instructions": [
+      "Stell dich aufrecht und schulterbreit hin und halte eine Langhantel im Untergriff, die Hände weiter als schulterbreit.",
+      "Lass die Langhantel mit gestreckten Armen vor den Oberschenkeln hängen, die Handflächen zeigen vom Körper weg.",
+      "Halte die Oberarme still, atme aus und beug die Arme mit Kraft aus dem Bizeps, um die Langhantel nach oben zu bringen.",
+      "Heb die Langhantel weiter, bis sie auf Schulterhöhe ist und der Bizeps ganz angespannt ist.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk die Langhantel langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0114": {
-    "name": "Step-up mit Langhantel"
+    "name": "Step-up mit Langhantel",
+    "instructions": [
+      "Stell dich vor eine Bank oder Stufe, die Langhantel liegt auf deinem oberen Rücken.",
+      "Setz einen Fuß mit der ganzen Sohle auf die Bank oder Stufe.",
+      "Drück dich über die Ferse hoch auf die Bank oder Stufe und streck Hüfte und Knie ganz durch.",
+      "Halte oben kurz inne und steig dann wieder hinunter in die Ausgangsposition.",
+      "Wiederhole das mit dem anderen Bein.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0115": {
-    "name": "Good Morning mit gestreckten Beinen und Langhantel"
+    "name": "Good Morning mit gestreckten Beinen und Langhantel",
+    "instructions": [
+      "Stell dich schulterbreit hin, die Knie leicht gebeugt.",
+      "Leg die Langhantel auf den oberen Rücken, sodass sie auf dem Trapezmuskel aufliegt.",
+      "Halte den Rücken gerade, kipp in der Hüfte nach vorn und schieb das Gesäß nach hinten.",
+      "Senk den Oberkörper, bis er parallel zum Boden ist und du eine Dehnung in der hinteren Oberschenkelmuskulatur spürst.",
+      "Spann Gesäß und hintere Oberschenkelmuskulatur an und komm zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0116": {
-    "name": "Kreuzheben mit gestreckten Beinen und Langhantel"
+    "name": "Kreuzheben mit gestreckten Beinen und Langhantel",
+    "instructions": [
+      "Stell dich schulterbreit hin, die Zehen zeigen nach vorn.",
+      "Greif die Langhantel im Obergriff, die Hände etwas weiter als schulterbreit.",
+      "Beug dich in der Hüfte nach vorn und senk die Langhantel Richtung Boden, der Rücken bleibt gerade und die Knie leicht gebeugt.",
+      "Senk die Langhantel, bis du eine Dehnung in der hinteren Oberschenkelmuskulatur spürst.",
+      "Spann die hintere Oberschenkelmuskulatur und das Gesäß an und heb die Langhantel zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0117": {
-    "name": "Sumo-Kreuzheben mit Langhantel"
+    "name": "Sumo-Kreuzheben mit Langhantel",
+    "instructions": [
+      "Stell dich breiter als schulterbreit hin, die Zehen zeigen nach außen.",
+      "Leg eine Langhantel vor dir auf den Boden, mittig zwischen deine Füße.",
+      "Beug die Knie und senk die Hüfte, Rücken gerade und Brust oben, und greif die Langhantel im Obergriff.",
+      "Spann den Rumpf an, drück dich über die Fersen hoch und heb die Langhantel vom Boden, dabei streckst du Hüfte und Knie gleichzeitig.",
+      "Halte beim Heben die Brust oben und den Rücken gerade und schieb die Hüfte nach vorn, damit das Gesäß voll arbeitet.",
+      "Halte oben kurz inne und senk die Langhantel dann langsam und kontrolliert zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0118": {
-    "name": "Vorgebeugtes Rudern im Untergriff mit Langhantel"
+    "name": "Vorgebeugtes Rudern im Untergriff mit Langhantel",
+    "instructions": [
+      "Stell dich schulterbreit hin, die Knie leicht gebeugt.",
+      "Halte eine Langhantel im Obergriff, die Handflächen zeigen nach unten und die Hände sind etwas weiter als schulterbreit.",
+      "Beug dich in der Hüfte nach vorn, Rücken gerade und Brust oben, bis dein Oberkörper fast parallel zum Boden ist.",
+      "Zieh die Langhantel zur unteren Brust und drück die Schulterblätter zusammen.",
+      "Halte oben kurz inne und senk die Langhantel dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0119": {
-    "name": "Aufrechtes Rudern mit Langhantel v. 2"
+    "name": "Aufrechtes Rudern mit Langhantel v. 2",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Langhantel im Obergriff, die Hände etwas weiter als schulterbreit.",
+      "Lass die Langhantel mit gestreckten Armen vor den Oberschenkeln hängen.",
+      "Halte den Rücken gerade, atme aus und zieh die Langhantel senkrecht nach oben Richtung Kinn, die Ellbogen führen.",
+      "Halte oben kurz inne, atme dann ein und senk die Langhantel langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0120": {
-    "name": "Aufrechtes Rudern mit Langhantel"
+    "name": "Aufrechtes Rudern mit Langhantel",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Langhantel im Obergriff, die Hände etwas weiter als schulterbreit.",
+      "Lass die Langhantel mit gestreckten Armen vor den Oberschenkeln hängen.",
+      "Halte den Rücken gerade und den Rumpf angespannt, atme aus und zieh die Langhantel senkrecht nach oben Richtung Kinn, die Ellbogen führen.",
+      "Halte oben kurz inne, atme dann ein und senk die Langhantel langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0121": {
-    "name": "Aufrechtes Rudern mit Langhantel v. 3"
+    "name": "Aufrechtes Rudern mit Langhantel v. 3",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Langhantel im Obergriff, die Hände etwas weiter als schulterbreit.",
+      "Lass die Langhantel mit gestreckten Armen vor den Oberschenkeln hängen.",
+      "Spann den Rumpf an, halte den Rücken gerade und zieh die Langhantel beim Ausatmen senkrecht nach oben Richtung Kinn, die Ellbogen führen.",
+      "Halte oben kurz inne und senk die Langhantel dann beim Einatmen langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0122": {
-    "name": "Bankdrücken mit Langhantel und weitem Griff"
+    "name": "Bankdrücken mit Langhantel und weitem Griff",
+    "instructions": [
+      "Leg dich flach auf die Bank, die Füße stehen flach auf dem Boden und der Rücken liegt an der Bank an.",
+      "Greif die Langhantel weit, etwas breiter als schulterbreit.",
+      "Heb die Langhantel aus der Ablage und halte sie mit gestreckten Armen direkt über deiner Brust.",
+      "Senk die Langhantel langsam zur Brust, die Ellbogen zeigen dabei leicht nach außen.",
+      "Halte kurz inne, wenn die Langhantel die Brust berührt, und drück sie dann zurück nach oben in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0123": {
-    "name": "Aufrechtes Rudern mit Langhantel und weitem Griff"
+    "name": "Aufrechtes Rudern mit Langhantel und weitem Griff",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Langhantel im Obergriff, die Hände weiter als schulterbreit.",
+      "Lass die Langhantel mit gestreckten Armen vor den Oberschenkeln hängen.",
+      "Halte den Rücken gerade, atme aus und zieh die Langhantel senkrecht nach oben Richtung Kinn, die Ellbogen führen.",
+      "Halte oben kurz inne, atme dann ein und senk die Langhantel langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0124": {
-    "name": "Kniebeuge mit Langhantel und weitem Stand"
+    "name": "Kniebeuge mit Langhantel und weitem Stand",
+    "instructions": [
+      "Stell dich breiter als schulterbreit hin, die Zehen zeigen leicht nach außen.",
+      "Leg die Langhantel auf den oberen Rücken, sodass sie auf dem Trapezmuskel oder den hinteren Schultern aufliegt.",
+      "Spann den Rumpf an, halte die Brust oben und geh in die Kniebeuge, indem du die Hüfte nach hinten schiebst und die Knie beugst.",
+      "Geh hinunter, bis deine Oberschenkel parallel zum Boden sind, oder so tief, wie es für dich angenehm ist.",
+      "Halte unten kurz inne und drück dich dann über die Fersen zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0125": {
-    "name": "Handgelenk-Curl mit Langhantel v. 2"
+    "name": "Handgelenk-Curl mit Langhantel v. 2",
+    "instructions": [
+      "Setz dich auf eine Bank, die Füße stehen flach auf dem Boden und die Knie sind gebeugt.",
+      "Halte eine Langhantel im Untergriff, die Handflächen zeigen nach oben und die Hände sind schulterbreit.",
+      "Leg die Unterarme auf den Oberschenkeln ab, sodass die Handgelenke über die Knie hinaushängen.",
+      "Beug die Handgelenke langsam nach oben und bring die Langhantel Richtung Unterarme.",
+      "Halte oben kurz inne und senk die Langhantel dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0126": {
-    "name": "Handgelenk-Curl mit Langhantel"
+    "name": "Handgelenk-Curl mit Langhantel",
+    "instructions": [
+      "Setz dich auf eine Bank, stell die Füße flach auf den Boden, leg die Unterarme auf die Oberschenkel und halte eine Langhantel im Untergriff.",
+      "Lass die Langhantel bis in die Fingerspitzen rollen, die Handgelenke bleiben dabei gerade.",
+      "Roll die Langhantel langsam Richtung Unterarme hoch, indem du die Handgelenke beugst.",
+      "Halte oben kurz inne und senk die Langhantel dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0127": {
-    "name": "Zercher-Kniebeuge mit Langhantel"
+    "name": "Zercher-Kniebeuge mit Langhantel",
+    "instructions": [
+      "Stell dich schulterbreit hin, die Zehen zeigen leicht nach außen.",
+      "Halte die Langhantel in den Armbeugen und greif die Stange mit den Händen, damit sie stabil liegt.",
+      "Spann den Rumpf an, halte die Brust oben und senk die Hüfte nach hinten unten in die Kniebeuge.",
+      "Halte die Knie in einer Linie mit den Zehen und das Gewicht auf den Fersen.",
+      "Halte unten kurz inne und drück dich dann über die Fersen zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0128": {
-    "name": "Battle Ropes"
+    "name": "Battle Ropes",
+    "instructions": [
+      "Stell dich schulterbreit hin, die Knie leicht gebeugt.",
+      "Halte in jeder Hand ein Seilende, die Handflächen zeigen zueinander.",
+      "Heb die Arme auf Schulterhöhe, die Ellbogen bleiben leicht gebeugt.",
+      "Mach abwechselnd Wellen mit den Seilen, indem du jeden Arm schnell hebst und senkst.",
+      "Mach so weiter, bis die gewünschte Zeit oder Anzahl an Wiederholungen erreicht ist."
+    ]
   },
   "0129": {
-    "name": "Bankdips mit gebeugten Knien"
+    "name": "Bankdips mit gebeugten Knien",
+    "instructions": [
+      "Setz dich auf die Kante einer Bank oder eines Stuhls und greif die Kante neben deiner Hüfte.",
+      "Rutsch mit dem Gesäß von der Bank und streck die Beine vor dir aus, die Fersen bleiben am Boden.",
+      "Beug die Ellbogen und senk deinen Körper Richtung Boden, der Rücken bleibt nah an der Bank.",
+      "Halte unten kurz inne und drück dich dann zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0130": {
-    "name": "Hüftstrecken auf der Bank"
+    "name": "Hüftstrecken auf der Bank",
+    "instructions": [
+      "Setz dich mit dem Rücken an eine Bank, die Füße stehen flach auf dem Boden.",
+      "Leg die Hände zur Stütze auf die Bank.",
+      "Spann Gesäß und hintere Oberschenkelmuskulatur an und heb die Hüfte, bis dein Körper von den Knien bis zu den Schultern eine gerade Linie bildet.",
+      "Halte oben kurz inne und senk die Hüfte dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0131": {
     "name": "Liegende Drehung mit gebeugten Knien auf dem Gymnastikball"
@@ -15290,16 +15471,42 @@
     "name": "Boot-Pose (Yoga)"
   },
   "0137": {
-    "name": "Body-up"
+    "name": "Body-up",
+    "instructions": [
+      "Stütz die Hände auf eine erhöhte Fläche, etwa eine Bank oder einen Barren, die Handflächen zeigen nach unten und die Finger nach vorn.",
+      "Streck die Beine vor dir aus, die Fersen bleiben am Boden und der Körper bleibt gerade.",
+      "Beug die Ellbogen und senk deinen Körper ab, bis die Oberarme parallel zum Boden sind. Die Ellbogen bleiben dabei nah am Körper.",
+      "Halte kurz inne, drück dich dann über die Handflächen hoch und streck die Arme, bis du wieder in der Ausgangsposition bist.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0138": {
-    "name": "Bottoms-up"
+    "name": "Bottoms-up",
+    "instructions": [
+      "Leg dich flach auf den Rücken, die Beine gestreckt und die Arme neben dem Körper.",
+      "Beug die Knie und zieh sie zur Brust, die Füße bleiben dabei in der Luft.",
+      "Spann den Bauch an, heb die Hüfte vom Boden und führ die Knie Richtung Kopf.",
+      "Halte oben kurz inne und senk die Hüfte dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0139": {
-    "name": "Enger Bizeps-Klimmzug"
+    "name": "Enger Bizeps-Klimmzug",
+    "instructions": [
+      "Häng dich im Untergriff an eine Klimmzugstange, die Handflächen zeigen zu dir und die Hände sind schulterbreit auseinander.",
+      "Spann den Rumpf an und zieh dich zur Stange hoch. Arbeite dabei vor allem mit dem Bizeps.",
+      "Halte oben kurz inne und lass dich dann langsam zurück in die Ausgangsposition ab.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0140": {
-    "name": "Bizeps-Klimmzug"
+    "name": "Bizeps-Klimmzug",
+    "instructions": [
+      "Häng dich im Obergriff an eine Klimmzugstange, die Handflächen zeigen von dir weg und die Hände sind schulterbreit auseinander.",
+      "Spann den Rumpf an, beug die Ellbogen und zieh dich hoch, die Brust kommt dabei Richtung Stange.",
+      "Halte oben kurz inne und lass dich dann langsam zurück in die Ausgangsposition ab.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0142": {
     "name": "Brücke auf den Knien"
@@ -15314,235 +15521,836 @@
     "name": "Fahrrad-Crunch mit Drehung"
   },
   "0148": {
-    "name": "Abwechselndes Schulterdrücken am Kabelzug"
+    "name": "Abwechselndes Schulterdrücken am Kabelzug",
+    "instructions": [
+      "Stell dich schulterbreit hin und greif die Griffe des Kabelzugs im Obergriff.",
+      "Bring die Hände auf Schulterhöhe, die Handflächen zeigen nach vorne.",
+      "Halte den Rumpf angespannt und den Rücken gerade.",
+      "Drück einen Griff nach oben und vorne, bis der Arm ganz gestreckt ist.",
+      "Halte oben kurz inne und senk den Griff dann langsam zurück in die Ausgangsposition.",
+      "Wiederhole das mit dem anderen Arm.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0149": {
-    "name": "Abwechselndes Trizeps-Strecken am Kabelzug"
+    "name": "Abwechselndes Trizeps-Strecken am Kabelzug",
+    "instructions": [
+      "Stell dich schulterbreit mit dem Gesicht zum Kabelzug hin.",
+      "Halte den Griff in der rechten Hand und heb den Arm, bis der Oberarm parallel zum Boden ist und der Ellbogen im 90-Grad-Winkel gebeugt ist.",
+      "Halte den Oberarm ruhig und führ den Unterarm nach hinten, bis der Arm ganz gestreckt ist.",
+      "Halte kurz inne und komm dann langsam zurück in die Ausgangsposition.",
+      "Wiederhole das mit dem linken Arm.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0150": {
-    "name": "Latzug mit Stange am Kabelzug"
+    "name": "Latzug mit Stange am Kabelzug",
+    "instructions": [
+      "Stell die Rolle des Kabelzugs nach oben und häng eine gerade Stange ein.",
+      "Setz dich mit dem Gesicht zum Kabelzug, die Füße flach auf dem Boden und die Knie leicht gebeugt.",
+      "Greif die Stange im Obergriff, etwas breiter als schulterbreit.",
+      "Lehn dich leicht zurück, halte die Brust oben und mach im unteren Rücken ein leichtes Hohlkreuz.",
+      "Zieh die Stange nach unten zur Brust, führ die Bewegung mit den Ellbogen und zieh die Schulterblätter zusammen.",
+      "Halte unten kurz inne und führ die Stange dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0151": {
-    "name": "Bankdrücken am Kabelzug"
+    "name": "Bankdrücken am Kabelzug",
+    "instructions": [
+      "Stell den Kabelzug auf Brusthöhe ein und häng die Griffe ein.",
+      "Stell dich schulterbreit mit dem Rücken zum Kabelzug hin.",
+      "Greif die Griffe im Obergriff und mach einen Schritt nach vorne, damit die Kabel gespannt sind.",
+      "Stell die Füße fest auf den Boden und spann den Rumpf an.",
+      "Beug die Ellbogen und bring die Hände auf Schulterhöhe, die Ellbogen im 90-Grad-Winkel.",
+      "Drück die Griffe nach vorne, bis die Arme vor dir ganz gestreckt sind.",
+      "Halte kurz inne und führ die Hände dann langsam zurück auf Schulterhöhe.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0152": {
-    "name": "Konzentrationsstrecken am Kabelzug auf dem Knie"
+    "name": "Konzentrationsstrecken am Kabelzug auf dem Knie",
+    "instructions": [
+      "Setz dich auf eine Bank oder einen Stuhl, die Knie gebeugt und die Füße flach auf dem Boden.",
+      "Halte den Griff in der rechten Hand und leg den Ellbogen an die Innenseite des rechten Knies.",
+      "Streck den Arm ganz, der Ellbogen bleibt ruhig und nah am Knie.",
+      "Halte oben kurz inne und senk den Arm dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
+    ]
   },
   "0153": {
-    "name": "Überkreuzter Latzug am Kabelzug"
+    "name": "Überkreuzter Latzug am Kabelzug",
+    "instructions": [
+      "Häng auf beiden Seiten des Kabelzugs auf Schulterhöhe je einen Griff ein.",
+      "Stell dich schulterbreit in die Mitte des Kabelzugs.",
+      "Greif die Griffe im Obergriff und geh einen Schritt zurück, damit die Kabel gespannt sind.",
+      "Neig dich aus der Hüfte leicht nach vorne, den Rücken gerade und die Brust oben.",
+      "Zieh die Griffe nach unten und quer vor den Körper und zieh dabei die Schulterblätter zusammen.",
+      "Halte unten kurz inne und komm dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0154": {
-    "name": "Überkreuztes Rückwärtsheben am Kabelzug"
+    "name": "Überkreuztes Rückwärtsheben am Kabelzug",
+    "instructions": [
+      "Häng an beiden unteren Rollen je einen D-Griff ein und stell dich in die Mitte des Kabelzugs.",
+      "Greif die Griffe im Obergriff, die Handflächen zeigen nach unten, und mach einen Schritt nach vorne. Die Füße stehen schulterbreit.",
+      "Beug die Knie leicht und neig dich aus der Hüfte nach vorne, den Rücken gerade und den Bauch angespannt.",
+      "Streck die Arme seitlich aus, die Ellbogen leicht gebeugt. Atme aus, zieh die Schulterblätter zusammen und führ die Kabel wie bei umgekehrten Fliegenden nach hinten und oben.",
+      "Halte am Punkt der stärksten Anspannung kurz inne, atme dann ein und komm langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0155": {
-    "name": "Überkreuzen am Kabelzug, Variante"
+    "name": "Überkreuzen am Kabelzug, Variante",
+    "instructions": [
+      "Stell die Rollen des Kabelzugs auf Brusthöhe ein.",
+      "Stell dich in die Mitte des Kabelzugs, einen Fuß vor den anderen.",
+      "Greif die Griffe mit den Handflächen nach unten, die Arme seitlich ausgestreckt.",
+      "Mach einen Schritt nach vorne, die Arme bleiben leicht gebeugt.",
+      "Führ die Hände mit leicht gebeugten Ellbogen vor der Brust zusammen.",
+      "Halte kurz inne und führ die Arme dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0157": {
-    "name": "Kreuzheben am Kabelzug"
+    "name": "Kreuzheben am Kabelzug",
+    "instructions": [
+      "Stell dich schulterbreit mit dem Gesicht zum Kabelzug hin.",
+      "Beug Hüfte und Knie und senk den Oberkörper, bis der Rücken parallel zum Boden ist.",
+      "Greif die Griffe im Obergriff, die Arme bleiben gestreckt und die Schultern zurückgezogen.",
+      "Spann Gesäß und hintere Oberschenkelmuskulatur an, heb die Griffe, streck die Hüfte und richte dich ganz auf.",
+      "Halte oben kurz inne und senk die Griffe dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0158": {
-    "name": "Fliegende an der Negativbank am Kabelzug"
+    "name": "Fliegende an der Negativbank am Kabelzug",
+    "instructions": [
+      "Stell den Kabelzug für die Negativ-Variante ein.",
+      "Stell dich schulterbreit mit dem Rücken zum Kabelzug hin.",
+      "Halte die Griffe mit den Handflächen nach vorne und streck die Arme gerade vor dir aus.",
+      "Lass die Ellbogen leicht gebeugt und öffne die Arme kontrolliert zur Seite.",
+      "Halte in der ganz geöffneten Position kurz inne und komm dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0159": {
-    "name": "Sitzendes Rudern mit weitem Griff an der Negativbank am Kabelzug"
+    "name": "Sitzendes Rudern mit weitem Griff an der Negativbank am Kabelzug",
+    "instructions": [
+      "Setz dich mit dem Gesicht zum Kabelzug auf die Negativbank und stell die Füße fest auf die Fußstützen.",
+      "Fass den Griff weit im Obergriff, die Handflächen zeigen nach unten.",
+      "Lehn dich leicht zurück, den Rücken gerade und den Rumpf angespannt.",
+      "Zieh das Kabel zur unteren Brust und zieh dabei die Schulterblätter zusammen.",
+      "Halte am Punkt der stärksten Anspannung kurz inne und führ den Griff dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0160": {
-    "name": "Sitzendes Rudern mit weitem Griff auf dem Boden am Kabelzug"
+    "name": "Sitzendes Rudern mit weitem Griff auf dem Boden am Kabelzug",
+    "instructions": [
+      "Setz dich mit gestreckten Beinen und geradem Rücken auf den Boden.",
+      "Häng einen Griff an eine untere Rolle und setz dich so, dass der Kabelzug hinter dir ist.",
+      "Fass den Griff weit im Obergriff, die Handflächen zeigen nach unten.",
+      "Lehn dich leicht zurück, den Rücken gerade und die Brust aufgerichtet.",
+      "Zieh den Griff zur Taille und zieh dabei die Schulterblätter zusammen.",
+      "Halte am Endpunkt kurz inne und führ den Griff dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0161": {
-    "name": "Vorwärtsheben am Kabelzug"
+    "name": "Vorwärtsheben am Kabelzug",
+    "instructions": [
+      "Stell dich schulterbreit hin, die Knie leicht gebeugt.",
+      "Halte den Griff im Obergriff, die Handflächen zeigen nach unten und die Arme sind vor dir ganz gestreckt.",
+      "Heb den Griff mit gestreckten Armen bis auf Schulterhöhe.",
+      "Halte oben kurz inne und senk den Griff dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0162": {
-    "name": "Frontheben am Kabelzug"
+    "name": "Frontheben am Kabelzug",
+    "instructions": [
+      "Stell dich schulterbreit hin und greif den Griff im Obergriff.",
+      "Halte den Rücken gerade und den Rumpf angespannt.",
+      "Heb den Griff vor dir an, die Arme bleiben gestreckt und die Handflächen zeigen nach unten.",
+      "Heb weiter, bis die Arme parallel zum Boden sind.",
+      "Halte oben kurz inne und senk den Griff dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0163": {
     "name": "Frontales Rudern sitzend am Kabelzug"
   },
   "0164": {
-    "name": "Vorderes Schulterheben am Kabelzug"
+    "name": "Vorderes Schulterheben am Kabelzug",
+    "instructions": [
+      "Stell dich schulterbreit hin und greif den Griff im Obergriff.",
+      "Halte den Rücken gerade und den Rumpf angespannt.",
+      "Heb den Griff vor dir an, die Arme bleiben gestreckt und die Handflächen zeigen nach unten.",
+      "Heb weiter, bis die Arme parallel zum Boden sind.",
+      "Halte oben kurz inne und senk den Griff dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0165": {
-    "name": "Hammer-Curl am Kabelzug mit Seil"
+    "name": "Hammer-Curl am Kabelzug mit Seil",
+    "instructions": [
+      "Stell dich aufrecht und schulterbreit hin, die Knie leicht gebeugt.",
+      "Greif das Seil so, dass die Handflächen zueinander zeigen, die Arme sind ganz gestreckt.",
+      "Halte die Oberarme ruhig, atme aus und beug die Arme, während du den Bizeps anspannst.",
+      "Zieh das Seil weiter nach oben, bis der Bizeps ganz angespannt ist und das Seil auf Schulterhöhe.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk das Seil langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0166": {
     "name": "Hammer-Curl am Kabelzug"
   },
   "0167": {
-    "name": "Hohes Rudern kniend am Kabelzug"
+    "name": "Hohes Rudern kniend am Kabelzug",
+    "instructions": [
+      "Häng eine gerade Stange auf Brusthöhe an den Kabelzug.",
+      "Knie dich vor den Kabelzug und greif die Stange im Obergriff, die Hände schulterbreit.",
+      "Setz dich auf die Fersen zurück, den Rücken gerade und den Rumpf angespannt.",
+      "Zieh die Stange zum oberen Bauch und zieh dabei die Schulterblätter zusammen.",
+      "Halte am Endpunkt kurz inne und führ die Stange dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0168": {
-    "name": "Hüftadduktion am Kabelzug"
+    "name": "Hüftadduktion am Kabelzug",
+    "instructions": [
+      "Leg die Fußmanschette um dein Fußgelenk und stell dich mit dem Gesicht zum Kabelzug hin.",
+      "Stell dich so weit vom Kabelzug weg, dass das Kabel gespannt ist.",
+      "Halte dich mit den Händen am Gerät fest.",
+      "Lass das Bein gestreckt und führ es langsam quer vor den Körper Richtung Körpermitte.",
+      "Halte am Ende der Bewegung kurz inne und komm dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0169": {
-    "name": "Schrägbankdrücken am Kabelzug"
+    "name": "Schrägbankdrücken am Kabelzug",
+    "instructions": [
+      "Stell die Bank auf 45 Grad Neigung ein.",
+      "Häng die Griffe an die oberen Rollen des Kabelzugs.",
+      "Setz dich mit dem Gesicht zum Kabelzug auf die Bank, die Füße flach auf dem Boden.",
+      "Greif die Griffe im Obergriff und bring sie auf Schulterhöhe.",
+      "Drück die Griffe nach vorne und oben, bis die Arme ganz gestreckt sind.",
+      "Halte kurz inne und senk die Griffe dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0170": {
-    "name": "Fliegende an der Schrägbank am Kabelzug auf dem Gymnastikball"
+    "name": "Fliegende an der Schrägbank am Kabelzug auf dem Gymnastikball",
+    "instructions": [
+      "Richte den Gymnastikball für eine schräge Position ein.",
+      "Häng die Griffe an die oberen Rollen des Kabelzugs.",
+      "Setz dich mit dem Rücken zum Kabelzug auf den Ball, die Füße fest auf dem Boden.",
+      "Greif die Griffe im Obergriff, die Handflächen zeigen nach vorne.",
+      "Neig dich leicht nach vorne, den Rücken gerade und den Rumpf angespannt.",
+      "Führ die Arme kontrolliert zur Seite, die Ellbogen bleiben leicht gebeugt.",
+      "Mach weiter, bis die Arme parallel zum Boden sind.",
+      "Halte kurz inne und komm dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0171": {
-    "name": "Fliegende an der Schrägbank am Kabelzug"
+    "name": "Fliegende an der Schrägbank am Kabelzug",
+    "instructions": [
+      "Stell den Kabelzug tief ein und häng die Griffe ein.",
+      "Setz dich auf eine Schrägbank, den Rücken am Polster und die Füße flach auf dem Boden.",
+      "Greif die Griffe im Obergriff und streck die Arme gerade vor dir aus.",
+      "Lass die Ellbogen leicht gebeugt und öffne die Arme kontrolliert zur Seite.",
+      "Halte in der ganz geöffneten Position kurz inne und komm dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0172": {
-    "name": "Lat-Pushdown in Schräglage am Kabelzug"
+    "name": "Lat-Pushdown in Schräglage am Kabelzug",
+    "instructions": [
+      "Häng eine gerade Stange an die obere Rolle des Kabelzugs.",
+      "Stell dich schulterbreit mit dem Rücken zum Kabelzug hin.",
+      "Greif die Stange im Obergriff, die Hände etwas breiter als schulterbreit.",
+      "Neig dich leicht nach vorne und halte den Rücken gerade.",
+      "Zieh die Stange nach unten zu den Oberschenkeln, indem du die Ellbogen streckst.",
+      "Halte unten kurz inne und führ die Stange dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0173": {
-    "name": "Trizeps-Strecken an der Schrägbank am Kabelzug"
+    "name": "Trizeps-Strecken an der Schrägbank am Kabelzug",
+    "instructions": [
+      "Stell die Rolle am Kabelzug tief ein.",
+      "Häng eine gerade Stange in den Kabelzug ein.",
+      "Stell dich mit dem Rücken zum Gerät, die Füße schulterbreit.",
+      "Greif die Stange im Obergriff und streck die Arme gerade über den Kopf.",
+      "Lehn dich leicht nach vorn, halte den Rücken gerade und spann den Rumpf an.",
+      "Beug die Ellbogen und senk die Stange hinter den Kopf, die Oberarme bleiben nah an den Ohren.",
+      "Halte kurz inne und streck die Arme dann wieder in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0174": {
-    "name": "Judowurf am Kabelzug"
+    "name": "Judowurf am Kabelzug",
+    "instructions": [
+      "Stell dich mit dem Gesicht zum Kabelzug, die Füße schulterbreit.",
+      "Halte den Griff mit beiden Händen auf Brusthöhe, die Handflächen zeigen nach unten.",
+      "Spann den Rumpf an und dreh den Oberkörper nach rechts, dabei ziehst du das Kabel quer vor dem Körper vorbei.",
+      "Dreh dabei den hinteren Fuß mit und lass die Hüfte natürlich mitgehen.",
+      "Streck die Arme ganz und schließ die Bewegung ab, indem du den Griff über die Schulter schwingst.",
+      "Kehr die Bewegung um und dreh den Oberkörper zurück zur Mitte in die Ausgangsposition.",
+      "Wiederhole die Bewegung zur anderen Seite.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0175": {
-    "name": "Crunch kniend am Kabelzug"
+    "name": "Crunch kniend am Kabelzug",
+    "instructions": [
+      "Häng ein Seil an die obere Rolle und knie dich mit dem Rücken zum Gerät hin.",
+      "Halte das Seil mit beiden Händen hinter dem Kopf, die Ellbogen zeigen zur Seite.",
+      "Halte die Hüfte ruhig und roll den Oberkörper aus der Taille nach unten zu den Oberschenkeln ein.",
+      "Halte unten kurz inne und geh dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0176": {
-    "name": "Trizeps-Strecken kniend am Kabelzug"
+    "name": "Trizeps-Strecken kniend am Kabelzug",
+    "instructions": [
+      "Häng ein Seil an die obere Rolle und knie dich mit dem Gesicht zum Kabelzug hin.",
+      "Greif das Seil mit neutralem Griff (die Handflächen zeigen zueinander) und führ die Hände seitlich an den Kopf.",
+      "Halte die Ellbogen während der ganzen Übung nah am Kopf und die Oberarme ruhig.",
+      "Spann den Trizeps an und streck die Unterarme, bis die Arme ganz durchgestreckt sind.",
+      "Halte kurz inne und geh dann langsam zurück in die Ausgangsposition, indem du die Ellbogen beugst.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0177": {
-    "name": "Latzug am Kabelzug mit Seil"
+    "name": "Latzug am Kabelzug mit Seil",
+    "instructions": [
+      "Häng ein Seil oben in den Kabelzug ein.",
+      "Stell dich mit dem Gesicht zum Gerät, die Füße schulterbreit.",
+      "Greif das Seil mit beiden Händen, die Handflächen zeigen zueinander.",
+      "Halte den Rücken gerade und lehn dich leicht nach hinten.",
+      "Zieh das Seil seitlich am Körper nach unten und drück die Schulterblätter zusammen.",
+      "Halte unten kurz inne.",
+      "Gib langsam nach und lass das Seil zurück in die Ausgangsposition gleiten.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0178": {
-    "name": "Seitheben am Kabelzug"
+    "name": "Seitheben am Kabelzug",
+    "instructions": [
+      "Stell dich schulterbreit hin und fass die Griffe des Kabelzugs im Obergriff.",
+      "Halte die Arme gestreckt und den Rumpf angespannt.",
+      "Heb die Arme seitlich an, bis sie parallel zum Boden sind.",
+      "Halte oben kurz inne und senk die Arme dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0179": {
-    "name": "Fliegende am Kabelzug unten"
+    "name": "Fliegende am Kabelzug unten",
+    "instructions": [
+      "Häng die Griffe an die unteren Rollen eines Kabelzugs und wähl ein passendes Gewicht.",
+      "Stell dich in die Mitte des Geräts, die Füße schulterbreit, die Knie leicht gebeugt.",
+      "Greif die Griffe im Obergriff und streck die Arme zur Seite aus, die Ellbogen bleiben leicht gebeugt.",
+      "Führ die Arme langsam und kontrolliert in einem weiten Bogen nach vorn, bis sie sich vor dem Körper kreuzen.",
+      "Halte am Endpunkt kurz inne und spür die Spannung in der Brustmuskulatur.",
+      "Kehr die Bewegung um und führ die Arme langsam zurück in die Ausgangsposition, die Brust bleibt dabei die ganze Zeit unter Spannung.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0180": {
-    "name": "Sitzendes Rudern am Kabelzug unten"
+    "name": "Sitzendes Rudern am Kabelzug unten",
+    "instructions": [
+      "Setz dich an das Gerät, die Füße flach auf den Fußstützen, die Knie leicht gebeugt.",
+      "Greif die Griffe im Obergriff, die Handflächen zeigen nach unten.",
+      "Halte den Rücken gerade, lehn dich leicht nach vorn und lass die Ellbogen leicht gebeugt.",
+      "Zieh die Griffe zum Körper und drück die Schulterblätter zusammen.",
+      "Halte am Endpunkt kurz inne und führ die Griffe dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0181": {
     "name": "Liegender Curl mit engem Griff am Kabelzug"
   },
   "0182": {
-    "name": "Liegender enger Bizeps-Curl am Kabelzug"
+    "name": "Liegender enger Bizeps-Curl am Kabelzug",
+    "instructions": [
+      "Häng eine gerade Stange an die untere Rolle eines Kabelzugs.",
+      "Leg dich mit dem Rücken auf eine Flachbank, die Füße flach auf dem Boden.",
+      "Greif die Stange im Untergriff, die Hände schulterbreit.",
+      "Streck die Arme ganz und halte die Ellbogen nah am Körper.",
+      "Halte die Oberarme ruhig, spann den Bizeps an und curl die Stange zur Brust.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Senk die Stange langsam zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0183": {
     "name": "Liegender Curl am Kabelzug"
   },
   "0184": {
-    "name": "Liegendes Überzug-Strecken am Kabelzug mit Seil"
+    "name": "Liegendes Überzug-Strecken am Kabelzug mit Seil",
+    "instructions": [
+      "Häng ein Seil in den Kabelzug ein und stell die Rolle ganz nach oben.",
+      "Leg dich auf eine Bank, der Kopf zeigt zum Kabelzug.",
+      "Halte das Seil mit beiden Händen und streck die Arme gerade über der Brust nach oben.",
+      "Halte die Arme gestreckt und senk das Seil langsam und kontrolliert hinter den Kopf.",
+      "Halte unten kurz inne und führ das Seil dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0185": {
-    "name": "Liegende Fliegende am Kabelzug"
+    "name": "Liegende Fliegende am Kabelzug",
+    "instructions": [
+      "Häng die Griffe an die Kabel und leg dich flach auf eine Bank, die Füße stehen fest auf dem Boden.",
+      "Halte die Griffe, die Handflächen zeigen zueinander, und streck die Arme gerade über der Brust nach oben.",
+      "Lass die Ellbogen leicht gebeugt und senk die Arme in einem weiten Bogen zur Seite, bis du eine Dehnung in der Brust spürst.",
+      "Halte kurz inne, spann dann die Brust an und führ die Arme zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0186": {
-    "name": "Liegendes Trizeps-Strecken am Kabelzug v. 2"
+    "name": "Liegendes Trizeps-Strecken am Kabelzug v. 2",
+    "instructions": [
+      "Häng ein Seil an die untere Rolle eines Kabelzugs.",
+      "Leg dich mit dem Rücken auf eine Flachbank, der Kopf zeigt zum Kabelzug.",
+      "Greif das Seil mit beiden Händen, die Handflächen zeigen zueinander, und streck die Arme gerade über der Brust nach oben.",
+      "Halte die Oberarme ruhig, beug die Ellbogen und senk das Seil langsam Richtung Stirn.",
+      "Halte unten kurz inne und streck die Arme dann wieder nach oben in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0187": {
     "name": "Liegendes Trizeps-Strecken am Kabelzug"
   },
   "0188": {
-    "name": "Fliegende auf Brusthöhe am Kabelzug"
+    "name": "Fliegende auf Brusthöhe am Kabelzug",
+    "instructions": [
+      "Stell die Rollen auf beiden Seiten des Kabelzugs auf Brusthöhe ein.",
+      "Stell dich in die Mitte des Geräts, ein Fuß leicht vor dem anderen.",
+      "Greif die Griffe im Obergriff und streck die Arme zur Seite aus.",
+      "Lass die Ellbogen leicht gebeugt und neig den Oberkörper leicht nach vorn.",
+      "Spann die Brust an und führ die Arme in einem weiten Bogen nach vorn.",
+      "Halte in der Mitte kurz inne und führ die Arme dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0189": {
-    "name": "Einarmiges vorgebeugtes Rudern am Kabelzug"
+    "name": "Einarmiges vorgebeugtes Rudern am Kabelzug",
+    "instructions": [
+      "Stell dich mit dem Gesicht zum Kabelzug, die Füße schulterbreit.",
+      "Beug die Knie leicht und kipp den Oberkörper aus der Hüfte nach vorn, der Rücken bleibt gerade.",
+      "Greif den Griff mit einer Hand, die Handfläche zeigt nach innen, und streck den Arm ganz.",
+      "Zieh den Griff zum Körper, bis die Hand die untere Brust erreicht, der Ellbogen bleibt nah am Körper.",
+      "Halte kurz inne und streck den Arm dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
+    ]
   },
   "0190": {
-    "name": "Einarmiger Curl am Kabelzug"
+    "name": "Einarmiger Curl am Kabelzug",
+    "instructions": [
+      "Stell dich mit dem Gesicht zum Kabelzug, die Füße schulterbreit.",
+      "Fass den Griff im Untergriff, die Handfläche zeigt nach oben.",
+      "Halte den Ellbogen nah am Körper und curl den Unterarm langsam zur Schulter hoch.",
+      "Halte oben kurz inne und senk den Unterarm dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0191": {
-    "name": "Einarmiges seitliches Rudern vorgebeugt am Kabelzug"
+    "name": "Einarmiges seitliches Rudern vorgebeugt am Kabelzug",
+    "instructions": [
+      "Stell dich schulterbreit hin, das Gesicht zum Kabelzug.",
+      "Greif den Griff mit einer Hand und geh einen Schritt zurück, damit das Kabel unter Spannung steht.",
+      "Beug den Oberkörper aus der Hüfte nach vorn, halte den Rücken gerade und den Rumpf angespannt.",
+      "Streck den Arm seitlich aus, parallel zum Boden, der Ellbogen bleibt leicht gebeugt.",
+      "Führ den Arm langsam und kontrolliert zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
+    ]
   },
   "0192": {
-    "name": "Einarmiges Seitheben am Kabelzug"
+    "name": "Einarmiges Seitheben am Kabelzug",
+    "instructions": [
+      "Stell dich schulterbreit hin, das Gesicht zum Kabelzug.",
+      "Halte den Griff mit einer Hand, die Handfläche zeigt nach unten, und stell dich so weit vom Gerät weg, dass das Kabel unter Spannung steht.",
+      "Halte den Arm gestreckt und heb ihn langsam seitlich an, bis er parallel zum Boden ist.",
+      "Halte oben kurz inne und senk den Arm dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
+    ]
   },
   "0193": {
-    "name": "Einarmiges hohes Rudern nach hinten kniend am Kabelzug"
+    "name": "Einarmiges hohes Rudern nach hinten kniend am Kabelzug",
+    "instructions": [
+      "Häng einen Griff auf Hüfthöhe in den Kabelzug ein.",
+      "Knie dich mit dem Gesicht zum Kabelzug hin und fass den Griff mit einer Hand.",
+      "Halte den Rücken gerade und den Rumpf angespannt.",
+      "Zieh den Griff zur Brust und drück die Schulterblätter zusammen.",
+      "Halte am Endpunkt der Bewegung kurz inne.",
+      "Führ den Griff langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht.",
+      "Wechsle die Seite und wiederhole die Übung mit dem anderen Arm."
+    ]
   },
   "0194": {
-    "name": "Überkopf-Trizeps-Strecken mit Seilzug am Kabelzug"
+    "name": "Überkopf-Trizeps-Strecken mit Seilzug am Kabelzug",
+    "instructions": [
+      "Häng ein Seil oben in den Kabelzug ein.",
+      "Stell dich mit dem Rücken zum Gerät, die Füße schulterbreit.",
+      "Greif das Seil mit beiden Händen, die Handflächen zeigen zueinander, und führ die Hände über den Kopf.",
+      "Halte die Oberarme nah am Kopf, die Ellbogen zeigen nach vorn.",
+      "Beug die Ellbogen und senk das Seil langsam hinter den Kopf.",
+      "Halte kurz inne und streck die Arme dann wieder nach oben in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0195": {
-    "name": "Scott-Curl am Kabelzug"
+    "name": "Scott-Curl am Kabelzug",
+    "instructions": [
+      "Stell den Kabelzug so ein, dass das Polster der Scott-Curl-Bank auf Brusthöhe ist.",
+      "Setz dich an die Scott-Curl-Bank, leg die Oberarme auf das Polster und greif den Kabelgriff im Untergriff.",
+      "Halte den Rücken gerade und die Ellbogen eng am Körper.",
+      "Curl den Griff langsam Richtung Schultern und spann oben den Bizeps fest an.",
+      "Halte kurz inne und senk den Griff dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0196": {
-    "name": "Durchziehen am Kabelzug mit Seil"
+    "name": "Durchziehen am Kabelzug mit Seil",
+    "instructions": [
+      "Stell dich mit dem Rücken zum Kabelzug, die Füße schulterbreit.",
+      "Greif das Seil mit beiden Händen und geh einen Schritt nach vorn, damit das Kabel unter Spannung steht.",
+      "Kipp den Oberkörper aus der Hüfte nach vorn, bis er parallel zum Boden ist, der Rücken bleibt gerade.",
+      "Spann Gesäß und hintere Oberschenkelmuskulatur an und richte dich wieder in die Ausgangsposition auf.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0197": {
-    "name": "Latzug am Kabelzug mit Pro-Lat-Stange"
+    "name": "Latzug am Kabelzug mit Pro-Lat-Stange",
+    "instructions": [
+      "Stell die Sitzhöhe so ein, dass die Oberschenkel parallel zum Boden sind und die Füße flach auf dem Boden stehen.",
+      "Greif die Latzugstange im Obergriff, etwas breiter als schulterbreit.",
+      "Setz dich hin und lehn dich leicht nach hinten, mit aufgerichteter Brust und geradem Rücken.",
+      "Zieh die Stange zur Brust und drück die Schulterblätter zusammen.",
+      "Halte unten kurz inne und führ die Stange dann langsam wieder nach oben in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0198": {
-    "name": "Latzug am Kabelzug"
+    "name": "Latzug am Kabelzug",
+    "instructions": [
+      "Stell den Latzug so ein, dass der Sitz eine bequeme Höhe hat und das Kniepolster fest sitzt.",
+      "Setz dich mit geradem Rücken hin, die Füße flach auf dem Boden.",
+      "Greif die Stange im Obergriff, etwas breiter als schulterbreit.",
+      "Lehn dich leicht nach hinten und spann den Rumpf an.",
+      "Zieh die Stange zur Brust und drück die Schulterblätter zusammen.",
+      "Halte unten kurz inne und führ die Stange dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0199": {
-    "name": "Trizeps-Drücken gerader Arm am Kabelzug v. 2"
+    "name": "Trizeps-Drücken gerader Arm am Kabelzug v. 2",
+    "instructions": [
+      "Häng eine gerade Stange an die obere Rolle eines Kabelzugs.",
+      "Stell dich mit dem Gesicht zum Gerät, die Füße schulterbreit, die Knie leicht gebeugt.",
+      "Greif die Stange im Obergriff, die Arme gestreckt, die Handflächen zeigen nach unten.",
+      "Spann den Rumpf an, halte den Rücken gerade, atme aus und drück die Stange zu den Oberschenkeln hinunter.",
+      "Halte unten kurz inne und führ die Stange dann beim Einatmen langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0200": {
-    "name": "Trizeps-Drücken am Kabelzug mit Seil"
+    "name": "Trizeps-Drücken am Kabelzug mit Seil",
+    "instructions": [
+      "Häng ein Seil an die obere Rolle eines Kabelzugs.",
+      "Stell dich mit dem Gesicht zum Gerät, die Füße schulterbreit, die Knie leicht gebeugt.",
+      "Greif das Seil mit beiden Händen, die Handflächen zeigen zueinander.",
+      "Halte die Ellbogen während der ganzen Übung nah am Körper und die Oberarme ruhig.",
+      "Atme aus und drück das Seil nach unten, indem du die Ellbogen streckst, bis die Arme ganz gestreckt sind.",
+      "Halte kurz inne, atme ein und beug die Ellbogen langsam, bis du wieder in der Ausgangsposition bist.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0201": {
-    "name": "Trizeps-Drücken am Kabelzug"
+    "name": "Trizeps-Drücken am Kabelzug",
+    "instructions": [
+      "Häng eine gerade Stange oben am Kabelzug ein.",
+      "Stell dich mit dem Gesicht zum Gerät, die Füße schulterbreit und die Knie leicht gebeugt.",
+      "Greif die Stange im Obergriff, die Hände schulterbreit.",
+      "Halte die Ellbogen nah am Körper und die Oberarme ruhig.",
+      "Atme aus und drück die Stange nach unten, bis die Arme ganz gestreckt sind.",
+      "Halte kurz inne, atme ein und führ die Stange langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0202": {
-    "name": "Rudern für hintere Schulter mit Trittbügeln am Kabelzug"
+    "name": "Rudern für hintere Schulter mit Trittbügeln am Kabelzug",
+    "instructions": [
+      "Häng einen Trittbügel unten am Kabelzug ein und stell dich mit dem Gesicht zum Gerät.",
+      "Greif den Griff mit der linken Hand und mach mit dem rechten Fuß einen Schritt zurück, sodass dein Körper leicht schräg steht.",
+      "Beug die Knie leicht und neig den Oberkörper aus der Hüfte nach vorne, der Rücken bleibt gerade und der Rumpf angespannt.",
+      "Der linke Arm ist gestreckt, die Handfläche zeigt nach unten. Zieh den Griff zur Brust, indem du das Schulterblatt nach hinten ziehst.",
+      "Halte oben kurz inne und zieh das Schulterblatt dabei fest nach hinten.",
+      "Führ den Griff langsam zurück in die Ausgangsposition und mach so viele Wiederholungen wie gewünscht.",
+      "Wechsle die Seite und mach die Übung mit dem rechten Arm."
+    ]
   },
   "0203": {
-    "name": "Rudern für hintere Schulter mit Seil am Kabelzug"
+    "name": "Rudern für hintere Schulter mit Seil am Kabelzug",
+    "instructions": [
+      "Häng ein Seil unten am Kabelzug ein.",
+      "Stell dich mit dem Gesicht zum Gerät, die Füße schulterbreit.",
+      "Greif das Seil mit beiden Händen, die Handflächen zeigen zueinander.",
+      "Beug die Knie leicht und neig den Oberkörper aus der Hüfte nach vorne, der Rücken bleibt gerade.",
+      "Halte die Ellbogen leicht gebeugt und zieh das Seil zur Brust, dabei ziehst du die Schulterblätter zusammen.",
+      "Halte am Endpunkt kurz inne, lass dann langsam nach und komm zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0204": {
-    "name": "Trizeps-Drücken nach hinten am Kabelzug"
+    "name": "Trizeps-Drücken nach hinten am Kabelzug",
+    "instructions": [
+      "Häng einen Griff unten am Kabelzug ein und stell dich mit dem Rücken zum Gerät.",
+      "Greif den Griff im Obergriff und streck die Arme gerade nach vorne aus.",
+      "Halte die Ellbogen ruhig, zieh den Griff zum Körper zurück und spann am Ende der Bewegung den Trizeps an.",
+      "Führ den Griff langsam zurück in die Ausgangsposition und mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0205": {
-    "name": "Rückwärtiger Latzug am Kabelzug"
+    "name": "Rückwärtiger Latzug am Kabelzug",
+    "instructions": [
+      "Stell die Rolle am Kabelzug ganz nach oben.",
+      "Setz dich mit dem Gesicht zum Gerät, die Füße flach auf dem Boden und die Knie leicht gebeugt.",
+      "Greif den Griff im Obergriff, die Hände etwas breiter als schulterbreit.",
+      "Lehn dich leicht zurück, der Rücken bleibt gerade und die Brust oben.",
+      "Zieh den Griff zur Brust herunter und drück dabei die Schulterblätter zusammen.",
+      "Halte unten kurz inne und führ den Griff dann langsam nach oben zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0206": {
-    "name": "Umgekehrter Curl am Kabelzug"
+    "name": "Umgekehrter Curl am Kabelzug",
+    "instructions": [
+      "Häng eine gerade Stange unten am Kabelzug ein.",
+      "Stell dich mit dem Gesicht zum Gerät, die Füße schulterbreit und die Knie leicht gebeugt.",
+      "Greif die Stange im Untergriff, die Hände schulterbreit.",
+      "Halte die Ellbogen während der ganzen Übung nah am Körper und die Oberarme ruhig.",
+      "Atme aus, beug die Arme und zieh die Stange zu den Schultern hoch, dabei spannst du den Bizeps an.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk die Stange langsam zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0207": {
-    "name": "Trizeps-Drücken mit Umkehrgriff am Kabelzug"
+    "name": "Trizeps-Drücken mit Umkehrgriff am Kabelzug",
+    "instructions": [
+      "Häng eine gerade Stange oben am Kabelzug ein.",
+      "Stell dich mit dem Gesicht zum Gerät, die Füße schulterbreit.",
+      "Greif die Stange im Untergriff, die Handflächen zeigen nach oben und die Hände sind schulterbreit.",
+      "Halte die Ellbogen während der ganzen Übung nah am Körper und die Oberarme ruhig.",
+      "Drück die Stange mit dem Trizeps nach unten, bis die Arme ganz gestreckt sind und der Trizeps angespannt ist.",
+      "Halte kurz inne und führ die Stange dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0208": {
-    "name": "Sitzendes hohes Rudern mit Umkehrgriff am Kabelzug"
+    "name": "Sitzendes hohes Rudern mit Umkehrgriff am Kabelzug",
+    "instructions": [
+      "Setz dich mit dem Gesicht zum Kabelzug auf den Sitz, die Füße flach auf dem Boden.",
+      "Greif den Griff im Untergriff, die Handflächen zeigen nach oben und die Hände sind schulterbreit.",
+      "Halte den Rücken gerade und lehn dich aus der Hüfte leicht nach vorne.",
+      "Zieh das Kabel zum Oberkörper, indem du die Schulterblätter nach hinten ziehst und die Rückenmuskeln anspannst.",
+      "Halte am Punkt der stärksten Anspannung kurz inne und führ das Kabel dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0209": {
-    "name": "Scott-Curl im Umkehrgriff am Kabelzug"
+    "name": "Scott-Curl im Umkehrgriff am Kabelzug",
+    "instructions": [
+      "Stell den Kabelzug so ein, dass das Polster der Scott-Bank auf Brusthöhe ist.",
+      "Setz dich an die Scott-Bank und leg die Oberarme aufs Polster, die Handflächen zeigen nach unten und die Arme sind ganz gestreckt.",
+      "Greif die Kabelgriffe schulterbreit.",
+      "Halte die Oberarme ruhig, atme aus, beug die Arme und zieh die Griffe zu den Schultern, dabei spannst du den Bizeps an.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk die Griffe langsam zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0210": {
-    "name": "Umgekehrter Handgelenk-Curl am Kabelzug"
+    "name": "Umgekehrter Handgelenk-Curl am Kabelzug",
+    "instructions": [
+      "Häng einen Griff unten am Kabelzug ein und setz dich mit dem Gesicht zum Gerät auf eine Bank.",
+      "Greif den Griff im Obergriff, die Handflächen zeigen nach unten.",
+      "Leg die Unterarme auf die Oberschenkel, die Handgelenke hängen über die Knie hinaus.",
+      "Halte die Unterarme ruhig, atme aus und beug die Handgelenke so weit wie möglich nach oben.",
+      "Halte oben kurz inne, atme ein und senk die Handgelenke langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0211": {
-    "name": "Russian Twist am Kabelzug auf dem Gymnastikball"
+    "name": "Russian Twist am Kabelzug auf dem Gymnastikball",
+    "instructions": [
+      "Setz dich auf einen Gymnastikball, die Füße flach auf dem Boden und die Knie im 90-Grad-Winkel gebeugt.",
+      "Halte den Griff des Kabelzugs mit beiden Händen und streck die Arme gerade nach vorne aus.",
+      "Lehn dich leicht zurück, der Rücken bleibt gerade und der Rumpf angespannt.",
+      "Dreh den Oberkörper nach rechts und führ den Griff zur rechten Hüfte.",
+      "Halte kurz inne, dreh dann den Oberkörper nach links und führ den Griff zur linken Hüfte.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0212": {
-    "name": "Sitzender Crunch am Kabelzug"
+    "name": "Sitzender Crunch am Kabelzug",
+    "instructions": [
+      "Setz dich an den Kabelzug, die Füße flach auf dem Boden und die Knie gebeugt.",
+      "Halte den Griff mit beiden Händen hinter dem Kopf.",
+      "Spann die Bauchmuskeln an und roll den Oberkörper langsam nach vorne, die Brust geht Richtung Knie.",
+      "Halte am Endpunkt kurz inne und komm dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0213": {
-    "name": "Hohes Rudern am Kabelzug V-Bar sitzend"
+    "name": "Hohes Rudern am Kabelzug V-Bar sitzend",
+    "instructions": [
+      "Setz dich an den Kabelzug, die Füße flach auf dem Boden und die Knie leicht gebeugt.",
+      "Greif den V-Griff mit beiden Händen, die Handflächen zeigen zueinander.",
+      "Halte den Rücken gerade und lehn dich aus der Hüfte leicht nach vorne.",
+      "Zieh den V-Griff zum Oberkörper, indem du die Schulterblätter nach hinten ziehst und die Rückenmuskeln anspannst.",
+      "Halte am Punkt der stärksten Anspannung kurz inne, lass dann langsam nach und komm zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0214": {
-    "name": "Abwechselndes einarmiges Rudern am Kabelzug sitzend"
+    "name": "Abwechselndes einarmiges Rudern am Kabelzug sitzend",
+    "instructions": [
+      "Setz dich mit dem Gesicht zum Kabelzug auf eine Bank, die Füße flach auf dem Boden und die Knie leicht gebeugt.",
+      "Greif den Griff mit einer Hand und streck den Arm ganz nach vorne aus.",
+      "Zieh den Griff zum Körper, nimm dabei das Schulterblatt nach hinten und halte den Ellbogen nah am Körper.",
+      "Halte am Endpunkt kurz inne und spann die Rückenmuskeln fest an.",
+      "Führ den Griff langsam zurück in die Ausgangsposition.",
+      "Mach dasselbe mit dem anderen Arm.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0215": {
-    "name": "Hinteres seitliches Heben am Kabelzug sitzend"
+    "name": "Hinteres seitliches Heben am Kabelzug sitzend",
+    "instructions": [
+      "Setz dich mit dem Gesicht zum Kabelzug auf eine Bank, die Füße flach auf dem Boden.",
+      "Greif die Griffe im Obergriff und streck die Arme gerade nach vorne aus.",
+      "Halte die Arme gestreckt und heb sie langsam seitlich nach außen, bis sie parallel zum Boden sind.",
+      "Halte oben kurz inne und senk die Arme dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0216": {
-    "name": "Interne Schulterrotation am Kabelzug sitzend"
+    "name": "Interne Schulterrotation am Kabelzug sitzend",
+    "instructions": [
+      "Setz dich mit dem Gesicht zum Kabelzug auf eine Bank oder einen Stuhl, die Füße flach auf dem Boden.",
+      "Halte den Griff mit gestrecktem Arm vor dir, parallel zum Boden.",
+      "Halte den Ellbogen leicht gebeugt und die Schulterblätter nach hinten unten gezogen.",
+      "Dreh den Arm langsam nach innen und führ den Griff zur Körpermitte.",
+      "Halte am Ende der Bewegung kurz inne und komm dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
+    ]
   },
   "0218": {
-    "name": "Rudern mit weitem Griff am Kabelzug sitzend"
+    "name": "Rudern mit weitem Griff am Kabelzug sitzend",
+    "instructions": [
+      "Setz dich an die Ruderstation am Kabelzug, die Füße flach auf den Fußstützen und die Knie leicht gebeugt.",
+      "Greif die Stange weit im Obergriff, die Handflächen zeigen nach unten.",
+      "Halte den Rücken gerade und lehn dich aus der Hüfte leicht nach vorne.",
+      "Zieh die Stange zur unteren Brust und zieh dabei die Schulterblätter zusammen.",
+      "Halte am Punkt der stärksten Anspannung kurz inne.",
+      "Führ die Stange langsam zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0219": {
-    "name": "Schulterdrücken am Kabelzug"
+    "name": "Schulterdrücken am Kabelzug",
+    "instructions": [
+      "Stell den Kabelzug so ein, dass die Griffe auf Schulterhöhe sind.",
+      "Stell dich mit dem Rücken zum Gerät, die Füße schulterbreit.",
+      "Greif die Griffe im Obergriff und führ sie auf Schulterhöhe, die Ellbogen sind gebeugt und zeigen nach außen.",
+      "Drück die Griffe nach oben, bis die Arme über dem Kopf ganz gestreckt sind.",
+      "Halte oben kurz inne und senk die Griffe dann langsam zurück auf Schulterhöhe.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0220": {
-    "name": "Shrugs am Kabelzug"
+    "name": "Shrugs am Kabelzug",
+    "instructions": [
+      "Stell dich mit dem Gesicht zum Kabelzug, die Füße schulterbreit.",
+      "Greif die Griffe im Obergriff und lass die Arme vor dem Körper hängen.",
+      "Halte die Arme gestreckt und zieh die Schultern Richtung Ohren hoch.",
+      "Halte oben kurz inne und senk die Schultern dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0221": {
-    "name": "Seitbeuge-Crunch am Kabelzug auf dem Bosu-Ball"
+    "name": "Seitbeuge-Crunch am Kabelzug auf dem Bosu-Ball",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte einen Griff des Kabelzugs in einer Hand.",
+      "Leg die andere Hand an die Hüfte.",
+      "Spann den Rumpf an und neig dich langsam zur Seite der Hand mit dem Griff, der Rücken bleibt gerade.",
+      "Halte unten kurz inne und komm dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
+    ]
   },
   "0222": {
-    "name": "Seitneigung am Kabelzug"
+    "name": "Seitneigung am Kabelzug",
+    "instructions": [
+      "Stell dich schulterbreit hin und greif den Griff des Kabelzugs mit einer Hand.",
+      "Halte den Rücken gerade und den Rumpf angespannt.",
+      "Neig dich langsam aus der Taille zur Seite und senk den Griff dabei Richtung Knie.",
+      "Halte kurz inne und komm dann zurück in die Ausgangsposition.",
+      "Wiederhole das zur anderen Seite.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0223": {
-    "name": "Seitlicher Crunch am Kabelzug"
+    "name": "Seitlicher Crunch am Kabelzug",
+    "instructions": [
+      "Häng einen Griff unten am Kabelzug ein und stell dich seitlich zum Gerät.",
+      "Greif den Griff mit der Hand, die weiter vom Gerät weg ist, und leg die andere Hand an die Hüfte.",
+      "Stell die Füße schulterbreit auseinander und beug die Knie leicht.",
+      "Spann die Bauchmuskeln an und neig dich aus der Taille zur Seite, dabei führst du den Ellbogen nach unten Richtung Hüfte.",
+      "Halte unten kurz inne und komm dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
+    ]
   },
   "0224": {
-    "name": "Handgelenk-Curl hinter dem Rücken stehend am Kabelzug"
+    "name": "Handgelenk-Curl hinter dem Rücken stehend am Kabelzug",
+    "instructions": [
+      "Stell dich mit dem Gesicht zum Kabelzug, die Füße schulterbreit.",
+      "Halte den Griff im Obergriff, die Handflächen zeigen nach unten.",
+      "Halte die Arme gestreckt und die Ellbogen nah am Körper.",
+      "Beug die Handgelenke langsam nach oben und führ den Griff dabei zum Körper.",
+      "Halte oben kurz inne und senk den Griff dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0225": {
-    "name": "Hohe umgekehrte Fliegende über Kreuz stehend am Kabelzug"
+    "name": "Hohe umgekehrte Fliegende über Kreuz stehend am Kabelzug",
+    "instructions": [
+      "Häng auf beiden Seiten des Kabelzugs einen D-Griff auf Schulterhöhe ein.",
+      "Stell dich mittig in den Kabelzug, die Füße schulterbreit.",
+      "Greif die Griffe im Obergriff und streck die Arme zur Seite aus, die Handflächen zeigen nach vorne.",
+      "Halte die Ellbogen während der ganzen Übung leicht gebeugt und den Rücken gerade.",
+      "Spann die Schultermuskeln an und zieh die Schulterblätter zusammen, während du die Griffe vor den Körper ziehst.",
+      "Halte am Endpunkt kurz inne und komm dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0226": {
-    "name": "Crunch am Kabelzug stehend"
+    "name": "Crunch am Kabelzug stehend",
+    "instructions": [
+      "Häng einen Griff oben am Kabelzug ein und stell dich mit dem Rücken zum Gerät.",
+      "Halte den Griff mit beiden Händen hinter dem Kopf, die Ellbogen sind gebeugt.",
+      "Stell die Füße schulterbreit auseinander und beug die Knie leicht.",
+      "Halte die Bauchmuskeln angespannt, atme aus und roll den Oberkörper nach unten Richtung Knie, die Ellbogen gehen zu den Oberschenkeln.",
+      "Halte unten kurz inne und komm dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0227": {
     "name": "Fliegende am Kabelzug stehend"
