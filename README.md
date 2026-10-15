@@ -41,6 +41,8 @@ on your phone, synced across your devices, behind your own passkey login.
 </tr>
 </table>
 
+Profile contains Stats and [Social](docs/SOCIAL.md): same-instance friendships and basic training summaries, shared only after acceptance.
+
 ## Why openGym
 
 Most workout apps keep your data on their servers, push you towards a subscription, or vanish

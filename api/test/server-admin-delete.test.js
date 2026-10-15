@@ -36,6 +36,10 @@ async function startServer(t, { twoAdmins = false } = {}) {
     invites: [{ code: 'CODE1', usedBy: VICTIM, usedAt: new Date().toISOString() }],
   }));
   fs.writeFileSync(path.join(dataDir, `state-${VICTIM}.json`), JSON.stringify({ unit: 'kg', workouts: [], _rev: 3 }));
+  fs.writeFileSync(path.join(dataDir, 'social.json'), JSON.stringify({
+    connections: [{ from: ADMIN, to: VICTIM, status: 'accepted' }, { from: 'keep-a', to: 'keep-b', status: 'pending' }],
+    blocks: [{ from: VICTIM, to: ADMIN }, { from: 'keep-a', to: 'keep-b' }]
+  }));
   const child = spawn(process.execPath, ['server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
     env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost' },
@@ -68,6 +72,9 @@ test('removes the account and everything attached to it', async t => {
   assert.deepEqual(db.creds.map(c => c.userId), [ADMIN], 'their passkeys are gone');
   assert.deepEqual(db.subs.map(s => s.userId), [ADMIN], 'their push subscriptions are gone');
   assert.equal(fs.existsSync(path.join(h.dataDir, `state-${VICTIM}.json`)), false, 'their history is gone');
+  const social = JSON.parse(fs.readFileSync(path.join(h.dataDir, 'social.json'), 'utf8'));
+  assert.deepEqual(social.connections, [{ from: 'keep-a', to: 'keep-b', status: 'pending' }]);
+  assert.deepEqual(social.blocks, [{ from: 'keep-a', to: 'keep-b' }]);
   // The code they joined with stays burned: it was used, and freeing it would quietly widen
   // an invite-only instance.
   assert.equal(db.invites[0].usedBy, VICTIM);

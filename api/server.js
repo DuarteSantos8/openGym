@@ -20,6 +20,7 @@ import { startCadence } from './coach/cadence.js';
 import { startWarmup } from './coach/warmup.js';
 import { dayReminderPush, nudgePush, restTimerPush, testPush } from './push-messages.js';
 import { verifyError } from './verify-error.js';
+import { socialRoutes } from './social/routes.js';
 import {
   hashPassword, verifyPassword, needsRehash, passwordProblem, passwordLength, nameKey, BusyError,
   MIN_LENGTH, MAX_LENGTH, makeResetCode, hashResetCode, resetCodeMatches, RESET_TTL_MS, warmUp,
@@ -207,6 +208,20 @@ function forClient(S) {
 // there is the honest reading of such a file — what was dropped carried nothing to show.
 const record = x => !!x && typeof x === 'object' && !Array.isArray(x);
 const records = v => (Array.isArray(v) ? v.filter(record) : []);
+
+const socialFile = path.join(DATA, 'social.json');
+function loadSocial() {
+  let value;
+  try { value = JSON.parse(fs.readFileSync(socialFile, 'utf8')); }
+  catch (e) {
+    if (e.code === 'ENOENT') return { connections: [], blocks: [] };
+    throw e;
+  }
+  if (!value || !Array.isArray(value.connections) || !Array.isArray(value.blocks)) {
+    throw new Error('social.json has an invalid structure');
+  }
+  return value;
+}
 
 /* ---------- push notifications (Web Push / VAPID) ---------- */
 const vapidFile = path.join(DATA, 'vapid.json');
@@ -2480,6 +2495,10 @@ const routes = {
     if (u.id === admin.id) return json(res, 400, { error: 'you cannot delete your own account' });
     if (isAdmin(u) && db.users.filter(isAdmin).length <= 1) return json(res, 400, { error: 'cannot delete the last admin' });
     const name = u.name;
+    const social = loadSocial();
+    social.connections = social.connections.filter(c => c.from !== u.id && c.to !== u.id);
+    social.blocks = social.blocks.filter(c => c.from !== u.id && c.to !== u.id);
+    atomicWrite(socialFile, JSON.stringify(social), 0o600);
     db.users = db.users.filter(x => x.id !== u.id);
     db.creds = (db.creds || []).filter(c => c.userId !== u.id);
     db.subs = (db.subs || []).filter(x => x.userId !== u.id);
@@ -2568,6 +2587,9 @@ const routes = {
     audit(req, 'admin.audit.clear', { user: admin });
     json(res, 200, { ok: true });
   },
+
+  ...socialRoutes({ json, readBody, readSession, users: () => db.users, readState,
+    load: loadSocial, save: data => atomicWrite(socialFile, JSON.stringify(data), 0o600), userNow }),
 
   /* ---------- AI Coach ---------- */
   // Routes live in coach/routes.js and are handed the helpers above rather than importing

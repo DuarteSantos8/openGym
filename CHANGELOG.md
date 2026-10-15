@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Profile replaces the Stats bottom-tab label, retaining existing progress charts and `/stats` links
+- Social inside Profile supports same-instance requests, acceptance, removal and blocks
+- Accepted friends see weekly workouts, streak, last workout and exercise-record count; plans, notes, photos and body weight remain private
+
 ## v1.4.1 (2026-10-10)
 
 Bug fixes for v1.4.0, mostly the things you told us about on Discord and GitHub.

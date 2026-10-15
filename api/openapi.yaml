@@ -153,6 +153,8 @@ tags:
       attached to a logged workout. Stored per profile (one quota for both) and named
       by the SHA-256 of its bytes; the state only carries a `MediaRef`. Every route here is a
       404 when the instance runs with `MEDIA_UPLOADS=0`.
+  - name: social
+    description: Same-instance friendships and accepted-friend training summaries
   - name: coach
     description: >-
       AI Coach: plans, reviews and debriefs. Every route here answers 503 unless the
@@ -2953,6 +2955,149 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  /api/social:
+    get:
+      tags: [social]
+      summary: Friends, requests, discovery and blocks
+      description: |
+        Discovery and pending requests contain only id and name. Accepted friends additionally
+        expose weekly workout count, weekly streak, last workout date and number of exercise
+        records. Plans, photos, notes, body weight and individual record values are excluded.
+        Disabled users and either direction of a block are excluded from discovery and progress.
+      security: [{ session: [] }, { bearer: [] }]
+      responses:
+        '200':
+          description: Social dashboard
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SocialDashboard' }
+        '401': { description: Not signed in }
+  /api/social/request:
+    post:
+      tags: [social]
+      summary: Send a friend request
+      description: Targets an enabled account on this server. Self requests are rejected. Either account may have at most 100 pending or accepted connections. Existing requests are not accepted automatically.
+      security: [{ session: [] }, { bearer: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SocialTarget' }
+      responses:
+        '200':
+          description: Connection state saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+        '400': { description: Invalid target or self request }
+        '401': { description: Not signed in }
+        '403': { description: Cross-origin request or blocked connection }
+        '404': { description: Account or incoming request not found }
+        '409': { description: Existing connection or connection limit reached }
+  /api/social/accept:
+    post:
+      tags: [social]
+      summary: Accept an incoming friend request
+      description: Only the recipient may accept. The sender must remain enabled and neither account may block the other. Acceptance enables the derived progress summary in both directions.
+      security: [{ session: [] }, { bearer: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SocialTarget' }
+      responses:
+        '200':
+          description: Connection state saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+        '400': { description: Invalid target or self request }
+        '401': { description: Not signed in }
+        '403': { description: Cross-origin request or blocked connection }
+        '404': { description: Account or incoming request not found }
+        '409': { description: Existing connection or connection limit reached }
+  /api/social/remove:
+    post:
+      tags: [social]
+      summary: Decline, cancel or remove a connection
+      description: Removes the connection in either direction and immediately revokes progress access. Also used to decline incoming requests and cancel outgoing requests.
+      security: [{ session: [] }, { bearer: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SocialTarget' }
+      responses:
+        '200':
+          description: Connection state saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+        '400': { description: Invalid target or self request }
+        '401': { description: Not signed in }
+        '403': { description: Cross-origin request or blocked connection }
+        '404': { description: Account or incoming request not found }
+        '409': { description: Existing connection or connection limit reached }
+  /api/social/block:
+    post:
+      tags: [social]
+      summary: Block a profile
+      description: Removes the connection and prevents discovery and new requests in both directions. Only the blocker sees the blocked profile in their block list.
+      security: [{ session: [] }, { bearer: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SocialTarget' }
+      responses:
+        '200':
+          description: Connection state saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+        '400': { description: Invalid target or self request }
+        '401': { description: Not signed in }
+        '403': { description: Cross-origin request or blocked connection }
+        '404': { description: Account or incoming request not found }
+        '409': { description: Existing connection or connection limit reached }
+  /api/social/unblock:
+    post:
+      tags: [social]
+      summary: Unblock a profile
+      description: Removes only the caller’s block. Does not restore a connection; a new request and acceptance are required. A block in the opposite direction continues to apply.
+      security: [{ session: [] }, { bearer: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SocialTarget' }
+      responses:
+        '200':
+          description: Connection state saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+        '400': { description: Invalid target or self request }
+        '401': { description: Not signed in }
+        '403': { description: Cross-origin request or blocked connection }
+        '404': { description: Account or incoming request not found }
+        '409': { description: Existing connection or connection limit reached }
+
 components:
   securitySchemes:
     cookieAuth:
@@ -3099,6 +3244,49 @@ components:
           example: { error: "that code is wrong, used or expired", code: "link-invalid" }
 
   schemas:
+    SocialTarget:
+      type: object
+      required: [userId]
+      properties:
+        userId: { type: string, description: Account id on this instance }
+    SocialPerson:
+      type: object
+      additionalProperties: false
+      required: [id, name]
+      properties:
+        id: { type: string }
+        name: { type: string }
+    SocialFriend:
+      type: object
+      additionalProperties: false
+      required: [id, name, thisWeek, weekStreak, lastWorkout, recordCount]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        thisWeek: { type: integer, minimum: 0 }
+        weekStreak: { type: integer, minimum: 0 }
+        lastWorkout: { type: [string, 'null'], format: date }
+        recordCount: { type: integer, minimum: 0, description: Exercises with an eligible personal record; completed work only }
+    SocialDashboard:
+      type: object
+      additionalProperties: false
+      required: [friends, incoming, outgoing, suggestions, blocks]
+      properties:
+        friends:
+          type: array
+          items: { $ref: '#/components/schemas/SocialFriend' }
+        incoming:
+          type: array
+          items: { $ref: '#/components/schemas/SocialPerson' }
+        outgoing:
+          type: array
+          items: { $ref: '#/components/schemas/SocialPerson' }
+        suggestions:
+          type: array
+          items: { $ref: '#/components/schemas/SocialPerson' }
+        blocks:
+          type: array
+          items: { $ref: '#/components/schemas/SocialPerson' }
     Error:
       type: object
       required: [error]
