@@ -4,6 +4,7 @@
 //   node scripts/catalogue/stage-media.mjs frontend/dist                 web demo, 180 px from catalogue/media
 //   APP_MEDIA_DIR=/private/app node scripts/catalogue/stage-media.mjs frontend/dist
 //                                                                        Android package: larger animations
+//   VITE_CLIP_EXT=webp APP_MEDIA_DIR=/private/app-webp ...              ... as animated WebP (the release)
 //
 // The media are licensed from Gym visual for openGym only (catalogue/media/NOTICE.md). 180 px is
 // what may sit in the repository, a website or a self-hosted server; anything larger may only
@@ -17,6 +18,11 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const out = path.resolve(process.argv[2] || 'frontend/dist')
 const media = path.join(ROOT, 'catalogue/media')
 const appDir = process.env.APP_MEDIA_DIR
+const clipExt = process.env.VITE_CLIP_EXT === 'webp' ? '.webp' : '.mp4'
+if (clipExt === '.webp' && !appDir) {
+  console.error('VITE_CLIP_EXT=webp needs APP_MEDIA_DIR: the repository only has the MP4 animations')
+  process.exit(1)
+}
 
 const copyDir = (from, to, ext) => {
   fs.mkdirSync(to, { recursive: true })
@@ -30,6 +36,6 @@ const copyDir = (from, to, ext) => {
 }
 const dest = path.join(out, 'exercise-media')
 const stills = copyDir(path.join(media, 'still'), path.join(dest, 'still'), '.webp')
-const clips = copyDir(appDir || path.join(media, 'clip'), path.join(dest, 'clip'), '.mp4')
+const clips = copyDir(appDir || path.join(media, 'clip'), path.join(dest, 'clip'), clipExt)
 fs.copyFileSync(path.join(media, 'NOTICE.md'), path.join(dest, 'NOTICE.md'))
 console.log(`media: ${stills} stills, ${clips} animations${appDir ? ' (app size)' : ''} -> ${path.relative(ROOT, out) || out}`)

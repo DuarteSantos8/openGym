@@ -222,7 +222,7 @@ const toProfileWeight = (wKg, unit) => {
  */
 export function parseHevyWorkouts(workouts, templates, { unit = 'kg', customEx = [] } = {}) {
   const R = makeResolver(templates, customEx)
-  const byDate = new Map()
+  const byDate = new Map()           // Hevy workout -> the session being built
   let sets = 0, skipped = 0, matched = 0, warmups = 0, rpeSets = 0
 
   for (const w of workouts || []) {
@@ -232,10 +232,12 @@ export function parseHevyWorkouts(workouts, templates, { unit = 'kg', customEx =
     // The history list renders the name as it is stored, so only text may become one.
     const title = typeof w.title === 'string' ? w.title : ''
 
-    let day = byDate.get(start.d)
+    // One workout per Hevy workout, not per day: a morning and an evening session stay two (#505).
+    const key = w.id != null ? 'id|' + w.id : start.d + '|' + start.t + '|' + title
+    let day = byDate.get(key)
     if (!day) {
-      day = { ex: new Map(), name: title, start: start.t, end: end?.t ?? null }
-      byDate.set(start.d, day)
+      day = { d: start.d, ex: new Map(), name: title, start: start.t, end: end?.t ?? null }
+      byDate.set(key, day)
     } else if (!day.name && title) day.name = title
     // Past midnight the end's clock restarts; count it from the start day's midnight instead.
     if (end?.t != null) day.end = end.t + daysBetween(start.d, end.d) * 86400000
@@ -279,11 +281,13 @@ export function parseHevyWorkouts(workouts, templates, { unit = 'kg', customEx =
     }
   }
 
-  // A day on which nothing measurable landed is not a workout — and imported, it would block the
-  // real one from a later export, since existing days win in mergeImport.
-  const dates = [...byDate.keys()].filter(d => byDate.get(d).ex.size).sort()
-  const outWorkouts = dates.map(d => {
-    const day = byDate.get(d)
+  // A session in which nothing measurable landed is not a workout — and imported, it would block
+  // the real one from a later export, since existing days win in mergeImport.
+  const days = [...byDate.values()].filter(day => day.ex.size)
+    .sort((a, b) => (a.d === b.d ? (a.start ?? 0) - (b.start ?? 0) : a.d < b.d ? -1 : 1))
+  const dates = days.map(day => day.d)
+  const outWorkouts = days.map(day => {
+    const d = day.d
     const entries = [...day.ex.entries()].map(([id, ss]) => {
       const mx = Math.max(0, ...ss.filter(s => !isWarmupRow(s)).map(s => s.w || 0))
       return { id, sets: ss, topW: mx || null }

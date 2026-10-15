@@ -13,6 +13,7 @@ vi.mock('../lib/rest-alert.js', () => ({
   holdRestAlert: vi.fn(),
   disarmRestAlert: vi.fn(),
   bindNativeRest: vi.fn(cb => { h.native = cb }),
+  toneNative: vi.fn(() => Promise.resolve(true)),
 }))
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ ok: true })) }))
@@ -22,6 +23,7 @@ import { useStore } from './useStore.js'
 import { api } from '../lib/api.js'
 import { armRestAlert, disarmRestAlert, holdRestAlert } from '../lib/rest-alert.js'
 import { beep, chime } from '../lib/sound.js'
+import { toneNative } from '../lib/rest-alert.js'
 
 const hide = hidden => {
   Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden })
@@ -39,7 +41,7 @@ beforeEach(() => {
   originalSettings = useStore.getState().S
   useStore.setState({ S: { ...originalSettings, sound: true, timerFlash: false }, user: null })
   useUI.setState({ timer: null, timerFlashId: 0 })
-  for (const f of [armRestAlert, holdRestAlert, disarmRestAlert, beep, chime, api]) f.mockClear()
+  for (const f of [armRestAlert, holdRestAlert, disarmRestAlert, beep, chime, api, toneNative]) f.mockClear()
   hide(false)
 })
 afterEach(() => {
@@ -86,16 +88,26 @@ describe('the rest the app starts, pauses and ends', () => {
     expect(disarmRestAlert.mock.calls.length).toBe(armed)
     expect(useUI.getState().timer).toMatchObject({ left: 0, ready: true })
     expect(chime).not.toHaveBeenCalled()
+    expect(toneNative).not.toHaveBeenCalled()
   })
 
-  it('still chimes in the app when the rest finishes on screen, and keeps the alarm', () => {
+  // On screen the native side plays the end tone (it ducks music, the page cannot).
+  it('still sounds in the app when the rest finishes on screen, and keeps the alarm', () => {
     useStore.setState({ S: { ...useStore.getState().S, timerFlash: true } })
     useUI.getState().startRest(1)
     const armed = disarmRestAlert.mock.calls.length
     vi.advanceTimersByTime(1000)
-    expect(chime).toHaveBeenCalledTimes(1)
+    expect(toneNative).toHaveBeenCalledTimes(1)
+    expect(chime).not.toHaveBeenCalled()
     expect(useUI.getState().timerFlashId).toBe(1)
     expect(disarmRestAlert.mock.calls.length).toBe(armed)
+  })
+
+  it('falls back to the page\'s chime when the native tone cannot play', async () => {
+    toneNative.mockResolvedValueOnce(false)
+    useUI.getState().startRest(1)
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(chime).toHaveBeenCalledTimes(1)
   })
 
   it('takes the notification down on Skip, and on Dismiss once it is Ready', () => {

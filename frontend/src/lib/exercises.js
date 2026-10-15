@@ -69,6 +69,14 @@ export function categoriesOf(list) {
   const have = new Set(list.map(e => e.cat).filter(Boolean))
   return CATEGORIES.filter(c => have.has(c))
 }
+// The Type chip row's filter, shared by the Library and the exercise picker (issue #521): the
+// options left in `list`, the choice still in effect, and the list narrowed to it. A choice the
+// search or body part has narrowed away is ignored for now, never a dead end.
+export function byCategory(list, cat) {
+  const opts = categoriesOf(list)
+  const on = opts.includes(cat) ? cat : ''
+  return { opts, on, list: on ? list.filter(e => e.cat === on) : list }
+}
 
 // Custom (user-created) exercises live in synced state S.customEx (issue #11) and are
 // merged into the id index here so every EXIDX[id] lookup keeps working unchanged.
@@ -172,6 +180,11 @@ const ENV = import.meta.env || {}
 // dataset's media over img/ and gif/, and would hide the catalogue's files if they lived there.
 const IMG_BASE = ENV.VITE_IMG_BASE || 'exercise-media/still/'
 const GIF_BASE = ENV.VITE_GIF_BASE || 'exercise-media/clip/'
+// The animations are MP4 loops, except in the Android release: there they are animated WebP
+// (VITE_CLIP_EXT=webp, staged from APP_MEDIA_DIR), shown as a plain image. The WebView's video
+// player stalled at every loop of these 3-second clips on real phones; an image decodes like the
+// GIFs the app had before and loops by itself.
+const CLIP_EXT = ENV.VITE_CLIP_EXT === 'webp' ? '.webp' : '.mp4'
 // About 940 exercises are drawn twice, on a male and on a female figure: `fv` names the female
 // drawing of a male exercise, `mv` the male drawing of a female one. Which figure shows is a
 // setting (figureOf); the exercise, its id and everything logged against it stay the same either
@@ -182,7 +195,8 @@ export const figureOf = S => (S?.exFigure === 'female' || S?.exFigure === 'male'
   : (S?.body === 'female' ? 'female' : 'male')
 const drawing = (ex, figure) => (figure === 'female' ? ex.fv : figure === 'male' ? ex.mv : null) || null
 export const imgSrc = (ex, figure) => IMG_BASE + (drawing(ex, figure) ? drawing(ex, figure) + '.webp' : ex.img)
-export const gifSrc = (ex, figure) => GIF_BASE + (drawing(ex, figure) ? drawing(ex, figure) + '.mp4' : ex.gif)
+const clipFile = f => (CLIP_EXT !== '.mp4' && f.endsWith('.mp4') ? f.slice(0, -4) + CLIP_EXT : f)
+export const gifSrc = (ex, figure) => GIF_BASE + clipFile(drawing(ex, figure) ? drawing(ex, figure) + '.mp4' : ex.gif)
 // The catalogue's animations are short MP4 loops; a fork's or an older build's may still be GIFs.
 export const isVideoSrc = src => /\.(mp4|webm)(\?|$)/i.test(src || '')
 
@@ -521,7 +535,10 @@ function tokenScore(entry, tok, ctx) {
 const CLASSIC = new Set(V13_IDS)
 const EQ_PRIOR = { barbell: 4, dumbbell: 4, cable: 3, 'leverage machine': 3, 'body weight': 3, 'smith machine': 2, kettlebell: 2, 'ez barbell': 2, 'sled machine': 2 }
 const CAT_PRIOR = { strength: 3, calisthenics: 3, olympic: 2, plyometrics: 1, isometric: 1, stretching: -3, mobility: -3, rehab: -4, yoga: -2, pilates: -2 }
-const priorOf = e => (CLASSIC.has(e.id) ? 3 : 0) + (EQ_PRIOR[e.eq] || 0) + (CAT_PRIOR[e.cat] || 0)
+// The one version every gym has, where the catalogue's name hides it: "leg press" means the 45°
+// sled, not the Smith machine or a one-leg variant (Discord, 2026-10-09).
+const EVERYDAY = { '0739': 6 }
+const priorOf = e => (CLASSIC.has(e.id) ? 3 : 0) + (EQ_PRIOR[e.eq] || 0) + (CAT_PRIOR[e.cat] || 0) + (EVERYDAY[e.id] || 0)
 
 // A name that is the query itself wins outright: as typed or in the singular 50, with the typos
 // the search allows for its length 40 ("sqat" is the exercise called "squat", not "dumbbell squat").

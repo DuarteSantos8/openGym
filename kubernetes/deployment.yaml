@@ -21,8 +21,8 @@ spec:
           # Pin both images to one release and move them together: a tag names what you run and
           # what you roll back to, where :latest changes under a pod whenever it is rescheduled.
           # The API and the web image of one version belong together. The published tags are
-          # the version (1.4.0) and its minor line (1.4); see the release notes before a bump.
-          image: ghcr.io/duartesantos8/opengym-api:1.4.0
+          # the version (1.4.1) and its minor line (1.4); see the release notes before a bump.
+          image: ghcr.io/duartesantos8/opengym-api:1.4.1
           imagePullPolicy: IfNotPresent
           env:
             - name: PORT
@@ -64,7 +64,7 @@ spec:
             limits:
               memory: 512Mi
         - name: web
-          image: ghcr.io/duartesantos8/opengym-web:1.4.0   # same version as the api container
+          image: ghcr.io/duartesantos8/opengym-web:1.4.1   # same version as the api container
           imagePullPolicy: IfNotPresent
           env:
             # Not the image's default 80: the image runs as uid 101, which can bind a port below

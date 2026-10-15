@@ -514,6 +514,16 @@ public final class RestAlert {
         nm.createNotificationChannel(channel);
     }
 
+    /**
+     * The end tone with the app on screen. The page's Web Audio cannot turn other apps down, so
+     * over music it was lost (Discord: "the bell doesn't ring while I have music on"); played
+     * here it ducks the music like the screen-off alarm does. Off the main thread: playClip
+     * waits until the clip has been heard.
+     */
+    static void playNow(Context ctx, String tone) {
+        new Thread(() -> playSound(ctx, tone), "opengym-tone").start();
+    }
+
     private static void playSound(Context ctx, String tone) {
         playClip(ctx, RestTone.render(tone));
     }

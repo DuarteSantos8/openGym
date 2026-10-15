@@ -126,6 +126,18 @@ public class RestAlertPlugin extends Plugin {
         call.resolve();
     }
 
+    /** The end tone now, over whatever plays, which ducks for it (see RestAlert.playNow). */
+    @PluginMethod
+    public void tone(PluginCall call) {
+        Context ctx = getContext();
+        if (ctx == null) {
+            call.reject("no context");
+            return;
+        }
+        RestAlert.playNow(ctx.getApplicationContext(), call.getString("kind", "chime"));
+        call.resolve();
+    }
+
     @PluginMethod
     public void cancel(PluginCall call) {
         Context ctx = getContext();

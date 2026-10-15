@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseWorkoutCSV } from './import-csv.js'
+import { parseWorkoutCSV, mergeImport } from './import-csv.js'
 
 // Rows from a real Strong export (QA sample). Strong writes the workout's length in Duration
 // ("1h 5m", "52m") on every row and a set's own time in Seconds; the session note is
@@ -69,5 +69,66 @@ describe('a Hevy export with a superset', () => {
     const csv = [HEVY.split('\n')[0], '"Core","3 févr. 2026, 18:00","3 févr. 2026, 18:30","","Plank",,"",0,"normal",,,,45,'].join('\n')
     const [w] = parseWorkoutCSV(csv, { unit: 'kg' }).workouts
     expect(w.entries[0].sets).toEqual([{ sec: 45, w: 0, done: true }])
+  })
+})
+
+// GitHub #505: a morning and an evening session on one day were filed as one workout, because
+// the rows were grouped by calendar day only. Strong and Hevy write each workout's start on
+// every row, so the two stay two; FitNotes has no times and stays one workout per day.
+describe('two sessions on one day', () => {
+  const TWO_STRONG = [
+    'Date;Workout Name;Duration;Exercise Name;Set Order;Weight;Reps;Distance;Seconds;Notes;Workout Notes;RPE',
+    '2026-10-05 07:00:00;Morning Push;45m;Bench Press (Barbell);1;80;5;0;0;;;',
+    '2026-10-05 07:00:00;Morning Push;45m;Bench Press (Barbell);2;80;5;0;0;;;',
+    '2026-10-05 18:30:00;Evening Legs;1h 0m;Squat (Barbell);1;100;5;0;0;;;',
+    '2026-10-05 18:30:00;Evening Legs;1h 0m;Squat (Barbell);2;100;5;0;0;;;',
+  ].join('\n')
+
+  it('Strong: keeps a morning and an evening workout apart', () => {
+    const parsed = parseWorkoutCSV(TWO_STRONG, { unit: 'kg' })
+    expect(parsed.workouts).toHaveLength(2)
+    const [am, pm] = parsed.workouts
+    expect([am.d, pm.d]).toEqual(['2026-10-05', '2026-10-05'])
+    expect([am.name, pm.name]).toEqual(['Morning Push', 'Evening Legs'])
+    expect(new Date(am.start).getHours()).toBe(7)
+    expect(minutes(am)).toBe(45)
+    expect(new Date(pm.start).getHours()).toBe(18)
+    expect(minutes(pm)).toBe(60)
+    expect(am.entries.map(e => e.sets.length)).toEqual([2])
+    expect(pm.entries.map(e => e.sets.length)).toEqual([2])
+    expect(am.id).not.toBe(pm.id)
+    expect([parsed.from, parsed.to]).toEqual(['2026-10-05', '2026-10-05'])
+  })
+
+  it('Strong: the evening session listed first still comes out after the morning one', () => {
+    const [head, ...rows] = TWO_STRONG.split('\n')
+    const parsed = parseWorkoutCSV([head, ...rows.reverse()].join('\n'), { unit: 'kg' })
+    expect(parsed.workouts.map(w => w.name)).toEqual(['Morning Push', 'Evening Legs'])
+  })
+
+  it('Hevy CSV: two workouts on one day stay two', () => {
+    const pm = HEVY.split('\n').slice(1).map(l => l.replace('"Push"', '"Arms"').replace('18:00', '20:00').replace('19:10', '21:00'))
+    const parsed = parseWorkoutCSV([HEVY, ...pm].join('\n'), { unit: 'kg' })
+    expect(parsed.workouts.map(w => w.name)).toEqual(['Push', 'Arms'])
+    expect(parsed.workouts.map(w => w.d)).toEqual(['2026-02-03', '2026-02-03'])
+    expect(parsed.workouts.map(minutes)).toEqual([70, 60])
+  })
+
+  it('both come in once, and importing the file again adds nothing', () => {
+    const S = { workouts: [], customEx: [], exWeights: {}, bodyweight: [] }
+    expect(mergeImport(S, parseWorkoutCSV(TWO_STRONG, { unit: 'kg' }))).toEqual({ added: 2, skipped: 0 })
+    expect(mergeImport(S, parseWorkoutCSV(TWO_STRONG, { unit: 'kg' }))).toEqual({ added: 0, skipped: 2 })
+    expect(S.workouts.map(w => w.name)).toEqual(['Morning Push', 'Evening Legs'])
+  })
+
+  it('FitNotes, which writes no times, stays one workout per day', () => {
+    const parsed = parseWorkoutCSV([
+      'Date,Exercise,Category,Weight (kg),Reps',
+      '2026-10-05,Flat Barbell Bench Press,Chest,80,5',
+      '2026-10-05,Barbell Squat,Legs,100,5',
+    ].join('\n'), { unit: 'kg' })
+    expect(parsed.source).toBe('FitNotes')
+    expect(parsed.workouts).toHaveLength(1)
+    expect(parsed.workouts[0].entries).toHaveLength(2)
   })
 })

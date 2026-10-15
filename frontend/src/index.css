@@ -234,6 +234,7 @@ button.conn:active{filter:brightness(1.12)}
    a box this tight, and that is what turned "Упражнения" into "Упра / жнен / ия". */
 .hdr>div{min-width:0}
 .hdr>.btn{flex:none}
+.hdr>.hdr-actions{display:flex;align-items:center;gap:8px;flex:none}
 .hdr h1{font-size:34px;line-height:1.06;font-weight:700;letter-spacing:-.028em;overflow-wrap:break-word}
 @media (max-width:420px){.hdr h1{font-size:30px}}
 .hdr .sub{color:var(--label-2);font-size:15px;letter-spacing:-.006em;margin-top:4px}
