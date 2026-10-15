@@ -1,5 +1,8 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Warm-up and work rest": "Bemelegítő és munkasorozatok pihenője",
+  "Per-set rest": "Pihenő sorozatonként",
+
   // --- generic ---
   'Confirm': 'Megerősítés',
   'Cancel': 'Mégse',

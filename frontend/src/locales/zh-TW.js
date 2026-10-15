@@ -1,4 +1,7 @@
 export default {
+  "Warm-up and work rest": "熱身組和正式組休息",
+  "Per-set rest": "每組休息",
+
   'Confirm': '確認',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回以退出',

@@ -1,5 +1,8 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Warm-up and work rest": "热身组和正式组休息",
+  "Per-set rest": "每组休息",
+
   'Confirm': '确认',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回退出',

@@ -1,5 +1,8 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Warm-up and work rest": "ওয়ার্ম-আপ ও মূল সেটের বিশ্রাম",
+  "Per-set rest": "প্রতি সেটের বিশ্রাম",
+
   'Confirm': 'নিশ্চিত করুন',
   'Cancel': 'বাতিল',
   'Press back again to exit': 'বের হতে আবার ব্যাক চাপুন',

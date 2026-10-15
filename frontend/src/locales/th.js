@@ -1,5 +1,8 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Warm-up and work rest": "เวลาพักเซตวอร์มอัพและเซตหลัก",
+  "Per-set rest": "เวลาพักแต่ละเซต",
+
   // --- generic ---
   'Confirm': 'ยืนยัน',
   'Cancel': 'ยกเลิก',

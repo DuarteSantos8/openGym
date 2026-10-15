@@ -95,6 +95,28 @@ describe('rest on a re-check', () => {
 
 // Issue #10: a routine can give an exercise its own rest, and the global timer stops being the
 // only answer. The resolution is the whole feature — the UI just writes the number down.
+describe('completed-set rest overrides', () => {
+  const entry = (restSec, done = true) => ({ target: { restSec: 90, workRestSec: 120, warmupRestSec: 30 },
+    sets: [{ phase: 'work', done, restSec }, { phase: 'work', done: false, restSec: 600 }] })
+  it('uses the completed row, including Off, before pyramid and phase defaults', () => {
+    expect(restSecFor([entry(10)], [0], 90, { idx: 0, sec: 200 }, { entryIdx: 0, setIdx: 0 })).toBe(10)
+    expect(restSecFor([entry(0)], [0], 90, null, { entryIdx: 0, setIdx: 0 })).toBe(0)
+    expect(restSecFor([entry(undefined)], [0], 90, null, { entryIdx: 0, setIdx: 0 })).toBe(120)
+    const off = entry(undefined); off.target.workRestSec = 0
+    expect(restSecFor([off], [0], 90, null, { entryIdx: 0, setIdx: 0 })).toBe(0)
+  })
+  it('takes the longest earned rest in a group, never a future row', () => {
+    const entries = [entry(60), entry(20)]
+    expect(restSecFor(entries, [0, 1], 90, null, { entryIdx: 1, setIdx: 0 })).toBe(60)
+  })
+  it('keeps final warm-up working rest unless that row explicitly overrides it', () => {
+    const e = entry(undefined); e.sets[0].phase = 'warmup'
+    expect(restSecFor([e], [0], 90, null, { entryIdx: 0, setIdx: 0 })).toBe(120)
+    e.sets[0].restSec = 0
+    expect(restSecFor([e], [0], 90, null, { entryIdx: 0, setIdx: 0 })).toBe(0)
+  })
+})
+
 describe('restSecFor', () => {
   // 0: no rest of its own, 1: 180 s, 2: 45 s — a heavy pull, a light accessory, a plain one.
   const entries = [
@@ -164,7 +186,7 @@ describe('warmupRestSecFor', () => {
 
   it('without the field a ramp set rests like a work set (the pre-field behaviour)', () => {
     expect(warmupRestSecFor(ramp(null), 0, 150)).toBe(150)
-    expect(warmupRestSecFor({ target: { warmupRestSec: 0 }, sets: ramp(null).sets }, 0, 90)).toBe(90)
+    expect(warmupRestSecFor({ target: { warmupRestSec: 0 }, sets: ramp(null).sets }, 0, 90)).toBe(0)
   })
 
   it('looks at the next UNFINISHED set: a ramp set re-checked after the work began rests the working rest', () => {

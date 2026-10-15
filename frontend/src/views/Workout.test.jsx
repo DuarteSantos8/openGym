@@ -281,6 +281,25 @@ afterEach(async () => {
 })
 
 describe('Workout set completion flow', () => {
+  it.each([10, 0, undefined])('uses row rest %s and phase Off through set completion', async restSec => {
+    await mount([exercise('ramped-squat', [false, false, false, false], {
+      target: { mode: 'reps', restSec: 90, warmupRestSec: 0, workRestSec: 120 },
+      sets: [
+        { w: 40, r: 8, done: false, phase: 'warmup', restSec },
+        { w: 60, r: 5, done: false, phase: 'warmup', restSec },
+        { w: 80, r: 5, done: false, phase: 'work', restSec: 0 },
+        { w: 80, r: 5, done: false, phase: 'work' },
+      ],
+    })])
+    await toggleSet(0)
+    expect(mocks.startRest).toHaveBeenLastCalledWith(restSec ?? 0, 0, { forSet: 0 })
+    await toggleSet(1)
+    expect(mocks.startRest).toHaveBeenLastCalledWith(restSec ?? 120, 0, { forSet: 1 })
+    await toggleSet(2)
+    expect(mocks.startRest).toHaveBeenLastCalledWith(0, 0, { forSet: 2 })
+  })
+
+
   it('rests the exercise\'s warm-up rest between ramp sets, and its working rest after the last ramp set', async () => {
     await mount([exercise('ramped-squat', [false, false, false, false], {
       target: { mode: 'reps', reps: 6, weight: 125, bodyweight: false, restSec: 150, warmupRestSec: 45 },
@@ -3391,7 +3410,7 @@ describe('the workout screen chrome (v1.3.11)', () => {
     expect(groups).toEqual([
       ['Today', ['Swap exercise', 'Add warm-up set', 'Add note', 'Don’t count for progression']],
       ['Look it up', ['History', 'How to do it']],
-      ['Settings', ['Exercise settings', 'Rest timer', 'Plate loading']],
+      ['Settings', ['Exercise settings', 'Rest timer', 'Warm-up and work rest', 'Plate loading']],
       ['Order and supersets', ['Make superset with next', 'Move up', 'Move down']],
       [undefined, ['Remove exercise']],
     ])
