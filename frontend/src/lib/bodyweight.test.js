@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { weeklyWeights } from './bodyweight.js'
+import { weeklyWeights, weighInMs } from './bodyweight.js'
 
 // Discord 'Weight': every weigh-in, week by week, with the week's mean.
 describe('weeklyWeights', () => {
@@ -37,5 +37,21 @@ describe('weeklyWeights', () => {
     expect(weeks[0]).toMatchObject({ n: 2, avg: 80 })
     expect(weeks[0].entries.map(b => b.d)).toEqual(['2026-09-09', '2026-09-07'])
     expect(weeklyWeights(undefined, 1)).toEqual([])
+  })
+})
+
+// The ms a weigh-in belongs at on the timeline: noon of its own date. `t` is the entry's change
+// stamp (sync-merge re-stamps it on every write, an import stamps a whole history at once —
+// issue #632), so a reader that places a weigh-in by `t` piles imported entries on today.
+describe('weighInMs', () => {
+  it("is noon of the weigh-in's own date, whatever the change stamp says", () => {
+    expect(weighInMs({ d: '2021-01-05', w: 90, t: Date.now() })).toBe(new Date('2021-01-05T12:00:00').getTime())
+    expect(weighInMs({ d: '2022-12-01', w: 76.3 })).toBe(new Date('2022-12-01T12:00:00').getTime())
+  })
+
+  it('falls back to the record time only when there is no usable date', () => {
+    expect(weighInMs({ w: 90, t: 123456 })).toBe(123456)
+    expect(weighInMs({ d: 'not a date', w: 90, t: 123456 })).toBe(123456)
+    expect(weighInMs(null)).toBeUndefined()
   })
 })
