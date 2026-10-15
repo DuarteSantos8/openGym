@@ -5,6 +5,7 @@ import { useUI } from '../../store/useUI.js'
 export function writeErrorText(e) {
   if (e?.code === 'offline' || e?.code === 'timeout') return t('Not saved: no connection. Try again when you are back online.')
   if (e?.status === 401) return t('Not saved: you are signed out. Sign in and try again.')
+  if (e?.code === 'changed') return t('Not saved: this entry changed elsewhere. The diary now shows its latest state.')
   return t('Not saved. Try again.')
 }
 
@@ -15,10 +16,11 @@ export function loadErrorText(e) {
   return t('The diary did not load.')
 }
 
-/** The toast after a log, with an Undo that takes it back (and says when that fails). */
+/** The toast after a log or a removal, with an Undo that takes it back. When the Undo fails it says
+ *  so and offers Try again, which runs the same `undo` (so it must send the same entries each time). */
 export function toastLogged(message, undo) {
-  useUI.getState().toast(message, {
-    action: t('Undo'),
-    onAction: () => { undo().catch(e => useUI.getState().toast(writeErrorText(e))) },
-  })
+  const run = () => {
+    undo().catch(e => useUI.getState().toast(writeErrorText(e), { action: t('Try again'), onAction: run }))
+  }
+  useUI.getState().toast(message, { action: t('Undo'), onAction: run })
 }

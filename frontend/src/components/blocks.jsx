@@ -38,8 +38,9 @@ const interactive = node => {
 // button, link or field of its own (a control inside a button is unreachable for a screen reader),
 // and in development it warns when it does. A row that holds a control of its own takes `onOpen`
 // instead: the title and subtitle become one real button (.item-open, RoutineEdit.jsx's exercise
-// name), so the text block opens the row and the control beside it stays reachable.
-export function ItemRow({ lead, title, subtitle, trailing, chevron = false, onClick, onOpen, className, titleClassName, subtitleClassName, ...rest }) {
+// name), so the text block opens the row and the control beside it stays reachable. `openProps`
+// (aria-busy, aria-disabled, a label) go on that button, which keeps its role and focus.
+export function ItemRow({ lead, title, subtitle, trailing, chevron = false, onClick, onOpen, openProps, className, titleClassName, subtitleClassName, ...rest }) {
   if (import.meta.env.DEV && onClick && onOpen) throw new Error('ItemRow: onClick (the row) or onOpen (its text), not both')
   if (import.meta.env.DEV && onClick && interactive([lead, title, subtitle, trailing])) {
     console.warn('ItemRow: a tappable row (role=button) holds an interactive child. Give the row no onClick and make the child the control, or move the control out of the row.')
@@ -47,7 +48,7 @@ export function ItemRow({ lead, title, subtitle, trailing, chevron = false, onCl
   return <div className={cx('item', className)} {...tappable(onClick)} {...rest}>
     {lead}
     {onOpen
-      ? <button type="button" className="grow item-open" onClick={onOpen}>
+      ? <button type="button" className="grow item-open" onClick={onOpen} {...openProps}>
         <span className={cx('tt', titleClassName)}>{title}</span>
         {subtitle != null && <span className={cx('ss', subtitleClassName)}>{subtitle}</span>}
       </button>

@@ -71,6 +71,24 @@ describe('WorkoutDetail — repeat today', () => {
     expect(navigated).toBeNull()
   })
 
+  it('skips the weigh-in when today already has one, and carries that weight', () => {
+    const saved = workout()
+    useStore.setState(s => ({ S: { ...s.S, workouts: [saved], weighIn: true, bodyweight: [{ d: todayISO(), w: 79.6, t: 1 }] } }))
+    const host = (workoutDetailSheet(saved), renderTop())
+    act(() => { button(host, 'Repeat today').click() })
+    expect(useStore.getState().S.active).toMatchObject({ d: todayISO(), bw: 79.6 })
+    expect(navigated).toBe('/train/workout')
+  })
+
+  it('still asks when the only weigh-in is from an earlier day', () => {
+    const saved = workout()
+    useStore.setState(s => ({ S: { ...s.S, workouts: [saved], weighIn: true, bodyweight: [{ d: '2020-01-01', w: 80, t: 1 }] } }))
+    const host = (workoutDetailSheet(saved), renderTop())
+    act(() => { button(host, 'Repeat today').click() })
+    expect(useStore.getState().S.active).toBeNull()
+    expect(navigated).toBeNull()
+  })
+
   it('is disabled while a workout is running', () => {
     const saved = workout()
     useStore.setState(s => ({ S: { ...s.S, workouts: [saved], active: { id: 'x', d: todayISO(), start: 1, entries: [] } } }))

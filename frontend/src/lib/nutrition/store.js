@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { NtApi } from './api.js'
-import { atPortion, dayWrite, foodItem, invalid, quickCaloriesItem, waterLog } from './diary.js'
+import { atPortion, changed, dayWrite, foodItem, invalid, quickCaloriesItem, stampOf, waterLog } from './diary.js'
 import { sortedByName } from './meals.js'
 import { offResults } from './off.js'
 import { useDiarySelection } from './selection.js'
@@ -90,8 +90,29 @@ export const useNutrition = create((set, get) => {
     if ((change.addItems?.length || change.addWater?.length) && !(date <= todayISO())) throw invalid('nothing can be logged to a future day')
     const g = gen
     const current = await NtApi.getDiaryDate(date)
+    // An edit lands on the entry it was made from. If the day no longer holds it (removed here or on
+    // another device, where NutriTrace keeps its tombstone), or holds another version of it than the
+    // one the edit opened (edited elsewhere, or the sheet was opened on a stale cache), writing
+    // would revert or resurrect someone else's change: the day is shown as it is now instead. A
+    // copy carrying this edit's own stamp is its earlier try, whose answer was lost: allowed.
+    const edits = change.edits || []
+    const stale = edits.some(({ item, from }) => {
+      const held = (current?.items || []).find(i => i?.uuid === item.uuid)
+      return !held || (stampOf(held) !== from && stampOf(held) !== item.updatedAt)
+    })
+    if (stale) {
+      applyDay(date, issue(date), g, current)
+      throw changed('the entry is gone or was changed since it was opened')
+    }
     const n = issue(date)
-    const entry = await NtApi.saveDiaryDate(date, dayWrite(current, change))
+    const body = dayWrite(current, { ...change, addItems: [...(change.addItems || []), ...edits.map(e => e.item)] })
+    if (change.at != null) {
+      // A restored entry goes back where it stood, not at the end of the day.
+      const uuid = change.addItems?.[0]?.uuid
+      const from = body.items.findIndex(i => i?.uuid === uuid)
+      if (from !== -1) body.items.splice(Math.min(change.at, body.items.length - 1), 0, ...body.items.splice(from, 1))
+    }
+    const entry = await NtApi.saveDiaryDate(date, body)
     applyDay(date, n, g, entry, { fromWrite: true })
     return entry
   }
@@ -359,6 +380,24 @@ export const useNutrition = create((set, get) => {
       if (!log?.uuid || !(Number(log.amount) > 0)) throw invalid('logWater takes a draftWater entry')
       await write(date, { addWater: [log] })
       return log
+    },
+
+    /** Saves an editedItem (diary.js) made from `opened`, the entry as the sheet showed it. Retry
+     *  it with the same one. Throws 'changed' when the day no longer holds `opened` as it was (the
+     *  entry is gone, or was edited elsewhere); the day is then reloaded. */
+    async updateItem(date, item, opened) {
+      if (!item?.uuid || !item.updatedAt || !opened) throw invalid('updateItem takes an editedItem and the entry it was made from')
+      await write(date, { edits: [{ item, from: stampOf(opened) }] })
+      return item
+    },
+
+    /** Puts a removed entry back (the Undo of Remove) at position `at` of the day. A removed uuid
+     *  stays tombstoned, so the entry comes back under a new one, built once by the caller and
+     *  sent again on a retry. */
+    async restoreItem(date, item, at = null) {
+      if (!item?.uuid) throw invalid('restoreItem takes an item with a uuid')
+      await write(date, { addItems: [item], at })
+      return item
     },
 
     // Undo of a log just made: out of the day, and a tombstone for its uuid (deleted_uuids).

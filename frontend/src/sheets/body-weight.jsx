@@ -98,7 +98,7 @@ function BwSheet({ required, onDone, close, date }) {
           <button className="iconbtn" aria-label={t('Cancel')} onClick={() => close()}><Icon name="xmark" /></button>
         </div>
       : <h3>{t('Log body weight')}</h3>}
-    <div className="muted small">{required ? t('Slide or tap to set your weight. We ask before every workout so your curve stays honest.') : day === todayISO() ? t('Today') + ', ' + fmtDate(day, true) : fmtDate(day, true)}</div>
+    <div className="muted small">{required ? t('Slide or tap to set your weight. We ask before your first workout each day so your curve stays honest.') : day === todayISO() ? t('Today') + ', ' + fmtDate(day, true) : fmtDate(day, true)}</div>
     <WeightInput value={v} setValue={setV} unit={unit} />
     <div style={{ height: 14 }} />
     <Button variant="primary" onClick={save}>{required ? t('Save & start workout') : t('Save')}</Button>

@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { startFlow } from './sheets.jsx'
+import { todayISO } from './lib/format.js'
 
 // Start opens the quick weigh-in unless Settings → During a workout → "Weigh in before
 // workouts" is off (issue #137) — then the session begins at once, with no body weight on it.
@@ -27,6 +28,20 @@ describe('the weigh-in before a workout is a setting', () => {
     act(() => startFlow([]))
     expect(useUI.getState().sheets).toHaveLength(1)
     expect(useUI.getState().sheets[0].locked).toBe(true)
+    expect(useStore.getState().S.active).toBeNull()
+  })
+
+  it('already weighed in today: Start skips the sheet and carries that weight', () => {
+    useStore.setState(s => ({ S: { ...s.S, bodyweight: [{ d: todayISO(), w: 81.4, t: 1 }] } }))
+    act(() => startFlow([]))
+    expect(useUI.getState().sheets).toHaveLength(0)
+    expect(useStore.getState().S.active.bw).toBe(81.4)
+  })
+
+  it('weighed in only on an earlier day: Start still asks', () => {
+    useStore.setState(s => ({ S: { ...s.S, bodyweight: [{ d: '2020-01-01', w: 80, t: 1 }] } }))
+    act(() => startFlow([]))
+    expect(useUI.getState().sheets).toHaveLength(1)
     expect(useStore.getState().S.active).toBeNull()
   })
 

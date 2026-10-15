@@ -9,6 +9,7 @@ import { useUnits } from '../lib/nutrition/use-units.js'
 import { ItemRow, SectionTitle } from './blocks.jsx'
 import { foodEditSheet } from './FoodEditSheet.jsx'
 import Icon from './Icon.jsx'
+import SavedMealsGroup from './SavedMealsGroup.jsx'
 import { scanSheet } from './ScanSheet.jsx'
 import { Button, SearchField } from './ui.jsx'
 
@@ -24,8 +25,10 @@ function FoodRow({ food, onPick, energy, disabled }) {
 // saved food saves it first (`disabled` holds the rows while it does). `scan` is what the barcode
 // sheet needs besides the pick (a diary target to log to); pass `{ onPick }` to have the scanned
 // food handed over instead of logged. A food made from "Create food" is picked once saved.
-// `children` follow the groups.
-export default function FoodSearch({ onPick, scan = {}, autoFocus = false, disabled = false, children }) {
+// `savedMeals` ({ date, meal, mealName, onLogged }) adds the Saved meals group, whose rows log a
+// saved meal or recipe to that date and meal in one tap; leave it out where only a food fits (a
+// recipe's ingredients). `children` follow the groups.
+export default function FoodSearch({ onPick, scan = {}, savedMeals, autoFocus = false, disabled = false, children }) {
   const [query, setQuery] = useState('')
   const [limit, setLimit] = useState(OWN_SHOWN)
   const { query: q, recents, own, ownTotal, online, foods } = useFoodSearch(query, { limit })
@@ -62,6 +65,8 @@ export default function FoodSearch({ onPick, scan = {}, autoFocus = false, disab
       {foods.status === 'ready' && !recents.length && <div className="muted small fp-note">{t('Foods you log show up here. Search to find one.')}</div>}
       {rows(recents)}
     </>}
+
+    {savedMeals && <SavedMealsGroup query={q} {...savedMeals} />}
 
     {(q || own.length > 0) && <>
       <SectionTitle>{t('Your foods')}</SectionTitle>

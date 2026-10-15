@@ -2806,4 +2806,10 @@ export default {
   'No containers: Home adds a 250 ml glass. Add one and its button replaces the glass.': 'No containers: Home adds a 250 ml glass. Add one and its button replaces the glass.',
   'The meals changed somewhere else. Close this and open it again.': 'The meals changed somewhere else. Close this and open it again.',
   'What was logged under it moves to the meal that takes its place.': 'What was logged under it moves to the meal that takes its place.',
+  'Edit {0}, {1}, {2}': 'Edit {0}, {1}, {2}',
+  'Meal {0}': 'Meal {0}',
+  'Not saved: this entry changed elsewhere. The diary now shows its latest state.': 'Not saved: this entry changed elsewhere. The diary now shows its latest state.',
+  'Recipe · 1 serving': 'Recipe · 1 serving',
+  'Slide or tap to set your weight. We ask before your first workout each day so your curve stays honest.': 'Slide or tap to set your weight. We ask before your first workout each day so your curve stays honest.',
+  'Updated': 'Updated',
 }

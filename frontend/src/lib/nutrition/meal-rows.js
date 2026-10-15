@@ -15,7 +15,8 @@ export function loggedAt(item, timeFormat) {
  * The rows of one meal in the diary: what each entry is called, its line under the name (the brand
  * when `brands`, the amount, the time logged when `times`) and its energy in kcal. With `summed`
  * (Profile › Diary & meals › Quick calories shown) the quick-calorie entries are one row.
- * @returns {{ key: string, name: string, sub: string, kcal: number }[]}
+ * `item` is the entry a row stands for (null for the one row that sums several quick entries).
+ * @returns {{ key: string, name: string, sub: string, kcal: number, item: object|null }[]}
  */
 export function mealRows(items, { summed = true, brands = true, times = false, timeFormat } = {}) {
   const rows = []
@@ -24,14 +25,14 @@ export function mealRows(items, { summed = true, brands = true, times = false, t
     const kcal = nutritionOf(item).calories || 0
     if (item.type === 'quick_calories') {
       if (summed && quick) { quick.kcal += kcal; quick.count += 1; continue }
-      const row = { key: item.uuid || item.addedAt, name: item.name || t('Quick kcal'), sub: t('Quick kcal'), kcal, count: 1 }
+      const row = { key: item.uuid || item.addedAt, name: item.name || t('Quick kcal'), sub: t('Quick kcal'), kcal, item, count: 1 }
       if (summed) quick = row
       else if (times) row.sub = [row.sub, loggedAt(item, timeFormat)].filter(Boolean).join(' · ')
       rows.push(row)
       continue
     }
     const sub = [brands ? item.brand : '', amountOf(item), times ? loggedAt(item, timeFormat) : ''].filter(Boolean).join(' · ')
-    rows.push({ key: item.uuid || item.addedAt, name: item.name, sub, kcal })
+    rows.push({ key: item.uuid || item.addedAt, name: item.name, sub, kcal, item })
   }
-  return rows.map(({ count, ...row }) => (count > 1 ? { ...row, name: t('Quick kcal'), sub: t('{0} entries', count) } : row))
+  return rows.map(({ count, ...row }) => (count > 1 ? { ...row, name: t('Quick kcal'), sub: t('{0} entries', count), item: null } : row))
 }

@@ -91,7 +91,7 @@ describe('Romanian products first', () => {
 describe('the diary picker', () => {
   it('groups recents and your foods, then Open Food Facts with its source named', async () => {
     await mount(<FoodPicker date={TODAY} meal="breakfast" mealName="Breakfast" />)
-    expect(headings(host)).toEqual(['Recent', 'Your foods'])
+    expect(headings(host)).toEqual(['Recent', 'Saved meals', 'Your foods'])
     expect(titles(host)).toContain('Rolled oats')
     await search(host, 'nutella')
     expect(headings(host)).toEqual(['Your foods', 'Open Food Facts'])
@@ -135,6 +135,93 @@ describe('the diary picker', () => {
   })
 })
 
+describe('saved meals in the diary picker', () => {
+  const putItems = () => nt.writes().filter(r => r.method === 'PUT').map(r => r.body.items)
+  const open = title => row(host, title).querySelector('button.item-open')
+
+  it('lists saved meals and recipes, and filters them by the typed name', async () => {
+    await mount(<FoodPicker date={TODAY} meal={1} mealName="Lunch" />)
+    expect(titles(host)).toEqual(expect.arrayContaining(['Oats and bread', 'Lentil soup']))
+    await search(host, 'lentil')
+    expect(titles(host)).toContain('Lentil soup')
+    expect(titles(host)).not.toContain('Oats and bread')
+  })
+
+  it('logs a saved meal in one tap: each ingredient, to the meal, in one write, with Undo', async () => {
+    const onLogged = vi.fn()
+    await mount(<FoodPicker date={TODAY} meal={1} mealName="Lunch" onLogged={onLogged} />)
+    await click(open('Oats and bread'))
+    expect(putItems()).toHaveLength(1)
+    const added = nt.state.days[TODAY].items.filter(i => ['Rolled oats', 'Wholemeal bread'].includes(i.name) && i.meal === 1)
+    expect(added.map(i => i.name)).toEqual(['Rolled oats', 'Wholemeal bread'])
+    expect(useUI.getState().toastMsg).toBe('Logged to Lunch')
+    expect(onLogged).toHaveBeenCalledTimes(1)
+    await act(async () => { useUI.getState().runToastAction() })
+    await settle()
+    expect(nt.state.days[TODAY].items.some(i => added.some(a => a.uuid === i.uuid))).toBe(false)
+  })
+
+  it('asks how many servings of a recipe while "Ask for quantity" is on, and logs that many', async () => {
+    await mount(<FoodPicker date={TODAY} meal={2} mealName="Dinner" />)
+    await click(open('Lentil soup'))
+    expect(putItems()).toHaveLength(0)
+    expect(lastSheet().querySelector('h3').textContent).toBe('Lentil soup')
+    await typeInto(lastSheet().querySelector('input[aria-label="Servings eaten"]'), '2')
+    await click(buttonIn(lastSheet(), 'Log to Dinner'))
+    expect(nt.state.days[TODAY].items.find(i => i.name === 'Lentil soup')).toMatchObject({ meal: 2, quantity: 2, is_recipe: true })
+  })
+
+  it('logs one serving of a recipe at once while "Ask for quantity" is off', async () => {
+    nt.state.settings.diaryPromptQuantity = false
+    await useNutrition.getState().loadSettings()
+    await mount(<FoodPicker date={TODAY} meal={2} mealName="Dinner" />)
+    await click(open('Lentil soup'))
+    expect(host.querySelectorAll('[data-sheet]')).toHaveLength(0)
+    expect(nt.state.days[TODAY].items.find(i => i.name === 'Lentil soup')).toMatchObject({ meal: 2, quantity: 1, is_recipe: true })
+  })
+
+  it('never prompts for a saved meal, whatever the setting', async () => {
+    await mount(<FoodPicker date={TODAY} meal={1} mealName="Lunch" />)
+    await click(open('Oats and bread'))
+    expect(host.querySelectorAll('[data-sheet]')).toHaveLength(0)
+    expect(nt.state.days[TODAY].items.filter(i => i.meal === 1 && ['Rolled oats', 'Wholemeal bread'].includes(i.name))).toHaveLength(2)
+  })
+
+  it('keeps a row a focused button, marked busy, while its write is in flight', async () => {
+    await mount(<FoodPicker date={TODAY} meal={1} mealName="Lunch" />)
+    const slow = nt.hold('PUT', '/nt/api/diary/')
+    const btn = open('Oats and bread')
+    btn.focus()
+    await act(async () => { btn.click() })
+    expect(open('Oats and bread')).toBe(btn)
+    expect(btn.tagName).toBe('BUTTON')
+    expect(btn.getAttribute('aria-busy')).toBe('true')
+    expect(btn.getAttribute('aria-disabled')).toBe('true')
+    expect(btn.disabled).toBe(false)
+    expect(document.activeElement).toBe(btn)
+    await act(async () => { slow.release() })
+    await settle()
+    expect(open('Oats and bread').hasAttribute('aria-busy')).toBe(false)
+  })
+
+  it('sends the same entries when a tap follows a save whose answer was lost', async () => {
+    await mount(<FoodPicker date={TODAY} meal={1} mealName="Lunch" />)
+    nt.failNext('PUT', '/nt/api/diary/', { lost: true, status: 504 })
+    await click(open('Oats and bread'))
+    expect(useUI.getState().toastMsg).toBe('Not saved. Try again.')
+    await click(open('Oats and bread'))
+    expect(nt.state.days[TODAY].items.filter(i => i.name === 'Rolled oats' && i.meal === 1)).toHaveLength(1)
+    expect(nt.state.days[TODAY].items.filter(i => i.name === 'Wholemeal bread')).toHaveLength(1)
+  })
+
+  it('stays out of the ingredient picker', async () => {
+    await act(async () => { ingredientSheet({ onDone: vi.fn() }) })
+    await mount(<></>)
+    await settle()
+    expect(headings(lastSheet())).not.toContain('Saved meals')
+  })
+})
+
 describe('what the search says and shows', () => {
   const live = () => host.querySelector('.fp-live')
 
@@ -159,7 +246,7 @@ describe('what the search says and shows', () => {
     nt.state.foods[1].usage_count = 5
     nt.state.foods[2].usage_count = 3
     await mount(<FoodPicker date={TODAY} meal="breakfast" mealName="Breakfast" />)
-    expect(titles(host).filter(n => !['Create food', 'Quick kcal'].includes(n))).toEqual(['Wholemeal bread', 'Crème fraîche', 'Rolled oats'])
+    expect(titles(host).filter(n => !['Create food', 'Quick kcal', 'Oats and bread', 'Lentil soup'].includes(n))).toEqual(['Wholemeal bread', 'Crème fraîche', 'Rolled oats'])
   })
 
   it('shows a saved copy of a product under its new name, and not the product again', async () => {

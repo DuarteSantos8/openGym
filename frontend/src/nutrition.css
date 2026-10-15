@@ -62,6 +62,7 @@
 .meal-add.on{color:var(--label-2)}
 .meal-items{list-style:none;margin:0 0 8px;padding:0}
 .meal-item,.activity-row{display:flex;align-items:center;gap:10px;padding:6px 0}
+.meal-item{width:100%;min-height:var(--tap-min,44px);background:none;border:0;color:inherit;font:inherit;text-align:start;cursor:pointer}
 .meal-item .tt,.activity-row .tt{display:block;font-size:15px}
 .meal-item .ss,.activity-row .ss{display:block}
 .meal-picker{padding-bottom:12px}

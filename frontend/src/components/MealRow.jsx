@@ -5,6 +5,7 @@ import { mealRows } from '../lib/nutrition/meal-rows.js'
 import { useNutrition } from '../lib/nutrition/store.js'
 import { settingOf } from '../lib/nutrition/use-nt-settings.js'
 import { useUnits } from '../lib/nutrition/use-units.js'
+import { diaryItemSheet } from './DiaryItemSheet.jsx'
 import FoodPicker from './FoodPicker.jsx'
 import Icon from './Icon.jsx'
 import MacroLine from './MacroLine.jsx'
@@ -42,10 +43,18 @@ export default function MealRow({ date, slot, name, items }) {
     </div>
     {items.length > 0 && settingOf(settings, 'diaryShowMacroSummary') && <MacroLine p={totals.proteins} c={totals.carbohydrates} f={totals.fat} />}
     {open && items.length > 0 && <ul className="meal-items" id={listId}>
-      {rows.map(row => <li key={row.key} className="meal-item">
-        <span className="grow"><span className="tt">{row.name}</span><span className="ss small muted">{row.sub}</span></span>
-        <span className="small">{energy(row.kcal)}</span>
-      </li>)}
+      {rows.map(row => {
+        const text = <>
+          <span className="grow"><span className="tt">{row.name}</span><span className="ss small muted">{row.sub}</span></span>
+          <span className="small">{energy(row.kcal)}</span>
+        </>
+        return <li key={row.key}>
+          {row.item
+            ? <button type="button" className="meal-item" onClick={() => diaryItemSheet({ date, item: row.item })}
+              aria-label={t('Edit {0}, {1}, {2}', row.name, row.sub, energy(row.kcal))}>{text}</button>
+            : <div className="meal-item">{text}</div>}
+        </li>
+      })}
     </ul>}
     {adding && <div className="meal-picker">
       <FoodPicker date={date} meal={slot} mealName={name} autoFocus onLogged={() => { setAdding(false); setOpen(true) }} />

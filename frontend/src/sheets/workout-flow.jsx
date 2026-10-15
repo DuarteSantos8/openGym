@@ -53,12 +53,17 @@ export function startOrResume() {
   navToWorkout()
 }
 
+// A weigh-in already logged today stands in for the one asked before a workout.
+const weighedToday = () => S().bodyweight.find(b => b.d === todayISO())
+
 // `routineIds` accepts `string | string[] | null` — `[r.id]` for one routine,
 // `effectiveRoutineIds(...)` for today's planned session, `[]` / null for explicit freestyle.
 export function startFlow(routineIds) {
   // The weigh-in is a setting (Settings → During a workout, issue #137): off goes straight
   // into the session with no body weight on it, same as "Start without weighing in".
   if (S().weighIn === false) { beginWorkout(routineIds, null); return }
+  const weighed = weighedToday()
+  if (weighed) { beginWorkout(routineIds, weighed.w); return }
   bwSheet({ required: true, onDone: bw => beginWorkout(routineIds, bw) })
 }
 export function beginWorkout(routineIds, bw) {
@@ -103,6 +108,8 @@ export function repeatWorkout(w, close) {
     if (skipped) toast(tn('{0} exercise no longer exists and was left out.', '{0} exercises no longer exist and were left out.', skipped))
   }
   if (st.weighIn === false) { go(null); return }
+  const weighed = weighedToday()
+  if (weighed) { go(weighed.w); return }
   if (close) close()
   bwSheet({ required: true, onDone: go })
 }
