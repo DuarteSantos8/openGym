@@ -200,23 +200,21 @@ function absorb(into, b, merge = false) {
  */
 export function countdownRuns(frames) {
   // Each second can carry two readings (taken half a second apart): a run takes whichever fits.
-  const both = (frames || []).map(f => [parseTimer(f.timer), parseTimer(f.timerB), parseTimer(f.timerC), parseTimer(f.timerD)].filter(x => x != null && x >= 0))
+  const both = (frames || []).map(readingsOf)
   const v = both.map(c => (c.length ? c[0] : null))
   const runs = []
   let cur = null
   // A reading fits the run when it is the count it should be — or that count with a stray "1" in
   // front (a piece of the ring round the digits read as a one: 8 as 18).
-  const fitsOne = (t, x) => {
-    if (!cur) return false
-    const e = cur.top - (t - cur.start)
-    return Math.abs(e - x) <= 1 || (x >= 10 && x < 20 && e < 10 && Math.abs(e - (x - 10)) <= 1)
-  }
+  // Or with its tens digit lost (a heavy "3" the OCR skipped: 35 read as 5).
+  const matches = (e, x) => Math.abs(e - x) <= 1 || (x >= 10 && x < 20 && e < 10 && Math.abs(e - (x - 10)) <= 1) || (x < 10 && e >= 10 && e % 10 === x)
+  const fitsOne = (t, x) => cur && matches(cur.top - (t - cur.start), x)
   const confirmedAs = (t, x) => {
     let ok = 0, bad = 0
     for (let k = 1; k <= 4 && t + k < both.length; k++) {
       const c = both[t + k]
       if (!c.length) continue
-      if (c.some(y => Math.abs(x - k - y) <= 1)) ok++; else bad++
+      if (c.some(y => matches(x - k, y))) ok++; else bad++
     }
     return ok >= 2 && ok > bad
   }
@@ -441,9 +439,15 @@ export function fillFromRounds(blocks) {
 export function timerTrack(frames) {
   let prev = null
   return (frames || []).map(f => {
-    const c = [parseTimer(f.timer), parseTimer(f.timerB), parseTimer(f.timerC), parseTimer(f.timerD)].filter(x => x != null && x >= 0)
+    const c = readingsOf(f)
     const pick = !c.length ? null : prev == null ? c[0] : c.reduce((a, b) => (Math.abs(b - (prev - 1)) < Math.abs(a - (prev - 1)) ? b : a))
     if (pick != null) prev = pick
     return pick
   })
+}
+
+/** Every timer reading a second carries (all boxes, both moments, both polarities), as numbers. */
+function readingsOf(f) {
+  const texts = f.timers || [f.timer, f.timerB, f.timerC, f.timerD]
+  return texts.map(parseTimer).filter(x => x != null && x >= 0)
 }

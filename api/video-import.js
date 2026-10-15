@@ -65,6 +65,15 @@ export function cleanNames(v) {
   return cleanBox(v);
 }
 
+/** One timer box or two (the work and the rest counted in different places). */
+export function cleanTimers(v) {
+  if (Array.isArray(v)) {
+    const boxes = v.map(cleanBox).filter(Boolean).slice(0, 2);
+    return boxes.length ? (boxes.length === 1 ? boxes[0] : boxes) : null;
+  }
+  return cleanBox(v);
+}
+
 const JOB_RE = /^[0-9a-f]{24}$/;
 const CHANNEL_RE = /^[A-Za-z0-9_@.-]{1,80}$/;
 
@@ -156,7 +165,7 @@ export function videoImportRoutes({ json, readBody, readSession, dataDir, atomic
       const user = guard(req, res); if (!user) return;
       const b = await readBody(req);
       const name = cleanNames(b.name);
-      const timer = b.timer == null ? null : cleanBox(b.timer);
+      const timer = b.timer == null ? null : cleanTimers(b.timer);
       if (!name) return json(res, 400, { error: 'draw a box around the exercise name', code: 'bad-roi' });
       const job = await ownJob(res, user, b.id); if (!job) return;
       const w = await worker('POST', '/jobs/' + b.id + '/roi', { name, timer });

@@ -116,3 +116,12 @@ export function cleanNames(v) {
   }
   return cleanBox(v)
 }
+
+/** One timer box or two (the work and the rest counted in different places); null if none is usable. */
+export function cleanTimers(v) {
+  if (Array.isArray(v)) {
+    const boxes = v.map(cleanBox).filter(Boolean).slice(0, 2)
+    return boxes.length ? (boxes.length === 1 ? boxes[0] : boxes) : null
+  }
+  return v ? cleanBox(v) : null
+}

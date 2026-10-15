@@ -2415,6 +2415,7 @@ export default {
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'इस डिवाइस पर 1 वर्कआउट है जो इस बैकअप में नहीं है। बदलने से यह मिट जाएगा।',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'इस डिवाइस पर {0} वर्कआउट हैं जो इस बैकअप में नहीं हैं। बदलने से ये मिट जाएँगे।',
   // Import from a video (views/VideoImport.jsx)
+  'Rest counted somewhere else than the work? Drag a box around each timer, up to two.': 'आराम की गिनती काम से अलग जगह होती है? हर टाइमर के चारों ओर एक बॉक्स खींचें, अधिकतम दो।',
   'Add this exercise again': 'यह व्यायाम फिर से जोड़ें',
   'As in the video': 'वीडियो जैसा',
   'Each exercise once, with its rounds as sets: A × 2, B × 2 … Shorter, but in a different order than the video.': 'हर व्यायाम एक बार, उसके राउंड सेट के रूप में: A × 2, B × 2 … छोटा, लेकिन वीडियो से अलग क्रम में।',

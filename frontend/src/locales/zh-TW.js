@@ -2408,6 +2408,7 @@ export default {
   'This device has 1 workout that is not in this backup. Replacing deletes it.': '此裝置上有 1 筆訓練紀錄不在此備份中。覆蓋將會刪除它。',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': '此裝置上有 {0} 筆訓練紀錄不在此備份中。覆蓋將會將其全數刪除。',
   // Import from a video (views/VideoImport.jsx)
+  'Rest counted somewhere else than the work? Drag a box around each timer, up to two.': '休息的計時與訓練不在同一處？為每個計時器都拖出一個框，最多兩個。',
   'Add this exercise again': '再次新增此動作',
   'As in the video': '與影片一致',
   'Each exercise once, with its rounds as sets: A × 2, B × 2 … Shorter, but in a different order than the video.': '每個動作只出現一次，輪數作為組數：A × 2、B × 2 … 更短，但順序與影片不同。',

@@ -58,19 +58,21 @@ export const MAX_NAME_BOXES = 3
 export async function extractCrops(file, roi, { width, height, duration, workDir, signal, onProgress } = {}) {
   const parts = [], maps = []
   const boxes = nameBoxes(roi)
-  const kinds = [...boxes.map((_, i) => 'name' + i), ...(roi.timer ? ['timer', 'timerB'] : [])]
+  // Up to two timers: some videos count the work in one place and the rest in another.
+  const clocks = timerBoxes(roi)
+  const kinds = [...boxes.map((_, i) => 'name' + i), ...clocks.flatMap((_, j) => ['timer' + j, 'timer' + j + 'B'])]
   const geo = {}
-  kinds.forEach(k => { geo[k] = cropGeometry(k.startsWith('timer') ? roi.timer : boxes[+k.slice(4)], width, height, k.startsWith('timer') ? TIMER_H : 72) })
+  kinds.forEach(k => { geo[k] = cropGeometry(k.startsWith('timer') ? clocks[+k[5]] : boxes[+k.slice(4)], width, height, k.startsWith('timer') ? TIMER_H : 72) })
   // A timer redraws the moment its number changes, often with a little animation (the digits
   // spin or fade in), and where in the second that falls differs from video to video and even
   // within one. So the timer is taken twice a second — at the start and half a second in — and
   // the countdown keeps whichever reading fits it (segment.js). Everything else once, half a
   // second in. One more branch: the whole frame, tiny, for spotting cuts (see sceneChanges).
-  const once = kinds.filter(k => k !== 'timerB')
+  const once = kinds.filter(k => !/^timer\dB$/.test(k))
   const split = `split=${once.length + 1}${once.map(k => `[${k}s]`).join('')}[scene0]`
   parts.push(`[0:v]split=2[at0][at5]`)
   parts.push(`[at5]trim=start=0.5,setpts=PTS-STARTPTS,fps=1,${split}`)
-  parts.push(roi.timer ? `[at0]fps=1[timerBs]` : `[at0]nullsink`)
+  parts.push(!clocks.length ? `[at0]nullsink` : clocks.length === 1 ? `[at0]fps=1[timer0Bs]` : `[at0]fps=1,split=2[timer0Bs][timer1Bs]`)
   parts.push(`[scene0]scale=${SCENE_W}:${SCENE_H}:flags=area,format=gray[scene]`)
   maps.push('-map', '[scene]', '-f', 'rawvideo', path.join(workDir, 'scene.gray'))
   for (const k of kinds) {
@@ -152,10 +154,9 @@ export async function extractCrops(file, roi, { width, height, duration, workDir
     seconds: len,
     scene: sceneChanges(sceneRaw, SCENE_W * SCENE_H).slice(0, len),
     names: boxes.map((_, i) => out['name' + i]),
-    timer: out.timer || new Array(len).fill(null),
-    timerB: out.timerB || new Array(len).fill(null),
-    timerAlt: out.timerAlt || new Array(len).fill(null),
-    timerBAlt: out.timerBAlt || new Array(len).fill(null)
+    // Every reading of every timer, one list each: per box, at the start and half a second in,
+    // in each polarity. The countdown keeps whichever fits.
+    timers: clocks.flatMap((_, j) => ['timer' + j, 'timer' + j + 'B'].flatMap(k => [out[k], out[k + 'Alt']])).map(l => l || new Array(len).fill(null))
   }
 }
 
@@ -175,3 +176,6 @@ export function sceneChanges(raw, size) {
 
 // Timer crops are scaled to this height: big enough for Tesseract to read two digits cleanly.
 const TIMER_H = 120
+
+/** The timer boxes of a ROI as a list: none, one, or two (a work timer and a rest timer). */
+export const timerBoxes = roi => [].concat(roi?.timer || []).filter(Boolean).slice(0, 2)

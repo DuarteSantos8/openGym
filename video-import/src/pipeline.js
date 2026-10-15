@@ -53,24 +53,24 @@ export async function analyse(file, roi, { workDir, signal, hints = [], parts = 
   progress('frames', 0)
   const crops = await extractCrops(file, roi, { ...d, workDir, signal, onProgress: f => progress('frames', f) })
   progress('ocr', 0)
-  const hasTimer = crops.timer.some(Boolean)
+  const hasTimer = crops.timers.some(l => l.some(Boolean))
   const share = hasTimer ? 0.7 / crops.names.length : 1 / crops.names.length
   const names = []
   for (let b = 0; b < crops.names.length; b++) {
     names.push(await readAll(crops.names[b], 'name', { workDir, signal, onProgress: f => progress('ocr', share * (b + f)) }))
   }
-  const none = { readings: crops.timer.map(() => ({ text: '', conf: 0 })), unique: 0 }
-  const timer = hasTimer ? await readAll(crops.timer, 'timer', { workDir, signal, onProgress: f => progress('ocr', 0.7 + f * 0.1) }) : none
-  const timerB = hasTimer ? await readAll(crops.timerB, 'timer', { workDir, signal, onProgress: f => progress('ocr', 0.8 + f * 0.1) }) : none
-  const alt = hasTimer ? await readAll(crops.timerAlt, 'timer', { workDir, signal, onProgress: f => progress('ocr', 0.9 + f * 0.05) }) : none
-  const altB = hasTimer ? await readAll(crops.timerBAlt, 'timer', { workDir, signal, onProgress: f => progress('ocr', 0.95 + f * 0.05) }) : none
+  const clocks = []
+  for (let c = 0; hasTimer && c < crops.timers.length; c++) {
+    clocks.push(await readAll(crops.timers[c], 'timer', { workDir, signal, onProgress: f => progress('ocr', 0.7 + 0.3 * (c + f) / crops.timers.length) }))
+  }
   // With several name boxes, each second takes the reading that looks most like a name: the
   // most letters, read with the most confidence. The other boxes are empty at that moment.
   const score = r => (r && r.text ? (String(r.text).match(/\p{L}/gu) || []).length * (r.conf || 0) : 0)
   const frames = []
   for (let t = 0; t < crops.seconds; t++) {
     const best = names.map(n => n.readings[t]).reduce((a, r) => (score(r) > score(a) ? r : a), { text: '', conf: 0 })
-    frames.push({ t, name: best.text, nameConf: best.conf, timer: timer.readings[t]?.text || '', timerB: timerB.readings[t]?.text || '', timerC: alt.readings[t]?.text || '', timerD: altB.readings[t]?.text || '', scene: crops.scene[t] || 0 })
+    const timers = clocks.map(c => c.readings[t]?.text || '')
+    frames.push({ t, name: best.text, nameConf: best.conf, timer: timers[0] || '', timers, scene: crops.scene[t] || 0 })
   }
   // The countdown first, where the video has one the OCR can follow: it knows every work, rest
   // and hold to the second. Whether it can be followed is what timerPhases finds — confirmed
@@ -98,6 +98,6 @@ export async function analyse(file, roi, { workDir, signal, hints = [], parts = 
   }
   return {
     frames, blocks, draft,
-    stats: { seconds: crops.seconds, uniqueName: names.reduce((t, n) => t + n.unique, 0), uniqueTimer: timer.unique, readFrames: frames.filter(f => f.name).length }
+    stats: { seconds: crops.seconds, uniqueName: names.reduce((t, n) => t + n.unique, 0), uniqueTimer: clocks.reduce((t, c) => t + c.unique, 0), readFrames: frames.filter(f => f.name).length }
   }
 }

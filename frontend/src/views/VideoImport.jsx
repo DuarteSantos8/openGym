@@ -188,13 +188,15 @@ function Header({ nav }) {
 // warm-up): each drag in "Exercise name" adds a box, up to three, and × removes one. The timer
 // has one box, and a new drag replaces it.
 const MAX_NAME_BOXES = 3
+const MAX_TIMER_BOXES = 2
 function RoiStep({ job, onDone, onCancel, busy }) {
   const setup = job.roiSetup
   const suggested = setup.suggest?.names?.length ? setup.suggest.names : setup.suggest?.name ? [setup.suggest.name] : []
   const [sample, setSample] = useState(0)
   const [which, setWhich] = useState('name')
   const [names, setNames] = useState(suggested.slice(0, MAX_NAME_BOXES))
-  const [timer, setTimer] = useState(setup.suggest?.timer || null)
+  // Up to two timers: a video can count the work in one place and the rest in another.
+  const [timers, setTimers] = useState(setup.suggest?.timer ? [setup.suggest.timer] : [])
   const [drawing, setDrawing] = useState(null)
   const [keep, setKeep] = useState(true)
   const drag = useRef(null)
@@ -214,7 +216,7 @@ function RoiStep({ job, onDone, onCancel, busy }) {
     drag.current = null
     // A tap, not a drag, leaves no box behind.
     if (drawing && drawing.w >= 0.02 && drawing.h >= 0.02) {
-      if (which === 'timer') setTimer(drawing)
+      if (which === 'timer') setTimers(list => [...list, drawing].slice(-MAX_TIMER_BOXES))
       else setNames(list => [...list, drawing].slice(-MAX_NAME_BOXES))
     }
     setDrawing(null)
@@ -234,13 +236,17 @@ function RoiStep({ job, onDone, onCancel, busy }) {
             <span>{t('Exercise name')}</span>
             <button className="vi-box-x" onPointerDown={e => e.stopPropagation()} onClick={e => remove(e, i)} aria-label={t('Remove this box')}>×</button>
           </div>)}
-          {timer && <div className={'vi-box timer' + (which === 'timer' ? ' on' : '')} style={style(timer)}><span>{t('Timer')}</span></div>}
+          {timers.map((b, i) => <div key={'t' + i} className={'vi-box timer' + (which === 'timer' ? ' on' : '')} style={style(b)}>
+            <span>{t('Timer')}</span>
+            <button className="vi-box-x" onPointerDown={e => e.stopPropagation()} onClick={e => { e.stopPropagation(); setTimers(list => list.filter((_, k) => k !== i)) }} aria-label={t('Remove this box')}>×</button>
+          </div>)}
           {drawing && <div className={'vi-box on ' + which} style={style(drawing)} />}
         </div>
         <div className="row" style={{ gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
           {setup.samples.map((s, i) => <button key={i} className={'chip' + (i === sample ? ' on' : '')} onClick={() => setSample(i)}>{clock(s.t)}</button>)}
-          {timer && <button className="chip" onClick={() => setTimer(null)}>{t('No timer on screen')}</button>}
+          {timers.length > 0 && <button className="chip" onClick={() => setTimers([])}>{t('No timer on screen')}</button>}
         </div>
+        {which === 'timer' && <div className="small muted" style={{ marginTop: 6 }}>{t('Rest counted somewhere else than the work? Drag a box around each timer, up to two.')}</div>}
         {which === 'name' && <div className="small muted" style={{ marginTop: 6 }}>{t('Names shown in more than one place (a big preview, a small one in the warm-up)? Drag a box around each, up to three.')}</div>}
       </div>
       <label className="row" style={{ gap: 10, padding: '6px 12px 10px' }}>
@@ -249,7 +255,7 @@ function RoiStep({ job, onDone, onCancel, busy }) {
       </label>
     </Section>
     <div className="row" style={{ gap: 8 }}>
-      <Button variant="primary" icon="check" disabled={busy || !names.length} onClick={() => onDone({ name: names.length === 1 ? names[0] : names, timer }, keep)}>{t('Continue')}</Button>
+      <Button variant="primary" icon="check" disabled={busy || !names.length} onClick={() => onDone({ name: names.length === 1 ? names[0] : names, timer: timers.length > 1 ? timers : timers[0] || null }, keep)}>{t('Continue')}</Button>
       <Button onClick={onCancel}>{t('Cancel')}</Button>
     </div>
   </>

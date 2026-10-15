@@ -2412,6 +2412,7 @@ export default {
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'На цьому пристрої є 1 тренування, якого немає в цій копії. Заміна його видалить.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'На цьому пристрої є тренування, яких немає в цій копії ({0}). Заміна їх видалить.',
   // Import from a video (views/VideoImport.jsx)
+  'Rest counted somewhere else than the work? Drag a box around each timer, up to two.': 'Відпочинок відліковується не там, де робота? Виділи рамкою кожен таймер, до двох.',
   'Add this exercise again': 'Додати цю вправу ще раз',
   'As in the video': 'Як у відео',
   'Each exercise once, with its rounds as sets: A × 2, B × 2 … Shorter, but in a different order than the video.': 'Кожна вправа один раз, а її раунди як підходи: A × 2, B × 2 … Коротше, але в іншому порядку, ніж у відео.',
