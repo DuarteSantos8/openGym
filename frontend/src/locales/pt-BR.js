@@ -1403,6 +1403,10 @@ export const PT_BR_OVERRIDES = {
   'Gentle, for headphones or a quiet room.': 'Suave, para fones de ouvido ou um lugar silencioso.',
   'Fewer than two workouts in this period. Pick a longer one.': 'Menos de dois treinos neste período. Escolha um mais longo.',
   'Releases are checked on GitHub. The download is verified against its checksum before the installer opens.': 'As versões são verificadas no GitHub. O download é conferido pela soma de verificação antes de abrir o instalador.',
+  // --- a sound for each kind of rest (#165) ---
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'Ouça o que vem a seguir sem olhar. Até você escolher um, cada um toca o som acima, como sempre fazem as isometrias e a pausa para trocar de lado.',
+  'Next round': 'Próxima rodada',
+  'Next exercise': 'Próximo exercício',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

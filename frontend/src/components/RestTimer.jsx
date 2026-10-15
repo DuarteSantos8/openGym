@@ -3,6 +3,7 @@ import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { REST_MAX } from '../lib/duration.js'
 import { durationSheet } from './DurationWheel.jsx'
+import { realign } from '../lib/viewport-guard.js'
 import { Button } from './ui.jsx'
 import Icon from './Icon.jsx'
 
@@ -25,14 +26,16 @@ export function adjustRestSheet() {
 }
 
 // What the wheel's Done does to the rest as it is by then: a new time left, the rest ended at
-// 0:00, or a fresh rest when the old one has run out (Ready) or was skipped meanwhile.
+// 0:00, or a fresh rest when the old one has run out (Ready) or was skipped meanwhile. A fresh
+// rest from Ready is +15 s's on Ready (useUI.addRest): it keeps what the old one led into, and
+// so the sound it ends with.
 export function applyRestLeft(v, opened) {
   if (opened !== undefined && v === opened) return
   const ui = useUI.getState()
   const now = ui.timer
   if (!now) { if (v > 0) ui.startRest(v); return }
   if (v <= 0) { ui.stopRest(); return }
-  if (now.ready) { ui.startRest(v, now.forIdx); return }
+  if (now.ready) { ui.addRest(v); return }
   if (v !== now.left) ui.addRest(v - now.left)
 }
 
@@ -86,7 +89,13 @@ export default function RestTimer() {
   // the Finish button can scroll clear of it.
   useEffect(() => {
     document.body.classList.toggle('resting', !!on)
-    return () => document.body.classList.remove('resting')
+    // The bar leaving takes that room back — the page gets shorter at once, often in the same
+    // commit that ticks a set or swaps the card. When that clamps the scroll position, iOS
+    // can be left with the two viewports apart: the bars mid-screen, scrolling with the page. Ask
+    // for them to be checked once the layout has settled; a no-op wherever they already agree
+    // (lib/viewport-guard.js).
+    const frame = on ? null : requestAnimationFrame(() => realign())
+    return () => { if (frame) cancelAnimationFrame(frame); document.body.classList.remove('resting') }
   }, [!!on])
   if (!on) return null
   const pct = Math.max(0, Math.min(100, (on.left / on.total) * 100))
