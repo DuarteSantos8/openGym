@@ -1,5 +1,8 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  'Rest between sides': 'Pihenő az oldalak között',
+  'Between-side duration': 'Oldalak közötti pihenő hossza',
+
   // --- generic ---
   'Confirm': 'Megerősítés',
   'Cancel': 'Mégse',

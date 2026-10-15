@@ -1,3 +1,4 @@
+import { hasUnfinishedSide, sideRestSecFor } from '../lib/side-rest.js'
 import { Fragment, useEffect, useId, useRef, useState } from 'react'
 import SwipeCards from '../components/SwipeCards.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
@@ -99,9 +100,6 @@ const RTL_LETTER = /[֐-ࣿיִ-﷿ﹰ-﻿]/
 // "last time" recap and the progression line — leaving the name, the ⋯ menu, the one-line plan
 // the rows are measured against, and the sets.
 // Nothing dropped is lost: it is all still on the ⋯ menu, or one ⋮ switch back to list/cards.
-// The pause between the left and the right side of one timed per-side set (owner's call): long
-// enough to turn over, far shorter than the rest the set earns once both sides are held.
-const SWITCH_SIDES_SEC = 10
 
 function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSide, onField, onAddSet, onRemoveSet, onAddWarmup, onRemoveSetAt, onCopySetAt, onStartTimed, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onRest, onNoProg, routineUpdate, onSwap, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy }) {
   const S = useStore(s => s.S)
@@ -1249,6 +1247,7 @@ function ActiveWorkout() {
       // A rest reads as the wheel shows it: "3:00", and 0 (no rest of its own) as the default.
       sub: found.changes.map(c => c.key === 'note' ? t('Note')
         : c.key === 'warmupSets' ? t('Warm-up sets') + ' ' + c.from + ' → ' + c.to
+        : c.key === 'sideRestSec' ? t('Rest between sides') + ' ' + fmtRest(c.from) + ' → ' + fmtRest(c.to)
         : t('Rest') + ' ' + restWord(c.from) + ' → ' + restWord(c.to)).join(' · '),
       run: () => confirmSheet({
         title: t('Update “{0}”?', routine.name),
@@ -1513,8 +1512,9 @@ function ActiveWorkout() {
         // by hand keeps its prescription, so its Undo leaves the numbers it should count at.
         const built = buildPlannedEntry(sessionHistory(s), full, activeRoutine, { noProg: builtOutOfProgression(activeEntry, activeRoutine) })
         const fresh = built.sets
-        const doneWarm = activeEntry.sets.filter(x => x.done && isWarmupRow(x))
-        const doneWork = activeEntry.sets.filter(x => x.done && !isWarmupRow(x))
+        const logged = x => x.done || x.sides?.L?.done || x.sides?.R?.done
+        const doneWarm = activeEntry.sets.filter(x => logged(x) && isWarmupRow(x))
+        const doneWork = activeEntry.sets.filter(x => logged(x) && !isWarmupRow(x))
         const freshWarm = fresh.filter(isWarmupRow)
         const freshWork = fresh.filter(x => !isWarmupRow(x))
         activeEntry.target = built.target
@@ -1665,7 +1665,23 @@ function ActiveWorkout() {
     // Only progress beyond this exercise's high-water mark may navigate or change rest. This
     // prevents an uncheck/re-check of finished work from replaying the flow side effects.
     const fresh = useStore.getState().S.active
+    if (fresh && hasUnfinishedSide(fresh.entries[idx], i, side)) {
+      const entry = fresh.entries[idx]
+      const unit = supersetUnits(fresh.entries).find(u => u.includes(idx)) || [idx]
+      const normalRest = restSecFor(fresh.entries, unit, S.restSec, { idx, sec: pyramidRestFor(entry.target, entry.sets, i) })
+      const seconds = sideRestSecFor(entry.target, normalRest)
+      const rest = useUI.getState().timer
+      // Re-ticking the same side must not reset its running countdown.
+      if (seconds > 0 && !(rest?.kind === 'switch' && rest.forIdx === idx && rest.forSet === i && !rest.ready)) {
+        startRest(seconds, idx, { kind: 'switch', forSet: i })
+      }
+      return
+    }
     if (fresh && checked && fresh.entries[idx]) {
+      const rest = useUI.getState().timer
+      const [start, count] = setSpanAt(fresh.entries[idx].sets, i)
+      if (rest?.kind === 'switch' && rest.forIdx === idx && rest.forSet >= start && rest.forSet < start + count) stopRest()
+
       const progress = setProgressHighWater(fresh.entries[idx], progressHighWater.current[idx] || 0)
       progressHighWater.current[idx] = progress.highWater
 
@@ -1705,18 +1721,6 @@ function ActiveWorkout() {
       if (collapseOn && freshUnitDone && nextUnit && freshUnit?.includes(fresh.cur)) {
         revealCur.current = true
         update(s => { if (s.active) s.active.cur = nextUnit[0] })
-      }
-
-      // Between the two sides of one timed per-side set (a side plank's left, then its right):
-      // a short "Switch sides" pause instead of the set's whole rest, which comes once both
-      // sides are held (owner's call). A rest switched Off stays off.
-      const rows = fresh.entries[idx].sets
-      const sideOf = r => r && !isWarmupRow(r) ? r.side : null
-      const partner = sideOf(rows[i]) === 'L' && sideOf(rows[i + 1]) === 'R' ? rows[i + 1]
-        : sideOf(rows[i]) === 'R' && sideOf(rows[i - 1]) === 'L' ? rows[i - 1] : null
-      if (m === 'time' && partner && !partner.done && restAfter > 0) {
-        startRest(Math.min(SWITCH_SIDES_SEC, restAfter), idx, { kind: 'switch', forSet: i })
-        return
       }
 
       // Singleton units are ordinary exercises: they rest between sets and after the closing

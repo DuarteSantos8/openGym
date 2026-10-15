@@ -3443,3 +3443,88 @@ describe('the workout screen chrome (v1.3.11)', () => {
     expect(container.querySelector('.wthumb')).toBeNull()
   })
 })
+
+
+describe('configurable rest between sides', () => {
+  const sideEntry = (seconds, warm = false) => exercise('plain-bench', [], {
+    target: { mode: 'reps', side: true, reps: 16, weight: 20, sideRestSec: seconds },
+    sets: [0, 1].map(i => ({ w: 20, r: 16, done: false,
+      ...(warm && i === 0 ? { phase: 'warmup', warmup: true } : {}),
+      sides: { L: { w: 20, r: 8, done: false }, R: { w: 20, r: 8, done: false } },
+    })),
+  })
+
+  it('keeps the already logged side when saving exercise settings mid-pair', async () => {
+    const entry = sideEntry(0)
+    entry.id = '0025'
+    entry.target.sets = 2
+    entry.plan = { policy: 'linear', kind: 'same', weight: 20, why: ['Keep going.'] }
+    entry.sets[0].sides.L.done = true
+    entry.sets[0].sides.L.r = 7
+    await mount([entry])
+    await pressProgression()
+    const [,, save] = mocks.exConfigSheet.mock.calls.at(-1)
+    await act(async () => save({ ...entry.target, sideRestSec: 30 }))
+    const updated = mocks.S.active.entries[0]
+    expect(updated.target.sideRestSec).toBe(30)
+    expect(updated.sets[0].sides.L).toMatchObject({ done: true, r: 7 })
+    expect(updated.sets[0].sides.R.done).toBe(false)
+    expect(updated.sets).toHaveLength(2)
+  })
+
+  it.each(['left', 'right'])('rests after the first %s side, then uses normal rest after the pair', async first => {
+    await mount([sideEntry(30)], 0, { active: { workoutView: 'list' } })
+    await toggleSet(first === 'left' ? 0 : 1)
+    expect(mocks.startRest).toHaveBeenLastCalledWith(30, 0, { kind: 'switch', forSet: 0 })
+    expect(mocks.S.active.entries[0].sets[0].done).toBe(false)
+    await rerender()
+    await toggleSet(first === 'left' ? 1 : 0)
+    expect(mocks.startRest).toHaveBeenLastCalledWith(90, 0, { forSet: 0 })
+  })
+
+  it('keeps Off quiet between sides and leaves full-pair rest alone', async () => {
+    await mount([sideEntry(0)], 0, { active: { workoutView: 'list' } })
+    await toggleSet(0)
+    expect(mocks.startRest).not.toHaveBeenCalled()
+    await rerender()
+    await toggleSet(1)
+    expect(mocks.startRest).toHaveBeenLastCalledWith(90, 0, { forSet: 0 })
+  })
+
+  it('supports warm-ups, does not advance a superset, and does not restart a running side rest on undo/recheck', async () => {
+    await mount([{ ...sideEntry(25, true), sg: 'pair' }, exercise('plain-row', [false], { sg: 'pair' })], 0, { active: { workoutView: 'list' } })
+    await toggleSet(0)
+    expect(mocks.startRest).toHaveBeenLastCalledWith(25, 0, { kind: 'switch', forSet: 0 })
+    expect(mocks.S.active.cur).toBe(0)
+    mocks.timer = { kind: 'switch', forIdx: 0, forSet: 0, left: 20 }
+    await rerender()
+    await toggleSet(0)
+    await rerender()
+    await toggleSet(0)
+    expect(mocks.startRest).toHaveBeenCalledTimes(1)
+  })
+
+  it('clears the side pause when finishing the pair before moving to the next superset exercise', async () => {
+    await mount([{ ...sideEntry(30), sg: 'pair' }, exercise('plain-row', [false, false], { sg: 'pair' })], 0, { active: { workoutView: 'list' } })
+    await toggleSet(0)
+    mocks.timer = { kind: 'switch', forIdx: 0, forSet: 0, left: 20 }
+    await rerender()
+    await toggleSet(1)
+    expect(mocks.timer).toBeNull()
+    expect(mocks.S.active.cur).toBe(1)
+    expect(mocks.startRest).toHaveBeenCalledTimes(1)
+  })
+
+  it.each([0, 40])('uses %s seconds between timed sides, then the normal rest', async seconds => {
+    await mount([exercise('plain-hold', [], {
+      target: { mode: 'time', side: true, sec: 30, sideRestSec: seconds },
+      sets: ['L', 'R', 'L', 'R'].map(side => ({ side, sec: 30, done: false })),
+    })], 0, { active: { workoutView: 'list' } })
+    await toggleSet(0)
+    if (seconds) expect(mocks.startRest).toHaveBeenLastCalledWith(seconds, 0, { kind: 'switch', forSet: 0 })
+    else expect(mocks.startRest).not.toHaveBeenCalled()
+    await rerender()
+    await toggleSet(1)
+    expect(mocks.startRest).toHaveBeenLastCalledWith(90, 0, { forSet: 1 })
+  })
+})

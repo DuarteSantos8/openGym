@@ -124,3 +124,15 @@ describe('updateRoutineFromEntry', () => {
     expect(routine.ex[0]).toEqual({ id: BENCH, sets: 3 })
   })
 })
+
+
+it('copies between-side rest to its routine slot, preserving explicit Off for timed holds', () => {
+  const routine = { id: 'A', ex: [{ id: BENCH, mode: 'time', side: true, sets: 2 }] }
+  const entries = [entry(BENCH, work(4), { mode: 'time', side: true, sideRestSec: 0 })]
+  expect(updateRoutineFromEntry(routine, entries, 0)).toEqual([{ key: 'sideRestSec', from: 10, to: 0 }])
+  expect(routine.ex[0].sideRestSec).toBe(0)
+  expect(routineChangesFromEntry(routine, entries, 0)).toBeNull()
+  entries[0].target.sideRestSec = 45
+  updateRoutineFromEntry(routine, entries, 0)
+  expect(routine.ex[0].sideRestSec).toBe(45)
+})

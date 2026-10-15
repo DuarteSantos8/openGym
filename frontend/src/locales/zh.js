@@ -1,5 +1,8 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  'Rest between sides': '左右侧之间休息',
+  'Between-side duration': '左右侧间休息时长',
+
   'Confirm': '确认',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回退出',

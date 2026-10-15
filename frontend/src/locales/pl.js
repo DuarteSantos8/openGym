@@ -1,5 +1,8 @@
 // Polish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  'Rest between sides': 'Odpoczynek między stronami',
+  'Between-side duration': 'Czas odpoczynku między stronami',
+
   'Confirm': 'Potwierdź',
   'Cancel': 'Anuluj',
   'Press back again to exit': 'Naciśnij wstecz ponownie, aby wyjść',
