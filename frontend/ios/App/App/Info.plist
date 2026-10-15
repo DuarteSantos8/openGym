@@ -23,7 +23,7 @@
 	<key>NSHealthShareUsageDescription</key>
 	<string>openGym reads body weight from Apple Health when you enable sync.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>openGym saves your weigh-ins and completed workouts to Apple Health when you enable sync.</string>
+	<string>openGym saves your weigh-ins, completed workouts and available measured active/resting energy to Apple Health when you enable sync.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -70,7 +70,7 @@
 	<string>Used to scan your gym membership QR code, and to take a photo or video of an exercise you add yourself.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Used to record the sound of a video you take of an exercise you add yourself.</string>
-	<key>NSHealthShareUsageDescription</key>
-	<string>openGym reads your latest weight from Apple Health to save a weigh-in and use it when you start a workout. If you connect a server, this weight syncs to that server with your profile.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>If you enable workout weather, openGym sends an approximate location to Open-Meteo once per workout to read outdoor temperature and humidity.</string>
 </dict>
 </plist>

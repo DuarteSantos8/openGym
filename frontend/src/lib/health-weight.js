@@ -1,9 +1,7 @@
-import { Capacitor, registerPlugin } from '@capacitor/core'
-import { App } from '@capacitor/app'
+import { Capacitor } from '@capacitor/core'
 import { isoOf } from './format.js'
 import { t } from './i18n.js'
 
-const HealthKit = registerPlugin('HealthKit')
 const POUNDS_PER_KILOGRAM = 2.2046226218
 
 /**
@@ -28,10 +26,6 @@ export const getHealthSource = () => HEALTH_STORES.find(store => store.platform 
 export const getSourceLabel = source =>
   (source ? HEALTH_STORES.find(store => store.id === source)?.getLabel() ?? null : t('Manual'))
 export const hasHealthStore = () => !!getHealthSource()
-export const readHealthWeight = () => hasHealthStore()
-  ? HealthKit.latestBodyMass().then(result => ({ ...result, source: getHealthSource() }))
-  : Promise.resolve({ status: 'unsupported' })
-
 const isPositiveWeight = kilograms => Number.isFinite(kilograms) && kilograms > 0
 // A number of milliseconds that is also a date the calendar can hold.
 const isRealTimestamp = ms => Number.isFinite(ms) && Number.isFinite(new Date(ms).getTime())
@@ -63,20 +57,3 @@ export function replaceDailyWeight(weighIns, entry) {
 // started does not replace the one already logged for the day.
 export const wasTakenAfterWorkout = (state, entry) =>
   [...state.workouts, state.active].some(workout => workout && workout.d === entry.d && workout.start <= entry.m)
-
-export function initHealthWeightSync(sync) {
-  if (!hasHealthStore()) return () => {}
-  let stopped = false
-  let listener = null
-  const onVisible = () => { if (!stopped && document.visibilityState === 'visible') sync() }
-  document.addEventListener('visibilitychange', onVisible)
-  App.addListener('appStateChange', ({ isActive }) => { if (!stopped && isActive) sync() })
-    .then(handle => { if (stopped) return handle.remove(); listener = handle })
-    .catch(error => console.warn('Apple Health foreground listener failed; using page visibility events', error))
-  sync()
-  return () => {
-    stopped = true
-    document.removeEventListener('visibilitychange', onVisible)
-    if (listener) Promise.resolve(listener.remove()).catch(error => console.warn('Apple Health listener cleanup failed', error))
-  }
-}

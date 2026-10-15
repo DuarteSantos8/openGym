@@ -1415,6 +1415,20 @@ export const PT_BR_OVERRIDES = {
   'Gentle, for headphones or a quiet room.': 'Suave, para fones de ouvido ou um lugar silencioso.',
   'Fewer than two workouts in this period. Pick a longer one.': 'Menos de dois treinos neste período. Escolha um mais longo.',
   'Releases are checked on GitHub. The download is verified against its checksum before the installer opens.': 'As versões são verificadas no GitHub. O download é conferido pela soma de verificação antes de abrir o instalador.',
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "O treino correspondente salvo pelo openGym no Saúde da Apple também será excluído.",
+  "Sync with Apple Health": "Sincronizar com o Saúde da Apple",
+  "Sync body weight both ways and save finished workouts to Health.": "Sincroniza o peso nos dois sentidos e salva os treinos concluídos no Saúde.",
+  "Apple Health: {0}": "Saúde da Apple: {0}",
+  "Sync Apple Health now": "Sincronizar com o Saúde da Apple agora",
+  "Apple Health": "Apple Saúde",
+  "Manual": "Manual",
+  "Apple Health is still checking for a weight. Enter your weight to start.": "O Apple Saúde ainda está procurando um peso. Informe seu peso para começar.",
+  "Apple Health is unavailable on this device. Enter your weight to start.": "O Apple Saúde não está disponível neste dispositivo. Informe seu peso para começar.",
+  "Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.": "O Apple Saúde não tem nenhum peso legível. Você pode verificar o acesso ao Saúde em Ajustes ou informar seu peso aqui.",
+  "Apple Health could not load your weight. Enter your weight to start.": "O Apple Saúde não conseguiu carregar seu peso. Informe seu peso para começar.",
+  "Workout weather": "Clima do treino",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "Salva a temperatura e umidade externas no Apple Saúde. Sua localização aproximada é enviada uma vez por treino ao Open-Meteo; ela não é armazenada nem enviada ao seu servidor openGym.",
+  "Weather data by Open-Meteo (CC BY 4.0)": "Dados meteorológicos do Open-Meteo (CC BY 4.0)",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

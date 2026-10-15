@@ -2254,4 +2254,7 @@ export default {
   'Apple Health is unavailable on this device. Enter your weight to start.': 'Apple Health bu cihazda kullanılamıyor. Başlamak için ağırlığını gir.',
   'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'Apple Health\'te okunabilir bir ağırlık yok. Ayarlar\'dan Health erişimini kontrol edebilir veya ağırlığını buraya girebilirsin.',
   'Apple Health could not load your weight. Enter your weight to start.': 'Apple Health ağırlığını yükleyemedi. Başlamak için ağırlığını gir.',
+  "Workout weather": "Antrenman havası",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "Dış sıcaklık ve nemi Apple Sağlık’a kaydet. Yaklaşık konumun antrenman başına bir kez Open-Meteo’ya gönderilir; saklanmaz veya openGym sunucuna gönderilmez.",
+  "Weather data by Open-Meteo (CC BY 4.0)": "Open-Meteo hava durumu verileri (CC BY 4.0)",
 }

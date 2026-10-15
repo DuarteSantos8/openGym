@@ -8,6 +8,7 @@ vi.mock('../lib/apple-health.js', () => ({
   appleHealthAvailable: mocks.available, appleHealthEnabled: () => mocks.enabled,
   enableAppleHealth: mocks.enable, disableAppleHealth: mocks.disable, syncAppleHealth: mocks.sync,
 }))
+vi.mock('./WorkoutWeatherSettings.jsx', () => ({ default: () => <div>Weather settings</div> }))
 vi.mock('../store/useStore.js', () => ({ useStore: selector => selector({ user: null }) }))
 vi.mock('../lib/i18n-core.js', () => ({ t: (key, value) => key.replace('{0}', value) }))
 vi.mock('./ui.jsx', () => ({

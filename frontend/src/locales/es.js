@@ -2254,4 +2254,7 @@ export default {
   'Apple Health is unavailable on this device. Enter your weight to start.': 'Apple Health no está disponible en este dispositivo. Introduce tu peso para empezar.',
   'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'Apple Health no tiene ningún peso que se pueda leer. Puedes revisar el acceso a Health en Ajustes o introducir tu peso aquí.',
   'Apple Health could not load your weight. Enter your weight to start.': 'Apple Health no pudo cargar tu peso. Introduce tu peso para empezar.',
+  "Workout weather": "Tiempo del entrenamiento",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "Guarda la temperatura y humedad exteriores en Apple Health. Tu ubicación aproximada se envía una vez por entrenamiento a Open-Meteo; no se almacena ni se envía a tu servidor de openGym.",
+  "Weather data by Open-Meteo (CC BY 4.0)": "Datos meteorológicos de Open-Meteo (CC BY 4.0)",
 }

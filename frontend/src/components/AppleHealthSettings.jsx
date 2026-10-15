@@ -1,3 +1,4 @@
+import WorkoutWeatherSettings from './WorkoutWeatherSettings.jsx'
 import { useEffect, useRef, useState } from 'react'
 import { Row, Switch } from './ui.jsx'
 import { useStore } from '../store/useStore.js'
@@ -46,6 +47,7 @@ function HealthRows({ available: supplied }) {
       }} />
     </Row>
     {error && <div className="lrow" role="alert">{t('Apple Health: {0}', error)}</div>}
+    {enabled && <WorkoutWeatherSettings />}
     {enabled && <Row icon="shuffle" title={t('Sync Apple Health now')} onClick={busy ? undefined : () => connect(false)} />}
   </>
 }

@@ -52,7 +52,7 @@ describe('Apple Health', () => {
     const store = makeStore('lb'); await enableAppleHealth(store)
     native.readWeights.mockResolvedValueOnce({ weights: [{ date, kg: 80, timestamp: time }] })
     expect((await syncAppleHealth(store)).imported).toBe(1)
-    expect(store.getState().S.bodyweight).toEqual([{ d: date, w: 176.4, t: time }])
+    expect(store.getState().S.bodyweight).toEqual([{ d: date, w: 176.4, t: expect.any(Number), src: 'apple-health', m: time }])
     expect(native.writeWeights).not.toHaveBeenCalled()
   })
   it('preserves newer local edits, exports pounds as kg and skips repeat writes', async () => {
@@ -194,4 +194,46 @@ describe('Apple Health', () => {
     expect(native.writeWorkouts.mock.calls.at(-1)[0].workouts[0].id).toBe('one')
   })
 
+})
+
+describe('Measured workout energy export', () => {
+  it('exports final active/resting energy once and asks for the extra native permissions', async () => {
+    const store = makeStore()
+    store.getState().S.workouts = [{ id: 'measured', start: time, end: time + 60000, healthMetrics: { activeKcal: 6.123, basalKcal: 1.234, sampledAt: time + 60000, final: true } }]
+    await enableAppleHealth(store); native.authorize.mockClear()
+    await syncAppleHealth(store); await syncAppleHealth(store)
+    expect(native.authorize).toHaveBeenCalledOnce()
+    expect(native.writeWorkouts).toHaveBeenCalledOnce()
+    expect(native.writeWorkouts.mock.calls[0][0].workouts[0].healthMetrics).toEqual(store.getState().S.workouts[0].healthMetrics)
+  })
+  it('waits for the Watch final measurement before exporting an ongoing measurement', async () => {
+    const store = makeStore()
+    const workout = { id: 'waiting', start: time, end: time + 60000, healthMetrics: { activeKcal: 6, sampledAt: time + 59000, final: false } }
+    store.getState().S.workouts = [workout]
+    await enableAppleHealth(store); await syncAppleHealth(store)
+    expect(native.writeWorkouts).not.toHaveBeenCalled()
+    workout.healthMetrics = { ...workout.healthMetrics, final: true, sampledAt: time + 60000 }
+    await syncAppleHealth(store)
+    expect(native.writeWorkouts).toHaveBeenCalledOnce()
+  })
+  it('enriches an already exported session if measured energy arrives later', async () => {
+    const store = makeStore()
+    const workout = { id: 'late', start: time, end: time + 60000 }
+    store.getState().S.workouts = [workout]
+    await enableAppleHealth(store); await syncAppleHealth(store)
+    workout.healthMetrics = { activeKcal: 6, sampledAt: time + 60000, final: true }
+    await syncAppleHealth(store); await syncAppleHealth(store)
+    expect(native.writeWorkouts).toHaveBeenCalledTimes(2)
+    expect(native.writeWorkouts.mock.calls[1][0].workouts).toHaveLength(1)
+    expect(native.deleteWorkout).not.toHaveBeenCalled()
+  })
+  it('retries energy export after a native failure without marking it exported', async () => {
+    const store = makeStore()
+    store.getState().S.workouts = [{ id: 'retry', start: time, end: time + 60000, healthMetrics: { activeKcal: 6, sampledAt: time + 60000, final: true } }]
+    await enableAppleHealth(store)
+    native.writeWorkouts.mockRejectedValueOnce(new Error('denied'))
+    await expect(syncAppleHealth(store)).rejects.toThrow('denied')
+    await syncAppleHealth(store)
+    expect(native.writeWorkouts).toHaveBeenCalledTimes(2)
+  })
 })

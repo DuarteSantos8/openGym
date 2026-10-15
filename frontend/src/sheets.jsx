@@ -300,7 +300,7 @@ function BwSheet({ required, onDone, close, fallbackReason }) {
   const unit = st.unit
   const bw = lastBW(st)
   // Only where this device reads a health store: which weight is pre-filled, and how old it is.
-  const usesHealth = useStore(s => hasHealthStore() && !!s.user)
+  const usesHealth = useStore(s => hasHealthStore() && appleHealthEnabled(useStore))
   const when = bw && (bw.src ? bw.m : bw.t)
   const [v, setV] = useState(bw ? bw.w : 70)
   // The line describes the pre-filled number, so it goes once the field holds another one.
@@ -2783,8 +2783,8 @@ export function startFlow(routineIds) {
   if (S().weighIn === false) { beginWorkout(routineIds, null); return }
   // Apple Health pre-fills the sheet (BwSheet says how old the reading is) but never answers it:
   // a reading can be weeks old, and the check-in is what keeps the curve honest.
-  const { healthWeightStatus, user } = useStore.getState()
-  const usesHealth = hasHealthStore() && !!user
+  const { healthWeightStatus } = useStore.getState()
+  const usesHealth = hasHealthStore() && appleHealthEnabled(useStore)
   const reasons = {
     pending: 'Apple Health is still checking for a weight. Enter your weight to start.',
     unsupported: 'Apple Health is unavailable on this device. Enter your weight to start.',

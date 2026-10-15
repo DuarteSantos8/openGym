@@ -7,19 +7,17 @@ vi.mock('@capacitor/core', () => ({ Capacitor: { getPlatform: () => 'ios' }, reg
 vi.mock('@capacitor/app', () => ({ App: { addListener } }))
 afterEach(() => vi.clearAllMocks())
 
-it('reads at startup and foreground, then removes listeners when the account view ends', async () => {
-  let onState
-  addListener.mockImplementation(async (event, callback) => { onState = callback; return { remove } })
-  const read = vi.fn()
-  const stop = healthWeight.initHealthWeightSync(read)
-  expect(read).toHaveBeenCalledTimes(1)
-  await Promise.resolve()
-  onState({ isActive: false })
-  expect(read).toHaveBeenCalledTimes(1)
-  onState({ isActive: true })
-  expect(read).toHaveBeenCalledTimes(2)
-  stop()
-  expect(remove).toHaveBeenCalledTimes(1)
+it('keeps measurement time separate from save time when converting pounds', () => {
+  expect(healthWeight.buildHealthWeighIn({ kilograms: 80, measuredAt: 1000, source: 'apple-health' }, 'lb', 2000))
+    .toMatchObject({ w: 176.4, t: 2000, m: 1000, src: 'apple-health' })
+})
+it.each([NaN, Infinity, -1, 0])('refuses invalid native weight %s', kilograms => {
+  expect(() => healthWeight.buildHealthWeighIn({ kilograms, measuredAt: 1000 }, 'kg')).toThrow()
+})
+it('recognizes readings at or after a same-day workout began', () => {
+  const state = { workouts: [{ d: '2026-10-15', start: 100 }], active: null }
+  expect(healthWeight.wasTakenAfterWorkout(state, { d: '2026-10-15', m: 100 })).toBe(true)
+  expect(healthWeight.wasTakenAfterWorkout(state, { d: '2026-10-15', m: 99 })).toBe(false)
 })
 
 it('replaceDailyWeight returns a new sorted list and leaves the one passed in untouched', () => {

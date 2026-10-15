@@ -2247,4 +2247,7 @@ export default {
   'Apple Health is unavailable on this device. Enter your weight to start.': '此裝置無法使用 Apple 健康。請輸入體重以開始。',
   'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'Apple 健康中沒有可讀取的體重。你可以在「設定」中檢查健康取用權限，或在此輸入體重。',
   'Apple Health could not load your weight. Enter your weight to start.': 'Apple 健康無法載入你的體重。請輸入體重以開始。',
+  "Workout weather": "訓練天氣",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "將室外溫度和濕度儲存至 Apple 健康。每次訓練會向 Open-Meteo 傳送一次大概位置；位置不會被儲存，也不會傳送至你的 openGym 伺服器。",
+  "Weather data by Open-Meteo (CC BY 4.0)": "天氣資料來自 Open-Meteo（CC BY 4.0）",
 }

@@ -2257,4 +2257,7 @@ export default {
   'Apple Health is unavailable on this device. Enter your weight to start.': 'Az Apple Health ezen az eszközön nem érhető el. Add meg a súlyodat a kezdéshez.',
   'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'Az Apple Healthben nincs olvasható testsúly. A Health-hozzáférést a Beállításokban ellenőrizheted, vagy itt megadhatod a súlyodat.',
   'Apple Health could not load your weight. Enter your weight to start.': 'Az Apple Health nem tudta betölteni a súlyodat. Add meg a súlyodat a kezdéshez.',
+  "Workout weather": "Edzés időjárása",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "A külső hőmérséklet és páratartalom mentése az Apple Egészségbe. A hozzávetőleges helyzet edzésenként egyszer az Open-Meteóhoz kerül; nem tároljuk és nem küldjük az openGym szerverére.",
+  "Weather data by Open-Meteo (CC BY 4.0)": "Időjárási adatok: Open-Meteo (CC BY 4.0)",
 }

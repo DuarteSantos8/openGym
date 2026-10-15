@@ -7,6 +7,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { isoOf } from './lib/format.js'
+import { appleHealthOwner } from './lib/apple-health.js'
 import { bwSheet, startFlow } from './sheets.jsx'
 
 const { platform } = vi.hoisted(() => ({ platform: { name: 'ios' } }))
@@ -16,6 +17,7 @@ beforeEach(() => {
   platform.name = 'ios'
   vi.useFakeTimers()
   useStore.setState({ S: { ...structuredClone(DEF), bodyweight: [{ d: '2026-09-08', w: 80, t: 1 }] }, user: { id: 'paired-user' }, healthWeightStatus: 'pending' })
+  localStorage.setItem('opengym_apple_health_owner', appleHealthOwner(useStore))
   useUI.setState({ sheets: [], toasts: [] })
 })
 afterEach(() => { vi.clearAllTimers(); vi.useRealTimers() })

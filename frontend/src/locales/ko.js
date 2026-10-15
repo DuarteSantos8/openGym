@@ -2254,4 +2254,7 @@ export default {
   'Apple Health is unavailable on this device. Enter your weight to start.': '이 기기에서는 Apple 건강을 사용할 수 없습니다. 시작하려면 체중을 입력하세요.',
   'Apple Health has no readable weight. You can check Health access in Settings or enter your weight here.': 'Apple 건강에 읽을 수 있는 체중이 없습니다. 설정에서 건강 접근 권한을 확인하거나 여기에 체중을 입력하세요.',
   'Apple Health could not load your weight. Enter your weight to start.': 'Apple 건강에서 체중을 불러오지 못했습니다. 시작하려면 체중을 입력하세요.',
+  "Workout weather": "운동 날씨",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "실외 온도와 습도를 Apple 건강에 저장합니다. 대략적인 위치는 운동당 한 번 Open-Meteo로 전송되며, 저장되거나 openGym 서버로 전송되지 않습니다.",
+  "Weather data by Open-Meteo (CC BY 4.0)": "Open-Meteo 날씨 데이터 (CC BY 4.0)",
 }

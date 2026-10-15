@@ -1,37 +1,25 @@
 // @vitest-environment happy-dom
-import { afterEach, expect, it, vi } from 'vitest'
-
-const { nativeRead } = vi.hoisted(() => ({ nativeRead: vi.fn() }))
-vi.mock('../lib/api.js', async importOriginal => ({ ...await importOriginal(), api: vi.fn(), setRemoteAuth: vi.fn() }))
-vi.mock('../lib/remote.js', () => ({ loadRemote: vi.fn(), forgetRemote: vi.fn(), connect: vi.fn(), chooseLocal: vi.fn() }))
-vi.mock('../lib/mobile.js', () => ({ MOBILE: true, initReminderSync: vi.fn(), nativeLoad: vi.fn(), nativeSave: vi.fn(), onAppActive: vi.fn(), syncReminder: vi.fn(), writeAutoBackup: vi.fn() }))
-vi.mock('../lib/coach-device.js', () => ({ loadCoachDevice: vi.fn(), saveCoachDevice: vi.fn(), coachDeviceSettings: () => null }))
-vi.mock('@capacitor/core', () => ({ Capacitor: { getPlatform: () => 'ios' }, registerPlugin: () => ({ latestBodyMass: nativeRead }) }))
-
-import { api } from '../lib/api.js'
-import { loadRemote, forgetRemote } from '../lib/remote.js'
+import { beforeEach, expect, it, vi } from 'vitest'
+const native = vi.hoisted(() => ({ available: vi.fn(), authorize: vi.fn(), readWeights: vi.fn(), writeWeights: vi.fn() }))
+vi.mock('../lib/mobile.js', async original => ({ ...await original(), MOBILE: true }))
+vi.mock('@capacitor/core', () => ({ Capacitor: { getPlatform: () => 'ios' }, registerPlugin: () => native }))
 import { DEF, useStore } from './useStore.js'
-
-afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); localStorage.clear() })
-
-it('keeps a paired account whose token the server refuses, and still imports its Health weight', async () => {
-  vi.useFakeTimers()
-  localStorage.clear()
-  useStore.setState({ S: structuredClone(DEF), ready: false })
-  useStore.getState().setUser({ id: 'previous-user' })
-  loadRemote.mockResolvedValue({ mode: 'remote', base: 'https://gym.example', token: 'revoked', user: { id: 'previous-user' } })
-  api.mockRejectedValue(Object.assign(new Error('Session expired'), { status: 401 }))
-  nativeRead.mockResolvedValue({ status: 'available', kilograms: 80, measuredAt: Date.now() })
-
-  await useStore.getState().boot()
-  // The pairing and the account stay; the screens say the server refuses this phone. Pairing
-  // again merges what the phone kept, the imported weigh-in included.
-  expect(useStore.getState().user).toEqual({ id: 'previous-user' })
-  expect(useStore.getState().isGuest()).toBe(false)
-  expect(forgetRemote).not.toHaveBeenCalled()
-  expect(useStore.getState().sync.status).toBe('auth')
-  await useStore.getState().syncHealthWeight()
-  expect(nativeRead).toHaveBeenCalledTimes(1)
-  expect(useStore.getState().S.bodyweight).toMatchObject([{ w: 80 }])
-  expect(useStore.getState().healthWeightStatus).toBe('available')
+import { enableAppleHealth, disableAppleHealth, syncAppleHealth } from '../lib/apple-health.js'
+beforeEach(() => {
+  localStorage.clear(); disableAppleHealth(); vi.clearAllMocks()
+  native.available.mockResolvedValue({ available: true }); native.authorize.mockResolvedValue({})
+  native.writeWeights.mockResolvedValue({ written: 0 })
+  useStore.setState({ S: structuredClone(DEF), ready: false, user: { id: 'one' } })
+})
+it('does not read into the profile until boot restoration is complete', async () => {
+  await enableAppleHealth(useStore); await syncAppleHealth(useStore)
+  expect(native.readWeights).not.toHaveBeenCalled()
+})
+it('leaves manual entry usable and reports native read failures', async () => {
+  useStore.setState({ ready: true })
+  native.readWeights.mockRejectedValueOnce(new Error('native failure'))
+  await enableAppleHealth(useStore)
+  await expect(syncAppleHealth(useStore)).rejects.toThrow('native failure')
+  expect(useStore.getState().healthWeightStatus).toBe('failed')
+  expect(useStore.getState().S.bodyweight).toEqual([])
 })

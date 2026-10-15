@@ -181,15 +181,29 @@ plays; the zip export opens the share sheet.
 
 Open **Settings → Data & backup → Sync with Apple Health** in the native iPhone app. Turning the
 switch on opens Apple's permission sheet. Allow body weight reads and writes and workout
-writes. The bridge also requests workout reads to recognize previously exported sessions.
+writes, including measured active/resting energy when available. The bridge also requests
+workout reads to recognize previously exported sessions.
 This setting is absent from the web/PWA and Android builds.
 
 - **Weight:** the latest external reading for each day is imported in the profile's kg/lb
-  unit. A reading only replaces a local entry when its timestamp is newer. Locally entered
-  weights are exported in kilograms. Existing history is included on first sync.
+  unit. Imported entries retain `src: apple-health` and measurement time `m`; `t` remains the
+  save/edit time. The weigh-in sheet shows the source and age, stays open for confirmation,
+  and falls back to manual entry on unavailable, empty or failed reads. Confirming today's
+  unchanged imported value preserves its provenance. Editing it manually removes `src` and
+  keeps `m`, so re-reading that sample does not undo the correction. A newer manual edit on
+  another device also wins, even if that device has not yet received `m`. The import does not
+  replace an existing day's entry with a reading taken at or after that day's workout began.
+  Deleted weigh-ins are not restored by re-reading an older Health sample. Locally entered
+  weights are exported in kilograms; imported entries are not echoed back. Existing history
+  is included on first sync.
 - **Workouts:** finished sessions are exported as strength training with their name, start
   and end time. Active or discarded sessions are not exported. This integration does not
   estimate energy expenditure or heart rate, and does not import workouts from Health.
+  When a session already carries final measured `healthMetrics`, active energy and optional
+  resting energy are associated with its exact app-owned workout. Partial measurements wait
+  for finalization; missing measurements remain absent. Stable sample identifiers/versions
+  make retries idempotent. Existing workouts are enriched without deleting/recreating them.
+  This integration consumes existing measurements; it does not add a sensor or Watch collector.
 - **Deleting a workout:** confirming Delete workout also removes the matching session
   exported by this app to Health when sync is enabled. Only that exact identifier, app
   source and saved time range are eligible. Other apps' workouts and weigh-ins are never
@@ -207,6 +221,21 @@ This setting is absent from the web/PWA and Android builds.
   profile's existing backup/export and, if paired, server sync settings. Health permission
   choices themselves are never sent to the server.
 
+**Workout weather** is a separate opt-in below Apple Health sync. Before any location request,
+the setting explains that one approximate location per workout is sent to Open-Meteo. A single
+foreground location fix is rounded to two decimal places; the native request uses an ephemeral
+session. Only outdoor temperature, humidity and an observation timestamp cross the bridge.
+Coordinates never enter the profile, backups or the openGym server. Open-Meteo attribution
+is displayed in the setting. This is an outdoor model estimate, not a gym thermometer.
+
+Weather consent and a bounded cache of at most 30 captures belong to this device/server/account.
+Only a sample observed inside the exact completed workout interval is exported, and the first
+export waits for its pending capture. Backfilled, edited and stale sessions never initiate a
+lookup. Permission denial, location failure and offline weather omit that metadata without
+preventing workout export. Existing Health workouts are not recreated to add weather.
+Disabling Health sync also disables weather and clears its cache. No background location,
+workout routes, location inspection or experimental effort calculation is included.
+
 Apple controls each permission separately. Completing the permission sheet does not mean
 all permissions were granted: denied reads appear as no accessible data; denied writes
 report an error. Review permissions in the Health app if sync brings in no readings.
@@ -223,6 +252,13 @@ HealthKit sync identifiers and versions make retries idempotent, including when 
 read access is denied. Weight replacement uses HealthKit's versioned save rather than
 removing the previous sample before its replacement succeeds. See Apple's
 [sync identifier documentation](https://developer.apple.com/documentation/healthkit/hkmetadatakeysyncidentifier).
+
+Source/age display, daily weight helpers and account-transition protections are adapted from
+[Dan Sedano (@thedandano), PR #463](https://github.com/DuarteSantos8/openGym/pull/463),
+original commit `455a1a31c94e6c38a5260c452e179c4315dae4b7`. The original authored commit is
+retained in the contribution history. Adaptations use the existing opt-in `HealthSync` bridge
+and keep #434's priority for manual edits newer than a measurement, rather than adding a
+second automatic reader.
 
 ### Health Connect (Android)
 

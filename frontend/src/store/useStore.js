@@ -16,7 +16,7 @@ import { pendingRefCount, settleMedia, loadPending } from '../lib/media-owed.js'
 import { referencedHashes } from '../lib/media-refs.js'
 import { mediaStore, mediaStoreInUse } from '../lib/media-store.js'
 import { countChanges, syncFingerprint } from '../lib/sync-changes.js'
-import { queueAppleHealthWorkoutDeletion } from '../lib/apple-health.js'
+import { invalidateAppleHealth, queueAppleHealthWorkoutDeletion } from '../lib/apple-health.js'
 import { sameWorkout } from '../lib/workout-date.js'
 import { saveWorkoutEdit, deleteEditedWorkout, editedRecord } from '../lib/session-edit.js'
 import { appBase } from '../lib/app-base.js'
@@ -26,7 +26,6 @@ import { loadCfAccess } from '../lib/cf-access.js'
 import { loadCoachDevice, saveCoachDevice, coachDeviceSettings } from '../lib/coach-device.js'
 import { RTL_LANGS } from '../lib/i18n-core.js'
 import { DEFAULT_TEMPLATE_ID } from '../lib/structuralBalanceTemplates.js'
-import { buildHealthWeighIn, readHealthWeight, replaceDailyWeight, wasTakenAfterWorkout } from '../lib/health-weight.js'
 
 import { WC_DEFAULT } from '../lib/workout-controls.js'
 import { sanitizeAccent } from '../lib/accent.js'
@@ -474,12 +473,10 @@ export const useStore = create((set, get) => {
     if (MOBILE) return pairedBase
     try { return location.origin && location.origin !== 'null' ? location.origin + appBase().replace(/\/$/, '') : null } catch { return null }
   }
-  let healthRead = null
-  let healthSession = 0
   // Sign-out and pairing swap the profile under an Apple Health read: the read in flight is
-  // dropped and no new one starts (syncHealthWeight waits for `ready`) until the swap is over.
+  // dropped and no new one starts (syncAppleHealth waits for `ready`) until the swap is over.
   const pauseHealth = async work => {
-    healthSession++; healthRead = null
+    invalidateAppleHealth()
     set({ ready: false, healthWeightStatus: 'pending' })
     try { return await work() } finally { set({ ready: true }) }
   }
@@ -1315,38 +1312,6 @@ export const useStore = create((set, get) => {
     // The connection as the screens show it — see statusOf above for every field.
     sync: sync0,
     healthWeightStatus: 'pending',
-    async syncHealthWeight() {
-      // ponytail: pair first; local imports need provenance before snapshot pairing can preserve both profiles.
-      if (!get().ready || !get().user) return
-      if (healthRead) return healthRead
-      const session = healthSession
-      set({ healthWeightStatus: 'pending' })
-      const request = (async () => {
-        try {
-          const sample = await readHealthWeight()
-          if (session !== healthSession) return
-          if (sample.status === 'unsupported' || sample.status === 'no-readable-data') {
-            console.warn(`Apple Health: ${sample.status}; using manual weigh-in`)
-            set({ healthWeightStatus: sample.status })
-            return
-          }
-          if (sample.status !== 'available') throw new Error('Apple Health returned an unknown result')
-          const entry = buildHealthWeighIn(sample, get().S.unit)
-          // Applied once: the day's entry carries `m`, the reading it came from or stands in for.
-          const existing = get().S.bodyweight.find(b => b.d === entry.d)
-          const applied = existing?.m === entry.m
-          if (!applied && !(existing && wasTakenAfterWorkout(get().S, entry))) get().update(s => { s.bodyweight = replaceDailyWeight(s.bodyweight, entry) })
-          set({ healthWeightStatus: 'available' })
-        } catch (error) {
-          // The native bridge and local persistence can both fail; neither may block a workout.
-          console.warn('Apple Health sync failed; using manual weigh-in', error)
-          if (session === healthSession) set({ healthWeightStatus: 'failed' })
-        }
-      })()
-      healthRead = request
-      await request
-      if (healthRead === request) healthRead = null
-    },
     /* Instance capabilities from GET /api/config. `config.coach` is present only when the owner
        has both enabled the Coach and connected a provider — every Coach entry point in the app
        hangs off it via coachAvailable(), so an unconfigured instance renders exactly what it
@@ -1526,7 +1491,7 @@ export const useStore = create((set, get) => {
     isGuest: () => localStorage.getItem('gym_guest') === '1',
     // Choosing to go on without a server ends whatever was said about the last one.
     setGuest(v) {
-      healthSession++; healthRead = null
+      invalidateAppleHealth()
       if (v) localStorage.setItem('gym_guest', '1'); else localStorage.removeItem('gym_guest')
       set({ healthWeightStatus: 'pending' })
       if (v) setSync({ auth: false, offline: false, lastError: null })
@@ -1557,7 +1522,7 @@ export const useStore = create((set, get) => {
     // `adopt` (a sign-in, a pairing — { alwaysAsk } for a device link): adoptProfile follows and
     // decides what becomes of this copy; until it has, nothing is pulled or pushed (ADOPT_KEY).
     setUser(u, { adopt } = {}) {
-      healthSession++; healthRead = null
+      invalidateAppleHealth()
       if (u) {
         // The local copy belongs to whoever last signed in here. When a session expires or is
         // revoked elsewhere, boot() only drops the user and the data stays; a different profile
