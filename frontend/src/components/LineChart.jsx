@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { fmtNum, fmtDate, MONTHS, isoOf } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
+import { EmptyState } from './blocks.jsx'
 
 const W = 340   // viewBox width; the svg stretches to its container, height comes from `h`
 
@@ -46,7 +47,7 @@ export default function LineChart({ points, h = 150, unit = '', color = 'var(--a
     tip.style.top = (cy < th + 14 ? Math.min(ch - th - M, cy + 14) : M) + 'px'
   })
 
-  if (!points || points.length === 0) return <div className="empty small">{t('No data yet')}</div>
+  if (!points || points.length === 0) return <EmptyState className="small">{t('No data yet')}</EmptyState>
   const H = h
   const P = { l: axes ? 34 : 8, r: 12, t: 10, b: axes ? 22 : 8 }
   const single = points.length === 1

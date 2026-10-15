@@ -13,11 +13,11 @@ import { Button, Row, Section, Segmented } from '../components/ui.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
 import { copyRoutine, deleteRoutine, restoreRoutine, routineSnapshot } from '../lib/routines.js'
 import { workoutControls } from '../lib/workout-controls.js'
-import { tappable } from '../lib/use-sheet-keyboard.js'
 import { useListReorder, moved } from '../lib/use-list-reorder.js'
 import { glyphOf, DEFAULT_GLYPH } from '../lib/glyphs.js'
 import { nav as navigateTo } from '../lib/nav.js'
-import SubHeader from '../components/SubHeader.jsx'
+import { Inline, Page } from '../components/layout.jsx'
+import { EmptyState, ItemRow, SectionTitle } from '../components/blocks.jsx'
 import { queueOf, queueView } from '../lib/queue.js'
 import { deriveSessionName } from '../lib/session-merge.js'
 import { markUndone, undoMarks } from '../lib/sync-merge.js'
@@ -147,13 +147,14 @@ export default function Plan({ view = 'schedule' }) {
   const mode = scheduleModeOf(S)
 
   return <div className="plan">
-    <SubHeader title={view === 'routines' ? t('Routines') : t('Schedule')}
+    <Page title={view === 'routines' ? t('Routines') : t('Schedule')}
       sub={view === 'routines' ? null : mode === 'rotation' ? t('Your routines in a loop') : t('Your weekly routine')}
-      action={<button className="iconbtn" onClick={openMenu} aria-label={t('Plan options')} title={t('Plan options')}><Icon name="share" /></button>} />
-    <input ref={fileRef} type="file" accept="application/json,.json" onChange={pickFile} hidden />
-    {view === 'routines'
-      ? <Routines S={S} update={update} nav={nav} />
-      : <Schedule S={S} update={update} nav={nav} mode={mode} />}
+      action={<button className="iconbtn" onClick={openMenu} aria-label={t('Plan options')} title={t('Plan options')}><Icon name="share" /></button>}>
+      <input ref={fileRef} type="file" accept="application/json,.json" onChange={pickFile} hidden />
+      {view === 'routines'
+        ? <Routines S={S} update={update} nav={nav} />
+        : <Schedule S={S} update={update} nav={nav} mode={mode} />}
+    </Page>
   </div>
 }
 
@@ -236,15 +237,14 @@ function Schedule({ S, update, nav, mode }) {
   // One weekday: what is on it at a glance, and a tap to change it (dayAssignSheet picks one
   // routine, several for a combined day, or a rest day).
   const dayRow = (d, rs = dayRoutines(d)) => {
-    return <div key={d} className="item plan-day" data-day={d} aria-label={t(DAYN[d])} {...tappable(() => dayAssignSheet(d))}>
-      <span className={'plan-day-n' + (d === todayDow ? ' today' : '')} aria-hidden="true">{t(DAYS[d])}</span>
-      <span className={'lrow-i' + (rs.length ? '' : ' rest')}><Icon name={rs.length ? glyphOf(rs[0].emoji) : 'moon'} /></span>
-      <div className="grow">
-        <div className="tt">{rs.length ? deriveSessionName(rs.map(r => r.name)) : t('Rest day')}</div>
-        <div className="ss">{rs.length === 1 ? exCount(rs[0].ex.length) : rs.length ? routineCount(rs.length) : t('Tap to plan something')}</div>
-      </div>
-      <Icon name="chevronRight" className="chev" />
-    </div>
+    return <ItemRow key={d} className="plan-day" data-day={d} aria-label={t(DAYN[d])} onClick={() => dayAssignSheet(d)}
+      lead={<>
+        <span className={'plan-day-n' + (d === todayDow ? ' today' : '')} aria-hidden="true">{t(DAYS[d])}</span>
+        <span className={'lrow-i' + (rs.length ? '' : ' rest')}><Icon name={rs.length ? glyphOf(rs[0].emoji) : 'moon'} /></span>
+      </>}
+      title={rs.length ? deriveSessionName(rs.map(r => r.name)) : t('Rest day')}
+      subtitle={rs.length === 1 ? exCount(rs[0].ex.length) : rs.length ? routineCount(rs.length) : t('Tap to plan something')}
+      chevron />
   }
   // Beside a loop, a weekday shows only what it adds to it: a routine that is in the loop already
   // is the loop's session, the same rule Home follows (effectiveRoutineIds, history.js).
@@ -268,35 +268,36 @@ function Schedule({ S, update, nav, mode }) {
       </Row>
     </Section>
 
-    {!S.routines.length && <div className="empty plan-empty">
-      <div className="ico"><Icon name="clipboard" /></div>{t('No routines yet.')}<br />{t('Make one, or grab the starter plan to get going.')}
-      <div style={{ marginTop: 12 }}><Button icon="clipboard" onClick={starterPlanSheet}>{t('Load starter plan')}</Button></div>
-    </div>}
+    {!S.routines.length && <EmptyState className="plan-empty" icon="clipboard">
+      {t('No routines yet.')}<br />{t('Make one, or grab the starter plan to get going.')}
+      <div className="mt-6"><Button icon="clipboard" onClick={starterPlanSheet}>{t('Load starter plan')}</Button></div>
+    </EmptyState>}
 
     {/* A queue payload that arrived unusable: a fix-up, shown whichever way you train. Giving it
         up also gives up S.scheduleMode='rotation', or the loop would sit there with no queue. */}
-    {recovery && <div className="empty">
+    {recovery && <EmptyState>
       {t('This rotation couldn’t be read. Another device may have written it.')}
-      <div style={{ marginTop: 10 }}>
+      <div className="mt-5">
         <Button size="sm" variant="tinted" aria-label={t('Discard it')} onClick={() => update(s => { s.queue = null; s.scheduleMode = 'week' })}>{t('Discard it')}</Button>
       </div>
-    </div>}
+    </EmptyState>}
 
     {mode === 'week' ? <>
-      <h4 className="sec">{t('This week')}</h4>
+      <SectionTitle>{t('This week')}</SectionTitle>
       <div className="list plan-week">{weekOrder(ws).map(d => dayRow(d))}</div>
       <p className="sect-f">{t('Want two routines on one day? Tap the day and pick both.')}</p>
     </> : <div className="rotation">
-      <div className="row between plan-sec-h">
-        <h4 className="sec">{t('The loop')}{external && <span className="tag" style={{ marginInlineStart: 8 }}>{t('Externally managed')}</span>}</h4>
+      <Inline justify="between" className="plan-sec-h">
+        {/* The tag's 8px start margin has no kit class (Tag takes no style), so it stays inline. */}
+        <SectionTitle>{t('The loop')}{external && <span className="tag" style={{ marginInlineStart: 8 }}>{t('Externally managed')}</span>}</SectionTitle>
         {/* A coach's own queue is read-only here: the one way to change what it holds is to
             adopt it first ("Use this rotation" below), never a tap on one of its rows. */}
-        {!external && <div className="row plan-sec-acts" style={{ gap: 6 }}>
+        {!external && <Inline gap={3} className="plan-sec-acts">
           {seq.length > 0 && <button className="plan-textbtn" aria-pressed={editLoop} onClick={() => setEditLoop(e => !e)}>{editLoop ? t('Done') : t('Edit')}</button>}
           <Button size="sm" variant="tinted" icon="plus" aria-label={t('Add routine to the rotation')}
             disabled={S.routines.every(r => seq.includes(r.id))} onClick={addToSeq}>{t('Add')}</Button>
-        </div>}
-      </div>
+        </Inline>}
+      </Inline>
       {seq.length ? <div className="list plan-loop" ref={loopReorder.listRef}>
         {seq.map((id, i) => {
           const r = routineOf(id)
@@ -304,29 +305,29 @@ function Schedule({ S, update, nav, mode }) {
           // The loop's swipe is remove-only (v1.3.11): a routine is in the loop once, so there is
           // nothing to copy. The row the reorder measures is the swipe's outer element.
           const reorderProps = { 'data-reorder-row': '', style: loopReorder.rowStyle(i) }
-          const row = <div {...(swipe ? {} : { key: id, ...reorderProps })} className={'item rotation-row' + (item?.state === 'done' ? ' is-done' : '')}>
-            {editing && <button className="plan-minus" aria-label={t('Remove {0}', r?.name ?? id)} title={t('Remove')}
-              onClick={() => takeOut(id)}><Icon name="minus" /></button>}
-            <span className={'plan-order' + (item?.state === 'next' ? ' next' : '')}>{item?.state === 'done' ? <Icon name="check" /> : i + 1}</span>
-            <span className="lrow-i"><Icon name={glyphOf(r?.emoji)} /></span>
-            <div className="grow" style={{ minWidth: 0 }}>
-              <div className="tt">{r?.name ?? id}</div>
-              <div className="ss">{item ? stateWord(item) : r ? exCount(r.ex.length) : ''}</div>
-            </div>
-            {editing && seq.length > 1 && <button className="plan-handle" aria-label={t('Move {0}', r?.name ?? id)} title={t('Drag to reorder')}
-              {...loopReorder.handle(i)}><Icon name="chevronsUpDown" /></button>}
-          </div>
+          // The title block needs no inline min-width: ItemRow's .item .grow is min-width:0 already.
+          const row = <ItemRow {...(swipe ? {} : { key: id, ...reorderProps })} className={'rotation-row' + (item?.state === 'done' ? ' is-done' : '')}
+            lead={<>
+              {editing && <button className="plan-minus" aria-label={t('Remove {0}', r?.name ?? id)} title={t('Remove')}
+                onClick={() => takeOut(id)}><Icon name="minus" /></button>}
+              <span className={'plan-order' + (item?.state === 'next' ? ' next' : '')}>{item?.state === 'done' ? <Icon name="check" /> : i + 1}</span>
+              <span className="lrow-i"><Icon name={glyphOf(r?.emoji)} /></span>
+            </>}
+            title={r?.name ?? id}
+            subtitle={item ? stateWord(item) : r ? exCount(r.ex.length) : ''}
+            trailing={editing && seq.length > 1 && <button className="plan-handle" aria-label={t('Move {0}', r?.name ?? id)} title={t('Drag to reorder')}
+              {...loopReorder.handle(i)}><Icon name="chevronsUpDown" /></button>} />
           return swipe
             ? <SwipeRow key={id} {...reorderProps} className="swrow-item" deleteLabel={t('Remove')} deleteIcon="minus"
               onDelete={() => takeOut(id)}>{row}</SwipeRow>
             : row
         })}
-      </div> : <div className="empty">{t('No rotation yet. Add routines in the order you want to train them. The first one you haven’t logged stays up next.')}</div>}
+      </div> : <EmptyState>{t('No rotation yet. Add routines in the order you want to train them. The first one you haven’t logged stays up next.')}</EmptyState>}
       {seq.length > 0 && <p className="sect-f">
         {qv ? (qv.waiting ? t('Next round starts {0}.', fmtDate(qv.startsOn, true)) : t('{0} of {1} done this round.', doneCount, qv.items.length)) + ' ' : ''}
         {external ? '' : editing ? t('Drag to reorder. Tap the minus to take one out.') : t('Trained out of order? Just pick another routine on Home.')}
       </p>}
-      <div className="row" style={{ gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
+      <Inline gap={4} wrap className="mt-2">
         {external && <Button size="sm" variant="tinted" aria-label={t('Use this rotation')} onClick={adopt}>{t('Use this rotation')}</Button>}
         {/* Throws the current round away and starts the saved loop again today; nothing logged
             before this moment counts for it (startNewPass, the strict pass). */}
@@ -335,12 +336,12 @@ function Schedule({ S, update, nav, mode }) {
         {/* Rotation chosen and a loop saved, but no round running (it was stopped elsewhere). */}
         {!liveQ && !recovery && seq.length > 0 && <Button size="sm" variant="tinted" icon="play" aria-label={t('Start the loop')}
           onClick={() => update(s => startPass(s))}>{t('Start the loop')}</Button>}
-      </div>
+      </Inline>
       {/* The weekday routines ride along beside a loop (effectiveRoutineIds, history.js) and feed
           the same tally (weekTally, queue.js), so the days that still add one stay in sight; a
           day whose only routines are in the loop already adds nothing and is left out. */}
       {plannedDays.length > 0 && <>
-        <h4 className="sec">{t('Also on fixed days')}</h4>
+        <SectionTitle>{t('Also on fixed days')}</SectionTitle>
         <div className="list plan-week">{plannedDays.map(d => dayRow(d, extraRoutines(d)))}</div>
         <p className="sect-f">{t('These count on top of the loop. Tap a day to change or clear it.')}</p>
       </>}
@@ -393,29 +394,32 @@ function Routines({ S, update, nav }) {
   const order = weekOrder(weekStartOf(S))
   const daysOf = id => order.filter(d => [].concat(S.week[d] || []).includes(id)).map(d => t(DAYS[d]))
   const sub = r => [exCount(r.ex.length), daysOf(r.id).join(', ')].filter(Boolean).join(' · ')
+  // The edit-mode row's reorder hooks. The row style is the hook's computed one; `true` renders
+  // data-reorder-row="true", as the bare attribute did.
+  const editRowProps = i => ({ 'data-reorder-row': true, style: reorder.rowStyle(i) })
 
   return <>
-    <div className="row between plan-sec-h plan-routines-bar">
+    <Inline justify="between" className="plan-sec-h plan-routines-bar">
       {routines.length > 0
         ? <button className="plan-textbtn" aria-pressed={edit} onClick={() => setEdit(e => !e)}>{edit ? t('Done') : t('Edit')}</button>
         : <span />}
       <Button size="sm" variant="tinted" icon="plus" onClick={addRoutine}>{t('New routine')}</Button>
-    </div>
+    </Inline>
     {routines.length ? <>
       {edit
         ? <div className="list routine-list plan-routines is-editing" ref={reorder.listRef}>{routines.map((r, i) =>
-          <div key={r.id} data-reorder-row className="item plan-routine" style={reorder.rowStyle(i)}>
-            <button className="plan-minus" aria-label={t('Delete {0}', r.name)} title={t('Delete routine')} onClick={() => remove(r)}><Icon name="minus" /></button>
-            <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
-            <div className="grow"><div className="tt">{r.name}</div><div className="ss">{sub(r)}</div></div>
-            {routines.length > 1 && <button className="plan-handle" aria-label={t('Move {0}', r.name)} title={t('Drag to reorder')}
-              {...reorder.handle(i)}><Icon name="chevronsUpDown" /></button>}
-          </div>)}</div>
+          <ItemRow key={r.id} {...editRowProps(i)} className="plan-routine"
+            lead={<>
+              <button className="plan-minus" aria-label={t('Delete {0}', r.name)} title={t('Delete routine')} onClick={() => remove(r)}><Icon name="minus" /></button>
+              <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
+            </>}
+            title={r.name} subtitle={sub(r)}
+            trailing={routines.length > 1 && <button className="plan-handle" aria-label={t('Move {0}', r.name)} title={t('Drag to reorder')}
+              {...reorder.handle(i)}><Icon name="chevronsUpDown" /></button>} />)}</div>
         : <div className="list routine-list plan-routines">{routines.map(r => {
-          const row = <div key={r.id} className="item plan-routine" {...tappable(() => nav('/train/routines/' + r.id))}>
-            <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
-            <div className="grow"><div className="tt">{r.name}</div><div className="ss">{sub(r)}</div></div>
-            <Icon name="chevronRight" className="chev" /></div>
+          const row = <ItemRow key={r.id} className="plan-routine" onClick={() => nav('/train/routines/' + r.id)}
+            lead={<span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>}
+            title={r.name} subtitle={sub(r)} chevron />
           // Swipe (v1.3.11, Settings → Swipe actions): toward the start deletes with an Undo,
           // toward the end duplicates. Edit's minus and the routine's own page stay the way in
           // for a keyboard and a screen reader.
@@ -427,7 +431,7 @@ function Routines({ S, update, nav }) {
         })}</div>}
       <p className="sect-f">{edit ? t('Drag to reorder. Tap the minus to delete.') : t('Tap a routine to edit it. Reorder and delete are behind Edit.')}</p>
     </> : <>
-      <div className="empty"><div className="ico"><Icon name="clipboard" /></div>{t('No routines yet.')}<br />{t('Make one, or grab the starter plan to get going.')}</div>
+      <EmptyState icon="clipboard">{t('No routines yet.')}<br />{t('Make one, or grab the starter plan to get going.')}</EmptyState>
       <Button icon="clipboard" onClick={starterPlanSheet}>{t('Load starter plan')}</Button>
     </>}
   </>
