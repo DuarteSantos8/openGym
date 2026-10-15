@@ -1,5 +1,8 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Aliases": "أسماء بديلة",
+  "Alternative names for search. Separate with commas.": "أسماء بديلة للبحث. افصل بينها بفواصل.",
+  "Save aliases": "حفظ الأسماء البديلة",
   'Confirm': 'تأكيد',
   'Cancel': 'إلغاء',
   'Press back again to exit': 'اضغط زر الرجوع مرة أخرى للخروج',

@@ -4,6 +4,9 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  'Aliases': 'Nomes alternativos',
+  'Alternative names for search. Separate with commas.': 'Nomes alternativos para pesquisa. Separe com vírgulas.',
+  'Save aliases': 'Salvar nomes alternativos',
   '{0} set brings an {1} with it. Switch on Effort per set in Settings to see it.': '{0} série traz um {1} junto. Ative “Esforço por série” nas Configurações para ver.',
   'Add to this set': 'Adicionar a esta série',
   'Copy this exercise’s warm-up sets, and the rest and note from its Exercise settings, into the routine. A note added for today stays with this workout. Your workout history is kept.': 'Copia para a rotina as séries de aquecimento deste exercício, e o descanso e a anotação das Configurações do exercício dele. Uma anotação adicionada para hoje fica com este treino. Seu histórico de treinos é mantido.',
