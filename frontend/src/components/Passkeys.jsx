@@ -15,11 +15,13 @@ import { askAddDeviceData } from '../sheets.jsx'
 import { passwordError, notReached, useAgainOnceReached, ProveOwner } from './PasswordAuth.jsx'
 import QrCanvas from './QrCanvas.jsx'
 import { Row, Button } from './ui.jsx'
+import { Spacer } from './layout.jsx'
+import { Card } from './blocks.jsx'
+import { SheetHeader } from './sheet-layout.jsx'
 
 const ui = () => useUI.getState()
 const toast = m => ui().toast(m)
 const post = (path, body) => api(path, { method: 'POST', body: JSON.stringify(body) })
-const errStyle = { color: 'var(--red-ink)', marginTop: 10 }
 // A passkey prompt the person closed is their answer, not an error worth a line in red.
 const dismissed = e => e?.name === 'NotAllowedError' || e?.name === 'AbortError'
 // How long a code lives (api/device-link.js DEVICE_LINK_TTL_MS), for the sentence that says so.
@@ -88,22 +90,22 @@ export function DeviceLinkRow({ state }) {
 export function PasskeysSheet({ close, changed }) {
   const { st, set } = usePasskeys(true)
   const done = r => { set(listOf(r) || st); changed?.() }
-  if (!st) return <><h3>{t('Passkeys')}</h3><div className="muted small">…</div></>
+  if (!st) return <><SheetHeader title={t('Passkeys')} /><div className="muted small">…</div></>
   const edit = (p, i) => ui().openSheet(c => <PasskeySheet passkey={p} title={label(p, i)} state={st} close={c} done={done} />)
   const add = () => ui().openSheet(c => <AddPasskeySheet state={st} close={c} done={done} />)
   return <>
-    <h3>{t('Passkeys')}</h3>
-    <div className="muted small" style={{ marginBottom: 14 }}>
+    <SheetHeader title={t('Passkeys')} />
+    <div className="muted small mb-7">
       {t('Each one signs in to this profile from the device or password manager that keeps it. Tap one to rename or remove it.')}
     </div>
     {st.passkeys.length > 0 && <div className="sect-b">
       {st.passkeys.map((p, i) => <Row key={p.id} icon="fingerprint" iconTint="var(--grey)" title={label(p, i)} subtitle={meta(p) || null}
         accessory="chevron" onClick={() => edit(p, i)} />)}
     </div>}
-    {st.passkeys.length === 1 && st.lastWayIn && <div className="dim small" style={{ marginTop: 8 }}>
+    {st.passkeys.length === 1 && st.lastWayIn && <div className="dim small mt-4">
       {t('It is your only way in, so it cannot be removed until there is another.')}</div>}
-    <div style={{ height: 14 }} />
-    {webauthnOK() && <><Button variant="primary" icon="plus" onClick={add}>{t('Add a passkey')}</Button><div style={{ height: 8 }} /></>}
+    <Spacer size={7} />
+    {webauthnOK() && <><Button variant="primary" icon="plus" onClick={add}>{t('Add a passkey')}</Button><Spacer size={4} /></>}
     <Button onClick={close}>{t('Done')}</Button>
   </>
 }
@@ -124,15 +126,15 @@ function PasskeySheet({ passkey, title, state, close, done }) {
   const remove = () => ui().openSheet(c => <RemovePasskeySheet passkey={passkey} title={title} state={state} close={c} done={r => { done(r); close() }} />)
   const info = meta(passkey)
   return <>
-    <h3>{title}</h3>
-    {info && <div className="muted small" style={{ marginBottom: 14 }}>{info}</div>}
+    <SheetHeader title={title} />
+    {info && <div className="muted small mb-7">{info}</div>}
     <form onSubmit={save} noValidate>
       <input className="input" placeholder={t('Name, e.g. Work laptop')} maxLength={40} value={name} onChange={e => setName(e.target.value)} />
-      {err && <div className="small" role="alert" style={errStyle}>{err}</div>}
-      <div style={{ height: 12 }} />
+      {err && <div className="small ink-danger mt-5" role="alert">{err}</div>}
+      <Spacer size={6} />
       <Button type="submit" variant="primary" disabled={busy}>{t('Save')}</Button>
     </form>
-    <div style={{ height: 8 }} />
+    <Spacer size={4} />
     {state.lastWayIn
       ? <div className="dim small">{t('It is your only way in, so it cannot be removed until there is another.')}</div>
       : <button type="button" className="btn danger" disabled={busy} onClick={remove}>{t('Remove passkey')}</button>}
@@ -151,14 +153,14 @@ function RemovePasskeySheet({ passkey, title, state, close, done }) {
     toast(t('Passkey removed'))
   }
   return <>
-    <h3>{t('Remove this passkey?')}</h3>
-    <div className="small" style={{ fontWeight: 600, marginBottom: 6 }}>{title}</div>
-    <div className="muted small" style={{ marginBottom: 6 }}>
+    <SheetHeader title={t('Remove this passkey?')} />
+    <div className="small fw-semibold mb-3">{title}</div>
+    <div className="muted small mb-3">
       {t('It can no longer sign in to this profile. A device already signed in with it stays signed in. If it was lost, use Sign out everywhere.')}
     </div>
-    <div className="dim small" style={{ marginBottom: 14 }}>{t('First confirm that it is you.')}</div>
+    <div className="dim small mb-7">{t('First confirm that it is you.')}</div>
     <ProveOwner passkey password={state.password} explain={passkeyError} danger submitText={t('Remove')} onProof={remove} />
-    <div style={{ height: 8 }} />
+    <Spacer size={4} />
     <Button type="button" variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
   </>
 }
@@ -190,16 +192,16 @@ function AddPasskeySheet({ state, close, done }) {
     } finally { setBusy(false) }
   }
   return <>
-    <h3>{t('Add a passkey')}</h3>
-    <div className="muted small" style={{ marginBottom: 14 }}>{ready
+    <SheetHeader title={t('Add a passkey')} />
+    <div className="muted small mb-7">{ready
       ? t('Confirmed. Now create the new passkey; your browser will ask where to keep it.')
       : t('For this device, a security key, a password manager, or your phone through the browser’s own QR code. First confirm that it is you.')}</div>
     <input className="input" placeholder={t('Name, e.g. Work laptop')} maxLength={40} value={name} onChange={e => setName(e.target.value)} />
-    <div style={{ height: 12 }} />
+    <Spacer size={6} />
     {ready ? <Button variant="primary" icon="plus" disabled={busy} onClick={create}>{t('Create passkey')}</Button>
       : <ProveOwner passkey={state.passkeys.length > 0} password={state.password} explain={passkeyError}
         onProof={async proof => setReady(await post('/api/account/passkeys/options', proof))} />}
-    {err && <div className="small" role="alert" style={errStyle}>{err}</div>}
+    {err && <div className="small ink-danger mt-5" role="alert">{err}</div>}
   </>
 }
 
@@ -219,27 +221,27 @@ export function DeviceLinkSheet({ close }) {
   const url = link ? deviceLinkUrl(link.code) : ''
   const copy = async () => { if (await copyText(url)) toast(t('Copied')) }
   return <>
-    <h3>{t('Add another device')}</h3>
+    <SheetHeader title={t('Add another device')} />
     {!st ? <div className="muted small">…</div> : !link ? <>
-      <div className="muted small" style={{ marginBottom: 14 }}>
+      <div className="muted small mb-7">
         {t('You get a code that lets your phone or another computer create a passkey for this profile. First confirm that it is you.')}
       </div>
       <ProveOwner passkey={st.passkeys.length > 0} password={st.password} explain={passkeyError}
         onProof={async proof => setLink(await post('/api/account/device-link', proof))} />
     </> : expired ? <>
-      <div className="muted small" style={{ marginBottom: 14 }}>{t('This code has expired.')}</div>
+      <div className="muted small mb-7">{t('This code has expired.')}</div>
       <Button variant="primary" onClick={() => setLink(null)}>{t('Make a new code')}</Button>
     </> : <>
-      <div className="muted small" style={{ marginBottom: 14 }}>
+      <div className="muted small mb-7">
         {t('Scan this with the other device, or open openGym there and enter the code on the sign-in screen. It works once, for {0} minutes.', LINK_MINUTES)}
       </div>
-      <div className="ci-qr-plate" style={{ width: 'fit-content', margin: '0 auto 14px' }}><QrCanvas value={url} size={200} /></div>
+      <div className="ci-qr-plate gate-qr"><QrCanvas value={url} size={200} /></div>
       {/* Read out or typed character by character: left to right in every language. */}
-      <div className="card" dir="ltr" style={{ textAlign: 'center', fontSize: 24, fontWeight: 700, letterSpacing: '.12em', padding: '14px 0' }}>{link.code}</div>
-      <div style={{ height: 12 }} />
+      <Card dir="ltr" className="ta-center fw-bold ls-12" style={{ fontSize: 24, padding: '14px 0' }}>{link.code}</Card>
+      <Spacer size={6} />
       <Button icon="copy" onClick={copy}>{t('Copy link')}</Button>
     </>}
-    <div style={{ height: 8 }} />
+    <Spacer size={4} />
     <Button variant="ghost" onClick={close}>{t('Done')}</Button>
   </>
 }
@@ -311,30 +313,30 @@ export function DeviceLinkRedeemSheet({ close }) {
     } finally { setBusy(false) }
   }
   if (!webauthnOK()) return <>
-    <h3>{t('Add this device')}</h3>
+    <SheetHeader title={t('Add this device')} />
     <div className="muted small">{t('This browser cannot create passkeys, so it cannot be added with a code. Open the link in a browser that can.')}</div>
-    <div style={{ height: 12 }} />
+    <Spacer size={6} />
     <Button onClick={close}>{t('Done')}</Button>
   </>
   const joining = info && info.code === code.trim() ? info : null
   const elsewhere = joining && joining.id !== user?.id
   return <>
-    <h3>{t('Add this device')}</h3>
-    <div className="muted small" style={{ marginBottom: 14 }}>{joining
+    <SheetHeader title={t('Add this device')} />
+    <div className="muted small mb-7">{joining
       ? t('Create a passkey on this device for the profile “{0}”. It signs you in here from now on.', joining.name)
       : t('Enter the code your other device shows under Settings → Account → Add another device. This device then gets a passkey of its own.')}</div>
-    {elsewhere && <div className="card small" style={{ textAlign: 'start', marginBottom: 14 }}>
-      {user && <div style={{ marginBottom: 8 }}>{user.name === joining.name
+    {elsewhere && <Card className="small ta-start mb-7">
+      {user && <div className="mb-4">{user.name === joining.name
         ? t('This code is for a different profile that is also called “{0}”, not the one this browser is signed in as. Adding it there signs yours out here.', joining.name)
         : t('This browser is signed in as “{0}”. Adding it to “{1}” signs “{0}” out here.', user.name, joining.name)}</div>}
       <div>{t('Only continue if this code comes from a device of your own. This browser is then signed in to “{0}”, and what you log here goes to that profile.', joining.name)}</div>
-    </div>}
+    </Card>}
     <form onSubmit={submit} noValidate>
-      <input ref={ref} className="input" name="device-code" autoComplete="one-time-code" placeholder={t('Code from your other device')} maxLength={20}
+      <input ref={ref} className="input ls-14 fw-semibold ta-center" name="device-code" autoComplete="one-time-code" placeholder={t('Code from your other device')} maxLength={20}
         value={code} onChange={e => setCode(e.target.value.toUpperCase())} autoCapitalize="characters" autoCorrect="off" spellCheck={false}
-        dir="ltr" style={{ letterSpacing: '.14em', fontWeight: 600, textAlign: 'center' }} />
-      {err && <div className="small" role="alert" style={errStyle}>{err}</div>}
-      <div style={{ height: 12 }} />
+        dir="ltr" />
+      {err && <div className="small ink-danger mt-5" role="alert">{err}</div>}
+      <Spacer size={6} />
       <Button type="submit" variant="primary" disabled={busy}>{t('Create passkey')}</Button>
     </form>
   </>

@@ -67,19 +67,27 @@ beforeAll(() => {
   }
 })
 
+// Letter spacing is written in em, so its computed px depends on the font size around it, which
+// differs per fixture (happy-dom resolves em against the parent's). Compare it back in em, or a
+// utility reads as lost where it won.
+const value = (el, p) => {
+  const v = getComputedStyle(el).getPropertyValue(p)
+  if (p !== 'letter-spacing' || !v.endsWith('px')) return v
+  return `${(parseFloat(v) / parseFloat(getComputedStyle(el.parentElement).fontSize)).toFixed(3)}em`
+}
+
 const computed = (html, cls) => {
   const host = document.createElement('div')
   host.innerHTML = html.replace(' T', ' data-t')
   document.body.appendChild(host)
   const el = host.querySelector('[data-t]')
   el.classList.add(cls)
-  const cs = getComputedStyle(el)
-  return { values: Object.fromEntries(props(utilities.find(u => u.cls === cls).decls).map(p => [p, cs.getPropertyValue(p)])), done: () => host.remove() }
+  return { values: Object.fromEntries(props(utilities.find(u => u.cls === cls).decls).map(p => [p, value(el, p)])), done: () => host.remove() }
 }
 
 describe('ui-kit utilities win the cascade', () => {
   it('reads the utilities from ui-kit.css', () => {
-    expect(utilities.map(u => u.cls)).toEqual(expect.arrayContaining(['mb-4', 'mt-2.5', 'm-0', 'g-0', 'sp-7', 'ink-danger', 'fs-caption', 'fw-bold', 'ta-center', 'stack']))
+    expect(utilities.map(u => u.cls)).toEqual(expect.arrayContaining(['mb-4', 'mt-2.5', 'm-0', 'g-0', 'sp-7', 'ink-danger', 'fs-caption', 'fw-bold', 'ta-center', 'stack', 'ls-12', 'ls-14', 'lh-145', 'lh-150', 'lh-160', 'wrap-anywhere']))
     expect(utilities.length).toBeGreaterThan(70)
   })
 

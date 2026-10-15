@@ -15,6 +15,8 @@ import { dateLocale } from '../lib/i18n-core.js'
 import { api, webauthnOK, passkeyAssertion, passwordLogin, passwordRegister, passwordResetRedeem } from '../lib/api.js'
 import { askAddDeviceData } from '../sheets.jsx'
 import { Row, Button } from './ui.jsx'
+import { Spacer } from './layout.jsx'
+import { SheetHeader } from './sheet-layout.jsx'
 
 // The server's floor (api/password.js MIN_LENGTH), checked here first so the common mistake is
 // answered without a round trip. The server still decides.
@@ -34,7 +36,6 @@ export const looksLikeEmail = s => {
 const ui = () => useUI.getState()
 const toast = m => ui().toast(m)
 const length = s => [...String(s || '')].length
-const errStyle = { color: 'var(--red-ink)', marginTop: 10 }
 
 // "in 5 minutes" in the UI language, for how long a pause (429, Retry-After) still lasts.
 function fmtIn(sec) {
@@ -80,7 +81,6 @@ async function signedIn(u, close) {
 }
 
 const field = { autoCapitalize: 'none', autoCorrect: 'off', spellCheck: false }
-const codeStyle = { letterSpacing: '.14em', fontWeight: 600, textAlign: 'center' }
 
 /* Sign in with name (or the profile's sign-in e-mail) and password, or — one tap away — redeem a reset code from the admin, which
    sets a new password and signs in. `onPasskey`, when given, offers the passkey instead. The
@@ -115,8 +115,8 @@ export function PasswordSignInSheet({ close, onPasskey }) {
     finally { setBusy(false) }
   }
   return <>
-    <h3>{reset ? t('Reset your password') : t('Sign in with password')}</h3>
-    <div className="muted small" style={{ marginBottom: 14 }}>{reset
+    <SheetHeader title={reset ? t('Reset your password') : t('Sign in with password')} />
+    <div className="muted small mb-7">{reset
       ? t('Enter the code your admin gave you and choose a new password. It signs you out everywhere else.')
       : t('Use your profile name (or the e-mail you added to it) and your password.')}</div>
     <form onSubmit={submit} noValidate>
@@ -124,28 +124,28 @@ export function PasswordSignInSheet({ close, onPasskey }) {
           type="email", which would refuse a plain name. */}
       <input ref={nameRef} className="input" name="username" autoComplete="username" placeholder={t('Name or e-mail')} maxLength={254}
         value={name} onChange={e => setName(e.target.value)} {...field} />
-      <div style={{ height: 10 }} />
+      <Spacer size={5} />
       {reset ? <>
-        <input className="input" name="reset-code" autoComplete="one-time-code" placeholder={t('Reset code')} maxLength={20}
-          value={code} onChange={e => setCode(e.target.value.toUpperCase())} {...field} style={codeStyle} />
-        <div style={{ height: 10 }} />
+        <input className="input ls-14 fw-semibold ta-center" name="reset-code" autoComplete="one-time-code" placeholder={t('Reset code')} maxLength={20}
+          value={code} onChange={e => setCode(e.target.value.toUpperCase())} {...field} />
+        <Spacer size={5} />
         <input className="input" type="password" name="new-password" autoComplete="new-password" placeholder={t('New password')}
           value={next} onChange={e => setNext(e.target.value)} />
-        <div style={{ height: 10 }} />
+        <Spacer size={5} />
         <input className="input" type="password" name="new-password-again" autoComplete="new-password" placeholder={t('Repeat the password')}
           value={again} onChange={e => setAgain(e.target.value)} />
-        <div className="dim small" style={{ marginTop: 6 }}>{t('At least {0} characters. A few unrelated words make a good one.', MIN_PASSWORD)}</div>
+        <div className="dim small mt-3">{t('At least {0} characters. A few unrelated words make a good one.', MIN_PASSWORD)}</div>
       </> : <input className="input" type="password" name="password" autoComplete="current-password" placeholder={t('Password')}
         value={pw} onChange={e => setPw(e.target.value)} />}
-      {err && <div className="small" role="alert" style={errStyle}>{err}</div>}
-      <div style={{ height: 12 }} />
+      {err && <div className="small ink-danger mt-5" role="alert">{err}</div>}
+      <Spacer size={6} />
       <Button type="submit" variant="primary" disabled={busy}>{reset ? t('Set password & sign in') : t('Sign in')}</Button>
     </form>
-    <div style={{ height: 8 }} />
+    <Spacer size={4} />
     <Button type="button" variant="ghost" className="dim" onClick={() => { setErr(null); setMode(reset ? 'signin' : 'reset') }}>
       {reset ? t('Sign in with password') : t('Have a reset code from your admin?')}</Button>
     {onPasskey && !reset && webauthnOK() && <>
-      <div style={{ height: 8 }} />
+      <Spacer size={4} />
       <Button type="button" icon="fingerprint" onClick={() => { close(); onPasskey() }}>{t('Sign in with passkey')}</Button>
     </>}
   </>
@@ -185,25 +185,25 @@ export function PasswordRegisterForm({ close, inviteOnly, name, setName, code, s
   return <form onSubmit={submit} noValidate>
     <input className="input" name="username" autoComplete="username" placeholder={t('Your name')} maxLength={40}
       value={name} onChange={e => setName(e.target.value)} {...field} />
-    <div style={{ height: 10 }} />
+    <Spacer size={5} />
     <input className="input" type="email" name="email" autoComplete="email" inputMode="email" placeholder={t('E-mail (optional)')} maxLength={254}
       value={email} onChange={e => setEmail(e.target.value)} {...field} />
-    <div className="dim small" style={{ marginTop: 6 }}>{t('Lets you sign in with it instead of your name. Nothing is ever sent to it.')}</div>
+    <div className="dim small mt-3">{t('Lets you sign in with it instead of your name. Nothing is ever sent to it.')}</div>
     {inviteOnly && <>
-      <div style={{ height: 10 }} />
-      <input className="input" placeholder={t('Invite code')} maxLength={40} value={code}
-        onChange={e => setCode(e.target.value.toUpperCase())} style={codeStyle} />
-      <div className="dim small" style={{ marginTop: 6 }}>{t('This app is invite-only. Enter the code you were given.')}</div>
+      <Spacer size={5} />
+      <input className="input ls-14 fw-semibold ta-center" placeholder={t('Invite code')} maxLength={40} value={code}
+        onChange={e => setCode(e.target.value.toUpperCase())} />
+      <div className="dim small mt-3">{t('This app is invite-only. Enter the code you were given.')}</div>
     </>}
-    <div style={{ height: 10 }} />
+    <Spacer size={5} />
     <input className="input" type="password" name="new-password" autoComplete="new-password" placeholder={t('Password')}
       value={pw} onChange={e => setPw(e.target.value)} />
-    <div style={{ height: 10 }} />
+    <Spacer size={5} />
     <input className="input" type="password" name="new-password-again" autoComplete="new-password" placeholder={t('Repeat the password')}
       value={again} onChange={e => setAgain(e.target.value)} />
-    <div className="dim small" style={{ marginTop: 6 }}>{t('At least {0} characters. A few unrelated words make a good one.', MIN_PASSWORD)}</div>
-    {err && <div className="small" role="alert" style={errStyle}>{err}</div>}
-    <div style={{ height: 12 }} />
+    <div className="dim small mt-3">{t('At least {0} characters. A few unrelated words make a good one.', MIN_PASSWORD)}</div>
+    {err && <div className="small ink-danger mt-5" role="alert">{err}</div>}
+    <Spacer size={6} />
     <Button type="submit" variant="primary" disabled={busy}>{t('Create profile')}</Button>
   </form>
 }
@@ -214,8 +214,8 @@ function PasswordRegisterSheet({ close }) {
   const [name, setName] = useState('')
   const [code, setCode] = useState('')
   return <>
-    <h3>{t('Create your profile')}</h3>
-    <div className="muted small" style={{ marginBottom: 14 }}>{t('Pick a name and a password. You sign in with both.')}</div>
+    <SheetHeader title={t('Create your profile')} />
+    <div className="muted small mb-7">{t('Pick a name and a password. You sign in with both.')}</div>
     <PasswordRegisterForm close={close} inviteOnly={!!config?.invite_only} name={name} setName={setName} code={code} setCode={setCode} />
   </>
 }
@@ -272,12 +272,12 @@ export function ProveOwner({ passkey, password, onProof, explain = passwordError
   return <>
     {withPasskey && <Button variant={main} icon="fingerprint" disabled={busy} onClick={() => run(signal => passkeyAssertion({ signal }))}>{t('Confirm with a passkey')}</Button>}
     {password && <form onSubmit={withPassword} noValidate>
-      {withPasskey && <div className="dim small" style={{ margin: '14px 0 8px', textAlign: 'center' }}>{t('or with your password')}</div>}
+      {withPasskey && <div className="dim small mt-7 mb-4 ta-center">{t('or with your password')}</div>}
       {/* Tells a password manager which account the password belongs to. */}
       <input type="text" name="username" autoComplete="username" value={name} readOnly hidden />
       <input className="input" type="password" name="current-password" autoComplete="current-password" placeholder={t('Current password')}
         value={pw} onChange={e => setPw(e.target.value)} />
-      <div style={{ height: 10 }} />
+      <Spacer size={5} />
       <Button type="submit" variant={withPasskey && !danger ? 'plain' : main} disabled={busy}>{submitText || t('Continue')}</Button>
     </form>}
     {/* A profile with no passkey whose password no longer counts — the instance switched
@@ -285,7 +285,7 @@ export function ProveOwner({ passkey, password, onProof, explain = passwordError
     {!withPasskey && !password && <div className="dim small">{passkey
       ? t('This browser cannot confirm with your passkey. Do this on a device that holds one.')
       : t('This profile has no passkey, and this server does not take passwords, so nothing here can confirm that it is you. Ask your admin.')}</div>}
-    {err && <div className="small" role="alert" style={errStyle}>{err}</div>}
+    {err && <div className="small ink-danger mt-5" role="alert">{err}</div>}
   </>
 }
 
@@ -354,8 +354,8 @@ export function PasswordSheet({ status, close, done }) {
   }
   const remove = () => ui().openSheet(c => <RemovePasswordSheet status={status} close={c} done={() => { close(); done() }} />)
   return <>
-    <h3>{status.set ? t('Change password') : t('Set a password')}</h3>
-    <div className="muted small" style={{ marginBottom: 14 }}>
+    <SheetHeader title={status.set ? t('Change password') : t('Set a password')} />
+    <div className="muted small mb-7">
       {t('Sign in as “{0}” with it on devices where passkeys do not work. Saving signs you out everywhere else, and paired phones have to be paired again.', status.name)}
     </div>
     <form onSubmit={ev => { ev.preventDefault(); save(!status.set) }} noValidate>
@@ -364,24 +364,24 @@ export function PasswordSheet({ status, close, done }) {
       {status.set && <>
         <input className="input" type="password" name="current-password" autoComplete="current-password" placeholder={t('Current password')}
           value={current} onChange={e => setCurrent(e.target.value)} />
-        <div style={{ height: 10 }} />
+        <Spacer size={5} />
       </>}
       <input className="input" type="password" name="new-password" autoComplete="new-password" placeholder={t('New password')}
         value={next} onChange={e => setNext(e.target.value)} />
-      <div style={{ height: 10 }} />
+      <Spacer size={5} />
       <input className="input" type="password" name="new-password-again" autoComplete="new-password" placeholder={t('Repeat the password')}
         value={again} onChange={e => setAgain(e.target.value)} />
-      <div className="dim small" style={{ marginTop: 6 }}>{t('At least {0} characters. A few unrelated words make a good one.', MIN_PASSWORD)}</div>
-      {err && <div className="small" role="alert" style={errStyle}>{err}</div>}
-      <div style={{ height: 12 }} />
+      <div className="dim small mt-3">{t('At least {0} characters. A few unrelated words make a good one.', MIN_PASSWORD)}</div>
+      {err && <div className="small ink-danger mt-5" role="alert">{err}</div>}
+      <Spacer size={6} />
       <Button type="submit" variant="primary" disabled={busy}>{status.set ? t('Save') : t('Confirm with passkey & save')}</Button>
     </form>
     {status.set && status.passkeys > 0 && webauthnOK() && <>
-      <div style={{ height: 8 }} />
+      <Spacer size={4} />
       <Button type="button" variant="ghost" className="dim" disabled={busy} onClick={() => save(true)}>{t('Forgot it? Confirm with your passkey instead')}</Button>
     </>}
     {status.set && status.passkeys > 0 && <>
-      <div style={{ height: 8 }} />
+      <Spacer size={4} />
       <button type="button" className="btn danger" disabled={busy} onClick={remove}>{t('Remove password')}</button>
     </>}
   </>
@@ -399,11 +399,11 @@ function RemovePasswordSheet({ status, close, done }) {
     toast(t('Password removed'))
   }
   return <>
-    <h3>{t('Remove your password?')}</h3>
-    <div className="muted small" style={{ marginBottom: 6 }}>{t('Only your passkeys sign in to this profile afterwards.')}</div>
-    <div className="dim small" style={{ marginBottom: 14 }}>{t('First confirm that it is you.')}</div>
+    <SheetHeader title={t('Remove your password?')} />
+    <div className="muted small mb-3">{t('Only your passkeys sign in to this profile afterwards.')}</div>
+    <div className="dim small mb-7">{t('First confirm that it is you.')}</div>
     <ProveOwner passkey={status.passkeys > 0} password danger submitText={t('Remove')} onProof={remove} />
-    <div style={{ height: 8 }} />
+    <Spacer size={4} />
     <Button type="button" variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
   </>
 }
@@ -446,27 +446,27 @@ export function EmailSheet({ status, close, done }) {
   }
   const remove = () => ui().openSheet(c => <RemoveEmailSheet status={status} close={c} done={() => { close(); done() }} />)
   return <>
-    <h3>{status.email ? t('Change sign-in e-mail') : t('Add a sign-in e-mail')}</h3>
-    <div className="muted small" style={{ marginBottom: 14 }}>
+    <SheetHeader title={status.email ? t('Change sign-in e-mail') : t('Add a sign-in e-mail')} />
+    <div className="muted small mb-7">
       {t('Type it at “Sign in with password” instead of your profile name. We never send anything to it; a forgotten password is still reset by your admin.')}
     </div>
     {step === 'edit' ? <>
       <form onSubmit={next} noValidate>
         <input className="input" type="email" name="email" autoComplete="email" inputMode="email" placeholder={t('E-mail address')} maxLength={254}
           value={email} onChange={e => setEmail(e.target.value)} {...field} />
-        {err && <div className="small" role="alert" style={errStyle}>{err}</div>}
-        <div style={{ height: 12 }} />
+        {err && <div className="small ink-danger mt-5" role="alert">{err}</div>}
+        <Spacer size={6} />
         <Button type="submit" variant="primary">{t('Continue')}</Button>
       </form>
       {status.email && <>
-        <div style={{ height: 8 }} />
+        <Spacer size={4} />
         <button type="button" className="btn danger" onClick={remove}>{t('Remove e-mail')}</button>
       </>}
     </> : <>
-      <div className="small" style={{ marginBottom: 6, fontWeight: 600, overflowWrap: 'anywhere' }}>{clean}</div>
-      <div className="dim small" style={{ marginBottom: 14 }}>{t('First confirm that it is you.')}</div>
+      <div className="small mb-3 fw-semibold wrap-anywhere">{clean}</div>
+      <div className="dim small mb-7">{t('First confirm that it is you.')}</div>
       <ProveOwner passkey={status.passkeys > 0} password={!!status.set} submitText={t('Save')} onProof={save} />
-      <div style={{ height: 8 }} />
+      <Spacer size={4} />
       <Button type="button" variant="ghost" className="dim" onClick={() => setStep('edit')}>{t('Back')}</Button>
     </>}
   </>
@@ -479,11 +479,11 @@ function RemoveEmailSheet({ status, close, done }) {
     toast(t('E-mail removed'))
   }
   return <>
-    <h3>{t('Remove your sign-in e-mail?')}</h3>
-    <div className="muted small" style={{ marginBottom: 6 }}>{t('Afterwards you sign in with your profile name only.')}</div>
-    <div className="dim small" style={{ marginBottom: 14 }}>{t('First confirm that it is you.')}</div>
+    <SheetHeader title={t('Remove your sign-in e-mail?')} />
+    <div className="muted small mb-3">{t('Afterwards you sign in with your profile name only.')}</div>
+    <div className="dim small mb-7">{t('First confirm that it is you.')}</div>
     <ProveOwner passkey={status.passkeys > 0} password={!!status.set} danger submitText={t('Remove')} onProof={remove} />
-    <div style={{ height: 8 }} />
+    <Spacer size={4} />
     <Button type="button" variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
   </>
 }

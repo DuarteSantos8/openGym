@@ -11,6 +11,8 @@ import { Button } from '../components/ui.jsx'
 import { askAddDeviceData } from '../sheets.jsx'
 import { normalizeServerUrl } from '../lib/remote.js'
 import { loadCfAccess, saveCfAccess } from '../lib/cf-access.js'
+import { Spacer, Stack } from '../components/layout.jsx'
+import { SheetHeader } from '../components/sheet-layout.jsx'
 
 // A plain http:// server works (#428), but whatever the app sends, the pairing code and then its
 // token, crosses the network readable. Said once under the field, not in the way: on a home
@@ -52,25 +54,25 @@ export function CfAccessSheet({ close, server = '' }) {
     finally { setBusy(false) }
   }
   return <>
-    <h3>{t('Cloudflare Access')}</h3>
-    <div className="muted small" style={{ marginBottom: 14 }}>
+    <SheetHeader title={t('Cloudflare Access')} />
+    <div className="muted small mb-7">
       {t('Only if your server is behind Cloudflare Access: the service token this phone sends with every request to it. Kept in this phone’s secure storage.')}
     </div>
     <input className="input" placeholder={t('Server address (e.g. gym.example.com)')} value={addr} aria-label={t('Server address (e.g. gym.example.com)')}
       onChange={e => setAddr(e.target.value)} autoCapitalize="none" autoCorrect="off" inputMode="url" />
-    {origin && <div className="dim small" role="note" style={{ marginTop: 8, lineHeight: 1.45, overflowWrap: 'anywhere' }}>
+    {origin && <div className="dim small mt-4 lh-145 wrap-anywhere" role="note">
       {t('Sent only to {0}, never to another server.', new URL(origin).host)}
     </div>}
-    <div style={{ height: 10 }} />
+    <Spacer size={5} />
     <input className="input" placeholder="CF-Access-Client-Id" value={clientId}
       onChange={e => setClientId(e.target.value)} autoCapitalize="none" autoCorrect="off" spellCheck={false} />
-    <div style={{ height: 10 }} />
+    <Spacer size={5} />
     <input className="input" type="password" placeholder="CF-Access-Client-Secret" value={clientSecret}
       onChange={e => setClientSecret(e.target.value)} autoCapitalize="none" autoCorrect="off" spellCheck={false} autoComplete="off" />
-    <div style={{ height: 12 }} />
+    <Spacer size={6} />
     <Button variant="primary" onClick={() => save(clientId, clientSecret)} disabled={busy}>{t('Save')}</Button>
     {had && <>
-      <div style={{ height: 10 }} />
+      <Spacer size={5} />
       <Button icon="trash" onClick={() => save('', '')} disabled={busy}>{t('Remove')}</Button>
     </>}
   </>
@@ -99,24 +101,24 @@ export function ConnectSheet({ close, initialUrl = '', again = false }) {
     finally { setBusy(false) }
   }
   return <>
-    <h3>{again ? t('Pair again') : t('Connect to my server')}</h3>
-    <div className="muted small" style={{ marginBottom: 14 }}>
+    <SheetHeader title={again ? t('Pair again') : t('Connect to my server')} />
+    <div className="muted small mb-7">
       {again
         ? t('Open Settings → Account → “Pair the mobile app” on your openGym site in a browser and enter the new code shown there. What this phone kept is merged into your account.')
         : t('Open Settings → Account → “Pair the mobile app” on the openGym site you’re already signed into, then enter its address and the code shown there.')}
     </div>
     <input ref={ref} className="input" placeholder={t('Server address (e.g. gym.example.com)')} value={url}
       onChange={e => setUrl(e.target.value)} autoCapitalize="none" autoCorrect="off" inputMode="url" />
-    {plainHttp(url) && <div className="dim small" role="note" style={{ marginTop: 8, lineHeight: 1.45 }}>
+    {plainHttp(url) && <div className="dim small mt-4 lh-145" role="note">
       {t('Plain http:// isn’t encrypted. Fine on your home network, but use https:// if your server is reachable from the internet.')}
     </div>}
-    <div style={{ height: 10 }} />
-    <input ref={codeRef} className="input" placeholder={t('Pairing code')} maxLength={8} value={code}
-      onChange={e => setCode(e.target.value.toUpperCase())} style={{ letterSpacing: '.14em', fontWeight: 600, textAlign: 'center' }} />
-    {error && <div className="small" role="alert" style={{ color: 'var(--red-ink)', marginTop: 10, lineHeight: 1.45, overflowWrap: 'anywhere' }}>{error}</div>}
-    <div style={{ height: 12 }} />
+    <Spacer size={5} />
+    <input ref={codeRef} className="input ls-14 fw-semibold ta-center" placeholder={t('Pairing code')} maxLength={8} value={code}
+      onChange={e => setCode(e.target.value.toUpperCase())} />
+    {error && <div className="small ink-danger mt-5 lh-145 wrap-anywhere" role="alert">{error}</div>}
+    <Spacer size={6} />
     <Button variant="primary" onClick={go} disabled={busy}>{busy ? t('Connecting…') : t('Connect')}</Button>
-    <div style={{ height: 10 }} />
+    <Spacer size={5} />
     <Button icon="key" onClick={() => openCfAccess(normalizeServerUrl(url) || '')} disabled={busy}>{t('Cloudflare Access')}</Button>
   </>
 }
@@ -124,22 +126,21 @@ export function ConnectSheet({ close, initialUrl = '', again = false }) {
 export default function MobileOnboarding() {
   const { chooseLocalMode } = useStore()
   const head = <>
-    <div style={{ fontSize: 54, display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)' }}><Icon name="dumbbell" /></div>
-    <h1 style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-.028em', margin: '10px 0 4px' }}>{BRAND.name}</h1>
+    <div className="gate-logo ink-acc"><Icon name="dumbbell" /></div>
+    <h1 className="gate-title fs-large fw-bold">{BRAND.name}</h1>
   </>
-  const wrap = { display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '78vh', textAlign: 'center' }
   return (
-    <div style={wrap}>
+    <Stack className="gate-wrap ta-center">
       {head}
       <div className="muted" style={{ marginBottom: 34 }}>{t('How do you want to use openGym?')}</div>
       <Button variant="primary" icon="lock" onClick={() => chooseLocalMode()}>{t('Use on this device')}</Button>
-      <div style={{ height: 10 }} />
+      <Spacer size={5} />
       <Button icon="cloud" onClick={() => useUI.getState().openSheet(close => <ConnectSheet close={close} />)}>{t('Connect to my server')}</Button>
-      <div className="dim small" style={{ marginTop: 26, lineHeight: 1.5 }}>
+      <div className="dim small lh-150" style={{ marginTop: 26 }}>
         {t('Local keeps everything on this phone. Connecting syncs to your own openGym server instead. You can switch later in Settings.')}
       </div>
-      <div style={{ height: 18 }} />
+      <Spacer size={9} />
       <Button icon="gear" onClick={() => openCfAccess()}>{t('Connection settings')}</Button>
-    </div>
+    </Stack>
   )
 }

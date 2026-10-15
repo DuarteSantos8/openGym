@@ -2,8 +2,9 @@ import { Component } from 'react'
 import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 import { BRAND } from '../brand.js'
-import Icon from './Icon.jsx'
 import { Button } from './ui.jsx'
+import { Spacer } from './layout.jsx'
+import { EmptyState } from './blocks.jsx'
 
 /**
  * Last line of defence: one bad render used to blank the whole app, with no way back —
@@ -23,14 +24,13 @@ export default class ErrorBoundary extends Component {
     const active = useStore.getState().S.active
     return (
       <div>
-        <div className="empty" style={{ marginTop: '18vh' }}>
-          <div className="ico"><Icon name="info" /></div>
-          <div style={{ fontWeight: 600, marginBottom: 6 }}>{t('Something went wrong')}</div>
+        <EmptyState icon="info" className="gate-empty">
+          <div className="fw-semibold mb-3">{t('Something went wrong')}</div>
           {t('This screen could not be drawn. Your data is safe on this device.')}
-        </div>
+        </EmptyState>
         <Button variant="primary" icon="reset" onClick={() => location.reload()}>{t('Reload openGym')}</Button>
         {active && <>
-          <div style={{ height: 8 }} />
+          <Spacer size={4} />
           <Button variant="danger" icon="trash" onClick={() => {
             useStore.getState().update(s => { s.active = null })
             location.reload()

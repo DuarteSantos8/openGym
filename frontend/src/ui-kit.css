@@ -124,6 +124,12 @@
 .ta-start.ta-start.ta-start{text-align:start}
 .ta-center.ta-center.ta-center{text-align:center}
 .ta-end.ta-end.ta-end{text-align:end}
+.ls-12.ls-12.ls-12{letter-spacing:.12em}
+.ls-14.ls-14.ls-14{letter-spacing:.14em}
+.lh-145.lh-145.lh-145{line-height:1.45}
+.lh-150.lh-150.lh-150{line-height:1.5}
+.lh-160.lh-160.lh-160{line-height:1.6}
+.wrap-anywhere.wrap-anywhere.wrap-anywhere{overflow-wrap:anywhere}
 
 /* ---------------------------------------------------------------- modifiers -- */
 /* Single-purpose classes the primitives set on their own elements. */
@@ -138,6 +144,14 @@
 /* Stat: the big number's unit, and a smaller number */
 .big .stat-unit,.tile .v .stat-unit{font-size:var(--fs-callout)}
 .big.big-sm{font-size:var(--fs-title2)}
+
+/* The screens in front of the app (sign-in, onboarding, the error screen): the one-off values
+   their sheets set, written with the class three times like the utilities. */
+.gate-wrap.gate-wrap.gate-wrap{justify-content:center;min-height:78vh}
+.gate-logo.gate-logo.gate-logo{font-size:54px;display:flex;justify-content:center}
+.gate-title.gate-title.gate-title{letter-spacing:-.028em;margin:10px 0 4px}
+.gate-empty.gate-empty.gate-empty{margin-top:18vh}
+.gate-qr.gate-qr.gate-qr{width:fit-content;margin:0 auto 14px}
 
 /* StatTile value sizes below the default 26px */
 .tile .v.v-sm{font-size:var(--fs-body)}

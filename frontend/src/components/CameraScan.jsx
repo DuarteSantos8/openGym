@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { t } from '../lib/i18n.js'
 import { decodeSource } from '../lib/scan-web.js'
 import { Button } from '../components/ui.jsx'
+import { SheetHeader } from './sheet-layout.jsx'
 
 // Live camera scanner for the browser/PWA (the app build uses ML Kit's own UI instead — see
 // lib/scan.js). Opens the rear camera into a <video>, decodes a frame every ~150 ms until a QR
@@ -99,9 +100,9 @@ export default function CameraScan({ onFound, onCancel, product = false }) {
   }
 
   return <>
-    <h3>{t('Scan')}</h3>
+    <SheetHeader title={t('Scan')} />
     {error
-      ? <div className="muted small" style={{ marginBottom: 16, lineHeight: 1.5 }}>
+      ? <div className="muted small mb-8 lh-150">
           {error === 'denied'
             ? t('Camera access was denied. Allow it in your browser and try again.')
             : t('No camera available here. Import a photo or type the code instead.')}
@@ -112,7 +113,7 @@ export default function CameraScan({ onFound, onCancel, product = false }) {
             <video ref={videoRef} playsInline muted autoPlay />
             <div className="cam-frame" aria-hidden="true" />
           </div>
-          <div className="muted small" style={{ textAlign: 'center', margin: '12px 0 16px' }}>{t('Point the camera at the QR code')}</div>
+          <div className="muted small ta-center mt-6 mb-8">{t('Point the camera at the QR code')}</div>
         </>}
     <Button variant="tinted" onClick={onCancel}>{t('Cancel')}</Button>
   </>
