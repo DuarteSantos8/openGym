@@ -247,6 +247,15 @@ export function checkName(exercise, german) {
     if (!required.test(name)) add('qualifier', `"${english}" is ${pattern.split('|')[0]}: the German name must say "${term}". "${name}" does not.`)
   }
 
+  // A leg curl is knee flexion: Beinbeugen. The batch that translated the lever curls wrote
+  // "Beinstrecken" for them (issue #631), which is the leg extension — 0585 is "Beinstrecken an
+  // der Hebelmaschine" — so a German list read like two spellings of the same exercise, and the
+  // hamstring work was filed with the quad work. "Strecken" stays the right word where the
+  // English really is an extension; this rule only stops it standing in for the curl.
+  if (/leg curl/iu.test(english) && /beinstrecken/iu.test(name)) {
+    add('movement', `Write "Beinbeugen" in "${name}": a leg curl bends the knee, and "Beinstrecken" is the leg extension.`)
+  }
+
   // Inverted English-leak check: anything the German name shares with the English one is a leak
   // unless it is on the loanword list. An enumerated list of forbidden English words missed a
   // different word every time it was written.
