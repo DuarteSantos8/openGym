@@ -1,5 +1,8 @@
 // Portuguese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Warm-up and work rest": "Descanso de aquecimento e trabalho",
+  "Per-set rest": "Descanso por série",
+
   'Confirm': 'Confirmar',
   'Cancel': 'Cancelar',
   'Press back again to exit': 'Prima novamente para sair',

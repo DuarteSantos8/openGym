@@ -82,7 +82,8 @@ export function restOnRecheck({ timerRunning, unitDone, lastUnit }) {
  * have no rest of their own, but an exercise that explicitly asks for one still gets it — the
  * setting is a default, and this field overrides the default.
  */
-export function restSecFor(entries, unit, defaultRestSec, setRest = null) {
+export function restSecFor(entries, unit, defaultRestSec, setRest = null, completed = null) {
+  const phase = isWarmupRow(entries?.[completed?.entryIdx]?.sets?.[completed?.setIdx]) ? 'warmup' : 'work'
   const fallback = defaultRestSec > 0 ? defaultRestSec : 0
   const idxs = Array.isArray(unit) && unit.length ? unit : []
   if (!idxs.length) return fallback
@@ -92,10 +93,21 @@ export function restSecFor(entries, unit, defaultRestSec, setRest = null) {
     if (rest > 0) return rest
   }
   return idxs.reduce((longest, idx) => {
-    // `setRest` is the ticked set's own rest ({ idx, sec }, a pyramid set): it stands in for
-    // that member's exercise rest, and a superset still takes the longest of the group.
-    const own = setRest && setRest.idx === idx && setRest.sec > 0 ? setRest.sec : entries?.[idx]?.target?.restSec
-    return Math.max(longest, own > 0 ? own : fallback)
+    const entry = entries?.[idx]
+    // The checked row owns its override. Group peers contribute their latest completed
+    // row in this phase; future rows must not change the break already earned.
+    const row = completed && (idx === completed.entryIdx ? entry?.sets?.[completed.setIdx]
+      : entry?.sets?.findLast(set => set.done && (isWarmupRow(set) ? 'warmup' : 'work') === phase))
+    const rowRest = Number.isFinite(row?.restSec) && row.restSec >= 0 ? row.restSec
+      : setRest && setRest.idx === idx && setRest.sec > 0 ? setRest.sec : undefined
+    const own = entry?.target?.restSec
+    const phaseRest = entry?.target?.workRestSec
+    // Phase zero explicitly means Off. Legacy exercise restSec zero still inherits.
+    const seconds = typeof rowRest === 'number' && Number.isFinite(rowRest) && rowRest >= 0
+      ? rowRest : typeof phaseRest === 'number' && Number.isFinite(phaseRest) && phaseRest >= 0
+      ? phaseRest : own > 0 ? own : fallback
+    const setIdx = row ? entry.sets.indexOf(row) : -1
+    return Math.max(longest, completed && setIdx >= 0 ? warmupRestSecFor(entry, setIdx, seconds) : seconds)
   }, 0)
 }
 
@@ -112,10 +124,11 @@ export function warmupRestSecFor(entry, setIdx, workRestSec) {
   const sets = Array.isArray(entry?.sets) ? entry.sets : []
   const set = sets[setIdx]
   if (!set || !isWarmupRow(set)) return workRestSec
+  if (Number.isFinite(set.restSec) && set.restSec >= 0) return workRestSec
   const next = sets.slice(setIdx + 1).find(s => !s.done)
   if (!next || !isWarmupRow(next)) return workRestSec
-  const own = Number(entry?.target?.warmupRestSec)
-  return own > 0 ? own : workRestSec
+  const own = entry?.target?.warmupRestSec
+  return Number.isFinite(own) && own >= 0 ? own : workRestSec
 }
 
 // Decide where a newly completed superset set goes next. Spent members are skipped, including
