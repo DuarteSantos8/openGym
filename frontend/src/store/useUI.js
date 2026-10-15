@@ -399,7 +399,7 @@ export const useUI = create((set, get) => ({
     const endsAt = Date.now() + total * 1000
     workDone = onDone
     pageHiddenAt = document.hidden ? Date.now() : null   // see startRest: a stale hide is not a catch-up
-    set({ work: { left: total, total, endsAt, label, overtime: useStore.getState().S.timedSetOvertime === true, ...(owner ? { owner } : {}) } })
+    set({ work: { left: total, total, endsAt, label, overtime: !owner?.interval && useStore.getState().S.timedSetOvertime === true, ...(owner ? { owner } : {}) } })
     runWork(set, get)
   },
   // The workout screen, back on a hold restored after a reload: `make(work)` gives it the handler
@@ -511,6 +511,8 @@ export function restoreWork(now = Date.now()) {
   if (!saved || useUI.getState().work) return false
   const total = Math.round(Number(saved.total))
   const drop = () => { try { ls.removeItem(WORK_KEY) } catch { /* nothing to drop */ } return false }
+  // An automatic group must be restarted explicitly after leaving or reloading the workout.
+  if (saved.owner?.interval) return drop()
   if (!(total > 0) || !(saved.endsAt > 0) || !ownerSet(saved.owner)) return drop()
   const wk = { left: total, total, endsAt: saved.endsAt, label: saved.label || '', overtime: !!saved.overtime, ...(saved.alerted ? { alerted: true } : {}), owner: saved.owner }
   const left = Math.round((saved.endsAt - now) / 1000)

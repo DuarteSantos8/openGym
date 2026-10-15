@@ -22,11 +22,12 @@ import Media from '../components/Media.jsx'
 import WorkoutScrollAnchor from '../components/WorkoutScrollAnchor.jsx'
 import WorkoutChips from '../components/WorkoutChips.jsx'
 import { supersetMeta } from '../lib/superset-meta.js'
+import IntervalGroup from '../components/IntervalGroup.jsx'
 import WorkoutThumb, { hasWorkoutMedia } from '../components/WorkoutThumb.jsx'
 import { workoutSettingsSheet } from '../components/WorkoutSettingsSheet.jsx'
 import { durationSheet } from '../components/DurationWheel.jsx'
 import { REST_MAX, fmtRest } from '../lib/duration.js'
-import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, exitWorkoutEdit, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet, finishWorkoutSheet } from '../sheets.jsx'
+import { activeSupersetSheet, startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, exitWorkoutEdit, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet, finishWorkoutSheet } from '../sheets.jsx'
 import { afterScrollRestore, scrollRestorePending } from '../components/Modals.jsx'
 import { effortColor } from '../lib/effort.js'
 import Elapsed from '../components/Elapsed.jsx'
@@ -949,6 +950,7 @@ function ActiveWorkout() {
   // A superset's heading: its own name and rest between rounds when it has them (#292).
   const ssTitle = u => {
     const m = supersetMeta(A.entries, u, { onTarget: true })
+    if (m.mode === 'interval') return m.name || t('Interval')
     if (m.rest > 0) return t('{0} · back-to-back, {1} rest after each round', m.name || t('Superset'), fmtRest(m.rest))
     return m.name ? t('{0} · do these back-to-back, rest when done', m.name) : t('Superset · do these back-to-back, rest when done')
   }
@@ -1927,6 +1929,11 @@ function ActiveWorkout() {
     </div>
     {editing && <p className="muted small">{t('Editing a saved workout. Date and duration stay unchanged.')}</p>}
     {A.backfill && <div className="muted small" style={{ marginBottom: 8 }}>{t('Logging a past workout, so no rest timers.')}</div>}
+    {!editing && !A.backfill && isSuperset && supersetMeta(A.entries, unit, { onTarget: true }).mode === 'interval' &&
+      <IntervalGroup key={A.id + ':' + unit.join('-')} unit={unit} onComplete={(idx, i, elapsed, chimed) => {
+        mutEntry(idx, en => { en.sets[i].sec = elapsed; delete en.sets[i].planSec })
+        toggle(idx, i, undefined, { quiet: chimed })
+      }} />}
 
     {A.entries.length ? (listMode ? (
       <div className="workout-list" data-testid="workout-list" ref={listRef}>
@@ -1959,7 +1966,7 @@ function ActiveWorkout() {
             </button> : multi ? (
               <div className="ss-card">
                 <div className="ss-hd" style={{ justifyContent: 'space-between' }}>
-                  <span className="row" style={{ gap: 5 }}><Icon name="link" />{ssTitle(u)}</span>
+                  <button type="button" className="row" style={{ gap: 5 }} onClick={() => activeSupersetSheet(A.entries[u[0]].sg)}><Icon name="gear" />{ssTitle(u)}</button>
                   <Button size="xs" variant="ghost" icon="link" title={t('Unpair')} onClick={() => unpairAt(u[0])}>{t('Unpair')}</Button>
                 </div>
                 {u.map((idx, k) => {
@@ -1999,7 +2006,7 @@ function ActiveWorkout() {
           return adjacent.length > 1 ? (
             <div className="ss-card">
               <div className="ss-hd" style={{ justifyContent: 'space-between' }}>
-                <span className="row" style={{ gap: 5 }}><Icon name="link" />{ssTitle(adjacent)}</span>
+                <button type="button" className="row" style={{ gap: 5 }} onClick={() => activeSupersetSheet(A.entries[adjacent[0]].sg)}><Icon name="gear" />{ssTitle(adjacent)}</button>
                 <Button size="xs" variant="ghost" icon="link" title={t('Unpair')} onClick={() => unpairAt(adjacent[0])}>{t('Unpair')}</Button>
               </div>
               {adjacent.map((idx, k) => <div key={idx} className="ss-ex" data-exidx={idx}>
@@ -2020,7 +2027,7 @@ function ActiveWorkout() {
       ) : isSuperset ? (
         <div className="ss-card">
           <div className="ss-hd" style={{ justifyContent: 'space-between' }}>
-            <span className="row" style={{ gap: 5 }}><Icon name="link" />{ssTitle(unit)}</span>
+            <button type="button" className="row" style={{ gap: 5 }} onClick={() => activeSupersetSheet(A.entries[unit[0]].sg)}><Icon name="gear" />{ssTitle(unit)}</button>
             <Button size="xs" variant="ghost" icon="link" title={t('Unpair')} onClick={() => unpairAt(cur)}>{t('Unpair')}</Button>
           </div>
           {unit.map((idx, k) => {
