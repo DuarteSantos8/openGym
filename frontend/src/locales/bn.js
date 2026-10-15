@@ -2494,7 +2494,7 @@ export default {
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'এই ডিভাইসে ১টি ওয়ার্কআউট আছে যা এই ব্যাকআপে নেই। প্রতিস্থাপন করলে এটি মুছে যাবে।',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'এই ডিভাইসে {0}টি ওয়ার্কআউট আছে যা এই ব্যাকআপে নেই। প্রতিস্থাপন করলে এগুলো মুছে যাবে।',
   // Import from a video (views/VideoImport.jsx)
-  'Rest counted somewhere else than the work? Drag a box around each timer, up to two.': 'বিশ্রাম কি কাজের থেকে অন্য জায়গায় গোনা হয়? প্রতিটি টাইমারের চারপাশে একটি করে বক্স টানুন, সর্বোচ্চ দুটি।',
+  'Timer in more than one place (the rest elsewhere, or moved part-way)? Drag a box around each, up to three.': 'টাইমার কি একাধিক জায়গায় (বিশ্রাম অন্য জায়গায়, বা মাঝপথে সরে যায়)? প্রতিটির চারপাশে একটি করে বক্স টানুন, সর্বোচ্চ তিনটি।',
   'Add this exercise again': 'এই ব্যায়াম আবার যোগ করুন',
   'As in the video': 'ভিডিওর মতো',
   'Each exercise once, with its rounds as sets: A × 2, B × 2 … Shorter, but in a different order than the video.': 'প্রতিটি ব্যায়াম একবার, রাউন্ডগুলো সেট হিসেবে: A × 2, B × 2 … ছোট, কিন্তু ভিডিওর থেকে আলাদা ক্রমে।',

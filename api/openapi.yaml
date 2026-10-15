@@ -3297,10 +3297,10 @@ paths:
                     - { $ref: '#/components/schemas/VideoImportBox' }
                     - { type: array, maxItems: 3, items: { $ref: '#/components/schemas/VideoImportBox' } }
                 timer:
-                  description: One box, or two where the work and the rest are counted in different places.
+                  description: One box, or up to three where the work and the rest are counted in different places (or the work timer moves).
                   oneOf:
                     - { $ref: '#/components/schemas/VideoImportBox' }
-                    - { type: array, maxItems: 2, items: { $ref: '#/components/schemas/VideoImportBox' } }
+                    - { type: array, maxItems: 3, items: { $ref: '#/components/schemas/VideoImportBox' } }
                 remember: { type: boolean, default: true }
       responses:
         '200':

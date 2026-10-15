@@ -1536,7 +1536,7 @@ export const PT_BR_OVERRIDES = {
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'Este dispositivo tem 1 treino que não está neste backup. Substituir exclui esse treino.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'Este dispositivo tem {0} treinos que não estão neste backup. Substituir exclui esses treinos.',
   // Import from a video (views/VideoImport.jsx)
-  'Rest counted somewhere else than the work? Drag a box around each timer, up to two.': 'O descanso é contado em outro lugar que não o do trabalho? Arraste uma caixa em volta de cada timer, até dois.',
+  'Timer in more than one place (the rest elsewhere, or moved part-way)? Drag a box around each, up to three.': 'Timer em mais de um lugar (o descanso em outro lugar, ou movido no meio do vídeo)? Arraste uma caixa em volta de cada um, até três.',
   'Add this exercise again': 'Adicionar este exercício de novo',
   'As in the video': 'Como no vídeo',
   'Each exercise once, with its rounds as sets: A × 2, B × 2 … Shorter, but in a different order than the video.': 'Cada exercício uma vez, com as rodadas como séries: A × 2, B × 2 … Mais curto, mas numa ordem diferente da do vídeo.',

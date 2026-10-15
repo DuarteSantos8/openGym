@@ -2415,7 +2415,7 @@ export default {
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'Cet appareil a 1 séance absente de cette sauvegarde. Remplacer la supprime.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'Cet appareil a {0} séances absentes de cette sauvegarde. Remplacer les supprime.',
   // Import from a video (views/VideoImport.jsx)
-  'Rest counted somewhere else than the work? Drag a box around each timer, up to two.': 'Le repos est compté ailleurs que l’effort ? Trace un cadre autour de chaque minuteur, jusqu’à deux.',
+  'Timer in more than one place (the rest elsewhere, or moved part-way)? Drag a box around each, up to three.': 'Minuteur à plusieurs endroits (le repos ailleurs, ou déplacé en cours de route) ? Trace un cadre autour de chacun, jusqu’à trois.',
   'Add this exercise again': 'Ajouter à nouveau cet exercice',
   'As in the video': 'Comme dans la vidéo',
   'Each exercise once, with its rounds as sets: A × 2, B × 2 … Shorter, but in a different order than the video.': 'Chaque exercice une fois, avec ses tours en séries : A × 2, B × 2 … Plus court, mais dans un ordre différent de la vidéo.',

@@ -65,10 +65,10 @@ export function cleanNames(v) {
   return cleanBox(v);
 }
 
-/** One timer box or two (the work and the rest counted in different places). */
+/** One timer box or up to three (the work and the rest counted in different places). */
 export function cleanTimers(v) {
   if (Array.isArray(v)) {
-    const boxes = v.map(cleanBox).filter(Boolean).slice(0, 2);
+    const boxes = v.map(cleanBox).filter(Boolean).slice(0, 3);
     return boxes.length ? (boxes.length === 1 ? boxes[0] : boxes) : null;
   }
   return cleanBox(v);

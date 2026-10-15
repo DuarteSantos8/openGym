@@ -2415,7 +2415,7 @@ export default {
   'This device has 1 workout that is not in this backup. Replacing deletes it.': '이 기기에 이 백업에 없는 운동이 1개 있습니다. 바꾸면 삭제됩니다.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': '이 기기에 이 백업에 없는 운동이 {0}개 있습니다. 바꾸면 삭제됩니다.',
   // Import from a video (views/VideoImport.jsx)
-  'Rest counted somewhere else than the work? Drag a box around each timer, up to two.': '휴식이 운동과 다른 곳에서 카운트되나요? 각 타이머에 상자를 드래그하세요. 최대 두 개예요.',
+  'Timer in more than one place (the rest elsewhere, or moved part-way)? Drag a box around each, up to three.': '타이머가 여러 곳에 있나요(휴식은 다른 곳이거나 중간에 옮겨져요)? 각각에 상자를 드래그하세요. 최대 세 개예요.',
   'Add this exercise again': '이 운동 다시 추가',
   'As in the video': '영상과 같게',
   'Each exercise once, with its rounds as sets: A × 2, B × 2 … Shorter, but in a different order than the video.': '각 운동을 한 번씩, 라운드는 세트로: A × 2, B × 2 … 더 짧지만 영상과 순서가 달라요.',

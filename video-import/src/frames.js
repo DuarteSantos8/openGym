@@ -58,7 +58,8 @@ export const MAX_NAME_BOXES = 3
 export async function extractCrops(file, roi, { width, height, duration, workDir, signal, onProgress } = {}) {
   const parts = [], maps = []
   const boxes = nameBoxes(roi)
-  // Up to two timers: some videos count the work in one place and the rest in another.
+  // Up to three timers: some videos count the work in one place and the rest in another, and
+  // some move the work timer part-way through.
   const clocks = timerBoxes(roi)
   const kinds = [...boxes.map((_, i) => 'name' + i), ...clocks.flatMap((_, j) => ['timer' + j, 'timer' + j + 'B'])]
   const geo = {}
@@ -72,7 +73,7 @@ export async function extractCrops(file, roi, { width, height, duration, workDir
   const split = `split=${once.length + 1}${once.map(k => `[${k}s]`).join('')}[scene0]`
   parts.push(`[0:v]split=2[at0][at5]`)
   parts.push(`[at5]trim=start=0.5,setpts=PTS-STARTPTS,fps=1,${split}`)
-  parts.push(!clocks.length ? `[at0]nullsink` : clocks.length === 1 ? `[at0]fps=1[timer0Bs]` : `[at0]fps=1,split=2[timer0Bs][timer1Bs]`)
+  parts.push(!clocks.length ? `[at0]nullsink` : clocks.length === 1 ? `[at0]fps=1[timer0Bs]` : `[at0]fps=1,split=${clocks.length}${clocks.map((_, j) => `[timer${j}Bs]`).join('')}`)
   parts.push(`[scene0]scale=${SCENE_W}:${SCENE_H}:flags=area,format=gray[scene]`)
   maps.push('-map', '[scene]', '-f', 'rawvideo', path.join(workDir, 'scene.gray'))
   for (const k of kinds) {
@@ -177,5 +178,9 @@ export function sceneChanges(raw, size) {
 // Timer crops are scaled to this height: big enough for Tesseract to read two digits cleanly.
 const TIMER_H = 120
 
-/** The timer boxes of a ROI as a list: none, one, or two (a work timer and a rest timer). */
-export const timerBoxes = roi => [].concat(roi?.timer || []).filter(Boolean).slice(0, 2)
+/**
+ * The timer boxes of a ROI as a list, up to three: a work timer and a rest timer, and a second
+ * place for the work timer in videos that move it part-way through.
+ */
+export const timerBoxes = roi => [].concat(roi?.timer || []).filter(Boolean).slice(0, MAX_TIMER_BOXES)
+export const MAX_TIMER_BOXES = 3

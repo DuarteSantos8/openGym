@@ -2415,7 +2415,7 @@ export default {
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'Bu cihazda bu yedekte olmayan 1 antrenman var. Değiştirmek onu siler.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'Bu cihazda bu yedekte olmayan {0} antrenman var. Değiştirmek onları siler.',
   // Import from a video (views/VideoImport.jsx)
-  'Rest counted somewhere else than the work? Drag a box around each timer, up to two.': 'Dinlenme, çalışmadan farklı bir yerde mi sayılıyor? Her zamanlayıcının çevresine bir kutu çiz, en fazla iki.',
+  'Timer in more than one place (the rest elsewhere, or moved part-way)? Drag a box around each, up to three.': 'Zamanlayıcı birden fazla yerde mi (dinlenme başka yerde ya da yarıda taşınıyor)? Her birinin çevresine bir kutu çiz, en fazla üç.',
   'Add this exercise again': 'Bu egzersizi tekrar ekle',
   'As in the video': 'Videodaki gibi',
   'Each exercise once, with its rounds as sets: A × 2, B × 2 … Shorter, but in a different order than the video.': 'Her egzersiz bir kez, turları set olarak: A × 2, B × 2 … Daha kısa, ama videodan farklı bir sırada.',

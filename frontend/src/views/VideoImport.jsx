@@ -188,14 +188,15 @@ function Header({ nav }) {
 // warm-up): each drag in "Exercise name" adds a box, up to three, and × removes one. The timer
 // has one box, and a new drag replaces it.
 const MAX_NAME_BOXES = 3
-const MAX_TIMER_BOXES = 2
+const MAX_TIMER_BOXES = 3
 function RoiStep({ job, onDone, onCancel, busy }) {
   const setup = job.roiSetup
   const suggested = setup.suggest?.names?.length ? setup.suggest.names : setup.suggest?.name ? [setup.suggest.name] : []
   const [sample, setSample] = useState(0)
   const [which, setWhich] = useState('name')
   const [names, setNames] = useState(suggested.slice(0, MAX_NAME_BOXES))
-  // Up to two timers: a video can count the work in one place and the rest in another.
+  // Up to three timers: a video can count the work in one place and the rest in another, or move
+  // the work timer part-way through.
   const [timers, setTimers] = useState(setup.suggest?.timer ? [setup.suggest.timer] : [])
   const [drawing, setDrawing] = useState(null)
   const [keep, setKeep] = useState(true)
@@ -246,7 +247,7 @@ function RoiStep({ job, onDone, onCancel, busy }) {
           {setup.samples.map((s, i) => <button key={i} className={'chip' + (i === sample ? ' on' : '')} onClick={() => setSample(i)}>{clock(s.t)}</button>)}
           {timers.length > 0 && <button className="chip" onClick={() => setTimers([])}>{t('No timer on screen')}</button>}
         </div>
-        {which === 'timer' && <div className="small muted" style={{ marginTop: 6 }}>{t('Rest counted somewhere else than the work? Drag a box around each timer, up to two.')}</div>}
+        {which === 'timer' && <div className="small muted" style={{ marginTop: 6 }}>{t('Timer in more than one place (the rest elsewhere, or moved part-way)? Drag a box around each, up to three.')}</div>}
         {which === 'name' && <div className="small muted" style={{ marginTop: 6 }}>{t('Names shown in more than one place (a big preview, a small one in the warm-up)? Drag a box around each, up to three.')}</div>}
       </div>
       <label className="row" style={{ gap: 10, padding: '6px 12px 10px' }}>

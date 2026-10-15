@@ -2418,7 +2418,7 @@ export default {
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'Ezen az eszközön 1 edzés van, amely nincs ebben a mentésben. A csere törli.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'Ezen az eszközön {0} edzés van, amely nincs ebben a mentésben. A csere törli őket.',
   // Import from a video (views/VideoImport.jsx)
-  'Rest counted somewhere else than the work? Drag a box around each timer, up to two.': 'A pihenőt máshol számolja, mint a munkát? Húzz keretet minden időzítő köré, legfeljebb kettőt.',
+  'Timer in more than one place (the rest elsewhere, or moved part-way)? Drag a box around each, up to three.': 'Az időzítő több helyen is látszik (a pihenő máshol, vagy menet közben áthelyeződik)? Húzz keretet mindegyik köré, legfeljebb hármat.',
   'Add this exercise again': 'Gyakorlat hozzáadása újra',
   'As in the video': 'Mint a videóban',
   'Each exercise once, with its rounds as sets: A × 2, B × 2 … Shorter, but in a different order than the video.': 'Minden gyakorlat egyszer, a körei sorozatként: A × 2, B × 2 … Rövidebb, de más sorrendben, mint a videóban.',

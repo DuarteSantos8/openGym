@@ -2426,7 +2426,7 @@ export default {
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'อุปกรณ์นี้มีการออกกำลังกาย 1 รายการที่ไม่อยู่ในข้อมูลสำรองนี้ การแทนที่จะลบรายการนั้น',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'อุปกรณ์นี้มีการออกกำลังกาย {0} รายการที่ไม่อยู่ในข้อมูลสำรองนี้ การแทนที่จะลบรายการเหล่านั้น',
   // Import from a video (views/VideoImport.jsx)
-  'Rest counted somewhere else than the work? Drag a box around each timer, up to two.': 'การพักนับอยู่คนละที่กับการออกกำลังหรือไม่? ลากกรอบครอบตัวจับเวลาแต่ละอัน สูงสุดสองอัน',
+  'Timer in more than one place (the rest elsewhere, or moved part-way)? Drag a box around each, up to three.': 'ตัวจับเวลาอยู่หลายที่หรือไม่ (ช่วงพักอยู่ที่อื่น หรือย้ายตำแหน่งกลางทาง)? ลากกรอบครอบแต่ละอัน สูงสุดสามอัน',
   'Add this exercise again': 'เพิ่มท่านี้อีกครั้ง',
   'As in the video': 'เหมือนในวิดีโอ',
   'Each exercise once, with its rounds as sets: A × 2, B × 2 … Shorter, but in a different order than the video.': 'แต่ละท่าหนึ่งครั้ง โดยนับรอบเป็นเซ็ต: A × 2, B × 2 … สั้นกว่า แต่ลำดับต่างจากวิดีโอ',
