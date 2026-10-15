@@ -64,8 +64,10 @@ let inflight = null
 let trailing = null
 let lastDone = -Infinity
 
-async function runSync() {
-  try { await useStore.getState().pushState() } catch { /* the store keeps it owed and retries */ }
+async function runSync(push) {
+  if (push) {
+    try { await useStore.getState().pushState() } catch { /* the store keeps it owed and retries */ }
+  }
   try {
     const status = await HubSync.now()
     useHubSync.setState({ status })
@@ -83,9 +85,11 @@ async function runSync() {
  * Calls coalesce: one while another runs, or within SYNC_MIN_INTERVAL_MS of the last, waits for
  * a single follow-up run that starts after it, so the latest change is always sent.
  * Never throws: a sync that does not happen now happens on the hub's next poll.
- * @returns {Promise<import('./api.js').SyncStatus|null>}
+ * `pushed`: the caller has just synced openGym itself (Profile's Sync now), so the push is skipped.
+ * A follow-up run always pushes: a change may have come in while it waited.
+ * @returns {Promise<import('./api.js').SyncStatus|null>} null when the hub did not answer
  */
-export function syncNow() {
+export function syncNow({ pushed = false } = {}) {
   if (!available()) return Promise.resolve(null)
   if (trailing) return trailing
   if (inflight || Date.now() - lastDone < SYNC_MIN_INTERVAL_MS) {
@@ -94,12 +98,12 @@ export function syncNow() {
       setTimeout(resolve, Math.max(0, SYNC_MIN_INTERVAL_MS - (Date.now() - lastDone)))
     })).then(() => {
       trailing = null
-      inflight = runSync().finally(() => { inflight = null })
+      inflight = runSync(true).finally(() => { inflight = null })
       return inflight
     })
     return trailing
   }
-  inflight = runSync().finally(() => { inflight = null })
+  inflight = runSync(!pushed).finally(() => { inflight = null })
   return inflight
 }
 

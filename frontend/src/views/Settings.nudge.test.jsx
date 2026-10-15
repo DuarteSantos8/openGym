@@ -78,7 +78,7 @@ afterEach(() => {
   host.remove()
 })
 
-const mount = async () => { await act(async () => { root.render(<Settings page="reminders" />) }) }
+const mount = async () => { await act(async () => { root.render(<Settings page="notifications" />) }) }
 const row = text => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes(text))
 const nudgeRow = () => row('Nudge me when I skip a planned workout')
 const toneRow = () => row('Nudge tone')

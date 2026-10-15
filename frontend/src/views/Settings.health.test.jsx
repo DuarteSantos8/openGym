@@ -6,9 +6,10 @@ import Settings from './Settings.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
-// #200: the Health Connect card. Only on the Android app, only where Health Connect is there or
-// can be installed, off until switched on, and turning it off asks what happens to what was
-// already written. lib/health-sync.js is mocked; its own tests cover the writing.
+// #200: the Health Connect card, on Profile › Connected apps & health. Only on the Android app,
+// only where Health Connect is there or can be installed, off until switched on, and turning it
+// off asks what happens to what was already written. lib/health-sync.js is mocked; its own tests
+// cover the writing.
 const mocks = vi.hoisted(() => {
   const state = { S: null, MOBILE: true, android: true, status: { status: 'available', granted: false }, health: { on: false, written: {}, error: null } }
   state.snapshot = () => ({
@@ -78,7 +79,7 @@ afterEach(() => {
 })
 
 const mount = async () => {
-  await act(async () => { root.render(<Settings page="data" />) })
+  await act(async () => { root.render(<Settings page="health" />) })
   await act(async () => { await Promise.resolve(); await Promise.resolve() })
 }
 const row = text => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes(text))

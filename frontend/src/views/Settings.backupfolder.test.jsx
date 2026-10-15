@@ -83,7 +83,7 @@ afterEach(() => {
   host.remove()
 })
 
-const mount = async () => { await act(async () => { root.render(<Settings page="data" />) }) }
+const mount = async () => { await act(async () => { root.render(<Settings page="backup" />) }) }
 const shown = () => !!host.querySelector('.backup-folder-row')
 
 describe('the backup folder rows', () => {

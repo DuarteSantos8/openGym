@@ -66,7 +66,7 @@ afterEach(() => {
   host.remove()
 })
 
-const mount = () => act(() => root.render(<Settings page="look" />))
+const mount = () => act(() => root.render(<Settings page="appearance" />))
 const own = () => host.querySelector('.swatch-own')
 const picker = () => host.querySelector('.swatch-own input[type="color"]')
 // A drag step: the browser sets the value and fires 'input' (React's onChange).

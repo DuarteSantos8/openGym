@@ -120,6 +120,11 @@ function Shell() {
   // A preset key, or the user's own colour as '#rrggbb' (lib/accent.js), already checked.
   const accent = accentValue(S)
   useEffect(() => { applyPrefs(S.theme, accent) }, [S.theme, accent])
+  // Profile › Appearance › Reduce motion: the same rule the system setting gets (index.css).
+  useEffect(() => {
+    if (S.reduceMotion === true) document.documentElement.dataset.motion = 'reduce'
+    else delete document.documentElement.dataset.motion
+  }, [S.reduceMotion])
   // 'system' needs to react live if the OS theme flips while the app is open, not just on
   // the next mount — a fixed 'dark'/'light' choice never re-fires this since matchMedia
   // isn't consulted for those.

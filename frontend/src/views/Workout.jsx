@@ -48,6 +48,7 @@ import { bestSetFor } from '../lib/exercise-history.js'
 import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry } from '../lib/active-workout-order.js'
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
+import { reducedMotion } from '../lib/reduced-motion.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import FocusView from './FocusView.jsx'
 import { withMeaning, historyAs, dbLoadFor, entryDbLoad, bellsIn, ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
@@ -1768,12 +1769,13 @@ function ActiveWorkout() {
   }, [cur])
   // Brings a list unit to the top of the screen, under the pinned header. The header grows when
   // the name wraps and by the chip row, so the unit's scroll margin (index.css) is fed its height
-  // as it is right now. A jump the eye should follow glides, unless the system asks for less motion.
+  // as it is right now. A jump the eye should follow glides, unless the device or the app's Reduce
+  // motion asks for less.
   const scrollToUnit = (el, glide) => {
     if (!el || typeof el.scrollIntoView !== 'function') return
     const hdrH = hdrRef.current?.offsetHeight
     if (hdrH) listRef.current?.style.setProperty('--whdr-h', hdrH + 'px')
-    const still = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const still = reducedMotion()
     el.scrollIntoView(glide && !still ? { block: 'start', behavior: 'smooth' } : { block: 'start' })
   }
   // A tap on a chip at the top (#323). Cards and Focus show one unit, so the chip makes it the one

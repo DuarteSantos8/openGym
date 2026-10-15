@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isTabRoot, launchPath, legacyPath, parentOf, slotOf, tabOf, workoutRunning } from './tab-route.js'
+import { PROFILE_RENAMED, isTabRoot, launchPath, legacyPath, parentOf, slotOf, tabOf, workoutRunning } from './tab-route.js'
 
 describe('the tab comes from the route', () => {
   it('Home, Training, Nutrition and Progress own their own paths', () => {
@@ -68,6 +68,15 @@ describe('the routes from before the tabs', () => {
     expect(legacyPath('/settings')).toBe('/me')
     expect(legacyPath('/settings/workout')).toBe('/me/workout')
     expect(legacyPath('/admin')).toBe('/me/admin')
+  })
+
+  it('send the Profile pages the §5 merge renamed to their new names', () => {
+    expect(legacyPath('/settings/look')).toBe('/me/appearance')
+    expect(legacyPath('/settings/reminders')).toBe('/me/notifications')
+    expect(legacyPath('/settings/plan')).toBe('/me/schedule')
+    expect(legacyPath('/settings/data', '?x=1')).toBe('/me/backup?x=1')
+    expect(legacyPath('/settings/advanced')).toBe('/me/advanced')
+    expect(PROFILE_RENAMED).toEqual({ look: 'appearance', reminders: 'notifications', plan: 'schedule', data: 'backup' })
   })
 
   it('leave new and unknown routes alone', () => {

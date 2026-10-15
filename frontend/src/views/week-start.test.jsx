@@ -70,7 +70,7 @@ const segButton = label => [...host.querySelectorAll('.seg button')].find(b => b
 const dayRows = () => [...host.querySelectorAll('.item .tt')].map(e => e.textContent)
 
 describe('Settings — week starts on', () => {
-  const mount = () => act(() => root.render(<Settings page="plan" />))
+  const mount = () => act(() => root.render(<Settings page="schedule" />))
 
   it('offers Monday and Sunday and writes the getDay() index', () => {
     mount()

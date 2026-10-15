@@ -7,6 +7,7 @@ import { speedUnitOf } from '../lib/speed.js'
 import { formulaOf, FORMULA_NAMES } from '../lib/onerm.js'
 import { copyText } from '../lib/clipboard.js'
 import { back as tabBack } from '../lib/use-tab-nav.js'
+import { PROFILE_RENAMED } from '../lib/tab-route.js'
 import { useUI } from '../store/useUI.js'
 import { ACCENTS, ACCENT_NAMES, todayISO, localTZ, weekStartOf, MONDAY, SUNDAY, fmtPlate } from '../lib/format.js'
 import { inventoryFor, ownsPlates } from '../lib/plates.js'
@@ -15,7 +16,7 @@ import { effortOf } from '../lib/history.js'
 import { figureOf } from '../lib/exercises.js'
 import { unlock, chime, playOnSilentSupported, vibrateSupported, appleTouchDevice } from '../lib/sound.js'
 import { REST_SOUND_IDS, restSoundOf } from '../lib/rest-sounds.js'
-import { scheduleModeOf, chooseFixedWeek, chooseRotation } from '../lib/rotation.js'
+import { scheduleModeOf } from '../lib/rotation.js'
 import { queueOf } from '../lib/queue.js'
 import { api, webauthnOK, passkeyRegister, passkeyError, IS_ANDROID } from '../lib/api.js'
 import { pushSupported, enablePush, disablePush, sendTestPush, syncPushSubscription } from '../lib/push.js'
@@ -46,34 +47,41 @@ import BackupFolderRow, { useBackupFolder, autoBackupSubtitle } from '../compone
 import { ServerSyncSection, KeptChangesRows, leaveServer, connectServer, passkeySignIn } from '../components/ServerSync.jsx'
 import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } from '../components/PasswordAuth.jsx'
 import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem } from '../components/Passkeys.jsx'
+import FeaturesList from '../components/FeaturesList.jsx'
+import SyncStatusCard from '../components/SyncStatusCard.jsx'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
-import { PAGES, ROOT_GROUPS, pageVisible, searchSettings, pageTrail } from './settings-pages.js'
+import { manageMeasurementsSheet } from './Measurements.jsx'
+import { nutritionAvailable } from '../lib/nutrition/api.js'
+import { systemReducesMotion } from '../lib/reduced-motion.js'
+import { PAGES, ROOT_GROUPS, pageExists, pageVisible, searchSettings } from './settings-pages.js'
 import { BRAND, LINKS } from '../brand.js'
 
-/* Settings (v1.3.11). The root is one screen: an account card, eleven rows that each open a page
-   (/settings/<page>), and a search over every row. Rare things live one level further down
-   (Workout → Fine-tuning). The rows and their rules are the ones the single long page had; only
-   where they sit changed. settings-pages.js says which page holds what, and is what the search
-   reads. `page` is the open page (null for the root), `find` a row a search hit asked for, which
-   is scrolled to and flashed. */
+/* Profile (ia-proposal §5). The root is one screen: the account card, the sync status, one group
+   of rows per domain that each open a page (/me/<page>, or a page in a tab), Log out, and a search
+   over every row. Every page goes back to Profile (§6). settings-pages.js says which page holds
+   what, and is what the search reads. `page` is the open page (null for the root), `find` a row a
+   search hit asked for, which is scrolled to and flashed. */
 
 // What was typed into the search, kept while you step into a hit and back out again: tied to
 // the history entry it was typed on, so Back (in the app, the browser's or Android's) brings the
 // results back, while Settings opened afresh from anywhere (the gear, a tab) starts at the root.
 let lastQuery = { q: '', key: null }
 
-// The route: /settings and /settings/<page>. An unknown page, or one this device does not have
-// (the Coach page off the phone app), goes back to the root.
+// The route: /me and /me/<page>. A page renamed by the §5 merge goes to its new name (tab-route.js);
+// a page that lives in a tab (the phone's Coach setup) goes there; an unknown page, or one this
+// device does not have, goes back to the root. Keyed on the history entry too, so a search hit for
+// a row on the root itself, which lands on the same path, flashes it every time.
 export function SettingsRoute() {
   const { page } = useParams()
   const loc = useLocation()
   const ctx = { user: useStore(s => s.user), mobile: MOBILE }
-  if (page && (!PAGES[page] || !pageVisible(PAGES[page].parent || page, ctx))) return <Navigate to="/me" replace />
-  if (page === 'coach') return <Navigate to="/train/coach/setup" replace />
-  return <Settings key={page || 'root'} page={page || null} find={loc.state?.find || null} via={loc.state?.via || null} />
+  if (page && PROFILE_RENAMED[page]) return <Navigate to={'/me/' + PROFILE_RENAMED[page]} replace state={loc.state} />
+  if (page && PAGES[page]?.to && pageVisible(page, ctx)) return <Navigate to={PAGES[page].to} replace />
+  if (page && !pageExists(page, ctx)) return <Navigate to="/me" replace />
+  return <Settings key={(page || 'root') + ':' + loc.key} page={page || null} find={loc.state?.find || null} via={loc.state?.via || null} />
 }
 
-// "Mon" / "Sun" in the app's language, for the Plan & schedule row's preview.
+// "Mon" / "Sun" in the app's language, for the Schedule defaults row's preview.
 const shortWeekday = day => {
   try { return new Intl.DateTimeFormat(dateLocale(), { weekday: 'short' }).format(new Date(2024, 0, day === 0 ? 7 : 1)) } catch { return day === 0 ? 'Sun' : 'Mon' }
 }
@@ -108,7 +116,7 @@ export default function Settings({ page = null, find = null, via = null }) {
   const wakeOK = wakeLockSupported()
 
   // A planner's own queue (no rotationId, or one that doesn't match the saved rotation here) is
-  // not this app's to switch off or overwrite. The Scheduling row goes read-only for it.
+  // not this app's to switch off or overwrite: the How you train row says so.
   const liveQ = queueOf(S)
   const externalQ = !!liveQ && (!S.rotation || liveQ.rotationId !== S.rotation.id)
 
@@ -125,32 +133,6 @@ export default function Settings({ page = null, find = null, via = null }) {
         { icon: 'pencil', label: t('Keep the numbers, change the label'), onClick: () => setUnit(v, { convert: false }) },
       ],
     })
-  }
-
-  // Fixed Week or Rotation. A live queue always wins (scheduleModeOf, lib/rotation.js) — a queue
-  // written by a planner switches the app to Rotation on its own — but choosing Rotation with
-  // nothing built yet has no queue to derive from, so S.scheduleMode is what keeps it selected
-  // (and the weekday grid hidden, on both Home and Plan) until the first routine is added.
-  // Fixed Week behaves as on Plan (views/Plan.jsx setMode), with the same words: with no loop
-  // running there is nothing to lose and it switches at once; a running loop asks first.
-  const setScheduleMode = v => {
-    if (v === scheduleModeOf(S)) return
-    if (v === 'week') {
-      // A planner's own queue is never this app's to drop — this control is text-only while one
-      // is live (below), but the guard stays here too rather than trust the render alone.
-      if (!liveQ) { update(s => { chooseFixedWeek(s) }); return }
-      confirmSheet({
-        title: t('Back to a fixed week?'),
-        message: t('The loop stops. Your weekdays stay as they are, and the loop is saved for later.'),
-        confirmText: t('Use Fixed Week'),
-        onConfirm: () => update(s => { chooseFixedWeek(s) }),
-      })
-      return
-    }
-    // The same switch as Plan's "How you train" (lib/rotation.js). With nothing to start (no
-    // saved sequence, or a malformed queue Plan has to sort out) the choice holds and you stay
-    // here: the page then offers the way to Plan (below), so picking a value never leaves it.
-    update(s => { chooseRotation(s) })
   }
 
   // --- update check state ---
@@ -377,31 +359,36 @@ export default function Settings({ page = null, find = null, via = null }) {
   // profile on the server, and — when it runs with the phone's own key — a file on the device.
   // Each is cleared on its own; forgetCoach() alone would pick one by mode. A failed call must
   // not stop the reset.
+  // Training data only: NutriTrace's diary, foods and goals are not openGym's to wipe.
   const resetEverything = () => confirmSheet({
-    title: t('Reset everything?'),
+    title: t('Reset training data?'),
     message: user
       ? t('Deletes your plan, workouts, body weight, photos and videos from your profile on this server and on every signed-in device. This cannot be undone.')
       : t('Deletes your plan, workouts, body weight, photos and videos on this device. This cannot be undone.'),
-    confirmText: t('Delete everything'), danger: true,
+    confirmText: t('Delete training data'), danger: true,
     onConfirm: () => {
       if (user) api('/api/coach/forget', { method: 'POST', body: '{}' }).catch(() => {})
       if (coachLocal?.mode === 'byok') forgetCoach().catch(() => {})
       resetAll()
-      nav('/home'); toast(t('All data reset'))
+      nav('/home'); toast(t('Training data reset'))
       clearMediaAfterReset(!!user).catch(() => {})
     },
   })
 
   /* ---------------- what the pages and the search need to know about this device ---------------- */
   const canVibrate = vibrateSupported()
+  const systemMotion = systemReducesMotion()
   const ctx = {
     user, mobile: MOBILE, android, demo: DEMO, wakeOK, hasMedia, pwOn, webauthn: webauthnOK(),
     sound: !!S.sound, playOnSilent: playOnSilentSupported(), canVibrate, vibrate: S.vibrate !== false,
     profiles: (S.equipProfiles || []).length > 0, nameLang: EXERCISE_NAME_LANGS.includes(baseLang(lang)),
     pushOK: !MOBILE && pushSupported(), reminderOn: !!S.reminder?.on, nudge: !!S.reminder?.nudge,
     autoBackup: !!S.autoBackup, synced: !!sync, installTip: !MOBILE && !standalone(), androidWeb: IS_ANDROID,
+    baseLang: baseLang(lang), systemMotion,
+    nutrition: nutritionAvailable(user),
   }
   const mode = scheduleModeOf(S)
+  const modeLabel = externalQ ? t('Rotation') + ' · ' + t('Externally managed') : mode === 'rotation' ? t('Rotation') : t('Fixed Week')
   const layout = ['list', 'compact', 'focus'].includes(S.workoutView) ? S.workoutView : 'cards'
   const layoutLabel = { cards: t('Cards'), list: t('List'), compact: t('Compact') }[layout]
   const activeProfile = (S.equipProfiles || []).find(p => p.id === S.activeEquipId)
@@ -410,23 +397,22 @@ export default function Settings({ page = null, find = null, via = null }) {
   const preview = {
     workout: () => (S.restSec > 0 ? t('{0} rest', fmtRest(S.restSec)) : t('No rest timer')) + ' · ' + layoutLabel,
     alerts: () => [S.sound ? t('Sound') : null, canVibrate && S.vibrate !== false ? t('Vibrate') : null, S.timerFlash ? t('Flash') : null].filter(Boolean).join(' · ') || t('Silent'),
-    reminders: () => (S.reminder?.on ? (S.reminder.time || DEF.reminder?.time || '') : t('Off')),
-    plan: () => (mode === 'rotation' ? t('Rotation') : t('Fixed Week')) + ' · ' + shortWeekday(weekStartOf(S) === SUNDAY ? 0 : 1),
+    notifications: () => (S.reminder?.on ? (S.reminder.time || DEF.reminder?.time || '') : t('Off')),
+    schedule: () => (mode === 'rotation' ? t('Rotation') : t('Fixed Week')) + ' · ' + shortWeekday(weekStartOf(S) === SUNDAY ? 0 : 1),
     units: () => (S.unit || 'kg') + ' · ' + (LANGS[lang] || lang),
     equipment: () => (S.equipFilterOn && activeProfile ? activeProfile.name : t('Everything')),
-    look: () => themeLabel + ' · ' + accentLabel(S),
+    appearance: () => themeLabel + ' · ' + accentLabel(S),
     coach: () => (coachLocal?.mode === 'server' ? t('Your server') : coachLocal?.mode === 'byok' ? t('Your API key') : t('Off')),
-    data: () => '',
     about: () => 'v' + BRAND.version,
   }
 
+  // A page of Profile, a page that lives in a tab, or the measurement chooser's sheet.
   const open = id => {
-    if (id === 'coach') { nav('/train/coach/setup'); return }
-    nav('/me/' + id)
+    if (PAGES[id].sheet) { manageMeasurementsSheet(); return }
+    nav(PAGES[id].to || '/me/' + id)
   }
-  // The tab's back (lib/use-tab-nav.js), with this page's own parent for a page opened from a
-  // link with nothing behind it.
-  const back = () => tabBack(PAGES[page]?.parent ? '/me/' + PAGES[page].parent : '/me')
+  // The tab's back (lib/use-tab-nav.js): every page of Profile goes back to Profile (§6).
+  const back = () => tabBack('/me')
 
   /* ---------------- the pages ---------------- */
   const restRow = <Row icon="timer" iconTint="var(--orange)" title={t('Rest timer')} value={fmtRest(S.restSec)} accessory="chevron"
@@ -509,9 +495,6 @@ export default function Settings({ page = null, find = null, via = null }) {
             value={S.gifSize === 'mini' || S.gifSize === 'off' ? S.gifSize : 'full'}
             onChange={v => update(s => { s.gifSize = v })} />
         </Row>
-      </Section>
-      <Section>
-        <Row icon="wrench" iconTint="var(--grey)" title={t('Fine-tuning')} subtitle={t('Buttons, timed sets')} accessory="chevron" onClick={() => open('advanced')} />
       </Section>
     </>,
 
@@ -615,22 +598,14 @@ export default function Settings({ page = null, find = null, via = null }) {
       </>
     },
 
-    reminders: () => <NotificationsCard S={S} update={update} toast={toast} />,
+    notifications: () => <NotificationsCard S={S} update={update} toast={toast} />,
 
-    plan: () => <>
+    schedule: () => <>
       <Section>
-        {/* Fixed Week (S.week) or Rotation (the live queue, lib/queue.js + lib/rotation.js).
-            Derived from the queue, never stored. */}
-        <Row icon="repeat" iconTint="var(--orange)" title={t('How you train')}>
-          {externalQ
-            ? <span className="small dim">{t('Rotation')} · {t('Externally managed')}</span>
-            : <Segmented className="seg-inline"
-                options={[{ value: 'week', label: t('Fixed Week') }, { value: 'rotation', label: t('Rotation') }]}
-                value={mode} onChange={setScheduleMode} />}
-        </Row>
-        {/* Rotation chosen with no loop running yet: the loop is built on Plan. */}
-        {mode === 'rotation' && !liveQ && <Row icon="calendar" iconTint="var(--orange)" title={t('Build your loop in Plan')}
-          accessory="chevron" onClick={() => nav('/train/schedule')} />}
+        {/* Fixed Week or Rotation is chosen on Training › Schedule, next to the week or the loop
+            it changes (§5): this row says which it is and goes there. */}
+        <Row icon="repeat" iconTint="var(--orange)" title={t('How you train')} value={modeLabel}
+          accessory="chevron" onClick={() => nav('/train/schedule')} />
         {/* Monday or Sunday: the Plan list, the Home strip, the calendar grid and every "this
             week" total follow it. Stored as a getDay() index (see lib/format.js). */}
         <Row icon="calendar" iconTint="var(--orange)" title={t('Week starts on')}>
@@ -709,7 +684,7 @@ export default function Settings({ page = null, find = null, via = null }) {
 
     equipment: () => <EquipmentCard S={S} update={update} />,
 
-    look: () => <>
+    appearance: () => <>
       <Section footer={DEMO || MOBILE || !user ? undefined : t('synced with your profile')}>
         <Row icon="moon" iconTint="var(--indigo)" title={t('Theme')}>
           <Segmented
@@ -750,6 +725,13 @@ export default function Settings({ page = null, find = null, via = null }) {
             onChange={v => update(s => { s.exFigure = v })}
           />
         </Row>
+        {/* On top of the device's own setting, which the app always follows (index.css,
+            lib/reduced-motion.js): with that on, the switch shows on and says where it is set. */}
+        <Row icon="minimize" iconTint="var(--blue)" title={t('Reduce motion')}
+          subtitle={systemMotion ? t('On in your device settings, so it is on here too.') : t('Turns off animations and slide-ins in this app.')}>
+          <Switch aria-label={t('Reduce motion')} checked={systemMotion || S.reduceMotion === true} disabled={systemMotion}
+            onChange={v => update(s => { s.reduceMotion = v })} />
+        </Row>
       </Section>
       <Section title={t('On Home')}>
         {/* Membership QR codes on Home (views/CheckIn.jsx); off = no Home card, no route. */}
@@ -772,7 +754,8 @@ export default function Settings({ page = null, find = null, via = null }) {
       </Section>
     </>,
 
-    data: () => <>
+    // One backup of everything openGym keeps, and the way back from it.
+    backup: () => <>
       <Section title={t('Back up')}>
         <Row icon="share" iconTint="var(--blue)" title={t('Export backup (JSON)')} subtitle={hasMedia ? t('Without photos and videos') : undefined} accessory="chevron" onClick={doExport} />
         {hasMedia && <Row icon="share" iconTint="var(--blue)" title={t('Export with photos & videos (.zip)')} accessory="chevron" onClick={doExportZip} />}
@@ -785,9 +768,14 @@ export default function Settings({ page = null, find = null, via = null }) {
         {/* Android only: the system folder picker (#161). iOS shows Documents in Files already. */}
         {MOBILE && android && S.autoBackup && <BackupFolderRow />}
       </Section>
-      {MOBILE && android && <HealthConnectCard S={S} toast={toast} />}
-      <Section title={t('Bring data in')}>
+      <Section title={t('Restore')}>
         <Row icon="download" iconTint="var(--teal)" title={t('Import backup')} accessory="chevron" onClick={() => fileRef.current.click()} />
+      </Section>
+      <input ref={fileRef} type="file" accept=".json,.zip,application/json,application/zip" style={{ display: 'none' }} onChange={doImport} />
+    </>,
+
+    import: () => <>
+      <Section title={t('Bring data in')}>
         <Row icon="download" iconTint="var(--teal)" title={t('Import from another app')}
           subtitle={t('FitNotes, Strong, Hevy, or body weight from Apple Health')}
           accessory="chevron" onClick={() => importRef.current.click()} />
@@ -795,15 +783,24 @@ export default function Settings({ page = null, find = null, via = null }) {
           subtitle={t('Pull your history with a Hevy Pro API key')}
           accessory="chevron" onClick={importFromHevy} />
       </Section>
-      {hasMedia && <Section><MediaRow /></Section>}
-      <Section>
-        <Row icon="trash" iconTint="var(--red)" title={t('Reset everything')} danger onClick={resetEverything} />
-      </Section>
-      <input ref={fileRef} type="file" accept=".json,.zip,application/json,application/zip" style={{ display: 'none' }} onChange={doImport} />
       {/* Reset after reading so picking the same file twice still fires onChange. */}
       <input ref={importRef} type="file" accept=".csv,.xml,text/csv,text/xml" style={{ display: 'none' }}
         onChange={ev => { const f = ev.target.files[0]; if (f) importFromApp(f); ev.target.value = '' }} />
     </>,
+
+    media: () => <Section><MediaRow /></Section>,
+
+    danger: () => <Section footer={<>
+      {t('Export a backup first if you might want any of it back.')}
+      {ctx.nutrition && <> {t('Your nutrition diary, foods and goals stay.')}</>}
+    </>}>
+      <Row icon="trash" iconTint="var(--red)" title={t('Reset training data')} danger onClick={resetEverything} />
+    </Section>,
+
+    // Health Connect on the Android app (§5 "Connected apps & health").
+    health: () => (MOBILE && android ? <HealthConnectCard S={S} toast={toast} /> : null),
+
+    features: () => <FeaturesList S={S} ctx={ctx} />,
 
     about: () => <>
       {/* Updates. On Android the row is always there: it checks on demand and installs when a
@@ -828,9 +825,6 @@ export default function Settings({ page = null, find = null, via = null }) {
       {/* The version, where the support template tells people to look for it. On the phone
           build there is no address bar and no about box, so without this there is no way to tell
           which build you are running, or whether an update actually installed. */}
-      <Section>
-        <Row icon="shield" iconTint="var(--grey)" title={t('Licences')} accessory="chevron" onClick={() => open('licences')} />
-      </Section>
       <div className="dim small sp-version">
         {BRAND.name} v{BRAND.version} · {t('free & open source (AGPL v3)')}<br />
         <a href={LINKS.source[0].url} target="_blank" rel="noopener">{t('Source code')}</a><br />
@@ -880,20 +874,17 @@ export default function Settings({ page = null, find = null, via = null }) {
       </Section></>,
 
     account: () => <>
-      {/* The server: which one, which account, how that stands, "Sync now". A paired phone's
-          Admin and Disconnect sit in the same block; a browser's account rows follow in their own. */}
+      {/* The server: which one, which account, how that stands. A paired phone's account id sits
+          in the same block; a browser's account rows follow in their own. Sync now, Admin and
+          Log out are on Profile itself. */}
       {user && !DEMO && <ServerSyncSection>
-        {MOBILE && <>
-          {user.admin && <Row icon="crown" iconTint="var(--indigo)" title={t('Admin dashboard')} accessory="chevron" onClick={() => nav('/me/admin')} />}
-          <AccountIdRow id={user.id} />
-          <Row icon="signOut" iconTint="var(--red)" title={t('Disconnect')} danger onClick={disconnect} />
-        </>}
+        {MOBILE && <AccountIdRow id={user.id} />}
       </ServerSyncSection>}
 
       {/* account (demo and mobile builds have nothing to sign in to) */}
       {!(MOBILE && user) && <Section title={MOBILE ? t('Your data') : DEMO ? t('Demo') : t('Account')}>
         {MOBILE ? <>
-          <Row icon="lock" iconTint="var(--acc)" title={t('All data stays on this phone')} subtitle={t('No account, no cloud. Back it up anytime in Data & backup.')} />
+          <Row icon="lock" iconTint="var(--acc)" title={t('All data stays on this phone')} subtitle={t('No account, no cloud. Back it up anytime under Backup.')} />
           <Row icon="cloud" iconTint="var(--indigo)" title={t('Connect to my server')} subtitle={t('Sync this device to your own self-hosted openGym instead.')} accessory="chevron"
             onClick={connectServer} />
           <KeptChangesRows />
@@ -904,13 +895,11 @@ export default function Settings({ page = null, find = null, via = null }) {
           <Row icon="rocket" iconTint="var(--indigo)" title={t('Self-host openGym')} subtitle={t('Passkey sign-in, sync across your devices, your own data.')} accessory="chevron"
             onClick={() => window.open(REPO, '_blank', 'noopener')} />
         </> : user ? <>
-          {user.admin && <Row icon="crown" iconTint="var(--indigo)" title={t('Admin dashboard')} accessory="chevron" onClick={() => nav('/me/admin')} />}
           <PasskeysRow state={passkeys.st} changed={credsChanged} />
           <DeviceLinkRow state={passkeys.st} />
           <Row icon="qr" iconTint="var(--blue)" title={t('Pair the mobile app')} subtitle={t('Connect the openGym app on your phone to this account.')} accessory="chevron"
             onClick={() => useUI.getState().openSheet(close => <PairSheet close={close} />)} />
           {pwOn && <PasswordRow version={credsV} />}
-          <Row icon="signOut" iconTint="var(--red)" title={t('Sign out')} danger onClick={signOutHere} />
           <Row icon="shield" iconTint="var(--red)" title={t('Sign out everywhere')} subtitle={t('Ends this profile’s sessions on all your devices.')} danger onClick={signOutEverywhere} />
           <AccountIdRow id={user.id} />
         </> : webauthnOK() ? <>
@@ -946,14 +935,19 @@ export default function Settings({ page = null, find = null, via = null }) {
   }
 
   /* ---------------- the root ---------------- */
-  return <SettingsRoot ctx={ctx} preview={preview} open={open} user={user} sync={sync}
-    go={(hit) => {
-      if (hit.page === 'coach') { nav('/train/coach/setup'); return }
-      nav('/me/' + hit.page, hit.isPage ? undefined : { state: hit.via ? { find: hit.title, via: hit.via } : { find: hit.title } })
+  // Log out (§5): the browser signs out, a paired phone disconnects. A guest and a phone kept
+  // local have nothing to leave.
+  const logOut = DEMO || !user ? null
+    : MOBILE ? <Row icon="signOut" iconTint="var(--red)" title={t('Disconnect')} danger onClick={disconnect} />
+    : <Row icon="signOut" iconTint="var(--red)" title={t('Sign out')} danger onClick={signOutHere} />
+  return <SettingsRoot bodyRef={body} ctx={ctx} preview={preview} open={open} user={user} sync={sync} logOut={logOut}
+    go={hit => {
+      if (hit.isPage) { open(hit.page); return }
+      nav(hit.page ? '/me/' + hit.page : '/me', { state: hit.via ? { find: hit.title, via: hit.via } : { find: hit.title } })
     }} />
 }
 
-function SettingsRoot({ ctx, preview, open, user, sync, go }) {
+function SettingsRoot({ bodyRef, ctx, preview, open, user, sync, logOut, go }) {
   // The router's key for this history entry (what useLocation().key reads), taken once.
   const [key] = useState(() => window.history.state?.key || null)
   const [q, setQ] = useState(() => (key && lastQuery.key === key ? lastQuery.q : ''))
@@ -968,16 +962,17 @@ function SettingsRoot({ ctx, preview, open, user, sync, go }) {
     : MOBILE ? { title: t('This phone'), sub: t('All data stays on this phone') }
     : { title: t('Guest'), sub: t('Your data lives on this device. Sign in to sync.') }
   const initial = user && !DEMO ? String(user.name || '?').trim().charAt(0).toUpperCase() : null
-  return <div>
-    {/* Me opens from the avatar in either mode, so back is back, not a fixed Home. */}
-    <Page title={t('Settings')} />
+  return <div ref={bodyRef}>
+    {/* Profile opens from the avatar on every tab, so back is back, not a fixed Home. */}
+    <Page title={t('Profile')} />
     <div className="sp-search">
       <SearchField value={q} onChange={e => set(e.target.value)} onClear={() => set('')}
         placeholder={t('Search…')} aria-label={t('Search settings')} inputMode="search" enterKeyHint="search" autoComplete="off" />
     </div>
     {hits ? (hits.length ? <Section title={tn('{0} result', '{0} results', hits.length)}>
       {hits.slice(0, 40).map(h => (
-        <Row key={h.page + ':' + h.title} icon={h.icon} iconTint={h.tint} title={h.label} subtitle={h.trail} accessory="chevron" onClick={() => go(h)} />
+        <Row key={h.page + ':' + h.title} icon={h.icon} iconTint={h.tint} title={h.label} subtitle={h.trail} accessory="chevron"
+          onClick={() => { if (!h.isPage && h.page == null) set(''); go(h) }} />
       ))}
     </Section> : <div className="sp-empty">{t('No setting matches “{0}”.', q.trim())}</div>) : <>
       <Section>
@@ -987,12 +982,14 @@ function SettingsRoot({ ctx, preview, open, user, sync, go }) {
           <Icon name="chevronRight" className="lrow-c" />
         </button>
       </Section>
-      {ROOT_GROUPS.map(g => g.filter(id => pageVisible(id, ctx))).filter(g => g.length).map(g => (
-        <Section key={g[0]}>
-          {g.map(id => <Row key={id} icon={PAGES[id].icon} iconTint={PAGES[id].tint} title={t(PAGES[id].title)}
+      <SyncStatusCard />
+      {ROOT_GROUPS.map(g => ({ ...g, ids: g.ids.filter(id => pageVisible(id, ctx)) })).filter(g => g.ids.length).map(g => (
+        <Section key={g.title} title={t(g.title)}>
+          {g.ids.map(id => <Row key={id} icon={PAGES[id].icon} iconTint={PAGES[id].tint} title={t(PAGES[id].title)}
             value={preview[id]?.() || null} accessory="chevron" onClick={() => open(id)} className="sp-root-row" />)}
         </Section>
       ))}
+      {logOut && <Section>{logOut}</Section>}
       <div className="dim small sp-version">{BRAND.name} v{BRAND.version}</div>
     </>}
   </div>
@@ -1114,7 +1111,7 @@ function MobileReminderCard({ S, update, toast }) {
     setReminder({ on })
   }
   return (
-    <Section title={t('Notifications')}
+    <Section title={t('Training')}
       footer={S.reminder?.on ? t('Reminds you at this time on days that have a routine planned.') + nudgeNote(S) : null}>
       <Row icon="calendar" iconTint="var(--orange)" title={t('Workout day reminder')}>
         <Switch checked={!!S.reminder?.on} onChange={toggle} />
@@ -1182,37 +1179,39 @@ function PushCard({ S, update, toast }) {
   }
 
   if (!supported) return (
-    <Section title={t('Notifications')}>
+    <Section title={t('Delivery')}>
       <Row icon="bellSlash" iconTint="var(--grey)" title={t('Not supported in this browser.')} />
     </Section>
   )
 
+  // Grouped by what they are about (§5): the training reminders, then how they reach you. The
+  // reminders ride on this browser's push subscription, so they show once it is on.
   return <>
-    <Section
-      title={t('Notifications')}
-      footer={on && S.reminder?.on
+    {on && <Section
+      title={t('Training')}
+      footer={S.reminder?.on
         ? t("Only sent on days you have a routine planned and haven't logged a workout yet.") +
           (S.reminder?.tz ? ' ' + t('Timezone: {0} (auto-detected, updates if you travel).', S.reminder.tz) : '') +
           nudgeNote(S)
         : null}
     >
-      <Row icon="bell" iconTint="var(--red)" title={t('Push notifications')} subtitle={t('Rest-timer alerts, even if openGym is closed.')}>
-        <Switch checked={on} disabled={busy} onChange={toggle} />
+      <Row icon="calendar" iconTint="var(--orange)" title={t('Workout day reminder')}>
+        <Switch checked={!!S.reminder?.on} onChange={() => update(s => { s.reminder = { ...(s.reminder || DEF.reminder), on: !s.reminder?.on, tz: localTZ() } })} />
       </Row>
-      {on && (
-        <Row icon="calendar" iconTint="var(--orange)" title={t('Workout day reminder')}>
-          <Switch checked={!!S.reminder?.on} onChange={() => update(s => { s.reminder = { ...(s.reminder || DEF.reminder), on: !s.reminder?.on, tz: localTZ() } })} />
-        </Row>
-      )}
-      {on && S.reminder?.on && (
+      {S.reminder?.on && (
         <Row icon="clock" iconTint="var(--purple)" title={t('Reminder time')}>
           <input type="time" className="timef" value={S.reminder?.time || DEF.reminder.time}
             onChange={e => update(s => { s.reminder = { ...(s.reminder || DEF.reminder), time: e.target.value, tz: localTZ() } })} />
         </Row>
       )}
-      {on && S.reminder?.on && (
+      {S.reminder?.on && (
         <NudgeRows S={S} setReminder={patch => update(s => { s.reminder = { ...(s.reminder || DEF.reminder), ...patch, tz: localTZ() } })} />
       )}
+    </Section>}
+    <Section title={t('Delivery')} footer={on ? null : t('Turn on push notifications to get workout reminders.')}>
+      <Row icon="bell" iconTint="var(--red)" title={t('Push notifications')} subtitle={t('Rest-timer alerts, even if openGym is closed.')}>
+        <Switch checked={on} disabled={busy} onChange={toggle} />
+      </Row>
     </Section>
     {on && <div className="mb-10" style={{ marginTop: -12 }}><Button size="sm" icon="bell" onClick={test}>{t('Send test notification')}</Button></div>}
   </>
@@ -1356,7 +1355,7 @@ function EquipmentCard({ S, update }) {
 // display names are free text and need not be unique. copyText also reaches the clipboard on a
 // plain-http LAN address, where the Clipboard API is missing and password sign-in (#118) is the
 // usual way in; where no copy works at all the id is still on screen to read out.
-/* After "Reset everything": the photos and videos go too. Signed in, the empty state is pushed
+/* After "Reset training data": the photos and videos go too. Signed in, the empty state is pushed
    first and, once the server holds it, the server is asked to drop every file that state no
    longer refers to (POST /api/media/sweep) — asked before the push landed, it would still see the
    old state and keep everything, which is the safe side. Then this device keeps only the files a

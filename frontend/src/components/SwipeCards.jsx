@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { reducedMotion } from '../lib/reduced-motion.js'
 
 // What a card swipe never starts on: things that take a sideways drag themselves (a slider, a
 // chip row that scrolls, a video's scrubber, a text area), and what has its own swipe (a set row,
@@ -188,7 +189,7 @@ export default function SwipeCards({ children, renderPreview, onNavigate, index,
     const speed = dt > 0 ? (samples[samples.length - 1][1] - samples[0][1]) / dt : 0
     const available = index + active.direction >= 0 && index + active.direction < count
     const commit = !cancelled && active.direction != null && available && cardCommits(dx, dy, speed)
-    const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
+    const still = reducedMotion()
     const width = surface.current?.getBoundingClientRect().width || 360
     const stillCurrent = () => {
       const current = latest.current
@@ -201,8 +202,8 @@ export default function SwipeCards({ children, renderPreview, onNavigate, index,
       if (navigate) onNavigate(completedDirection)
     }
 
-    paint(commit ? -active.direction * active.side * (width + GAP) : 0, !reducedMotion, active.direction)
-    if (reducedMotion) complete()
+    paint(commit ? -active.direction * active.side * (width + GAP) : 0, !still, active.direction)
+    if (still) complete()
     else pending.current = setTimeout(complete, DURATION)
   }
 

@@ -35,10 +35,16 @@ export function parentOf(pathname = '') {
   return pathname.slice(0, pathname.lastIndexOf('/'))
 }
 
+// Profile pages the §5 merge renamed, old id → new id. /me/<old> and /settings/<old> land on the
+// new page (views/Settings.jsx SettingsRoute, and LEGACY below). Data & backup lands on Backup, the
+// page with its export and import.
+export const PROFILE_RENAMED = { look: 'appearance', reminders: 'notifications', plan: 'schedule', data: 'backup' }
+
 // Routes from before the tabs, still reachable from bookmarks, home-screen shortcuts and the links
 // already sitting in delivered notifications (the server's Coach push says #/coach). Longest
-// prefix first: /plan/r/:id is a routine, /plan the week.
+// prefix first: /plan/r/:id is a routine, /plan the week, /settings/look before /settings.
 const LEGACY = [
+  ...Object.entries(PROFILE_RENAMED).map(([from, to]) => ['/settings/' + from, '/me/' + to]),
   ['/plan/r', '/train/routines'],
   ['/plan', '/train/schedule'],
   ['/checkin', '/train/checkin'],

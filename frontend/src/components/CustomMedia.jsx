@@ -25,6 +25,7 @@ import { mediaStore } from '../lib/media-store.js'
 import { fetchToStore, mayFetch } from '../lib/media-sync.js'
 import { prefetchAllowed } from '../lib/media-prefetch.js'
 import { LOOP_MAX_SEC } from '../lib/media-limits.js'
+import { reducedMotion } from '../lib/reduced-motion.js'
 import Icon from './Icon.jsx'
 
 /** Opens a link after a tap: sanitised again here, since plan files and backups can bring any
@@ -86,9 +87,6 @@ export function useMediaUrl(file, { auto = true } = {}) {
   return { ...state, load: () => setAsked(n => n + 1) }
 }
 
-const reducedMotion = () => {
-  try { return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches } catch { return false }
-}
 
 /* ------------------------------------------------------------------ thumbnails ----------- */
 

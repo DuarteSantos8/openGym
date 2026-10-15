@@ -6,7 +6,7 @@ import Settings from './Settings.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
-// "Reset everything" is one dialog with two truths. A guest's data lives in this browser only.
+// "Reset training data" (Profile › Danger zone; nutrition stays) is one dialog with two truths. A guest's data lives in this browser only.
 // A signed-in profile pushes the empty state to the server like any other change, so the wipe
 // reaches every device that syncs with it — and the Coach's own files have to go too: the
 // per-profile one on the server, and the device one when the Coach runs with the phone's own key.
@@ -82,8 +82,8 @@ afterEach(() => {
   host.remove()
 })
 
-const mount = () => act(() => root.render(<Settings page="data" />))
-const resetRow = () => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Reset everything'))
+const mount = () => act(() => root.render(<Settings page="danger" />))
+const resetRow = () => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Reset training data'))
 const openDialog = () => {
   act(() => { resetRow().click() })
   expect(mocks.confirmSheet).toHaveBeenCalledTimes(1)
@@ -95,14 +95,15 @@ describe('Settings — reset everything', () => {
   it('guest: says the wipe is local, resets to the defaults, never calls the Coach', () => {
     mount()
     const dialog = openDialog()
-    expect(dialog.title).toBe('Reset everything?')
+    expect(dialog.title).toBe('Reset training data?')
+    expect(dialog.confirmText).toBe('Delete training data')
     expect(dialog.message).toBe('Deletes your plan, workouts, body weight, photos and videos on this device. This cannot be undone.')
     act(() => { dialog.onConfirm() })
     // the store's reset: the empty copy, stamped (useStore resetEverything)
     expect(mocks.resetEverything).toHaveBeenCalledTimes(1)
     expect(serverForgetCalls()).toHaveLength(0)
     expect(mocks.forgetCoach).not.toHaveBeenCalled()
-    expect(mocks.toast).toHaveBeenCalledWith('All data reset')
+    expect(mocks.toast).toHaveBeenCalledWith('Training data reset')
   })
 
   it('signed in: says the wipe reaches the server and every device, and forgets the Coach on the server too', () => {
@@ -115,7 +116,7 @@ describe('Settings — reset everything', () => {
     expect(serverForgetCalls()[0][1]).toEqual({ method: 'POST', body: '{}' })
     expect(mocks.forgetCoach).not.toHaveBeenCalled()   // no device Coach here
     expect(mocks.resetEverything).toHaveBeenCalledTimes(1)
-    expect(mocks.toast).toHaveBeenCalledWith('All data reset')
+    expect(mocks.toast).toHaveBeenCalledWith('Training data reset')
   })
 
   it('signed in: a failing Coach call does not block the reset', async () => {
@@ -126,7 +127,7 @@ describe('Settings — reset everything', () => {
     await act(async () => { dialog.onConfirm(); await Promise.resolve() })
     expect(serverForgetCalls()).toHaveLength(1)
     expect(mocks.resetEverything).toHaveBeenCalledTimes(1)
-    expect(mocks.toast).toHaveBeenCalledWith('All data reset')
+    expect(mocks.toast).toHaveBeenCalledWith('Training data reset')
   })
 
   // A paired phone running the Coach with its own key has Coach data in both homes.
@@ -139,7 +140,7 @@ describe('Settings — reset everything', () => {
     expect(serverForgetCalls()).toHaveLength(1)
     expect(mocks.forgetCoach).toHaveBeenCalledTimes(1)
     expect(mocks.resetEverything).toHaveBeenCalledTimes(1)
-    expect(mocks.toast).toHaveBeenCalledWith('All data reset')
+    expect(mocks.toast).toHaveBeenCalledWith('Training data reset')
   })
 
   it('own key, no server: clears the device Coach without touching the server', () => {

@@ -12,7 +12,7 @@ import { jpeg } from '../lib/media-samples.test-util.js'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 /* Settings → Data with photos and videos: the JSON export says it leaves them out, the zip export
-   carries them, Import takes either, and "Reset everything" takes the files too — on the server
+   carries them, Import takes either, and "Reset training data" takes the files too — on the server
    once the empty state is there, and on this device except what a stash still refers to. */
 const mocks = vi.hoisted(() => {
   const state = { S: null, user: null, config: null, sync: { status: 'ok' }, stashed: new Set() }
@@ -101,15 +101,20 @@ afterEach(() => {
   host.remove()
   _setMediaStore(null)
 })
-const mount = async () => { act(() => root.render(<Settings page="data" />)); await settle() }
+// Backup holds the exports and the import; Photos & videos (shown once there are any) the status
+// row; Danger zone the reset.
+const mount = async (page = 'backup') => { act(() => root.render(<Settings page={page} />)); await settle() }
 
 describe('Settings — photos and videos', () => {
   it('the JSON export says it leaves them out, the zip row and the Photos & videos row appear', async () => {
     await mount()
     expect(row('Export backup (JSON)').textContent).toContain('Without photos and videos')
     expect(row('Export with photos & videos (.zip)')).toBeTruthy()
-    expect(row('Photos & videos').textContent).toContain('Kept on this device only')
     expect(host.querySelector('input[type="file"][accept=".json,.zip,application/json,application/zip"]')).toBeTruthy()
+    await mount(null)
+    expect(row('Photos & videos')).toBeTruthy()
+    await mount('media')
+    expect(row('Photos & videos').textContent).toContain('Kept on this device only')
   })
 
   // QA, v1.3.9: a paired phone started in airplane mode has no config yet (it is never cached),
@@ -121,7 +126,7 @@ describe('Settings — photos and videos', () => {
     mocks.user = { id: 'u1', name: 'Ana' }
     mocks.config = null
     mocks.sync = { status: 'offline', offline: true }
-    await mount()
+    await mount('media')
     expect(row('Photos & videos').textContent).not.toContain('Kept on this device only')
     expect(row('Photos & videos').textContent).toContain('1 waiting to upload')
   })
@@ -129,7 +134,7 @@ describe('Settings — photos and videos', () => {
   it('signed in to a server that stores no photos or videos: kept on this device only', async () => {
     mocks.user = { id: 'u1', name: 'Ana' }
     mocks.config = { invite_only: false }
-    await mount()
+    await mount('media')
     expect(row('Photos & videos').textContent).toContain('Kept on this device only')
   })
 
@@ -138,6 +143,7 @@ describe('Settings — photos and videos', () => {
     await mount()
     expect(row('Export backup (JSON)').textContent).not.toContain('Without photos')
     expect(row('Export with photos & videos')).toBeUndefined()
+    await mount(null)
     expect(row('Photos & videos')).toBeUndefined()
   })
 
@@ -212,8 +218,8 @@ describe('Settings — photos and videos', () => {
     await media.put(HASH, new Blob([PHOTO]), { mime: 'image/jpeg', pending: false })
     await media.put(other, new Blob(['x']), { mime: 'image/png', pending: true })
     mocks.stashed = new Set([other])
-    await mount()
-    act(() => { row('Reset everything').click() })
+    await mount('danger')
+    act(() => { row('Reset training data').click() })
     act(() => { mocks.confirmSheet.mock.calls[0][0].onConfirm() })
     await until(async () => !(await media.has(HASH)))
     expect(mocks.pushState).toHaveBeenCalled()
@@ -226,8 +232,8 @@ describe('Settings — photos and videos', () => {
     mocks.user = { id: 'u1', name: 'Ana' }
     mocks.config = { media: { imageMB: 2 } }
     mocks.sync = { status: 'offline' }
-    await mount()
-    act(() => { row('Reset everything').click() })
+    await mount('danger')
+    act(() => { row('Reset training data').click() })
     act(() => { mocks.confirmSheet.mock.calls[0][0].onConfirm() })
     await until(() => mocks.pushState.mock.calls.length > 0)
     await settle()
@@ -238,8 +244,8 @@ describe('Settings — photos and videos', () => {
     mocks.sync = { status: 'ok' }
     mocks.confirmSheet.mockClear(); mocks.api.mockClear()
     await media.put(HASH, new Blob([PHOTO]), { mime: 'image/jpeg', pending: true })
-    await mount()
-    act(() => { row('Reset everything').click() })
+    await mount('danger')
+    act(() => { row('Reset training data').click() })
     act(() => { mocks.confirmSheet.mock.calls[0][0].onConfirm() })
     await until(async () => !(await media.has(HASH)))
     expect(mocks.api).not.toHaveBeenCalled()

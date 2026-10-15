@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { reducedMotion } from './reduced-motion.js'
 import { vibrate } from './sound.js'
 
 // Swipe on sets (v1.3.11): the gesture core behind components/SwipeRow.jsx. A set row swiped
@@ -96,9 +97,6 @@ export function velocityOf(samples) {
   return dt > 0 ? (b[1] - a[1]) / dt : 0
 }
 
-export const reducedMotion = () => {
-  try { return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches } catch { return false }
-}
 
 // One open row at a time, and the click a swipe leaves behind. Shared by every row on the page.
 const shared = { open: null, swallow: false, swallowTm: null, installed: false }

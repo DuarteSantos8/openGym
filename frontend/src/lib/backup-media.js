@@ -38,7 +38,7 @@ media/               the photos, GIFs and videos of your own exercises and of yo
                      workouts, each named by its SHA-256, plus the small previews
                      shown in lists.
 
-To bring it back: ${BRAND.name} -> Settings -> Data & backup -> Import backup, and pick this .zip as it is.
+To bring it back: ${BRAND.name} -> Profile -> Backup -> Import backup, and pick this .zip as it is.
 Do not unpack and re-zip it: the app reads zips that are stored, not compressed.
 `
 

@@ -236,11 +236,12 @@ export function OwedSheet({ kind, count: count0, media: media0 = 0, exportBackup
 }
 
 /* ---------------------------------------------------------------- Settings ------------------- */
-const TINT = { ok: 'var(--green)', wait: 'var(--orange)', off: 'var(--grey)', bad: 'var(--red)', quiet: 'var(--grey)' }
+export const TONE_TINT = { ok: 'var(--green)', wait: 'var(--orange)', off: 'var(--grey)', bad: 'var(--red)', quiet: 'var(--grey)' }
 
-// Settings → "Server & sync", for a device signed in or paired: which server, which account, how
-// things stand, since when, what is still waiting, and "Sync now". `children` are the account's
-// own rows (the phone's Admin and Disconnect), which belong in the same block.
+// Profile › Account → "Server & sync", for a device signed in or paired: which server, which
+// account, how things stand, since when, and what is still waiting. "Sync now" is on Profile
+// itself (SyncStatusCard). `children` are the account's own rows (the phone's account id), which
+// belong in the same block.
 export function ServerSyncSection({ children }) {
   const user = useStore(s => s.user)
   const sync = useStore(s => s.sync)
@@ -248,7 +249,6 @@ export function ServerSyncSection({ children }) {
   useStore(s => s.config)   // whether "Sign in" may offer a password
   const unsynced = useStore(s => s.unsyncedChanges)
   const online = useOnline()
-  const [busy, setBusy] = useState(false)
   // "Last synced: 3 minutes ago" goes stale on an open screen; a re-render now and then keeps it true.
   const [, tick] = useState(0)
   useEffect(() => { const iv = setInterval(() => tick(n => n + 1), 30000); return () => clearInterval(iv) }, [])
@@ -261,18 +261,12 @@ export function ServerSyncSection({ children }) {
     sync.lastSynced ? t('Last synced: {0}', fmtAgo(sync.lastSynced)) : t('Not synced with this server yet'),
     owed.owed && (owed.count > 0 ? t('Not on your server yet: {0}', changeCount(owed.count)) : owed.count == null ? t('Some changes on this device have not reached your server.') : null),
   ].filter(Boolean).join(' · ')
-  const now = async () => {
-    if (busy) return
-    setBusy(true)
-    try { await syncNowWithToast() } finally { setBusy(false) }
-  }
   return <Section title={t('Server & sync')}>
     {/* No address: a phone an earlier version unpaired. The status row below already says it is
         not connected; this row only says which server, and there is none to name. */}
     <Row icon="globe" iconTint="var(--blue)" title={sync.server ? hostOf(sync.server) : t('Server address unknown')}
       subtitle={t('Signed in as {0}', user.name)} />
-    <Row icon={view.icon} iconTint={TINT[view.tone]} title={view.line} subtitle={sub} className="sync-status" />
-    <Row icon="reset" iconTint="var(--acc)" title={busy ? t('Syncing…') : t('Sync now')} onClick={now} />
+    <Row icon={view.icon} iconTint={TONE_TINT[view.tone]} title={view.line} subtitle={sub} className="sync-status" />
     {MOBILE && <Row icon="key" iconTint="var(--orange)" title={t('Cloudflare Access')} accessory="chevron"
       onClick={() => ui().openSheet(close => <CfAccessSheet close={close} server={sync.server || ''} />)} />}
     {sync.status === 'auth' && (MOBILE

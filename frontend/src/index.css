@@ -207,6 +207,7 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 }
 
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+html[data-motion=reduce] *{animation:none!important;transition:none!important}
 
 /* ------------------------------------------------------------ type scale -- */
 /* The nine .t-* classes that used to live here emitted from no JSX in the app, while the views
