@@ -18518,25 +18518,77 @@
     ]
   },
   "0453": {
-    "name": "Sitzendes Trizeps-Strecken mit SZ-Stange"
+    "name": "Sitzendes Trizeps-Strecken mit SZ-Stange",
+    "instructions": [
+      "Setz dich mit geradem Rücken auf eine Bank und stell die Füße flach auf den Boden.",
+      "Greif die SZ-Stange im Obergriff, die Hände schulterbreit auseinander.",
+      "Heb die Stange über den Kopf, bis deine Arme ganz gestreckt sind.",
+      "Halte die Oberarme ruhig und senk die Stange hinter den Kopf, indem du die Ellbogen beugst.",
+      "Halte kurz inne und streck dann die Arme, um die Stange zurück in die Ausgangsposition zu heben.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0454": {
-    "name": "Spider-Curl mit SZ-Stange"
+    "name": "Spider-Curl mit SZ-Stange",
+    "instructions": [
+      "Stell dich hin, die Füße schulterbreit auseinander, und greif die SZ-Stange im Untergriff, die Handflächen zeigen nach oben.",
+      "Leg die Oberarme auf eine Scott-Bank oder einen Gymnastikball und lass die Ellbogen nach unten hängen.",
+      "Halte die Oberarme ruhig, atme aus und beug die Arme, um die Stange zu den Schultern zu heben.",
+      "Halte oben kurz inne und spann den Bizeps an.",
+      "Atme ein und senk die Stange langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0455": {
-    "name": "Finger-Curls mit Langhantel"
+    "name": "Finger-Curls mit Langhantel",
+    "instructions": [
+      "Setz dich auf eine Bank, stell die Füße flach auf den Boden und greif eine Langhantel im Untergriff, die Handflächen zeigen nach oben.",
+      "Leg die Unterarme auf die Oberschenkel, sodass die Handgelenke vorn über die Knie hinaushängen.",
+      "Roll die Finger langsam zur Handfläche ein und pack die Stange fest.",
+      "Halte die Spannung kurz und öffne die Finger dann langsam wieder bis in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0456": {
-    "name": "Sit-up mit gebeugten Knien"
+    "name": "Sit-up mit gebeugten Knien",
+    "instructions": [
+      "Leg dich flach auf den Rücken, beug die Knie und stell die Füße flach auf den Boden.",
+      "Leg die Hände hinter den Kopf, die Ellbogen zeigen nach außen.",
+      "Spann die Bauchmuskeln an, roll dich langsam nach vorn ein und heb den Oberkörper vom Boden, bis er einen Winkel von 45 Grad erreicht.",
+      "Heb gleichzeitig die Beine vom Boden, beug die Knie und zieh sie zur Brust.",
+      "Halte oben kurz inne und senk dann Oberkörper und Beine langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0457": {
-    "name": "Sit-up mit Beinanziehen und gestreckten Armen"
+    "name": "Sit-up mit Beinanziehen und gestreckten Armen",
+    "instructions": [
+      "Leg dich flach auf den Rücken, die Beine gestreckt und die Arme gerade über dem Kopf.",
+      "Spann die Bauchmuskeln an, heb den Oberkörper vom Boden und zieh gleichzeitig die Beine zur Brust.",
+      "Streck die Hände dabei in Richtung Zehen.",
+      "Halte oben kurz inne und senk dann Oberkörper und Beine langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0458": {
-    "name": "Fliegende am Boden mit Langhantel"
+    "name": "Fliegende am Boden mit Langhantel",
+    "instructions": [
+      "Leg dich flach mit dem Rücken auf den Boden, beug die Knie und stell die Füße flach auf.",
+      "Greif eine Langhantel im Obergriff und streck die Arme senkrecht über der Brust nach oben.",
+      "Senk die Stange langsam ab und führ die Arme dabei nach außen, die Ellbogen bleiben leicht gebeugt.",
+      "Senk die Stange, bis deine Arme parallel zum Boden sind und du eine Dehnung in der Brust spürst.",
+      "Halte kurz inne und spann dann die Brustmuskeln an, um die Stange zurück in die Ausgangsposition zu bringen.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0459": {
-    "name": "Flutter Kicks"
+    "name": "Flutter Kicks",
+    "instructions": [
+      "Leg dich flach auf den Rücken, streck die Beine aus und leg die Hände neben den Körper.",
+      "Spann den Rumpf an und heb die Beine etwa 15 cm vom Boden ab.",
+      "Halte die Beine gestreckt und heb abwechselnd ein Bein etwas höher als das andere.",
+      "Mach mit dieser Flatterbewegung weiter, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0461": {
     "name": "Frosch-Kniebeuge"
@@ -18548,37 +18600,113 @@
     "name": "Unterarmstütz"
   },
   "0464": {
-    "name": "Unterarmstütz mit Drehung"
+    "name": "Unterarmstütz mit Drehung",
+    "instructions": [
+      "Geh in den hohen Stütz, die Hände direkt unter den Schultern. Dein Körper bildet von Kopf bis Fuß eine gerade Linie.",
+      "Spann Rumpf und Gesäß an, damit du stabil bleibst.",
+      "Dreh den Oberkörper nach rechts, heb den rechten Arm und streck ihn zur Decke.",
+      "Halte Hüfte und Beine ruhig, während du dich drehst.",
+      "Halte kurz inne und kehr dann in die Ausgangsposition zurück.",
+      "Mach die Drehung jetzt zur linken Seite.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0466": {
-    "name": "Gironda-Sternum-Klimmzug"
+    "name": "Gironda-Sternum-Klimmzug",
+    "instructions": [
+      "Stell dich vor eine hohe Stange, die Füße schulterbreit auseinander.",
+      "Greif nach oben und fass die Stange im Obergriff, etwas breiter als schulterbreit.",
+      "Häng dich mit ganz gestreckten Armen und geradem Körper an die Stange.",
+      "Spann den breiten Rückenmuskel und den Bizeps an und zieh die Brust zur Stange, das Brustbein führt die Bewegung.",
+      "Halte oben kurz inne und lass dich dann langsam zurück in die Ausgangsposition ab.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0467": {
-    "name": "Gorilla-Klimmzug"
+    "name": "Gorilla-Klimmzug",
+    "instructions": [
+      "Stell dich hin, die Füße schulterbreit auseinander und die Knie leicht gebeugt.",
+      "Greif eine Klimmzugstange im Obergriff, etwas breiter als schulterbreit.",
+      "Häng dich mit ganz gestreckten Armen an die Stange, die Handflächen zeigen von dir weg.",
+      "Spann den Rumpf an und zieh dich zur Stange hoch, bis dein Kinn über der Stange ist.",
+      "Halte oben kurz inne und senk den Körper dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0468": {
     "name": "Grasshopper-Liegestütz"
+  },
+  "0469": {
+    "instructions": [
+      "Leg dich flach auf den Rücken, beug die Knie und stell die Füße flach auf den Boden.",
+      "Leg die Hände hinter den Kopf, die Ellbogen zeigen nach außen.",
+      "Spann die Bauchmuskeln an, heb die Beine vom Boden und zieh die Knie zur Brust.",
+      "Halte oben kurz inne und senk die Beine dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0470": {
     "name": "Crunch Hand zum gegenüberliegenden Knie"
   },
   "0471": {
-    "name": "Handstand-Liegestütz"
+    "name": "Handstand-Liegestütz",
+    "instructions": [
+      "Such dir eine Wand und stell dich mit dem Rücken zu ihr, ein kleines Stück davon entfernt.",
+      "Setz die Hände schulterbreit auf den Boden und schwing die Beine an der Wand hoch, bis du im Handstand bist.",
+      "Beug die Ellbogen und senk den Kopf Richtung Boden, der Körper bleibt dabei in einer geraden Linie.",
+      "Drück dich über die Hände hoch und streck die Arme, um in die Ausgangsposition zurückzukehren.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0472": {
-    "name": "Hängendes Beinheben"
+    "name": "Hängendes Beinheben",
+    "instructions": [
+      "Häng dich mit ganz gestreckten Armen an eine Klimmzugstange, die Handflächen zeigen von dir weg.",
+      "Spann den Rumpf an und heb die Beine gestreckt nach vorn.",
+      "Heb sie weiter, bis sie parallel zum Boden sind oder so hoch, wie es angenehm geht.",
+      "Halte oben kurz inne und senk die Beine dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0473": {
-    "name": "Hängender Pike"
+    "name": "Hängender Pike",
+    "instructions": [
+      "Häng dich mit ganz gestreckten Armen an eine Klimmzugstange, die Handflächen zeigen von dir weg.",
+      "Spann den Rumpf an und heb die Beine gestreckt in Richtung Stange.",
+      "Heb sie weiter, bis dein Körper ein V bildet und die Beine parallel zum Boden sind.",
+      "Halte die Position kurz und senk die Beine dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0474": {
-    "name": "Hängendes Hüftheben mit gestreckten Beinen"
+    "name": "Hängendes Hüftheben mit gestreckten Beinen",
+    "instructions": [
+      "Häng dich mit ganz gestreckten Armen an eine Klimmzugstange, die Handflächen zeigen von dir weg.",
+      "Spann den Rumpf an und heb die Beine nach vorn, bis sie parallel zum Boden sind.",
+      "Halte oben kurz inne und senk die Beine dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0475": {
-    "name": "Hängendes Beinheben mit gestreckten Beinen"
+    "name": "Hängendes Beinheben mit gestreckten Beinen",
+    "instructions": [
+      "Häng dich mit ganz gestreckten Armen an eine Klimmzugstange, die Handflächen zeigen von dir weg.",
+      "Spann den Rumpf an und heb die Beine gestreckt nach vorn.",
+      "Heb sie weiter, bis sie parallel zum Boden sind oder so hoch, wie es angenehm geht.",
+      "Halte oben kurz inne und senk die Beine dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0476": {
-    "name": "Hängendes Hüftheben mit gestreckten Beinen und Drehung"
+    "name": "Hängendes Hüftheben mit gestreckten Beinen und Drehung",
+    "instructions": [
+      "Häng dich mit ganz gestreckten Armen und gestreckten Beinen an eine Klimmzugstange.",
+      "Spann den Rumpf an und heb die gestreckten Beine Richtung Brust.",
+      "Sobald die Beine parallel zum Boden sind, dreh die Hüfte zu einer Seite und führ die Beine dorthin.",
+      "Halte kurz inne und kehr dann in die Ausgangsposition zurück.",
+      "Wiederhole die Bewegung und dreh die Hüfte diesmal zur anderen Seite.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0479": {
     "name": "Step-up mit hohem Knie"
@@ -18593,7 +18721,14 @@
     "name": "Hüft-Crunch (Knie gebeugt)"
   },
   "0484": {
-    "name": "Hüftheben mit gebeugten Knien"
+    "name": "Hüftheben mit gebeugten Knien",
+    "instructions": [
+      "Leg dich flach auf den Rücken, beug die Knie und stell die Füße flach auf den Boden.",
+      "Leg die Hände neben den Körper, die Handflächen zeigen nach unten.",
+      "Spann Rumpf und Gesäß an und heb die Hüfte vom Boden, bis dein Körper von den Knien bis zu den Schultern eine gerade Linie bildet.",
+      "Halte oben kurz inne und senk die Hüfte dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0485": {
     "name": "Hüftheben-Brücke v. 2"
@@ -18605,46 +18740,157 @@
     "name": "Hüftheben-Crunch"
   },
   "0488": {
-    "name": "Hyperextension auf der Bank"
+    "name": "Hyperextension auf der Bank",
+    "instructions": [
+      "Stell die Hyperextension-Bank so ein, dass deine Hüfte bequem auf dem Polster liegt und deine Füße fixiert sind.",
+      "Verschränk die Arme vor der Brust oder leg die Hände hinter den Kopf.",
+      "Senk den Oberkörper langsam Richtung Boden und halte dabei den Rücken gerade.",
+      "Halte unten kurz inne und heb den Oberkörper dann wieder an, bis er mit den Beinen eine Linie bildet.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0489": {
-    "name": "Hyperextension"
+    "name": "Hyperextension",
+    "instructions": [
+      "Stell die Hyperextension-Bank so ein, dass der obere Teil deiner Oberschenkel auf dem Polster liegt und deine Füße fixiert sind.",
+      "Verschränk die Arme vor der Brust oder leg die Hände hinter den Kopf.",
+      "Senk den Oberkörper Richtung Boden und halte dabei den Rücken gerade.",
+      "Halte unten kurz inne und heb den Oberkörper dann wieder an, bis er mit den Beinen eine Linie bildet.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0490": {
-    "name": "Schräger Liegestütz mit engem Griff"
+    "name": "Schräger Liegestütz mit engem Griff",
+    "instructions": [
+      "Setz die Hände etwas breiter als schulterbreit auf eine erhöhte Fläche, etwa eine Bank oder eine Stufe.",
+      "Streck die Beine nach hinten aus und stütz dich auf die Fußballen, sodass dein Körper von Kopf bis Ferse eine gerade Linie bildet.",
+      "Beug die Ellbogen und senk die Brust zur erhöhten Fläche, die Ellbogen bleiben dabei nah am Körper.",
+      "Halte unten kurz inne und streck dann die Arme, um dich zurück in die Ausgangsposition zu drücken.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0491": {
-    "name": "Hüftheben an der Schrägbank mit gestreckten Beinen"
+    "name": "Hüftheben an der Schrägbank mit gestreckten Beinen",
+    "instructions": [
+      "Leg dich mit dem Rücken flach auf eine Schrägbank und streck die Beine gerade nach vorn aus.",
+      "Halte dich mit den Händen seitlich an der Bank fest.",
+      "Spann die Bauchmuskeln an und heb die Beine von der Bank, so hoch du kannst, ohne sie zu beugen.",
+      "Halte oben kurz inne und senk die Beine dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0492": {
-    "name": "Schräger Liegestütz mit Niedersprung"
+    "name": "Schräger Liegestütz mit Niedersprung",
+    "instructions": [
+      "Such dir eine erhöhte Fläche, etwa eine Bank oder eine Stufe, und setz die Hände schulterbreit an die Kante.",
+      "Geh mit den Füßen nach hinten, sodass dein Körper von Kopf bis Ferse eine gerade Linie bildet.",
+      "Beug die Ellbogen und senk die Brust zur Kante, der Körper bleibt dabei gerade.",
+      "Drück dich über die Handflächen hoch, streck die Arme und kehr in die Ausgangsposition zurück.",
+      "Spring von der Kante ab und lande weich mit leicht gebeugten Knien.",
+      "Wiederhole Liegestütz und Niedersprung, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0493": {
-    "name": "Schräger Liegestütz"
+    "name": "Schräger Liegestütz",
+    "instructions": [
+      "Setz die Hände etwas breiter als schulterbreit auf eine erhöhte Fläche, etwa eine Bank oder eine Stufe.",
+      "Streck die Beine nach hinten aus und stütz dich auf die Fußballen, sodass dein Körper von Kopf bis Ferse eine gerade Linie bildet.",
+      "Beug die Ellbogen und senk die Brust zur erhöhten Fläche, der Körper bleibt dabei in einer geraden Linie.",
+      "Halte unten kurz inne und streck dann die Arme, um dich zurück in die Ausgangsposition zu drücken.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0494": {
-    "name": "Schräger Liegestütz im Untergriff"
+    "name": "Schräger Liegestütz im Untergriff",
+    "instructions": [
+      "Setz die Hände etwas breiter als schulterbreit an die Kante einer Bank oder einer anderen erhöhten Fläche.",
+      "Streck die Beine nach hinten aus und stütz dich auf die Fußballen, sodass dein Körper von Kopf bis Ferse eine gerade Linie bildet.",
+      "Beug die Ellbogen und senk die Brust zur Bank, die Ellbogen bleiben dabei nah am Körper.",
+      "Halte unten kurz inne und streck dann die Arme, um dich zurück in die Ausgangsposition zu drücken.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0495": {
-    "name": "Sit-up mit Drehung auf der Schrägbank"
+    "name": "Sit-up mit Drehung auf der Schrägbank",
+    "instructions": [
+      "Stell eine Schrägbank auf 45 Grad ein.",
+      "Leg dich auf die Bank und hak die Füße unter den Fußpolstern ein.",
+      "Leg die Hände hinter den Kopf oder verschränk sie vor der Brust.",
+      "Spann die Bauchmuskeln an, heb den Oberkörper von der Bank und roll dich nach vorn ein.",
+      "Dreh beim Hochkommen den Oberkörper zu einer Seite und führ den Ellbogen zum gegenüberliegenden Knie.",
+      "Halte oben kurz inne und senk den Oberkörper dann langsam zurück in die Ausgangsposition.",
+      "Wiederhole die Bewegung und dreh den Oberkörper diesmal zur anderen Seite.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0496": {
-    "name": "Umgekehrter Beincurl an der Bank"
+    "name": "Umgekehrter Beincurl an der Bank",
+    "instructions": [
+      "Leg dich in Bauchlage so auf eine Bank, dass die Hüfte an der Kante liegt und die Beine gestreckt nach hinten zeigen.",
+      "Halte dich an der Bank fest.",
+      "Halte den Oberkörper ruhig, beug die Knie und zieh die Fersen zum Gesäß.",
+      "Halte oben kurz inne und streck die Beine dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0497": {
-    "name": "Umgekehrtes Rudern v. 2"
+    "name": "Umgekehrtes Rudern v. 2",
+    "instructions": [
+      "Stell eine Stange in der Multipresse auf Hüfthöhe ein oder nimm einen Schlingentrainer.",
+      "Stell dich mit dem Gesicht zur Stange oder zum Schlingentrainer und greif im Obergriff zu, die Hände schulterbreit.",
+      "Setz die Füße Schritt für Schritt nach vorn und lehn dich zurück, bis dein Körper leicht schräg steht.",
+      "Halte den Körper gerade, zieh die Brust zur Stange oder zu den Griffen hoch und drück die Schulterblätter zusammen.",
+      "Halte oben kurz inne und lass dich dann langsam zurück in die Ausgangsposition ab.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0498": {
-    "name": "Umgekehrtes Rudern an Schlingen"
+    "name": "Umgekehrtes Rudern an Schlingen",
+    "instructions": [
+      "Befestige einen Schlingentrainer oder Schlingen auf Brusthöhe.",
+      "Stell dich mit dem Gesicht zum Befestigungspunkt und greif die Griffe im Obergriff.",
+      "Setz die Füße Schritt für Schritt nach vorn und lehn dich zurück, bis dein Körper schräg steht.",
+      "Halte den Körper gerade und spann den Rumpf an.",
+      "Zieh die Brust zu den Griffen und drück die Schulterblätter zusammen.",
+      "Halte oben kurz inne und lass dich dann langsam zurück in die Ausgangsposition ab.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0499": {
-    "name": "Umgekehrtes Rudern"
+    "name": "Umgekehrtes Rudern",
+    "instructions": [
+      "Stell eine Stange auf Hüfthöhe ein oder nimm einen Schlingentrainer.",
+      "Stell dich mit dem Gesicht zur Stange oder zum Schlingentrainer, die Füße schulterbreit.",
+      "Greif die Stange oder die Griffe im Obergriff, etwas breiter als schulterbreit.",
+      "Lehn dich zurück, halte den Körper gerade und lass die Fersen am Boden.",
+      "Zieh die Brust zur Stange oder zu den Griffen und drück die Schulterblätter zusammen.",
+      "Halte oben kurz inne und lass dich dann langsam zurück in die Ausgangsposition ab.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0500": {
-    "name": "Isometrische Scheibenwischer"
+    "name": "Isometrische Scheibenwischer",
+    "instructions": [
+      "Leg dich auf einer Matte oder Bank flach auf den Rücken.",
+      "Streck die Arme gerade zur Seite, im rechten Winkel zum Körper.",
+      "Spann den Rumpf an und heb beide Beine geschlossen und gestreckt vom Boden.",
+      "Senk die Beine langsam und kontrolliert zu einer Seite, bis die Füße möglichst den Boden berühren.",
+      "Halte kurz inne und heb die Beine dann mit der Kraft aus dem Rumpf zurück in die Ausgangsposition.",
+      "Wiederhole die Bewegung und senk die Beine diesmal zur anderen Seite.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0501": {
-    "name": "Hampelmann-Burpee"
+    "name": "Hampelmann-Burpee",
+    "instructions": [
+      "Stell dich hin, die Füße schulterbreit.",
+      "Geh in die Hocke und setz die Hände vor dir auf den Boden.",
+      "Spring mit den Füßen nach hinten in die Liegestützposition.",
+      "Mach einen Liegestütz: Senk die Brust zum Boden und drück dich wieder hoch.",
+      "Spring mit den Füßen nach vorn zurück in die Hocke.",
+      "Spring explosiv hoch und streck die Arme über den Kopf.",
+      "Lande weich und geh sofort wieder in die Hocke, um die nächste Wiederholung zu beginnen."
+    ]
   },
   "0502": {
     "name": "Taschenmesser am Boden"
@@ -18659,139 +18905,485 @@
     "name": "Jack-Split-Crunches"
   },
   "0507": {
-    "name": "Jackknife-Sit-up"
+    "name": "Jackknife-Sit-up",
+    "instructions": [
+      "Leg dich flach auf den Rücken, die Beine gestreckt, die Arme über dem Kopf.",
+      "Spann den Rumpf an, heb Beine und Oberkörper gleichzeitig und streck die Hände zu den Zehen.",
+      "Halte oben kurz inne und senk Beine und Oberkörper dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0508": {
-    "name": "Janda-Sit-up"
+    "name": "Janda-Sit-up",
+    "instructions": [
+      "Leg dich flach auf den Rücken, beug die Knie und stell die Füße flach auf den Boden.",
+      "Leg die Hände hinter den Kopf, die Ellbogen zeigen nach außen.",
+      "Spann die Bauchmuskeln an und roll den Oberkörper langsam vom Boden hoch, bis er in einem Winkel von 45 Grad steht.",
+      "Halte oben kurz inne und senk den Oberkörper dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0510": {
     "name": "Sprung-Ausfallschritt mit Jack"
   },
   "0513": {
-    "name": "Sprungkniebeuge v. 2"
+    "name": "Sprungkniebeuge v. 2",
+    "instructions": [
+      "Stell dich hin, die Füße schulterbreit.",
+      "Geh in die Kniebeuge: Beug die Knie und schieb die Hüfte nach hinten.",
+      "Spring explosiv ab und streck dabei Hüfte und Knie ganz durch.",
+      "Lande weich auf den Fußballen und geh sofort wieder in die Kniebeuge.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0514": {
-    "name": "Sprungkniebeuge"
+    "name": "Sprungkniebeuge",
+    "instructions": [
+      "Stell dich hin, die Füße schulterbreit.",
+      "Geh in die Kniebeuge: Beug die Knie und schieb die Hüfte nach hinten.",
+      "Spring explosiv vom Boden ab und streck dabei Hüfte, Knie und Sprunggelenke.",
+      "Führ die Arme in der Luft schnell nach vorn, um das Gleichgewicht zu halten.",
+      "Lande weich auf den Fußballen und geh direkt in die nächste Wiederholung über.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0517": {
-    "name": "Fortgeschrittene Windmühle mit Kettlebell"
+    "name": "Fortgeschrittene Windmühle mit Kettlebell",
+    "instructions": [
+      "Stell dich hin, die Füße weiter als schulterbreit, die Zehen zeigen leicht nach außen.",
+      "Halte eine Kettlebell in der rechten Hand, den Arm über dem Kopf gestreckt, die Handfläche zeigt nach vorn.",
+      "Dreh den linken Fuß leicht nach rechts und verlagere das Gewicht auf das linke Bein.",
+      "Beug das linke Knie, kipp den Oberkörper aus der Hüfte und senk ihn zur linken Seite.",
+      "Lass den rechten Arm über dem Kopf gestreckt und den Blick auf der Kettlebell.",
+      "Lass beim Absenken das rechte Bein gerade werden und den rechten Fuß leicht mitdrehen.",
+      "Senk den Oberkörper, bis du eine Dehnung in der linken hinteren Oberschenkelmuskulatur spürst und der linke Arm zum Boden zeigt.",
+      "Halte kurz inne, spann dann den Rumpf an und drück dich über die linke Ferse zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
+    ]
   },
   "0518": {
-    "name": "Abwechselndes Umsetzen aus dem Hang mit Kettlebell"
+    "name": "Abwechselndes Umsetzen aus dem Hang mit Kettlebell",
+    "instructions": [
+      "Stell dich hin, die Füße schulterbreit, und halte in jeder Hand eine Kettlebell im Obergriff.",
+      "Beug die Knie leicht und kipp den Oberkörper aus der Hüfte nach vorn, der Rücken bleibt gerade, die Brust oben.",
+      "Lass die Kettlebells mit gestreckten Armen vor dem Körper hängen.",
+      "Streck in einer fließenden Bewegung explosiv die Hüfte, zieh die Schultern hoch und führ die Kettlebells nach oben zu den Schultern.",
+      "Sobald die Kettlebells auf Schulterhöhe sind, dreh die Handgelenke und fang sie in der Rack-Position ab: Die Handflächen zeigen nach innen, die Kettlebells liegen außen an den Unterarmen.",
+      "Senk die Kettlebells zurück in die Ausgangsposition und wiederhole die Bewegung mit dem anderen Arm.",
+      "Wechsle weiter die Arme, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0519": {
-    "name": "Abwechselndes Drücken am Boden mit Kettlebell"
+    "name": "Abwechselndes Drücken am Boden mit Kettlebell",
+    "instructions": [
+      "Leg dich auf dem Boden auf den Rücken, beug die Knie und stell die Füße flach auf.",
+      "Halte in jeder Hand eine Kettlebell und streck die Arme gerade zur Decke, die Handflächen zeigen zu den Füßen.",
+      "Senk eine Kettlebell zur Schulter, während die andere gestreckt oben bleibt.",
+      "Drück die abgesenkte Kettlebell zurück nach oben und senk gleichzeitig die andere zur Schulter.",
+      "Wechsle weiter die Arme, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0520": {
-    "name": "Abwechselndes Drücken mit Kettlebell"
+    "name": "Abwechselndes Drücken mit Kettlebell",
+    "instructions": [
+      "Stell dich hin, die Füße schulterbreit, und halte in jeder Hand eine Kettlebell auf Schulterhöhe.",
+      "Drück eine Kettlebell über den Kopf, bis der Arm ganz gestreckt ist.",
+      "Senk die Kettlebell zurück auf Schulterhöhe.",
+      "Wiederhole das mit dem anderen Arm.",
+      "Wechsle weiter die Arme, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0521": {
-    "name": "Abwechselndes Rudern in der Plank-Position mit Kettlebell"
+    "name": "Abwechselndes Rudern in der Plank-Position mit Kettlebell",
+    "instructions": [
+      "Geh in die Plank-Position mit gestreckten Armen, die Hände greifen die Kettlebells, die Füße hüftbreit.",
+      "Spann den Rumpf an und halte den Körper von Kopf bis Fersen in einer geraden Linie.",
+      "Zieh eine Kettlebell zur Brust, der Ellbogen bleibt nah am Körper.",
+      "Senk die Kettlebell zurück in die Ausgangsposition und wiederhole das mit dem anderen Arm.",
+      "Wechsle weiter die Arme, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0522": {
-    "name": "Abwechselndes Rudern mit Kettlebell"
+    "name": "Abwechselndes Rudern mit Kettlebell",
+    "instructions": [
+      "Stell dich hin, die Füße schulterbreit, die Knie leicht gebeugt, und halte in jeder Hand eine Kettlebell, die Handflächen zeigen zum Körper.",
+      "Beug dich aus der Hüfte nach vorn, halte den Rücken gerade und den Rumpf angespannt.",
+      "Zieh eine Kettlebell zur Brust, halte den Ellbogen nah am Körper und drück die Schulterblätter zusammen.",
+      "Senk die Kettlebell zurück in die Ausgangsposition und wiederhole das mit dem anderen Arm.",
+      "Wechsle weiter die Arme, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0523": {
-    "name": "Arnold-Drücken mit Kettlebell"
+    "name": "Arnold-Drücken mit Kettlebell",
+    "instructions": [
+      "Stell dich hin, die Füße schulterbreit, und halte in jeder Hand eine Kettlebell auf Schulterhöhe, die Handflächen zeigen zu dir.",
+      "Spann den Rumpf an und drück die Kettlebells über den Kopf. Dreh dabei die Handflächen nach vorn, während du die Arme streckst.",
+      "Halte oben kurz inne und senk die Kettlebells dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0524": {
-    "name": "Gebeugtes Drücken mit Kettlebell"
+    "name": "Gebeugtes Drücken mit Kettlebell",
+    "instructions": [
+      "Stell dich hin, die Füße schulterbreit, und halte eine Kettlebell in der rechten Hand.",
+      "Beug die Knie leicht und drück die Kettlebell mit dem rechten Arm über den Kopf, der Ellbogen bleibt durchgestreckt.",
+      "Dreh den Oberkörper nach links und verlagere das Gewicht auf den linken Fuß.",
+      "Beug das linke Knie und senk den Oberkörper zum Boden, der rechte Arm bleibt über dem Kopf gestreckt.",
+      "Lass beim Absenken den Blick auf der Kettlebell und die Brust oben.",
+      "Sobald die linke Hand den Boden berührt, drück dich über den linken Fuß ab, streck das linke Bein und schieb die Hüfte nach vorn.",
+      "Während du die Hüfte nach vorn schiebst, drück die Kettlebell mit Rumpf und rechtem Arm zurück nach oben in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
+    ]
   },
   "0525": {
-    "name": "Bottoms-up-Umsetzen aus dem Hang mit Kettlebell"
+    "name": "Bottoms-up-Umsetzen aus dem Hang mit Kettlebell",
+    "instructions": [
+      "Stell dich hin, die Füße schulterbreit, und halte in einer Hand eine Kettlebell im Obergriff.",
+      "Beug die Knie leicht und kipp den Oberkörper aus der Hüfte nach vorn, der Rücken bleibt gerade, die Brust oben.",
+      "Lass die Kettlebell mit gestrecktem Arm zwischen den Beinen hängen.",
+      "Streck in einer fließenden Bewegung explosiv Hüfte und Knie und zieh die Kettlebell dabei zur Schulter.",
+      "Sobald die Kettlebell auf Schulterhöhe ist, dreh das Handgelenk so, dass der Boden der Kettlebell nach oben zeigt.",
+      "Fang die Kettlebell auf Schulterhöhe ab, der Ellbogen ist gebeugt und die Handfläche zeigt nach oben.",
+      "Führ die Bewegung umgekehrt aus und senk die Kettlebell zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
+    ]
   },
   "0526": {
-    "name": "Doppeltes abwechselndes Umsetzen aus dem Hang mit Kettlebell"
+    "name": "Doppeltes abwechselndes Umsetzen aus dem Hang mit Kettlebell",
+    "instructions": [
+      "Stell dich hin, die Füße schulterbreit, und halte in jeder Hand eine Kettlebell im Obergriff.",
+      "Beug die Knie leicht und kipp den Oberkörper aus der Hüfte nach vorn, der Rücken bleibt gerade, die Brust oben.",
+      "Lass die Kettlebells gerade vor dem Körper hängen.",
+      "Streck in einer fließenden Bewegung explosiv Hüfte und Knie und zieh dabei die Schultern hoch.",
+      "Zieh die Kettlebells beim Hochkommen zu den Schultern, die Ellbogen bleiben hoch und zeigen zur Seite.",
+      "Fang die Kettlebells auf Schulterhöhe ab, die Handflächen zeigen nach innen und die Ellbogen nach vorn.",
+      "Senk die Kettlebells zurück in die Ausgangsposition und mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0527": {
-    "name": "Doppeltes Stoßen mit Kettlebell"
+    "name": "Doppeltes Stoßen mit Kettlebell",
+    "instructions": [
+      "Stell dich hin, die Füße schulterbreit, und halte in jeder Hand eine Kettlebell auf Schulterhöhe.",
+      "Beug die Knie leicht und spann den Rumpf an.",
+      "Drück die Kettlebells über den Kopf, bis die Arme ganz gestreckt sind.",
+      "Beug die Knie und geh schnell in eine halbe Kniebeuge.",
+      "Streck Hüfte und Knie explosiv und stoß die Kettlebells über den Kopf.",
+      "Streck die Arme durch und fang die Kettlebells über dem Kopf mit leicht gebeugten Knien ab.",
+      "Richte dich ganz auf und kehr in die Ausgangsposition zurück.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0528": {
-    "name": "Doppeltes Ausstoßen mit Kettlebell"
+    "name": "Doppeltes Ausstoßen mit Kettlebell",
+    "instructions": [
+      "Stell dich hin, die Füße schulterbreit, und halte in jeder Hand eine Kettlebell auf Schulterhöhe.",
+      "Beug die Knie leicht und spann den Rumpf an.",
+      "Starte die Bewegung, indem du Hüfte, Knie und Sprunggelenke explosiv streckst und die Kettlebells mit Schwung nach oben bringst.",
+      "Wenn die Kettlebells oben ankommen, drück sie ganz über den Kopf und streck die Arme durch.",
+      "Beug die Ellbogen und senk die Kettlebells zurück auf Schulterhöhe in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0529": {
-    "name": "Doppeltes Reißen mit Kettlebell"
+    "name": "Doppeltes Reißen mit Kettlebell",
+    "instructions": [
+      "Stell dich hin, die Füße schulterbreit, und halte in jeder Hand eine Kettlebell mit gestreckten Armen vor den Oberschenkeln.",
+      "Beug die Knie leicht und kipp den Oberkörper aus der Hüfte nach vorn, der Rücken bleibt flach, die Brust oben.",
+      "Streck in einer explosiven Bewegung Hüfte, Knie und Sprunggelenke und zieh gleichzeitig die Kettlebells zu den Schultern.",
+      "Sobald die Kettlebells auf Schulterhöhe sind, dreh die Handgelenke und stoß die Kettlebells über den Kopf, bis die Arme ganz gestreckt sind.",
+      "Senk die Kettlebells zurück in die Ausgangsposition und mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0530": {
-    "name": "Doppelte Windmühle mit Kettlebell"
+    "name": "Doppelte Windmühle mit Kettlebell",
+    "instructions": [
+      "Stell dich hin, die Füße schulterbreit, und halte eine Kettlebell in der rechten Hand.",
+      "Streck den rechten Arm über den Kopf und lass den Blick auf der Kettlebell.",
+      "Dreh den linken Fuß um 45 Grad nach links und den rechten Fuß um 90 Grad nach rechts.",
+      "Beug den Oberkörper aus der Taille nach links, der rechte Arm bleibt über dem Kopf gestreckt.",
+      "Senk den Oberkörper Richtung Boden und greif mit der linken Hand zum linken Fuß.",
+      "Halte kurz inne, spann dann den Rumpf an und drück dich über den rechten Fuß zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
+    ]
   },
   "0531": {
-    "name": "Einarmiges Drücken am Boden mit erweitertem Bewegungsumfang mit Kettlebell"
+    "name": "Einarmiges Drücken am Boden mit erweitertem Bewegungsumfang mit Kettlebell",
+    "instructions": [
+      "Leg dich auf den Rücken, beug die Knie und stell die Füße flach auf den Boden.",
+      "Halte eine Kettlebell in einer Hand, die Handfläche zeigt Richtung Füße.",
+      "Streck den Arm gerade zur Decke, mit durchgestrecktem Ellbogen und geradem Handgelenk.",
+      "Senk die Kettlebell langsam und kontrolliert zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann den Arm."
+    ]
   },
   "0532": {
-    "name": "Figure-8 mit Kettlebell"
+    "name": "Figure-8 mit Kettlebell",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Kettlebell in einer Hand.",
+      "Geh leicht in die Knie und beug dich aus der Hüfte nach vorn, der Rücken bleibt gerade.",
+      "Führ die Kettlebell zwischen den Beinen hindurch und gib sie hinter den Beinen in die andere Hand.",
+      "Wenn die Kettlebell nach vorn kommt, gib sie zwischen den Beinen wieder an die andere Hand weiter.",
+      "Führ die Kettlebell so weiter in Form einer Acht zwischen den Beinen hindurch.",
+      "Halte ein gleichmäßiges Tempo und spann dabei die ganze Zeit den Rumpf an.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0533": {
-    "name": "Frontkniebeuge mit Kettlebell"
+    "name": "Frontkniebeuge mit Kettlebell",
+    "instructions": [
+      "Stell dich schulterbreit hin, die Zehen zeigen leicht nach außen.",
+      "Halte die Kettlebell mit beiden Händen vor der Brust, nah am Körper.",
+      "Spann den Rumpf an, halte die Brust oben und schieb die Hüfte nach unten und hinten, als würdest du dich auf einen Stuhl setzen.",
+      "Geh runter, bis die Oberschenkel parallel zum Boden sind, oder so tief, wie es für dich angenehm ist.",
+      "Drück dich über die Fersen wieder hoch und spann oben das Gesäß an.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0534": {
-    "name": "Goblet Kniebeuge mit Kettlebell"
+    "name": "Goblet Kniebeuge mit Kettlebell",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Kettlebell mit beiden Händen nah an der Brust.",
+      "Halte die Brust oben, spann den Rumpf an und beug Knie und Hüfte, um in die Kniebeuge zu gehen.",
+      "Geh weiter runter, bis die Oberschenkel parallel zum Boden sind, oder so tief, wie es für dich angenehm ist.",
+      "Halte unten kurz inne und drück dich dann über die Fersen zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0535": {
-    "name": "Umsetzen aus dem Hang mit Kettlebell"
+    "name": "Umsetzen aus dem Hang mit Kettlebell",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Kettlebell vor den Oberschenkeln.",
+      "Geh leicht in die Knie und beug dich aus der Hüfte nach vorn, der Rücken bleibt gerade.",
+      "Senk die Kettlebell Richtung Boden und lass sie zwischen den Beinen durchschwingen.",
+      "Streck Hüfte und Knie schnell und nutz den Schwung, um die Kettlebell bis auf Schulterhöhe hochzuschwingen.",
+      "Wenn die Kettlebell auf Schulterhöhe ist, dreh das Handgelenk und fang sie in der Rack-Position auf, mit dem Ellbogen nah am Körper und der Kettlebell auf dem Unterarm.",
+      "Senk die Kettlebell zurück zwischen die Beine in die Ausgangsposition und mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0536": {
-    "name": "Ausfallschritt mit Durchführung mit Kettlebell"
+    "name": "Ausfallschritt mit Durchführung mit Kettlebell",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Kettlebell mit beiden Händen vor der Brust.",
+      "Mach mit dem rechten Fuß einen Schritt nach vorn und senk dich in den Ausfallschritt.",
+      "Führ die Kettlebell dabei unter dem rechten Oberschenkel hindurch und gib sie in die linke Hand.",
+      "Drück dich mit dem rechten Fuß zurück in die Ausgangsposition und gib die Kettlebell gleichzeitig wieder in die rechte Hand.",
+      "Mach den Ausfallschritt auf der anderen Seite und führ die Kettlebell unter dem linken Oberschenkel hindurch.",
+      "Wechsle weiter die Seiten und gib die Kettlebell von Hand zu Hand, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0537": {
-    "name": "Einarmiges Umsetzen und Stoßen mit Kettlebell"
+    "name": "Einarmiges Umsetzen und Stoßen mit Kettlebell",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Kettlebell im Obergriff in einer Hand.",
+      "Geh leicht in die Knie, beug dich aus der Hüfte nach vorn und senk die Kettlebell zwischen die Beine.",
+      "Streck Hüfte, Knie und Sprunggelenke explosiv und nutz den Schwung, um die Kettlebell bis auf Schulterhöhe hochzuschwingen.",
+      "Wenn die Kettlebell auf Schulterhöhe ist, dreh das Handgelenk und stoß die Hand gerade nach oben, bis der Arm über dem Kopf durchgestreckt ist.",
+      "Senk die Kettlebell zurück in die Ausgangsposition und mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0538": {
-    "name": "Einarmiges Stoßen mit Kettlebell"
+    "name": "Einarmiges Stoßen mit Kettlebell",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Kettlebell in einer Hand auf Schulterhöhe.",
+      "Beug die Knie leicht und spann den Rumpf an.",
+      "Drück die Kettlebell in einer geraden Linie über den Kopf, bis der Arm ganz gestreckt ist.",
+      "Geh dabei gleichzeitig kurz in die Knie und streck sie schnell wieder, um Schwung zu holen.",
+      "Wenn die Kettlebell am höchsten Punkt ist, tauch schnell darunter ab, indem du Knie und Hüfte beugst.",
+      "Fang die Kettlebell auf, Knie und Hüfte leicht gebeugt und der Arm über dem Kopf ganz gestreckt.",
+      "Richte dich auf, streck Knie und Hüfte ganz durch und stabilisier die Kettlebell über dem Kopf.",
+      "Beug Knie und Hüfte, senk die Kettlebell zurück in die Ausgangsposition und mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0539": {
-    "name": "Einarmiges militärisches Drücken zur Seite mit Kettlebell"
+    "name": "Einarmiges militärisches Drücken zur Seite mit Kettlebell",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Kettlebell in einer Hand auf Schulterhöhe.",
+      "Spann den Rumpf an und halte den Rücken gerade.",
+      "Drück die Kettlebell über den Kopf, bis der Arm ganz gestreckt ist.",
+      "Halte oben kurz inne und senk die Kettlebell dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
+    ]
   },
   "0540": {
-    "name": "Einarmiges Drücken mit Schwung mit Kettlebell"
+    "name": "Einarmiges Drücken mit Schwung mit Kettlebell",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Kettlebell in einer Hand auf Schulterhöhe.",
+      "Beug die Knie leicht und spann den Rumpf an.",
+      "Streck die Beine ganz durch und drück dabei die Kettlebell über den Kopf, bis der Arm gestreckt ist.",
+      "Beug die Knie und bring die Kettlebell zurück an die Schulter in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
+    ]
   },
   "0541": {
-    "name": "Einarmiges Rudern mit Kettlebell"
+    "name": "Einarmiges Rudern mit Kettlebell",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Kettlebell im Obergriff in einer Hand.",
+      "Geh leicht in die Knie und beug dich aus der Hüfte nach vorn, den Rücken gerade und den Rumpf angespannt.",
+      "Zieh die Kettlebell Richtung Brust, halte den Ellbogen nah am Körper und drück die Schulterblätter zusammen.",
+      "Halte oben kurz inne und senk die Kettlebell dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
+    ]
   },
   "0542": {
-    "name": "Einarmiges Reißen mit Kettlebell"
+    "name": "Einarmiges Reißen mit Kettlebell",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Kettlebell in einer Hand zwischen den Beinen.",
+      "Geh leicht in die Knie, beug dich aus der Hüfte nach vorn und senk die Kettlebell Richtung Boden.",
+      "Streck Hüfte und Knie explosiv und nutz den Schwung, um die Kettlebell Richtung Schulter hochzuschwingen.",
+      "Wenn die Kettlebell auf Schulterhöhe ist, dreh die Hand und stoß sie gerade über den Kopf, bis der Arm ganz gestreckt ist.",
+      "Senk die Kettlebell zurück zwischen die Beine und mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0543": {
-    "name": "Piraten-Suppe mit Kettlebell"
+    "name": "Piraten-Suppe mit Kettlebell",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Kettlebell in einer Hand.",
+      "Geh leicht in die Knie und beug dich aus der Hüfte nach vorn, der Rücken bleibt gerade.",
+      "Heb die Kettlebell bis auf Schulterhöhe, der Ellbogen bleibt nah am Körper.",
+      "Streck den Arm ganz über den Kopf, bis der Ellbogen durchgestreckt ist.",
+      "Senk die Kettlebell wieder auf Schulterhöhe und geh dann zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
+    ]
   },
   "0544": {
-    "name": "Einbeinige Kniebeuge mit Kettlebell"
+    "name": "Einbeinige Kniebeuge mit Kettlebell",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Kettlebell mit beiden Händen vor der Brust.",
+      "Heb den linken Fuß vom Boden und streck das Bein nach vorn, parallel zum Boden.",
+      "Senk dich langsam in die Kniebeuge, der rechte Fuß bleibt flach auf dem Boden und das linke Bein gestreckt.",
+      "Halte unten kurz inne und drück dich dann über die rechte Ferse zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann das Bein."
+    ]
   },
   "0545": {
-    "name": "Plyometrischer Liegestütz mit Kettlebell"
+    "name": "Plyometrischer Liegestütz mit Kettlebell",
+    "instructions": [
+      "Geh in die Liegestützposition mit gestreckten Armen, die Hände schulterbreit auf den Kettlebells.",
+      "Senk die Brust Richtung Boden, die Ellbogen bleiben nah am Körper.",
+      "Drück dich explosiv mit den Händen ab, sodass sie von den Kettlebells abheben und die Arme ganz gestreckt sind.",
+      "Lande weich wieder auf den Kettlebells und senk die Brust sofort für die nächste Wiederholung ab.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0546": {
-    "name": "Sitzendes Drücken mit Kettlebell"
+    "name": "Sitzendes Drücken mit Kettlebell",
+    "instructions": [
+      "Setz dich auf eine Bank, mit geradem Rücken und den Füßen flach auf dem Boden.",
+      "Halte in jeder Hand eine Kettlebell auf Schulterhöhe, die Handflächen zeigen nach vorn.",
+      "Drück die Kettlebells über den Kopf, bis die Arme ganz gestreckt sind.",
+      "Senk die Kettlebells zurück auf Schulterhöhe.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0547": {
-    "name": "Wippen-Drücken mit Kettlebell"
+    "name": "Wippen-Drücken mit Kettlebell",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte in jeder Hand eine Kettlebell auf Schulterhöhe.",
+      "Drück eine Kettlebell über den Kopf, die andere bleibt auf Schulterhöhe.",
+      "Senk die obere Kettlebell zurück auf Schulterhöhe und drück gleichzeitig die andere über den Kopf.",
+      "Drück so abwechselnd weiter, sodass eine Wippbewegung entsteht.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0548": {
-    "name": "Sumo Hochziehen mit Kettlebell"
+    "name": "Sumo Hochziehen mit Kettlebell",
+    "instructions": [
+      "Stell dich breiter als schulterbreit hin, die Zehen zeigen nach außen.",
+      "Halte eine Kettlebell mit beiden Händen vor dem Körper, die Arme hängen gestreckt nach unten.",
+      "Beug die Knie und senk die Hüfte in die Kniebeuge, der Rücken bleibt gerade.",
+      "Drück dich über die Fersen ab, streck Hüfte und Knie explosiv und zieh die Kettlebell Richtung Kinn.",
+      "Halte die Ellbogen beim Hochziehen hoch und weit außen und zieh die Schulterblätter zusammen.",
+      "Senk die Kettlebell zurück in die Ausgangsposition und mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0549": {
-    "name": "Swing mit Kettlebell"
+    "name": "Swing mit Kettlebell",
+    "instructions": [
+      "Stell dich schulterbreit hin, die Zehen zeigen leicht nach außen.",
+      "Halte die Kettlebell mit beiden Händen vor dem Körper, die Arme gestreckt.",
+      "Geh leicht in die Knie, beug dich aus der Hüfte nach vorn und schieb dabei das Gesäß nach hinten.",
+      "Schwing die Kettlebell zwischen den Beinen nach hinten, die Arme bleiben gestreckt und der Rücken gerade.",
+      "Schieb die Hüfte kräftig nach vorn und bring die Kettlebell mit dem Schwung aus der Hüfte bis auf Schulterhöhe.",
+      "Lass die Kettlebell wieder zwischen die Beine zurückschwingen und mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0550": {
-    "name": "Thruster mit Kettlebell"
+    "name": "Thruster mit Kettlebell",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Kettlebell mit beiden Händen vor der Brust, die Handflächen zeigen zueinander.",
+      "Beug die Knie, schieb die Hüfte nach hinten und geh in die Kniebeuge, die Brust oben und den Rücken gerade.",
+      "Steh unten explosiv über die Fersen auf und drück die Kettlebell dabei gleichzeitig über den Kopf.",
+      "Streck oben die Ellbogen ganz durch.",
+      "Kehr die Bewegung um, beug die Ellbogen und senk die Kettlebell zurück vor die Brust in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0551": {
-    "name": "Türkischer Aufsteh mit Kettlebell im Kniebeuge-Stil"
+    "name": "Türkischer Aufsteh mit Kettlebell im Kniebeuge-Stil",
+    "instructions": [
+      "Leg dich mit gestreckten Beinen auf den Rücken und halte die Kettlebell in der rechten Hand, der Arm ist über der Schulter ganz gestreckt.",
+      "Beug das rechte Knie und stell den rechten Fuß flach auf den Boden, das linke Bein bleibt gestreckt.",
+      "Drück dich über den rechten Fuß ab, heb die Hüfte vom Boden und komm in die Brücke.",
+      "Schieb das linke Bein unter dem Körper durch, beug das linke Knie und stell den linken Fuß flach auf den Boden.",
+      "Dreh den Oberkörper nach links und stütz dich mit der linken Hand am Boden ab.",
+      "Drück dich über den rechten Fuß und die linke Hand ab, heb den Oberkörper vom Boden und komm in den Kniestand.",
+      "Steh aus dem Kniestand auf, die Kettlebell bleibt über dem Kopf gestreckt.",
+      "Kehr die Bewegung um, zurück in die Ausgangsposition.",
+      "Wiederhole die Übung auf der anderen Seite, mit der Kettlebell in der linken Hand."
+    ]
   },
   "0552": {
-    "name": "Umsetzen mit zwei Armen und Kettlebell"
+    "name": "Umsetzen mit zwei Armen und Kettlebell",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Kettlebell mit beiden Händen vor den Oberschenkeln, die Handflächen zeigen zu dir.",
+      "Geh leicht in die Knie, beug dich aus der Hüfte nach vorn und senk die Kettlebell Richtung Boden.",
+      "Streck Hüfte und Knie explosiv und nutz den Schwung, um die Kettlebell Richtung Schultern zu ziehen.",
+      "Wenn die Kettlebell auf Schulterhöhe ist, dreh die Handgelenke und fang sie in der Rack-Position auf, mit den Ellbogen nah am Körper und der Kettlebell an der Außenseite der Unterarme.",
+      "Senk die Kettlebell zurück in die Ausgangsposition und mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0553": {
-    "name": "Militärisches Drücken mit zwei Armen und Kettlebell"
+    "name": "Militärisches Drücken mit zwei Armen und Kettlebell",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte in jeder Hand eine Kettlebell auf Schulterhöhe, die Handflächen zeigen nach vorn.",
+      "Spann den Rumpf an und drück die Kettlebells über den Kopf, bis die Arme ganz gestreckt sind.",
+      "Halte oben kurz inne und senk die Kettlebells dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0554": {
-    "name": "Windmühle mit Kettlebell"
+    "name": "Windmühle mit Kettlebell",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte eine Kettlebell in der rechten Hand über dem Kopf.",
+      "Dreh den linken Fuß etwa 45 Grad nach außen, der rechte Fuß zeigt nach vorn.",
+      "Neig den Oberkörper zur linken Seite, der rechte Arm bleibt über dem Kopf gestreckt und der Blick auf der Kettlebell.",
+      "Senk den Oberkörper so weit ab, wie du kannst, der rechte Arm bleibt gerade und der linke Arm zur Seite gestreckt.",
+      "Halte kurz inne und komm dann zurück in die Ausgangsposition, indem du dich über den rechten Fuß abdrückst und die seitlichen Bauchmuskeln anspannst.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
+    ]
+  },
+  "0555": {
+    "instructions": [
+      "Setz dich auf die Kante einer Bank oder eines Stuhls, die Füße flach auf dem Boden und die Knie im 90-Grad-Winkel gebeugt.",
+      "Lehn dich leicht zurück und stütz dich mit den Händen an der Kante der Bank oder des Stuhls ab.",
+      "Spann die hintere Oberschenkelmuskulatur an, heb die Füße vom Boden und streck die Beine gerade nach vorn.",
+      "Halte oben kurz inne, beug dann langsam die Knie und zieh die Füße zurück zum Körper.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0556": {
     "name": "Kicks mit gebeugtem Bein v. 2"
   },
   "0558": {
-    "name": "Kipping-Muscle-up"
+    "name": "Kipping-Muscle-up",
+    "instructions": [
+      "Häng dich im Obergriff an eine Klimmzugstange, die Hände etwas weiter als schulterbreit.",
+      "Spann den Rumpf an und bau mit einer Pendelbewegung Schwung auf.",
+      "Zieh beim Vorschwingen die Brust Richtung Stange und starte die Bewegung mit Latissimus und Bizeps.",
+      "Zieh dich weiter nach oben, bis die Brust die Stange erreicht. Geh dann in die Dip-Position über, indem du die Stange nach unten drückst und die Arme streckst.",
+      "Beug die Arme und senk dich kontrolliert zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0559": {
     "name": "Knie-zur-Brust-Dehnung"
@@ -18803,7 +19395,13 @@
     "name": "Kniende Handgelenkbeuger-Dehnung"
   },
   "0562": {
-    "name": "Landmine 180er mit Langhantel"
+    "name": "Landmine 180er mit Langhantel",
+    "instructions": [
+      "Stell dich schulterbreit hin und halte die Langhantel mit beiden Händen vor der Brust.",
+      "Beug die Knie leicht und dreh den Oberkörper nach rechts, sodass die Langhantel nach unten zur rechten Hüfte schwingt.",
+      "Kehr die Bewegung am tiefsten Punkt schnell um und dreh den Oberkörper nach links, sodass die Langhantel quer vor dem Körper nach oben zur linken Schulter schwingt.",
+      "Setz diese Drehbewegung fort. Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0564": {
     "name": "Seitlicher Kastensprung"
@@ -18821,73 +19419,263 @@
     "name": "Beincurl (auf dem Gymnastikball)"
   },
   "0570": {
-    "name": "Knieanziehen auf der Flachbank"
+    "name": "Knieanziehen auf der Flachbank",
+    "instructions": [
+      "Setz dich auf eine Flachbank und streck die Beine gerade nach vorne aus.",
+      "Stütz dich mit den Händen neben den Hüften auf der Bank ab.",
+      "Spann die Bauchmuskeln an, heb die Beine vom Boden und zieh die Knie Richtung Brust.",
+      "Halte oben kurz inne und senk die Beine dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0571": {
-    "name": "Abwechselndes sitzendes Rudern mit engem Griff an der Hebelmaschine"
+    "name": "Abwechselndes sitzendes Rudern mit engem Griff an der Hebelmaschine",
+    "instructions": [
+      "Stell Sitzhöhe und Fußplatte so ein, dass du richtig ausgerichtet bist.",
+      "Setz dich mit geradem Rücken an die Maschine und stell die Füße flach auf die Fußplatte.",
+      "Greif die Griffe eng, die Handflächen zeigen zueinander.",
+      "Halte während der ganzen Übung die Brust oben und die Schultern hinten.",
+      "Zieh einen Griff zum Oberkörper, während der andere Griff an seinem Platz bleibt.",
+      "Zieh am Ende der Bewegung die Schulterblätter zusammen.",
+      "Führ den Griff langsam zurück in die Ausgangsposition und wiederhole die Bewegung auf der anderen Seite.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0572": {
-    "name": "Assistierter Klimmzug im Untergriff an der Hebelmaschine"
+    "name": "Assistierter Klimmzug im Untergriff an der Hebelmaschine",
+    "instructions": [
+      "Stell die Hebelmaschine auf den gewünschten Widerstand ein.",
+      "Stell dich auf die Fußplattform und greif die Griffe im Untergriff, etwas weiter als schulterbreit.",
+      "Häng mit ganz gestreckten Armen und halte den Körper gerade.",
+      "Spann die Rückenmuskeln an und zieh dich Richtung Griffe nach oben, die Brust führt.",
+      "Zieh weiter, bis das Kinn über den Griffen ist.",
+      "Halte oben kurz inne und senk dich dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0573": {
-    "name": "Rückenstrecken an der Hebelmaschine"
+    "name": "Rückenstrecken an der Hebelmaschine",
+    "instructions": [
+      "Stell die Maschine auf deine Körpergröße und deinen Bewegungsumfang ein.",
+      "Setz dich an die Maschine, den Rücken am Polster und die Füße fixiert.",
+      "Leg die Hände an die Griffe oder Haltestangen.",
+      "Spann den Rumpf an und lehn dich langsam nach vorne, der Rücken darf sich dabei leicht runden.",
+      "Halte unten kurz inne und spür die Dehnung im unteren Rücken.",
+      "Richte den Oberkörper mit der Rückenmuskulatur langsam wieder auf, bis du in der Ausgangsposition bist.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0574": {
-    "name": "Vorgebeugtes Rudern mit Langhantel"
+    "name": "Vorgebeugtes Rudern mit Langhantel",
+    "instructions": [
+      "Stell dich schulterbreit hin, die Knie leicht gebeugt.",
+      "Halte die Langhantel im Obergriff, die Hände etwas weiter als schulterbreit.",
+      "Beug dich aus der Hüfte nach vorne, Rücken gerade, Brust raus.",
+      "Zieh die Langhantel zur unteren Brust und zieh dabei die Schulterblätter zusammen.",
+      "Halte oben kurz inne und senk die Langhantel dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0575": {
-    "name": "Bizeps-Curl an der Hebelmaschine"
+    "name": "Bizeps-Curl an der Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe ein und setz dich so an die Maschine, dass dein Rücken am Polster liegt.",
+      "Greif die Griffe im Untergriff, die Handflächen zeigen nach oben, und halte die Ellbogen nah am Körper.",
+      "Atme aus und zieh die Griffe mit dem Bizeps nach oben.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk die Griffe langsam zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0576": {
-    "name": "Brustpresse an der Hebelmaschine"
+    "name": "Brustpresse an der Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe ein und setz dich so an die Maschine, dass dein Rücken flach am Polster liegt.",
+      "Greif die Griffe im Obergriff und winkle die Ellbogen auf 90 Grad an.",
+      "Drück die Griffe nach vorne, bis die Arme ganz gestreckt sind, und atme dabei aus.",
+      "Halte am Ende der Bewegung kurz inne und führ die Griffe dann langsam zurück in die Ausgangsposition. Atme dabei ein.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0577": {
-    "name": "Brustpresse an der Hebelmaschine"
+    "name": "Brustpresse an der Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe ein und setz dich so an die Maschine, dass dein Rücken flach am Polster liegt.",
+      "Greif die Griffe im Obergriff und winkle die Ellbogen auf 90 Grad an.",
+      "Drück die Griffe nach vorne, bis die Arme ganz gestreckt sind, und atme dabei aus.",
+      "Halte am Ende der Bewegung kurz inne und führ die Griffe dann langsam zurück in die Ausgangsposition. Atme dabei ein.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0578": {
-    "name": "Kreuzheben an der Hebelmaschine"
+    "name": "Kreuzheben an der Hebelmaschine",
+    "instructions": [
+      "Stell Sitzhöhe und Fußplattform wie gewünscht ein.",
+      "Setz dich an die Maschine, den Rücken am Polster und die Füße flach auf der Fußplattform.",
+      "Halte dich an den Griffen oder seitlich am Sitz fest, damit du stabil sitzt.",
+      "Spann Gesäß und hintere Oberschenkelmuskulatur an und drück dich über die Fersen ab, um das Gewicht anzuheben.",
+      "Halte den Rücken gerade und lass die Schultern nicht nach vorne rund werden.",
+      "Streck oben die Hüfte ganz durch und spann das Gesäß fest an.",
+      "Senk das Gewicht kontrolliert ab und halte dabei Gesäß und hintere Oberschenkelmuskulatur unter Spannung.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0579": {
-    "name": "Latzug von vorne an der Hebelmaschine"
+    "name": "Latzug von vorne an der Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe ein und setz dich an die Maschine, die Knie unter den Polstern und die Füße flach auf dem Boden.",
+      "Greif die Griffe im Obergriff, etwas weiter als schulterbreit.",
+      "Sitz aufrecht, Brust raus und Schultern zurück, und halte im unteren Rücken ein leichtes Hohlkreuz.",
+      "Spann den Latissimus an und zieh die Griffe nach unten zur Brust, dabei ziehst du die Schulterblätter zusammen.",
+      "Halte unten kurz inne und führ die Griffe dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0580": {
-    "name": "Shrugs ohne Griff an der Hebelmaschine"
+    "name": "Shrugs ohne Griff an der Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe ein und setz dich an die Hebelmaschine.",
+      "Greif die Griffe, die Handflächen zeigen nach innen, und halte die Arme ganz gestreckt.",
+      "Halte den Rücken gerade, atme aus und zieh die Schultern so hoch wie möglich.",
+      "Halte die Spannung kurz, atme dann ein und senk die Schultern langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0581": {
-    "name": "Hohes Rudern an der Hebelmaschine"
+    "name": "Hohes Rudern an der Hebelmaschine",
+    "instructions": [
+      "Stell Sitzhöhe und Fußplattform bequem ein.",
+      "Setz dich an die Maschine, die Brust am Polster und die Füße flach auf der Fußplattform.",
+      "Greif die Griffe im Obergriff, etwas weiter als schulterbreit.",
+      "Halte den Rücken gerade und spann den Rumpf an.",
+      "Zieh die Griffe zum Körper und zieh dabei die Schulterblätter zusammen.",
+      "Halte am Endpunkt der Bewegung kurz inne und führ die Griffe dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0582": {
-    "name": "Kniendes Beinstrecken an der Hebelmaschine"
+    "name": "Kniendes Beinstrecken an der Hebelmaschine",
+    "instructions": [
+      "Stell die Maschine auf deinen Körper ein und wähl das gewünschte Gewicht.",
+      "Knie dich mit Blick nach unten auf die Maschine, die Knie auf dem Polster und die Füße unter den Fußpolstern fixiert.",
+      "Halte dich an den Griffen oder seitlich an der Maschine fest, damit du stabil bist.",
+      "Halte den Oberkörper ruhig, atme aus, beug die Knie und zieh die Unterschenkel nach oben Richtung Gesäß.",
+      "Halte oben kurz inne und spann die hintere Oberschenkelmuskulatur fest an.",
+      "Atme ein und senk die Beine langsam zurück in die Ausgangsposition, bis die Knie ganz gestreckt sind.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0583": {
-    "name": "Kniender Twist an der Hebelmaschine"
+    "name": "Kniender Twist an der Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe ein und knie dich so auf die Maschine, dass die Knie auf den Polstern liegen und der Oberkörper nach vorne zeigt.",
+      "Halte dich an den Griffen oder seitlich an der Maschine fest, damit du stabil bist.",
+      "Halte den Rumpf angespannt und dreh den Oberkörper so weit zu einer Seite, wie es angenehm geht.",
+      "Halte kurz inne und kehr dann langsam in die Ausgangsposition zurück.",
+      "Wiederhole die Drehung zur anderen Seite.",
+      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
+    ]
   },
   "0584": {
-    "name": "Seitheben an der Hebelmaschine"
+    "name": "Seitheben an der Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe ein und setz dich so an die Maschine, dass dein Rücken am Polster liegt.",
+      "Greif die Griffe im Obergriff und halte die Arme gestreckt.",
+      "Atme aus und heb die Arme seitlich an, bis sie parallel zum Boden sind.",
+      "Halte oben kurz inne, atme dann ein und senk die Arme langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0585": {
-    "name": "Beinstrecken an der Hebelmaschine"
+    "name": "Beinstrecken an der Hebelmaschine",
+    "instructions": [
+      "Stell Sitzhöhe und Rückenlehne passend zu deinem Körper ein.",
+      "Setz dich an die Maschine, den Rücken an der Lehne und die Füße am Fußpolster.",
+      "Halte dich an den Griffen oder seitlichen Stangen fest, damit du stabil sitzt.",
+      "Streck die Beine nach vorne durch und heb so das Gewicht.",
+      "Halte oben kurz inne und senk das Gewicht dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0586": {
-    "name": "Liegendes Beinstrecken an der Hebelmaschine"
+    "name": "Liegendes Beinstrecken an der Hebelmaschine",
+    "instructions": [
+      "Stell die Maschine auf deinen Körper ein und wähl das gewünschte Gewicht.",
+      "Leg dich in Bauchlage auf die Maschine, die Beine gestreckt und die Fersen am gepolsterten Hebel.",
+      "Halte dich an den Griffen oder seitlich an der Maschine fest, damit du stabil liegst.",
+      "Halte den Oberkörper ruhig, atme aus und beug die Beine so weit wie möglich, ohne die Hüfte vom Polster zu heben.",
+      "Halte die Endposition kurz und spann dabei die hintere Oberschenkelmuskulatur an.",
+      "Atme ein und senk den Hebel langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0587": {
-    "name": "Militärisches Drücken an der Hebelmaschine"
+    "name": "Militärisches Drücken an der Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe ein und setz dich so an die Maschine, dass dein Rücken an der Rückenlehne liegt.",
+      "Greif die Griffe im Obergriff, die Hände etwas weiter als schulterbreit.",
+      "Drück die Griffe nach oben, bis die Arme ganz gestreckt sind, aber drück die Ellbogen nicht durch.",
+      "Halte oben kurz inne und senk die Griffe dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0588": {
-    "name": "Sitzendes Rudern mit engem Griff an der Hebelmaschine"
+    "name": "Sitzendes Rudern mit engem Griff an der Hebelmaschine",
+    "instructions": [
+      "Stell Sitzhöhe und Fußstützen so ein, dass du sauber trainieren kannst.",
+      "Setz dich an die Maschine, die Füße flach auf den Fußstützen und die Knie leicht gebeugt.",
+      "Greif die Griffe eng, die Handflächen zeigen zueinander.",
+      "Halte den Rücken gerade und lehn dich leicht nach vorne.",
+      "Zieh die Griffe zum Oberkörper und zieh dabei die Schulterblätter zusammen.",
+      "Halte am Endpunkt der Bewegung kurz inne.",
+      "Lass die Griffe langsam nachgeben und kehr in die Ausgangsposition zurück.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0589": {
-    "name": "Einarmiges vorgebeugtes Rudern mit Langhantel"
+    "name": "Einarmiges vorgebeugtes Rudern mit Langhantel",
+    "instructions": [
+      "Stell dich schulterbreit hin, die Knie leicht gebeugt, und halte eine Langhantel im Obergriff.",
+      "Beug dich aus der Hüfte nach vorne, Rücken gerade, Kopf oben.",
+      "Lass die Langhantel mit ganz gestreckten Armen vor dir hängen.",
+      "Zieh die Langhantel nach oben zur Brust und halte die Ellbogen dabei nah am Körper.",
+      "Zieh oben die Schulterblätter zusammen.",
+      "Senk die Langhantel zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0590": {
-    "name": "Einarmiges Schulterdrücken an der Hebelmaschine"
+    "name": "Einarmiges Schulterdrücken an der Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe ein und setz dich so an die Maschine, dass dein Rücken am Polster liegt.",
+      "Greif den Hebelgriff mit einer Hand und winkle den Ellbogen auf 90 Grad an.",
+      "Drück den Hebel nach oben, bis der Arm über dem Kopf ganz gestreckt ist.",
+      "Halte oben kurz inne und senk den Hebel dann langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht und wechsle dann den Arm."
+    ]
   },
   "0591": {
-    "name": "Trizeps-Dips an der Hebelmaschine mit Überhandgriff"
+    "name": "Trizeps-Dips an der Hebelmaschine mit Überhandgriff",
+    "instructions": [
+      "Stell die Maschine auf die passende Höhe ein und fixier dich in der richtigen Position.",
+      "Greif die Griffe im Obergriff und bring den Körper so in Position, dass die Arme ganz gestreckt sind.",
+      "Beug die Ellbogen und senk den Körper ab, die Oberarme bleiben nah am Körper.",
+      "Senk dich weiter ab, bis die Oberarme parallel zum Boden sind.",
+      "Halte kurz inne, streck dann die Ellbogen und drück dich zurück nach oben in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0592": {
-    "name": "Scott-Curl an der Hebelmaschine"
+    "name": "Scott-Curl an der Hebelmaschine",
+    "instructions": [
+      "Stell die Sitzhöhe ein und setz dich an die Hebelmaschine.",
+      "Leg die Oberarme auf das Polster und greif die Griffe im Untergriff.",
+      "Halte den Rücken gerade und lass die Ellbogen auf dem Polster.",
+      "Atme aus und zieh die Unterarme mit dem Bizeps Richtung Oberarme.",
+      "Halte oben kurz inne und spann den Bizeps fest an.",
+      "Atme ein und senk die Griffe langsam zurück in die Ausgangsposition.",
+      "Mach so viele Wiederholungen wie gewünscht."
+    ]
   },
   "0593": {
     "name": "Umgekehrte Hyperextension an der Hebelmaschine"
