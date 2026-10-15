@@ -166,7 +166,22 @@ export function textMask(gray, w, h, { digits = false, both = false } = {}) {
           const row = rows.find(r => c.y0 < r.y1 - m * 0.3 && c.y1 > r.y0 + m * 0.3)
           if (row) { row.list.push(c); row.y0 = Math.min(row.y0, c.y0); row.y1 = Math.max(row.y1, c.y1) } else rows.push({ y0: c.y0, y1: c.y1, list: [c] })
         }
-        line = rows.filter(r => r.list.length >= 2).flatMap(r => r.list)
+        const kept = rows.filter(r => r.list.length >= 2)
+        line = kept.flatMap(r => r.list)
+        // A letter that touches something bright behind it (a pole through the "U" of DUMBBELL)
+        // joins a shape too big to be a letter. The part of that shape inside a line of text, and
+        // within the line's own span, is that letter: it goes back in, cut to the line.
+        const all = components(ink, w, h)
+        for (const r of kept) {
+          const xs = r.list.flatMap(c => [c.x0, c.x1])
+          const lx0 = Math.min(...xs), lx1 = Math.max(...xs)
+          for (const c of all) {
+            if (r.list.includes(c) || c.y0 > r.y0 || c.y1 < r.y1) continue
+            const px = c.px.filter(i => { const x = i % w, y = (i - x) / w; return y >= r.y0 && y <= r.y1 && x >= lx0 && x <= lx1 })
+            const cols = new Set(px.map(i => i % w)).size
+            if (px.length && cols <= m * 1.5) line.push({ ...c, px, n: px.length })
+          }
+        }
       }
       if (digits) {
         const cy = line.map(c => (c.y0 + c.y1) / 2)

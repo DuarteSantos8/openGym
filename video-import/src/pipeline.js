@@ -5,7 +5,7 @@ import path from 'node:path'
 import fs from 'node:fs'
 import { probe, extractCrops, still, stillDataUrl } from './frames.js'
 import { readCrops } from './ocr.js'
-import { segment, timerPhases, timerQuality, timerTrack, TIMER_TRUST } from './segment.js'
+import { segment, timerPhases } from './segment.js'
 import { classify, cutsOf } from './classify.js'
 import { suggestRois } from './roi-suggest.js'
 import { run } from './proc.js'
@@ -73,8 +73,11 @@ export async function analyse(file, roi, { workDir, signal, hints = [], parts = 
     frames.push({ t, name: best.text, nameConf: best.conf, timer: timer.readings[t]?.text || '', timerB: timerB.readings[t]?.text || '', timerC: alt.readings[t]?.text || '', timerD: altB.readings[t]?.text || '', scene: crops.scene[t] || 0 })
   }
   // The countdown first, where the video has one the OCR can follow: it knows every work, rest
-  // and hold to the second. The captions alone otherwise.
-  const phases = timerQuality(timerTrack(frames)) >= TIMER_TRUST ? timerPhases(frames) : null
+  // and hold to the second. Whether it can be followed is what timerPhases finds — confirmed
+  // countdowns over a good part of the video — not how clean every reading is: a timer shown
+  // only during the work, or read in one of its four readings, still runs the show. The
+  // captions alone otherwise.
+  const phases = timerPhases(frames)
   const blocks = phases || segment(frames)
   const draft = classify(blocks, { hints, parts, cuts: cutsOf(frames.map(f => f.scene)), timed: !!phases })
   progress('thumbs', 0)

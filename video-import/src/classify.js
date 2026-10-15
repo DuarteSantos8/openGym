@@ -16,7 +16,7 @@
 //    per-side row.
 
 import { detectRounds } from './rounds.js'
-import { similarity, sameName, sideOf, sectionWord, displayName, median, snapSec, mode, SAME_NAME } from './text.js'
+import { similarity, sameName, sideOf, sectionTitle, displayName, median, snapSec, mode, SAME_NAME } from './text.js'
 
 export const MAX_WORK = 120
 export const MAX_REST = 60
@@ -24,7 +24,8 @@ export const SECTION_BREAK = 120   // a rest this long ends an interval section
 const MIN_INTERVALS = 3
 const MIN_TIMED = 10   // seconds: a timed hold shorter than this is a countdown to the next thing
 
-const isRestish = b => b && (b.kind === 'rest' || b.kind === 'gap')
+// A gap the countdown measured (a move nobody named) is a move, not a rest.
+const isRestish = b => b && (b.kind === 'rest' || (b.kind === 'gap' && !b.timed))
 
 /** The kind a hint range or the block's own caption gives it, or null. */
 function hintFor(b, hints) {
@@ -33,7 +34,7 @@ function hintFor(b, hints) {
   const mid = b.start + b.dur / 2
   const h = (hints || []).find(x => mid >= x.start && mid < x.end)
   if (h) return h.kind
-  return sectionWord(b.text || b.key)
+  return sectionTitle(b.text || b.key)
 }
 
 /** A block that runs across a chapter boundary ends there: what follows is the next part. */
@@ -116,8 +117,15 @@ export function classify(blocks, { hints = [], parts = [], cuts = [], timed = fa
   // Interval sections: index ranges [from, to] over bs.
   const ranges = []
   let i = 0
+  // A move that follows another with no rest between, and then a pause much longer than the
+  // workout's rests (the minute to fetch the dumbbells), is the last of a warm-up, not the first
+  // interval. The same for a stretch that a long pause leads into.
+  const typicalRest = median(bs.filter((b, j) => flag[j - 1] && isRestish(b)).map(b => b.dur)) || 0
+  const moves = b => b && (b.kind === 'work' || (b.kind === 'gap' && b.timed))
+  const chained = (x, y) => moves(bs[x]) && moves(bs[y]) && Math.abs(bs[y].start - bs[x].end) <= 2
+  const longPause = b => isRestish(b) && typicalRest > 0 && b.dur > typicalRest * 1.5
   while (i < bs.length) {
-    if (!flag[i]) { i++; continue }
+    if (!flag[i] || (chained(i - 1, i) && longPause(bs[i + 1]))) { i++; continue }
     let j = i, count = 0, last = i
     while (j < bs.length) {
       if (bs[j].kind === 'work' && parts.length && partOf(bs[j]) !== partOf(bs[i])) break
@@ -136,7 +144,7 @@ export function classify(blocks, { hints = [], parts = [], cuts = [], timed = fa
     const med = median(works.map(b => b.dur))
     let k = last + 1
     while (k < bs.length && isRestish(bs[k]) && bs[k].dur <= MAX_REST) k++
-    if (bs[k] && bs[k].kind === 'work' && !flag[k] && hintFor(bs[k], hints) == null && Math.abs(bs[k].dur - med) <= Math.max(3, med * 0.25)) {
+    if (bs[k] && bs[k].kind === 'work' && !flag[k] && hintFor(bs[k], hints) == null && Math.abs(bs[k].dur - med) <= Math.max(3, med * 0.25) && !(chained(k, k + 1) && longPause(bs[k - 1]))) {
       last = k; count++
     }
     if (count >= MIN_INTERVALS) { ranges.push([i, last]); i = last + 1 } else i = j + 1
@@ -297,6 +305,13 @@ export function mergeIntervals(sections) {
     while (k >= 0 && isJunk(res[k])) k--
     const prev = k >= 0 && res[k].kind === 'interval' && res[k].part === s.part ? res[k] : null
     const shared = prev ? s.rows.filter(r => prev.rows.some(p => sameName(p.key, r.key))).length : 0
+    // A block cut in two by a longer pause (a minute to set up the next exercises) is one block:
+    // same part of the video, same work and rest, and no more than a minute and a half apart.
+    const close = prev && k === res.length - 1 && s.start - prev.end <= 90 && near(s.work || 0, prev.work || 0) && near(s.rest || 0, prev.rest || 0, 0.4)
+    if (prev && close && shared < Math.min(prev.rows.length, s.rows.length) * 0.5) {
+      prev.rows.push(...s.rows); prev.end = s.end
+      continue
+    }
     if (!prev || shared < Math.min(prev.rows.length, s.rows.length) * 0.5) { res.push(s); continue }
     const junk = res.splice(k + 1)
     for (const j of junk) prev.rows.push(...j.rows)

@@ -59,9 +59,21 @@ export function restOf(key) {
 
 // Words a section header uses. Matched on the whole normalised title.
 const WARMUP_RE = /\b(warm ?up|warming up|rozgrzewka|aufwarmen|calentamiento|echauffement|riscaldamento)\b/
-const STRETCH_RE = /\b(stretch|stretching|cool ?down|cooldown|rozciaganie|dehnen|estiramiento|etirement|stretching|allungamento|mobility)\b/
+const STRETCH_RE = /\b(stretch|stretches|stretching|cool ?down|cooldown|rozciaganie|dehnen|estiramiento|etirement|stretching|allungamento|mobility)\b/
 
 /** 'warmup' | 'stretch' | null, for a caption or a chapter title that names a section. */
+/**
+ * The section a caption announces when the caption is nothing but a section's title ("WARM UP",
+ * "Cool down & stretch"), or null. A move named after what it does ("Dynamic chest stretch",
+ * "Quad stretch") is a move, not a section.
+ */
+export function sectionTitle(text) {
+  const kind = sectionWord(text)
+  if (!kind) return null
+  const rest = normName(text).replace(/\b(warm ?up|warming up|cool ?down|cooldown|stretch|stretches|stretching|mobility|and|the|time|session|intro|introduction|final|wrap up|rozgrzewka|rozciaganie)\b/g, ' ').trim()
+  return rest ? null : kind
+}
+
 export function sectionWord(text) {
   const k = normName(text)
   if (WARMUP_RE.test(k)) return 'warmup'
@@ -161,6 +173,8 @@ export function snapSec(x) {
  * move — "quad stretch left" and "quad stretch right" are one edit apart in spirit and must stay
  * two blocks, or a per-side stretch reads as one long hold.
  */
+const KIT_WORDS = new Set(['dumbbell', 'dumbbells', 'kettlebell', 'kettlebells', 'barbell', 'band', 'alternating', 'alternate', 'alt', 'single', 'arm', 'with'])
+
 export function sameName(a, b) {
   // Two blocks nobody could read are not the same exercise; they are two unknowns.
   if (!normName(a) || !normName(b)) return false
@@ -173,6 +187,20 @@ export function sameName(a, b) {
   // their words, but a move is named by its first one.
   const w1 = normName(a).split(' ')[0], w2 = normName(b).split(' ')[0]
   if (w1.length >= 3 && w2.length >= 3 && similarity(w1, w2) < 0.5) return false
+  // Names that share their equipment and little else ("dumbbell floor press", "dumbbell push
+  // press"; "bent over row", "bent over underhand row") are two moves: most of the words that say
+  // what the move is must match, an OCR slip or two allowed in a long word.
+  const moveWords = t => normName(t).split(' ').filter(w => w.length >= 3 && !KIT_WORDS.has(w))
+  const m1 = moveWords(a), m2 = moveWords(b)
+  if (m1.length && m2.length) {
+    const used = new Set()
+    let hit = 0
+    for (const x of m1) {
+      const k = m2.findIndex((y, i) => !used.has(i) && (x === y || x.replace(/s$/, '') === y.replace(/s$/, '') || (Math.min(x.length, y.length) >= 5 && editDistance(x, y) <= (Math.max(x.length, y.length) >= 7 ? 2 : 1))))
+      if (k >= 0) { hit++; used.add(k) }
+    }
+    if (hit / Math.max(m1.length, m2.length) < 0.8) return false
+  }
   return similarity(a, b) >= SAME_NAME
 }
 

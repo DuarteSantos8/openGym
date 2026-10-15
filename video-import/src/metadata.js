@@ -22,7 +22,7 @@ const NOISE_RE = /^(intro|introduction|outro|welcome|hello|hi|subscribe|thanks|t
 
 // What a section-only title says besides its section word: "Introduction and warm-up",
 // "Dynamic mobility warm up", "Cool down & conclusion". Left with nothing else, it names no exercise.
-const SECTION_FILLER = /\b(warm ?up|warming up|cool ?down|cooldown|stretch|stretching|mobility|dynamic|static|full body|intro|introduction|conclusion|outro|and|the|a|quick|short|final|rozgrzewka|rozciaganie|i|und|y|et|e)\b/g
+const SECTION_FILLER = /\b(warm ?up|warming up|cool ?down|cooldown|stretch|stretches|stretching|wrap up|conclusion|mobility|dynamic|static|full body|intro|introduction|conclusion|outro|and|the|a|quick|short|final|rozgrzewka|rozciaganie|i|und|y|et|e)\b/g
 
 // "1. Burpees", "Exercise 3 - Burpees", "03 | Burpees", "Burpees (40s)"
 function cleanTitle(title) {
