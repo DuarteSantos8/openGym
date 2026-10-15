@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useUI } from '../store/useUI.js'
 import { keyboardOpen } from '../lib/viewport-guard.js'
 import { noteSheetEntries, onSheetEntry } from '../lib/nav.js'
+import { useSheetDialog } from '../lib/use-sheet-dialog.js'
 
 // Putting the page back after a sheet closes takes up to three goes (see the un-pin below): now,
 // next frame, and once the keyboard's dismiss animation is over. Anything else that wants to
@@ -46,9 +47,14 @@ const drainScrollRestore = close => {
 }
 
 // One bottom sheet (or centered dialog) with swipe-to-dismiss.
-function Sheet({ sheet }) {
+function Sheet({ sheet, covered }) {
   const { closeSheet } = useUI()
   const ref = useRef(null)
+  // The element that is the dialog, whichever kind of sheet this is: named by its header, focus
+  // moved in and kept there, the page behind inert, focus back on what opened it. Escape closing
+  // the top sheet that allows it is the one handler in Modals below.
+  const dialog = useRef(null)
+  useSheetDialog(dialog)
   // startY null = no gesture. axis stays null until the finger has travelled far enough to
   // tell a vertical pull from a sideways scroll; 'x' hands the gesture to whatever scrolls
   // horizontally under it (chip strips, heatmap) and the sheet stays put.
@@ -123,22 +129,25 @@ function Sheet({ sheet }) {
   }, [])
 
   const close = () => closeSheet(sheet.id)
+  // A sheet under a newer one is out of reach, to the keyboard and to a screen reader, until the
+  // newer one closes: `inert` on its wrapper (a stacked sheet's background is the sheet below).
+  const inert = covered ? true : undefined
   // Full screen, on black: a photo or video opened from a workout (WorkoutMedia.jsx). No
   // backdrop to tap, no drag to dismiss — the viewer has its own close button, and back closes
   // it like any sheet.
-  if (sheet.kind === 'viewer') return <div>{sheet.render(close)}</div>
+  if (sheet.kind === 'viewer') return <div ref={dialog} inert={inert}>{sheet.render(close)}</div>
   if (sheet.kind === 'center') {
     return (
-      <div>
-        <div className="mback" onClick={() => { if (!sheet.locked) close() }} />
-        <div className="center">{sheet.render(close)}</div>
+      <div inert={inert}>
+        <div className="mback" aria-hidden="true" onClick={() => { if (!sheet.locked) close() }} />
+        <div className="center" ref={dialog}>{sheet.render(close)}</div>
       </div>
     )
   }
   return (
-    <div>
-      <div className="mback" onClick={() => { if (!sheet.locked) close() }} />
-      <div className="sheet" ref={ref} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
+    <div inert={inert}>
+      <div className="mback" aria-hidden="true" onClick={() => { if (!sheet.locked) close() }} />
+      <div className="sheet" ref={el => { ref.current = el; dialog.current = el }} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
         onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}>
         <div className="grab" />
         {sheet.render(close)}
@@ -289,7 +298,7 @@ export default function Modals() {
   if (!sheets.length) return null
   return (
     <div id="modal-root" className="open">
-      {sheets.map(s => <Sheet key={s.id} sheet={s} />)}
+      {sheets.map((s, i) => <Sheet key={s.id} sheet={s} covered={i < sheets.length - 1} />)}
     </div>
   )
 }

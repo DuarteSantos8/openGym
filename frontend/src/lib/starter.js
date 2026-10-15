@@ -34,13 +34,54 @@ const FIVE_BY_FIVE = [
   ['5x5-c', '5×5 C', 'barbell', [['0739', 5, 5], ['0047', 5, 5], ['1323', 5, 5]]]
 ]
 
+// Two days a week: the whole body both days, so each session carries what three would split
+// between them (squat or hinge, a press, a pull, and the small stuff).
+const FULL_BODY_2 = [
+  ['fb2-a', '2-Day Full Body A', 'figureStrength', [['0043', 3, 8], ['0025', 3, 8], ['2330', 3, 10], ['0586', 2, 12], ['0426', 2, 10], ['0031', 2, 12], ['0605', 2, 15]]],
+  ['fb2-b', '2-Day Full Body B', 'figureStrength', [['0085', 3, 8], ['0047', 3, 8], ['0027', 3, 10], ['0739', 3, 10], ['0334', 2, 12], ['0241', 2, 12], ['0585', 2, 12]]]
+]
+
+// Five days a week: upper/lower to start the week, then push/pull/legs to finish it. The two
+// halves train each muscle about twice, and the Wednesday and Sunday are rest.
+const UL_PPL = [
+  ['ulp-upper', 'Upper', 'barbell', [['0025', 3, 8], ['0027', 3, 8], ['0426', 3, 10], ['2330', 3, 10], ['0334', 2, 12], ['0241', 2, 12], ['0031', 2, 12]]],
+  ['ulp-lower', 'Lower', 'legs', [['0043', 3, 8], ['0085', 3, 8], ['0739', 2, 10], ['0586', 2, 12], ['0605', 3, 15]]],
+  ['ulp-push', 'Push', 'barbell', [['0047', 3, 8], ['0289', 3, 10], ['0405', 3, 10], ['0334', 3, 12], ['0241', 3, 12], ['0251', 2, 10]]],
+  ['ulp-pull', 'Pull', 'pullup', [['0198', 3, 10], ['0293', 3, 10], ['1323', 3, 10], ['5609', 3, 15], ['0313', 3, 12]]],
+  ['ulp-legs', 'Legs', 'legs', [['0739', 3, 10], ['1060', 3, 10], ['0585', 3, 12], ['0586', 3, 12], ['0605', 4, 15]]]
+]
+
+// Six days a week: push/pull/legs twice. The first of each pair is the heavy one, the second
+// swaps the lifts for their close cousins, so the muscles get two different stimuli, not the
+// same session twice. Sunday is rest.
+const PPL_6 = [
+  ['ppl6-push-a', 'Push A', 'barbell', [['0025', 4, 8], ['0426', 3, 10], ['0314', 3, 10], ['0334', 3, 12], ['0241', 3, 12], ['0251', 2, 10]]],
+  ['ppl6-pull-a', 'Pull A', 'pullup', [['2330', 4, 10], ['0027', 4, 8], ['1323', 3, 10], ['5609', 3, 15], ['0031', 3, 10]]],
+  ['ppl6-legs-a', 'Legs A', 'legs', [['0043', 4, 8], ['0085', 3, 10], ['0739', 3, 12], ['0586', 3, 12], ['0605', 4, 15]]],
+  ['ppl6-push-b', 'Push B', 'barbell', [['0047', 4, 8], ['0405', 3, 10], ['0289', 3, 10], ['0178', 3, 15], ['0241', 3, 12]]],
+  ['ppl6-pull-b', 'Pull B', 'pullup', [['1326', 3, 8], ['0293', 3, 10], ['0861', 3, 10], ['0313', 3, 12], ['0031', 2, 12]]],
+  ['ppl6-legs-b', 'Legs B', 'legs', [['0032', 3, 5], ['1992', 3, 10], ['1060', 3, 10], ['0585', 3, 12], ['0586', 3, 12], ['0605', 4, 15]]]
+]
+
 // [weekday, routineKey] — weekday is a DAYN index, so 1 is Monday. Fixed weeks only: every
 // plan repeats the same seven days, which is all the weekly plan model can represent.
+//
+// `onboarding: true` keeps a plan out of the starter-plan chooser (starterPlanOptions() with no
+// argument): that sheet looks a plan's name and description up by id in its own copy table
+// (src/sheets/starter.jsx), and an id it has no copy for would break it. Onboarding picks a plan
+// by its day count from starterPlanOptions({ all: true }). A plan loses the flag when the chooser
+// has its copy.
 const PLANS = {
   ppl: { routines: PPL, schedule: [[1, 'push'], [3, 'pull'], [5, 'legs']] },
   'upper-lower': { routines: UPPER_LOWER, schedule: [[1, 'upper-a'], [2, 'lower-a'], [4, 'upper-b'], [5, 'lower-b']] },
   'full-body': { routines: FULL_BODY, schedule: [[1, 'fb-a'], [3, 'fb-b'], [5, 'fb-c']] },
-  '5x5': { routines: FIVE_BY_FIVE, schedule: [[1, '5x5-a'], [3, '5x5-b'], [5, '5x5-c']] }
+  '5x5': { routines: FIVE_BY_FIVE, schedule: [[1, '5x5-a'], [3, '5x5-b'], [5, '5x5-c']] },
+  'full-body-2': { onboarding: true, routines: FULL_BODY_2, schedule: [[1, 'fb2-a'], [4, 'fb2-b']] },
+  'upper-lower-ppl': { onboarding: true, routines: UL_PPL, schedule: [[1, 'ulp-upper'], [2, 'ulp-lower'], [4, 'ulp-push'], [5, 'ulp-pull'], [6, 'ulp-legs']] },
+  'ppl-6': {
+    onboarding: true, routines: PPL_6,
+    schedule: [[1, 'ppl6-push-a'], [2, 'ppl6-pull-a'], [3, 'ppl6-legs-a'], [4, 'ppl6-push-b'], [5, 'ppl6-pull-b'], [6, 'ppl6-legs-b']]
+  }
 }
 
 const build = routines =>
@@ -51,9 +92,11 @@ const build = routines =>
 export const starterRoutines = () => build(PPL)
 
 // [{ id, days }] for the chooser. The day count is read off the schedule rather than stored
-// beside it, so the two can never disagree.
-export const starterPlanOptions = () =>
-  Object.entries(PLANS).map(([id, { schedule }]) => ({ id, days: schedule.length }))
+// beside it, so the two can never disagree. `{ all: true }` also lists the onboarding plans (2,
+// 5 and 6 days), which the chooser sheet has no copy for (see PLANS); the chooser calls this with
+// no argument and gets what it always did.
+export const starterPlanOptions = ({ all = false } = {}) =>
+  Object.entries(PLANS).filter(([, plan]) => all || !plan.onboarding).map(([id, { schedule }]) => ({ id, days: schedule.length }))
 
 // The weekdays a plan would claim, or null for an unknown id.
 export const starterPlanDays = id => PLANS[id]?.schedule.map(([day]) => day) ?? null

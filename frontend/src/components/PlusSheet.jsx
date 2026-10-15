@@ -60,7 +60,7 @@ function PlusSheet({ close, pathname }) {
   const settings = useNutrition(s => s.settings.data)
   const water = async ml => { setWatering(true); if (await addWater(target.date, ml)) close(); else setWatering(false) }
   return (
-    <div className="plus-sheet" ref={ref} role="dialog" aria-modal="true" aria-labelledby={titleId}>
+    <div className="plus-sheet" ref={ref} role="dialog" aria-modal="true" aria-labelledby={titleId} data-own-dialog-focus>
       <h3 id={titleId}>{t('Add')}</h3>
       {food && <LoggingTo target={target} />}
       {here.length > 0 && <Section title={t('Here')}>

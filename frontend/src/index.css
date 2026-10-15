@@ -196,6 +196,9 @@ p a,.small a,.dim a,.sect-f a,.sp-version a,.sp-lic a{text-decoration:underline;
 :focus{outline:none}
 /* --acc-ink, not --acc: >= 4.5:1 on every fill the ring lands on, so also >= 3:1 as a ring */
 :focus-visible{outline:2.5px solid var(--acc-ink);outline-offset:2px;border-radius:6px}
+/* A sheet takes the focus itself when it opens (lib/use-sheet-dialog.js): the dialog is where you
+   are, not a control, so no ring around the whole sheet. Its controls keep theirs. */
+[role="dialog"][tabindex="-1"]:focus-visible{outline:none}
 button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp button,.sld
 {-webkit-user-select:none;user-select:none}
 
@@ -320,8 +323,19 @@ button.conn:active{filter:brightness(1.12)}
    changing the painted box. Segmented buttons sit flush against each other, so they
    only grow vertically or the neighbour would steal the edge of the tap. */
 .iconbtn,.chip,.seg button,.helpbtn{position:relative}
-.iconbtn::before,.chip::before,.seg button::before,.helpbtn::before{content:'';position:absolute;inset:-6px}
-.seg button::before{inset:-6px 0}
+/* :where, so a button that something positions itself (absolute, sticky) keeps that. */
+:where(.btn.sm,.btn.xs){position:relative}
+/* The hit area is centred on the painted box and never smaller than --tap-min (44px) either way,
+   whatever the control's own size is (a 36px icon button, a 36px .btn.sm, a 27px .btn.xs, a 30px
+   chip, a 26px one in a .subrow): max(its size, 44px). The icon buttons, chips and help buttons
+   keep the 6px of slop they always had, so none of them got smaller. */
+.iconbtn::before,.chip::before,.seg button::before,.helpbtn::before,.btn.sm::before,.btn.xs::before{
+  content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:max(calc(100% + 12px),var(--tap-min));height:max(calc(100% + 12px),var(--tap-min));
+}
+/* Buttons never had any: exactly the floor, no slop. */
+.btn.sm::before,.btn.xs::before{width:max(100%,var(--tap-min));height:max(100%,var(--tap-min))}
+.seg button::before{width:100%}
 .iconbtn.on-ss{background:var(--acc-soft);color:var(--acc-ink)}
 .iconbtn:disabled{opacity:.32}
 
@@ -641,11 +655,13 @@ h4.sec{
    strip is at its end, a diagonal drag must not chain into the page either. */
 .chips,.hm-wrap{overscroll-behavior-x:contain;scroll-padding-inline:16px}
 .chips{touch-action:pan-x;overscroll-behavior:contain}
-/* The chip hit-area (.chip::before, inset:-6px) must not poke out of the strip vertically:
-   overflow-x:auto makes overflow-y auto as well, and that 6px of positioned overflow gave
-   the 32px row a 36px scroll height — a diagonal swipe, wheel or drag then scrolled the
-   whole row up by 4px and left it there. Vertical slop is clipped by the strip anyway. */
-.chips .chip::before{top:0;bottom:0}
+/* The chip hit-area (.chip::before) must not poke out of the strip vertically: overflow-x:auto
+   makes overflow-y auto as well, and 6px of positioned overflow once gave the row a scroll
+   height past its own, so a diagonal swipe, wheel or drag scrolled the whole row up and left it
+   there. So the strip is itself --tap-min tall (chips centred in it) and the chip's hit area is
+   exactly max(its height, --tap-min): it fills the strip and never leaves it. */
+.chips:not(.wchips){min-height:var(--tap-min);align-items:center;padding-block:5px}
+.chips .chip::before{height:max(100%,var(--tap-min))}
 .chip{
   flex:none;padding:6px 13px;border-radius:99px;background:var(--surface);
   font-size:14px;font-weight:400;color:var(--label);text-transform:capitalize;

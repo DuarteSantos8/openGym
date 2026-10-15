@@ -40,6 +40,27 @@ warns in development). Make the child the control and drop the row's onClick, or
   `ui-kit-cascade.test.js` checks every utility on every primitive's element. Id rules still win.
 - An odd px or a computed value may stay inline; a new layout gets a class, never a new colour.
 
+## Touch targets and sheets
+
+- **44px to tap.** `--tap-min` is the floor. `Button size="sm"` (36px painted), `size="xs"` (about
+  27px), `Chip`, icon buttons, help buttons and segmented buttons are painted at their own size and
+  tapped over a centred `::before` that is never smaller than `--tap-min` either way (index.css, next
+  to `.iconbtn`; `tap-targets.test.js` works the box out for each size). A control you add that is
+  painted under 44px needs the same pseudo-element, not a bigger box. A chip in a scrolling `.chips`
+  strip gets the same 44px: the strip is itself `--tap-min` tall with the chips centred, so the
+  hit area fills the strip and never overflows it (an overflow would grow the strip's scroll height).
+- **A sheet is a dialog.** Everything opened with `useUI.openSheet` gets `role="dialog"`,
+  `aria-modal`, a name from its first heading (`SheetHeader`'s `<h3>`, or any `h1`-`h3`), focus on the
+  sheet itself on open (never on a field: a phone raises its keyboard), Tab kept inside, the page
+  behind it `inert`, Escape closing it unless it is locked, and focus back on what opened it
+  (`lib/use-sheet-dialog.js`, `lib/use-dialog-focus.js`). Give a sheet a heading, or it has no name.
+  A sheet that focuses a field itself keeps it. Stacked sheets work in any closing order: the one
+  under a newer sheet is inert, and the page stays inert until the last closes. Content that is
+  already a dialog (a photo viewer) keeps its own role and name and still gets focus in, the trap,
+  the inert page and focus return; only content marked `data-own-dialog-focus` (the + sheet, which
+  runs the trap itself) is left alone. A sheet that replaces another in the same tap
+  (`close(); nextSheet()`) inherits the opener of the one it replaced.
+
 ## Guards (`src/ui-guards.test.js`, a ratchet)
 
 Each file's count must equal `src/ui-guards.baseline.json`. Above it fails, and so does a new file
