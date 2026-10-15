@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
-import { UNITS, newUuid } from '../lib/nutrition/diary.js'
+import { UNITS, customUnitAbbrs, newUuid } from '../lib/nutrition/diary.js'
 import { NUTRIENTS, categoryChoices, editorEnergyUnit, foodErrorText, foodOf, formOf, nutrientLabel } from '../lib/nutrition/foods.js'
 import { useNutrition } from '../lib/nutrition/store.js'
 import { confirmSheet } from '../sheets.jsx'
@@ -41,7 +41,8 @@ export function FoodEditSheet({ food = null, settings = null, onSaved = null, cl
   const key = useRef(newUuid())
   const choices = categoryChoices(settings)
   const categories = form.category && !choices.includes(form.category) ? [...choices, form.category] : choices
-  const units = form.unit && !UNITS.includes(form.unit) ? [form.unit, ...UNITS] : UNITS
+  const catalogue = [...customUnitAbbrs(settings), ...UNITS]
+  const units = form.unit && !catalogue.includes(form.unit) ? [form.unit, ...catalogue] : catalogue
 
   const set = patch => setForm(f => ({ ...f, ...patch }))
   const setNutrient = (id, value) => setForm(f => ({ ...f, nutrients: { ...f.nutrients, [id]: value } }))

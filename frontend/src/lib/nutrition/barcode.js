@@ -1,6 +1,7 @@
 import { NtApi } from './api.js'
 import { offProduct } from './off.js'
 import { useNutrition } from './store.js'
+import { settingOf } from './use-nt-settings.js'
 
 // A scanned or typed barcode, to the food it names. NutriTrace's order (Foods.svelte handleScan):
 // your own foods first (a saved barcode needs no lookup), then Open Food Facts.
@@ -60,6 +61,8 @@ export async function findByBarcode(code, { lang = 'en', signal } = {}) {
   if (store.foods.status !== 'ready') await store.loadFoods()
   const own = ownFoodWith(useNutrition.getState().foods.list, code)
   if (own) return { kind: 'own', food: own }
+  // Profile › Food sources: with Open Food Facts off, only your own foods answer a code.
+  if (!settingOf(useNutrition.getState().settings.data, 'offEnabled')) return { kind: 'miss' }
   let data
   try {
     data = await NtApi.lookupProduct(code, { lang, signal })

@@ -17,7 +17,7 @@ export const clearOnlineSearchCache = () => cache.clear()
 // A newer query aborts the one in flight; an aborted search is not an error, and an answer to a
 // query no longer typed never shows.
 // status: 'idle' | 'loading' | 'ready' | 'error'
-export function useOnlineSearch(query, { active, lang }) {
+export function useOnlineSearch(query, { active, lang, country = null }) {
   const q = query.trim()
   const [state, setState] = useState({ status: 'idle', query: '', results: [], error: null })
 
@@ -26,7 +26,7 @@ export function useOnlineSearch(query, { active, lang }) {
       setState({ status: 'idle', query: '', results: [], error: null })
       return undefined
     }
-    const key = keyOf(q, lang)
+    const key = keyOf(q, lang + '|' + (country || ''))
     if (cache.has(key)) {
       setState({ status: 'ready', query: q, results: cache.get(key), error: null })
       return undefined
@@ -35,7 +35,7 @@ export function useOnlineSearch(query, { active, lang }) {
     setState(s => ({ ...s, status: 'loading', query: q, error: null }))
     const timer = setTimeout(async () => {
       try {
-        const results = await useNutrition.getState().searchOnline(q, lang, { signal: ctl.signal })
+        const results = await useNutrition.getState().searchOnline(q, lang, { signal: ctl.signal, country })
         cache.set(key, results)
         if (!ctl.signal.aborted) setState({ status: 'ready', query: q, results, error: null })
       } catch (e) {
@@ -43,7 +43,7 @@ export function useOnlineSearch(query, { active, lang }) {
       }
     }, DEBOUNCE_MS)
     return () => { clearTimeout(timer); ctl.abort() }
-  }, [active, q, lang])
+  }, [active, q, lang, country])
 
   return state
 }

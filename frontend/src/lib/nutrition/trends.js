@@ -9,8 +9,11 @@ const DAY = 86400000
 
 /** The metrics the explorer offers, with the unit NutriTrace stores them in (src/lib/nutrition.js
  *  NUTRIMENTS, minus kilojoules, which is calories shown in the person's energy unit). The label
- *  is read at call time so it follows the language. */
-export const nutrientOptions = () => [
+ *  is read at call time so it follows the language. Water is left out when Profile › Water says
+ *  not to show it in statistics (`waterShowInStats`); without settings, everything is offered. */
+export const nutrientOptions = settings => allNutrientOptions().filter(o => o.value !== 'water' || !settings || settings.waterShowInStats !== false)
+
+const allNutrientOptions = () => [
   { value: 'calories', label: t('Calories'), unit: 'kcal' },
   { value: 'proteins', label: t('Protein'), unit: 'g' },
   { value: 'carbohydrates', label: t('Carbs'), unit: 'g' },
@@ -53,7 +56,7 @@ export const HEADLINE_METRICS = ['calories', 'proteins', 'carbohydrates', 'fat']
 export const DEFAULT_METRIC = 'calories'
 
 /** A metric from the address, or the default when it is absent or not one of ours. */
-export const metricFrom = value => (nutrientOptions().some(o => o.value === value) ? value : DEFAULT_METRIC)
+export const metricFrom = (value, settings) => (nutrientOptions(settings).some(o => o.value === value) ? value : DEFAULT_METRIC)
 
 const round1 = n => Math.round(n * 10) / 10
 const dayKey = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')

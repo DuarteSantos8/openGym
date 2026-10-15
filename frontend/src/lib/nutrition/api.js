@@ -167,9 +167,11 @@ export const NtApi = {
   saveDiaryDate: (date, payload) => nt('PUT', `/api/diary/${date}`, payload),
   /** @returns {Promise<NtSettings>} */
   getSettings: () => nt('GET', '/api/settings'),
-  /** Upserts one setting. The hub takes exactly { key, value } for calorieGoalMode, calorieGoalFactor,
-   *  goals, goalTemplates, waterGoalMl, calorieAdjustFromActivity, diaryShowActivity, fastingEnabled
-   *  and fastingDefaultHours, type-checks the value, and refuses anything else with 400. */
+  /** Upserts one setting. The hub takes exactly { key, value } for one of the 64 keys in
+   *  fitness-hub src/nt-body-checks.ts WRITABLE_SETTINGS (goals, fasting, diary, water, foods, food
+   *  sources, custom nutrients, categories, custom units, units and statistics), type-checks the
+   *  value, and refuses anything else with 400. A custom unit is { abbr, full }, a custom nutrient
+   *  { id: 'custom_…', label, unit }, a category a name or { name, label }. */
   putSetting: (key, value) => nt('PUT', '/api/settings', { key, value }),
   /** Your own foods, by name. @returns {Promise<Food[]>} (img_url, not imgUrl) */
   getFoods: () => nt('GET', '/api/foods'),
@@ -219,8 +221,8 @@ export const NtApi = {
   getWellness: (source, from, to) => nt('GET', `/api/wellness/${source === 'garmin' ? 'garmin' : 'fitbit'}/data?from=${from}&to=${to}`),
   /** Open Food Facts text search through NutriTrace's proxy (the hub lets this one URL shape by,
    *  30 a minute per person). Raw OFF answer: map it with off.js offResults. */
-  searchOnline: (query, { page = 1, pageSize = 40, lang = 'en', signal } = {}) =>
-    nt('GET', '/api/proxy?url=' + encodeURIComponent(offSearchUrl(query, { page, pageSize, lang })), undefined, { signal }),
+  searchOnline: (query, { page = 1, pageSize = 40, lang = 'en', country = null, signal } = {}) =>
+    nt('GET', '/api/proxy?url=' + encodeURIComponent(offSearchUrl(query, { page, pageSize, lang, country })), undefined, { signal }),
   /** One Open Food Facts product by barcode, through the same proxy (the hub lets this second URL
    *  shape by, under the same cap). Raw OFF answer: map it with off.js offProduct. An unknown
    *  barcode is a 404 (`status` 404 on the NtError). */

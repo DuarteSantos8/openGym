@@ -9,6 +9,8 @@
 import { t } from '../lib/i18n.js'
 import { ACCENT_NAMES } from '../lib/format.js'
 import { workoutControls } from '../lib/workout-controls.js'
+import { MEAL_NAMES_MAX } from '../lib/nutrition/settings-lists.js'
+import { settingOf } from '../lib/nutrition/use-nt-settings.js'
 
 export const PAGES = {
   appearance: { title: 'Appearance', icon: 'palette', tint: 'var(--purple)' },
@@ -24,7 +26,12 @@ export const PAGES = {
   equipment: { title: 'Equipment', icon: 'kettlebell', tint: 'var(--indigo)' },
   // The calorie goal mode, macros and water goal live on Nutrition › Goals (§5): linked, not copied.
   goals: { title: 'Goals', icon: 'target', tint: 'var(--red)', to: '/food/goals', kw: 'calorie goal mode fixed adaptive dynamic factor macros protein target water' },
-  diary: { title: 'Diary & meals', icon: 'utensils', tint: 'var(--orange)' },
+  diary: { title: 'Diary & meals', icon: 'utensils', tint: 'var(--orange)', kw: 'diary meals meal names breakfast lunch dinner snacks quick calories activity fasting' },
+  water: { title: 'Water', icon: 'droplet', tint: 'var(--blue)', kw: 'water drink hydration containers bottle glass unit ml oz' },
+  foods: { title: 'Foods & scanning', icon: 'scanBarcode', tint: 'var(--green)', kw: 'foods meals recipes list sort order barcode scanner camera photos' },
+  sources: { title: 'Food sources', icon: 'globe', tint: 'var(--teal)', kw: 'open food facts off usda online database search language country' },
+  categories: { title: 'Categories', icon: 'list', tint: 'var(--indigo)', kw: 'food categories emoji label groups' },
+  customUnits: { title: 'Custom units', icon: 'ruler', tint: 'var(--purple)', kw: 'custom units serving shot scoop stick abbreviation' },
   fields: { title: 'Measurement fields', icon: 'ruler', tint: 'var(--purple)', sheet: true },
   backup: { title: 'Backup', icon: 'folder', tint: 'var(--blue)' },
   import: { title: 'Import', icon: 'download', tint: 'var(--teal)' },
@@ -37,11 +44,15 @@ export const PAGES = {
 }
 export const PAGE_IDS = Object.keys(PAGES)
 
+// The pages that are NutriTrace's settings, read and written through the hub (lib/nutrition):
+// the web app, signed in. Goals is one too, but lives in the Nutrition tab.
+const NUTRITION_PAGES = ['diary', 'water', 'foods', 'sources', 'categories', 'customUnits']
+
 // The root, top to bottom. Whether a row shows is pageVisible's call.
 export const ROOT_GROUPS = [
   { title: 'General', ids: ['appearance', 'units', 'notifications', 'coach', 'features', 'health'] },
   { title: 'Training', ids: ['workout', 'advanced', 'alerts', 'schedule', 'equipment'] },
-  { title: 'Nutrition', ids: ['goals', 'diary'] },
+  { title: 'Nutrition', ids: ['goals', 'diary', 'water', 'foods', 'sources', 'categories', 'customUnits'] },
   { title: 'Body & progress', ids: ['fields'] },
   { title: 'Data', ids: ['backup', 'import', 'media', 'danger'] },
   { title: 'Admin', ids: ['admin'] },
@@ -56,7 +67,7 @@ export function pageExists(page, ctx) {
   if (!(page in PAGES) || PAGES[page].to || PAGES[page].sheet) return false
   if (page === 'notifications') return !!(ctx.user || ctx.mobile)
   if (page === 'health') return !!ctx.mobile
-  if (page === 'diary') return !ctx.mobile && !!ctx.user
+  if (NUTRITION_PAGES.includes(page)) return !ctx.mobile && !!ctx.user
   return true
 }
 
@@ -68,7 +79,7 @@ export function pageExists(page, ctx) {
  */
 export function pageVisible(page, ctx) {
   if (page == null) return true
-  if (page === 'goals' || page === 'diary') return !!ctx.nutrition
+  if (page === 'goals' || NUTRITION_PAGES.includes(page)) return !!ctx.nutrition
   if (page === 'notifications') return !!(ctx.user || ctx.mobile)
   if (page === 'coach') return !!ctx.mobile
   if (page === 'health') return !!(ctx.mobile && ctx.android)
@@ -95,6 +106,12 @@ const signedInWeb = c => !!c.user && !c.mobile && !c.demo
 // The reminder rows: the phone's own notifications, or web push where the browser has it.
 const remind = c => !!c.mobile || !!c.pushOK
 const PUSH = 'Push notifications'
+// NutriTrace's settings rows: reachable on the web app, signed in. A switch that starts off says
+// whether it is on once the settings are here, and null until then (like the push rows, only the
+// settings can tell).
+const ntOn = c => !!c.nutrition
+const ntValue = (c, key) => settingOf(c.ntSettings, key)
+const ntFeature = key => (S, c) => (c.ntSettings ? c.ntSettings[key] === true : null)
 export const SEARCH = [
   // Root
   { page: null, title: 'Sync now', icon: 'reset', tint: 'var(--acc)', kw: 'server sync upload refresh status connection nutrition', when: c => !!c.user && !c.demo && c.synced },
@@ -112,8 +129,38 @@ export const SEARCH = [
   // Features (the NutriTrace switches whose only home is here)
   { page: 'features', title: 'Fasting', icon: 'timer', tint: 'var(--indigo)', kw: 'fast fasting intermittent 16:8 omad', when: c => !!c.nutrition, feature: (S, c) => !!c.fastingOn },
   // Diary & meals
-  { page: 'diary', title: 'Show activity under meals', icon: 'flame', tint: 'var(--orange)', kw: 'activity workouts burned exercise calories diary', when: c => !!c.nutrition, feature: (S, c) => (c.ntSettings ? c.ntSettings.diaryShowActivity === true : null) },
+  { page: 'diary', title: 'Show macro summary', icon: 'chart', tint: 'var(--teal)', kw: 'protein carbs fat bar meal card diary home', when: ntOn },
+  { page: 'diary', title: 'Show brand names', icon: 'apple', tint: 'var(--green)', kw: 'brand diary food row home', when: ntOn },
+  { page: 'diary', title: 'Show time logged', icon: 'clock', tint: 'var(--purple)', kw: 'timestamp time diary food row home', when: ntOn, feature: ntFeature('diaryShowTimestamps') },
+  { page: 'diary', title: 'Ask for quantity when adding', icon: 'plusCircle', tint: 'var(--green)', kw: 'prompt portion quantity servings add food diary', when: ntOn },
+  { page: 'diary', title: 'Quantity starts in', icon: 'pencil', tint: 'var(--blue)', kw: 'default field cursor servings portion add food', opts: ['Number of servings', 'Serving size'], when: ntOn },
+  { page: 'diary', title: 'Show quick calories', icon: 'bolt', tint: 'var(--yellow)', kw: 'quick calories kcal calorie only entry bolt', when: ntOn },
+  { page: 'diary', title: 'Quick calories shown', icon: 'list', tint: 'var(--indigo)', kw: 'quick calories summed separate rows', opts: ['Added into one row', 'One row each'], when: ntOn },
+  { page: 'diary', title: 'Show activity under meals', icon: 'flame', tint: 'var(--orange)', kw: 'activity workouts burned exercise calories diary', when: ntOn, feature: ntFeature('diaryShowActivity') },
+  { page: 'diary', title: 'Wearable and manual entries', icon: 'swap', tint: 'var(--indigo)', kw: 'activity policy wearable manual fitbit garmin both additive', opts: ['Wearable wins', 'Manual wins', 'Add them'], when: c => ntOn(c) && ntValue(c, 'diaryShowActivity') === true && c.ntSettings?.calorieAdjustFromActivity === true },
   { page: 'diary', title: 'Default fasting plan', icon: 'timer', tint: 'var(--indigo)', kw: 'fasting default plan goal hours', opts: ['14:10', '16:8', '18:6', '20:4', 'OMAD'], when: c => !!c.nutrition && !!c.fastingOn },
+  { page: 'diary', title: 'Add a meal', icon: 'plusCircle', tint: 'var(--green)', kw: 'meal names rename reorder breakfast lunch dinner snacks', when: c => ntOn(c) && (c.ntSettings?.mealNames?.length ?? 4) < MEAL_NAMES_MAX },
+  // Water
+  { page: 'water', title: 'Water unit', icon: 'droplet', tint: 'var(--blue)', kw: 'water unit ml oz liters gallons', opts: ['Milliliters (ml)', 'Fluid ounces (fl oz)', 'Liters (L)', 'Gallons (G)'], when: ntOn },
+  { page: 'water', title: 'Show water in the diary', icon: 'utensils', tint: 'var(--orange)', kw: 'water card diary hide', when: ntOn },
+  { page: 'water', title: 'Show water in statistics', icon: 'chart', tint: 'var(--teal)', kw: 'water statistics trends hide', when: ntOn },
+  { page: 'water', title: 'Add a container', icon: 'plusCircle', tint: 'var(--green)', kw: 'water container bottle glass cup quick add volume', when: ntOn },
+  // Foods & scanning
+  { page: 'foods', title: 'Show categories', icon: 'list', tint: 'var(--indigo)', kw: 'foods list category row', when: ntOn },
+  { page: 'foods', title: 'Show category labels', icon: 'flag', tint: 'var(--orange)', kw: 'foods list category emoji label row', when: ntOn },
+  { page: 'foods', title: 'Show notes', icon: 'note', tint: 'var(--blue)', kw: 'foods list notes row', when: ntOn },
+  { page: 'foods', title: 'Search in', icon: 'magnifier', tint: 'var(--blue)', kw: 'default source search foods open food facts usda', opts: ['All sources', 'Your foods', 'Open Food Facts'], when: ntOn },
+  { page: 'foods', title: 'Foods order', icon: 'apple', tint: 'var(--green)', kw: 'sort order foods favorites alphabetical recent most used', opts: ['A to Z', 'Most recent', 'Most used'], when: ntOn },
+  { page: 'foods', title: 'Meals order', icon: 'utensils', tint: 'var(--orange)', kw: 'sort order meals alphabetical recent most used', opts: ['A to Z', 'Most recent', 'Most used'], when: ntOn },
+  { page: 'foods', title: 'Recipes order', icon: 'cookingPot', tint: 'var(--red)', kw: 'sort order recipes alphabetical recent most used', opts: ['A to Z', 'Most recent', 'Most used'], when: ntOn },
+  { page: 'foods', title: 'Beep when a barcode scans', icon: 'speaker', tint: 'var(--pink)', kw: 'barcode scanner sound beep camera scan', when: ntOn, feature: ntFeature('barcodeBeep') },
+  // Food sources
+  { page: 'sources', title: 'Search Open Food Facts', icon: 'globe', tint: 'var(--teal)', kw: 'off open food facts online database barcode lookup source', when: ntOn },
+  { page: 'sources', title: 'Search language', icon: 'chat', tint: 'var(--blue)', kw: 'open food facts language results', when: c => ntOn(c) && ntValue(c, 'offEnabled') === true },
+  { page: 'sources', title: 'Search country', icon: 'flag', tint: 'var(--orange)', kw: 'open food facts country region results', when: c => ntOn(c) && ntValue(c, 'offEnabled') === true },
+  // Categories, units
+  { page: 'categories', title: 'Add a category', icon: 'plusCircle', tint: 'var(--green)', kw: 'food category emoji label dairy proteins', when: ntOn },
+  { page: 'customUnits', title: 'Add a custom unit', icon: 'plusCircle', tint: 'var(--green)', kw: 'custom unit shot scoop stick serving abbreviation', when: ntOn },
   // Units & language
   { page: 'units', title: 'Language', icon: 'globe', tint: 'var(--blue)', kw: 'language translation idioma sprache langue lingua' },
   { page: 'units', title: 'English exercise names', icon: 'globe', tint: 'var(--purple)', kw: 'exercise names english translation', when: c => c.nameLang },

@@ -3,8 +3,10 @@ import { useStore } from '../store/useStore.js'
 import { t, tn } from '../lib/i18n.js'
 import { nutritionAvailable } from '../lib/nutrition/api.js'
 import { energyOf, matchesFood } from '../lib/nutrition/diary.js'
+import { sortFoods } from '../lib/nutrition/foods.js'
 import { mealKcal, mealLoadErrorText, servingsOf } from '../lib/nutrition/meals.js'
 import { useNutrition } from '../lib/nutrition/store.js'
+import { settingOf } from '../lib/nutrition/use-nt-settings.js'
 import { Card, EmptyState, ItemRow, Tag } from '../components/blocks.jsx'
 import { Page } from '../components/layout.jsx'
 import { mealDetailSheet } from '../components/MealDetailSheet.jsx'
@@ -40,7 +42,8 @@ export default function MealCatalog({ recipes }) {
   }
 
   const create = () => mealEditSheet({ recipe: recipes })
-  const list = catalog.list.filter(m => matchesFood(m, q))
+  // The order from Profile › Foods & scanning (Meals order, Recipes order).
+  const list = sortFoods(catalog.list.filter(m => matchesFood(m, q)), settingOf(settings, recipes ? 'recipesSort' : 'mealsSort'))
 
   const row = meal => {
     const kcal = energyOf(mealKcal(meal), settings)

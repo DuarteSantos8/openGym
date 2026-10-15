@@ -118,7 +118,10 @@ export function gramsOfPortion(portion, unit, food = null) {
 
 /** How much the nutrients scale going from (origPortion, origUnit) to (newPortion, newUnit):
  *  per-food household units first, then the mass/volume table (density across systems), else
- *  the plain ratio of the two numbers. */
+ *  the plain ratio of the two numbers. A custom unit (Profile › Custom units, `{ abbr, full }`) has
+ *  no weight, so it is always that last case, as in NutriTrace (units.js): a food saved as 1 shot
+ *  logged as 2 shot is 2×; a food saved as 100 g logged as 100 shot is 1×, because only the two
+ *  numbers are compared. */
 export function scaleFactor(origPortion, origUnit, newPortion, newUnit, food = null) {
   const op = parseFloat(origPortion)
   const np = parseFloat(newPortion)
@@ -139,11 +142,17 @@ export function scaleFactor(origPortion, origUnit, newPortion, newUnit, food = n
   return newP / origP
 }
 
-/** The units a food can be logged in: its household units, its own unit, then the catalogue. */
-export function unitsFor(food) {
+/** The abbreviations of the person's own units (Profile › Custom units, `customUnits`). */
+export const customUnitAbbrs = settings =>
+  (Array.isArray(settings?.customUnits) ? settings.customUnits : []).map(u => String(u?.abbr || '')).filter(Boolean)
+
+/** The units a food can be logged in: its household units, its own unit, the person's custom
+ *  units (NutriTrace lists them first in the picker), then the catalogue. */
+export function unitsFor(food, settings = null) {
   const alt = (parseAltUnits(food?.alt_units) || []).map(r => String(r?.abbr || '')).filter(Boolean)
+  const custom = customUnitAbbrs(settings)
   const own = food?.unit && !UNITS.includes(food.unit) && !alt.includes(food.unit) ? [food.unit] : []
-  return [...new Set([...alt, ...own, ...UNITS])]
+  return [...new Set([...alt, ...own, ...custom, ...UNITS])]
 }
 
 /** The food as logged at (portion, unit): NutriTrace's quantity prompt (Foods.svelte

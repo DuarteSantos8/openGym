@@ -4,8 +4,10 @@ import { useUI } from '../store/useUI.js'
 import { t, tn } from '../lib/i18n.js'
 import { nutritionAvailable } from '../lib/nutrition/api.js'
 import { energyOf, foodKcal } from '../lib/nutrition/diary.js'
-import { SORTS, categoriesOf, fmtAmount, foodErrorText, per100Unit, searchErrorText, visibleFoods } from '../lib/nutrition/foods.js'
+import { SORTS, categoriesOf, categoryChoices, fmtAmount, foodErrorText, per100Unit, searchErrorText, visibleFoods } from '../lib/nutrition/foods.js'
+import { categoryLabel, categoryName } from '../lib/nutrition/settings-lists.js'
 import { useNutrition } from '../lib/nutrition/store.js'
+import { settingOf } from '../lib/nutrition/use-nt-settings.js'
 import { MIN_QUERY, useOnlineSearch } from '../lib/nutrition/use-online-search.js'
 import Icon from '../components/Icon.jsx'
 import { Card, Chip, ChipRow, EmptyState, ItemRow, Tag } from '../components/blocks.jsx'
@@ -24,13 +26,18 @@ export default function Foods() {
   const on = nutritionAvailable(user)
   const foods = useNutrition(s => s.foods)
   const settings = useNutrition(s => s.settings.data)
-  const [mode, setMode] = useState('mine')
+  // Profile › Foods & scanning and Food sources: the order and the search the page opens on, the
+  // Open Food Facts tab (gone while that source is off), and what each row shows.
+  const offOn = settingOf(settings, 'offEnabled')
+  const [modePick, setMode] = useState(null)
+  const mode = offOn && (modePick ?? (settingOf(settings, 'foodsDefaultSource') === 'off' ? 'online' : 'mine')) === 'online' ? 'online' : 'mine'
   const [q, setQ] = useState('')
-  const [sort, setSort] = useState('alpha')
+  const [sortPick, setSort] = useState(null)
+  const sort = sortPick ?? settingOf(settings, 'foodsSort')
   const [category, setCategory] = useState('')
   const [saving, setSaving] = useState(() => new Set())
   const [saved, setSaved] = useState(() => new Set())
-  const online = useOnlineSearch(q, { active: on && mode === 'online', lang: settings?.offSearchLanguage || 'en' })
+  const online = useOnlineSearch(q, { active: on && mode === 'online', lang: settings?.offSearchLanguage || 'en', country: settingOf(settings, 'offSearchCountry') })
 
   useEffect(() => {
     if (!on) return
@@ -47,7 +54,12 @@ export default function Foods() {
     </Page>
   }
 
-  const categories = categoriesOf(foods.list)
+  // The categories from Profile › Categories, then any a food uses that is not among them.
+  const categories = [...new Set([...categoryChoices(settings), ...categoriesOf(foods.list)])]
+  const categoryText = name => {
+    const label = categoryLabel((settings?.foodCategories || []).find(c => categoryName(c) === name))
+    return label && settingOf(settings, 'foodsShowLabels') ? label + ' ' + name : name
+  }
   // A category nobody uses any more (its last food was deleted or moved) is no filter.
   const activeCategory = categories.includes(category) ? category : ''
   const list = visibleFoods(foods.list, { query: q, category: activeCategory, sort })
@@ -64,7 +76,11 @@ export default function Foods() {
 
   const row = food => <ItemRow key={food.id} onClick={() => open(food)} chevron
     title={<>{food.favorite && <Icon name="starFill" className="fav-star" />}{food.name}</>}
-    subtitle={[food.brand, `${fmtAmount(food.portion ?? 100)} ${food.unit || 'g'}`].filter(Boolean).join(' · ')}
+    subtitle={[
+      food.brand, `${fmtAmount(food.portion ?? 100)} ${food.unit || 'g'}`,
+      settingOf(settings, 'foodsShowCategories') && food.category ? categoryText(food.category) : '',
+      settingOf(settings, 'foodsShowNotes') ? food.notes : '',
+    ].filter(Boolean).join(' · ')}
     trailing={kcalTag(food)} />
 
   // A result row holds its own Save, so the row is no button itself: its text opens the result.
@@ -117,7 +133,7 @@ export default function Foods() {
   } else if (!list.length) {
     body = <EmptyState icon="magnifier">
       {t('No match')}
-      {q.trim().length >= MIN_QUERY && <Button size="sm" variant="tinted" onClick={() => setMode('online')}>{t('Search online')}</Button>}
+      {offOn && q.trim().length >= MIN_QUERY && <Button size="sm" variant="tinted" onClick={() => setMode('online')}>{t('Search online')}</Button>}
     </EmptyState>
   } else {
     body = <div className="list">{list.map(row)}</div>
@@ -126,13 +142,13 @@ export default function Foods() {
   return <Page title={t('Foods')} sub={mode === 'mine' && foods.status === 'ready' ? tn('{0} food', '{0} foods', foods.list.length) : undefined}
     action={<Button size="sm" variant="tinted" icon="plus" onClick={() => foodEditSheet({ settings })}>{t('New')}</Button>}>
     <Stack gap={5} className="mb-6">
-      <Segmented value={mode} onChange={setMode} options={[{ value: 'mine', label: t('My foods') }, { value: 'online', label: t('Online') }]} />
+      {offOn && <Segmented value={mode} onChange={setMode} options={[{ value: 'mine', label: t('My foods') }, { value: 'online', label: t('Online') }]} />}
       <SearchField value={q} placeholder={mode === 'online' ? t('Search Open Food Facts') : t('Search your foods')} onChange={e => setQ(e.target.value)} onClear={() => setQ('')} />
       {mode === 'mine' && foods.list.length > 1 && <Segmented value={sort} onChange={setSort}
         options={SORTS.map(s => ({ value: s, label: s === 'alpha' ? t('A to Z') : s === 'recent' ? t('Recent') : t('Most used') }))} />}
       {mode === 'mine' && categories.length > 0 && <ChipRow>
         <Chip nocap on={!activeCategory} onClick={() => setCategory('')}>{t('All')}</Chip>
-        {categories.map(c => <Chip key={c} nocap on={activeCategory === c} onClick={() => setCategory(c)}>{c}</Chip>)}
+        {categories.map(c => <Chip key={c} nocap on={activeCategory === c} onClick={() => setCategory(c)}>{categoryText(c)}</Chip>)}
       </ChipRow>}
     </Stack>
     {body}

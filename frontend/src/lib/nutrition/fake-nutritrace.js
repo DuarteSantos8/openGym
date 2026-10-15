@@ -115,16 +115,98 @@ const ID = /^[A-Za-z0-9_-]{1,64}$/
 // PUT /api/settings (fitness-hub src/nt-body-checks.ts WRITABLE_SETTINGS): each key with the type
 // NutriTrace reads it as.
 const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v)
+// The hub's field checks (nt-body-checks.ts), shared by the settings below and the meals routes.
+const text = max => v => typeof v === 'string' && v.length <= max
+const nonEmptyText = max => v => typeof v === 'string' && v.trim() !== '' && v.length <= max
+const nullable = check => v => v === null || check(v)
+const oneOf = (...allowed) => v => allowed.includes(v)
+const bool = v => typeof v === 'boolean'
+const numberIn = (min, max) => v => typeof v === 'number' && Number.isFinite(v) && v >= min && v <= max
+const integerIn = (min, max) => v => Number.isInteger(v) && v >= min && v <= max
+const positiveAmount = numberIn(Number.MIN_VALUE, 1_000_000)
+const hasOnly = (o, fields) => isObject(o) && Object.entries(o).every(([k, v]) => Object.hasOwn(fields, k) && fields[k](v))
+const hasAll = (o, keys) => keys.every(k => Object.hasOwn(o, k))
+const arrayOf = (check, max) => v => Array.isArray(v) && v.length <= max && v.every(check)
+// An object with these fields and no others; `required` must all be there.
+const exactly = (required, fields) => v => isObj(v) && hasAll(v, required) && hasOnly(v, fields)
+const idList = arrayOf(nonEmptyText(60), 200)
+const SORT = oneOf('recent', 'most', 'alpha')
+const OFF_COUNTRIES = ['World', 'Argentina', 'Australia', 'Austria', 'Belgium', 'Brazil', 'Canada', 'Chile', 'China', 'Denmark', 'Finland', 'France', 'Germany', 'India', 'Ireland', 'Italy', 'Japan', 'Mexico', 'Netherlands', 'New Zealand', 'Norway', 'Poland', 'Portugal', 'Singapore', 'South Africa', 'South Korea', 'Spain', 'Sweden', 'Switzerland', 'United Kingdom', 'United States']
+const plainMap = max => v => isObj(v) && Object.keys(v).length <= max && Object.values(v).every(isObj)
 const WRITABLE_SETTINGS = {
-  calorieGoalMode: v => ['fixed', 'adaptive', 'dynamic'].includes(v),
-  calorieGoalFactor: v => [0.8, 1, 1.1, 1.2].includes(v),
-  goals: v => isObj(v) && Object.keys(v).length <= 100 && Object.values(v).every(isObj),
-  goalTemplates: v => Array.isArray(v) && v.length <= 30 && v.every(isObj),
-  waterGoalMl: v => typeof v === 'number' && v >= 1 && v <= 50000,
-  calorieAdjustFromActivity: v => typeof v === 'boolean',
-  diaryShowActivity: v => typeof v === 'boolean',
-  fastingEnabled: v => typeof v === 'boolean',
-  fastingDefaultHours: v => typeof v === 'number' && v >= 1 && v <= 168,
+  // Goals and Fasting.
+  calorieGoalMode: oneOf('fixed', 'adaptive', 'dynamic'),
+  calorieGoalFactor: oneOf(0.8, 1, 1.1, 1.2),
+  goals: plainMap(100),
+  goalTemplates: arrayOf(isObj, 30),
+  waterGoalMl: numberIn(1, 50000),
+  calorieAdjustFromActivity: bool,
+  diaryShowActivity: bool,
+  fastingEnabled: bool,
+  fastingDefaultHours: numberIn(1, 168),
+  // Diary and meals.
+  mealNames: v => Array.isArray(v) && v.length > 0 && arrayOf(nonEmptyText(40), 12)(v),
+  diaryShowBrands: bool,
+  diaryShowTimestamps: bool,
+  diaryShowThumbnails: bool,
+  diaryShowAllNutrients: bool,
+  diaryShowNutritionUnits: bool,
+  diaryShowMacroSummary: bool,
+  diaryPromptQuantity: bool,
+  diaryShowPortionSize: bool,
+  diaryShowNotes: bool,
+  diaryShowCompletion: bool,
+  showQuickCalories: bool,
+  showUnitMetadata: bool,
+  warnUnitMismatch: bool,
+  diaryDefaultField: oneOf('servings', 'portion'),
+  quickCaloriesDisplay: oneOf('summed', 'separate'),
+  manualActivityPolicy: oneOf('wearable_wins', 'manual_wins', 'additive'),
+  // Water.
+  waterUnit: oneOf('ml', 'oz', 'L', 'G'),
+  waterShowInDiary: bool,
+  waterShowInStats: bool,
+  waterContainers: arrayOf(exactly(['id', 'name', 'volumeMl'], { id: nonEmptyText(32), name: nonEmptyText(40), volumeMl: numberIn(1, 10000) }), 20),
+  // Foods and scanning (the flashlight is a device setting: not here).
+  foodsShowThumbnails: bool,
+  foodsShowCategories: bool,
+  foodsShowLabels: bool,
+  foodsShowNotes: bool,
+  barcodeBeep: bool,
+  cropPhotos: bool,
+  foodsDefaultSource: oneOf('local', 'off', 'usda', 'all'),
+  foodsSort: SORT,
+  mealsSort: SORT,
+  recipesSort: SORT,
+  // Food sources: switches and search preferences, never a key or login.
+  offEnabled: bool,
+  offSearchLanguage: v => typeof v === 'string' && /^[a-z]{2}$/.test(v),
+  offSearchCountry: oneOf(...OFF_COUNTRIES),
+  offImportPortion: oneOf('per100g', 'perServing'),
+  usdaEnabled: bool,
+  // Custom nutrients, categories and units, in the shapes NutriTrace's own pages write.
+  customNutriments: arrayOf(exactly(['id', 'label', 'unit'], {
+    id: v => typeof v === 'string' && /^custom_\S{1,33}$/.test(v), label: nonEmptyText(60), unit: nonEmptyText(16),
+  }), 50),
+  visibleNutriments: v => v === null || idList(v),
+  nutrimentsOrder: idList,
+  foodCategories: arrayOf(v => nonEmptyText(100)(v) || exactly(['name'], { name: nonEmptyText(100), label: text(16) })(v), 100),
+  customUnits: arrayOf(exactly(['abbr'], { abbr: nonEmptyText(16), full: text(60) }), 100),
+  // Units and language, statistics and the body stats lists.
+  energyUnit: oneOf('kcal', 'kJ'),
+  dateFormat: oneOf('ISO', 'US', 'EU', 'natural'),
+  timeFormat: oneOf('12h', '24h'),
+  statsChartType: oneOf('bar', 'line'),
+  statsAvgLine: bool,
+  statsGoalLine: bool,
+  statsTrendLine: bool,
+  statsIncludeToday: bool,
+  statsShowEmptyDays: bool,
+  statsYZero: bool,
+  statsMetricOrder: idList,
+  statsHiddenMetrics: idList,
+  bodyStatsOrder: idList,
+  hiddenBodyStats: idList,
 }
 
 function onlyKeys(params, allowed) {
@@ -199,17 +281,6 @@ const isPrivateFoodWithoutImage = b => isObject(b) && !('img_url' in b) && !('im
 // nt-body-checks.ts MEAL_EDIT_FIELDS, NEW_MEAL_FIELDS, INGREDIENT_FIELDS, ALT_UNIT_FIELDS, with
 // the ingredient rules of gains-hub#11): a key outside them, or a value of the wrong kind, is a 400,
 // in the meal and in each ingredient.
-const text = max => v => typeof v === 'string' && v.length <= max
-const nonEmptyText = max => v => typeof v === 'string' && v.trim() !== '' && v.length <= max
-const nullable = check => v => v === null || check(v)
-const oneOf = (...allowed) => v => allowed.includes(v)
-const isBool = v => typeof v === 'boolean'
-const numberIn = (min, max) => v => typeof v === 'number' && Number.isFinite(v) && v >= min && v <= max
-const integerIn = (min, max) => v => Number.isInteger(v) && v >= min && v <= max
-const positiveAmount = numberIn(Number.MIN_VALUE, 1_000_000)
-const hasOnly = (o, fields) => isObject(o) && Object.entries(o).every(([k, v]) => Object.hasOwn(fields, k) && fields[k](v))
-const hasAll = (o, keys) => keys.every(k => Object.hasOwn(o, k))
-const arrayOf = (check, max) => v => Array.isArray(v) && v.length <= max && v.every(check)
 const isNutrition = v => isObject(v) && Object.keys(v).length <= 100 && Object.entries(v).every(([k, n]) => k.length <= 40 && numberIn(0, 1e9)(n))
 const ALT_UNIT_FIELDS = { abbr: nonEmptyText(20), grams: positiveAmount }
 const INGREDIENT_AMOUNT = numberIn(0, 1_000_000)
@@ -217,12 +288,12 @@ const INGREDIENT_FIELDS = {
   id: v => integerIn(0, Number.MAX_SAFE_INTEGER)(v) || text(64)(v), name: text(200), brand: nullable(text(200)),
   portion: INGREDIENT_AMOUNT, unit: text(16), quantity: INGREDIENT_AMOUNT, nutrition: isNutrition,
   nutrition_basis: nullable(oneOf('g', 'ml')), alt_units: nullable(arrayOf(u => hasOnly(u, ALT_UNIT_FIELDS), 20)),
-  density_g_ml: nullable(positiveAmount), is_recipe: isBool,
+  density_g_ml: nullable(positiveAmount), is_recipe: bool,
 }
 const isIngredient = v => isObject(v) && hasAll(v, ['name', 'portion', 'unit', 'nutrition']) && hasOnly(v, INGREDIENT_FIELDS)
 const MEAL_EDIT_FIELDS = {
   name: nonEmptyText(200), notes: text(5000), items: v => Array.isArray(v) && v.length > 0 && arrayOf(isIngredient, 100)(v),
-  is_recipe: isBool, nutrition: isNutrition, portion: positiveAmount, unit: nonEmptyText(16), servings: integerIn(1, 1000),
+  is_recipe: bool, nutrition: isNutrition, portion: positiveAmount, unit: nonEmptyText(16), servings: integerIn(1, 1000),
 }
 const NEW_MEAL_FIELDS = { ...MEAL_EDIT_FIELDS, client_key: nonEmptyText(128), visibility: oneOf('private') }
 const isNewMeal = b => isObject(b) && hasAll(b, ['name', 'items', 'is_recipe', 'visibility']) && hasOnly(b, NEW_MEAL_FIELDS)

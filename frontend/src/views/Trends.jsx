@@ -36,7 +36,7 @@ export default function Trends() {
   const { status, days, error } = useTrends()
   const fasting = useFasting()
   const range = rangeFrom(search, 90)
-  const metric = metricFrom(new URLSearchParams(search).get('metric'))
+  const metric = metricFrom(new URLSearchParams(search).get('metric'), settings.data)
   const fastingOn = settings.data?.fastingEnabled === true
 
   const today = useToday()
@@ -58,7 +58,7 @@ export default function Trends() {
   }
 
   const win = useMemo(() => windowOf(range, days, today), [range, days, today])
-  const options = nutrientOptions()
+  const options = nutrientOptions(settings.data)
   const series = useMemo(() => Object.fromEntries(
     [...new Set([metric, ...HEADLINE_METRICS])].map(m => [m, seriesOf(days, m, win, settings.data)]),
   ), [metric, days, win, settings.data])

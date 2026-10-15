@@ -49,8 +49,14 @@ import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } fro
 import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem } from '../components/Passkeys.jsx'
 import { nutritionAvailable } from '../lib/nutrition/api.js'
 import { useNutrition } from '../lib/nutrition/store.js'
+import CustomUnitsSettings from '../components/CustomUnitsSettings.jsx'
 import DiaryMealsSettings from '../components/DiaryMealsSettings.jsx'
 import FeaturesList from '../components/FeaturesList.jsx'
+import FoodCategoriesSettings from '../components/FoodCategoriesSettings.jsx'
+import FoodSourcesSettings from '../components/FoodSourcesSettings.jsx'
+import FoodsSettings from '../components/FoodsSettings.jsx'
+import NtSettingsGate from '../components/NtSettingsGate.jsx'
+import WaterSettings from '../components/WaterSettings.jsx'
 import SyncStatusCard from '../components/SyncStatusCard.jsx'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
 import { manageMeasurementsSheet } from './Measurements.jsx'
@@ -810,7 +816,13 @@ export default function Settings({ page = null, find = null, via = null }) {
 
     features: () => <FeaturesList S={S} ctx={ctx} />,
 
-    diary: () => <DiaryMealsSettings />,
+    // NutriTrace's settings pages wait for its settings (NtSettingsGate), then read and write them.
+    diary: () => <NtSettingsGate><DiaryMealsSettings /></NtSettingsGate>,
+    water: () => <NtSettingsGate><WaterSettings /></NtSettingsGate>,
+    foods: () => <NtSettingsGate><FoodsSettings /></NtSettingsGate>,
+    sources: () => <NtSettingsGate><FoodSourcesSettings /></NtSettingsGate>,
+    categories: () => <NtSettingsGate><FoodCategoriesSettings /></NtSettingsGate>,
+    customUnits: () => <NtSettingsGate><CustomUnitsSettings /></NtSettingsGate>,
 
     about: () => <>
       {/* Updates. On Android the row is always there: it checks on demand and installs when a

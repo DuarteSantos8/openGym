@@ -183,7 +183,7 @@ describe('Home is the diary', () => {
     expect(host.querySelector('.activity-row')).toBeNull()
   })
 
-  it('+250 ml logs a glass to the shown day, with Undo', async () => {
+  it('+250 ml (a person with no water containers) logs a glass to the shown day, with Undo', async () => {
     await mount(<Home />)
     await click(button('Add a glass of water, 250 ml'))
     expect(puts()).toHaveLength(1)

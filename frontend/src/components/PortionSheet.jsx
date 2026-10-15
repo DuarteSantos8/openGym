@@ -3,6 +3,7 @@ import { t } from '../lib/i18n.js'
 import { useUI } from '../store/useUI.js'
 import { atPortion, nutritionOf, unitsFor } from '../lib/nutrition/diary.js'
 import { useNutrition } from '../lib/nutrition/store.js'
+import { settingOf } from '../lib/nutrition/use-nt-settings.js'
 import { useUnits } from '../lib/nutrition/use-units.js'
 import { writeErrorText, toastLogged } from '../lib/nutrition/log-feedback.js'
 import { fmtDate } from '../lib/format.js'
@@ -22,6 +23,9 @@ const foodKey = food => String(food.id ?? food.client_key ?? food.name)
 
 export default function PortionSheet({ food, date, meal, mealName, onLogged, pending: shared, close }) {
   const units = useUnits()
+  const settings = useNutrition(s => s.settings.data)
+  // Which box the cursor starts in (Profile › Diary & meals › Quantity starts in).
+  const startInServings = settingOf(settings, 'diaryDefaultField') !== 'portion'
   const own = useRef({ uuid: null, food: null })
   const pending = shared || own.current
   const [portion, setPortion] = useState(Number(food.portion) || 100)
@@ -62,15 +66,15 @@ export default function PortionSheet({ food, date, meal, mealName, onLogged, pen
     <div className="portion-grid">
       <label className="portion-f">
         <span className="small muted">{t('Serving size')}</span>
-        <NumberField value={portion} onChange={setPortion} aria-label={t('Serving size')} />
+        <NumberField value={portion} onChange={setPortion} aria-label={t('Serving size')} autoFocus={!startInServings} />
       </label>
       <label className="portion-f">
         <span className="small muted">{t('Servings')}</span>
-        <NumberField value={servings} onChange={setServings} aria-label={t('Servings')} />
+        <NumberField value={servings} onChange={setServings} aria-label={t('Servings')} autoFocus={startInServings} />
       </label>
     </div>
     <ChipRow className="portion-units" role="radiogroup" aria-label={t('Unit')}>
-      {unitsFor(food).map(u => <Chip key={u} nocap on={u === unit} role="radio" aria-checked={u === unit} onClick={() => setUnit(u)}>{u}</Chip>)}
+      {unitsFor(food, settings).map(u => <Chip key={u} nocap on={u === unit} role="radio" aria-checked={u === unit} onClick={() => setUnit(u)}>{u}</Chip>)}
     </ChipRow>
     <div className="portion-sum">
       <Stat value={units.energy(scaled.calories || 0)} />

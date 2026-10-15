@@ -12,10 +12,16 @@ import { useFastingOn } from '../lib/nutrition/use-fasting.js'
 import { createFakeNutriTrace, fixtureSettings } from '../lib/nutrition/fake-nutritrace.js'
 import { pageExists, pageVisible, searchSettings } from '../views/settings-pages.js'
 import { bindUI } from './ui.jsx'
-import DiaryMealsSettings from './DiaryMealsSettings.jsx'
+import DiaryMealsPage from './DiaryMealsSettings.jsx'
 import FeaturesList from './FeaturesList.jsx'
+import NtSettingsGate from './NtSettingsGate.jsx'
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => () => {} }))
+
+// The page as Settings.jsx mounts it: behind the gate that waits for NutriTrace's settings.
+const DiaryMealsSettings = () => <NtSettingsGate><DiaryMealsPage /></NtSettingsGate>
+
+
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 

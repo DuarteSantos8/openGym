@@ -4,6 +4,7 @@ import { foodKcal } from '../lib/nutrition/diary.js'
 import { searchErrorText } from '../lib/nutrition/foods.js'
 import { useNutrition } from '../lib/nutrition/store.js'
 import { OWN_SHOWN, useFoodSearch } from '../lib/nutrition/use-food-search.js'
+import { settingOf } from '../lib/nutrition/use-nt-settings.js'
 import { useUnits } from '../lib/nutrition/use-units.js'
 import { ItemRow, SectionTitle } from './blocks.jsx'
 import { foodEditSheet } from './FoodEditSheet.jsx'
@@ -68,7 +69,7 @@ export default function FoodSearch({ onPick, scan = {}, autoFocus = false, disab
       {ownTotal > own.length && <Button size="sm" variant="tinted" onClick={() => setLimit(n => n + OWN_SHOWN)}>{t('Show more')}</Button>}
     </>}
 
-    {q && <>
+    {q && settingOf(settings, 'offEnabled') && <>
       <SectionTitle>{t('Open Food Facts')}</SectionTitle>
       {online.status === 'loading' && <div className="muted small fp-note">{t('Searching Open Food Facts…')}</div>}
       {online.status === 'error' && <div className="nt-error small" role="alert">{searchErrorText(online.error)}</div>}

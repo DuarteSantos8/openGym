@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react'
 import { ownFoodWith } from './barcode.js'
 import { matchesFood, recentFoods } from './diary.js'
 import { useNutrition } from './store.js'
+import { settingOf } from './use-nt-settings.js'
 import { MIN_QUERY, useOnlineSearch } from './use-online-search.js'
 
 export const OWN_SHOWN = 50
@@ -28,9 +29,16 @@ const savedCopy = (foods, result) =>
  */
 export function useFoodSearch(query, { limit = OWN_SHOWN } = {}) {
   const foods = useNutrition(s => s.foods)
-  const lang = useNutrition(s => s.settings.data?.offSearchLanguage)
+  const settings = useNutrition(s => s.settings.data)
+  const lang = settings?.offSearchLanguage
   const q = query.trim()
-  const online = useOnlineSearch(query, { active: true, lang: typeof lang === 'string' ? lang : 'en' })
+  // Profile › Food sources: no online results while Open Food Facts is off; its language and
+  // country steer the search and the order.
+  const online = useOnlineSearch(query, {
+    active: settingOf(settings, 'offEnabled'),
+    lang: typeof lang === 'string' ? lang : 'en',
+    country: settingOf(settings, 'offSearchCountry'),
+  })
 
   useEffect(() => { useNutrition.getState().loadFoods() }, [])
 

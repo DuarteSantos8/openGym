@@ -17,7 +17,9 @@ import { quickKcalSheet } from './QuickKcalSheet.jsx'
 import { foodPickerSheet } from './FoodPickerSheet.jsx'
 import { scanSheet } from './ScanSheet.jsx'
 import PlusFastRow from './PlusFastRow.jsx'
-import { addWater, WATER_STEP_ML } from './WaterCard.jsx'
+import { settingOf } from '../lib/nutrition/use-nt-settings.js'
+import { waterButtons } from '../lib/nutrition/water.js'
+import { addWater, waterAria } from './WaterCard.jsx'
 import { useUnits } from '../lib/nutrition/use-units.js'
 
 const under = (pathname, base) => pathname === base || pathname.startsWith(base + '/')
@@ -55,7 +57,8 @@ function PlusSheet({ close, pathname }) {
   const [watering, setWatering] = useState(false)
   const units = useUnits()
   useEffect(() => { if (food) useNutrition.getState().loadSettings() }, [food])
-  const water = async () => { setWatering(true); if (await addWater(target.date)) close(); else setWatering(false) }
+  const settings = useNutrition(s => s.settings.data)
+  const water = async ml => { setWatering(true); if (await addWater(target.date, ml)) close(); else setWatering(false) }
   return (
     <div className="plus-sheet" ref={ref} role="dialog" aria-modal="true" aria-labelledby={titleId}>
       <h3 id={titleId}>{t('Add')}</h3>
@@ -64,15 +67,17 @@ function PlusSheet({ close, pathname }) {
         {here.map(([icon, tint, label, act]) => <Row key={label} icon={icon} iconTint={tint} title={label} accessory="chevron" onClick={() => act(close)} />)}
       </Section>}
       <Section title={t('Anytime')}>
-        {food && <Row icon="bolt" iconTint="var(--pink)" title={t('Quick kcal')} accessory="chevron"
+        {food && settingOf(settings, 'showQuickCalories') && <Row icon="bolt" iconTint="var(--pink)" title={t('Quick kcal')} accessory="chevron"
           onClick={() => { close(); quickKcalSheet({ date: target.date, meal: target.meal, mealName: target.mealName }) }} />}
         <Row icon="scale" iconTint="var(--indigo)" title={t('Weigh in')} accessory="chevron" onClick={() => { close(); bwSheet({ date: target.date }) }} />
         <Row icon="play" iconTint="var(--purple)" title={S.active ? t('Resume workout') : t('Start workout')} accessory="chevron" onClick={() => { close(); startOrResume() }}>
           {live && <span className="lrow-v plus-sheet-live"><span className="live-dot" aria-hidden="true" /><Elapsed start={S.active.start} /></span>}
         </Row>
         {food && <Row icon="droplet" iconTint="var(--blue)" title={t('Water')}>
-          <Button size="sm" variant="tinted" icon="plus" onClick={water} disabled={watering}
-            aria-label={t('Add a glass of water, {0}', units.water(WATER_STEP_ML))}>{units.water(WATER_STEP_ML)}</Button>
+          {waterButtons(settings).map(b => (
+            <Button key={b.id} size="sm" variant="tinted" icon="plus" onClick={() => water(b.ml)} disabled={watering}
+              aria-label={waterAria(b, units)}>{units.water(b.ml)}</Button>
+          ))}
         </Row>}
         {food && <PlusFastRow close={close} />}
         {S.checkIn !== false && <Row icon="qr" iconTint="var(--blue)" title={t('Gym check-in')} accessory="chevron" onClick={() => closeThenNav(close, '/train/checkin')} />}

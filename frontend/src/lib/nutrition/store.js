@@ -257,8 +257,8 @@ export const useNutrition = create((set, get) => {
 
     /** Online results for a search, mapped to unsaved foods (off.js). Throws an NtError
      *  ('aborted' once `signal` aborts: a newer search replaced this one). */
-    async searchOnline(query, lang, { signal } = {}) {
-      return offResults(await NtApi.searchOnline(query, { lang, signal }), lang)
+    async searchOnline(query, lang, { signal, country } = {}) {
+      return offResults(await NtApi.searchOnline(query, { lang, country, signal }), lang, country)
     },
 
     /* --- drafts: build once, log (and retry) the same one --- */

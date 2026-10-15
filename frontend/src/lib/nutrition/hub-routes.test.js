@@ -96,7 +96,35 @@ describe('the fake answers the new routes as the hub would', () => {
     return { status: res.status, data: await res.json() }
   }
 
-  it('lets only the fasting settings through PUT /api/settings', async () => {
+  it('takes the Nutrition pages\' keys in the shapes NutriTrace writes, and refuses the guessed ones', async () => {
+    const nt = createFakeNutriTrace()
+    const put = (key, value) => call(nt, 'PUT', '/nt/api/settings', { key, value }).then(r => r.status)
+    expect(await put('customUnits', [{ abbr: 'shot', full: 'shot glass' }, { abbr: 'scoop' }])).toBe(200)
+    expect(await put('customUnits', [{ abbr: 'shot', grams: 30 }])).toBe(400)
+    expect(await put('customUnits', [{ abbr: 'x'.repeat(17), full: '' }])).toBe(400)
+    expect(await put('customNutriments', [{ id: 'custom_omega-3', label: 'Omega-3', unit: 'g' }])).toBe(200)
+    expect(await put('customNutriments', [{ id: 'custom_omega-3', name: 'Omega-3', unit: 'g' }])).toBe(400)
+    expect(await put('customNutriments', [{ id: 'omega-3', label: 'Omega-3', unit: 'g' }])).toBe(400)
+    expect(await put('customNutriments', [{ id: 'custom_has space', label: 'Omega 3', unit: 'g' }])).toBe(400)
+    expect(await put('foodCategories', ['Dairy', { name: 'Fruit', label: '🍎' }, { name: 'Veg' }])).toBe(200)
+    expect(await put('foodCategories', [{ id: 1, name: 'Dairy', emoji: '🥛' }])).toBe(400)
+    expect(await put('foodCategories', [{ name: 'Dairy', label: 'x'.repeat(17) }])).toBe(400)
+    expect(await put('waterContainers', [{ id: '1', name: 'Bottle', volumeMl: 500 }])).toBe(200)
+    expect(await put('waterContainers', [{ id: '1', name: 'Bottle', volumeMl: 0 }])).toBe(400)
+    expect(await put('waterContainers', [{ id: '1', name: 'Bottle', volumeMl: 500, color: 'red' }])).toBe(400)
+    expect(await put('mealNames', [])).toBe(400)
+    expect(await put('mealNames', ['Breakfast', 'Lunch'])).toBe(200)
+    expect(await put('foodsDefaultSource', 'mealie')).toBe(400)
+    expect(await put('offSearchLanguage', 'en')).toBe(200)
+    expect(await put('offSearchLanguage', 'english')).toBe(400)
+    expect(await put('offSearchCountry', 'Atlantis')).toBe(400)
+    expect(await put('usdaApiKey', 'secret')).toBe(400)
+    expect(await put('defaultShareVisibility', 'group')).toBe(400)
+    expect(await put('barcodeFlashlight', true)).toBe(400)
+    expect(await put('diaryShowNutritionBar', true)).toBe(400)
+  })
+
+  it('takes exactly { key, value } for a known key and type-checks the fasting settings', async () => {
     const nt = createFakeNutriTrace()
     expect((await call(nt, 'PUT', '/nt/api/settings', { key: 'fastingEnabled', value: true })).status).toBe(200)
     expect((await call(nt, 'PUT', '/nt/api/settings', { key: 'fastingDefaultHours', value: 18 })).status).toBe(200)

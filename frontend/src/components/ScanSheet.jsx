@@ -6,6 +6,9 @@ import { findByBarcode, normalizeBarcode } from '../lib/nutrition/barcode.js'
 import { foodKcal } from '../lib/nutrition/diary.js'
 import { useUnits } from '../lib/nutrition/use-units.js'
 import { writeErrorText } from '../lib/nutrition/log-feedback.js'
+import { asksQuantity, logServing } from '../lib/nutrition/log-serving.js'
+import { settingOf } from '../lib/nutrition/use-nt-settings.js'
+import { beep } from '../lib/sound.js'
 import CameraScan from './CameraScan.jsx'
 import { foodEditSheet } from './FoodEditSheet.jsx'
 import { portionSheet } from './PortionSheet.jsx'
@@ -34,6 +37,7 @@ function lookupErrorText(e) {
 export default function ScanSheet({ date, meal, mealName, onLogged, onSearch, onPick, close }) {
   const units = useUnits()
   const lang = useNutrition(s => s.settings.data?.offSearchLanguage)
+  const beepOn = useNutrition(s => settingOf(s.settings.data, 'barcodeBeep'))
   const [step, setStep] = useState({ id: 'scan' })
   const [typed, setTyped] = useState('')
   const [notice, setNotice] = useState(null)
@@ -67,10 +71,17 @@ export default function ScanSheet({ date, meal, mealName, onLogged, onSearch, on
   // Stable: the camera restarts when this changes, so it reaches the latest submit through a ref.
   const submitRef = useRef(submit)
   useEffect(() => { submitRef.current = submit })
-  const onFound = useCallback(hit => submitRef.current(hit.value), [])
+  // The camera read a code: a short beep when Profile › Foods & scanning says so.
+  const onFound = useCallback(hit => { beep(beepOn, 1040, 0.12); submitRef.current(hit.value) }, [beepOn])
 
   const again = () => { setNotice(null); setTyped(''); setStep({ id: 'scan' }) }
-  const log = food => { close(); if (onPick) onPick(food); else portionSheet({ food, date, meal, mealName, onLogged }) }
+  // A found product is logged as picked: asking how much first, unless Profile says not to.
+  const log = food => {
+    close()
+    if (onPick) onPick(food)
+    else if (asksQuantity(useNutrition.getState().settings.data)) portionSheet({ food, date, meal, mealName, onLogged })
+    else logServing(food, { date, meal, mealName, onLogged })
+  }
   const search = () => { close(); if (onSearch) onSearch() }
   const quick = () => { close(); quickKcalSheet({ date, meal, mealName, onLogged }) }
   // Foods' create flow, with the scanned code in its Barcode field (no id, so it creates).
