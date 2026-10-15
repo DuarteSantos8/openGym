@@ -2618,7 +2618,8 @@ describe('list layout: only what is left to do (Discord request, #241)', () => {
     expect(units()[0].querySelector('.wl-summary')).toBeNull()
     await flushFrame()
     expect(mocks.scrollCalls.at(-1).node.dataset.unitKey).toBe('0')
-    expect(mocks.S.active.cur).toBe(1)
+    expect(mocks.S.active.cur).toBe(0)
+    expect(mocks.S.active.entries[1].sets[0].done).toBe(false)
   })
 })
 
@@ -2675,7 +2676,7 @@ describe('exercise chips at the top of the workout (#323)', () => {
     expect(chip(1).getAttribute('aria-current')).toBe('step')
   })
 
-  it.each(['list', 'compact'])('rides in the pinned header in %s and scrolls to the unit without moving Current', async workoutView => {
+  it.each(['list', 'compact'])('rides in the pinned header in %s and selects and scrolls to the unit without logging sets', async workoutView => {
     await mount(session(), 0, { active: { workoutView } })
     expect(container.querySelector('.whdr .wchips')).toBeTruthy()
     await flushFrame()   // the list's own open-at-current scroll
@@ -2688,7 +2689,8 @@ describe('exercise chips at the top of the workout (#323)', () => {
     expect(mocks.scrollCalls[0].node.dataset.unitKey).toBe('3')
     expect(mocks.scrollCalls[0].options).toEqual({ block: 'start', behavior: 'smooth' })
     expect(container.querySelector('.workout-list').style.getPropertyValue('--whdr-h')).toBe('150px')
-    expect(mocks.S.active.cur).toBe(0)
+    expect(mocks.S.active.cur).toBe(3)
+    expect(mocks.S.active.entries[3].sets[0].done).toBe(false)
   })
 
   it('jumps without the glide when the system asks for less motion', async () => {
