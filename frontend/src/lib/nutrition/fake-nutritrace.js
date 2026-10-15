@@ -83,6 +83,20 @@ export const fixtureSyncStatus = (state = 'ok') => ({ state, pending: 0, held: 0
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/
 const ID = /^[A-Za-z0-9_-]{1,64}$/
+// PUT /api/settings (fitness-hub src/nt-body-checks.ts WRITABLE_SETTINGS): each key with the type
+// NutriTrace reads it as.
+const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v)
+const WRITABLE_SETTINGS = {
+  calorieGoalMode: v => ['fixed', 'adaptive', 'dynamic'].includes(v),
+  calorieGoalFactor: v => [0.8, 1, 1.2].includes(v),
+  goals: v => isObj(v) && Object.keys(v).length <= 100 && Object.values(v).every(isObj),
+  goalTemplates: v => Array.isArray(v) && v.length <= 30 && v.every(isObj),
+  waterGoalMl: v => typeof v === 'number' && v >= 1 && v <= 50000,
+  calorieAdjustFromActivity: v => typeof v === 'boolean',
+  diaryShowActivity: v => typeof v === 'boolean',
+  fastingEnabled: v => typeof v === 'boolean',
+  fastingDefaultHours: v => typeof v === 'number' && v >= 1 && v <= 168,
+}
 
 function onlyKeys(params, allowed) {
   const seen = new Set()
@@ -204,6 +218,15 @@ export function createFakeNutriTrace({
       return notFound()
     }
     if (res === 'settings' && method === 'GET' && n === 3) return json(state.settings)
+    // server/routes/settings.js stores one key per write, as JSON (what is read back is a copy).
+    // The hub lets through only exactly { key, value } for a writable key, and answers 400 otherwise.
+    if (res === 'settings' && method === 'PUT' && n === 3) {
+      const exact = isObj(body) && Object.keys(body).sort().join() === 'key,value'
+      const check = exact && Object.hasOwn(WRITABLE_SETTINGS, body.key) ? WRITABLE_SETTINGS[body.key] : null
+      if (!check || !check(body.value)) return json({ error: 'request body refused' }, 400)
+      state.settings[body.key] = structuredClone(body.value)
+      return json({ ok: true })
+    }
     if (res === 'foods') {
       if (method === 'GET' && n === 3) return [...query.keys()].length ? json({ error: 'forbidden' }, 403) : json(state.foods)
       if (method === 'POST' && n === 3) {

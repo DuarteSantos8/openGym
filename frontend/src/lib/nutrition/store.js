@@ -130,6 +130,15 @@ export const useNutrition = create((set, get) => {
       }
     },
 
+    /** Writes one setting (PUT /api/settings) and, once the server has it, puts it in the cache.
+     *  Throws an NtError and leaves the cache as it was. */
+    async saveSetting(key, value) {
+      const g = gen
+      await NtApi.putSetting(key, value)
+      const cur = get().settings
+      if (g === gen && cur.data) set({ settings: { ...cur, data: { ...cur.data, [key]: value } } })
+    },
+
     // `signal`: the caller no longer wants the day (the calendar moved on); an aborted load
     // leaves the day as it was before it.
     async loadDay(date, { force = false, signal } = {}) {

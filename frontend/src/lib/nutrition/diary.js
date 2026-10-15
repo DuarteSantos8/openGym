@@ -354,7 +354,7 @@ export function energyOf(kcal, settings) {
   return settings?.energyUnit === 'kJ' ? { value: Math.round(n * 4.184), unit: 'kJ' } : { value: Math.round(n), unit: 'kcal' }
 }
 
-const WATER_UNITS = { oz: [29.5735, 0, 'fl oz'], L: [1000, 2, 'L'], G: [3785.41, 3, 'G'] }
+export const WATER_UNITS = { oz: [29.5735, 0, 'fl oz'], L: [1000, 2, 'L'], G: [3785.41, 3, 'G'] }
 /** ml in the person's water unit (waterUnit 'ml' | 'oz' | 'L' | 'G'; WaterWidget.svelte formatMl). */
 export function waterOf(ml, settings) {
   const n = Number(ml) || 0

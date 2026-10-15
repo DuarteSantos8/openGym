@@ -131,6 +131,10 @@ export const NtApi = {
   saveDiaryDate: (date, payload) => nt('PUT', `/api/diary/${date}`, payload),
   /** @returns {Promise<NtSettings>} */
   getSettings: () => nt('GET', '/api/settings'),
+  /** Upserts one setting. The hub takes exactly { key, value } for calorieGoalMode, calorieGoalFactor,
+   *  goals, goalTemplates, waterGoalMl, calorieAdjustFromActivity, diaryShowActivity, fastingEnabled
+   *  and fastingDefaultHours, type-checks the value, and refuses anything else with 400. */
+  putSetting: (key, value) => nt('PUT', '/api/settings', { key, value }),
   /** Your own foods, by name. @returns {Promise<Food[]>} (img_url, not imgUrl) */
   getFoods: () => nt('GET', '/api/foods'),
   /** Saves a food as yours: always private, never with an image (the hub refuses `img_url`,
@@ -148,7 +152,9 @@ export const NtApi = {
   getActivitySum: (date, policy) => nt('GET', `/api/activity/sum/${date}?policy=${encodeURIComponent(policy || 'wearable_wins')}`),
   /** Dynamic goal: yesterday's wearable burn for the date. @returns {Promise<{ calories_out: number|null }>} */
   getCaloriesOut: date => nt('GET', `/api/wellness/calories-out?date=${date}`),
-  /** @returns {Promise<{ ready: boolean, tdee?: number }>} */
+  /** Learned from 35 days of weight and diary (server/lib/adaptive-tdee.js).
+   *  @returns {Promise<{ ready: boolean, daysAvailable?: number, daysRequired?: number, tdee?: number|null,
+   *    trendKgPerWeek?: number|null, confidence?: number|null }>} */
   getAdaptiveTdee: () => nt('GET', '/api/goals/adaptive-tdee'),
   /** Open Food Facts text search through NutriTrace's proxy (the hub lets this one URL shape by,
    *  30 a minute per person). Raw OFF answer: map it with off.js offResults. */
