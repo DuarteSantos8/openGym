@@ -1,0 +1,24 @@
+{
+  "id": "6027",
+  "name": "punch step forward",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "quadriceps",
+    "core"
+  ],
+  "category": "combat",
+  "description": "A shadow-boxing drill pairing a forward step with a punch for cardio and coordination.",
+  "instructions": [
+    "Stand in a boxing stance with fists up.",
+    "Step forward with your lead foot.",
+    "Throw a punch as you step.",
+    "Return to your stance.",
+    "Alternate sides and keep a steady rhythm."
+  ],
+  "femaleVariant": "6028",
+  "textSource": "opengym"
+}

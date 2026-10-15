@@ -1,0 +1,22 @@
+{
+  "id": "1291",
+  "name": "dumbbell one arm pullover on exercise ball",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "latissimus dorsi",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A pullover with one dumbbell while your upper back rests on a stability ball. It stretches the chest and lats and asks your core to stay braced.",
+  "instructions": [
+    "Sit on an exercise ball with your feet flat on the ground and your knees bent at a 90-degree angle.",
+    "Hold a dumbbell with one hand and extend your arm straight up above your chest.",
+    "Slowly lower the dumbbell behind your head while keeping your arm straight.",
+    "Pause for a moment, then raise the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

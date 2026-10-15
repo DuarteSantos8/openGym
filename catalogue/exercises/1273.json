@@ -1,0 +1,21 @@
+{
+  "id": "1273",
+  "name": "clap push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive push-up with a clap in mid-air. It builds power in the chest, shoulders and triceps.",
+  "instructions": [
+    "Start in a high plank position with your hands slightly wider than shoulder-width apart.",
+    "Lower your body towards the ground by bending your elbows, keeping your core engaged.",
+    "Push through your palms explosively to propel your body off the ground.",
+    "While in mid-air, clap your hands together before landing back in the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

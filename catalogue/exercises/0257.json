@@ -1,0 +1,21 @@
+{
+  "id": "0257",
+  "name": "circles knee stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps"
+  ],
+  "category": "mobility",
+  "description": "A standing knee circle drill with the heels lifted. It warms up the knees and calves and can ease tight lower legs.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your hands on your hips.",
+    "Bend your knees slightly and lift your heels off the ground, balancing on the balls of your feet.",
+    "Keeping your knees bent, rotate your knees in a circular motion, first clockwise and then counterclockwise.",
+    "Perform the movement for the desired number of repetitions."
+  ],
+  "femaleVariant": "3932",
+  "textSource": "exercisedb"
+}

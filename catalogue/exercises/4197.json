@@ -1,0 +1,23 @@
+{
+  "id": "4197",
+  "name": "cable pallof press with glute bridge",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Combine a pallof press with a glute bridge.",
+  "instructions": [
+    "Lie on your back with a cable beside you.",
+    "Hold the handle at your chest.",
+    "Bridge your hips up.",
+    "Press the handle forward.",
+    "Return and lower.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

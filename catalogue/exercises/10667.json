@@ -1,0 +1,24 @@
+{
+  "id": "10667",
+  "name": "cable kneeling single arm horizontal row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "biceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-arm cable row from a kneeling position. Kneeling removes leg drive so your back does the pulling.",
+  "instructions": [
+    "Set a cable at chest height and kneel facing it.",
+    "Hold the handle with one hand and brace your core.",
+    "Pull your elbow back along your side.",
+    "Squeeze your shoulder blade toward your spine.",
+    "Extend the arm slowly.",
+    "Complete the reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

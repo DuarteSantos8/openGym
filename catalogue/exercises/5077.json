@@ -1,0 +1,21 @@
+{
+  "id": "5077",
+  "name": "bodyweight svend press",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "isometric",
+  "description": "Press your palms together hard in front of your chest and push them forward and back. It needs no equipment and fires the inner chest.",
+  "instructions": [
+    "Stand or sit tall with your palms together at chest height.",
+    "Squeeze your palms hard against each other.",
+    "Push your hands straight out in front of you.",
+    "Bring them back to your chest while still squeezing.",
+    "Keep your shoulders down and repeat."
+  ],
+  "textSource": "opengym"
+}

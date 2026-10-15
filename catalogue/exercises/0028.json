@@ -1,0 +1,44 @@
+{
+  "id": "0028",
+  "name": "barbell clean and press",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes",
+    "shoulders",
+    "triceps"
+  ],
+  "category": "olympic",
+  "description": "Lift the bar from the floor to your shoulders in one movement, then press it overhead. A full-body power exercise.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and the barbell on the floor in front of you.",
+    "Bend your knees and hinge at the hips to lower down and grip the barbell with an overhand grip, hands slightly wider than shoulder-width apart.",
+    "Drive through your heels and extend your hips and knees to lift the barbell off the floor, keeping it close to your body.",
+    "As the barbell reaches your thighs, explosively extend your hips, shrug your shoulders, and pull the barbell up towards your chest.",
+    "As the barbell reaches chest height, quickly drop under it and catch it at shoulder level, with your elbows pointing forward and your palms facing up.",
+    "From the catch position, press the barbell overhead by extending your arms and pushing the barbell straight up.",
+    "Lower the barbell back down to the starting position and repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "bodyPart": "full body",
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "hamstring",
+      "trapezius",
+      "deltoids",
+      "triceps"
+    ],
+    "secondaries": [
+      "calves",
+      "forearm",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "femaleVariant": "3648",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5970",
+  "name": "heel to toe walk",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "core",
+    "glutes"
+  ],
+  "category": "mobility",
+  "description": "A slow line walk with each heel touching the toes of the other foot, which trains balance and steady stride control.",
+  "instructions": [
+    "Stand tall with your arms out to the sides.",
+    "Place your right heel directly in front of your left toes.",
+    "Shift your weight forward and step again with the other foot.",
+    "Keep your eyes forward and your core gently braced.",
+    "Walk 10-15 steps, then turn around and return."
+  ],
+  "textSource": "opengym"
+}

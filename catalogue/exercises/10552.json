@@ -1,0 +1,22 @@
+{
+  "id": "10552",
+  "name": "medicine ball split stance torso twist",
+  "bodyPart": "waist",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "Rotate your torso side to side with a medicine ball in a split stance. It trains the trunk rotators.",
+  "instructions": [
+    "Stand in a split stance and hold a medicine ball at chest height.",
+    "Brace your core.",
+    "Rotate your torso to one side, keeping your hips steady.",
+    "Return to the centre and rotate the other way.",
+    "Complete all reps, then switch the front foot."
+  ],
+  "textSource": "opengym"
+}

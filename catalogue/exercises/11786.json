@@ -1,0 +1,22 @@
+{
+  "id": "11786",
+  "name": "seated radial nerve mobilization",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms",
+    "wrist flexors",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "A gentle seated nerve glide that moves the radial nerve along the arm.",
+  "instructions": [
+    "Sit tall with one arm down at your side, palm facing back.",
+    "Lower your shoulder slightly and rotate your arm inward.",
+    "Bend your wrist gently and tilt your head away.",
+    "Move slowly and stop at a mild pull, never pain.",
+    "Repeat 8-10 times, then switch arms."
+  ],
+  "textSource": "opengym"
+}

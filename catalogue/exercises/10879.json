@@ -1,0 +1,22 @@
+{
+  "id": "10879",
+  "name": "weighted dumbbell crunch (hands overhead) v. 2",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A second version of the overhead dumbbell crunch. It builds ab strength with a loaded reach.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat.",
+    "Hold a dumbbell at one end with both hands, arms extended overhead.",
+    "Crunch up and let the dumbbell travel in an arc toward your knees.",
+    "Squeeze your abs at the top.",
+    "Lower with control and repeat."
+  ],
+  "femaleVariant": "10880",
+  "textSource": "opengym"
+}

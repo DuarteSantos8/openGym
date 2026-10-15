@@ -1,0 +1,22 @@
+{
+  "id": "6767",
+  "name": "roll ball side lying scalene muscles activation",
+  "bodyPart": "neck",
+  "equipment": "roller",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "trapezius"
+  ],
+  "category": "mobility",
+  "description": "Lying on your side with a ball at the neck to ease the scalene muscles. Use light pressure.",
+  "instructions": [
+    "Lie on your side with a small ball under the side of your neck.",
+    "Support your head with a pillow or your hand.",
+    "Relax your shoulder.",
+    "Gently press or nod to roll over the ball.",
+    "Keep the pressure light.",
+    "Do 30-60 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

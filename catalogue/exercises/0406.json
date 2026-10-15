@@ -1,0 +1,21 @@
+{
+  "id": "0406",
+  "name": "dumbbell shrug",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "traps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Standing tall with dumbbells at your sides, you lift your shoulders toward your ears. It builds the upper traps and grip.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a dumbbell in each hand with your palms facing your body.",
+    "Keep your arms straight and let the dumbbells hang by your sides.",
+    "Raise your shoulders as high as possible, as if you are trying to touch your ears with your shoulders.",
+    "Hold the contraction for a second, then slowly lower your shoulders back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2596",
+  "textSource": "exercisedb"
+}

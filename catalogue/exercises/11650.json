@@ -1,0 +1,21 @@
+{
+  "id": "11650",
+  "name": "seated single leg calf raise on a chair",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "calisthenics",
+  "description": "A seated one-leg calf raise that mainly hits the soleus using only your body weight.",
+  "instructions": [
+    "Sit on a chair with one foot flat on the floor, knee bent to 90 degrees.",
+    "Lift the other foot off the floor or tuck it behind.",
+    "Press through the ball of the working foot and raise your heel.",
+    "Pause at the top, then lower slowly.",
+    "Complete your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

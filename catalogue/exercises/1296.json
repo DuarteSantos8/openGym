@@ -1,0 +1,23 @@
+{
+  "id": "1296",
+  "name": "exercise ball pike push up",
+  "bodyPart": "chest",
+  "equipment": "stability ball",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A pike push-up with your feet on a stability ball. It builds shoulders and chest and works your core to hold the ball steady.",
+  "instructions": [
+    "Start in a push-up position with your hands on the floor and your shins resting on the stability ball.",
+    "Engage your core and lift your hips up towards the ceiling, rolling the ball towards your hands.",
+    "Keep your legs straight and your body in a pike position, forming an inverted V shape.",
+    "Bend your elbows and lower your upper body towards the floor, keeping your head in line with your hands.",
+    "Push through your hands and extend your arms to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

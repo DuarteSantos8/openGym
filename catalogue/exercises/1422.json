@@ -1,0 +1,23 @@
+{
+  "id": "1422",
+  "name": "pelvic tilt into bridge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "Lie on your back with your knees bent, tilt your pelvis, then lift into a bridge. It warms up the glutes, lower back and core.",
+  "instructions": [
+    "Lie on your back with your knees bent and feet flat on the ground.",
+    "Place your arms by your sides with your palms facing down.",
+    "Engage your glutes and core muscles.",
+    "Tilt your pelvis upward, lifting your hips off the ground.",
+    "Hold the bridge position for a few seconds.",
+    "Slowly lower your hips back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

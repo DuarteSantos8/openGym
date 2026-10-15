@@ -1,0 +1,23 @@
+{
+  "id": "6218",
+  "name": "dumbbell incline twist press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "An incline press where you rotate the dumbbells during the press. It works the upper chest.",
+  "instructions": [
+    "Lie on an incline bench holding dumbbells at chest level.",
+    "Palms face you.",
+    "Press up, rotating your palms forward.",
+    "Lock out at the top.",
+    "Lower, rotating back.",
+    "Keep your shoulders down."
+  ],
+  "textSource": "opengym"
+}

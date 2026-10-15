@@ -1,0 +1,20 @@
+{
+  "id": "1655",
+  "name": "dumbbell biceps curl squat",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A squat combined with a dumbbell curl. It works the legs and biceps in one move.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand with your palms facing forward.",
+    "Keeping your back straight and your elbows close to your sides, exhale and curl the dumbbells up towards your shoulders.",
+    "Pause for a moment at the top, squeezing your biceps.",
+    "Inhale and slowly lower the dumbbells back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "3621",
+  "name": "twisting crunch (straight arms)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch with a twist and arms extended to work the abs and obliques.",
+  "instructions": [
+    "Lie on your back with knees bent and arms straight up.",
+    "Lift your shoulders off the floor.",
+    "Twist to reach one side.",
+    "Return to center and twist the other way.",
+    "Keep your lower back on the floor."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "2096",
+  "name": "flexion finger stretch",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "hands"
+  ],
+  "category": "stretching",
+  "description": "Gently bends the fingers down to stretch the tight tissue on the top of the hand and fingers. Handy after typing or gripping work.",
+  "instructions": [
+    "Hold one arm out in front of you with the palm facing down.",
+    "Use your other hand to press the fingers of the extended hand gently downward.",
+    "Keep the elbow of the extended arm straight and the shoulders relaxed.",
+    "Stop at a mild pull, never at pain.",
+    "Hold for 20-30 seconds.",
+    "Release and repeat on the other hand."
+  ],
+  "textSource": "opengym"
+}

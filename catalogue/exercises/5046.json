@@ -1,0 +1,22 @@
+{
+  "id": "5046",
+  "name": "v sit toe tap",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "Hold a V sit and reach to tap your toes. It strengthens the abs and challenges balance.",
+  "instructions": [
+    "Sit on the floor and lean back, lifting your legs into a V.",
+    "Reach both arms forward.",
+    "Crunch up and tap your toes with your fingers.",
+    "Lower slightly back while keeping your feet up.",
+    "Keep your chest open and repeat."
+  ],
+  "textSource": "opengym"
+}

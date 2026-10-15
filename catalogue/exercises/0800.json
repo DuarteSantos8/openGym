@@ -1,0 +1,22 @@
+{
+  "id": "0800",
+  "name": "step up opposite elbow to knee twist",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "A step up that finishes with a twist, bringing an elbow toward the opposite knee. It trains the legs, trunk and coordination.",
+  "instructions": [
+    "Stand facing a sturdy step with hands by your head.",
+    "Step up with your right foot and drive the left knee up.",
+    "Twist to bring your right elbow toward your left knee.",
+    "Step down carefully and reset.",
+    "Repeat on the other side, alternating."
+  ],
+  "textSource": "opengym"
+}

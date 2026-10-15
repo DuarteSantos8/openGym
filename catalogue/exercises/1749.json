@@ -1,0 +1,20 @@
+{
+  "id": "1749",
+  "name": "ez bar standing french press",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A standing overhead EZ bar extension, bending only at the elbows. Builds triceps size and strength.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold the ez barbell with an overhand grip.",
+    "Raise the barbell above your head, fully extending your arms.",
+    "Keeping your upper arms close to your head, slowly lower the barbell behind your head by bending your elbows.",
+    "Pause for a moment, then extend your arms back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "11795",
+  "name": "backward press shoulders mobilization",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids"
+  ],
+  "category": "mobility",
+  "description": "A shoulder mobility drill moving the arm backward to open the front of the shoulder.",
+  "instructions": [
+    "Stand tall with your arms at your sides.",
+    "Press one arm backward, keeping the elbow straight.",
+    "Move through a comfortable range.",
+    "Return slowly and repeat 8-12 times.",
+    "Switch arms."
+  ],
+  "textSource": "opengym"
+}

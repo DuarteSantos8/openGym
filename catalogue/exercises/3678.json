@@ -1,0 +1,22 @@
+{
+  "id": "3678",
+  "name": "high jump rope",
+  "bodyPart": "cardio",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "quadriceps",
+    "shoulders"
+  ],
+  "category": "cardio",
+  "description": "Jump rope with higher jumps to add power and intensity.",
+  "instructions": [
+    "Hold the rope handles and stand tall.",
+    "Swing the rope overhead.",
+    "Jump higher than usual.",
+    "Land softly with bent knees.",
+    "Keep your rhythm."
+  ],
+  "textSource": "opengym"
+}

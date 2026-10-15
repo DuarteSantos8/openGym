@@ -1,0 +1,22 @@
+{
+  "id": "7056",
+  "name": "dumbbell standing reverse curl rotate",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "brachialis",
+    "biceps",
+    "wrist extensors"
+  ],
+  "category": "strength",
+  "description": "A standing reverse curl that ends with a forearm rotation. It targets the forearms and brachialis.",
+  "instructions": [
+    "Stand holding dumbbells with an overhand grip at your thighs.",
+    "Curl the weights up while keeping your elbows tucked.",
+    "At the top, rotate your forearms so the palms turn up.",
+    "Rotate back and lower slowly.",
+    "Keep your wrists strong and avoid swinging."
+  ],
+  "textSource": "opengym"
+}

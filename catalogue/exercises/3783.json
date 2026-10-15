@@ -1,0 +1,23 @@
+{
+  "id": "3783",
+  "name": "dumbbell archer",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back",
+    "rear deltoids",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A wide-stance move where one arm extends sideways like drawing a bow. It trains your shoulders and upper back.",
+  "instructions": [
+    "Stand with feet wide and hold a dumbbell in one hand.",
+    "Shift your weight toward the empty-hand side and bend that knee.",
+    "Raise the dumbbell out to the side, keeping the other leg straight.",
+    "Lower with control and shift back to the center.",
+    "Repeat all reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

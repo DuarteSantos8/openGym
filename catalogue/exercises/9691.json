@@ -1,0 +1,22 @@
+{
+  "id": "9691",
+  "name": "bodyweight elevated heel front squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight squat with your heels raised. It shifts the work to the quads and allows a deeper position.",
+  "instructions": [
+    "Place your heels on a low plate or wedge.",
+    "Hold your hands in front of your chest.",
+    "Sit down into a deep squat with your chest tall.",
+    "Keep your knees tracking over your toes.",
+    "Press up to stand and repeat."
+  ],
+  "textSource": "opengym"
+}

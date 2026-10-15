@@ -1,0 +1,34 @@
+{
+  "id": "1270",
+  "name": "cable upper chest crossovers",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "deltoids",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "Cable crossovers aimed at the upper chest. It trains the upper pecs.",
+  "instructions": [
+    "Attach the handles to the cables at chest height.",
+    "Stand in the center of the cable machine with one foot slightly in front of the other.",
+    "Grasp the handles with your palms facing down and your arms extended out to the sides.",
+    "Keep a slight bend in your elbows and engage your core.",
+    "Pull the cables together in front of your chest, crossing them over each other.",
+    "Squeeze your chest muscles at the peak of the movement.",
+    "Slowly release the cables back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "chest"
+    ],
+    "secondaries": [
+      "upper-back",
+      "trapezius"
+    ]
+  },
+  "femaleVariant": "2442",
+  "textSource": "exercisedb"
+}

@@ -977,6 +977,12 @@ describe('applyPrescription', () => {
     expect(applyPrescription(sets, { kind: 'up', weight: 42.5, reps: 8 })[1]).toEqual({ w: 42.5, r: 8, done: false })
   })
 
+  it('re-ramps an open warm-up toward the new weight but never under the bar', () => {
+    const sets = [{ w: 25, r: 10, done: false, phase: 'warmup', warmup: true }, { w: 50, r: 10, done: false }]
+    expect(applyPrescription(sets, { kind: 'up', weight: 55 }, 5, 45).map(r => r.w)).toEqual([45, 55])
+    expect(applyPrescription(sets, { kind: 'up', weight: 55 }, 5).map(r => r.w)).toEqual([25, 55])
+  })
+
   it('touches nothing for "off" or a first session', () => {
     expect(applyPrescription(sets, { kind: 'off' })).toBe(sets)
     expect(applyPrescription(sets, { kind: 'first' })).toBe(sets)

@@ -1,0 +1,32 @@
+{
+  "id": "0155",
+  "name": "cable cross-over variation",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "deltoids",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A variation of the cable crossover for the chest.",
+  "instructions": [
+    "Adjust the cable pulleys to chest height.",
+    "Stand in the center of the cable machine with one foot in front of the other.",
+    "Grasp the handles with your palms facing down and your arms extended out to the sides.",
+    "Take a step forward, keeping your arms slightly bent.",
+    "With a slight bend in your elbows, bring your hands together in front of your chest.",
+    "Pause for a moment, then slowly return your arms back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "chest"
+    ],
+    "secondaries": [
+      "upper-back",
+      "trapezius"
+    ]
+  },
+  "textSource": "exercisedb"
+}

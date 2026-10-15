@@ -1,0 +1,21 @@
+{
+  "id": "1259",
+  "name": "behind head chest stretch",
+  "bodyPart": "chest",
+  "equipment": "assisted",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "stretching",
+  "description": "A stretch with the hands behind the head, pulling the elbows back. It opens the chest and shoulders.",
+  "instructions": [
+    "Stand tall with your feet shoulder-width apart.",
+    "Interlace your fingers behind your head with your elbows pointing outwards.",
+    "Slowly squeeze your shoulder blades together and push your chest forward.",
+    "Hold the stretch for 15-30 seconds.",
+    "Release the stretch and repeat as desired."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4191",
+  "name": "dumbbell partials lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "Short range lateral raises that keep tension on the side delts.",
+  "instructions": [
+    "Stand holding dumbbells at your sides.",
+    "Raise them out to the sides.",
+    "Stay within the mid range, between hip and shoulder height.",
+    "Pause briefly.",
+    "Lower slowly.",
+    "Avoid shrugging."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "3472",
+  "name": "lying leg tuck hip stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "A lying hip stretch pulling the knee in toward the chest.",
+  "instructions": [
+    "Lie on your back.",
+    "Pull one knee toward your chest.",
+    "Keep your other leg relaxed.",
+    "Hold for 20-30 seconds.",
+    "Release slowly.",
+    "Switch legs."
+  ],
+  "femaleVariant": "1945",
+  "textSource": "opengym"
+}

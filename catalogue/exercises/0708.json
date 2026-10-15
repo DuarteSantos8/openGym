@@ -1,0 +1,23 @@
+{
+  "id": "0708",
+  "name": "side crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch focusing on the sides of the waist. It strengthens the obliques.",
+  "instructions": [
+    "Lie on your back with knees bent and tilted to one side.",
+    "Place your hands behind your head.",
+    "Crunch up, lifting your shoulders.",
+    "Squeeze your side.",
+    "Lower with control.",
+    "Finish reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

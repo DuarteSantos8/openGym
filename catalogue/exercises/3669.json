@@ -1,0 +1,24 @@
+{
+  "id": "3669",
+  "name": "standing archer",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "shoulders",
+    "biceps",
+    "forearms"
+  ],
+  "category": "mobility",
+  "description": "A standing movement that rotates the torso and draws one arm back like pulling a bow. It mobilises the upper back and shoulders.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your knees slightly bent.",
+    "Extend your arms straight out in front of you at shoulder height, parallel to the ground.",
+    "Rotate your torso to the right, keeping your arms extended and your back straight.",
+    "As you rotate, extend your right arm forward and your left arm back, mimicking the motion of drawing a bowstring.",
+    "Hold the position for a moment, then return to the starting position.",
+    "Repeat the motion, this time rotating your torso to the left and extending your left arm forward and your right arm back.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

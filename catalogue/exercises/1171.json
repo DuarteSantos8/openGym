@@ -1,0 +1,22 @@
+{
+  "id": "1171",
+  "name": "45 degree twisting hyperextension",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A back extension on a 45 degree bench with a rotation at the top that adds work for the obliques and lower back.",
+  "instructions": [
+    "Position yourself on the bench with your ankles under the pads and your hips just off the edge.",
+    "Cross your arms over your chest and lower your torso with a flat back.",
+    "Raise your torso back up, squeezing your glutes.",
+    "At the top, rotate your upper body gently to one side, then return to center.",
+    "Alternate sides each rep and keep the movement slow and controlled."
+  ],
+  "textSource": "opengym"
+}

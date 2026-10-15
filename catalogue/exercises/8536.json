@@ -1,0 +1,21 @@
+{
+  "id": "8536",
+  "name": "bodyweight tibialis raise wall supported",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles"
+  ],
+  "category": "calisthenics",
+  "description": "A wall-supported toe raise that strengthens the muscles at the front of the shins.",
+  "instructions": [
+    "Stand with your back against a wall and your feet a bit in front of you.",
+    "Keep your legs straight.",
+    "Lift your toes toward your shins as high as you can.",
+    "Lower slowly to the floor.",
+    "Keep the movement smooth and repeat."
+  ],
+  "textSource": "opengym"
+}

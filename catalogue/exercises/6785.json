@@ -1,0 +1,22 @@
+{
+  "id": "6785",
+  "name": "band seated hip abduction v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A seated move pushing the knees outward against a band. It strengthens the outer hips and glutes.",
+  "instructions": [
+    "Sit tall on a bench with a band around your thighs above the knees.",
+    "Keep your feet flat and planted.",
+    "Press your knees apart against the band.",
+    "Hold for a second at the widest point.",
+    "Bring the knees back together slowly."
+  ],
+  "femaleVariant": "6784",
+  "textSource": "opengym"
+}

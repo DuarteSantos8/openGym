@@ -1,0 +1,22 @@
+{
+  "id": "4033",
+  "name": "band standing leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "Standing leg curl using a band around the ankle. It isolates the hamstrings.",
+  "instructions": [
+    "Anchor the band low and loop it around one ankle.",
+    "Stand tall facing the anchor and hold a support.",
+    "Bend your knee and curl your heel toward your glute.",
+    "Keep your thighs together and hips still.",
+    "Lower slowly, finish the reps, then switch legs."
+  ],
+  "femaleVariant": "0925",
+  "textSource": "opengym"
+}

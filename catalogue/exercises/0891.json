@@ -1,0 +1,21 @@
+{
+  "id": "0891",
+  "name": "band back extension",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A back extension with band resistance. It strengthens the lower back and glutes.",
+  "instructions": [
+    "Anchor the band and secure it across your upper back.",
+    "Hinge forward at the hips with a flat back.",
+    "Extend your torso up until your body is in a straight line.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

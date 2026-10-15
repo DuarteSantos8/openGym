@@ -1,0 +1,23 @@
+{
+  "id": "3223",
+  "name": "star jump (male)",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A jump where arms and legs spread wide like a star at the top. It is a full-body cardio move that raises your pulse fast.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your arms by your sides.",
+    "Bend your knees slightly and jump up explosively.",
+    "As you jump, spread your legs and extend your arms out to the sides, forming a star shape with your body.",
+    "Land softly on the balls of your feet with your knees slightly bent.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "0797",
+  "textSource": "exercisedb"
+}

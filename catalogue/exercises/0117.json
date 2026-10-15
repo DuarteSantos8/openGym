@@ -1,0 +1,40 @@
+{
+  "id": "0117",
+  "name": "barbell sumo deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A deadlift with a wide stance and narrow grip. Works the glutes, hamstrings and inner thighs.",
+  "instructions": [
+    "Stand with your feet wider than shoulder-width apart, toes pointing outwards.",
+    "Place a barbell on the ground in front of you, centered between your feet.",
+    "Bend your knees and lower your hips, keeping your back straight and chest up, to grip the barbell with an overhand grip.",
+    "Engage your core and drive through your heels to lift the barbell off the ground, extending your hips and knees simultaneously.",
+    "As you lift, keep your chest up and back straight, and push your hips forward to fully engage your glutes.",
+    "Pause for a moment at the top, then slowly lower the barbell back down to the starting position, maintaining control throughout the movement.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "bodyPart": "full body",
+    "primaries": [
+      "gluteal",
+      "hamstring",
+      "lower-back"
+    ],
+    "secondaries": [
+      "quadriceps",
+      "adductors",
+      "calves",
+      "abs",
+      "obliques"
+    ]
+  },
+  "femaleVariant": "2517",
+  "textSource": "exercisedb"
+}

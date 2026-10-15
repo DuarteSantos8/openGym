@@ -1,0 +1,23 @@
+{
+  "id": "3715",
+  "name": "single leg stand on bosu ball",
+  "bodyPart": "upper legs",
+  "equipment": "bosu ball",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "core",
+    "calves"
+  ],
+  "category": "isometric",
+  "description": "A balance hold on one leg on an unstable bosu ball. It challenges the ankle and hip stabilisers.",
+  "instructions": [
+    "Place a bosu ball dome-up in front of you.",
+    "Step onto it with one foot near the center.",
+    "Lift your other foot and hold it off the ground.",
+    "Keep your hips level and your core tight.",
+    "Hold for 20 to 30 seconds, then switch legs."
+  ],
+  "textSource": "opengym"
+}

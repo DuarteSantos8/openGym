@@ -1,0 +1,23 @@
+{
+  "id": "9517",
+  "name": "weighted kettlebell dead bug",
+  "bodyPart": "waist",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A dead bug done while holding a kettlebell overhead, adding load to the core challenge.",
+  "instructions": [
+    "Lie on your back holding a kettlebell above your chest with straight arms.",
+    "Raise your knees to a tabletop position.",
+    "Press your lower back into the floor.",
+    "Extend one leg out while keeping your back flat.",
+    "Return it and alternate sides."
+  ],
+  "textSource": "opengym"
+}

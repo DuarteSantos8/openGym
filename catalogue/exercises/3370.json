@@ -1,0 +1,23 @@
+{
+  "id": "3370",
+  "name": "battling ropes alternate arms jump squat",
+  "bodyPart": "full body",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "calves",
+    "shoulders"
+  ],
+  "category": "plyometrics",
+  "description": "A high energy move combining a jump squat with alternating rope waves. It builds power and conditioning.",
+  "instructions": [
+    "Hold the rope ends and stand in a squat position.",
+    "Start waving the ropes with alternating arms.",
+    "Jump up explosively and land softly.",
+    "Go straight into the next squat.",
+    "Keep going for a set time and rest when needed."
+  ],
+  "textSource": "opengym"
+}

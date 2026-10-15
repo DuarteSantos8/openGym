@@ -1,0 +1,22 @@
+{
+  "id": "4044",
+  "name": "single leg glute bridge with knee to chest",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "One leg glute bridge where the free knee is hugged toward the chest. It strengthens the glutes and challenges hip stability.",
+  "instructions": [
+    "Lie on your back with one knee bent and the foot flat, the other knee pulled toward your chest.",
+    "Brace your core.",
+    "Push through the planted heel and lift your hips.",
+    "Squeeze your glute at the top.",
+    "Lower slowly, finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

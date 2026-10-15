@@ -1,0 +1,24 @@
+{
+  "id": "2887",
+  "name": "cable hanging leg raise",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A hanging leg raise with cable resistance at your feet. Strengthens the abs and hip flexors.",
+  "instructions": [
+    "Hang from a pull-up bar with the cable attached to your ankles.",
+    "Keep your arms straight and your body steady.",
+    "Raise your legs up in front of you toward hip height or higher.",
+    "Curl your pelvis slightly at the top.",
+    "Lower slowly without swinging."
+  ],
+  "femaleVariant": "2886",
+  "textSource": "opengym"
+}

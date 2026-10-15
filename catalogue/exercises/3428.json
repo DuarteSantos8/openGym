@@ -1,0 +1,21 @@
+{
+  "id": "3428",
+  "name": "dumbbell front raise v. 3",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "Lift dumbbells in front of you to work the front of the shoulders.",
+  "instructions": [
+    "Stand tall holding a dumbbell in each hand in front of your thighs.",
+    "Brace your core and keep a slight bend in your elbows.",
+    "Raise the weights in front of you to shoulder height.",
+    "Pause briefly.",
+    "Lower slowly without swinging your body."
+  ],
+  "textSource": "opengym"
+}

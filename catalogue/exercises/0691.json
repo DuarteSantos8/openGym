@@ -1,0 +1,22 @@
+{
+  "id": "0691",
+  "name": "seated side crunch (wall)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "Seated against a wall, you crunch from side to side. Works the obliques with back support.",
+  "instructions": [
+    "Sit on the floor with your back against a wall and your legs extended in front of you.",
+    "Bend your knees and place your feet flat on the floor, hip-width apart.",
+    "Place your hands behind your head with your elbows pointing outwards.",
+    "Engage your abs and lean to one side, bringing your elbow towards your hip.",
+    "Pause for a moment, then return to the starting position.",
+    "Repeat on the other side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

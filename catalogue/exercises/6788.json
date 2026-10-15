@@ -1,0 +1,22 @@
+{
+  "id": "6788",
+  "name": "hip internal rotation test",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "adductors",
+    "hip flexors"
+  ],
+  "category": "mobility",
+  "description": "A simple check of how far the hip turns inward. You do it gently to see your range.",
+  "instructions": [
+    "Sit or lie with the knee bent 90 degrees.",
+    "Keep the thigh still.",
+    "Swing the lower leg outward so the hip rotates inward.",
+    "Stop where you feel a stretch or end of range.",
+    "Note how far each side goes.",
+    "Repeat on the other leg."
+  ],
+  "textSource": "opengym"
+}

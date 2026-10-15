@@ -1,0 +1,23 @@
+{
+  "id": "10752",
+  "name": "bodyweight jefferson curl",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "A slow forward bend that rolls through the spine one segment at a time. It builds back and hamstring mobility.",
+  "instructions": [
+    "Stand tall with feet hip-width apart.",
+    "Tuck your chin and roll down one vertebra at a time.",
+    "Let your arms hang toward the floor.",
+    "Reach only as far as is comfortable.",
+    "Reverse slowly to stand.",
+    "Move with control and keep the load light."
+  ],
+  "textSource": "opengym"
+}

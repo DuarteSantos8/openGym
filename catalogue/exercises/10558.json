@@ -1,0 +1,23 @@
+{
+  "id": "10558",
+  "name": "medicine ball sit up slam",
+  "bodyPart": "waist",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "shoulders",
+    "lats"
+  ],
+  "category": "plyometrics",
+  "description": "Sit up while raising a medicine ball overhead and slam it down. It combines a crunch with power.",
+  "instructions": [
+    "Lie on your back with knees bent, holding a medicine ball overhead.",
+    "Sit up in one motion, bringing the ball forward.",
+    "Slam the ball down in front of your feet.",
+    "Catch it on the bounce or pick it up.",
+    "Lie back with control and repeat."
+  ],
+  "textSource": "opengym"
+}

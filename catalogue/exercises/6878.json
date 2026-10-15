@@ -1,0 +1,23 @@
+{
+  "id": "6878",
+  "name": "sitting yoga pose siddhasana",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back",
+    "core"
+  ],
+  "category": "yoga",
+  "description": "A calm cross-legged seat that opens the hips and teaches you to sit tall.",
+  "instructions": [
+    "Sit on the floor and bend your knees.",
+    "Place one heel against your inner thigh and the other foot in front of it.",
+    "Rest your hands on your knees and lengthen your spine.",
+    "Relax your shoulders and look straight ahead.",
+    "Hold for 30-60 seconds, breathing slowly.",
+    "Switch the cross of your legs and repeat."
+  ],
+  "textSource": "opengym"
+}

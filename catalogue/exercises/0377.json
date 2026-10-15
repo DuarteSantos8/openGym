@@ -1,0 +1,24 @@
+{
+  "id": "0377",
+  "name": "dumbbell rear delt row_shoulder",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "Bent over, you row dumbbells with elbows flared out. It targets the rear shoulders and upper back.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and knees slightly bent.",
+    "Hold a dumbbell in each hand with your palms facing your body.",
+    "Bend forward at the waist, keeping your back straight and your core engaged.",
+    "Extend your arms straight down towards the floor, with a slight bend in your elbows.",
+    "Raise the dumbbells out to the sides, squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3755",
+  "textSource": "exercisedb"
+}

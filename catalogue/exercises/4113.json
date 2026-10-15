@@ -1,0 +1,22 @@
+{
+  "id": "4113",
+  "name": "landmine romanian deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "landmine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A hip hinge using a landmine barbell, training hamstrings and glutes.",
+  "instructions": [
+    "Stand holding the end of the bar close to your thighs.",
+    "Soften your knees and push your hips back.",
+    "Lower the bar along your legs with a flat back.",
+    "Feel a stretch in your hamstrings.",
+    "Drive your hips forward to stand tall."
+  ],
+  "textSource": "opengym"
+}

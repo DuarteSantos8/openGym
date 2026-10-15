@@ -1,0 +1,26 @@
+{
+  "id": "2138",
+  "name": "stationary bike run v. 3",
+  "bodyPart": "cardio",
+  "equipment": "stationary bike",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "Steady pedalling on a stationary bike at a pace that suits you. Builds endurance and leg conditioning.",
+  "instructions": [
+    "Adjust the seat height and position to ensure proper alignment.",
+    "Place your feet on the pedals and secure them with the straps if available.",
+    "Start pedaling at a comfortable pace.",
+    "Maintain a steady rhythm and increase the resistance as desired.",
+    "Engage your core muscles to maintain stability and proper posture.",
+    "Continue pedaling for the desired duration of your workout.",
+    "Gradually decrease the resistance and slow down before coming to a complete stop.",
+    "Stretch your legs and cool down after the workout."
+  ],
+  "femaleVariant": "2264",
+  "textSource": "exercisedb"
+}

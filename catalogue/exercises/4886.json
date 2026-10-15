@@ -1,0 +1,22 @@
+{
+  "id": "4886",
+  "name": "lying flat hip raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A hip raise done lying flat on the floor. It works the lower abs by lifting your hips with a controlled curl.",
+  "instructions": [
+    "Lie on your back with arms by your sides or under your hips.",
+    "Raise your legs so they point to the ceiling.",
+    "Tighten your abs and lift your hips a few centimetres.",
+    "Hold for a moment at the top.",
+    "Lower your hips slowly to the floor.",
+    "Keep the motion small and controlled."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "3890",
+  "name": "hanging knees to elbows",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "grip muscles",
+    "lats",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A hanging leg raise where the knees travel up to the elbows, working the abs and hip flexors hard.",
+  "instructions": [
+    "Hang from a pull-up bar with a firm grip.",
+    "Brace your core and tuck your knees.",
+    "Raise your knees up toward your elbows.",
+    "Curl your pelvis up at the top.",
+    "Lower slowly without swinging.",
+    "Repeat for the desired reps."
+  ],
+  "textSource": "opengym"
+}

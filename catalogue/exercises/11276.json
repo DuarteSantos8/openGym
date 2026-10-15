@@ -1,0 +1,21 @@
+{
+  "id": "11276",
+  "name": "cable prone single leg curl v. 3",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A lying face-down leg curl on a cable. Training one leg at a time builds the hamstrings evenly.",
+  "instructions": [
+    "Lie face down with an ankle strap attached to a low cable.",
+    "Keep your hips pressed down.",
+    "Curl your heel toward your glutes.",
+    "Squeeze your hamstring at the top.",
+    "Lower slowly, finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

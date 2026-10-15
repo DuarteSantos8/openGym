@@ -1,0 +1,23 @@
+{
+  "id": "11570",
+  "name": "resistance band standing hip extension",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "Standing, you extend one leg behind you against band tension to work the glutes.",
+  "instructions": [
+    "Loop the band around your ankles or secure it low, and stand tall.",
+    "Hold a support for balance.",
+    "Keep your core tight.",
+    "Kick one leg straight back without arching the back.",
+    "Squeeze the glute at the end.",
+    "Return slowly, then switch legs."
+  ],
+  "textSource": "opengym"
+}

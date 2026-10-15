@@ -1,0 +1,36 @@
+{
+  "id": "0772",
+  "name": "smith standing behind head military press",
+  "bodyPart": "shoulders",
+  "equipment": "smith machine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A standing overhead press with the smith bar lowered behind the head. It builds the shoulders and triceps and needs good shoulder mobility.",
+  "instructions": [
+    "Adjust the seat height of the smith machine so that the bar is at shoulder level.",
+    "Stand with your feet shoulder-width apart and your knees slightly bent.",
+    "Grasp the bar with an overhand grip, slightly wider than shoulder-width apart.",
+    "Lift the bar off the rack and step back, maintaining a stable stance.",
+    "Position the bar behind your head, resting on your upper traps.",
+    "Keep your core engaged and your chest lifted throughout the exercise.",
+    "Press the bar overhead by extending your arms, fully straightening them.",
+    "Pause briefly at the top of the movement, then slowly lower the bar back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "deltoids"
+    ],
+    "secondaries": [
+      "chest",
+      "triceps",
+      "trapezius",
+      "serratus"
+    ]
+  },
+  "textSource": "exercisedb"
+}

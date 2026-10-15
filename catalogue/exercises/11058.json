@@ -1,0 +1,22 @@
+{
+  "id": "11058",
+  "name": "dumbbell hip supported romanian deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A Romanian deadlift with your hips supported against a surface. It teaches a clean hip hinge and loads the hamstrings.",
+  "instructions": [
+    "Stand with your hips lightly against the support, holding dumbbells in front of your thighs.",
+    "Soften your knees and keep your back flat.",
+    "Push your hips back and slide the dumbbells down your legs.",
+    "Stop when you feel a stretch in your hamstrings.",
+    "Drive your hips forward to stand tall."
+  ],
+  "textSource": "opengym"
+}

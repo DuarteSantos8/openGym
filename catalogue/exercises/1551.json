@@ -1,0 +1,23 @@
+{
+  "id": "1551",
+  "name": "dumbbell decline bench lunge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A rear-foot-elevated lunge using a decline bench and dumbbells. The raised back foot shifts the load onto the front leg.",
+  "instructions": [
+    "Hold a dumbbell in each hand and stand facing away from a decline bench.",
+    "Place the top of one foot on the bench behind you.",
+    "Lower your hips straight down until your front thigh is about parallel to the floor.",
+    "Keep your torso upright and your front knee tracking over your toes.",
+    "Push through your front foot to rise, then switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

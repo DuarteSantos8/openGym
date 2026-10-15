@@ -1,0 +1,22 @@
+{
+  "id": "4152",
+  "name": "dumbbell close grip curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A biceps curl with the dumbbells held close together. This emphasises the outer biceps through a controlled curl.",
+  "instructions": [
+    "Stand tall holding dumbbells with palms forward and hands close together.",
+    "Pin your elbows to your sides.",
+    "Curl the weights up toward your shoulders.",
+    "Squeeze your biceps at the top.",
+    "Lower slowly until your arms are straight.",
+    "Avoid swinging your torso."
+  ],
+  "textSource": "opengym"
+}

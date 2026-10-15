@@ -1,0 +1,20 @@
+{
+  "id": "1352",
+  "name": "lower back curl",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Lie face down and lift your chest off the floor in a curling motion. It strengthens the lower back with a gentle bodyweight movement.",
+  "instructions": [
+    "Lie flat on your stomach with your legs extended and your arms by your sides.",
+    "Engage your glutes and hamstrings, and slowly lift your upper body off the ground, curling your back upwards.",
+    "Pause for a moment at the top, then slowly lower your upper body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

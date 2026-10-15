@@ -1,0 +1,23 @@
+{
+  "id": "2726",
+  "name": "strongman hercules hold",
+  "bodyPart": "full body",
+  "equipment": "weight plate",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "upper back",
+    "shoulders",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "Holding two heavy weights, arms out, for time to build grip and shoulder endurance.",
+  "instructions": [
+    "Pick up the weights and stand tall.",
+    "Hold your arms out to your sides.",
+    "Brace your core and keep your shoulders down.",
+    "Hold the position as long as you can.",
+    "Lower under control when done."
+  ],
+  "textSource": "opengym"
+}

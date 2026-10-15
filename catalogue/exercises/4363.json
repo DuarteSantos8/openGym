@@ -1,0 +1,22 @@
+{
+  "id": "4363",
+  "name": "counterbalanced skater squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A single-leg squat with arms forward as a counterweight. It builds balance and strength.",
+  "instructions": [
+    "Stand on one leg and extend the other behind you.",
+    "Reach your arms forward for balance.",
+    "Bend your standing knee and lower slowly.",
+    "Touch lightly with your back knee if needed.",
+    "Drive back up and switch legs."
+  ],
+  "textSource": "opengym"
+}

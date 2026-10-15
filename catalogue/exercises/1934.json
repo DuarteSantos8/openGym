@@ -1,0 +1,21 @@
+{
+  "id": "1934",
+  "name": "seated knee up extended rotation stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A seated twist with the raised knee and the back leg extended, giving the hip a longer stretch.",
+  "instructions": [
+    "Sit on the floor with one leg extended and the other knee bent and crossed over it.",
+    "Rotate your torso toward the bent knee, using the opposite elbow to guide it, until the hip stretches.",
+    "Keep your spine long and look over your back shoulder.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

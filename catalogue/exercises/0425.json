@@ -1,0 +1,20 @@
+{
+  "id": "0425",
+  "name": "dumbbell standing one arm reverse curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Standing, you curl one dumbbell with an overhand grip. It works the biceps, the muscle under them and the forearm.",
+  "instructions": [
+    "Stand up straight with your feet shoulder-width apart and hold a dumbbell in one hand with an overhand grip.",
+    "Keep your arm fully extended and close to your body, with your palm facing down.",
+    "Slowly curl the dumbbell up towards your shoulder, keeping your upper arm stationary.",
+    "Pause for a moment at the top, then slowly lower the dumbbell back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch to the other arm."
+  ],
+  "textSource": "exercisedb"
+}

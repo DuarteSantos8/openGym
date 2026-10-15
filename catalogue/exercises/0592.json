@@ -1,0 +1,30 @@
+{
+  "id": "0592",
+  "name": "lever preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "leverage machine",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "With your arms on a preacher pad, you curl the handles up. Isolates the biceps with no swinging.",
+  "instructions": [
+    "Adjust the seat height and position yourself on the leverage machine.",
+    "Place your upper arms on the pad and grip the handles with an underhand grip.",
+    "Keep your back straight and your elbows positioned on the pad.",
+    "Exhale and curl your forearms towards your upper arms, contracting your biceps.",
+    "Pause for a moment at the top of the movement, squeezing your biceps.",
+    "Inhale and slowly lower the handles back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "biceps"
+    ],
+    "secondaries": [
+      "forearm"
+    ]
+  },
+  "textSource": "exercisedb"
+}

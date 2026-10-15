@@ -1,0 +1,21 @@
+{
+  "id": "1954",
+  "name": "quadriceps stretch on box",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "A quad stretch with the back foot resting on a box or bench, opening the front of the thigh.",
+  "instructions": [
+    "Stand facing away from a box or bench and place the top of one foot on it behind you.",
+    "Stand tall on the front leg with a soft knee.",
+    "Tuck your pelvis and lower the hips slightly until you feel a stretch in the front of the thigh.",
+    "Hold a support for balance if needed.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

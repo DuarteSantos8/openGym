@@ -1,0 +1,23 @@
+{
+  "id": "2336",
+  "name": "barbell chest bench press forearms (form check)",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A bench press form check that shows how the forearms should line up under the bar for a safe and strong press.",
+  "instructions": [
+    "Lie on a bench with your eyes under the bar and your feet planted.",
+    "Grip the bar slightly wider than shoulder-width.",
+    "Keep your forearms vertical when the bar is at your chest.",
+    "Lower the bar with control to the mid-chest.",
+    "Press it up to straight arms without flaring the elbows.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

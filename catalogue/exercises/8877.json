@@ -1,0 +1,22 @@
+{
+  "id": "8877",
+  "name": "resistance band fingers extension",
+  "bodyPart": "lower arms",
+  "equipment": "resistance band",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist extensors",
+    "hands"
+  ],
+  "category": "rehab",
+  "description": "Opening your fingers against a band strengthens the small extensor muscles of the hand and forearm. It is a good balance for all the gripping you do.",
+  "instructions": [
+    "Loop a light band around your fingers and thumb of one hand.",
+    "Rest your forearm on a table or your thigh.",
+    "Start with the fingers curled in a relaxed fist.",
+    "Spread your fingers open against the band's pull.",
+    "Close them back slowly with control.",
+    "Do all reps, then switch hands."
+  ],
+  "textSource": "opengym"
+}

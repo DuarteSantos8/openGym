@@ -1,0 +1,22 @@
+{
+  "id": "6742",
+  "name": "cable donkey diagonal kickback",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A donkey kickback on a cable that sends the leg back and slightly out. It focuses on the glutes.",
+  "instructions": [
+    "Attach an ankle cuff to a low pulley and put it on one ankle.",
+    "Get on all fours facing the machine.",
+    "Keep your core braced and back flat.",
+    "Kick the leg back and slightly out on a diagonal.",
+    "Squeeze your glute at the top.",
+    "Return slowly, then switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

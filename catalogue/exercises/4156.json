@@ -1,0 +1,23 @@
+{
+  "id": "4156",
+  "name": "lying leg hip side raise on floor",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "adductors"
+  ],
+  "category": "calisthenics",
+  "description": "A side lying raise where you lift both legs together toward the ceiling. It works the obliques and the sides of your trunk.",
+  "instructions": [
+    "Lie on your side with legs stacked and straight.",
+    "Rest your head on your lower arm and brace your core.",
+    "Lift both legs together a short way off the floor.",
+    "Pause at the top, squeezing your side.",
+    "Lower slowly without touching the floor.",
+    "Complete reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

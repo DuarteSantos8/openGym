@@ -1,0 +1,23 @@
+{
+  "id": "5004",
+  "name": "suspension sumo squat",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "adductors",
+    "quadriceps",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A wide-stance squat holding suspension handles for support. It trains the inner thighs and glutes.",
+  "instructions": [
+    "Stand facing the anchor holding the handles with a wide stance.",
+    "Turn your toes out slightly.",
+    "Sit your hips down, keeping knees over toes.",
+    "Use the straps lightly for balance.",
+    "Push through your heels to stand.",
+    "Squeeze your glutes at the top."
+  ],
+  "textSource": "opengym"
+}

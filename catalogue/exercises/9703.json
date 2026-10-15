@@ -1,0 +1,23 @@
+{
+  "id": "9703",
+  "name": "kettlebell z press",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "An overhead press done seated on the floor with legs straight. It removes leg drive and challenges the core.",
+  "instructions": [
+    "Sit on the floor with legs extended and hold a kettlebell at your shoulder.",
+    "Sit tall and brace your core.",
+    "Press the kettlebell overhead until your arm is straight.",
+    "Lower it slowly to your shoulder.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

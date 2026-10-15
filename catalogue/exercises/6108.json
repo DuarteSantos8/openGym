@@ -1,0 +1,22 @@
+{
+  "id": "6108",
+  "name": "bodyweight lying legs curl",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A floor-based curl where you bend the knees against no added load. It targets the hamstrings in a simple way.",
+  "instructions": [
+    "Lie on your front with your legs straight.",
+    "Rest your forehead on your hands.",
+    "Bend your knees and bring your heels toward your glutes.",
+    "Squeeze the hamstrings at the top.",
+    "Lower your feet slowly back to the floor.",
+    "Keep your hips pressed down throughout."
+  ],
+  "textSource": "opengym"
+}

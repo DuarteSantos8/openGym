@@ -1,0 +1,33 @@
+{
+  "id": "0293",
+  "name": "dumbbell bent over row",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A two-arm dumbbell row done bent over. You pull the weights to the chest to build the upper back.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, knees slightly bent, and hold a dumbbell in each hand with your palms facing your body.",
+    "Bend forward at the hips, keeping your back straight and your core engaged.",
+    "Let your arms hang straight down towards the floor, with your elbows slightly bent.",
+    "Pull the dumbbells up towards your chest, squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly lower the dumbbells back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ]
+  },
+  "femaleVariant": "2482",
+  "textSource": "exercisedb"
+}

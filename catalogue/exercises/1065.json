@@ -1,0 +1,24 @@
+{
+  "id": "1065",
+  "name": "lying hip lift (on stability ball)",
+  "bodyPart": "upper legs",
+  "equipment": "stability ball",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A glute bridge with your feet or upper back on a stability ball. The unstable surface adds a balance challenge.",
+  "instructions": [
+    "Lie on your back with your heels resting on the stability ball.",
+    "Press your arms into the floor for support.",
+    "Lift your hips until your body forms a straight line.",
+    "Squeeze your glutes at the top.",
+    "Lower your hips under control.",
+    "Keep the ball steady throughout."
+  ],
+  "femaleVariant": "0618",
+  "textSource": "opengym"
+}

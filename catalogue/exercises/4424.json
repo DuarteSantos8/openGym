@@ -1,0 +1,24 @@
+{
+  "id": "4424",
+  "name": "barbell lying close grip overhand row on rack",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "rear deltoids",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight row under a rack-mounted barbell with a close overhand grip, targeting the upper back and lats.",
+  "instructions": [
+    "Set a barbell in a rack at about waist height.",
+    "Lie beneath it and grip the bar overhand with hands close together.",
+    "Keep your body straight from head to heels.",
+    "Pull your chest to the bar and squeeze your shoulder blades.",
+    "Lower with control."
+  ],
+  "textSource": "opengym"
+}

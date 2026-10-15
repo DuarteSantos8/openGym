@@ -1,0 +1,22 @@
+{
+  "id": "8712",
+  "name": "lever romanian deadlift (plate loaded)",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A hip hinge on a plate-loaded machine that trains the hamstrings and glutes.",
+  "instructions": [
+    "Stand in the machine and grip the handles with a flat back.",
+    "Keep a soft bend in your knees.",
+    "Hinge at the hips, pushing them back as you lower.",
+    "Stop when you feel the hamstrings stretch.",
+    "Drive your hips forward to stand."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "0482",
+  "name": "hip crunch (knees bent)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A reverse-crunch style move lifting the hips off the floor with the knees bent. It works the lower abs.",
+  "instructions": [
+    "Lie on your back with your knees bent and lifted over your hips.",
+    "Place your hands at your sides.",
+    "Curl your hips off the floor by bringing your knees toward your chest.",
+    "Pause at the top.",
+    "Lower slowly back to the start.",
+    "Use your abs instead of swinging your legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4630",
+  "name": "side to side leg swings",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "mobility",
+  "description": "A dynamic warm-up swinging one leg across your body and out to the side to loosen the hips.",
+  "instructions": [
+    "Stand tall and hold a wall or support for balance.",
+    "Shift onto one leg.",
+    "Swing the other leg across your body, then out to the side.",
+    "Keep your torso upright and the swing controlled.",
+    "Do your reps, then switch legs."
+  ],
+  "femaleVariant": "2574",
+  "textSource": "opengym"
+}

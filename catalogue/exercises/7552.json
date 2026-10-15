@@ -1,0 +1,23 @@
+{
+  "id": "7552",
+  "name": "barbell zercher bulgarian split squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "hamstrings",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Rear-foot elevated split squat with the barbell in your elbow crooks.",
+  "instructions": [
+    "Rest the barbell in the crooks of your elbows.",
+    "Put your rear foot on a bench.",
+    "Lower your back knee toward the floor.",
+    "Keep your chest up.",
+    "Drive up and switch legs."
+  ],
+  "textSource": "opengym"
+}

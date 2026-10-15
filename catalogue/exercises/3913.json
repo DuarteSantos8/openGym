@@ -1,0 +1,24 @@
+{
+  "id": "3913",
+  "name": "dumbbell one arm front raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "trapezius",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-arm raise in front of you that trains the front delts.",
+  "instructions": [
+    "Stand with a dumbbell in one hand in front of your thigh.",
+    "Keep your core braced.",
+    "Raise your arm forward to shoulder height.",
+    "Pause at the top.",
+    "Lower slowly.",
+    "Switch arms after your reps."
+  ],
+  "femaleVariant": "7430",
+  "textSource": "opengym"
+}

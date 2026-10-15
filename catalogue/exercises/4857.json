@@ -1,0 +1,23 @@
+{
+  "id": "4857",
+  "name": "barbell behind the back push press",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "quadriceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A push press with the bar behind the neck. It builds overhead power.",
+  "instructions": [
+    "Hold a barbell on your upper back with a wide grip.",
+    "Dip your knees slightly.",
+    "Drive up explosively and press overhead.",
+    "Lock out your arms.",
+    "Lower the bar back to your shoulders."
+  ],
+  "textSource": "opengym"
+}

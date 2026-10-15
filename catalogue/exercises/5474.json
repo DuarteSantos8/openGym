@@ -1,0 +1,23 @@
+{
+  "id": "5474",
+  "name": "supinated narrow grip pull up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "brachialis",
+    "upper back",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "Chin-up style pull-up with a close underhand grip that puts extra work on the biceps along with the lats.",
+  "instructions": [
+    "Grip the bar with palms facing you, hands close together.",
+    "Hang with arms straight and shoulders pulled down.",
+    "Pull your elbows down and in until your chin is above the bar.",
+    "Lower under control to full arm extension.",
+    "Keep your legs still and avoid swinging."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "10386",
+  "name": "weighted sandbag carry (shoulders)",
+  "bodyPart": "full body",
+  "equipment": "sandbag",
+  "target": "traps",
+  "secondaryMuscles": [
+    "core",
+    "glutes",
+    "upper back",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A walking carry with a sandbag across the shoulders, building posture and trunk strength.",
+  "instructions": [
+    "Lift the sandbag onto your shoulders and hold it there.",
+    "Stand tall with your core braced.",
+    "Walk forward with steady, controlled steps.",
+    "Keep your ribs stacked over your hips.",
+    "Carry for a set distance or time, then set the bag down carefully."
+  ],
+  "textSource": "opengym"
+}

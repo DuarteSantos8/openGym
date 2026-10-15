@@ -1,0 +1,23 @@
+{
+  "id": "2907",
+  "name": "power sled backward push",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Pushing a power sled while walking backward. Builds quad strength and conditioning.",
+  "instructions": [
+    "Stand behind the sled with your back to it and grip the handles.",
+    "Brace your core and lean slightly into the load.",
+    "Walk forward in powerful steps, pushing the sled.",
+    "Keep your stride steady and breathing controlled.",
+    "Cover a set distance, then rest."
+  ],
+  "textSource": "opengym"
+}

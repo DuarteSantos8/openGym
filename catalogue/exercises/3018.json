@@ -1,0 +1,21 @@
+{
+  "id": "3018",
+  "name": "standing calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight calf raise that builds lower-leg strength and ankle stability.",
+  "instructions": [
+    "Stand tall with feet hip-width apart.",
+    "Rise up onto the balls of your feet as high as you can.",
+    "Pause at the top for a second.",
+    "Lower your heels slowly back to the floor.",
+    "Hold a wall for balance if needed."
+  ],
+  "textSource": "opengym"
+}

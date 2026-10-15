@@ -1,0 +1,22 @@
+{
+  "id": "0849",
+  "name": "weighted seated twist (on stability ball)",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A seated twist on a stability ball holding a weight at the chest. It trains the obliques and builds core control.",
+  "instructions": [
+    "Sit on a stability ball with your feet flat on the ground and your knees bent at a 90-degree angle.",
+    "Hold a weight plate or dumbbell with both hands close to your chest.",
+    "Engage your core and slowly rotate your torso to one side, keeping your hips stable.",
+    "Pause for a moment at the end of the rotation, then slowly return to the starting position.",
+    "Repeat the rotation to the other side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

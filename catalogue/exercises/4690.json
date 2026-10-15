@@ -1,0 +1,23 @@
+{
+  "id": "4690",
+  "name": "leg over knee glute bridge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A single-leg style glute bridge with one ankle resting on the opposite knee.",
+  "instructions": [
+    "Lie on your back with knees bent and one ankle crossed over the other knee.",
+    "Press through the grounded foot.",
+    "Lift your hips until your body forms a line.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly and switch sides."
+  ],
+  "femaleVariant": "4670",
+  "textSource": "opengym"
+}

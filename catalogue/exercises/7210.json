@@ -1,0 +1,24 @@
+{
+  "id": "7210",
+  "name": "resistance band plank jack",
+  "bodyPart": "waist",
+  "equipment": "resistance band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "obliques",
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A plank with jumping feet and a band around the legs, working your core while the hips resist.",
+  "instructions": [
+    "Place the band above your knees and get into a high plank.",
+    "Brace your abs and keep your hips level.",
+    "Jump your feet out wide.",
+    "Jump them back together.",
+    "Keep your hands under your shoulders.",
+    "Repeat at a steady pace."
+  ],
+  "textSource": "opengym"
+}

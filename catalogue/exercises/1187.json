@@ -1,0 +1,22 @@
+{
+  "id": "1187",
+  "name": "kettlebell sit up",
+  "bodyPart": "waist",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A sit-up holding a kettlebell for extra resistance on the abs.",
+  "instructions": [
+    "Lie on your back with knees bent and hold a kettlebell at your chest.",
+    "Brace your core.",
+    "Curl up until your torso is upright.",
+    "Keep the kettlebell close to you.",
+    "Lower slowly back down."
+  ],
+  "femaleVariant": "4522",
+  "textSource": "opengym"
+}

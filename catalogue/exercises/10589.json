@@ -1,0 +1,22 @@
+{
+  "id": "10589",
+  "name": "stick lying front raise",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "mobility",
+  "description": "Lying on your back, raise a light stick from your hips to overhead. It helps shoulder mobility.",
+  "instructions": [
+    "Lie on your back holding a stick with an overhand grip.",
+    "Keep your arms straight.",
+    "Raise the stick overhead as far as is comfortable.",
+    "Return to your thighs slowly.",
+    "Keep your ribs down throughout."
+  ],
+  "textSource": "opengym"
+}

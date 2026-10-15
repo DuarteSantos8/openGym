@@ -1,0 +1,21 @@
+{
+  "id": "4369",
+  "name": "bodyweight standing biceps curl v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "brachialis"
+  ],
+  "category": "strength",
+  "description": "A light, no-equipment biceps curl using self-resistance, useful for warming up.",
+  "instructions": [
+    "Stand tall with arms at your sides.",
+    "Make fists and curl your hands to your shoulders.",
+    "Tense your biceps at the top.",
+    "Lower slowly.",
+    "Keep your elbows pinned."
+  ],
+  "textSource": "opengym"
+}

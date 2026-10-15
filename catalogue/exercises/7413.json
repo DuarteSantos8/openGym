@@ -1,0 +1,24 @@
+{
+  "id": "7413",
+  "name": "elevated two legs hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "core",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A hip thrust with your upper back on a bench, driving both hips up to train the glutes.",
+  "instructions": [
+    "Sit on the floor with your upper back against a bench and knees bent.",
+    "Plant your feet hip-width apart.",
+    "Drive through your heels to lift your hips.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

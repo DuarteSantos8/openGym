@@ -1,0 +1,21 @@
+{
+  "id": "2788",
+  "name": "spine (lumbar) rotation",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "Twisting the trunk to each side, working the obliques and mobilising the spine.",
+  "instructions": [
+    "Stand or sit tall with a relaxed posture and the joint in a neutral starting position.",
+    "Stand with feet hip width apart and your arms crossed over your chest.",
+    "Rotate your torso to one side while keeping the hips facing forward.",
+    "Return to center, then rotate to the other side.",
+    "Repeat for 10-15 smooth reps, then switch sides if you are working one side at a time."
+  ],
+  "textSource": "opengym"
+}

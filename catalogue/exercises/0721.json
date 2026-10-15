@@ -1,0 +1,22 @@
+{
+  "id": "0721",
+  "name": "side wrist pull stretch",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrists",
+    "hands"
+  ],
+  "category": "stretching",
+  "description": "You pull your wrist gently with the other hand to stretch the forearm. Hold on each side.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your arms extended in front of you.",
+    "Extend your right arm out to the side, parallel to the ground, with your palm facing down.",
+    "With your left hand, grab your right hand and gently pull it towards your body, feeling a stretch in your right forearm.",
+    "Hold the stretch for 15-30 seconds, then release.",
+    "Repeat on the other side."
+  ],
+  "femaleVariant": "4308",
+  "textSource": "exercisedb"
+}

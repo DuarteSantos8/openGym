@@ -1,0 +1,20 @@
+{
+  "id": "1738",
+  "name": "dumbbell seated reverse grip one arm overhead tricep extension",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A one-arm overhead extension done seated with an underhand grip on the dumbbell. It works the triceps through a long, stretched range.",
+  "instructions": [
+    "Sit on a bench with your back straight and feet flat on the ground.",
+    "Hold a dumbbell with an underhand grip and extend your arm straight up overhead.",
+    "Lower the dumbbell behind your head by bending your elbow, keeping your upper arm stationary.",
+    "Pause for a moment, then extend your arm back up to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

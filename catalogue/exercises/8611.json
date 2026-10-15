@@ -1,0 +1,22 @@
+{
+  "id": "8611",
+  "name": "resistance band seated eversion foot",
+  "bodyPart": "lower legs",
+  "equipment": "band",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "shins"
+  ],
+  "category": "rehab",
+  "description": "A seated ankle drill that works the muscles on the outside of the lower leg.",
+  "instructions": [
+    "Sit with one leg extended and loop the band around the forefoot, anchored on the inside.",
+    "Keep your leg still.",
+    "Turn your foot outward against the band.",
+    "Return slowly.",
+    "Finish the reps, then switch feet."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,40 @@
+{
+  "id": "0529",
+  "name": "kettlebell double snatch",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "forearms",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "You swing two kettlebells from the floor to overhead in one motion. It builds the hips, shoulders and grip.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a kettlebell in each hand at arm's length in front of your thighs.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back flat and chest up.",
+    "In one explosive motion, extend your hips, knees, and ankles, and simultaneously pull the kettlebells up towards your shoulders.",
+    "As the kettlebells reach shoulder level, rotate your wrists and punch the kettlebells overhead, fully extending your arms.",
+    "Lower the kettlebells back down to the starting position and repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "bodyPart": "full body",
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "hamstring",
+      "trapezius",
+      "deltoids"
+    ],
+    "secondaries": [
+      "calves",
+      "forearm",
+      "triceps",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "0403",
+  "name": "dumbbell seated revers grip concentration curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Seated with your elbow against your thigh, you curl a dumbbell with an overhand grip. It targets the forearm and the upper arm flexors.",
+  "instructions": [
+    "Sit on a bench with your feet flat on the ground and hold a dumbbell in one hand, palm facing up.",
+    "Rest your elbow on the inside of your thigh, just above the knee.",
+    "Keeping your upper arm stationary, exhale and curl the dumbbell towards your shoulder.",
+    "Pause for a moment at the top, squeezing your biceps.",
+    "Inhale and slowly lower the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

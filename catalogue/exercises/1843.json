@@ -1,0 +1,22 @@
+{
+  "id": "1843",
+  "name": "assisted rotating neck stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "upper back"
+  ],
+  "category": "stretching",
+  "description": "A hand-assisted head turn that stretches the muscles at the side of the neck.",
+  "instructions": [
+    "Sit tall with your shoulders relaxed.",
+    "Turn your head to one side as far as is comfortable.",
+    "Place one hand on your chin and the other on the back of your head.",
+    "Add light pressure to deepen the turn.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

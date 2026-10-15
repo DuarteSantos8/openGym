@@ -1,0 +1,23 @@
+{
+  "id": "2941",
+  "name": "forearm wall slide",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "serratus anterior",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper back",
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "mobility",
+  "description": "Sliding your forearms up a wall to wake up the shoulder blade muscles. It improves overhead movement.",
+  "instructions": [
+    "Stand facing a wall with your forearms on it, elbows at shoulder height.",
+    "Lean in slightly and keep your abs braced.",
+    "Slide your forearms up the wall as you reach upward.",
+    "Pause at the top without arching your back.",
+    "Slide back down and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,42 @@
+{
+  "id": "1347",
+  "name": "lever one arm lateral wide pulldown",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A one-arm pulldown on a lever machine that works the lats one side at a time. It helps even out strength between left and right.",
+  "instructions": [
+    "Adjust the seat height and position yourself on the machine with your chest against the pad and your feet flat on the floor.",
+    "Grasp the handle with an overhand grip and fully extend your arm, keeping a slight bend in your elbow.",
+    "Pull the handle down and across your body towards your opposite hip, squeezing your lat muscle at the bottom of the movement.",
+    "Slowly return the handle to the starting position, fully extending your arm.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm",
+      "trapezius",
+      "triceps"
+    ],
+    "weights": {
+      "upper-back": 1,
+      "biceps": 0.4,
+      "deltoids": 0.4,
+      "forearm": 0.4,
+      "trapezius": 0.4,
+      "triceps": 0
+    }
+  },
+  "textSource": "exercisedb"
+}

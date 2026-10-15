@@ -1,0 +1,24 @@
+{
+  "id": "5990",
+  "name": "high hurdle jump to sprint and cut",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "Jump over a high hurdle, land and sprint into a sharp cut, training explosive power and reactive agility.",
+  "instructions": [
+    "Stand facing a high hurdle with feet shoulder-width apart.",
+    "Swing your arms and jump over it, tucking your knees.",
+    "Land softly with bent knees.",
+    "Sprint forward right away.",
+    "Plant and cut sharply to one side.",
+    "Walk back and repeat, alternating cut directions."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4055",
+  "name": "dumbbell seated lateral raise on stability ball",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "core",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Seated side raise performed on a stability ball. It trains the side delts and trunk balance.",
+  "instructions": [
+    "Sit upright on a stability ball with a dumbbell in each hand at your sides.",
+    "Keep a slight bend in your elbows.",
+    "Raise your arms out to the sides to shoulder height.",
+    "Pause briefly.",
+    "Lower slowly without swinging."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "9488",
+  "name": "pike stand",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "hamstrings",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "A folded stance with hips high and head down, shifting weight over your hands. It opens the hamstrings and loads the shoulders.",
+  "instructions": [
+    "Start on all fours and walk your feet in while lifting your hips high.",
+    "Form an upside-down V with straight arms and legs.",
+    "Press the floor away and let your head hang between your arms.",
+    "Keep your heels reaching toward the floor.",
+    "Hold for 20-30 seconds while breathing slowly."
+  ],
+  "textSource": "opengym"
+}

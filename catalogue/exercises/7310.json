@@ -1,0 +1,22 @@
+{
+  "id": "7310",
+  "name": "seated hamstring stretch with chair",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A seated stretch using a chair to lengthen the back of the thigh without a deep fold.",
+  "instructions": [
+    "Sit on the front edge of a chair.",
+    "Straighten one leg with the heel on the floor and toes up.",
+    "Keep the other foot flat and your back long.",
+    "Hinge forward at the hips until you feel a stretch.",
+    "Hold for 20-30 seconds, breathing calmly.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

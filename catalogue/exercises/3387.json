@@ -1,0 +1,23 @@
+{
+  "id": "3387",
+  "name": "dips between chairs",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "calisthenics",
+  "description": "Bodyweight dips using two sturdy chairs, working the triceps and chest.",
+  "instructions": [
+    "Place two sturdy chairs facing each other and brace them against a wall.",
+    "Grip the seats, lift your body and straighten your arms.",
+    "Lower yourself by bending your elbows until your upper arms are about parallel to the floor.",
+    "Keep your elbows pointing back and your chest up.",
+    "Press up to straight arms.",
+    "Make sure the chairs cannot slide."
+  ],
+  "textSource": "opengym"
+}

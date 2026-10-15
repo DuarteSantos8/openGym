@@ -1,0 +1,23 @@
+{
+  "id": "5220",
+  "name": "extended side angle yoga pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "obliques",
+    "hamstrings",
+    "glutes",
+    "groin"
+  ],
+  "category": "yoga",
+  "description": "A wide-legged yoga lunge with a long side stretch. It opens the hips and sides of the body.",
+  "instructions": [
+    "Step your feet wide apart and turn one foot out.",
+    "Bend the front knee over the ankle.",
+    "Rest your forearm on your thigh and reach the other arm overhead.",
+    "Lengthen the whole side body and look up if comfortable.",
+    "Hold for 20-30 seconds and switch sides."
+  ],
+  "textSource": "opengym"
+}

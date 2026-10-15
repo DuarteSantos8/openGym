@@ -1,0 +1,28 @@
+{
+  "id": "1376",
+  "name": "cable standing one leg calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "cable",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "A one-leg standing calf raise using a cable for resistance. It trains each calf separately and helps balance.",
+  "instructions": [
+    "Stand facing a cable machine with your feet shoulder-width apart.",
+    "Hold onto the cable machine for support.",
+    "Lift one leg off the ground and balance on the other leg.",
+    "Slowly raise your heel off the ground, lifting your body up onto your toes.",
+    "Pause for a moment at the top, then slowly lower your heel back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch legs."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "calves"
+    ],
+    "secondaries": []
+  },
+  "textSource": "exercisedb"
+}

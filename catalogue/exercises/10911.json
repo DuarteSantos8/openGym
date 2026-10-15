@@ -1,0 +1,21 @@
+{
+  "id": "10911",
+  "name": "seated squeezing toes",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "feet",
+    "ankles"
+  ],
+  "category": "mobility",
+  "description": "Curling and squeezing the toes while seated. It wakes up the small muscles of the feet.",
+  "instructions": [
+    "Sit on a chair with both feet flat on the floor.",
+    "Curl all your toes down as if gripping the floor.",
+    "Squeeze for a couple of seconds.",
+    "Relax and spread your toes wide.",
+    "Repeat smoothly."
+  ],
+  "textSource": "opengym"
+}

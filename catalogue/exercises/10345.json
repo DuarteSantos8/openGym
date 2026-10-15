@@ -1,0 +1,22 @@
+{
+  "id": "10345",
+  "name": "superman pulse",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "rear deltoids"
+  ],
+  "category": "calisthenics",
+  "description": "Lie face down and lift arms and legs with small pulses. It strengthens the lower back and glutes.",
+  "instructions": [
+    "Lie face down with arms extended in front.",
+    "Lift your arms, chest and legs a few inches.",
+    "Pulse them up and down in small movements.",
+    "Keep your neck neutral.",
+    "Lower and rest after your set."
+  ],
+  "textSource": "opengym"
+}

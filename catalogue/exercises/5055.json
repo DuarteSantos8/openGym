@@ -1,0 +1,22 @@
+{
+  "id": "5055",
+  "name": "dead hang stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "grip muscles",
+    "forearms"
+  ],
+  "category": "stretching",
+  "description": "Hanging from a bar to stretch the lats and shoulders. It also decompresses the spine.",
+  "instructions": [
+    "Grab a pull-up bar with an overhand grip, hands shoulder width apart.",
+    "Hang with your arms straight and feet off the floor.",
+    "Relax your shoulders and let your body lengthen.",
+    "Breathe steadily.",
+    "Hold for 20-30 seconds."
+  ],
+  "textSource": "opengym"
+}

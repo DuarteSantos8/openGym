@@ -1,0 +1,21 @@
+{
+  "id": "4343",
+  "name": "dumbbell one arm triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A single-arm overhead extension with a dumbbell. It isolates the triceps and builds arm strength.",
+  "instructions": [
+    "Hold a dumbbell in one hand and press it overhead.",
+    "Keep your upper arm close to your head with the elbow pointing up.",
+    "Bend the elbow and lower the dumbbell behind your head.",
+    "Extend the elbow to press the weight back up.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

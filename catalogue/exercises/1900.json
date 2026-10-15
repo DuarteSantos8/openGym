@@ -1,0 +1,22 @@
+{
+  "id": "1900",
+  "name": "standing bent knee hip adductor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "inner thighs",
+    "groin"
+  ],
+  "category": "stretching",
+  "description": "Standing stretch with a bent knee that opens the inner thigh and hip.",
+  "instructions": [
+    "Stand with your feet wide.",
+    "Bend one knee and lower into that side.",
+    "Keep your other leg straight.",
+    "Push the bent knee gently out with your hand.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

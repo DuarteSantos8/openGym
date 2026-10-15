@@ -1,0 +1,23 @@
+{
+  "id": "0355",
+  "name": "dumbbell one arm lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "You raise one dumbbell out to the side to shoulder height, one arm at a time. It builds the side of the shoulder.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in one hand with your palm facing your body.",
+    "Keep your back straight and your core engaged throughout the exercise.",
+    "Raise the dumbbell to the side, keeping your arm straight and your palm facing down.",
+    "Continue lifting until your arm is parallel to the ground.",
+    "Pause for a moment at the top, then slowly lower the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch to the other arm."
+  ],
+  "femaleVariant": "2591",
+  "textSource": "exercisedb"
+}

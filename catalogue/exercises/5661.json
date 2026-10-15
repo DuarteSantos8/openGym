@@ -1,0 +1,23 @@
+{
+  "id": "5661",
+  "name": "dumbbell bent over row with chest support",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "Chest-supported dumbbell row to reduce lower back stress.",
+  "instructions": [
+    "Lie chest down on an incline bench with dumbbells.",
+    "Let your arms hang.",
+    "Row the weights up toward your ribs.",
+    "Squeeze your shoulder blades.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

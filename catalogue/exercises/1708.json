@@ -1,0 +1,20 @@
+{
+  "id": "1708",
+  "name": "assisted lying calves stretch",
+  "bodyPart": "lower legs",
+  "equipment": "assisted",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "A partner-assisted stretch lying on your back for the calves. It lengthens the lower leg.",
+  "instructions": [
+    "Lie on your back with your legs extended.",
+    "Bend one knee and place your foot flat on the ground.",
+    "Using your hands or a towel, gently pull your toes towards your body, feeling a stretch in your calf.",
+    "Hold the stretch for 20-30 seconds.",
+    "Release the stretch and repeat on the other leg."
+  ],
+  "textSource": "exercisedb"
+}

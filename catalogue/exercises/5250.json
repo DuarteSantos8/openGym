@@ -1,0 +1,21 @@
+{
+  "id": "5250",
+  "name": "lying bicycle crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A lying alternating crunch that pedals the legs while the elbow meets the opposite knee. It works the abs and obliques.",
+  "instructions": [
+    "Lie on your back with your hands behind your head.",
+    "Lift your shoulders and bring your knees up.",
+    "Extend one leg while turning your opposite elbow toward the other knee.",
+    "Switch sides in a smooth pedalling motion.",
+    "Keep your lower back pressed down."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "3655",
+  "name": "walking high knees lunge",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "glutes",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "A walking lunge with a high knee between each step. It raises your heart rate and trains the legs.",
+  "instructions": [
+    "Stand with your feet hip-width apart.",
+    "Lift your right knee up towards your chest as high as you can while balancing on your left leg.",
+    "Step forward with your right foot and lower your body into a lunge position, bending both knees to a 90-degree angle.",
+    "Push off with your right foot and bring your left knee up towards your chest.",
+    "Step forward with your left foot and lower your body into a lunge position.",
+    "Continue alternating legs and lunging forward, keeping your core engaged and maintaining a steady pace.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

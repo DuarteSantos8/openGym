@@ -1,0 +1,33 @@
+{
+  "id": "0214",
+  "name": "cable seated one arm alternate row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated cable row that alternates between arms. It works the back one side at a time with a full squeeze each rep.",
+  "instructions": [
+    "Sit on a bench facing a cable machine with your feet flat on the ground and knees slightly bent.",
+    "Grasp the handle with one hand and keep your arm fully extended in front of you.",
+    "Pull the handle towards your body, retracting your shoulder blade and keeping your elbow close to your side.",
+    "Pause for a moment at the top of the movement, squeezing your back muscles.",
+    "Slowly release the handle back to the starting position.",
+    "Repeat with the other arm.",
+    "Alternate between arms for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ]
+  },
+  "textSource": "exercisedb"
+}

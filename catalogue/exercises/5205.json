@@ -1,0 +1,22 @@
+{
+  "id": "5205",
+  "name": "resistance band overhead shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A two-handed overhead press using a resistance band. It is an easy way to train the shoulders anywhere.",
+  "instructions": [
+    "Stand on the middle of the band and hold a handle in each hand at your shoulders.",
+    "Brace your abs and stand tall.",
+    "Press both handles overhead until your arms are straight.",
+    "Pause briefly.",
+    "Lower slowly back to shoulder height."
+  ],
+  "textSource": "opengym"
+}

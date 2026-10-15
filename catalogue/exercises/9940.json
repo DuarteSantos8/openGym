@@ -1,0 +1,24 @@
+{
+  "id": "9940",
+  "name": "weighted sandbag forward lunge",
+  "bodyPart": "upper legs",
+  "equipment": "sandbag",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A forward lunge holding a sandbag at your chest or on your shoulders. The awkward load challenges your legs and core.",
+  "instructions": [
+    "Hold a sandbag against your chest or across your shoulders and stand tall.",
+    "Step forward with one leg into a long stride.",
+    "Lower until both knees are about 90 degrees with your torso upright.",
+    "Push through the front foot to return to standing.",
+    "Repeat with the other leg.",
+    "Keep your front knee over your ankle and the bag tight to your body."
+  ],
+  "textSource": "opengym"
+}

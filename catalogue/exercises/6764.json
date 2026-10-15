@@ -1,0 +1,22 @@
+{
+  "id": "6764",
+  "name": "forward bend back stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "A standing forward fold that lengthens the back and the backs of the legs.",
+  "instructions": [
+    "Stand with feet hip-width apart.",
+    "Hinge forward at the hips with soft knees.",
+    "Let your arms and head hang down.",
+    "Relax your neck and shoulders.",
+    "Hold for 20-30 seconds, breathing calmly.",
+    "Roll up slowly to stand."
+  ],
+  "textSource": "opengym"
+}

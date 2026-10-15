@@ -1,0 +1,23 @@
+{
+  "id": "5977",
+  "name": "tight rope walk",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "core",
+    "glutes"
+  ],
+  "category": "mobility",
+  "description": "Walking along an imaginary or taped line to train balance and foot control.",
+  "instructions": [
+    "Place a line of tape on the floor or imagine one.",
+    "Stand at one end with your arms out for balance.",
+    "Walk heel to toe along the line.",
+    "Keep your gaze ahead and your core braced.",
+    "Turn at the end and walk back."
+  ],
+  "textSource": "opengym"
+}

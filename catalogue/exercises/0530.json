@@ -1,0 +1,24 @@
+{
+  "id": "0530",
+  "name": "kettlebell double windmill",
+  "bodyPart": "waist",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Holding two kettlebells, you hinge sideways with one overhead. It trains the obliques, shoulders and hips.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a kettlebell in your right hand.",
+    "Extend your right arm overhead, keeping your eyes on the kettlebell.",
+    "Rotate your left foot 45 degrees to the left and your right foot 90 degrees to the right.",
+    "Bend at the waist to the left, keeping your right arm extended overhead.",
+    "Lower the kettlebell towards the ground, reaching towards your left foot.",
+    "Pause for a moment, then engage your core and push through your right foot to return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "femaleVariant": "4520",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "3389",
+  "name": "sit up with chair assisted",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A sit-up with your feet or legs supported on a chair to focus on the abs.",
+  "instructions": [
+    "Lie on your back and rest your lower legs on a chair seat, knees bent.",
+    "Cross your arms over your chest or place your hands by your ears.",
+    "Curl your torso up toward your knees.",
+    "Pause briefly at the top.",
+    "Lower back down slowly.",
+    "Do not pull on your neck."
+  ],
+  "textSource": "opengym"
+}

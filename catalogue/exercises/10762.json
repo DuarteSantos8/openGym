@@ -1,0 +1,23 @@
+{
+  "id": "10762",
+  "name": "toe side walk",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A sideways walk on tiptoe. It builds calf strength and ankle stability.",
+  "instructions": [
+    "Stand tall and rise onto your toes.",
+    "Bend your knees slightly.",
+    "Step sideways with small controlled steps.",
+    "Stay high on your toes.",
+    "Keep your hips level.",
+    "Walk one way, then return."
+  ],
+  "textSource": "opengym"
+}

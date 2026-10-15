@@ -1,0 +1,24 @@
+{
+  "id": "3535",
+  "name": "bodyweight pulse squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A squat held at the bottom with small pulses. It burns the quads and glutes.",
+  "instructions": [
+    "Stand with feet shoulder-width apart.",
+    "Squat down until thighs are parallel.",
+    "Pulse up and down a few centimetres.",
+    "Keep your chest up and knees tracking over your toes.",
+    "Keep your weight on your heels.",
+    "Stand up fully to finish."
+  ],
+  "femaleVariant": "3803",
+  "textSource": "opengym"
+}

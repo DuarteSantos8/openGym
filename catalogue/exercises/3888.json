@@ -1,0 +1,44 @@
+{
+  "id": "3888",
+  "name": "dumbbell one arm snatch",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "A one-armed dumbbell snatch, pulling the weight from the floor to overhead in one explosive movement. It trains the hips, legs and shoulders.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in one hand with an overhand grip.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight and chest up.",
+    "Lower the dumbbell towards the ground, keeping it close to your body.",
+    "Explosively extend your hips, knees, and ankles, driving the dumbbell upwards in a straight line.",
+    "As the dumbbell reaches shoulder height, quickly rotate your hand and punch it overhead, fully extending your arm.",
+    "Catch the dumbbell overhead with a slight bend in your knees and hips.",
+    "Lower the dumbbell back down to the starting position in a controlled manner.",
+    "Repeat for the desired number of repetitions, then switch to the other arm."
+  ],
+  "muscleMap": {
+    "bodyPart": "full body",
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "hamstring",
+      "trapezius",
+      "deltoids"
+    ],
+    "secondaries": [
+      "calves",
+      "forearm",
+      "triceps",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "femaleVariant": "5786",
+  "textSource": "exercisedb"
+}

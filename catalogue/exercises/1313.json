@@ -1,0 +1,34 @@
+{
+  "id": "1313",
+  "name": "lever unilateral row",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A machine row where you pull each handle independently. It works the upper back and lets you even out strength differences between sides.",
+  "instructions": [
+    "Adjust the seat height and position yourself facing the machine.",
+    "Grasp the handles with an overhand grip and keep your back straight.",
+    "Pull the handles towards your body, squeezing your shoulder blades together.",
+    "Pause for a moment at the peak of the movement, then slowly release and extend your arms back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm",
+      "trapezius",
+      "chest",
+      "triceps"
+    ]
+  },
+  "textSource": "exercisedb"
+}

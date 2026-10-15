@@ -1,0 +1,22 @@
+{
+  "id": "1581",
+  "name": "bodyweight rear lunge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A lunge where you step back instead of forward. It is gentler on the knees and focuses on the glutes.",
+  "instructions": [
+    "Stand tall with your feet hip-width apart.",
+    "Step one foot back and lower until both knees are bent at about 90 degrees.",
+    "Keep your torso upright and your front heel planted.",
+    "Push through your front foot to return to standing.",
+    "Alternate legs or finish all reps on one side first."
+  ],
+  "textSource": "opengym"
+}

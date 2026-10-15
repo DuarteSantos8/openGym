@@ -1,0 +1,22 @@
+{
+  "id": "2415",
+  "name": "dumbbell single arm leaning lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A lateral raise done while leaning away from a support for a greater range on the side delt.",
+  "instructions": [
+    "Hold a support with one hand and lean your body away.",
+    "Hold a dumbbell in your free hand by your side.",
+    "Raise the dumbbell out to the side until it reaches shoulder height.",
+    "Keep a slight bend in your elbow.",
+    "Lower slowly to the start.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

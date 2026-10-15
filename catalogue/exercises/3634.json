@@ -1,0 +1,22 @@
+{
+  "id": "3634",
+  "name": "sitting sumo with arms up mobility stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "shoulders",
+    "groin",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "A wide seated stretch with arms overhead to open the hips, inner thighs and shoulders.",
+  "instructions": [
+    "Sit with legs spread wide and back straight.",
+    "Raise both arms overhead.",
+    "Lean forward slowly from the hips.",
+    "Keep your arms extended and your chest open.",
+    "Hold for 20-30 seconds, then sit tall."
+  ],
+  "textSource": "opengym"
+}

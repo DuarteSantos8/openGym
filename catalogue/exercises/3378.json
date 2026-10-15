@@ -1,0 +1,23 @@
+{
+  "id": "3378",
+  "name": "battling ropes split jump",
+  "bodyPart": "full body",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "calves",
+    "shoulders"
+  ],
+  "category": "plyometrics",
+  "description": "Jumping lunges while waving the ropes, a demanding mix of power and cardio.",
+  "instructions": [
+    "Hold the rope ends and stand in a split stance.",
+    "Start making waves with your arms.",
+    "Jump and switch legs in mid air.",
+    "Land softly in a lunge.",
+    "Keep switching for the set time."
+  ],
+  "textSource": "opengym"
+}

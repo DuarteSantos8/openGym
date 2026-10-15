@@ -1,0 +1,23 @@
+{
+  "id": "6554",
+  "name": "glute ham sit up",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A sit-up on a glute ham bench. The extra range of motion works the abs and hip flexors hard.",
+  "instructions": [
+    "Set your feet under the pads of a glute ham bench, hips on the support.",
+    "Cross your arms over your chest and lean back to a comfortable depth.",
+    "Brace your abs and curl up until your torso is upright.",
+    "Pause briefly at the top.",
+    "Lower slowly under control.",
+    "Keep your lower back from over-arching at the bottom."
+  ],
+  "textSource": "opengym"
+}

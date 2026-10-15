@@ -1,0 +1,22 @@
+{
+  "id": "4748",
+  "name": "dumbbell overhead sit up",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A sit-up holding a dumbbell above your head, which lengthens the lever and makes your abs work harder.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat or anchored.",
+    "Hold a dumbbell with both hands, arms extended overhead.",
+    "Curl up to a seated position, keeping the dumbbell above you.",
+    "Keep your arms by your ears.",
+    "Lower back down slowly."
+  ],
+  "textSource": "opengym"
+}

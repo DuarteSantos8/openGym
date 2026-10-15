@@ -1,0 +1,22 @@
+{
+  "id": "6517",
+  "name": "lever bent over single arm wide grip row (with chest support)",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A one-arm chest-supported row on a wide handle, hitting the upper back and rear shoulder on one side.",
+  "instructions": [
+    "Lean your chest on the pad and grip one wide handle.",
+    "Start with your arm extended.",
+    "Pull the handle back with your elbow flaring out.",
+    "Squeeze at the end.",
+    "Return slowly, finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

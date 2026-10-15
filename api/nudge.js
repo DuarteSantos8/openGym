@@ -36,9 +36,17 @@ export function nudgeWindowOpen(reminderTime, hhmm) {
 const dayBefore = iso => new Date(Date.parse(iso + 'T12:00:00Z') - 86400000).toISOString().slice(0, 10);
 const records = v => (Array.isArray(v) ? v.filter(x => x && typeof x === 'object') : []);
 const logged = (S, iso) => S.workouts.some(w => w.d === iso);
+// A day with a note on it (frontend lib/day-notes.js: a quick pick or a line of text) is excused:
+// never a missed day, never nudged or reminded about.
+const DAY_NOTE_TAGS = ['sick', 'travel', 'rest', 'injured'];
+export function excusedOn(S, iso) {
+  const e = S?.dayNotes && typeof S.dayNotes === 'object' ? S.dayNotes[iso] : null;
+  if (!e || typeof e !== 'object' || Array.isArray(e)) return false;
+  return DAY_NOTE_TAGS.includes(e.tag) || (typeof e.text === 'string' && e.text.trim() !== '');
+}
 
 function missed(S, iso) {
-  if (logged(S, iso)) return null;
+  if (logged(S, iso) || excusedOn(S, iso)) return null;
   const rid = effectiveRoutineId(S, iso);
   if (!rid) return null;
   if (queueLiveOn(S, iso) && logged(S, dayBefore(iso))) return null;

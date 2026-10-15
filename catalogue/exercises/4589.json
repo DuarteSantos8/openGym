@@ -1,0 +1,23 @@
+{
+  "id": "4589",
+  "name": "boxing jab (with partner)",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "chest",
+    "core"
+  ],
+  "category": "combat",
+  "description": "A straight lead-hand punch thrown at a partner holding pads, working speed and accuracy.",
+  "instructions": [
+    "Face your partner, who holds a pad at head height.",
+    "Stand in a boxing stance with hands up.",
+    "Throw your lead hand straight to the pad.",
+    "Rotate your fist so the palm faces down.",
+    "Retract your hand quickly to your guard.",
+    "Keep your feet light and repeat."
+  ],
+  "textSource": "opengym"
+}

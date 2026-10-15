@@ -1,0 +1,22 @@
+{
+  "id": "11289",
+  "name": "standing ankle and hip drill",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "hip flexors",
+    "glutes"
+  ],
+  "category": "mobility",
+  "description": "A standing drill that loosens the ankles and hips. It is a good warm-up for squats and lunges.",
+  "instructions": [
+    "Stand tall with your feet hip width.",
+    "Shift your weight onto one foot.",
+    "Rotate your ankle and hip through a smooth circle.",
+    "Keep your upper body steady.",
+    "Do 8-10 slow reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

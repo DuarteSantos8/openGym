@@ -1,0 +1,23 @@
+{
+  "id": "6044",
+  "name": "bottle weighted front squat",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "hamstrings",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A squat holding weighted bottles at shoulder height. It works the quads and glutes and keeps your torso upright.",
+  "instructions": [
+    "Hold a bottle in each hand at your shoulders, elbows pointing forward.",
+    "Stand with feet shoulder-width apart.",
+    "Sit your hips down and back until your thighs are about parallel.",
+    "Keep your chest up and knees tracking over your toes.",
+    "Press through your heels to stand."
+  ],
+  "textSource": "opengym"
+}

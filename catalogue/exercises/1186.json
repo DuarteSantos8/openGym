@@ -1,0 +1,22 @@
+{
+  "id": "1186",
+  "name": "alternate straight leg raise (on bosu ball)",
+  "bodyPart": "waist",
+  "equipment": "bosu ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lying leg raise on a bosu ball that adds an unstable surface to challenge the lower abs and balance.",
+  "instructions": [
+    "Lie back on a bosu ball with your lower back supported and your hands holding it lightly.",
+    "Brace your abs and extend both legs.",
+    "Raise one leg while keeping it straight.",
+    "Lower it and switch to the other leg.",
+    "Keep your torso steady and move with control."
+  ],
+  "textSource": "opengym"
+}

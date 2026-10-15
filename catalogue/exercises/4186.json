@@ -1,0 +1,23 @@
+{
+  "id": "4186",
+  "name": "resistance band overhead squat",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A squat with a band held overhead. It improves mobility and leg strength.",
+  "instructions": [
+    "Stand on the band and hold it overhead with wide grip.",
+    "Brace your core.",
+    "Squat down keeping arms overhead.",
+    "Keep your chest up.",
+    "Drive up through your feet.",
+    "Keep your arms in line with your ears."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5315",
+  "name": "cable glute dominant step up",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A step-up with a cable that is set to put more work on the glutes. It builds strength in the hips.",
+  "instructions": [
+    "Hold the cable handle and stand facing a step.",
+    "Place one foot on the step.",
+    "Lean slightly forward from the hips.",
+    "Drive through the heel to stand up.",
+    "Lower slowly.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

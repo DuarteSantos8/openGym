@@ -1,0 +1,25 @@
+{
+  "id": "3230",
+  "name": "prone cobra hands interlocked",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "upper back",
+    "rear deltoids",
+    "trapezius"
+  ],
+  "category": "isometric",
+  "description": "A face-down hold with your hands clasped behind you. It trains the back extensors and opens the chest.",
+  "instructions": [
+    "Lie face down with your hands clasped behind your lower back.",
+    "Keep your neck long and look at the floor.",
+    "Lift your chest off the floor.",
+    "Reach your hands toward your feet.",
+    "Hold for 15-30 seconds.",
+    "Lower slowly and rest."
+  ],
+  "femaleVariant": "3210",
+  "textSource": "opengym"
+}

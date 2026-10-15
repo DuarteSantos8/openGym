@@ -1,0 +1,23 @@
+{
+  "id": "4023",
+  "name": "front plank to toe tap",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "shoulders",
+    "glutes",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A forearm or high plank where you reach a foot out to tap the floor. It trains core stability and hip control.",
+  "instructions": [
+    "Start in a front plank with your body in a straight line from head to heels.",
+    "Brace your abs and squeeze your glutes.",
+    "Lift one foot and tap the toes out to the side without twisting your hips.",
+    "Bring the foot back to the start.",
+    "Repeat on the other leg and keep alternating."
+  ],
+  "textSource": "opengym"
+}

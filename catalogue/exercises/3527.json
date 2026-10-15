@@ -1,0 +1,23 @@
+{
+  "id": "3527",
+  "name": "downward facing dog toe touch",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "shoulders",
+    "core"
+  ],
+  "category": "yoga",
+  "description": "A downward dog with alternating hand-to-toe taps. It stretches the hamstrings and calves.",
+  "instructions": [
+    "Start in a downward facing dog, hips high.",
+    "Press your chest toward your thighs.",
+    "Reach one hand back to touch the opposite foot.",
+    "Return the hand and switch sides.",
+    "Keep your hips high.",
+    "Move slowly with steady breathing."
+  ],
+  "textSource": "opengym"
+}

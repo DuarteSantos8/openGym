@@ -1,0 +1,30 @@
+{
+  "id": "0575",
+  "name": "lever bicep curl",
+  "bodyPart": "upper arms",
+  "equipment": "leverage machine",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Seated at a lever machine, you curl the handles up with an underhand grip. Isolates the biceps with a smooth path.",
+  "instructions": [
+    "Adjust the seat height and position yourself on the machine with your back against the pad.",
+    "Grasp the handles with an underhand grip, palms facing up, and keep your elbows close to your sides.",
+    "Exhale and curl the handles upward, contracting your biceps.",
+    "Pause for a moment at the top of the movement, squeezing your biceps.",
+    "Inhale and slowly lower the handles back to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "biceps"
+    ],
+    "secondaries": [
+      "forearm"
+    ]
+  },
+  "femaleVariant": "3098",
+  "textSource": "exercisedb"
+}

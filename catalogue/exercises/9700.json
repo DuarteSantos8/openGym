@@ -1,0 +1,23 @@
+{
+  "id": "9700",
+  "name": "bodyweight walking low lunge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A walking lunge with a deep, low position that opens the hips and works the glutes and thighs.",
+  "instructions": [
+    "Stand tall with your hands on your hips.",
+    "Step forward into a long stride.",
+    "Lower your back knee close to the floor.",
+    "Push through your front foot and step the back leg forward.",
+    "Continue walking forward, alternating legs."
+  ],
+  "textSource": "opengym"
+}

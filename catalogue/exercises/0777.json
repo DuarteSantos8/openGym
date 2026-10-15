@@ -1,0 +1,22 @@
+{
+  "id": "0777",
+  "name": "spell caster",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A rotational move with a dumbbell, sweeping the weight across the body from low to high. It trains the abs and obliques and builds control.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a dumbbell in one hand.",
+    "Bend your knees slightly and hinge forward at the waist, keeping your back straight.",
+    "Extend your arm with the dumbbell towards the opposite foot, rotating your torso as you do so.",
+    "Return to the starting position and repeat on the other side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "femaleVariant": "3846",
+  "textSource": "exercisedb"
+}

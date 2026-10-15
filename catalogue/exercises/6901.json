@@ -1,0 +1,23 @@
+{
+  "id": "6901",
+  "name": "cow yoga pose bitilasana",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "core",
+    "chest",
+    "hip flexors"
+  ],
+  "category": "yoga",
+  "description": "A gentle spinal extension from all fours that wakes up the back and often pairs with cat pose.",
+  "instructions": [
+    "Start on hands and knees, with wrists under shoulders and knees under hips.",
+    "Inhale and let your belly drop toward the floor.",
+    "Lift your chest and tailbone while your gaze goes slightly forward.",
+    "Keep your shoulders away from your ears.",
+    "Hold for 3-5 breaths.",
+    "Return to a neutral spine."
+  ],
+  "textSource": "opengym"
+}

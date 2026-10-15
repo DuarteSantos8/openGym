@@ -1,0 +1,22 @@
+{
+  "id": "1730",
+  "name": "dumbbell seated bent over alternate kickback",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "back"
+  ],
+  "category": "strength",
+  "description": "Alternating triceps kickbacks, seated and bent over. It isolates the triceps with a squeeze at the top.",
+  "instructions": [
+    "Sit on a bench with a dumbbell in each hand, palms facing inwards.",
+    "Bend forward at the waist, keeping your back straight and parallel to the ground.",
+    "Extend one arm straight back, keeping it close to your body, until your arm is fully extended.",
+    "Pause for a moment, then slowly lower the dumbbell back to the starting position.",
+    "Repeat with the other arm.",
+    "Continue alternating arms for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

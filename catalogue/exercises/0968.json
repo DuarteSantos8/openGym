@@ -1,0 +1,19 @@
+{
+  "id": "0968",
+  "name": "band alternating biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A band curl alternating one arm at a time. It trains the biceps.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold the band with an underhand grip, palms facing up.",
+    "Keep your elbows close to your sides and slowly curl one arm up towards your shoulder, squeezing your biceps at the top.",
+    "Lower the arm back down to the starting position and repeat with the other arm.",
+    "Continue alternating arms for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

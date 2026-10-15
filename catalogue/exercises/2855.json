@@ -1,0 +1,22 @@
+{
+  "id": "2855",
+  "name": "lying single leg kick",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes",
+    "upper back"
+  ],
+  "category": "pilates",
+  "description": "A face-down move kicking one heel toward the glute while the chest stays lifted.",
+  "instructions": [
+    "Lie face down and prop yourself on your forearms.",
+    "Keep your chest lifted.",
+    "Kick one heel toward your glute twice.",
+    "Lower and switch legs.",
+    "Keep your hips down."
+  ],
+  "textSource": "opengym"
+}

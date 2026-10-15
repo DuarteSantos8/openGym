@@ -1,0 +1,23 @@
+{
+  "id": "10058",
+  "name": "alternating kneeling to half kneeling",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hip flexors",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A floor-to-stand drill moving from kneeling to half kneeling, alternating sides. It builds hip mobility and control.",
+  "instructions": [
+    "Kneel upright with both knees on the floor.",
+    "Step one foot forward into a half-kneeling position.",
+    "Pause and keep your torso tall.",
+    "Step back to full kneeling.",
+    "Repeat with the other foot.",
+    "Move slowly and use your arms for balance if needed."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "0443",
+  "name": "elbow-to-knee",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A standing or floor crunch where you bring an elbow toward the opposite knee. It trains the abs and obliques.",
+  "instructions": [
+    "Start by lying flat on your back with your knees bent and feet flat on the ground.",
+    "Place your hands behind your head with your elbows pointing outwards.",
+    "Engage your abs and lift your upper body off the ground, bringing your right elbow towards your left knee.",
+    "At the same time, bring your left knee towards your right elbow, creating a twisting motion.",
+    "Pause for a moment at the top, then slowly lower your upper body and extend your legs back to the starting position.",
+    "Repeat the movement, this time bringing your left elbow towards your right knee and your right knee towards your left elbow.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

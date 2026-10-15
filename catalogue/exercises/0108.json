@@ -1,0 +1,20 @@
+{
+  "id": "0108",
+  "name": "barbell standing leg calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "barbell",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A standing calf raise with the barbell on the shoulders. Builds the calves.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and place a barbell across your upper back.",
+    "Raise your heels off the ground as high as possible, using your calves.",
+    "Pause for a moment at the top, then slowly lower your heels back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "0910",
+  "name": "band lying leg and hip raise",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A lying raise lifting the legs and hips with a band. It works the lower abs.",
+  "instructions": [
+    "Lie on your back with the band set around your feet or anchored.",
+    "Lift your legs toward the ceiling.",
+    "Curl your hips off the floor.",
+    "Lower slowly.",
+    "Keep your lower back controlled."
+  ],
+  "textSource": "opengym"
+}

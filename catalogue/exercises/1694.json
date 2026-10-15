@@ -1,0 +1,23 @@
+{
+  "id": "1694",
+  "name": "dumbbell overhead side lunge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A side lunge with a dumbbell held overhead that trains the legs and core stability.",
+  "instructions": [
+    "Hold one dumbbell overhead with both hands or one hand and stand tall.",
+    "Step out wide to one side and sit back into the hips.",
+    "Keep your chest tall and your arm locked out overhead.",
+    "Push through the bent leg to return to the middle.",
+    "Alternate sides for the planned reps."
+  ],
+  "textSource": "opengym"
+}

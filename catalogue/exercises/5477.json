@@ -1,0 +1,22 @@
+{
+  "id": "5477",
+  "name": "vertical leg raise (on parallel bars) v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "Hanging-style leg raise performed supported on parallel bars, taking the legs high to challenge the lower abs.",
+  "instructions": [
+    "Support yourself on parallel bars with straight arms and shoulders pushed down.",
+    "Keep your legs together and slightly bent or straight.",
+    "Raise your legs until they reach hip height or higher, curling your pelvis.",
+    "Lower them slowly without swinging.",
+    "Repeat for the target reps."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "10934",
+  "name": "bodyweight side lying shoulder external rotation",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids",
+    "shoulders"
+  ],
+  "category": "rehab",
+  "description": "A side-lying outward shoulder rotation with no weight. It trains rotator cuff control.",
+  "instructions": [
+    "Lie on your side with a small towel under the top elbow.",
+    "Bend the elbow to 90 degrees.",
+    "Rotate your forearm up toward the ceiling.",
+    "Pause, then lower slowly.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

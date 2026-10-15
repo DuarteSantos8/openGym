@@ -1,0 +1,23 @@
+{
+  "id": "5979",
+  "name": "x drill",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "glutes",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A cone drill in an X pattern that mixes sprints, shuffles and backpedals for agility.",
+  "instructions": [
+    "Set four cones in a square, with a center point.",
+    "Sprint diagonally from one corner through the center to the opposite corner.",
+    "Shuffle sideways along one edge to the next corner.",
+    "Backpedal or sprint diagonally again.",
+    "Stay low through turns and repeat."
+  ],
+  "textSource": "opengym"
+}

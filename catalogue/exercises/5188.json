@@ -1,0 +1,24 @@
+{
+  "id": "5188",
+  "name": "power clean thruster",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "triceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "A power clean flowing straight into a front squat and overhead press. It is a big full-body power movement.",
+  "instructions": [
+    "Set up with the barbell over mid-foot and grip it just outside your knees.",
+    "Pull the bar explosively and catch it on your shoulders in a quarter squat.",
+    "Stand, then sink into a full front squat.",
+    "Drive up and press the bar overhead.",
+    "Lower the bar to your shoulders and then to the floor with control."
+  ],
+  "textSource": "opengym"
+}

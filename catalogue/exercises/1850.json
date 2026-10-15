@@ -1,0 +1,21 @@
+{
+  "id": "1850",
+  "name": "wrist flexor stretch",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "hands"
+  ],
+  "category": "stretching",
+  "description": "A simple forearm stretch for the wrist flexors, helpful after gripping or typing.",
+  "instructions": [
+    "Extend one arm in front of you with the palm up.",
+    "Use your other hand to pull the fingers back toward you.",
+    "Keep your elbow straight and your shoulder relaxed.",
+    "Feel the stretch along the inner forearm.",
+    "Hold for 20-30 seconds, then switch arms."
+  ],
+  "textSource": "opengym"
+}

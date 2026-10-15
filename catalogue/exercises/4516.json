@@ -1,0 +1,23 @@
+{
+  "id": "4516",
+  "name": "band warm up shoulder stretch",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "A light band drill that warms up the shoulder joint and loosens the surrounding muscles before training.",
+  "instructions": [
+    "Hold a light band with both hands in front of your thighs, hands wide.",
+    "Keep your arms straight and your core braced.",
+    "Lift the band overhead and continue back behind your head as far as is comfortable.",
+    "Return along the same path to the start.",
+    "Keep the movement slow and controlled.",
+    "Repeat for 10-15 reps, widening your grip if it feels tight."
+  ],
+  "femaleVariant": "1846",
+  "textSource": "opengym"
+}

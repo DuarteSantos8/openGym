@@ -1,0 +1,22 @@
+{
+  "id": "5173",
+  "name": "bodyweight standing fly",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A standing fly motion without weights, squeezing the arms together. It teaches chest engagement and works as a warm-up.",
+  "instructions": [
+    "Stand with your feet hip-width apart and your arms out wide with slightly bent elbows.",
+    "Brace your core and keep your chest proud.",
+    "Sweep your arms together in front of your chest.",
+    "Squeeze your pecs hard for a second.",
+    "Open your arms back out with control."
+  ],
+  "textSource": "opengym"
+}

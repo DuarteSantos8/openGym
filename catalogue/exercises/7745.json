@@ -1,0 +1,23 @@
+{
+  "id": "7745",
+  "name": "standing supinated face pull (with towels)",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "biceps",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A face pull using a towel looped around a fixed anchor and an underhand grip. A simple way to train the rear delts without a cable.",
+  "instructions": [
+    "Loop a towel around a sturdy anchor and hold both ends, palms up.",
+    "Lean back with your arms extended.",
+    "Pull your hands toward your face, elbows wide.",
+    "Squeeze your shoulder blades together.",
+    "Lower yourself slowly. Walk your feet in to make it harder."
+  ],
+  "textSource": "opengym"
+}

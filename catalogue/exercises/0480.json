@@ -1,0 +1,24 @@
+{
+  "id": "0480",
+  "name": "high knee twist",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "quadriceps",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "A running-in-place move where you twist to bring the elbow to the lifted knee. It raises your heart rate and engages the trunk.",
+  "instructions": [
+    "Stand tall with your hands behind your head.",
+    "Lift one knee high and twist your torso to meet it with the opposite elbow.",
+    "Lower and switch sides.",
+    "Keep a quick, steady rhythm.",
+    "Land softly on the balls of your feet.",
+    "Go for 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

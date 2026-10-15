@@ -1,0 +1,23 @@
+{
+  "id": "3950",
+  "name": "crawl to crab",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "glutes",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Move from a crawl position into a crab position to work the whole body.",
+  "instructions": [
+    "Start on hands and knees.",
+    "Lift your knees slightly into a low crawl.",
+    "Rotate your body and sit back into a crab position, face up.",
+    "Lift your hips.",
+    "Rotate back into the crawl and repeat."
+  ],
+  "textSource": "opengym"
+}

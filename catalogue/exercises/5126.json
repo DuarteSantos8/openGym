@@ -1,0 +1,21 @@
+{
+  "id": "5126",
+  "name": "standing ab twist",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "mobility",
+  "description": "Twist your torso from side to side while standing. It warms up the trunk and works the obliques lightly.",
+  "instructions": [
+    "Stand with feet shoulder-width apart, arms bent in front of your chest.",
+    "Keep your hips facing forward.",
+    "Rotate your upper body to one side.",
+    "Come back through the center and rotate the other way.",
+    "Keep a smooth rhythm for 20-30 twists."
+  ],
+  "femaleVariant": "5085",
+  "textSource": "opengym"
+}

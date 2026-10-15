@@ -1,0 +1,22 @@
+{
+  "id": "1641",
+  "name": "cable seated curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated cable biceps curl. The seat keeps you steady so the biceps do the lifting.",
+  "instructions": [
+    "Sit on a cable machine with your feet flat on the ground and your back straight.",
+    "Grasp the cable attachment with an underhand grip, palms facing up, and your arms fully extended.",
+    "Keeping your upper arms stationary, exhale and curl the cable attachment towards your shoulders, contracting your biceps.",
+    "Pause for a moment at the top of the movement, squeezing your biceps.",
+    "Inhale and slowly lower the cable attachment back to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3062",
+  "textSource": "exercisedb"
+}

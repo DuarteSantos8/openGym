@@ -1,0 +1,27 @@
+{
+  "id": "0742",
+  "name": "sled forward angled calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "sled machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "On a sled, you raise your heels with the machine angled forward. Works the calves.",
+  "instructions": [
+    "Adjust the sled machine to a comfortable weight and position yourself on the machine with your toes on the platform and your heels hanging off.",
+    "Place your hands on the handles or the sides of the machine for support.",
+    "Engage your calves and slowly raise your heels as high as possible, pushing against the resistance of the sled.",
+    "Pause for a moment at the top of the movement, then slowly lower your heels back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "calves"
+    ],
+    "secondaries": []
+  },
+  "textSource": "exercisedb"
+}

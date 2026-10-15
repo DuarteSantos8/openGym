@@ -36,24 +36,30 @@ export const withTimeout = (promise, ms = NATIVE_TIMEOUT_MS) => new Promise((res
   promise.then(v => { clearTimeout(tm); resolve(v) }, e => { clearTimeout(tm); reject(e) })
 })
 
-export async function getApiKey() {
+// Any small secret under a key of its own, with the same fallbacks: lib/cf-access.js keeps the
+// Cloudflare Access service token here, beside the Coach's API key.
+export async function secureGet(key) {
   const { store: p } = await plugin()
   if (p) {
-    try { const v = await withTimeout(p.get(KEY)); return typeof v === 'string' && v ? v : null } catch { /* fall through */ }
+    try { const v = await withTimeout(p.get(key)); return typeof v === 'string' && v ? v : null } catch { /* fall through */ }
   }
-  return memory.get(KEY) || null
+  return memory.get(key) || null
 }
-export async function setApiKey(value) {
+export async function secureSet(key, value) {
   const v = String(value || '').trim()
-  if (!v) return clearApiKey()
+  if (!v) return secureRemove(key)
   const { store: p } = await plugin()
   if (p) {
-    try { await withTimeout(p.set(KEY, v)); memory.delete(KEY); return } catch { /* fall through */ }
+    try { await withTimeout(p.set(key, v)); memory.delete(key); return } catch { /* fall through */ }
   }
-  memory.set(KEY, v)
+  memory.set(key, v)
 }
-export async function clearApiKey() {
+export async function secureRemove(key) {
   const { store: p } = await plugin()
-  if (p) { try { await withTimeout(p.remove(KEY)) } catch { /* nothing to clear */ } }
-  memory.delete(KEY)
+  if (p) { try { await withTimeout(p.remove(key)) } catch { /* nothing to clear */ } }
+  memory.delete(key)
 }
+
+export const getApiKey = () => secureGet(KEY)
+export const setApiKey = value => secureSet(KEY, value)
+export const clearApiKey = () => secureRemove(KEY)

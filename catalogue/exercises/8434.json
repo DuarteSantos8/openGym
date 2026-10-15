@@ -1,0 +1,23 @@
+{
+  "id": "8434",
+  "name": "seated forward roll up on a chair",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A seated roll-up that curls the spine forward one segment at a time. It trains the abs and spinal control.",
+  "instructions": [
+    "Sit tall on the edge of a chair with your arms crossed or reaching forward.",
+    "Tuck your chin and round your lower back.",
+    "Roll your spine forward one segment at a time.",
+    "Reach toward your knees and pause.",
+    "Roll back up slowly to a tall position.",
+    "Keep the motion smooth and controlled."
+  ],
+  "textSource": "opengym"
+}

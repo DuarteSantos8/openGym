@@ -1,0 +1,23 @@
+{
+  "id": "5822",
+  "name": "prone y raise",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "trapezius",
+    "lower back",
+    "rhomboids"
+  ],
+  "category": "calisthenics",
+  "description": "Lie face down and lift your arms overhead in a Y. It builds the lower traps and the muscles that support the shoulder blades.",
+  "instructions": [
+    "Lie face down with arms stretched overhead in a Y.",
+    "Turn your thumbs up.",
+    "Lift your arms, squeezing your shoulder blades.",
+    "Hold briefly at the top.",
+    "Lower with control."
+  ],
+  "textSource": "opengym"
+}

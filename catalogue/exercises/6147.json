@@ -1,0 +1,22 @@
+{
+  "id": "6147",
+  "name": "dumbbell alternate hammer strict curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "An alternating hammer curl done with strict form, keeping your body still. It builds the biceps, brachialis and forearms.",
+  "instructions": [
+    "Stand holding dumbbells with your palms facing in.",
+    "Keep your elbows at your sides.",
+    "Curl one dumbbell up without swinging.",
+    "Lower it slowly.",
+    "Repeat with the other arm.",
+    "Keep your torso still."
+  ],
+  "textSource": "opengym"
+}

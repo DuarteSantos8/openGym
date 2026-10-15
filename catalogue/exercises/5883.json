@@ -1,0 +1,23 @@
+{
+  "id": "5883",
+  "name": "barbell curl press extension",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A three-part arm combo: curl, press overhead, then lower behind the head for a triceps extension. It works the whole arm in one set.",
+  "instructions": [
+    "Stand holding a barbell with an underhand grip at thigh level.",
+    "Curl the bar up to your shoulders without swinging.",
+    "Press it overhead until your arms are straight.",
+    "Bend your elbows to lower the bar behind your head, keeping your upper arms still.",
+    "Extend, bring the bar back to the front and lower it under control.",
+    "Use a light weight to keep your form tidy."
+  ],
+  "textSource": "opengym"
+}

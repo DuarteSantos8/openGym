@@ -1,0 +1,22 @@
+{
+  "id": "4945",
+  "name": "chest out hands behind (hold)",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "stretching",
+  "description": "A standing chest stretch with the hands clasped behind your back. It opens the front of the chest.",
+  "instructions": [
+    "Stand tall and clasp your hands behind your back.",
+    "Straighten your arms.",
+    "Lift your chest and gently raise your hands.",
+    "Feel the stretch across the chest and shoulders.",
+    "Hold for 20-30 seconds.",
+    "Release slowly."
+  ],
+  "textSource": "opengym"
+}

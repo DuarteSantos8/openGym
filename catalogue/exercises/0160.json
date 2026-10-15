@@ -1,0 +1,23 @@
+{
+  "id": "0160",
+  "name": "cable floor seated wide-grip row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A wide-grip cable row seated on the floor. Targets the upper back.",
+  "instructions": [
+    "Sit on the floor with your legs extended and your back straight.",
+    "Attach a cable handle to a low pulley and position the cable machine behind you.",
+    "Grasp the handle with a wide overhand grip, palms facing down.",
+    "Lean back slightly, keeping your back straight and your chest lifted.",
+    "Pull the handle towards your waist, squeezing your shoulder blades together.",
+    "Pause for a moment at the top of the movement, then slowly release the handle back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

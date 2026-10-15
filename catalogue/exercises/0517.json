@@ -1,0 +1,25 @@
+{
+  "id": "0517",
+  "name": "kettlebell advanced windmill",
+  "bodyPart": "waist",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "An advanced kettlebell windmill where you hold the bell overhead and hinge sideways. It trains the obliques, shoulders and hips.",
+  "instructions": [
+    "Stand with your feet wider than shoulder-width apart, toes pointing slightly outward.",
+    "Hold a kettlebell in your right hand, with your arm extended overhead and your palm facing forward.",
+    "Rotate your left foot slightly to the right, and shift your weight onto your left leg.",
+    "Bend your left knee and hinge at the hip, lowering your torso towards the left side.",
+    "Keep your right arm extended overhead and your eyes on the kettlebell.",
+    "As you lower your torso, allow your right leg to straighten and your right foot to pivot slightly.",
+    "Lower your torso until you feel a stretch in your left hamstring and your right arm is pointing towards the ground.",
+    "Pause for a moment, then engage your core and push through your left heel to return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "textSource": "exercisedb"
+}

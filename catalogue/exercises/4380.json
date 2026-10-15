@@ -1,0 +1,24 @@
+{
+  "id": "4380",
+  "name": "standing leg slide with towel",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "adductors",
+    "core",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A standing exercise where one foot slides on a towel to work the hips and thighs while the standing leg balances you.",
+  "instructions": [
+    "Stand on a smooth floor with one foot on a towel and hold a support if needed.",
+    "Bend the standing knee slightly and keep your chest tall.",
+    "Slide the towel foot out to the side or back as far as you can control.",
+    "Pull it back to the start using your hip and thigh muscles.",
+    "Complete your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

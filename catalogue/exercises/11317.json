@@ -1,0 +1,23 @@
+{
+  "id": "11317",
+  "name": "weighted plate hyperextension v. 2",
+  "bodyPart": "back",
+  "equipment": "weight plate",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A back extension holding a weight plate. The plate adds resistance for the lower back and glutes.",
+  "instructions": [
+    "Set up on a hyperextension bench with your feet secured and hold a plate against your chest.",
+    "Keep your back straight and body in a line.",
+    "Lower your torso with control.",
+    "Raise until you are back in a straight line.",
+    "Squeeze your glutes at the top without overarching."
+  ],
+  "femaleVariant": "11318",
+  "textSource": "opengym"
+}

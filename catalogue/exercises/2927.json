@@ -1,0 +1,24 @@
+{
+  "id": "2927",
+  "name": "kettlebell kneeling one arm bottoms up press",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "rotator cuff",
+    "core",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Pressing a kettlebell held upside down from a kneeling position. The unstable load demands shoulder control and grip.",
+  "instructions": [
+    "Kneel on both knees and hold a kettlebell bottoms up at shoulder height.",
+    "Squeeze the handle tight and keep your wrist straight.",
+    "Press the bell straight overhead.",
+    "Lower slowly to your shoulder, keeping the bell balanced.",
+    "Finish the reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

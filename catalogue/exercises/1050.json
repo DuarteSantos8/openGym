@@ -1,0 +1,22 @@
+{
+  "id": "1050",
+  "name": "smith calf raise (with block)",
+  "bodyPart": "lower legs",
+  "equipment": "smith machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "A standing calf raise under the Smith bar with the balls of your feet on a block. The block lets you stretch deeper.",
+  "instructions": [
+    "Place a block under the Smith bar and rest the bar on your upper back.",
+    "Stand with the balls of your feet on the block.",
+    "Lower your heels for a full stretch.",
+    "Rise onto your toes as high as you can.",
+    "Pause at the top, then lower slowly."
+  ],
+  "textSource": "opengym"
+}

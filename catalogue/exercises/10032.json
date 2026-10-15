@@ -1,0 +1,22 @@
+{
+  "id": "10032",
+  "name": "thumb abduction",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "hands",
+    "wrist extensors"
+  ],
+  "category": "mobility",
+  "description": "A simple thumb movement where you lift the thumb away from the palm to improve hand mobility.",
+  "instructions": [
+    "Rest your hand on a table with the palm facing up.",
+    "Keep your fingers relaxed and straight.",
+    "Slowly move your thumb away from your palm.",
+    "Pause at the end of the range.",
+    "Return slowly to the start.",
+    "Do 10-15 reps, then switch hands."
+  ],
+  "textSource": "opengym"
+}

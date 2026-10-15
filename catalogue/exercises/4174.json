@@ -1,0 +1,22 @@
+{
+  "id": "4174",
+  "name": "lever reverse shoulder press (plate loaded)",
+  "bodyPart": "shoulders",
+  "equipment": "leverage machine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A plate loaded press with a reverse grip on a lever machine. It targets the front shoulders.",
+  "instructions": [
+    "Adjust the seat and sit with your back against the pad.",
+    "Grip the handles with a reverse grip.",
+    "Press the handles up until your arms are extended.",
+    "Pause at the top.",
+    "Lower slowly to shoulder level.",
+    "Keep your core braced."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "3822",
+  "name": "pulse row",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rear deltoids",
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A rowing movement with small pulses at the top of the pull. It builds endurance in your upper back.",
+  "instructions": [
+    "Hinge forward at the hips with a flat back and arms hanging.",
+    "Pull your elbows back and squeeze your shoulder blades.",
+    "Pulse in short movements at the top.",
+    "Lower your arms under control.",
+    "Keep your neck neutral."
+  ],
+  "femaleVariant": "2923",
+  "textSource": "opengym"
+}

@@ -1,0 +1,32 @@
+{
+  "id": "0234",
+  "name": "cable standing row (v-bar)",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A standing cable row with a v-bar. You pull toward your torso and squeeze the shoulder blades together.",
+  "instructions": [
+    "Stand facing the cable machine with your feet shoulder-width apart.",
+    "Grasp the v-bar attachment with an overhand grip, palms facing down.",
+    "Keep your back straight and your core engaged.",
+    "Pull the v-bar towards your body, squeezing your shoulder blades together.",
+    "Pause for a moment at the peak of the movement, then slowly release the tension and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ]
+  },
+  "textSource": "exercisedb"
+}

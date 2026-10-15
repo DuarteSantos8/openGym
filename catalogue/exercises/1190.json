@@ -1,0 +1,21 @@
+{
+  "id": "1190",
+  "name": "incline twisting sit up v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "An incline sit-up with a twist to work the obliques as well as the abs.",
+  "instructions": [
+    "Lie on an incline bench with your feet secured.",
+    "Place your hands lightly behind your head.",
+    "Curl up while rotating your torso to one side.",
+    "Lower slowly.",
+    "Alternate sides each rep."
+  ],
+  "textSource": "opengym"
+}

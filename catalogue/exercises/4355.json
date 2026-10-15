@@ -1,0 +1,21 @@
+{
+  "id": "4355",
+  "name": "cable triceps pushdown (v bar) v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A triceps pushdown using a V bar on a high cable, a classic for the back of the arms.",
+  "instructions": [
+    "Stand facing a high pulley and grip the V bar with elbows at your sides.",
+    "Keep your torso upright and slightly forward.",
+    "Push the bar down until your arms are straight.",
+    "Squeeze your triceps for a moment.",
+    "Let the bar rise slowly, elbows still."
+  ],
+  "textSource": "opengym"
+}

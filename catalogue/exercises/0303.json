@@ -1,0 +1,21 @@
+{
+  "id": "0303",
+  "name": "dumbbell decline hammer press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A decline press with the palms facing each other, using dumbbells. The neutral grip is easier on the shoulders and works the chest.",
+  "instructions": [
+    "Lie on a decline bench with your feet secured and your head lower than your hips.",
+    "Hold a dumbbell in each hand with your palms facing each other and your arms extended above your chest.",
+    "Lower the dumbbells to the sides of your chest, keeping your elbows slightly bent.",
+    "Press the dumbbells back up to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

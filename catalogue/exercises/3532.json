@@ -1,0 +1,24 @@
+{
+  "id": "3532",
+  "name": "boxer shuffle",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "quadriceps",
+    "core",
+    "shoulders"
+  ],
+  "category": "cardio",
+  "description": "A light-footed shuffle used by boxers to keep the heart rate up.",
+  "instructions": [
+    "Stand with feet shoulder-width apart, knees soft.",
+    "Shift your weight from foot to foot.",
+    "Stay on the balls of your feet.",
+    "Keep your hands up like a guard.",
+    "Keep it light and quick for 30-60 seconds.",
+    "Rest briefly and repeat."
+  ],
+  "textSource": "opengym"
+}

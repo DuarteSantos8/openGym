@@ -1,0 +1,22 @@
+{
+  "id": "2404",
+  "name": "ez-bar biceps curl (with arm blaster)",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "An EZ bar curl with an arm blaster. Isolates the biceps with a comfortable wrist angle.",
+  "instructions": [
+    "Stand up straight with your feet shoulder-width apart and hold the ez barbell with an underhand grip, palms facing up.",
+    "Place your upper arms against the arm blaster, keeping them stationary throughout the exercise.",
+    "Keeping your elbows close to your body, exhale and curl the barbell up towards your shoulders.",
+    "Pause for a moment at the top, squeezing your biceps.",
+    "Inhale and slowly lower the barbell back to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3087",
+  "textSource": "exercisedb"
+}

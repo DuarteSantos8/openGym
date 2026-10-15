@@ -1,0 +1,23 @@
+{
+  "id": "1098",
+  "name": "suspension side bridge",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "isometric",
+  "description": "A side plank with your feet in the straps. It strengthens the obliques and stabilisers.",
+  "instructions": [
+    "Lie on your side with feet in the straps and your elbow below your shoulder.",
+    "Lift your hips.",
+    "Hold a straight line.",
+    "Breathe steadily.",
+    "Hold for 20-30 seconds.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

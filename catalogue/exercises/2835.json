@@ -1,0 +1,22 @@
+{
+  "id": "2835",
+  "name": "cable narrow chair stand up",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A weighted sit-to-stand with a narrow stance and cable resistance.",
+  "instructions": [
+    "Sit on a chair holding the cable handle at your chest.",
+    "Keep your feet close together.",
+    "Lean forward slightly.",
+    "Push through your heels to stand.",
+    "Lower back under control."
+  ],
+  "textSource": "opengym"
+}

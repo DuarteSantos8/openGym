@@ -1,0 +1,21 @@
+{
+  "id": "4777",
+  "name": "reverse back extension on floor",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "Lying face down, you lift your legs behind you to extend the hips. It strengthens the glutes and lower back.",
+  "instructions": [
+    "Lie face down with arms extended in front or under your head.",
+    "Keep your legs straight.",
+    "Raise both legs off the floor by squeezing your glutes.",
+    "Pause at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

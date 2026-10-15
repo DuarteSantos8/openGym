@@ -1,0 +1,23 @@
+{
+  "id": "4518",
+  "name": "kettlebell single arm thruster",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A front squat into an overhead press with one kettlebell. It combines legs and shoulders in one flowing move.",
+  "instructions": [
+    "Hold a kettlebell at your shoulder with one hand in the rack position.",
+    "Squat down with your chest up and elbow close.",
+    "Drive up through your legs.",
+    "Use that momentum to press the kettlebell overhead.",
+    "Lower it back to your shoulder, repeat, then switch arms."
+  ],
+  "textSource": "opengym"
+}

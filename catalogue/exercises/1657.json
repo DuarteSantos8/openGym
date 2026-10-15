@@ -1,0 +1,22 @@
+{
+  "id": "1657",
+  "name": "dumbbell cross body hammer curl v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A hammer curl across the body toward the opposite shoulder, version 2. It hits the brachialis and biceps.",
+  "instructions": [
+    "Stand up straight with a dumbbell in each hand, palms facing your body.",
+    "Keep your elbows close to your torso and your upper arms stationary.",
+    "Exhale and curl the weights while contracting your biceps, bringing the dumbbells as close to your opposite shoulder as possible.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale and slowly begin to lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2646",
+  "textSource": "exercisedb"
+}

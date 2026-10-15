@@ -1,0 +1,24 @@
+{
+  "id": "10193",
+  "name": "burpee power sled push",
+  "bodyPart": "full body",
+  "equipment": "sled machine",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "chest",
+    "shoulders",
+    "triceps"
+  ],
+  "category": "cardio",
+  "description": "A conditioning move that pairs a burpee with a hard sled push for a tough full body effort.",
+  "instructions": [
+    "Stand behind a loaded sled and drop into a burpee, chest to the floor.",
+    "Jump up to your feet explosively.",
+    "Grab the sled handles with your arms extended and lean in.",
+    "Drive with short, powerful steps to push the sled for a set distance.",
+    "Return and repeat, keeping your back flat while pushing."
+  ],
+  "textSource": "opengym"
+}

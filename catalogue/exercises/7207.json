@@ -1,0 +1,24 @@
+{
+  "id": "7207",
+  "name": "resistance band bulgarian squat",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A single-leg squat with the rear foot elevated and a band adding resistance.",
+  "instructions": [
+    "Stand in front of a bench, band under your front foot and held at your shoulders.",
+    "Rest the top of your back foot on the bench.",
+    "Lower straight down until your front thigh is parallel.",
+    "Keep your torso tall.",
+    "Press through your front heel to rise.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

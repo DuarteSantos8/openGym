@@ -1,0 +1,21 @@
+{
+  "id": "1315",
+  "name": "back relaxation",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "lower back",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "A gentle resting position that lets the back relax and lengthen after training.",
+  "instructions": [
+    "Get into a comfortable resting position, such as kneeling with your torso folded forward.",
+    "Rest your arms in a relaxed position.",
+    "Let your back round and release.",
+    "Breathe slowly into your lower back.",
+    "Hold for 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

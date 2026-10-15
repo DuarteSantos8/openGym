@@ -1,0 +1,22 @@
+{
+  "id": "2113",
+  "name": "standing lower trunk lateral flexor stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "Bends the lower trunk sideways from a standing position to stretch the muscles along the flank and low back.",
+  "instructions": [
+    "Stand with feet slightly wider than hip-width.",
+    "Place one hand on your hip and reach the other arm overhead.",
+    "Push the hips slightly to the side opposite your reach.",
+    "Bend sideways from the waist without leaning forward or back.",
+    "Hold for 20-30 seconds.",
+    "Return to upright and switch sides."
+  ],
+  "textSource": "opengym"
+}

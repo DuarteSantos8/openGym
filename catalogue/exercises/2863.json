@@ -1,0 +1,22 @@
+{
+  "id": "2863",
+  "name": "shoulder bridge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "pilates",
+  "description": "A bridge that lifts the hips and adds a leg raise, working the glutes and hamstrings.",
+  "instructions": [
+    "Lie on your back with knees bent.",
+    "Lift your hips into a bridge.",
+    "Extend one leg up.",
+    "Lower it and switch legs.",
+    "Roll down slowly."
+  ],
+  "textSource": "opengym"
+}

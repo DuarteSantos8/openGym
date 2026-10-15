@@ -1,0 +1,22 @@
+{
+  "id": "9868",
+  "name": "cable 45 degrees single arm reverse fly",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A one-arm cable reverse fly, hinged at 45 degrees to target the rear delt.",
+  "instructions": [
+    "Stand at a cable station and take one handle.",
+    "Hinge forward about 45 degrees.",
+    "Pull your arm out and back in an arc.",
+    "Squeeze your shoulder blade.",
+    "Return slowly and switch sides."
+  ],
+  "textSource": "opengym"
+}

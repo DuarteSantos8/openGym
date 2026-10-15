@@ -1,0 +1,24 @@
+{
+  "id": "4247",
+  "name": "landmine romanian deadlift v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "landmine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A Romanian deadlift using the landmine bar for an angled load. It builds the hamstrings and glutes with a good hip hinge.",
+  "instructions": [
+    "Hold the end of the landmine bar with both hands in front of your thighs.",
+    "Stand with soft knees and a flat back.",
+    "Push your hips back and slide the bar down your legs.",
+    "Lower until you feel a hamstring stretch.",
+    "Drive your hips forward to stand.",
+    "Squeeze your glutes at the top."
+  ],
+  "textSource": "opengym"
+}

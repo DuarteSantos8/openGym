@@ -1,0 +1,21 @@
+{
+  "id": "4141",
+  "name": "band overhead single arm triceps extension v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A second version of the one arm overhead band extension.",
+  "instructions": [
+    "Anchor or stand on the band and hold it overhead in one hand.",
+    "Bend your elbow so your hand drops behind your head.",
+    "Extend your arm fully.",
+    "Keep your core tight.",
+    "Switch arms after your set."
+  ],
+  "textSource": "opengym"
+}

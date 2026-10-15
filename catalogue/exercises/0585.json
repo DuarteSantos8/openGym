@@ -1,0 +1,28 @@
+{
+  "id": "0585",
+  "name": "lever leg extension",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Seated on a machine, you straighten your legs against a pad. A simple quad builder.",
+  "instructions": [
+    "Adjust the seat height and backrest of the machine to fit your body.",
+    "Sit on the machine with your back against the backrest and your feet on the footpad.",
+    "Grasp the handles or sidebars for stability.",
+    "Extend your legs forward by straightening your knees, lifting the weight.",
+    "Pause for a moment at the top, then slowly lower the weight back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps"
+    ],
+    "secondaries": []
+  },
+  "femaleVariant": "2256",
+  "textSource": "exercisedb"
+}

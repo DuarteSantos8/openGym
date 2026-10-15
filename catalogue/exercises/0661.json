@@ -1,0 +1,23 @@
+{
+  "id": "0661",
+  "name": "push-up inside leg kick",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up where you kick one leg inward at the top. Adds core and hip work to the chest effort.",
+  "instructions": [
+    "Start in a push-up position with your hands slightly wider than shoulder-width apart and your feet together.",
+    "Lower your body towards the ground by bending your elbows, keeping your back straight and your core engaged.",
+    "As you push back up, lift one leg off the ground and kick it out to the side, keeping it straight.",
+    "Lower your leg back down and repeat the push-up, then switch to the other leg.",
+    "Continue alternating leg kicks with each push-up repetition."
+  ],
+  "textSource": "exercisedb"
+}

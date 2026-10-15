@@ -1,0 +1,22 @@
+{
+  "id": "11282",
+  "name": "glute ham developer straight arms sit up",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A sit-up on a glute ham developer with your arms extended. The longer range makes your abs work harder.",
+  "instructions": [
+    "Set up on the GHD with your feet secured and hips on the pad.",
+    "Extend your arms overhead and lean back.",
+    "Curl up, bringing your arms forward.",
+    "Reach your torso over your knees.",
+    "Lower slowly with control."
+  ],
+  "textSource": "opengym"
+}

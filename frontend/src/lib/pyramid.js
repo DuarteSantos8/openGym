@@ -1,5 +1,6 @@
 // Pyramid sets (CONTEXT.md): one rep target per set, in order — a number, or PYRAMID_MAX for
-// "as many reps as you can". No load is prescribed and the exercise is never progressed.
+// "as many reps as you can". A set may carry its own planned weight (pyramidWeight); the
+// exercise is never progressed.
 // Imports nothing from history.js, which imports this module.
 import { t } from './i18n-core.js'
 import { isWarmupRow } from './workout-model.js'
@@ -64,6 +65,25 @@ export function normalizePyramidRest(rest, length) {
   const src = Array.isArray(rest) ? rest : []
   const out = Array.from({ length }, (_, i) => Math.max(0, Math.round(Number(src[i])) || 0))
   return out.some(v => v > 0) ? out : []
+}
+
+// Each set's own planned weight, beside the targets (`pyramidWeight[i]` for `pyramid[i]`), in
+// the plan's unit. 0 is "no plan": the set starts from what that same set lifted last time.
+// Sized to the list; all zeros is no field at all, like pyramidRest.
+export function normalizePyramidWeight(weights, length) {
+  const src = Array.isArray(weights) ? weights : []
+  const out = Array.from({ length }, (_, i) => {
+    const w = Number(src[i])
+    return Number.isFinite(w) && w > 0 ? Math.round(w * 100) / 100 : 0
+  })
+  return out.some(v => v > 0) ? out : []
+}
+
+/** The weight planned for work set `i` of a pyramid, or 0 when that set has none. An extra set
+ *  added mid-session copies the last one's, like its target. */
+export function pyramidWeightAt(cfg, i) {
+  if (!isPyramid(cfg) || !Array.isArray(cfg.pyramidWeight) || !cfg.pyramidWeight.length) return 0
+  return Math.max(0, Number(pyramidTargetAt(cfg.pyramidWeight, i)) || 0)
 }
 
 /** The rest a ticked work row of a pyramid earns, or 0 to fall back to the exercise's rest.

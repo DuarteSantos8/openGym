@@ -1,0 +1,22 @@
+{
+  "id": "3156",
+  "name": "bodyweight standing close-grip one arm row",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A standing, bent-over one arm row with a close grip, working the muscles between and around the shoulder blades. A light handheld weight keeps the pull honest.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, knees slightly bent, and hold a dumbbell in one hand with a neutral grip.",
+    "Bend forward at the hips, keeping your back straight and your core engaged.",
+    "Pull the dumbbell up towards your chest, keeping your elbow close to your body and squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly lower the dumbbell back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "femaleVariant": "3155",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1762",
+  "name": "single leg squat with support (pistol)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A pistol squat where you hold onto a support to help with balance. It builds single-leg strength and control on the way to an unassisted pistol.",
+  "instructions": [
+    "Stand next to a sturdy support and hold it with one or both hands.",
+    "Lift one leg out in front of you and balance on the other.",
+    "Sit your hips back and bend your knee, lowering as far as you can control.",
+    "Keep your heel down and your knee tracking over your toes.",
+    "Press through your foot to stand, using the support only as needed, then switch legs."
+  ],
+  "textSource": "opengym"
+}

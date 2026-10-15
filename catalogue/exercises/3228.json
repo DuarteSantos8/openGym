@@ -1,0 +1,25 @@
+{
+  "id": "3228",
+  "name": "lying back extension",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "upper back",
+    "trapezius"
+  ],
+  "category": "calisthenics",
+  "description": "A face-down lift of your chest off the floor. It strengthens the lower back muscles.",
+  "instructions": [
+    "Lie face down with your hands beside your head.",
+    "Keep your legs straight and your feet on the floor.",
+    "Lift your chest using your lower back.",
+    "Pause briefly at the top.",
+    "Lower slowly.",
+    "Keep your neck in line with your spine."
+  ],
+  "femaleVariant": "3208",
+  "textSource": "opengym"
+}

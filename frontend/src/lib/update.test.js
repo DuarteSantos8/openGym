@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { checkForUpdate, sha256, resetUpdateCheck } from './update.js'
+import { checkForUpdate, sha256, resetUpdateCheck, fetchChecksum } from './update.js'
 
 // __APP_VERSION__ is defined at build time by vite.config.js (reads package.json).
 // In the test environment vitest applies the same define, so it's available here.
@@ -38,9 +38,16 @@ describe('checkForUpdate', () => {
       json: () => Promise.resolve(body),
     }))
   }
+  const asset = (name, url = 'https://github.com/x/releases/download/v9/' + name) => ({ name, browser_download_url: url })
+
+  it('asks GitHub for the latest published release (never a draft or a beta)', async () => {
+    mockFetch({ tag_name: 'v' + __APP_VERSION__, assets: [] })
+    await checkForUpdate()
+    expect(globalThis.fetch.mock.calls[0][0]).toBe('https://api.github.com/repos/DuarteSantos8/openGym/releases/latest')
+  })
 
   it('reports no update when the latest release matches the current version', async () => {
-    mockFetch([{ tag_name: 'v' + __APP_VERSION__, assets: { links: [] } }])
+    mockFetch({ tag_name: 'v' + __APP_VERSION__, assets: [] })
     const result = await checkForUpdate()
     expect(result.hasUpdate).toBe(false)
     expect(result.latestVersion).toBe(__APP_VERSION__)
@@ -49,183 +56,93 @@ describe('checkForUpdate', () => {
   })
 
   it('reports no update when the latest release is older than current', async () => {
-    mockFetch([{ tag_name: 'v0.0.1', assets: { links: [] } }])
+    mockFetch({ tag_name: 'v0.0.1', assets: [] })
     const result = await checkForUpdate()
     expect(result.hasUpdate).toBe(false)
     expect(result.latestVersion).toBe('0.0.1')
   })
 
   it('reports an update when the latest release is newer', async () => {
-    mockFetch([{ tag_name: 'v99.0.0', assets: { links: [] } }])
+    mockFetch({ tag_name: 'v99.0.0', assets: [] })
     const result = await checkForUpdate()
     expect(result.hasUpdate).toBe(true)
     expect(result.latestVersion).toBe('99.0.0')
-  })
-
-  it('strips the v prefix from the tag name', async () => {
-    mockFetch([{ tag_name: 'v99.1.2', assets: { links: [] } }])
-    const result = await checkForUpdate()
-    expect(result.latestVersion).toBe('99.1.2')
   })
 
   it('handles tag names without a v prefix', async () => {
-    mockFetch([{ tag_name: '99.0.0', assets: { links: [] } }])
+    mockFetch({ tag_name: '99.1.2', assets: [] })
     const result = await checkForUpdate()
     expect(result.hasUpdate).toBe(true)
-    expect(result.latestVersion).toBe('99.0.0')
+    expect(result.latestVersion).toBe('99.1.2')
   })
 
-  it('finds the APK download URL from release asset links', async () => {
-    const apkUrl = 'https://gitlab.com/project/-/releases/v2.0.0/downloads/opengym.apk'
-    mockFetch([{
-      tag_name: 'v99.0.0',
-      assets: { links: [{ url: apkUrl, direct_asset_url: apkUrl }] }
-    }])
+  // What api.github.com returned for releases/latest on 2026-10-10 (v1.4.0, trimmed): the APK
+  // and its checksum as release assets. The checksum file also ends in neither .apk nor
+  // anything else the APK match could take.
+  const REAL_RELEASE = {
+    tag_name: 'v1.4.0',
+    assets: [
+      { name: 'openGym-1.4.0.apk', browser_download_url: 'https://github.com/DuarteSantos8/openGym/releases/download/v1.4.0/openGym-1.4.0.apk' },
+      { name: 'openGym-1.4.0.apk.sha256', browser_download_url: 'https://github.com/DuarteSantos8/openGym/releases/download/v1.4.0/openGym-1.4.0.apk.sha256' },
+    ],
+  }
+
+  it('finds the APK and its checksum in a real GitHub release payload', async () => {
+    mockFetch(REAL_RELEASE)
     const result = await checkForUpdate()
-    expect(result.apkUrl).toBe(apkUrl)
+    expect(result.latestVersion).toBe('1.4.0')
+    expect(result.apkUrl).toBe('https://github.com/DuarteSantos8/openGym/releases/download/v1.4.0/openGym-1.4.0.apk')
+    expect(result.hashUrl).toBe('https://github.com/DuarteSantos8/openGym/releases/download/v1.4.0/openGym-1.4.0.apk.sha256')
   })
 
-  it('prefers direct_asset_url over url for APK links', async () => {
-    mockFetch([{
-      tag_name: 'v99.0.0',
-      assets: {
-        links: [{
-          url: 'https://redirect.example/opengym.apk',
-          direct_asset_url: 'https://direct.example/opengym.apk'
-        }]
-      }
-    }])
+  it('does not take the checksum for the APK when it is listed first', async () => {
+    mockFetch({ tag_name: 'v99.0.0', assets: [asset('a.apk.sha256'), asset('sbom.json'), asset('a.apk')] })
     const result = await checkForUpdate()
-    expect(result.apkUrl).toBe('https://direct.example/opengym.apk')
+    expect(result.apkUrl).toMatch(/\/a\.apk$/)
+    expect(result.hashUrl).toMatch(/\/a\.apk\.sha256$/)
   })
 
-  it('returns null apkUrl when no .apk link exists', async () => {
-    mockFetch([{
-      tag_name: 'v99.0.0',
-      assets: { links: [{ url: 'https://example.com/changelog.md', direct_asset_url: 'https://example.com/changelog.md' }] }
-    }])
+  it('returns null URLs when the release has no APK or checksum', async () => {
+    mockFetch({ tag_name: 'v99.0.0', assets: [asset('changelog.md')] })
     const result = await checkForUpdate()
     expect(result.hasUpdate).toBe(true)
     expect(result.apkUrl).toBe(null)
-  })
-
-  it('finds the .sha256 hash URL from release asset links', async () => {
-    const hashUrl = 'https://gitlab.com/project/-/releases/v2.0.0/downloads/opengym.apk.sha256'
-    mockFetch([{
-      tag_name: 'v99.0.0',
-      assets: {
-        links: [
-          { url: 'https://example.com/opengym.apk', direct_asset_url: 'https://example.com/opengym.apk' },
-          { url: hashUrl, direct_asset_url: hashUrl },
-        ]
-      }
-    }])
-    const result = await checkForUpdate()
-    expect(result.hashUrl).toBe(hashUrl)
-  })
-
-  it('finds hash URL by link name containing sha256', async () => {
-    mockFetch([{
-      tag_name: 'v99.0.0',
-      assets: {
-        links: [
-          { name: 'APK', url: 'https://example.com/opengym.apk', direct_asset_url: 'https://example.com/opengym.apk' },
-          { name: 'SHA256 checksum', url: 'https://example.com/checksum.txt', direct_asset_url: 'https://example.com/checksum.txt' },
-        ]
-      }
-    }])
-    const result = await checkForUpdate()
-    expect(result.hashUrl).toBe('https://example.com/checksum.txt')
-  })
-
-  // The exact JSON gitlab.com returns for GET /projects/85678327/releases?per_page=1 (v1.3.1,
-  // fetched 2026-09-05, description and commit trimmed). The CI publishes the APK and its
-  // checksum as generic-package links, and the checksum link is listed BEFORE the APK — the
-  // detection must not confuse the two.
-  const REAL_RELEASE = [
-    {
-      "tag_name": "v1.3.1",
-      "name": "openGym v1.3.1",
-      "assets": {
-        "count": 7,
-        "sources": [
-          {
-            "format": "zip",
-            "url": "https://gitlab.com/DuarteSantos8/opengym/-/archive/v1.3.1/opengym-v1.3.1.zip"
-          },
-          {
-            "format": "tar.gz",
-            "url": "https://gitlab.com/DuarteSantos8/opengym/-/archive/v1.3.1/opengym-v1.3.1.tar.gz"
-          },
-          {
-            "format": "tar.bz2",
-            "url": "https://gitlab.com/DuarteSantos8/opengym/-/archive/v1.3.1/opengym-v1.3.1.tar.bz2"
-          },
-          {
-            "format": "tar",
-            "url": "https://gitlab.com/DuarteSantos8/opengym/-/archive/v1.3.1/opengym-v1.3.1.tar"
-          }
-        ],
-        "links": [
-          {
-            "id": 12790840,
-            "name": "Container images (api + web)",
-            "url": "https://gitlab.com/DuarteSantos8/opengym/container_registry",
-            "direct_asset_url": "https://gitlab.com/DuarteSantos8/opengym/container_registry",
-            "link_type": "image"
-          },
-          {
-            "id": 12790839,
-            "name": "openGym-1.3.1.apk.sha256 (checksum)",
-            "url": "https://gitlab.com/api/v4/projects/85678327/packages/generic/opengym-android/1.3.1/openGym-1.3.1.apk.sha256",
-            "direct_asset_url": "https://gitlab.com/api/v4/projects/85678327/packages/generic/opengym-android/1.3.1/openGym-1.3.1.apk.sha256",
-            "link_type": "other"
-          },
-          {
-            "id": 12790838,
-            "name": "openGym-1.3.1.apk (Android, sideload)",
-            "url": "https://gitlab.com/api/v4/projects/85678327/packages/generic/opengym-android/1.3.1/openGym-1.3.1.apk",
-            "direct_asset_url": "https://gitlab.com/api/v4/projects/85678327/packages/generic/opengym-android/1.3.1/openGym-1.3.1.apk",
-            "link_type": "package"
-          }
-        ]
-      }
-    }
-  ]
-
-  it('finds the APK and its checksum in a real gitlab.com release payload', async () => {
-    mockFetch(REAL_RELEASE)
-    const result = await checkForUpdate()
-    expect(result.latestVersion).toBe('1.3.1')
-    expect(result.apkUrl).toBe('https://gitlab.com/api/v4/projects/85678327/packages/generic/opengym-android/1.3.1/openGym-1.3.1.apk')
-    expect(result.hashUrl).toBe('https://gitlab.com/api/v4/projects/85678327/packages/generic/opengym-android/1.3.1/openGym-1.3.1.apk.sha256')
-  })
-
-  it('returns null hashUrl when no hash link exists', async () => {
-    mockFetch([{
-      tag_name: 'v99.0.0',
-      assets: { links: [{ url: 'https://example.com/opengym.apk', direct_asset_url: 'https://example.com/opengym.apk' }] }
-    }])
-    const result = await checkForUpdate()
     expect(result.hashUrl).toBe(null)
   })
 
-  it('returns no update when the releases array is empty', async () => {
-    mockFetch([])
+  it('returns no update when the repository has no release yet (404)', async () => {
+    mockFetch({ message: 'Not Found' }, 404)
     const result = await checkForUpdate()
     expect(result.hasUpdate).toBe(false)
     expect(result.latestVersion).toBe(__APP_VERSION__)
-    expect(result.hashUrl).toBe(null)
   })
 
   it('throws when the API responds with an error status', async () => {
     mockFetch(null, 500)
-    await expect(checkForUpdate()).rejects.toThrow('GitLab API 500')
+    await expect(checkForUpdate()).rejects.toThrow('GitHub API 500')
   })
 
   it('throws on network failure', async () => {
     globalThis.fetch = vi.fn(() => Promise.reject(new Error('Network error')))
     await expect(checkForUpdate()).rejects.toThrow('Network error')
+  })
+})
+
+describe('fetchChecksum (web)', () => {
+  let originalFetch
+  beforeEach(() => { originalFetch = globalThis.fetch })
+  afterEach(() => { globalThis.fetch = originalFetch })
+  const serve = text => { globalThis.fetch = vi.fn(() => Promise.resolve({ ok: true, text: () => Promise.resolve(text) })) }
+
+  it('reads the hash out of a sha256sum line', async () => {
+    serve('EC2822' + 'a'.repeat(58) + '  openGym-1.4.0.apk\n')
+    expect(await fetchChecksum('https://x/a.apk.sha256')).toBe('ec2822' + 'a'.repeat(58))
+  })
+
+  it('gives null for anything that is not a SHA-256, or no URL', async () => {
+    serve('<html>not found</html>')
+    expect(await fetchChecksum('https://x/a.apk.sha256')).toBe(null)
+    expect(await fetchChecksum(null)).toBe(null)
   })
 })
 
@@ -237,7 +154,7 @@ describe('semver comparison (via checkForUpdate behavior)', () => {
   function mockRelease(tag) {
     globalThis.fetch = vi.fn(() => Promise.resolve({
       ok: true, status: 200,
-      json: () => Promise.resolve([{ tag_name: tag, assets: { links: [] } }]),
+      json: () => Promise.resolve({ tag_name: tag, assets: [] }),
     }))
   }
 

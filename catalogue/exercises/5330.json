@@ -1,0 +1,24 @@
+{
+  "id": "5330",
+  "name": "dumbbell pullover v. 2",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "lats",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Arc a dumbbell from overhead to your chest while lying on a bench. Works the chest and lats with a deep stretch.",
+  "instructions": [
+    "Lie across or along a bench holding one dumbbell with both hands over your chest.",
+    "Keep a slight bend in your elbows.",
+    "Lower the dumbbell back behind your head in an arc.",
+    "Feel the stretch through your chest and lats.",
+    "Pull it back over your chest.",
+    "Keep your hips low and ribs down."
+  ],
+  "femaleVariant": "6484",
+  "textSource": "opengym"
+}

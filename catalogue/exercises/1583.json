@@ -1,0 +1,22 @@
+{
+  "id": "1583",
+  "name": "sled reverse hack squat",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A hack squat done facing the pad on the sled. It puts more load on the glutes and hamstrings.",
+  "instructions": [
+    "Face the pad of the hack squat sled with your chest against it and feet on the platform.",
+    "Hold the handles and release the safety.",
+    "Lower by bending your knees and pushing your hips back.",
+    "Keep your chest pressed against the pad.",
+    "Drive through your heels to stand back up."
+  ],
+  "textSource": "opengym"
+}

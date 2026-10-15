@@ -1,0 +1,22 @@
+{
+  "id": "7553",
+  "name": "doorway chest stretch",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest",
+    "biceps"
+  ],
+  "category": "stretching",
+  "description": "Doorway stretch that opens up the chest and the fronts of your shoulders.",
+  "instructions": [
+    "Stand in a doorway with forearms on the frame, elbows at 90 degrees.",
+    "Step one foot forward.",
+    "Lean gently through the door until you feel a stretch.",
+    "Hold for 20-30 seconds.",
+    "Breathe slowly and step back."
+  ],
+  "textSource": "opengym"
+}

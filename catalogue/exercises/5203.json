@@ -1,0 +1,21 @@
+{
+  "id": "5203",
+  "name": "resistance band standing ab crunch",
+  "bodyPart": "waist",
+  "equipment": "resistance band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A standing crunch against band tension. It trains the abs without lying on the floor.",
+  "instructions": [
+    "Anchor the band high and stand facing it with your feet hip-width apart.",
+    "Hold the handles at your head.",
+    "Bend forward by crunching your ribs toward your pelvis.",
+    "Squeeze your abs hard.",
+    "Return slowly to standing."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4977",
+  "name": "ring alternate superman",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "rear deltoids",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A superman variation with your feet in rings, lifting opposite arm and leg in turn. It builds the lower back and core.",
+  "instructions": [
+    "Put your feet in the rings and get into a face-down plank.",
+    "Brace your core and keep your hips level.",
+    "Lift one arm forward while holding steady.",
+    "Return it and switch to the other arm.",
+    "Avoid letting your lower back sag.",
+    "Alternate sides for the full set."
+  ],
+  "textSource": "opengym"
+}

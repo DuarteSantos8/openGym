@@ -1,0 +1,22 @@
+{
+  "id": "2133",
+  "name": "farmers walk",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "calves",
+    "forearms",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A loaded carry holding a dumbbell in each hand while walking tall. Builds grip, core and total-body strength.",
+  "instructions": [
+    "Stand up straight with a dumbbell in each hand, palms facing your sides.",
+    "Keep your back straight and your shoulders back.",
+    "Take small, controlled steps forward, maintaining an upright posture.",
+    "Continue walking for the desired distance or time.",
+    "To finish, stop walking and carefully lower the dumbbells to your sides."
+  ],
+  "textSource": "exercisedb"
+}

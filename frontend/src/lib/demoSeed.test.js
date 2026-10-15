@@ -1,7 +1,7 @@
 // The demo build is the only openGym most people ever see, so its seeded history has to
 // exercise the stats it is there to show off — including the effort card, which renders as
 // dashes on a history that is rated too thinly or not at all.
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
 import { buildDemoState } from './demoSeed.js'
 import {
   effortSummary, effortWeeks, effortHistogram, hasEffort, displayScale, avgRir,
@@ -105,5 +105,52 @@ describe('demo seed — effort', () => {
     const b = buildDemoState()
     const flat = st => st.workouts.map(w => w.entries.map(e => e.sets.map(s => `${s.w}x${s.r}/${s.rir ?? ''}/${s.rpe ?? ''}`).join(',')).join('|')).join(';')
     expect(flat(b)).toBe(flat(S))
+  })
+})
+
+// The demo history is a published fixture: mcp/test/tools.test.js pins exact values against it,
+// and every existing viewer's demo profile is these numbers. Anything drawn from a generator the
+// training loop shares slides the whole sequence along and rewrites that history — which is how
+// the measurement block first broke the mcp suite. So the training stream gets pinned here too,
+// on the frontend side of the boundary, where the seed actually lives.
+describe('demo seed — the training stream is a fixture', () => {
+  const TODAY = '2026-07-27'                 // Monday, matching the mcp suite's pinned clock
+  // Not copied off a run: 18412.5 is the sum of w×r over the twenty completed sets of the newest
+  // session, and 78.3 is BW_TO, the end of the body-weight trend. Same two values mcp asserts.
+  const NEWEST = { d: '2026-07-24', name: 'Leg Day', vol: 18412.5 }
+  const LATEST_BW = { d: TODAY, w: 78.3 }
+  let D = null
+
+  beforeAll(() => {
+    vi.useFakeTimers({ now: new Date(TODAY + 'T12:00:00Z'), toFake: ['Date'] })
+    D = buildDemoState()
+  })
+  afterAll(() => vi.useRealTimers())
+
+  it('ends the body-weight trend where the goal delta is derived from', () => {
+    expect(D.bodyweight.at(-1)).toMatchObject(LATEST_BW)
+  })
+
+  it('closes on the session the mcp suite reads as newest', () => {
+    const w = D.workouts.at(-1)
+    expect({ d: w.d, name: w.name, vol: w.vol }).toEqual(NEWEST)
+    const sets = w.entries.flatMap(e => e.sets)
+    expect(sets.length).toBe(20)
+    expect(sets.every(s => s.done)).toBe(true)
+    // …and the volume really is the sum of w×r over them, not a number that drifted into place.
+    expect(sets.reduce((n, s) => n + s.w * s.r, 0)).toBe(NEWEST.vol)
+  })
+
+  it('logs measurements without touching that stream', () => {
+    // Measurements land on their own cadence, so a shared generator would show up as a shifted
+    // history rather than as anything wrong with the measurements themselves.
+    expect(D.measurements.length).toBeGreaterThanOrEqual(5)
+    const dates = D.measurements.map(m => m.d)
+    expect(new Set(dates).size).toBe(dates.length)
+    expect(dates).toEqual([...dates].sort())
+    // The waist trend is the one the demo exists to show moving; it should actually move.
+    const waist = D.measurements.map(m => m.waist)
+    expect(waist.every(v => v > 60 && v < 130)).toBe(true)
+    expect(waist.at(0) - waist.at(-1)).toBeGreaterThan(3)
   })
 })

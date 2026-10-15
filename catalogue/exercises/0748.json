@@ -1,0 +1,40 @@
+{
+  "id": "0748",
+  "name": "smith bench press",
+  "bodyPart": "chest",
+  "equipment": "smith machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Lying on a bench, you press a smith machine bar up from your chest. Works the chest, shoulders and triceps.",
+  "instructions": [
+    "Adjust the height of the smith machine bar to chest level.",
+    "Lie flat on the bench with your feet firmly planted on the ground.",
+    "Grip the bar with an overhand grip slightly wider than shoulder-width apart.",
+    "Unrack the bar and lower it towards your chest, keeping your elbows tucked in.",
+    "Pause for a moment when the bar touches your chest.",
+    "Push the bar back up to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "chest"
+    ],
+    "secondaries": [
+      "triceps",
+      "deltoids",
+      "biceps"
+    ],
+    "weights": {
+      "chest": 1,
+      "deltoids": 0.4,
+      "triceps": 0.4,
+      "biceps": 0
+    }
+  },
+  "femaleVariant": "7002",
+  "textSource": "exercisedb"
+}

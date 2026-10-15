@@ -1,0 +1,21 @@
+{
+  "id": "0901",
+  "name": "band hip extension",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A band-resisted leg kick back. It strengthens the glutes and hamstrings.",
+  "instructions": [
+    "Loop the band around your ankles or anchor it low.",
+    "Stand tall and hold support.",
+    "Press one leg straight back against the band.",
+    "Squeeze your glute at the top.",
+    "Return slowly, then switch legs."
+  ],
+  "textSource": "opengym"
+}

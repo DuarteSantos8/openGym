@@ -1,0 +1,24 @@
+{
+  "id": "4543",
+  "name": "kettlebell one arm clean",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "upper back",
+    "forearms",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "A powerful hip-driven pull that brings a kettlebell from the floor to the rack position on one shoulder.",
+  "instructions": [
+    "Stand over a kettlebell with feet shoulder-width apart and hinge at the hips to grab the handle.",
+    "Hike it back between your legs.",
+    "Snap your hips forward and pull the bell close to your body.",
+    "Rotate your hand around the bell so it lands softly in the rack at your shoulder.",
+    "Stand tall with your elbow tucked in.",
+    "Lower the bell back down with control and switch arms."
+  ],
+  "textSource": "opengym"
+}

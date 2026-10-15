@@ -1,0 +1,22 @@
+{
+  "id": "2875",
+  "name": "side kick kneeling",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A kneeling Pilates side kick that works the outer hip and core stability.",
+  "instructions": [
+    "Kneel on one knee with the opposite leg extended to the side.",
+    "Place your bottom hand on the mat and keep the top hand light behind your head.",
+    "Kick the top leg forward, then sweep it back with control.",
+    "Keep your torso steady and tall.",
+    "Complete your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

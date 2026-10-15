@@ -1,0 +1,21 @@
+{
+  "id": "5087",
+  "name": "cable shoulder 90 degrees external rotation",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "Rotate your forearm up and back against a cable with your upper arm at shoulder height. It strengthens the rotator cuff external rotators.",
+  "instructions": [
+    "Set a cable at shoulder height and stand sideways to it.",
+    "Hold the handle with your upper arm out at 90 degrees and elbow bent 90 degrees.",
+    "Rotate your forearm up and back without moving your upper arm.",
+    "Pause, then return slowly.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

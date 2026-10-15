@@ -1,0 +1,24 @@
+{
+  "id": "3469",
+  "name": "downward facing dog",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "shoulders",
+    "upper back"
+  ],
+  "category": "yoga",
+  "description": "A classic yoga pose that stretches the back of the legs and shoulders.",
+  "instructions": [
+    "Start on hands and knees.",
+    "Tuck your toes and lift your hips up and back.",
+    "Press your chest toward your thighs.",
+    "Keep your arms straight.",
+    "Hold for 20-30 seconds.",
+    "Lower down gently."
+  ],
+  "femaleVariant": "5251",
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "9321",
+  "name": "lying floor horizontal flutter kick",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "calisthenics",
+  "description": "Small alternating kicks while lying down. It trains the lower abs and hip flexors.",
+  "instructions": [
+    "Lie on your back with your legs straight and hands under your hips.",
+    "Lift your feet a few inches off the floor.",
+    "Kick your legs up and down in small alternating motions.",
+    "Keep your lower back pressed down.",
+    "Breathe steadily.",
+    "Continue for 20 to 40 seconds."
+  ],
+  "textSource": "opengym"
+}

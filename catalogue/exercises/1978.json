@@ -1,0 +1,22 @@
+{
+  "id": "1978",
+  "name": "shoulder extensor adductor and retractor stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rhomboids",
+    "upper back",
+    "triceps"
+  ],
+  "category": "stretching",
+  "description": "A stretch for the back of the shoulder and the muscles between the shoulder blades.",
+  "instructions": [
+    "Stand tall and extend one arm behind you.",
+    "Reach across to grab it with the other hand.",
+    "Draw the arm gently back and across the body.",
+    "Keep your chest open and your shoulders down.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

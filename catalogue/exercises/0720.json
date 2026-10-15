@@ -1,0 +1,22 @@
+{
+  "id": "0720",
+  "name": "side-to-side chin",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "You pull yourself up to one side of the bar, then slide across to the other. Builds the lats, arms and grip.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your knees slightly bent.",
+    "Grasp a pull-up bar with an overhand grip, hands slightly wider than shoulder-width apart.",
+    "Hang from the bar with your arms fully extended and your body relaxed.",
+    "Pull yourself up by bending your elbows and bringing your chin towards the bar, while keeping your body straight.",
+    "Once your chin is above the bar, lower yourself back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

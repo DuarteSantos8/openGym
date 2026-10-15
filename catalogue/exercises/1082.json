@@ -1,0 +1,23 @@
+{
+  "id": "1082",
+  "name": "suspension jackknife",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "From a plank with feet in straps, you pull the knees toward the chest. It trains the abs and core control.",
+  "instructions": [
+    "Start in a plank with your feet in the straps and hands under shoulders.",
+    "Brace your core.",
+    "Pull your knees toward your chest by rolling your hips up.",
+    "Pause briefly.",
+    "Extend your legs back to plank.",
+    "Keep your shoulders stacked over your hands."
+  ],
+  "textSource": "opengym"
+}

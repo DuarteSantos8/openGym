@@ -1,0 +1,22 @@
+{
+  "id": "1773",
+  "name": "one arm towel row",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A one-arm row using a towel while hinged forward. Trains the upper back and builds grip strength.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, knees slightly bent, and hold a towel with one hand.",
+    "Bend forward at the waist, keeping your back straight and your core engaged.",
+    "Extend your arm fully, allowing the towel to hang in front of you.",
+    "Pull the towel towards your chest, squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly lower the towel back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

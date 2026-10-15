@@ -1,0 +1,22 @@
+{
+  "id": "4067",
+  "name": "dumbbell alternate arnold press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "Seated Arnold press alternating arms. The twist works the front and side delts.",
+  "instructions": [
+    "Sit upright holding dumbbells at shoulder height with palms facing you.",
+    "Press one dumbbell overhead while rotating your palm forward.",
+    "Lower it while rotating back.",
+    "Alternate arms.",
+    "Keep your back against the pad and avoid arching."
+  ],
+  "textSource": "opengym"
+}

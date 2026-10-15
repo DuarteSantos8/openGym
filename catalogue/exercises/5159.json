@@ -1,0 +1,22 @@
+{
+  "id": "5159",
+  "name": "plank on hands",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "isometric",
+  "description": "A straight-arm plank held on the hands. It builds trunk stiffness and shoulder stability.",
+  "instructions": [
+    "Place your hands under your shoulders and extend your legs behind you.",
+    "Tuck your toes and lift your hips so the body forms a straight line.",
+    "Squeeze your glutes and brace your abs.",
+    "Keep your neck neutral and look at the floor.",
+    "Hold for 20-40 seconds, then lower your knees."
+  ],
+  "textSource": "opengym"
+}

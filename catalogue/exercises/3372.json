@@ -1,0 +1,23 @@
+{
+  "id": "3372",
+  "name": "battling ropes alternate arms side lunge",
+  "bodyPart": "full body",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "adductors",
+    "shoulders"
+  ],
+  "category": "cardio",
+  "description": "Side lunges while whipping the ropes alternately, working legs, shoulders and heart.",
+  "instructions": [
+    "Hold the rope ends and stand with feet together.",
+    "Step wide to one side and sit into a side lunge.",
+    "Whip the ropes alternately with your arms.",
+    "Push back to the middle.",
+    "Alternate sides and keep the waves going."
+  ],
+  "textSource": "opengym"
+}

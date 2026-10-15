@@ -1,0 +1,20 @@
+{
+  "id": "0924",
+  "name": "band standing internal shoulder rotation",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "An internal rotation with a band. It strengthens the rotator cuff.",
+  "instructions": [
+    "Anchor the band at elbow height and stand sideways to it.",
+    "Hold the end with your elbow bent at 90 degrees.",
+    "Rotate your forearm across toward your belly.",
+    "Return slowly.",
+    "Finish reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

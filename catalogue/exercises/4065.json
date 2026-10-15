@@ -1,0 +1,23 @@
+{
+  "id": "4065",
+  "name": "dumbbell standing alternate arnold press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "trapezius",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Rotating press with dumbbells, done one arm at a time while standing. It works all parts of the shoulder.",
+  "instructions": [
+    "Stand holding dumbbells at shoulder height with palms facing you.",
+    "Brace your core.",
+    "Press one dumbbell overhead while rotating your palm forward.",
+    "Lower while rotating back.",
+    "Alternate arms."
+  ],
+  "textSource": "opengym"
+}

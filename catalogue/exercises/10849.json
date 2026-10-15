@@ -1,0 +1,23 @@
+{
+  "id": "10849",
+  "name": "pilates machine lying pelvic lift",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A reformer bridge that lifts the hips. It strengthens the glutes and hamstrings.",
+  "instructions": [
+    "Lie on your back with your feet on the bar and knees bent.",
+    "Press your arms into the pad.",
+    "Lift your hips one vertebra at a time.",
+    "Hold at the top.",
+    "Roll down slowly.",
+    "Keep your ribs relaxed."
+  ],
+  "textSource": "opengym"
+}

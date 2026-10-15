@@ -1,0 +1,23 @@
+{
+  "id": "10410",
+  "name": "steel mace squat (weighted)",
+  "bodyPart": "upper legs",
+  "equipment": "macebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A squat holding a steel mace across the shoulders or upper back. It builds leg strength and a braced trunk.",
+  "instructions": [
+    "Rest the mace on your shoulders and hold it with both hands.",
+    "Stand with feet about shoulder width apart.",
+    "Sit your hips back and down until your thighs are about parallel.",
+    "Keep your chest tall and knees tracking over your toes.",
+    "Drive through your feet to stand back up."
+  ],
+  "textSource": "opengym"
+}

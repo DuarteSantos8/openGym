@@ -1,0 +1,24 @@
+{
+  "id": "10675",
+  "name": "landmine squat jump",
+  "bodyPart": "upper legs",
+  "equipment": "landmine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core",
+    "shoulders"
+  ],
+  "category": "plyometrics",
+  "description": "A squat holding a landmine bar at your chest, followed by a jump. It builds explosive leg power.",
+  "instructions": [
+    "Hold the end of a landmine bar at your chest.",
+    "Stand with feet shoulder-width apart.",
+    "Squat down with a tall chest.",
+    "Jump up explosively through your feet.",
+    "Land softly with bent knees.",
+    "Reset and repeat."
+  ],
+  "textSource": "opengym"
+}

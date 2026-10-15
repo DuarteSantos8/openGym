@@ -1,0 +1,22 @@
+{
+  "id": "0892",
+  "name": "band bent over row v. 2",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A bent-over row with a band. It builds the muscles between your shoulder blades and the lats.",
+  "instructions": [
+    "Stand on the band and hold the ends in your hands.",
+    "Hinge forward with a flat back and soft knees.",
+    "Pull your elbows back toward your hips.",
+    "Squeeze your shoulder blades together.",
+    "Lower with control."
+  ],
+  "textSource": "opengym"
+}

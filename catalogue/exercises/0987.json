@@ -1,0 +1,22 @@
+{
+  "id": "0987",
+  "name": "band one arm single leg split squat",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A single-leg split squat with a band, back foot raised. It trains the quads and glutes.",
+  "instructions": [
+    "Stand with your feet hip-width apart and place a resistance band around your ankles.",
+    "Extend one leg forward and rest the top of your foot on a bench or step behind you.",
+    "Hold onto a support with one hand for balance.",
+    "Bend your standing leg and lower your body down into a squat position, keeping your knee in line with your toes.",
+    "Push through your heel to return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch legs."
+  ],
+  "textSource": "exercisedb"
+}

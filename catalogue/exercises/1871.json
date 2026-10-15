@@ -1,0 +1,21 @@
+{
+  "id": "1871",
+  "name": "lever triceps dip (plate loaded)",
+  "bodyPart": "upper arms",
+  "equipment": "leverage machine",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Seated plate-loaded dip machine that builds the triceps.",
+  "instructions": [
+    "Sit upright and grip the handles beside you.",
+    "Set your elbows tight to your sides.",
+    "Press down until your arms are straight.",
+    "Squeeze your triceps.",
+    "Return slowly to the start."
+  ],
+  "textSource": "opengym"
+}

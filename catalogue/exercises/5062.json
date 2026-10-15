@@ -1,0 +1,21 @@
+{
+  "id": "5062",
+  "name": "lying chin tucks",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "trapezius"
+  ],
+  "category": "rehab",
+  "description": "A small nodding motion lying on your back. It trains the deep neck muscles and improves head posture.",
+  "instructions": [
+    "Lie on your back with your head resting on the floor and knees bent.",
+    "Gently draw your chin toward your throat.",
+    "Press the back of your head lightly into the floor.",
+    "Hold for 3-5 seconds.",
+    "Release and repeat."
+  ],
+  "textSource": "opengym"
+}

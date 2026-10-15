@@ -1,0 +1,24 @@
+{
+  "id": "1161",
+  "name": "rowing (with rowing machine)",
+  "bodyPart": "cardio",
+  "equipment": "leverage machine",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "lats",
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "Steady rowing on an indoor machine for full-body cardio conditioning.",
+  "instructions": [
+    "Sit on the machine, strap in your feet and grab the handle with straight arms.",
+    "Push through your legs first, then lean back slightly.",
+    "Pull the handle to your lower ribs with elbows close.",
+    "Reverse the order: arms out, hips hinge, then knees bend to slide forward.",
+    "Keep a smooth rhythm for 10-30 minutes at a comfortable pace."
+  ],
+  "femaleVariant": "2262",
+  "textSource": "opengym"
+}

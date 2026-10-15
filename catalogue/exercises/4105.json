@@ -1,0 +1,23 @@
+{
+  "id": "4105",
+  "name": "trap bar deadlift from deficit",
+  "bodyPart": "upper legs",
+  "equipment": "trap bar",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A trap bar deadlift while standing on a raised platform, increasing range of motion for legs and back.",
+  "instructions": [
+    "Stand on a low platform inside the trap bar.",
+    "Squat down and grip the handles with a flat back.",
+    "Brace and push the floor away.",
+    "Stand tall and squeeze your glutes at the top.",
+    "Lower the bar with control to the start."
+  ],
+  "textSource": "opengym"
+}

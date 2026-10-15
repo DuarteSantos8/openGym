@@ -1,0 +1,21 @@
+{
+  "id": "10929",
+  "name": "standing internal rotation slide with towel",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "rotator cuff"
+  ],
+  "category": "rehab",
+  "description": "A towel slide that rotates the shoulder inward. It works the rotator cuff gently.",
+  "instructions": [
+    "Stand side-on to a wall with a towel under your forearm.",
+    "Bend your elbow to 90 degrees against your side.",
+    "Slide your hand across your body along the wall.",
+    "Return slowly.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

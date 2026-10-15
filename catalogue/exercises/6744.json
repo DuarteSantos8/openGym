@@ -1,0 +1,22 @@
+{
+  "id": "6744",
+  "name": "resistance band side walk squat",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A squat position with side steps against a band. It strengthens the outer hips and thighs.",
+  "instructions": [
+    "Put a band around your thighs or just above the knees.",
+    "Drop into a quarter squat with chest up.",
+    "Step sideways, keeping tension on the band.",
+    "Bring the trailing foot in without letting the feet touch.",
+    "Take several steps one way, then return the other way.",
+    "Keep your knees pushed out."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4757",
+  "name": "dumbbell staggered stance romanian deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "forearms",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A Romanian deadlift with one foot slightly behind the other. It loads the hamstrings and glutes and improves balance.",
+  "instructions": [
+    "Stand with one foot a half step ahead and hold dumbbells in front of you.",
+    "Keep most of your weight on the front leg.",
+    "Hinge at the hips, sliding the dumbbells down your legs.",
+    "Stop when you feel a stretch in the hamstring, back flat.",
+    "Drive your hips forward to stand, then switch feet."
+  ],
+  "textSource": "opengym"
+}

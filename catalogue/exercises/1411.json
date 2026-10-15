@@ -1,0 +1,22 @@
+{
+  "id": "1411",
+  "name": "barbell palms down wrist curl over a bench",
+  "bodyPart": "lower arms",
+  "equipment": "barbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "biceps",
+    "brachialis"
+  ],
+  "category": "strength",
+  "description": "Sit with your forearms on your thighs or a bench, palms down, and curl a barbell up with your wrists. It strengthens the back of the forearms.",
+  "instructions": [
+    "Sit on a bench with your feet flat on the ground and your forearms resting on your thighs, palms facing down.",
+    "Hold a barbell with an overhand grip, hands shoulder-width apart.",
+    "Lower the barbell towards the ground by flexing your wrists, keeping your forearms stationary.",
+    "Pause for a moment at the bottom, then slowly raise the barbell back up by extending your wrists.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2681",
+  "textSource": "exercisedb"
+}

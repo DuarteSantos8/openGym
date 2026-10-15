@@ -1,0 +1,23 @@
+{
+  "id": "4679",
+  "name": "band split squat v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A split squat with band resistance. It works the quads and glutes one leg at a time.",
+  "instructions": [
+    "Stand on the band with your front foot and hold the other end at your shoulders.",
+    "Step your other foot back into a split stance.",
+    "Lower your back knee toward the floor.",
+    "Keep your torso upright and your front knee stable.",
+    "Drive up through the front foot, then switch legs after your set."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "1984",
+  "name": "rotator cuff stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids"
+  ],
+  "category": "stretching",
+  "description": "A stretch aimed at the small stabilizing muscles around the shoulder joint.",
+  "instructions": [
+    "Stand tall and bring one arm across your body at chest height.",
+    "Hold the arm just above the elbow with the other hand and draw it in until the back of the shoulder stretches.",
+    "Keep the shoulder blade down and relaxed.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

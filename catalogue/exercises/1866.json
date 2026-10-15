@@ -1,0 +1,22 @@
+{
+  "id": "1866",
+  "name": "wide grip pull up on dip cage",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "Wide-grip pull-up performed on the dip cage that emphasises the lats.",
+  "instructions": [
+    "Grab the wide handles with your palms facing forward.",
+    "Hang with your arms fully extended.",
+    "Pull yourself up by driving your elbows down and back.",
+    "Pause when your chin clears the bar.",
+    "Lower slowly to a full hang."
+  ],
+  "textSource": "opengym"
+}

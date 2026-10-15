@@ -1,0 +1,22 @@
+{
+  "id": "6041",
+  "name": "bottle weighted romanian deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A hip hinge holding a weighted bottle in each hand. It trains the hamstrings and glutes with light load.",
+  "instructions": [
+    "Stand with feet hip-width apart, holding a bottle in each hand in front of your thighs.",
+    "Soften your knees and push your hips back.",
+    "Lower the bottles along your legs with a flat back until you feel your hamstrings stretch.",
+    "Drive your hips forward to stand tall.",
+    "Keep your shoulders back and your core braced."
+  ],
+  "textSource": "opengym"
+}

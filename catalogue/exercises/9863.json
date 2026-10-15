@@ -1,0 +1,22 @@
+{
+  "id": "9863",
+  "name": "cable side lying floor single leg kickback",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A side-lying leg kickback with a cable. It isolates the glutes.",
+  "instructions": [
+    "Lie on your side with a cuff on your top ankle.",
+    "Position the cable behind you.",
+    "Kick your top leg back and slightly up.",
+    "Squeeze your glute at the top.",
+    "Return slowly.",
+    "Do your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

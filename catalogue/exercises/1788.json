@@ -1,0 +1,22 @@
+{
+  "id": "1788",
+  "name": "over head straight arm stretch",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "lats",
+    "triceps"
+  ],
+  "category": "stretching",
+  "description": "Straight arms overhead lengthen the chest, shoulders and sides of your back. A simple full-reach stretch.",
+  "instructions": [
+    "Stand tall and raise both straight arms overhead with your palms facing forward.",
+    "Reach up and slightly back, keeping your ribs down and your core lightly braced.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

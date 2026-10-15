@@ -1,0 +1,21 @@
+{
+  "id": "1972",
+  "name": "sitting shoulders stretch on bench",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "upper back"
+  ],
+  "category": "stretching",
+  "description": "A seated stretch that opens the front of the shoulders using a bench.",
+  "instructions": [
+    "Sit on the edge of a bench and place your hands behind you on it, fingers pointing back.",
+    "Walk your hips slightly forward off the bench.",
+    "Lower your hips gently until you feel a stretch at the front of the shoulders.",
+    "Keep your back close to the bench and shoulders down.",
+    "Hold for 20-30 seconds, then rise up."
+  ],
+  "textSource": "opengym"
+}

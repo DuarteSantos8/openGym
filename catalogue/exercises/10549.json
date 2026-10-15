@@ -1,0 +1,22 @@
+{
+  "id": "10549",
+  "name": "elevated single leg bridge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A single-leg glute bridge with your feet raised. It strongly works the glutes and hamstrings.",
+  "instructions": [
+    "Lie on your back with one foot raised on a bench or step.",
+    "Extend the other leg straight up.",
+    "Drive through your heel and lift your hips.",
+    "Squeeze your glute at the top without arching your back.",
+    "Lower slowly, finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

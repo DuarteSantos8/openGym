@@ -1,0 +1,22 @@
+{
+  "id": "1443",
+  "name": "dumbbell lying pronated grip maltese hold",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "chest",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "Holding dumbbells out to the sides in a lying Maltese position. It is an advanced hold for the shoulders and chest.",
+  "instructions": [
+    "Lie face up with a dumbbell in each hand, palms down.",
+    "Lift your arms out to the sides at about hip level.",
+    "Keep your arms straight and your body tight.",
+    "Hold the position without letting the weights drop.",
+    "Hold for 10-20 seconds, then lower carefully."
+  ],
+  "textSource": "opengym"
+}

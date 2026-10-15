@@ -1,0 +1,21 @@
+{
+  "id": "2761",
+  "name": "ankle dorsal flexion",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles"
+  ],
+  "category": "mobility",
+  "description": "Pulling the toes up toward the shin, working the front of the lower leg. A simple way to keep the ankle moving well.",
+  "instructions": [
+    "Stand or sit tall with a relaxed posture and the joint in a neutral starting position.",
+    "Sit with one leg out and your heel resting on the floor.",
+    "Pull your toes and the top of your foot toward your shin as far as is comfortable.",
+    "Pause briefly, then lower the foot back down slowly.",
+    "Repeat for 10-15 smooth reps, then switch sides if you are working one side at a time."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1889",
+  "name": "sitting toe pull achilles stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "shins"
+  ],
+  "category": "stretching",
+  "description": "Seated stretch where you pull the toes toward you.",
+  "instructions": [
+    "Sit on the floor with one leg straight.",
+    "Loop a towel around the ball of your foot or grip your toes.",
+    "Pull your toes toward your shin.",
+    "Keep your knee straight.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

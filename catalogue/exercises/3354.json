@@ -1,0 +1,22 @@
+{
+  "id": "3354",
+  "name": "cable front squat v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A second take on the cable front squat, holding the handle at your chest to stay upright and hit the quads.",
+  "instructions": [
+    "Set the cable low and hold the handle against your chest.",
+    "Stand with feet shoulder width apart.",
+    "Sit down into a deep squat, chest tall.",
+    "Keep your knees tracking over your toes.",
+    "Press through your heels back to standing."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "8199",
+  "name": "sitting woodchopper on a chair",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A seated woodchop with the hands clasped. It works the obliques with no equipment.",
+  "instructions": [
+    "Sit tall on a chair and clasp your hands together.",
+    "Raise your arms diagonally up to one side.",
+    "Chop down across your body to the opposite knee.",
+    "Rotate through your torso.",
+    "Alternate sides at an easy pace."
+  ],
+  "textSource": "opengym"
+}

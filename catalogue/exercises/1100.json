@@ -1,0 +1,23 @@
+{
+  "id": "1100",
+  "name": "suspension single leg split squat",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A split squat with the rear foot in a strap. It builds the front leg and balance.",
+  "instructions": [
+    "Put your rear foot in the strap and step forward.",
+    "Stand tall.",
+    "Lower your hips, back knee down.",
+    "Keep your front knee over your foot.",
+    "Press up.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

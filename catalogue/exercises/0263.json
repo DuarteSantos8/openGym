@@ -1,0 +1,22 @@
+{
+  "id": "0263",
+  "name": "cross body twisting crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch that twists across the body, bringing the elbow toward the opposite knee. It emphasises the obliques.",
+  "instructions": [
+    "Lie on your back with your knees bent and your hands behind your head.",
+    "Lift your shoulders and twist your torso to one side.",
+    "Bring your elbow toward the opposite knee.",
+    "Lower back down and repeat on the other side.",
+    "Keep your lower back on the floor.",
+    "Do not pull on your neck."
+  ],
+  "textSource": "opengym"
+}

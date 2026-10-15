@@ -1,0 +1,22 @@
+{
+  "id": "1162",
+  "name": "barbell standing military press",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A strict standing overhead press with a barbell. It builds shoulder and triceps strength.",
+  "instructions": [
+    "Unrack the bar at shoulder height, hands just outside your shoulders.",
+    "Stand tall with feet hip-width apart and squeeze your glutes.",
+    "Press the bar straight up, moving your head slightly back then through.",
+    "Lock out overhead with the bar over your mid-foot.",
+    "Lower the bar back to your collarbone with control."
+  ],
+  "textSource": "opengym"
+}

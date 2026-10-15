@@ -1,0 +1,21 @@
+{
+  "id": "4694",
+  "name": "band overhead triceps extension v. 4",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "An overhead triceps extension with a band. It isolates the back of the arms.",
+  "instructions": [
+    "Stand on the band and hold the ends behind your head with elbows bent.",
+    "Keep your elbows pointing forward.",
+    "Extend your arms overhead.",
+    "Squeeze your triceps at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

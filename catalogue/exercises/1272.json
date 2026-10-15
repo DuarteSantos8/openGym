@@ -1,0 +1,21 @@
+{
+  "id": "1272",
+  "name": "chest stretch with exercise ball",
+  "bodyPart": "chest",
+  "equipment": "stability ball",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "stretching",
+  "description": "A chest stretch using an exercise ball held out in front. It loosens the chest.",
+  "instructions": [
+    "Sit on the stability ball with your feet flat on the ground and your back straight.",
+    "Hold the exercise ball with both hands and extend your arms straight out in front of you.",
+    "Slowly bring the exercise ball towards your chest, feeling a stretch in your chest muscles.",
+    "Hold the stretch for a few seconds, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

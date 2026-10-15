@@ -1,0 +1,20 @@
+{
+  "id": "0003",
+  "name": "air bike",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A bicycle-style crunch where opposite elbow and knee meet while the other leg straightens. Hits the abs and obliques.",
+  "instructions": [
+    "Lie flat on your back with your hands placed behind your head.",
+    "Lift your legs off the ground and bend your knees at a 90-degree angle.",
+    "Bring your right elbow towards your left knee while simultaneously straightening your right leg.",
+    "Return to the starting position and repeat the movement on the opposite side, bringing your left elbow towards your right knee while straightening your left leg.",
+    "Continue alternating sides in a pedaling motion for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -34,20 +34,21 @@ function worker(all = new Map()) {
     delete: async n => all.delete(n),
     match: async req => { for (const c of all.values()) { const hit = await c.match(req); if (hit) return hit } return undefined },
   }
-  const env = { net: { up: true, answer: null }, fetched: [], all, caches }
+  const env = { net: { up: true, answer: null }, fetched: [], ranges: [], all, caches }
   const fetch = async req => {
     const url = keyOf(req)
     env.fetched.push(url)
+    env.ranges.push(typeof req === 'string' ? '' : req.headers?.get('range') || '')
     if (!env.net.up) throw new TypeError('Failed to fetch')
     if (env.net.answer) return env.net.answer(url)
     return new Response('GIF89a' + url, { status: 200, headers: { 'content-type': 'image/gif', 'content-length': String(40 * 1024 * 1024) } })
   }
   const self = { addEventListener: (t, f) => { handlers[t] = f }, skipWaiting: () => {}, clients: { claim: async () => {} }, registration: {} }
   new Function('self', 'caches', 'fetch', 'location', SW)(self, caches, fetch, new URL(ORIGIN + '/sw.js'))
-  env.get = async path => {
+  env.get = async (path, headers) => {
     const pending = []
     let responded = null
-    const e = { request: { url: ORIGIN + path, method: 'GET', mode: 'no-cors' }, respondWith: p => { responded = p }, waitUntil: p => { pending.push(p) } }
+    const e = { request: { url: ORIGIN + path, method: 'GET', mode: 'no-cors', headers: new Headers(headers || {}) }, respondWith: p => { responded = p }, waitUntil: p => { pending.push(p) } }
     handlers.fetch(e)
     const res = await responded
     await Promise.all(pending)
@@ -151,6 +152,58 @@ describe('sw.js exercise media', () => {
     expect(left).not.toContain('2.gif')
     expect(left).toEqual(expect.arrayContaining(['3.gif', '1.gif', '4.gif', '0.jpg', '18.jpg']))
     expect(left).toHaveLength(22)
+  })
+
+  describe('a video clip, asked for in ranges', () => {
+    const CLIP = '0123456789abcdefghij'   // 20 bytes
+    const clip = () => new Response(CLIP, { status: 200, headers: { 'content-type': 'video/mp4', 'content-length': '20' } })
+
+    it('a miss fetches the whole file without the Range, keeps it, and answers with the 206 asked for', async () => {
+      const w = worker()
+      w.net.answer = clip
+      const res = await w.get('/exercise-media/clip/0001.mp4', { range: 'bytes=0-' })
+      expect(w.ranges).toEqual([''])
+      expect(res.status).toBe(206)
+      expect(res.headers.get('content-range')).toBe('bytes 0-19/20')
+      expect(res.headers.get('content-type')).toBe('video/mp4')
+      expect(await res.text()).toBe(CLIP)
+      expect(w.media().urls()).toEqual([ORIGIN + '/exercise-media/clip/0001.mp4'])
+      const kept = await w.media().match(ORIGIN + '/exercise-media/clip/0001.mp4')
+      expect(kept.status).toBe(200)
+    })
+
+    it('a hit answers each range with a 206 cut from the cached file, offline too', async () => {
+      const w = worker()
+      w.net.answer = clip
+      await w.get('/exercise-media/clip/0002.mp4')
+      w.net.up = false
+      const part = await w.get('/exercise-media/clip/0002.mp4', { range: 'bytes=2-5' })
+      expect(part.status).toBe(206)
+      expect(part.headers.get('content-range')).toBe('bytes 2-5/20')
+      expect(part.headers.get('content-length')).toBe('4')
+      expect(await part.text()).toBe('2345')
+      const tail = await w.get('/exercise-media/clip/0002.mp4', { range: 'bytes=-3' })
+      expect(tail.headers.get('content-range')).toBe('bytes 17-19/20')
+      expect(await tail.text()).toBe('hij')
+      const past = await w.get('/exercise-media/clip/0002.mp4', { range: 'bytes=10-99' })
+      expect(past.headers.get('content-range')).toBe('bytes 10-19/20')
+      const beyond = await w.get('/exercise-media/clip/0002.mp4', { range: 'bytes=40-' })
+      expect(beyond.status).toBe(416)
+      expect(beyond.headers.get('content-range')).toBe('bytes */20')
+      // without a Range, still the whole file as before
+      const whole = await w.get('/exercise-media/clip/0002.mp4')
+      expect(whole.status).toBe(200)
+      expect(await whole.text()).toBe(CLIP)
+    })
+
+    it('a refusal or a partial answer from the network is passed on and not kept', async () => {
+      const w = worker()
+      w.net.answer = () => new Response('no', { status: 401 })
+      expect((await w.get('/exercise-media/clip/0003.mp4', { range: 'bytes=0-' })).status).toBe(401)
+      w.net.answer = () => new Response('01', { status: 206, headers: { 'content-type': 'video/mp4', 'content-range': 'bytes 0-1/20' } })
+      expect((await w.get('/exercise-media/clip/0003.mp4', { range: 'bytes=0-' })).status).toBe(206)
+      expect(w.media().urls()).toEqual([])
+    })
   })
 
   it('names the same cache as the page-side prefetch', () => {

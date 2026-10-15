@@ -1,0 +1,22 @@
+{
+  "id": "5814",
+  "name": "cable low chest press",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A standing cable press with the handles starting low and moving upward. It works the upper chest and front shoulders.",
+  "instructions": [
+    "Set the pulleys low and hold a handle in each hand.",
+    "Step forward into a split stance with elbows bent.",
+    "Press the handles up and forward in an arc.",
+    "Squeeze your chest as your hands meet.",
+    "Return slowly to the start."
+  ],
+  "textSource": "opengym"
+}

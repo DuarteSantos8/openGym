@@ -1,0 +1,22 @@
+{
+  "id": "5837",
+  "name": "resistance band pull through",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip hinge where you pull a band through your legs. Teaches the hinge and strengthens the glutes and hamstrings.",
+  "instructions": [
+    "Anchor the band low and face away from it, holding the band between your legs.",
+    "Step forward until you feel tension, feet shoulder-width apart.",
+    "Push your hips back with a flat back.",
+    "Squeeze your glutes and drive your hips forward to stand tall.",
+    "Keep your arms relaxed and straight."
+  ],
+  "textSource": "opengym"
+}

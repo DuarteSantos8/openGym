@@ -1,0 +1,24 @@
+{
+  "id": "4891",
+  "name": "hanging half windmill",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lats",
+    "grip muscles",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "From a hang you lift the legs and sweep them to one side in a half circle. It builds oblique strength and grip.",
+  "instructions": [
+    "Hang from a pull-up bar with a firm overhand grip.",
+    "Raise both legs together toward one side of the bar.",
+    "Sweep them across the front in a half circle.",
+    "Lower the legs on the other side under control.",
+    "Keep the swing small and your shoulders active.",
+    "Repeat, alternating the direction."
+  ],
+  "textSource": "opengym"
+}

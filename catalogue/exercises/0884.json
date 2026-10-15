@@ -1,0 +1,22 @@
+{
+  "id": "0884",
+  "name": "smith lateral step up",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A sideways step up under the smith bar. It works the quads and glutes one leg at a time.",
+  "instructions": [
+    "Place a bench beside you and set the bar across your upper back.",
+    "Stand with the bench at your side.",
+    "Step up sideways with the near foot.",
+    "Straighten your leg to lift your body.",
+    "Lower slowly, finish reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

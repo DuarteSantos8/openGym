@@ -1,0 +1,21 @@
+{
+  "id": "4019",
+  "name": "reverse crunch v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Curl the knees and hips up toward the chest. It works the lower abs.",
+  "instructions": [
+    "Lie on your back with knees bent.",
+    "Lift your legs.",
+    "Curl hips off the floor.",
+    "Lower slowly.",
+    "Do not swing."
+  ],
+  "textSource": "opengym"
+}

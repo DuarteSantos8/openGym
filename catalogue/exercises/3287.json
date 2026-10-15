@@ -1,0 +1,21 @@
+{
+  "id": "3287",
+  "name": "elbow dips",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A bench dip variation that bends the elbows to lower the hips. It trains the triceps and the front of the shoulders.",
+  "instructions": [
+    "Sit on the edge of a bench or chair with your hands gripping the edge next to your hips.",
+    "Slide your hips forward off the bench and straighten your legs, keeping your heels on the ground.",
+    "Bend your elbows and lower your body towards the ground, keeping your back close to the bench.",
+    "Pause for a moment at the bottom, then push through your hands to straighten your arms and lift your body back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

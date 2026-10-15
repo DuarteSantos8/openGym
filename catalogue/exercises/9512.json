@@ -1,0 +1,23 @@
+{
+  "id": "9512",
+  "name": "box single leg assisted pull up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up with only one foot on a box for assistance. It is a step closer to a full pull-up.",
+  "instructions": [
+    "Place a box under a pull-up bar.",
+    "Grip the bar and rest one foot on the box.",
+    "Pull up until your chin clears the bar.",
+    "Push lightly with the foot on the box.",
+    "Lower slowly.",
+    "Switch the assisting leg on the next set."
+  ],
+  "textSource": "opengym"
+}

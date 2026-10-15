@@ -1,0 +1,21 @@
+{
+  "id": "10917",
+  "name": "seated single leg tibialis press v. 2",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles"
+  ],
+  "category": "rehab",
+  "description": "A gentle seated press that engages the shin muscle. Useful for ankle control.",
+  "instructions": [
+    "Sit on a chair with one foot flat and the other crossed over it.",
+    "Press the top foot up against the resistance of the bottom foot.",
+    "Feel the front of your shin work.",
+    "Hold for a second.",
+    "Relax and repeat, then switch feet."
+  ],
+  "textSource": "opengym"
+}

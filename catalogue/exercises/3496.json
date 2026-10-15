@@ -1,0 +1,23 @@
+{
+  "id": "3496",
+  "name": "lying straight leg marches",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Alternating straight-leg raises while lying on your back, like a slow march. It trains the lower abs and hip flexors.",
+  "instructions": [
+    "Lie on your back, arms by your sides.",
+    "Press your lower back gently into the floor.",
+    "Raise one straight leg toward the ceiling.",
+    "Lower it as you raise the other leg.",
+    "Keep alternating in a slow, steady march.",
+    "Keep your back from arching."
+  ],
+  "textSource": "opengym"
+}

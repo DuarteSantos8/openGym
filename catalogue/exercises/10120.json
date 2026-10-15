@@ -1,0 +1,23 @@
+{
+  "id": "10120",
+  "name": "cable unilateral step up",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A single leg step up with cable resistance that builds leg strength and balance one side at a time.",
+  "instructions": [
+    "Face a box with the cable handle held at your chest or by your side.",
+    "Place one foot fully on the box.",
+    "Drive through that heel and stand up straight on the box.",
+    "Lower your trailing foot back to the floor slowly.",
+    "Keep your knee tracking over your toes. Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

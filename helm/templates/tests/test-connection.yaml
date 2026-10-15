@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "helm.fullname" . }}-test-connection"
+  labels:
+    {{- include "helm.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      # Through web's /api proxy, so it checks both containers.
+      args: ['-qO-', '{{ include "helm.fullname" . }}:{{ .Values.service.port }}/api/health']
+  restartPolicy: Never

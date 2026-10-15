@@ -1,0 +1,23 @@
+{
+  "id": "0371",
+  "name": "dumbbell plyo squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A dumbbell squat finished with an explosive jump. It builds leg power and gets the heart rate up.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand at your sides.",
+    "Lower your body into a squat position by bending your knees and pushing your hips back.",
+    "As you reach the bottom of the squat, explode upward, jumping off the ground.",
+    "While in the air, quickly switch the position of your feet, landing with your opposite foot forward.",
+    "Immediately lower your body back into a squat position and repeat the jump, switching your feet again.",
+    "Continue alternating the position of your feet with each jump for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

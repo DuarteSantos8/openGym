@@ -1,0 +1,23 @@
+{
+  "id": "6297",
+  "name": "wheel pose urdhva dhanurasana",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "triceps",
+    "hip flexors"
+  ],
+  "category": "yoga",
+  "description": "A deep backbend pressing up from the floor. It opens the chest and shoulders and strengthens the back and legs.",
+  "instructions": [
+    "Lie on your back, knees bent, hands beside your head with fingers toward your feet.",
+    "Press into hands and feet and lift your hips.",
+    "Straighten your arms as you lift the crown of your head off the floor.",
+    "Press your chest toward the wall behind.",
+    "Hold for a few breaths, then lower slowly."
+  ],
+  "textSource": "opengym"
+}

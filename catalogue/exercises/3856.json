@@ -1,0 +1,22 @@
+{
+  "id": "3856",
+  "name": "resistance band smith squat",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A smith machine squat with resistance band tension added. It builds your quads and glutes under a guided bar path.",
+  "instructions": [
+    "Set the bar on the smith machine and attach the band as required.",
+    "Place the bar on your upper back with your feet slightly forward.",
+    "Lower into a squat until your thighs are about parallel.",
+    "Drive through your heels to stand.",
+    "Keep your chest up."
+  ],
+  "textSource": "opengym"
+}

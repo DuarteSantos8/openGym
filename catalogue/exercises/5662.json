@@ -1,0 +1,22 @@
+{
+  "id": "5662",
+  "name": "barbell power shrug",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "traps",
+  "secondaryMuscles": [
+    "upper back",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "olympic",
+  "description": "Explosive shrug with a barbell, using a hip drive to build the traps.",
+  "instructions": [
+    "Hold a barbell at mid-thigh.",
+    "Dip your knees slightly.",
+    "Extend your hips and shrug explosively.",
+    "Lower the bar under control.",
+    "Keep your arms straight."
+  ],
+  "textSource": "opengym"
+}

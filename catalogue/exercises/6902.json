@@ -1,0 +1,24 @@
+{
+  "id": "6902",
+  "name": "cow face yoga pose gomukhasana",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "glutes",
+    "chest",
+    "hip flexors"
+  ],
+  "category": "yoga",
+  "description": "A seated pose that stretches the shoulders, triceps and hips together.",
+  "instructions": [
+    "Sit with one knee stacked over the other and your feet beside your hips.",
+    "Reach one arm up and bend the elbow, hand down your back.",
+    "Sweep the other arm behind you and try to clasp your fingers.",
+    "Keep your spine tall and your chest open.",
+    "Hold for 20-30 seconds, breathing calmly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4129",
+  "name": "weighted counterbalanced skater squat",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A single leg skater squat with a counterweight held in front for balance.",
+  "instructions": [
+    "Hold a weight out in front and stand on one leg.",
+    "Bend your standing knee while reaching your rear leg back.",
+    "Lower until your rear knee nearly touches the floor.",
+    "Push back to standing.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

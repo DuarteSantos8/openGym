@@ -1,0 +1,20 @@
+{
+  "id": "1368",
+  "name": "ankle circles",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankle stabilizers"
+  ],
+  "category": "mobility",
+  "description": "Sit and move your foot in slow circles from the ankle. It warms up the ankle joint and the muscles around the calf.",
+  "instructions": [
+    "Sit on the ground with your legs extended in front of you.",
+    "Lift one leg off the ground and rotate your ankle in a circular motion.",
+    "Perform the desired number of circles in one direction, then switch to the other direction.",
+    "Repeat with the other leg."
+  ],
+  "femaleVariant": "3931",
+  "textSource": "exercisedb"
+}

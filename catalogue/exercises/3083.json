@@ -1,0 +1,21 @@
+{
+  "id": "3083",
+  "name": "dumbbell seated curl v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated curl that keeps the body steady while the biceps do the work.",
+  "instructions": [
+    "Sit on a bench with a dumbbell in each hand.",
+    "Let your arms hang by your sides, palms forward.",
+    "Curl the weights up toward your shoulders.",
+    "Squeeze at the top and keep elbows pinned.",
+    "Lower slowly to full extension."
+  ],
+  "textSource": "opengym"
+}

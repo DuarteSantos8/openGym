@@ -1,0 +1,22 @@
+{
+  "id": "5628",
+  "name": "landmine hack squat",
+  "bodyPart": "upper legs",
+  "equipment": "landmine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Squat with a landmine bar held at your chest, mimicking a hack squat.",
+  "instructions": [
+    "Hold the end of a landmine bar at your chest.",
+    "Stand with feet shoulder width.",
+    "Squat down with your chest up.",
+    "Drive through your heels to stand.",
+    "Keep the bar close."
+  ],
+  "textSource": "opengym"
+}

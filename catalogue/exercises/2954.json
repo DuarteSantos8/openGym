@@ -1,0 +1,23 @@
+{
+  "id": "2954",
+  "name": "cable standing reverse grip curl (straight bar)",
+  "bodyPart": "lower arms",
+  "equipment": "cable",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "brachialis",
+    "biceps",
+    "wrist extensors"
+  ],
+  "category": "strength",
+  "description": "A standing curl with an overhand grip on a straight cable bar. It targets the forearms and brachialis.",
+  "instructions": [
+    "Stand facing a low cable with a straight bar in an overhand grip.",
+    "Keep your elbows at your sides.",
+    "Curl the bar up toward your shoulders without swinging.",
+    "Squeeze at the top.",
+    "Lower slowly until your arms are straight."
+  ],
+  "femaleVariant": "2953",
+  "textSource": "opengym"
+}

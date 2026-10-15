@@ -1,0 +1,22 @@
+{
+  "id": "1543",
+  "name": "barbell stiff legged deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "The classic stiff-legged deadlift, hinging at the hips with nearly straight knees. A great builder for hamstrings, glutes and the lower back.",
+  "instructions": [
+    "Stand holding a barbell in front of your thighs, feet hip-width apart.",
+    "Keep a slight bend in your knees and push your hips back.",
+    "Lower the bar along your legs until you feel a deep stretch in your hamstrings.",
+    "Keep your back flat and your chest proud the whole way.",
+    "Drive your hips forward to return to standing."
+  ],
+  "textSource": "opengym"
+}

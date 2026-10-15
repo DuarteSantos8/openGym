@@ -1,0 +1,22 @@
+{
+  "id": "10188",
+  "name": "standing bend alternating toe touch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hamstrings",
+    "obliques",
+    "lower back"
+  ],
+  "category": "plyometrics",
+  "description": "A quick standing toe touch where you reach to opposite feet in turn, warming up the hamstrings and midsection.",
+  "instructions": [
+    "Stand tall with your feet wider than your hips and arms out to the sides.",
+    "Hinge forward and twist to reach one hand toward the opposite foot.",
+    "Return to standing with arms out.",
+    "Reach the other hand to the opposite foot.",
+    "Keep a flat back and move at a lively pace."
+  ],
+  "textSource": "opengym"
+}

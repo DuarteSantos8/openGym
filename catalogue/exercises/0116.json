@@ -1,0 +1,35 @@
+{
+  "id": "0116",
+  "name": "barbell straight leg deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A deadlift with nearly straight legs, which targets the hamstrings.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your toes pointing forward.",
+    "Hold the barbell with an overhand grip, hands slightly wider than shoulder-width apart.",
+    "Bend at your hips and lower the barbell towards the ground, keeping your back straight and your knees slightly bent.",
+    "Lower the barbell until you feel a stretch in your hamstrings.",
+    "Engage your hamstrings and glutes to lift the barbell back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "gluteal",
+      "hamstring"
+    ],
+    "secondaries": [
+      "lower-back",
+      "quadriceps",
+      "adductors",
+      "calves"
+    ]
+  },
+  "femaleVariant": "3594",
+  "textSource": "exercisedb"
+}

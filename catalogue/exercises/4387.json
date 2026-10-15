@@ -1,0 +1,23 @@
+{
+  "id": "4387",
+  "name": "prayer squat yoga pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "hip flexors",
+    "groin"
+  ],
+  "category": "yoga",
+  "description": "A deep squat with palms together that opens the hips and inner thighs and builds ankle and hip mobility.",
+  "instructions": [
+    "Stand with feet wider than hips and toes turned out.",
+    "Lower into a deep squat, keeping your heels down if you can.",
+    "Press your palms together at your chest.",
+    "Use your elbows to gently press your knees outward.",
+    "Hold for 30-60 seconds while breathing slowly."
+  ],
+  "textSource": "opengym"
+}

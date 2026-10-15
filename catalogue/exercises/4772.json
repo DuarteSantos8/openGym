@@ -1,0 +1,22 @@
+{
+  "id": "4772",
+  "name": "kneeling straight leg kickback v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A kneeling kickback with the working leg kept straight, a second variation. It targets the glutes and the back of the thigh.",
+  "instructions": [
+    "Get on all fours with hands under shoulders and knees under hips.",
+    "Extend one leg straight behind you with the toes on the floor.",
+    "Squeeze the glute and lift the straight leg to hip height.",
+    "Pause briefly, then lower the leg without letting the back arch.",
+    "Keep your hips level and your core tight.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

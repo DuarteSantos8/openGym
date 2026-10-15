@@ -1,0 +1,22 @@
+{
+  "id": "4373",
+  "name": "hanging deadbug",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "grip muscles"
+  ],
+  "category": "calisthenics",
+  "description": "A hanging variation of the dead bug, extending opposite arm and leg. It builds core control.",
+  "instructions": [
+    "Hang from a pull-up bar with a firm grip.",
+    "Lift your knees to hip height.",
+    "Extend one leg while keeping control of your torso.",
+    "Return and switch legs.",
+    "Avoid swinging."
+  ],
+  "textSource": "opengym"
+}

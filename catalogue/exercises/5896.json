@@ -1,0 +1,23 @@
+{
+  "id": "5896",
+  "name": "mountain pose",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "core",
+    "glutes",
+    "quadriceps",
+    "calves"
+  ],
+  "category": "yoga",
+  "description": "The basic standing pose with a tall, balanced posture. A base for most other poses.",
+  "instructions": [
+    "Stand with your feet together or hip-width apart.",
+    "Spread your toes and press evenly through both feet.",
+    "Lengthen your spine and draw your shoulders back and down.",
+    "Let your arms hang with palms forward.",
+    "Hold for 5 slow breaths."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,40 @@
+{
+  "id": "1461",
+  "name": "barbell full squat (back pov)",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A full-depth barbell squat shown from behind. It builds the quads, glutes and core and is a great check of back and knee alignment.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, toes slightly turned out.",
+    "Hold the barbell across your upper back, resting it on your traps or rear delts.",
+    "Engage your core and keep your chest up as you begin to lower your body down.",
+    "Bend at the knees and hips, pushing your hips back and down as if sitting into a chair.",
+    "Lower your body until your thighs are parallel to the ground or slightly below.",
+    "Keep your knees in line with your toes and your weight in your heels.",
+    "Drive through your heels to stand back up, extending your hips and knees.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "textSource": "exercisedb"
+}

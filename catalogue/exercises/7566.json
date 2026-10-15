@@ -1,0 +1,22 @@
+{
+  "id": "7566",
+  "name": "dumbbell hack squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "Hack squat with dumbbells held behind the legs.",
+  "instructions": [
+    "Hold dumbbells behind you with your heels slightly raised.",
+    "Keep your chest up.",
+    "Squat down.",
+    "Stay tall.",
+    "Drive up through your feet."
+  ],
+  "textSource": "opengym"
+}

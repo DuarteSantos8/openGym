@@ -1,0 +1,23 @@
+{
+  "id": "11764",
+  "name": "cable standing single arm supinated grip chest press",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "biceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing one-arm press with a palm-up grip that works the chest and tests core stability.",
+  "instructions": [
+    "Set a cable at chest height and hold the handle with a palm-up grip.",
+    "Stand facing away in a staggered stance.",
+    "Press the handle forward until your arm is straight.",
+    "Keep your torso still and resist twisting.",
+    "Return slowly and switch arms after your reps."
+  ],
+  "textSource": "opengym"
+}

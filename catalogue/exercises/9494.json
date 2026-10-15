@@ -1,0 +1,22 @@
+{
+  "id": "9494",
+  "name": "lever belt romanian deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A hip hinge using a belt machine so the weight hangs from your hips. It trains the hamstrings and glutes without loading the back.",
+  "instructions": [
+    "Wear the belt and stand tall with soft knees.",
+    "Push your hips back and lower your torso with a flat back.",
+    "Stop when you feel a stretch in the hamstrings.",
+    "Squeeze your glutes and drive your hips forward to stand.",
+    "Repeat with smooth control."
+  ],
+  "textSource": "opengym"
+}

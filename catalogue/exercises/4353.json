@@ -1,0 +1,21 @@
+{
+  "id": "4353",
+  "name": "cable lying triceps extension (with rope)",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A lying triceps extension on a bench using a cable rope. It keeps constant tension on the triceps.",
+  "instructions": [
+    "Lie on a bench with your head toward a low pulley and hold the rope above your chest.",
+    "Keep your upper arms still.",
+    "Bend your elbows and lower the rope behind your head.",
+    "Extend your arms to return.",
+    "Spread the rope slightly at the end."
+  ],
+  "textSource": "opengym"
+}

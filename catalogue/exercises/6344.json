@@ -1,0 +1,22 @@
+{
+  "id": "6344",
+  "name": "holding squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A static squat hold that builds endurance in your thighs and glutes and teaches a solid bottom position.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Sit down into a squat until your thighs are about parallel to the floor.",
+    "Keep your chest up and your knees tracking over your toes.",
+    "Hold the position while breathing steadily.",
+    "Hold for 20-40 seconds, then stand up."
+  ],
+  "textSource": "opengym"
+}

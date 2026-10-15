@@ -1,0 +1,22 @@
+{
+  "id": "0294",
+  "name": "dumbbell biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "The standard standing dumbbell biceps curl. You curl both weights up while keeping the upper arms still.",
+  "instructions": [
+    "Stand up straight with a dumbbell in each hand, palms facing forward and arms fully extended.",
+    "Keeping your upper arms stationary, exhale and curl the weights while contracting your biceps.",
+    "Continue to raise the weights until your biceps are fully contracted and the dumbbells are at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale and slowly begin to lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2483",
+  "textSource": "exercisedb"
+}

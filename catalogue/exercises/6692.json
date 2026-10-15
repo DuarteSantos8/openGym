@@ -1,0 +1,24 @@
+{
+  "id": "6692",
+  "name": "barbell deadlift (side pov)",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "quadriceps",
+    "grip muscles",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "The classic barbell deadlift shown from the side to check form. It trains the whole posterior chain.",
+  "instructions": [
+    "Stand with the bar over mid-foot and grip it just outside your legs.",
+    "Brace your core, flatten your back and pull the slack out of the bar.",
+    "Push the floor away and stand up, keeping the bar close to your legs.",
+    "Lock out the hips without leaning back.",
+    "Hinge at the hips and lower the bar under control."
+  ],
+  "textSource": "opengym"
+}

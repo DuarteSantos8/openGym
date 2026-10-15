@@ -1,0 +1,22 @@
+{
+  "id": "2100",
+  "name": "seated quadriceps stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "stretching",
+  "description": "Stretches the front of the thigh from a seated position by folding one leg back while the other stays supported.",
+  "instructions": [
+    "Sit sideways on a bench or sturdy seat with one leg hanging off the side.",
+    "Bend the hanging knee and bring the heel back toward your glutes.",
+    "Hold the foot or ankle with your hand and gently pull the heel closer.",
+    "Keep your torso upright and your knees close together.",
+    "Hold for 20-30 seconds.",
+    "Release and switch legs."
+  ],
+  "textSource": "opengym"
+}

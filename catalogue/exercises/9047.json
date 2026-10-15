@@ -1,0 +1,23 @@
+{
+  "id": "9047",
+  "name": "straight hip single leg curl on stability ball",
+  "bodyPart": "upper legs",
+  "equipment": "stability ball",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "With your heels on a ball and hips lifted, you curl it in with one leg. It hits the hamstrings and glutes hard.",
+  "instructions": [
+    "Lie on your back with one heel on the ball and the other leg raised.",
+    "Lift your hips so your body forms a line.",
+    "Curl the ball toward your glutes with the one leg.",
+    "Keep your hips high.",
+    "Extend the leg slowly back out.",
+    "Finish the reps and switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1077",
+  "name": "suspension hip abduction",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Standing leg raise to the side with one foot in a strap. It works the outer hip and stability muscles.",
+  "instructions": [
+    "Put one foot in a strap and stand tall on the other leg, holding the anchor for balance.",
+    "Brace your core.",
+    "Sweep the strapped leg out to the side.",
+    "Pause briefly at the end.",
+    "Bring it back under control.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

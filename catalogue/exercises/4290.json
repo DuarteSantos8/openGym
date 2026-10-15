@@ -1,0 +1,23 @@
+{
+  "id": "4290",
+  "name": "dumbbell static lunge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A split-stance lunge done in place with dumbbells in hand. It builds strength in the front thigh and glutes without any stepping.",
+  "instructions": [
+    "Hold a dumbbell in each hand and stand in a long split stance, rear heel lifted.",
+    "Keep your torso upright and core braced.",
+    "Bend both knees and lower until the back knee nearly touches the floor.",
+    "Press through the front heel to stand back up without moving your feet.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

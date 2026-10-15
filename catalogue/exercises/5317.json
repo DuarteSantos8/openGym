@@ -1,0 +1,24 @@
+{
+  "id": "5317",
+  "name": "resistance band pull apart (45 degrees)",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "trapezius",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Pull a band apart with your arms angled upward at about 45 degrees. Strengthens the rear shoulders and upper back.",
+  "instructions": [
+    "Hold a resistance band in both hands in front of you.",
+    "Raise your arms to about 45 degrees above horizontal.",
+    "Pull the band apart by moving your hands out to the sides.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly to the start.",
+    "Keep your ribs down and your shoulders away from your ears."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "3548",
+  "name": "dumbbell single arm overhead carry",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "traps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-handed overhead carry, walking while holding a dumbbell above your head. It trains the shoulders, core and balance.",
+  "instructions": [
+    "Stand tall with your feet shoulder-width apart, holding a dumbbell in one hand.",
+    "Raise the dumbbell overhead, fully extending your arm.",
+    "Engage your core and keep your back straight as you walk forward, maintaining the dumbbell overhead.",
+    "Continue walking for the desired distance or time.",
+    "Switch hands and repeat the exercise."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4603",
+  "name": "pvc front rack stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "wrist flexors",
+    "triceps"
+  ],
+  "category": "stretching",
+  "description": "A pipe-assisted stretch for the lats, shoulders and wrists that helps you get into a comfortable front rack position.",
+  "instructions": [
+    "Stand tall holding a PVC pipe across your upper chest in a front rack grip.",
+    "Lift your elbows forward and up as high as you comfortably can.",
+    "Keep your chest up and your lower back from arching.",
+    "Hold for 20-30 seconds while breathing steadily.",
+    "Lower the elbows and repeat."
+  ],
+  "textSource": "opengym"
+}

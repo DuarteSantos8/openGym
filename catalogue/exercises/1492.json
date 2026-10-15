@@ -1,0 +1,22 @@
+{
+  "id": "1492",
+  "name": "triceps dip stretch",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "chest",
+    "lats"
+  ],
+  "category": "stretching",
+  "description": "A stretch for the back of the upper arm, taken with the elbow bent overhead.",
+  "instructions": [
+    "Stand or sit tall and raise one arm overhead.",
+    "Bend the elbow so your hand drops behind your head.",
+    "Use your other hand to gently press the elbow back and down.",
+    "Keep your ribs down and avoid arching your back.",
+    "Hold for 20-30 seconds, then switch arms."
+  ],
+  "textSource": "opengym"
+}

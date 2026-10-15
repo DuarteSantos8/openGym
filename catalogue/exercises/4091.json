@@ -1,0 +1,23 @@
+{
+  "id": "4091",
+  "name": "twist superman",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A floor exercise where you lift your limbs off the ground and add a rotation, training the lower back and glutes.",
+  "instructions": [
+    "Lie face down with your arms extended overhead and legs straight.",
+    "Lift your arms, chest and legs off the floor.",
+    "Rotate your torso slightly to one side while holding the lift.",
+    "Return to the center, then rotate to the other side.",
+    "Lower down with control and keep your neck neutral."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4175",
+  "name": "weighted standing shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "weighted",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing overhead press with weight in hand. It builds shoulder and triceps strength.",
+  "instructions": [
+    "Stand with feet shoulder width apart, weight at shoulder height.",
+    "Brace your core and squeeze your glutes.",
+    "Press the weight straight overhead.",
+    "Lock out without leaning back.",
+    "Lower slowly to your shoulders.",
+    "Keep your ribs down."
+  ],
+  "textSource": "opengym"
+}

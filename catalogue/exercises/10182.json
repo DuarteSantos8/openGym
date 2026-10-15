@@ -1,0 +1,24 @@
+{
+  "id": "10182",
+  "name": "burpee over the dumbbell",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "chest",
+    "shoulders",
+    "core",
+    "glutes"
+  ],
+  "category": "cardio",
+  "description": "A burpee where you jump sideways over a dumbbell each rep, raising the heart rate and working the whole body.",
+  "instructions": [
+    "Stand beside a dumbbell lying on the floor.",
+    "Squat down, place your hands on the floor, jump your feet back and do a push up.",
+    "Jump your feet forward under your hips.",
+    "Jump up and sideways over the dumbbell, landing softly.",
+    "Turn and repeat in the other direction at a steady pace."
+  ],
+  "textSource": "opengym"
+}

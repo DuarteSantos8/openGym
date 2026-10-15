@@ -1,0 +1,22 @@
+{
+  "id": "0022",
+  "name": "barbell pullover to press",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "triceps",
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Lying on a bench, you lower a barbell overhead in an arc and then press it back up. Works the lats, chest and triceps.",
+  "instructions": [
+    "Lie flat on a bench with your head at one end and your feet on the ground.",
+    "Hold the barbell with a pronated grip (palms facing away from you) and extend your arms straight above your chest.",
+    "Keeping your arms straight, lower the barbell behind your head in an arc-like motion until you feel a stretch in your lats.",
+    "Pause for a moment, then reverse the motion and press the barbell back to the starting position above your chest.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

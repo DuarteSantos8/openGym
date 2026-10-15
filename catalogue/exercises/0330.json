@@ -1,0 +1,21 @@
+{
+  "id": "0330",
+  "name": "dumbbell incline triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A dumbbell triceps extension on an incline bench. You lower the weights behind the head and extend to target the triceps.",
+  "instructions": [
+    "Sit on an incline bench with a dumbbell in each hand, palms facing inwards.",
+    "Extend your arms fully overhead, keeping your elbows close to your head.",
+    "Lower the dumbbells behind your head by bending your elbows, keeping your upper arms stationary.",
+    "Pause for a moment, then raise the dumbbells back to the starting position by extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2507",
+  "textSource": "exercisedb"
+}

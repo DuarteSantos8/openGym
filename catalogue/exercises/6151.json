@@ -1,0 +1,23 @@
+{
+  "id": "6151",
+  "name": "dumbbell reverse push up",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A push-up variation performed with the hands on dumbbells in a reverse hand position. It focuses on the triceps.",
+  "instructions": [
+    "Place two dumbbells on the floor and grip them.",
+    "Set up in a plank position.",
+    "Lower your chest with your elbows close to your body.",
+    "Stop just above the floor.",
+    "Press back up to the start.",
+    "Keep your body in a straight line."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1110",
+  "name": "suspender body saw",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "lower back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "From a forearm plank with feet in the straps, you rock your body back and forth like a saw to challenge the core.",
+  "instructions": [
+    "Place your feet in the straps and set up on your forearms.",
+    "Brace your abs and keep your body straight.",
+    "Shift your body backward by pushing through the forearms.",
+    "Rock forward past the starting point in a short controlled motion.",
+    "Keep your hips level, do not let your lower back arch.",
+    "Continue for the planned reps or time."
+  ],
+  "textSource": "opengym"
+}

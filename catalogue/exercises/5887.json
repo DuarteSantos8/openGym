@@ -1,0 +1,23 @@
+{
+  "id": "5887",
+  "name": "3 leg dog pose",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "shoulders",
+    "calves",
+    "glutes",
+    "core"
+  ],
+  "category": "yoga",
+  "description": "Downward dog with one leg lifted behind you. Stretches the back of the legs while building shoulder and hip stability.",
+  "instructions": [
+    "Start in downward dog with hands shoulder-width apart.",
+    "Press your hands into the floor and lengthen your spine.",
+    "Lift one leg straight up behind you, keeping your hips square.",
+    "Hold for 5 slow breaths.",
+    "Lower and switch legs."
+  ],
+  "textSource": "opengym"
+}

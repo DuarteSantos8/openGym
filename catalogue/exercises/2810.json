@@ -1,0 +1,23 @@
+{
+  "id": "2810",
+  "name": "barbell split squat v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A barbell split squat with a long stance. Builds the quads and glutes one leg at a time.",
+  "instructions": [
+    "Start by standing with your feet shoulder-width apart, holding a barbell across your upper back.",
+    "Take a large step forward with your right foot, keeping your torso upright.",
+    "Lower your body by bending your knees and hips until your right thigh is parallel to the ground.",
+    "Pause for a moment, then push through your right heel to return to the starting position.",
+    "Repeat with your left leg forward for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb",
+  "maleVariant": "2809"
+}

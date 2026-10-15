@@ -1,0 +1,21 @@
+{
+  "id": "1473",
+  "name": "backward jump",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A bodyweight jump backward with a soft landing. It builds explosive power in the quads and trains control.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Bend your knees slightly and jump backwards, pushing off with both feet.",
+    "Land softly on the balls of your feet, bending your knees to absorb the impact.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

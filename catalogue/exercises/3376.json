@@ -1,0 +1,23 @@
+{
+  "id": "3376",
+  "name": "battling ropes jumping jack",
+  "bodyPart": "full body",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "shoulders",
+    "calves",
+    "quadriceps",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "A jumping jack with rope waves added, so arms and legs both work hard.",
+  "instructions": [
+    "Hold the rope ends with feet together.",
+    "Jump your feet apart while raising your arms and making waves.",
+    "Jump back to the start.",
+    "Keep your landings soft.",
+    "Keep a steady pace for the set time."
+  ],
+  "textSource": "opengym"
+}

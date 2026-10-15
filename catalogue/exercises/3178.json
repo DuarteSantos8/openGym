@@ -1,0 +1,21 @@
+{
+  "id": "3178",
+  "name": "stability ball reverse hyperextension (off a bench)",
+  "bodyPart": "upper legs",
+  "equipment": "stability ball",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A reverse hyperextension over a ball at the edge of a bench for glutes and lower back.",
+  "instructions": [
+    "Lie face down with your hips over the ball and hands on the floor.",
+    "Hold the bench or the ball for stability.",
+    "Lift your legs until they are in line with your body.",
+    "Squeeze your glutes at the top.",
+    "Lower with control."
+  ],
+  "textSource": "opengym"
+}

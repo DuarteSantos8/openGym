@@ -1,0 +1,23 @@
+{
+  "id": "4104",
+  "name": "trap bar bent over row",
+  "bodyPart": "back",
+  "equipment": "trap bar",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A bent over row using a trap bar, working your back and arms with a neutral grip.",
+  "instructions": [
+    "Stand in the trap bar and hinge forward with a flat back, gripping the handles.",
+    "Brace your core.",
+    "Row the bar toward your lower ribs.",
+    "Squeeze your shoulder blades together.",
+    "Lower the bar with control."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "6361",
+  "name": "ez barbell standing wrist reverse curl",
+  "bodyPart": "lower arms",
+  "equipment": "ez barbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist extensors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Reverse wrist curls with an EZ bar, an overhand movement that trains the top of your forearms.",
+  "instructions": [
+    "Stand holding an EZ bar with an overhand grip, arms hanging in front.",
+    "Keep your elbows still at your sides.",
+    "Extend your wrists to raise the bar upward.",
+    "Hold briefly at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

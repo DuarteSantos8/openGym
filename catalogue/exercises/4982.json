@@ -1,0 +1,24 @@
+{
+  "id": "4982",
+  "name": "negative dragon flag",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "lats",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "The lowering half of the dragon flag. You control a straight body down toward the bench, which builds serious core strength.",
+  "instructions": [
+    "Lie on a bench and grip the edge behind your head.",
+    "Raise your body into a straight vertical line on your upper back.",
+    "Lower your body slowly as one stiff plank, keeping hips from bending.",
+    "Stop just above the bench with your core tight.",
+    "Bend your knees to return to the start, then repeat."
+  ],
+  "femaleVariant": "5264",
+  "textSource": "opengym"
+}

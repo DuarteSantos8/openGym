@@ -1,0 +1,23 @@
+{
+  "id": "10388",
+  "name": "weighted sandbag military press",
+  "bodyPart": "shoulders",
+  "equipment": "sandbag",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A standing overhead press using a sandbag, which shifts as you push, so your shoulders and core must stay tight.",
+  "instructions": [
+    "Hold a sandbag at your upper chest or shoulders.",
+    "Stand with feet hip width apart and brace your core.",
+    "Press the bag straight overhead.",
+    "Lock out the arms, then lower the bag with control.",
+    "Keep your ribs down and avoid leaning back."
+  ],
+  "textSource": "opengym"
+}

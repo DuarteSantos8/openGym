@@ -1,0 +1,22 @@
+{
+  "id": "1789",
+  "name": "assisted straight arms lying stretch (chest)",
+  "bodyPart": "chest",
+  "equipment": "assisted",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "lats",
+    "upper chest"
+  ],
+  "category": "stretching",
+  "description": "Lying down with your arms out, a partner gently presses your arms toward the floor. It stretches the chest and the front of the shoulders.",
+  "instructions": [
+    "Lie on your back with your arms stretched out straight to the sides or overhead.",
+    "Have your partner gently press your wrists or arms down toward the floor.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

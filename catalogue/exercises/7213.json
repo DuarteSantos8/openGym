@@ -1,0 +1,21 @@
+{
+  "id": "7213",
+  "name": "side lying internal rotation",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "chest"
+  ],
+  "category": "rehab",
+  "description": "A light rotation exercise lying on your side that turns the arm inward. It strengthens the rotator cuff gently.",
+  "instructions": [
+    "Lie on your side with your elbow bent to 90 degrees and tucked to your ribs.",
+    "Rest the forearm on the floor in front of you.",
+    "Rotate your forearm up toward your belly.",
+    "Lower it slowly back to the floor.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

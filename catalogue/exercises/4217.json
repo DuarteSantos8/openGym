@@ -1,0 +1,24 @@
+{
+  "id": "4217",
+  "name": "cable wide neutral grip pulldown",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "rhomboids",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A lat pulldown with a wide handle that keeps your palms facing each other. It builds back width with less wrist strain.",
+  "instructions": [
+    "Sit at the pulldown station and lock your thighs under the pads.",
+    "Grab the wide neutral-grip handles with straight arms.",
+    "Lean back slightly and lift your chest.",
+    "Pull the handles down toward your upper chest, driving your elbows down.",
+    "Pause, then let the bar rise slowly.",
+    "Do not swing your torso."
+  ],
+  "textSource": "opengym"
+}

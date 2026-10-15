@@ -1,0 +1,22 @@
+{
+  "id": "2749",
+  "name": "lever assisted leg press",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A machine leg press with assistance, building the thighs and glutes with a controlled path.",
+  "instructions": [
+    "Sit in the machine and place your feet on the platform about shoulder width apart.",
+    "Release the safety handles.",
+    "Lower the platform by bending your knees until they reach about 90 degrees.",
+    "Push through your heels to extend the legs.",
+    "Do not lock your knees fully."
+  ],
+  "textSource": "opengym"
+}

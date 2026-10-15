@@ -1,0 +1,21 @@
+{
+  "id": "1303",
+  "name": "medicine ball chest push from 3 point stance",
+  "bodyPart": "chest",
+  "equipment": "medicine ball",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "plyometrics",
+  "description": "From a three point stance with one hand on a medicine ball, you push the ball away explosively. It trains the chest and arms with power and balance.",
+  "instructions": [
+    "Start in a 3 point stance with one hand on the medicine ball and the other hand on the ground.",
+    "Extend your legs and position your body in a straight line.",
+    "Lower your chest towards the ground while keeping your back straight.",
+    "Push the medicine ball away from your body, extending your arm fully.",
+    "Return to the starting position and repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

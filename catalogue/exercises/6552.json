@@ -1,0 +1,23 @@
+{
+  "id": "6552",
+  "name": "cable romanian deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A hip hinge using a low cable. It trains the hamstrings and glutes with steady tension.",
+  "instructions": [
+    "Attach a straight bar to a low pulley and face the machine.",
+    "Hold the bar, step back and stand tall with soft knees.",
+    "Push your hips back and slide the bar down your thighs.",
+    "Keep your back flat and shoulders pulled back.",
+    "Lower until you feel a hamstring stretch.",
+    "Drive your hips forward to stand up."
+  ],
+  "textSource": "opengym"
+}

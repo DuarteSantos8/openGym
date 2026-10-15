@@ -1,0 +1,22 @@
+{
+  "id": "5969",
+  "name": "dot drill",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "quadriceps",
+    "ankles",
+    "feet"
+  ],
+  "category": "plyometrics",
+  "description": "A fast foot drill over a pattern of dots that builds foot speed, ankle stability and coordination.",
+  "instructions": [
+    "Mark five dots on the floor like the five on a die.",
+    "Stand on the balls of your feet next to the pattern.",
+    "Hop quickly from dot to dot in your chosen order.",
+    "Keep your hops small and your knees soft.",
+    "Work for 20-30 seconds, then rest."
+  ],
+  "textSource": "opengym"
+}

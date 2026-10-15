@@ -1,0 +1,23 @@
+{
+  "id": "0113",
+  "name": "barbell standing wide-grip curl",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A standing wide-grip curl. Emphasises the inner biceps.",
+  "instructions": [
+    "Stand up straight with your feet shoulder-width apart and hold a barbell with an overhand grip, hands wider than shoulder-width apart.",
+    "Let the barbell hang at arm's length in front of your thighs, with your palms facing away from your body.",
+    "Keeping your upper arms stationary, exhale and curl the barbell upward by contracting your biceps.",
+    "Continue to raise the barbell until your biceps are fully contracted and the barbell is at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale and slowly begin to lower the barbell back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

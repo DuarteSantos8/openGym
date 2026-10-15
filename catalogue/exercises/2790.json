@@ -1,0 +1,20 @@
+{
+  "id": "2790",
+  "name": "wrist extension",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist extensors"
+  ],
+  "category": "mobility",
+  "description": "Lifting the back of the hand up, working the top of the forearm.",
+  "instructions": [
+    "Stand or sit tall with a relaxed posture and the joint in a neutral starting position.",
+    "Rest your forearm on a table with your hand hanging off the edge, palm down.",
+    "Raise your hand upward by bending the wrist back.",
+    "Pause briefly, then lower slowly.",
+    "Repeat for 10-15 smooth reps, then switch sides if you are working one side at a time."
+  ],
+  "textSource": "opengym"
+}

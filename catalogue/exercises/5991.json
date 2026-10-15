@@ -1,0 +1,23 @@
+{
+  "id": "5991",
+  "name": "partner shuffle",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "adductors",
+    "quadriceps",
+    "calves",
+    "glutes"
+  ],
+  "category": "plyometrics",
+  "description": "A mirror drill where you shuffle sideways in response to a partner, training lateral quickness and reaction.",
+  "instructions": [
+    "Face a partner about 2 yards away in an athletic stance.",
+    "Have your partner move left or right.",
+    "Shuffle sideways to mirror them without crossing your feet.",
+    "Keep your hips low and chest up.",
+    "Work for 20-30 seconds, then swap roles."
+  ],
+  "textSource": "opengym"
+}

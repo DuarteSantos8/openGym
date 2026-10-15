@@ -1,0 +1,22 @@
+{
+  "id": "4068",
+  "name": "barbell bench press with 3 board",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "Bench press with three boards on the chest limiting the range. It overloads the lockout phase.",
+  "instructions": [
+    "Lie on a bench with three boards stacked on your chest.",
+    "Grip the bar slightly wider than shoulders.",
+    "Lower the bar until it touches the boards.",
+    "Press back up to full extension.",
+    "Keep your feet planted and shoulder blades pinched."
+  ],
+  "textSource": "opengym"
+}

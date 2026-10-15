@@ -1,0 +1,21 @@
+{
+  "id": "0084",
+  "name": "barbell rollerout",
+  "bodyPart": "waist",
+  "equipment": "barbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "Kneeling, you roll the barbell forward and pull it back in. A demanding exercise for the abs.",
+  "instructions": [
+    "Kneel on the floor and hold a barbell with both hands, shoulder-width apart.",
+    "Roll the barbell forward, extending your arms and keeping your core engaged.",
+    "Continue rolling forward until your body is fully extended and your arms are overhead.",
+    "Pause for a moment, then slowly roll the barbell back towards your knees, maintaining control.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2699",
+  "textSource": "exercisedb"
+}

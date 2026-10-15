@@ -1,0 +1,23 @@
+{
+  "id": "2906",
+  "name": "power sled rear drag",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Walking backward while dragging a power sled. Great for quads and conditioning with low joint stress.",
+  "instructions": [
+    "Face the sled, holding its handles or straps with a slight lean back.",
+    "Keep your chest up and core braced.",
+    "Walk backward in steady steps, pulling the sled with you.",
+    "Keep your knees soft and drive through your legs.",
+    "Cover a set distance, then rest."
+  ],
+  "textSource": "opengym"
+}

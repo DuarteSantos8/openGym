@@ -1,0 +1,21 @@
+{
+  "id": "3260",
+  "name": "standing arms flinging",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "Open and close your arms in a relaxed fling to loosen the chest and shoulders. Handy as a quick warm-up.",
+  "instructions": [
+    "Stand tall with feet shoulder-width apart and arms out in front at chest height.",
+    "Fling both arms wide open to the sides, squeezing your shoulder blades together.",
+    "Swing them back across your body, letting one arm cross over the other.",
+    "Keep the motion loose and controlled, without arching your back.",
+    "Repeat for 15-20 swings."
+  ],
+  "textSource": "opengym"
+}

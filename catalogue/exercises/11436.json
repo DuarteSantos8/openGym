@@ -1,0 +1,22 @@
+{
+  "id": "11436",
+  "name": "cable standing neutral grip overhead triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Overhead cable extension with a neutral grip that loads the long head of the triceps through a deep stretch.",
+  "instructions": [
+    "Attach a rope or neutral handle to a low pulley and face away from the stack.",
+    "Hold it overhead with elbows bent and pointing forward, one foot slightly ahead.",
+    "Keep your upper arms close to your ears and your ribs down.",
+    "Extend your elbows until your arms are straight overhead.",
+    "Lower slowly back to a deep stretch and repeat."
+  ],
+  "femaleVariant": "11435",
+  "textSource": "opengym"
+}

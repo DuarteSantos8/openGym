@@ -1,0 +1,23 @@
+{
+  "id": "6047",
+  "name": "bottle weighted forward lunge",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A walking-style lunge stepping forward with bottles in your hands. It works the quads and glutes one leg at a time.",
+  "instructions": [
+    "Stand tall holding a bottle in each hand at your sides.",
+    "Step forward with one leg.",
+    "Lower until both knees are bent about 90 degrees.",
+    "Push off the front foot to return to standing.",
+    "Alternate legs each rep."
+  ],
+  "textSource": "opengym"
+}

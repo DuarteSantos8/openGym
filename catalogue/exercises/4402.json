@@ -1,0 +1,23 @@
+{
+  "id": "4402",
+  "name": "straight angle yoga pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "adductors",
+    "inner thighs",
+    "groin",
+    "lower back"
+  ],
+  "category": "yoga",
+  "description": "A wide-legged forward fold that stretches the hamstrings and inner thighs.",
+  "instructions": [
+    "Stand with your feet wide apart and toes pointing forward.",
+    "Place your hands on your hips and lengthen your spine.",
+    "Hinge forward at the hips with a flat back.",
+    "Lower your hands to the floor or to your shins.",
+    "Hold for 20-30 seconds, then rise slowly."
+  ],
+  "textSource": "opengym"
+}

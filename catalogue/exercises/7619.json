@@ -1,0 +1,24 @@
+{
+  "id": "7619",
+  "name": "jack burpee v. 2",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "chest",
+    "shoulders",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "A burpee that finishes with a jumping jack. It raises your heart rate and works the whole body.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Squat down, place your hands on the floor and jump your feet back to a plank.",
+    "Lower your chest to the floor and push up, or skip the push-up if you prefer.",
+    "Jump your feet back toward your hands.",
+    "Jump up, spreading your arms and legs like a jumping jack, then repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -171,7 +171,7 @@ describe('CoachSetup — bringing your own key', () => {
     await mount(); await openByok()
     const section = all('.sect').find(s => s.querySelector('.sect-t')?.textContent === 'What leaves this phone')
     expect([...section.querySelectorAll('.lrow-t')].map(t => t.textContent))
-      .toEqual(DATA_CATEGORIES.map(k => CATEGORY_TEXT[k][0]))
+      .toEqual(DATA_CATEGORIES.map(k => CATEGORY_TEXT[k]()[0]))
     expect(host.textContent).toContain('Each request goes straight to api.anthropic.com with your key')
   })
 

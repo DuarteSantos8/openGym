@@ -1,0 +1,23 @@
+{
+  "id": "4865",
+  "name": "dumbbell overhead walking lunge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Walking lunges with dumbbells held overhead. It trains the legs and shoulder stability.",
+  "instructions": [
+    "Hold dumbbells overhead with locked arms.",
+    "Step forward into a lunge.",
+    "Lower your back knee near the floor.",
+    "Push through your front foot.",
+    "Step through into the next lunge."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "0424",
+  "name": "dumbbell standing one arm palm in press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "You press one dumbbell overhead with the palm facing in. It trains the shoulders and triceps, with a joint-friendly grip.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in one hand at shoulder height with your palm facing inwards.",
+    "Engage your core and keep your back straight.",
+    "Press the dumbbell upwards until your arm is fully extended.",
+    "Pause for a moment at the top, then slowly lower the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch to the other arm."
+  ],
+  "textSource": "exercisedb"
+}

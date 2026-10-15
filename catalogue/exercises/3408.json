@@ -1,0 +1,21 @@
+{
+  "id": "3408",
+  "name": "standing upper body rotation",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "A standing rotation of the upper body that mobilises the thoracic spine and warms up the waist.",
+  "instructions": [
+    "Stand with feet hip-width apart and hands clasped in front of your chest.",
+    "Keep your hips facing forward.",
+    "Rotate your upper body to one side as far as is comfortable.",
+    "Return through the centre and rotate the other way.",
+    "Keep it smooth for 10-15 reps per side."
+  ],
+  "textSource": "opengym"
+}

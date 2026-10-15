@@ -1,0 +1,21 @@
+{
+  "id": "4063",
+  "name": "band biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Standing curl using a band under your feet. It builds the biceps with rising tension.",
+  "instructions": [
+    "Stand on the band and hold the ends with palms forward.",
+    "Keep your elbows at your sides.",
+    "Curl your hands up toward your shoulders.",
+    "Squeeze your biceps at the top.",
+    "Lower slowly without swinging."
+  ],
+  "textSource": "opengym"
+}

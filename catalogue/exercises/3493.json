@@ -1,0 +1,24 @@
+{
+  "id": "3493",
+  "name": "single leg low box squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A one-leg squat down to a low box, giving you a target depth. It builds single-leg strength and balance.",
+  "instructions": [
+    "Stand in front of a low box or bench on one leg.",
+    "Extend the other leg forward and raise your arms for balance.",
+    "Sit your hips back and lower until you lightly touch the box.",
+    "Keep your chest up and knee tracking over your toes.",
+    "Drive through the heel to stand.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

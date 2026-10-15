@@ -1,0 +1,21 @@
+{
+  "id": "11797",
+  "name": "forward press shoulders mobilization",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "rotator cuff"
+  ],
+  "category": "mobility",
+  "description": "A shoulder mobility drill pressing the arm forward to warm up the joint.",
+  "instructions": [
+    "Stand tall with your elbows bent in front of you.",
+    "Press your arm forward until it is straight.",
+    "Keep your shoulder relaxed.",
+    "Return slowly and repeat 8-12 times.",
+    "Switch arms."
+  ],
+  "textSource": "opengym"
+}

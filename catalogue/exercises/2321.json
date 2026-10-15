@@ -1,0 +1,22 @@
+{
+  "id": "2321",
+  "name": "dumbbell standing inner biceps curl v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A standing biceps curl with the palms turning to face forward as you lift. Works the biceps and brachialis.",
+  "instructions": [
+    "Stand up straight with a dumbbell in each hand, palms facing your torso.",
+    "Keep your elbows close to your torso and rotate the palms of your hands until they are facing forward.",
+    "While holding your upper arms stationary, curl the weights while contracting your biceps.",
+    "Continue to raise the weights until your biceps are fully contracted and the dumbbells are at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Slowly begin to bring the dumbbells back to the starting position as your breathe in.",
+    "Repeat for the recommended amount of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

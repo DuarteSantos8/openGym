@@ -1,0 +1,22 @@
+{
+  "id": "6148",
+  "name": "dumbbell seated alternate overhead triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A seated overhead extension done one arm after the other. It isolates the triceps through a deep stretch.",
+  "instructions": [
+    "Sit upright holding a dumbbell in each hand overhead.",
+    "Lower one dumbbell behind your head by bending the elbow.",
+    "Keep your upper arm close to your head.",
+    "Extend the arm back up.",
+    "Repeat with the other arm.",
+    "Keep your core braced."
+  ],
+  "textSource": "opengym"
+}

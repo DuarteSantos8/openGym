@@ -1,0 +1,21 @@
+{
+  "id": "11651",
+  "name": "seated patella mobilization",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "quadriceps",
+    "ankles"
+  ],
+  "category": "mobility",
+  "description": "Gentle kneecap sliding while seated that loosens the tissue around the knee and warms up the front of the thigh.",
+  "instructions": [
+    "Sit tall on a chair or bench with one leg extended and the thigh muscle relaxed.",
+    "Place your fingertips or the heel of your hand on the edges of your kneecap.",
+    "Gently glide the kneecap side to side and up and down in small, slow motions.",
+    "Keep the quad relaxed and stay in a comfortable range with no sharp pain.",
+    "Move for 30-60 seconds, then switch legs."
+  ],
+  "textSource": "opengym"
+}

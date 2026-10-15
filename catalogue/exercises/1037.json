@@ -1,0 +1,22 @@
+{
+  "id": "1037",
+  "name": "lever standing rear kick",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A standing machine kickback that squeezes the glutes as you press the leg behind you.",
+  "instructions": [
+    "Stand facing the machine and hold the handles for support.",
+    "Place the back of your working leg against the pad.",
+    "Kick the leg back by squeezing the glute.",
+    "Pause at the top, then return slowly.",
+    "Keep your torso upright. Finish the reps, then switch legs."
+  ],
+  "femaleVariant": "3613",
+  "textSource": "opengym"
+}

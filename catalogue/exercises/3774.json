@@ -1,0 +1,23 @@
+{
+  "id": "3774",
+  "name": "band squat with horizontal pallof hold",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "obliques",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A squat while holding the band out in front of you against sideways pull. It trains your legs and anti-rotation core strength.",
+  "instructions": [
+    "Anchor the band at chest height and stand side-on to it.",
+    "Hold the handle with both hands at your chest, then press it straight out.",
+    "Keep your hips and shoulders square as you squat down.",
+    "Stand back up while holding the band steady.",
+    "Complete your reps, then turn around and repeat on the other side."
+  ],
+  "textSource": "opengym"
+}

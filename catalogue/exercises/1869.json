@@ -1,0 +1,21 @@
+{
+  "id": "1869",
+  "name": "lever seated hip abduction v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "Seated machine move that pushes the legs outward to train the outer hips.",
+  "instructions": [
+    "Sit with your back against the pad and your legs inside the pads.",
+    "Hold the handles for stability.",
+    "Push your legs apart smoothly.",
+    "Pause at the widest point.",
+    "Return slowly without letting the weights crash."
+  ],
+  "femaleVariant": "2553",
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "0012",
+  "name": "assisted lying leg raise with lateral throw down",
+  "bodyPart": "waist",
+  "equipment": "assisted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A lying leg raise where the legs lower to alternating sides, adding an oblique challenge to the lower abs.",
+  "instructions": [
+    "Lie flat on your back with your legs extended and your arms by your sides.",
+    "Place your hands under your glutes for support.",
+    "Engage your abs and lift your legs off the ground, keeping them straight.",
+    "While keeping your legs together, lower them to one side until they are a few inches above the ground.",
+    "Pause for a moment, then lift your legs back to the starting position.",
+    "Repeat the movement to the other side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

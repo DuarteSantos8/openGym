@@ -1,0 +1,23 @@
+{
+  "id": "4048",
+  "name": "dumbbell ipsilateral split squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Split squat with the dumbbell held on the same side as the working front leg. It tests balance and leg strength.",
+  "instructions": [
+    "Hold a dumbbell in one hand and step into a split stance, the dumbbell on the same side as your front leg.",
+    "Keep your torso upright.",
+    "Lower your back knee toward the floor.",
+    "Press through the front foot to rise.",
+    "Finish the reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

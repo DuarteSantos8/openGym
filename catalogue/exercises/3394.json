@@ -1,0 +1,22 @@
+{
+  "id": "3394",
+  "name": "glute march",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A hip-bridge hold with alternating knee lifts that trains glutes and pelvic stability.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat.",
+    "Lift your hips into a bridge.",
+    "Raise one knee toward your chest without letting your hips drop.",
+    "Place that foot down and lift the other.",
+    "Keep squeezing your glutes the whole time.",
+    "Continue alternating for 10-20 marches."
+  ],
+  "textSource": "opengym"
+}

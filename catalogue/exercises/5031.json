@@ -1,0 +1,22 @@
+{
+  "id": "5031",
+  "name": "medicine ball lying leg raise",
+  "bodyPart": "waist",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "Leg raise gripping a medicine ball between your feet. The extra load makes the lower abs work harder.",
+  "instructions": [
+    "Lie on your back with a medicine ball squeezed between your feet.",
+    "Press your lower back into the floor.",
+    "Raise your legs until they are vertical.",
+    "Lower them slowly without letting your back arch.",
+    "Keep your grip on the ball firm."
+  ],
+  "textSource": "opengym"
+}

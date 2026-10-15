@@ -1,0 +1,21 @@
+{
+  "id": "1970",
+  "name": "standing upright shoulders stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "chest"
+  ],
+  "category": "stretching",
+  "description": "A tall standing stretch that opens the shoulders and chest.",
+  "instructions": [
+    "Stand tall with your feet hip-width apart.",
+    "Clasp your hands behind your back.",
+    "Straighten your arms and lift them gently away from your body.",
+    "Keep your chest open and your neck relaxed.",
+    "Hold for 20-30 seconds."
+  ],
+  "textSource": "opengym"
+}

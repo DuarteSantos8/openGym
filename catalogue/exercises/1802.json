@@ -1,0 +1,22 @@
+{
+  "id": "1802",
+  "name": "side lat stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "Bending sideways with an arm overhead lengthens the lat and the side of your trunk. A quick stretch for the flanks.",
+  "instructions": [
+    "Stand tall with your feet hip-width apart and raise one arm overhead.",
+    "Lean to the opposite side from the raised arm, reaching over without twisting.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

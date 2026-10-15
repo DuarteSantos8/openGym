@@ -1,0 +1,24 @@
+{
+  "id": "2259",
+  "name": "walking on treadmill",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "Walking on a treadmill lets you control speed and incline for steady, low-impact cardio.",
+  "instructions": [
+    "Step onto the belt and hold the rails while you start at a slow speed.",
+    "Increase to a comfortable walking pace.",
+    "Let go of the rails and swing your arms naturally.",
+    "Keep your head up and your steps even.",
+    "Add some incline if you want more challenge.",
+    "Walk for 20-45 minutes and slow down before stepping off."
+  ],
+  "femaleVariant": "2260",
+  "textSource": "opengym"
+}

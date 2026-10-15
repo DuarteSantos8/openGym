@@ -1,0 +1,24 @@
+{
+  "id": "3916",
+  "name": "handstand shoulder press with wall (between benches)",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "trapezius",
+    "core",
+    "upper chest"
+  ],
+  "category": "calisthenics",
+  "description": "A wall-supported handstand press between two benches for strong shoulders and triceps.",
+  "instructions": [
+    "Place your hands on two benches and kick up into a handstand with your heels against the wall.",
+    "Brace your core and keep your body straight.",
+    "Lower your head between the benches by bending your elbows.",
+    "Press back up to straight arms.",
+    "Keep the movement controlled.",
+    "Come down carefully when done."
+  ],
+  "textSource": "opengym"
+}

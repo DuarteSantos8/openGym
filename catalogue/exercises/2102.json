@@ -1,0 +1,23 @@
+{
+  "id": "2102",
+  "name": "sitting toe pull calf stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "shins",
+    "feet"
+  ],
+  "category": "stretching",
+  "description": "Pulls the toes back toward the shin while sitting, giving the calf and the back of the lower leg a gentle stretch.",
+  "instructions": [
+    "Sit on the floor with one leg straight out in front of you.",
+    "Reach forward and grab the toes or the ball of the foot of that leg.",
+    "Gently pull the toes toward your shin while keeping the knee straight.",
+    "Sit tall and avoid rounding your back.",
+    "Hold for 20-30 seconds.",
+    "Release and switch legs."
+  ],
+  "textSource": "opengym"
+}

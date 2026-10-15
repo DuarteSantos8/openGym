@@ -1,0 +1,22 @@
+{
+  "id": "10907",
+  "name": "bodyweight half split squat hold",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "calves"
+  ],
+  "category": "stretching",
+  "description": "A half split position that stretches the back of the front leg while you sit back on the rear leg.",
+  "instructions": [
+    "Kneel on one knee with the other leg extended in front, heel on the floor.",
+    "Sit your hips back toward the rear heel.",
+    "Keep the front leg straight and your back long.",
+    "Hold for 20-30 seconds.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

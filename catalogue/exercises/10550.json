@@ -1,0 +1,22 @@
+{
+  "id": "10550",
+  "name": "lying floor svend press",
+  "bodyPart": "chest",
+  "equipment": "weight plate",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "Press a plate out from your chest while lying on the floor, squeezing it with both hands. It targets the inner chest.",
+  "instructions": [
+    "Lie on your back holding a plate between your palms at your chest.",
+    "Squeeze the plate firmly.",
+    "Press it straight up until your arms are extended.",
+    "Keep squeezing as you lower it back to your chest.",
+    "Repeat with steady control."
+  ],
+  "textSource": "opengym"
+}

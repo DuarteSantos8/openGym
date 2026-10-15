@@ -1,0 +1,23 @@
+{
+  "id": "7747",
+  "name": "dumbbell prone w raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "Lying face down, you raise light dumbbells while bending the elbows into a W shape. It works the rear delts and the upper back.",
+  "instructions": [
+    "Lie face down on a bench or the floor with a light dumbbell in each hand.",
+    "Bend your elbows to about 90 degrees.",
+    "Lift your arms out and up into a W shape.",
+    "Squeeze your shoulder blades together.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

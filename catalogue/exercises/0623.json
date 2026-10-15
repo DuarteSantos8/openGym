@@ -1,0 +1,22 @@
+{
+  "id": "0623",
+  "name": "lying simultaneous alternating leg raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "calisthenics",
+  "description": "Lying down, you lift legs in opposite directions at the same time. It works the lower abs and hips.",
+  "instructions": [
+    "Lie on your back with your arms by your sides.",
+    "Raise one leg toward the ceiling while the other hovers near the floor.",
+    "Switch the legs at the same time.",
+    "Keep both legs mostly straight.",
+    "Press your lower back into the floor.",
+    "Move at a controlled pace."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4259",
+  "name": "walking on elliptical machine v. 7",
+  "bodyPart": "cardio",
+  "equipment": "elliptical machine",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "Steady walking motion on an elliptical trainer. It is a low-impact way to raise your heart rate and build endurance.",
+  "instructions": [
+    "Step onto the pedals and hold the handles lightly.",
+    "Start moving in a smooth, walking-style stride.",
+    "Stand tall with your shoulders relaxed and core braced.",
+    "Choose a moderate resistance and keep a steady pace.",
+    "Continue for 10 to 30 minutes, depending on your fitness, then cool down slowly."
+  ],
+  "textSource": "opengym"
+}

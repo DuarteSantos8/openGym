@@ -1,0 +1,21 @@
+{
+  "id": "1242",
+  "name": "crunch (on bosu ball)",
+  "bodyPart": "waist",
+  "equipment": "bosu ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A crunch on a bosu ball. The unstable surface asks more from your core.",
+  "instructions": [
+    "Sit on the bosu ball and lie back so it supports your lower back.",
+    "Place your hands lightly behind your head.",
+    "Curl your shoulders up by contracting your abs.",
+    "Hold the top briefly.",
+    "Lower slowly and keep your feet planted."
+  ],
+  "textSource": "opengym"
+}

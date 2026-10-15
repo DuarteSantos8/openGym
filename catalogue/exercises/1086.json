@@ -1,0 +1,23 @@
+{
+  "id": "1086",
+  "name": "suspension power pull",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A powerful pull from a long position under the straps. It builds the lats and upper back.",
+  "instructions": [
+    "Hold the handles with arms straight and lean back.",
+    "Keep your body in a straight line.",
+    "Pull explosively with your arms and back.",
+    "Bring your chest toward your hands.",
+    "Lower slowly.",
+    "Keep your core tight."
+  ],
+  "textSource": "opengym"
+}

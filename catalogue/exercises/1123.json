@@ -1,0 +1,23 @@
+{
+  "id": "1123",
+  "name": "suspender one arm biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "suspension trainer",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "brachialis",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "You curl yourself up with one arm holding a single strap, a tough unilateral biceps move.",
+  "instructions": [
+    "Hold one handle palm up and lean back at an angle.",
+    "Keep your feet planted and body straight.",
+    "Bend the elbow and pull your body toward your hand.",
+    "Squeeze the biceps at the top.",
+    "Lower slowly to a straight arm.",
+    "Finish your reps and switch arms."
+  ],
+  "textSource": "opengym"
+}

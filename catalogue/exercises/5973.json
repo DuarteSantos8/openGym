@@ -1,0 +1,23 @@
+{
+  "id": "5973",
+  "name": "lateral ladder drill",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "adductors",
+    "calves",
+    "quadriceps",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A sideways run through an agility ladder to build lateral speed and foot coordination.",
+  "instructions": [
+    "Stand sideways at the start of an agility ladder.",
+    "Step both feet into the first square, one at a time.",
+    "Move sideways to the next square with quick steps.",
+    "Keep your hips low and your feet light.",
+    "Finish the ladder, then repeat facing the other way."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5039",
+  "name": "silent burpee",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "chest",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "A low-impact burpee without the jump. It raises your heart rate while staying quiet and gentle on the joints.",
+  "instructions": [
+    "Stand with feet shoulder width apart.",
+    "Squat down and place your hands on the floor.",
+    "Step your feet back into a plank.",
+    "Step your feet forward to your hands.",
+    "Stand up tall.",
+    "Keep a steady pace for 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

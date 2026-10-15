@@ -1,0 +1,21 @@
+{
+  "id": "6001",
+  "name": "single straight leg glute bridge hold (left)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A glute bridge held with the left leg extended straight. Builds one-sided glute strength and pelvic control.",
+  "instructions": [
+    "Lie on your back with both knees bent.",
+    "Straighten your left leg in line with your torso.",
+    "Press through the right heel to lift your hips.",
+    "Hold for 20-30 seconds with your hips level.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

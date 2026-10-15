@@ -1,0 +1,23 @@
+{
+  "id": "3539",
+  "name": "lying t spine mobility stretching",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "obliques",
+    "upper back",
+    "chest"
+  ],
+  "category": "mobility",
+  "description": "A lying rotation stretch for the upper back.",
+  "instructions": [
+    "Lie on your side with knees bent and arms in front.",
+    "Lift your top arm and open it toward the other side.",
+    "Follow your hand with your eyes.",
+    "Hold for 20-30 seconds.",
+    "Return to the start.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

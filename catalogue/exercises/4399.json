@@ -1,0 +1,22 @@
+{
+  "id": "4399",
+  "name": "standing seal yoga pose",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "core",
+    "hip flexors",
+    "shoulders"
+  ],
+  "category": "yoga",
+  "description": "A standing back-bending pose that opens the chest and front of the hips and stretches the abdomen.",
+  "instructions": [
+    "Stand with feet hip-width apart and your hands on your lower back.",
+    "Lengthen through your spine.",
+    "Lift your chest and gently arch backward.",
+    "Keep your neck relaxed and your legs strong.",
+    "Hold for 15-30 seconds, then come back up slowly."
+  ],
+  "textSource": "opengym"
+}

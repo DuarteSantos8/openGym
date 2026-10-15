@@ -1,0 +1,22 @@
+{
+  "id": "5007",
+  "name": "suspension hammer curl",
+  "bodyPart": "upper arms",
+  "equipment": "suspension trainer",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A hammer curl using suspension straps with palms facing each other. It works the biceps and the muscles beside them.",
+  "instructions": [
+    "Hold the handles with palms facing each other and lean back.",
+    "Keep your body in a straight line.",
+    "Curl your hands toward your head.",
+    "Keep your elbows high and still.",
+    "Lower slowly until arms are straight.",
+    "Keep your core tight."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "8703",
+  "name": "battling rope pull",
+  "bodyPart": "back",
+  "equipment": "rope",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "grip muscles",
+    "core",
+    "glutes"
+  ],
+  "category": "cardio",
+  "description": "A rope pull that brings the rope toward you, working the back, arms and grip with a conditioning effect.",
+  "instructions": [
+    "Anchor the rope and hold the ends in a staggered stance.",
+    "Lean back slightly with your core tight.",
+    "Pull the rope toward you hand over hand.",
+    "Keep your chest tall and drive with your legs.",
+    "Return smoothly and repeat."
+  ],
+  "textSource": "opengym"
+}

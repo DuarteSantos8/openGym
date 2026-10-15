@@ -1,0 +1,22 @@
+{
+  "id": "3733",
+  "name": "kettlebell straight leg deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A stiff-legged deadlift with a kettlebell that stretches and strengthens the hamstrings.",
+  "instructions": [
+    "Stand holding a kettlebell with both hands in front of your thighs.",
+    "Keep your legs almost straight with a soft knee.",
+    "Hinge at the hips and lower the bell along your legs.",
+    "Keep your back flat.",
+    "Drive your hips forward to stand."
+  ],
+  "textSource": "opengym"
+}

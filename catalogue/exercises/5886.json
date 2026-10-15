@@ -1,0 +1,23 @@
+{
+  "id": "5886",
+  "name": "kettlebell rotational deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip hinge with a rotation toward the floor, training the glutes and hamstrings while the trunk learns to twist under load.",
+  "instructions": [
+    "Stand with feet hip-width apart holding a kettlebell in both hands.",
+    "Push your hips back and lower the bell toward the outside of one foot.",
+    "Rotate your torso slightly as you reach, keeping your back flat.",
+    "Drive your hips forward to stand and unwind.",
+    "Repeat to the same side, then switch."
+  ],
+  "textSource": "opengym"
+}

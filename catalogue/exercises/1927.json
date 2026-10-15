@@ -1,0 +1,22 @@
+{
+  "id": "1927",
+  "name": "plantar flexor and foot inverter stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "shins"
+  ],
+  "category": "stretching",
+  "description": "A seated ankle stretch that lengthens the front of the lower leg and the inner side of the ankle.",
+  "instructions": [
+    "Sit with one leg extended and hold the foot with your hand.",
+    "Point the foot down and turn the sole slightly inward.",
+    "Gently press the foot until you feel a stretch along the front and inner ankle.",
+    "Move slowly and stop at a mild stretch.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

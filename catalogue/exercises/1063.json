@@ -1,0 +1,25 @@
+{
+  "id": "1063",
+  "name": "barbell sumo squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "adductors",
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A wide-stance squat with a barbell on your back. It hits the glutes and inner thighs along with the quads.",
+  "instructions": [
+    "Set the bar on your upper back and stand with feet well wider than your shoulders.",
+    "Turn your toes out about 30 degrees.",
+    "Brace your core and sit down between your legs.",
+    "Keep your knees tracking over your toes.",
+    "Descend to thigh level or lower, then push through your heels to stand.",
+    "Keep your chest tall."
+  ],
+  "femaleVariant": "5722",
+  "textSource": "opengym"
+}

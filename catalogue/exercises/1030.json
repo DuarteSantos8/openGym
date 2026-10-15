@@ -1,0 +1,23 @@
+{
+  "id": "1030",
+  "name": "lever pec deck fly",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "rear deltoids",
+    "chest"
+  ],
+  "category": "strength",
+  "description": "A machine fly where the arms sweep together in front, isolating the chest.",
+  "instructions": [
+    "Sit on the pec deck with your back flat and the arms at chest level.",
+    "Place your forearms or hands on the pads with elbows slightly bent.",
+    "Bring the arms together in front of your chest.",
+    "Squeeze for a moment, then open slowly until you feel a chest stretch.",
+    "Keep your shoulders down and back."
+  ],
+  "femaleVariant": "2427",
+  "textSource": "opengym"
+}

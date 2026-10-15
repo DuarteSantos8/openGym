@@ -1,0 +1,20 @@
+{
+  "id": "10538",
+  "name": "seated single leg knee extension v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "rehab",
+  "description": "A variation of the seated knee extension. It builds thigh strength with a small, controlled range.",
+  "instructions": [
+    "Sit tall on a chair, holding the seat edge for support.",
+    "Straighten one knee until the leg is level.",
+    "Hold for a second, tightening your thigh.",
+    "Lower slowly to the start.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

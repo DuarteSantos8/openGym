@@ -1,0 +1,23 @@
+{
+  "id": "11303",
+  "name": "smith bench squat",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A squat on the Smith machine to a bench. The bench gives you a consistent depth and a stable path.",
+  "instructions": [
+    "Set a bench behind you and place the bar on your upper back.",
+    "Unrack and step your feet slightly forward.",
+    "Sit down until you lightly touch the bench.",
+    "Keep your chest up and knees tracking over your toes.",
+    "Drive through your heels to stand."
+  ],
+  "femaleVariant": "11304",
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "1917",
+  "name": "standing reach down hamstring crossed legs stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "A standing forward fold with the legs crossed, which shifts the stretch to the back of the rear leg.",
+  "instructions": [
+    "Stand tall and cross one foot over the other.",
+    "Hinge forward at the hips and reach toward the floor until the back of the thighs stretch.",
+    "Keep both legs fairly straight and let your head hang relaxed.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

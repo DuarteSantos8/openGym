@@ -1,0 +1,22 @@
+{
+  "id": "8533",
+  "name": "kneeling to standing squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A flowing move from kneeling up into a squat, working the legs, glutes and balance.",
+  "instructions": [
+    "Kneel on both knees with your torso upright.",
+    "Step one foot forward and then the other so both feet are flat.",
+    "Press up to stand, then sit back into a squat.",
+    "Return to kneeling under control.",
+    "Alternate which foot steps first."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "3987",
+  "name": "barbell incline wrist curl with chest support",
+  "bodyPart": "lower arms",
+  "equipment": "barbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A wrist curl performed chest down on an incline bench. It isolates the forearm flexors.",
+  "instructions": [
+    "Lie chest down on an incline bench with the barbell in hands, palms up.",
+    "Let your wrists extend gently.",
+    "Curl your wrists upward.",
+    "Squeeze at the top.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

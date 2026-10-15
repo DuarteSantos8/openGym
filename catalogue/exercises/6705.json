@@ -1,0 +1,22 @@
+{
+  "id": "6705",
+  "name": "supine windshield wipers",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on your back, you swing the legs side to side like wipers. It strengthens the obliques and trunk control.",
+  "instructions": [
+    "Lie on your back with arms out to the sides, palms down.",
+    "Lift your legs straight up over your hips.",
+    "Lower both legs to one side without touching the floor.",
+    "Bring them back up through the middle.",
+    "Lower to the other side and keep alternating."
+  ],
+  "textSource": "opengym"
+}

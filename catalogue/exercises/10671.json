@@ -1,0 +1,23 @@
+{
+  "id": "10671",
+  "name": "lever stack seated chest press",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A seated machine press with a weight stack. It is a stable way to build the chest and triceps.",
+  "instructions": [
+    "Set the seat so the handles are level with your mid chest.",
+    "Sit back and pull your shoulder blades together.",
+    "Press the handles forward until your arms are nearly straight.",
+    "Pause without locking out.",
+    "Return slowly to a gentle chest stretch.",
+    "Keep your feet flat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "7538",
+  "name": "lying floor slide",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "trapezius",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "Floor slide that improves shoulder mobility and activates the upper back.",
+  "instructions": [
+    "Lie on your back with knees bent and arms in a goalpost position.",
+    "Keep your back and wrists on the floor.",
+    "Slide your arms up overhead.",
+    "Return slowly to the start.",
+    "Move within your comfortable range."
+  ],
+  "textSource": "opengym"
+}

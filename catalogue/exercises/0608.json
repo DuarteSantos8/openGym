@@ -1,0 +1,22 @@
+{
+  "id": "0608",
+  "name": "lever twist",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A seated machine twist that trains the abs and obliques through rotation.",
+  "instructions": [
+    "Sit in the machine and adjust the pads so your torso is secure.",
+    "Grip the handles and keep your hips facing forward.",
+    "Rotate your torso to one side in a controlled way.",
+    "Pause briefly at the end of the range.",
+    "Return to the centre and rotate to the other side.",
+    "Move slowly and avoid using momentum."
+  ],
+  "textSource": "opengym"
+}

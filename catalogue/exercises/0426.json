@@ -1,0 +1,32 @@
+{
+  "id": "0426",
+  "name": "dumbbell standing overhead press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Standing, you press dumbbells from your shoulders to overhead. It builds the shoulders, triceps and trunk stability.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand at shoulder level with your palms facing forward.",
+    "Press the dumbbells upward until your arms are fully extended overhead.",
+    "Pause for a moment at the top, then slowly lower the dumbbells back down to shoulder level.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "deltoids"
+    ],
+    "secondaries": [
+      "chest",
+      "triceps",
+      "trapezius",
+      "serratus"
+    ]
+  },
+  "femaleVariant": "2380",
+  "textSource": "exercisedb"
+}

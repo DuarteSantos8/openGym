@@ -1,0 +1,23 @@
+{
+  "id": "6120",
+  "name": "pavanamuktasana yoga pose",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "lower back",
+    "hip flexors",
+    "core"
+  ],
+  "category": "yoga",
+  "description": "The wind-relieving pose, where you hug your knees to your chest while lying down. It stretches the hips and lower back.",
+  "instructions": [
+    "Lie on your back with your legs straight.",
+    "Bend your knees and draw them into your chest.",
+    "Wrap your arms around your shins and hug them in.",
+    "Keep your head and shoulders relaxed on the floor.",
+    "Breathe slowly and hold for 20-30 seconds.",
+    "Release and extend your legs."
+  ],
+  "textSource": "opengym"
+}

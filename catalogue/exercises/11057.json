@@ -1,0 +1,22 @@
+{
+  "id": "11057",
+  "name": "cable seated scapular retraction",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "trapezius",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A seated cable move that trains your shoulder blades to pull back. It helps posture and builds the mid back.",
+  "instructions": [
+    "Sit at a low cable station, feet braced, and hold the handle with straight arms.",
+    "Sit tall and let your shoulder blades stretch forward.",
+    "Pull your shoulder blades together, keeping your arms straight.",
+    "Hold the squeeze briefly.",
+    "Return slowly to the start."
+  ],
+  "textSource": "opengym"
+}

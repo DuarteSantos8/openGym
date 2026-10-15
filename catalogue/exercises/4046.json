@@ -1,0 +1,24 @@
+{
+  "id": "4046",
+  "name": "kettlebell sumo deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "adductors",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Deadlift from a wide stance with a kettlebell between your feet. It trains the glutes, thighs and back.",
+  "instructions": [
+    "Stand with feet wide and toes angled out, the kettlebell between your feet.",
+    "Hinge and bend your knees to grip the handle with both hands.",
+    "Keep your back flat and chest up.",
+    "Drive through your feet to stand tall and squeeze your glutes.",
+    "Lower the kettlebell under control."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "4762",
+  "name": "glute ham developer hip extension",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A hip extension on a glute ham developer. You hinge at the hips with a straight body to work the glutes and hamstrings.",
+  "instructions": [
+    "Set up on the GHD with your feet planted and hips just past the pad.",
+    "Cross your arms over your chest.",
+    "Lower your torso by hinging at the hips with a flat back.",
+    "Squeeze your glutes to raise back to a straight line.",
+    "Do not arch past neutral at the top."
+  ],
+  "textSource": "opengym"
+}

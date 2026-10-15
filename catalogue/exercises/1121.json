@@ -1,0 +1,23 @@
+{
+  "id": "1121",
+  "name": "suspender mountain climber push up",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "quads",
+  "secondaryMuscles": [
+    "core",
+    "hip flexors",
+    "chest"
+  ],
+  "category": "calisthenics",
+  "description": "A hard conditioning move combining a push-up with mountain climber knee drives while the feet sit in the straps.",
+  "instructions": [
+    "Place your feet in the straps and set up in a high plank.",
+    "Do one push-up, keeping your body straight.",
+    "Drive one knee toward your chest, then the other.",
+    "Alternate legs in a steady rhythm.",
+    "Keep your hips level.",
+    "Repeat the sequence for the set."
+  ],
+  "textSource": "opengym"
+}

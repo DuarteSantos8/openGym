@@ -1,0 +1,21 @@
+{
+  "id": "1234",
+  "name": "plate hyperextension",
+  "bodyPart": "back",
+  "equipment": "weight plate",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A back extension holding a plate at your chest. It strengthens the lower back, glutes and hamstrings.",
+  "instructions": [
+    "Set the hyperextension bench so your hips are just past the pad.",
+    "Hold a weight plate against your chest and cross your arms over it.",
+    "Lower your torso toward the floor with a flat back.",
+    "Raise your torso until your body forms a straight line.",
+    "Squeeze your glutes at the top and avoid overarching."
+  ],
+  "textSource": "opengym"
+}

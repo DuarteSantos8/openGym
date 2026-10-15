@@ -1,0 +1,25 @@
+{
+  "id": "0629",
+  "name": "mountain climber lunge",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "hip flexors",
+    "core",
+    "shoulders"
+  ],
+  "category": "cardio",
+  "description": "A mountain climber that steps the foot all the way outside the hand into a lunge. It raises the heart rate and opens the hips.",
+  "instructions": [
+    "Start in a plank with hands under your shoulders.",
+    "Step one foot forward outside your hand.",
+    "Lower your hips into a lunge stretch.",
+    "Return the foot back to the plank.",
+    "Switch legs.",
+    "Keep your core tight and move at a steady pace."
+  ],
+  "textSource": "opengym"
+}

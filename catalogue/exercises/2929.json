@@ -1,0 +1,24 @@
+{
+  "id": "2929",
+  "name": "kneeling battling ropes",
+  "bodyPart": "full body",
+  "equipment": "rope",
+  "target": "delts",
+  "secondaryMuscles": [
+    "core",
+    "upper back",
+    "forearms",
+    "grip muscles",
+    "lats"
+  ],
+  "category": "cardio",
+  "description": "Making waves with heavy ropes while kneeling. It raises your heart rate and burns the shoulders and arms.",
+  "instructions": [
+    "Kneel in front of the anchored ropes and hold an end in each hand.",
+    "Brace your abs and keep your chest up.",
+    "Raise and lower your arms alternately to create waves.",
+    "Keep the waves quick and steady.",
+    "Work for a set time, then rest."
+  ],
+  "textSource": "opengym"
+}

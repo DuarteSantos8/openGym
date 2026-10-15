@@ -1,0 +1,23 @@
+{
+  "id": "0676",
+  "name": "reverse lunge (leg kick)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A reverse lunge that ends with a forward kick. It trains the glutes and legs, and tests balance.",
+  "instructions": [
+    "Stand tall with feet hip-width apart.",
+    "Step one leg back into a lunge.",
+    "Push through the front heel to stand.",
+    "Kick the rear leg forward.",
+    "Place the foot down behind you for the next rep.",
+    "Finish reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

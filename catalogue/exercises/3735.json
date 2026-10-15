@@ -1,0 +1,22 @@
+{
+  "id": "3735",
+  "name": "kettlebell pullover 3 month position",
+  "bodyPart": "back",
+  "equipment": "kettlebell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "chest",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lying pullover with a kettlebell that stretches and works the lats and chest.",
+  "instructions": [
+    "Lie on your back holding a kettlebell with both hands above your chest.",
+    "Keep your arms slightly bent.",
+    "Lower the bell back over your head in an arc.",
+    "Stop when you feel a stretch in your lats.",
+    "Pull it back over your chest."
+  ],
+  "textSource": "opengym"
+}

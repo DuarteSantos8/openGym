@@ -1,0 +1,20 @@
+{
+  "id": "2791",
+  "name": "wrist flexion",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors"
+  ],
+  "category": "mobility",
+  "description": "Curling the hand toward the forearm, working the underside of the forearm.",
+  "instructions": [
+    "Stand or sit tall with a relaxed posture and the joint in a neutral starting position.",
+    "Rest your forearm on a table with your hand hanging off the edge, palm up.",
+    "Curl your hand upward by bending the wrist toward your forearm.",
+    "Pause briefly, then lower slowly.",
+    "Repeat for 10-15 smooth reps, then switch sides if you are working one side at a time."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "3132",
+  "name": "potty squat with support",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A deep squat done holding a support for balance. Works the glutes and legs.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, toes pointing slightly outward.",
+    "Hold onto a stable support, such as a chair or wall, for balance.",
+    "Lower your body down into a squat position by bending your knees and pushing your hips back.",
+    "Keep your chest up and your back straight throughout the movement.",
+    "Pause for a moment at the bottom, then push through your heels to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3131",
+  "textSource": "exercisedb"
+}

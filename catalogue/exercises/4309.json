@@ -1,0 +1,22 @@
+{
+  "id": "4309",
+  "name": "single leg stretch (bent knee)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques",
+    "quadriceps"
+  ],
+  "category": "pilates",
+  "description": "A pilates move where you alternate pulling one knee in while the other leg extends. It builds core control and coordination.",
+  "instructions": [
+    "Lie on your back, lift your head and shoulders, and bring both knees toward your chest.",
+    "Place your hands on one shin and extend the other leg out low.",
+    "Switch legs smoothly, drawing the other knee in.",
+    "Keep your lower back pressed down and your abs tight.",
+    "Continue alternating with a steady breath rhythm."
+  ],
+  "textSource": "opengym"
+}

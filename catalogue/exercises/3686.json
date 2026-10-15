@@ -1,0 +1,22 @@
+{
+  "id": "3686",
+  "name": "dumbbell kneeling hold to stand",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "core",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Move from a kneeling position to standing while holding a dumbbell.",
+  "instructions": [
+    "Kneel on both knees holding a dumbbell at your chest.",
+    "Step one foot forward into a half-kneel.",
+    "Drive through that foot to stand.",
+    "Lower back into the kneeling position.",
+    "Alternate lead legs."
+  ],
+  "textSource": "opengym"
+}

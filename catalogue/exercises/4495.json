@@ -1,0 +1,22 @@
+{
+  "id": "4495",
+  "name": "roll ball forearm supinator",
+  "bodyPart": "lower arms",
+  "equipment": "roller",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist extensors",
+    "brachialis"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a small ball to ease tension in the upper forearm (supinator). A simple way to loosen tight spots before or after training.",
+  "instructions": [
+    "Place the ball under your upper forearm (supinator) on a table with your arm resting on it.",
+    "Shift your weight onto the ball until you feel moderate, tolerable pressure.",
+    "Roll slowly back and forth over a short range, about 2-3 cm at a time.",
+    "When you find a tender spot, pause on it and breathe for 20-30 seconds.",
+    "Keep your breathing steady and avoid rolling over bone or joints.",
+    "Repeat on the other side if needed."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "3702",
+  "name": "forward pulse lunge with hands overhead",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A forward lunge held in the bottom position where you pulse up and down with your arms overhead. It burns the legs and challenges balance.",
+  "instructions": [
+    "Stand tall and raise both arms straight overhead.",
+    "Step one foot forward into a lunge and lower until both knees are about 90 degrees.",
+    "Pulse up and down a few inches in the low position.",
+    "Push back to standing.",
+    "Switch legs and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "0595",
+  "name": "lever seated crunch (chest pad)",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "Seated on a machine with a chest pad, you curl your torso forward against resistance. Works the abs.",
+  "instructions": [
+    "Adjust the seat height and chest pad position according to your comfort.",
+    "Sit on the machine with your back against the chest pad and your feet flat on the floor.",
+    "Grasp the handles or side bars for stability.",
+    "Engage your abs and slowly lean back, allowing the chest pad to move with you.",
+    "Pause for a moment at the maximum contraction, feeling the tension in your abs.",
+    "Slowly return to the starting position by contracting your abs and pulling yourself back up.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3753",
+  "textSource": "exercisedb"
+}

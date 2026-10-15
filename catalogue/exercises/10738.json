@@ -1,0 +1,24 @@
+{
+  "id": "10738",
+  "name": "box jump through the arms",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core",
+    "shoulders"
+  ],
+  "category": "plyometrics",
+  "description": "A box jump with a swing-through arm action. It builds explosive power and coordination.",
+  "instructions": [
+    "Stand facing a sturdy box.",
+    "Swing your arms back and bend your knees.",
+    "Jump onto the box, driving your arms through.",
+    "Land softly with both feet.",
+    "Stand tall at the top.",
+    "Step down and reset."
+  ],
+  "textSource": "opengym"
+}

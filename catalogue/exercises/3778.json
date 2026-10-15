@@ -1,0 +1,23 @@
+{
+  "id": "3778",
+  "name": "band upper body lying air bike",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "shoulders",
+    "core",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "Lying on your back, you pedal your arms against the band like a bicycle. It hits your abs with added resistance.",
+  "instructions": [
+    "Lie on your back with the band anchored behind your head, a handle in each hand.",
+    "Lift your shoulders and legs slightly off the floor.",
+    "Alternate pulling one handle toward your opposite knee in a pedalling motion.",
+    "Keep your lower back pressed down.",
+    "Continue at a steady pace for your set."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "7850",
+  "name": "reverse air cycling",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Lie on your back with your hips raised, pedalling the legs in a backward motion. It targets the lower abs.",
+  "instructions": [
+    "Lie on your back and lift your hips slightly with hands under your glutes.",
+    "Raise your legs.",
+    "Pedal backward in a smooth circle.",
+    "Keep your lower back pressed down.",
+    "Continue for a set time or reps."
+  ],
+  "textSource": "opengym"
+}

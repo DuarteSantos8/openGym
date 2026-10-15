@@ -1,0 +1,23 @@
+{
+  "id": "1048",
+  "name": "dumbbell lying one arm rear lateral raise v. 2",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "Lying on your side on a bench, you raise a dumbbell out to the side. It isolates the rear shoulder.",
+  "instructions": [
+    "Lie on your side on a bench holding a light dumbbell in your top hand.",
+    "Start with your arm hanging in front of you, slight bend in the elbow.",
+    "Raise the arm out and up until it is about shoulder height.",
+    "Pause, then lower with control.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "9387",
+  "name": "lever angled single leg press",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "Pressing with one leg on an angled leg press machine focuses the work on the quads and glutes.",
+  "instructions": [
+    "Sit on the machine and place one foot on the platform.",
+    "Release the safety handles.",
+    "Lower the platform until your knee is bent about 90 degrees.",
+    "Press through your heel to push it back.",
+    "Do not lock your knee at the top.",
+    "Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

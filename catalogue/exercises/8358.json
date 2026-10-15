@@ -1,0 +1,22 @@
+{
+  "id": "8358",
+  "name": "hamstring bridge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bridge with the heels placed farther away so the hamstrings and glutes do more of the lifting.",
+  "instructions": [
+    "Lie on your back with knees bent and heels placed a bit farther from your hips.",
+    "Press your heels into the floor.",
+    "Lift your hips until your body forms a straight line from shoulders to knees.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

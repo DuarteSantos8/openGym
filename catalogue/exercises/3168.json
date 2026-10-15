@@ -1,0 +1,22 @@
+{
+  "id": "3168",
+  "name": "bodyweight squatting row",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A squat paired with a pulling motion on a sturdy anchor or suspension trainer. It trains the legs and upper back in one flowing movement.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding onto a sturdy object or suspension trainer with your arms extended.",
+    "Lower your body into a squat position, keeping your back straight and your knees behind your toes.",
+    "From the squat position, pull your body up towards the object or suspension trainer, squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly lower your body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3170",
+  "textSource": "exercisedb"
+}

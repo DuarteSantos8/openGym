@@ -1,0 +1,24 @@
+{
+  "id": "5980",
+  "name": "sun salutation a",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "triceps",
+    "quadriceps",
+    "lower back"
+  ],
+  "category": "yoga",
+  "description": "A flowing sequence linking breath and movement. Warms up the whole body.",
+  "instructions": [
+    "Stand in mountain pose and sweep your arms overhead.",
+    "Fold forward and step back to plank.",
+    "Lower, then press into upward dog and downward dog.",
+    "Step forward, rise and return to mountain.",
+    "Repeat the flow at a steady pace."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5377",
+  "name": "roll chest lying on floor",
+  "bodyPart": "chest",
+  "equipment": "roller",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a foam roller to ease tightness in the chest. Good before training or on rest days to loosen up.",
+  "instructions": [
+    "Lie face down with the roller under one side of your chest.",
+    "Place the roller under the chest and let your body weight settle onto it.",
+    "Roll slowly side to side across the muscle.",
+    "Pause on tender spots and breathe slowly for 20-30 seconds.",
+    "Keep your core braced and avoid rolling over joints or bone.",
+    "Roll for 30-60 seconds, then switch sides if needed."
+  ],
+  "femaleVariant": "5416",
+  "textSource": "opengym"
+}

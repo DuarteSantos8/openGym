@@ -1,0 +1,24 @@
+{
+  "id": "3914",
+  "name": "cable rear delt row",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A row with wide elbows on the cable machine that targets the rear delts.",
+  "instructions": [
+    "Set a cable at chest height with a handle or rope.",
+    "Hold it with your arms extended.",
+    "Step back and lean slightly.",
+    "Pull the handle toward your upper chest with your elbows flared out.",
+    "Squeeze your rear delts.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

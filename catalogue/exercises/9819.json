@@ -1,0 +1,23 @@
+{
+  "id": "9819",
+  "name": "hanging knee raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "grip muscles",
+    "lats"
+  ],
+  "category": "calisthenics",
+  "description": "From a hang, you bring your knees up toward your chest to work the lower abs.",
+  "instructions": [
+    "Hang from a pull-up bar with arms straight.",
+    "Brace your abs and avoid swinging.",
+    "Raise your knees toward your chest.",
+    "Tilt your pelvis up at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

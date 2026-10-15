@@ -1,0 +1,23 @@
+{
+  "id": "10817",
+  "name": "dumbbell wrist rotation",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "wrist extensors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A forearm drill where you rotate a dumbbell through your palm. It builds wrist and forearm control.",
+  "instructions": [
+    "Sit with your forearm resting on your thigh or a bench.",
+    "Hold a light dumbbell with your palm facing up.",
+    "Rotate your forearm so the palm turns down.",
+    "Pause, then rotate back.",
+    "Move slowly with control.",
+    "Switch arms."
+  ],
+  "textSource": "opengym"
+}

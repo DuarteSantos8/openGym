@@ -1,0 +1,22 @@
+{
+  "id": "1962",
+  "name": "seated toe extensor stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "feet",
+    "shins",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "A seated stretch for the muscles that lift the toes, using your hand to point the toes downward.",
+  "instructions": [
+    "Sit and cross one ankle over the opposite knee.",
+    "Hold the top of the foot and toes with your hand.",
+    "Gently curl the toes and foot downward until you feel a stretch on the top.",
+    "Keep the motion gentle.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "0640",
+  "name": "one arm slam (with medicine ball)",
+  "bodyPart": "waist",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "back"
+  ],
+  "category": "plyometrics",
+  "description": "You lift a medicine ball overhead with one hand and slam it to the floor. Builds explosive power in the shoulders, core and lats.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding the medicine ball with one hand in front of your waist.",
+    "Bend your knees slightly and engage your core.",
+    "Raise the medicine ball above your head, fully extending your arm.",
+    "Forcefully slam the medicine ball down to the ground, using your core and shoulders to generate power.",
+    "Catch the medicine ball on the bounce and repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

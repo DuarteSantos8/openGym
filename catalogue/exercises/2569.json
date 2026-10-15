@@ -1,0 +1,23 @@
+{
+  "id": "2569",
+  "name": "cossack squats",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "hamstrings",
+    "inner thighs"
+  ],
+  "category": "calisthenics",
+  "description": "A wide side-to-side squat where you sink onto one leg while the other stays straight. It builds leg strength and hip mobility.",
+  "instructions": [
+    "Stand with your feet much wider than shoulder width and toes slightly out.",
+    "Shift your weight to one side and bend that knee, sitting your hips down and back.",
+    "Keep the other leg straight with the heel down and toes up.",
+    "Push through the bent leg to slide back to the centre.",
+    "Repeat on the other side and keep your chest tall."
+  ],
+  "textSource": "opengym"
+}

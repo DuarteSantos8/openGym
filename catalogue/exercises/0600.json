@@ -1,0 +1,21 @@
+{
+  "id": "0600",
+  "name": "lever seated leg raise crunch",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "On a machine, you raise your legs while curling your torso. Works the lower abs and hip flexors.",
+  "instructions": [
+    "Sit on the leverage machine with your back against the backrest and your feet on the footrests.",
+    "Grasp the handles or sidebars for stability.",
+    "Engage your abs and slowly raise your legs up towards your chest, curling your torso forward at the same time.",
+    "Pause for a moment at the top, then slowly lower your legs and torso back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3647",
+  "textSource": "exercisedb"
+}

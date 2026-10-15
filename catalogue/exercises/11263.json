@@ -1,0 +1,23 @@
+{
+  "id": "11263",
+  "name": "cable single arm row with rotation v. 3",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "biceps",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A one-arm cable row that adds a torso rotation. It trains the back and the twisting muscles of the core.",
+  "instructions": [
+    "Stand facing a cable at chest height with a single handle in one hand.",
+    "Take a staggered stance and brace your core.",
+    "Row the handle to your ribs while rotating your torso slightly.",
+    "Squeeze your back at the end.",
+    "Return slowly, finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

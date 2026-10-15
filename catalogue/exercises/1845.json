@@ -1,0 +1,22 @@
+{
+  "id": "1845",
+  "name": "decline bent leg reverse crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Reverse crunch on a decline bench that curls the hips toward the chest and trains the lower abs.",
+  "instructions": [
+    "Lie on a decline bench and hold the top edge above your head.",
+    "Bring your knees up and bend them.",
+    "Curl your hips off the bench, drawing your knees toward your chest.",
+    "Lower back down slowly without swinging.",
+    "Keep the movement controlled throughout."
+  ],
+  "femaleVariant": "3072",
+  "textSource": "opengym"
+}

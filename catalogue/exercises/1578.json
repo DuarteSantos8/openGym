@@ -1,0 +1,23 @@
+{
+  "id": "1578",
+  "name": "one leg quarter squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A shallow single-leg squat that is easy on the knees. It builds balance and leg strength.",
+  "instructions": [
+    "Stand on one leg with the other foot lifted slightly off the floor.",
+    "Extend your arms in front for balance.",
+    "Bend your knee and sink down about a quarter of the way.",
+    "Keep your knee in line with your toes and your chest up.",
+    "Stand back up, then switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

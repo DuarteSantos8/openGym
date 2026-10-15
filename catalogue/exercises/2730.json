@@ -1,0 +1,23 @@
+{
+  "id": "2730",
+  "name": "strongman tire flip",
+  "bodyPart": "full body",
+  "equipment": "tire",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "lower back",
+    "shoulders",
+    "chest"
+  ],
+  "category": "strength",
+  "description": "Flipping a large tire end over end by driving up from a deep hinge. A full body power move that hits legs, back and chest.",
+  "instructions": [
+    "Stand close to the tire and squat down, getting your fingers under its edge.",
+    "Press your chest against the tire with a flat back and hips low.",
+    "Explode up with your legs and hips, lifting the tire as you rise.",
+    "Shove the tire over with your hands and shoulders, then step in and reset for the next flip."
+  ],
+  "textSource": "opengym"
+}

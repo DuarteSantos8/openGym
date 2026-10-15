@@ -1,0 +1,22 @@
+{
+  "id": "5225",
+  "name": "smith back wide shrug",
+  "bodyPart": "back",
+  "equipment": "smith machine",
+  "target": "traps",
+  "secondaryMuscles": [
+    "rhomboids",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A wide-grip shrug with the Smith bar held behind your body. It shifts the load toward the back of the traps.",
+  "instructions": [
+    "Stand with your back to the bar, set at thigh height, and grip it wide behind you.",
+    "Lift the bar off the hooks and stand tall.",
+    "Shrug your shoulders straight up.",
+    "Pause at the top.",
+    "Lower slowly and keep your arms straight."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "7591",
+  "name": "cable lying face pull",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A face pull performed lying on your back with a cable. It hits the rear delts and upper back with little help from momentum.",
+  "instructions": [
+    "Lie on your back with the cable set low behind your head and hold the rope ends.",
+    "Start with your arms extended.",
+    "Pull the rope toward your face, elbows flaring out and wide.",
+    "Squeeze your shoulder blades together at the end.",
+    "Return slowly to the start."
+  ],
+  "textSource": "opengym"
+}

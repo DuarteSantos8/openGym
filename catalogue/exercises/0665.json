@@ -1,0 +1,23 @@
+{
+  "id": "0665",
+  "name": "push up w",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up variation with the hands placed in a W shape. It focuses on the chest and shoulders.",
+  "instructions": [
+    "Get into a plank and place your hands in a W position.",
+    "Keep your body straight from head to heels.",
+    "Lower your chest toward the floor.",
+    "Keep your elbows angled slightly out.",
+    "Press back up.",
+    "Repeat without letting your hips sag."
+  ],
+  "textSource": "opengym"
+}

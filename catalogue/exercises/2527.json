@@ -1,0 +1,23 @@
+{
+  "id": "2527",
+  "name": "vibrate plate lunge",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lunge with the front foot on a vibrating plate for added stability work.",
+  "instructions": [
+    "Place one foot on the vibrating plate and step the other back.",
+    "Lower into a lunge with your torso upright.",
+    "Keep your front knee over your ankle.",
+    "Hold the bottom briefly.",
+    "Push up to return.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "1980",
+  "name": "across chest shoulder stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back"
+  ],
+  "category": "stretching",
+  "description": "A classic cross-body stretch for the back of the shoulder.",
+  "instructions": [
+    "Stand tall and bring one arm straight across your chest.",
+    "Use your other forearm to press the arm gently toward your body.",
+    "Keep the shoulder relaxed and down.",
+    "Feel the stretch in the back of the shoulder.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4326",
+  "name": "dumbbell bent arm pullover",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "lats",
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A pullover with the elbows kept bent, lying on a bench. It stretches and strengthens the chest and lats.",
+  "instructions": [
+    "Lie back on a bench holding one dumbbell with both hands above your chest.",
+    "Bend your elbows slightly and keep them bent throughout.",
+    "Lower the dumbbell back over your head until you feel a stretch in your chest.",
+    "Keep your ribs down and your core braced.",
+    "Pull the dumbbell back over your chest and repeat."
+  ],
+  "textSource": "opengym"
+}

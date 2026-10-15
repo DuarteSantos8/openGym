@@ -1,0 +1,22 @@
+{
+  "id": "4330",
+  "name": "reverse crunch kick",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "calisthenics",
+  "description": "A reverse crunch finished with a leg kick upward, hitting the lower abs.",
+  "instructions": [
+    "Lie on your back with arms by your sides and knees bent over your hips.",
+    "Curl your hips off the floor, bringing your knees toward your chest.",
+    "Kick your feet up toward the ceiling.",
+    "Lower your hips slowly and bend your knees again.",
+    "Avoid swinging; use your abs to lift."
+  ],
+  "textSource": "opengym"
+}

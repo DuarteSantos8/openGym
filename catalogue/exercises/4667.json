@@ -1,0 +1,21 @@
+{
+  "id": "4667",
+  "name": "bodyweight overhead triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A triceps extension using your own bodyweight against a stable surface. It targets the back of the arms.",
+  "instructions": [
+    "Place your hands on a bar or sturdy surface at about waist height, shoulder-width apart.",
+    "Walk your feet back and lean forward in a plank.",
+    "Bend your elbows and lower your head between your arms.",
+    "Keep your elbows pointing forward and your body straight.",
+    "Press back up by extending your arms and repeat."
+  ],
+  "textSource": "opengym"
+}

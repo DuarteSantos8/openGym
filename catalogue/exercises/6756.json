@@ -1,0 +1,21 @@
+{
+  "id": "6756",
+  "name": "cable kneeling shoulder internal rotation",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "chest"
+  ],
+  "category": "strength",
+  "description": "A light rotation drill with a cable that turns the arm inward. It builds rotator cuff strength and shoulder stability.",
+  "instructions": [
+    "Kneel side-on to a low cable and hold the handle with the near hand.",
+    "Tuck your elbow at your side, bent to 90 degrees.",
+    "Rotate your forearm inward across your belly.",
+    "Pause briefly at the end.",
+    "Return slowly and switch arms after your reps."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "3683",
+  "name": "dumbbell goblet curtsey lunge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Hold a dumbbell at your chest and step behind and across into a curtsey lunge.",
+  "instructions": [
+    "Hold a dumbbell at your chest.",
+    "Step one leg behind and across the other.",
+    "Lower until both knees bend.",
+    "Press through the front leg to return.",
+    "Alternate legs for the set."
+  ],
+  "textSource": "opengym"
+}

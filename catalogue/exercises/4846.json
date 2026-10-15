@@ -1,0 +1,23 @@
+{
+  "id": "4846",
+  "name": "kettlebell lying on floor single arm bottoms up chest press",
+  "bodyPart": "chest",
+  "equipment": "kettlebell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "forearms",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-arm floor press with the kettlebell upside down. It demands stability in the wrist and shoulder.",
+  "instructions": [
+    "Lie on the floor and hold a kettlebell upside down in one hand.",
+    "Keep your wrist straight and the bell steady.",
+    "Press it up to full extension.",
+    "Lower slowly until your upper arm touches the floor.",
+    "Switch sides after your reps."
+  ],
+  "textSource": "opengym"
+}

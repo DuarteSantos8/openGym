@@ -1,0 +1,22 @@
+{
+  "id": "8901",
+  "name": "cable single arm lateral raise v. 2",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "Lifting one arm out to the side against a cable keeps constant tension on the side delt. It builds shoulder width.",
+  "instructions": [
+    "Stand side-on to the low cable and hold the handle with the far hand.",
+    "Keep a slight bend in your elbow.",
+    "Raise your arm out to the side up to shoulder height.",
+    "Pause briefly at the top.",
+    "Lower slowly against the cable.",
+    "Avoid leaning or swinging, then switch arms."
+  ],
+  "textSource": "opengym"
+}

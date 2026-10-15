@@ -1,0 +1,24 @@
+{
+  "id": "10092",
+  "name": "barbell core squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "lower back",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A barbell squat focused on bracing your core hard through the lift. It builds leg strength and trunk stability.",
+  "instructions": [
+    "Rest a barbell on your upper back and stand with feet shoulder width apart.",
+    "Take a deep breath and brace your abs.",
+    "Squat down until your thighs are about parallel.",
+    "Keep your torso tight and chest up.",
+    "Drive through your feet to stand back up.",
+    "Exhale at the top and reset your brace each rep."
+  ],
+  "textSource": "opengym"
+}

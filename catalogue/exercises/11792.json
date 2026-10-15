@@ -1,0 +1,21 @@
+{
+  "id": "11792",
+  "name": "kneeling isometric biceps hold",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "isometric",
+  "description": "A static curl hold that builds biceps endurance.",
+  "instructions": [
+    "Kneel upright with your elbows bent at about 90 degrees.",
+    "Hold your hands in front of you with palms up.",
+    "Keep your elbows pinned to your sides.",
+    "Squeeze your biceps and hold the position.",
+    "Hold for 20-30 seconds, then rest."
+  ],
+  "textSource": "opengym"
+}

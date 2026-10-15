@@ -1,0 +1,22 @@
+{
+  "id": "2873",
+  "name": "spine stretch forward v. 2",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "pilates",
+  "description": "A seated Pilates stretch that rounds the spine forward to lengthen the back and hamstrings.",
+  "instructions": [
+    "Sit tall with legs extended hip-width apart and arms reaching forward.",
+    "Draw your belly in and flex your feet.",
+    "Curl forward one vertebra at a time, reaching over an imaginary ball.",
+    "Hold for a breath at the bottom.",
+    "Roll back up to tall sitting and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4125",
+  "name": "dumbbell face down lying shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A face down press on an incline bench that works the rear shoulder.",
+  "instructions": [
+    "Lie face down on an incline bench holding dumbbells at ear height.",
+    "Press the dumbbells up and slightly back.",
+    "Pause at the top.",
+    "Lower slowly.",
+    "Keep your chest on the bench."
+  ],
+  "textSource": "opengym"
+}

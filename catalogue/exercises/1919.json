@@ -1,0 +1,21 @@
+{
+  "id": "1919",
+  "name": "seated hip stretch with opposite leg from behind",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "A seated hip stretch with one leg folded in front and the other tucked behind you.",
+  "instructions": [
+    "Sit on the floor with one leg bent in front of you and the other leg bent behind.",
+    "Lean your chest forward over the front shin until you feel the stretch deep in the hip and buttock.",
+    "Keep both sit bones as level as you can.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

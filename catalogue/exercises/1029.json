@@ -1,0 +1,22 @@
+{
+  "id": "1029",
+  "name": "lever parallel chest press",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A seated machine press with parallel handles, working the chest with a stable path.",
+  "instructions": [
+    "Adjust the seat so the handles are at mid-chest height and sit back.",
+    "Grip the handles with your elbows slightly below shoulder level.",
+    "Press the handles forward until your arms are almost straight.",
+    "Return slowly until you feel a stretch in the chest.",
+    "Keep your back against the pad."
+  ],
+  "textSource": "opengym"
+}

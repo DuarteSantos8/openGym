@@ -1,0 +1,23 @@
+{
+  "id": "7592",
+  "name": "cable incline rear delt fly with back support",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A rear delt fly with cables while your chest rests on an incline bench. It isolates the back of the shoulders.",
+  "instructions": [
+    "Lie chest down on an incline bench between two cable stations.",
+    "Grab the opposite handles, arms hanging with a slight bend.",
+    "Raise your arms out to the sides until they reach shoulder level.",
+    "Pause and squeeze your rear delts.",
+    "Lower slowly without swinging."
+  ],
+  "textSource": "opengym"
+}

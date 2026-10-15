@@ -1,0 +1,22 @@
+{
+  "id": "11316",
+  "name": "standing wall slide half squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A half squat with your back sliding against a wall. It builds leg strength with support and good alignment.",
+  "instructions": [
+    "Stand with your back against a wall and your feet slightly forward.",
+    "Slide down until your knees are bent to about 45 degrees.",
+    "Keep your back flat on the wall.",
+    "Press through your heels to rise.",
+    "Repeat for the set."
+  ],
+  "textSource": "opengym"
+}

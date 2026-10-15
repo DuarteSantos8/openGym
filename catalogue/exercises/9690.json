@@ -1,0 +1,22 @@
+{
+  "id": "9690",
+  "name": "dumbbell elevated heel front squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A front squat with a dumbbell and raised heels, which keeps your torso upright and puts the work on the quads.",
+  "instructions": [
+    "Place your heels on small plates and hold a dumbbell at your chest.",
+    "Brace your core and keep your elbows up.",
+    "Sit down into a deep squat.",
+    "Keep your chest tall and knees tracking over toes.",
+    "Drive up to stand."
+  ],
+  "textSource": "opengym"
+}

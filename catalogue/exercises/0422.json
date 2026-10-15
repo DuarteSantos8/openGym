@@ -1,0 +1,21 @@
+{
+  "id": "0422",
+  "name": "dumbbell standing one arm curl (over incline bench)",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Standing beside an incline bench, you curl one dumbbell with the upper arm braced on the pad. It keeps the biceps working without swing.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in one hand with your palm facing forward.",
+    "Place your other hand on an incline bench for support.",
+    "Keeping your upper arm stationary, exhale and curl the dumbbell towards your shoulder by contracting your biceps.",
+    "Pause for a moment at the top, then inhale and slowly lower the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "femaleVariant": "3085",
+  "textSource": "exercisedb"
+}

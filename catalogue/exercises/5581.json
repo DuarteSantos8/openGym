@@ -1,0 +1,22 @@
+{
+  "id": "5581",
+  "name": "cable kneeling single lat pulldown",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "Kneeling one-arm lat pulldown for a stretch and strong contraction on each side.",
+  "instructions": [
+    "Kneel facing a high cable with a single handle in one hand.",
+    "Reach up to a full stretch.",
+    "Pull your elbow down toward your hip.",
+    "Squeeze your lat at the bottom.",
+    "Return slowly and switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4367",
+  "name": "cable bent over reverse grip row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "upper back",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A bent-over row with a cable using an underhand grip, which emphasizes the lower lats and biceps.",
+  "instructions": [
+    "Stand facing a low cable and hinge forward with a flat back.",
+    "Grip the bar with palms up.",
+    "Pull the bar toward your lower ribs.",
+    "Squeeze your shoulder blades together.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "2158",
+  "name": "resistance band one leg glute bridge with straight leg",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A single leg bridge with a band and the free leg held straight, demanding strong glutes and a level pelvis.",
+  "instructions": [
+    "Lie on your back with a band around your thighs and one knee bent, foot flat.",
+    "Extend the other leg straight, in line with your thigh.",
+    "Drive through the planted heel and lift your hips.",
+    "Keep your hips level and squeeze your glute at the top.",
+    "Lower slowly, finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1893",
+  "name": "squatting achilles stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "hip flexors"
+  ],
+  "category": "stretching",
+  "description": "Deep squat hold that opens the ankles and calves.",
+  "instructions": [
+    "Stand with your feet shoulder width apart.",
+    "Sink into a deep squat with your heels down.",
+    "Hold on to a support if needed.",
+    "Gently shift your weight forward over your toes.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Stand up slowly."
+  ],
+  "textSource": "opengym"
+}

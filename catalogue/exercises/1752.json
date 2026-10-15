@@ -1,0 +1,22 @@
+{
+  "id": "1752",
+  "name": "smith machine incline tricep extension",
+  "bodyPart": "upper arms",
+  "equipment": "smith machine",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "An incline smith machine extension that lowers the bar toward your forehead. Guided path lets you focus on the triceps.",
+  "instructions": [
+    "Adjust the seat of the smith machine so that the bar is at shoulder height.",
+    "Sit on the bench with your back against the pad and your feet flat on the ground.",
+    "Grasp the bar with an overhand grip, slightly wider than shoulder-width apart.",
+    "Extend your arms fully, lifting the bar off the rack and holding it directly above your chest.",
+    "Lower the bar slowly towards your forehead, keeping your elbows close to your head.",
+    "Pause for a moment at the bottom, then push the bar back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

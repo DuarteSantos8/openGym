@@ -1,0 +1,21 @@
+{
+  "id": "1343",
+  "name": "exercise ball prone leg raise",
+  "bodyPart": "back",
+  "equipment": "stability ball",
+  "target": "spine",
+  "secondaryMuscles": [
+    "abdominals",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "Lie face down with your toes on a stability ball and lift your legs. It works the lower back and glutes with a gentle range.",
+  "instructions": [
+    "Lie face down on a mat with your legs extended and your toes resting on top of the stability ball.",
+    "Place your hands on the ground, shoulder-width apart, and engage your core muscles.",
+    "Keeping your legs straight, slowly lift them off the ground, using your lower back and glutes to raise them as high as possible.",
+    "Pause for a moment at the top, then slowly lower your legs back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

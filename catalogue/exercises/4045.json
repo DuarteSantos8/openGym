@@ -1,0 +1,23 @@
+{
+  "id": "4045",
+  "name": "kettlebell lateral lunge",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Side lunge holding a kettlebell at the chest. It trains the thighs, glutes and inner thighs in the frontal plane.",
+  "instructions": [
+    "Hold the kettlebell at your chest with both hands and stand tall.",
+    "Take a big step to one side.",
+    "Sit your hips back and bend that knee while the other leg stays straight.",
+    "Keep your chest up and both feet flat.",
+    "Push back to the start and alternate sides."
+  ],
+  "textSource": "opengym"
+}

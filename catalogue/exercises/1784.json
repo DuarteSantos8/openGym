@@ -1,0 +1,21 @@
+{
+  "id": "1784",
+  "name": "assisted pulling backs chest stretch",
+  "bodyPart": "chest",
+  "equipment": "assisted",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "stretching",
+  "description": "A partner pulls your arms backward to deepen the chest stretch. It works well when you want more range than you get alone.",
+  "instructions": [
+    "Stand or sit tall with your arms extended behind you at hip to shoulder height.",
+    "Have your partner hold your wrists and gently pull your arms back and slightly up.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

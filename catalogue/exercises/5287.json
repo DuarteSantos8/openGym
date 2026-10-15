@@ -1,0 +1,24 @@
+{
+  "id": "5287",
+  "name": "barbell full clean",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "upper back",
+    "shoulders",
+    "forearms"
+  ],
+  "category": "olympic",
+  "description": "The full clean lifts the barbell from the floor to the shoulders while dropping into a front squat. It builds explosive power.",
+  "instructions": [
+    "Stand with the bar over mid-foot and grip it just outside your knees.",
+    "Pull the bar explosively with a flat back.",
+    "Drop under the bar and catch it on your shoulders in a front squat.",
+    "Stand up fully.",
+    "Lower the bar with control to the floor."
+  ],
+  "textSource": "opengym"
+}

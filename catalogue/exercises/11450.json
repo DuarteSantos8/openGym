@@ -1,0 +1,22 @@
+{
+  "id": "11450",
+  "name": "step up (1st and 2nd stairs steps)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A simple stair step-up done on the first and second steps. It builds leg strength and balance using everyday stairs.",
+  "instructions": [
+    "Stand facing the stairs with your feet hip-width apart.",
+    "Place one foot on the first step and push through the heel to climb up.",
+    "Continue onto the second step, then step back down in control.",
+    "Keep your torso tall and your knee tracking over your toes.",
+    "Alternate the leading leg each rep or finish all reps on one side first."
+  ],
+  "textSource": "opengym"
+}

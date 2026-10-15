@@ -1,0 +1,24 @@
+{
+  "id": "2912",
+  "name": "trap bar farmers carry",
+  "bodyPart": "upper legs",
+  "equipment": "trap bar",
+  "target": "traps",
+  "secondaryMuscles": [
+    "forearms",
+    "grip muscles",
+    "glutes",
+    "core",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "Carrying a loaded trap bar at your sides while walking. It works grip, traps and the whole trunk together.",
+  "instructions": [
+    "Stand inside the trap bar and hinge down to grip the handles.",
+    "Stand up with a flat back, shoulders back and chest tall.",
+    "Walk with short, quick steps, keeping the bar still.",
+    "Cover the set distance without leaning or shrugging.",
+    "Lower the bar back to the floor with control."
+  ],
+  "textSource": "opengym"
+}

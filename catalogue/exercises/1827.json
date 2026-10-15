@@ -1,0 +1,21 @@
+{
+  "id": "1827",
+  "name": "finger extensor stretch",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist extensors",
+    "hands"
+  ],
+  "category": "stretching",
+  "description": "Bending your fingers down stretches the muscles on the back of your forearm. Handy to loosen up after lots of gripping.",
+  "instructions": [
+    "Extend one arm forward with your palm facing down and your wrist relaxed.",
+    "Use your other hand to gently press your fingers and hand down toward you.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

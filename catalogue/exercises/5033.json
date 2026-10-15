@@ -1,0 +1,22 @@
+{
+  "id": "5033",
+  "name": "cable single arm triceps pushdown (rope attachment)",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "One-arm pushdown with a rope on a high cable. The rope lets you spread the ends at the bottom for a strong triceps squeeze.",
+  "instructions": [
+    "Attach a rope to a high pulley and grip it with one hand.",
+    "Keep your elbow tucked at your side.",
+    "Press the rope down until your arm is straight, turning the end out slightly.",
+    "Squeeze your triceps.",
+    "Return slowly, then switch arms."
+  ],
+  "femaleVariant": "7399",
+  "textSource": "opengym"
+}

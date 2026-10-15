@@ -1,0 +1,23 @@
+{
+  "id": "4556",
+  "name": "push through reach",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "shoulders",
+    "obliques",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A quadruped drill that threads one arm under the body to free up the upper back and shoulders.",
+  "instructions": [
+    "Start on all fours with hands under shoulders and knees under hips.",
+    "Slide one arm under your body, palm up, reaching across.",
+    "Let your shoulder and head lower toward the floor.",
+    "Hold briefly, then pull the arm back.",
+    "Reach it up toward the ceiling, following with your eyes.",
+    "Repeat, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4378",
+  "name": "lever reverse grip high row (plate loaded)",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "upper back",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A plate-loaded machine row with an underhand grip that trains the lats and upper back while the biceps assist.",
+  "instructions": [
+    "Sit at the machine with your chest against the pad and grab the handles underhand.",
+    "Set your shoulders back and down.",
+    "Pull the handles toward your lower ribs, driving your elbows back.",
+    "Squeeze your back at the end of the pull.",
+    "Slowly extend your arms without letting your shoulders round forward."
+  ],
+  "textSource": "opengym"
+}

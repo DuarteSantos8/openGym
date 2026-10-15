@@ -1,0 +1,23 @@
+{
+  "id": "10850",
+  "name": "pilates machine side split",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "inner thighs",
+    "glutes",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A reformer move where you open and close the legs sideways. It works the inner thighs and balance.",
+  "instructions": [
+    "Stand with one foot on the carriage and one on the platform.",
+    "Brace your core.",
+    "Slide the carriage out to widen your stance.",
+    "Pause.",
+    "Draw it back under control with your inner thighs.",
+    "Keep your hips square."
+  ],
+  "textSource": "opengym"
+}

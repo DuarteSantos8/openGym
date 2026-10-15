@@ -1,0 +1,22 @@
+{
+  "id": "1070",
+  "name": "suspender arm curl",
+  "bodyPart": "upper arms",
+  "equipment": "suspension trainer",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Curl yourself toward the straps while leaning back. It works the biceps.",
+  "instructions": [
+    "Hold the handles and lean back with arms extended.",
+    "Keep your body straight.",
+    "Bend your elbows to pull yourself up.",
+    "Squeeze the biceps.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "3707",
+  "name": "dumbbell press squat (thighs)",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A squat combined with an overhead press. The legs drive the movement while the shoulders finish the press.",
+  "instructions": [
+    "Hold a dumbbell in each hand at shoulder height.",
+    "Squat down until your thighs are about parallel to the floor.",
+    "Drive up through your heels as you stand.",
+    "Use that momentum to press the dumbbells overhead.",
+    "Lower them to your shoulders and go into the next squat."
+  ],
+  "textSource": "opengym"
+}

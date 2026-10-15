@@ -1,0 +1,23 @@
+{
+  "id": "5153",
+  "name": "side to side hop",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "ankles"
+  ],
+  "category": "plyometrics",
+  "description": "Hop laterally from one foot to the other. It builds ankle stability, leg power and agility.",
+  "instructions": [
+    "Stand on one foot with a slight knee bend.",
+    "Hop sideways to the other foot.",
+    "Land softly and balance for a second.",
+    "Hop back to the first foot.",
+    "Keep your hips level and repeat for 20-30 hops."
+  ],
+  "femaleVariant": "8186",
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4003",
+  "name": "v up with clap",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "calisthenics",
+  "description": "A V up finishing with a clap above the legs. It trains the core and coordination.",
+  "instructions": [
+    "Lie flat with arms overhead.",
+    "Lift your arms and legs into a V.",
+    "Clap above your shins.",
+    "Lower with control.",
+    "Repeat smoothly."
+  ],
+  "femaleVariant": "4271",
+  "textSource": "opengym"
+}

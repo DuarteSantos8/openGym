@@ -1,0 +1,22 @@
+{
+  "id": "1818",
+  "name": "supination bar suspension stretch",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "lats",
+    "shoulders"
+  ],
+  "category": "stretching",
+  "description": "Hanging from a bar with palms facing you stretches the biceps and forearms. Let your body weight do the lengthening.",
+  "instructions": [
+    "Grip a pull-up bar with an underhand, shoulder-width grip.",
+    "Let your body hang with your arms straight, relaxing your shoulders downward.",
+    "Take as much weight through your legs as you need to stay comfortable.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

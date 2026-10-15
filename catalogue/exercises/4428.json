@@ -1,0 +1,25 @@
+{
+  "id": "4428",
+  "name": "power sled push",
+  "bodyPart": "full body",
+  "equipment": "sled machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A heavy sled push that builds leg drive and conditioning.",
+  "instructions": [
+    "Load the sled and grip the handles at chest or hip height.",
+    "Lean forward with a straight body line.",
+    "Drive through your legs with powerful steps.",
+    "Keep your core tight and push the sled forward.",
+    "Maintain a steady pace for the set distance."
+  ],
+  "femaleVariant": "2524",
+  "textSource": "opengym"
+}

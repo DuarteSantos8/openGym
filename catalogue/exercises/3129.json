@@ -1,0 +1,24 @@
+{
+  "id": "3129",
+  "name": "scapula retraction protraction",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "lats",
+    "trapezius",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "A shoulder blade drill where you pull the blades together and then spread them apart. It improves control of the scapulae.",
+  "instructions": [
+    "Stand or sit tall with your arms forward at shoulder height.",
+    "Pull your shoulder blades together behind you.",
+    "Hold for a moment.",
+    "Then push your hands forward and let the blades spread apart.",
+    "Move slowly between the two positions.",
+    "Keep your neck relaxed and your ribs down."
+  ],
+  "textSource": "opengym"
+}

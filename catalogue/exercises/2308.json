@@ -1,0 +1,23 @@
+{
+  "id": "2308",
+  "name": "roundhouse kick",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "core",
+    "hip flexors"
+  ],
+  "category": "combat",
+  "description": "A kick that swings in an arc to hit with the shin or instep, powered by a hip turn.",
+  "instructions": [
+    "Stand in a fighting stance with your hands up.",
+    "Pivot on your supporting foot and turn the hip over.",
+    "Lift the knee and swing the leg in an arc across the target.",
+    "Extend the lower leg at the end.",
+    "Pull the leg back and return to stance.",
+    "Repeat, then switch legs."
+  ],
+  "textSource": "opengym"
+}

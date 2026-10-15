@@ -1,0 +1,21 @@
+{
+  "id": "8289",
+  "name": "side lying chest stretch",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "stretching",
+  "description": "Lying on your side, you open one arm backward to stretch the chest. It loosens tight pecs.",
+  "instructions": [
+    "Lie on your side with your knees bent and arms in front of you.",
+    "Lift your top arm and open it back like a book.",
+    "Let your chest rotate open.",
+    "Hold for 20-30 seconds.",
+    "Return and switch sides."
+  ],
+  "textSource": "opengym"
+}

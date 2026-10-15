@@ -1,0 +1,41 @@
+{
+  "id": "0151",
+  "name": "cable bench press",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A cable press from a bench. Trains the chest, shoulders and triceps.",
+  "instructions": [
+    "Adjust the cable machine to chest height and attach the handles.",
+    "Stand facing away from the machine with your feet shoulder-width apart.",
+    "Grasp the handles with an overhand grip and step forward to create tension in the cables.",
+    "Position your feet firmly on the ground and engage your core.",
+    "Bend your elbows and bring your hands to shoulder level, keeping your elbows at a 90-degree angle.",
+    "Push the handles forward, extending your arms fully in front of you.",
+    "Pause for a moment, then slowly reverse the movement, bringing your hands back to shoulder level.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "chest"
+    ],
+    "secondaries": [
+      "triceps",
+      "deltoids",
+      "biceps"
+    ],
+    "weights": {
+      "chest": 1,
+      "deltoids": 0.4,
+      "triceps": 0.4,
+      "biceps": 0
+    }
+  },
+  "femaleVariant": "2678",
+  "textSource": "exercisedb"
+}

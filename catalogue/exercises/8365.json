@@ -1,0 +1,22 @@
+{
+  "id": "8365",
+  "name": "resistance band pass through",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "chest",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "A band stretch that moves overhead and behind you, opening up the shoulders and chest.",
+  "instructions": [
+    "Hold the band in front of your thighs with a wide grip and straight arms.",
+    "Stand tall.",
+    "Raise the band overhead and keep going back behind your body.",
+    "Reverse the path to return to the front.",
+    "Widen your grip if it feels too tight."
+  ],
+  "textSource": "opengym"
+}

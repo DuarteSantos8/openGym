@@ -1,0 +1,22 @@
+{
+  "id": "2371",
+  "name": "weighted russian twist v. 2",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A weighted russian twist, rotating a weight side to side while leaning back. Works the abs and obliques.",
+  "instructions": [
+    "Sit on the ground with your knees bent and feet flat on the floor.",
+    "Hold the weight with both hands in front of your chest.",
+    "Lean back slightly to engage your core muscles.",
+    "Twist your torso to the right, bringing the weight towards the right side of your body.",
+    "Pause for a moment, then twist your torso to the left, bringing the weight towards the left side of your body.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

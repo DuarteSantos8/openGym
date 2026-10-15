@@ -1,0 +1,23 @@
+{
+  "id": "4314",
+  "name": "spinal stretch (on stability ball)",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "spine",
+  "secondaryMuscles": [
+    "lats",
+    "shoulders",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "A gentle back stretch draped over or kneeling at a stability ball. It lengthens the spine and relaxes the torso.",
+  "instructions": [
+    "Kneel in front of a stability ball and place your forearms or hands on top.",
+    "Roll the ball forward as you sink your hips back.",
+    "Let your head drop between your arms and lengthen your spine.",
+    "Hold for 20-30 seconds, breathing deeply.",
+    "Roll the ball back in to come up."
+  ],
+  "femaleVariant": "0779",
+  "textSource": "opengym"
+}

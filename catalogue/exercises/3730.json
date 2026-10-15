@@ -1,0 +1,22 @@
+{
+  "id": "3730",
+  "name": "barbell behind the back shrug",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "traps",
+  "secondaryMuscles": [
+    "forearms",
+    "grip muscles",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A shrug with the bar held behind your thighs, which shifts the load slightly to the mid traps.",
+  "instructions": [
+    "Stand holding a barbell behind your back with straight arms.",
+    "Keep your chest up and shoulders relaxed.",
+    "Shrug your shoulders straight up toward your ears.",
+    "Pause at the top.",
+    "Lower slowly without rolling your shoulders."
+  ],
+  "textSource": "opengym"
+}

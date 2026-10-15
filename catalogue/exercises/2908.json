@@ -1,0 +1,23 @@
+{
+  "id": "2908",
+  "name": "power sled anti rotation forward walk",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "core",
+    "obliques",
+    "quadriceps",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Walking a loaded sled forward while resisting twist from a side-on pull or hold. It builds hip and trunk stability under load.",
+  "instructions": [
+    "Set a light load and stand side-on to the pull, gripping the handle at chest height.",
+    "Brace your abs and keep your hips and shoulders square.",
+    "Walk forward in controlled steps without letting the torso twist.",
+    "Walk the set distance, then reset and repeat.",
+    "Switch sides and do the same distance."
+  ],
+  "textSource": "opengym"
+}

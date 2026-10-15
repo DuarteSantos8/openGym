@@ -1,0 +1,22 @@
+{
+  "id": "1263",
+  "name": "cable one arm fly on exercise ball",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "deltoids",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A one-arm cable fly seated on an exercise ball. It trains the chest and core.",
+  "instructions": [
+    "Sit on an exercise ball with your feet flat on the ground and your back straight.",
+    "Hold a cable handle in one hand and extend your arm out to the side, parallel to the ground.",
+    "Keep your elbow slightly bent and your palm facing forward.",
+    "Slowly bring your arm across your body, squeezing your chest muscles.",
+    "Pause for a moment at the end of the movement, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "1839",
+  "name": "neck flexor stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid"
+  ],
+  "category": "stretching",
+  "description": "Tilts the head back to stretch the muscles at the front of the neck.",
+  "instructions": [
+    "Sit or stand tall with your shoulders relaxed.",
+    "Lift your chin and slowly tilt your head back.",
+    "Keep the movement small and comfortable.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Return your head to neutral."
+  ],
+  "textSource": "opengym"
+}

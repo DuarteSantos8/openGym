@@ -1,0 +1,21 @@
+{
+  "id": "0139",
+  "name": "biceps narrow pull-ups",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up with a narrow grip. Emphasises the biceps and lats.",
+  "instructions": [
+    "Hang from a pull-up bar with your palms facing towards you and your hands shoulder-width apart.",
+    "Engage your core and pull yourself up towards the bar, focusing on using your biceps to lift your body.",
+    "Pause for a moment at the top, then slowly lower yourself back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2694",
+  "textSource": "exercisedb"
+}

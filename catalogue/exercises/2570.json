@@ -1,0 +1,22 @@
+{
+  "id": "2570",
+  "name": "bent leg circle kick (kneeling)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "obliques"
+  ],
+  "category": "pilates",
+  "description": "A kneeling Pilates move where one bent leg draws circles in the air. It works the glutes and hips while the core keeps you steady.",
+  "instructions": [
+    "Start on hands and knees with your hands under your shoulders.",
+    "Lift one leg out to the side with the knee bent.",
+    "Draw slow circles in the air with your knee.",
+    "Keep your hips level and your spine still.",
+    "Switch direction, then repeat on the other leg."
+  ],
+  "textSource": "opengym"
+}

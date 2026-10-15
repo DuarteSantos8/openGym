@@ -1,0 +1,22 @@
+{
+  "id": "4252",
+  "name": "weighted crunch v. 2",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A crunch with weight held on your chest or behind your head. The added load makes the abs work harder.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat.",
+    "Hold a weight against your chest.",
+    "Curl your shoulders and upper back off the floor.",
+    "Squeeze your abs at the top.",
+    "Lower slowly.",
+    "Keep your chin off your chest."
+  ],
+  "textSource": "opengym"
+}

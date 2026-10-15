@@ -1,0 +1,23 @@
+{
+  "id": "2120",
+  "name": "standing side stretch with stick",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lats",
+    "shoulders"
+  ],
+  "category": "stretching",
+  "description": "Uses a stick held overhead to guide a deeper side bend, stretching the flank and the lats.",
+  "instructions": [
+    "Stand with feet shoulder-width apart holding a stick with both hands overhead.",
+    "Keep your arms straight and your shoulders relaxed.",
+    "Lean your torso slowly to one side without twisting.",
+    "Keep your hips steady and your chest facing forward.",
+    "Hold for 20-30 seconds.",
+    "Return to upright and lean to the other side."
+  ],
+  "textSource": "opengym"
+}

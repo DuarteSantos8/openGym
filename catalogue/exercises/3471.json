@@ -1,0 +1,24 @@
+{
+  "id": "3471",
+  "name": "warrior pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors",
+    "shoulders",
+    "core"
+  ],
+  "category": "yoga",
+  "description": "A standing yoga pose that builds strength and stretches the hips.",
+  "instructions": [
+    "Take a long stance.",
+    "Bend your front knee over your ankle.",
+    "Raise your arms.",
+    "Keep your back leg straight.",
+    "Hold for 20-30 seconds.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

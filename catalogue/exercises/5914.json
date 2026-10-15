@@ -1,0 +1,22 @@
+{
+  "id": "5914",
+  "name": "four limbed staff",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders",
+    "core"
+  ],
+  "category": "yoga",
+  "description": "A low plank with elbows hugged by your sides. Builds strength in the arms and core.",
+  "instructions": [
+    "Start in a high plank.",
+    "Shift slightly forward on your toes.",
+    "Bend your elbows straight back and lower.",
+    "Keep your body straight like a plank.",
+    "Hold briefly, then press back up."
+  ],
+  "textSource": "opengym"
+}

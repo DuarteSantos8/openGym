@@ -1,0 +1,21 @@
+{
+  "id": "1969",
+  "name": "mobilization of ankle stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "soleus",
+    "shins"
+  ],
+  "category": "mobility",
+  "description": "A gentle rocking stretch that improves ankle movement and loosens the calf.",
+  "instructions": [
+    "Stand facing a wall with one foot forward, toes a few inches from it.",
+    "Keep your front heel on the floor.",
+    "Bend the front knee and glide it toward the wall.",
+    "Return and repeat slowly for 10-15 reps, then switch feet."
+  ],
+  "textSource": "opengym"
+}

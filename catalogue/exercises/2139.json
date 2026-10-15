@@ -1,0 +1,21 @@
+{
+  "id": "2139",
+  "name": "hands bike",
+  "bodyPart": "chest",
+  "equipment": "upper body ergometer",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "cardio",
+  "description": "Cranking pedals with your hands on an upper body ergometer. Gets your heart rate up using the arms and shoulders.",
+  "instructions": [
+    "Adjust the seat height and handlebar position to a comfortable level.",
+    "Sit on the ergometer with your back straight and feet on the pedals.",
+    "Grasp the handles with your hands and position your arms at a 90-degree angle.",
+    "Start pedaling with your hands, pushing and pulling the handles in a controlled motion.",
+    "Continue pedaling for the desired duration or number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

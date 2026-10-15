@@ -12,7 +12,7 @@ import { MOBILE, shareExport } from '../lib/mobile.js'
 import { syncMedia } from '../lib/media-sync.js'
 import { DEMO } from '../lib/demo.js'
 import { askAddDeviceData, menuSheet } from '../sheets.jsx'
-import { ConnectSheet } from '../views/MobileOnboarding.jsx'
+import { ConnectSheet, CfAccessSheet } from '../views/MobileOnboarding.jsx'
 import { passwordOn, openPasswordSignIn } from './PasswordAuth.jsx'
 import { Section, Row, Button } from './ui.jsx'
 
@@ -92,9 +92,12 @@ export function connectionView(sync, { mobile = MOBILE, online = isOnline() } = 
       return err.code === 'not-paired'
         ? { tone: 'bad', icon: 'lock', action: 'pair', line: t('This phone is not connected to a server.'), banner: t('This phone is no longer paired with your server. Your changes are kept here.') }
         : { tone: 'bad', icon: 'lock', action: 'pair', line: t('The server refuses this phone'), banner: t('Your server no longer accepts this phone. Your changes are kept here.') }
-    default:   // 'local': no server at all — chosen, so it is said quietly, but it is said
+    // 'local': no server at all. On a phone that is a choice that needs no reminder (#454, #369):
+    // Settings still says it and offers Connect, the bar stays away. A guest in a browser is on a
+    // server it could sign in to, so it still hears that its data stays in this browser.
+    default:
       return mobile
-        ? { tone: 'quiet', icon: 'lock', action: 'connect', line: t('On this phone only, not connected to a server'), banner: t('On this phone only, not connected to a server') }
+        ? { tone: 'quiet', icon: 'lock', action: 'connect', line: t('On this phone only, not connected to a server'), banner: null }
         : { tone: 'quiet', icon: 'lock', action: canSignIn() ? 'signin' : null, line: t('Guest mode: your data lives only in this browser.'), banner: t('Guest mode: your data lives only in this browser.') }
   }
 }
@@ -146,14 +149,14 @@ export async function passkeySignIn() {
    the device until it reaches this server as this account again. `done(result)` runs once the
    device has actually left. */
 const LEAVE = {
-  disconnect: { run: (st, o) => st.disconnectServer(o), anyway: () => t('Disconnect anyway') },
-  signout: { run: (st, o) => st.signOut(o), anyway: () => t('Sign out anyway') },
-  everywhere: { run: (st, o) => st.signOutAll(o), anyway: () => t('Sign out anyway') },
+  disconnect: { run: (st, o) => st.disconnectServer(o), anyway: () => t('Disconnect anyway'), failed: () => t('Couldn’t disconnect. You’re still connected.') },
+  signout: { run: (st, o) => st.signOut(o), anyway: () => t('Sign out anyway'), failed: () => t('Couldn’t sign out. You’re still signed in.') },
+  everywhere: { run: (st, o) => st.signOutAll(o), anyway: () => t('Sign out anyway'), failed: () => t('Couldn’t sign out everywhere. You’re still signed in.') },
 }
 async function attempt(kind, opts) {
   try { return await LEAVE[kind].run(useStore.getState(), opts) }
-  catch (e) {   // only "sign out everywhere" throws: the other sessions are all still valid
-    toast(t('Couldn’t sign out everywhere. You’re still signed in.'))
+  catch (e) {   // only a local failure lands here (signOut swallows a failed logout request); each says which action it was
+    toast(LEAVE[kind].failed())
     return null
   }
 }
@@ -268,6 +271,8 @@ export function ServerSyncSection({ children }) {
       subtitle={t('Signed in as {0}', user.name)} />
     <Row icon={view.icon} iconTint={TINT[view.tone]} title={view.line} subtitle={sub} className="sync-status" />
     <Row icon="reset" iconTint="var(--acc)" title={busy ? t('Syncing…') : t('Sync now')} onClick={now} />
+    {MOBILE && <Row icon="key" iconTint="var(--orange)" title={t('Cloudflare Access')} accessory="chevron"
+      onClick={() => ui().openSheet(close => <CfAccessSheet close={close} server={sync.server || ''} />)} />}
     {sync.status === 'auth' && (MOBILE
       ? <Row icon="qr" iconTint="var(--indigo)" title={t('Pair again')} subtitle={t('Your changes are kept here, and merged into your account once it is paired again.')} accessory="chevron" onClick={pairAgain} />
       : canSignIn() && <Row icon={pwOn() ? 'person' : 'fingerprint'} iconTint="var(--blue)" title={pwOn() ? t('Sign in') : t('Sign in with passkey')} subtitle={t('Your changes are kept here, and merged into your account once you are signed in again.')} accessory="chevron" onClick={signInAgain} />)}

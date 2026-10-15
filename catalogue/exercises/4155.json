@@ -1,0 +1,22 @@
+{
+  "id": "4155",
+  "name": "weighted seated calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "weighted",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "strength",
+  "description": "A seated calf raise with weight resting on your thighs. The bent knee focuses the work on the soleus beneath the calf.",
+  "instructions": [
+    "Sit on a bench with feet flat and the weight resting on your thighs.",
+    "Place the balls of your feet on a raised edge if possible.",
+    "Lift your heels as high as you can.",
+    "Pause and squeeze your calves.",
+    "Lower your heels slowly below the edge for a stretch.",
+    "Hold the weight steady throughout."
+  ],
+  "textSource": "opengym"
+}

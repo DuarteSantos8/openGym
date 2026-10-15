@@ -1,0 +1,36 @@
+{
+  "id": "0068",
+  "name": "barbell one leg squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A single-leg squat with the bar on your back. Challenges the quads, glutes and balance.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a barbell across your upper back.",
+    "Lift one foot off the ground and extend it forward, keeping it parallel to the ground.",
+    "Bend your standing leg and lower your body down as if sitting back into a chair, keeping your chest up and your back straight.",
+    "Lower yourself until your thigh is parallel to the ground, then push through your heel to return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch legs and repeat."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "textSource": "exercisedb"
+}

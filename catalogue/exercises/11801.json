@@ -1,0 +1,21 @@
+{
+  "id": "11801",
+  "name": "lying single leg quadriceps mobilization",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "ankles"
+  ],
+  "category": "mobility",
+  "description": "A lying quad mobilization that gently bends the knee to loosen the front of the thigh.",
+  "instructions": [
+    "Lie on your side or stomach with your legs extended.",
+    "Bend one knee and bring your heel toward your glute, holding the ankle if needed.",
+    "Move the knee in and out of the bend in a slow, controlled rhythm.",
+    "Keep your hips level and stay within a comfortable range.",
+    "Repeat for 10-15 reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

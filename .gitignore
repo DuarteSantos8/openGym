@@ -1,4 +1,5 @@
-# Exercise media — fetched on first `docker compose up` (or via scripts/fetch-media.sh)
+# Exercise media downloaded by installs before v1.4.0 (now in catalogue/media); kept ignored so an
+# old folder never gets committed by accident
 media/img/
 media/gif/
 
@@ -16,8 +17,16 @@ node_modules/
 node_modules
 .claude/
 .agents/
+.superpowers/
+
+# Nix build result symlinks
+result
+result-*
 
 # CI reports (test:* jobs write these next to the suites)
 junit.xml
 coverage/
 frontend/bundle-size.json
+
+# Local planning notes
+docs/superpowers/plans/

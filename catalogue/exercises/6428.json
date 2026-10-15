@@ -1,0 +1,20 @@
+{
+  "id": "6428",
+  "name": "90 degree heel touch v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on your back with your knees bent, you reach side to side to tap your heels, working your obliques.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat.",
+    "Lift your shoulders slightly off the floor.",
+    "Reach your right hand toward your right heel.",
+    "Switch and reach your left hand to your left heel.",
+    "Keep your core tight and continue alternating."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "6795",
+  "name": "thomas frontal test",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "adductors"
+  ],
+  "category": "stretching",
+  "description": "The frontal-view version of the Thomas test, checking for tight hip flexors and inner thighs while you lie on a bench.",
+  "instructions": [
+    "Sit at the end of a bench and lie back, pulling one knee to your chest.",
+    "Let the other leg hang down off the edge, fully relaxed.",
+    "Keep your lower back pressed down and your pelvis still.",
+    "Watch whether the hanging leg drifts outward or the thigh lifts.",
+    "Hold for 20-30 seconds, breathing calmly.",
+    "Switch legs and compare."
+  ],
+  "textSource": "opengym"
+}

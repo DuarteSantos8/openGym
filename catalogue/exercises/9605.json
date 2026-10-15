@@ -1,0 +1,23 @@
+{
+  "id": "9605",
+  "name": "bodyweight peterson step from stepbox",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A step-down drill with a slow, controlled lowering. It builds quad strength and knee stability.",
+  "instructions": [
+    "Stand on a step box on one leg.",
+    "Lower the other foot slowly toward the floor.",
+    "Keep your knee stable and your torso tall.",
+    "Touch the floor lightly.",
+    "Rise back up through the working leg.",
+    "Do your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

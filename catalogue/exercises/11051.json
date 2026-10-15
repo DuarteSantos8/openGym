@@ -1,0 +1,21 @@
+{
+  "id": "11051",
+  "name": "cable standing high cross neutral grip triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A triceps pushdown with the cable set high and the handles crossed, using a neutral grip. It isolates the back of the arm.",
+  "instructions": [
+    "Set both pulleys high and stand in the middle, holding the handles with palms facing in.",
+    "Cross your hands in front of your chest with elbows tucked to your sides.",
+    "Press the handles down and out until your arms are straight.",
+    "Squeeze your triceps for a moment.",
+    "Let the handles rise back slowly without moving your elbows."
+  ],
+  "textSource": "opengym"
+}

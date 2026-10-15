@@ -1,0 +1,23 @@
+{
+  "id": "4236",
+  "name": "dumbbell incline two front raise with chest support",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A front raise with both arms while lying chest down on an incline bench. The support stops you from cheating with your back.",
+  "instructions": [
+    "Set a bench to an incline and lie chest down on it.",
+    "Hold a dumbbell in each hand, arms hanging.",
+    "Raise both arms forward to shoulder height or just above.",
+    "Pause for a second.",
+    "Lower under control.",
+    "Keep your head neutral and your movement smooth."
+  ],
+  "textSource": "opengym"
+}

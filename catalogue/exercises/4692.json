@@ -1,0 +1,22 @@
+{
+  "id": "4692",
+  "name": "bent knee back to side kick",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A kneeling leg movement combining a rear lift with a side kick to work the glutes and hips.",
+  "instructions": [
+    "Start on all fours with a flat back.",
+    "Lift one bent knee back and up.",
+    "Swing the leg out to the side into a kick.",
+    "Return the knee under control.",
+    "Switch legs after the set."
+  ],
+  "femaleVariant": "4668",
+  "textSource": "opengym"
+}

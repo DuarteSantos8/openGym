@@ -1,0 +1,22 @@
+{
+  "id": "4990",
+  "name": "knee tuck oblique crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "calisthenics",
+  "description": "Drive a knee toward the opposite elbow to crunch the side of your waist. It trains the obliques and lower abs.",
+  "instructions": [
+    "Lie on your back with your hands behind your head.",
+    "Lift your shoulders off the floor.",
+    "Tuck one knee in while rotating your opposite elbow toward it.",
+    "Return and repeat to the other side.",
+    "Move with control instead of pulling on your neck."
+  ],
+  "textSource": "opengym"
+}

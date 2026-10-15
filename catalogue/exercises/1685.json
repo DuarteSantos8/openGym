@@ -1,0 +1,22 @@
+{
+  "id": "1685",
+  "name": "squat to overhead reach",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A squat followed by reaching your arms overhead. It trains the quads and glutes and opens up the shoulders.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and toes slightly turned out.",
+    "Lower your body down into a squat position by bending your knees and pushing your hips back.",
+    "As you come up from the squat, extend your arms overhead, reaching towards the ceiling.",
+    "Return to the starting position by lowering your arms and bending your knees to squat down again.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

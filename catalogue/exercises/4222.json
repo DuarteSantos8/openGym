@@ -1,0 +1,22 @@
+{
+  "id": "4222",
+  "name": "tiger tail neck",
+  "bodyPart": "neck",
+  "equipment": "roller",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "trapezius",
+    "sternocleidomastoid"
+  ],
+  "category": "mobility",
+  "description": "Gently rolling a handheld roller along the back and sides of the neck. It helps loosen stiff neck and upper trap muscles.",
+  "instructions": [
+    "Sit or stand tall with relaxed shoulders.",
+    "Hold the roller by both handles behind your neck.",
+    "Roll gently up and down along one side with light pressure.",
+    "Avoid pressing on the spine itself.",
+    "Repeat on the other side.",
+    "Roll for 30-60 seconds and stop if it hurts."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "8617",
+  "name": "seated external rotation on a chair",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids",
+    "upper back"
+  ],
+  "category": "rehab",
+  "description": "A seated rotation drill for the back of the shoulders and rotator cuff.",
+  "instructions": [
+    "Sit tall near the front of a sturdy chair with your feet flat on the floor.",
+    "Brace your core and keep your shoulders relaxed.",
+    "Tuck your elbows at your sides bent to 90 degrees.",
+    "Rotate your forearms outward, squeezing your shoulder blades.",
+    "Return slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

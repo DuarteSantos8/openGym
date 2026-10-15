@@ -1,0 +1,22 @@
+{
+  "id": "6570",
+  "name": "glute bridge walk",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A glute bridge held high while stepping the feet out and back. It adds a dynamic challenge for glutes and hamstrings.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat.",
+    "Lift your hips into a glute bridge.",
+    "Keep the hips high and walk your feet out a few small steps.",
+    "Then walk them back in toward your body.",
+    "Keep your hips level and avoid sagging.",
+    "Lower with control when finished."
+  ],
+  "textSource": "opengym"
+}

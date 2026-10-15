@@ -1,0 +1,32 @@
+{
+  "id": "1326",
+  "name": "chin-up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "Hang from a bar with an underhand grip and pull until your chin clears it. A classic builder of the lats and biceps.",
+  "instructions": [
+    "Hang from a pull-up bar with your palms facing towards you and your hands shoulder-width apart.",
+    "Engage your core and pull your body up towards the bar, leading with your chest.",
+    "Continue pulling until your chin is above the bar.",
+    "Pause for a moment at the top, then slowly lower your body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ]
+  },
+  "femaleVariant": "2379",
+  "textSource": "exercisedb"
+}

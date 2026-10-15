@@ -1,0 +1,21 @@
+{
+  "id": "0855",
+  "name": "weighted standing twist",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A standing torso rotation holding a weight. It builds the obliques and trunk control.",
+  "instructions": [
+    "Stand with feet shoulder-width apart holding a weight at your chest.",
+    "Keep your hips facing forward.",
+    "Rotate your torso to one side.",
+    "Return to centre and rotate to the other side.",
+    "Move smoothly without jerking."
+  ],
+  "textSource": "opengym"
+}

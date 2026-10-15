@@ -1,0 +1,21 @@
+{
+  "id": "1909",
+  "name": "standing toe up hamstring stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "Standing stretch with one heel on the floor and toes pulled up, lengthening the back of the thigh and calf.",
+  "instructions": [
+    "Stand tall and step one foot forward, resting the heel on the floor with the toes pulled up.",
+    "Keep the front leg straight and the back knee slightly bent.",
+    "Hinge forward at the hips with a flat back until you feel a pull behind the thigh.",
+    "Keep your chest open and avoid rounding your spine.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

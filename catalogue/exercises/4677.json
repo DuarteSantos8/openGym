@@ -1,0 +1,22 @@
+{
+  "id": "4677",
+  "name": "band kneeling single leg kick",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "Kicking one leg back from a kneeling position against a band. It isolates the glutes.",
+  "instructions": [
+    "Get on all fours with a band looped around your foot and hands.",
+    "Brace your core and keep your back flat.",
+    "Extend one leg back, squeezing your glute.",
+    "Pause briefly at full extension.",
+    "Return with control and repeat, then switch legs."
+  ],
+  "textSource": "opengym"
+}

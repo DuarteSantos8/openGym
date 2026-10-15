@@ -1,0 +1,21 @@
+{
+  "id": "1946",
+  "name": "standing leg tuck hip stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "A standing stretch drawing one knee up and in to open the hip and glutes.",
+  "instructions": [
+    "Stand tall, holding a wall or support for balance.",
+    "Lift one knee and hold the shin and ankle with both hands.",
+    "Pull the leg gently toward your chest and slightly across the body.",
+    "Keep your standing leg soft and your back straight.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

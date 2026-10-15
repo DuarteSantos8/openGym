@@ -1,0 +1,23 @@
+{
+  "id": "4571",
+  "name": "resistance band push up",
+  "bodyPart": "chest",
+  "equipment": "resistance band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with a band across your back that adds resistance at the top of the movement.",
+  "instructions": [
+    "Loop the band across your upper back and hold the ends under your hands.",
+    "Get into a plank position with your body straight.",
+    "Lower your chest toward the floor, elbows at about 45 degrees.",
+    "Press up against the band until your arms are straight.",
+    "Keep your core tight and hips level.",
+    "Lower slowly for the next rep."
+  ],
+  "textSource": "opengym"
+}

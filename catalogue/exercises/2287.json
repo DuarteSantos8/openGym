@@ -1,0 +1,41 @@
+{
+  "id": "2287",
+  "name": "lever alternate leg press",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A machine leg press done one leg at a time, alternating. Builds the quads and glutes.",
+  "instructions": [
+    "Adjust the seat and foot platform of the leverage machine to your desired position.",
+    "Sit on the machine with your back against the backrest and your feet on the foot platform.",
+    "Place your hands on the handles or sides of the machine for stability.",
+    "Push one foot against the foot platform, extending your leg until it is almost fully straight.",
+    "Pause for a moment, then slowly bend your leg and return to the starting position.",
+    "Repeat with the other leg.",
+    "Continue alternating legs for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves"
+    ],
+    "weights": {
+      "quadriceps": 1,
+      "gluteal": 1,
+      "adductors": 1,
+      "hamstring": 0.4,
+      "calves": 0
+    }
+  },
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "10756",
+  "name": "calf forward jump",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "plyometrics",
+  "description": "Small forward hops driven by the calves. They build ankle stiffness and reactive power.",
+  "instructions": [
+    "Stand tall with feet together and knees slightly soft.",
+    "Push off the balls of your feet and hop forward a short distance.",
+    "Keep your knees nearly straight.",
+    "Land softly on the balls of your feet.",
+    "Hop back or turn around and repeat.",
+    "Stay light and quick through the whole set."
+  ],
+  "textSource": "opengym"
+}

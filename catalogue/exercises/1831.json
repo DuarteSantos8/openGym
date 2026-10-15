@@ -1,0 +1,21 @@
+{
+  "id": "1831",
+  "name": "rotating neck stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "trapezius"
+  ],
+  "category": "stretching",
+  "description": "Turning your head slowly from side to side stretches the muscles around the neck. It is a gentle way to ease stiffness.",
+  "instructions": [
+    "Sit or stand tall with your shoulders relaxed.",
+    "Slowly turn your head to one side, then to the other, as far as is comfortable.",
+    "Keep your chin level and avoid pushing into any pain.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

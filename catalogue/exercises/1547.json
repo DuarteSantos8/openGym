@@ -1,0 +1,21 @@
+{
+  "id": "1547",
+  "name": "cable standing leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "Standing on one leg, you curl the other against a low cable. It isolates the hamstrings one side at a time.",
+  "instructions": [
+    "Attach an ankle cuff to a low pulley and strap it around one ankle.",
+    "Stand facing the machine and hold on for balance, with the working leg slightly behind you.",
+    "Bend your knee and curl your heel toward your glutes.",
+    "Squeeze at the top without swinging your torso.",
+    "Lower slowly, finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

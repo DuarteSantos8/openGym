@@ -1,0 +1,21 @@
+{
+  "id": "1971",
+  "name": "reverse shoulder stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "biceps"
+  ],
+  "category": "stretching",
+  "description": "Clasping your hands behind your back and lifting them to open the front of the shoulders.",
+  "instructions": [
+    "Stand tall and clasp your hands behind your back.",
+    "Straighten your arms and lift your hands up and away from your body until the shoulders and chest stretch.",
+    "Keep your chest open and avoid leaning forward.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

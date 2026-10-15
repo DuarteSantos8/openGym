@@ -1,0 +1,22 @@
+{
+  "id": "3939",
+  "name": "band overhead triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Press a band overhead from behind your head to straighten the elbows. It isolates the triceps.",
+  "instructions": [
+    "Anchor the band low or stand on it and hold the other end behind your head.",
+    "Keep your elbows pointing up and close to your ears.",
+    "Straighten your arms overhead.",
+    "Bend the elbows slowly to return.",
+    "Keep your upper arms still and your ribs down."
+  ],
+  "femaleVariant": "0914",
+  "textSource": "opengym"
+}

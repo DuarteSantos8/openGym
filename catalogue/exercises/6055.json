@@ -1,0 +1,22 @@
+{
+  "id": "6055",
+  "name": "bottle weighted russian twist",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A seated rotation holding a bottle. It works the obliques and deep core.",
+  "instructions": [
+    "Sit on the floor, knees bent, and lean back a little with a straight spine.",
+    "Hold a bottle with both hands in front of your chest.",
+    "Rotate your torso to one side and tap the bottle near the floor.",
+    "Rotate to the other side.",
+    "Keep your feet down or lifted for more challenge."
+  ],
+  "textSource": "opengym"
+}

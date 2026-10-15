@@ -1,0 +1,21 @@
+{
+  "id": "2124",
+  "name": "lateral bend on floor by kneeling",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lats"
+  ],
+  "category": "stretching",
+  "description": "A kneeling side bend where you reach along the floor to stretch the side of the waist.",
+  "instructions": [
+    "Kneel on a mat and extend one arm sideways along the floor.",
+    "Walk your hands to one side and sink your hips the other way until the side of the waist stretches.",
+    "Keep your hips over your knees.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "5242",
+  "name": "kneeling abdominal draw in",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "isometric",
+  "description": "Pulling your belly in while kneeling. It teaches deep abdominal control.",
+  "instructions": [
+    "Kneel on all fours with your hands under your shoulders.",
+    "Relax your belly toward the floor.",
+    "Draw your navel up toward your spine.",
+    "Hold for 10-15 seconds while breathing normally.",
+    "Release slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

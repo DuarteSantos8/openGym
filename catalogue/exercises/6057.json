@@ -1,0 +1,22 @@
+{
+  "id": "6057",
+  "name": "bottle weighted lying chest press",
+  "bodyPart": "chest",
+  "equipment": "weighted",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A floor or bench press with a bottle in each hand. It builds the chest and triceps with light load.",
+  "instructions": [
+    "Lie on your back, knees bent, holding a bottle in each hand at chest level.",
+    "Press the bottles straight up until your arms are extended.",
+    "Keep your wrists straight.",
+    "Lower slowly until your elbows touch the floor or reach chest level.",
+    "Repeat for your reps."
+  ],
+  "textSource": "opengym"
+}

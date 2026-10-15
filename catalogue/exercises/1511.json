@@ -1,0 +1,21 @@
+{
+  "id": "1511",
+  "name": "hamstring stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "A stretch for the back of the thigh. You reach toward your toes with a long spine and feel the hamstrings lengthen.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Step forward with your right foot and shift your weight onto your right leg.",
+    "Keeping your back straight, slowly bend forward at the hips, reaching towards your right foot with both hands.",
+    "Hold the stretch for 20-30 seconds, then return to the starting position.",
+    "Repeat on the other side."
+  ],
+  "femaleVariant": "4285",
+  "textSource": "exercisedb"
+}

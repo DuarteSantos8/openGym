@@ -1,0 +1,23 @@
+{
+  "id": "5030",
+  "name": "push up jack",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A push up combined with a jumping jack leg motion. It raises your heart rate while training chest and shoulders.",
+  "instructions": [
+    "Start in a high plank with your feet together.",
+    "Lower into a push up with control.",
+    "Push back up and jump your feet wide.",
+    "Jump your feet back together.",
+    "Keep your body straight and move rhythmically."
+  ],
+  "textSource": "opengym"
+}

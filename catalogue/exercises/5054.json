@@ -1,0 +1,23 @@
+{
+  "id": "5054",
+  "name": "crab pose",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "wrist flexors",
+    "hip flexors",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "Seated backbend with hips lifted, like an upside down table. It opens the chest, shoulders and front of the hips.",
+  "instructions": [
+    "Sit with knees bent and hands behind you, fingers pointing toward your feet.",
+    "Press into your hands and feet.",
+    "Lift your hips until your torso is flat.",
+    "Let your head relax back gently.",
+    "Hold for 20-30 seconds."
+  ],
+  "textSource": "opengym"
+}

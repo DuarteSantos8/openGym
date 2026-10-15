@@ -1,0 +1,23 @@
+{
+  "id": "4711",
+  "name": "criss cross jack",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "shoulders",
+    "adductors",
+    "quadriceps"
+  ],
+  "category": "cardio",
+  "description": "A jumping jack variation where the arms and legs cross over each other.",
+  "instructions": [
+    "Stand with feet together and arms at your sides.",
+    "Jump your feet apart while the arms swing overhead.",
+    "Jump and cross one foot in front and the arms across your chest.",
+    "Alternate which side crosses.",
+    "Keep a quick but controlled pace."
+  ],
+  "textSource": "opengym"
+}

@@ -33,7 +33,10 @@ test('buildPrompt picks the task by kind and refine, and only adds the repair bl
   const create = buildPrompt('create', payload, null);
   assert.ok(create.includes(PROMPTS.create) && !create.includes(PROMPTS.refine));
   const refine = buildPrompt('create', { ...payload, refine: { text: 'x' } }, null);
-  assert.ok(refine.includes(PROMPTS.refine) && !refine.includes(PROMPTS.create));
+  // A revision answers in the plan's format, so it carries create.md's rules and Output section
+  // ahead of its own (#471); a create never sees the refine task.
+  assert.ok(refine.includes(PROMPTS.refine) && refine.includes(PROMPTS.create));
+  assert.ok(refine.indexOf(PROMPTS.create) < refine.indexOf(PROMPTS.refine));
 
   const repaired = buildPrompt('review', payload, { previous: '{"bad": true}', errors: ['first', 'second'] });
   assert.ok(repaired.includes('{"bad": true}'));

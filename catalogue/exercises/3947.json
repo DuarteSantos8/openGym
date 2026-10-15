@@ -1,0 +1,22 @@
+{
+  "id": "3947",
+  "name": "hands release push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up where you lift your hands at the bottom, removing momentum and building chest strength.",
+  "instructions": [
+    "Start in a high plank with hands under shoulders.",
+    "Lower your whole body to the floor.",
+    "Lift your hands off the floor briefly.",
+    "Place them back and press up.",
+    "Keep your body in a straight line."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4075",
+  "name": "band chest fly",
+  "bodyPart": "chest",
+  "equipment": "band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "biceps",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "Standing band fly bringing the hands together in front of the chest. It trains the pecs.",
+  "instructions": [
+    "Anchor the band behind you at chest height and hold the ends.",
+    "Stand in a staggered stance.",
+    "Start with arms out to the sides and slightly bent.",
+    "Bring your hands together in front of your chest.",
+    "Return slowly under control."
+  ],
+  "textSource": "opengym"
+}

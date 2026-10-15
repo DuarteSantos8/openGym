@@ -1,0 +1,22 @@
+{
+  "id": "8195",
+  "name": "sitting side bend on a chair",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A gentle seated side bend that works the obliques and loosens the sides. Easy to do at a desk.",
+  "instructions": [
+    "Sit tall on a chair with feet flat.",
+    "Place one hand behind your head.",
+    "Bend sideways toward the floor.",
+    "Return to upright using your side muscles.",
+    "Repeat on the other side."
+  ],
+  "femaleVariant": "9161",
+  "textSource": "opengym"
+}

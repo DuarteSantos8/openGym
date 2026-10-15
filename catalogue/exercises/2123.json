@@ -1,0 +1,23 @@
+{
+  "id": "2123",
+  "name": "assisted obliques stretch",
+  "bodyPart": "waist",
+  "equipment": "assisted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lats",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "With help from a partner, this stretch lengthens the oblique muscles on the side of the trunk through a slow bend or twist.",
+  "instructions": [
+    "Stand upright with feet shoulder-width apart.",
+    "Raise one arm overhead while your partner steadies your hips.",
+    "Lean away from the raised arm while your partner gently guides your arm.",
+    "Keep your chest open and avoid leaning forward.",
+    "Hold for 20-30 seconds.",
+    "Come back to upright and switch sides."
+  ],
+  "textSource": "opengym"
+}

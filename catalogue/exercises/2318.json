@@ -1,0 +1,33 @@
+{
+  "id": "2318",
+  "name": "lever shoulder press v. 3",
+  "bodyPart": "shoulders",
+  "equipment": "leverage machine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "chest"
+  ],
+  "category": "strength",
+  "description": "A machine shoulder press, pushing the handles overhead. Builds shoulder and triceps strength.",
+  "instructions": [
+    "Adjust the seat height and backrest of the leverage machine to a comfortable position.",
+    "Sit on the machine with your back against the backrest and your feet flat on the floor.",
+    "Grasp the handles of the machine with an overhand grip, slightly wider than shoulder-width apart.",
+    "Push the handles upward and forward until your arms are fully extended, but not locked.",
+    "Pause for a moment at the top, then slowly lower the handles back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "deltoids"
+    ],
+    "secondaries": [
+      "chest",
+      "triceps",
+      "trapezius",
+      "serratus"
+    ]
+  },
+  "textSource": "exercisedb"
+}

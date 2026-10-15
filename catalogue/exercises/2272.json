@@ -1,0 +1,23 @@
+{
+  "id": "2272",
+  "name": "boxing jab",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "chest",
+    "core"
+  ],
+  "category": "combat",
+  "description": "A quick straight punch with the lead hand, used to build speed, shoulder endurance and timing.",
+  "instructions": [
+    "Stand in a boxing stance with your lead foot forward and hands up by your chin.",
+    "Extend your lead hand straight toward the target.",
+    "Rotate your fist so the palm faces down as it lands.",
+    "Keep your chin tucked and your rear hand guarding.",
+    "Snap the hand back to the guard quickly.",
+    "Repeat, then switch stance if you want."
+  ],
+  "textSource": "opengym"
+}

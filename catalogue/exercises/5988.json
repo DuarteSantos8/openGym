@@ -1,0 +1,22 @@
+{
+  "id": "5988",
+  "name": "bottle weighted deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A light deadlift holding a bottle in each hand. A good way to learn the hip hinge.",
+  "instructions": [
+    "Hold a bottle in each hand and stand with feet hip-width apart.",
+    "Hinge at your hips with a flat back and soft knees.",
+    "Lower the bottles along your legs to mid-shin.",
+    "Drive your hips forward to stand tall.",
+    "Squeeze your glutes at the top."
+  ],
+  "textSource": "opengym"
+}

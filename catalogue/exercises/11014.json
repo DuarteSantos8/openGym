@@ -1,0 +1,22 @@
+{
+  "id": "11014",
+  "name": "dumbbell underhand front raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "biceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A front raise with palms facing up. It targets the front of the shoulders.",
+  "instructions": [
+    "Stand holding a dumbbell in each hand, palms facing forward.",
+    "Keep your elbows slightly soft.",
+    "Raise your arms in front of you to shoulder height.",
+    "Pause at the top.",
+    "Lower slowly and avoid leaning back."
+  ],
+  "textSource": "opengym"
+}

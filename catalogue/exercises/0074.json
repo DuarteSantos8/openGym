@@ -1,0 +1,22 @@
+{
+  "id": "0074",
+  "name": "barbell rack pull",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A partial deadlift from a rack at knee height. Overloads the upper back, glutes and hips.",
+  "instructions": [
+    "Set up a barbell on a rack at knee height.",
+    "Stand with your feet shoulder-width apart, toes pointing slightly outwards.",
+    "Bend at the hips and knees to lower yourself down and grip the barbell with an overhand grip, hands shoulder-width apart.",
+    "Engage your core and lift the barbell by extending your hips and knees, pulling your shoulders back and squeezing your glutes at the top.",
+    "Lower the barbell back down to the starting position by bending at the hips and knees.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

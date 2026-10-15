@@ -1,0 +1,23 @@
+{
+  "id": "3586",
+  "name": "scissors (advanced)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "Hold both legs low and cross them repeatedly like scissors, working the lower abs.",
+  "instructions": [
+    "Lie on your back with legs extended and hands under your hips.",
+    "Lift your head, shoulders and legs slightly off the floor.",
+    "Cross one leg over the other in a scissor motion.",
+    "Alternate sides in a controlled rhythm.",
+    "Keep your lower back pressed down."
+  ],
+  "femaleVariant": "2893",
+  "textSource": "opengym"
+}

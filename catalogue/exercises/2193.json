@@ -1,0 +1,24 @@
+{
+  "id": "2193",
+  "name": "bicycle recline walk",
+  "bodyPart": "cardio",
+  "equipment": "stationary bike",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "cardio",
+  "description": "A relaxed walking-style pedal motion on a recumbent bike that builds leg endurance with the back well supported.",
+  "instructions": [
+    "Sit on the recumbent bike and adjust the seat so your knees stay slightly bent at full extension.",
+    "Place your feet on the pedals and hold the handles.",
+    "Pedal at an easy, walking-like pace.",
+    "Keep your back against the backrest and breathe steadily.",
+    "Continue for 15-30 minutes.",
+    "Cool down by slowing the pedalling gradually."
+  ],
+  "femaleVariant": "2428",
+  "textSource": "opengym"
+}

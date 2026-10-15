@@ -1,0 +1,23 @@
+{
+  "id": "2999",
+  "name": "resistance band standing back achilles stretch",
+  "bodyPart": "lower legs",
+  "equipment": "resistance band",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "stretching",
+  "description": "A calf and Achilles stretch with a band that gently pulls the toes toward you while the leg is behind you.",
+  "instructions": [
+    "Loop a resistance band around the front of the foot of your back leg.",
+    "Hold the band ends in your hands and stand tall.",
+    "Step that leg back with the heel on the floor.",
+    "Pull the band gently so your toes move toward your shin.",
+    "Hold for 20-30 seconds with your back leg fairly straight.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

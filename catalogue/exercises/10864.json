@@ -1,0 +1,22 @@
+{
+  "id": "10864",
+  "name": "high box step up",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "Stepping up onto a tall box. It builds the quads and glutes.",
+  "instructions": [
+    "Stand facing a high box.",
+    "Place one foot fully on top.",
+    "Drive through that heel to stand up.",
+    "Bring the other foot up.",
+    "Step down with control.",
+    "Switch leading legs."
+  ],
+  "textSource": "opengym"
+}

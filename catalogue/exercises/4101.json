@@ -1,0 +1,22 @@
+{
+  "id": "4101",
+  "name": "weighted straight leg toe touch crunch",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A crunch with straight legs raised, reaching toward your toes while holding a weight for extra resistance.",
+  "instructions": [
+    "Lie on your back with your legs straight up and a weight held in both hands.",
+    "Reach the weight toward your toes.",
+    "Lift your shoulder blades off the floor.",
+    "Lower slowly with control.",
+    "Keep your legs vertical and your neck relaxed."
+  ],
+  "textSource": "opengym"
+}

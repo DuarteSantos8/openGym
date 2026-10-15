@@ -1,0 +1,24 @@
+{
+  "id": "5047",
+  "name": "side bridge with bent leg",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "shoulders",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "Side plank with the knees bent for a gentler version. It builds the obliques and hip stability.",
+  "instructions": [
+    "Lie on your side with knees bent and your forearm under your shoulder.",
+    "Lift your hips so your body forms a line from shoulder to knee.",
+    "Keep your hips stacked and core tight.",
+    "Hold for 20-30 seconds.",
+    "Lower and switch sides."
+  ],
+  "femaleVariant": "4461",
+  "textSource": "opengym"
+}

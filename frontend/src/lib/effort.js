@@ -6,9 +6,10 @@
 // half-empty series. So everything aggregates in RIR and is converted back for display.
 // RIR is the internal unit because it has a real zero — a set taken to failure — where RPE's
 // floor of 6 is only a convention about which sets are worth rating. RPE 8 == RIR 2.
-import { EFFORT, effortOf } from './history.js'
+import { EFFORT, effortOf, workoutAt } from './history.js'
 import { weekKey, weekStartOf, startOfWeek } from './format.js'
-import { isWarmupRow } from './workout-model.js'
+import { isWarmupRow, isFailureSet } from './workout-model.js'
+import { isAssisted } from './exercises.js'
 
 // At or below this a set is close enough to failure to be the kind that drives adaptation.
 // 3 rather than 2: the line is a convention, and drawn one rep too generously it still
@@ -18,9 +19,13 @@ export const HARD_RIR = 3
 // like a finding when it is one tap, so the callers show a dash instead.
 export const MIN_RATED = 5
 
-/** A set's effort in RIR, or null when it was never rated. 0 is a rating, not "empty". */
+/**
+ * A set's effort in RIR, or null when it was never rated. 0 is a rating, not "empty". A set
+ * marked as taken to failure (workout-model isFailureSet) is RIR 0 by definition, so it reads as
+ * one when nothing was rated; a rating typed in by hand still wins, it is the more exact of the two.
+ */
 export const rirOf = s =>
-  !s ? null : s.rir != null ? s.rir : s.rpe != null ? 10 - s.rpe : null
+  !s ? null : s.rir != null ? s.rir : s.rpe != null ? 10 - s.rpe : isFailureSet(s) ? 0 : null
 
 /** RIR → the scale being displayed. The reverse of rirOf, for one number. */
 export const toScale = (kind, rir) =>
@@ -51,7 +56,17 @@ function eachDoneSet(S, fn) {
 // A window in days, counted back from now. 0 = everything, which is also what an empty
 // history means for every caller here.
 const inWindow = (w, days) =>
-  !days || (w.start || new Date(w.d).getTime()) > Date.now() - days * 86400000
+  !days || workoutAt(w) > Date.now() - days * 86400000
+
+// A set's RIR plus where it came from. The default resolver is logged effort only
+// (historical behaviour, unchanged); pass a resolver built on
+// recovery.js:resolveSetRir for the estimated fallback, which keeps stats and the
+// fatigue map in agreement about every set.
+const normRir = r => {
+  if (r == null) return null
+  if (typeof r === 'number') return { rir: r, estimated: false }
+  return { rir: r.rir, estimated: r.source ? r.source !== 'logged' : !!r.estimated }
+}
 
 export const avgRir = sets => {
   const vs = (sets || []).map(rirOf).filter(v => v != null)
@@ -62,22 +77,26 @@ export const avgRir = sets => {
  * The headline numbers for a window: how hard, how much of it was hard, and — the part that
  * keeps the rest honest — how much of the training was rated at all. Effort is optional and
  * off by default, so partial coverage is the normal case; an average without its denominator
- * would quietly speak for sets that were never rated.
+ * would quietly speak for sets that were never rated. `resolve` maps (set, workout, entry)
+ * to RIR; estimates flow through it flagged, so the caller can label them honestly.
  */
-export function effortSummary(S, days) {
-  let done = 0, rated = 0, sum = 0, hard = 0
-  eachDoneSet(S, (s, w) => {
+export function effortSummary(S, days, resolve = rirOf) {
+  let done = 0, rated = 0, est = 0, sum = 0, hard = 0
+  eachDoneSet(S, (s, w, e) => {
     if (!inWindow(w, days)) return
     done++
-    const r = rirOf(s)
-    if (r == null) return
-    rated++; sum += r
-    if (r <= HARD_RIR) hard++
+    const r = normRir(resolve(s, w, e))
+    if (r == null || r.rir == null) return
+    if (r.estimated) est++
+    else rated++
+    sum += r.rir
+    if (r.rir <= HARD_RIR) hard++
   })
+  const covered = rated + est
   return {
-    done, rated, hard,
-    avg: rated >= MIN_RATED ? sum / rated : null,
-    hardPct: rated >= MIN_RATED ? hard / rated : null
+    done, rated, est, covered, hard,
+    avg: covered >= MIN_RATED ? sum / covered : null,
+    hardPct: covered >= MIN_RATED ? hard / covered : null
   }
 }
 
@@ -89,25 +108,44 @@ export function hasEffort(S) {
 }
 
 /**
+ * Could any set be RIR-estimated (load, reps in estimator range, non-assisted)?
+ * Decides whether the estimated-fallback UI exists for histories nobody rated -
+ * Jefit/Hevy imports carry loads but no ratings. Warm-ups don't count: estimating
+ * them would fill the card with discounted ramp rows instead of training.
+ */
+export function hasEstimableEffort(S) {
+  let any = false
+  eachDoneSet(S, (s, w, e) => {
+    if (any) return
+    const wgt = Number(s?.w)
+    const reps = Number(s?.r)
+    if (!(wgt > 0) || !(reps >= 1) || reps > 12) return
+    if (isAssisted(e?.id ? { id: e.id } : e)) return
+    any = true
+  })
+  return any
+}
+
+/**
  * Average effort per calendar week, with the week's set count alongside: the pair is the
  * point. Volume up with effort up is fatigue accumulating; volume up with effort flat is the
  * adaptation you were training for. Weeks with a single rated set are dropped rather than
  * drawn — one tap should not become a peak in the curve.
  */
-export function effortWeeks(S, days) {
+export function effortWeeks(S, days, resolve = rirOf) {
   const ws = weekStartOf(S)
   const wk = new Map()
-  eachDoneSet(S, (s, w) => {
+  eachDoneSet(S, (s, w, entry) => {
     if (!inWindow(w, days)) return
     const k = weekKey(w.d, ws)
-    let e = wk.get(k)
-    if (!e) wk.set(k, e = { k, t: startOfWeek(w.d, ws).getTime(), sum: 0, n: 0, sets: 0 })
-    e.sets++
-    const r = rirOf(s)
-    if (r != null) { e.sum += r; e.n++ }
+    let b = wk.get(k)
+    if (!b) wk.set(k, b = { k, t: startOfWeek(w.d, ws).getTime(), sum: 0, n: 0, est: 0, sets: 0 })
+    b.sets++
+    const r = normRir(resolve(s, w, entry))
+    if (r != null && r.rir != null) { b.sum += r.rir; b.n++; if (r.estimated) b.est++ }
   })
   return [...wk.values()].filter(e => e.n >= 2).sort((a, b) => a.t - b.t)
-    .map(e => ({ t: e.t, rir: e.sum / e.n, n: e.n, sets: e.sets }))
+    .map(e => ({ t: e.t, rir: e.sum / e.n, n: e.n, est: e.est, sets: e.sets }))
 }
 
 /**
@@ -117,15 +155,15 @@ export function effortWeeks(S, days) {
  * half the sets at 0 and half at 4 average to a healthy-looking 2.
  */
 export const BUCKETS = 4        // 0,1,2,3 and a "4+" tail
-export function effortHistogram(S, days) {
+export function effortHistogram(S, days, resolve = rirOf) {
   const bins = new Array(BUCKETS + 1).fill(0)
   let rated = 0
-  eachDoneSet(S, (s, w) => {
+  eachDoneSet(S, (s, w, e) => {
     if (!inWindow(w, days)) return
-    const r = rirOf(s)
-    if (r == null) return
+    const r = normRir(resolve(s, w, e))
+    if (r == null || r.rir == null) return
     rated++
-    bins[Math.min(BUCKETS, Math.max(0, Math.floor(r)))]++
+    bins[Math.min(BUCKETS, Math.max(0, Math.floor(r.rir)))]++
   })
   return bins.map((n, i) => ({ rir: i, tail: i === BUCKETS, n, pct: rated ? n / rated : 0 }))
 }

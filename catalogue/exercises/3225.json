@@ -1,0 +1,25 @@
+{
+  "id": "3225",
+  "name": "floor t raise",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "rear deltoids",
+    "trapezius",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "Lying face down, you lift your arms out to the sides into a T. It strengthens the mid and upper back.",
+  "instructions": [
+    "Lie face down with your arms out to the sides in a T.",
+    "Keep your forehead near the floor.",
+    "Turn your thumbs up toward the ceiling.",
+    "Squeeze your shoulder blades together and lift your arms.",
+    "Pause for a second.",
+    "Lower slowly and repeat."
+  ],
+  "femaleVariant": "3205",
+  "textSource": "opengym"
+}

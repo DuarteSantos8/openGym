@@ -1,0 +1,25 @@
+{
+  "id": "4230",
+  "name": "kettlebell bottoms up to knee turkish get up",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "glutes",
+    "core",
+    "quadriceps",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A Turkish get-up holding the bell upside down, moving only up to a kneeling position. It builds shoulder stability and core control.",
+  "instructions": [
+    "Lie on your back holding a kettlebell upside down in one hand, arm straight up.",
+    "Bend the same-side knee and plant the foot.",
+    "Roll onto your elbow, then your hand.",
+    "Lift your hips and sweep the straight leg back to kneel.",
+    "Reverse the steps slowly to lie down.",
+    "Keep your eyes on the bell and switch sides after your reps."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4979",
+  "name": "ring rollout",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "lats"
+  ],
+  "category": "calisthenics",
+  "description": "A rollout using gymnastic rings. The unstable rings make your core work hard.",
+  "instructions": [
+    "Kneel holding rings under your shoulders.",
+    "Brace your core and tuck your pelvis.",
+    "Roll your arms forward, extending your body.",
+    "Go as far as you can with a flat back.",
+    "Pull back to the start using your abs.",
+    "Keep your ribs down."
+  ],
+  "textSource": "opengym"
+}

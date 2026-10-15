@@ -1,0 +1,25 @@
+{
+  "id": "3908",
+  "name": "bodyweight windmill",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hamstrings",
+    "shoulders",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "A standing side bend and twist that loosens the hips and trains the obliques.",
+  "instructions": [
+    "Stand with feet wider than shoulder-width and one arm overhead.",
+    "Turn your feet slightly outward.",
+    "Hinge at the hips and rotate your torso toward the floor.",
+    "Reach your free hand toward the opposite foot.",
+    "Return to standing with control.",
+    "Switch sides after your reps."
+  ],
+  "femaleVariant": "3949",
+  "textSource": "opengym"
+}

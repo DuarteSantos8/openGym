@@ -1,0 +1,23 @@
+{
+  "id": "7230",
+  "name": "kettlebell gorilla row",
+  "bodyPart": "back",
+  "equipment": "kettlebell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "grip muscles",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A wide-stance row between two kettlebells, alternating arms. It trains the lats and the core.",
+  "instructions": [
+    "Place two kettlebells on the floor between your wide stance.",
+    "Hinge at the hips with a flat back and grab both handles.",
+    "Row one kettlebell to your hip while the other stays down.",
+    "Lower it and row the other side.",
+    "Keep your hips and shoulders square."
+  ],
+  "textSource": "opengym"
+}

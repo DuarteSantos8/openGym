@@ -1,0 +1,24 @@
+{
+  "id": "10097",
+  "name": "weighted plate side up squat",
+  "bodyPart": "upper legs",
+  "equipment": "weight plate",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A squat holding a weight plate in front of your chest. The plate acts as a counterweight and helps keep your torso upright.",
+  "instructions": [
+    "Hold a weight plate at your chest with both hands.",
+    "Stand with feet shoulder width apart.",
+    "Squat down until your thighs are parallel.",
+    "Keep your chest up and elbows in.",
+    "Push through your heels to stand.",
+    "Keep the plate close to your body."
+  ],
+  "textSource": "opengym"
+}

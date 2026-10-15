@@ -1,0 +1,23 @@
+{
+  "id": "4153",
+  "name": "one side archer push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push up where one arm does most of the work while the other extends out to the side. It builds unilateral chest and arm strength.",
+  "instructions": [
+    "Start in a wide push up position with hands well outside your shoulders.",
+    "Keep your body in a straight line.",
+    "Shift your weight to one arm and bend that elbow while the other arm stays straight.",
+    "Lower your chest toward the bent arm side.",
+    "Push back up and shift to the centre.",
+    "Alternate or complete reps on one side, then switch."
+  ],
+  "textSource": "opengym"
+}

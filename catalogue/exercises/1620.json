@@ -1,0 +1,22 @@
+{
+  "id": "1620",
+  "name": "dumbbell incline one arm hammer press on exercise ball",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "chest"
+  ],
+  "category": "strength",
+  "description": "A one-arm hammer press on an incline with an exercise ball. It works the triceps and adds a balance challenge.",
+  "instructions": [
+    "Sit on an exercise ball with a dumbbell in one hand.",
+    "Walk your feet forward and roll your body down until your head, neck, and upper back are supported on the ball.",
+    "Hold the dumbbell with your palm facing inward and your elbow bent at a 90-degree angle.",
+    "Press the dumbbell up towards the ceiling, straightening your arm.",
+    "Lower the dumbbell back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

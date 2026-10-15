@@ -1,0 +1,23 @@
+{
+  "id": "9040",
+  "name": "sprint against wall",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "hip flexors",
+    "quadriceps",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "Leaning into a wall, you drive your knees in a fast running pattern. It practises sprint posture and builds speed.",
+  "instructions": [
+    "Place your hands on a wall and lean forward with a straight body line.",
+    "Brace your core.",
+    "Drive one knee up while the other leg stays extended.",
+    "Switch legs quickly in a running rhythm.",
+    "Keep your hips level.",
+    "Go hard for 10-20 seconds, then rest."
+  ],
+  "textSource": "opengym"
+}

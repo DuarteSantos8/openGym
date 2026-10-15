@@ -1,0 +1,22 @@
+{
+  "id": "1336",
+  "name": "exercise ball back extension with rotation",
+  "bodyPart": "back",
+  "equipment": "stability ball",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A stability ball back extension where you add a twist at the top. It trains the lower back, glutes and obliques.",
+  "instructions": [
+    "Start by lying face down on the stability ball with your hips resting on the ball and your feet firmly planted on the ground.",
+    "Place your hands behind your head or cross them over your chest.",
+    "Engage your core and slowly lift your upper body off the ball, extending your back until your body forms a straight line from your head to your heels.",
+    "Pause for a moment at the top, then slowly rotate your torso to one side, keeping your hips and legs stable.",
+    "Return to the center and repeat the rotation to the other side.",
+    "Lower your upper body back down to the starting position and repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

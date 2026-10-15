@@ -1,0 +1,23 @@
+{
+  "id": "4047",
+  "name": "kettlebell dead bug",
+  "bodyPart": "waist",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "lower abs",
+    "hip flexors",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Dead bug with a kettlebell held above the chest. The weight adds challenge to the core while the limbs move.",
+  "instructions": [
+    "Lie on your back and hold a kettlebell by the horns above your chest.",
+    "Lift your knees to a tabletop position.",
+    "Slowly extend one leg while pressing your lower back into the floor.",
+    "Bring the leg back and switch.",
+    "Keep the kettlebell steady and breathe."
+  ],
+  "textSource": "opengym"
+}

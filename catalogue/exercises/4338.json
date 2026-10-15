@@ -1,0 +1,21 @@
+{
+  "id": "4338",
+  "name": "barbell spider curl",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A barbell curl done chest-down on an incline bench, which removes swinging and isolates the biceps.",
+  "instructions": [
+    "Lie chest-down on an incline bench with your arms hanging and a barbell in your hands.",
+    "Grip the bar with palms facing up, shoulder-width.",
+    "Curl the bar toward your shoulders without moving your upper arms.",
+    "Squeeze at the top.",
+    "Lower slowly to full extension."
+  ],
+  "textSource": "opengym"
+}

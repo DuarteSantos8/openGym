@@ -1,0 +1,21 @@
+{
+  "id": "1956",
+  "name": "double lean back quadriceps stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "Sitting back on your heels and leaning back to stretch both quadriceps at once.",
+  "instructions": [
+    "Kneel and sit back so your hips rest on your heels.",
+    "Place your hands on the floor behind you.",
+    "Lean back slowly and lift the hips slightly until you feel a stretch in the front of both thighs.",
+    "Stop if you feel any pinch in the knees.",
+    "Hold for 20-30 seconds, then come back up slowly."
+  ],
+  "textSource": "opengym"
+}

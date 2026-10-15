@@ -3,19 +3,15 @@ flowchart TB
 
     subgraph host["Your server"]
         direction TB
-        media["media<br/>one-shot download"]
-        web["web<br/>nginx: serves the app,<br/>proxies /api"]
+        web["web<br/>nginx: serves the app<br/>and exercise media,<br/>proxies /api"]
         api["api<br/>Node + WebAuthn"]
         data[("./data<br/>JSON files")]
         mcp["MCP server<br/>optional, read-only"]
     end
 
-    upstream["Exercise media<br/>upstream dataset"]
     ai["AI provider<br/>optional, your key"]
 
     phone -- HTTPS --> web
-    upstream -. first start .-> media
-    media -- shared volume --> web
     web -- /api --> api
     api --> data
     data -.-> mcp

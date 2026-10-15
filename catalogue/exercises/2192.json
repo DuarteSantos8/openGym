@@ -1,0 +1,24 @@
+{
+  "id": "2192",
+  "name": "elliptical machine walk",
+  "bodyPart": "cardio",
+  "equipment": "elliptical machine",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "cardio",
+  "description": "A steady, low-impact walk on the elliptical that builds endurance and works the legs without pounding the joints.",
+  "instructions": [
+    "Step onto the pedals and hold the handles.",
+    "Start walking forward in a smooth rhythm.",
+    "Stand tall and keep your shoulders relaxed.",
+    "Set a resistance and pace you can keep up while breathing steadily.",
+    "Continue for 15-45 minutes.",
+    "Slow down for a minute before you step off."
+  ],
+  "femaleVariant": "2263",
+  "textSource": "opengym"
+}

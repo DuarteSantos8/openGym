@@ -1,0 +1,23 @@
+{
+  "id": "2473",
+  "name": "glute bridge one leg on bench",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A single-leg bridge with a foot on a bench that targets the glutes harder.",
+  "instructions": [
+    "Lie on your back with one foot on a bench and the other leg extended.",
+    "Brace your core.",
+    "Push through the planted heel to lift your hips.",
+    "Keep your hips level.",
+    "Squeeze your glute at the top.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

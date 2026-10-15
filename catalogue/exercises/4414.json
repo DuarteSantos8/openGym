@@ -1,0 +1,23 @@
+{
+  "id": "4414",
+  "name": "barbell bench press with band suspended kettlebell",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A bench press with kettlebells hanging from bands on the bar. The swinging load forces your stabilising muscles to work harder.",
+  "instructions": [
+    "Lie on a bench and unrack the barbell with kettlebells hung from bands.",
+    "Plant your feet and brace your core.",
+    "Lower the bar slowly to your mid chest.",
+    "Press it up to full extension while keeping the bar steady.",
+    "Rack the bar safely when finished."
+  ],
+  "textSource": "opengym"
+}

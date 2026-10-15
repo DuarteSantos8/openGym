@@ -1,0 +1,29 @@
+{
+  "id": "3195",
+  "name": "lever lying two-one leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A lying machine leg curl that starts with both legs and finishes with one. It targets the hamstrings with a controlled, heavier lowering phase.",
+  "instructions": [
+    "Adjust the machine to fit your body and sit on it with your back against the backrest.",
+    "Place your legs on the lever pad, just above your ankles.",
+    "Grasp the handles on the sides of the machine for support.",
+    "Keeping your upper body still, exhale and curl your legs up towards your glutes.",
+    "Pause for a moment at the top, then inhale and slowly lower your legs back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "hamstring"
+    ],
+    "secondaries": [
+      "calves"
+    ]
+  },
+  "textSource": "exercisedb"
+}

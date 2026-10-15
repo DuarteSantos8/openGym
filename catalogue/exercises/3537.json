@@ -1,0 +1,24 @@
+{
+  "id": "3537",
+  "name": "elevated inverted underhand grip row between 3 chairs",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "rhomboids",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "An inverted row with an underhand grip and elevated feet. It emphasises the lats and biceps.",
+  "instructions": [
+    "Set a bar across two stable chairs and a third chair at your feet.",
+    "Lie under the bar and grip it underhand.",
+    "Place your heels on the third chair.",
+    "Pull your chest to the bar with elbows close.",
+    "Lower slowly to straight arms.",
+    "Keep your body straight."
+  ],
+  "textSource": "opengym"
+}

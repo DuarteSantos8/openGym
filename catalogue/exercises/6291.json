@@ -1,0 +1,23 @@
+{
+  "id": "6291",
+  "name": "warrior pose ii",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "shoulders",
+    "core"
+  ],
+  "category": "yoga",
+  "description": "A wide lunge with arms extended to the sides. It strengthens the legs and opens the hips.",
+  "instructions": [
+    "Stand with feet wide, turn your front foot out and back foot slightly in.",
+    "Bend your front knee over the ankle.",
+    "Extend both arms parallel to the floor.",
+    "Gaze over your front hand.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

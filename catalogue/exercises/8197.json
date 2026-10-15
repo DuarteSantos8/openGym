@@ -1,0 +1,22 @@
+{
+  "id": "8197",
+  "name": "sitting swimmer on a chair",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "core",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "A seated move where your arms alternate in a swimming motion. A gentle shoulder warm-up for any time.",
+  "instructions": [
+    "Sit upright near the edge of a chair.",
+    "Lean forward slightly with a flat back.",
+    "Reach one arm forward and the other back, then alternate.",
+    "Move in a steady rhythm.",
+    "Keep your core braced."
+  ],
+  "textSource": "opengym"
+}

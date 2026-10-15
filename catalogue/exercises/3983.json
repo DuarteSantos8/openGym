@@ -1,0 +1,22 @@
+{
+  "id": "3983",
+  "name": "one arm front plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "obliques",
+    "glutes"
+  ],
+  "category": "isometric",
+  "description": "A front plank held with one arm lifted. It tests anti-rotation core strength.",
+  "instructions": [
+    "Start in a high plank with feet wide.",
+    "Lift one hand off the floor.",
+    "Hold your hips steady.",
+    "Hold for 20-30 seconds.",
+    "Switch arms."
+  ],
+  "textSource": "opengym"
+}

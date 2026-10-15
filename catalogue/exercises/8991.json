@@ -1,0 +1,23 @@
+{
+  "id": "8991",
+  "name": "barbell zercher back extension",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Holding a barbell in the crook of your elbows, you hinge and extend the back. It loads the lower back, glutes and core.",
+  "instructions": [
+    "Hold the barbell in the crook of your elbows against your chest.",
+    "Set up on a back extension bench with your hips on the pad.",
+    "Lower your torso with a flat back until you feel a hamstring stretch.",
+    "Raise your torso until your body is in a straight line.",
+    "Avoid hyperextending at the top.",
+    "Use a light weight and control the bar."
+  ],
+  "textSource": "opengym"
+}

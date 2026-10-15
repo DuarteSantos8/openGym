@@ -1,0 +1,20 @@
+{
+  "id": "0817",
+  "name": "triceps stretch",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "stretching",
+  "description": "An overhead stretch for the back of the upper arm, pulling the elbow toward the head. It loosens the triceps and shoulders.",
+  "instructions": [
+    "Stand or sit upright with your back straight.",
+    "Extend one arm overhead, bending it at the elbow.",
+    "Place your opposite hand on the bent elbow and gently pull it towards your head.",
+    "Hold the stretch for 15-30 seconds, feeling a gentle stretch in your triceps.",
+    "Release the stretch and repeat on the other arm."
+  ],
+  "textSource": "exercisedb"
+}

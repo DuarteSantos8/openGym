@@ -1,0 +1,22 @@
+{
+  "id": "0005",
+  "name": "band alternate biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A biceps curl done one arm at a time against a band stood on with your feet. It gives rising tension toward the top of the curl.",
+  "instructions": [
+    "Stand on the middle of a band and hold an end in each hand.",
+    "Keep your elbows at your sides with palms forward.",
+    "Curl one hand up toward your shoulder.",
+    "Lower it slowly while curling the other hand.",
+    "Keep your upper arms still and avoid leaning back.",
+    "Alternate sides for your reps."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "2727",
+  "name": "strongman shield carry",
+  "bodyPart": "full body",
+  "equipment": "weight plate",
+  "target": "spine",
+  "secondaryMuscles": [
+    "core",
+    "glutes",
+    "upper back",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Carrying a heavy shield-like load over a distance, training core and back strength.",
+  "instructions": [
+    "Lift the shield and hold it in front of you.",
+    "Stand tall with your core braced.",
+    "Walk forward at a steady pace.",
+    "Keep your posture upright.",
+    "Set it down under control when you finish."
+  ],
+  "textSource": "opengym"
+}

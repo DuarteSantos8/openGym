@@ -1,0 +1,22 @@
+{
+  "id": "0591",
+  "name": "lever overhand triceps dip",
+  "bodyPart": "upper arms",
+  "equipment": "leverage machine",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "On a dip machine, you press the handles down and extend your elbows. Focuses on the triceps and chest.",
+  "instructions": [
+    "Adjust the machine to the appropriate height and secure your body in position.",
+    "Grasp the handles with an overhand grip and position your body so that your arms are fully extended.",
+    "Lower your body by bending your elbows, keeping your upper arms close to your sides.",
+    "Continue lowering until your upper arms are parallel to the floor.",
+    "Pause for a moment, then push yourself back up to the starting position by extending your elbows.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

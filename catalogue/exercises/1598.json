@@ -1,0 +1,23 @@
+{
+  "id": "1598",
+  "name": "smith zercher squat",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "biceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A squat holding the bar in the crooks of your elbows on the smith machine. It trains the legs while taxing the core and upper back.",
+  "instructions": [
+    "Set the bar at waist height and hook your elbows under it with your arms crossed.",
+    "Unrack and stand with feet shoulder-width apart.",
+    "Squat down while keeping your chest up and the bar close to your body.",
+    "Go until your thighs are about parallel.",
+    "Press through your heels to stand and rerack when done."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4079",
+  "name": "band standing alternate chest press",
+  "bodyPart": "chest",
+  "equipment": "band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Standing band press, one arm at a time, hitting the chest and triceps.",
+  "instructions": [
+    "Anchor the band behind you at chest height and hold both ends.",
+    "Stand in a staggered stance.",
+    "Press one hand straight forward.",
+    "Return and press the other hand.",
+    "Keep your torso steady."
+  ],
+  "textSource": "opengym"
+}

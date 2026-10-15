@@ -1,0 +1,23 @@
+{
+  "id": "2724",
+  "name": "strongman atlas stones",
+  "bodyPart": "full body",
+  "equipment": "weight plate",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Lifting heavy round stones onto a platform, a classic test of full-body strength.",
+  "instructions": [
+    "Straddle the stone and squat down to wrap your arms around it.",
+    "Lift it to your lap by driving the hips forward.",
+    "Roll the stone up your chest.",
+    "Extend your hips to load it on the platform.",
+    "Lower it back to the floor under control and reset."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "3588",
+  "name": "quickly swing arms in place",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "upper back",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "Swing your arms quickly while standing to warm up the shoulders and raise your heart rate.",
+  "instructions": [
+    "Stand with feet hip width apart and knees soft.",
+    "Swing both arms across your chest and open wide.",
+    "Keep your torso upright and relaxed.",
+    "Increase speed gradually.",
+    "Continue for 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

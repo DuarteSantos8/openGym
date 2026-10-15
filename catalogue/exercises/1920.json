@@ -1,0 +1,22 @@
+{
+  "id": "1920",
+  "name": "plantar flexion stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles",
+    "feet"
+  ],
+  "category": "stretching",
+  "description": "Pointing the foot downward to stretch the front of the ankle and shin.",
+  "instructions": [
+    "Sit on a chair or the floor with one leg extended.",
+    "Point your toes away from you as far as is comfortable.",
+    "Gently press the top of the foot with your hand for a little extra stretch.",
+    "Keep the movement slow and avoid forcing the ankle.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1470",
+  "name": "lateral side plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A classic side plank that trains the obliques and hip stabilisers.",
+  "instructions": [
+    "Lie on your side with your forearm under your shoulder and your legs straight.",
+    "Stack your feet or stagger them for balance.",
+    "Lift your hips to form a straight line from head to feet.",
+    "Keep your core tight and your hips from sagging.",
+    "Hold for the planned time, then switch sides."
+  ],
+  "textSource": "opengym"
+}

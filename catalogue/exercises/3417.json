@@ -1,0 +1,22 @@
+{
+  "id": "3417",
+  "name": "kneeling one arm reach roll lift",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "obliques"
+  ],
+  "category": "mobility",
+  "description": "A kneeling drill where one arm reaches, rolls and lifts to open the upper back and shoulders.",
+  "instructions": [
+    "Start on hands and knees with hands under shoulders.",
+    "Reach one arm forward along the floor.",
+    "Roll that arm up and across, rotating your chest.",
+    "Lift it toward the ceiling, following your hand with your eyes.",
+    "Return and repeat, then switch arms."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4187",
+  "name": "ez bar legs side pull in sit up",
+  "bodyPart": "waist",
+  "equipment": "ez barbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A sit up with legs pulled to the side while holding an EZ bar. It works the abs and obliques.",
+  "instructions": [
+    "Lie on your back holding an EZ bar over your chest.",
+    "Bend your knees.",
+    "Sit up while pulling your knees to one side.",
+    "Lower slowly.",
+    "Repeat on the other side.",
+    "Keep the bar stable."
+  ],
+  "textSource": "opengym"
+}

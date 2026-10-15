@@ -1,0 +1,23 @@
+{
+  "id": "8894",
+  "name": "knee tuck push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with a knee tuck toward the chest at the top. It combines upper body pressing with an ab crunch.",
+  "instructions": [
+    "Start in a push-up position with a straight body.",
+    "Lower your chest toward the floor.",
+    "Press back up.",
+    "Pull one knee toward your chest.",
+    "Return the leg and repeat on the other side.",
+    "Keep your hips level."
+  ],
+  "textSource": "opengym"
+}

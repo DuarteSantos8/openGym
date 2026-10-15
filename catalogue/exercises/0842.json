@@ -1,0 +1,22 @@
+{
+  "id": "0842",
+  "name": "weighted pullover (on stability ball)",
+  "bodyPart": "chest",
+  "equipment": "weighted",
+  "target": "lats",
+  "secondaryMuscles": [
+    "chest",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A pullover with a weight while lying across a stability ball. It stretches and works the lats and chest.",
+  "instructions": [
+    "Lie with your upper back on the ball, hips lifted.",
+    "Hold a weight with both hands above your chest.",
+    "Lower it back over your head with slightly bent arms.",
+    "Pull it back up over your chest.",
+    "Keep your core tight and hips high."
+  ],
+  "textSource": "opengym"
+}

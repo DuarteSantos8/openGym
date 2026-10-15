@@ -1,0 +1,22 @@
+{
+  "id": "6546",
+  "name": "landmine single leg hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "landmine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-leg hip thrust with a landmine bar across the hips. It hits each glute separately and challenges balance.",
+  "instructions": [
+    "Rest your upper back on a bench with a padded landmine bar across your hips.",
+    "Plant one foot on the floor and extend the other leg or hold it up.",
+    "Drive through the planted heel and lift your hips.",
+    "Squeeze the glute at the top with your torso level.",
+    "Lower with control.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

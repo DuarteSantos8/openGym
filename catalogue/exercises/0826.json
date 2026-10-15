@@ -1,0 +1,21 @@
+{
+  "id": "0826",
+  "name": "vertical leg raise (on parallel bars)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A leg raise done hanging or supported between parallel bars, lifting straight legs in front. It trains the abs and hip flexors.",
+  "instructions": [
+    "Hang from the parallel bars with your arms fully extended and your body straight.",
+    "Engage your core and lift your legs up in front of you, keeping them straight.",
+    "Continue lifting until your legs are parallel to the ground or slightly higher.",
+    "Pause for a moment at the top, then slowly lower your legs back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2448",
+  "textSource": "exercisedb"
+}

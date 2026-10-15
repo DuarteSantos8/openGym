@@ -1,0 +1,22 @@
+{
+  "id": "5266",
+  "name": "air twisting crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A twisting crunch with the legs held in the air. It works your abs and obliques.",
+  "instructions": [
+    "Lie on your back with your knees raised.",
+    "Place your hands behind your head.",
+    "Lift your shoulders and twist toward one knee.",
+    "Return and twist toward the other side.",
+    "Keep a slow rhythm and press your lower back down."
+  ],
+  "femaleVariant": "0004",
+  "textSource": "opengym"
+}

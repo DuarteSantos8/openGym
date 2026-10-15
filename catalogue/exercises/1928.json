@@ -1,0 +1,21 @@
+{
+  "id": "1928",
+  "name": "tibial flexion stretch on wall bar",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "A stretch using a wall bar to flex the ankle and lengthen the muscles of the lower leg.",
+  "instructions": [
+    "Stand facing the wall bars and place the front of one foot against a low bar.",
+    "Lean your body forward and press your heel toward the floor until the lower leg stretches.",
+    "Hold the bars with your hands to stay balanced.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

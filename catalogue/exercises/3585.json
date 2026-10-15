@@ -1,0 +1,23 @@
+{
+  "id": "3585",
+  "name": "single leg deadlift with knee lift",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A single-leg hip hinge that ends with a knee drive, training balance, hamstrings and glutes.",
+  "instructions": [
+    "Stand on one leg with a slight knee bend.",
+    "Hinge forward as the other leg extends behind you.",
+    "Return to upright by squeezing the glute.",
+    "Drive the free knee up toward your chest.",
+    "Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

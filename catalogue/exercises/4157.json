@@ -1,0 +1,22 @@
+{
+  "id": "4157",
+  "name": "dumbbell seated front and back tate press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A seated triceps move where the dumbbells go from the chest outward in front and back. It hits the triceps from a unique angle.",
+  "instructions": [
+    "Sit upright holding dumbbells above your chest, palms facing your feet.",
+    "Keep your upper arms close to your torso.",
+    "Lower the weights with elbows flared until they touch your chest.",
+    "Extend your elbows to push the weights up and slightly forward.",
+    "Return to the start in a controlled path.",
+    "Keep your back straight and avoid arching."
+  ],
+  "textSource": "opengym"
+}

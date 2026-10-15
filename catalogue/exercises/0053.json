@@ -1,0 +1,22 @@
+{
+  "id": "0053",
+  "name": "barbell jump squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A squat with an explosive jump while holding the bar on the upper back. Builds leg power.",
+  "instructions": [
+    "Start by standing with your feet shoulder-width apart, holding a barbell across your upper back.",
+    "Lower your body into a squat position by bending your knees and pushing your hips back.",
+    "Once you reach the bottom of the squat, explode upwards by jumping off the ground.",
+    "As you jump, extend your hips, knees, and ankles, pushing through your toes.",
+    "Land softly back into the squat position and immediately repeat the movement for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

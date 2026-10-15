@@ -1,0 +1,25 @@
+{
+  "id": "3095",
+  "name": "lateral bound",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hip flexors",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A sideways leap from one leg to the other. It builds lateral power and balance.",
+  "instructions": [
+    "Stand on one leg with a slight bend in the knee.",
+    "Push off hard to leap sideways.",
+    "Land on the opposite foot and bend to absorb the impact.",
+    "Hold the landing for a second to stay balanced.",
+    "Bound back the other way.",
+    "Keep your chest up and your knee over your toes."
+  ],
+  "femaleVariant": "0563",
+  "textSource": "opengym"
+}

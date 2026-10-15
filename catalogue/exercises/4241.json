@@ -1,0 +1,24 @@
+{
+  "id": "4241",
+  "name": "resistance band shuttle",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Quick side-to-side steps against band tension. It trains lateral leg power, agility and glute strength.",
+  "instructions": [
+    "Anchor a band at hip height or place it around your waist with a partner or post.",
+    "Get into a slight squat with your chest up.",
+    "Shuffle sideways several steps against the tension.",
+    "Keep your feet from crossing.",
+    "Shuffle back the other way under control.",
+    "Stay low throughout."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,26 @@
+{
+  "id": "2311",
+  "name": "walking on stepmill",
+  "bodyPart": "cardio",
+  "equipment": "stepmill machine",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "glutes",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "Stepping on a stepmill at a steady pace. A tough, low-impact cardio workout for legs and glutes.",
+  "instructions": [
+    "Adjust the stepmill machine to a comfortable level.",
+    "Step onto the machine and place your hands on the handrails for support.",
+    "Start walking by placing one foot on a step and then the other, alternating between legs.",
+    "Maintain an upright posture and engage your core muscles.",
+    "Continue walking for the desired duration or distance.",
+    "Gradually increase the intensity or speed as you become more comfortable with the exercise.",
+    "Remember to cool down and stretch after completing the exercise."
+  ],
+  "femaleVariant": "2490",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "4132",
+  "name": "kettlebell sumo deadlift with high pull",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "trapezius",
+    "shoulders",
+    "quadriceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A sumo deadlift flowing into a high pull, working legs, hips and upper back.",
+  "instructions": [
+    "Stand wide over a kettlebell and grip it with both hands.",
+    "Drive up through your legs.",
+    "Pull it to chin height with elbows high.",
+    "Lower it under control.",
+    "Keep your back flat."
+  ],
+  "textSource": "opengym"
+}

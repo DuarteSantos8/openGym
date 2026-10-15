@@ -1,0 +1,22 @@
+{
+  "id": "4812",
+  "name": "side crunch v. 3",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A side crunch, a second variation, aimed at the obliques. It shortens the side of the waist with a small controlled movement.",
+  "instructions": [
+    "Lie on your side with knees bent and one hand behind your head.",
+    "Rest the other hand on the floor for balance.",
+    "Lift your shoulders and knees toward each other.",
+    "Squeeze the side of your waist at the top.",
+    "Lower slowly without relaxing fully.",
+    "Complete your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

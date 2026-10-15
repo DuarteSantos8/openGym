@@ -1,0 +1,23 @@
+{
+  "id": "1331",
+  "name": "dumbbell reverse grip incline bench two arm row",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A two-arm dumbbell row with an underhand grip, chest down on an incline bench. The support keeps you strict so the back and biceps work.",
+  "instructions": [
+    "Set up an incline bench at a 45-degree angle.",
+    "Sit on the bench with your chest against the backrest and your feet flat on the ground.",
+    "Hold a dumbbell in each hand with an underhand grip.",
+    "Lean forward and let your arms hang straight down, fully extended.",
+    "Pull the dumbbells up towards your chest, squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly lower the dumbbells back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

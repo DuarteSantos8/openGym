@@ -1,0 +1,21 @@
+{
+  "id": "0791",
+  "name": "standing hip abduction",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Raising a straight leg out to the side while standing. It strengthens the outer hip and glutes.",
+  "instructions": [
+    "Stand tall beside a wall or chair for balance.",
+    "Keep your hips square and toes pointing forward.",
+    "Lift one leg out to the side with the knee straight.",
+    "Pause briefly at the top.",
+    "Lower slowly, finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5129",
+  "name": "seated upper body rotation",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "A seated twist of the upper body. It mobilises the spine and warms up the obliques.",
+  "instructions": [
+    "Sit tall with arms crossed on your chest.",
+    "Keep your hips facing forward.",
+    "Rotate your torso to one side.",
+    "Return to the centre.",
+    "Rotate to the other side.",
+    "Move smoothly without forcing the twist."
+  ],
+  "textSource": "opengym"
+}

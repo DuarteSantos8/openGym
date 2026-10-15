@@ -1,0 +1,22 @@
+{
+  "id": "3712",
+  "name": "standing single leg calf raise with support",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "calisthenics",
+  "description": "Raise your heel on one leg while holding a support for balance, building the calf.",
+  "instructions": [
+    "Stand on one foot and hold a wall or rail for balance.",
+    "Rise as high as you can onto the ball of your foot.",
+    "Pause briefly at the top.",
+    "Lower slowly below flat if you can do so comfortably.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

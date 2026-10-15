@@ -1,0 +1,23 @@
+{
+  "id": "9045",
+  "name": "hanging front lever hold",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lats",
+    "core",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "The full front lever: a straight horizontal body hold under a bar. It is an advanced test of back and core strength.",
+  "instructions": [
+    "Hang from a pull-up bar with an overhand grip.",
+    "Pull your shoulder blades down and tighten your core.",
+    "Raise your whole body to horizontal with your legs straight.",
+    "Keep your arms locked and your body in one line.",
+    "Hold for as long as you can with good form.",
+    "Lower down slowly."
+  ],
+  "textSource": "opengym"
+}

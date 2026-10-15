@@ -1,0 +1,23 @@
+{
+  "id": "7294",
+  "name": "lying pelvic tilt",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower back",
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "mobility",
+  "description": "A small floor movement that teaches you to control the tilt of your pelvis and relax the lower back.",
+  "instructions": [
+    "Lie on your back with your knees bent and feet flat.",
+    "Take a breath in with a neutral spine.",
+    "Exhale, tilting your pelvis so your lower back presses into the floor.",
+    "Hold for a moment.",
+    "Release back to neutral.",
+    "Repeat slowly."
+  ],
+  "textSource": "opengym"
+}

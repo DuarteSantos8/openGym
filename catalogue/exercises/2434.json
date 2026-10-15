@@ -1,0 +1,23 @@
+{
+  "id": "2434",
+  "name": "cable seated twist on floor",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A seated rotation with a cable that trains the obliques and core.",
+  "instructions": [
+    "Sit on the floor facing a low cable and hold the handle.",
+    "Lean back slightly and lift your feet if you can.",
+    "Rotate your torso from side to side.",
+    "Keep your arms steady and your core tight.",
+    "Move slowly without jerking.",
+    "Continue for the planned reps."
+  ],
+  "textSource": "opengym"
+}

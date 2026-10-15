@@ -1,0 +1,20 @@
+{
+  "id": "2741",
+  "name": "ez-barbell standing wide grip biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A standing EZ bar curl with a wide grip. Emphasises the biceps.",
+  "instructions": [
+    "Stand up straight with your feet shoulder-width apart and hold the ez barbell with an underhand grip, hands wider than shoulder-width apart.",
+    "Keep your elbows close to your torso and your upper arms stationary throughout the movement.",
+    "Curl the barbell up towards your shoulders by contracting your biceps.",
+    "Pause for a moment at the top, then slowly lower the barbell back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

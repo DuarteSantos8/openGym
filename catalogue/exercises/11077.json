@@ -1,0 +1,22 @@
+{
+  "id": "11077",
+  "name": "dumbbell over the chest lying abduction",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A side-lying hip abduction while you hold a dumbbell over your chest. It trains the outer hips and adds a core challenge.",
+  "instructions": [
+    "Lie on your side with legs stacked and hold a dumbbell over your chest with both hands.",
+    "Keep your hips stacked and core braced.",
+    "Raise your top leg without rotating your torso.",
+    "Pause at the top.",
+    "Lower with control, finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

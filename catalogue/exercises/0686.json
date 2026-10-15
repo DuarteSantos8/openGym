@@ -1,0 +1,24 @@
+{
+  "id": "0686",
+  "name": "russian twist (on stability ball arms straight)",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A rotating move with your upper back on a stability ball and arms straight. It targets the obliques and core stability.",
+  "instructions": [
+    "Lie with your upper back on a stability ball.",
+    "Lift your hips so your body is flat like a table.",
+    "Extend your arms straight above your chest.",
+    "Rotate your torso to one side.",
+    "Return to center and rotate to the other side.",
+    "Keep your hips lifted throughout."
+  ],
+  "textSource": "opengym"
+}

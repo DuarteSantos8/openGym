@@ -1,0 +1,21 @@
+{
+  "id": "0346",
+  "name": "dumbbell lying one arm supinated triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Lying on a bench, you extend one arm overhead with a palm-up grip to hit the back of the upper arm. A focused way to build triceps one side at a time.",
+  "instructions": [
+    "Lie flat on a bench with your back and head supported, and your feet flat on the ground.",
+    "Hold a dumbbell in one hand with an underhand grip, and extend your arm straight up above your shoulder.",
+    "Keeping your upper arm stationary, slowly lower the dumbbell behind your head by bending your elbow.",
+    "Pause for a moment at the bottom, then extend your arm back up to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "femaleVariant": "2587",
+  "textSource": "exercisedb"
+}

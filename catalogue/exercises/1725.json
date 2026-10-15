@@ -1,0 +1,22 @@
+{
+  "id": "1725",
+  "name": "cable rope incline tricep extension",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "An incline triceps extension with a rope on a cable. It stretches and builds the triceps.",
+  "instructions": [
+    "Attach a rope to a high pulley and adjust the incline bench to a comfortable angle.",
+    "Stand facing away from the pulley with your feet shoulder-width apart.",
+    "Grasp the rope with an overhand grip and extend your arms straight overhead.",
+    "Keep your elbows close to your head and your upper arms stationary throughout the exercise.",
+    "Lower the rope behind your head by bending your elbows until your forearms touch your biceps.",
+    "Pause for a moment, then extend your arms back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5609",
+  "name": "cable standing face pull",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Cable face pull to build the rear delts and strengthen the upper back.",
+  "instructions": [
+    "Set a cable at upper chest height with a handle.",
+    "Stand tall and pull toward your face.",
+    "Spread your hands apart at the end.",
+    "Squeeze your shoulder blades.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

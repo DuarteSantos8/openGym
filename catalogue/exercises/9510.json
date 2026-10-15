@@ -1,0 +1,23 @@
+{
+  "id": "9510",
+  "name": "partner assisted pull up",
+  "bodyPart": "back",
+  "equipment": "assisted",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up where a partner supports your legs or hips. It lets you build pulling strength while you work toward full reps.",
+  "instructions": [
+    "Hang from a pull-up bar with an overhand grip.",
+    "Have your partner hold your legs or hips.",
+    "Pull your chest toward the bar.",
+    "Pause at the top.",
+    "Lower yourself slowly.",
+    "Ask your partner to give just enough help."
+  ],
+  "textSource": "opengym"
+}

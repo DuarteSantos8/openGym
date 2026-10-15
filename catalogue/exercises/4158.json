@@ -1,0 +1,22 @@
+{
+  "id": "4158",
+  "name": "weighted side crunch",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A side crunch holding a weight to load the obliques. It builds strength along the sides of the waist.",
+  "instructions": [
+    "Lie on your side with knees bent and hold a weight against your chest.",
+    "Support your head lightly.",
+    "Crunch your top ribs toward your hip.",
+    "Pause and squeeze your side.",
+    "Lower slowly without losing tension.",
+    "Complete all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

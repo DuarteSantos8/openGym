@@ -1,0 +1,22 @@
+{
+  "id": "4329",
+  "name": "push with chair",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up variation with hands on a sturdy chair. It makes pressing easier while still training chest and arms.",
+  "instructions": [
+    "Place a stable chair against a wall and set your hands on the seat edge.",
+    "Walk your feet back until your body is straight.",
+    "Lower your chest toward the seat, elbows at about 45 degrees.",
+    "Push back up until your arms are straight.",
+    "Keep your core tight and hips level."
+  ],
+  "textSource": "opengym"
+}

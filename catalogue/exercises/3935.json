@@ -1,0 +1,22 @@
+{
+  "id": "3935",
+  "name": "decline push up (kneeling)",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up from your knees with the lower body elevated, shifting the work to the upper chest and shoulders.",
+  "instructions": [
+    "Kneel with your knees on a bench or step and hands on the floor.",
+    "Keep a straight line from head to knees.",
+    "Lower your chest toward the floor.",
+    "Press back up.",
+    "Keep your core tight and your elbows at about 45 degrees."
+  ],
+  "textSource": "opengym"
+}

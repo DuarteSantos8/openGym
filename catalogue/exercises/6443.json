@@ -1,0 +1,22 @@
+{
+  "id": "6443",
+  "name": "half seated leg circle",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core",
+    "adductors"
+  ],
+  "category": "mobility",
+  "description": "Seated leg circles that loosen up your hips and gently work the muscles around them.",
+  "instructions": [
+    "Sit on the floor leaning back slightly on your hands.",
+    "Lift one leg a little off the floor.",
+    "Draw slow circles in the air with that foot.",
+    "Keep your core engaged and your torso steady.",
+    "Switch directions, then switch legs."
+  ],
+  "textSource": "opengym"
+}

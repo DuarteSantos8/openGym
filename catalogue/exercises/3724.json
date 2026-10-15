@@ -1,0 +1,22 @@
+{
+  "id": "3724",
+  "name": "barbell floor chest press",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A barbell press from the floor. The floor limits the range and takes pressure off your shoulders.",
+  "instructions": [
+    "Lie on the floor with your knees bent and a barbell set above your chest.",
+    "Grip the bar slightly wider than shoulder width.",
+    "Lower the bar until your upper arms touch the floor.",
+    "Pause briefly.",
+    "Press the bar back up to full extension."
+  ],
+  "textSource": "opengym"
+}

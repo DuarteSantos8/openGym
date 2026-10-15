@@ -1,0 +1,22 @@
+{
+  "id": "1282",
+  "name": "dumbbell incline one arm press on exercise ball",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A one-arm dumbbell press done with your upper back on a stability ball. Your core has to stay tight to keep you steady while the chest presses.",
+  "instructions": [
+    "Sit on an exercise ball with a dumbbell in one hand, feet flat on the ground.",
+    "Slowly walk your feet forward, rolling the ball until your head, neck, and upper back are supported on the ball.",
+    "Hold the dumbbell at shoulder height with your palm facing forward.",
+    "Press the dumbbell upward until your arm is fully extended.",
+    "Pause for a moment at the top, then slowly lower the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch to the other arm."
+  ],
+  "textSource": "exercisedb"
+}

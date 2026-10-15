@@ -1,0 +1,23 @@
+{
+  "id": "4094",
+  "name": "suspender forward lunge with rear fly",
+  "bodyPart": "shoulders",
+  "equipment": "suspension trainer",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "quadriceps",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A lunge combined with a rear delt fly on suspension straps, working legs, shoulders and upper back together.",
+  "instructions": [
+    "Hold the straps with both hands, leaning back slightly with arms extended.",
+    "Step one foot forward into a lunge.",
+    "As you lower, pull your arms out wide in a rear fly.",
+    "Push through the front foot to return to standing and bring your hands together.",
+    "Switch legs on the next rep."
+  ],
+  "textSource": "opengym"
+}

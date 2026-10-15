@@ -1,0 +1,22 @@
+{
+  "id": "5636",
+  "name": "landmine kneeling one arm shoulder press v. 2",
+  "bodyPart": "shoulders",
+  "equipment": "landmine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Kneeling one-arm landmine press for shoulder strength with an angled path.",
+  "instructions": [
+    "Kneel holding the end of a landmine bar at your shoulder.",
+    "Brace your core and keep your torso upright.",
+    "Press the bar up and forward until your arm is straight.",
+    "Lower slowly.",
+    "Switch sides after your set."
+  ],
+  "textSource": "opengym"
+}

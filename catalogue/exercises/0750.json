@@ -1,0 +1,25 @@
+{
+  "id": "0750",
+  "name": "smith chair squat",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "On the smith machine, you squat down until you touch a chair. Works the quads and glutes with a clear depth marker.",
+  "instructions": [
+    "Adjust the height of the smith machine bar to a comfortable position.",
+    "Stand with your feet shoulder-width apart, toes slightly turned out.",
+    "Place the barbell across your upper back, resting it on your traps.",
+    "Engage your core and keep your chest up as you slowly lower your body by bending your knees and hips.",
+    "Continue lowering until your thighs are parallel to the ground, or as low as you can comfortably go.",
+    "Pause for a moment, then push through your heels to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2617",
+  "textSource": "exercisedb"
+}

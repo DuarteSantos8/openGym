@@ -1,0 +1,21 @@
+{
+  "id": "0746",
+  "name": "smith back shrug",
+  "bodyPart": "back",
+  "equipment": "smith machine",
+  "target": "traps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "On the smith machine, you lift your shoulders straight up with the bar. Builds the upper traps.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your knees slightly bent.",
+    "Grasp the barbell with an overhand grip, hands slightly wider than shoulder-width apart.",
+    "Keep your arms straight and allow the barbell to hang in front of your thighs.",
+    "Lift your shoulders straight up towards your ears, squeezing your traps at the top.",
+    "Hold for a moment, then lower your shoulders back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

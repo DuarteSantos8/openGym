@@ -1,0 +1,22 @@
+{
+  "id": "10065",
+  "name": "lever torso rotation",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A machine rotation that trains the abs and obliques with controlled twisting.",
+  "instructions": [
+    "Sit in the machine and secure your torso against the pads.",
+    "Grip the handles.",
+    "Rotate your torso to one side while keeping your hips still.",
+    "Pause at the end.",
+    "Return to centre and rotate the other way.",
+    "Go slowly and avoid momentum."
+  ],
+  "textSource": "opengym"
+}

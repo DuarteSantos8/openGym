@@ -1,0 +1,23 @@
+{
+  "id": "6146",
+  "name": "dumbbell bent over row against wall",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A dumbbell row where you lean on a wall for support. It trains the back while sparing the lower back.",
+  "instructions": [
+    "Stand a step from a wall and hinge forward.",
+    "Support your forehead or free hand on the wall.",
+    "Hold a dumbbell in each hand with your arms hanging.",
+    "Row the weights toward your hips.",
+    "Squeeze your shoulder blades together.",
+    "Lower with control."
+  ],
+  "textSource": "opengym"
+}

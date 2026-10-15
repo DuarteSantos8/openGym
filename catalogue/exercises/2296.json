@@ -1,0 +1,24 @@
+{
+  "id": "2296",
+  "name": "stability ball rollout",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "core",
+    "shoulders",
+    "lats"
+  ],
+  "category": "strength",
+  "description": "Rolling a ball forward with your forearms to challenge the abs and core stability.",
+  "instructions": [
+    "Kneel in front of a stability ball and place your forearms on it.",
+    "Brace your abs and keep your body in a straight line from knees to head.",
+    "Roll the ball forward by extending your arms and body.",
+    "Stop when you feel your core working hard without your back sagging.",
+    "Pull the ball back by squeezing your abs.",
+    "Repeat slowly."
+  ],
+  "textSource": "opengym"
+}

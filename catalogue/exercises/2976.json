@@ -1,0 +1,25 @@
+{
+  "id": "2976",
+  "name": "landmine squat and press",
+  "bodyPart": "full body",
+  "equipment": "landmine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "triceps",
+    "core",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A squat that flows into a press with a landmine bar. It works legs and shoulders in one smooth motion.",
+  "instructions": [
+    "Hold the end of the landmine bar at your chest with both hands.",
+    "Stand with your feet shoulder-width apart.",
+    "Squat down with your chest up.",
+    "Drive up and press the bar away until your arms are straight.",
+    "Lower the bar to your chest and repeat."
+  ],
+  "femaleVariant": "2977",
+  "textSource": "opengym"
+}

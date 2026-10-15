@@ -1,0 +1,24 @@
+{
+  "id": "2982",
+  "name": "dumbbell alternating floor press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A floor press where you press one dumbbell at a time. It trains the chest and triceps with a limited range for the shoulders.",
+  "instructions": [
+    "Lie on the floor with a dumbbell in each hand and knees bent.",
+    "Press both dumbbells up over your chest.",
+    "Lower one dumbbell until your upper arm touches the floor.",
+    "Press it back up and lower the other side.",
+    "Keep alternating."
+  ],
+  "femaleVariant": "2983",
+  "textSource": "opengym"
+}

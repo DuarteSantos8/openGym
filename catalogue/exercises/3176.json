@@ -1,0 +1,24 @@
+{
+  "id": "3176",
+  "name": "dumbbell straight arm pullover (knees at 90 degrees)",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "lats",
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A straight-arm pullover with knees bent to 90 degrees on a bench. It works the chest and lats and keeps the trunk braced.",
+  "instructions": [
+    "Lie on a bench with your feet up and knees at 90 degrees.",
+    "Hold one dumbbell with both hands above your chest.",
+    "Keep your arms nearly straight.",
+    "Lower the dumbbell in an arc behind your head.",
+    "Pull it back over your chest.",
+    "Keep your ribs down and your back flat."
+  ],
+  "textSource": "opengym"
+}

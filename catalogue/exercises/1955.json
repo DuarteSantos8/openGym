@@ -1,0 +1,21 @@
+{
+  "id": "1955",
+  "name": "single lean back quadriceps stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "Kneeling with one leg folded and leaning back to stretch the quadriceps.",
+  "instructions": [
+    "Kneel on both knees, then lift one foot out in front so that the other leg is folded.",
+    "Place your hands behind you on the floor.",
+    "Lean back slowly until you feel a stretch in the front of the folded thigh.",
+    "Keep your hips lifted and avoid sagging into the lower back.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

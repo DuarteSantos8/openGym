@@ -1,0 +1,23 @@
+{
+  "id": "5349",
+  "name": "lever abduction leg raise",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "Raise the leg out to the side against lever resistance. Targets the outer hips.",
+  "instructions": [
+    "Set up in the machine with the pad on the outside of your leg.",
+    "Hold the supports for stability.",
+    "Raise your leg out to the side in a controlled motion.",
+    "Pause at the top.",
+    "Lower slowly.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

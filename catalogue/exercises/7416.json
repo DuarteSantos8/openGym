@@ -1,0 +1,22 @@
+{
+  "id": "7416",
+  "name": "cable standing neutral grip fly",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "Standing cable fly with palms facing each other to squeeze the chest.",
+  "instructions": [
+    "Set the pulleys at chest height and grab the handles.",
+    "Step forward with a staggered stance and a slight elbow bend.",
+    "Bring your hands together in front of your chest.",
+    "Squeeze your pecs for a moment.",
+    "Return slowly until you feel a stretch."
+  ],
+  "textSource": "opengym"
+}

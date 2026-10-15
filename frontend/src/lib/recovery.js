@@ -1,24 +1,66 @@
-import { EXIDX } from './exercises.js'
+import { EXIDX, isAssisted } from './exercises.js'
+import { workoutAt } from './history.js'
 import { MUSCLES, musclesOf } from './muscles.js'
-import { isWarmupRow, dropsOf } from './workout-model.js'
+import { isWarmupRow, dropsOf, isSideSet } from './workout-model.js'
+import { estimate1RM, REP_CAP } from './onerm.js'
+import { rirOf, HARD_RIR } from './effort.js'
 
-// A "normal" hard session for one muscle, in primary-set equivalents. The saturation curve
-// 1 - exp(-stimulus / REF) maps any session size onto [0,1) so volume raises the starting
-// fatigue level without ever pinning it, and the value can then fade asymptotically.
-export const FATIGUE_REF_VOLUME = 2000  // default reference: kg of intensity-weighted volume per session
-export const FATIGUE_MIN_SESSIONS = 3  // smoothing horizon for the causal per-muscle reference
-// Computational bound for the stimulus scan, not a semantic cliff: after 30 days (20
-// half-lives) a session contributes below 1e-6 to the accumulated value.
+// Fatigue stimulus in effective hard sets, not tonnage: hypertrophy dose-response
+// tracks sets near failure (~5-30 reps), while tonnage overweights heavy compounds
+// (a 250x7 leg press counts ~50x a 5x12 fly for a comparable growth stimulus).
+// One full session on a muscle (~8 hard sets, the per-session growth plateau)
+// scores 1.0 raw unit; secondary movers count 0.4 via musclesOf weights.
+export const FATIGUE_SETS_PER_UNIT = 8
+// Per-session cap per muscle: beyond ~10-12 sets the growth response plateaus,
+// so extra junk volume must not extend the red tail linearly.
+export const FATIGUE_MAX_SETS_PER_SESSION = 12
+// Computational bound for the stimulus scan, not a semantic cliff: after 30 days
+// even a 24h half-life muscle retains below 1e-9 of the stimulus.
 export const FATIGUE_SCAN_MS = 30 * 24 * 60 * 60 * 1000
-export const BODYWEIGHT_REF_LOAD = 75  // kg assumed for bodyweight exercises when no load is logged
-export const CARDIO_TONNAGE_PER_MIN = 50  // duration proxy for cardio/timed work
+// Capacity anchors and chronic exposure look further back than the stimulus scan:
+// a 90-day rolling best still knows the lifter's recent strength, and 28 days of
+// exposure is the chronic side of the acute:chronic pair. Sessions older than the
+// stimulus scan never emit stimulus themselves - they only inform these two.
+export const FATIGUE_RIR_WINDOW_MS = 90 * 24 * 60 * 60 * 1000
+export const FATIGUE_ACUTE_WINDOW_MS = 7 * 24 * 60 * 60 * 1000
+export const FATIGUE_CHRONIC_WINDOW_MS = 28 * 24 * 60 * 60 * 1000
+// A far-from-failure set still moves blood and practices the lift: it costs no less
+// than this fraction of a hard set.
+export const FATIGUE_RIR_FLOOR_WEIGHT = 0.3
+// The acute:chronic gain is clamped: doubling volume at most doubles the scored
+// stimulus, halving at most halves it. Maintenance (~1.0) reproduces phase-1 values.
+export const FATIGUE_RATIO_MIN = 0.5
+export const FATIGUE_RATIO_MAX = 2
+// Prior weekly exposure for a muscle never trained in the chronic window: the novice
+// anchor. A first session therefore scores amplified (unadapted), a maintained
+// veteran scores ~1.0 (adapted) - the repeated-bout effect as arithmetic.
+export const FATIGUE_NOVICE_WEEKLY_SETS = 4
+// kg assumed for a bodyweight exercise's body mass when neither the workout nor the profile
+// carries a bodyweight. Only the RIR estimate reads it (a load against the anchor), so a wrong
+// guess shifts loaded and unloaded bodyweight sets together.
+export const BODYWEIGHT_REF_LOAD = 75
 
-// Preserve the shipped set-count signal when a completed custom/imported exercise has no load.
-// Two such sets therefore retain the old 1 - exp(-2 / 3) starting-fatigue reading.
-const ZERO_LOAD_SET_STIMULUS = FATIGUE_REF_VOLUME / 3
+// Exponential half-life for fatigue stimulus, per muscle. Lower body (heavier
+// absolute loads, more damage) recovers slower than upper body: 10RM
+// reproducibility data shows squat still down -6.6% at 36h while bench is -3.0%,
+// both fully back by 48-72h. Small/core muscles share the fast 24h lane.
+const FATIGUE_HL_24H = 24 * 60 * 60 * 1000
+const FATIGUE_HL_30H = 30 * 60 * 60 * 1000
+const FATIGUE_HL_48H = 48 * 60 * 60 * 1000
+const FATIGUE_HL_BY_MUSCLE = {
+  trapezius: FATIGUE_HL_30H, deltoids: FATIGUE_HL_24H, chest: FATIGUE_HL_30H,
+  'upper-back': FATIGUE_HL_30H, serratus: FATIGUE_HL_24H,
+  biceps: FATIGUE_HL_24H, triceps: FATIGUE_HL_24H, forearm: FATIGUE_HL_24H,
+  abs: FATIGUE_HL_24H, obliques: FATIGUE_HL_24H, 'lower-back': FATIGUE_HL_48H,
+  gluteal: FATIGUE_HL_48H, quadriceps: FATIGUE_HL_48H, hamstring: FATIGUE_HL_48H,
+  adductors: FATIGUE_HL_48H, 'hip-flexors': FATIGUE_HL_24H,
+  calves: FATIGUE_HL_48H, tibialis: FATIGUE_HL_24H,
+}
 
-/** Exponential half-life for fatigue stimulus. */
-export const FATIGUE_HALF_LIFE_MS = 129600000
+/** Exponential half-life for fatigue stimulus of one muscle. */
+export function fatigueHalfLifeOf(slug) {
+  return FATIGUE_HL_BY_MUSCLE[slug] || FATIGUE_HL_30H
+}
 
 /** Period after training during which retained strength remains at full value. */
 export const STRENGTH_FULL_MS = 1209600000
@@ -50,12 +92,11 @@ export function halfLifeDecay(ageMs, halfLifeMs) {
   return 0.5 ** (ageMs / halfLifeMs)
 }
 
-// The v2 data contract has one timestamp per workout, not per set. Keep this fallback in one
-// place so fatigue and strength use exactly the same stimulus time as effort.js.
-function workoutTimestamp(workout) {
-  const timestamp = workout?.start || new Date(workout?.d).getTime()
-  return Number.isFinite(timestamp) ? timestamp : Number(timestamp)
-}
+// The v2 data contract has one timestamp per workout, not per set. history.js owns the rule
+// (workoutAt) so fatigue, strength, effort.js and Stats all read the same stimulus time: a
+// start of 0 is a real timestamp, and a date-only workout is local noon rather than UTC
+// midnight, which is the previous day west of Greenwich.
+const workoutTimestamp = workoutAt
 
 function emptyMuscleMap(value) {
   return Object.fromEntries(MUSCLES.map(slug => [slug, value]))
@@ -67,12 +108,6 @@ function exerciseFor(entry) {
   return EXIDX[entry?.id] || entry
 }
 
-// Epley one-rep-max estimate, matching onerm.js (REP_CAP included so high-rep sets do not
-// inflate the estimate). Used only to express a set's intensity relative to the lifter's own
-// capacity - the same formula the app already shows for estimated 1RM.
-const REP_CAP = 12
-const epley1RM = (load, reps) => load * (1 + Math.min(reps || 1, REP_CAP) / 30)
-
 export const LB_TO_KG = 0.45359237
 
 function numeric(value) {
@@ -81,10 +116,10 @@ function numeric(value) {
   return Number.isFinite(n) ? n : null
 }
 
-function isPounds(unit) {
-  return /^(?:lb|lbs|pound|pounds)$/i.test(String(unit ?? '').trim())
-}
-
+// Unit stamps live on the set, the target, the entry, or the workout; profile unit
+// comes through opts. The anchor compares loads across sessions (and mixed-unit
+// imports alternate kg/lb rows), so every load is canonicalised to kg first -
+// 176 lb must anchor like 80 kg, not like 176 kg.
 function unitOf(...records) {
   for (const record of records) {
     if (!record || typeof record !== 'object') continue
@@ -95,6 +130,10 @@ function unitOf(...records) {
   return 'kg'
 }
 
+function isPounds(unit) {
+  return /^(?:lb|lbs|pound|pounds)$/i.test(String(unit ?? '').trim())
+}
+
 function kgOf(value, unit) {
   const n = numeric(value)
   if (n === null) return 0
@@ -103,8 +142,8 @@ function kgOf(value, unit) {
 
 // A bodyweight value stamped on a workout is the best historical value. When old records do not
 // carry one, use the current profile's canonical bodyweight supplied by Stats, then the stable
-// fallback used by the original fatigue model. `bodyweightKg` is already canonical; `bodyweight`
-// is accepted for callers that provide a display-unit value explicitly.
+// fallback. `bodyweightKg` is already canonical; `bodyweight` is accepted for callers that
+// provide a display-unit value explicitly.
 function bodyweightKgFor(workout, opts = {}, stampedLoadUnit) {
   const stamped = numeric(workout?.bw) ?? numeric(workout?.bodyweight)
   if (stamped !== null) {
@@ -152,117 +191,219 @@ function bodyweightConfigured(ex, entry, set, workout, opts = {}) {
   return ex?.eq === 'body weight' && (added === 0 || hasBodyweightContext)
 }
 
-function loadKgFor(ex, entry, set, workout, opts = {}) {
-  const setUnit = unitOf(set, entry?.target, entry, workout, opts)
-  const addedKg = kgOf(set?.w, setUnit)
-  const loadUnit = hasUnitStamp(set, entry?.target, entry) ? setUnit : undefined
+// The load a row actually moved, in kg: its own `w` canonicalised from whatever unit is stamped
+// nearest, plus the body mass when the exercise is configured as bodyweight. `row` is the set
+// itself, one side of a side set, or a drop; whether the exercise counts body mass is decided by
+// the parent set so a drop never flips the semantics of its own row. Without the body mass a
+// weighted dip's back-off (+10 kg after +20 kg) would read as RIR 10 against a 20 kg "max".
+function loadKgFor(ex, entry, set, workout, opts = {}, row = set) {
+  const rowUnit = unitOf(row, set, entry?.target, entry, workout, opts)
+  const addedKg = kgOf(row?.w, rowUnit)
+  const loadUnit = hasUnitStamp(row, set, entry?.target, entry) ? rowUnit : undefined
   return bodyweightConfigured(ex, entry, set, workout, opts)
     ? bodyweightKgFor(workout, opts, loadUnit) + addedKg
     : addedKg
 }
 
-// Best Epley estimate inside one session. Keeping intensity context on the session makes a
-// scored stimulus independent of later imports/deletes; unlike an all-history maximum, a
-// 90-day-old CSV row cannot retroactively reweight today's sets.
-function session1RMs(workout, opts = {}) {
-  const best = new Map()
-  for (const entry of workout?.entries || []) {
-    const ex = exerciseFor(entry)
-    for (const set of entry.sets || []) {
-      const load = loadKgFor(ex, entry, set, workout, opts)
-      if (set?.done !== true || !(load > 0) || !(set.r > 0)) continue
-      const est = epley1RM(load, set.r)
-      if (!best.has(entry.id) || est > best.get(entry.id)) best.set(entry.id, est)
+/**
+ * How much of a hard set a proximity-to-failure reading is worth. Logged effort
+ * (`rir`/`rpe` via effort.js) always wins; otherwise the RIR is estimated against
+ * the exercise's 90-day rolling best (see `estimateSetRir`). At or near failure a
+ * set counts full, far from it no less than the floor: easy work still moves blood.
+ *
+ * @param {number|null} rir Reps in reserve, or null when intensity is unknown.
+ * @returns {number} Set weight in [0.3, 1].
+ */
+export function rirWeightFor(rir) {
+  if (rir == null) return 1
+  if (rir <= HARD_RIR) return 1
+  if (rir >= 6) return FATIGUE_RIR_FLOOR_WEIGHT
+  return 1 - (1 - FATIGUE_RIR_FLOOR_WEIGHT) * (rir - HARD_RIR) / (6 - HARD_RIR)
+}
+
+/**
+ * Estimate a set's reps in reserve from a capacity anchor (Epley inverse, both in
+ * kg so mixed-unit histories anchor correctly). The anchor is the exercise's recent
+ * best 1RM estimate, so `80x8` against a 110 max reads ~RIR 3 while the same set
+ * against a 100 max reads failure. Returns null wherever an honest answer is
+ * impossible: no anchor, no load, no reps, or above the rep cap (where estimators
+ * diverge past 10%).
+ *
+ * @param {{w?: number, r?: number}} set A completed set with load and reps.
+ * @param {number|null} anchorKg Recent best 1RM estimate for the exercise, in kg.
+ * @returns {{rir: number, source: 'estimated'}|null} Clamped RIR in [0, 10].
+ */
+export function estimateSetRir(set, anchorKg, unit) {
+  const w = numeric(set?.w)
+  const r = numeric(set?.r)
+  if (!(anchorKg > 0) || !(w > 0) || !(r >= 1) || r > REP_CAP) return null
+  const wKg = kgOf(w, unit ?? set?.unit)
+  if (!(wKg > 0)) return null
+  const maxReps = 30 * (anchorKg / wKg - 1)
+  const rir = Math.min(10, Math.max(0, maxReps - r))
+  return { rir, source: 'estimated' }
+}
+
+// One session's per-muscle stimulus in quality-weighted effective sets. Every
+// completed set counts (warm-ups included: mechanical work is mechanical work, but a
+// row flagged as warm-up without a logged effort is far from failure by definition and
+// costs the floor weight even when no anchor exists yet to estimate it from);
+// drop-set drops count as extra sets; rest-pause `clusters` are NOT extra because
+// the row's own set already totals every burst (see applyIntensifierPlan/history.js).
+// Cardio/timed rows count as sets too. Each set is scaled by its RIR weight -
+// logged effort first, Epley-inverse estimate against the anchor second, full
+// credit when intensity is unknowable (rings, load-less imports). Anchors come
+// from the 90-day window ending at this session, never from its future.
+function sessionEffSets(workout, anchors, opts = {}) {
+  const sums = emptyMuscleMap(0)
+  const score = (row, set, entry, weights, requireDone = true) => {
+    if (requireDone && row?.done !== true) return
+    const resolved = resolveSetRir(row, set, entry, workout, anchors, opts)
+    const count = resolved?.source !== 'logged' && isWarmupRow(set)
+      ? FATIGUE_RIR_FLOOR_WEIGHT
+      : rirWeightFor(resolved?.rir)
+    for (const [slug, weight] of Object.entries(weights)) {
+      if (Object.prototype.hasOwnProperty.call(MUSCLES_BY_SLUG, slug)) sums[slug] += count * weight
     }
   }
-  return best
-}
-
-// Extra tonnage from a drop-set's drops, weighted the same way as the row's own main set — a
-// drop taken near failure counts the same as any other hard rep for fatigue purposes, it just
-// carries its own (usually lighter) load.
-//
-// A rest-pause row's `clusters` are NOT extra here: the row's own `r` already is the total reps
-// across every burst (see applyIntensifierPlan/history.js), so the main tonnage term below
-// already covers it — adding clusters on top would double-count the same reps.
-function extraTonnage(ex, entry, set, workout, oneRm, opts = {}) {
-  const drops = dropsOf(set)
-  if (!drops.length) return 0
-  const isBwEx = bodyweightConfigured(ex, entry, set, workout, opts)
-  const weigh = (load, reps) => {
-    if (!(load > 0) || !(reps > 0)) return 0
-    const raw = load * reps
-    return isBwEx || !(oneRm > 0) ? raw : raw * Math.min(1, load / oneRm) ** 1.5
-  }
-  return drops.reduce((sum, d) => sum + weigh(loadKgFor(ex, entry, d, workout, opts), Number(d?.r) || 0), 0)
-}
-
-// Intensity-weighted tonnage for one completed set: load x reps x (load / exercise 1RM)^1.5.
-// The exponent saturates the "hard set" effect - a set at 90% of your 1RM counts ~0.81 of its
-// raw tonnage, one at 50% only ~0.35. Cardio, timed holds, and sets whose exercise has no
-// 1RM history stay unweighted (duration proxies, or intensity 1 for the first sessions).
-function setTonnage(ex, entry, set, workout, oneRm, opts = {}) {
-  if (ex?.bp === 'cardio') {
-    return Math.max(set?.min || 0, (set?.sec || 0) / 60) * CARDIO_TONNAGE_PER_MIN
-  }
-  if (set?.sec != null && set?.r == null) {
-    return (set.sec / 60) * CARDIO_TONNAGE_PER_MIN
-  }
-  const reps = set?.r || 1
-  const load = loadKgFor(ex, entry, set, workout, opts)
-  const raw = load * reps
-  const extra = extraTonnage(ex, entry, set, workout, oneRm, opts)
-  // A bodyweight target is already an external-load-normalised total (body mass + any added
-  // load). It has no meaningful barbell-style 1RM intensity ratio in the legacy data model, so
-  // retain the monotonic total-load stimulus instead of letting a newly created low 1RM shrink
-  // a weighted bodyweight set below the unloaded version.
-  if (bodyweightConfigured(ex, entry, set, workout, opts)) return raw + extra
-  if (!(oneRm > 0) || !(load > 0)) return raw + extra
-  return raw * Math.min(1, load / oneRm) ** 1.5 + extra
-}
-
-// One session's per-muscle stimulus, calculated only from that session. A completed zero-load
-// set gets the set-equivalent fallback instead of disappearing from fatigue.
-function sessionTonnages(workout, opts = {}) {
-  const sums = emptyMuscleMap(0)
-  const oneRms = session1RMs(workout, opts)
   for (const entry of workout?.entries || []) {
     const ex = exerciseFor(entry)
     const weights = musclesOf(ex)
     for (const set of entry.sets || []) {
-      if (set?.done !== true) continue
-      const measured = setTonnage(ex, entry, set, workout, oneRms.get(entry.id), opts)
-      const tonnage = Number.isFinite(measured) && measured > 0 ? measured : ZERO_LOAD_SET_STIMULUS
-      for (const [slug, weight] of Object.entries(weights)) {
-        if (Object.prototype.hasOwnProperty.call(MUSCLES_BY_SLUG, slug)) sums[slug] += tonnage * weight
-      }
+      score(set, set, entry, weights)
+      // Drop-set drops carry their own load against the same anchor - extra work at
+      // a discount, never double-counted. Drops carry no done flag of their own;
+      // performed as part of a done set, they count unconditionally.
+      if (set?.done === true) for (const drop of dropsOf(set)) score(drop, set, entry, weights, false)
     }
   }
+  for (const slug of MUSCLES) sums[slug] = Math.min(sums[slug], FATIGUE_MAX_SETS_PER_SESSION)
   return sums
 }
 
-// Build normalised stimuli in workout order. The reference seen by a session is strictly the
-// reference left by earlier in-window sessions; the session cannot dilute its own score. The
-// downward-only EWMA is deliberate: removing any earlier workout can only raise a later
-// denominator (and removes its own positive stimulus), so deletion can never increase fatigue.
-// Rebuilding from the bounded scan also makes imports older than the scan exactly irrelevant.
-function fatigueStimuli(workouts, current, opts = {}) {
-  const cutoff = current - FATIGUE_SCAN_MS
+// Best Epley estimate per exercise inside one session, in kg (body mass included for
+// bodyweight work, see loadKgFor). Epley on purpose, not onerm's weighted blend: the RIR
+// estimate inverts this same formula, so the set that set the anchor reads RIR 0. Session-local, so a
+// 90-day-old import can never reweight today's anchor - only sessions inside the
+// anchor window ending at the scored session contribute. Assistance work has no
+// 1RM (the load is help received) and stays out, matching onerm.js.
+function sessionBests(workout, opts = {}) {
+  const best = new Map()
+  const consider = (ex, set, entry, exId) => {
+    if (set?.done !== true) return
+    const sides = isSideSet(set) ? [set.sides.L, set.sides.R].filter(s => s?.done === true) : [set]
+    for (const side of sides) {
+      const est = estimate1RM(loadKgFor(ex, entry, set, workout, opts, side), numeric(side?.r))
+      if (est !== null && (!best.has(exId) || est > best.get(exId))) best.set(exId, est)
+    }
+  }
+  for (const entry of workout?.entries || []) {
+    if (isAssisted(entry?.id ? { id: entry.id } : entry)) continue
+    const ex = exerciseFor(entry)
+    for (const set of entry.sets || []) consider(ex, set, entry, entry.id)
+  }
+  return best
+}
+
+/**
+ * Capacity anchors per workout: the 90-day rolling best 1RM estimate per exercise,
+ * in kg, keyed by the workout object. One chronological pass - later sessions never
+ * leak into earlier anchors. Powers both fatigue scoring and estimated-effort stats;
+ * unrated histories without any estimable set simply get empty maps (full credit).
+ *
+ * @param {Array<object>} workouts Workout history.
+ * @param {{unit?: string, bodyweightKg?: number}} opts Profile unit for unstamped loads and the
+ * profile bodyweight for bodyweight exercises (the same options fatigueOf takes).
+ * @returns {Map<object, Map<string, number>>} Workout -> exercise id -> anchor.
+ */
+export function anchorsByWorkout(workouts, opts = {}) {
   const ordered = (workouts || [])
     .map((workout, index) => ({ workout, index, timestamp: workoutTimestamp(workout) }))
-    .filter(item => Number.isFinite(item.timestamp) && item.timestamp > cutoff)
+    .filter(item => Number.isFinite(item.timestamp))
     .sort((a, b) => a.timestamp - b.timestamp || a.index - b.index)
-  const references = emptyMuscleMap(FATIGUE_REF_VOLUME)
+  const bests = ordered.map(item => sessionBests(item.workout, opts))
+  const out = new Map()
+  // `ordered` is sorted by time, so the window's first workout only ever moves forward: each
+  // workout looks back over its own 90 days instead of visiting the whole history to skip it.
+  let lo = 0
+  ordered.forEach((item, i) => {
+    const anchors = new Map()
+    while (lo < i && ordered[lo].timestamp <= item.timestamp - FATIGUE_RIR_WINDOW_MS) lo += 1
+    for (let j = lo; j <= i; j += 1) {
+      if (ordered[j].timestamp <= item.timestamp - FATIGUE_RIR_WINDOW_MS) continue
+      for (const [exId, est] of bests[j]) {
+        if (!anchors.has(exId) || est > anchors.get(exId)) anchors.set(exId, est)
+      }
+    }
+    out.set(item.workout, anchors)
+  })
+  return out
+}
+
+/**
+ * One set's RIR with its provenance: logged effort first, Epley-inverse estimate
+ * against the workout's anchors second, null when intensity is unknowable. The same
+ * precedence fatigue scoring uses, so stats and the map never disagree about a set.
+ */
+export function resolveSetRir(row, set, entry, workout, anchors, opts = {}) {
+  const logged = rirOf(row)
+  if (logged != null) return { rir: logged, source: 'logged' }
+  const anchor = anchors?.get(entry?.id)
+  if (!(anchor > 0)) return null
+  // Same load rule as the anchor: canonical kg, body mass included for bodyweight work.
+  const loadKg = loadKgFor(exerciseFor(entry), entry, set || row, workout, opts, row)
+  return estimateSetRir({ w: loadKg, r: row?.r }, anchor, 'kg')
+}
+
+// Build normalised stimuli in workout order. Each session is scored from its own
+// quality-weighted sets against the fixed full-session unit, multiplied by the
+// acute:chronic gain left by strictly earlier exposure: a session that doubles the
+// recent weekly rate scores up to twice, a deload down to half, maintenance
+// reproduces phase-1 values. Stimuli stay non-negative and every window is
+// causal, so rest still never increases fatigue and out-of-scan imports stay
+// irrelevant - but deleting a mid-history workout can now re-score later sessions
+// through their anchors and gains (adaptation is history-dependent by design).
+// Deleting the latest session still never increases anything: earlier windows end
+// before it.
+function fatigueStimuli(workouts, current, opts = {}) {
+  const scanCutoff = current - FATIGUE_SCAN_MS
+  // The pool covers every window a scored session can read: its anchor reaches 90d
+  // back from its own timestamp, and the oldest scored session is 30d old, so the
+  // pool spans 120d. Narrower would let sessions age out of anchors as `now' advances
+  // and fatigue would rise during rest.
+  const poolCutoff = current - (FATIGUE_SCAN_MS + FATIGUE_RIR_WINDOW_MS)
+  const pool = (workouts || [])
+    .map((workout, index) => ({ workout, index, timestamp: workoutTimestamp(workout) }))
+    .filter(item => Number.isFinite(item.timestamp) && item.timestamp > poolCutoff)
+    .sort((a, b) => a.timestamp - b.timestamp || a.index - b.index)
+  const scored = pool.filter(item => item.timestamp > scanCutoff)
+  const byWorkout = anchorsByWorkout(pool.map(item => item.workout), opts)
+  const effSets = pool.map(item => sessionEffSets(item.workout, byWorkout.get(item.workout), opts))
   const byMuscle = Object.fromEntries(MUSCLES.map(slug => [slug, []]))
 
-  for (const { workout, timestamp } of ordered) {
-    const sums = sessionTonnages(workout, opts)
+  for (const item of scored) {
+    const i = pool.indexOf(item)
+    const acute = emptyMuscleMap(0)
+    const chronic = emptyMuscleMap(0)
+    for (let j = 0; j <= i; j += 1) {
+      const age = item.timestamp - pool[j].timestamp
+      if (age < 0 || age > FATIGUE_CHRONIC_WINDOW_MS) continue
+      for (const slug of MUSCLES) {
+        if (age <= FATIGUE_ACUTE_WINDOW_MS) acute[slug] += effSets[j][slug]
+        chronic[slug] += effSets[j][slug]
+      }
+    }
     for (const slug of MUSCLES) {
-      const stimulus = sums[slug]
+      const stimulus = effSets[i][slug]
       if (!(stimulus > 0)) continue
-      byMuscle[slug].push({ slug, timestamp, stimulus: stimulus / references[slug] })
-      const ewma = references[slug] + (stimulus - references[slug]) / FATIGUE_MIN_SESSIONS
-      references[slug] = Math.min(references[slug], ewma)
+      const gain = Math.min(
+        FATIGUE_RATIO_MAX,
+        Math.max(
+          FATIGUE_RATIO_MIN,
+          (acute[slug] + FATIGUE_NOVICE_WEEKLY_SETS) / (chronic[slug] / 4 + FATIGUE_NOVICE_WEEKLY_SETS),
+        ),
+      )
+      byMuscle[slug].push({ slug, timestamp: item.timestamp, stimulus: stimulus / FATIGUE_SETS_PER_UNIT * gain })
     }
   }
   return byMuscle
@@ -270,38 +411,45 @@ function fatigueStimuli(workouts, current, opts = {}) {
 
 const MUSCLES_BY_SLUG = Object.fromEntries(MUSCLES.map(slug => [slug, true]))
 
-function fatigueValue(events, now) {
+function fatigueValue(events, now, slug) {
   if (!events.length) return 0
+  const halfLife = fatigueHalfLifeOf(slug)
   events.sort((a, b) => a.timestamp - b.timestamp)
 
   let value = 0
   let lastTimestamp = events[0].timestamp
   for (const event of events) {
-    value *= halfLifeDecay(event.timestamp - lastTimestamp, FATIGUE_HALF_LIFE_MS)
+    value *= halfLifeDecay(event.timestamp - lastTimestamp, halfLife)
     value += event.stimulus
     lastTimestamp = event.timestamp
   }
-  value *= halfLifeDecay(Math.max(0, now - lastTimestamp), FATIGUE_HALF_LIFE_MS)
-  // Normalise the accumulated stimulus to a saturating fatigue level: more volume starts
-  // higher but never pins, and the value fades asymptotically - no window-edge cliff.
+  value *= halfLifeDecay(Math.max(0, now - lastTimestamp), halfLife)
+  // Normalise the accumulated stimulus to a saturating fatigue level: more sets start
+  // higher but never pin, and the value fades asymptotically - no window-edge cliff.
   return 1 - Math.exp(-value)
 }
 
 /**
  * Calculate current per-muscle fatigue from completed sets in the recent window.
  *
- * Stimulus time is `workout.start`, falling back to the workout date `workout.d`. Each completed
- * set contributes the exercise's `musclesOf` weights; the scan is bounded to FATIGUE_SCAN_MS for
- * performance, not semantics. Stimuli are accumulated chronologically with a 36-hour half-life,
- * decayed to `now`, and normalised with the saturation curve 1 - exp(-v). Each session is scored
- * against a causal, downward-only EWMA left by strictly earlier in-window sessions. Session-local
- * intensity estimates and the causal reference make out-of-window imports irrelevant, while
- * deleting a workout can only remove stimulus and/or raise later references.
+ * Stimulus time is history.js `workoutAt`: `workout.start`, falling back to the workout date
+ * `workout.d` read as local noon. Each completed
+ * set contributes the exercise's `musclesOf` weights in quality-weighted effective-set units
+ * (logged RIR first, Epley-inverse estimate against the 90-day rolling best second, full
+ * credit when intensity is unknowable); a full session of ~8 hard sets scores 1.0, scaled by
+ * the acute:chronic gain (recent weekly rate vs 28-day exposure, novice prior of 4 sets/week,
+ * clamped 0.5-2). The scan is bounded to FATIGUE_SCAN_MS for performance, not semantics.
+ * Stimuli accumulate chronologically with a per-muscle half-life (24h arms/small,
+ * 30h torso, 48h legs/lower-back), decayed to `now`, and normalised with the saturation curve
+ * 1 - exp(-v). Every window is causal, so rest never increases fatigue and out-of-window
+ * imports stay irrelevant; deleting the latest session never increases anything, while
+ * deleting mid-history may re-score later sessions through their anchors and gains.
  * The result always contains every drawable muscle slug.
  *
  * @param {Array<object>} workouts Workout history with `start`/`d` and entry set arrays.
  * @param {number} now Current time in milliseconds; injected to keep this function deterministic.
- * @param {{unit?: string}} options Reserved profile-level options; unit is supplied at the UI boundary.
+ * @param {{unit?: string, bodyweightKg?: number}} options Profile unit for unstamped loads and the
+ * profile bodyweight (kg) for bodyweight exercises; both are supplied at the UI boundary.
  * @returns {Record<string, number>} Fatigue values keyed by every drawable muscle slug.
  */
 export function fatigueOf(workouts, now, opts = {}) {
@@ -309,7 +457,7 @@ export function fatigueOf(workouts, now, opts = {}) {
   const result = emptyMuscleMap(0)
   if (!Number.isFinite(current)) return result
   const byMuscle = fatigueStimuli(workouts, current, opts)
-  for (const slug of MUSCLES) result[slug] = fatigueValue(byMuscle[slug], current)
+  for (const slug of MUSCLES) result[slug] = fatigueValue(byMuscle[slug], current, slug)
   return result
 }
 

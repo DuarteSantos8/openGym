@@ -1,0 +1,22 @@
+{
+  "id": "1406",
+  "name": "hamstring lying stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A simple lying hamstring stretch that eases tightness at the back of the thigh.",
+  "instructions": [
+    "Lie on your back with both legs extended.",
+    "Raise one leg and hold behind the thigh or calf.",
+    "Gently straighten the knee while pulling the leg toward you.",
+    "Keep your other leg flat and your back relaxed.",
+    "Hold for 20-30 seconds, then switch legs."
+  ],
+  "textSource": "opengym"
+}

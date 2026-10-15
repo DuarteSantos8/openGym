@@ -1,0 +1,24 @@
+{
+  "id": "4441",
+  "name": "kettlebell front rack walking lunge",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Walking lunges with kettlebells held in the front rack position. Builds leg strength while the core works to keep you upright.",
+  "instructions": [
+    "Clean two kettlebells to the front rack, elbows tucked and close to your ribs.",
+    "Stand tall with your feet hip width apart.",
+    "Step forward and lower until both knees are around 90 degrees.",
+    "Push through the front foot and bring the back leg forward into the next step.",
+    "Keep your torso upright and the bells steady against your chest.",
+    "Continue alternating legs for the planned distance."
+  ],
+  "textSource": "opengym"
+}

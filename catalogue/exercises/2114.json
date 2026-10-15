@@ -1,0 +1,21 @@
+{
+  "id": "2114",
+  "name": "seated lower trunk lateral flexor stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lats"
+  ],
+  "category": "stretching",
+  "description": "A seated side bend that lengthens the muscles along the side of the waist.",
+  "instructions": [
+    "Sit tall on the floor or a chair with your legs crossed or feet flat.",
+    "Reach one arm overhead and bend sideways away from it until you feel the side of the waist stretch.",
+    "Keep both hips grounded and avoid leaning forward.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

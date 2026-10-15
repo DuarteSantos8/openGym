@@ -1,0 +1,23 @@
+{
+  "id": "0734",
+  "name": "sit (wall)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "isometric",
+  "description": "The wall sit, a hold that builds endurance in the thighs without any equipment.",
+  "instructions": [
+    "Stand with your back against a wall and walk your feet forward.",
+    "Slide down until your knees are bent to about 90 degrees.",
+    "Keep your back flat against the wall and your weight on your heels.",
+    "Hold the position while breathing steadily.",
+    "Hold for 20-60 seconds, then slide back up the wall to finish."
+  ],
+  "femaleVariant": "6696",
+  "textSource": "opengym"
+}

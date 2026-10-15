@@ -1,0 +1,23 @@
+{
+  "id": "1469",
+  "name": "lateral side plank (bent leg)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "An easier side plank with the bottom knee bent, building oblique and hip stability.",
+  "instructions": [
+    "Lie on your side with your forearm under your shoulder and your knees bent.",
+    "Stack your hips and shoulders in a line.",
+    "Lift your hips off the floor until your body forms a straight line from knee to head.",
+    "Keep your core tight and your hips from sagging.",
+    "Hold for the planned time, then switch sides."
+  ],
+  "textSource": "opengym"
+}

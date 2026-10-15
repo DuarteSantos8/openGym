@@ -1,0 +1,23 @@
+{
+  "id": "6786",
+  "name": "faber test",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "adductors",
+    "groin"
+  ],
+  "category": "stretching",
+  "description": "A gentle hip check where the ankle rests on the opposite knee and the knee drops out. It shows how mobile the hip is.",
+  "instructions": [
+    "Lie on your back with legs straight.",
+    "Place one foot on the opposite knee.",
+    "Let the bent knee drop out to the side.",
+    "Relax and notice how far it goes.",
+    "Hold for 20-30 seconds without forcing it.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

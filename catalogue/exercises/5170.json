@@ -1,0 +1,22 @@
+{
+  "id": "5170",
+  "name": "kneeling pulse",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Small pulsing leg lifts from a kneeling position. It gives your glutes a burning, focused workout.",
+  "instructions": [
+    "Kneel on all fours with your hands under your shoulders.",
+    "Lift one leg back with the knee bent at about 90 degrees.",
+    "Pulse the foot upward in small, controlled movements.",
+    "Keep your hips square and your back flat.",
+    "Finish the set, then switch legs."
+  ],
+  "femaleVariant": "4656",
+  "textSource": "opengym"
+}

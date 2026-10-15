@@ -1,0 +1,22 @@
+{
+  "id": "1021",
+  "name": "band standing leg raise",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "Raise a leg forward against a band loop. It targets the hip flexors and front thigh.",
+  "instructions": [
+    "Loop a band around your ankles or one ankle and anchor it.",
+    "Stand tall and hold a support if needed.",
+    "Lift one straight leg forward to hip height.",
+    "Lower slowly.",
+    "Complete reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

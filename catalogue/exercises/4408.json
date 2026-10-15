@@ -1,0 +1,23 @@
+{
+  "id": "4408",
+  "name": "kettlebell upright row",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "biceps",
+    "upper back",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A vertical pull with a kettlebell that works the shoulders and upper traps.",
+  "instructions": [
+    "Stand tall holding a kettlebell with both hands in front of your thighs.",
+    "Keep it close to your body.",
+    "Pull it up toward your chest, leading with your elbows.",
+    "Stop at about chest height.",
+    "Lower slowly under control."
+  ],
+  "textSource": "opengym"
+}

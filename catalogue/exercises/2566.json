@@ -1,0 +1,22 @@
+{
+  "id": "2566",
+  "name": "dumbbell bent arm pullover with knees bent",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "lats",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lying pullover with a bent elbow that stretches and works the chest, with help from the lats and triceps.",
+  "instructions": [
+    "Lie back on a bench or the floor with knees bent and feet flat, holding one dumbbell over your chest.",
+    "Bend your elbows slightly and lock that angle.",
+    "Lower the dumbbell back over your head in a slow arc until you feel a stretch in your chest.",
+    "Pull the weight back over your chest along the same arc.",
+    "Keep your ribs down and your lower back from arching."
+  ],
+  "textSource": "opengym"
+}

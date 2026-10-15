@@ -1,0 +1,23 @@
+{
+  "id": "8371",
+  "name": "kettlebell weighted russian twist",
+  "bodyPart": "waist",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A seated twist holding a kettlebell. It builds the obliques and trunk rotation strength.",
+  "instructions": [
+    "Sit on the floor with your knees bent and lean back slightly.",
+    "Hold a kettlebell with both hands at your chest.",
+    "Keep your back straight and rotate your torso to one side.",
+    "Touch the kettlebell lightly near the floor.",
+    "Rotate to the other side in a controlled way.",
+    "Keep your feet down or lifted if you can stay stable."
+  ],
+  "textSource": "opengym"
+}

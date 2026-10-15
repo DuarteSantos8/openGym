@@ -1,0 +1,23 @@
+{
+  "id": "1567",
+  "name": "kettlebell open palm clean",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "shoulders",
+    "upper back",
+    "forearms"
+  ],
+  "category": "olympic",
+  "description": "A kettlebell clean where your palm stays open and you catch the bell on your forearm. It teaches a smooth hip-driven pull.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and a kettlebell on the floor in front of you.",
+    "Hinge down and grab the handle with one hand.",
+    "Hike the bell back, then drive your hips forward to pull it up.",
+    "Keep your hand open and guide the bell to rest at your shoulder.",
+    "Lower it back with control and repeat, then switch sides."
+  ],
+  "textSource": "opengym"
+}

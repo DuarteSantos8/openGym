@@ -1,0 +1,22 @@
+{
+  "id": "1099",
+  "name": "suspension single leg split squat (self assisted)",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A split squat holding the handles for help. It trains the legs and balance.",
+  "instructions": [
+    "Hold the handles and place your back foot behind you.",
+    "Stand tall.",
+    "Lower your back knee toward the floor.",
+    "Use your arms for light help.",
+    "Press up through your front heel.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

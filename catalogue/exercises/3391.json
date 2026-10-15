@@ -1,0 +1,23 @@
+{
+  "id": "3391",
+  "name": "bent over twist",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back",
+    "hamstrings"
+  ],
+  "category": "mobility",
+  "description": "A standing bent-over rotation that mobilizes the spine and works the obliques.",
+  "instructions": [
+    "Stand with feet wide and hinge forward at the hips with a flat back.",
+    "Extend your arms out to the sides.",
+    "Rotate your torso and reach one hand toward the opposite foot.",
+    "Return through the middle and twist to the other side.",
+    "Move with control and keep your hips square.",
+    "Do 10-12 reps per side."
+  ],
+  "textSource": "opengym"
+}

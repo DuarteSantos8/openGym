@@ -1,0 +1,23 @@
+{
+  "id": "3342",
+  "name": "cable y raise",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "trapezius",
+    "upper back",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A cable raise that moves your arms into a Y shape, building the shoulders and the muscles that stabilise your shoulder blades.",
+  "instructions": [
+    "Set the pulleys low and hold a handle in each hand, arms crossed in front.",
+    "Stand tall with a slight lean forward.",
+    "Raise both arms up and out into a Y shape.",
+    "Keep your thumbs pointing up and shoulders down.",
+    "Lower slowly to the start."
+  ],
+  "textSource": "opengym"
+}

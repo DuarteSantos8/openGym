@@ -1,0 +1,24 @@
+{
+  "id": "4882",
+  "name": "side lying scissors",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on your side, you open and close the legs like scissors. Good for the outer hips and the glutes.",
+  "instructions": [
+    "Lie on your side with your body in a straight line and head supported.",
+    "Stack your legs and lift the top leg slightly.",
+    "Raise the top leg up while the bottom leg lifts toward it.",
+    "Bring them back together in a smooth scissor motion.",
+    "Keep your hips stacked and still.",
+    "Finish your reps, then switch sides."
+  ],
+  "femaleVariant": "4655",
+  "textSource": "opengym"
+}

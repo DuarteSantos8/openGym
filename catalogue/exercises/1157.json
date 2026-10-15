@@ -1,0 +1,23 @@
+{
+  "id": "1157",
+  "name": "suspender hip hinge",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Holding the straps, you hinge the hips back and forth to train the glutes and hamstrings.",
+  "instructions": [
+    "Hold the handles with arms straight and feet hip width apart.",
+    "Soften your knees.",
+    "Push your hips back with a flat back.",
+    "Lean on the straps for balance.",
+    "Drive your hips forward to stand tall.",
+    "Squeeze the glutes at the top."
+  ],
+  "textSource": "opengym"
+}

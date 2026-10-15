@@ -1,0 +1,23 @@
+{
+  "id": "6270",
+  "name": "barbell larsen press",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A bench press with your feet raised off the floor. It trains the chest with less leg drive.",
+  "instructions": [
+    "Lie on a bench and grip the bar.",
+    "Lift your feet off the floor.",
+    "Unrack the bar.",
+    "Lower it to your chest.",
+    "Press back up.",
+    "Keep your back flat."
+  ],
+  "textSource": "opengym"
+}

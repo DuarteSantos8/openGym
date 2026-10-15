@@ -1,0 +1,21 @@
+{
+  "id": "5058",
+  "name": "kneeling neck stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "trapezius",
+    "sternocleidomastoid"
+  ],
+  "category": "stretching",
+  "description": "Kneeling side neck stretch. It releases tension in the sides and back of the neck.",
+  "instructions": [
+    "Kneel tall with your back straight.",
+    "Tilt your head to one side, ear toward shoulder.",
+    "Place a hand lightly on your head for a gentle pull.",
+    "Keep the opposite shoulder low.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

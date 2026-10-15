@@ -1,0 +1,21 @@
+{
+  "id": "0340",
+  "name": "dumbbell lying hammer press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A lying press with the palms facing each other. It works the chest and arms with a shoulder-friendly grip.",
+  "instructions": [
+    "Lie flat on a bench with a dumbbell in each hand, palms facing each other and arms extended straight up.",
+    "Lower the dumbbells to the sides of your chest, keeping your elbows at a 90-degree angle.",
+    "Press the dumbbells back up to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2486",
+  "textSource": "exercisedb"
+}

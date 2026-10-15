@@ -1,0 +1,22 @@
+{
+  "id": "3868",
+  "name": "cable fly with chest supported",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A cable fly with your chest against a bench, which isolates the pecs with steady tension.",
+  "instructions": [
+    "Set the pulleys at about shoulder height and position an incline bench facing the stack, chest against the pad.",
+    "Hold a handle in each hand with arms out to the sides.",
+    "With a slight bend in your elbows, sweep your arms forward in a wide arc.",
+    "Squeeze your chest as the handles meet.",
+    "Return slowly until you feel a stretch across the chest."
+  ],
+  "textSource": "opengym"
+}

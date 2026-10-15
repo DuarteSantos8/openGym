@@ -1,0 +1,23 @@
+{
+  "id": "4682",
+  "name": "band bent over rear delt fly",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A bent-over fly with a band. It targets the rear shoulders and upper back.",
+  "instructions": [
+    "Stand on the band and hold the ends in each hand.",
+    "Hinge at the hips with a flat back.",
+    "Raise your arms out to the sides with slight elbow bends.",
+    "Squeeze your shoulder blades at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

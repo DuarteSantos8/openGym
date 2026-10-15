@@ -5,6 +5,9 @@
 // body-part tap regardless — the only one of the three exercise browsers that did.
 import React, { act } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+// The first render indexes all 5,600+ catalogue exercises for search and the muscle map, which
+// takes over a second here on its own and longer on a busy runner.
+vi.setConfig({ testTimeout: 15000 })
 import { createRoot } from 'react-dom/client'
 import MuscleExplorer from './MuscleExplorer.jsx'
 

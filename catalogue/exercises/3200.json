@@ -1,0 +1,34 @@
+{
+  "id": "3200",
+  "name": "lever bent-over row with v-bar",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A machine row done in a bent-over stance with a v-bar handle. It builds the upper back and lats by pulling the handle toward your abdomen.",
+  "instructions": [
+    "Adjust the seat height and position yourself facing the machine.",
+    "Grasp the v-bar with an overhand grip, keeping your back straight and your knees slightly bent.",
+    "Pull the v-bar towards your abdomen, squeezing your shoulder blades together.",
+    "Pause for a moment at the top of the movement, then slowly release the weight back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm",
+      "trapezius",
+      "chest",
+      "triceps"
+    ]
+  },
+  "textSource": "exercisedb"
+}

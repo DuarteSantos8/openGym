@@ -1,0 +1,23 @@
+{
+  "id": "6798",
+  "name": "resistance band standing balance glute kickback",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A standing band kickback that builds the glutes while challenging your balance on one leg.",
+  "instructions": [
+    "Loop the band around your ankles or hold it under your standing foot.",
+    "Stand on one leg with a slight bend in the knee and brace your abs.",
+    "Kick the other leg straight back against the band.",
+    "Squeeze your glute at the top without arching your lower back.",
+    "Return slowly with control.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

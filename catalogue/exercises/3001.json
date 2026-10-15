@@ -1,0 +1,24 @@
+{
+  "id": "3001",
+  "name": "squats knee position",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight squat focused on where your knees travel, helping you learn to track them over your toes.",
+  "instructions": [
+    "Stand with your feet shoulder width apart and toes slightly out.",
+    "Brace your core and lift your chest.",
+    "Bend at the hips and knees to lower into a squat.",
+    "Push your knees out so they follow the line of your toes.",
+    "Go down as deep as feels controlled.",
+    "Drive up through your whole foot to stand."
+  ],
+  "textSource": "opengym"
+}

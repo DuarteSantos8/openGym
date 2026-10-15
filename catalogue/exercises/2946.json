@@ -1,0 +1,23 @@
+{
+  "id": "2946",
+  "name": "single arm scapula push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "serratus anterior",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A small push-up movement with one arm that moves only the shoulder blades. It builds control of the serratus anterior.",
+  "instructions": [
+    "Start in a plank with one hand on the floor, the other behind your back or on your hip.",
+    "Keep your elbow locked straight.",
+    "Let your chest sink slightly between your shoulder blades.",
+    "Push the floor away to round your upper back slightly.",
+    "Finish the reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

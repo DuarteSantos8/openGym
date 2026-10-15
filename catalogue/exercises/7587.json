@@ -1,0 +1,23 @@
+{
+  "id": "7587",
+  "name": "cable single arm high row with chest support",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rear deltoids",
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A one-arm cable row from a high pulley while your chest rests on a pad. The support lets you focus on the upper back without cheating.",
+  "instructions": [
+    "Set a handle on a high pulley and lean your chest against the support.",
+    "Grab the handle with one hand and let your arm extend.",
+    "Pull your elbow back and down toward your hip.",
+    "Squeeze your shoulder blade at the end of the pull.",
+    "Return slowly to full extension, finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

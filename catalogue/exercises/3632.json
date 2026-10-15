@@ -1,0 +1,23 @@
+{
+  "id": "3632",
+  "name": "sitting sumo right twist stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "obliques",
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "From a wide seated position, twist toward the right leg to stretch the inner thigh and torso.",
+  "instructions": [
+    "Sit with legs spread wide and back tall.",
+    "Rotate your torso to the right.",
+    "Reach both hands toward your right foot.",
+    "Keep your hips grounded.",
+    "Hold for 20-30 seconds while breathing steadily.",
+    "Release slowly and repeat on the other side if needed."
+  ],
+  "textSource": "opengym"
+}

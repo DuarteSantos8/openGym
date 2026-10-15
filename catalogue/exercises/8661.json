@@ -1,0 +1,22 @@
+{
+  "id": "8661",
+  "name": "cable incline y raise with back support",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rear deltoids",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A Y-shaped raise with cables while supported on an incline bench, working the shoulders and upper back.",
+  "instructions": [
+    "Lie chest-down on an incline bench with a cable handle in each hand.",
+    "Keep your neck neutral.",
+    "Raise your arms forward and up in a Y shape.",
+    "Pause at the top.",
+    "Lower slowly with straight arms."
+  ],
+  "textSource": "opengym"
+}

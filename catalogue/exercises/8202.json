@@ -1,0 +1,22 @@
+{
+  "id": "8202",
+  "name": "sitting alternate abduction twist on a chair",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A seated move combining a leg out to the side with a twist. It gently works the hips and waist.",
+  "instructions": [
+    "Sit tall near the edge of a chair.",
+    "Lift one leg and open it out to the side.",
+    "Twist your torso toward that leg.",
+    "Return to centre.",
+    "Alternate sides."
+  ],
+  "textSource": "opengym"
+}

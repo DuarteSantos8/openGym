@@ -1,0 +1,22 @@
+{
+  "id": "4986",
+  "name": "dumbbell step up v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "Step up onto a bench or box holding dumbbells. It trains your legs and glutes one side at a time.",
+  "instructions": [
+    "Hold a dumbbell in each hand and stand facing a sturdy bench.",
+    "Place one foot fully on the bench.",
+    "Drive through that heel to stand up tall on the bench.",
+    "Lower your trailing foot back down under control.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

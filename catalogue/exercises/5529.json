@@ -1,0 +1,24 @@
+{
+  "id": "5529",
+  "name": "weighted full squat with overhead press",
+  "bodyPart": "full body",
+  "equipment": "weighted",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Full-depth squat followed by an overhead press, a thruster-style move that works legs and shoulders together.",
+  "instructions": [
+    "Hold the weight at your shoulders and stand with feet shoulder width.",
+    "Squat down deeply with chest up.",
+    "Drive up through your legs.",
+    "Use that momentum to press the weight overhead.",
+    "Lower it back to your shoulders and repeat."
+  ],
+  "textSource": "opengym"
+}

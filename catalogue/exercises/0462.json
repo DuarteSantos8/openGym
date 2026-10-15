@@ -1,0 +1,22 @@
+{
+  "id": "0462",
+  "name": "front and back neck stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "trapezius"
+  ],
+  "category": "stretching",
+  "description": "A gentle neck stretch where you tip your head forward and then back to loosen the front and back of the neck.",
+  "instructions": [
+    "Sit or stand tall with your shoulders relaxed.",
+    "Slowly lower your chin toward your chest until you feel a stretch at the back of the neck.",
+    "Hold for 20-30 seconds.",
+    "Raise your head and slowly tip it back to look up.",
+    "Hold for 20-30 seconds, staying comfortable.",
+    "Move slowly and keep your breathing relaxed."
+  ],
+  "textSource": "opengym"
+}

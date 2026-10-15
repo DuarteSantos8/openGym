@@ -1,0 +1,21 @@
+{
+  "id": "11452",
+  "name": "calves stretch v. 2",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "A standing calf stretch variation that lengthens the lower leg muscles and helps ankle mobility.",
+  "instructions": [
+    "Stand facing a wall and place your hands on it at chest height.",
+    "Step one foot back with the heel flat on the floor and the toes pointing forward.",
+    "Bend the front knee and lean in until you feel the back calf stretch.",
+    "Keep the back leg straight and the heel down.",
+    "Hold for 20-30 seconds, then switch legs."
+  ],
+  "textSource": "opengym"
+}

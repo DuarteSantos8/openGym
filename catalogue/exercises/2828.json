@@ -1,0 +1,24 @@
+{
+  "id": "2828",
+  "name": "battling ropes side raise",
+  "bodyPart": "shoulders",
+  "equipment": "rope",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "forearms",
+    "core",
+    "trapezius"
+  ],
+  "category": "cardio",
+  "description": "Raising battling ropes out to the side with a fast, wave-making motion. Boosts shoulder endurance and heart rate.",
+  "instructions": [
+    "Stand in a slight squat holding a rope end in each hand.",
+    "Keep your core braced and elbows soft.",
+    "Raise both arms out to the sides to about shoulder height in a quick, controlled motion.",
+    "Lower and repeat at a steady fast pace.",
+    "Work in intervals of 20-30 seconds."
+  ],
+  "femaleVariant": "2827",
+  "textSource": "opengym"
+}

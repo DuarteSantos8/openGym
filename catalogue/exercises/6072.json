@@ -1,0 +1,23 @@
+{
+  "id": "6072",
+  "name": "bottle weighted armpit row",
+  "bodyPart": "shoulders",
+  "equipment": "weighted",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "trapezius",
+    "upper back",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A high row pulling bottles up toward your armpits. It trains the rear shoulders and upper back.",
+  "instructions": [
+    "Hold a bottle in each hand and hinge slightly forward.",
+    "Pull your elbows out and up, bottles moving toward your armpits.",
+    "Squeeze your shoulder blades.",
+    "Lower slowly.",
+    "Keep your neck relaxed."
+  ],
+  "textSource": "opengym"
+}

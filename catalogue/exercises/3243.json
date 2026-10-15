@@ -1,0 +1,21 @@
+{
+  "id": "3243",
+  "name": "lying lower back stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "A lying stretch hugging both knees toward your chest to release the lower back.",
+  "instructions": [
+    "Lie on your back.",
+    "Pull both knees toward your chest.",
+    "Wrap your arms around your shins.",
+    "Hold for 20-30 seconds.",
+    "Release slowly."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5921",
+  "name": "dumbbell hammer preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A preacher curl with a neutral hammer grip that targets the brachialis and forearms along with the biceps.",
+  "instructions": [
+    "Sit at a preacher bench with your upper arms resting on the pad.",
+    "Hold a dumbbell with palm facing in, thumb up.",
+    "Curl the weight up toward your shoulder.",
+    "Squeeze at the top, then lower slowly until your arm is nearly straight.",
+    "Complete your reps, then switch arms or alternate."
+  ],
+  "femaleVariant": "4337",
+  "textSource": "opengym"
+}

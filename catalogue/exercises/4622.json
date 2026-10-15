@@ -1,0 +1,20 @@
+{
+  "id": "4622",
+  "name": "dumbbell front plank arm raise",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A plank with one arm lifting a dumbbell forward, challenging your core to stay still.",
+  "instructions": [
+    "Start in a forearm or high plank with a dumbbell in one hand.",
+    "Brace your abs and keep hips level.",
+    "Lift the dumbbell forward in line with your torso.",
+    "Lower it with control.",
+    "Alternate arms for the set."
+  ],
+  "textSource": "opengym"
+}

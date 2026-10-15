@@ -1,0 +1,23 @@
+{
+  "id": "3821",
+  "name": "crunch (arms straight)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch with your arms reaching toward your knees. It focuses on your upper abs.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat.",
+    "Extend your arms straight toward your knees.",
+    "Curl your shoulders off the floor, keeping your arms reaching.",
+    "Pause briefly at the top.",
+    "Lower slowly without pulling on your neck."
+  ],
+  "femaleVariant": "0266",
+  "textSource": "opengym"
+}

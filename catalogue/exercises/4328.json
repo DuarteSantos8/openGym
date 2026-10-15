@@ -1,0 +1,23 @@
+{
+  "id": "4328",
+  "name": "standing scissors",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A quick jumping drill where your legs swap front and back like scissors. Good for conditioning and coordination.",
+  "instructions": [
+    "Stand tall with one foot forward and one back, arms ready.",
+    "Hop lightly and switch your leg positions in the air.",
+    "Swing your arms opposite to your legs for balance.",
+    "Land softly on the balls of your feet.",
+    "Keep a quick, steady rhythm for the set."
+  ],
+  "textSource": "opengym"
+}

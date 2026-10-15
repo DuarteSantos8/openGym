@@ -1,0 +1,24 @@
+{
+  "id": "3550",
+  "name": "seated pull up between chairs",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms",
+    "rhomboids"
+  ],
+  "category": "calisthenics",
+  "description": "A seated pull-up using a bar between two chairs, with the legs assisting.",
+  "instructions": [
+    "Set a bar across two sturdy chairs.",
+    "Sit on the floor beneath it and grip the bar.",
+    "Keep your legs bent for light help.",
+    "Pull your chest toward the bar.",
+    "Lower with control.",
+    "Use your legs as little as possible."
+  ],
+  "textSource": "opengym"
+}

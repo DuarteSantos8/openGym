@@ -1,0 +1,22 @@
+{
+  "id": "7417",
+  "name": "overhead sit up with legs on bench",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "Sit-up with arms overhead and calves on a bench for a longer lever on the abs.",
+  "instructions": [
+    "Lie on your back with your calves resting on a bench, knees bent.",
+    "Extend your arms overhead.",
+    "Curl your torso up, keeping your arms by your ears.",
+    "Reach toward your knees.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

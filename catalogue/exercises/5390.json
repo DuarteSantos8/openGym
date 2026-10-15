@@ -1,0 +1,23 @@
+{
+  "id": "5390",
+  "name": "roll glutes sitting on floor",
+  "bodyPart": "upper legs",
+  "equipment": "roller",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "hip flexors"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a foam roller to ease tightness in the glutes. Good before training or on rest days to loosen up.",
+  "instructions": [
+    "Sit on the roller with your hands behind you.",
+    "Place the roller under the glutes and let your body weight settle onto it.",
+    "Roll slowly back and forth under your glutes.",
+    "Pause on tender spots and breathe slowly for 20-30 seconds.",
+    "Keep your core braced and avoid rolling over joints or bone.",
+    "Roll for 30-60 seconds, then switch sides if needed."
+  ],
+  "femaleVariant": "5428",
+  "textSource": "opengym"
+}

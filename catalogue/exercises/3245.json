@@ -1,0 +1,22 @@
+{
+  "id": "3245",
+  "name": "feet and ankles side to side stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "shins"
+  ],
+  "category": "stretching",
+  "description": "A seated stretch moving the feet side to side to loosen the ankles.",
+  "instructions": [
+    "Sit with your legs extended.",
+    "Keep your heels on the floor.",
+    "Roll your feet slowly to the outside.",
+    "Then roll them inward.",
+    "Continue for 20-30 seconds."
+  ],
+  "textSource": "opengym"
+}

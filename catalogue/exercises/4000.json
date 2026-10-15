@@ -1,0 +1,22 @@
+{
+  "id": "4000",
+  "name": "static lunge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A lunge held in one place with no stepping. It builds the legs and balance.",
+  "instructions": [
+    "Step one foot forward and stay in a split stance.",
+    "Lower your back knee toward the floor.",
+    "Keep your front knee above the ankle.",
+    "Push through the front heel.",
+    "Finish reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

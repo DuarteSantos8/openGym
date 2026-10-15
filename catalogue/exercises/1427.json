@@ -1,0 +1,21 @@
+{
+  "id": "1427",
+  "name": "straight leg outer hip abductor",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Lie on your side with your legs straight and lift the top leg. It works the outer hip and glute muscles that stabilise your pelvis.",
+  "instructions": [
+    "Lie on your side with your legs straight and stacked on top of each other.",
+    "Place your bottom arm under your head for support.",
+    "Engage your core and lift your top leg as high as possible without rotating your hips or leaning backward.",
+    "Pause for a moment at the top, then slowly lower your leg back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "textSource": "exercisedb"
+}

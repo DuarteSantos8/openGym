@@ -1,0 +1,22 @@
+{
+  "id": "7621",
+  "name": "barbell pin bench press conventional grip",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A bench press started from a dead stop on safety pins, using a standard grip. It builds strength off the chest without any bounce.",
+  "instructions": [
+    "Set the pins at a height just above your chest and lie on the bench.",
+    "Grab the bar at about shoulder-width plus a little.",
+    "Pause the bar on the pins to remove momentum.",
+    "Press the bar straight up until your arms lock out.",
+    "Lower back to the pins with control and reset for each rep."
+  ],
+  "textSource": "opengym"
+}

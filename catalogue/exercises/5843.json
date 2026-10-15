@@ -1,0 +1,21 @@
+{
+  "id": "5843",
+  "name": "lever incline fly",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A machine fly with an incline angle that emphasizes the upper chest. The handles move in a fixed arc.",
+  "instructions": [
+    "Sit in the machine with your back against the pad.",
+    "Grip the handles with elbows slightly bent.",
+    "Bring the handles together in front of your upper chest.",
+    "Squeeze your chest.",
+    "Return slowly to a comfortable stretch."
+  ],
+  "textSource": "opengym"
+}

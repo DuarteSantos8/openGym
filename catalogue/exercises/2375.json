@@ -1,0 +1,24 @@
+{
+  "id": "2375",
+  "name": "single leg squat with support",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A one-leg squat using a support for balance, building strength in each leg.",
+  "instructions": [
+    "Stand next to a sturdy support and hold it lightly with one hand.",
+    "Lift one foot slightly off the floor in front of you.",
+    "Sit your hips back and lower on the standing leg.",
+    "Keep your knee tracking over your toes.",
+    "Push through your heel to stand back up.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

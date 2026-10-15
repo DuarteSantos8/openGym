@@ -1,0 +1,22 @@
+{
+  "id": "3956",
+  "name": "twist step stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques",
+    "glutes"
+  ],
+  "category": "mobility",
+  "description": "Step into a lunge with a twist to open the hips and loosen the trunk.",
+  "instructions": [
+    "Stand tall.",
+    "Step forward into a lunge.",
+    "Twist your torso toward the front leg.",
+    "Return to centre and step back.",
+    "Alternate sides for 8-10 reps each."
+  ],
+  "textSource": "opengym"
+}

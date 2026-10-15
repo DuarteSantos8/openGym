@@ -1,0 +1,24 @@
+{
+  "id": "2902",
+  "name": "power sled rear lunge row",
+  "bodyPart": "back",
+  "equipment": "sled machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "quadriceps",
+    "glutes",
+    "biceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A rear lunge combined with a row using a power sled. Works legs and back together.",
+  "instructions": [
+    "Hold the sled handles with arms extended and feet together.",
+    "Step back into a rear lunge, lowering your back knee.",
+    "As you rise, row the handles toward your ribs, squeezing your shoulder blades.",
+    "Return to standing and extend your arms.",
+    "Alternate legs on each rep."
+  ],
+  "textSource": "opengym"
+}

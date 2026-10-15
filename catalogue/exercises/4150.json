@@ -1,0 +1,23 @@
+{
+  "id": "4150",
+  "name": "dumbbell one arm low fly",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A single arm fly that sweeps the dumbbell from low up to the chest. It works the upper pecs and front shoulder.",
+  "instructions": [
+    "Stand with feet staggered and hold a dumbbell at your side with a slight elbow bend.",
+    "Brace your core and keep your chest up.",
+    "Sweep the dumbbell out and up in an arc to chest height in front of you.",
+    "Squeeze your chest at the top.",
+    "Lower slowly along the same arc.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

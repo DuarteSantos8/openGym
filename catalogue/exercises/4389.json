@@ -1,0 +1,24 @@
+{
+  "id": "4389",
+  "name": "dumbbell push jerk",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "quadriceps",
+    "glutes",
+    "core",
+    "upper chest"
+  ],
+  "category": "olympic",
+  "description": "An explosive overhead lift that uses a leg drive to send dumbbells overhead. It builds power and shoulder strength.",
+  "instructions": [
+    "Hold dumbbells at shoulder height, feet hip-width apart.",
+    "Dip by bending your knees slightly while keeping your torso upright.",
+    "Drive up through your legs explosively.",
+    "Press the dumbbells overhead as you straighten, then lock out your arms.",
+    "Lower them back to your shoulders with control."
+  ],
+  "textSource": "opengym"
+}

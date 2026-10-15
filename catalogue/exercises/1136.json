@@ -1,0 +1,23 @@
+{
+  "id": "1136",
+  "name": "suspender single leg squat figure",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-leg squat holding the straps for support, building leg strength and balance.",
+  "instructions": [
+    "Hold the handles and stand on one leg, other leg forward.",
+    "Sit your hips back and bend the knee.",
+    "Lower as far as you can control.",
+    "Keep your knee over your toes and chest tall.",
+    "Drive through the heel to stand.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "4098",
+  "name": "kettlebell side lunge",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lateral lunge holding a kettlebell, working glutes, quads and inner thighs.",
+  "instructions": [
+    "Stand tall holding a kettlebell at your chest.",
+    "Take a big step to the side.",
+    "Sit back into that hip while keeping the other leg straight.",
+    "Push off the bent leg to return to standing.",
+    "Complete all reps, then switch sides."
+  ],
+  "femaleVariant": "4526",
+  "textSource": "opengym"
+}

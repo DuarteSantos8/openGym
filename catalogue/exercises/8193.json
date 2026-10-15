@@ -1,0 +1,23 @@
+{
+  "id": "8193",
+  "name": "cable reverse woodchop",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A cable chop that travels from low to high across your body. It trains the obliques and builds rotational power.",
+  "instructions": [
+    "Set the cable low and stand side-on to the stack.",
+    "Hold the handle with both hands.",
+    "Pull it diagonally up across your body.",
+    "Pivot your back foot and rotate your torso.",
+    "Return slowly. Switch sides after your set."
+  ],
+  "textSource": "opengym"
+}

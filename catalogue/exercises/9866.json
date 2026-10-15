@@ -1,0 +1,23 @@
+{
+  "id": "9866",
+  "name": "lever belt deadlift (straight bar)",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A belt-machine deadlift using a straight bar, so the load hangs from your hips.",
+  "instructions": [
+    "Stand on the platform with the belt around your hips and grip the straight bar.",
+    "Bend your knees and hinge with a flat back.",
+    "Brace your core.",
+    "Drive your feet down and stand tall.",
+    "Lower with control."
+  ],
+  "textSource": "opengym"
+}

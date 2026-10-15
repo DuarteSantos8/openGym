@@ -1,0 +1,25 @@
+{
+  "id": "3108",
+  "name": "plyo jacks",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "calves",
+    "shoulders"
+  ],
+  "category": "plyometrics",
+  "description": "A jumping jack with a squat landing. The extra depth makes it harder on the legs and your heart.",
+  "instructions": [
+    "Stand with your feet together.",
+    "Jump your feet wide and land in a quarter squat.",
+    "Swing your arms out as you land.",
+    "Jump your feet back together.",
+    "Land softly each time.",
+    "Keep a quick, controlled pace."
+  ],
+  "femaleVariant": "0645",
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "3695",
+  "name": "dumbbell alternate bench press (high start)",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A dumbbell bench press where you press one arm at a time, starting with both weights held high. It challenges chest strength and stability.",
+  "instructions": [
+    "Lie on a flat bench and press both dumbbells up above your chest.",
+    "Keep one arm locked out and lower the other dumbbell to chest level.",
+    "Press it back up to the top.",
+    "Repeat with the other arm, alternating each rep.",
+    "Keep your feet planted and your back flat on the bench."
+  ],
+  "textSource": "opengym"
+}

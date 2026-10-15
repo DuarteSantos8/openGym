@@ -1,0 +1,23 @@
+{
+  "id": "9701",
+  "name": "long distance lunge (low lunge)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "hip flexors",
+    "groin"
+  ],
+  "category": "calisthenics",
+  "description": "A lunge with an extra-long stride into a low position. It stretches the hips while working the glutes and thighs.",
+  "instructions": [
+    "Stand tall with hands on your hips.",
+    "Take a very long step forward.",
+    "Sink down until your back knee hovers above the floor.",
+    "Keep your torso upright and front knee over the ankle.",
+    "Push back to the start and switch legs."
+  ],
+  "textSource": "opengym"
+}

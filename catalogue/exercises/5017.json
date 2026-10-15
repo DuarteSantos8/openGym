@@ -1,0 +1,24 @@
+{
+  "id": "5017",
+  "name": "pause squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Squat with a hold in the bottom position. It builds strength out of the hole and control.",
+  "instructions": [
+    "Set the bar on your upper back and stand shoulder width apart.",
+    "Brace your core and squat down to depth.",
+    "Pause in the bottom for about two seconds, staying tight.",
+    "Drive up through your whole foot.",
+    "Keep your chest up and knees tracking over your toes."
+  ],
+  "textSource": "opengym"
+}

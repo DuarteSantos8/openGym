@@ -1,0 +1,23 @@
+{
+  "id": "4920",
+  "name": "leg assisted ring pull up",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A ring pull up where your feet on the floor help you up. It is a good step toward full pull ups.",
+  "instructions": [
+    "Hold the rings with a firm grip and stand with a bend in the knees.",
+    "Place your feet on the floor for light help.",
+    "Pull your elbows down and your chest between the rings.",
+    "Use your legs only as much as you need.",
+    "Lower with control.",
+    "Keep your core tight."
+  ],
+  "textSource": "opengym"
+}

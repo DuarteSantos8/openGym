@@ -1,0 +1,22 @@
+{
+  "id": "2419",
+  "name": "resistance band leg lift",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A leg lift against band tension that trains the glutes and hips.",
+  "instructions": [
+    "Place a loop band around your ankles or thighs.",
+    "Get on all fours or stand with support.",
+    "Lift one leg back or out against the band.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly without arching your back.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

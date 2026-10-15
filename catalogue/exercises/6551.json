@@ -1,0 +1,22 @@
+{
+  "id": "6551",
+  "name": "bodyweight reverse lunge with overhead reach",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A reverse lunge with an overhead reach that works your legs and stretches your torso.",
+  "instructions": [
+    "Stand tall with your feet hip-width apart.",
+    "Step one foot back and lower into a lunge.",
+    "Reach both arms overhead as you lower.",
+    "Push through your front foot to stand.",
+    "Alternate legs."
+  ],
+  "textSource": "opengym"
+}

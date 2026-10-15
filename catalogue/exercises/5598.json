@@ -1,0 +1,23 @@
+{
+  "id": "5598",
+  "name": "inchworm and mountain climbers",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "hamstrings",
+    "quadriceps"
+  ],
+  "category": "cardio",
+  "description": "Combo of an inchworm walk-out followed by mountain climbers for a full-body workout.",
+  "instructions": [
+    "Stand tall, then hinge forward and walk your hands out to a plank.",
+    "Brace your core and keep a straight line.",
+    "Drive your knees to your chest alternately for several reps.",
+    "Walk your hands back to your feet.",
+    "Stand up and repeat."
+  ],
+  "textSource": "opengym"
+}

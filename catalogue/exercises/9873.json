@@ -1,0 +1,23 @@
+{
+  "id": "9873",
+  "name": "cable lying bench single arm cross lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A one-armed lying lateral raise across the body with a low cable. It isolates a single side delt and lets you fix imbalances.",
+  "instructions": [
+    "Lie on a flat bench next to a low pulley and take the handle with the far hand.",
+    "Start with your arm across your body and a soft bend in the elbow.",
+    "Raise the arm out and up in an arc until it reaches about shoulder height.",
+    "Hold for a moment, then lower with control.",
+    "Keep your torso still and your shoulder away from your ear.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "6097",
+  "name": "back kick overhead press",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A dynamic combo of a backward leg kick with an overhead arm press. It works the shoulders and glutes together and raises your heart rate.",
+  "instructions": [
+    "Stand with your feet hip-width apart and your hands at shoulder height.",
+    "Press both hands straight overhead as you kick one leg back.",
+    "Squeeze the glute at the top without arching your lower back.",
+    "Bring the hands and foot back to the start.",
+    "Switch legs and repeat at a lively pace.",
+    "Keep your core tight throughout."
+  ],
+  "femaleVariant": "6096",
+  "textSource": "opengym"
+}

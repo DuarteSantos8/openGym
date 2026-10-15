@@ -1,0 +1,21 @@
+{
+  "id": "11763",
+  "name": "cable seated incline curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A curl on an incline seat with cable resistance for a deep, constant-tension biceps stretch.",
+  "instructions": [
+    "Set a bench to incline and place a low pulley behind you.",
+    "Sit back with your arms hanging and grab the handles.",
+    "Curl the handles toward your shoulders, keeping elbows back.",
+    "Squeeze the biceps at the top.",
+    "Lower slowly to a full stretch."
+  ],
+  "textSource": "opengym"
+}

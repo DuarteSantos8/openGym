@@ -1,0 +1,22 @@
+{
+  "id": "4621",
+  "name": "dumbbell close grip shoulder press sit up",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A sit-up that finishes with an overhead press, joining core and shoulder work in a single rep.",
+  "instructions": [
+    "Lie on your back with knees bent, holding a dumbbell in each hand at your shoulders, palms facing in.",
+    "Sit up using your abs.",
+    "Press the dumbbells overhead at the top.",
+    "Lower them to your shoulders and roll back down slowly.",
+    "Keep your feet planted, or anchor them if needed."
+  ],
+  "textSource": "opengym"
+}

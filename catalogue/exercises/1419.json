@@ -1,0 +1,23 @@
+{
+  "id": "1419",
+  "name": "iron cross stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps"
+  ],
+  "category": "stretching",
+  "description": "Lie on your back with your arms out and cross one leg over your body toward the opposite hand. It stretches the glutes and lower back.",
+  "instructions": [
+    "Lie flat on your back with your arms extended out to the sides.",
+    "Raise your legs up towards the ceiling, keeping them straight.",
+    "Slowly lower your legs to one side, aiming to touch the floor with your feet.",
+    "Hold the stretch for a few seconds, then return your legs to the starting position.",
+    "Repeat the stretch on the other side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "femaleVariant": "3285",
+  "textSource": "exercisedb"
+}

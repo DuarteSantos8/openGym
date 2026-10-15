@@ -1,0 +1,24 @@
+{
+  "id": "2804",
+  "name": "dumbbell supported squat v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A dumbbell squat with a hand on a support for balance. Lets you focus on a deep, steady squat pattern.",
+  "instructions": [
+    "Hold a dumbbell in one hand and rest the other hand on a stable support.",
+    "Stand with feet shoulder width apart and toes slightly out.",
+    "Sit your hips back and down until your thighs are about parallel.",
+    "Drive through your heels to stand, keeping your chest up.",
+    "Switch the dumbbell hand halfway through if needed."
+  ],
+  "textSource": "opengym",
+  "femaleVariant": "2803"
+}

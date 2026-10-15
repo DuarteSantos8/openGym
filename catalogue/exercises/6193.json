@@ -1,0 +1,23 @@
+{
+  "id": "6193",
+  "name": "kettlebell cossack squat",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A side-to-side squat holding a kettlebell. It builds hip mobility and leg strength.",
+  "instructions": [
+    "Hold a kettlebell at your chest and stand wide.",
+    "Shift your weight to one side.",
+    "Squat down with the other leg straight.",
+    "Keep the bent knee over your toes.",
+    "Push back to the center.",
+    "Alternate sides."
+  ],
+  "textSource": "opengym"
+}

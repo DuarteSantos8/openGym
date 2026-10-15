@@ -1,0 +1,23 @@
+{
+  "id": "4256",
+  "name": "stepdown squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A single-leg squat that lowers you off a step. It builds quad strength and knee control.",
+  "instructions": [
+    "Stand on a step with one foot hanging off the edge.",
+    "Hold your arms in front for balance.",
+    "Squat down on the standing leg and lower the free heel to the floor.",
+    "Keep your knee tracking over your toes.",
+    "Press back up to the start.",
+    "Finish your reps and switch legs."
+  ],
+  "textSource": "opengym"
+}

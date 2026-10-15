@@ -1,0 +1,23 @@
+{
+  "id": "8878",
+  "name": "cable 45 degrees reverse fly",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "Hinged forward at about 45 degrees, you pull the cable handles apart in a wide arc. It targets the rear shoulders and upper back.",
+  "instructions": [
+    "Set two cable handles at a low or mid height and grab them crossed over.",
+    "Hinge forward at the hips to about 45 degrees with a flat back.",
+    "Keep a slight bend in your elbows.",
+    "Pull the handles out and back in a wide arc until your arms are in line with your torso.",
+    "Squeeze your shoulder blades gently at the end.",
+    "Return slowly and keep your torso still."
+  ],
+  "textSource": "opengym"
+}

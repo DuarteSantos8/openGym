@@ -1,0 +1,21 @@
+{
+  "id": "3283",
+  "name": "weighted floor twisting crunch feet on bench",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A loaded twisting crunch with the legs on a bench, building the abs and obliques.",
+  "instructions": [
+    "Lie on your back with your calves on a bench and knees bent.",
+    "Hold a light weight against your chest with both hands.",
+    "Curl up and rotate one shoulder toward the opposite knee.",
+    "Lower with control.",
+    "Alternate sides each rep."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "3359",
+  "name": "cable standing chest press",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing press with cables that trains the chest while your core keeps you steady.",
+  "instructions": [
+    "Set the cables at chest height and hold a handle in each hand.",
+    "Step forward into a split stance.",
+    "Press the handles forward until your arms are straight.",
+    "Squeeze your chest at the end.",
+    "Return slowly with control."
+  ],
+  "femaleVariant": "1066",
+  "textSource": "opengym"
+}

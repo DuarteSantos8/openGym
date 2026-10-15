@@ -1,0 +1,22 @@
+{
+  "id": "1579",
+  "name": "sled one leg hack squat",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A hack squat on the sled using one leg at a time. It isolates each quad and glute with solid back support.",
+  "instructions": [
+    "Position yourself in the hack squat sled with your back and shoulders against the pads.",
+    "Place one foot in the middle of the platform and keep the other foot off.",
+    "Release the safety and lower by bending your working knee.",
+    "Go as deep as you can with control.",
+    "Press up through your heel, then switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

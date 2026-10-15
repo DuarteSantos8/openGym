@@ -1,0 +1,23 @@
+{
+  "id": "2111",
+  "name": "rotating stomach stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "hip flexors"
+  ],
+  "category": "stretching",
+  "description": "Combines a gentle lift of the chest with a twist to stretch the stomach muscles and the sides of the trunk.",
+  "instructions": [
+    "Lie face down and prop yourself up on your forearms or hands.",
+    "Keep your hips on the floor and lift your chest.",
+    "Slowly turn your head and shoulders toward one side.",
+    "Stay relaxed and avoid pushing into pain in the lower back.",
+    "Hold for 20-30 seconds.",
+    "Return to centre and rotate to the other side."
+  ],
+  "textSource": "opengym"
+}

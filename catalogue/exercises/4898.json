@@ -1,0 +1,24 @@
+{
+  "id": "4898",
+  "name": "kick side jump",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A lively jump that ends with a kick out to the side. It lifts your heart rate and trains leg power.",
+  "instructions": [
+    "Stand tall with your knees slightly bent.",
+    "Jump up off both feet.",
+    "Kick one leg out to the side at the top.",
+    "Land softly on both feet with soft knees.",
+    "Repeat, alternating the kicking leg.",
+    "Keep a controlled, bouncy rhythm."
+  ],
+  "textSource": "opengym"
+}

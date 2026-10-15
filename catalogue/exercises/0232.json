@@ -1,0 +1,23 @@
+{
+  "id": "0232",
+  "name": "cable standing pulldown (with rope)",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A standing rope pulldown from a high pulley, pulling toward the thighs. It trains the arms and the lats.",
+  "instructions": [
+    "Attach a rope to the cable machine at the highest setting.",
+    "Stand facing the machine with your feet shoulder-width apart.",
+    "Grasp the rope with an overhand grip, palms facing down.",
+    "Keep your back straight and core engaged throughout the exercise.",
+    "Pull the rope down towards your thighs, squeezing your biceps.",
+    "Pause for a moment at the bottom, then slowly release the rope back up.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

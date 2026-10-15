@@ -1,0 +1,24 @@
+{
+  "id": "3786",
+  "name": "resistance band squat with single arm row",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "lats",
+    "upper back",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A squat combined with a one-arm band row. It trains your legs and your back together.",
+  "instructions": [
+    "Anchor the band at a low point and hold the handle in one hand.",
+    "Stand tall with feet shoulder width apart and the band under light tension.",
+    "Sit your hips back and down into a squat while keeping your chest up.",
+    "Stand up and, at the top, pull the handle to your ribs with your elbow close to your body, then let it return slowly.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

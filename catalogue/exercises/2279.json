@@ -1,0 +1,23 @@
+{
+  "id": "2279",
+  "name": "stationary bike run v. 4",
+  "bodyPart": "cardio",
+  "equipment": "stationary bike",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "cardio",
+  "description": "A stationary bike session at a brisk pace, similar to running in effort, to build heart and leg endurance.",
+  "instructions": [
+    "Adjust the seat so your knees stay slightly bent at the bottom of the stroke.",
+    "Hold the handles and sit tall.",
+    "Start pedalling at an easy pace to warm up.",
+    "Raise the speed to a brisk rhythm you can sustain.",
+    "Keep your upper body relaxed.",
+    "Continue for 10-30 minutes, then slow down to cool off."
+  ],
+  "textSource": "opengym"
+}

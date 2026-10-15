@@ -1,0 +1,22 @@
+{
+  "id": "9410",
+  "name": "barbell standing bent knee calf raise from deficit",
+  "bodyPart": "lower legs",
+  "equipment": "barbell",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "A standing calf raise with a bent knee and the balls of your feet on a raised edge, which shifts work toward the soleus. The deficit gives a deeper stretch at the bottom.",
+  "instructions": [
+    "Rest a barbell across your upper back and stand with the balls of your feet on a low platform.",
+    "Soften your knees into a slight bend and keep that angle throughout.",
+    "Lower your heels below the platform until you feel a stretch in your calves.",
+    "Press up onto your toes as high as you can.",
+    "Pause briefly at the top, then lower slowly with control."
+  ],
+  "textSource": "opengym"
+}

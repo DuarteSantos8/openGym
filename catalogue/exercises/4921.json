@@ -1,0 +1,24 @@
+{
+  "id": "4921",
+  "name": "ring high row",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "calisthenics",
+  "description": "A row with the rings pulled toward your face, higher than a normal row. It builds the upper back and rear shoulders.",
+  "instructions": [
+    "Hold the rings and lean back with a straight body.",
+    "Pull the rings toward your forehead.",
+    "Flare your elbows out and squeeze your shoulder blades.",
+    "Pause briefly at the top.",
+    "Lower until your arms are straight.",
+    "Keep your hips up the whole time."
+  ],
+  "femaleVariant": "5269",
+  "textSource": "opengym"
+}

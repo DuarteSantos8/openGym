@@ -1,0 +1,22 @@
+{
+  "id": "6209",
+  "name": "kneeling straight leg kickback v. 2 (left)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A kneeling kickback with a straight leg on the left side. It targets the glutes.",
+  "instructions": [
+    "Start on all fours.",
+    "Extend your left leg straight behind you.",
+    "Lift it to hip height.",
+    "Squeeze the glute at the top.",
+    "Lower with control.",
+    "Keep your hips level."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "2146",
+  "name": "lever hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A machine version of the hip thrust that loads the glutes with a fixed path of motion.",
+  "instructions": [
+    "Sit on the machine with your upper back against the pad and the belt across your hips.",
+    "Plant your feet flat, about hip width apart.",
+    "Drive through your heels and lift your hips until your torso and thighs are in line.",
+    "Squeeze your glutes at the top for a moment.",
+    "Lower with control and repeat, keeping your chin tucked."
+  ],
+  "textSource": "opengym"
+}

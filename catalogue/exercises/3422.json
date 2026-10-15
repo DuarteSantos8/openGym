@@ -1,0 +1,23 @@
+{
+  "id": "3422",
+  "name": "medicine ball crunch",
+  "bodyPart": "waist",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A crunch holding a medicine ball to add resistance for the abs.",
+  "instructions": [
+    "Lie on your back with knees bent and hold a medicine ball on your chest.",
+    "Curl your shoulders off the floor.",
+    "Squeeze your abs at the top.",
+    "Lower slowly.",
+    "Keep your chin off your chest.",
+    "Breathe out as you crunch up."
+  ],
+  "femaleVariant": "3423",
+  "textSource": "opengym"
+}

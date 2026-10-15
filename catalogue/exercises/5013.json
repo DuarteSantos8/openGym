@@ -1,0 +1,21 @@
+{
+  "id": "5013",
+  "name": "barbell pause bench press",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Bench press with a stop on your chest. The pause makes you drive the bar without bounce.",
+  "instructions": [
+    "Lie on a flat bench with your eyes under the bar and feet planted.",
+    "Lower the bar to your mid chest with control.",
+    "Pause for a second with the bar resting lightly.",
+    "Press up explosively until your arms lock.",
+    "Keep your shoulder blades pinched throughout."
+  ],
+  "textSource": "opengym"
+}

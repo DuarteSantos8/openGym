@@ -1,0 +1,21 @@
+{
+  "id": "11278",
+  "name": "cable standing side bend v. 3",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing side bend that loads the obliques with a cable. It trains your core to resist and control sideways motion.",
+  "instructions": [
+    "Stand side-on to a low pulley and hold the handle at your side.",
+    "Keep your chest tall.",
+    "Bend sideways away from the machine.",
+    "Contract your obliques to return upright.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

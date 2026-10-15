@@ -1,0 +1,21 @@
+{
+  "id": "1973",
+  "name": "assisted sitting reverse shoulder stretch",
+  "bodyPart": "shoulders",
+  "equipment": "assisted",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "upper back"
+  ],
+  "category": "stretching",
+  "description": "A partner gently draws your arms back to stretch the front of the shoulders.",
+  "instructions": [
+    "Sit tall and put your arms behind you, palms facing down.",
+    "Have a partner stand behind and hold your wrists or forearms.",
+    "Ask them to lift your arms slowly until you feel a stretch.",
+    "Keep your shoulders relaxed and chest open.",
+    "Hold for 20-30 seconds, then lower slowly."
+  ],
+  "textSource": "opengym"
+}

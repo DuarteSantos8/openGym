@@ -1,0 +1,23 @@
+{
+  "id": "4416",
+  "name": "sliding leg bird dog",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A bird dog variation where the leg slides along the floor, improving core stability and coordination.",
+  "instructions": [
+    "Start on all fours with a sliding disc or towel under one foot.",
+    "Brace your core and keep your hips level.",
+    "Slide that leg straight back as you extend the opposite arm forward.",
+    "Return to the start in a controlled way.",
+    "Complete your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

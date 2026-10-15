@@ -1,0 +1,23 @@
+{
+  "id": "2471",
+  "name": "glute bridge two legs on floor",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A floor bridge with both feet down that strengthens the glutes and hamstrings.",
+  "instructions": [
+    "Lie on your back with your knees bent and feet flat.",
+    "Place your arms by your sides.",
+    "Push through your heels to lift your hips.",
+    "Make a straight line from shoulders to knees.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

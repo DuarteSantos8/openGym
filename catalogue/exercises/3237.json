@@ -1,0 +1,21 @@
+{
+  "id": "3237",
+  "name": "landmine lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "traps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A raise done with a barbell anchored in a landmine setup, lifting out and up to shoulder height. It works the shoulders with a smooth arc.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and knees slightly bent.",
+    "Hold the barbell with an overhand grip, resting it on the front of your shoulders.",
+    "Keeping your core engaged and back straight, lift the barbell up and away from your body, raising it to shoulder height.",
+    "Pause for a moment at the top, then slowly lower the barbell back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

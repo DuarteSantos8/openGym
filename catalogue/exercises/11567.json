@@ -1,0 +1,22 @@
+{
+  "id": "11567",
+  "name": "lever lying leg curl to reverse hyperextension",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A combo move on a lever machine: curl the legs up, then lift the hips and legs to work hamstrings and glutes together.",
+  "instructions": [
+    "Lie face down on the machine with the pads behind your lower legs.",
+    "Curl your heels toward your glutes, then lower with control.",
+    "Move into the reverse hyperextension position with the pad behind your legs.",
+    "Squeeze your glutes to raise your legs until they line up with your torso.",
+    "Lower slowly and avoid swinging."
+  ],
+  "textSource": "opengym"
+}

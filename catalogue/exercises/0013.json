@@ -1,0 +1,24 @@
+{
+  "id": "0013",
+  "name": "assisted lying leg raise with throw down",
+  "bodyPart": "waist",
+  "equipment": "assisted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A lying leg raise with the legs lifted straight up and lowered with control. Works the lower abs.",
+  "instructions": [
+    "Lie flat on your back with your legs extended and your arms by your sides.",
+    "Place your hands under your glutes for support.",
+    "Engage your core and lift your legs off the ground, keeping them straight.",
+    "Raise your legs until they are perpendicular to the ground.",
+    "Lower your legs back down to the starting position.",
+    "Simultaneously, throw your legs down towards the ground, keeping them straight.",
+    "Raise your legs back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "10593",
+  "name": "incline jack plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "hip flexors",
+    "glutes"
+  ],
+  "category": "cardio",
+  "description": "A plank with hands on a raised surface, jumping your feet in and out like a jumping jack. It builds core and gets the heart rate up.",
+  "instructions": [
+    "Place your hands on a bench in an incline plank.",
+    "Brace your core and keep your body straight.",
+    "Jump your feet wide.",
+    "Jump them back together.",
+    "Keep your hips level and the pace steady."
+  ],
+  "textSource": "opengym"
+}

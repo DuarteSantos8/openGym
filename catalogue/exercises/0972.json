@@ -1,0 +1,21 @@
+{
+  "id": "0972",
+  "name": "band bicycle crunch",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A bicycle crunch with a band, rotating the torso and alternating the knees. It trains the abs and obliques.",
+  "instructions": [
+    "Lie flat on your back with your hands behind your head and your knees bent.",
+    "Lift your feet off the ground and bring your right knee towards your chest while simultaneously twisting your torso to bring your left elbow towards your right knee.",
+    "Straighten your right leg while bringing your left knee towards your chest and twisting your torso to bring your right elbow towards your left knee.",
+    "Continue alternating the twisting motion, as if you are pedaling a bicycle, while keeping your core engaged throughout the movement.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

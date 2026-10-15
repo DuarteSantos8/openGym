@@ -1,0 +1,22 @@
+{
+  "id": "1491",
+  "name": "supine spinal twist yoga pose",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "chest"
+  ],
+  "category": "yoga",
+  "description": "A relaxing lying twist that mobilises the spine and stretches the hips and sides of the trunk.",
+  "instructions": [
+    "Lie on your back with your arms out to the sides.",
+    "Pull one knee toward your chest.",
+    "Guide that knee across your body toward the floor on the opposite side.",
+    "Keep both shoulders on the floor and turn your head the other way if comfortable.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

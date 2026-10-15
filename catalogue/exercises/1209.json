@@ -1,0 +1,23 @@
+{
+  "id": "1209",
+  "name": "cable twisting overhead press",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "An overhead cable press where you rotate your torso as you push. It works the shoulders and the core together.",
+  "instructions": [
+    "Set a cable low and stand sideways, holding the handle at your shoulder.",
+    "Brace your core and turn slightly toward the cable.",
+    "Press the handle overhead while rotating your torso to face forward.",
+    "Lower the handle back to your shoulder with control.",
+    "Finish your reps, then switch sides."
+  ],
+  "femaleVariant": "2542",
+  "textSource": "opengym"
+}

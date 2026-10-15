@@ -1,0 +1,23 @@
+{
+  "id": "3992",
+  "name": "barbell bent over wide row plus",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A wide grip bent over row aimed at the upper back. It builds the lats and rear shoulders.",
+  "instructions": [
+    "Hinge forward with a wide overhand grip.",
+    "Keep a flat back.",
+    "Row the bar toward your upper abdomen.",
+    "Squeeze your shoulder blades.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

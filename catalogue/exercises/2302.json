@@ -1,0 +1,23 @@
+{
+  "id": "2302",
+  "name": "front leg hook kick",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "hip flexors",
+    "core"
+  ],
+  "category": "combat",
+  "description": "A hooking kick with the lead leg that swings the heel across the target, building balance and hip control.",
+  "instructions": [
+    "Stand in a fighting stance with your hands up.",
+    "Lift the lead knee and point it forward.",
+    "Extend the leg and hook the heel across the target.",
+    "Keep your supporting foot grounded and your core tight.",
+    "Bring the leg back under control.",
+    "Return to stance and repeat, then switch sides."
+  ],
+  "textSource": "opengym"
+}

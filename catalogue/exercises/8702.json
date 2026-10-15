@@ -1,0 +1,23 @@
+{
+  "id": "8702",
+  "name": "torque tank push",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "A hard push of a torque tank sled across the floor that fires up the legs and the heart.",
+  "instructions": [
+    "Grip the handles of the tank and lean forward.",
+    "Keep your back flat and core tight.",
+    "Drive with short, powerful steps.",
+    "Keep your hips low and push over the distance.",
+    "Rest and repeat."
+  ],
+  "textSource": "opengym"
+}

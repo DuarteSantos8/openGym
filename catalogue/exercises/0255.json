@@ -1,0 +1,23 @@
+{
+  "id": "0255",
+  "name": "wall ball circles",
+  "bodyPart": "shoulders",
+  "equipment": "stability ball",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "upper back",
+    "trapezius"
+  ],
+  "category": "mobility",
+  "description": "A shoulder drill rolling a ball in circles against a wall. It warms up the shoulder and builds control.",
+  "instructions": [
+    "Stand facing a wall and place a ball against it at shoulder height with one hand.",
+    "Keep your arm straight but relaxed.",
+    "Roll the ball in small circles on the wall.",
+    "Do several circles in one direction.",
+    "Reverse the direction.",
+    "Keep your shoulder down, then switch arms."
+  ],
+  "textSource": "opengym"
+}

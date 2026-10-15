@@ -1,0 +1,22 @@
+{
+  "id": "4796",
+  "name": "standing single leg calf raise balance",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "A one-leg calf raise that also challenges balance. It builds calf strength and ankle stability.",
+  "instructions": [
+    "Stand tall on one foot with the other lifted.",
+    "Keep your hands on your hips or lightly on a wall.",
+    "Rise up onto your toes as high as you can.",
+    "Hold briefly at the top, steady.",
+    "Lower slowly, finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

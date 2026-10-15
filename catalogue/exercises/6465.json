@@ -1,0 +1,22 @@
+{
+  "id": "6465",
+  "name": "smith frog hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A loaded hip thrust on a Smith machine with the soles of your feet together, strongly targeting the glutes.",
+  "instructions": [
+    "Sit with your upper back on a bench and the Smith bar over your hips.",
+    "Put the soles of your feet together, knees open.",
+    "Drive your hips up until your body is level.",
+    "Squeeze your glutes at the top.",
+    "Lower under control and repeat."
+  ],
+  "textSource": "opengym"
+}

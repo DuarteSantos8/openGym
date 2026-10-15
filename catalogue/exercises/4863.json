@@ -1,0 +1,22 @@
+{
+  "id": "4863",
+  "name": "side plank leg lift",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A side plank with the top leg lifted. It trains the obliques and hip stabilisers.",
+  "instructions": [
+    "Lie on your side and prop up on your forearm.",
+    "Lift your hips into a side plank.",
+    "Raise your top leg.",
+    "Lower it slowly.",
+    "Switch sides after your reps."
+  ],
+  "textSource": "opengym"
+}

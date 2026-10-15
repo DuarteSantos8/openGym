@@ -1,0 +1,24 @@
+{
+  "id": "7114",
+  "name": "ez barbell standing upright row",
+  "bodyPart": "shoulders",
+  "equipment": "ez barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "biceps",
+    "upper back",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A vertical pull with an EZ bar that builds the side shoulders and upper traps.",
+  "instructions": [
+    "Stand tall holding the EZ bar with a shoulder-width grip.",
+    "Let the bar hang in front of your thighs.",
+    "Pull it up along your body, leading with your elbows.",
+    "Stop around chest height without shrugging hard.",
+    "Lower the bar slowly to the start.",
+    "Keep your torso upright throughout."
+  ],
+  "textSource": "opengym"
+}

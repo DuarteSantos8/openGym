@@ -1,0 +1,21 @@
+{
+  "id": "0971",
+  "name": "band assisted wheel rollerout",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "An ab wheel rollout with a band to help bring you back. It trains the abs with a lighter load.",
+  "instructions": [
+    "Kneel on the floor and hold the handles of the band with both hands, palms facing down.",
+    "Place the band on the ground in front of you and position your hands shoulder-width apart.",
+    "Engage your core and slowly roll the wheel forward, extending your body as far as you can while maintaining control.",
+    "Pause for a moment at the furthest point, then slowly roll the wheel back towards your knees to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2649",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "4292",
+  "name": "dumbbell lying hamstring curl",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "Lying face down, you curl a dumbbell held between your feet toward your glutes. A simple way to train the back of the thighs without a machine.",
+  "instructions": [
+    "Lie face down on a bench and grip the edge for support.",
+    "Have a dumbbell gripped between your feet, or placed by a partner, with legs straight.",
+    "Bend your knees and curl the weight toward your glutes.",
+    "Pause briefly at the top without lifting your hips.",
+    "Lower slowly until your legs are almost straight."
+  ],
+  "textSource": "opengym"
+}

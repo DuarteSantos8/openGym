@@ -1,0 +1,33 @@
+{
+  "id": "0118",
+  "name": "barbell reverse grip bent over row",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A bent-over row with an underhand grip. Targets the upper back and biceps.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and knees slightly bent.",
+    "Hold a barbell with an overhand grip, palms facing down, and hands slightly wider than shoulder-width apart.",
+    "Bend forward at the hips, keeping your back straight and chest up, until your torso is almost parallel to the floor.",
+    "Pull the barbell towards your lower chest, squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly lower the barbell back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ]
+  },
+  "femaleVariant": "2467",
+  "textSource": "exercisedb"
+}

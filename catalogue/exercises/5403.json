@@ -1,0 +1,21 @@
+{
+  "id": "5403",
+  "name": "stick standing twist stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "obliques",
+    "upper back"
+  ],
+  "category": "stretching",
+  "description": "A gentle standing rotation with a stick across your shoulders. Loosens the mid back and trunk.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and rest a stick across your upper back.",
+    "Hold it with both hands and keep your hips facing forward.",
+    "Rotate your upper body slowly to one side.",
+    "Pause for a moment, then rotate to the other side.",
+    "Repeat for 10-12 slow turns and keep your knees soft."
+  ],
+  "textSource": "opengym"
+}

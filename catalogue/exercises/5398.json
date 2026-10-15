@@ -1,0 +1,23 @@
+{
+  "id": "5398",
+  "name": "roll foot",
+  "bodyPart": "lower legs",
+  "equipment": "roller",
+  "target": "calves",
+  "secondaryMuscles": [
+    "feet",
+    "ankles"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a foam roller to ease tightness in the sole of the foot. Good before training or on rest days to loosen up.",
+  "instructions": [
+    "Stand or sit with the roller under one foot.",
+    "Place the roller under the sole of the foot and let your body weight settle onto it.",
+    "Roll the sole from heel to toes, then switch feet.",
+    "Pause on tender spots and breathe slowly for 20-30 seconds.",
+    "Keep your core braced and avoid rolling over joints or bone.",
+    "Roll for 30-60 seconds, then switch sides if needed."
+  ],
+  "femaleVariant": "5442",
+  "textSource": "opengym"
+}

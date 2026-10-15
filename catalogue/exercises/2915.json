@@ -1,0 +1,24 @@
+{
+  "id": "2915",
+  "name": "barbell zercher carry",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "core",
+    "biceps",
+    "upper back",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "Carrying a barbell in the crooks of your elbows. It loads the legs, upper back and trunk in a tough front-loaded position.",
+  "instructions": [
+    "Set the bar in your elbow crooks, hugging it tight to your chest.",
+    "Stand tall with your chest up and your abs braced.",
+    "Walk with controlled steps while keeping the bar close.",
+    "Cover the set distance without rounding forward.",
+    "Lower the bar to the rack or floor carefully."
+  ],
+  "textSource": "opengym"
+}

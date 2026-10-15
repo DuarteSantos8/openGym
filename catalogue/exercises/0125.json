@@ -1,0 +1,23 @@
+{
+  "id": "0125",
+  "name": "barbell wrist curl v. 2",
+  "bodyPart": "lower arms",
+  "equipment": "barbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "biceps",
+    "brachialis"
+  ],
+  "category": "strength",
+  "description": "A wrist curl with palms up, resting the forearms on a bench. Builds the forearm flexors.",
+  "instructions": [
+    "Sit on a bench with your feet flat on the ground and your knees bent.",
+    "Hold a barbell with an underhand grip, palms facing up, and your hands shoulder-width apart.",
+    "Rest your forearms on your thighs, allowing your wrists to hang off the edge.",
+    "Slowly curl your wrists upward, bringing the barbell towards your forearms.",
+    "Pause for a moment at the top, then slowly lower the barbell back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "11881",
+  "textSource": "exercisedb"
+}

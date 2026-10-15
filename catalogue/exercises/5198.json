@@ -1,0 +1,22 @@
+{
+  "id": "5198",
+  "name": "single straight leg glute bridge hold",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "Holding a glute bridge with one leg straight. It trains the glutes and challenges hip stability.",
+  "instructions": [
+    "Lie on your back with knees bent.",
+    "Straighten one leg.",
+    "Lift your hips with the planted foot.",
+    "Hold with hips level.",
+    "Hold for 20-30 seconds.",
+    "Lower and switch legs."
+  ],
+  "textSource": "opengym"
+}

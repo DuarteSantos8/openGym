@@ -1,0 +1,23 @@
+{
+  "id": "3881",
+  "name": "lever seated full crunch",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A seated machine crunch that works the full abdominal wall with adjustable resistance.",
+  "instructions": [
+    "Adjust the seat and sit with the pads in position.",
+    "Hold the handles and keep your feet planted.",
+    "Exhale and curl your torso forward, bringing your ribs toward your hips.",
+    "Squeeze your abs at the bottom.",
+    "Return slowly to the start.",
+    "Keep your hips on the seat."
+  ],
+  "textSource": "opengym"
+}

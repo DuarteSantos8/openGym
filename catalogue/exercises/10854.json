@@ -1,0 +1,23 @@
+{
+  "id": "10854",
+  "name": "pilates machine arm circle",
+  "bodyPart": "shoulders",
+  "equipment": "leverage machine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "lats",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A reformer arm circle holding straps. It works the shoulders and the upper back.",
+  "instructions": [
+    "Lie on your back holding the straps with arms up.",
+    "Bend your knees and brace your core.",
+    "Lower your arms out to the sides.",
+    "Circle them down and up in a smooth arc.",
+    "Reverse the direction after a few reps.",
+    "Keep your ribs down."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "6485",
+  "name": "weighted plate standing lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "weight plate",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "Holding a weight plate in each hand, you raise your arms out to the sides to build the middle shoulders.",
+  "instructions": [
+    "Stand tall holding a plate in each hand at your sides.",
+    "Keep a slight bend in your elbows.",
+    "Raise your arms out to the sides up to shoulder height.",
+    "Pause briefly.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

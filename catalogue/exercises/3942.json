@@ -1,0 +1,21 @@
+{
+  "id": "3942",
+  "name": "romanian chair sit up v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A sit up done with your legs supported on a chair, which keeps the movement strict. It trains the abs and hip flexors.",
+  "instructions": [
+    "Sit on the floor and rest your lower legs on a chair or bench, knees bent.",
+    "Cross your arms over your chest.",
+    "Curl your torso up until your chest nears your knees.",
+    "Lower slowly back to the floor.",
+    "Do not pull on your neck."
+  ],
+  "textSource": "opengym"
+}

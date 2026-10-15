@@ -1,0 +1,21 @@
+{
+  "id": "1068",
+  "name": "cable kickback v. 3",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Extend your arm back against cable resistance. It isolates the triceps.",
+  "instructions": [
+    "Hinge forward and hold a handle with elbow bent.",
+    "Keep your upper arm parallel to the floor.",
+    "Extend your arm back.",
+    "Squeeze the triceps.",
+    "Return slowly and switch sides."
+  ],
+  "textSource": "opengym"
+}

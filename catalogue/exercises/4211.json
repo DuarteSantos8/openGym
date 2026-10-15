@@ -1,0 +1,23 @@
+{
+  "id": "4211",
+  "name": "dumbbell 4 ways lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A shoulder series that moves the dumbbells through four raise positions in one set. It hits all heads of the delts with light weight.",
+  "instructions": [
+    "Stand with a light dumbbell in each hand and a slight knee bend.",
+    "Raise both arms out to your sides to shoulder height.",
+    "Lower, then raise them to the front to shoulder height.",
+    "Lower, then hinge forward slightly and raise them out to the rear.",
+    "Return and finish with a raise to the sides again.",
+    "Keep the weights light and avoid swinging."
+  ],
+  "textSource": "opengym"
+}

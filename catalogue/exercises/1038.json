@@ -1,0 +1,22 @@
+{
+  "id": "1038",
+  "name": "lever chair squat",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A machine squat performed with a chair-like support, a stable way to train the legs.",
+  "instructions": [
+    "Position yourself in the machine with the pads on your shoulders and feet shoulder width apart.",
+    "Release the safety and brace your core.",
+    "Bend your knees and sit back and down.",
+    "Drive through your heels to stand back up.",
+    "Keep your chest up and knees tracking over your toes."
+  ],
+  "textSource": "opengym"
+}

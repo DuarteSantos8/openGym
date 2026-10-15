@@ -1,0 +1,22 @@
+{
+  "id": "0305",
+  "name": "dumbbell decline shrug",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "traps",
+  "secondaryMuscles": [
+    "shoulders",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A face-down dumbbell shrug on a decline bench. You raise the shoulders toward the ears to work the traps.",
+  "instructions": [
+    "Set up a decline bench at a 45-degree angle.",
+    "Lie face down on the bench with your chest and stomach resting against it.",
+    "Hold a dumbbell in each hand with your arms fully extended towards the floor.",
+    "Keeping your arms straight, raise your shoulders towards your ears as high as possible.",
+    "Hold the contraction for a moment, then slowly lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

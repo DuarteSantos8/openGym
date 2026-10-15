@@ -1,0 +1,24 @@
+{
+  "id": "10389",
+  "name": "weighted sandbag row",
+  "bodyPart": "back",
+  "equipment": "sandbag",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rhomboids",
+    "grip muscles",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A bent-over row with a sandbag, training the back and grip.",
+  "instructions": [
+    "Stand over a sandbag, hinge forward and grab it with both hands.",
+    "Keep your back flat and knees slightly bent.",
+    "Row the bag toward your lower ribs.",
+    "Squeeze your shoulder blades together.",
+    "Lower slowly back to full arm extension."
+  ],
+  "textSource": "opengym"
+}

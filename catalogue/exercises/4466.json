@@ -1,0 +1,22 @@
+{
+  "id": "4466",
+  "name": "roll ball popliteal",
+  "bodyPart": "upper legs",
+  "equipment": "roller",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "soleus"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a small ball to ease tension in the back of the knee (popliteal area). A simple way to loosen tight spots before or after training.",
+  "instructions": [
+    "Place the ball under your back of the knee (popliteal area) while sitting on the floor with your knee gently bent.",
+    "Shift your weight onto the ball until you feel moderate, tolerable pressure.",
+    "Roll slowly back and forth over a short range, about 2-3 cm at a time.",
+    "When you find a tender spot, pause on it and breathe for 20-30 seconds.",
+    "Use very light pressure here and stop if you feel tingling.",
+    "Repeat on the other side if needed."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5392",
+  "name": "roll hamstrings and glute sitting on floor",
+  "bodyPart": "upper legs",
+  "equipment": "roller",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a foam roller to ease tightness in the hamstrings and glutes. Good before training or on rest days to loosen up.",
+  "instructions": [
+    "Sit with the roller under your thighs and hands behind you.",
+    "Place the roller under the hamstrings and glutes and let your body weight settle onto it.",
+    "Lift your hips and roll from the knee toward the glutes.",
+    "Pause on tender spots and breathe slowly for 20-30 seconds.",
+    "Keep your core braced and avoid rolling over joints or bone.",
+    "Roll for 30-60 seconds, then switch sides if needed."
+  ],
+  "femaleVariant": "5430",
+  "textSource": "opengym"
+}
