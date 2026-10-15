@@ -15,6 +15,7 @@ import { askAddDeviceData, menuSheet } from '../sheets.jsx'
 import { ConnectSheet, CfAccessSheet } from '../views/MobileOnboarding.jsx'
 import { passwordOn, openPasswordSignIn } from './PasswordAuth.jsx'
 import { Section, Row, Button } from './ui.jsx'
+import { Spacer } from './layout.jsx'
 
 const ui = () => useUI.getState()
 const toast = m => ui().toast(m)
@@ -205,30 +206,31 @@ export function OwedSheet({ kind, count: count0, media: media0 = 0, exportBackup
     if (r.owed && !r.stashed) { toast(t('Couldn’t keep a copy of the changes on this device. Nothing was removed.')); return }
     finish(r)
   }
-  return <div style={{ textAlign: 'center', padding: '4px 0' }}>
-    <h3 style={{ marginBottom: 8 }}>{t('Not everything is on your server yet')}</h3>
-    {(count !== 0 || !media) && <div style={{ marginBottom: 6, fontWeight: 600 }}>
+  return <div className="ta-center" style={{ padding: '4px 0' }}>
+    {/* Not SheetHeader: that h3 has no bottom margin, this one keeps its 8px. */}
+    <h3 className="mb-4">{t('Not everything is on your server yet')}</h3>
+    {(count !== 0 || !media) && <div className="mb-3 fw-semibold">
       {count > 0 ? t('Not on your server yet: {0}', changeCount(count)) : t('Some changes on this device have not reached your server.')}
     </div>}
-    {media > 0 && <div style={{ marginBottom: 6, fontWeight: 600 }}>{tn('{0} photo or video has not reached your server yet.', '{0} photos or videos have not reached your server yet.', media)}</div>}
-    {(tried || refused) && view && <div className="small" style={{ color: 'var(--red-ink)', marginBottom: 6 }}>{view.line}</div>}
+    {media > 0 && <div className="mb-3 fw-semibold">{tn('{0} photo or video has not reached your server yet.', '{0} photos or videos have not reached your server yet.', media)}</div>}
+    {(tried || refused) && view && <div className="small ink-danger mb-3">{view.line}</div>}
     {/* It names the button below it: Try again, or Pair again / Sign in where the server refuses. */}
-    <div className="muted small" style={{ marginBottom: 18, lineHeight: 1.5 }}>
+    <div className="muted small mb-9" style={{ lineHeight: 1.5 }}>
       {refused
         ? (MOBILE
           ? t('Pair again, or export a backup first. Going ahead anyway keeps a copy of these changes on this device until it connects to this server as this account again. Then they’re added back.')
           : t('Sign in again, or export a backup first. Going ahead anyway keeps a copy of these changes on this device until it connects to this server as this account again. Then they’re added back.'))
         : t('Try again, or export a backup first. Going ahead anyway keeps a copy of these changes on this device until it connects to this server as this account again. Then they’re added back.')}
     </div>
-    {refused && MOBILE && <><button className="btn primary" disabled={busy} onClick={() => { close(); pairAgain() }}>{t('Pair again')}</button><div style={{ height: 8 }} /></>}
-    {refused && !MOBILE && canSignIn() && <><button className="btn primary" disabled={busy} onClick={() => { close(); signInAgain() }}>{pwOn() ? t('Sign in') : t('Sign in with passkey')}</button><div style={{ height: 8 }} /></>}
-    {!refused && <><button className="btn primary" disabled={busy} onClick={retry}>{busy ? t('Syncing…') : t('Try again')}</button><div style={{ height: 8 }} /></>}
+    {refused && MOBILE && <><button className="btn primary" disabled={busy} onClick={() => { close(); pairAgain() }}>{t('Pair again')}</button><Spacer size={4} /></>}
+    {refused && !MOBILE && canSignIn() && <><button className="btn primary" disabled={busy} onClick={() => { close(); signInAgain() }}>{pwOn() ? t('Sign in') : t('Sign in with passkey')}</button><Spacer size={4} /></>}
+    {!refused && <><button className="btn primary" disabled={busy} onClick={retry}>{busy ? t('Syncing…') : t('Try again')}</button><Spacer size={4} /></>}
     {media > 0 && exportBackupZip
       ? <Button icon="share" disabled={busy} onClick={exportBackupZip}>{t('Export with photos & videos (.zip)')}</Button>
       : <Button icon="share" disabled={busy} onClick={exportBackup}>{t('Export backup (JSON)')}</Button>}
-    <div style={{ height: 8 }} />
+    <Spacer size={4} />
     <button className="btn danger" disabled={busy} onClick={anyway}>{LEAVE[kind].anyway()}</button>
-    <div style={{ height: 8 }} />
+    <Spacer size={4} />
     <Button variant="ghost" className="dim" disabled={busy} onClick={close}>{t('Cancel')}</Button>
   </div>
 }

@@ -154,7 +154,7 @@ describe('G4 and G7', () => {
   it('finds the routed components and exempts the full-screen ones', () => {
     const views = routeViewsWithoutPage()
     expect(views).toContain('Workout')
-    expect(views).toContain('SettingsRoute')
+    expect(views).not.toContain('SettingsRoute')
     expect(PAGE_EXEMPT).toEqual(['FocusView', 'Login', 'MobileOnboarding', 'Workout'])
     expect(now.G4).not.toContain('Workout')
   })

@@ -10,6 +10,7 @@ import { closeThenNav } from '../lib/nav.js'
 import { REST_MAX, fmtRest } from '../lib/duration.js'
 import { durationSheet } from './DurationWheel.jsx'
 import { Section, Row, Switch, Segmented, Button } from './ui.jsx'
+import { Inline } from './layout.jsx'
 
 // The settings people touch at the gym, without leaving the workout (v1.3.11, opened from the
 // workout's ⋯ → Workout settings). Every row writes the same S.* field as Settings → Workout and
@@ -27,11 +28,12 @@ export function WorkoutSettings({ close }) {
   const gif = S.gifSize === 'mini' || S.gifSize === 'off' ? S.gifSize : 'full'
   const allSettings = () => closeThenNav(close, '/me/workout')
   return <div className="ws-sheet">
-    <div className="row between" style={{ marginBottom: 2 }}>
-      <h3 style={{ margin: 0 }}>{t('Workout settings')}</h3>
+    {/* Not SheetHeader: its row is 14px under, its sub line 10px; this header keeps 2px and 12px. */}
+    <Inline justify="between" className="mb-1">
+      <h3 className="m-0">{t('Workout settings')}</h3>
       <Button size="sm" variant="ghost" onClick={close}>{t('Done')}</Button>
-    </div>
-    <div className="muted small" style={{ marginBottom: 12 }}>{t('Changes stick for your next workouts too.')}</div>
+    </Inline>
+    <div className="muted small mb-6">{t('Changes stick for your next workouts too.')}</div>
     <Section>
       <Row icon="timer" iconTint="var(--orange)" title={t('Rest timer')} value={fmtRest(S.restSec)} accessory="chevron"
         onClick={() => durationSheet({

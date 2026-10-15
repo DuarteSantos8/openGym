@@ -37,7 +37,9 @@ import { forgetCoach } from '../lib/coach-api.js'
 import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration } from '../lib/duration.js'
 import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, plateInventorySheet, dumbbellInventorySheet, menuSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
-import SubHeader from '../components/SubHeader.jsx'
+import { Page, Spacer } from '../components/layout.jsx'
+import { Card } from '../components/blocks.jsx'
+import { SheetHeader, SheetActions } from '../components/sheet-layout.jsx'
 import { durationSheet } from '../components/DurationWheel.jsx'
 import { showsConnection, showsLocalLine } from '../components/SyncBanner.jsx'
 import BackupFolderRow, { useBackupFolder, autoBackupSubtitle } from '../components/BackupFolderRow.jsx'
@@ -721,7 +723,7 @@ export default function Settings({ page = null, find = null, via = null }) {
             onChange={v => update(s => { s.theme = v })}
           />
         </Row>
-        <div className="lrow" style={{ flexWrap: 'wrap', rowGap: 12, paddingBottom: 14 }}>
+        <div className="lrow wrap" style={{ rowGap: 12, paddingBottom: 14 }}>
           <span className="lrow-i" style={{ '--tint': 'var(--purple)' }}><Icon name="palette" /></span>
           <span className="lrow-m"><span className="lrow-t">{t('Accent color')}</span></span>
           <span className="lrow-v">{accentLabel(S)}</span>
@@ -931,14 +933,14 @@ export default function Settings({ page = null, find = null, via = null }) {
       </Section>}
       {/* The connection banner already says this to a guest; the line is for when it is switched
           off, or its × hid it (#454). */}
-      {!user && !DEMO && !MOBILE && !(showsConnection(S) && showsLocalLine(S)) && <p className="sect-f" style={{ marginTop: -18, marginBottom: 22 }}>{t('Guest mode: your data lives only in this browser.')}</p>}
+      {!user && !DEMO && !MOBILE && !(showsConnection(S) && showsLocalLine(S)) && <p className="sect-f mb-10" style={{ marginTop: -18 }}>{t('Guest mode: your data lives only in this browser.')}</p>}
     </>,
   }
 
   /* ---------------- a page ---------------- */
   if (page && pages[page]) {
     return <div ref={body}>
-      <SubHeader title={t(PAGES[page].title)} onBack={back} />
+      <Page title={t(PAGES[page].title)} onBack={back} />
       {pages[page]()}
     </div>
   }
@@ -968,7 +970,7 @@ function SettingsRoot({ ctx, preview, open, user, sync, go }) {
   const initial = user && !DEMO ? String(user.name || '?').trim().charAt(0).toUpperCase() : null
   return <div>
     {/* Me opens from the avatar in either mode, so back is back, not a fixed Home. */}
-    <SubHeader title={t('Settings')} />
+    <Page title={t('Settings')} />
     <div className="sp-search">
       <SearchField value={q} onChange={e => set(e.target.value)} onClear={() => set('')}
         placeholder={t('Search…')} aria-label={t('Search settings')} inputMode="search" enterKeyHint="search" autoComplete="off" />
@@ -1027,8 +1029,8 @@ const DownloadProgress = forwardRef(function DownloadProgress(_, ref) {
     }
   })
   return (
-    <div style={{ textAlign: 'center', padding: '8px 0' }}>
-      <h3>{t('Downloading update…')}</h3>
+    <div className="ta-center" style={{ padding: '8px 0' }}>
+      <SheetHeader title={t('Downloading update…')} />
       <div style={{ margin: '16px 0', height: 6, borderRadius: 3, background: 'var(--fill-3)', overflow: 'hidden' }}>
         <div style={{ height: '100%', width: pct + '%', background: 'var(--acc)', borderRadius: 3, transition: 'width .2s' }} />
       </div>
@@ -1057,22 +1059,23 @@ export function RestSoundSheet({ close }) {
   const S = useStore(s => s.S)
   const cur = restSoundOf(S)
   return <>
-    <h3>{t('Sound')}</h3>
-    <div className="muted small" style={{ marginBottom: 12 }}>{t('Tap one to hear it.')}</div>
+    <SheetHeader title={t('Sound')} />
+    <div className="muted small mb-6">{t('Tap one to hear it.')}</div>
     <Section>
       {REST_SOUND_IDS.map(id => <Row key={id} icon={id === cur ? 'speaker' : 'play'} iconTint="var(--pink)" title={t(REST_SOUND_LABEL[id])}
         subtitle={REST_SOUND_HINT[id] ? t(REST_SOUND_HINT[id]) : null} accessory={id === cur ? 'check' : 'none'}
         onClick={() => pickRestSound(id)} />)}
     </Section>
-    <div style={{ height: 14 }} />
-    <Button variant="primary" onClick={close}>{t('Done')}</Button>
+    <SheetActions>
+      <Button variant="primary" onClick={close}>{t('Done')}</Button>
+    </SheetActions>
   </>
 }
 const restSoundSheet = () => useUI.getState().openSheet(close => <RestSoundSheet close={close} />)
 
 function effortHelpSheet() {
   useUI.getState().openSheet(close => <>
-    <h3>{t('Effort per set')}</h3>
+    <SheetHeader title={t('Effort per set')} />
     <div className="muted small" style={{ lineHeight: 1.5 }}>
       {t('How hard a set was, logged next to weight and reps. Two scales for the same judgement, counted from opposite ends.')}
     </div>
@@ -1084,11 +1087,11 @@ function effortHelpSheet() {
         </div>
       ))}
     </div>
-    <div className="dim small" style={{ lineHeight: 1.5, display: 'grid', gap: 8 }}>
+    <div className="dim small g-4" style={{ lineHeight: 1.5, display: 'grid' }}>
       <div>{t('RIR counts the reps you left in the tank; RPE reads the same effort off a 10-point scale, so RPE ≈ 10 − RIR. Pick whichever you already think in.')}</div>
       <div>{t('The highlighted row is where most working sets land. Sets you have already logged keep their own scale, and nothing else reads the value, so progression and estimated 1RM are unaffected.')}</div>
     </div>
-    <div style={{ height: 8 }} />
+    <Spacer size={4} />
   </>)
 }
 
@@ -1211,7 +1214,7 @@ function PushCard({ S, update, toast }) {
         <NudgeRows S={S} setReminder={patch => update(s => { s.reminder = { ...(s.reminder || DEF.reminder), ...patch, tz: localTZ() } })} />
       )}
     </Section>
-    {on && <div style={{ marginTop: -12, marginBottom: 22 }}><Button size="sm" icon="bell" onClick={test}>{t('Send test notification')}</Button></div>}
+    {on && <div className="mb-10" style={{ marginTop: -12 }}><Button size="sm" icon="bell" onClick={test}>{t('Send test notification')}</Button></div>}
   </>
 }
 
@@ -1411,16 +1414,16 @@ function PairSheet({ close }) {
   const [err, setErr] = useState(null)
   useEffect(() => { api('/api/pair/create', { method: 'POST', body: '{}' }).then(r => setCode(r.code)).catch(e => setErr(e.message || t('Could not generate a code'))) }, [])
   return <>
-    <h3>{t('Pair the mobile app')}</h3>
-    <div className="muted small" style={{ marginBottom: 14 }}>
+    <SheetHeader title={t('Pair the mobile app')} />
+    <div className="muted small mb-7">
       {t('On the openGym app, choose “Connect to my server”, then enter this address and the code below. It expires in 5 minutes.')}
     </div>
     {err ? <div className="dim small">{err}</div> : (
-      <div className="card" style={{ textAlign: 'center', fontSize: 30, fontWeight: 700, letterSpacing: '.16em', padding: '18px 0' }}>
+      <Card className="ta-center fs-big fw-bold" style={{ letterSpacing: '.16em', padding: '18px 0' }}>
         {code || '········'}
-      </div>
+      </Card>
     )}
-    <div style={{ height: 12 }} />
+    <Spacer size={6} />
     <Button onClick={close}>{t('Done')}</Button>
   </>
 }
@@ -1444,16 +1447,16 @@ function RegisterInline({ close, setUser, pushState, pullState, toast }) {
     } catch (e) { if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') toast(passkeyError(e, t('Registration failed'))) }
   }
   return <>
-    <h3>{t('Create your profile')}</h3>
-    <div className="muted small" style={{ marginBottom: 14 }}>{t('Pick a name, then confirm with your device.')}</div>
+    <SheetHeader title={t('Create your profile')} />
+    <div className="muted small mb-7">{t('Pick a name, then confirm with your device.')}</div>
     <TextField ref={nameRef} placeholder={t('Your name')} maxLength={40} />
     {inviteOnly && <>
-      <div style={{ height: 10 }} />
-      <input className="input" placeholder={t('Invite code')} maxLength={40} value={code}
-        onChange={e => setCode(e.target.value.toUpperCase())} style={{ letterSpacing: '.14em', fontWeight: 600, textAlign: 'center' }} />
-      <div className="dim small" style={{ marginTop: 6 }}>{t('This app is invite-only. Enter the code you were given.')}</div>
+      <Spacer size={5} />
+      <input className="input fw-semibold ta-center" placeholder={t('Invite code')} maxLength={40} value={code}
+        onChange={e => setCode(e.target.value.toUpperCase())} style={{ letterSpacing: '.14em' }} />
+      <div className="dim small mt-3">{t('This app is invite-only. Enter the code you were given.')}</div>
     </>}
-    <div style={{ height: 12 }} /><Button variant="primary" onClick={go}>{t('Create passkey')}</Button>
+    <Spacer size={6} /><Button variant="primary" onClick={go}>{t('Create passkey')}</Button>
   </>
 }
 
