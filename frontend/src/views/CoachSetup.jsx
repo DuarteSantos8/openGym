@@ -21,7 +21,8 @@ import { HTTP_PROVIDERS, HTTP_PROVIDER_IDS, baseUrlFor, validateBaseUrl } from '
 import { DATA_CATEGORIES } from '../../../api/coach/core/categories.js'
 import { ConnectSheet } from './MobileOnboarding.jsx'
 import Icon from '../components/Icon.jsx'
-import SubHeader from '../components/SubHeader.jsx'
+import { Page, Inline } from '../components/layout.jsx'
+import { Card, Chip } from '../components/blocks.jsx'
 import { Section, Row, Button, TextField } from '../components/ui.jsx'
 
 // Literal t() calls, so check-source-strings sees the three lines; t(s) over a list of keys hid them.
@@ -136,7 +137,7 @@ export default function CoachSetup() {
     : t('Off. Choose how the Coach should run.')
 
   return <div>
-    <SubHeader title={t('AI Coach')} />
+    <Page title={t('AI Coach')} />
 
     <Section title={t('How should the Coach run?')} footer={current}>
       <Row icon="rocket" iconTint="var(--indigo)" title={t('Use my self-hosted openGym')}
@@ -147,20 +148,20 @@ export default function CoachSetup() {
         accessory="chevron" onClick={() => setChoice('byok')} />
     </Section>
 
-    {choice === 'server' && !serverHasCoach && <div className="card">
+    {choice === 'server' && !serverHasCoach && <Card>
       <div className="muted small">{t('Your server has no Coach enabled. Ask its admin, or bring your own key below.')}</div>
-    </div>}
+    </Card>}
 
     {choice === 'byok' && <>
       <Section title={t('Provider')}>
-        <div className="row" style={{ flexWrap: 'wrap', gap: 7, padding: '8px 12px' }}>
-          {HTTP_PROVIDER_IDS.map(id => <button key={id} className={'chip' + (id === provider ? ' on' : '')} disabled={busy}
-            onClick={() => setProvider(id)}>{HTTP_PROVIDERS[id].label}</button>)}
-        </div>
+        <Inline wrap style={{ gap: 7, padding: '8px 12px' }}>
+          {HTTP_PROVIDER_IDS.map(id => <Chip key={id} on={id === provider} disabled={busy}
+            onClick={() => setProvider(id)}>{HTTP_PROVIDERS[id].label}</Chip>)}
+        </Inline>
       </Section>
 
       {meta.baseUrl && <Section title={t('Endpoint')}
-        footer={isCleartext(baseUrl) ? <span style={{ color: 'var(--red-ink)' }}>{cleartextRefused()}</span> : null}>
+        footer={isCleartext(baseUrl) ? <span className="ink-danger">{cleartextRefused()}</span> : null}>
         <div style={{ padding: '8px 12px' }}>
           <TextField value={baseUrl} placeholder="https://ollama.example.com" inputMode="url" autoCapitalize="none" autoCorrect="off"
             onChange={e => setBaseUrl(e.target.value)} />
@@ -180,16 +181,16 @@ export default function CoachSetup() {
           return <Row key={k} icon="check" iconTint="var(--acc)" title={title} subtitle={sub} />
         })}
       </Section>
-      <p className="sect-f" style={{ marginTop: -18, marginBottom: 22, lineHeight: 1.5 }}>
+      <p className="sect-f mb-10" style={{ marginTop: -18, lineHeight: 1.5 }}>
         {t('Each request goes straight to {0} with your key. Nobody else sees it, and you pay for it.', host || meta.label)}
       </p>
 
-      {step >= 0 && <div className="card">
-        {STEPS().map((s, i) => <div key={s} className="row" style={{ gap: 8, padding: '3px 0', opacity: i > step ? .4 : 1 }}>
+      {step >= 0 && <Card>
+        {STEPS().map((s, i) => <Inline key={s} gap={4} style={{ padding: '3px 0', opacity: i > step ? .4 : 1 }}>
           <span style={{ color: i < step || step === 2 ? 'var(--green-ink)' : i === step ? 'var(--acc-ink)' : 'var(--dim)' }}><Icon name={i < step || step === 2 ? 'check' : 'hourglass'} /></span>
           <span className="small">{s}</span>
-        </div>)}
-      </div>}
+        </Inline>)}
+      </Card>}
 
       {models && <Section title={t('Model')}>
         <div style={{ padding: '8px 12px' }}>
@@ -200,12 +201,12 @@ export default function CoachSetup() {
         </div>
       </Section>}
 
-      <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+      <Inline gap={4} wrap>
         {!models
           ? <Button variant="primary" icon="list" disabled={busy} onClick={prepare}>{t('List models')}</Button>
           : <Button variant="primary" icon="check" disabled={busy} onClick={save}>{t('Save and use the Coach')}</Button>}
         {models && <Button disabled={busy} onClick={prepare}>{t('List models')}</Button>}
-      </div>
+      </Inline>
     </>}
 
     {coachLocal?.mode && coachLocal.mode !== 'off' && <Section title={t('Controls')}>

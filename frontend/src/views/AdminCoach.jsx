@@ -3,6 +3,9 @@ import { useUI } from '../store/useUI.js'
 import { useStore } from '../store/useStore.js'
 import { api } from '../lib/api.js'
 import Icon from '../components/Icon.jsx'
+import { Inline, Spacer } from '../components/layout.jsx'
+import { Card, Chip, Tiles } from '../components/blocks.jsx'
+import { SheetHeader } from '../components/sheet-layout.jsx'
 import { Button, Switch, TextArea, TextField } from '../components/ui.jsx'
 import { confirmSheet } from '../sheets.jsx'
 
@@ -113,12 +116,12 @@ export default function AdminCoach() {
     setBusy(false)
   }
 
-  if (!d) return <div className="card"><div className="muted small">Loading Coach status…</div></div>
+  if (!d) return <Card><div className="muted small">Loading Coach status…</div></Card>
 
-  if (d.disabledByEnv) return <div className="card">
-    <h2 style={{ margin: '0 0 6px' }}>AI Coach</h2>
+  if (d.disabledByEnv) return <Card>
+    <h2 className="mb-3">AI Coach</h2>
     <div className="adm-lead">Force-disabled by <code>COACH_DISABLED</code> in the server's environment. Remove that variable and restart to configure the Coach here.</div>
-  </div>
+  </Card>
 
   const meta = d.providers.find(p => p.id === d.provider) || {}
   const authState = d.auth?.state
@@ -162,7 +165,7 @@ export default function AdminCoach() {
   const stepAt = () => { const i = idx++; return { open: i === (firstTodo === -1 ? -1 : firstTodo), key: i + ':' + (i === firstTodo) } }
 
   // Off = a quiet, optional feature: one clean pitch and one button, no half-dimmed controls.
-  if (!d.enabled) return <div className="card">
+  if (!d.enabled) return <Card>
     <div className="adm-hero">
       <div className="adm-hero-av"><Icon name="chat" /></div>
       <h2>AI Coach</h2>
@@ -174,13 +177,15 @@ export default function AdminCoach() {
       </div>
       <Button variant="primary" icon="chat" disabled={busy} onClick={() => patch({ enabled: true })}>Set up the Coach</Button>
     </div>
-  </div>
+  </Card>
 
-  return <div className="card" style={{ borderColor: live ? 'var(--acc)' : undefined }}>
-    <div className="row between" style={{ marginBottom: 2 }}>
-      <h2 style={{ margin: 0 }}>AI Coach</h2>
+  // The card's borderColor (accent when live) was set inline on a card with no border, so it
+  // never drew; it is dropped rather than turned into a Card `tone` ring, which would show.
+  return <Card>
+    <Inline justify="between" className="mb-1">
+      <h2 className="m-0">AI Coach</h2>
       <Switch checked={!!d.enabled} disabled={busy} onChange={v => patch({ enabled: v })} />
-    </div>
+    </Inline>
     <div className="adm-status">
       <span className={'adm-pill ' + (live ? 'ok' : 'warn')}>{live ? 'ready' : 'not ready'}</span>
       <span>{status}</span>
@@ -198,12 +203,12 @@ export default function AdminCoach() {
         {groups.map(g => !!g.items.length && <div key={g.title} className="adm-group">
           <div className="adm-group-t">{g.title}</div>
           <div className="adm-chips">
-            {g.items.map(p => <button key={p.id} className={'chip' + (p.id === d.provider ? ' on' : '')} disabled={busy}
+            {g.items.map(p => <Chip key={p.id} on={p.id === d.provider} disabled={busy}
               onClick={() => { setTestResult(null); patch({ provider: p.id }) }}>
               {p.label}{p.connected && <span className="adm-chip-key">key saved</span>}
-            </button>)}
+            </Chip>)}
           </div>
-          <div className="adm-hint" style={{ margin: '6px 0 0' }}>{g.hint}</div>
+          <div className="adm-hint mt-3 mb-0">{g.hint}</div>
         </div>)}
       </Step>
 
@@ -215,7 +220,7 @@ export default function AdminCoach() {
           <TextField key={d.baseUrl || ''} defaultValue={d.baseUrl || ''} placeholder="http://ollama:11434  or  https://openrouter.ai/api" inputMode="url" autoCapitalize="none" autoCorrect="off"
             onBlur={e => e.target.value !== (d.baseUrl || '') && patch({ baseUrl: e.target.value })} />
         </div>
-        <div className="adm-hint" style={{ margin: 0 }}>The host is written to the job log, so you can always see where requests went.</div>
+        <div className="adm-hint m-0">The host is written to the job log, so you can always see where requests went.</div>
         <div className="adm-field">
           <label>Extra headers (optional)</label>
           <TextArea key={headersToText(d.headers)} defaultValue={headersToText(d.headers)} placeholder={'x-opencode-session: 550e8400-…'} autoCapitalize="none" autoCorrect="off" rows={2}
@@ -227,14 +232,14 @@ export default function AdminCoach() {
               patch({ headers: p.headers })
             }} />
         </div>
-        <div className="adm-hint" style={{ margin: 0 }}>One <code>Name: value</code> per line, sent with every request to this endpoint. For gateways that demand routing headers. Never <code>Authorization</code> or <code>Content-Type</code> — those are refused.</div>
+        <div className="adm-hint m-0">One <code>Name: value</code> per line, sent with every request to this endpoint. For gateways that demand routing headers. Never <code>Authorization</code> or <code>Content-Type</code> — those are refused.</div>
       </Step>}
 
       {/* ---------- credential ---------- */}
       {hasCredentialStep && <Step n={num()} title="Credential" hint={credentialHint(d.auth, meta)} done={step3Done} {...stepAt()}>
-        <div className="row" style={{ gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+        <Inline gap={4} wrap className="mb-4">
           <CredentialPill auth={d.auth} />
-        </div>
+        </Inline>
         {authState === 'connected' ? <>
           <div className="adm-hint">Connected{d.auth.account ? ' as ' + d.auth.account : ''} via {credentialLabel(d.auth.type)}{d.auth.connectedAt ? ' · added ' + rel(d.auth.connectedAt) : ''}. The key is stored encrypted and is never shown again.</div>
           <div className="adm-actions">
@@ -250,7 +255,7 @@ export default function AdminCoach() {
             })}>Remove</Button>
           </div>
         </> : <>
-          {authState === 'unreadable' && <div className="adm-hint" style={{ color: 'var(--red-ink)' }}>
+          {authState === 'unreadable' && <div className="adm-hint ink-danger">
             The stored credential can't be decrypted. This usually means <code>./data</code> was restored without its <code>secret</code> file. Add the key again to fix it.
           </div>}
           {authState === 'optional' && <div className="adm-hint">This endpoint works without a key. Add one only if your server asks for it (OpenRouter does; a model on your own network usually does not).</div>}
@@ -295,7 +300,7 @@ export default function AdminCoach() {
         <div className="adm-actions">
           <Button size="sm" variant="primary" icon="check" disabled={busy || !authed || !hasEndpoint} onClick={test}>Test the Coach</Button>
         </div>
-        {(!authed || !hasEndpoint) && <div className="adm-hint" style={{ margin: '6px 0 0' }}>
+        {(!authed || !hasEndpoint) && <div className="adm-hint mt-3 mb-0">
           {!hasEndpoint ? 'Finish the Endpoint step first.' : 'Finish the Credential step first.'}
         </div>}
         {testResult && <div className={'adm-result ' + (testResult.pending ? '' : testResult.ok ? 'ok' : 'bad')}>
@@ -303,9 +308,9 @@ export default function AdminCoach() {
             : testResult.ok ? <><b>Passed</b>{testResult.version ? 'Provider: ' + testResult.version : 'The provider answered as expected.'}</>
               : <><b>Failed</b>{testResult.error || 'No answer from the provider.'}</>}
         </div>}
-        <div className="adm-kv" style={{ marginTop: 10 }}>
+        <div className="adm-kv mt-5">
           <span className="k">Runtime</span>
-          <span className="v">{d.runtime.ok ? <span className="adm-pill ok">ready</span> : <span className="adm-pill bad">missing</span>}{d.runtime.version ? <div className="dim small">{d.runtime.version}</div> : null}{!d.runtime.ok && d.runtime.error ? <div className="small" style={{ color: 'var(--red-ink)' }}>{d.runtime.error}</div> : null}</span>
+          <span className="v">{d.runtime.ok ? <span className="adm-pill ok">ready</span> : <span className="adm-pill bad">missing</span>}{d.runtime.version ? <div className="dim small">{d.runtime.version}</div> : null}{!d.runtime.ok && d.runtime.error ? <div className="small ink-danger">{d.runtime.error}</div> : null}</span>
         </div>
       </Step>
 
@@ -321,24 +326,24 @@ export default function AdminCoach() {
           <div className="adm-kv"><span className="k">Whole instance, per day</span>
             <span className="v"><input className="num" type="number" min="0" max="5000" defaultValue={d.caps.instanceDaily} disabled={busy}
               onBlur={capBlur('instanceDaily')} /></span></div>
-          <div className="adm-hint" style={{ marginTop: 10 }}>How long a chat message, refinement or review note can be. The chat composer and the server both enforce this.</div>
+          <div className="adm-hint mt-5">How long a chat message, refinement or review note can be. The chat composer and the server both enforce this.</div>
           <div className="adm-kv"><span className="k">Max message length</span>
             <span className="v"><input className="num" type="number" min="200" max="4000" defaultValue={d.maxMessageLen} disabled={busy}
               onBlur={e => +e.target.value !== d.maxMessageLen && patch({ maxMessageLen: +e.target.value })} /></span></div>
-          <div className="adm-hint" style={{ marginTop: 10 }}>The ceiling on a single provider answer. Reasoning models — DeepSeek-style endpoints, or a "thinking" Gemini/OpenAI model — count their hidden reasoning against it, so a plan can fail with "the answer was cut off at the output limit" even though the plan itself is short. Raise it if that happens; keep it within the model's own output limit.</div>
+          <div className="adm-hint mt-5">The ceiling on a single provider answer. Reasoning models — DeepSeek-style endpoints, or a "thinking" Gemini/OpenAI model — count their hidden reasoning against it, so a plan can fail with "the answer was cut off at the output limit" even though the plan itself is short. Raise it if that happens; keep it within the model's own output limit.</div>
           <div className="adm-kv"><span className="k">Max output tokens</span>
             <span className="v"><input className="num" type="number" min="1024" max="65536" defaultValue={d.maxOutputTokens} disabled={busy}
               onBlur={e => +e.target.value !== d.maxOutputTokens && patch({ maxOutputTokens: +e.target.value })} /></span></div>
 
-          <div className="adm-group-t" style={{ marginTop: 14 }}>Compare with others</div>
-          <div className="row between" style={{ gap: 12, alignItems: 'flex-start' }}>
-            <div className="adm-hint" style={{ margin: 0 }}>
+          <div className="adm-group-t mt-7">Compare with others</div>
+          <Inline justify="between" gap={6} align="start">
+            <div className="adm-hint m-0">
               <b>Let people compare with each other.</b> Anonymous medians (estimated 1RM, sessions per week) across profiles that opt in; at least three must share before anyone sees a number. Each person switches themselves on in the Coach chat, and sees nothing unless they do.
             </div>
             <Switch checked={!!d.community} disabled={busy} onChange={v => patch({ community: v })} />
-          </div>
+          </Inline>
 
-          <div className="adm-group-t" style={{ marginTop: 14 }}>Whose account pays</div>
+          <div className="adm-group-t mt-7">Whose account pays</div>
           <div className="adm-hint">{d.authMode === 'profile'
             ? 'Each profile signs in with their own account.'
             : d.auth?.type === 'apikey' || meta.http
@@ -347,9 +352,9 @@ export default function AdminCoach() {
                 ? 'One personal account, already in use by one profile. Every other profile is refused, so nobody spends somebody else\'s subscription.'
                 : 'One personal account. The first profile to use it becomes the only one allowed to; every other profile is then refused. Paste an API key instead if the whole instance should have the Coach.'}</div>
 
-          <div className="adm-group-t" style={{ marginTop: 14 }}>Isolation</div>
+          <div className="adm-group-t mt-7">Isolation</div>
           <div className="adm-hint">{d.unprivileged && !d.unprivileged.ok
-            ? <span style={{ color: 'var(--red-ink)' }}>Jobs are blocked: {d.unprivileged.why}. Nothing runs until this is fixed.</span>
+            ? <span className="ink-danger">Jobs are blocked: {d.unprivileged.why}. Nothing runs until this is fixed.</span>
             : d.unprivileged?.dropped
               ? 'Jobs run as a separate unprivileged user that cannot read your data directory or secrets.'
               : d.unprivileged?.why?.includes('no child process')
@@ -362,16 +367,16 @@ export default function AdminCoach() {
       <details className="adm-fold">
         <summary>Activity <Icon name="chevronRight" className="chev" /></summary>
         <div className="adm-fold-b">
-          <div className="tiles" style={{ textAlign: 'start', marginBottom: 10 }}>
+          <Tiles className="ta-start mb-5">
             <div className="tile"><div className="l">Jobs today</div><div className="v" style={{ fontSize: '1.1rem' }}>{d.jobsToday}</div></div>
             <div className="tile"><div className="l">Last success</div><div className="v" style={{ fontSize: '.85rem' }}>{rel(d.lastSuccess?.at)}</div></div>
-          </div>
+          </Tiles>
           {d.lastError && <>
             <div className="adm-group-t">Last failure</div>
-            <div className="adm-result bad" style={{ marginTop: 0, marginBottom: 10 }}>
+            <div className="adm-result bad mt-0 mb-5">
               <b>{failureTitle(d.lastError.errorClass)}</b>
               {d.lastError.detail ? <span className="small">{d.lastError.detail}</span> : null}
-              <div className="dim" style={{ fontSize: '.72rem', marginTop: 4 }}>{rel(d.lastError.at)}</div>
+              <div className="dim mt-2" style={{ fontSize: '.72rem' }}>{rel(d.lastError.at)}</div>
             </div>
           </>}
           <div className="adm-group-t">Recent jobs</div>
@@ -381,11 +386,11 @@ export default function AdminCoach() {
               <span className="when">{rel(e.at)}</span>
             </div>)}
           </div> : <div className="adm-empty">No jobs yet.</div>}
-          <div className="adm-hint" style={{ margin: '8px 0 0' }}>Counts and outcomes only. What people asked the Coach, and what it answered, is never shown here.</div>
+          <div className="adm-hint mt-4 mb-0">Counts and outcomes only. What people asked the Coach, and what it answered, is never shown here.</div>
         </div>
       </details>
     </>}
-  </div>
+  </Card>
 }
 
 /* ---------------------------------- pieces ---------------------------------- */
@@ -459,16 +464,16 @@ function SetupTokenSheet({ close, onDone, label }) {
   }
 
   return <>
-    <h3>Connect {label}</h3>
-    <div className="muted small" style={{ lineHeight: 1.5, marginBottom: 12 }}>
+    <SheetHeader title={`Connect ${label}`} />
+    <div className="muted small mb-6" style={{ lineHeight: 1.5 }}>
       On a trusted computer where you use Claude Code, run <code>claude setup-token</code>, complete its normal browser sign-in, then paste the token it prints here. This app never opens or handles Claude's authorization flow.
     </div>
     <TextField value={token} autoFocus type="password" placeholder="paste setup token" onChange={e => setToken(e.target.value)} />
-    <div style={{ height: 8 }} />
+    <Spacer size={4} />
     <TextField value={account} placeholder="whose account is this? (e.g. you@example.com)" onChange={e => setAccount(e.target.value)} />
-    <div style={{ height: 12 }} />
+    <Spacer size={6} />
     <Button variant="primary" disabled={busy || !token.trim()} onClick={save}>Save token</Button>
-    <div style={{ height: 8 }} />
+    <Spacer size={4} />
   </>
 }
 
@@ -485,13 +490,13 @@ function ApiKeySheet({ close, onDone, label, placeholder, optional }) {
     } catch (e) { toast(e.message); setBusy(false) }
   }
   return <>
-    <h3>{label} API key</h3>
-    <div className="muted small" style={{ lineHeight: 1.5, marginBottom: 12 }}>
+    <SheetHeader title={`${label} API key`} />
+    <div className="muted small mb-6" style={{ lineHeight: 1.5 }}>
       Stored encrypted on this server and sent to the provider only while a job runs. It is never shown again and never leaves the server{optional ? '. For an endpoint that takes no key, you can leave this empty and close the sheet.' : '.'}
     </div>
     <TextField value={key} autoFocus type="password" placeholder={placeholder || 'sk-…'} autoCapitalize="none" autoCorrect="off" onChange={e => setKey(e.target.value)} />
-    <div style={{ height: 12 }} />
+    <Spacer size={6} />
     <Button variant="primary" disabled={busy || !key.trim()} onClick={save}>Save key</Button>
-    <div style={{ height: 8 }} />
+    <Spacer size={4} />
   </>
 }

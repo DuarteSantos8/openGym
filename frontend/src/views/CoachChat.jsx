@@ -32,7 +32,9 @@ import { insightsFor, sessionInsights } from '../lib/coach-insights.js'
 import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan, resolvePending, cohortStats, setCohortShare, jobErrorText, awaitedJob, settleAwaited, JOB_ERRORS } from '../lib/coach-api.js'
 import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
-import SubHeader from '../components/SubHeader.jsx'
+import { Page, Spacer } from '../components/layout.jsx'
+import { Tag } from '../components/blocks.jsx'
+import { SheetHeader } from '../components/sheet-layout.jsx'
 import { glyphOf } from '../lib/glyphs.js'
 import LineChart from '../components/LineChart.jsx'
 import { Button, Check, Switch, Section, Row, SelectRow } from '../components/ui.jsx'
@@ -142,12 +144,12 @@ export default function CoachChat() {
     t('Improve my routine “{0}”.', r.name))
 
   const pickRoutine = () => openSheet(close => <div className="chat-menu">
-    <h3>{t('Improve which routine?')}</h3>
+    <SheetHeader title={t('Improve which routine?')} />
     <div className="sect-b">
       {(S.routines || []).map(r => <Row key={r.id} icon={glyphOf(r.emoji)} iconTint="var(--acc)" title={r.name} subtitle={tn('{0} exercise', '{0} exercises', (r.ex || []).length)} accessory="chevron" onClick={() => { close(); askImprove(r) }} />)}
       {!(S.routines || []).length && <div className="chat-empty">{t('You don’t have any routines yet. Ask the Coach for a plan first.')}</div>}
     </div>
-    <div style={{ height: 10 }} />
+    <Spacer size={5} />
   </div>)
 
   const showHistory = () => openSheet(close => <HistorySheet S={S} close={close} openSheet={openSheet} />)
@@ -155,7 +157,7 @@ export default function CoachChat() {
 
   const idle = !job && !pending
   const menu = () => openSheet(close => <div className="chat-menu">
-    <h3>{t('Coach')}</h3>
+    <SheetHeader title={t('Coach')} />
     <div className="sect-b">
       {idle && <Row icon="chat" iconTint="var(--acc)" title={t('Ask for a review')} subtitle={t('What would the Coach change after your last sessions?')} accessory="chevron" onClick={() => { close(); askReview() }} />}
       {idle && !!lastWorkout && <Row icon="checkCircle" iconTint="var(--green)" title={t('Review my last workout')} subtitle={t('What went well, what to watch, what to do next time')} accessory="chevron" onClick={() => { close(); askDebrief() }} />}
@@ -167,7 +169,7 @@ export default function CoachChat() {
       <Row icon="clock" iconTint="var(--purple)" title={t('Automatic reviews')} subtitle={cadenceLabel(coach)} accessory="chevron" onClick={() => { close(); cadenceSheet(openSheet, update) }} />
       {canRevert(S) && <Row icon="reset" iconTint="var(--blue)" title={t('Undo the last Coach changes')} accessory="chevron" onClick={() => { close(); doRevert() }} />}
     </div>
-    <div style={{ height: 10 }} />
+    <Spacer size={5} />
   </div>)
 
   const doRevert = () => confirmSheet({
@@ -188,7 +190,7 @@ export default function CoachChat() {
 
   return <div className="chat">
     <div className="chat-hdr">
-      <SubHeader title={t('Coach')} sub={<span className={'chat-st' + (job ? ' live' : '')}>{status}</span>}
+      <Page title={t('Coach')} sub={<span className={'chat-st' + (job ? ' live' : '')}>{status}</span>}
         action={<button className="iconbtn" onClick={menu} aria-label={t('More')}><Icon name="more" /></button>} />
     </div>
 
@@ -330,7 +332,7 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
         <div className="pcard-eyebrow">{p.iteration > 1 ? t('Revision {0}', p.iteration) : t('Your plan')}</div>
         <h2 className="pcard-h">{b.name || t('Coach plan')}</h2>
         {!!b.summary && <p className="pcard-sum">{b.summary}</p>}
-        {!!b.basedOn && <p className="pcard-sum" style={{ fontSize: 13 }}>{b.basedOn}</p>}
+        {!!b.basedOn && <p className="pcard-sum fs-footnote">{b.basedOn}</p>}
       </div>
 
       <WeekStrip days={weekDays} ws={weekStartOf(S)} />
@@ -406,10 +408,10 @@ function ReviewCard({ p, S, update, toast, refresh }) {
         <div className="pcard-eyebrow">{t('Suggestions')}</div>
         <h2 className="pcard-h">{tn('{0} suggestion', '{0} suggestions', marked.changes.length)}</h2>
         {!!marked.summary && <p className="pcard-sum">{marked.summary}</p>}
-        {!!marked.evidence?.sessions && <p className="pcard-sum" style={{ fontSize: 13 }}>
+        {!!marked.evidence?.sessions && <p className="pcard-sum fs-footnote">
           {t('Based on your last {0} sessions', marked.evidence.sessions)}{marked.evidence.from ? ` · ${fmtDate(marked.evidence.from)} – ${fmtDate(marked.evidence.to)}` : ''}
         </p>}
-        {marked.planMoved && <p className="pcard-sum" style={{ fontSize: 13, color: 'var(--yellow-ink)' }}>
+        {marked.planMoved && <p className="pcard-sum fs-footnote ink-warn">
           {t('Your plan changed since the Coach looked at it. Suggestions that no longer match are greyed out. Ask for a fresh review to see them again.')}
         </p>}
       </div>
@@ -440,8 +442,8 @@ function ChangeRow({ c, S, stale, badge, children }) {
   const vals = changeValues(c, S)
   return <div className={'pcard-chg' + (stale ? ' stale' : '') + (c.status === 'rejected' ? ' declined' : '')}>
     <div className="grow">
-      <div className="pcard-chg-t">{changeTitle(c, S)}{c.routineName ? <span className="dim" style={{ fontWeight: 400 }}> · {c.routineName}</span> : null}</div>
-      {vals && <div className="pcard-chg-v"><span className="tag">{vals.before}</span><Icon name="chevronRight" style={{ fontSize: 12, color: 'var(--label-3)' }} /><span className="tag acc">{vals.after}</span></div>}
+      <div className="pcard-chg-t">{changeTitle(c, S)}{c.routineName ? <span className="dim fw-regular"> · {c.routineName}</span> : null}</div>
+      {vals && <div className="pcard-chg-v"><Tag>{vals.before}</Tag><Icon name="chevronRight" className="fs-caption dim" /><Tag tone="acc">{vals.after}</Tag></div>}
       <div className="pcard-chg-w">{c.why}</div>
       {stale && <div className="pcard-chg-stale">{t('Doesn’t match your plan any more, so it can’t be applied.')}</div>}
     </div>
@@ -491,7 +493,7 @@ function Insights({ S, window: win, compact }) {
       <div className="ins-h"><span>{t('Estimated 1RM')}</span><span className="dim">{t('first → last session')}</span></div>
       {ins.strength.map(x => <div key={x.id} className="ins-row">
         <span className="ins-row-n">{x.name}</span>
-        <span className="ins-row-v"><span className="tag">{fmtNum(x.first)}</span><Icon name="chevronRight" /><span className="tag acc">{fmtNum(x.last)}</span></span>
+        <span className="ins-row-v"><Tag>{fmtNum(x.first)}</Tag><Icon name="chevronRight" /><Tag tone="acc">{fmtNum(x.last)}</Tag></span>
         <span className={'ins-delta' + (x.delta > 0 ? ' up' : x.delta < 0 ? ' down' : '')}>{x.delta > 0 ? '▲' : x.delta < 0 ? '▼' : '•'} {Math.abs(x.pct)}%</span>
       </div>)}
     </div>}
@@ -536,7 +538,7 @@ function DebriefBody({ p, S }) {
         <div className="ins-h"><span>{t('Best set, estimated 1RM')}</span></div>
         {live.lifts.slice(0, 6).map(x => <div key={x.id} className="ins-row">
           <span className="ins-row-n">{x.name} <span className="dim">{fmtNum(x.w)}×{x.r}</span></span>
-          <span className="ins-row-v"><span className="tag acc">{fmtNum(x.est)}</span></span>
+          <span className="ins-row-v"><Tag tone="acc">{fmtNum(x.est)}</Tag></span>
           {x.prev != null && <span className={'ins-delta' + (x.est > x.prev ? ' up' : x.est < x.prev ? ' down' : '')}>{x.est > x.prev ? '▲' : x.est < x.prev ? '▼' : '•'} {fmtNum(Math.abs(x.est - x.prev))}</span>}
         </div>)}
       </div>}
@@ -620,8 +622,8 @@ function ProposalDetail({ entry, S }) {
       <div className="pcard-eyebrow">{kind === 'create' ? t('Plan') : kind === 'debrief' ? t('Workout debrief') : t('Suggestions')} · {fmtDate(new Date(entry.at).toISOString().slice(0, 10))}</div>
       <h2 className="pcard-h">{kind === 'create' ? (b?.name || t('Coach plan')) : kind === 'debrief' ? (entry.workout?.name || t('Workout')) : tn('{0} suggestion', '{0} suggestions', entry.decisions?.length || 0)}</h2>
       {!!entry.summary && <p className="pcard-sum">{entry.summary}</p>}
-      {entry.dismissed && <p className="pcard-sum" style={{ color: 'var(--red-ink)' }}>{t('You declined this.')}</p>}
-      {!!entry.evidence?.sessions && <p className="pcard-sum" style={{ fontSize: 13 }}>
+      {entry.dismissed && <p className="pcard-sum ink-danger">{t('You declined this.')}</p>}
+      {!!entry.evidence?.sessions && <p className="pcard-sum fs-footnote">
         {t('Based on your last {0} sessions', entry.evidence.sessions)}{entry.evidence.from ? ` · ${fmtDate(entry.evidence.from)} – ${fmtDate(entry.evidence.to)}` : ''}
       </p>}
     </div>
@@ -639,13 +641,13 @@ function ProposalDetail({ entry, S }) {
         {b.routines.map((x, i) => <button key={x.id || i} className={'pcard-tab' + (i === tab ? ' on' : '')} onClick={() => setTab(i)}><Icon name={glyphOf(x.emoji)} />{x.name}</button>)}
       </div>}
       {r && <RoutineBlock r={r} unit={S.unit} speedUnit={speedUnitOf(S)} />}
-      <p className="pcard-sum" style={{ fontSize: 13 }}>{entry.scheduled ? t('Your week was set to this schedule.') : t('Imported without changing your week.')}</p>
+      <p className="pcard-sum fs-footnote">{entry.scheduled ? t('Your week was set to this schedule.') : t('Imported without changing your week.')}</p>
     </>}
     {kind === 'create' && !b && <p className="pcard-sum">{t('This plan was imported before the app kept proposals; only its summary is left.')}</p>}
 
     {kind === 'debrief' && <DebriefBody p={entry} S={S} />}
     {kind === 'revert' && <p className="pcard-sum">{t('Reverted the last Coach changes.')}</p>}
-    <div style={{ height: 10 }} />
+    <Spacer size={5} />
   </div>
 }
 
@@ -654,7 +656,7 @@ function HistorySheet({ S, close, openSheet }) {
   const log = [...(S.coach?.log || [])].reverse()
   const icon = { create: ['clipboard', 'var(--indigo)'], review: ['chat', 'var(--acc)'], debrief: ['checkCircle', 'var(--green)'], revert: ['reset', 'var(--blue)'] }
   return <div className="chat-menu">
-    <h3>{t('Everything the Coach proposed')}</h3>
+    <SheetHeader title={t('Everything the Coach proposed')} />
     {!log.length && <div className="chat-empty">{t('Nothing yet. Every plan, suggestion and debrief will be kept here, whether you said yes or no.')}</div>}
     <div className="sect-b">
       {log.map(e => {
@@ -671,7 +673,7 @@ function HistorySheet({ S, close, openSheet }) {
           onClick={() => { close(); openSheet(() => <ProposalDetail entry={e} S={S} />) }} />
       })}
     </div>
-    <div style={{ height: 10 }} />
+    <Spacer size={5} />
   </div>
 }
 
@@ -695,7 +697,7 @@ function CohortSheet({ S, update, toast }) {
   }
   const sharing = !!d?.sharing
   return <div className="chat-menu">
-    <h3>{t('Compare with others here')}</h3>
+    <SheetHeader title={t('Compare with others here')} />
     <Section footer={t('Only medians across everyone who shares, never a name, a body weight or a single session. Turning this off removes you from the numbers immediately.')}>
       <Row icon="person" iconTint="var(--teal)" title={t('Include me')} subtitle={sharing ? t('Your lifts count towards the medians') : t('Off. You see nothing and share nothing')}>
         <Switch checked={sharing} disabled={busy || !d} onChange={share} />
@@ -725,7 +727,7 @@ function CohortSheet({ S, update, toast }) {
       </div>}
       {!d.exercises.length && <div className="chat-empty">{t('No exercise is trained by three or more people yet.')}</div>}
     </div>}
-    <div style={{ height: 10 }} />
+    <Spacer size={5} />
   </div>
 }
 
@@ -751,7 +753,7 @@ function CadenceSheet({ update }) {
   })
   const patch = fn => update(s => { const c = (s.coach = s.coach || emptyCoach()); fn(c) })
   return <>
-    <h3>{t('Automatic reviews')}</h3>
+    <SheetHeader title={t('Automatic reviews')} />
     <Section footer={mode === 'off' ? t('Off. The Coach only looks when you ask.') : t('You are only notified when the Coach actually has something to suggest.')}>
       <SelectRow icon="clock" iconTint="var(--purple)" title={t('When')} value={mode} onChange={setMode}
         options={[

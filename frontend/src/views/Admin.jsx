@@ -8,7 +8,9 @@ import { auditCat, auditLine, fmtWhen } from '../lib/audit.js'
 import { workoutVolume, setsDone } from '../lib/history.js'
 import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
-import SubHeader from '../components/SubHeader.jsx'
+import { Page, Inline, Spacer } from '../components/layout.jsx'
+import { Card, Chip, ChipRow, SectionTitle, StatTile, Tiles } from '../components/blocks.jsx'
+import { SheetHeader } from '../components/sheet-layout.jsx'
 import { Button } from '../components/ui.jsx'
 import AdminCoach from './AdminCoach.jsx'
 import '../admin.css'
@@ -42,12 +44,12 @@ function ResetCodeSheet({ name, email, code, expires, close }) {
     else { setManual(true); toast('Could not copy. It is selected below: copy it by hand.') }
   }
   return <>
-    <h3>Reset code for {name}</h3>
+    <SheetHeader title={`Reset code for ${name}`} />
     <div className="adm-lead">Give them this code. They choose “Sign in with password” → “Have a reset code from your admin?”, enter their name <b>{name}</b>{email && <> (or their sign-in e-mail <b>{email}</b>)</>}, the code and a new password. It works once, until {new Date(expires).toLocaleString()}, and will not be shown again.</div>
-    <button className="adm-code" style={{ fontSize: 22, width: '100%', padding: '14px 0' }} onClick={copy} aria-label="copy code">{code}</button>
-    {manual && <input className="input" readOnly dir="ltr" value={code} aria-label="Copy this by hand" autoFocus
-      onFocus={e => e.target.select()} style={{ marginTop: 8 }} />}
-    <div style={{ height: 12 }} />
+    <button className="adm-code fs-title2" style={{ width: '100%', padding: '14px 0' }} onClick={copy} aria-label="copy code">{code}</button>
+    {manual && <input className="input mt-4" readOnly dir="ltr" value={code} aria-label="Copy this by hand" autoFocus
+      onFocus={e => e.target.select()} />}
+    <Spacer size={6} />
     <Button variant="primary" onClick={close}>Done</Button>
   </>
 }
@@ -98,7 +100,7 @@ function UserDetail({ id, onChanged, close }) {
   })
   return <>
     <h3 className="capitalize">{u.name}</h3>
-    <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '8px 0 12px' }}>
+    <Inline gap={3} wrap className="mt-4 mb-6">
       {u.admin && <span className="adm-pill acc">admin</span>}
       {u.disabled && <span className="adm-pill bad">disabled</span>}
       {u.invitedBy && <span className="adm-pill">invite {u.invitedBy}</span>}
@@ -107,16 +109,16 @@ function UserDetail({ id, onChanged, close }) {
       {u.email && <span className="adm-pill" title="sign-in e-mail">{u.email}</span>}
       {u.resetUntil && <span className="adm-pill acc">reset code until {new Date(u.resetUntil).toLocaleString()}</span>}
       <span className="adm-pill">joined {u.created ? fmtDate(u.created.slice(0, 10)) : '–'}</span>
-    </div>
-    <div className="tiles" style={{ textAlign: 'start' }}>
+    </Inline>
+    <Tiles className="ta-start">
       <div className="tile"><div className="l">Workouts</div><div className="v" style={{ fontSize: '1.1rem' }}>{workouts.length}</div></div>
       <div className="tile"><div className="l">Weigh-ins</div><div className="v" style={{ fontSize: '1.1rem' }}>{d.bodyweight.length}</div></div>
       <div className="tile"><div className="l">Measurements</div><div className="v" style={{ fontSize: '1.1rem' }}>{(d.measurements || []).length}</div></div>
       <div className="tile"><div className="l">Routines</div><div className="v" style={{ fontSize: '1.1rem' }}>{d.routines.length}</div></div>
       <div className="tile"><div className="l">Last sync</div><div className="v" style={{ fontSize: '.95rem' }}>{rel(d.lastSync)}</div></div>
-    </div>
+    </Tiles>
     {!u.admin && <>
-      <button className={'btn ' + (u.disabled ? 'primary' : 'danger')} style={{ margin: '12px 0 4px' }}
+      <button className={'btn ' + (u.disabled ? 'primary' : 'danger') + ' mt-6 mb-2'}
         onClick={() => u.disabled ? setDisabled(false)
           : confirmSheet({ title: 'Disable ' + u.name + '?', message: 'They are signed out everywhere and can no longer sync or log in until re-enabled. Their data stays.', confirmText: 'Disable', danger: true, onConfirm: () => setDisabled(true) })}>
         {u.disabled ? 'Enable account' : 'Disable account'}</button>
@@ -124,7 +126,7 @@ function UserDetail({ id, onChanged, close }) {
       {/* The one destructive action in the app (issue #107), so it asks twice and offers the
           export first — that history is theirs. The second step names the account again, because
           the first sheet can be dismissed by anyone who was not reading. */}
-      <button className="btn danger" style={{ margin: '14px 0 4px' }}
+      <button className="btn danger mt-7 mb-2"
         onClick={() => confirmSheet({
           title: 'Delete ' + u.name + '?',
           message: 'Everything goes: their workouts, weigh-ins, routines, passkeys and notifications. This cannot be undone, and the invite code they joined with stays used. Download their data first if they might want it.',
@@ -138,22 +140,22 @@ function UserDetail({ id, onChanged, close }) {
             onConfirm: doDelete,
           }),
         })}>Delete account</button>
-      <button className="btn" style={{ marginBottom: 4 }} onClick={exportUser}>Download their data</button>
+      <button className="btn mb-2" onClick={exportUser}>Download their data</button>
       <div className="adm-hint">Deleting removes the account and every trace of its training history from this server.</div>
       {pwInstance && <>
-        <button className="btn" style={{ margin: '14px 0 4px' }} onClick={resetPassword}>Reset password</button>
+        <button className="btn mt-7 mb-2" onClick={resetPassword}>Reset password</button>
         <div className="adm-hint">{u.password
           ? 'For a forgotten password: a one-time code lets them choose a new one. Their current password stops working at once.'
           : 'No password yet. A one-time code lets them set one. That’s the way back in after losing their only passkey.'}</div>
       </>}
     </>}
-    <h4 className="sec">Workout history</h4>
-    {workouts.length ? <div className="list" style={{ gap: 0 }}>
-      {workouts.slice(0, 60).map(w => <div key={w.id} className="row between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)' }}>
-        <div><div className="small" style={{ fontWeight: 600 }}>{w.name}</div>
+    <SectionTitle>Workout history</SectionTitle>
+    {workouts.length ? <div className="list g-0">
+      {workouts.slice(0, 60).map(w => <Inline key={w.id} justify="between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)' }}>
+        <div><div className="small fw-semibold">{w.name}</div>
           <div className="dim" style={{ fontSize: '.72rem' }}>{fmtDate(w.d, true)} · {fmtDur((w.end || w.start) - w.start)} · {setsDone(w)} sets{w.prs?.length ? ' · ' + w.prs.length + ' PR' : ''}</div></div>
         <span className="small muted">{fmtVol(w.vol ?? workoutVolume(w), d.unit)}</span>
-      </div>)}
+      </Inline>)}
     </div> : <div className="adm-empty">No workouts logged.</div>}
   </>
 }
@@ -173,9 +175,7 @@ function InvitesCard({ invites, reload, inviteOnly }) {
   const copy = async code => toast(await copyText(code) ? 'Copied ' + code : 'Could not copy ' + code)
   const open = (invites || []).filter(i => !i.usedBy)
   const used = (invites || []).filter(i => i.usedBy)
-  return <div className="card">
-    <div className="row between"><h2 style={{ margin: 0 }}>Invite codes</h2>
-      <Button variant="primary" size="sm" onClick={gen} icon="plus">New code</Button></div>
+  return <Card title="Invite codes" action={<Button variant="primary" size="sm" onClick={gen} icon="plus">New code</Button>}>
     <div className="adm-lead">
       {inviteOnly
         ? 'Sign-up is invite-only: someone needs one of these codes to create a profile. Each code works once.'
@@ -183,22 +183,22 @@ function InvitesCard({ invites, reload, inviteOnly }) {
     </div>
     {open.length ? <>
       <div className="adm-group-t">Unused · tap to copy</div>
-      {open.map(i => <div key={i.code} className="row between" style={{ padding: '6px 0', borderBottom: 'var(--hair) solid var(--sep)' }}>
+      {open.map(i => <Inline key={i.code} justify="between" style={{ padding: '6px 0', borderBottom: 'var(--hair) solid var(--sep)' }}>
         <button className="adm-code" onClick={() => copy(i.code)} aria-label={'copy ' + i.code}>{i.code}</button>
-        <div className="row" style={{ gap: 4 }}>
+        <Inline gap={2}>
           <button className="iconbtn adm-iconbtn" onClick={() => copy(i.code)} aria-label="copy"><Icon name="copy" /></button>
-          <button className="iconbtn adm-iconbtn" style={{ color: 'var(--red-ink)' }} onClick={() => revoke(i.code)} aria-label="revoke"><Icon name="trash" /></button>
-        </div>
-      </div>)}
+          <button className="iconbtn adm-iconbtn ink-danger" onClick={() => revoke(i.code)} aria-label="revoke"><Icon name="trash" /></button>
+        </Inline>
+      </Inline>)}
     </> : null}
     {used.length ? <>
-      <div className="adm-group-t" style={{ marginTop: open.length ? 12 : 0 }}>Already used</div>
-      {used.map(i => <div key={i.code} className="row between dim" style={{ padding: '6px 0', fontSize: '.82rem' }}>
+      <div className={'adm-group-t ' + (open.length ? 'mt-6' : 'mt-0')}>Already used</div>
+      {used.map(i => <Inline key={i.code} justify="between" className="dim" style={{ padding: '6px 0', fontSize: '.82rem' }}>
         <span style={{ fontFamily: 'ui-monospace,SFMono-Regular,Menlo,monospace', letterSpacing: '.06em' }}>{i.code}</span><span>→ {i.usedByName || 'used'}</span>
-      </div>)}
+      </Inline>)}
     </> : null}
     {!open.length && !used.length && <div className="adm-empty">No codes yet. "New code" makes one and copies it to your clipboard.</div>}
-  </div>
+  </Card>
 }
 
 // Who signed in, who tried and failed, what an admin changed. A card rather than its own route:
@@ -228,36 +228,34 @@ function AuditCard({ tick }) {
 
   if (meta && !meta.enabled) return null      // AUDIT_LOG=0 — the card isn't there at all
 
-  return <div className="card">
-    <div className="row between"><h2 style={{ margin: 0 }}>Activity log</h2>
-      <button className="iconbtn adm-iconbtn" style={{ color: 'var(--red-ink)' }} onClick={clear} aria-label="clear log"><Icon name="trash" /></button></div>
+  return <Card title="Activity log" action={<button className="iconbtn adm-iconbtn ink-danger" onClick={clear} aria-label="clear log"><Icon name="trash" /></button>}>
     <div className="adm-lead">
       Who signed in, what failed, and what an admin changed.
       {meta ? ' ' + fmtNum(meta.total) + ' events'
         + (meta.retention.days ? ', kept for ' + meta.retention.days + ' days' : '')
         + (meta.ip_mode === 'off' ? ', without IP addresses' : '') + '.' : ''}
     </div>
-    <div className="chips" style={{ marginBottom: 10 }}>
+    <ChipRow className="mb-5">
       {[['', 'All'], ['auth', 'Sign-ins'], ['admin', 'Admin'], ['fail', 'Failed']].map(([v, l]) =>
-        <button key={v} className={'chip' + (cat === v ? ' on' : '')} onClick={() => pick(v)}>{l}</button>)}
-    </div>
+        <Chip key={v} on={cat === v} onClick={() => pick(v)}>{l}</Chip>)}
+    </ChipRow>
     {rows.map(e => {
       const line = auditLine(e)
-      return <div key={e.id} className="row between" style={{ padding: '8px 2px', borderBottom: 'var(--hair) solid var(--sep)' }}>
+      return <Inline key={e.id} justify="between" style={{ padding: '8px 2px', borderBottom: 'var(--hair) solid var(--sep)' }}>
         <div className="grow">
-          <div className="small" style={{ fontWeight: 600 }}>{line.title}
+          <div className="small fw-semibold">{line.title}
             {/* a red pill, not a red row: twenty fumbled Face IDs in a row shouldn't read as an incident */}
             {!e.ok && <span className="adm-pill bad" style={{ marginInlineStart: 6 }}>failed</span>}
             {auditCat(e.ev) === 'admin' && <span className="adm-pill acc" style={{ marginInlineStart: 6 }}>admin</span>}</div>
           {line.sub && <div className="dim" style={{ fontSize: '.72rem' }}>{line.sub}</div>}
         </div>
         <span className="small muted" style={{ flex: 'none', marginInlineStart: 8 }}>{fmtWhen(e.ts, meta?.now)}</span>
-      </div>
+      </Inline>
     })}
     {meta && !rows.length && <div className="adm-empty">Nothing logged yet.</div>}
-    {meta?.nextBefore && <div style={{ marginTop: 10 }}>
+    {meta?.nextBefore && <div className="mt-5">
       <Button size="sm" onClick={() => load(cat, meta.nextBefore)}>Show more</Button></div>}
-  </div>
+  </Card>
 }
 
 export default function Admin() {
@@ -290,36 +288,38 @@ export default function Admin() {
   const disabledCount = (users || []).filter(u => u.disabled).length
 
   return <div>
-    <SubHeader title="Admin" sub={users ? users.length + ' users · ' + activeCount + ' active this week' : usersErr ? 'Could not load' : 'Loading…'}
+    <Page title="Admin" sub={users ? users.length + ' users · ' + activeCount + ' active this week' : usersErr ? 'Could not load' : 'Loading…'}
       action={<button className="iconbtn" onClick={() => { loadUsers(); loadInvites(); setTick(n => n + 1) }} aria-label="refresh">↻</button>} />
     <div className="adm-intro">
       Everything about running this instance: who uses it, how they get in, the AI Coach, and what has happened on it. Nothing here shows anyone's training data beyond counts.
     </div>
 
-    {usersErr && <div className="card" role="alert" style={{ borderColor: 'var(--red)' }}>
-      <div className="row between"><h2 style={{ margin: 0 }}>{users ? 'The last update failed' : 'Could not load the users'}</h2>
-        <Button size="sm" icon="reset" onClick={loadUsers}>Try again</Button></div>
-      <div className="adm-lead" style={{ marginBottom: 0 }}>
+    {/* The two alert cards below set borderColor inline on a card with no border (border-style is
+        none), so it never drew; it is dropped rather than turned into a Card `tone` ring, which
+        would be a visible change. */}
+    {usersErr && <Card role="alert" title={users ? 'The last update failed' : 'Could not load the users'}
+      action={<Button size="sm" icon="reset" onClick={loadUsers}>Try again</Button>}>
+      <div className="adm-lead mb-0">
         {usersErr} {users ? 'The list below is the last one that loaded.' : 'It tries again every 15 seconds.'}
       </div>
-    </div>}
+    </Card>}
 
-    <div className="tiles" style={{ marginBottom: 12 }}>
-      <div className="tile"><div className="l">Users</div><div className="v">{users ? users.length : '–'}</div></div>
-      <div className="tile"><div className="l">Training now</div><div className="v" style={{ color: liveUsers.length ? 'var(--acc-ink)' : undefined }}>{users ? liveUsers.length : '–'}</div></div>
-      <div className="tile"><div className="l">Active 7 days</div><div className="v">{users ? activeCount : '–'}</div></div>
-      <div className="tile"><div className="l">Disabled</div><div className="v">{users ? disabledCount : '–'}</div></div>
-    </div>
+    <Tiles>
+      <StatTile label="Users" value={users ? users.length : '–'} />
+      <StatTile label="Training now" value={users ? liveUsers.length : '–'} tone={liveUsers.length ? 'acc' : undefined} />
+      <StatTile label="Active 7 days" value={users ? activeCount : '–'} />
+      <StatTile label="Disabled" value={users ? disabledCount : '–'} />
+    </Tiles>
 
-    {liveUsers.length > 0 && <div className="card" style={{ borderColor: 'var(--acc)' }}>
-      <h2 className="row" style={{ margin: '0 0 2px', gap: 6 }}><Icon name="dot" style={{ fontSize: 10, color: 'var(--green)' }} />Training now</h2>
+    {liveUsers.length > 0 && <Card>
+      <Inline as="h2" gap={3} className="mb-1"><Icon name="dot" style={{ fontSize: 10, color: 'var(--green)' }} />Training now</Inline>
       <div className="adm-lead">Sessions running at this moment. Tap a name for details.</div>
-      {liveUsers.map(u => <div key={u.id} className="row between" style={{ padding: '8px 2px', borderBottom: 'var(--hair) solid var(--sep)' }} onClick={() => openUser(u.id)}>
-        <div><div className="small" style={{ fontWeight: 600 }}>{u.name}</div>
+      {liveUsers.map(u => <Inline key={u.id} justify="between" style={{ padding: '8px 2px', borderBottom: 'var(--hair) solid var(--sep)' }} onClick={() => openUser(u.id)}>
+        <div><div className="small fw-semibold">{u.name}</div>
           <div className="dim" style={{ fontSize: '.72rem' }}>{u.live.name} · exercise {u.live.exIdx} of {u.live.exTotal} · {u.live.setsDone}/{u.live.setsTotal} sets</div></div>
         <span className="adm-pill acc">{dur(Date.now() - u.live.startedAt)}</span>
-      </div>)}
-    </div>}
+      </Inline>)}
+    </Card>}
 
     {/* The Coach setup. Renders nothing at all unless the instance offers the Coach, so an admin
         page on a box that never enabled it is byte-for-byte the page it was before. */}
@@ -327,20 +327,20 @@ export default function Admin() {
 
     <InvitesCard invites={invites} reload={loadInvites} inviteOnly={inviteOnly} />
 
-    <div className="card">
-      <h2 style={{ margin: 0 }}>Users</h2>
+    <Card>
+      <h2 className="m-0">Users</h2>
       <div className="adm-lead">Everyone with a profile on this instance. Tap one to see their activity, to disable the account (nothing is deleted) or to delete it with all their data for good.</div>
       <div className="list">
         {(users || []).map(u => <div key={u.id} className="item" onClick={() => openUser(u.id)} style={u.disabled ? { opacity: .55 } : null}>
           <div className="grow"><div className="tt">{u.live && <Icon name="dot" style={{ fontSize: 9, color: 'var(--green)', display: 'inline-block', marginInlineEnd: 5 }} />}{u.name} {u.admin && <span className="adm-pill acc" style={{ marginInlineStart: 4 }}>admin</span>}{u.disabled && <span className="adm-pill bad" style={{ marginInlineStart: 4 }}>disabled</span>}</div>
             <div className="ss">{u.live ? 'training now · ' + u.live.name : u.workouts + ' workouts' + (u.lastWorkout ? ' · last ' + fmtDate(u.lastWorkout) : '') + ' · last sync ' + rel(u.lastSync)}</div>
             {u.email && <div className="ss" title="sign-in e-mail">{u.email}</div>}</div>
-          {u.hasPush && <Icon name="bell" title="push notifications on" style={{ fontSize: 15, color: 'var(--label-3)' }} />}<Icon name="chevronRight" className="chev" />
+          {u.hasPush && <Icon name="bell" title="push notifications on" className="fs-subhead dim" />}<Icon name="chevronRight" className="chev" />
         </div>)}
         {users && !users.length && <div className="adm-empty">No users yet.</div>}
       </div>
-    </div>
+    </Card>
 
-    <div style={{ marginTop: 14 }}><AuditCard tick={tick} /></div>
+    <div className="mt-7"><AuditCard tick={tick} /></div>
   </div>
 }

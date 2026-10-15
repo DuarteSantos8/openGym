@@ -22,7 +22,8 @@ import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
 import { activeProfile } from '../lib/equipment.js'
 import Icon from '../components/Icon.jsx'
-import SubHeader from '../components/SubHeader.jsx'
+import { Page } from '../components/layout.jsx'
+import { Chip } from '../components/blocks.jsx'
 import { Button, TextArea } from '../components/ui.jsx'
 import '../coach.css'
 
@@ -132,7 +133,7 @@ export default function CoachIntake() {
   const dotIndex = dots.indexOf(key)
 
   return <div className="ob">
-    <SubHeader title={t('Coach')} onBack={back}
+    <Page title={t('Coach')} onBack={back}
       sub={key !== 'consent' && <div className="ob-dots">
         {dots.map((s, i) => <span key={s} className={'ob-dot' + (i === dotIndex ? ' on' : i < dotIndex ? ' done' : '')} />)}
       </div>}
@@ -191,7 +192,7 @@ export default function CoachIntake() {
           <span className="ob-time-l">{t('h:mm')}</span>
         </div>
         <div className="ob-quick">
-          {QUICK_MIN.map(m => <button key={m} className={'chip' + (p.sessionMin === m ? ' on' : '')} onClick={() => set({ sessionMin: m })}>{m} {t('min')}</button>)}
+          {QUICK_MIN.map(m => <Chip key={m} on={p.sessionMin === m} onClick={() => set({ sessionMin: m })}>{m} {t('min')}</Chip>)}
         </div>
       </>}
 
@@ -200,7 +201,7 @@ export default function CoachIntake() {
         <h1 className="ob-h">{t('What can you train with?')}</h1>
         <p className="ob-p">{t('Pick everything you have access to. Leave it empty and the Coach will use the whole library.')}</p>
         <div className="ob-chips">
-          {EQUIPMENT.map(e => <button key={e} className={'chip' + (p.equipment.includes(e) ? ' on' : '')} onClick={() => toggleEq(e)}>{t(e)}</button>)}
+          {EQUIPMENT.map(e => <Chip key={e} on={p.equipment.includes(e)} onClick={() => toggleEq(e)}>{t(e)}</Chip>)}
         </div>
       </>}
 
@@ -219,11 +220,11 @@ export default function CoachIntake() {
         <div className="ob-eyebrow">{t('Almost there')}</div>
         <h1 className="ob-h">{t('Anything else?')}</h1>
         <p className="ob-p">{t('All optional. The more the Coach knows, the less it guesses.')}</p>
-        <div className="ob-sub" style={{ marginTop: 0 }}>{t('Exercises you love')}</div>
+        <div className="ob-sub mt-0">{t('Exercises you love')}</div>
         <div className="ob-field"><TextArea rows={2} maxLength={300} value={p.likes} onChange={e => set({ likes: e.target.value })} placeholder={t('e.g. “deadlifts, anything with a kettlebell”')} /></div>
-        <div className="ob-sub" style={{ marginTop: 4 }}>{t('Exercises you would rather not')}</div>
+        <div className="ob-sub mt-2">{t('Exercises you would rather not')}</div>
         <div className="ob-field"><TextArea rows={2} maxLength={300} value={p.dislikes} onChange={e => set({ dislikes: e.target.value })} placeholder={t('e.g. “I hate lunges”')} /></div>
-        <div className="ob-sub" style={{ marginTop: 4 }}>{t('Anything you want the Coach to know')}</div>
+        <div className="ob-sub mt-2">{t('Anything you want the Coach to know')}</div>
         <div className="ob-field"><TextArea rows={3} maxLength={600} value={p.notes} onChange={e => set({ notes: e.target.value })} placeholder={t('e.g. “I want visible arms progress by spring”')} /></div>
       </>}
     </div>
@@ -258,7 +259,7 @@ function Consent({ onAgree, onDecline }) {
     <div className="ob-eyebrow">{t('Before we start')}</div>
     <h1 className="ob-h">{t('Meet the Coach')}</h1>
     <p className="ob-p">{t('It designs your plan from a few answers and adjusts it from what you actually log. It never changes anything without your say-so, and you can undo every change.')}</p>
-    <div className="ob-sub" style={{ marginTop: 0 }}>{t('What it reads')}</div>
+    <div className="ob-sub mt-0">{t('What it reads')}</div>
     <div className="ob-consent">
       {(info?.categories || Object.keys(CATEGORY_TEXT)).map(k => {
         const [title, sub] = CATEGORY_TEXT[k]?.() || [k, '']
@@ -268,7 +269,7 @@ function Consent({ onAgree, onDecline }) {
     <div className="ob-fine">
       <div>{who}</div>
       <div>{t('Your name, your sign-in details and everything else about your account stay here. Other people’s data is never included.')}</div>
-      <div style={{ color: 'var(--yellow-ink)' }}>{t('The Coach is not a doctor or a physiotherapist. If something hurts, ask a professional.')}</div>
+      <div className="ink-warn">{t('The Coach is not a doctor or a physiotherapist. If something hurts, ask a professional.')}</div>
     </div>
     <div className="ob-foot" style={{ flexDirection: 'column' }}>
       <Button variant="primary" onClick={onAgree}>{t('I understand, let’s go')}</Button>
