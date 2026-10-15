@@ -1,3 +1,4 @@
+import { clampDuration } from './duration.js'
 // Share a weekly plan.
 //
 // Two jobs:
@@ -95,7 +96,10 @@ function cleanEx(e) {
   // it disagrees with the catalogue, since agreeing is what the other end already assumes.
   if (e.bodyweight != null && e.bodyweight !== isBodyweightEq(e.id)) o.bodyweight = e.bodyweight
   // Reps work and timed holds (a per-side hold is an L and an R hold per set); never cardio.
-  if (e.side && mode !== 'cardio') o.side = true
+  if (e.side && mode !== 'cardio') {
+    o.side = true
+    if (Number.isFinite(e.sideRestSec) && e.sideRestSec >= 0) o.sideRestSec = clampDuration(e.sideRestSec)
+  }
   // Progression settings travel with the plan — a shared Greyskull routine that arrives
   // without its rule is just a list of weights.
   if (e.prog) o.prog = e.prog
@@ -249,7 +253,8 @@ export function parsePlan(raw, destinationUnit = 'kg') {
       const pyramid = normalizePyramid(e.pyramid)
       const pyramidRest = pyramid.length ? normalizePyramidRest(e.pyramidRest, pyramid.length) : []
       const pyramidWeight = pyramid.length ? normalizePyramidWeight(e.pyramidWeight, pyramid.length) : []
-      const { warmupSets, intensifier, restSec, warmupRestSec, pyramid: _pyramid, pyramidRest: _pyramidRest, pyramidWeight: _pyramidWeight, ...passthrough } = e
+      const { warmupSets, intensifier, restSec, warmupRestSec, sideRestSec, pyramid: _pyramid, pyramidRest: _pyramidRest, pyramidWeight: _pyramidWeight, ...passthrough } = e
+      if (e.side && modeOf(e) !== 'cardio' && Number.isFinite(sideRestSec) && sideRestSec >= 0) passthrough.sideRestSec = clampDuration(sideRestSec)
       if (!known.has(passthrough.id)) passthrough.id = canonicalExId(passthrough.id)
       return convertedExercise({ ...passthrough, ...(pyramid.length ? { pyramid } : {}), ...(pyramidRest.length ? { pyramidRest } : {}), ...(pyramidWeight.length ? { pyramidWeight } : {}), ...(warm ? { warmupSets: warm } : {}), ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : {}), ...(warmRest ? { warmupRestSec: warmRest } : {}) }, sourceUnit || destination, destination)
     })

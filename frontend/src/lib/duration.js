@@ -2,7 +2,7 @@
 // exercise's target.restSec). The scroll-wheel picker (components/DurationWheel.jsx) reads and
 // writes them as minutes + seconds, and every place that shows one goes through fmtDuration, so
 // a value off the old 60/90/120/150/180 list ("1:45") reads the same everywhere.
-import { t, tn } from './i18n.js'
+import { t, tn } from './i18n-core.js'
 
 // The rest timer's range: 0 is "no rest timer", 15 minutes the most a wheel offers.
 export const REST_MAX = 15 * 60

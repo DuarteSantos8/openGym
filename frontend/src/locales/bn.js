@@ -1,5 +1,8 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  'Rest between sides': 'দুই পাশের মাঝে বিশ্রাম',
+  'Between-side duration': 'দুই পাশের মাঝের বিশ্রামের সময়',
+
   'Confirm': 'নিশ্চিত করুন',
   'Cancel': 'বাতিল',
   'Press back again to exit': 'বের হতে আবার ব্যাক চাপুন',

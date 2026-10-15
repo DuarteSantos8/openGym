@@ -1,3 +1,4 @@
+import { sideRestSecFor } from './side-rest.js'
 import { uid } from './format.js'
 import { defaultConfig, isBw, modeOf, MAX_PLANNED_WARMUPS, NOTE_MAX } from './history.js'
 import { isAssisted, isBodyweightEq, isCardio } from './exercises.js'
@@ -186,6 +187,7 @@ function setupOf(entry) {
     restSec: Math.max(0, Math.round(Number(target.restSec)) || 0),
     note: String(target.note || '').trim().slice(0, NOTE_MAX),
   }
+  if (target.side && !isCardio(entry.id) && Number.isFinite(target.sideRestSec) && target.sideRestSec >= 0) out.sideRestSec = sideRestSecFor(target)
   if (!isCardio(entry.id) && target.intensifier?.type !== 'restpause') {
     out.warmupSets = Math.min(MAX_PLANNED_WARMUPS, (entry.sets || []).filter(isWarmupRow).length)
   }
@@ -208,9 +210,9 @@ export function routineChangesFromEntry(routine, entries, idx) {
   const slot = routine.ex[at]
   const now = setupOf(entries[idx])
   const changes = []
-  for (const key of ['warmupSets', 'restSec', 'note']) {
+  for (const key of ['warmupSets', 'restSec', 'sideRestSec', 'note']) {
     if (now[key] === undefined) continue
-    const from = key === 'note' ? String(slot.note || '').trim() : Math.max(0, Math.round(Number(slot[key])) || 0)
+    const from = key === 'sideRestSec' ? sideRestSecFor(slot) : key === 'note' ? String(slot.note || '').trim() : Math.max(0, Math.round(Number(slot[key])) || 0)
     if (from !== now[key]) changes.push({ key, from, to: now[key] })
   }
   return changes.length ? { at, changes } : null
@@ -226,7 +228,7 @@ export function updateRoutineFromEntry(routine, entries, idx) {
   if (!found) return null
   const slot = routine.ex[found.at]
   for (const { key, to } of found.changes) {
-    if (to) slot[key] = to
+    if (to || key === 'sideRestSec') slot[key] = to
     else delete slot[key]
   }
   return found.changes

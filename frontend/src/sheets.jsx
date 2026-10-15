@@ -21,6 +21,7 @@ import LineChart from './components/LineChart.jsx'
 import Stepper from './components/Stepper.jsx'
 import { durationSheet } from './components/DurationWheel.jsx'
 import { SG_NAME_MAX } from './lib/superset-meta.js'
+import { sideRestSecFor } from './lib/side-rest.js'
 import { REST_MAX, fmtRest } from './lib/duration.js'
 import Icon from './components/Icon.jsx'
 import { Button, Slider, Switch, Segmented, SelectRow, Row, TextField, NumberField, MultiSelectRow } from './components/ui.jsx'
@@ -1663,6 +1664,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   // Both default from the dataset and are then whatever the config says — see isBw.
   const bw = !cardio && isBw({ ...c, id: ex.id })
   const perSide = isPerSide(c)
+  const sideRest = sideRestSecFor({ ...c, mode }, c.restSec > 0 ? c.restSec : st.restSec)
   // Pyramid sets: one rep target per set, in place of the flat Sets × Reps (CONTEXT.md).
   const pyramid = mode === 'reps' && isPyramid({ ...c, mode })
   const setPyramidAt = (i, v) => setC(x => ({ ...x, pyramid: x.pyramid.map((p, j) => (j === i ? v : p)) }))
@@ -1716,6 +1718,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     // was. Mode-independent — a heavy triple, a plank and a cardio interval all rest.
     const restSec = Math.max(0, Math.round(c.restSec) || 0)
     const withRest = restSec ? { restSec } : {}
+    if (perSide && !cardio && c.sideRestSec != null) withRest.sideRestSec = sideRest
     // What a dumbbell weight means in this slot (lib/dumbbells.js): written only when the slot
     // picked its own, so every other config stays the shape it was.
     const dbLoad = isBellEx(ex) && !bw ? dbLoadOf(c.dbLoad) : null
@@ -1912,6 +1915,15 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
             : next
         })} />
       </Row>}
+      {perSide && <>
+        <Row icon="timer" iconTint="var(--blue)" title={t('Rest between sides')}>
+          <Switch aria-label={t('Rest between sides')} checked={sideRest > 0} onChange={v => setC(x => ({ ...x, sideRestSec: v ? 10 : 0 }))} />
+        </Row>
+        {sideRest > 0 && <Row title={t('Between-side duration')} value={fmtRest(sideRest)} accessory="chevron"
+          onClick={() => durationSheet({ title: t('Rest between sides'), value: sideRest, min: 1, max: REST_MAX,
+            onDone: v => setC(x => ({ ...x, sideRestSec: v })),
+          })} />}
+      </>}
       {/* Off keeps the list as `pyramidDraft`, so a stray tap does not lose it before Save
           (save writes neither field unless the toggle is on). */}
       {/* The last work set of every session is marked as taken to failure, like Greyskull's

@@ -306,3 +306,18 @@ describe('parsePlan refuses a file that is not a plan in words', () => {
     try { parsePlan('{oops') } catch (e) { expect(e.code).toBe('not-plan') }
   })
 })
+
+
+describe('shared between-side rest', () => {
+  it.each([0, 45, 900])('preserves %s seconds including explicit Off', sideRestSec => {
+    expect(roundTrip({ side: true, sideRestSec }).sideRestSec).toBe(sideRestSec)
+    expect(roundTrip({ side: true, mode: 'time', sec: 30, sideRestSec }).sideRestSec).toBe(sideRestSec)
+  })
+  it('drops invalid and inapplicable settings and clamps imported duration', () => {
+    for (const value of [-1, '45', null]) expect(roundTrip({ side: true, sideRestSec: value }).sideRestSec).toBeUndefined()
+    expect(roundTrip({ sideRestSec: 45 }).sideRestSec).toBeUndefined()
+    const bundle = buildPlanBundle(stateWith({ side: true }), 'Plan')
+    bundle.routines[0].ex[0].sideRestSec = 99999
+    expect(parsePlan(bundle).routines[0].ex[0].sideRestSec).toBe(900)
+  })
+})

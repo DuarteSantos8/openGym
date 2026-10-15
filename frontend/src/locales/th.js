@@ -1,5 +1,8 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  'Rest between sides': 'พักระหว่างข้าง',
+  'Between-side duration': 'เวลาพักระหว่างข้าง',
+
   // --- generic ---
   'Confirm': 'ยืนยัน',
   'Cancel': 'ยกเลิก',

@@ -1,4 +1,7 @@
 export default {
+  'Rest between sides': '左右側之間休息',
+  'Between-side duration': '左右側間休息時間',
+
   'Confirm': '確認',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回以退出',

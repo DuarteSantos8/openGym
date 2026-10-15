@@ -1,5 +1,8 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  'Rest between sides': 'दोनों तरफ़ के बीच आराम',
+  'Between-side duration': 'दोनों तरफ़ के बीच आराम की अवधि',
+
   'Confirm': 'पुष्टि करें',
   'Cancel': 'रद्द करें',
   'Press back again to exit': 'बाहर निकलने के लिए फिर से बैक दबाएँ',
