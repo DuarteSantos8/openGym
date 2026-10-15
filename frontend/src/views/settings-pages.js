@@ -22,6 +22,9 @@ export const PAGES = {
   alerts: { title: 'Timer alerts', icon: 'speaker', tint: 'var(--pink)' },
   schedule: { title: 'Schedule defaults', icon: 'calendar', tint: 'var(--orange)' },
   equipment: { title: 'Equipment', icon: 'kettlebell', tint: 'var(--indigo)' },
+  // The calorie goal mode, macros and water goal live on Nutrition › Goals (§5): linked, not copied.
+  goals: { title: 'Goals', icon: 'target', tint: 'var(--red)', to: '/food/goals', kw: 'calorie goal mode fixed adaptive dynamic factor macros protein target water' },
+  diary: { title: 'Diary & meals', icon: 'utensils', tint: 'var(--orange)' },
   fields: { title: 'Measurement fields', icon: 'ruler', tint: 'var(--purple)', sheet: true },
   backup: { title: 'Backup', icon: 'folder', tint: 'var(--blue)' },
   import: { title: 'Import', icon: 'download', tint: 'var(--teal)' },
@@ -38,6 +41,7 @@ export const PAGE_IDS = Object.keys(PAGES)
 export const ROOT_GROUPS = [
   { title: 'General', ids: ['appearance', 'units', 'notifications', 'coach', 'features', 'health'] },
   { title: 'Training', ids: ['workout', 'advanced', 'alerts', 'schedule', 'equipment'] },
+  { title: 'Nutrition', ids: ['goals', 'diary'] },
   { title: 'Body & progress', ids: ['fields'] },
   { title: 'Data', ids: ['backup', 'import', 'media', 'danger'] },
   { title: 'Admin', ids: ['admin'] },
@@ -52,16 +56,19 @@ export function pageExists(page, ctx) {
   if (!(page in PAGES) || PAGES[page].to || PAGES[page].sheet) return false
   if (page === 'notifications') return !!(ctx.user || ctx.mobile)
   if (page === 'health') return !!ctx.mobile
+  if (page === 'diary') return !ctx.mobile && !!ctx.user
   return true
 }
 
 /**
  * Whether the root shows a page's row. The Coach page is the phone's Coach setup (the web app's
  * Coach runs on the server, set up by its admin); Health Connect is Android's; the photos row
- * only shows once a custom exercise has one; Admin is the admin's.
+ * only shows once a custom exercise has one; Admin is the admin's. Nutrition is NutriTrace's,
+ * reached through the hub: the web app, signed in (`ctx.nutrition`).
  */
 export function pageVisible(page, ctx) {
   if (page == null) return true
+  if (page === 'goals' || page === 'diary') return !!ctx.nutrition
   if (page === 'notifications') return !!(ctx.user || ctx.mobile)
   if (page === 'coach') return !!ctx.mobile
   if (page === 'health') return !!(ctx.mobile && ctx.android)
@@ -102,6 +109,11 @@ export const SEARCH = [
   { page: 'appearance', title: 'Gym check-in', icon: 'qr', tint: 'var(--blue)', kw: 'qr code membership card check in barcode' },
   { page: 'appearance', title: 'Body weight', icon: 'scale', tint: 'var(--green)', kw: 'weight card home' },
   { page: 'appearance', title: 'Show connection status', icon: 'cloud', tint: 'var(--blue)', kw: 'sync offline banner bar connection', when: c => !c.demo },
+  // Features (the NutriTrace switches whose only home is here)
+  { page: 'features', title: 'Fasting', icon: 'timer', tint: 'var(--indigo)', kw: 'fast fasting intermittent 16:8 omad', when: c => !!c.nutrition, feature: (S, c) => !!c.fastingOn },
+  // Diary & meals
+  { page: 'diary', title: 'Show activity under meals', icon: 'flame', tint: 'var(--orange)', kw: 'activity workouts burned exercise calories diary', when: c => !!c.nutrition, feature: (S, c) => (c.ntSettings ? c.ntSettings.diaryShowActivity === true : null) },
+  { page: 'diary', title: 'Default fasting plan', icon: 'timer', tint: 'var(--indigo)', kw: 'fasting default plan goal hours', opts: ['14:10', '16:8', '18:6', '20:4', 'OMAD'], when: c => !!c.nutrition && !!c.fastingOn },
   // Units & language
   { page: 'units', title: 'Language', icon: 'globe', tint: 'var(--blue)', kw: 'language translation idioma sprache langue lingua' },
   { page: 'units', title: 'English exercise names', icon: 'globe', tint: 'var(--purple)', kw: 'exercise names english translation', when: c => c.nameLang },
@@ -188,7 +200,8 @@ export const SEARCH = [
 ]
 
 /** Features (§5, §9 q12): the off-by-default switches this device and profile have, each where
- *  its own row would show. A switch whose home is the Features page itself is left out. */
+ *  its own row would show. A switch whose home is the Features page itself (Fasting) is left out:
+ *  Features draws it as a switch of its own. */
 export function featuresFor(ctx) {
   return SEARCH.filter(e => e.feature && e.page !== 'features' && pageVisible(e.page, ctx) && (!e.when || e.when(ctx)))
 }
@@ -235,7 +248,7 @@ export function searchSettings(query, ctx, tr = t) {
   }
   for (const id of PAGE_IDS) {
     if (!pageVisible(id, ctx)) continue
-    consider({ page: id, title: PAGES[id].title, icon: PAGES[id].icon, tint: PAGES[id].tint }, true)
+    consider({ page: id, title: PAGES[id].title, icon: PAGES[id].icon, tint: PAGES[id].tint, kw: PAGES[id].kw }, true)
   }
   for (const e of SEARCH) {
     if (!pageVisible(e.page, ctx)) continue

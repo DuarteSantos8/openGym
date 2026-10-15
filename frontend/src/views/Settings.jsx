@@ -47,11 +47,13 @@ import BackupFolderRow, { useBackupFolder, autoBackupSubtitle } from '../compone
 import { ServerSyncSection, KeptChangesRows, leaveServer, connectServer, passkeySignIn } from '../components/ServerSync.jsx'
 import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } from '../components/PasswordAuth.jsx'
 import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem } from '../components/Passkeys.jsx'
+import { nutritionAvailable } from '../lib/nutrition/api.js'
+import { useNutrition } from '../lib/nutrition/store.js'
+import DiaryMealsSettings from '../components/DiaryMealsSettings.jsx'
 import FeaturesList from '../components/FeaturesList.jsx'
 import SyncStatusCard from '../components/SyncStatusCard.jsx'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
 import { manageMeasurementsSheet } from './Measurements.jsx'
-import { nutritionAvailable } from '../lib/nutrition/api.js'
 import { systemReducesMotion } from '../lib/reduced-motion.js'
 import { PAGES, ROOT_GROUPS, pageExists, pageVisible, searchSettings } from './settings-pages.js'
 import { BRAND, LINKS } from '../brand.js'
@@ -375,6 +377,11 @@ export default function Settings({ page = null, find = null, via = null }) {
     },
   })
 
+  // NutriTrace's settings, through the hub (lib/nutrition): the web app, signed in.
+  const nutrition = nutritionAvailable(user)
+  const ntSettings = useNutrition(s => s.settings.data)
+  useEffect(() => { if (nutrition) useNutrition.getState().loadSettings() }, [nutrition])
+
   /* ---------------- what the pages and the search need to know about this device ---------------- */
   const canVibrate = vibrateSupported()
   const systemMotion = systemReducesMotion()
@@ -385,7 +392,7 @@ export default function Settings({ page = null, find = null, via = null }) {
     pushOK: !MOBILE && pushSupported(), reminderOn: !!S.reminder?.on, nudge: !!S.reminder?.nudge,
     autoBackup: !!S.autoBackup, synced: !!sync, installTip: !MOBILE && !standalone(), androidWeb: IS_ANDROID,
     baseLang: baseLang(lang), systemMotion,
-    nutrition: nutritionAvailable(user),
+    nutrition, ntSettings, fastingOn: ntSettings?.fastingEnabled === true,
   }
   const mode = scheduleModeOf(S)
   const modeLabel = externalQ ? t('Rotation') + ' · ' + t('Externally managed') : mode === 'rotation' ? t('Rotation') : t('Fixed Week')
@@ -404,6 +411,7 @@ export default function Settings({ page = null, find = null, via = null }) {
     appearance: () => themeLabel + ' · ' + accentLabel(S),
     coach: () => (coachLocal?.mode === 'server' ? t('Your server') : coachLocal?.mode === 'byok' ? t('Your API key') : t('Off')),
     about: () => 'v' + BRAND.version,
+    goals: () => (ntSettings ? ({ adaptive: t('Adaptive'), dynamic: t('Dynamic') })[ntSettings.calorieGoalMode] || t('Fixed') : null),
   }
 
   // A page of Profile, a page that lives in a tab, or the measurement chooser's sheet.
@@ -801,6 +809,8 @@ export default function Settings({ page = null, find = null, via = null }) {
     health: () => (MOBILE && android ? <HealthConnectCard S={S} toast={toast} /> : null),
 
     features: () => <FeaturesList S={S} ctx={ctx} />,
+
+    diary: () => <DiaryMealsSettings />,
 
     about: () => <>
       {/* Updates. On Android the row is always there: it checks on demand and installs when a

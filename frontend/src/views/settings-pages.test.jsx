@@ -120,7 +120,9 @@ describe('the root', () => {
     mocks.sync = { status: 'ok', server: 'https://gym.example', lastSynced: Date.now() }
     mount()
     const sects = [...host.querySelectorAll('.sect-t')].map(e => e.textContent)
-    expect(sects).toEqual(['Sync', 'General', 'Training', 'Body & progress', 'Data', 'Admin', 'About'])
+    // signed in on the web app, nutrition is reachable: its group is there too
+    expect(sects).toEqual(['Sync', 'General', 'Training', 'Nutrition', 'Body & progress', 'Data', 'Admin', 'About'])
+    expect(titles()).toEqual(expect.arrayContaining(['Goals', 'Diary & meals']))
     expect(titles()).toContain('Sync now')
     expect(titles().at(-1)).toBe('Sign out')
     act(() => rowTitled('Admin dashboard').click())
