@@ -55,8 +55,13 @@ export function writeState(dir, uid, S) {
 
 /* A calendar date n days before today (UTC, as the Coach reads it). The Coach only reads the last
  * MAX_WEEKS weeks of training, so a fixture dated in the calendar ages out of the window; dates
- * are taken relative to now to keep the tests correct in any month. */
-export const daysAgo = n => new Date(Date.now() - n * 86400000).toISOString().slice(0, 10);
+ * are taken relative to now to keep the tests correct in any month.
+ *
+ * "Now" is read once, when this module loads: reading the clock on every call let a run that
+ * crossed 00:00 UTC date one fixture by yesterday and the next by today, a day apart from what
+ * the test meant. */
+export const NOW = Date.now();
+export const daysAgo = n => new Date(NOW - n * 86400000).toISOString().slice(0, 10);
 
 /** A profile that has consented and has some history — the usual starting point. */
 export function sampleState(over = {}) {

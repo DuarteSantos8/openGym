@@ -59,7 +59,7 @@ const LOGS_MAX = 1000;
 
 const bad = (json, res, code, error) => json(res, 400, { error, code });
 
-export function syncRoutes({ hub, json, findUser, readStateCached, readStateStrict, UNREADABLE, readBody, commitState, auditFail }) {
+export function syncRoutes({ hub, json, findUser, readStateCached, readStateStrict, UNREADABLE, readBody, commitState, auditSyncFail }) {
   const replays = replayCache();
   const logs = new Map();
   const logOf = (uid, S, items) => {
@@ -77,13 +77,14 @@ export function syncRoutes({ hub, json, findUser, readStateCached, readStateStri
     if (!token) return json(res, 401, { error: 'not signed in' });
     const v = verifyHubToken(hub, token, { audience: HUB_AUDIENCE, scopes: ['sync'] });
     if (!v.ok) {
-      // The reason only, never the token. auditFail keeps a flood of junk out of the log.
-      auditFail(req, 'sync.token.fail', { ok: false, msg: v.reason });
+      // The reason only, never the token. auditSyncFail folds a storm of the same reason into
+      // one counted row an hour (server.js), so a misconfigured hub cannot fill the log.
+      auditSyncFail(req, v.reason);
       return json(res, 401, { error: 'invalid sync token', code: 'token-invalid' });
     }
     // After the signature: only a token the hub signed can take a place in the cache.
     if (replays.seen(v.claims)) {
-      auditFail(req, 'sync.token.fail', { ok: false, msg: 'replay' });
+      auditSyncFail(req, 'replay');
       return json(res, 401, { error: 'sync token already used', code: 'replay' });
     }
     const user = findUser(v.claims.sub);

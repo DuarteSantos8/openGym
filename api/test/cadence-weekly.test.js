@@ -35,7 +35,9 @@ const wallClockIn = (tz, ms) => {
 };
 const coach = lastReviewAt => ({ cadence: { weekly }, lastReview: { at: lastReviewAt } });
 // One workout, logged right after the last review — so "nothing new to read" is never the reason.
-const state = lastReviewAt => ({ workouts: [{ id: 'w1', d: '2026-09-18', end: lastReviewAt + MIN }] });
+// Its day is the day it ended, never a date of its own, so it stays "after the review" whatever
+// the review time a case uses and however the window logic reads it.
+const state = lastReviewAt => ({ workouts: [{ id: 'w1', d: new Date(lastReviewAt + MIN).toISOString().slice(0, 10), end: lastReviewAt + MIN }] });
 
 /** isDue as the tick calls it, with the clock stopped at `at`. */
 const dueAt = (t, at, lastReviewAt) => {
@@ -89,7 +91,8 @@ test('the slot is read on the user\'s clock, not the server\'s', t => {
   t.after(() => t.mock.timers.reset());
   // Last week's review, after both profiles' slots on that Sunday.
   const lastAt = Date.UTC(2026, 8, 13, 19, 0);
-  const tokyo = { date: '2026-09-20', hhmm: '18:01', weekday: 0 };
+  const tokyo = wallClockIn('Asia/Tokyo', at);
+  assert.deepEqual(tokyo, { date: '2026-09-20', hhmm: '18:01', weekday: 0 }, 'Sunday 18:01 in Tokyo');
   assert.equal(isDue(coach(lastAt), state(lastAt), tokyo, 0), true, 'Tokyo is a minute past its slot');
   assert.equal(isDue(coach(lastAt), state(lastAt), wallClock(at), 0), false, 'UTC has not reached 18:00');
 });

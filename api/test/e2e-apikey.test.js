@@ -22,10 +22,13 @@ forcePrivilegeVerdict({ ok: true, dropped: false, why: 'pinned by the test suite
 /* ---------- a provider on localhost ---------- */
 const seen = [];
 const REVIEW_NOCHANGE = { coach_contract: 1, nochange: true, reading: 'Plan not trained long enough to judge.' };
+// The evidence names the one session sampleState logged (a week ago), not a fixed date that ages
+// out of the Coach's MAX_WEEKS window as the calendar moves.
+const SESSION_DAY = sampleState().workouts[0].d;
 const REVIEW_CHANGE = {
   coach_contract: 1,
   summary: 'Top sets at RPE 10 on the dumbbell press; one set less.',
-  evidence: { from: '2026-07-20', to: '2026-07-20', sessions: 1 },
+  evidence: { from: SESSION_DAY, to: SESSION_DAY, sessions: 1 },
   changes: [{ id: 'c1', type: 'sets', target: { routineId: 'r1', exId: '0001' }, before: 3, after: 2, why: 'stalls ≥ 2 and every top set at RPE 10' }],
   notes: []
 };

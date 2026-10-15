@@ -13,13 +13,16 @@ import { createMediaStore, mediaLimits, MediaError } from '../media.js';
 import * as M from './media-samples.mjs';
 
 const DAY = 86400000, HOUR = 3600000;
+// The injected clock's start. Every dated fixture is taken from it, so none drifts out of a window
+// the store might read relative to its clock.
+const T0 = 1_800_000_000_000;
 const quiet = { warn() {}, error() {}, log() {} };
 
 function setup(t, { limits = {}, states = {} } = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'media-gc-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const dir = path.join(root, 'uploads');
-  const clock = { t: 1_800_000_000_000 };
+  const clock = { t: T0 };
   const S = new Map(Object.entries(states));
   const warnings = [];
   const store = createMediaStore({
@@ -251,7 +254,8 @@ test('a new upload nobody references yet is marked, so the grace also covers a p
 // The photos and videos of a logged workout (workouts[].media) keep their files exactly like an
 // exercise's picture: a file only a workout refers to is never swept, and taking it off the
 // workout starts its grace like any other.
-const wref = (...hashes) => ({ workouts: [{ id: 'w1', d: '2026-09-20', start: 1, end: 2, entries: [], media: hashes.map((h, i) => ({ kind: 'image', hash: h, mime: 'image/jpeg', size: 1, width: 1, height: 1, at: i + 1 })) }] });
+// Logged the hour before the clock starts.
+const wref = (...hashes) => ({ workouts: [{ id: 'w1', d: new Date(T0).toISOString().slice(0, 10), start: T0 - HOUR, end: T0, entries: [], media: hashes.map((h, i) => ({ kind: 'image', hash: h, mime: 'image/jpeg', size: 1, width: 1, height: 1, at: T0 - HOUR + i + 1 })) }] });
 
 test('a file referenced only by a workout is never swept, whatever the grace', t => {
   const h = setup(t);

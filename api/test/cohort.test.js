@@ -2,15 +2,16 @@
  * headcount, computed from the state files on disk. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { tempData, writeState, sampleState } from './helpers.mjs';
+import { tempData, writeState, sampleState, daysAgo } from './helpers.mjs';
 
 const DIR = tempData();
 const cfg = await import('../coach/config.js');
 const jobs = await import('../coach/jobs.js');
 const cohort = await import('../coach/cohort.js');
 
-const today = new Date().toISOString().slice(0, 10);
-const daysAgo = n => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); };
+// One clock reading for the whole file (helpers.mjs NOW), so a run across midnight cannot date
+// two fixtures from different days.
+const today = daysAgo(0);
 // One workout per week for `weeks` weeks, each with one top set on exercise 0001 (and 0002).
 const lifter = (w1, w2, { unit = 'kg', weeks = 4 } = {}) => sampleState({
   unit,

@@ -37,6 +37,7 @@ import { atomicWrite as durableWrite } from './durable.js';
 import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
 import { hubKeysFromEnv } from './hub-token.js';
 import { syncRoutes } from './sync-routes.js';
+import { createAggregator } from './audit-aggregate.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -900,6 +901,8 @@ function audit(req, ev, f = {}) {
   if (f.msg) rec.msg = String(f.msg).slice(0, 120);
   // What a failed proof of ownership was guarding (proveOwner): 'email', 'passkey-add', …
   if (f.act) rec.act = String(f.act).slice(0, 40);
+  // How many more of the same this row stands for (auditSyncFail folds repeats into one row).
+  if (Number.isInteger(f.n) && f.n > 0) rec.n = f.n;
   const ip = clientIp(req);
   if (ip) rec.ip = ip;
   try { fs.appendFileSync(auditFile, JSON.stringify(rec) + '\n'); }
@@ -1023,10 +1026,32 @@ function strikeAddress(req, kind) {
 // dropped is a row that says the same thing as the ten before it.
 const FAIL_AUDIT = createWindow({ max: 10, windowMs: 60000 });
 const FAIL_AUDIT_ALL = createWindow({ max: 120, windowMs: 60000 });
-setInterval(() => { FAIL_AUDIT.sweep(); FAIL_AUDIT_ALL.sweep(); }, 60000).unref();
+setInterval(() => { FAIL_AUDIT.sweep(); FAIL_AUDIT_ALL.sweep(); SYNC_FAIL_AUDIT.sweep(); }, 60000).unref();
 function auditFail(req, ev, f) {
   if (FAIL_AUDIT.take(ev + '|' + limitAddress(req)) || FAIL_AUDIT_ALL.take(ev)) return;
   audit(req, ev, f);
+}
+
+// A refused sync token (sync-routes.js) is held harder still. Those come from the hub, one
+// address, and a misconfigured hub fails every call it makes for as long as nobody looks: ten
+// rows a minute was the whole log in about eight hours. Per reason, the first refusal of the hour
+// is written at once and the rest become one row with their count, `n` (audit-aggregate.js).
+// Only the client address fields of the first request are kept for that row, not the request.
+const SYNC_FAIL_WINDOW_MS = 3600000;
+const SYNC_FAIL_AUDIT = createAggregator({
+  windowMs: SYNC_FAIL_WINDOW_MS,
+  write: ({ req, reason, repeats }) => audit(req, 'sync.token.fail', { ok: false, msg: reason, ...(repeats ? { n: repeats } : {}) })
+});
+const addressOf = req => ({
+  headers: {
+    'cf-connecting-ip': req.headers['cf-connecting-ip'],
+    'x-forwarded-for': req.headers['x-forwarded-for'],
+    'x-real-ip': req.headers['x-real-ip']
+  },
+  socket: { remoteAddress: req.socket?.remoteAddress }
+});
+function auditSyncFail(req, reason) {
+  SYNC_FAIL_AUDIT.record(reason, { req: addressOf(req), reason });
 }
 
 /* ---------- password sign-in (#118) ---------- */
@@ -2598,7 +2623,7 @@ const routes = {
   // Absent unless HUB_JWKS is set. Its own credential, checked there: never sessionOf.
   ...(HUB ? syncRoutes({
     hub: HUB, json, findUser: id => db.users.find(u => u.id === id) || null,
-    readStateCached, readStateStrict, UNREADABLE, readBody, commitState, auditFail
+    readStateCached, readStateStrict, UNREADABLE, readBody, commitState, auditSyncFail
   }) : {})
 };
 
