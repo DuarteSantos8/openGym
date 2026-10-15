@@ -4,8 +4,9 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { DAYN, DAYS, weekOrder, weekStartOf, uid, exCount, routineCount, todayISO, fmtDate } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
+import { EXIDX } from '../lib/exercises.js'
 import {
-  dayAssignSheet, starterPlanSheet, confirmSheet, menuSheet,
+  dayAssignSheet, starterPlanSheet, confirmSheet, menuSheet, exerciseDetailSheet,
   planHasRoutines, exportPlanFile, printWholePlan, importPlanFile,
 } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
@@ -205,6 +206,10 @@ function Programmes({ S, nav }) {
         onClose={() => setSelectedId(null)} onEdit={() => go('/programme/new', { mode: 'edit', programmeId: selected.id })}
         onDuplicate={() => go('/programme/new', { mode: 'duplicate', programmeId: selected.id })}
         onShare={() => programmeShareSheet(selected)}
+        onExercise={(_routineId, exerciseId) => {
+          const exercise = (S.customEx || []).find(ex => String(ex.id) === String(exerciseId)) || EXIDX[exerciseId]
+          if (exercise) exerciseDetailSheet(exercise)
+        }}
         onStart={() => go('/programme/pickup', { programmeId: selected.id })} />}
     </Fragment>)}</div> : <div className="small dim">{t('No ready programmes')}</div>}
     {!!completed.length && <><h4 className="sec">{t('Completed programmes')}</h4><div className="list">{completed.map(cycle => <CompletedProgrammeRow key={cycle.id} cycle={cycle} state={S} onRepeat={() => go('/programme/pickup', { repeatCycleId: cycle.id })} />)}</div></>}
