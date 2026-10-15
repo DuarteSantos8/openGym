@@ -354,18 +354,26 @@ export function harmonise(sections, { cuts = [], timed = false } = {}) {
       const period = median(steps(onsets(s.rows)))
       // The beat decides the work when the rest is known: 60 s apart with 20 s off is 40 s on.
       const beat = rest > 0 && period > rest ? snapSec(period - rest) : 0
-      const W = beat && near(beat, work, 0.3) ? beat : snapSec(work)
+      // Only when the beat and the measured work nearly agree: with rests of mixed lengths the
+      // beat is off by the difference.
+      const W = beat && Math.abs(beat - work) <= 3 ? beat : snapSec(work)
       const R = rest > 0 ? snapSec(rest) : 0
       // An exercise ends a rest before the next one starts. The last of a round runs into whatever
       // comes next (the next group's intro, a longer break) and reads long without that limit;
       // with no next start at all it is as long as the others.
       const all = onsets(s.rows)
       const room = o => { const n = all.find(t => t > o.start); return n == null ? W : n - o.start - R }
+      // A countdown measured the work to the second: only the few seconds a countdown caught late
+      // costs are evened out. From captions alone the lengths are rougher, and a quarter is allowed.
+      // A length three or more sets share is the video's own (a block of 50 s sets amid 45 s
+      // ones), not noise, and is kept as it is.
+      const count = (key, v) => s.rows.reduce((t, r) => t + (snapSec(r[key]) === v ? (r.occurrences || []).length || 1 : 0), 0)
+      const close = (x, y, frac, key) => (timed ? Math.abs(x - y) <= 5 && count(key, snapSec(x)) < 3 : near(x, y, frac))
       for (const r of s.rows) {
         const most = median((r.occurrences || []).map(room))
         if (most > 0 && r.sec > most) r.sec = snapSec(most)
-        if (near(r.sec, W)) r.sec = W
-        if (R && near(r.rest, R, 0.4)) r.rest = R
+        if (close(r.sec, W, 0.25, 'sec')) r.sec = W
+        if (R && close(r.rest, R, 0.4, 'rest')) r.rest = R
       }
       s.work = W
       if (R) s.rest = R

@@ -377,7 +377,10 @@ export function timerPhases(frames) {
     // countdown with a caption over most of it, between two with none at their start, announces
     // the next exercise: the video names each exercise during the rest before it.
 
-    const announces = c && c.cover >= 0.6 && (c.first - r.start) / len(r) < 0.3 && bare(i + 1) && (i === 0 || bare(i - 1))
+    // An announcement is no longer than what it announces; a countdown much longer than the bare
+    // ones round it is the exercise itself, with its name on screen (and the bare ones the rests).
+    const announces = c && c.cover >= 0.6 && (c.first - r.start) / len(r) < 0.3 && bare(i + 1) && (i === 0 || bare(i - 1)) &&
+      len(r) <= len(runs[i + 1]) * 1.1
     // A countdown of a few seconds is a "get ready" or the last seconds of a rest shown where the
     // work timer will be, never an exercise.
     if (restAt(i) || announces || len(r) < MIN_EXERCISE) {

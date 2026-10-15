@@ -13,6 +13,7 @@ export const MIN_EXERCISES = 3
 // Exercises in a follow-along last seconds to a few minutes. Chapters that run for ten minutes
 // each are the video's parts ("Group 1: Lower body"), and the exercises are inside them.
 export const MAX_EXERCISE_CHAPTER = 240
+const MANY_CHAPTERS = 12
 
 // "Group 1: Lower body", "Part 2 - Upper", "Circuit 3", "Superset A", "Round 2: legs": the title
 // of a part of the video, never an exercise.
@@ -84,7 +85,9 @@ export function metadataDraft(info) {
     const numbered = String(c.title || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^\p{L}0-9]+/gu, ' ').trim()
     // A long chapter that is not the warm-up or the cool-down ("Lower body workout", 8 minutes) is a
     // part of the video too, whatever its title.
-    if (PART_RE.test(numbered) || (!section && c.end - c.start > MAX_EXERCISE_CHAPTER)) { parts.push({ start: Math.round(c.start), end: Math.round(c.end), label: String(c.title || '').trim().slice(0, 60) }); continue }
+    // (Not when the chapters name the exercises one by one, a dozen or more of them: a long one
+    // there is one exercise done in several sets, not a part of the video.)
+    if (PART_RE.test(numbered) || (!section && c.end - c.start > MAX_EXERCISE_CHAPTER && chapters.length < MANY_CHAPTERS)) { parts.push({ start: Math.round(c.start), end: Math.round(c.end), label: String(c.title || '').trim().slice(0, 60) }); continue }
     blocks.push({
       start: Math.round(c.start), end: Math.round(c.start) + dur, dur,
       kind: r.rest ? 'rest' : 'work', key, text, conf: 0.9,
