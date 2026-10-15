@@ -9,6 +9,7 @@ class FakeCtx {
     this.currentTime = 0
     this.destination = {}
     this.tones = []
+    this.stops = []               // a tone called off before it played stops at 0 (hush)
     this.resumes = 0
     this.suspends = 0
     this.gains = []
@@ -33,7 +34,7 @@ class FakeCtx {
       frequency: { value: 0, ramps: [], setValueAtTime() {}, linearRampToValueAtTime(v, at) { this.ramps.push([v, at]) } }, type: '', wave: null, connect() {},
       setPeriodicWave(w) { o.wave = w },
       start(at) { ctx.tones.push({ freq: o.frequency.value, at }); ctx.oscs.push(o); o.at = at },
-      stop(at) { o.until = at },
+      stop(at) { o.until = at; ctx.stops.push({ freq: o.frequency.value, at }) },
     }
     return o
   }
@@ -146,6 +147,54 @@ describe('the context sleeps between beeps', () => {
     expect(ctx().state).toBe('running')
     vi.advanceTimersByTime(400)
     expect(ctx().state).toBe('suspended')
+  })
+})
+
+// A suspended context is not "playing media", and iOS then points the hardware volume buttons at
+// the ringer rather than at the media channel the timer uses. Holding the context open for the
+// length of a rest is what lets someone in a gym simply turn the phone up.
+describe('the context is held open while a timer runs', () => {
+  it('does not sleep between the beeps of a held burst', () => {
+    sound.beep(true, 880, 0.15)
+    sound.holdSession(true)
+    vi.advanceTimersByTime(60000)
+    expect(ctx().state).toBe('running')
+    expect(ctx().suspends).toBe(0)
+  })
+
+  it('sleeps once the timer lets go, after the longest end-of-rest sound has rung out', () => {
+    sound.beep(true, 880, 0.15)
+    sound.holdSession(true)
+    vi.advanceTimersByTime(60000)
+    sound.chime(true, 'bell')                 // the rest's end, played just before letting go: rings 1.75 s
+    sound.holdSession(false)
+    vi.advanceTimersByTime(2700)
+    expect(ctx().state).toBe('running')
+    vi.advanceTimersByTime(100)
+    expect(ctx().state).toBe('suspended')
+  })
+
+  it('letting go early overrides the deadline the queued count-in left', () => {
+    // A 90 s rest queues its last tick for 0:89, and that used to keep the context running to
+    // the end of the rest after a Skip at 0:30, with the page awake behind a locked phone.
+    sound.holdSession(true)
+    sound.countdown(true, 90)
+    vi.advanceTimersByTime(30000)
+    sound.hush()
+    sound.holdSession(false)
+    vi.advanceTimersByTime(2800)
+    expect(ctx().state).toBe('suspended')
+    expect(ctx().suspends).toBe(1)
+  })
+
+  it('holding gets the context running even when nothing has played yet', () => {
+    sound.holdSession(true)
+    expect(ctx().state).toBe('running')
+    expect(ctx().tones).toHaveLength(0)
+  })
+
+  it('letting go without a context, or twice over, is harmless', () => {
+    expect(() => { sound.holdSession(false); sound.holdSession(false) }).not.toThrow()
   })
 })
 
@@ -486,3 +535,69 @@ describe('alertBuzz', () => {
     expect(calls).toEqual([])
   })
 })
+
+// A timer counts you back in out loud. The whole burst is queued when the timer starts, because
+// the thing that used to beep it, a one-second interval, is throttled to nothing in a
+// backgrounded tab, which is where a phone spends a rest.
+describe('the count-in to the end of a timer', () => {
+  const cancelled = () => ctx().stops.filter(st => st.at === 0)
+
+  it('queues five ticks a second apart, the last one a second before the timer ends', () => {
+    sound.countdown(true, 90)
+    expect(ctx().tones).toEqual([85, 86, 87, 88, 89].map(at => ({ freq: 660, at })))
+  })
+
+  it('each tick is the one the tick-by-tick count-in beeped: 660 Hz for 0.1 s, at a beep\'s level', () => {
+    sound.countdown(true, 1)
+    expect(ctx().oscs[0].type).toBe('sine')
+    expect(+(ctx().stops[0].at - ctx().tones[0].at - 0.05).toFixed(3)).toBe(0.1)   // tone() stops 0.05 s after its length
+    expect(Math.max(...ctx().gains[0].map(([, v]) => v))).toBe(0.35)
+  })
+
+  // The time left comes in fractions (the rest's end against the clock now): the ticks are placed
+  // against it, so the last one is still a second before the end and never on the end's sound.
+  it('counts against the time really left, fractions included', () => {
+    sound.countdown(true, 94.25)
+    expect(ctx().tones.map(tn => tn.at)).toEqual([89.25, 90.25, 91.25, 92.25, 93.25])
+  })
+
+  it('a timer shorter than the count-in counts down from what it has', () => {
+    sound.countdown(true, 3)
+    expect(ctx().tones).toEqual([0, 1, 2].map(at => ({ freq: 660, at })))
+  })
+
+  it('queues nothing with sounds off, and nothing for a timer with no time left', () => {
+    sound.countdown(false, 90)
+    sound.countdown(true, 0)
+    expect(FakeCtx.instances).toHaveLength(0)
+  })
+
+  it('is called off by hush, so a rest you skip does not tick on without you', () => {
+    sound.countdown(true, 90)
+    const queued = ctx().tones.length
+    sound.hush()
+    expect(cancelled()).toHaveLength(queued)
+  })
+
+  it('queuing it again (+15 s) calls off the ticks the old end had', () => {
+    sound.countdown(true, 20)
+    sound.countdown(true, 35)
+    expect(cancelled()).toHaveLength(5)
+    expect(ctx().tones.slice(5)).toEqual([30, 31, 32, 33, 34].map(at => ({ freq: 660, at })))
+  })
+
+  it('leaves the rest-end sound alone: hush only calls off the ticks it queued', () => {
+    sound.chime(true, 'bell')
+    sound.hush()
+    expect(cancelled()).toHaveLength(0)
+  })
+
+  it('keeps the context awake until the last tick, not just the first', () => {
+    sound.countdown(true, 90)                 // last tick ends at 89 + 0.1 + 0.05
+    vi.advanceTimersByTime(90000)
+    expect(ctx().state).toBe('running')
+    vi.advanceTimersByTime(200)
+    expect(ctx().state).toBe('suspended')
+  })
+})
+
