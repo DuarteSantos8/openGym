@@ -61,7 +61,7 @@ function resolveUid() {
   if (files.length === 0) {
     reloadDb()
     if (_db.users.length === 1) return _db.users[0].id
-    if (_db.users.length === 0) throw new Error(`no openGym users found in ${path.join(DATA_DIR, 'db.json')} — sign in at least once on a device`)
+    if (_db.users.length === 0) throw new Error(`no Gains users found in ${path.join(DATA_DIR, 'db.json')} — sign in at least once on a device`)
     // Multiple users in db.json but no state file yet — hit when accounts exist but none has
     // signed in on a device.
     throw ambiguousUid(_db.users.map(u => u.id))
@@ -75,8 +75,8 @@ function resolveUid() {
 // change are what the model can act on; the ids and the path go to the server log on stderr,
 // where the operator is already reading the startup line.
 function ambiguousUid(ids) {
-  console.error(`[opengym-mcp] ${ids.length} openGym profiles in ${DATA_DIR}: ${ids.join(', ')} — set OPENGYM_UID to one of them`)
-  const err = new Error(`this openGym data directory holds ${ids.length} profiles — set OPENGYM_UID to the one this server should read (the ids are on the server's stderr, and in db.json under "users"[].id)`)
+  console.error(`[opengym-mcp] ${ids.length} Gains profiles in ${DATA_DIR}: ${ids.join(', ')} — set OPENGYM_UID to one of them`)
+  const err = new Error(`this Gains data directory holds ${ids.length} profiles — set OPENGYM_UID to the one this server should read (the ids are on the server's stderr, and in db.json under "users"[].id)`)
   err.code = 'EINVAL'
   return err
 }

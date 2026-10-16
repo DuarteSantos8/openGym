@@ -115,7 +115,7 @@ Then set your domain in `.env` and restart:
 RP_ID=gym.example.com
 ORIGIN=https://gym.example.com
 WEB_PORT=8080
-RP_NAME=openGym
+RP_NAME=Gains
 ```
 
 ```bash

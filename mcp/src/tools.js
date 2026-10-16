@@ -110,7 +110,7 @@ function prTable(S, formula) {
 /** list_routines — names + counts of each routine in the user's plan. */
 export const listRoutines = {
   name: 'list_routines',
-  description: 'List the workout routines saved in the user\'s openGym profile (the same list the Plan screen shows). Each routine is a named set of exercises with set/rep targets. Use this to discover the plan structure before diving into a specific routine or today\'s workout.',
+  description: 'List the workout routines saved in the user\'s Gains profile (the same list the Plan screen shows). Each routine is a named set of exercises with set/rep targets. Use this to discover the plan structure before diving into a specific routine or today\'s workout.',
   schema: {},
   handler: () => {
     const S = getState()
@@ -678,7 +678,7 @@ export const TOOLS = [
 
 function noState() {
   return {
-    error: 'no synced state yet — sign in at least once from a device so the openGym api can save a state file for this profile',
+    error: 'no synced state yet — sign in at least once from a device so the Gains api can save a state file for this profile',
     unit: 'kg'
   }
 }

@@ -35,9 +35,10 @@ Notes:
   called `eg` in `envoy-gateway-system` with an `https` listener; change both to match your
   cluster. The Gateway has to terminate TLS; this was tested with
   [Envoy Gateway](https://gateway.envoyproxy.io) and [cert-manager](https://cert-manager.io).
-- The manifests still name the images `ghcr.io/duartesantos8/opengym-api` and `opengym-web`, from the
-  project Gains was forked from: build and push your own (the repository publishes `linux/amd64` ones to
-  `ghcr.io/steradrian/gains-api` and `gains-web`) and change them in `kubernetes/deployment.yaml`. The AI
+- The images are `ghcr.io/steradrian/gains-api` and `gains-web` (`linux/amd64`, tags `main` and the
+  commit SHA, published from every push to `main`). Pin both containers to the same SHA to know what
+  you run. For another architecture, or a private package, build and push your own and change them
+  in `kubernetes/deployment.yaml`. The AI
   Coach with an API key works on that same API image; the Claude and Codex sign-in providers
   need the `coach` build target, which is not published — build it yourself (see
   [AI_COACH.md](AI_COACH.md)).

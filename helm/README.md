@@ -1,6 +1,5 @@
-> **Inherited packaging.** This chart comes from the project Gains was forked from. Its names and its
-> default images (`ghcr.io/duartesantos8/opengym-*`) are that project's: set `api.image.repository` and `web.image.repository` to your own
-> build before using it for Gains.
+> The chart's names (`opengym`) are inherited from the project Gains was forked from; its default images
+> are Gains' (`ghcr.io/steradrian/gains-api` and `gains-web`, tag `main` or a commit SHA).
 
 # openGym Helm chart
 
@@ -17,8 +16,8 @@ Read [docs/SELF_HOSTING.md](../docs/SELF_HOSTING.md) first. The passkey requirem
 ## Install
 
 ```bash
-git clone https://github.com/DuarteSantos8/openGym
-cd openGym
+git clone https://github.com/steradrian/gains
+cd gains
 
 helm install opengym ./helm -n fitness --create-namespace \
   --set api.env.RP_ID=gym.example.com \

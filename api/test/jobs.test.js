@@ -490,7 +490,7 @@ test('an HTTPS provider is not refused for lacking a privilege drop, and runs en
     assert.equal(seen[0].auth, undefined, 'no key configured, so no Authorization header');
     assert.equal(seen[0].body.model, 'local-model');
     assert.ok(seen[0].body.messages[1].content.includes('"coach_contract":1'), 'the payload rode in the user turn');
-    assert.ok(seen[0].body.messages[0].content.includes('openGym Coach'), 'the rules rode in the system turn');
+    assert.ok(seen[0].body.messages[0].content.includes('Gains Coach'), 'the rules rode in the system turn');
 
     // And the same host refuses a runtime-backed provider, so the gate itself is intact.
     cfg.save({ provider: 'fixture' });

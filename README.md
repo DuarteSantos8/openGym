@@ -127,9 +127,9 @@ Traefik and nginx, and there are separate guides for
 
 > [!NOTE]
 > Images for `linux/amd64` are also published to this repository's GitHub Container Registry
-> (`ghcr.io/steradrian/gains-api` and `gains-web`) on every push to `main`. `docker-compose.yml` still
-> names images from the project Gains was forked from, so use `--build` as above until it is
-> pointed at these.
+> (`ghcr.io/steradrian/gains-api` and `gains-web`, tags `main` and the commit SHA) on every push to
+> `main`, and `docker-compose.yml` names them. Use `--build` as above to build for another
+> architecture, or if the package is not public.
 
 <details>
 <summary><b>Configuration reference</b> (all through <code>.env</code>)</summary>
@@ -142,7 +142,7 @@ Traefik and nginx, and there are separate guides for
 | `NGINX_PORT` | Port the web container listens on inside the container | `80` |
 | `BACKEND` | Name of the API service that `/api` is proxied to | `api` |
 | `PORT` | Port the API listens on; the web container proxies to the same value | `3000` |
-| `RP_NAME` | Name shown in the passkey prompt | `openGym` |
+| `RP_NAME` | Name shown in the passkey prompt | `Gains` |
 | `SESSION_DAYS` | How long a sign-in lasts, in days | `90` |
 | `ADMIN_UIDS` | User ids that get the admin dashboard, comma-separated | *(none)* |
 | `FIRST_USER_ADMIN` | `1`: the first profile created on an empty instance becomes its admin | *(off)* |

@@ -11,7 +11,7 @@ test('localizes every server-generated notification in pt-BR', () => {
     url: '#/train/workout',
   });
   assert.deepEqual(testPush('pt-BR'), {
-    title: 'openGym',
+    title: 'Gains',
     body: 'Notificação de teste ✅ É assim que os alertas aparecem.',
     tag: 'test',
   });

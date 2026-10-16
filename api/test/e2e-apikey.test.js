@@ -141,7 +141,7 @@ test('Gemini: x-goog-api-key header, generateContent, JSON mime type', async () 
   assert.equal(job.headers['x-goog-api-key'], 'AIza-test-789');
   assert.ok(!job.url.includes('key='), 'never ?key=');
   assert.equal(job.body.generationConfig.responseMimeType, 'application/json');
-  assert.match(job.body.systemInstruction.parts[0].text, /openGym Coach/);
+  assert.match(job.body.systemInstruction.parts[0].text, /Gains Coach/);
 });
 
 test('an overloaded provider is retried and the job still succeeds', async () => {
