@@ -1,4 +1,4 @@
-import { programmeCycleItems, updateActiveProgrammeCycleInState } from './programmes.js'
+import { programmeCycleItems, programmeItemSettled, updateActiveProgrammeCycleInState } from './programmes.js'
 import { routineFromSession, sessionForRoutine, sessionChangeFields } from './session-routines.js'
 
 export function applySessionToFutureProgramme(state, session) {
@@ -10,7 +10,7 @@ export function applySessionToFutureProgramme(state, session) {
   const currentIndex = items.findIndex(item => item.instanceId === currentId)
   if (currentIndex < 0) throw new Error('The source Programme session is no longer available.')
   const source = items[currentIndex]
-  const future = items.slice(currentIndex + 1).filter(item => item.routineId === source.routineId && !item.done && item.status !== 'completed' && !state.workouts.some(w => (w.programmeInstanceId || w.programmeInstance?.instanceId) === item.instanceId))
+  const future = items.slice(currentIndex + 1).filter(item => item.routineId === source.routineId && !item.done && !programmeItemSettled(item) && !state.workouts.some(w => (w.programmeInstanceId || w.programmeInstance?.instanceId) === item.instanceId))
   if (!future.length) throw new Error('No future sessions use this routine.')
   const weeks = structuredClone(cycle.snapshot.weeks)
   const sourceRoutine = { ...source.routineSnapshot, id: source.routineId }

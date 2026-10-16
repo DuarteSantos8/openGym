@@ -15,9 +15,10 @@ import { Button } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { dayNoteOf } from '../lib/day-notes.js'
-import { activeProgrammeCycles, completeProgrammeCycleInState, currentProgrammeProjection, programmeSessionsForStart } from '../lib/programmes.js'
+import { activeProgrammeCycles, completeProgrammeCycleInState, currentProgrammeProjection, programmeSessionsForStart, programmeCycleItems, programmeItemSettled, resolveOverdueProgrammeInState } from '../lib/programmes.js'
 import { ActiveProgrammeCard, COLOUR_CSS } from '../components/ProgrammeCard.jsx'
 import ActiveProgrammeDetail from '../components/ActiveProgrammeDetail.jsx'
+import { useUI } from '../store/useUI.js'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -170,14 +171,22 @@ export default function Home() {
       {programmeToday.map(item => {
         const activeId = S.active?.programmeInstance?.instanceId || S.active?.programmeInstanceId
         const resume = activeId === item.instanceId
+        const overdue = item.date < todayISO() && !programmeItemSettled(item) && !resume
+        const cycle = activeCycles.find(cycle => cycle.id === item.cycleId)
+        const remaining = programmeCycleItems(S, cycle).filter(candidate => !programmeItemSettled(candidate))
+        const following = remaining[remaining.findIndex(candidate => candidate.instanceId === item.instanceId) + 1]
+        const skip = () => {
+          try { useStore.getState().update(state => { resolveOverdueProgrammeInState(state, item.cycleId, item.instanceId, 'skip') }) }
+          catch (error) { useUI.getState().toast(t(error.message)) }
+        }
         return <div key={item.instanceId} className="today-row" data-testid="home-programme-session" style={{ borderTop: 'var(--hair) solid var(--sep)' }}>
           <button type="button" className="programme-ready-open" onClick={() => setSearch({ cycle: item.cycleId })} aria-label={item.programmeName + ' · ' + item.routineSnapshot?.name}>
             <span className="lrow-i" style={{ background: COLOUR_CSS[item.colour] || 'var(--acc)' }}><Icon name={glyphOf(item.routineSnapshot?.emoji)} /></span>
-            <span style={{ minWidth: 0 }}><span className="lbl2">{item.programmeName}</span><span className="ttl" style={{ display: 'block' }}>{item.routineSnapshot?.name || item.routineId}</span></span>
+            <span style={{ minWidth: 0 }}><span className="lbl2">{item.programmeName}</span><span className="ttl" style={{ display: 'block' }}>{item.routineSnapshot?.name || item.routineId}</span>{overdue && <span className="programme-overdue-meta">{t('Overdue')} · {fmtDate(item.date)}{following && <> | {t('Next')} · {following.routineSnapshot?.name || following.routineId}</>}</span>}</span>
           </button>
           {resume ? <Button size="sm" variant="primary" onClick={() => nav('/workout')}>{t('Resume')}</Button>
             : item.status === 'completed' ? <span className="tag">{t('Done')}</span>
-            : <Button size="sm" variant="primary" onClick={() => startProgrammeFlow(item)}>{t('Start')}</Button>}
+            : <div className="programme-overdue-actions">{overdue && <Button size="sm" variant="ghost" disabled={!!S.active} onClick={skip}>{t('Skip')}</Button>}<Button size="sm" variant="primary" onClick={() => startProgrammeFlow(item)}>{t(overdue ? 'Do now' : 'Start')}</Button></div>}
         </div>
       })}      {!S.active && <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
         <Button size="sm" variant="ghost" className="dim" icon="swap" onClick={() => nav('/workout')}>

@@ -35,7 +35,7 @@ export function ProgrammeWeekStrip({ cycle, projection }) {
     {Array.from({ length: cycle.lengthWeeks || weeks.length || 1 }, (_, index) => {
       const week = index + 1, mode = programmeWeekMode(weeks[index]?.mode)
       const progress = projection?.weekProgress?.[index]
-      const done = progress?.total > 0 && progress.completed === progress.total
+      const done = progress?.total > 0 && progress.completed + (progress.skipped || 0) === progress.total
       const kind = done ? 'done' : week === current ? 'current' : mode
       const label = t('Week {0}: {1}', week, done ? t('Completed') : modeLabel(mode))
       return <span key={week} role="listitem" data-week-state={kind} aria-label={label} title={label}

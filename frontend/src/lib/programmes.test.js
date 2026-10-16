@@ -254,10 +254,10 @@ describe('Programme cycles, projection, and settlement', () => {
     const first = currentProgrammeProjection(S, { now: '2026-02-02T12:00:00Z' }).items[0]
     S.workouts.push({ id: 'done', ...programmeWorkoutSource(first) })
     const week2 = currentProgrammeProjection(S, { now: '2026-02-10T12:00:00Z' }).cycles.cycle
-    expect(week2.currentWeek).toBe(2)
+    expect(week2.currentWeek).toBe(1)
     expect(week2.items.map(item => [item.weekIndex, item.status])).toEqual([[1, 'pending'], [2, 'due']])
     const afterWindow = currentProgrammeProjection(S, { now: '2026-03-10T12:00:00Z' }).cycles.cycle
-    expect(afterWindow.currentWeek).toBe(2)
+    expect(afterWindow.currentWeek).toBe(1)
     expect(afterWindow.items).toHaveLength(2)
   })
 
@@ -286,7 +286,7 @@ describe('Programme cycles, projection, and settlement', () => {
     startProgrammeCycleInState(S, 'p1', { id: 'c1', now: '2026-02-02T08:00:00Z', timeZone: 'UTC' })
     startProgrammeCycleInState(S, 'p2', { id: 'c2', now: '2026-02-09T08:00:00Z', timeZone: 'UTC' })
     const projection = currentProgrammeProjection(S, { now: '2026-02-10T12:00:00Z' })
-    expect(projection.cycles.c1.currentWeek).toBe(2)
+    expect(projection.cycles.c1.currentWeek).toBe(1)
     expect(projection.cycles.c2.currentWeek).toBe(1)
     expect(projection.items).toEqual([...projection.items].sort((a, b) => a.date.localeCompare(b.date) || a.instanceId.localeCompare(b.instanceId)))
   })
@@ -447,7 +447,7 @@ it('retains completed weeks in progress without settling partial history or empt
  const first=currentProgrammeProjection(S,{now:'2026-02-04T12:00:00Z'}).items;
  S.workouts=first.map(item=>({programmeInstance:{cycleId:cycle.id,instanceId:item.instanceId}}));
  let result=currentProgrammeProjection(S,{now:'2026-02-10T12:00:00Z'}).cycles[cycle.id];
- expect(result.weekProgress).toEqual([{total:2,completed:2},{total:1,completed:0},{total:0,completed:0}]);
+ expect(result.weekProgress).toEqual([{total:2,completed:2,skipped:0},{total:1,completed:0,skipped:0},{total:0,completed:0,skipped:0}]);
  expect(result.items.every(item=>item.weekIndex===2)).toBe(true);
  S.workouts[0].partial=true;
  result=currentProgrammeProjection(S,{now:'2026-02-10T12:00:00Z'}).cycles[cycle.id];

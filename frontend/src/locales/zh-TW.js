@@ -1,4 +1,7 @@
 export default {
+  "Overdue": "已逾期",
+  "Do now": "立即開始",
+  "Missed": "已錯過",
   'Confirm': '確認',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回以退出',

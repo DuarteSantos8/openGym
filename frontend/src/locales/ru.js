@@ -1,5 +1,8 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Overdue": "Просрочено",
+  "Do now": "Начать сейчас",
+  "Missed": "Пропущено",
   'Confirm': 'Подтвердить',
   'Cancel': 'Отмена',
   'Press back again to exit': 'Нажмите «Назад» ещё раз, чтобы выйти',

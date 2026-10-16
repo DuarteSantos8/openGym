@@ -1,5 +1,8 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Overdue": "Gecikmiş",
+  "Do now": "Şimdi başla",
+  "Missed": "Atlandı",
   'Confirm': 'Onayla',
   'Cancel': 'İptal',
   'Press back again to exit': 'Çıkmak için geri tuşuna tekrar basın',

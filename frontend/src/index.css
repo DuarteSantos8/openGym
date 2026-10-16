@@ -2286,3 +2286,6 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .shared-programme-list { list-style: none; padding: 0; }
 .shared-programme-list li { gap: 12px; padding-block: 12px; border-bottom: 1px solid var(--sep); }
 .shared-programme-name { min-width: 0; overflow-wrap: anywhere; }
+.programme-overdue-meta{display:block;margin-top:3px;color:var(--orange);font-size:12px;line-height:1.4;overflow-wrap:anywhere}
+.programme-overdue-actions{display:flex;align-items:center;gap:6px;flex:none}
+@media(max-width:420px){.today-row:has(.programme-overdue-meta){flex-wrap:wrap}.today-row:has(.programme-overdue-meta) .programme-overdue-actions{margin-left:auto}}

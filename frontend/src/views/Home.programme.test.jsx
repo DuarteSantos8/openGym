@@ -86,3 +86,15 @@ it('requires confirmation to complete a cycle early and preserves recorded worko
  expect(useStore.getState().S.programmes.cycles[0].status).toBe('completed');expect(useStore.getState().S.workouts).toEqual(before);
  expect(node.querySelector('[data-testid="active-programme-card"]')).toBeNull();expect(node.querySelector('[data-testid="active-programme-detail"]')).toBeNull();
 });
+
+it('offers compact overdue actions and skips the exact occurrence without changing history',()=>{
+ const state=fixture();const cycle=state.programmes.cycles[0];const earlier=new Date();earlier.setDate(earlier.getDate()-2);cycle.week1StartDate=isoOf(earlier);
+ const before=structuredClone(state.workouts);const node=mount(state);let row=node.querySelector('[data-testid="home-programme-session"]');
+ expect(row.textContent).toContain('Overdue');expect(row.textContent).toContain('| Next · Live Push');
+ expect([...row.querySelectorAll('button')].map(b=>b.textContent)).toContain('Do now');
+ act(()=>[...row.querySelectorAll('button')].find(b=>b.textContent==='Skip').click());
+ expect(useStore.getState().S.programmes.cycles[0].skippedInstanceIds).toHaveLength(1);expect(useStore.getState().S.workouts).toEqual(before);
+ row=node.querySelector('[data-testid="home-programme-session"]');expect(row.textContent).not.toContain('| Next');
+ act(()=>[...row.querySelectorAll('button')].find(b=>b.textContent==='Do now').click());
+ expect(startProgrammeFlow).toHaveBeenCalledWith(expect.objectContaining({instanceId:expect.not.stringContaining(':s1')}));
+});

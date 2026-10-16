@@ -5,7 +5,7 @@ import { programmeTimelineForCycle } from '../lib/programme-timeline.js'
 import { renderSupersetGroups } from './ReadyProgrammeDetail.jsx'
 import Icon from './Icon.jsx'
 import { Button } from './ui.jsx'
-const settledProgrammeStatuses = new Set(['completed'])
+const settledProgrammeStatuses = new Set(['completed', 'skipped'])
 const routineForItem = item => item.routineSnapshot || {}
 function programmeDayLabel(weekday) {
   const value = Number(weekday)
@@ -24,6 +24,7 @@ function programmeItemMeta(item) {
 
 function programmeStatus(item, isNext) {
   if (isNext) return { className: 'is-next', label: t('Next') }
+  if (item?.status === 'skipped') return { className: 'is-planned', label: t('Missed') }
   if (settledProgrammeStatuses.has(item?.status)) return { className: 'is-done', label: t('Done') }
   return { className: 'is-planned', label: t('Planned') }
 }
@@ -33,12 +34,21 @@ export default function ActiveProgrammeDetail({ state, cycle, now, onClose, onCo
   const summary = { name: cycle.name, currentWeek: timeline.currentWeek, totalWeeks: timeline.totalWeeks }
   const groups = timeline.weeks
   const currentGroup = groups.find(group => group.index === timeline.currentWeek) || groups[0] || null
-  // The Monday (dd/mm) of any programme week, anchored on the cycle's week-1 start.
+  // Keep week labels aligned with projected dates, including shifted rest weeks.
   const mondayOfWeek = weekIndex => {
     const anchor = timeline.cycle?.week1StartDate
     if (!anchor) return null
+    const allItems = groups.flatMap(group => group.items)
+    const reference = allItems.find(item => item.weekIndex >= weekIndex) || allItems.at(-1)
     const day = new Date(anchor + 'T12:00:00')
     day.setDate(day.getDate() + (Number(weekIndex) - 1) * 7)
+    if (reference) {
+      const original = new Date(anchor + 'T12:00:00Z')
+      const offset = (Number(reference.weekday) - Number(cycle.programmeRevision != null ? 1 : cycle.weekStart ?? 1) + 7) % 7
+      original.setUTCDate(original.getUTCDate() + (reference.weekIndex - 1) * 7 + offset)
+      const shift = Math.round((Date.parse(reference.projectedDate + 'T12:00:00Z') - original.getTime()) / 86400000)
+      day.setDate(day.getDate() + shift)
+    }
     return String(day.getDate()).padStart(2, '0') + '/' + String(day.getMonth() + 1).padStart(2, '0')
   }
   const ddmmOf = iso => (iso ? String(iso).slice(8, 10) + '/' + String(iso).slice(5, 7) : '')
@@ -47,7 +57,7 @@ export default function ActiveProgrammeDetail({ state, cycle, now, onClose, onCo
   const [expandedSessions, setExpandedSessions] = useState(() => new Set())
   const selectedGroup = groups.find(group => group.index === selectedWeek) || currentGroup
   const queued = projection?.items || []
-  const startItem = queued.find(item => item.status !== 'completed' && item.weekIndex < timeline.currentWeek) || queued.find(item => item.status === 'due') || queued.find(item => item.status === 'pending')
+  const startItem = queued.find(item => !settledProgrammeStatuses.has(item.status))
   const activeInstanceId = state.active?.programmeInstance?.instanceId || state.active?.programmeInstanceId
   const nextItem = groups.flatMap(group => group.items).find(item => !settledProgrammeStatuses.has(item.status)) || null
   const selectWeek = weekIndex => {
@@ -96,7 +106,7 @@ export default function ActiveProgrammeDetail({ state, cycle, now, onClose, onCo
     </div>}
     {nextItem && <article className="prog-next" data-testid="programme-next-up">
       <button type="button" className="prog-next-toggle" data-testid="programme-next-toggle" aria-expanded={nextOpen} onClick={() => setNextOpen(open => !open)}>
-        <span className="prog-next-day"><span className="tag acc">{t('Next').toUpperCase()}</span><span>{programmeDayLabel(nextItem.weekday)}</span></span>
+        <span className="prog-next-day"><span className="tag acc">{t('Next').toUpperCase()}</span><span>{ddmmOf(nextItem.projectedDate)}</span></span>
         <span className="grow"><strong className="prog-session-title">{nextItem.routineName || nextItem.routineSnapshot?.name || nextItem.routineId || t('Session')}</strong><span className="prog-session-meta">{programmeItemMeta(nextItem)}</span></span>
         <Icon name="chevronRight" className={`prog-chevron${nextOpen ? ' is-open' : ''}`} />
       </button>
@@ -107,10 +117,11 @@ export default function ActiveProgrammeDetail({ state, cycle, now, onClose, onCo
     {selectedGroup && <>
       <div className={`prog-week-label${selectedGroup.mode === 'deload' ? ' is-deload' : ''}${selectedGroup.mode === 'rest' ? ' is-rest' : ''}`} data-testid="programme-week-label">{t('Week')} {selectedGroup.index} · {t('sessions')}{selectedGroup.mode === 'deload' ? ' · ' + t('deload') : selectedGroup.mode === 'rest' ? ' · ' + t('rest week') : ''}</div>
       {selectedGroup.items.length ? <div className="prog-day-list" data-testid="programme-day-list">
-        {[1, 2, 3, 4, 5, 6, 0].map(weekday => {
-          const dayItems = selectedGroup.items.filter(item => Number(item.weekday) % 7 === weekday)
+        {[...new Set(selectedGroup.items.map(item => item.projectedDate))].sort().map(projectedDate => {
+          const weekday = new Date(projectedDate + 'T12:00:00').getDay()
+          const dayItems = selectedGroup.items.filter(item => item.projectedDate === projectedDate)
           if (!dayItems.length) return null
-          return <div key={weekday} className={`prog-day-row${selectedGroup.mode === 'deload' ? ' is-deload' : ''}${selectedGroup.mode === 'rest' ? ' is-rest' : ''}`} data-testid="programme-day-row">
+          return <div key={projectedDate} className={`prog-day-row${selectedGroup.mode === 'deload' ? ' is-deload' : ''}${selectedGroup.mode === 'rest' ? ' is-rest' : ''}`} data-testid="programme-day-row">
             <div className="prog-day-head">
               <span className="tag acc prog-session-day">{programmeDayLabel(weekday)}</span>
               <span className="prog-day-date dim">{ddmmOf(dayItems[0].projectedDate)}</span>
@@ -122,7 +133,7 @@ export default function ActiveProgrammeDetail({ state, cycle, now, onClose, onCo
           const status = programmeStatus(item, isNext)
           return <article className={`prog-session${open ? ' is-open' : ''}`} key={item.instanceId}>
             <button type="button" className="prog-session-toggle" data-testid="programme-session-row" aria-expanded={open} onClick={() => toggleSession(item.instanceId)}>
-              <span className="tag acc prog-session-day">{programmeDayLabel(item.weekday)}</span>
+              <span className="tag acc prog-session-day">{programmeDayLabel(weekday)}</span>
               <span className="grow"><strong className="prog-session-title">{item.routineName || item.routineSnapshot?.name || item.routineId || t('Session')}</strong><span className="prog-session-meta">{programmeItemMeta(item)}</span></span>
               <span className={`prog-status ${status.className}`}>{status.label}</span>
               <Icon name="chevronRight" className={`prog-chevron${open ? ' is-open' : ''}`} />

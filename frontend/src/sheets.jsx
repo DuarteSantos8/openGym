@@ -67,7 +67,7 @@ import { workoutCardModel, layoutWorkoutCard, drawWorkoutCard, viewAspect, CARD_
 import { copyText } from './lib/clipboard.js'
 import { queueRemaining, pinState } from './lib/queue.js'
 import { DAY_NOTE_TAGS, DAY_NOTE_LABEL, DAY_NOTE_ICON, dayNoteOf, dayNoteLine, canNoteDay, withDayNote } from './lib/day-notes.js'
-import { programmeStartDisposition, programmeWorkoutSource, settleProgrammeWorkoutInState } from './lib/programmes.js'
+import { programmeStartDisposition, prepareProgrammeStartInState, programmeWorkoutSource, settleProgrammeWorkoutInState } from './lib/programmes.js'
 
 const S = () => useStore.getState().S
 const update = (...a) => useStore.getState().update(...a)
@@ -2789,12 +2789,13 @@ export function beginWorkout(routineIds, bw, programmeItem = null, requestedISO 
   const disposition = programmeStartDisposition(st.active, programmeItem)
   if (disposition === 'resume') { navToWorkout(); return disposition }
   if (disposition === 'blocked') { toast(t('Finish the current workout first.')); return disposition }
-  const routine = programmeItem?.routineSnapshot
-  const combined = programmeItem
-    ? { entries: buildSessionEntries(st, routine, programmeItem).map(entry => ({ ...entry, rid: programmeItem.routineId })), routineIds: [programmeItem.routineId], routines: [routine] }
-    : buildCombinedEntries(st, routineIds)
-  const { entries, routineIds: rids, routines } = combined
-  update(s => {
+  try { update(s => {
+    if (programmeItem) programmeItem = prepareProgrammeStartInState(s, programmeItem, { today: requestedISO || todayISO() })
+    const routine = programmeItem?.routineSnapshot
+    const combined = programmeItem
+      ? { entries: buildSessionEntries(st, routine, programmeItem).map(entry => ({ ...entry, rid: programmeItem.routineId })), routineIds: [programmeItem.routineId], routines: [routine] }
+      : buildCombinedEntries(st, routineIds)
+    const { entries, routineIds: rids, routines } = combined
     s.active = {
       id: uid(), d: requestedISO || todayISO(), start: Date.now(),
       // A session tracks its routines as a list; per-entry `rid` carries which one each
@@ -2807,7 +2808,7 @@ export function beginWorkout(routineIds, bw, programmeItem = null, requestedISO 
       workoutView: st.workoutView || 'cards',
       ...(programmeItem ? { ...programmeWorkoutSource(programmeItem), unit: st.unit || 'kg' } : {}),
     }
-  })
+  }) } catch (error) { toast(t(error.message)); return 'blocked' }
   useUI.getState().stopRest()
   navToWorkout()
   return 'start'

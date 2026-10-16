@@ -1,5 +1,8 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Overdue": "সময় পেরিয়ে গেছে",
+  "Do now": "এখন করুন",
+  "Missed": "বাদ পড়েছে",
   'Confirm': 'নিশ্চিত করুন',
   'Cancel': 'বাতিল',
   'Press back again to exit': 'বের হতে আবার ব্যাক চাপুন',

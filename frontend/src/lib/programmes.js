@@ -335,6 +335,15 @@ export function updateActiveProgrammeCycleInState(state, cycleId, input = {}, op
   }, state, { id: cycle.programmeId, now: options.now, existing: cycle.programmeSnapshot })
   const error = protectedEditError(state, cycle, draft.weeks)
   if (error) throw new Error(error)
+  if (cycle.sessionDates) {
+    const before = new Map(materialize(cycle).map(item => [item.instanceId, item]))
+    const after = materialize({ ...cycle, snapshot: { ...cycle.snapshot, weeks: draft.weeks } })
+    cycle.sessionDates = Object.fromEntries(after.filter(item => cycle.sessionDates[item.instanceId]).map(item => {
+      const previous = before.get(item.instanceId)
+      const shift = previous ? daysBetween(previous.date, cycle.sessionDates[item.instanceId]) : 0
+      return [item.instanceId, addDays(item.date, shift)]
+    }))
+  }
   cycle.name = draft.name
   cycle.progression = draft.progression
   cycle.colour = draft.colour
@@ -361,20 +370,20 @@ export function currentProgrammeProjection(state, options = {}) {
   const result = { cycles: {}, items: [] }
   for (const cycle of activeProgrammeCycles(state)) {
     const today = localDate(options.now ?? Date.now(), cycle.timeZone || options.timeZone || 'UTC')
-    const calendarWeek = Math.floor(daysBetween(cycle.week1StartDate, today) / 7) + 1
-    const currentWeek = Math.max(1, Math.min(cycle.lengthWeeks || 1, calendarWeek))
+    const currentWeek = programmeCurrentWeek(state, cycle, options)
+    const calendarWeek = Math.max(1, Math.min(cycle.lengthWeeks || 1, Math.floor(daysBetween(cycle.week1StartDate, today) / 7) + 1))
     const completed = completedInstances(state, cycle.id)
     const inCalendar = item => typeof options.calendarThrough === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(options.calendarThrough)
       && item.date >= today && item.date <= options.calendarThrough
-    const sessions = materialize(cycle)
+    const sessions = programmeCycleItems(state, cycle, options)
     const weekProgress = Array.from({ length: cycle.lengthWeeks || 1 }, (_, index) => {
       const week = sessions.filter(item => item.weekIndex === index + 1)
-      return { total: week.length, completed: week.filter(item => completed.has(item.instanceId)).length }
+      return { total: week.length, completed: week.filter(item => completed.has(item.instanceId)).length, skipped: week.filter(item => item.status === 'skipped').length }
     })
-    const items = sessions.filter(item => item.weekIndex <= currentWeek || inCalendar(item)).flatMap(item => {
+    const items = sessions.filter(item => item.weekIndex <= calendarWeek || inCalendar(item)).flatMap(item => {
       const done = completed.has(item.instanceId)
-      if (done && item.weekIndex !== currentWeek && !inCalendar(item)) return []
-      return [{ ...item, status: done ? 'completed' : item.date === today ? 'due' : 'pending' }]
+      if (done && item.weekIndex !== calendarWeek && !inCalendar(item)) return []
+      return [{ ...item, status: done ? 'completed' : item.status === 'skipped' ? 'skipped' : item.date === today ? 'due' : 'pending' }]
     }).sort(compareOccurrences)
     result.cycles[cycle.id] = { currentWeek, items, weekProgress }
     result.items.push(...items)
@@ -383,9 +392,76 @@ export function currentProgrammeProjection(state, options = {}) {
   return result
 }
 
-export function programmeCycleItems(state, cycle) {
+export const programmeItemSettled = item => ['completed', 'skipped'].includes(item?.status)
+
+export function programmeCycleItems(state, cycle, options = {}) {
   const completed = completedInstances(state, cycle.id)
-  return materialize(cycle).map(item => ({ ...item, status: completed.has(item.instanceId) ? 'completed' : 'pending' }))
+  const skipped = new Set(cycle.skippedInstanceIds || [])
+  const items = materialize(cycle).map(item => ({ ...item,
+    date: cycle.sessionDates?.[item.instanceId] || item.date,
+    status: completed.has(item.instanceId) ? 'completed' : skipped.has(item.instanceId) ? 'skipped' : 'pending',
+  })).sort(compareOccurrences)
+  const carry = items.find(item => item.instanceId === cycle.carryInstanceId && !programmeItemSettled(item))
+  const activeId = state.active?.programmeInstance?.instanceId || state.active?.programmeInstanceId
+  if (carry && activeId !== carry.instanceId) {
+    const today = options.today || localDate(options.now ?? Date.now(), cycle.timeZone || 'UTC')
+    const shift = Math.max(0, daysBetween(carry.date, today))
+    const first = items.indexOf(carry)
+    return items.map((item, index) => index >= first && !programmeItemSettled(item) && item.instanceId !== activeId
+      ? { ...item, date: addDays(item.date, shift) } : item)
+  }
+  return items
+}
+
+export function programmeCurrentWeek(state, cycle, options = {}) {
+  const today = options.today || localDate(options.now ?? Date.now(), cycle.timeZone || 'UTC')
+  const calendarWeek = Math.floor(daysBetween(cycle.week1StartDate, today) / 7) + 1
+  const next = programmeCycleItems(state, cycle, options).find(item => !programmeItemSettled(item))
+  return Math.max(1, Math.min(cycle.lengthWeeks || 1, calendarWeek, next?.weekIndex ?? Infinity))
+}
+
+export function resolveOverdueProgrammeInState(state, cycleId, instanceId, action, options = {}) {
+  if (!['skip', 'carry'].includes(action)) throw new Error('Invalid Programme action')
+  if (state.active) throw new Error('Finish the current workout first.')
+  const cycle = namespace(state).cycles.find(item => item.id === cycleId && item.status === 'active')
+  if (!cycle) throw new Error('Active Programme cycle not found')
+  const today = options.today || localDate(options.now ?? Date.now(), cycle.timeZone || 'UTC')
+  const items = programmeCycleItems(state, cycle, { ...options, today })
+  const item = items.find(candidate => candidate.instanceId === instanceId)
+  if (!item || programmeItemSettled(item)) throw new Error('Programme session is no longer available')
+  if (item.instanceId !== items.find(candidate => !programmeItemSettled(candidate))?.instanceId) throw new Error('Complete or skip the earlier Programme session first.')
+  if (item.date > today || (item.date === today && cycle.carryInstanceId !== instanceId)) throw new Error('Programme session is not overdue')
+  cycle.sessionDates = { ...cycle.sessionDates }
+  // Freeze the current projection before applying another choice, without touching history.
+  for (const candidate of items) cycle.sessionDates[candidate.instanceId] = candidate.date
+  if (action === 'skip') {
+    cycle.skippedInstanceIds = [...new Set([...(cycle.skippedInstanceIds || []), instanceId])]
+    if (cycle.carryInstanceId === instanceId) delete cycle.carryInstanceId
+  } else {
+    const shift = daysBetween(item.date, today)
+    for (const candidate of items.slice(items.indexOf(item)).filter(candidate => !programmeItemSettled(candidate))) {
+      cycle.sessionDates[candidate.instanceId] = addDays(candidate.date, shift)
+    }
+    cycle.carryInstanceId = instanceId
+  }
+  cycle.updatedAt = instant(options.now)
+  settleProgrammeCycleInState(state, cycle.id, options)
+  return programmeCycleItems(state, cycle, { ...options, today }).find(candidate => candidate.instanceId === instanceId)
+}
+
+export function prepareProgrammeStartInState(state, requested, options = {}) {
+  const cycle = namespace(state).cycles.find(cycle => cycle.id === requested.cycleId && cycle.status === 'active')
+  if (!cycle) throw new Error('Active Programme cycle not found')
+  const today = options.today || localDate(options.now ?? Date.now(), cycle.timeZone || 'UTC')
+  const items = programmeCycleItems(state, cycle, { ...options, today })
+  const item = items.find(item => item.instanceId === requested.instanceId)
+  if (!item || item.status === 'skipped') throw new Error('Programme session is no longer available')
+  const first = items.find(candidate => !programmeItemSettled(candidate))
+  if (item.status !== 'completed' && first?.date < today && first.instanceId !== item.instanceId) throw new Error('Complete or skip the earlier Programme session first.')
+  if (item.status !== 'completed' && (item.date < today || cycle.carryInstanceId === item.instanceId)) {
+    return resolveOverdueProgrammeInState(state, cycle.id, item.instanceId, 'carry', { ...options, today })
+  }
+  return item
 }
 
 export function programmeStartDisposition(active, item) {
@@ -395,26 +471,25 @@ export function programmeStartDisposition(active, item) {
 }
 
 // Keep duplicate routines separate when they belong to different Programme occurrences.
-export function programmeSessionsForDate(state, date) {
+export function programmeSessionsForDate(state, date, options = {}) {
   if (!state.programmeMode) return []
-  return activeProgrammeCycles(state).flatMap(cycle => programmeCycleItems(state, cycle)
-    .filter(item => item.date === date)
+  return activeProgrammeCycles(state).flatMap(cycle => programmeCycleItems(state, cycle, options)
+    .filter(item => item.date === date && item.status !== 'skipped')
     .map(item => ({ ...item, programmeName: cycle.name, colour: cycle.colour })))
     .sort(compareOccurrences)
 }
 
-// Home and Start share the next overdue occurrence; the dated calendar stays unchanged.
+// An unresolved overdue occurrence takes precedence over today's later sessions.
 export function programmeSessionsForStart(state, date, today = todayISO()) {
-  const scheduled = programmeSessionsForDate(state, date)
+  const scheduled = programmeSessionsForDate(state, date, { today })
   if (!state.programmeMode || date !== today) return scheduled
   const overdue = activeProgrammeCycles(state).flatMap(cycle => {
-    if (scheduled.some(item => item.cycleId === cycle.id)) return []
-    const item = programmeCycleItems(state, cycle)
-      .filter(item => item.date < today && item.status !== 'completed')
+    const item = programmeCycleItems(state, cycle, { today })
+      .filter(item => item.date < today && !programmeItemSettled(item))
       .sort(compareOccurrences)[0]
     return item ? [{ ...item, programmeName: cycle.name, colour: cycle.colour }] : []
   })
-  return [...overdue, ...scheduled]
+  return [...overdue, ...scheduled.filter(item => !overdue.some(older => older.cycleId === item.cycleId))]
 }
 
 export function programmeWorkoutSource(item) {
@@ -432,10 +507,9 @@ export function programmeWorkoutSource(item) {
 export function settleProgrammeCycleInState(state, cycleId, options = {}) {
   const cycle = namespace(state).cycles.find(item => item.id === cycleId && item.status === 'active')
   if (!cycle) return false
-  const sessions = materialize(cycle)
-  const completed = completedInstances(state, cycle.id)
+  const sessions = programmeCycleItems(state, cycle, options)
   if (!sessions.length || new Set(sessions.map(item => item.instanceId)).size !== sessions.length) return false
-  if (!sessions.every(item => completed.has(item.instanceId))) return false
+  if (!sessions.every(programmeItemSettled)) return false
   completeProgrammeCycleInState(state, cycle.id, { ...options, reason: 'completed' })
   return true
 }

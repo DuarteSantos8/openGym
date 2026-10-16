@@ -1,4 +1,4 @@
-import { programmeCycleItems, programmeWeekMode } from './programmes.js'
+import { programmeCycleItems, programmeWeekMode, programmeCurrentWeek } from './programmes.js'
 import { lastEntryFor, modeOf } from './history.js'
 import { nextPrescription, POLICIES_FOR } from './progression.js'
 import { EXIDX } from './exercises.js'
@@ -37,11 +37,8 @@ function targetText(target, cfg, mode, unit) {
   return weight > 0 ? weight + ' ' + unit + ' × ' + reps : reps + ' reps'
 }
 export function programmeTimelineForCycle(state, cycle, options = {}) {
-  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: cycle.timeZone || 'UTC', year:'numeric',month:'2-digit',day:'2-digit' }).formatToParts(new Date(options.now ?? Date.now()))
-  const part = type => parts.find(value => value.type === type).value
-  const today = part('year') + '-' + part('month') + '-' + part('day')
-  const currentWeek = Math.max(1, Math.min(cycle.lengthWeeks || 1, Math.floor((Date.parse(today)-Date.parse(cycle.week1StartDate))/604800000)+1))
-  const items = programmeCycleItems(state, cycle)
+  const currentWeek = programmeCurrentWeek(state, cycle, options)
+  const items = programmeCycleItems(state, cycle, options)
   const weeks = (cycle.snapshot?.weeks || []).map((week,index) => ({ index:index+1, mode:programmeWeekMode(week.mode), items:items.filter(item=>item.weekIndex===index+1).map(item=>{
     const routine = item.routineSnapshot || {}, configs = routine.ex || []
     return { ...item, projectedDate:item.date, exercises:configs.map((cfg,index)=>{

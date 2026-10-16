@@ -1,5 +1,8 @@
 // Italian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Overdue": "In ritardo",
+  "Do now": "Inizia ora",
+  "Missed": "Saltata",
   'Confirm': 'Conferma',
   'Cancel': 'Annulla',
   'Press back again to exit': 'Premi di nuovo indietro per uscire',

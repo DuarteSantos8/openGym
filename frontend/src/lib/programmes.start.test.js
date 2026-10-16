@@ -20,11 +20,11 @@ describe('programme start choices', () => {
     expect(state).toEqual(before)
   })
 
-  it('keeps scheduled occurrences ahead of catch-up work even when today is completed', () => {
+  it('keeps overdue work visible even when a later session today is completed', () => {
     const state = fixture()
     const today = programmeSessionsForDate(state, '2026-09-01')[0]
     state.workouts.push({ cycleId: 'cycle', programmeInstanceId: today.instanceId })
-    expect(programmeSessionsForStart(state, '2026-09-01', '2026-09-01')).toEqual([{ ...today, status: 'completed' }])
+    expect(programmeSessionsForStart(state, '2026-09-01', '2026-09-01')).toEqual([programmeSessionsForDate(state, '2026-08-31')[0]])
   })
 
   it('does not add overdue work to other dates or while programme mode is off', () => {

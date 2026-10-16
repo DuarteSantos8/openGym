@@ -1,5 +1,8 @@
 // Spanish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Overdue": "Atrasada",
+  "Do now": "Hacer ahora",
+  "Missed": "Perdida",
   'Confirm': 'Confirmar',
   'Cancel': 'Cancelar',
   'Press back again to exit': 'Pulsa atrás otra vez para salir',

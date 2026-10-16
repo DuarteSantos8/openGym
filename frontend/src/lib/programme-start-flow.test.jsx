@@ -13,6 +13,14 @@ const item = instanceId => ({
   routineSnapshot: { id: 'push', name: 'Frozen Push', prog: 'off', ex: [] },
 })
 
+function registerSource(source) {
+  const template = source.instanceId.slice(source.cycleId.length + 1)
+  useStore.getState().update(state => {
+    state.programmes.cycles = [{ id: source.cycleId, programmeId: source.programmeId, status: 'active', name: 'Block', timeZone: 'UTC', weekStart: 1, week1StartDate: '2026-02-02', lengthWeeks: source.weekIndex,
+      snapshot: { weeks: Array.from({length:source.weekIndex}, (_,i) => i+1===source.weekIndex ? {days:[{weekday:1,sessions:[{...source,id:template,sessionTemplateId:template}]}]} : {mode:'rest',days:[]}) } }]
+  })
+}
+
 describe('Programme workout start boundary', () => {
   const navigate = vi.fn()
   beforeEach(() => {
@@ -23,6 +31,7 @@ describe('Programme workout start boundary', () => {
 
   it('seeds from the frozen snapshot and writes additive provenance', () => {
     const source = item('cycle-1:session-1')
+    registerSource(source)
     expect(beginWorkout('push', 82, source)).toBe('start')
     expect(useStore.getState().S.active).toMatchObject({
       routineIds: ['push'], name: 'Frozen Push', bw: 82, programmeId: 'programme-1', cycleId: 'cycle-1',
@@ -67,12 +76,12 @@ it('starts Programme targets independently of global confirmed weights and prese
  const source=item('cycle-1:session-2');source.weekIndex=2;source.date='2026-02-09';source.routineSnapshot.ex=[cfg,{...cfg}];
  const history={unit:'kg',d:'2026-02-02',programmeInstance:{cycleId:'cycle-1',instanceId:'cycle-1:session-1',weekIndex:1},entries:[30,40].map((weight,i)=>({id:'fixture',occurrenceId:'fixture#'+(i+1),target:{...cfg,weight},sets:[{w:weight,r:5,done:true}]}))};
  useStore.setState({S:{...structuredClone(DEF),unit:'kg',active:null,exWeights:{fixture:{w:200}},workouts:[history,{...history,programmeInstance:{...history.programmeInstance,cycleId:'other'}}]}});
- beginWorkout('push',82,source);const active=useStore.getState().S.active;
+ registerSource(source);beginWorkout('push',82,source);const active=useStore.getState().S.active;
  expect(active.entries.map(entry=>entry.sets[0].w)).toEqual([32.5,42.5]);
  active.entries.forEach(entry=>{entry.sets[0].done=true});const completed=buildCompletedWorkout(active);
  expect(completed.unit).toBe('kg');expect(completed.entries.map(entry=>entry.occurrenceId)).toEqual(['fixture#1','fixture#2']);
  useStore.setState({S:{...structuredClone(DEF),unit:'kg',active:null,exWeights:{fixture:{w:200}},workouts:[]}});
- beginWorkout('push',82,source);expect(useStore.getState().S.active.entries.map(entry=>entry.sets[0].w)).toEqual([20,20]);
+ registerSource(source);beginWorkout('push',82,source);expect(useStore.getState().S.active.entries.map(entry=>entry.sets[0].w)).toEqual([20,20]);
 });
 
 it('keeps authored order and progresses the second of two same-day sessions from the first', () => {

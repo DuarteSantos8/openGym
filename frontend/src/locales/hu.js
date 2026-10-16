@@ -1,5 +1,8 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Overdue": "Elmaradt",
+  "Do now": "Kezdés most",
+  "Missed": "Kihagyva",
   // --- generic ---
   'Confirm': 'Megerősítés',
   'Cancel': 'Mégse',
