@@ -140,8 +140,10 @@ export function getState() {
       // field the app added since the snapshot was last saved shows up undefined-safe.
       _state = Object.assign({}, defaultsShape(), fresh)
       _loadedMtime = mtime
-    } else if (_state === undefined) {
-      _state = null  // no state file at all — never signed in on a device
+    } else {
+      // It can disappear after stat but before read too (for example during replacement).
+      _state = null
+      _loadedMtime = 0
     }
   }
   return _state
