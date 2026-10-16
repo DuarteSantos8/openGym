@@ -120,3 +120,52 @@ describe('the "which profile?" error is a config message, not a roster', () => {
     })
   }
 })
+
+
+describe('mtime fallback after the state file changes', () => {
+  test('forgets a deleted file and reads its replacement when watching is unavailable', async () => {
+    const dir = mk({ 'db.json': DB, 'state-alex.json': JSON.stringify({ unit: 'lb', routines: [{ id: 'old', name: 'Old', ex: [] }] }) })
+    const file = path.join(dir, 'state-alex.json')
+    const watch = vi.spyOn(fs, 'watch').mockImplementation(() => { throw new Error('watch unavailable') })
+    try {
+      const { getState } = await load(dir)
+      expect(getState().routines[0].id).toBe('old')
+      const original = fs.statSync(file)
+      fs.unlinkSync(file)
+      expect(getState()).toBeNull()
+      fs.writeFileSync(file, JSON.stringify({ routines: [{ id: 'replacement', name: 'New', ex: [] }] }))
+      fs.utimesSync(file, original.atime, original.mtime)
+      expect(getState().routines[0].id).toBe('replacement')
+      expect(getState().unit).toBe('kg')
+      fs.writeFileSync(file, JSON.stringify({ unit: 'lb', routines: [] }))
+      // Distinct actual filesystem metadata, without depending on timestamp precision.
+      const later = new Date(Date.now() + 2000)
+      fs.utimesSync(file, later, later)
+      expect(getState().unit).toBe('lb')
+      expect(getState().routines).toEqual([])
+    } finally { watch.mockRestore() }
+  })
+
+  const asRoot = typeof process.getuid === 'function' && process.getuid() === 0
+  test.skipIf(asRoot)('reports a lost directory permission instead of returning the cached profile', async () => {
+    const dir = mk({ 'db.json': DB, 'state-alex.json': JSON.stringify({ unit: 'lb' }) })
+    const watch = vi.spyOn(fs, 'watch').mockImplementation(() => { throw new Error('watch unavailable') })
+    try {
+      const { getState } = await load(dir)
+      expect(getState().unit).toBe('lb')
+      fs.chmodSync(dir, 0o000)
+      let error
+      try { getState() } catch (e) { error = e }
+      expect(error?.code).toBe('EIO')
+      expect(error.message).toMatch(/cannot read state-alex\.json: EACCES/)
+      expect(error.message).not.toContain(dir)
+    } finally { fs.chmodSync(dir, 0o700); watch.mockRestore() }
+  })
+
+  test('the test-only in-memory seed still needs no backing file', async () => {
+    const { _seedStateForTests, getState } = await load(mk({ 'db.json': DB }))
+    const state = { unit: 'lb', routines: [] }
+    _seedStateForTests(state)
+    expect(getState()).toBe(state)
+  })
+})

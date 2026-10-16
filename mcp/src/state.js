@@ -115,12 +115,23 @@ export function init() {
 // Returns the state object, or null for a fresh account that never signed in on a device.
 export function getState() {
   init()
+  // The test-only seed has no backing file; ordinary profiles always consult the filesystem.
+  if (_loadedMtime === Number.MAX_SAFE_INTEGER) return _state
   const file = stateFile(_uid)
   // Re-read if the file's mtime changed since our last load — covers watcher omissions and
   // platforms with no fs.watch.
   let mtime
-  try { mtime = fs.statSync(file).mtimeMs } catch {
-    return _state === undefined ? null : _state
+  try { mtime = fs.statSync(file).mtimeMs } catch (e) {
+    if (e.code !== 'ENOENT') {
+      const err = new Error(`cannot read ${path.basename(file)}: ${e.code || e.name}`)
+      err.code = 'EIO'
+      throw err
+    }
+    // A removed file is no longer a cached profile. Reset the timestamp too so a replacement
+    // with the same mtime is read on the next call, even when fs.watch is unavailable.
+    _state = null
+    _loadedMtime = 0
+    return null
   }
   if (_state === undefined || mtime !== _loadedMtime) {
     const fresh = readJsonOrNull(file)
