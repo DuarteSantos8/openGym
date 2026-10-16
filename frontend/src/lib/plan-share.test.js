@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { buildPlanBundle, mergePlan, parsePlan } from './plan-share.js'
+import { modeOf, exLine } from './history.js'
 
 // There was no test file for plan sharing at all, which is how a whole prescription field
 // went missing without anyone noticing.
@@ -61,6 +62,22 @@ describe('plan-share units', () => {
 })
 
 describe('what survives a shared plan', () => {
+  it('keeps cardio targets through export, import and merge even outside the cardio catalogue (#640)', () => {
+    for (const id of ['0549', '1160']) {
+      const prescription = { id, sets: 2, mode: 'cardio', min: 15, speed: 10 }
+      const source = { unit: 'kg', routines: [{ id: 'r1', name: 'Finisher', ex: [prescription] }], week: {}, customEx: [] }
+      const exported = buildPlanBundle(source, 'Finisher')
+      expect(exported.routines[0].ex[0]).toEqual(prescription)
+      const imported = parsePlan(JSON.stringify(exported))
+      const target = { unit: 'kg', routines: [], week: {}, customEx: [] }
+      mergePlan(target, imported)
+      const entry = target.routines[0].ex[0]
+      expect(entry).toEqual(prescription)
+      expect(modeOf(entry)).toBe('cardio')
+      expect(exLine(entry, 'kg')).toBe(exLine(prescription, 'kg'))
+    }
+  })
+
   it('carries Per side on a timed hold, and on reps work; never on cardio', () => {
     const hold = roundTrip({ mode: 'time', sec: 30, sets: 2, reps: undefined, weight: undefined, side: true })
     expect(hold).toMatchObject({ mode: 'time', sec: 30, sets: 2, side: true })

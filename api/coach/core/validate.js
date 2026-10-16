@@ -128,6 +128,7 @@ export function validatePlan(data, ctx = {}) {
       const mode = MODES.includes(e.mode) ? e.mode : 'reps';
       const perSide = !!e.side;
       if (mode === 'cardio') {
+        clean.mode = 'cardio';
         clean.min = isInt(e.min, 1, 180) ? e.min : 20;
         clean.speed = isNum(e.speed) && e.speed > 0 && e.speed <= MAX_SPEED ? e.speed : 8;
       } else if (mode === 'time') {
