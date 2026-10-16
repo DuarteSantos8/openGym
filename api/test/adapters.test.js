@@ -11,7 +11,7 @@ import { tempData } from './helpers.mjs';
 tempData();
 const { adapterFor, default: ADAPTERS } = await import('../coach/adapters/index.js');
 const { LOCKDOWN } = await import('../coach/adapters/claude.js');
-const { argvFor } = await import('../coach/adapters/codex.js');
+const { argvFor, DISABLED_FEATURES } = await import('../coach/adapters/codex.js');
 const cfg = await import('../coach/config.js');
 
 test('every provider the config offers has an adapter, and vice versa', () => {
@@ -76,7 +76,15 @@ test('the Codex adapter runs with the three flags that keep host state out of a 
   // session files being written, and --skip-git-repo-check is what lets the bare mkdtemp job dir
   // run at all. Dropping any of them was a green build before this test existed.
   assert.deepEqual(argvFor(null), [
-    'exec', '-', '--skip-git-repo-check', '--ephemeral', '--ignore-user-config'
+    'exec', '-', '--skip-git-repo-check', '--ephemeral', '--ignore-user-config',
+    ...DISABLED_FEATURES.flatMap(f => ['--disable', f]), '-c', 'web_search="disabled"'
+  ]);
+  assert.deepEqual(DISABLED_FEATURES, [
+    'auth_elicitation', 'shell_tool', 'unified_exec', 'shell_snapshot', 'view_image',
+    'browser_use', 'browser_use_external', 'browser_use_full_cdp_access', 'in_app_browser',
+    'computer_use', 'apps', 'plugins', 'plugin_sharing', 'remote_plugin', 'multi_agent',
+    'skill_search', 'skill_mcp_dependency_install', 'workspace_dependencies', 'image_generation',
+    'hooks', 'code_mode_host', 'tool_suggest'
   ]);
 });
 

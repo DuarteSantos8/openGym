@@ -455,17 +455,19 @@ function removeJobDir(jobDir, ids) {
   try { fs.rmSync(jobDir, { recursive: true, force: true }); } catch { /* leaked, not fatal */ }
 }
 
-export async function testRun() {
+export async function testRun(uid) {
   const cfg = cfgStore.load();
   const adapter = adapterFor(cfg.provider);
   if (!adapter) return { ok: false, error: 'no provider configured' };
+  const credential = cfgStore.credentialFor(uid || cfgStore.boundUidFor(cfg));
+  if (cfg.provider === 'codex' && !credential.ok) return { ok: false, error: credential.message || 'connect a Codex credential before testing' };
   const jobDir = adapter.spawns === false ? null : fs.mkdtempSync(path.join(os.tmpdir(), 'coach-test-'));
   try {
     // No user asked for this, so there is no profile whose account is being spent. In instance
     // mode that is the bound profile's credential — the one the round-trip is meant to prove —
     // and in per-profile mode it is nobody's, which is the honest answer: an admin cannot test
     // a credential that belongs to a profile.
-    const env = cfgStore.jobEnv(jobDir || os.tmpdir(), cfgStore.credentialFor(cfgStore.boundUidFor(cfg)));
+    const env = cfgStore.jobEnv(jobDir || os.tmpdir(), credential);
     const ids = jobDir && unprivilegedIds();
     if (ids) shareJobDir(jobDir, ids);
     const check = await adapter.check(cfg, env);

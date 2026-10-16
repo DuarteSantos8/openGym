@@ -42,6 +42,10 @@ const FILE = path.join(DATA, 'coach.json');
  * So the runtime gets its own mount, and the backup instructions stay true rather than being
  * quietly wrong about what they capture. */
 export const CREDENTIAL_HOME = process.env.COACH_CREDENTIAL_DIR || '/coach-auth';
+export const codexAuthFile = () => path.join(CREDENTIAL_HOME, 'auth.json');
+export function hasCodexAuth() {
+  try { return fs.lstatSync(codexAuthFile()).isFile(); } catch { return false; }
+}
 export const COACH_DISABLED = /^(1|true|yes|on)$/i.test(process.env.COACH_DISABLED || '');
 
 // Providers this build can drive. `runtime` is what the adapter runs. Adding one is an adapter
@@ -63,7 +67,7 @@ export const PROVIDERS = {
   // somewhere is CREDENTIAL_HOME — outside ./data, so `tar czf … data/` cannot capture it.
   codex: {
     label: 'Codex (OpenAI)', runtime: 'Codex CLI',
-    apiKeyEnv: 'CODEX_API_KEY', oauthEnv: null, credentialHomeEnv: 'CODEX_HOME'
+    apiKeyEnv: 'CODEX_API_KEY', oauthEnv: null, credentialHomeEnv: 'CODEX_HOME', deviceLogin: true
   },
   // The plain-HTTPS providers — Anthropic, OpenAI, Gemini and any OpenAI-compatible endpoint.
   // Described once in core/providers.js so the phone's picker and this table cannot disagree.
@@ -256,6 +260,12 @@ export function credentialFor(uid) {
     return { ok: false, reason: 'shared-account', message: SHARED_ACCOUNT_REFUSAL, mode: 'instance' };
   }
   const rec = authFor(cfg);
+  if (cfg.provider === 'codex' && rec?.type === 'chatgpt-cli') {
+    if (!uid || rec.ownerUid !== uid || bound !== uid) return { ok: false, reason: 'shared-account', message: SHARED_ACCOUNT_REFUSAL, mode: 'instance' };
+    return hasCodexAuth()
+      ? { ok: true, auth: null, type: 'chatgpt-cli', account: rec.account || null, mode: 'instance' }
+      : { ok: false, reason: 'no-credential', mode: 'instance' };
+  }
   const auth = rec && rec.data ? decrypt(rec.data) : null;
   if (!auth || !auth.token) {
     // An endpoint that takes no key (a model on the LAN) is connected without one. Only when
@@ -273,7 +283,7 @@ export function credentialFor(uid) {
    the provider terms forbid. An API key is what an admin pastes so their household can use the
    Coach; binding it to whoever happened to click first would just look broken, and the daily
    caps are what bound its spend. */
-export const isPersonalCredential = type => type === 'cli-token' || type === 'oauth';
+export const isPersonalCredential = type => type === 'cli-token' || type === 'oauth' || type === 'chatgpt-cli';
 
 /** First profile to actually spend the instance credential binds it — a personal credential
  *  only; an API key is shared by every profile on the instance. */
@@ -320,6 +330,7 @@ export function isConnected() {
   if (cfg.authMode === 'profile') return true;
   const rec = authFor(cfg);
   if (!rec) return !!providerMeta(cfg).keyOptional && !!baseUrlFor(cfg.provider, cfg);
+  if (cfg.provider === 'codex' && rec.type === 'chatgpt-cli') return !!rec.ownerUid && boundUidFor(cfg) === rec.ownerUid && hasCodexAuth();
   return !!decrypt(rec.data);
 }
 
@@ -349,7 +360,7 @@ export function jobEnv(jobDir, resolved) {
   // A provider whose runtime keeps its own credential cache needs a home that survives the job,
   // because HOME is a temp dir that dies with it. It is deliberately NOT under ./data — see
   // CREDENTIAL_HOME — so the documented backup of ./data cannot pick up a live refresh token.
-  if (meta.credentialHomeEnv) env[meta.credentialHomeEnv] = CREDENTIAL_HOME;
+  if (meta.credentialHomeEnv) env[meta.credentialHomeEnv] = resolved?.type === 'apikey' ? jobDir : CREDENTIAL_HOME;
   return env;
 }
 
