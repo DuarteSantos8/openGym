@@ -5,6 +5,10 @@
   "type": "module",
   "description": "MCP (Model Context Protocol) bridge for Gains — lets an external LLM read your routines, workouts, body-weight log, estimated 1RMs and muscle balance from your self-hosted data. Read-only, stdio transport; no extra container.",
   "license": "AGPL-3.0-or-later",
+  "packageManager": "npm@10.9.9",
+  "engines": {
+    "npm": ">=10 <11"
+  },
   "main": "src/index.js",
   "bin": {
     "gains-mcp": "src/index.js"

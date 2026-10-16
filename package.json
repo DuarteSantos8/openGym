@@ -1,4 +1,8 @@
 {
+  "packageManager": "npm@10.9.9",
+  "engines": {
+    "npm": ">=10 <11"
+  },
   "devDependencies": {
     "js-yaml": "^4.1.0"
   }

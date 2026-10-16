@@ -5,6 +5,10 @@
   "type": "module",
   "main": "server.js",
   "license": "AGPL-3.0-or-later",
+  "packageManager": "npm@10.9.9",
+  "engines": {
+    "npm": ">=10 <11"
+  },
   "scripts": {
     "start": "node server.js",
     "test": "node --test test/*.test.js"
