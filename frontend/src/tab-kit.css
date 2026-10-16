@@ -32,6 +32,13 @@
 .hdr-slot{flex:none;display:flex;margin-inline-start:calc(-1 * var(--space-4))}
 .hdr-slot-in{display:flex;padding-inline-start:var(--space-4)}
 .hdr-slot-in>.iconbtn{width:var(--hdr-btn);height:var(--hdr-btn);font-size:20px;box-shadow:var(--ring-hair),var(--shadow-card)}
+/* A context readout (Nutrition's "N left"): a text pill, 44px to tap, in the same chrome. */
+.hdr-slot-in>.hdr-left{
+  min-height:var(--tap-min);padding-inline:12px;border-radius:var(--r-pill);white-space:nowrap;
+  background:var(--surface);box-shadow:var(--ring-hair),var(--shadow-card);
+  font-size:var(--fs-subhead);font-weight:var(--fw-medium);color:var(--acc-ink);font-variant-numeric:tabular-nums;
+}
+.hdr-slot-in>.hdr-left.over{color:var(--orange-ink)}
 
 /* The search pill: the real input, 40px, the same surface as the avatar beside it. */
 .spill{
@@ -138,8 +145,7 @@
 /* WeekStrip: seven equal days. A horizontal swipe changes the week, so the strip keeps vertical
    panning for the page and takes the horizontal drag itself. */
 .wk-strip{touch-action:pan-y;overflow:hidden;margin-bottom:var(--space-6)}
-.wk-days{display:grid;grid-template-columns:repeat(7,1fr);gap:var(--space-1)}
-.wk-days.from-next{animation:wk-in-next var(--med) var(--ease)}
+.wk-days{display:grid;grid-template-columns:repeat(7,1fr);gap:var(--space-1)}.wk-days.from-next{animation:wk-in-next var(--med) var(--ease)}
 .wk-days.from-prev{animation:wk-in-prev var(--med) var(--ease)}
 @keyframes wk-in-next{from{transform:translateX(24px);opacity:0}}
 @keyframes wk-in-prev{from{transform:translateX(-24px);opacity:0}}
@@ -151,6 +157,9 @@
   transition:background var(--fast) var(--ease),transform var(--fast) var(--ease);
 }
 .wk-d:active{transform:scale(.96)}
+/* 7 days at their 44px floor plus the gaps need 320px of content: a 320px screen has 288, so the
+   floor gives way there (a day is still 64px tall) and the gaps close, or Sunday is cut off. */
+@media (width <= 340px){.wk-days{gap:0;grid-template-columns:repeat(7,minmax(0,1fr))}.wk-d{min-width:0}}
 .wk-n{font-size:var(--fs-footnote);color:var(--label-2)}
 .wk-num{font-size:var(--fs-body);font-variant-numeric:tabular-nums}
 .wk-dot{width:5px;height:5px;margin-top:2px;border-radius:50%}
@@ -225,7 +234,7 @@
 /* ActionRow / ActionButton: 56px discs on the card surface, none filled (Owner decision 7). */
 .act-row{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:var(--space-4);padding-block:var(--space-4)}
 .act-b{
-  display:flex;flex-direction:column;align-items:center;gap:var(--space-4);min-width:72px;min-height:88px;
+  display:flex;flex-direction:column;align-items:center;gap:var(--space-4);min-width:0;min-height:88px;
   color:var(--label);text-align:center;
 }
 .act-d{

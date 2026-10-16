@@ -20,12 +20,6 @@
 /* The headers of a tab's root and of the pages under it live in tab-kit.css. */
 
 /* --- hubs --- */
-.hub-tiles{margin-bottom:16px}
-.tile.hub-tile{cursor:pointer;display:flex;flex-direction:column;gap:2px;min-height:96px}
-/* StatTile's (FoodHub): the icon over the title in .l, the line under it in .v. */
-.tile.hub-tile .l{flex-direction:column;align-items:flex-start;gap:2px;color:var(--label);font-size:17px;font-weight:600;letter-spacing:-.012em}
-.tile.hub-tile .l .icn{font-size:22px;color:var(--acc-ink);margin-bottom:6px}
-.tile.hub-tile .v{font-size:13px;font-weight:400;letter-spacing:0;line-height:inherit;margin-top:0;color:var(--label-2)}
 /* "Resume · 12:34" on the Today card stays one tag, never broken over two lines. */
 .today-row .tag{white-space:nowrap;flex:none}
 .card>.today-row:first-child{margin-top:0}

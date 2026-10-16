@@ -1,7 +1,6 @@
-/* The diary (Nutrition's root) and its logging sheets: the calories ring, water, meals and
-   activity rows, Home's meal pills, the food picker and the amount sheets. Reads the tokens in
-   index.css only; the macro colours are --macro-* (always P · C · F, always labelled). Loaded
-   after tab-shell.css. */
+/* The diary (Nutrition's root) and its logging sheets: water, meals and activity rows, Home's
+   meal pills, the food picker and the amount sheets. Reads the tokens in index.css only; the
+   macro colours are --macro-* (always P · C · F, always labelled). Loaded after tab-shell.css. */
 
 /* Icon tints for the .lrow-i squares these cards lead with. */
 .tint-blue{--tint:var(--blue)}
@@ -10,42 +9,26 @@
 .tint-teal{--tint:var(--teal)}
 .tint-quiet{--tint:var(--surface-3)}
 .tint-quiet .icn{color:var(--label)}
-.nt-lead{min-width:0}
-
-/* --- what is left, pinned under the tab-root header once the calories card is gone. No height
-   of its own: the pill comes and goes without moving the page. --- */
-.kcal-left-bar{position:sticky;top:calc(var(--sat) + var(--conn) + var(--hdr-h));z-index:5;height:0}
-.kcal-left-pill{
-  position:absolute;top:var(--space-2);inset-inline-end:0;padding:6px 12px;border-radius:var(--r-pill);
-  background:var(--surface);box-shadow:var(--ring-hair),var(--shadow-card);
-  font-size:var(--fs-subhead);font-weight:var(--fw-medium);color:var(--acc-ink);white-space:nowrap;
-}
-.kcal-left-pill.over{color:var(--orange-ink)}
 
 /* --- Home's meal pills: the meal, then its energy or a + --- */
 .meal-pill-v{margin-inline-start:6px;color:var(--label-2);font-variant-numeric:tabular-nums}
 .meal-pills .chip .icn{margin-inline-start:4px;font-size:14px}
 
-/* --- calories ring + macros --- */
-.kcal-card.loading{opacity:.6}
-.kcal-top{position:relative;display:flex;align-items:center;gap:16px;margin-bottom:12px}
-.kcal-ring{width:112px;height:112px;flex:none}
-.kcal-ring circle{fill:none;stroke-width:9}
-.kcal-ring-bg{stroke:var(--surface-2)}
-.kcal-ring-fg{stroke:var(--acc);stroke-linecap:round;transition:stroke-dashoffset var(--med) var(--ease)}
-.kcal-ring-fg.over{stroke:var(--orange)}
-.kcal-mid{position:absolute;inset-inline-start:0;width:112px;text-align:center}
-.kcal-left{font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
-.kcal-side{display:flex;flex-direction:column;gap:4px}
-.macro-bar{margin-top:8px}
+/* --- macros: the dots that key P · C · F, and the track the fasting card fills --- */
 .macro-track{height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden;margin-top:4px}
 .macro-track>i{display:block;height:100%;border-radius:3px;background:var(--acc)}
-.macro-track>i.p,.mdot.p{background:var(--macro-protein)}
-.macro-track>i.c,.mdot.c{background:var(--macro-carbs)}
-.macro-track>i.f,.mdot.f{background:var(--macro-fat)}
-.water-track>i{background:var(--blue)}
+.mdot.p{background:var(--macro-protein)}
+.mdot.c{background:var(--macro-carbs)}
+.mdot.f{background:var(--macro-fat)}
 .mdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-inline-end:6px;vertical-align:middle}
 .macro-line{display:flex;flex-wrap:wrap;gap:4px 12px;color:var(--label-2)}
+
+/* --- water: the diary's row, its quick-adds at the end --- */
+.water-adds{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:var(--space-3)}
+/* Three containers or more do not fit beside the title and total on a phone: the title column was
+   left 80px and the total wrapped to four lines. They take a row of their own under it instead. */
+.water-card .lrow:has(.water-adds button:nth-child(3)){flex-wrap:wrap}
+.water-card .lrow:has(.water-adds button:nth-child(3)) .water-adds{flex-basis:100%;justify-content:flex-start}
 
 /* --- meals --- */
 .meals-card{padding-block:4px}
@@ -65,6 +48,11 @@
 .meal-item .tt,.activity-row .tt{display:block;font-size:15px}
 .meal-item .ss,.activity-row .ss{display:block}
 .meal-picker{padding-bottom:12px}
+/* yesterday's meal, inside today's empty one */
+.meal-again{display:flex;align-items:center;gap:var(--space-4);padding-bottom:var(--space-4)}
+.meal-again .grow{min-width:0}
+.meal-again .tt{display:block;font-size:var(--fs-subhead);font-weight:var(--fw-medium)}
+.meal-again .ss{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .meal-picker .item{background:var(--surface-2)}
 .activity-rows{padding-top:4px}
 .activity-rows ul{list-style:none;margin:0;padding:0}

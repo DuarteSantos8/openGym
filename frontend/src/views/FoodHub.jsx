@@ -1,52 +1,46 @@
 import { useEffect, useState } from 'react'
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import { fmtDur, isoOf, todayISO } from '../lib/format.js'
-import { t, tn } from '../lib/i18n.js'
+import { useLocation, useSearchParams } from 'react-router-dom'
+import { isoOf, todayISO } from '../lib/format.js'
+import { t } from '../lib/i18n.js'
 import { useDiarySelection, useDiaryTarget } from '../lib/nutrition/selection.js'
-import { progressOf } from '../lib/nutrition/fasting.js'
-import { useNutrition } from '../lib/nutrition/store.js'
-import { useFasting, useNow } from '../lib/nutrition/use-fasting.js'
 import { useDiaryDay } from '../lib/nutrition/use-diary-day.js'
-import { useUnits } from '../lib/nutrition/use-units.js'
 import { useScrolledPast } from '../lib/use-scrolled-past.js'
-import { Card, EmptyState, StatTile, Tiles } from '../components/blocks.jsx'
+import { EmptyState } from '../components/blocks.jsx'
 import { Page } from '../components/layout.jsx'
+import { LineArt } from '../components/line-art.jsx'
 import { SectionHeader, TabSection } from '../components/tab-kit.jsx'
 import DayNav from '../components/DayNav.jsx'
-import KcalLeftBar from '../components/KcalLeftBar.jsx'
-import CaloriesCard from '../components/CaloriesCard.jsx'
-import WaterCard from '../components/WaterCard.jsx'
+import KcalLeftButton from '../components/KcalLeftButton.jsx'
+import NutritionHero from '../components/NutritionHero.jsx'
+import NutritionMacros from '../components/NutritionMacros.jsx'
+import NutritionActions from '../components/NutritionActions.jsx'
 import MealsCard from '../components/MealsCard.jsx'
-import YesterdayMealRow from '../components/YesterdayMealRow.jsx'
+import TodayFastRow from '../components/TodayFastRow.jsx'
+import WaterCard from '../components/WaterCard.jsx'
+import NutritionLibrary from '../components/NutritionLibrary.jsx'
 
-// The pinned tab-root header (--hdr-h): the calories card counts as gone once it passes under it
-// (the hook adds the safe-area inset the header sits below).
+// The pinned tab-root header (--hdr-h): the hero counts as gone once it passes under it (the hook
+// adds the safe-area inset the header sits below).
 const HEADER_PX = 56
 
 // "2026-10-13" and a real day.
 const isDay = s => /^\d{4}-\d{2}-\d{2}$/.test(s) && isoOf(new Date(s + 'T12:00:00')) === s
 
-// The Nutrition tab's root: the diary for the day every tab shares (ux-redesign-tabs §4.2) —
-// energy and macros, water, the meals with their items and activity, yesterday's meal to log
-// again — then the places nutrition lives. A place gets a tile when its page exists.
+// The Nutrition tab's root (ux-redesign-tabs §4.2, Owner decision 9): the month and week on the
+// date every tab shares (a day to come is dimmed), the energy left as the hero, the action row,
+// the macros, then the diary for that day (the meals with their items, yesterday's meal inside
+// the empty one it matches, activity, the running fast and water) and the Library list. Once the
+// hero scrolls away, "N left" takes the header's context slot and scrolls back to the top. Without
+// nutrition (the phone build, a guest) it is one empty state.
 // `/food?date=YYYY-MM-DD` opens it on that day (today or before; a day to come is today).
 export default function FoodHub() {
-  const nav = useNavigate()
   const location = useLocation()
   const [params, setParams] = useSearchParams()
   const { date } = useDiaryTarget(null)
   const day = useDiaryDay(date)
-  const { on, status, settings, target, left } = day
-  const units = useUnits()
-  const foods = useNutrition(s => s.foods)
-  const meals = useNutrition(s => s.meals)
-  const recipes = useNutrition(s => s.recipes)
-  const { meal } = useDiaryTarget(settings)
-  const [kcalRef, kcalGone] = useScrolledPast(HEADER_PX)
-
-  const fastingOn = on && settings?.fastingEnabled === true
-  const fasting = useFasting()
-  const now = useNow(!!fasting.active, 30_000)
+  const { meal } = useDiaryTarget(day.settings)
+  const [heroRef, heroGone] = useScrolledPast(HEADER_PX)
+  const isToday = date === todayISO()
 
   // The deep link picks the day once, then leaves the address as the tab's own. `find` (a search's
   // Day result, `?date=&find=<uuid>`) is kept for that day: its meal opens and the entry flashes
@@ -63,51 +57,25 @@ export default function FoodHub() {
     setParams({}, { replace: true, state: location.state })
   }, [linked, findParam, setParams, location.state])
 
-  useEffect(() => {
-    if (!on) return
-    const n = useNutrition.getState()
-    n.loadFoods()
-    n.loadMeals({ recipes: false })
-    n.loadMeals({ recipes: true })
-  }, [on])
-  useEffect(() => {
-    if (fastingOn) useFasting.getState().load()
-  }, [fastingOn])
-
-  if (!on) {
+  if (!day.on) {
     return <Page root title={t('Nutrition')}>
-      <Card>
-        <EmptyState icon="utensils" title={t('Nutrition lives in the web app')}>{t('Sign in on the web app to log food and see your day here.')}</EmptyState>
-      </Card>
+      <EmptyState art={<LineArt scene="plate" />} title={t('Nutrition lives in the web app')}>
+        {t('Sign in on the web app to log food and see your day here.')}
+      </EmptyState>
     </Page>
   }
 
-  const fastingSub = !settings ? t('Loading…')
-    : !fastingOn ? t('Off')
-    : fasting.active ? fmtDur(progressOf(fasting.active, now).elapsedMs) : t('Start a fast')
-
-  // One entry per page that exists.
-  const targets = [
-    { path: '/food/foods', icon: 'apple', title: t('Foods'), sub: foods.status === 'ready' ? tn('{0} food', '{0} foods', foods.list.length) : t('Your own foods') },
-    { path: '/food/meals', icon: 'bookOpen', title: t('Saved meals'), sub: meals.status === 'ready' ? tn('{0} meal', '{0} meals', meals.list.length) : t('Loading…') },
-    { path: '/food/recipes', icon: 'cookingPot', title: t('Recipes'), sub: recipes.status === 'ready' ? tn('{0} recipe', '{0} recipes', recipes.list.length) : t('Loading…') },
-    { path: '/food/goals', icon: 'target', title: t('Goals'), sub: status === 'ready' ? units.energy(target.base) : t('Daily target') },
-    // Always there: the Fasting page is where fasting is switched on, so the way in cannot depend on it.
-    { path: '/food/fasting', icon: 'timer', title: t('Fasting'), sub: fastingSub },
-  ]
-
-  return <Page root title={t('Nutrition')}>
+  return <Page root title={t('Nutrition')} action={heroGone && day.status === 'ready' ? <KcalLeftButton left={day.left} /> : undefined}>
     <DayNav future="off" />
-    <KcalLeftBar left={kcalGone && status === 'ready' ? left : null} />
+    <TabSection><NutritionHero date={date} day={day} ref={heroRef} /></TabSection>
+    <TabSection><NutritionActions date={date} day={day} /></TabSection>
+    {day.status !== 'error' && <TabSection><NutritionMacros day={day} /></TabSection>}
     <TabSection>
-      <SectionHeader title={date === todayISO() ? t('Today’s diary') : t('Diary')} />
-      <CaloriesCard ref={kcalRef} day={day} />
+      <SectionHeader title={isToday ? t('Today’s diary') : t('Diary')} />
+      <MealsCard date={date} day={day} find={find && (!find.date || find.date === date) ? find.uuid : null} again={isToday ? meal : null} />
+      {isToday && <TodayFastRow />}
       <WaterCard date={date} water={day.water} ready={day.dayReady} />
-      <MealsCard date={date} day={day} find={find && (!find.date || find.date === date) ? find.uuid : null} />
-      {date === todayISO() && <YesterdayMealRow settings={settings} meal={meal} />}
     </TabSection>
-    <Tiles className="hub-tiles">
-      {targets.map(x => <StatTile key={x.path} className="hub-tile" icon={x.icon} label={x.title} value={x.sub} onClick={() => nav(x.path)} />)}
-    </Tiles>
+    <TabSection><NutritionLibrary day={day} /></TabSection>
   </Page>
 }

@@ -89,6 +89,15 @@ describe('HeroStatus', () => {
     expect($('.hero-num').classList.contains('ink-orange')).toBe(false)
     expect(() => render(<HeroStatus status="busy" />)).toThrow(/HeroStatus: status="busy"/)
   })
+
+  it('hands its box to `ref` while loading and once ready, so a page can watch it scroll away', () => {
+    const seen = []
+    const ref = el => { if (el) seen.push(el) }
+    render(<HeroStatus value="1" caption="y" status="loading" ref={ref} />)
+    expect(seen.at(-1)).toBe($('.hero'))
+    render(<HeroStatus value="1" caption="y" ref={ref} />)
+    expect(seen.at(-1)).toBe($('.hero'))
+  })
 })
 
 describe('ActionRow / ActionButton', () => {

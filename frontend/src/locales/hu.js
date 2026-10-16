@@ -107,7 +107,6 @@ export default {
   // --- nutrition diary on Home: English until the translation pass ---
   '{0} items': '{0} items',
   '{0} left': '{0} left',
-  '{0} of {1} eaten': '{0} of {1} eaten',
   '{0} over': '{0} over',
   '{0} over 7 days': '{0} over 7 days',
   '7 days': '7 days',
@@ -158,7 +157,6 @@ export default {
   'Snacks': 'Snacks',
   'Stop adding to {0}': 'Stop adding to {0}',
   'Tap a day to see it': 'Tap a day to see it',
-  'Target': 'Target',
   'The diary did not load: no connection.': 'The diary did not load: no connection.',
   'The diary did not load: you are signed out.': 'The diary did not load: you are signed out.',
   'The diary did not load.': 'The diary did not load.',
@@ -2790,6 +2788,8 @@ export default {
   'of {0}': '/ {0}',
   'over by {0}': 'túllépés: {0}',
   'Loading today': 'A mai nap betöltése',
+  'Loading {0}': 'Loading {0}',
+  'Log yesterday’s {0} again': 'Log yesterday’s {0} again',
   // --- the first-run onboarding (views/onboarding): English until the translation pass ---
   '0, just tracking food': '0, just tracking food',
   'A ready-made plan, one row per training day': 'A ready-made plan, one row per training day',
@@ -3132,4 +3132,9 @@ export default {
   'Nothing planned this week': 'Erre a hétre nincs semmi betervezve',
   'Pick exercises as you go': 'A gyakorlatokat edzés közben választod',
   'Start a freestyle workout': 'Szabad edzés indítása',
+
+  // --- the redesigned Nutrition tab ---
+  'Library': 'Könyvtár',
+  'Set targets': 'Célok beállítása',
+  '{0} eaten · {1} goal': '{0} elfogyasztva · cél {1}',
 }

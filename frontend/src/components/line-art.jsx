@@ -108,7 +108,20 @@ function equipment({ eq = 'bodyweight' }) {
   </>
 }
 
-const SCENES = { routine, mobility, scale, equipment }
+// A plate from above between a fork and a knife, a quarter of it lit in the accent: Nutrition
+// with nothing to show (the phone build, a guest).
+function plate() {
+  return <>
+    {FLOOR}
+    <circle className="il il-occ" cx="48" cy="36" r="22" {...at(1)} />
+    <circle className="il-d il-lit" cx="48" cy="36" r="14" {...at(2)} />
+    <path className="il" d="M12 12v10M16 12v10M20 12v10M12 22a4 4 0 0 0 8 0M16 26v32" {...at(3)} />
+    <path className="il" d="M80 12v46M80 12c5 5 5 14 0 18" {...at(4)} />
+    <path className="il-acc" d="M48 22a14 14 0 0 1 14 14" {...at(5)} />
+  </>
+}
+
+const SCENES = { routine, mobility, scale, equipment, plate }
 export const LINE_ART_SCENES = Object.keys(SCENES)
 
 export function LineArt({ scene, state = {}, className }) {

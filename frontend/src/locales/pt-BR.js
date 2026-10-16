@@ -1695,6 +1695,8 @@ export const PT_BR_OVERRIDES = {
   'of {0}': 'de {0}',
   'over by {0}': '{0} acima',
   'Loading today': 'Carregando hoje',
+  'Loading {0}': 'Loading {0}',
+  'Log yesterday’s {0} again': 'Log yesterday’s {0} again',
   // --- the first-run onboarding (views/onboarding): English until the translation pass ---
   '0, just tracking food': '0, just tracking food',
   'A ready-made plan, one row per training day': 'A ready-made plan, one row per training day',

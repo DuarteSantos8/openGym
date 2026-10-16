@@ -328,14 +328,14 @@ export function Section({ title, footer, children, className = '' }) {
 // instead of the tinted `icon` tile. accessory="add": a + disc of its own at the end (`onAdd`,
 // named `addLabel` or "Add to {title}"); the row is then no button itself, and its text opens it
 // (`onOpen`), so both stay reachable.
-export function Row({ icon, iconTint, glyph, title, subtitle, value, accessory = 'none', onClick, onOpen, onAdd, addLabel, danger, children, className = '' }) {
+export function Row({ icon, iconTint, glyph, title, titleId, subtitle, subtitleId, value, accessory = 'none', onClick, onOpen, onAdd, addLabel, danger, children, className = '' }) {
   oneOf('Row', 'accessory', accessory, ['none', 'chevron', 'check', 'add'])
   const add = accessory === 'add'
   if (import.meta.env.DEV && add && onClick) throw new Error('Row: accessory="add" takes onOpen and onAdd, not onClick')
   const Tag = onClick ? 'button' : 'div'
   const text = <>
-    <span className="lrow-t">{title}</span>
-    {subtitle && <span className="lrow-s">{subtitle}</span>}
+    <span className="lrow-t" id={titleId}>{title}</span>
+    {subtitle && <span className="lrow-s" id={subtitleId}>{subtitle}</span>}
   </>
   return (
     <Tag className={'lrow' + (onClick ? ' tap' : '') + (add ? ' lrow-add' : '') + (danger ? ' danger' : '') + ' ' + className} onClick={onClick}>

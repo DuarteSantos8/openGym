@@ -16,9 +16,11 @@ const toast = (m, opts) => useUI.getState().toast(m, opts)
 // meal is there and every entry in it can be logged again (lib/nutrition/again.js). The entries
 // go in one write with uuids that come from the copy itself, so a second tap or a retry is the
 // same entries, and "Logged" is read off today's diary, not remembered here. `whileEmpty` (Home's
-// live row): only while today's meal is still empty; once it has anything the row goes, the
-// toast's Undo still there.
-export default function YesterdayMealRow({ settings, meal, whileEmpty = false }) {
+// live row, Nutrition's diary): only while today's meal is still empty; once it has anything the
+// row goes, the toast's Undo still there, and focus moves to the meal's own control
+// (`data-meal-slot`: the diary's meal row, Home's meal pill). `inline`: a line inside that empty meal of the diary
+// (ux-redesign-tabs §4.2), not a row of its own.
+export default function YesterdayMealRow({ settings, meal, whileEmpty = false, inline = false }) {
   const today = todayISO()
   const yesterday = yesterdayISO()
   const entry = useNutrition(s => s.days[yesterday]?.entry)
@@ -49,6 +51,8 @@ export default function YesterdayMealRow({ settings, meal, whileEmpty = false })
         action: t('Undo'),
         onAction: () => { useNutrition.getState().removeItems(today, logged.map(i => i.uuid)).catch(e => toast(foodErrorText(e, { write: true }))) },
       })
+      // The row goes now that the meal has entries: focus follows to that meal, not to the body.
+      requestAnimationFrame(() => document.querySelector(`[data-meal-slot="${meal}"]`)?.focus())
     } catch (e) {
       toast(foodErrorText(e, { write: true }))
     } finally {
@@ -56,11 +60,18 @@ export default function YesterdayMealRow({ settings, meal, whileEmpty = false })
     }
   }
 
+  const title = t('Yesterday’s {0}', label)
+  const subtitle = `${items.map(i => i.name).join(', ')} · ${kcal.value} ${kcal.unit}`
+  const control = done
+    ? <Tag tone="acc">{t('Logged')}</Tag>
+    : <Button size="sm" variant="tinted" onClick={again} disabled={busy || !ready} aria-label={t('Log yesterday’s {0} again', label)}>{t('Log again')}</Button>
+  if (inline) {
+    return <div className="meal-again">
+      <span className="grow"><span className="tt">{title}</span><span className="ss small muted">{subtitle}</span></span>
+      {control}
+    </div>
+  }
   return <Section>
-    <Row icon="history" iconTint="var(--indigo)" title={t('Yesterday’s {0}', label)} subtitle={`${items.map(i => i.name).join(', ')} · ${kcal.value} ${kcal.unit}`}>
-      {done
-        ? <Tag tone="acc">{t('Logged')}</Tag>
-        : <Button size="sm" variant="tinted" onClick={again} disabled={busy || !ready}>{t('Log again')}</Button>}
-    </Row>
+    <Row icon="history" iconTint="var(--indigo)" title={title} subtitle={subtitle}>{control}</Row>
   </Section>
 }

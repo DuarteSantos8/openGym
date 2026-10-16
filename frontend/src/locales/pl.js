@@ -105,7 +105,6 @@ export default {
   // --- nutrition diary on Home: English until the translation pass ---
   '{0} items': { one: '{0} item', few: '{0} items', many: '{0} items' },
   '{0} left': '{0} left',
-  '{0} of {1} eaten': '{0} of {1} eaten',
   '{0} over': '{0} over',
   '{0} over 7 days': '{0} over 7 days',
   '7 days': '7 days',
@@ -156,7 +155,6 @@ export default {
   'Snacks': 'Snacks',
   'Stop adding to {0}': 'Stop adding to {0}',
   'Tap a day to see it': 'Tap a day to see it',
-  'Target': 'Target',
   'The diary did not load: no connection.': 'The diary did not load: no connection.',
   'The diary did not load: you are signed out.': 'The diary did not load: you are signed out.',
   'The diary did not load.': 'The diary did not load.',
@@ -2787,6 +2785,8 @@ export default {
   'of {0}': 'z {0}',
   'over by {0}': 'o {0} za dużo',
   'Loading today': 'Wczytywanie dnia',
+  'Loading {0}': 'Loading {0}',
+  'Log yesterday’s {0} again': 'Log yesterday’s {0} again',
   // --- the first-run onboarding (views/onboarding): English until the translation pass ---
   '0, just tracking food': '0, just tracking food',
   'A ready-made plan, one row per training day': 'A ready-made plan, one row per training day',
@@ -3129,4 +3129,9 @@ export default {
   'Nothing planned this week': 'Nic nie zaplanowano na ten tydzień',
   'Pick exercises as you go': 'Ćwiczenia wybierasz na bieżąco',
   'Start a freestyle workout': 'Zacznij trening dowolny',
+
+  // --- the redesigned Nutrition tab ---
+  'Library': 'Biblioteka',
+  'Set targets': 'Ustaw cele',
+  '{0} eaten · {1} goal': 'Zjedzono {0} · cel {1}',
 }

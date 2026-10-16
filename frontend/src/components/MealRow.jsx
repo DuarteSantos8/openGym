@@ -15,8 +15,9 @@ import MacroLine from './MacroLine.jsx'
 // the meal show follows Profile › Diary & meals (brand names, time logged, quick calories, macro
 // summary).
 // `find`: the uuid of an entry in it a search's Day result asks for (FoodHub `?find=`): the meal opens
-// and that entry is scrolled to and flashed once.
-export default function MealRow({ date, slot, name, items, find = null }) {
+// and that entry is scrolled to and flashed once. `children`: a line under the meal's head
+// (yesterday's meal to log again, MealsCard).
+export default function MealRow({ date, slot, name, items, find = null, children }) {
   const { energy } = useUnits()
   const settings = useNutrition(s => s.settings.data)
   const [open, setOpen] = useState(!!find)
@@ -45,7 +46,7 @@ export default function MealRow({ date, slot, name, items, find = null }) {
   return <div className={'meal-row' + (open || adding ? ' expanded' : '')}>
     <div className="meal-head">
       <button type="button" className="meal-toggle" onClick={() => setOpen(o => !o)} aria-expanded={open}
-        aria-controls={listId} disabled={!items.length}>
+        aria-controls={listId} disabled={!items.length} data-meal-slot={slot}>
         <span className="meal-name">{name}</span>
         <span className="meal-sub small muted">{items.length ? tn('{0} item', '{0} items', items.length) : t('Nothing yet')}</span>
         <span className="meal-kcal small">{items.length ? energy(totals.calories) : ''}</span>
@@ -56,6 +57,7 @@ export default function MealRow({ date, slot, name, items, find = null }) {
         <Icon name={adding ? 'xmark' : 'plus'} />
       </button>
     </div>
+    {children}
     {items.length > 0 && settingOf(settings, 'diaryShowMacroSummary') && <MacroLine p={totals.proteins} c={totals.carbohydrates} f={totals.fat} />}
     {open && items.length > 0 && <ul className="meal-items" id={listId} ref={listRef}>
       {rows.map(row => {

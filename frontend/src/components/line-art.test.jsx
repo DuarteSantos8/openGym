@@ -29,12 +29,12 @@ const shapes = () => [...svg().querySelectorAll('path, rect, circle')].filter(e 
 const CASES = [
   ['routine', {}], ['routine', { days: 3, next: 1 }], ['routine', { days: 2, scheduled: false }],
   ['mobility', { minutes: 20 }], ['mobility', {}], ['scale', { kg: 82.4 }], ['scale', {}],
-  ...EQUIPMENT.map(eq => ['equipment', { eq }]),
+  ...EQUIPMENT.map(eq => ['equipment', { eq }]), ['plate', {}],
 ]
 
 describe('LineArt', () => {
-  it('knows its four scenes', () => {
-    expect(LINE_ART_SCENES).toEqual(['routine', 'mobility', 'scale', 'equipment'])
+  it('knows its five scenes', () => {
+    expect(LINE_ART_SCENES).toEqual(['routine', 'mobility', 'scale', 'equipment', 'plate'])
     expect(() => render(<LineArt scene="figure" />)).toThrow(/LineArt: scene="figure"/)
   })
 

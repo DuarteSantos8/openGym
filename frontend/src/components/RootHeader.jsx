@@ -6,14 +6,10 @@ import { tabOf } from '../lib/tab-route.js'
 import { useScrolledBy } from '../lib/use-scrolled-by.js'
 import { useStore } from '../store/useStore.js'
 import { nutritionAvailable } from '../lib/nutrition/api.js'
-import { mealLabels } from '../lib/nutrition/meal-name.js'
-import { useDiarySelection } from '../lib/nutrition/selection.js'
-import { useNutrition } from '../lib/nutrition/store.js'
 import { SEARCH_LIST_ID, closeSearch, openSearch, overlayKey, registerPill, setQuery, takeFocusOnMount, useSearch } from '../lib/search/session.js'
 import AvatarButton from './AvatarButton.jsx'
-import { foodPickerSheet } from './FoodPickerSheet.jsx'
 import SearchPill from './SearchPill.jsx'
-import { scanSheet } from './ScanSheet.jsx'
+import { scanToSelection } from './scan-to-selection.js'
 
 // The context button's exit and return load with the search chunk; until then it just goes.
 const ContextSlot = lazy(() => import('./search/header-motion.jsx').then(m => ({ default: m.ContextSlot })))
@@ -25,16 +21,6 @@ const SCOPED = {
 }
 
 const desktopKeys = () => { try { return !!window.matchMedia?.('(hover: hover) and (pointer: fine)').matches } catch { return false } }
-
-// The barcode button scans to where the + sheet's Scan logs (PlusSheet.jsx): the date every tab
-// shares and the meal, as they are at the tap, with "Search foods" going on to the picker.
-function scanToSelection() {
-  const settings = useNutrition.getState().settings.data
-  const { date, meal } = useDiarySelection.getState().target(settings)
-  const names = mealLabels(settings)
-  const slot = meal < names.length ? meal : 0
-  scanSheet({ date, meal: slot, mealName: names[slot], onSearch: foodPickerSheet })
-}
 
 // The header of a tab's root (Home, Training, Nutrition, Progress), the bearmenu mobile header:
 // one pinned row of the search pill, the tab's one context button where it has one (`action`),

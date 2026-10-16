@@ -289,10 +289,13 @@ describe('Home is the hub', () => {
     useDiarySelection.getState().setMeal(0)
     await mount(<Home />)
     expect(text()).toContain('Yesterday’s Breakfast')
-    await click(button('Log again'))
+    await click(button('Log yesterday’s Breakfast again'))
     expect(nt.state.days[TODAY].items.map(i => i.name)).toEqual(['Rolled oats'])
     expect(text()).not.toContain('Yesterday’s Breakfast')
     expect(useUI.getState().toastMsg).toBe('Logged to Breakfast')
+    // The row has gone: focus lands on Breakfast's pill, not the body.
+    await settle(20)
+    expect(document.activeElement).toBe(host.querySelector('[data-meal-slot="0"]'))
   })
 
   it('does not offer yesterday\'s meal when today\'s already has food', async () => {
