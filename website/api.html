@@ -3570,7 +3570,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Sync: what the profile has already answered, for the onboarding</span>
   </summary>
   <div class="ep-body">
-<p>What the hub's first-run onboarding may skip asking: the unit (and whether it was chosen or is held by stored weights), the latest weigh-in, how many routines and planned weekdays there are, the Coach intake answers, and whether gym check-in is on. Nothing else of the profile. A profile with no document yet answers with nothing answered (<code>rev</code> 0).</p>
+<p>What the hub's first-run onboarding may skip asking: the unit (and whether it was chosen or is held by stored weights), the latest weigh-in, how many routines and planned weekdays there are, the Coach intake answers, and whether gym check-in is on. Nothing else of the profile. A profile with no document yet answers with nothing answered (<code>rev</code> 0). <code>coachAvailable</code> is the server's, not the profile's: whether this instance has an AI coach connected, which is the only case the onboarding offers to have it build a plan. <code>seed</code> is the server's too: which plan fields the POST takes (<code>starter</code>, <code>coachBuild</code>). A hub sends those only where this says so; an openGym from before them answers without <code>seed</code>, and refuses both fields as <code>bad-field</code>. <code>seed.starterTemplates</code> names each ready-made plan this server builds and the numbers of weekdays it runs at, so a hub checks a person's choice against them when it is made and keeps no list of its own.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Hub token only: <code>Authorization: Bearer &lt;ES256 JWS&gt;</code> signed by a key in <code>HUB_JWKS</code>. A session cookie or a paired token is refused.</span></p>
 
 
@@ -3578,7 +3578,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">The summary.<span class="r-sig">{ rev: integer, wid: string, unit: &quot;kg&quot; | &quot;lb&quot;, unitChosen: boolean, latestWeight: null | object, routines: integer, plannedDays: integer, coachProfile: null | object, checkIn: boolean } &middot; sets <code>ETag</code></span></span>
+    <span class="p-desc">The summary.<span class="r-sig">{ rev: integer, wid: string, coachAvailable: boolean, seed: object, unit: &quot;kg&quot; | &quot;lb&quot;, unitChosen: boolean, latestWeight: null | object, routines: integer, plannedDays: integer, coachProfile: null | object, checkIn: boolean } &middot; sets <code>ETag</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -3604,9 +3604,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Sync: write the onboarding answers into the profile</span>
   </summary>
   <div class="ep-body">
-<p>The hub's first-run onboarding, written once: the unit, the first weigh-in, the Coach intake answers, a starter plan (routines and the weekdays they go on) and the gym check-in switch. Every field is optional, and each goes in only where the profile has not decided it already; one it has is left as it is and listed in <code>skipped</code> with why:</p>
-<ul><li><code>unit</code>: <code>same</code>; <code>chosen</code> (a unit switch on record); <code>has-data</code> (stored weights a switch would convert).</li><li><code>bodyweight</code>: <code>has-entry</code> (the date has a weigh-in).</li><li><code>coachProfile</code>: <code>answered</code> (the Coach intake has answers).</li><li><code>plan</code>: <code>has-plan</code> (the profile has routines or planned weekdays).</li><li><code>checkIn</code>: <code>same</code>; <code>existing-profile</code> (only a profile under 30 days old with no training gets check-in off); <code>chosen</code> (the switch was changed on a device); <code>in-use</code> (a gym card is saved).</li></ul>
-<p>So the same write sent again changes nothing, and needs no <code>If-Match</code>: the decision is made here, on the stored document, read and written with nothing in between. Each change is stamped later than anything the profile holds, as the app stamps its own, so every device merges it as the newest change. A profile with no document yet gets its first one while it is less than 30 days old; an older one answers 409 <code>no-state</code>. The body is at most 32 KB.</p>
+<p>The hub's first-run onboarding, written once: the unit, the first weigh-in, the Coach intake answers, a plan and the gym check-in switch. Every field is optional, and each goes in only where the profile has not decided it already; one it has is left as it is and listed in <code>skipped</code> with why.</p>
+<p>A plan comes one of two ways, and only one per request (<code>bad-coach-build</code> otherwise). It is always a choice: built routines are not taken (<code>bad-field</code>).</p>
+<ul><li><code>starter</code>: a ready-made plan by choice (<code>templateId</code>, <code>weekdays</code>, <code>equipment</code>), built here from the plans the app offers, already fitted to the equipment. Session i of the plan goes on <code>weekdays[i]</code>; <code>full-body-2</code> also runs on one weekday, with its first session. This server owns which templates there are and the days each runs at.</li><li><code>coachBuild</code>: the person agreed to the AI coach building a plan from their answers, at <code>consentAt</code> by the hub's clock, to the consent text <code>consentVersion</code> names. Refused (<code>coach-unavailable</code>) where this server has no AI coach. It is recorded (<code>coach.build</code>: <code>status</code> pending, <code>source</code> onboarding, <code>consentAt</code>, <code>consentVersion</code>, <code>equipment</code>, <code>requestedAt</code>) for the Coach flow to pick up; nothing is run, no model is called and the Coach's own consent is not given on the person's behalf.</li></ul>
+<ul><li><code>unit</code>: <code>same</code>; <code>chosen</code> (a unit switch on record); <code>has-data</code> (stored weights a switch would convert).</li><li><code>bodyweight</code>: <code>has-entry</code> (the date has a weigh-in).</li><li><code>coachProfile</code>: <code>answered</code> (the Coach intake has answers).</li><li><code>plan</code> (also what <code>starter</code> is applied as): <code>has-plan</code> (the profile has routines or planned weekdays).</li><li><code>coachBuild</code>: <code>requested</code> (a build is already on record); <code>has-plan</code>.</li><li><code>checkIn</code>: <code>same</code>; <code>existing-profile</code> (only a profile under 30 days old with no training gets check-in off); <code>chosen</code> (the switch was changed on a device); <code>in-use</code> (a gym card is saved).</li></ul>
+<p>So the same write sent again changes nothing, and needs no <code>If-Match</code>: the decision is made here, on the stored document, read and written with nothing in between. Each change is stamped later than anything the profile holds, as the app stamps its own, so every device merges it as the newest change. A profile with no document yet gets its first one while it is less than 30 days old; an older one answers 409 <code>no-state</code>. The body is at most 4 KB.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Hub token only: <code>Authorization: Bearer &lt;ES256 JWS&gt;</code> signed by a key in <code>HUB_JWKS</code>. A session cookie or a paired token is refused.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
@@ -3656,43 +3658,43 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-desc"></span>
   </div>
   <div class="prow">
-    <span class="p-name">plan</span>
+    <span class="p-name">starter</span>
     <span class="p-type">object</span>
     <span class="p-desc"></span>
   </div>
   <div class="prow">
-    <span class="p-name">plan.routines<em class="p-req" title="required">required</em></span>
-    <span class="p-type">object[]</span>
+    <span class="p-name">starter.templateId<em class="p-req" title="required">required</em></span>
+    <span class="p-type">&quot;full-body-2&quot; | &quot;full-body&quot; | &quot;upper-lower&quot; | &quot;upper-lower-ppl&quot; | &quot;ppl-6&quot;</span>
     <span class="p-desc"></span>
   </div>
   <div class="prow">
-    <span class="p-name">plan.routines[].name<em class="p-req" title="required">required</em></span>
-    <span class="p-type">string <span class="p-hint">(&le; 60 chars)</span></span>
+    <span class="p-name">starter.weekdays<em class="p-req" title="required">required</em></span>
+    <span class="p-type">(integer <span class="p-hint">(0&ndash;6)</span>)[]</span>
+    <span class="p-desc">The weekday (0 = Sunday) of each session, in order. 1 or 2 for full-body-2, 3 for full-body, 4 for upper-lower, 5 for upper-lower-ppl, 6 for ppl-6.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">starter.equipment<em class="p-req" title="required">required</em></span>
+    <span class="p-type">&quot;gym&quot; | &quot;dumbbells&quot; | &quot;none&quot;</span>
     <span class="p-desc"></span>
   </div>
   <div class="prow">
-    <span class="p-name">plan.routines[].emoji</span>
-    <span class="p-type">string <span class="p-hint">(&le; 32 chars)</span></span>
-    <span class="p-desc">The routine icon key.</span>
-  </div>
-  <div class="prow">
-    <span class="p-name">plan.routines[].ex<em class="p-req" title="required">required</em></span>
-    <span class="p-type">object[]</span>
+    <span class="p-name">coachBuild</span>
+    <span class="p-type">object</span>
     <span class="p-desc"></span>
   </div>
   <div class="prow">
-    <span class="p-name">plan.schedule<em class="p-req" title="required">required</em></span>
-    <span class="p-type">object[]</span>
-    <span class="p-desc">One entry per weekday (0 = Sunday), each naming a routine by its index.</span>
+    <span class="p-name">coachBuild.consentAt<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string <span class="p-hint">(date-time)</span></span>
+    <span class="p-desc">When the person agreed, by the hub's clock, in UTC (Date.toISOString). Not in the future.</span>
   </div>
   <div class="prow">
-    <span class="p-name">plan.schedule[].day<em class="p-req" title="required">required</em></span>
-    <span class="p-type">integer <span class="p-hint">(0&ndash;6)</span></span>
-    <span class="p-desc"></span>
+    <span class="p-name">coachBuild.consentVersion<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The id of the consent text the person was shown (the hub keeps the texts).</span>
   </div>
   <div class="prow">
-    <span class="p-name">plan.schedule[].routine<em class="p-req" title="required">required</em></span>
-    <span class="p-type">integer <span class="p-hint">(0&ndash;)</span></span>
+    <span class="p-name">coachBuild.equipment<em class="p-req" title="required">required</em></span>
+    <span class="p-type">&quot;gym&quot; | &quot;dumbbells&quot; | &quot;none&quot;</span>
     <span class="p-desc"></span>
   </div>
   <div class="prow">
@@ -3717,30 +3719,14 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
       5
     ]
   },
-  &quot;plan&quot;: {
-    &quot;routines&quot;: [
-      {
-        &quot;name&quot;: &quot;Full Body A&quot;,
-        &quot;emoji&quot;: &quot;figureStrength&quot;,
-        &quot;ex&quot;: [
-          {
-            &quot;id&quot;: &quot;0043&quot;,
-            &quot;sets&quot;: 3,
-            &quot;reps&quot;: 8
-          }
-        ]
-      }
+  &quot;starter&quot;: {
+    &quot;templateId&quot;: &quot;full-body&quot;,
+    &quot;weekdays&quot;: [
+      1,
+      3,
+      5
     ],
-    &quot;schedule&quot;: [
-      {
-        &quot;day&quot;: 1,
-        &quot;routine&quot;: 0
-      },
-      {
-        &quot;day&quot;: 4,
-        &quot;routine&quot;: 0
-      }
-    ]
+    &quot;equipment&quot;: &quot;gym&quot;
   },
   &quot;checkIn&quot;: false
 }</code></pre>
@@ -3752,7 +3738,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">400</span>
-    <span class="p-desc">A field is malformed or unknown (<code>bad-field</code>, <code>bad-unit</code>, <code>bad-date</code>, <code>bad-weight</code>, <code>bad-coach-profile</code>, <code>bad-plan</code>, <code>bad-check-in</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;unknown field units&quot;}</code></span></span>
+    <span class="p-desc">A field is malformed or unknown (<code>bad-field</code>, <code>bad-unit</code>, <code>bad-date</code>, <code>bad-weight</code>, <code>bad-coach-profile</code>, <code>bad-plan</code>, <code>bad-coach-build</code>, <code>bad-check-in</code>), or a coach build reached a server with no AI coach (<code>coach-unavailable</code>). <code>field</code> names the top-level field refused (null: the body as a whole), so the same body without it can be sent: nothing of a refused body is written.<span class="r-sig"><code>{&quot;error&quot;:&quot;this server has no AI coach to build a plan&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -3810,6 +3796,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">retryAfter</span>
     <span class="p-type">integer</span>
     <span class="p-desc">429 only. The same number of seconds as the Retry-After header.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">field</span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc">The onboarding seed's 400 only. The top-level field refused, or null for the body as a whole.</span>
   </div>
 </div>
   </div>

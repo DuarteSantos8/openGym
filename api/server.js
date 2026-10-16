@@ -2704,6 +2704,7 @@ const routes = {
   ...(HUB ? syncRoutes({
     hub: HUB, json, findUser: id => db.users.find(u => u.id === id) || null,
     readStateCached, stateVersion, readStateStrict, UNREADABLE, readBody, commitState, auditSyncFail,
+    coachAvailable: () => coachConfig.publicConfig() !== null,
     // Last: server-state-read-cost.test.js reads this call's text up to the first `}`.
     listProfiles: () => { pruneGone(); return { users: db.users, gone: db.gone }; }
   }) : {})

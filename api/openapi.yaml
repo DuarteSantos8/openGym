@@ -3393,7 +3393,14 @@ paths:
         What the hub's first-run onboarding may skip asking: the unit (and whether it was chosen or
         is held by stored weights), the latest weigh-in, how many routines and planned weekdays there
         are, the Coach intake answers, and whether gym check-in is on. Nothing else of the profile.
-        A profile with no document yet answers with nothing answered (`rev` 0).
+        A profile with no document yet answers with nothing answered (`rev` 0). `coachAvailable` is
+        the server's, not the profile's: whether this instance has an AI coach connected, which is
+        the only case the onboarding offers to have it build a plan. `seed` is the server's too:
+        which plan fields the POST takes (`starter`, `coachBuild`). A hub sends those only where
+        this says so; an openGym from before them answers without `seed`, and refuses both fields
+        as `bad-field`. `seed.starterTemplates` names each ready-made plan this server builds and
+        the numbers of weekdays it runs at, so a hub checks a person's choice against them when it
+        is made and keeps no list of its own.
       security:
         - hubToken: []
       responses:
@@ -3408,6 +3415,17 @@ paths:
                 properties:
                   rev: { type: integer }
                   wid: { type: string }
+                  coachAvailable: { type: boolean }
+                  seed:
+                    type: object
+                    description: 'The plan fields the POST takes.'
+                    properties:
+                      starter: { type: boolean }
+                      coachBuild: { type: boolean }
+                      starterTemplates:
+                        type: object
+                        description: 'Each `starter.templateId` the POST takes, and the numbers of weekdays it runs at.'
+                        additionalProperties: { type: array, items: { type: integer, minimum: 1, maximum: 6 } }
                   unit: { type: string, enum: [kg, lb] }
                   unitChosen: { type: boolean }
                   latestWeight:
@@ -3426,7 +3444,7 @@ paths:
                           daysPerWeek: { oneOf: [{ type: integer }, { type: 'null' }] }
                           preferredDays: { type: array, items: { type: integer } }
                   checkIn: { type: boolean }
-              example: { rev: 4, wid: "9f2c01ab33de4e10", unit: kg, unitChosen: true, latestWeight: { date: "2026-10-14", kg: 81.2 }, routines: 3, plannedDays: 3, coachProfile: null, checkIn: false }
+              example: { rev: 4, wid: "9f2c01ab33de4e10", coachAvailable: false, seed: { starter: true, coachBuild: true, starterTemplates: { full-body-2: [1, 2], full-body: [3], upper-lower: [4], upper-lower-ppl: [5], ppl-6: [6] } }, unit: kg, unitChosen: true, latestWeight: { date: "2026-10-14", kg: 81.2 }, routines: 3, plannedDays: 3, coachProfile: null, checkIn: false }
         '401': { $ref: '#/components/responses/SyncUnauthorized' }
         '404': { $ref: '#/components/responses/SyncUserGone' }
         '503': { $ref: '#/components/responses/SyncStateUnreadable' }
@@ -3436,21 +3454,36 @@ paths:
       summary: 'Sync: write the onboarding answers into the profile'
       description: |
         The hub's first-run onboarding, written once: the unit, the first weigh-in, the Coach
-        intake answers, a starter plan (routines and the weekdays they go on) and the gym check-in
-        switch. Every field is optional, and each goes in only where the profile has not decided it
-        already; one it has is left as it is and listed in `skipped` with why:
+        intake answers, a plan and the gym check-in switch. Every field is optional, and each goes
+        in only where the profile has not decided it already; one it has is left as it is and
+        listed in `skipped` with why.
+
+        A plan comes one of two ways, and only one per request (`bad-coach-build` otherwise). It
+        is always a choice: built routines are not taken (`bad-field`).
+
+        - `starter`: a ready-made plan by choice (`templateId`, `weekdays`, `equipment`), built
+          here from the plans the app offers, already fitted to the equipment. Session i of the
+          plan goes on `weekdays[i]`; `full-body-2` also runs on one weekday, with its first session.
+          This server owns which templates there are and the days each runs at.
+        - `coachBuild`: the person agreed to the AI coach building a plan from their answers, at
+          `consentAt` by the hub's clock, to the consent text `consentVersion` names. Refused
+          (`coach-unavailable`) where this server has no AI coach. It is recorded (`coach.build`:
+          `status` pending, `source` onboarding, `consentAt`, `consentVersion`, `equipment`,
+          `requestedAt`) for the Coach flow to pick up; nothing is run, no model is called and the
+          Coach's own consent is not given on the person's behalf.
 
         - `unit`: `same`; `chosen` (a unit switch on record); `has-data` (stored weights a switch would convert).
         - `bodyweight`: `has-entry` (the date has a weigh-in).
         - `coachProfile`: `answered` (the Coach intake has answers).
-        - `plan`: `has-plan` (the profile has routines or planned weekdays).
+        - `plan` (also what `starter` is applied as): `has-plan` (the profile has routines or planned weekdays).
+        - `coachBuild`: `requested` (a build is already on record); `has-plan`.
         - `checkIn`: `same`; `existing-profile` (only a profile under 30 days old with no training gets check-in off); `chosen` (the switch was changed on a device); `in-use` (a gym card is saved).
 
         So the same write sent again changes nothing, and needs no `If-Match`: the decision is made
         here, on the stored document, read and written with nothing in between. Each change is
         stamped later than anything the profile holds, as the app stamps its own, so every device
         merges it as the newest change. A profile with no document yet gets its first one while it
-        is less than 30 days old; an older one answers 409 `no-state`. The body is at most 32 KB.
+        is less than 30 days old; an older one answers 409 `no-state`. The body is at most 4 KB.
       security:
         - hubToken: []
       requestBody:
@@ -3476,49 +3509,34 @@ paths:
                     experience: { type: string, enum: [new, returning, regular] }
                     daysPerWeek: { type: integer, minimum: 1, maximum: 7 }
                     preferredDays: { type: array, maxItems: 7, items: { type: integer, minimum: 0, maximum: 6 } }
-                plan:
+                starter:
                   type: object
-                  required: [routines, schedule]
+                  required: [templateId, weekdays, equipment]
+                  additionalProperties: false
                   properties:
-                    routines:
+                    templateId: { type: string, enum: [full-body-2, full-body, upper-lower, upper-lower-ppl, ppl-6] }
+                    weekdays:
                       type: array
                       minItems: 1
-                      maxItems: 7
-                      items:
-                        type: object
-                        required: [name, ex]
-                        properties:
-                          name: { type: string, maxLength: 60 }
-                          emoji: { type: string, maxLength: 32, description: 'The routine icon key.' }
-                          ex:
-                            type: array
-                            minItems: 1
-                            maxItems: 20
-                            items:
-                              type: object
-                              required: [id, sets, reps]
-                              properties:
-                                id: { type: string, description: 'Exercise id.' }
-                                sets: { type: integer, minimum: 1, maximum: 20 }
-                                reps: { type: integer, minimum: 1, maximum: 100 }
-                    schedule:
-                      type: array
-                      maxItems: 7
-                      description: 'One entry per weekday (0 = Sunday), each naming a routine by its index.'
-                      items:
-                        type: object
-                        required: [day, routine]
-                        properties:
-                          day: { type: integer, minimum: 0, maximum: 6 }
-                          routine: { type: integer, minimum: 0 }
+                      maxItems: 6
+                      uniqueItems: true
+                      description: 'The weekday (0 = Sunday) of each session, in order. 1 or 2 for full-body-2, 3 for full-body, 4 for upper-lower, 5 for upper-lower-ppl, 6 for ppl-6.'
+                      items: { type: integer, minimum: 0, maximum: 6 }
+                    equipment: { type: string, enum: [gym, dumbbells, none] }
+                coachBuild:
+                  type: object
+                  required: [consentAt, consentVersion, equipment]
+                  additionalProperties: false
+                  properties:
+                    consentAt: { type: string, format: date-time, description: 'When the person agreed, by the hub''s clock, in UTC (Date.toISOString). Not in the future.' }
+                    consentVersion: { type: string, pattern: '^[a-z0-9-]{1,40}$', description: 'The id of the consent text the person was shown (the hub keeps the texts).' }
+                    equipment: { type: string, enum: [gym, dumbbells, none] }
                 checkIn: { type: boolean }
             example:
               unit: kg
               bodyweight: { date: "2026-10-15", kg: 78.4 }
               coachProfile: { goal: muscle, experience: new, daysPerWeek: 3, preferredDays: [1, 3, 5] }
-              plan:
-                routines: [{ name: "Full Body A", emoji: figureStrength, ex: [{ id: "0043", sets: 3, reps: 8 }] }]
-                schedule: [{ day: 1, routine: 0 }, { day: 4, routine: 0 }]
+              starter: { templateId: full-body, weekdays: [1, 3, 5], equipment: gym }
               checkIn: false
       responses:
         '200':
@@ -3540,11 +3558,11 @@ paths:
                   wid: { type: string }
               example: { ok: true, changed: true, applied: [bodyweight, plan, checkIn], skipped: [{ field: unit, reason: same }], rev: 5, wid: "77a0c3d2e91b4f08" }
         '400':
-          description: 'A field is malformed or unknown (`bad-field`, `bad-unit`, `bad-date`, `bad-weight`, `bad-coach-profile`, `bad-plan`, `bad-check-in`).'
+          description: 'A field is malformed or unknown (`bad-field`, `bad-unit`, `bad-date`, `bad-weight`, `bad-coach-profile`, `bad-plan`, `bad-coach-build`, `bad-check-in`), or a coach build reached a server with no AI coach (`coach-unavailable`). `field` names the top-level field refused (null: the body as a whole), so the same body without it can be sent: nothing of a refused body is written.'
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "unknown field units", code: "bad-field" }
+              example: { error: "this server has no AI coach to build a plan", code: "coach-unavailable", field: coachBuild }
         '401': { $ref: '#/components/responses/SyncUnauthorized' }
         '404': { $ref: '#/components/responses/SyncUserGone' }
         '409':
@@ -3838,6 +3856,9 @@ components:
         retryAfter:
           type: integer
           description: 429 only. The same number of seconds as the Retry-After header.
+        field:
+          oneOf: [{ type: string }, { type: 'null' }]
+          description: The onboarding seed's 400 only. The top-level field refused, or null for the body as a whole.
 
     Ok:
       type: object

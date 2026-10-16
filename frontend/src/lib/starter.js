@@ -178,3 +178,8 @@ export const buildStarterPlan = (id, equipment) => {
     ...(fit && { fit: { swapped: fit.swapped, dropped: fit.dropped } })
   }
 }
+
+// What each equipment choice the onboarding offers leaves available, as buildStarterPlan takes
+// it: a full gym (null, the plan as written), dumbbells only, or nothing (body weight). The API's
+// copy of the fitted plans (api/starter-plans.js) is checked against these, never a copy of them.
+export const STARTER_EQUIPMENT_LISTS = { gym: null, dumbbells: ['dumbbell'], none: [] }
