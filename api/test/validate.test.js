@@ -192,6 +192,24 @@ test('a review cannot prescribe an odd total on a per-side exercise', () => {
   assert.equal(review([change({ type: 'reps', after: 17 })]).ok, true);
 });
 
+test('review-added cardio exercises retain minutes and speed in both add paths (#640)', () => {
+  for (const type of ['add-exercise', 'add-routine']) {
+    const incoming = { id: '0549', mode: 'cardio', sets: 2, min: 15, speed: 10 };
+    const run = ex => review([change({ type, target: type === 'add-routine' ? {} : { routineId: 'r1' }, after: type === 'add-routine' ? { name: 'Finisher', ex: [ex] } : ex })]);
+    const valid = run(incoming);
+    assert.equal(valid.ok, true);
+    const clean = valid.proposal.changes[0].after;
+    const ex = type === 'add-routine' ? clean.ex[0] : clean;
+    assert.equal(ex.mode, 'cardio');
+    assert.equal(ex.min, 15);
+    assert.equal(ex.speed, 10);
+    const defaults = run({ ...incoming, min: -1, speed: Infinity });
+    const fallback = type === 'add-routine' ? defaults.proposal.changes[0].after.ex[0] : defaults.proposal.changes[0].after;
+    assert.equal(fallback.min, 20);
+    assert.equal(fallback.speed, 8);
+  }
+});
+
 /* ---------------- review change-sets ---------------- */
 
 test('an invented change type does nothing at all', () => {
