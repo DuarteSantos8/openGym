@@ -1,4 +1,4 @@
-/* A stand-in for the sync hub: an ES256 key pair, its public half as the JWKS openGym is given
+/* A stand-in for the sync hub: an ES256 key pair, its public half as the JWKS Gains is given
    (HUB_JWKS), and tokens signed the way the hub signs them, with any claim or header overridden
    to make one that is wrong in exactly one way. Shared by hub-token.test.js and
    server-sync.test.js. */

@@ -4,12 +4,12 @@ import { backupFolder, chooseBackupFolder, resetBackupFolder, onBackupFolderChan
 import { useUI } from '../store/useUI.js'
 import { Row } from './ui.jsx'
 
-const DEFAULT_FOLDER = 'Documents/openGym'
+const DEFAULT_FOLDER = 'Documents/Gains'
 
-/* Where auto-backup puts its copies on this Android phone (#161): Documents/openGym, or a folder
+/* Where auto-backup puts its copies on this Android phone (#161): Documents/Gains, or a folder
    chosen with the system picker — a sync app's, an SD card's. The choice is this phone's alone
    (lib/mobile.js), so it is read here and not from the synced state. When the chosen folder
-   stops taking copies they go to Documents/openGym again, and this says so until the folder is
+   stops taking copies they go to Documents/Gains again, and this says so until the folder is
    chosen again or the default is confirmed. */
 export function useBackupFolder(enabled = true) {
   const [folder, setFolder] = useState(null)
@@ -27,11 +27,11 @@ export function useBackupFolder(enabled = true) {
 }
 
 /* The Auto-backup row's subtitle names where the copies go: the chosen folder once there is one,
-   not Documents/openGym regardless (Android QA). `keep` is AUTO_BACKUP_KEEP. */
+   not Documents/Gains regardless (Android QA). `keep` is AUTO_BACKUP_KEEP. */
 export function autoBackupSubtitle(folder, keep) {
   if (folder?.uri && folder.label) return t('Saves a dated copy to “{0}” after finishing a workout or editing a routine, and keeps the newest {1}.', folder.label, keep)
   if (folder?.uri) return t('Saves a dated copy to the folder you chose after finishing a workout or editing a routine, and keeps the newest {0}.', keep)
-  return t('Saves a dated copy to Documents/openGym after finishing a workout or editing a routine, and keeps the newest {0}. Point a sync app at that folder, or copy it out by hand.', keep)
+  return t('Saves a dated copy to Documents/Gains after finishing a workout or editing a routine, and keeps the newest {0}. Point a sync app at that folder, or copy it out by hand.', keep)
 }
 
 export default function BackupFolderRow() {
@@ -51,8 +51,8 @@ export default function BackupFolderRow() {
       subtitle={folder.uri ? (folder.label || t('Chosen folder')) : DEFAULT_FOLDER} accessory="chevron" onClick={choose} />
     {folder.lost && <Row icon="warning" iconTint="var(--orange)" className="backup-lost"
       title={folder.lostLabel
-        ? t('openGym can no longer write to “{0}”, so copies go to Documents/openGym again. Choose the folder again to switch back.', folder.lostLabel)
-        : t('openGym can no longer write to the chosen folder, so copies go to Documents/openGym again. Choose the folder again to switch back.')} />}
+        ? t('Gains can no longer write to “{0}”, so copies go to Documents/Gains again. Choose the folder again to switch back.', folder.lostLabel)
+        : t('Gains can no longer write to the chosen folder, so copies go to Documents/Gains again. Choose the folder again to switch back.')} />}
     {(folder.uri || folder.lost) && <Row icon="reset" iconTint="var(--label-3)" title={t('Use default folder')}
       subtitle={DEFAULT_FOLDER} onClick={useDefault} />}
   </>

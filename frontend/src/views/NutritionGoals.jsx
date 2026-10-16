@@ -214,7 +214,7 @@ function GoalsForm({ form }) {
 
 // Nutrition › Goals (B24–B27): the calorie goal and how it is worked out, macros, water, target
 // weight, templates. Everything but target weight is a NutriTrace setting; target weight is
-// openGym's own and the same one Body edits.
+// Gains' own and the same one Body edits.
 export default function NutritionGoals() {
   const user = useStore(s => s.user)
   return <Page title={t('Goals')}>

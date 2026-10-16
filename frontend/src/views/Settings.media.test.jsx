@@ -157,7 +157,7 @@ describe('Settings — photos and videos', () => {
     await until(() => created.mock.calls.length > 0)
     expect(created).toHaveBeenCalled()
     const names = (await readZip(blob)).map(e => e.name)
-    expect(names).toEqual(['opengym-backup.json', `media/${HASH}.jpg`, 'README.txt'])
+    expect(names).toEqual(['gains-backup.json', `media/${HASH}.jpg`, 'README.txt'])
     expect(mocks.toast).toHaveBeenCalledWith('Backup exported')
     vi.restoreAllMocks()
   })
@@ -175,7 +175,7 @@ describe('Settings — photos and videos', () => {
 
   it('importing a zip keeps its photo as pending, once confirmed', async () => {
     const S = stateWithPhoto()
-    const zip = await zipStore([{ name: 'opengym-backup.json', blob: new Blob([JSON.stringify(S)]) }, { name: `media/${HASH}.jpg`, blob: new Blob([PHOTO]) }])
+    const zip = await zipStore([{ name: 'gains-backup.json', blob: new Blob([JSON.stringify(S)]) }, { name: `media/${HASH}.jpg`, blob: new Blob([PHOTO]) }])
     await mount()
     const input = host.querySelector('input[type="file"][accept^=".json"]')
     Object.defineProperty(input, 'files', { value: [new File([zip], 'backup.zip')], configurable: true })

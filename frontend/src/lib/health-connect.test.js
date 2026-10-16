@@ -36,7 +36,7 @@ describe('sessionRecord', () => {
   it('carries the workout id, its times, the name and the sets as text', () => {
     const rec = sessionRecord(workout([strength], { note: 'Felt strong.' }), { unit: 'kg', nameOf })
     expect(rec).toEqual({
-      id: 'opengym-w-w1', start: at(18), end: at(19), type: 'strength_training', title: 'Push',
+      id: 'gains-w-w1', start: at(18), end: at(19), type: 'strength_training', title: 'Push',
       notes: 'Barbell Bench Press\n60×8, 60×8\n\nFelt strong.',
     })
   })
@@ -59,7 +59,7 @@ describe('weightRecord', () => {
     expect(weightRecord({ d: '2026-09-17', w: 176.4, t: at(7) }, 'lb').kg).toBeCloseTo(80.014, 3)
   })
   it('is at the time it was typed when that was on its own day', () => {
-    expect(weightRecord({ d: '2026-09-17', w: 80, t: at(7, 12) }, 'kg')).toEqual({ id: 'opengym-bw-2026-09-17', time: at(7, 12), kg: 80 })
+    expect(weightRecord({ d: '2026-09-17', w: 80, t: at(7, 12) }, 'kg')).toEqual({ id: 'gains-bw-2026-09-17', time: at(7, 12), kg: 80 })
   })
   it('is at 08:00 on its day when it was added to that day later, or carries no time', () => {
     const morning = new Date(2026, 8, 10, 8).getTime()
@@ -80,8 +80,8 @@ describe('healthRecords', () => {
       bodyweight: [{ d: '2026-09-17', w: 80, t: at(7) }, { d: '2026-09-18', w: null }],
     }
     const r = healthRecords(S, { nameOf })
-    expect(r.sessions.map(s => s.id)).toEqual(['opengym-w-w1'])
-    expect(r.weights.map(s => s.id)).toEqual(['opengym-bw-2026-09-17'])
+    expect(r.sessions.map(s => s.id)).toEqual(['gains-w-w1'])
+    expect(r.weights.map(s => s.id)).toEqual(['gains-bw-2026-09-17'])
   })
   it('copes with a state that has neither', () => {
     expect(healthRecords({}, { nameOf })).toEqual({ sessions: [], weights: [] })
@@ -97,7 +97,7 @@ describe('planSync', () => {
     expect(plan.sessions).toHaveLength(1)
     expect(plan.weights).toHaveLength(1)
     expect(plan.remove).toEqual({ sessions: [], weights: [] })
-    expect(Object.keys(plan.written)).toEqual(['opengym-w-w1', 'opengym-bw-2026-09-17'])
+    expect(Object.keys(plan.written)).toEqual(['gains-w-w1', 'gains-bw-2026-09-17'])
   })
   it('writes nothing again when nothing changed', () => {
     const { written } = planSync(records(), {})
@@ -113,10 +113,10 @@ describe('planSync', () => {
     expect(plan.weights.map(w => w.kg)).toEqual([79.5])
     expect(plan.sessions).toEqual([])
   })
-  it('removes what was deleted from openGym, and only what this phone wrote', () => {
+  it('removes what was deleted from Gains, and only what this phone wrote', () => {
     const { written } = planSync(records(), {})
     const plan = planSync({ sessions: [], weights: [] }, written)
-    expect(plan.remove).toEqual({ sessions: ['opengym-w-w1'], weights: ['opengym-bw-2026-09-17'] })
+    expect(plan.remove).toEqual({ sessions: ['gains-w-w1'], weights: ['gains-bw-2026-09-17'] })
     expect(plan.written).toEqual({})
   })
   it('writes one record for two workouts that share an id', () => {
@@ -127,7 +127,7 @@ describe('planSync', () => {
 
 describe('recordKey', () => {
   it('is the same for the same record and differs for a changed one', () => {
-    const rec = { id: 'opengym-bw-2026-09-17', time: at(7), kg: 80 }
+    const rec = { id: 'gains-bw-2026-09-17', time: at(7), kg: 80 }
     expect(recordKey({ ...rec })).toBe(recordKey(rec))
     expect(recordKey({ ...rec, kg: 80.1 })).not.toBe(recordKey(rec))
   })

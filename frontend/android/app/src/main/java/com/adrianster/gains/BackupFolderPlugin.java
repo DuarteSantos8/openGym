@@ -1,4 +1,4 @@
-package ch.duartesantos.opengym;
+package com.adrianster.gains;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -135,7 +135,7 @@ public class BackupFolderPlugin extends Plugin {
                 for (String[] child : children(tree)) {
                     if (only.matcher(child[0]).matches() && !child[0].equals(written)) older.add(child);
                 }
-                // Newest first by the date in the name, as the Documents/openGym prune does.
+                // Newest first by the date in the name, as the Documents/Gains prune does.
                 older.sort((a, b) -> b[0].compareTo(a[0]));
                 ContentResolver cr = getContext().getContentResolver();
                 for (int i = keep - 1; i < older.size(); i++) {

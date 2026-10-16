@@ -9,7 +9,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 /* The connection indicator: every way the app can be without its server gets a line that stays
    while the condition lasts — offline, an error with its HTTP code, a server that refuses this
-   device, an answer that is not openGym's, a guest in a browser — and says what to do about it.
+   device, an answer that is not Gains', a guest in a browser — and says what to do about it.
    A phone kept local on purpose gets no line at all (#454).
    Never in the public demo, never during the phone's first-launch choice, and a change merely
    waiting for its push does not flash it. The store is a stand-in: its `sync` is what each test
@@ -163,7 +163,7 @@ describe('not connected — it says so, and what to do', () => {
     expect(bar().className).toContain('bad')
   })
 
-  it('an answer that is not openGym\'s (a proxy\'s login page) is named as such', () => {
+  it('an answer that is not Gains\'s (a proxy\'s login page) is named as such', () => {
     mocks.sync = sync('error', { lastError: { status: 200, code: 'bad-response' } })
     render()
     expect(text()).toBe('Your server’s address answered with something other than Gains (HTTP 200). Your changes are kept here.')

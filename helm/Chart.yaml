@@ -1,5 +1,5 @@
 apiVersion: v2
-name: opengym
+name: gains
 description: A self-hosted gym and body-weight tracker you actually own.
 
 # A chart can be either an 'application' or a 'library' chart.

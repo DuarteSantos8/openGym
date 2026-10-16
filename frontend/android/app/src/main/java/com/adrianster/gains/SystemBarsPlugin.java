@@ -1,4 +1,4 @@
-package ch.duartesantos.opengym;
+package com.adrianster.gains;
 
 import android.app.Activity;
 import android.os.Build;

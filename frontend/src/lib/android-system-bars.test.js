@@ -9,7 +9,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 
 const read = rel => readFileSync(new URL(rel, import.meta.url), 'utf8')
 const css = read('../index.css')
-const activity = read('../../android/app/src/main/java/ch/duartesantos/opengym/MainActivity.java')
+const activity = read('../../android/app/src/main/java/com/adrianster/gains/MainActivity.java')
 
 describe('the system bars on Android', () => {
   it('the stylesheet takes the larger of env() and what the app passes', () => {

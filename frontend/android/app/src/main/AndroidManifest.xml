@@ -108,7 +108,7 @@
     <!-- Gym check-in: scanning a membership QR/barcode with the camera. -->
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- Health Connect (#200): write-only, asked for only when the user turns it on in Settings.
-         openGym writes finished workouts and weigh-ins and reads nothing back. -->
+         Gains writes finished workouts and weigh-ins and reads nothing back. -->
     <uses-permission android:name="android.permission.health.WRITE_EXERCISE" />
     <uses-permission android:name="android.permission.health.WRITE_WEIGHT" />
 

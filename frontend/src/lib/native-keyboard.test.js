@@ -111,7 +111,7 @@ describe('keeping the focused field above the keyboard', () => {
 
 describe('the two halves agree', () => {
   const css = read('../index.css')
-  const activity = read('../../android/app/src/main/java/ch/duartesantos/opengym/MainActivity.java')
+  const activity = read('../../android/app/src/main/java/com/adrianster/gains/MainActivity.java')
 
   it('the app passes the IME inset as --native-kb and fires the event', () => {
     expect(activity).toMatch(/WindowInsetsCompat\.Type\.ime\(\)/)

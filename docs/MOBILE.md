@@ -20,7 +20,7 @@ Gains ships in two flavors from the same codebase:
 | Exercise media | served by your server (`exercise-media/`) | packed into the app (`exercise-media/`) |
 
 The mobile flavor never talks to a backend by default: no sign-in screen, no sync, no
-telemetry. State is mirrored from `localStorage` into `opengym-state.json` in the app's
+telemetry. State is mirrored from `localStorage` into `gains-state.json` in the app's
 private data directory on every change (iOS is allowed to evict WebView storage under
 pressure — the file mirror is the durable copy and is restored on launch). Backups go out
 through the OS share sheet instead of a browser download.
@@ -123,13 +123,13 @@ account's unsent changes aside on the phone until that account comes back.
 
 Where the phone keeps things, in case you ever need them by hand:
 
-- `opengym-state.json` in the app's private data directory — the durable copy of everything
+- `gains-state.json` in the app's private data directory — the durable copy of everything
   on the phone, written after every change (not reachable without a rooted phone or `adb`
-  on a debug build). `opengym-state-owner.json` beside it says which account that copy
+  on a debug build). `gains-state-owner.json` beside it says which account that copy
   belongs to: a paired phone only ever takes the file back for that account.
-- `opengym-stash.json`, same directory — changes kept by "Disconnect anyway" or by another
+- `gains-stash.json`, same directory — changes kept by "Disconnect anyway" or by another
   account pairing, waiting for their server and account.
-- `Documents/openGym/opengym-backup-YYYY-MM-DD.json` — only with Settings → Data & backup → **Auto-backup on
+- `Documents/Gains/gains-backup-YYYY-MM-DD.json` — only with Settings → Data & backup → **Auto-backup on
   changes** switched on: a dated copy after every finished workout or edited routine, in a
   folder of its own under the phone's Documents folder, where a file manager or a sync app
   (Syncthing, a cloud folder) can reach it without taking the rest of Documents along. One
@@ -141,7 +141,7 @@ Where the phone keeps things, in case you ever need them by hand:
   system folder picker — a sync app's folder, an SD card — and the copies go there instead,
   pruned to the same 14. The choice belongs to this phone and does not sync. If the folder
   stops accepting copies (the permission revoked, the folder deleted), they go to
-  `Documents/openGym` again and Settings says so until you choose the folder again or tap
+  `Documents/Gains` again and Settings says so until you choose the folder again or tap
   **Use default folder**.
 
 ### Photos and videos of your own exercises
@@ -153,7 +153,7 @@ survive), a GIF loses its comment and metadata blocks, and an MP4/MOV keeps its 
 sound while its metadata and any GPS or sensor track are zeroed. The original file name is
 never stored.
 
-- **Where it lives:** `Library/opengym-media/` in the app's own storage (iOS's Library folder,
+- **Where it lives:** `Library/gains-media/` in the app's own storage (iOS's Library folder,
   Android's files directory), one file per photo or video named by its SHA-256, plus a small
   `index.json`. The state keeps only a reference of a few hundred bytes. A MOV is stored with
   an `.mp4` name so the WebView plays it.
@@ -164,7 +164,7 @@ never stored.
   with the phone's token into the same folder, so they show offline too. A file that has not
   reached the server yet is owed like an unsynced change: **Disconnect** says so and keeps it.
   Big files wait for Wi-Fi unless you tap Settings → Data & backup → **Photos & videos**.
-- **Backups:** Android's cloud backup leaves `opengym-media/` out
+- **Backups:** Android's cloud backup leaves `gains-media/` out
   (`res/xml/backup_rules.xml`, `res/xml/data_extraction_rules.xml`) — Auto Backup drops an
   app's whole backup past 25 MB, and a few videos would take the state file down with them. A
   device-to-device transfer keeps it. iOS includes Library in iCloud and computer backups.
@@ -194,10 +194,10 @@ that.
 - **Write-only.** The manifest declares `WRITE_EXERCISE` and `WRITE_WEIGHT` and nothing else, and
   Gains reads nothing back.
 - **No duplicates.** Every record carries Gains' own id as its `clientRecordId`
-  (`opengym-w-<workout id>`, `opengym-bw-<day>`), so writing it again replaces it. An edited workout
+  (`gains-w-<workout id>`, `gains-bw-<day>`), so writing it again replaces it. An edited workout
   or weigh-in is written again; a deleted one is removed from Health Connect.
 - **This phone only.** Whether it is on, and a fingerprint of each record already written, live in
-  `opengym-health.json` in the app's data directory, never in the synced state: it does not travel
+  `gains-health.json` in the app's data directory, never in the synced state: it does not travel
   to a server, into a backup export, or to a second phone. It works the same in local mode and
   paired with a server, because the writing happens on the phone.
 - **When it writes:** after each save (finishing a workout, a weigh-in, an edit), when the app comes

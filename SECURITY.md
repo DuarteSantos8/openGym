@@ -6,9 +6,8 @@ need — what the app protects you from and what it doesn't.
 
 ## Supported versions
 
-Only the current **`main`**. Gains is in beta and has not cut releases of its own yet (the
-[CHANGELOG.md](CHANGELOG.md) before it begins is the history of the project it was forked from); there
-is no LTS or maintenance branch. A fix lands on `main` and in the images published from it.
+Only the current **`main`**. Gains is in beta and has not cut releases yet; there is no LTS or
+maintenance branch. A fix lands on `main` and in the images published from it.
 
 Updating a self-hosted instance:
 

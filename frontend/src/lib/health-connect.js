@@ -4,7 +4,7 @@
 //
 // Write-only, and only on request: the user turns it on in Settings, on each phone. Every record
 // carries a client id of its own (a workout's id, a weigh-in's day), so writing it again replaces
-// it instead of adding a second one, and anything openGym wrote can be found and removed again.
+// it instead of adding a second one, and anything Gains wrote can be found and removed again.
 import { workoutText } from './workout-text.js'
 import { modeForEntry, hasCompletedWork } from './workout-model.js'
 import { isoOf } from './format.js'
@@ -52,7 +52,7 @@ export function sessionRecord(w, { unit, nameOf, speedUnit }) {
   const start = Number(w?.start), end = Number(w?.end)
   if (!w?.id || !(start > 0) || !(end > start)) return null
   return {
-    id: 'opengym-w-' + w.id,
+    id: 'gains-w-' + w.id,
     start, end,
     type: sessionType(w),
     title: clip(String(w.name || '').trim()),
@@ -71,7 +71,7 @@ export function weightRecord(b, unit) {
   const time = typed > 0 && isoOf(new Date(typed)) === b.d ? typed : localMorning(b.d)
   if (!(time > 0)) return null
   const kg = unit === 'lb' ? w / LB_PER_KG : w
-  return { id: 'opengym-bw-' + b.d, time, kg: Math.round(kg * 1000) / 1000 }
+  return { id: 'gains-bw-' + b.d, time, kg: Math.round(kg * 1000) / 1000 }
 }
 
 function localMorning(iso) {
@@ -109,7 +109,7 @@ export function recordKey(rec) {
 /**
  * What a sync has to do, given the records now and `written`, what this phone wrote before
  * ({ [id]: { k: 'session' | 'weight', h: recordKey } }). New and changed records are written,
- * records that are gone from openGym (a deleted workout, a removed weigh-in) are removed.
+ * records that are gone from Gains (a deleted workout, a removed weigh-in) are removed.
  * Returns { sessions, weights, remove: { sessions: [id], weights: [id] }, written } — `written`
  * being what the phone has written once the sync went through.
  */
@@ -135,7 +135,7 @@ export function planSync({ sessions, weights }, written = {}) {
   return out
 }
 
-/** Every record this phone wrote, by type — what "remove what openGym wrote" takes away. */
+/** Every record this phone wrote, by type — what "remove what Gains wrote" takes away. */
 export function writtenIds(written = {}) {
   const out = { sessions: [], weights: [] }
   for (const [id, was] of Object.entries(written || {})) {

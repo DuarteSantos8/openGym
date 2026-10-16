@@ -165,7 +165,7 @@ describe('export as .fit', () => {
     const host = mountTopSheet()
     await act(async () => { button(host, 'Export as .fit file').click() })
     expect(clicked).toHaveLength(1)
-    expect(clicked[0]).toMatch(/^opengym-2026-09-15-\d{4}\.fit$/)
+    expect(clicked[0]).toMatch(/^gains-2026-09-15-\d{4}\.fit$/)
     const bytes = new Uint8Array(await blobs[0].arrayBuffer())
     expect(String.fromCharCode(...bytes.slice(8, 12))).toBe('.FIT')
     expect(toast).toHaveBeenCalledWith('Saved. Garmin Connect can take it from here.')

@@ -1,6 +1,6 @@
 /* Hub tokens: how a separate sync service (the hub) acts for one profile without a session.
  *
- * The hub signs a short-lived ES256 JWS per call; openGym holds only the public half of its key,
+ * The hub signs a short-lived ES256 JWS per call; Gains holds only the public half of its key,
  * from the environment, and never fetches a key over the network. The contract is shared with the
  * hub's other verifier, so it is followed to the letter:
  *
@@ -59,7 +59,7 @@ export function hubKeysFromEnv(env) {
     }
     const kid = label(jwk.kid);
     // The hub's signing key has no business on this host; a set that carries it is a mistake.
-    if ('d' in jwk) throw new Error(`HUB_JWKS: key ${kid} is a private key, give openGym the public half only`);
+    if ('d' in jwk) throw new Error(`HUB_JWKS: key ${kid} is a private key, give Gains the public half only`);
     if (jwk.alg !== undefined && jwk.alg !== 'ES256') throw new Error(`HUB_JWKS: key ${kid} is not for ES256`);
     if (jwk.use !== undefined && jwk.use !== 'sig') throw new Error(`HUB_JWKS: key ${kid} is not a signing key`);
     if (keys.has(jwk.kid)) throw new Error(`HUB_JWKS: kid ${kid} appears twice`);

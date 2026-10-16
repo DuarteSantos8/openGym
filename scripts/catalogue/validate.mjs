@@ -48,7 +48,7 @@ export function validateCatalogue(dir) {
     if (typeof e.description !== 'string') say(file, '"description" must be text (may be empty)')
     if (!Array.isArray(e.instructions) || e.instructions.some(s => !isText(s))) say(file, '"instructions" must be a list of steps (text)')
     if (e.textSource !== 'exercisedb') {
-      // Text written for openGym follows the app's copy rules; the imported text is left as it came.
+      // Text written for Gains follows the app's copy rules; the imported text is left as it came.
       const texts = [e.name, e.description, ...(e.instructions || [])]
       if (texts.some(s => typeof s === 'string' && s.includes('—'))) say(file, 'no em dash (—) in exercise text, use a comma or a full stop')
       if (!e.description) say(file, '"description" is empty')

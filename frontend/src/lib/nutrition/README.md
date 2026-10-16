@@ -51,7 +51,7 @@ is not on the list needs a hub PR first.
   it. Default meal (a Gains rule; NutriTrace has none): the meal whose reminder time
   (`notifMealTimes`) is nearest now. A hand pick (`setMeal`) holds 30 minutes, and
   `setDate` clears it. `setDate` never goes past today, and the store refuses to log to a later day.
-- `sync.js`: `syncNow()` pushes openGym first, coalesces concurrent calls, keeps at least 5 s
+- `sync.js`: `syncNow()` pushes Gains first, coalesces concurrent calls, keeps at least 5 s
   between runs, and never throws. Also `refreshHubStatus()`, `useHubTrouble()` and
   `workoutSyncRow(id)`. The status is `null` until the hub has stored the person.
 - `trends.js` and `use-trends.js` (Progress › Trends): `useTrends` holds every diary day

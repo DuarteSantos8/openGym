@@ -1,7 +1,7 @@
 /* The paired phone app calls in from its WebView's own origin — https://localhost on Android,
    capacitor://localhost on iOS — so every request it makes with a JSON body or a Bearer token is
    preceded by a CORS preflight. #329 was a proxy in front that answered that preflight itself;
-   these pin what openGym's own answer looks like, so a regression here is never the cause.
+   these pin what Gains' own answer looks like, so a regression here is never the cause.
    Real server.js in a child. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

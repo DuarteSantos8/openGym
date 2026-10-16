@@ -21,7 +21,6 @@ Pick the part that matches what you're doing. If you just have a question, try t
 | [Kubernetes](SELF_HOSTING_KUBERNETES.md) | You run a cluster instead of Docker Compose |
 | [AI coach](AI_COACH.md) | You're deciding whether to turn the coach on, and with which provider |
 | [MCP server](../mcp/README.md) | You want Claude Desktop, Cursor or another AI client to read your training history |
-| [NixOS](NIX.md) | You run NixOS and want Gains native — flake packages and a NixOS module, no Docker |
 | [Security](../SECURITY.md) | You host it for other people, or want to report a vulnerability |
 
 All settings live in `.env`; [`.env.example`](../.env.example) explains each one, and the
@@ -35,8 +34,6 @@ All settings live in `.env`; [`.env.example`](../.env.example) explains each one
 | [CLAUDE.md](../CLAUDE.md) | You want the architecture in one page (written for Claude Code, useful for people too) |
 | [HTTP API](API.md) | You're touching routes; the OpenAPI spec is the source of truth |
 | [Sync: listing profiles](SYNC_USERS.md) | You run the hub next to this instance: `GET /api/sync/users`, its token and why it is separate |
-| [Roadmap](../ROADMAP.md) | You want to know what's planned and where your idea fits |
-| [Changelog](../CHANGELOG.md) | You want to know what changed in a release |
 
 Design notes for specific features, kept next to the code they describe:
 

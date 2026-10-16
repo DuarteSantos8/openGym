@@ -91,7 +91,7 @@ async function exchange(url, init) {
   const body = parsed && data && typeof data === 'object' ? data : null
   // The body rides along on the error: a 409 from /api/data carries the server's document.
   if (!r.ok) { const e = new Error((body && body.error) || ('HTTP ' + r.status)); e.status = r.status; e.data = body || {}; throw e }
-  if (!body) throw failure(t('The server answered with something other than openGym data.'), 'bad-response', r.status)
+  if (!body) throw failure(t('The server answered with something other than Gains data.'), 'bad-response', r.status)
   return body
 }
 
@@ -201,7 +201,7 @@ export function apiUpload(path, blob, mime, { onProgress, idleMs = 60000, XHR = 
       if (body && typeof body !== 'object') body = null
       if (xhr.status >= 200 && xhr.status < 300) {
         if (body) resolve(body)
-        else reject(failure(t('The server answered with something other than openGym data.'), 'bad-response', xhr.status))
+        else reject(failure(t('The server answered with something other than Gains data.'), 'bad-response', xhr.status))
         return
       }
       if (xhr.status === 413 && !body) { reject(failure('HTTP 413', 'proxy-too-large', 413)); return }
@@ -222,16 +222,16 @@ export function apiUpload(path, blob, mime, { onProgress, idleMs = 60000, XHR = 
 // "Failed to fetch" is all the WebView says when pairing never got an answer (#329), and it says
 // the same for a wrong address and for a reverse proxy that answered the CORS preflight itself
 // without letting the app's origin in (a Traefik `headers` middleware with an allow-list, which
-// never passes the OPTIONS on to openGym). A no-cors request needs no preflight and tells the two
+// never passes the OPTIONS on to Gains). A no-cors request needs no preflight and tells the two
 // apart: it settles when the server is there at all. Its answer cannot be read, nor needs to be.
 const PROBE_MS = 5000
 const hostOfBase = base => {
   try { const u = new URL(base); return u.host + u.pathname.replace(/\/$/, '') } catch { return base || '' }
 }
 // What /api/health says when it can be read (the app's native fetch reads it past CORS):
-// 'opengym', 'front' when something in front of openGym answered in its place (a redirect, a
+// 'opengym', 'front' when something in front of Gains answered in its place (a redirect, a
 // 401/403 or an HTML page: an SSO login, forward-auth, a proxy rule), 'other' for an answer that
-// is just not openGym's (another app's JSON, a proxy's plain "404 page not found"), and null
+// is just not Gains' (another app's JSON, a proxy's plain "404 page not found"), and null
 // when nothing readable came back.
 async function healthAnswer(base, ms) {
   const ctl = typeof AbortController === 'function' ? new AbortController() : null
@@ -265,20 +265,20 @@ async function whyUnreachable(base, ms) {
     reached = true
   } catch { /* not reachable either */ }
   finally { clearTimeout(timer) }
-  // Something answered. Whether it is openGym needs a readable answer: in the app the native
-  // fetch reads /api/health past CORS. A login page or a proxy rule answering in openGym's place
-  // is not a wrong address, and a page that is simply not openGym's is (#329). No readable
+  // Something answered. Whether it is Gains needs a readable answer: in the app the native
+  // fetch reads /api/health past CORS. A login page or a proxy rule answering in Gains' place
+  // is not a wrong address, and a page that is simply not Gains' is (#329). No readable
   // answer at all leaves the CORS explanation.
   const answer = reached ? await healthAnswer(base, ms) : null
   if (answer === 'front') {
-    return failure(t('That address answers, but a login page or proxy rule replied instead of openGym. Let /api/ through to openGym unchanged. See “Phone app and CORS” in docs/SELF_HOSTING.md.'), 'proxy-answered')
+    return failure(t('That address answers, but a login page or proxy rule replied instead of Gains. Let /api/ through to Gains unchanged. See “Phone app and CORS” in docs/SELF_HOSTING.md.'), 'proxy-answered')
   }
   if (answer === 'other') {
-    return failure(t('That address answers, but it isn’t an openGym server. Check the URL.'), 'not-opengym')
+    return failure(t('That address answers, but it isn’t a Gains server. Check the URL.'), 'not-opengym')
   }
   if (reached) {
     const origin = globalThis.location?.origin || 'https://localhost'
-    return failure(t('Your server was reached, but it refused the app’s request (CORS). If a reverse proxy such as Traefik adds CORS headers, let requests from {0} through to openGym unchanged. See “Phone app and CORS” in docs/SELF_HOSTING.md.', origin), 'cors')
+    return failure(t('Your server was reached, but it refused the app’s request (CORS). If a reverse proxy such as Traefik adds CORS headers, let requests from {0} through to Gains unchanged. See “Phone app and CORS” in docs/SELF_HOSTING.md.', origin), 'cors')
   }
   // An address typed without a scheme is tried as https://. A home server on plain http gives
   // that try nothing to talk to, while the phone's browser, which tries http, opens it (#428).
@@ -327,7 +327,7 @@ export async function pairRedeem(serverBase, code, { probeMs = PROBE_MS } = {}) 
   }
   // Anything that is not a pairing would be saved as one — and the phone would then send every
   // change to a server that never gave it a token.
-  if (!data.token || !data.user) throw failure(t('The server answered with something other than openGym data.'), 'bad-response', 200)
+  if (!data.token || !data.user) throw failure(t('The server answered with something other than Gains data.'), 'bad-response', 200)
   return data
 }
 

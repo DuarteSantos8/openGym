@@ -339,7 +339,7 @@ describe('date and meal selection', () => {
 })
 
 describe('sync now', () => {
-  it('pushes openGym first, then asks the hub, and keeps its status', async () => {
+  it('pushes Gains first, then asks the hub, and keeps its status', async () => {
     const order = []
     useStore.setState({ pushState: vi.fn(async () => { order.push('push') }) })
     vi.stubGlobal('fetch', vi.fn((...a) => { order.push('hub'); return nt.fetch(...a) }))

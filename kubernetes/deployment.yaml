@@ -2,19 +2,19 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: opengym
-  name: opengym
+    app: gains
+  name: gains
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: opengym
+      app: gains
   template:
     metadata:
       labels:
-        app: opengym
+        app: gains
     spec:
       containers:
         - name: api
@@ -30,9 +30,9 @@ spec:
             - name: DATA_DIR
               value: /data
             - name: RP_ID
-              value: opengym.example.com
+              value: gains.example.com
             - name: ORIGIN
-              value: https://opengym.example.com
+              value: https://gains.example.com
             # Everything else in .env.example (INVITE_ONLY, ADMIN_UIDS, FIRST_USER_ADMIN,
             # ALLOW_GUEST, DEFAULT_LANG, PASSWORD_LOGIN, the push keys, ...) goes here the
             # same way. FIRST_USER_ADMIN="1" makes the first profile created on an empty

@@ -1,7 +1,7 @@
 /* The phone's backend for lib/media-store.js: plain files in the app's own folder.
  *
- *   Library/opengym-media/<hash>.<playExt>   one file per photo, GIF or video
- *   Library/opengym-media/index.json          { hash: { mime, size, putAt, shownAt, pending, rejected } }
+ *   Library/gains-media/<hash>.<playExt>   one file per photo, GIF or video
+ *   Library/gains-media/index.json          { hash: { mime, size, putAt, shownAt, pending, rejected } }
  *
  * Directory.Library is iOS's Library folder (kept in device backups, never shown in Files) and
  * Android's files directory. Android's cloud backup is told to leave the folder out
@@ -25,7 +25,7 @@ import { MEDIA_MIMES } from './media-refs.js'
 import { sniffKind } from './media-sniff.js'
 import { sha256Hex } from './sha256.js'
 
-const DIR = 'opengym-media'
+const DIR = 'gains-media'
 const INDEX = DIR + '/index.json'
 const CHUNK = 3 * 1024 * 1024   // a multiple of 3, so no piece but the last has base64 padding
 const FILE_RE = /^([0-9a-f]{64})\.(jpg|png|webp|gif|mp4|webm)$/

@@ -37,7 +37,7 @@ const outputs = [];
   const { EXDB } = await import(pathToFileURL(src).href);
   // The library slice a prompt gets is capped (MAX_LIBRARY) and takes each body part's entries in
   // this order, so the order decides what the Coach can pick from. Since the catalogue grew past
-  // 5,000 exercises (v1.4.0), the well-known core comes first: the 1,324 exercises openGym always
+  // 5,000 exercises (v1.4.0), the well-known core comes first: the 1,324 exercises Gains always
   // had, then the newer lifts, and stretches, mobility, yoga and the like last.
   const LATE = new Set(['stretching', 'mobility', 'yoga', 'pilates', 'rehab', 'combat']);
   const catDir = join(root, 'catalogue', 'exercises');

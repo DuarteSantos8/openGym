@@ -9,7 +9,7 @@ import { isHubTrouble, syncNow as hubSyncNow, useHubStatusRefresh, useHubSync } 
 import { TONE_TINT as TINT, connectionView, useOnline } from './ServerSync.jsx'
 import { Row, Section } from './ui.jsx'
 
-// The hub's openGym ↔ NutriTrace sync, in words (fitness-hub src/sync/engine.ts SyncState).
+// The hub's Gains ↔ NutriTrace sync, in words (fitness-hub src/sync/engine.ts SyncState).
 function hubView(status) {
   if (!status) return { tone: 'quiet', icon: 'cloud', line: t('Not synced yet') }
   switch (status.state) {
@@ -22,8 +22,8 @@ function hubView(status) {
   }
 }
 
-// Profile's sync status (ia-proposal §5): the same two states the avatar's dot watches, openGym's
-// own sync and the hub's openGym ↔ NutriTrace sync, and one "Sync now" for both. Only for an
+// Profile's sync status (ia-proposal §5): the same two states the avatar's dot watches, Gains'
+// own sync and the hub's Gains ↔ NutriTrace sync, and one "Sync now" for both. Only for an
 // account that syncs: a guest, a phone kept local and the demo have nothing to sync.
 export default function SyncStatusCard() {
   const user = useStore(s => s.user)
@@ -40,7 +40,7 @@ export default function SyncStatusCard() {
     if (busy) return
     setBusy(true)
     try {
-      // openGym first (the hub reads the change from there), so the hub run need not push again.
+      // Gains first (the hub reads the change from there), so the hub run need not push again.
       const st = await useStore.getState().syncNow()
       const trainingView = connectionView(st)
       // A training sync that failed says so first; then the hub's half: no answer, or a state that

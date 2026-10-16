@@ -105,7 +105,7 @@ describe('the backup folder rows', () => {
   })
 })
 
-// Android QA: the Auto-backup row still said Documents/openGym after another folder was chosen.
+// Android QA: the Auto-backup row still said Documents/Gains after another folder was chosen.
 describe('the Auto-backup row', () => {
   const subtitle = () => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Auto-backup on changes'))?.querySelector('.lrow-s')?.textContent
   it('names the chosen folder', async () => {
@@ -113,11 +113,11 @@ describe('the Auto-backup row', () => {
     mocks.folder = { uri: 'content://tree/Sync', label: 'SyncFolder' }
     await mount()
     expect(subtitle()).toContain('“SyncFolder”')
-    expect(subtitle()).not.toContain('Documents/openGym')
+    expect(subtitle()).not.toContain('Documents/Gains')
   })
-  it('names Documents/openGym with no folder chosen', async () => {
+  it('names Documents/Gains with no folder chosen', async () => {
     mocks.S.autoBackup = true
     await mount()
-    expect(subtitle()).toContain('Documents/openGym')
+    expect(subtitle()).toContain('Documents/Gains')
   })
 })

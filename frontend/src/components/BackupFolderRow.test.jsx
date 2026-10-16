@@ -34,7 +34,7 @@ const tap = async el => { await act(async () => { el.click() }) }
 describe('BackupFolderRow', () => {
   it('shows the default folder, and nothing to go back to', async () => {
     await mount()
-    expect(rowWith('Backup folder').textContent).toContain('Documents/openGym')
+    expect(rowWith('Backup folder').textContent).toContain('Documents/Gains')
     expect(rowWith('Use default folder')).toBeUndefined()
   })
 
@@ -44,7 +44,7 @@ describe('BackupFolderRow', () => {
     await tap(rowWith('Backup folder'))
     expect(rowWith('Backup folder').textContent).toContain('Sync')
     await tap(rowWith('Use default folder'))
-    expect(rowWith('Backup folder').textContent).toContain('Documents/openGym')
+    expect(rowWith('Backup folder').textContent).toContain('Documents/Gains')
     expect(rowWith('Use default folder')).toBeUndefined()
   })
 
@@ -61,13 +61,13 @@ describe('BackupFolderRow', () => {
     expect(host.querySelector('.backup-lost')).toBeNull()
     await act(async () => { m.listeners.forEach(fn => fn({ lost: true, lostLabel: 'Sync' })) })
     expect(host.querySelector('.backup-lost').textContent).toContain('Gains can no longer write to “Sync”')
-    expect(rowWith('Backup folder').textContent).toContain('Documents/openGym')
+    expect(rowWith('Backup folder').textContent).toContain('Documents/Gains')
     await tap(rowWith('Use default folder'))
     expect(host.querySelector('.backup-lost')).toBeNull()
   })
 })
 
-// Android QA: after another folder was chosen, the Auto-backup row still said Documents/openGym.
+// Android QA: after another folder was chosen, the Auto-backup row still said Documents/Gains.
 describe('the Auto-backup subtitle', () => {
   it('names the chosen folder, or the default', async () => {
     const { autoBackupSubtitle } = await import('./BackupFolderRow.jsx')
@@ -75,7 +75,7 @@ describe('the Auto-backup subtitle', () => {
       .toBe('Saves a dated copy to “SyncFolder” after finishing a workout or editing a routine, and keeps the newest 14.')
     expect(autoBackupSubtitle({ uri: 'content://tree/x' }, 14))
       .toBe('Saves a dated copy to the folder you chose after finishing a workout or editing a routine, and keeps the newest 14.')
-    for (const f of [{}, null, { lost: true, lostLabel: 'SyncFolder' }]) expect(autoBackupSubtitle(f, 14)).toContain('Documents/openGym')
+    for (const f of [{}, null, { lost: true, lostLabel: 'SyncFolder' }]) expect(autoBackupSubtitle(f, 14)).toContain('Documents/Gains')
   })
 
   it('the lost-folder warning is a warning row, not a big title', async () => {

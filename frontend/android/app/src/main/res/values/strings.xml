@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">openGym</string>
-    <string name="title_activity_main">openGym</string>
-    <string name="package_name">ch.duartesantos.opengym</string>
-    <string name="custom_url_scheme">ch.duartesantos.opengym</string>
+    <string name="app_name">Gains</string>
+    <string name="title_activity_main">Gains</string>
+    <string name="package_name">com.adrianster.gains</string>
+    <string name="custom_url_scheme">com.adrianster.gains</string>
     <string name="rest_countdown_channel_name">Rest countdown</string>
     <string name="rest_channel_name">Rest timer</string>
     <string name="rest_quiet_channel_name">Rest timer, without vibration</string>

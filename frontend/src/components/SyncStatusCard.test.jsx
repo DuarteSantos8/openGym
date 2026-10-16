@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-// Profile's sync status (ia-proposal §5): openGym's own sync and the hub's openGym ↔ NutriTrace
+// Profile's sync status (ia-proposal §5): Gains' own sync and the hub's Gains ↔ NutriTrace
 // sync, the two the avatar's dot watches, and one Sync now for both. Against the fake hub.
 import { act } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -60,7 +60,7 @@ describe('SyncStatusCard', () => {
     expect(syncNow).toHaveBeenCalledTimes(1)
     expect(nt.requests.some(r => r.method === 'POST' && r.path === '/hub/api/sync/now')).toBe(true)
     expect(toast).toHaveBeenCalledWith('Nutrition sync needs attention')
-    // openGym was synced by the first half: the hub run does not push it a second time
+    // Gains was synced by the first half: the hub run does not push it a second time
     expect(useStore.getState().pushState).not.toHaveBeenCalled()
   })
 

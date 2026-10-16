@@ -78,7 +78,7 @@ library.
 - **Export backup (JSON)** saves your whole profile as one file. **Export with photos & videos
   (.zip)** includes your media as well.
 - **Import backup** restores such a file and *replaces* everything currently in the app.
-- **Auto-backup on changes** (phone app only) saves a dated copy to `Documents/openGym` after each
+- **Auto-backup on changes** (phone app only) saves a dated copy to `Documents/Gains` after each
   workout or routine edit and keeps the newest 14. Point a sync app at that folder to get them off
   the phone — or, on Android, choose the sync app's own folder under Settings → Data & backup → **Backup folder**.
 

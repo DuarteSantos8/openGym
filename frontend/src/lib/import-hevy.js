@@ -102,7 +102,7 @@ export async function fetchHevyAccount(apiKey, { onProgress } = {}) {
 
 /* ---------------------------------------------------------- template → id -- */
 
-// Hevy primary_muscle_group → openGym body-part for exercises we invent. Indexed straight from
+// Hevy primary_muscle_group → Gains body-part for exercises we invent. Indexed straight from
 // the API's text, so it has no prototype: a plain object answers "constructor" and "__proto__"
 // with Object's own machinery, and that would ride into the store as a body part.
 const HEVY_BP = Object.assign(Object.create(null), {
@@ -326,7 +326,7 @@ export function parseHevyWorkouts(workouts, templates, { unit = 'kg', customEx =
 }
 
 /**
- * Hevy routine → openGym routine config.
+ * Hevy routine → Gains routine config.
  * Work sets become `sets`×`reps`/`weight`; warm-ups become `warmupSets`;
  * supersets keep adjacency via `sg`. Always imported as *new* routines.
  */
@@ -336,7 +336,7 @@ export function parseHevyRoutines(routines, templates, { unit = 'kg', customEx =
 
   for (const r of routines || []) {
     const ex = []
-    const sgMap = new Map() // Hevy superset_id → openGym sg token
+    const sgMap = new Map() // Hevy superset_id → Gains sg token
 
     for (const he of r.exercises || []) {
       const id = R.resolve(he.exercise_template_id, he.title)

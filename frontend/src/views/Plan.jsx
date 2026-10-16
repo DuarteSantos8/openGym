@@ -135,7 +135,7 @@ export default function Plan({ view = 'schedule' }) {
       title: t('Plan'),
       subtitle: has ? null : t('Add an exercise to a routine first. An empty plan has nothing to share.'),
       items: [
-        { icon: 'share', label: t('Export plan file'), sub: t('A small file a friend can import into their own openGym. Routines only, none of your workouts or weigh-ins.'), disabled: !has, onClick: exportPlanFile },
+        { icon: 'share', label: t('Export plan file'), sub: t('A small file a friend can import into their own Gains. Routines only, none of your workouts or weigh-ins.'), disabled: !has, onClick: exportPlanFile },
         { icon: 'note', label: t('Print / Save as PDF'), disabled: !has, onClick: printWholePlan },
         { icon: 'download', label: t('Import a plan file'), onClick: () => fileRef.current?.click() },
         { icon: 'clipboard', label: t('Load starter plan'), onClick: starterPlanSheet },
@@ -224,7 +224,7 @@ function Schedule({ S, update, nav, mode }) {
   const replacesOwn = ownSeq.length > 0 && (ownSeq.length !== seq.length || ownSeq.some((id, i) => id !== seq[i]))
   const adopt = () => confirmSheet({
     title: t('Use this rotation?'),
-    message: t('Your coach gives up control of this week: openGym owns the queue from here on and repeats these sessions by itself once they are all done. A new week from the coach’s app would replace this rotation.')
+    message: t('Your coach gives up control of this week: Gains owns the queue from here on and repeats these sessions by itself once they are all done. A new week from the coach’s app would replace this rotation.')
       + (replacesOwn ? ' ' + t('Your own loop gets replaced.') : ''),
     confirmText: t('Use this rotation'),
     onConfirm: () => update(s => saveRotation(s, seq, '')),

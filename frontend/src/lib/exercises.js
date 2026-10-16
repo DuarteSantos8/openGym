@@ -530,7 +530,7 @@ function tokenScore(entry, tok, ctx) {
 }
 
 // Among equally good matches, the one people most likely mean: the familiar core of the
-// catalogue (the exercises openGym shipped before v1.4.0), the common equipment, and a lift
+// catalogue (the exercises the app shipped at first), the common equipment, and a lift
 // before a stretch. Small on purpose: it orders ties, it never beats a better match.
 const CLASSIC = new Set(V13_IDS)
 const EQ_PRIOR = { barbell: 4, dumbbell: 4, cable: 3, 'leverage machine': 3, 'body weight': 3, 'smith machine': 2, kettlebell: 2, 'ez barbell': 2, 'sled machine': 2 }

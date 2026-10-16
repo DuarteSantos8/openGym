@@ -64,6 +64,14 @@ describe('import', () => {
     expect(await media.get(main.hash)).toMatchObject({ mime: 'image/jpeg', pending: true })
   })
 
+  it('a zip written under the earlier name of the data file still restores', async () => {
+    const S = stateWith([{ id: 'a', n: 'a' }])
+    const zip = await zipStore([{ name: 'opengym-backup.json', blob: new Blob([JSON.stringify(S)]) }])
+    const read = await readBackupFile(new File([zip], 'backup.zip'))
+    expect(read.zip).toBe(true)
+    expect(read.state.customEx[0].id).toBe('a')
+  })
+
   it('a tampered file is skipped, and so is one over its cap or of a type that is not stored', async () => {
     const photo = jpeg()
     const main = await refFor(photo, 'image/jpeg')
@@ -100,7 +108,7 @@ describe('import', () => {
     await expect(readBackupFile(new File([zip], 'x.zip'))).rejects.toThrow()
   })
 
-  // German QA: 'Import fehlgeschlagen: not-zip', '... not an openGym backup', 'Unexpected token ...'.
+  // German QA: 'Import fehlgeschlagen: not-zip', '... not a Gains backup', 'Unexpected token ...'.
   it('says why an import failed in words, never the thrown developer text', async () => {
     const why = async (content, name) => { try { await readBackupFile(new File([content], name)) } catch (e) { return backupImportError(e) } }
     const notOurs = 'That file isn’t a Gains backup.'

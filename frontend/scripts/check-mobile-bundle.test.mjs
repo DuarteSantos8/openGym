@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { checkMobileBundle } from './check-mobile-bundle.mjs'
 
-const MOBILE_HTML = '<head><meta name="opengym-flavor" content="mobile"><script type="module" crossorigin src="./assets/index-BKpgfSzf.js"></script><link rel="stylesheet" href="./assets/index-x.css"></head>'
+const MOBILE_HTML = '<head><meta name="gains-flavor" content="mobile"><script type="module" crossorigin src="./assets/index-BKpgfSzf.js"></script><link rel="stylesheet" href="./assets/index-x.css"></head>'
 const WEB_HTML = '<head><script type="module" crossorigin src="./assets/index-C_XIl0Rk.js"></script><link rel="stylesheet" href="./assets/index-x.css"></head>'
 
 const tree = (files) => {

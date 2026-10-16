@@ -1,4 +1,4 @@
-package ch.duartesantos.opengym;
+package com.adrianster.gains;
 
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -29,13 +29,13 @@ import android.util.Log;
  * the user also allows notifications there.
  */
 public final class RestAlert {
-    static final String ACTION = "ch.duartesantos.opengym.action.REST_OVER";
-    static final String ACTION_PAUSE = "ch.duartesantos.opengym.rest.PAUSE";
-    static final String ACTION_MINUS = "ch.duartesantos.opengym.rest.MINUS";
-    static final String ACTION_PLUS = "ch.duartesantos.opengym.rest.PLUS";
-    static final String ACTION_SKIP = "ch.duartesantos.opengym.rest.SKIP";
-    static final String ACTION_ACCENT = "ch.duartesantos.opengym.rest.ACCENT";
-    static final String ACTION_HOLD = "ch.duartesantos.opengym.rest.HOLD";
+    static final String ACTION = "com.adrianster.gains.action.REST_OVER";
+    static final String ACTION_PAUSE = "com.adrianster.gains.rest.PAUSE";
+    static final String ACTION_MINUS = "com.adrianster.gains.rest.MINUS";
+    static final String ACTION_PLUS = "com.adrianster.gains.rest.PLUS";
+    static final String ACTION_SKIP = "com.adrianster.gains.rest.SKIP";
+    static final String ACTION_ACCENT = "com.adrianster.gains.rest.ACCENT";
+    static final String ACTION_HOLD = "com.adrianster.gains.rest.HOLD";
     static final String CHANNEL_ID = "rest-over";
     /**
      * Settings → Vibrate off. Android keeps a channel's vibration as it was when the channel was
@@ -100,7 +100,7 @@ public final class RestAlert {
             am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
             exact = false;
         }
-        if (!exact) Log.w("openGym", "exact alarms not allowed; the rest countdown sounds the end itself");
+        if (!exact) Log.w("Gains", "exact alarms not allowed; the rest countdown sounds the end itself");
         if (Build.VERSION.SDK_INT >= 26) {
             NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
             String posted = alarmBuzz ? QUIET_CHANNEL_ID : channelId;
@@ -155,7 +155,7 @@ public final class RestAlert {
         intent.putExtra("alarmBuzz", lastAlarmBuzz);
         intent.putExtra("channelId", lastChannel);
         intent.putExtra("at", at);
-        new Thread(() -> fire(ctx, intent), "opengym-rest").start();
+        new Thread(() -> fire(ctx, intent), "gains-rest").start();
     }
 
     /** One alert per end: the countdown and an exact alarm reach the same end in the same instant. */
@@ -171,7 +171,7 @@ public final class RestAlert {
         PowerManager.WakeLock cpu = null;
         try {
             PowerManager pm = (PowerManager) ctx.getSystemService(Context.POWER_SERVICE);
-            cpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "opengym:rest");
+            cpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "gains:rest");
             cpu.acquire(10_000);
         } catch (Exception ignored) { /* tone still attempts without the lock */ }
         try {
@@ -226,7 +226,7 @@ public final class RestAlert {
             PowerManager pm = (PowerManager) ctx.getSystemService(Context.POWER_SERVICE);
             PowerManager.WakeLock screen = pm.newWakeLock(
                     PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
-                    "opengym:rest-screen");
+                    "gains:rest-screen");
             screen.acquire(3000);
         } catch (Exception ignored) { /* */ }
     }
@@ -405,7 +405,7 @@ public final class RestAlert {
             if (Build.VERSION.SDK_INT >= 26) ctx.startForegroundService(i);
             else ctx.startService(i);
         } catch (Exception e) {
-            Log.w("openGym", "rest countdown not started", e);
+            Log.w("Gains", "rest countdown not started", e);
         }
     }
 
@@ -521,7 +521,7 @@ public final class RestAlert {
      * waits until the clip has been heard.
      */
     static void playNow(Context ctx, String tone) {
-        new Thread(() -> playSound(ctx, tone), "opengym-tone").start();
+        new Thread(() -> playSound(ctx, tone), "gains-tone").start();
     }
 
     private static void playSound(Context ctx, String tone) {
@@ -573,17 +573,17 @@ public final class RestAlert {
             // modes) and the tone was then silently skipped: stream the same clip instead.
             boolean streaming = false;
             if (track.getState() != AudioTrack.STATE_INITIALIZED) {
-                Log.w("openGym", "rest tone: static track refused, streaming it");
+                Log.w("Gains", "rest tone: static track refused, streaming it");
                 track.release();
                 track = buildTrack(attrs, Math.max(min * 2, 8192), AudioTrack.MODE_STREAM);
                 streaming = true;
             }
             // Each way out says why in logcat: a rest tone that never plays is otherwise silent twice.
-            if (track.getState() != AudioTrack.STATE_INITIALIZED) { Log.w("openGym", "rest tone: track not initialized"); return; }
+            if (track.getState() != AudioTrack.STATE_INITIALIZED) { Log.w("Gains", "rest tone: track not initialized"); return; }
             int frames = samples.length;
             if (!streaming) {
                 frames = track.write(samples, 0, samples.length);
-                if (frames <= 0) { Log.w("openGym", "rest tone: write returned " + frames); return; }
+                if (frames <= 0) { Log.w("Gains", "rest tone: write returned " + frames); return; }
             }
             track.setVolume(1f);
             am = (AudioManager) ctx.getSystemService(Context.AUDIO_SERVICE);
@@ -594,7 +594,7 @@ public final class RestAlert {
             // A streaming track is fed after play(); write() blocks until the mixer has room.
             if (streaming) {
                 int written = track.write(samples, 0, samples.length);
-                if (written <= 0) { Log.w("openGym", "rest tone: stream write returned " + written); return; }
+                if (written <= 0) { Log.w("Gains", "rest tone: stream write returned " + written); return; }
             }
             long clipMs = frames * 1000L / RATE;
             long deadline = System.currentTimeMillis() + clipMs + 3000;
@@ -606,7 +606,7 @@ public final class RestAlert {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (Exception e) {
-            Log.w("openGym", "rest tone failed", e);   // the notification still posted
+            Log.w("Gains", "rest tone failed", e);   // the notification still posted
         }
         finally {
             if (track != null) {

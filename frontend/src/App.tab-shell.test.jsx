@@ -187,7 +187,7 @@ describe('a history the mirror does not match', () => {
   it('a sheet\'s entry left under the page does not stop the walk short', async () => {
     await launch('#/train')
     // What Modals.jsx leaves behind when a sheet closes as the app moves on.
-    window.history.pushState({ ...window.history.state, idx: 1, openGymSheet: true }, '')
+    window.history.pushState({ ...window.history.state, idx: 1, gainsSheet: true }, '')
     await go(() => nav('/train/history'))
     expect(idx()).toBe(2)
     await click(tab('Home'))
@@ -435,7 +435,7 @@ describe('a sheet\'s entry nobody is closing', () => {
     window.history.pushState({ marker: true }, '', '#/not-the-app')
     window.history.pushState({ usr: null, key: 'a', idx: 0 }, '', '#/train')
     window.history.pushState({ usr: null, key: 'b', idx: 1 }, '', '#/train/history')
-    window.history.pushState({ usr: null, key: 'b', idx: 2, openGymSheet: true }, '')
+    window.history.pushState({ usr: null, key: 'b', idx: 2, gainsSheet: true }, '')
     host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
     await act(async () => { root.render(<App />) })
     await settle()
@@ -446,7 +446,7 @@ describe('a sheet\'s entry nobody is closing', () => {
   it('a leaked one mid-session: each tap of back goes back, and taps do not pile up', async () => {
     await launch('#/train')
     await go(() => nav('/train/history'))
-    window.history.pushState({ ...window.history.state, idx: 2, openGymSheet: true }, '')
+    window.history.pushState({ ...window.history.state, idx: 2, gainsSheet: true }, '')
     const backBtn = () => document.querySelector('.sub-hdr button[aria-label="Back"]')
     await click(backBtn())
     await click(backBtn())

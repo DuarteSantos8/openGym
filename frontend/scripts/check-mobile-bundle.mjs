@@ -6,7 +6,7 @@
  * builds in one worktree) leaves the web index.html beside the mobile chunks, and the APK then
  * opens the web app: no Android-only settings, a service worker, the passkey login screen. Each
  * copy is checked for
- *   - the flavour tag the mobile build writes into index.html (vite.config.js, `opengym-flavor`),
+ *   - the flavour tag the mobile build writes into index.html (vite.config.js, `gains-flavor`),
  *   - every script and stylesheet index.html loads, present beside it,
  *   - a stamped service worker (no `__BUILD__` left in sw.js).
  *
@@ -26,8 +26,8 @@ export function checkCopy(dir) {
   const html = join(dir, 'index.html')
   if (!existsSync(html)) return [`${dir}: no index.html`]
   const text = readFileSync(html, 'utf8')
-  if (!/<meta\s+name="opengym-flavor"\s+content="mobile"/.test(text))
-    problems.push(`${dir}/index.html is not the mobile build (no opengym-flavor meta) — another build ran into dist/?`)
+  if (!/<meta\s+name="gains-flavor"\s+content="mobile"/.test(text))
+    problems.push(`${dir}/index.html is not the mobile build (no gains-flavor meta) — another build ran into dist/?`)
   for (const [, ref] of text.matchAll(/(?:src|href)="\.?\/?(assets\/[^"]+\.(?:js|css))"/g))
     if (!existsSync(join(dir, ref))) problems.push(`${dir}/index.html loads ${ref}, which is missing`)
   const sw = join(dir, 'sw.js')

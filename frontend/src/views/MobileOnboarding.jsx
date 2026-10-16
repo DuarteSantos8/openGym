@@ -1,5 +1,5 @@
 // Mobile build only, first launch: the choice useStore.boot() couldn't make on its own — keep
-// everything on this device, or connect to a self-hosted openGym server instead. See
+// everything on this device, or connect to a self-hosted Gains server instead. See
 // lib/remote.js for the pairing flow this hands off to.
 import { useState, useRef, useEffect } from 'react'
 import { useStore } from '../store/useStore.js'
@@ -104,8 +104,8 @@ export function ConnectSheet({ close, initialUrl = '', again = false }) {
     <SheetHeader title={again ? t('Pair again') : t('Connect to my server')} />
     <div className="muted small mb-7">
       {again
-        ? t('Open Settings → Account → “Pair the mobile app” on your openGym site in a browser and enter the new code shown there. What this phone kept is merged into your account.')
-        : t('Open Settings → Account → “Pair the mobile app” on the openGym site you’re already signed into, then enter its address and the code shown there.')}
+        ? t('Open Settings → Account → “Pair the mobile app” on your Gains site in a browser and enter the new code shown there. What this phone kept is merged into your account.')
+        : t('Open Settings → Account → “Pair the mobile app” on the Gains site you’re already signed into, then enter its address and the code shown there.')}
     </div>
     <input ref={ref} className="input" placeholder={t('Server address (e.g. gym.example.com)')} value={url}
       onChange={e => setUrl(e.target.value)} autoCapitalize="none" autoCorrect="off" inputMode="url" />
@@ -132,12 +132,12 @@ export default function MobileOnboarding() {
   return (
     <Stack className="gate-wrap ta-center">
       {head}
-      <div className="muted" style={{ marginBottom: 34 }}>{t('How do you want to use openGym?')}</div>
+      <div className="muted" style={{ marginBottom: 34 }}>{t('How do you want to use Gains?')}</div>
       <Button variant="primary" icon="lock" onClick={() => chooseLocalMode()}>{t('Use on this device')}</Button>
       <Spacer size={5} />
       <Button icon="cloud" onClick={() => useUI.getState().openSheet(close => <ConnectSheet close={close} />)}>{t('Connect to my server')}</Button>
       <div className="dim small lh-150" style={{ marginTop: 26 }}>
-        {t('Local keeps everything on this phone. Connecting syncs to your own openGym server instead. You can switch later in Settings.')}
+        {t('Local keeps everything on this phone. Connecting syncs to your own Gains server instead. You can switch later in Settings.')}
       </div>
       <Spacer size={9} />
       <Button icon="gear" onClick={() => openCfAccess()}>{t('Connection settings')}</Button>

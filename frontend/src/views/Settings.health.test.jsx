@@ -113,7 +113,7 @@ describe('Settings — Health Connect', () => {
   })
 
   it('turning it off asks whether to keep or remove what was written', async () => {
-    mocks.health = { on: true, written: { 'opengym-w-w1': { k: 'session', h: 'x' } }, error: null }
+    mocks.health = { on: true, written: { 'gains-w-w1': { k: 'session', h: 'x' } }, error: null }
     await mount()
     act(() => { writeSwitch().click() })
     expect(mocks.disableHealth).not.toHaveBeenCalled()

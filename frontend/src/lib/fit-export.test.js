@@ -90,7 +90,7 @@ describe('FIT time', () => {
 describe('encodeFit', () => {
   const file = encodeFit([
     { global: MSG.fileId, fields: [[0, 'enum', 4], [1, 'uint16', 255], [3, 'uint32z', 1234], [4, 'uint32', 1000]] },
-    { global: MSG.deviceInfo, fields: [[0, 'uint8', 0], [27, 'string', 'openGym', 16]] },
+    { global: MSG.deviceInfo, fields: [[0, 'uint8', 0], [27, 'string', 'Gains', 16]] },
   ])
   const d = decode(file)
 
@@ -108,7 +108,7 @@ describe('encodeFit', () => {
     expect(d.definitions.map(x => x.global)).toEqual([MSG.fileId, MSG.deviceInfo])
     expect(d.messages).toEqual([
       { global: MSG.fileId, local: 0, f: { 0: 4, 1: 255, 3: 1234, 4: 1000 } },
-      { global: MSG.deviceInfo, local: 1, f: { 0: 0, 27: 'openGym' } },
+      { global: MSG.deviceInfo, local: 1, f: { 0: 0, 27: 'Gains' } },
     ])
   })
 
@@ -171,7 +171,7 @@ describe('a strength workout as FIT', () => {
   const sets = of(d, MSG.set)
   const active = sets.filter(s => s[5] === 1)
 
-  it('is a valid activity file from openGym', () => {
+  it('is a valid activity file from Gains', () => {
     expect(fitCrc(workoutFit(strength))).toBe(0)
     const [id] = of(d, MSG.fileId)
     expect(id[0]).toBe(4)                         // activity
@@ -179,7 +179,7 @@ describe('a strength workout as FIT', () => {
     expect(id[3]).toBeGreaterThan(0)              // serial, stable per workout
     expect(id[4]).toBe(fitTime(T0))
     expect(of(d, MSG.fileCreator)[0][0]).toBe(104)
-    expect(of(d, MSG.deviceInfo)[0][27]).toBe('openGym')
+    expect(of(d, MSG.deviceInfo)[0][27]).toBe('Gains')
     expect(decode(workoutFit(strength)).messages.find(m => m.global === MSG.fileId).f[3]).toBe(id[3])
   })
 
@@ -346,7 +346,7 @@ describe('categories and sports', () => {
   })
   it('names the file after the day and the start time', () => {
     const local = new Date(2026, 9, 9, 18, 5).getTime()
-    expect(fitFileName({ start: local })).toBe('opengym-2026-10-09-1805.fit')
-    expect(fitFileName({})).toBe('opengym-workout.fit')
+    expect(fitFileName({ start: local })).toBe('gains-2026-10-09-1805.fit')
+    expect(fitFileName({})).toBe('gains-workout.fit')
   })
 })

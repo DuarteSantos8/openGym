@@ -1,4 +1,4 @@
-name: opengym
+name: gains
 
 services:
   # Passkey auth + per-user data (Node, no framework).

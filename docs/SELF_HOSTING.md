@@ -444,7 +444,7 @@ NGINX_PORT=80              # port the web container listens on, inside the conta
 BACKEND=api                # name of the API service that /api is proxied to
 PORT=3000                  # port the API listens on; web proxies to the same value
 RESOLVER=127.0.0.11        # DNS nginx resolves BACKEND with — Docker's, unless you are not on Docker
-BASE_PATH=                 # subpath openGym is served under, e.g. /gym — see below; empty = site root
+BASE_PATH=                 # subpath Gains is served under, e.g. /gym — see below; empty = site root
 SESSION_DAYS=90            # how long a sign-in lasts
 ```
 
@@ -568,7 +568,7 @@ are not encrypted at rest — whoever can read that folder can see them.
 Everything is in `./data`:
 
 ```bash
-tar czf opengym-backup-$(date +%F).tar.gz data/
+tar czf gains-backup-$(date +%F).tar.gz data/
 ```
 
 That archive contains all profiles, passkeys and workout history — and, if the activity log is
@@ -580,7 +580,7 @@ The photos and videos of custom exercises are in `data/uploads/`, and they are m
 the archive large. To leave them out:
 
 ```bash
-tar czf opengym-backup-$(date +%F).tar.gz --exclude=data/uploads data/
+tar czf gains-backup-$(date +%F).tar.gz --exclude=data/uploads data/
 ```
 
 Restored without them, every profile is intact, and an exercise whose file is gone shows a

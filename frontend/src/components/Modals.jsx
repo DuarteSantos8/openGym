@@ -180,7 +180,7 @@ export default function Modals() {
         // router's `idx` stays the true distance to the first entry (lib/tab-history.js).
         const state = history.state || {}
         const at = Number.isInteger(state.idx) ? state.idx + 1 : 1
-        history.pushState({ ...state, idx: at, openGymSheet: true }, '')
+        history.pushState({ ...state, idx: at, gainsSheet: true }, '')
         pushedEntries.current++
       }
     } else if (sheets.length < prev) {

@@ -1,6 +1,6 @@
 // Mobile build only: "connect to my server" mode (see mobile.js's header comment for why the
 // mobile flavor has no backend at all by default). This is the alternative — pairing the app to
-// an already self-hosted openGym server instead of keeping data device-local.
+// an already self-hosted Gains server instead of keeping data device-local.
 //
 // Passkeys can't be used from inside the app's own WebView (its origin never matches the
 // server's RP_ID), so auth here is a short one-time code redeemed from an already signed-in

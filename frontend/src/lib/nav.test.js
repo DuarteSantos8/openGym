@@ -21,7 +21,7 @@ describe('nav', () => {
   })
 
   it('a closing sheet hands its history entry to the next page', () => {
-    history.pushState({ openGymSheet: true }, '')
+    history.pushState({ gainsSheet: true }, '')
     const close = vi.fn()
     closeThenNav(close, '/me/workout')
     expect(close).toHaveBeenCalledOnce()
@@ -42,7 +42,7 @@ describe('nav', () => {
     })
 
     it('waits for the sheet\'s entry to be walked off, then replaces the page under it', () => {
-      history.pushState({ openGymSheet: true }, '')
+      history.pushState({ gainsSheet: true }, '')
       noteSheetEntries(1)
       const close = vi.fn()
       closeThenReplace(close, '/progress/body/photos')
@@ -57,7 +57,7 @@ describe('nav', () => {
 
     it('replaces anyway when the walk-off never comes', () => {
       vi.useFakeTimers()
-      history.pushState({ openGymSheet: true }, '')
+      history.pushState({ gainsSheet: true }, '')
       noteSheetEntries(1)
       closeThenReplace(() => {}, '/progress/body/photos')
       vi.advanceTimersByTime(500)
@@ -76,7 +76,7 @@ describe('nav', () => {
   })
 
   it('starting through the weigh-in sheet replaces the sheet\'s entry', () => {
-    history.pushState({ openGymSheet: true }, '')
+    history.pushState({ gainsSheet: true }, '')
     navToWorkout()
     expect(calls).toEqual([['/train/workout', { replace: true }]])
   })

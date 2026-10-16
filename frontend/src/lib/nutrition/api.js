@@ -1,5 +1,5 @@
 // NutriTrace (nutrition) and the hub's sync routes, as the browser reaches them: same origin, the
-// openGym session cookie, through the hub at /nt/api/* and /hub/api/sync/*. The hub checks the
+// Gains session cookie, through the hub at /nt/api/* and /hub/api/sync/*. The hub checks the
 // session and the request's origin itself (Sec-Fetch-Site), so there is no token to send, and it
 // forwards only the routes in fitness-hub src/nt-routes.ts: a call to anything else is a 404.
 // Every shape here is NutriTrace's own (server/routes/*.js, src/lib/api.js, src/stores/diary.js).
@@ -91,7 +91,7 @@ const TIMEOUT_MS = 30000
 
 const failure = (message, status, code) => Object.assign(new Error(message), { status, code })
 
-/** The web app behind the hub has nutrition; a phone build talks to openGym alone, and so does a
+/** The web app behind the hub has nutrition; a phone build talks to Gains alone, and so does a
  *  guest (no session for the hub to check). */
 export function nutritionAvailable(user) {
   return !MOBILE && !!user

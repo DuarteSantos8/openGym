@@ -1,5 +1,5 @@
 // Tests for mcp/src/state.js — the uid/config resolution and what a read failure looks like.
-// state.js reads OPENGYM_DATA at module load and caches module-globally, so each case stubs the
+// state.js reads GAINS_DATA at module load and caches module-globally, so each case stubs the
 // env and imports a fresh copy. Temp dirs only; nothing here touches a real profile.
 import { describe, test, expect, afterEach, afterAll, vi } from 'vitest'
 import fs from 'node:fs'
@@ -33,8 +33,8 @@ function mk(files) {
 // A fresh state.js bound to `dir`.
 async function load(dir, uid = 'alex') {
   vi.resetModules()
-  vi.stubEnv('OPENGYM_DATA', dir)
-  vi.stubEnv('OPENGYM_UID', uid)
+  vi.stubEnv('GAINS_DATA', dir)
+  vi.stubEnv('GAINS_UID', uid)
   return import('../src/state.js')
 }
 
@@ -103,14 +103,14 @@ describe('the "which profile?" error is a config message, not a roster', () => {
       const logs = []
       const spy = vi.spyOn(console, 'error').mockImplementation((...a) => logs.push(a.join(' ')))
       const dir = mk(files)
-      const { getState } = await load(dir, '')       // no OPENGYM_UID pinned
+      const { getState } = await load(dir, '')       // no GAINS_UID pinned
       let err = null
       try { getState() } catch (e) { err = e }
       spy.mockRestore()
       expect(err).toBeTruthy()
       expect(err.code).toBe('EINVAL')
       expect(err.message).toMatch(/holds 3 profiles/)
-      expect(err.message).toMatch(/set OPENGYM_UID/)
+      expect(err.message).toMatch(/set GAINS_UID/)
       for (const u of uids) expect(err.message).not.toContain(u)
       expect(err.message).not.toContain(dir)
       expect(err.message).not.toContain('/')

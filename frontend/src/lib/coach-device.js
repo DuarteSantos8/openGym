@@ -10,7 +10,7 @@
 // anything, and the promise there is that nothing AI-shaped loads until they do.
 import { readJsonFile, writeJsonFile } from './mobile.js'
 
-const FILE = 'opengym-coach.json'
+const FILE = 'gains-coach.json'
 
 export const COACH_MODES = ['off', 'server', 'byok']
 

@@ -441,7 +441,7 @@ const toKm = (v, unit) => num(v) * (KM[String(unit || 'km').toLowerCase().trim()
 /* --------------------------------------------------------------- parse ---- */
 
 /**
- * Read an export into workouts openGym understands, WITHOUT touching state — the caller
+ * Read an export into workouts Gains understands, WITHOUT touching state — the caller
  * shows the summary for confirmation first. Nothing here throws on a bad row: a history
  * of several thousand sets will contain oddities, and losing the file over one of them
  * helps nobody. Bad rows are counted and reported instead.

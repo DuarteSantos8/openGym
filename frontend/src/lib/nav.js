@@ -9,7 +9,7 @@ export const nav = (to, opts) => (opts ? _nav(to, opts) : _nav(to))
 // page at once left that entry behind: back from the new page landed on it, the same page with
 // no sheet, and the next back seemed to do nothing. The new page takes the sheet's entry instead.
 export const onSheetEntry = () => {
-  try { return !!globalThis.history?.state?.openGymSheet } catch { return false }
+  try { return !!globalThis.history?.state?.gainsSheet } catch { return false }
 }
 
 // How many sheet entries Modals.jsx still holds as live — more than the sheets open means one is

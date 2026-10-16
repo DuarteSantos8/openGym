@@ -1,4 +1,4 @@
-# openGym Helm chart. Mirrors kubernetes/ (the plain manifests); docs/SELF_HOSTING_KUBERNETES.md
+# Gains Helm chart. Mirrors kubernetes/ (the plain manifests); docs/SELF_HOSTING_KUBERNETES.md
 # explains the choices. Always one replica: the API keeps its data in JSON files on one volume,
 # so a second pod would be a second writer.
 
@@ -8,7 +8,7 @@ fullnameOverride: ""
 
 serviceAccount:
   create: true
-  # openGym never talks to the Kubernetes API.
+  # Gains never talks to the Kubernetes API.
   automount: false
   annotations: {}
   name: ""
@@ -50,14 +50,14 @@ ingress:
     # ingress-nginx caps request bodies at 1m; uploads need MEDIA_UPLOAD_MAX (48m):
     # nginx.ingress.kubernetes.io/proxy-body-size: 48m
   hosts:
-    - host: opengym.example.com
+    - host: gains.example.com
       paths:
         - path: /
           pathType: Prefix
   tls: []
-  #  - secretName: opengym-tls
+  #  - secretName: gains-tls
   #    hosts:
-  #      - opengym.example.com
+  #      - gains.example.com
 
 # Gateway API HTTPRoute (what kubernetes/httproute.yaml does).
 httpRoute:
@@ -68,18 +68,18 @@ httpRoute:
       namespace: envoy-gateway-system
       sectionName: https
   hostnames:
-    - opengym.example.com
+    - gains.example.com
 
 # cert-manager Certificate for the HTTPRoute's listener. Ingress users usually want the
 # cert-manager.io/cluster-issuer annotation instead.
 certificate:
   enabled: false
-  secretName: opengym-tls
+  secretName: gains-tls
   issuerRef:
     kind: ClusterIssuer
     name: letsencrypt
   dnsNames:
-    - opengym.example.com
+    - gains.example.com
   # Lets a Gateway in another namespace read the certificate Secret. Drop if your listener
   # carries its own (e.g. wildcard) certificate.
   referenceGrant:
@@ -108,8 +108,8 @@ api:
   # An empty value is left out, so the app default applies. PORT comes from api.service.port.
   env:
     DATA_DIR: /data
-    RP_ID: opengym.example.com
-    ORIGIN: https://opengym.example.com
+    RP_ID: gains.example.com
+    ORIGIN: https://gains.example.com
     RP_NAME: Gains
     INVITE_ONLY: ""          # "1" = signup needs an invite code
     ALLOW_GUEST: ""          # "0" = no "Continue without account"

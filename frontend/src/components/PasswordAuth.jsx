@@ -411,7 +411,7 @@ function RemovePasswordSheet({ status, close, done }) {
 /* Settings → Account → Sign-in e-mail, right under the password (and shown on the same terms:
    only while the instance takes passwords, and only where something here can confirm it is the
    owner). An address typed at "Sign in with password" instead of the profile name. Nothing is
-   ever sent to it — there is no mail server behind openGym — so it is not verified either, and a
+   ever sent to it — there is no mail server behind Gains — so it is not verified either, and a
    forgotten password is still reset by the admin's code. Setting, changing and removing it ask
    the proof a password does (ProveOwner): a copied session must not choose how the owner signs
    in. `status` is GET /api/account/password, whose `email` only the owner ever gets. */

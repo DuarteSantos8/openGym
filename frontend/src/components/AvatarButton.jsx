@@ -8,7 +8,7 @@ import { useConnectionTrouble } from './SyncBanner.jsx'
 
 // The way into Profile (the settings pages), at the end of every tab root's header. Its dot is
 // the app's one sync indicator: a sync that is stuck while the connection banner is switched off
-// (#369, #330), or the hub's openGym ↔ NutriTrace sync needing the person (an error, a held
+// (#369, #330), or the hub's Gains ↔ NutriTrace sync needing the person (an error, a held
 // delete, suspended).
 // mode="close": the same button in the same spot closes the search overlay while it is open
 // (`onClose`); the dot waits until it is closed again.

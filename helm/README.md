@@ -1,9 +1,8 @@
-> The chart's names (`opengym`) are inherited from the project Gains was forked from; its default images
-> are Gains' (`ghcr.io/steradrian/gains-api` and `gains-web`, tag `main` or a commit SHA).
+> Default images are `ghcr.io/steradrian/gains-api` and `gains-web` (tag `main` or a commit SHA).
 
-# openGym Helm chart
+# Gains Helm chart
 
-Installs openGym on Kubernetes: the API and the web container in a single pod, a PVC for the data, a
+Installs Gains on Kubernetes: the API and the web container in a single pod, a PVC for the data, a
 Service, and optionally an Ingress or a Gateway API HTTPRoute with a cert-manager certificate. It
 deploys the same thing as the plain manifests in [`kubernetes/`](../kubernetes), but lets you set
 everything from values.
@@ -19,7 +18,7 @@ Read [docs/SELF_HOSTING.md](../docs/SELF_HOSTING.md) first. The passkey requirem
 git clone https://github.com/steradrian/gains
 cd gains
 
-helm install opengym ./helm -n fitness --create-namespace \
+helm install gains ./helm -n fitness --create-namespace \
   --set api.env.RP_ID=gym.example.com \
   --set api.env.ORIGIN=https://gym.example.com \
   --set ingress.enabled=true \
@@ -31,9 +30,9 @@ helm install opengym ./helm -n fitness --create-namespace \
 For anything more than a quick test, put your settings in a values file:
 
 ```bash
-helm install opengym ./helm -n fitness --create-namespace -f my-values.yaml
-helm upgrade opengym ./helm -n fitness -f my-values.yaml
-helm test opengym -n fitness          # calls /api/health through the web container
+helm install gains ./helm -n fitness --create-namespace -f my-values.yaml
+helm upgrade gains ./helm -n fitness -f my-values.yaml
+helm test gains -n fitness          # calls /api/health through the web container
 ```
 
 Pods restart on their own when the ConfigMap or Secret changes.
@@ -58,7 +57,7 @@ ingress:
         - path: /
           pathType: Prefix
   tls:
-    - secretName: opengym-tls
+    - secretName: gains-tls
       hosts:
         - gym.example.com
 ```
@@ -79,7 +78,7 @@ httpRoute:
 
 certificate:
   enabled: true
-  secretName: opengym-tls
+  secretName: gains-tls
   issuerRef:
     kind: ClusterIssuer
     name: letsencrypt
@@ -93,8 +92,8 @@ certificate:
 ### Neither (local test)
 
 ```bash
-helm install opengym ./helm --set api.env.RP_ID=localhost --set api.env.ORIGIN=http://localhost:8080
-kubectl port-forward svc/opengym 8080:80
+helm install gains ./helm --set api.env.RP_ID=localhost --set api.env.ORIGIN=http://localhost:8080
+kubectl port-forward svc/gains 8080:80
 ```
 
 Browsers allow passkeys over plain `http://` only on `localhost`.
@@ -126,7 +125,7 @@ The chart keeps the PVC on `helm uninstall` (`helm.sh/resource-policy: keep`). T
 the data, delete it by hand.
 
 The exercise stills and animations are part of the web image, so there is no media volume. Charts
-before openGym 1.4.0 created a `<release>-media` PVC for a download; after upgrading it is no
+before the media shipped inside the image, the chart created a `<release>-media` PVC for a download; after upgrading it is no
 longer mounted, and since Helm keeps it, delete it by hand once the new pod runs.
 
 ### Images
@@ -139,6 +138,13 @@ image from different releases aren't meant to run side by side.
 `imagePullSecrets`, `serviceAccount`, `podAnnotations`, `podLabels`, `podSecurityContext`,
 `securityContext`, `nodeSelector`, `tolerations`, `affinity`, `api/web.resources`
 and `api/web.livenessProbe`/`readinessProbe` work the way they do in any Helm chart. See [`values.yaml`](values.yaml) for the full list.
+
+## Upgrading an existing release
+
+The chart's name is `gains`, and resource names derive from the release and chart names. A release
+installed under another name keeps every resource name (and its data volume) by pinning it:
+`--set fullnameOverride=<what `kubectl get deploy` shows today>`. Without it, `helm upgrade` renames the
+resources, which creates a new, empty volume.
 
 ## Always one replica
 
@@ -153,9 +159,9 @@ HTTPRoute, Certificate and ReferenceGrant, but **keep the `opengym-data` PVC**: 
 the data. Point the chart at the existing claim instead:
 
 ```bash
-kubectl -n fitness delete deployment/opengym service/opengym httproute/opengym \
-  certificate/opengym-tls referencegrant/allow-gateway
-helm install opengym ./helm -n fitness -f my-values.yaml \
+kubectl -n fitness delete deployment/gains service/gains httproute/gains \
+  certificate/gains-tls referencegrant/allow-gateway
+helm install gains ./helm -n fitness -f my-values.yaml \
   --set persistence.data.existingClaim=opengym-data
 ```
 

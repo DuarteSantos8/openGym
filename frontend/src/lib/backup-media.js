@@ -4,7 +4,7 @@
  * reference to its file and never the file. "Export with photos & videos" writes a store-only zip
  * (lib/zip.js) instead:
  *
- *   opengym-backup.json      the very same JSON
+ *   gains-backup.json         the very same JSON
  *   media/<sha256>.<ext>     every photo, GIF, video and poster the state refers to
  *   README.txt               what this is and how to bring it back
  *
@@ -26,14 +26,16 @@ import { DEFAULT_LIMITS, MB } from './media-limits.js'
 import { t } from './i18n-core.js'
 import { BRAND } from '../brand.js'
 
-export const BACKUP_JSON = 'opengym-backup.json'
+export const BACKUP_JSON = 'gains-backup.json'
+// What the data file inside a backup zip was called before: a zip written then still restores.
+const EARLIER_BACKUP_JSON = 'opengym-backup.json'
 const MEDIA_ENTRY = /^media\/([0-9a-f]{64})\.(jpg|png|webp|gif|mp4|mov|webm)$/
 
 const README_TITLE = `${BRAND.name} backup with photos and videos`
 const README = `${README_TITLE}
 ${'='.repeat(README_TITLE.length)}
 
-opengym-backup.json  your data - the same file "Export backup (JSON)" writes.
+gains-backup.json     your data - the same file "Export backup (JSON)" writes.
 media/               the photos, GIFs and videos of your own exercises and of your
                      workouts, each named by its SHA-256, plus the small previews
                      shown in lists.
@@ -85,7 +87,7 @@ export async function exportBackupZip(S, { media = mediaStore, fetchOne = null, 
 
 const isBackup = d => !!d && typeof d === 'object' && !Array.isArray(d) && Array.isArray(d.workouts) && Array.isArray(d.routines)
 
-const notBackup = () => Object.assign(new Error('not an openGym backup'), { code: 'not-backup' })
+const notBackup = () => Object.assign(new Error('not a Gains backup'), { code: 'not-backup' })
 
 /**
  * What to tell someone whose pick did not import, in their language. The thrown messages are for
@@ -93,7 +95,7 @@ const notBackup = () => Object.assign(new Error('not an openGym backup'), { code
  */
 export function backupImportError(e) {
   if (e?.code === 'compressed') return t('That zip was repacked. Import the original backup file.')
-  if (e?.code === 'not-backup' || e?.code === 'not-zip' || e?.code === 'encrypted' || e instanceof SyntaxError) return t('That file isn’t an openGym backup.')
+  if (e?.code === 'not-backup' || e?.code === 'not-zip' || e?.code === 'encrypted' || e instanceof SyntaxError) return t('That file isn’t a Gains backup.')
   return t('Couldn’t read that file.')
 }
 
@@ -101,14 +103,14 @@ export function backupImportError(e) {
  * Reads a picked backup, .json or .zip (told apart by its first bytes, not its name):
  * { state, files: [{ hash, entry }], zip }. `files` are the zip's media entries the state refers
  * to, not yet checked or stored — storeBackupMedia does that, once the import is confirmed.
- * Throws on anything that is not an openGym backup.
+ * Throws on anything that is not a Gains backup.
  */
 export async function readBackupFile(file) {
   let state, files = []
   const zip = await looksLikeZip(file)
   if (zip) {
     const entries = await readZip(file)
-    const json = entries.find(e => e.name === BACKUP_JSON)
+    const json = entries.find(e => e.name === BACKUP_JSON) || entries.find(e => e.name === EARLIER_BACKUP_JSON)
     if (!json) throw notBackup()
     state = JSON.parse(await json.blob.text())
     if (!isBackup(state)) throw notBackup()

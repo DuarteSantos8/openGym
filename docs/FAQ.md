@@ -21,7 +21,6 @@ No, there are three ways to use it:
 Not in the App Store, and Apple doesn't allow installing apps from anywhere else. On an iPhone you can
 self-host and add Gains to your home screen from Safari (it's a full PWA that works offline), or
 build the native app onto your own phone with Xcode. Both are described in [MOBILE.md](MOBILE.md).
-An App Store build is on the [roadmap](../ROADMAP.md).
 
 ### Why isn't it on the Play Store?
 

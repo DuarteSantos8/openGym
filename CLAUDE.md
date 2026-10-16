@@ -58,9 +58,7 @@ GitHub (`github.com/steradrian/gains`) is the home of the project. Pull requests
 `.github/workflows/test.yml` on Node 22 — the same version as `web/Dockerfile` / `api/Dockerfile`
 (`node:22-alpine`): the frontend, api and MCP suites, the locale checks, and building and booting
 both api image targets. A push to `main` publishes `linux/amd64` images to GHCR
-(`.github/workflows/publish-ghcr.yml`). `.gitlab-ci.yml`, `.github/workflows/mirror.yml`,
-`docker-publish.yml`, `cla*.yml` and `pages.yml` are inherited from the project Gains was forked from
-and are not what runs here; do not extend them.
+(`.github/workflows/publish-ghcr.yml`). `.github/workflows/pages.yml` builds the browser-only demo.
 
 ## Architecture
 

@@ -126,7 +126,7 @@ describe('sizes nobody exports', () => {
 })
 
 describe('files that are not an export at all', () => {
-  it('an openGym backup dropped on the wrong button is refused', () => {
+  it('an Gains backup dropped on the wrong button is refused', () => {
     expect(parseImport('{"workouts":"hello","routines":"world"}', kg).error).toBe('empty')
     expect(parseImport(JSON.stringify({ workouts: 'hello', routines: [] }, null, 2), kg).error).toBe('unrecognised')
   })

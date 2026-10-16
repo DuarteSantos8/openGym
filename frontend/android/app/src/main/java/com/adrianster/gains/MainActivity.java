@@ -1,4 +1,4 @@
-package ch.duartesantos.opengym;
+package com.adrianster.gains;
 
 import android.os.Build;
 import android.os.Bundle;
@@ -105,7 +105,7 @@ public class MainActivity extends BridgeActivity {
         return "(function(e){if(!e)return;"
                 + "e.style.setProperty('--native-kb','" + px + "px');"
                 + "if(" + px + ">0)e.setAttribute('data-native-kb','');else e.removeAttribute('data-native-kb');"
-                + "window.dispatchEvent(new CustomEvent('opengym:native-keyboard',{detail:{height:" + px + "}}))"
+                + "window.dispatchEvent(new CustomEvent('gains:native-keyboard',{detail:{height:" + px + "}}))"
                 + "})(document.documentElement)";
     }
 }

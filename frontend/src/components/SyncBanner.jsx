@@ -13,7 +13,7 @@ export const PENDING_GRACE_MS = 5000
 
 /* The connection, always in view while the app is not connected to a server: offline, the server
    unreachable or answering with an error (its HTTP code, for whoever runs it), a server that no
-   longer accepts this device, an answer that is not openGym's, and a guest in a browser. A
+   longer accepts this device, an answer that is not Gains', and a guest in a browser. A
    problem cannot be dismissed; it goes when the condition does — or when Settings → "Show
    connection status" is off, and then a dot on Home says a problem is there. The guest line alone
    has an ×, which hides it for good (#454): no server is a choice there, not a fault. A phone kept

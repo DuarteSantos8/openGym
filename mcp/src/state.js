@@ -1,10 +1,10 @@
-/* opengym-mcp state — reads ./data/state-<uid>.json + db.json (read-only). Cached with an
+/* gains-mcp state — reads ./data/state-<uid>.json + db.json (read-only). Cached with an
    fs.watch + mtime fallback so a session the api server just wrote is visible on the next
    tool call without a restart. */
 import fs from 'node:fs'
 import path from 'node:path'
 
-const DATA_DIR = process.env.OPENGYM_DATA || path.join(process.cwd(), 'data')
+const DATA_DIR = process.env.GAINS_DATA || path.join(process.cwd(), 'data')
 
 // null = no state file (brand-new account); undefined = not yet loaded.
 let _state = undefined
@@ -45,13 +45,13 @@ function stateFile(uid) {
   return path.join(DATA_DIR, 'state-' + uid.replace(/[^a-zA-Z0-9_-]/g, '') + '.json')
 }
 
-// Pick the uid: OPENGYM_UID env, else the only state-* file, else the only user in db.json.
+// Pick the uid: GAINS_UID env, else the only state-* file, else the only user in db.json.
 // Throws listing the options if ambiguous. The sanitiser on stateFile() keeps a sneaky
-// '..' in OPENGYM_UID harmless.
+// '..' in GAINS_UID harmless.
 function resolveUid() {
-  const envUid = (process.env.OPENGYM_UID || '').trim()
+  const envUid = (process.env.GAINS_UID || '').trim()
   if (envUid) {
-    if (!/^[a-zA-Z0-9_-]+$/.test(envUid)) throw new Error(`OPENGYM_UID contains characters that aren't safe in a filename: ${JSON.stringify(envUid)}`)
+    if (!/^[a-zA-Z0-9_-]+$/.test(envUid)) throw new Error(`GAINS_UID contains characters that aren't safe in a filename: ${JSON.stringify(envUid)}`)
     return envUid
   }
   const files = fs.readdirSync(DATA_DIR)
@@ -75,8 +75,8 @@ function resolveUid() {
 // change are what the model can act on; the ids and the path go to the server log on stderr,
 // where the operator is already reading the startup line.
 function ambiguousUid(ids) {
-  console.error(`[opengym-mcp] ${ids.length} Gains profiles in ${DATA_DIR}: ${ids.join(', ')} — set OPENGYM_UID to one of them`)
-  const err = new Error(`this Gains data directory holds ${ids.length} profiles — set OPENGYM_UID to the one this server should read (the ids are on the server's stderr, and in db.json under "users"[].id)`)
+  console.error(`[gains-mcp] ${ids.length} Gains profiles in ${DATA_DIR}: ${ids.join(', ')} — set GAINS_UID to one of them`)
+  const err = new Error(`this Gains data directory holds ${ids.length} profiles — set GAINS_UID to the one this server should read (the ids are on the server's stderr, and in db.json under "users"[].id)`)
   err.code = 'EINVAL'
   return err
 }
@@ -84,7 +84,7 @@ function ambiguousUid(ids) {
 // Idempotent. Picks the uid, loads db.json, attaches the watcher, primes state.
 export function init() {
   if (_uid !== null) return
-  if (!fs.existsSync(DATA_DIR)) throw new Error(`OPENGYM_DATA dir does not exist: ${DATA_DIR}`)
+  if (!fs.existsSync(DATA_DIR)) throw new Error(`GAINS_DATA dir does not exist: ${DATA_DIR}`)
   _uid = resolveUid()
   reloadDb()
   const file = stateFile(_uid)

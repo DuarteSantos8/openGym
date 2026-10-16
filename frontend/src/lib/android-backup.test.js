@@ -1,6 +1,6 @@
 // Android's cloud backup (Auto Backup) skips an app's whole backup once it passes 25 MB. The
 // local copies of the photos and videos of custom exercises (lib/media-store-fs.js, the files
-// directory's opengym-media/) would take the state mirror down with them, so both rule files
+// directory's gains-media/) would take the state mirror down with them, so both rule files
 // leave that folder out of the cloud backup — and the manifest has to point at them, or neither
 // applies. A device-to-device transfer keeps it.
 import { describe, it, expect } from 'vitest'
@@ -10,7 +10,7 @@ const read = p => readFileSync(new URL('../../android/app/src/main/' + p, import
 const manifest = read('AndroidManifest.xml')
 const legacy = read('res/xml/backup_rules.xml')
 const modern = read('res/xml/data_extraction_rules.xml')
-const EXCLUDE = /<exclude\s+domain="file"\s+path="opengym-media\/"\s*\/>/
+const EXCLUDE = /<exclude\s+domain="file"\s+path="gains-media\/"\s*\/>/
 
 describe('Android backup rules', () => {
   it('the manifest names both rule files', () => {

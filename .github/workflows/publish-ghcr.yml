@@ -1,8 +1,7 @@
-name: Publish fork images to GHCR
+name: Publish images to GHCR
 
-# Fork-only. Upstream's docker-publish.yml stays untouched (and disabled on the fork) so
-# upstream merges stay clean. This one publishes linux/amd64 images to this fork's GHCR
-# namespace on every push to main; it does nothing on pull requests.
+# Publishes linux/amd64 images to this repository's GHCR namespace on every push to main; it does
+# nothing on pull requests.
 #
 # Tags: the full commit SHA and `main`. Authentication is GITHUB_TOKEN only.
 on:

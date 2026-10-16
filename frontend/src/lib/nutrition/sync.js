@@ -3,7 +3,7 @@ import { create } from 'zustand'
 import { HubSync, nutritionAvailable } from './api.js'
 import { useStore } from '../../store/useStore.js'
 
-// The hub's openGym ↔ NutriTrace sync, as the app sees it: "sync now" after a workout or a
+// The hub's Gains ↔ NutriTrace sync, as the app sees it: "sync now" after a workout or a
 // weigh-in, so the workout's kcal and the weight reach NutriTrace without waiting for the hub's
 // next poll, and its status for the avatar's dot.
 
@@ -80,12 +80,12 @@ async function runSync(push) {
 }
 
 /**
- * Asks the hub to sync now. The change goes to openGym's server first (the hub reads it from
+ * Asks the hub to sync now. The change goes to Gains' server first (the hub reads it from
  * there), then the hub runs a cycle (it waits up to 8 s) and answers with its status.
  * Calls coalesce: one while another runs, or within SYNC_MIN_INTERVAL_MS of the last, waits for
  * a single follow-up run that starts after it, so the latest change is always sent.
  * Never throws: a sync that does not happen now happens on the hub's next poll.
- * `pushed`: the caller has just synced openGym itself (Profile's Sync now), so the push is skipped.
+ * `pushed`: the caller has just synced Gains itself (Profile's Sync now), so the push is skipped.
  * A follow-up run always pushes: a change may have come in while it waited.
  * @returns {Promise<import('./api.js').SyncStatus|null>} null when the hub did not answer
  */

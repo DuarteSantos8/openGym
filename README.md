@@ -12,8 +12,7 @@ on your phone, synced across your devices, behind your own passkey login.
 
 [Self-hosting guide](docs/SELF_HOSTING.md) ·
 [Phone app](docs/MOBILE.md) ·
-[Documentation](docs/README.md) ·
-[Changelog](CHANGELOG.md)
+[Documentation](docs/README.md)
 
 </div>
 
@@ -104,7 +103,6 @@ No account on someone else's server, no subscription, no ads, no telemetry. One
 - An [MCP server](mcp/README.md) so an assistant like Claude Desktop can answer questions about your
   training history. Read-only and local; not part of the Docker build.
 
-The full list of what changed release by release is in the [changelog](CHANGELOG.md).
 
 ## Quick start
 

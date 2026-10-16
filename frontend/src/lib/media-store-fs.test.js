@@ -59,14 +59,14 @@ describe('the phone backend', () => {
     await be.put({ hash, mime: 'video/quicktime', size: big.length, putAt: 1, shownAt: 0, pending: true, rejected: false }, new Blob([big]))
     const writes = fs.calls.filter(c => c[0] === 'writeFile' || c[0] === 'appendFile')
     expect(writes.map(c => [c[0], c[2]])).toEqual([['writeFile', 3 * 1024 * 1024], ['appendFile', 3 * 1024 * 1024], ['appendFile', 1024 * 1024]])
-    expect(writes.every(c => c[1] === `opengym-media/${hash}.mp4.part`)).toBe(true)   // a MOV is named .mp4
+    expect(writes.every(c => c[1] === `gains-media/${hash}.mp4.part`)).toBe(true)   // a MOV is named .mp4
     // Compared by hash: a deep equal over 7 MB element by element takes minutes.
-    expect(await sha256Hex(fs.files.get(`opengym-media/${hash}.mp4`))).toBe(hash)
-    expect(fs.files.has(`opengym-media/${hash}.mp4.part`)).toBe(false)
-    expect(await be.fileUrl(hash)).toBe(`capacitor://localhost/_capacitor_file_/lib/opengym-media/${hash}.mp4`)
+    expect(await sha256Hex(fs.files.get(`gains-media/${hash}.mp4`))).toBe(hash)
+    expect(fs.files.has(`gains-media/${hash}.mp4.part`)).toBe(false)
+    expect(await be.fileUrl(hash)).toBe(`capacitor://localhost/_capacitor_file_/lib/gains-media/${hash}.mp4`)
     expect(await sha256Hex(await be.getBlob(hash))).toBe(hash)
     await tick(20)
-    expect(JSON.parse(new TextDecoder().decode(fs.files.get('opengym-media/index.json')))[hash]).toMatchObject({ mime: 'video/quicktime', pending: true })
+    expect(JSON.parse(new TextDecoder().decode(fs.files.get('gains-media/index.json')))[hash]).toMatchObject({ mime: 'video/quicktime', pending: true })
   })
 
   it('on start, keeps a file the index never listed as pending, and drops what points at nothing', async () => {
@@ -76,11 +76,11 @@ describe('the phone backend', () => {
     const ph = await sha256Hex(photo)
     const vh = await sha256Hex(video)
     const gone = 'f'.repeat(64)
-    fs.files.set(`opengym-media/${ph}.jpg`, photo)
-    fs.files.set(`opengym-media/${vh}.mp4`, video)
-    fs.files.set(`opengym-media/${'e'.repeat(64)}.jpg`, photo)         // bytes that do not match the name
-    fs.files.set(`opengym-media/${'d'.repeat(64)}.webp.part`, photo)   // half a write
-    fs.files.set('opengym-media/index.json', new TextEncoder().encode(JSON.stringify({
+    fs.files.set(`gains-media/${ph}.jpg`, photo)
+    fs.files.set(`gains-media/${vh}.mp4`, video)
+    fs.files.set(`gains-media/${'e'.repeat(64)}.jpg`, photo)         // bytes that do not match the name
+    fs.files.set(`gains-media/${'d'.repeat(64)}.webp.part`, photo)   // half a write
+    fs.files.set('gains-media/index.json', new TextEncoder().encode(JSON.stringify({
       [vh]: { hash: vh, mime: 'video/mp4', size: video.length, putAt: 5, shownAt: 0, pending: false, rejected: false },
       [gone]: { hash: gone, mime: 'image/webp', size: 10, putAt: 5, shownAt: 0, pending: false, rejected: false }
     })))
@@ -91,8 +91,8 @@ describe('the phone backend', () => {
     expect(recs[ph]).toMatchObject({ mime: 'image/jpeg', size: photo.length, pending: true })
     expect(recs[vh]).toMatchObject({ pending: false })
     await tick(5)
-    expect(fs.files.has(`opengym-media/${'e'.repeat(64)}.jpg`)).toBe(false)
-    expect(fs.files.has(`opengym-media/${'d'.repeat(64)}.webp.part`)).toBe(false)
+    expect(fs.files.has(`gains-media/${'e'.repeat(64)}.jpg`)).toBe(false)
+    expect(fs.files.has(`gains-media/${'d'.repeat(64)}.webp.part`)).toBe(false)
   })
 
   it('removes the file before the index entry, and clear empties the folder', async () => {
@@ -103,11 +103,11 @@ describe('the phone backend', () => {
     const h = await sha256Hex(photo)
     await be.put({ hash: h, mime: 'image/jpeg', size: photo.length, putAt: 1, shownAt: 0, pending: true, rejected: false }, new Blob([photo]))
     await be.remove(h)
-    expect(fs.files.has(`opengym-media/${h}.jpg`)).toBe(false)
+    expect(fs.files.has(`gains-media/${h}.jpg`)).toBe(false)
     expect(await be.all()).toEqual([])
     await be.put({ hash: h, mime: 'image/jpeg', size: photo.length, putAt: 1, shownAt: 0, pending: true, rejected: false }, new Blob([photo]))
     await be.clear()
-    expect([...fs.files.keys()].filter(k => k.startsWith('opengym-media/') && !k.endsWith('index.json'))).toEqual([])
+    expect([...fs.files.keys()].filter(k => k.startsWith('gains-media/') && !k.endsWith('index.json'))).toEqual([])
   })
 
   it('answers false when there is no Filesystem plugin at all', async () => {

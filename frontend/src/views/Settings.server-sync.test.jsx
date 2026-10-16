@@ -212,7 +212,7 @@ describe('leaving the server', () => {
 
     await act(async () => { buttonByText(sheet, 'Export backup (JSON)').click() })
     expect(mocks.shareExport).toHaveBeenCalledTimes(1)     // the phone exports through the share sheet
-    expect(mocks.shareExport.mock.calls[0][1]).toMatch(/^opengym-backup-\d{4}-\d{2}-\d{2}\.json$/)
+    expect(mocks.shareExport.mock.calls[0][1]).toMatch(/^gains-backup-\d{4}-\d{2}-\d{2}\.json$/)
 
     mocks.disconnectServer.mockResolvedValueOnce({ owed: true, count: 2, stashed: true })
     await act(async () => { buttonByText(sheet, 'Disconnect anyway').click() })

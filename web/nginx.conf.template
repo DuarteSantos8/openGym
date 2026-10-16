@@ -1,4 +1,4 @@
-# openGym — standalone web server: serves the static app AND proxies /api to the backend,
+# Gains — standalone web server: serves the static app AND proxies /api to the backend,
 # so the whole app lives on ONE origin (required for WebAuthn / passkeys).
 
 # What the two /api blocks below forward: the request's own target, path and query exactly as
@@ -113,7 +113,7 @@ server {
     # query string travels along; the hash never reaches the server anyway. Relative Location so
     # the redirect keeps the scheme and host the reverse proxy in front presented, not nginx's own.
     #
-    # BASE_PATH (default empty) is for a reverse proxy that serves openGym under a subpath and
+    # BASE_PATH (default empty) is for a reverse proxy that serves Gains under a subpath and
     # passes that prefix through — "/gym", no trailing slash. A proxy that strips the prefix
     # before the container sees it needs nothing set here: the app asks its own address for the
     # API (lib/api.js appBase), so the call carries whatever prefix the browser is using.
@@ -145,7 +145,7 @@ server {
     # The exercise stills and animations, licensed from Gym visual for openGym only (NOTICE.md).
     # Cross-Origin-Resource-Policy keeps another site from showing them in its own pages: the
     # browser refuses a cross-origin <img> or <video> of them. The app loads them same-origin
-    # (the mobile app ships its own copy), so nothing of openGym's is affected. `^~` so this
+    # (the mobile app ships its own copy), so nothing of Gains' is affected. `^~` so this
     # prefix beats the image regex below; that one's caching is repeated in the nested block,
     # and so are the headers, since an add_header replaces the inherited set (see the top).
     location ^~ ${BASE_PATH}/exercise-media/ {

@@ -28,7 +28,7 @@ export default class ErrorBoundary extends Component {
           <div className="fw-semibold mb-3">{t('Something went wrong')}</div>
           {t('This screen could not be drawn. Your data is safe on this device.')}
         </EmptyState>
-        <Button variant="primary" icon="reset" onClick={() => location.reload()}>{t('Reload openGym')}</Button>
+        <Button variant="primary" icon="reset" onClick={() => location.reload()}>{t('Reload Gains')}</Button>
         {active && <>
           <Spacer size={4} />
           <Button variant="danger" icon="trash" onClick={() => {

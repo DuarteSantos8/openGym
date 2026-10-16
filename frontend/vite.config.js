@@ -17,7 +17,7 @@ const apiOrigin = process.env.API_ORIGIN || 'http://localhost:8080'
 // proxied to a server of your choice with MEDIA_TARGET.
 const media = process.env.MEDIA_TARGET
 const catalogueMedia = {
-  name: 'opengym-catalogue-media',
+  name: 'gains-catalogue-media',
   configureServer(server) {
     if (media) return
     const dirs = { '/exercise-media/still/': ['still', '.webp'], '/exercise-media/clip/': ['clip', '.mp4'] }
@@ -42,7 +42,7 @@ const umamiSrc = process.env.VITE_UMAMI_SRC
 const umamiId = process.env.VITE_UMAMI_ID
 
 const umami = {
-  name: 'opengym-umami',
+  name: 'gains-umami',
   transformIndexHtml() {
     if (!umamiSrc || !umamiId) return
     return [{
@@ -64,7 +64,7 @@ const umami = {
 let outDir = fileURLToPath(new URL('./dist/', import.meta.url))
 let lazy = []
 const swStamp = {
-  name: 'opengym-sw-stamp',
+  name: 'gains-sw-stamp',
   apply: 'build',
   configResolved(config) { outDir = resolve(config.root, config.build.outDir) },
   generateBundle(_, bundle) { lazy = lazyAssets(bundle) },
@@ -82,10 +82,10 @@ const swStamp = {
 // APK: no Android-only settings, a service worker, the passkey login. scripts/check-mobile-bundle.mjs
 // reads this tag in the synced copy after `cap sync` and fails the build without it.
 const flavor = {
-  name: 'opengym-flavor',
+  name: 'gains-flavor',
   transformIndexHtml() {
     if (process.env.VITE_MOBILE !== '1') return
-    return [{ tag: 'meta', attrs: { name: 'opengym-flavor', content: 'mobile' }, injectTo: 'head' }]
+    return [{ tag: 'meta', attrs: { name: 'gains-flavor', content: 'mobile' }, injectTo: 'head' }]
   }
 }
 

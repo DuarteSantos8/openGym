@@ -1,4 +1,4 @@
-package ch.duartesantos.opengym;
+package com.adrianster.gains;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -19,7 +19,7 @@ import java.security.MessageDigest;
  * Usage from JS:
  *   import { registerPlugin } from '@capacitor/core';
  *   const Install = registerPlugin('Install');
- *   await Install.installApk({ fileName: 'opengym-update.apk', sha256: '<64 hex>' });
+ *   await Install.installApk({ fileName: 'gains-update.apk', sha256: '<64 hex>' });
  *
  * With `sha256` the file is streamed through SHA-256 first and a mismatch is refused (and the
  * file deleted) before the installer opens: the APK is ~300 MB, too big to hash in the WebView.

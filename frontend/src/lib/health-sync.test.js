@@ -39,7 +39,7 @@ const workout = (id, d) => ({ id, d: `2026-09-${d}`, start: at(d, 18), end: at(d
 const state = (workouts, bodyweight = []) => ({ unit: 'kg', workouts, bodyweight })
 const writes = () => h.calls.filter(c => c[0] === 'write').map(c => c[1])
 const removes = () => h.calls.filter(c => c[0] === 'remove').map(c => c[1])
-const file = () => JSON.parse(h.files.get('opengym-health.json') || 'null')
+const file = () => JSON.parse(h.files.get('gains-health.json') || 'null')
 
 let hs
 beforeEach(async () => {
@@ -53,7 +53,7 @@ describe('off (the default)', () => {
     await hs.loadHealth()
     await hs.syncHealth(state([workout('w1', 17)]))
     expect(h.calls).toEqual([])
-    expect(h.files.has('opengym-health.json')).toBe(false)
+    expect(h.files.has('gains-health.json')).toBe(false)
   })
 })
 
@@ -63,10 +63,10 @@ describe('turning it on', () => {
     expect(r.ok).toBe(true)
     expect(h.calls[0]).toEqual(['request'])
     expect(writes()).toHaveLength(1)
-    expect(writes()[0].sessions.map(s => s.id)).toEqual(['opengym-w-w1'])
-    expect(writes()[0].weights.map(s => s.id)).toEqual(['opengym-bw-2026-09-17'])
+    expect(writes()[0].sessions.map(s => s.id)).toEqual(['gains-w-w1'])
+    expect(writes()[0].weights.map(s => s.id)).toEqual(['gains-bw-2026-09-17'])
     expect(file().on).toBe(true)
-    expect(Object.keys(file().written)).toEqual(['opengym-w-w1', 'opengym-bw-2026-09-17'])
+    expect(Object.keys(file().written)).toEqual(['gains-w-w1', 'gains-bw-2026-09-17'])
   })
   it('stays off when the permissions are not granted', async () => {
     h.grant = false
@@ -94,25 +94,25 @@ describe('keeping in step', () => {
     expect(h.calls).toEqual([])
 
     await hs.syncHealth(state([workout('w1', 17), workout('w2', 18)]))
-    expect(writes().map(w => w.sessions.map(s => s.id))).toEqual([['opengym-w-w2']])
+    expect(writes().map(w => w.sessions.map(s => s.id))).toEqual([['gains-w-w2']])
 
     h.calls = []
     await hs.syncHealth(state([workout('w2', 18)]))
     expect(writes()).toEqual([])
-    expect(removes()).toEqual([{ sessions: ['opengym-w-w1'], weights: [] }])
-    expect(Object.keys(file().written)).toEqual(['opengym-w-w2'])
+    expect(removes()).toEqual([{ sessions: ['gains-w-w1'], weights: [] }])
+    expect(Object.keys(file().written)).toEqual(['gains-w-w2'])
   })
   it('remembers a refused permission, keeps what it has, and clears it once allowed again', async () => {
     await hs.enableHealth(state([workout('w1', 17)]))
     h.fail = 'permission'
     await hs.syncHealth(state([workout('w1', 17), workout('w2', 18)]))
     expect(file().error).toBe('permission')
-    expect(Object.keys(file().written)).toEqual(['opengym-w-w1'])
+    expect(Object.keys(file().written)).toEqual(['gains-w-w1'])
 
     h.fail = null
     await hs.syncHealth(state([workout('w1', 17), workout('w2', 18)]))
     expect(file().error).toBeNull()
-    expect(Object.keys(file().written)).toEqual(['opengym-w-w1', 'opengym-w-w2'])
+    expect(Object.keys(file().written)).toEqual(['gains-w-w1', 'gains-w-w2'])
   })
   it('runs one sync at a time and follows it with the newest state', async () => {
     await hs.enableHealth(state([]))
@@ -122,7 +122,7 @@ describe('keeping in step', () => {
     const c = hs.syncHealth(state([workout('w1', 17), workout('w2', 18), workout('w3', 19)]))
     await Promise.all([a, b, c])
     // The second call is overtaken by the third before it runs: two writes, not three.
-    expect(writes().map(w => w.sessions.map(s => s.id))).toEqual([['opengym-w-w1'], ['opengym-w-w2', 'opengym-w-w3']])
+    expect(writes().map(w => w.sessions.map(s => s.id))).toEqual([['gains-w-w1'], ['gains-w-w2', 'gains-w-w3']])
   })
 })
 
@@ -139,7 +139,7 @@ describe('turning it off', () => {
   it('or remove exactly what it wrote', async () => {
     await hs.enableHealth(state([workout('w1', 17)], [{ d: '2026-09-17', w: 80, t: at(17, 7) }]))
     await hs.disableHealth({ removeWritten: true })
-    expect(removes()).toEqual([{ sessions: ['opengym-w-w1'], weights: ['opengym-bw-2026-09-17'] }])
+    expect(removes()).toEqual([{ sessions: ['gains-w-w1'], weights: ['gains-bw-2026-09-17'] }])
     expect(file()).toMatchObject({ on: false, written: {} })
   })
 })

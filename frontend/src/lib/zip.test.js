@@ -37,7 +37,7 @@ describe('zip', () => {
   it('round-trips names (UTF-8 included) and bytes, and says it is a zip', async () => {
     const bin = new Uint8Array(70000).map((_, i) => i & 0xff)
     const z = await zipStore([
-      { name: 'opengym-backup.json', blob: new Blob(['{"workouts":[]}']) },
+      { name: 'gains-backup.json', blob: new Blob(['{"workouts":[]}']) },
       { name: 'media/übung.bin', blob: new Blob([bin]) },
       { name: 'empty.txt', blob: new Blob([]) }
     ])
@@ -45,7 +45,7 @@ describe('zip', () => {
     expect(await looksLikeZip(z)).toBe(true)
     expect(await looksLikeZip(new Blob(['{"a":1}']))).toBe(false)
     const back = await readZip(z)
-    expect(back.map(e => [e.name, e.size])).toEqual([['opengym-backup.json', 15], ['media/übung.bin', 70000], ['empty.txt', 0]])
+    expect(back.map(e => [e.name, e.size])).toEqual([['gains-backup.json', 15], ['media/übung.bin', 70000], ['empty.txt', 0]])
     expect(await text(back[0].blob)).toBe('{"workouts":[]}')
     expect(await u8(back[1].blob)).toEqual(bin)
   })

@@ -163,7 +163,7 @@ describe('the web boot', () => {
   })
 
   it('a page in front that answers for the server is an error, not a sign-out', async () => {
-    await boot(() => { throw Object.assign(new Error('not openGym data'), { status: 200, code: 'bad-response' }) })
+    await boot(() => { throw Object.assign(new Error('not Gains data'), { status: 200, code: 'bad-response' }) })
     expect(useStore.getState().user).toEqual(USER)
     expect(useStore.getState().sync).toMatchObject({ status: 'error', lastError: { status: 200, code: 'bad-response' } })
   })

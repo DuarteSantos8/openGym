@@ -78,8 +78,8 @@ export async function fetchChecksum(hashUrl) {
   let text
   if (MOBILE) {
     const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
-    await Filesystem.downloadFile({ url: hashUrl, path: 'opengym-update.apk.sha256', directory: Directory.Cache })
-    text = (await Filesystem.readFile({ path: 'opengym-update.apk.sha256', directory: Directory.Cache, encoding: Encoding.UTF8 })).data
+    await Filesystem.downloadFile({ url: hashUrl, path: 'gains-update.apk.sha256', directory: Directory.Cache })
+    text = (await Filesystem.readFile({ path: 'gains-update.apk.sha256', directory: Directory.Cache, encoding: Encoding.UTF8 })).data
   } else {
     const res = await fetch(hashUrl)
     if (!res.ok) return null
@@ -114,7 +114,7 @@ export async function downloadAndInstall(url, expectedHash, onProgress = null) {
   }
   if (!/^[0-9a-f]{64}$/i.test(expectedHash || '')) throw new Error('no checksum to verify the download against')
   const { Filesystem, Directory } = await import('@capacitor/filesystem')
-  const fileName = 'opengym-update.apk'
+  const fileName = 'gains-update.apk'
   const listener = onProgress
     ? await Filesystem.addListener('progress', p => onProgress(p.bytes, p.contentLength))
     : null

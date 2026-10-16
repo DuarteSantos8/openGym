@@ -84,7 +84,7 @@ export function connectionView(sync, { mobile = MOBILE, online = isOnline() } = 
       }
     case 'error':
       return err.code === 'bad-response'
-        ? { tone: 'bad', icon: 'warning', action: 'retry', line: t('Not an openGym answer (HTTP {0})', err.status), banner: t('Your server’s address answered with something other than openGym (HTTP {0}). Your changes are kept here.', err.status) }
+        ? { tone: 'bad', icon: 'warning', action: 'retry', line: t('Not a Gains answer (HTTP {0})', err.status), banner: t('Your server’s address answered with something other than Gains (HTTP {0}). Your changes are kept here.', err.status) }
         : { tone: 'bad', icon: 'warning', action: 'retry', line: t('Server error (HTTP {0})', err.status), banner: t('Your server answered with an error (HTTP {0}). Your changes are kept here.', err.status) }
     case 'auth':
       if (!mobile) return { tone: 'bad', icon: 'lock', action: 'signin', line: t('The server refuses this browser'), banner: t('Your server no longer accepts this browser. Your changes are kept here.') }
@@ -299,7 +299,7 @@ export function KeptChangesRows() {
     const state = await useStore.getState().keptState(k.server, k.uid)
     if (!state) return
     const json = JSON.stringify(state, null, 2)
-    const name = 'opengym-kept-' + String(k.name || k.uid).replace(/[^\w-]+/g, '_') + '-' + new Date().toISOString().slice(0, 10) + '.json'
+    const name = 'gains-kept-' + String(k.name || k.uid).replace(/[^\w-]+/g, '_') + '-' + new Date().toISOString().slice(0, 10) + '.json'
     if (MOBILE) { try { await shareExport(json, name); useUI.getState().toast(t('Backup exported')) } catch { /* share sheet dismissed */ } return }
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' })); a.download = name; a.click()
     setTimeout(() => URL.revokeObjectURL(a.href), 60000)

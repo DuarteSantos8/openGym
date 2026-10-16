@@ -177,7 +177,7 @@ describe('the alarm buzz in the Android app', () => {
 
 // The native half cannot run here; what it must do with the flag is read off its source.
 describe('the Android side of Vibrate off', () => {
-  const src = name => readFileSync(new URL(`../../android/app/src/main/java/ch/duartesantos/opengym/${name}.java`, import.meta.url), 'utf8')
+  const src = name => readFileSync(new URL(`../../android/app/src/main/java/com/adrianster/gains/${name}.java`, import.meta.url), 'utf8')
   const alert = src('RestAlert')
 
   it('reads the flag from the page, defaulting to on for an older page', () => {
@@ -201,7 +201,7 @@ describe('the Android side of Vibrate off', () => {
 })
 
 describe('the Android side of the alarm buzz (#375)', () => {
-  const src = name => readFileSync(new URL(`../../android/app/src/main/java/ch/duartesantos/opengym/${name}.java`, import.meta.url), 'utf8')
+  const src = name => readFileSync(new URL(`../../android/app/src/main/java/com/adrianster/gains/${name}.java`, import.meta.url), 'utf8')
   const alert = src('RestAlert')
   const plugin = src('RestAlertPlugin')
 

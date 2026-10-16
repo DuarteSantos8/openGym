@@ -716,7 +716,7 @@ describe('estimate_1rm', () => {
     const { Client } = await import('@modelcontextprotocol/sdk/client/index.js')
     const { InMemoryTransport } = await import('@modelcontextprotocol/sdk/inMemory.js')
     const t = TOOLS.find(x => x.name === 'estimate_1rm')
-    const server = new McpServer({ name: 'opengym', version: '0.1.0' })
+    const server = new McpServer({ name: 'gains', version: '0.1.0' })
     server.tool(t.name, t.description, t.schema, async p => ({ content: [{ type: 'text', text: JSON.stringify(t.handler(p || {})) }] }))
     const client = new Client({ name: 'tools-test', version: '1' })
     const [ct, st] = InMemoryTransport.createLinkedPair()
@@ -1260,7 +1260,7 @@ describe('date arguments must be dates the calendar has', () => {
     const { McpServer } = await import('@modelcontextprotocol/sdk/server/mcp.js')
     const { Client } = await import('@modelcontextprotocol/sdk/client/index.js')
     const { InMemoryTransport } = await import('@modelcontextprotocol/sdk/inMemory.js')
-    const server = new McpServer({ name: 'opengym', version: '0.1.0' })
+    const server = new McpServer({ name: 'gains', version: '0.1.0' })
     for (const t of TOOLS) {
       server.tool(t.name, t.description, t.schema, async (params) => {
         try {

@@ -1,4 +1,4 @@
-/* The first-run onboarding's openGym routes: the invite check that never uses an invite up, invite
+/* The first-run onboarding's Gains routes: the invite check that never uses an invite up, invite
    expiry and single use at sign-up, the migration of invites from before expiry, and the passkey
    backup flags (BE/BS) behind `synced` in /api/me. Real server.js in a child, the harness of
    server-passkeys.test.js; every test talks from its own X-Forwarded-For address (TRUST_PROXY=1). */

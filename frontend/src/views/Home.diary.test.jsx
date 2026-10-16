@@ -453,7 +453,7 @@ describe('the + sheet', () => {
 })
 
 describe('sync after a weigh-in and a workout', () => {
-  it('a weigh-in pushes openGym, then asks the hub to sync now', async () => {
+  it('a weigh-in pushes Gains, then asks the hub to sync now', async () => {
     const order = []
     useStore.setState({ pushState: vi.fn(async () => { order.push('push') }) })
     vi.stubGlobal('fetch', vi.fn((...a) => { order.push(String(a[0])); return nt.fetch(...a) }))

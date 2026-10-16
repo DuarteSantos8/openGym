@@ -1,6 +1,6 @@
 // Auto-backup into a folder the person chose (#161, Android): the copy goes there through the
 // local BackupFolder plugin and the dated copies are pruned there; a folder that stops taking
-// them sends the copy to Documents/openGym after all and leaves a note for Settings. With no
+// them sends the copy to Documents/Gains after all and leaves a note for Settings. With no
 // folder chosen nothing changes. The choice lives in a private file, never in the synced state.
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { todayISO } from './format.js'
@@ -38,7 +38,7 @@ vi.mock('@capacitor/core', () => ({
 const mobile = await import('./mobile.js')
 const { writeAutoBackup, chooseBackupFolder, resetBackupFolder, backupFolder, onBackupFolderChange, BACKUP_FOLDER_FILE, AUTO_BACKUP_KEEP, _resetBackupFolder } = mobile
 
-const today = 'opengym-backup-' + todayISO() + '.json'
+const today = 'gains-backup-' + todayISO() + '.json'
 const saved = () => JSON.parse(h.files.get('DATA/' + BACKUP_FOLDER_FILE) || 'null')
 const methods = () => h.calls.map(c => c[0])
 const SYNC = 'content://com.android.externalstorage.documents/tree/primary%3ASync'
@@ -50,9 +50,9 @@ beforeEach(() => {
 })
 
 describe('with no folder chosen', () => {
-  it('writes to Documents/openGym exactly as before and never asks the plugin to write', async () => {
+  it('writes to Documents/Gains exactly as before and never asks the plugin to write', async () => {
     await writeAutoBackup({ n: 1 })
-    expect(JSON.parse(h.files.get('DOCUMENTS/openGym/' + today))).toEqual({ n: 1 })
+    expect(JSON.parse(h.files.get('DOCUMENTS/Gains/' + today))).toEqual({ n: 1 })
     expect(methods()).toEqual([])
     expect(await backupFolder()).toEqual({})
   })
@@ -104,18 +104,18 @@ describe('writing into the chosen folder', () => {
     expect(prune).toMatchObject({ uri: SYNC, keep: AUTO_BACKUP_KEEP, written: today })
     // The same names the Documents prune keeps to, and nothing else.
     const re = new RegExp(prune.pattern)
-    expect(re.test('opengym-backup-2026-01-02.json')).toBe(true)
-    expect(re.test('opengym-backup-2026-01-02-2.json')).toBe(true)
+    expect(re.test('gains-backup-2026-01-02.json')).toBe(true)
+    expect(re.test('gains-backup-2026-01-02-2.json')).toBe(true)
     expect(re.test('notes.txt')).toBe(false)
     expect([...h.files.keys()].some(k => k.startsWith('DOCUMENTS/'))).toBe(false)
   })
 
-  it('a folder whose permission is gone: the copy goes to Documents/openGym and Settings hears', async () => {
+  it('a folder whose permission is gone: the copy goes to Documents/Gains and Settings hears', async () => {
     const heard = []
     onBackupFolderChange(s => heard.push(s))
     h.held = false
     await writeAutoBackup({ n: 3 })
-    expect(JSON.parse(h.files.get('DOCUMENTS/openGym/' + today))).toEqual({ n: 3 })
+    expect(JSON.parse(h.files.get('DOCUMENTS/Gains/' + today))).toEqual({ n: 3 })
     expect(methods()).not.toContain('write')
     expect(saved()).toEqual({ lost: true, lostLabel: 'Sync' })
     expect(heard).toEqual([{ lost: true, lostLabel: 'Sync' }])
@@ -124,13 +124,13 @@ describe('writing into the chosen folder', () => {
   it('a write that fails falls back the same way, and the next copy goes straight to Documents', async () => {
     h.refuse = true
     await writeAutoBackup({ n: 4 })
-    expect(JSON.parse(h.files.get('DOCUMENTS/openGym/' + today))).toEqual({ n: 4 })
+    expect(JSON.parse(h.files.get('DOCUMENTS/Gains/' + today))).toEqual({ n: 4 })
     expect(methods()).not.toContain('prune')
     expect(saved()).toMatchObject({ lost: true })
     h.calls.length = 0
     await writeAutoBackup({ n: 5 })
     expect(methods()).toEqual([])
-    expect(JSON.parse(h.files.get('DOCUMENTS/openGym/' + today))).toEqual({ n: 5 })
+    expect(JSON.parse(h.files.get('DOCUMENTS/Gains/' + today))).toEqual({ n: 5 })
   })
 
   it('"Use default folder" puts the warning away', async () => {

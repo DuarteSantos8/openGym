@@ -1,4 +1,4 @@
-openGym {{ .Chart.AppVersion }} is installed.
+Gains {{ .Chart.AppVersion }} is installed.
 {{- if .Values.ingress.enabled }}
 {{- range $host := .Values.ingress.hosts }}
   {{- range .paths }}

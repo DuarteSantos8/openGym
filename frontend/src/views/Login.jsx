@@ -91,7 +91,7 @@ export default function Login() {
       <div className="muted" style={{ marginBottom: 30 }}>{t('Live demo. Everything stays in this browser.')}</div>
       <Button variant="primary" icon="play" onClick={() => setGuest(true)}>{t('Start the demo')}</Button>
       <Card className="small muted ta-start mt-8">
-        {t('This demo runs entirely in your browser on example data. Nothing is sent anywhere. Passkey sign-in and sync across your devices come with the openGym server, which you get by self-hosting it.')}
+        {t('This demo runs entirely in your browser on example data. Nothing is sent anywhere. Passkey sign-in and sync across your devices come with the Gains server, which you get by self-hosting it.')}
       </Card>
       <div className="dim small mt-10 lh-160">
         <a href={REPO} target="_blank" rel="noopener">{t('Self-host it in a minute →')}</a>
@@ -122,7 +122,7 @@ export default function Login() {
         <Button icon="plusCircle" onClick={register}>{t('Create new profile')}</Button>
         {canGuest && <Spacer size={5} />}
       </> : <Card className="small muted ta-start">{canGuest
-        ? t("This browser doesn't do passkeys, but you can still use openGym locally on this device.")
+        ? t("This browser doesn't do passkeys, but you can still use Gains locally on this device.")
         // Without passkeys and without the guest entrance there is no way in from this browser,
         // so say that plainly instead of offering a local profile that cannot be created.
         : t("This browser doesn't support passkeys, and this instance requires an account. Try a browser or device with passkey support.")}</Card>}

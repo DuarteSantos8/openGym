@@ -36,7 +36,7 @@ to answer for — its user id is in `./data/db.json` under `users[].id`:
 node src/index.js
 
 # multi-user instance, or just to be explicit:
-OPENGYM_UID=<your-uid> OPENGYM_DATA=/path/to/gains/data node src/index.js
+GAINS_UID=<your-uid> GAINS_DATA=/path/to/gains/data node src/index.js
 ```
 
 ### 3. Register with your LLM client
@@ -47,12 +47,12 @@ Add the server to your LLM client's MCP config. For Claude Desktop, edit
 ```jsonc
 {
   "mcpServers": {
-    "opengym": {
+    "gains": {
       "command": "node",
       "args": ["/absolute/path/to/gains/mcp/src/index.js"],
       "env": {
-        "OPENGYM_DATA": "/absolute/path/to/gains/data",
-        "OPENGYM_UID": "<your-uid>"   // optional — auto-detected if you have one profile
+        "GAINS_DATA": "/absolute/path/to/gains/data",
+        "GAINS_UID": "<your-uid>"   // optional — auto-detected if you have one profile
       }
     }
   }

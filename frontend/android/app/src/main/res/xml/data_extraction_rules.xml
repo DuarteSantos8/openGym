@@ -5,6 +5,6 @@
      a transfer takes everything, as before. -->
 <data-extraction-rules>
     <cloud-backup>
-        <exclude domain="file" path="opengym-media/" />
+        <exclude domain="file" path="gains-media/" />
     </cloud-backup>
 </data-extraction-rules>

@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: opengym
+  name: gains
 spec:
   type: ClusterIP
   ports:
@@ -11,4 +11,4 @@ spec:
       protocol: TCP
       targetPort: web
   selector:
-    app: opengym
+    app: gains

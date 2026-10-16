@@ -34,7 +34,7 @@ const PKG = '@anthropic-ai/claude-agent-sdk';
 const require_ = createRequire(import.meta.url);
 // Read rather than hardcoded: the fork's copy still identified itself as 1.2.3 two releases
 // later, which is the failure mode of every version string typed by hand.
-const CLIENT_APP = `opengym-coach/${(() => {
+const CLIENT_APP = `gains-coach/${(() => {
   try { return require_('../../package.json').version; } catch { return '0' }
 })()}`;
 const OUTPUT_CAP = 4 * 1024 * 1024;

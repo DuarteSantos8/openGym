@@ -1,4 +1,4 @@
-// openGym control set.
+// Gains control set.
 //
 // Every input in the app is built here rather than styled on top of a native
 // widget. Native controls are the single loudest "unfinished" tell: a checkbox

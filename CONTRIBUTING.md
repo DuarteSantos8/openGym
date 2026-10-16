@@ -98,8 +98,5 @@ login issues are an origin mismatch.
 
 ## Contribution terms
 
-Gains has not set contribution terms of its own yet. [CLA.md](CLA.md) is the Contributor License
-Agreement of the project Gains was forked from: it grants rights to that project's maintainer, not to
-Gains, so it does not apply to a contribution here. Until Gains has terms of its own, open a pull
-request only if you are happy for it to be licensed under the [GNU AGPL v3.0](LICENSE) like the rest
-of the code.
+Gains has no contributor agreement. Open a pull request only if you are happy for it to be licensed
+under the [GNU AGPL v3.0](LICENSE) like the rest of the code.

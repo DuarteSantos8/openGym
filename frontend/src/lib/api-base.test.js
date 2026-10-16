@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-// Issue #238: openGym behind a reverse proxy that serves it under a subpath. The assets were
+// Issue #238: Gains behind a reverse proxy that serves it under a subpath. The assets were
 // already relative; the API call was not, so it went to the proxy's own root where nothing
 // answers it. The base is read from where the app is being served.
 import { describe, it, expect, vi, afterEach } from 'vitest'
