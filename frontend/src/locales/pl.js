@@ -586,6 +586,8 @@ export default {
   'Fatigue': 'Zmęczenie',
   'Ready': 'Gotowe',
   'Recovering': 'W regeneracji',
+  'Recovering {0}': 'W regeneracji {0}',
+  'Ready {0}': 'Gotowe {0}',
   'Fatigued': 'Zmęczone',
   'Fatigue shows how recently each muscle was trained. High means rest.': 'Zmęczenie pokazuje, jak niedawno trenowano każdą partię mięśni. Wysoki poziom oznacza potrzebę odpoczynku.',
   'Strength shows retained muscle strength. Train again to reset it.': 'Siła pokazuje, ile siły mięśniowej pozostało. Ponowny trening przywraca jej poziom wyjściowy.',

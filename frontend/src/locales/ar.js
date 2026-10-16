@@ -476,6 +476,8 @@ export default {
   'Fatigue': 'الإجهاد العضلي',
   'Ready': 'جاهز',
   'Recovering': 'يتعافى',
+  'Recovering {0}': 'يتعافى {0}',
+  'Ready {0}': 'جاهز {0}',
   'Fatigued': 'مُجهَد',
   'Fatigue shows how recently each muscle was trained. High means rest.': 'يوضح مستوى الإجهاد العضلي بناءً على مدى حداثة تدريب كل عضلة. المستوى المرتفع يعني أن العضلة بحاجة إلى راحة.',
   'Strength shows retained muscle strength. Train again to reset it.': 'تقدّر مقدار القوة المتبقية في العضلة. درّبها مرة أخرى لإعادة ضبطها.',

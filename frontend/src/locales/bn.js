@@ -669,6 +669,8 @@ export default {
   'Fatigue': 'ক্লান্তি',
   'Ready': 'প্রস্তুত',
   'Recovering': 'রিকভারি চলছে',
+  'Recovering {0}': 'রিকভারি চলছে {0}',
+  'Ready {0}': 'প্রস্তুত {0}',
   'Fatigued': 'ক্লান্ত',
   'Fatigue shows how recently each muscle was trained. High means rest.': 'ক্লান্তি দেখায় প্রতিটি পেশি কত সম্প্রতি ট্রেন করা হয়েছে। বেশি মানে বিশ্রাম দরকার।',
   'Strength shows retained muscle strength. Train again to reset it.': 'শক্তি দেখায় পেশির ধরে রাখা শক্তি। রিসেট করতে আবার ট্রেন করুন।',

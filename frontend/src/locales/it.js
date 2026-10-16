@@ -586,6 +586,8 @@ export default {
   'Fatigue': 'Fatica',
   'Ready': 'Pronto',
   'Recovering': 'In recupero',
+  'Recovering {0}': 'In recupero {0}',
+  'Ready {0}': 'Pronto {0}',
   'Fatigued': 'Affaticato',
   'Fatigue shows how recently each muscle was trained. High means rest.': 'La fatica mostra quanto è recente l’allenamento di ogni muscolo. Un valore alto significa che serve riposo.',
   'Strength shows retained muscle strength. Train again to reset it.': 'La forza mostra quanta forza muscolare hai mantenuto. Allenati di nuovo per reimpostarla.',
