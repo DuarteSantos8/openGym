@@ -17,8 +17,12 @@ export default class WorkoutScrollAnchor extends Component {
     })
     // If the content at the top is itself disappearing, hold the next surviving tile in
     // place instead. A summary already collapsed is a perfectly good anchor too.
-    const anchor = visible.find(el => !collapsing.has(el.dataset.unitKey)) || visible[0]
-    return anchor ? { anchor, top: anchor.getBoundingClientRect().top } : null
+    const anchor = visible.find(el => !collapsing.has(el.dataset.unitKey))
+    // Everything visible is folding away (say the last open exercise was just finished):
+    // there is no tile to hold and no later expansion to reclaim trailing space, so let the
+    // page settle naturally instead of leaving filler below (#642).
+    if (!anchor) return { noAnchor: true }
+    return { anchor, top: anchor.getBoundingClientRect().top }
   }
 
   componentDidUpdate(prev, state, snapshot) {
@@ -26,7 +30,7 @@ export default class WorkoutScrollAnchor extends Component {
     const root = this.root.current
     if (this.leadingSpace) this.leadingSpace.style.marginTop = ''
     this.leadingSpace = null
-    if (!snapshot.anchor.isConnected) { root.style.paddingBottom = ''; return }
+    if (snapshot.noAnchor || !snapshot.anchor.isConnected) { root.style.paddingBottom = ''; return }
     const body = document.body
     const locked = body.style.position === 'fixed'
     const delta = snapshot.anchor.getBoundingClientRect().top - snapshot.top
