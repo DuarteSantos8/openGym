@@ -177,7 +177,6 @@ export default {
   'Exercises trained: {0}': 'Exercises trained: {0}',
   'Here': 'Here',
   'In Progress, under Training load': 'In Progress, under Training load',
-  'Library': 'Library',
   'Log past workout': 'Log past workout',
   'Main navigation': 'Main navigation',
   'New exercise': 'New exercise',
@@ -189,13 +188,11 @@ export default {
   'Progress': 'Progress',
   'Resume workout': 'Resume workout',
   'Routine name': 'Routine name',
-  'Start a different workout': 'Start a different workout',
   'Training': 'Training',
   'Training load': 'Training load',
   'Training settings': 'Training settings',
   'Weigh in': 'Weigh in',
   'Weight, measurements and photos': 'Weight, measurements and photos',
-  '{0} of your own': '{0} of your own',
   '{0}, workout in progress': '{0}, workout in progress',
   'By muscle': '按肌肉',
   'Explore muscles': '探索肌肉',
@@ -392,7 +389,6 @@ export default {
   'Rest’s over. Next set!': '休息结束，下一组！',
   'Hi {0}': '你好，{0}',
   'This week': '本周',
-  '{0} (in progress)': '{0}（进行中）',
   'Resume ▶': '继续 ▶',
   'Welcome!': '欢迎！',
   'Set up your weekly routine to get going, or grab a ready-made starter plan.': '设置每周计划就能开始，或者直接拿一份现成的入门计划。',
@@ -1197,7 +1193,6 @@ export default {
   'Local keeps everything on this phone. Connecting syncs to your own openGym server instead. You can switch later in Settings.': '本地模式会把所有内容保留在这部手机上。连接则会改为与你自己的 openGym 服务器同步。之后可以在设置中更改。',
 
   // --- workout notes and planned warm-ups ---
-  '{0} (done)': '{0}（已完成）',
   'Workout done': '训练已完成',
   'reps': '次',
   'Most reps in a set per workout': '每次训练单组最多次数',
@@ -1903,7 +1898,6 @@ export default {
   'Discard it': '丢弃它',
   'Use Fixed Week': '使用固定周',
   'No rotation yet. Add routines to it in Plan.': '还没有轮换。在计划中添加训练日。',
-  'Set up in Plan': '在计划中设置',
   'Round complete': '本轮已完成',
   'Next round starts {0}.': '下一轮从 {0} 开始。',
   'Pyramid sets': '金字塔组',
@@ -2837,4 +2831,10 @@ export default {
   '{0} this week': '本周 {0}',
   '{0} PR': '{0} 个 PR',
   '{0} PRs': '{0} 个 PR',
+
+  // --- the redesigned Training tab ---
+  'See all': '查看全部',
+  'Nothing planned this week': '本周暂无安排',
+  'Pick exercises as you go': '边练边选动作',
+  'Start a freestyle workout': '开始自由训练',
 }

@@ -1,10 +1,13 @@
-import { queueView } from '../lib/queue.js'
+import { useNavigate } from 'react-router-dom'
+import { queueOf, queueView } from '../lib/queue.js'
 import { effectiveRoutineIds } from '../lib/history.js'
 import { fmtDate } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
+import { startFlow } from '../sheets.jsx'
 import Icon from './Icon.jsx'
 
-// Home's progress row for a coach week (S.queue) — it stands in for the seven weekday dots
+// The progress row for a coach week or your own rotation (S.queue), on Home's This week and
+// Training's Your plan — it stands in for the seven weekday dots
 // while a planner-written queue runs the week, because its sessions have no weekday: they are done in
 // order, on whatever days you train. One chip per session in slot order; the next undone one
 // is lit, and any undone chip starts its own routine, in whatever order the day calls for. A
@@ -12,9 +15,16 @@ import Icon from './Icon.jsx'
 // S.dayPlan) is not lit and wears its day instead of a state word — it still starts on a tap.
 // Reads through queueView so the words here and the today row (effectiveRoutineIds →
 // queueNext) can never disagree about which is next.
-export default function QueueRow({ S, today, onStart, managed }) {
+export default function QueueRow({ S, today }) {
+  const nav = useNavigate()
   const v = queueView(S, today)
   if (!v) return null
+  // Ownership, not mere presence of a rotationId: a stale id left over from a rebuilt rotation
+  // would otherwise still read as "this app manages it" (lib/rotation.js).
+  const liveQ = queueOf(S)
+  const managed = !!liveQ && !!S.rotation && liveQ.rotationId === S.rotation.id
+  // A session in progress wins over a chip: starting another would overwrite it.
+  const onStart = id => { if (S.active) nav('/train/workout'); else startFlow([id]) }
   const word = { done: t('Done'), next: t('Up next'), later: t('Later') }
   const next = v.items.find(i => i.state === 'next')
   // With every remaining session pinned to its own day nothing floats, so there is no 'next'

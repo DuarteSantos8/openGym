@@ -179,7 +179,6 @@ export default {
   'Exercises trained: {0}': 'Exercises trained: {0}',
   'Here': 'Here',
   'In Progress, under Training load': 'In Progress, under Training load',
-  'Library': 'Library',
   'Log past workout': 'Log past workout',
   'Main navigation': 'Main navigation',
   'New exercise': 'New exercise',
@@ -191,13 +190,11 @@ export default {
   'Progress': 'Progress',
   'Resume workout': 'Resume workout',
   'Routine name': 'Routine name',
-  'Start a different workout': 'Start a different workout',
   'Training': 'Training',
   'Training load': 'Training load',
   'Training settings': 'Training settings',
   'Weigh in': 'Weigh in',
   'Weight, measurements and photos': 'Weight, measurements and photos',
-  '{0} of your own': '{0} of your own',
   '{0}, workout in progress': '{0}, workout in progress',
   'By muscle': 'ตามกล้ามเนื้อ',
   'Explore muscles': 'สำรวจกล้ามเนื้อ',
@@ -391,7 +388,6 @@ export default {
   // --- home ---
   'Hi {0}': 'สวัสดี {0}',
   'This week': 'สัปดาห์นี้',
-  '{0} (in progress)': '{0} (กำลังทำอยู่)',
   'Resume ▶': 'เล่นต่อ ▶',
   'Welcome!': 'ยินดีต้อนรับ!',
   'Set up your weekly routine to get going, or grab a ready-made starter plan.': 'ตั้งค่ารูทีนรายสัปดาห์เพื่อเริ่มต้น หรือหยิบแผนเริ่มต้นสำเร็จรูปไปใช้ก็ได้',
@@ -1032,7 +1028,6 @@ export default {
   'Local keeps everything on this phone. Connecting syncs to your own openGym server instead. You can switch later in Settings.': 'แบบเก็บในเครื่องจะเก็บทุกอย่างไว้ในโทรศัพท์นี้ ส่วนการเชื่อมต่อจะซิงก์กับเซิร์ฟเวอร์ openGym ของคุณเองแทน เปลี่ยนภายหลังได้ในการตั้งค่า',
 
   // --- workout notes and planned warm-ups ---
-  '{0} (done)': '{0} (เสร็จแล้ว)',
   'Workout done': 'ออกกำลังกายเสร็จแล้ว',
   'reps': 'ครั้ง',
   'Most reps in a set per workout': 'จำนวนครั้งมากที่สุดในหนึ่งเซ็ตต่อการออกกำลังกาย',
@@ -1911,7 +1906,6 @@ export default {
   'Discard it': 'ทิ้งไป',
   'Use Fixed Week': 'ใช้สัปดาห์คงที่',
   'No rotation yet. Add routines to it in Plan.': 'ยังไม่มีการหมุนเวียน เพิ่มรูทีนได้ในแผน',
-  'Set up in Plan': 'ตั้งค่าในแผน',
   'Round complete': 'รอบนี้ครบแล้ว',
   'Next round starts {0}.': 'รอบถัดไปเริ่ม {0}',
   'Pyramid sets': 'เซ็ตพีระมิด',
@@ -2848,4 +2842,10 @@ export default {
   '{0} this week': '{0} สัปดาห์นี้',
   '{0} PR': '{0} PR',
   '{0} PRs': '{0} PR',
+
+  // --- the redesigned Training tab ---
+  'See all': 'ดูทั้งหมด',
+  'Nothing planned this week': 'สัปดาห์นี้ยังไม่มีแผน',
+  'Pick exercises as you go': 'เลือกท่าระหว่างออกกำลังกายได้เลย',
+  'Start a freestyle workout': 'เริ่มออกกำลังกายแบบฟรีสไตล์',
 }

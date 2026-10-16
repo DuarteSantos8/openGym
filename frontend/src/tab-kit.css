@@ -213,6 +213,8 @@
 
 /* TabSection: a tab root's sections, --gap-tab-section apart. */
 .tab-sec{margin-bottom:var(--gap-tab-section)}
+/* The section's gap is the whole gap: a card or an inset list closing it adds none of its own. */
+.tab-sec>.card:last-child,.tab-sec>.sect:last-child{margin-bottom:0}
 /* A section whose live rows are all absent takes no space. */
 .tab-sec:empty{display:none}
 
@@ -359,6 +361,9 @@
 .lineart .il-occ{fill:var(--surface)}
 .lineart .il-lit{fill:var(--acc-soft)}
 .lineart .il-dash{stroke-dasharray:4 4}
+/* An exercise thumbnail's equipment (EquipmentThumb): the scene fills the tile at any size, on
+   the tile's own ground. */
+.thumb-x>.lineart{width:100%;height:100%;background:none}
 /* Draw-in: each path over 480ms, 60ms apart, the accent over --hero; fills after their outline.
    The keyframes start from nothing drawn, so a still (reduced motion) is the finished scene. */
 .lineart.il-draw [pathLength="1"]{stroke-dasharray:1;animation:il-draw 480ms var(--ease-io) both;animation-delay:calc(var(--i,0) * 60ms)}

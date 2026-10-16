@@ -1944,28 +1944,6 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   .wl-unit{padding:10px 8px 2px}
 }
 
-/* --- home: today's session row --- */
-.today-row{
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  margin-top:12px;padding:12px 14px;border-radius:var(--r);background:var(--surface-2);
-  transition:background var(--fast);width:100%;text-align: start;cursor:pointer;
-}
-.today-row:active{background:var(--surface-3)}
-.today-row .lbl2{font-size:11px;font-weight:500;letter-spacing:.03em;text-transform:uppercase;color:var(--label-2)}   /* --label-3 was 1.7:1 on the row in light */
-.today-row .ttl{
-  font-weight:500;font-size:17px;line-height:1.25;text-transform:capitalize;
-  letter-spacing:-.012em;margin-top:2px;
-  /* two lines before the ellipsis: "Leg Day — in progress" grows past one line in hu/tr/th/pt-BR */
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;
-}
-
-/* Only where a pointer really hovers — on a phone :hover sticks to the row after the tap.
-   Lighter than :active, which goes all the way to --surface-3, so the two stay distinct. */
-@media (hover:hover){
-  .today-row:hover{background:color-mix(in srgb,var(--surface-2),var(--surface-3) 60%)}
-  :root[data-theme="light"] .today-row:hover{background:color-mix(in srgb,var(--surface-2),var(--surface-3) 85%)}
-}
-
 /* --------------------------------------------------- desktop (≥1000px) --- */
 @media (min-width:1000px){
   :root{--page-w:640px;--app-top:32px}

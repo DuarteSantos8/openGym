@@ -177,7 +177,6 @@ export default {
   'Exercises trained: {0}': 'Exercises trained: {0}',
   'Here': 'Here',
   'In Progress, under Training load': 'In Progress, under Training load',
-  'Library': 'Library',
   'Log past workout': 'Log past workout',
   'Main navigation': 'Main navigation',
   'New exercise': 'New exercise',
@@ -189,13 +188,11 @@ export default {
   'Progress': 'Progress',
   'Resume workout': 'Resume workout',
   'Routine name': 'Routine name',
-  'Start a different workout': 'Start a different workout',
   'Training': 'Training',
   'Training load': 'Training load',
   'Training settings': 'Training settings',
   'Weigh in': 'Weigh in',
   'Weight, measurements and photos': 'Weight, measurements and photos',
-  '{0} of your own': '{0} of your own',
   '{0}, workout in progress': '{0}, workout in progress',
   'By muscle': 'मांसपेशी से',
   'Explore muscles': 'मांसपेशियाँ खोजें',
@@ -392,7 +389,6 @@ export default {
   'Rest’s over. Next set!': 'आराम खत्म। अगला सेट!',
   'Hi {0}': 'नमस्ते {0}',
   'This week': 'इस हफ़्ते',
-  '{0} (in progress)': '{0} (चल रहा है)',
   'Resume ▶': 'जारी रखें ▶',
   'Welcome!': 'स्वागत है!',
   'Set up your weekly routine to get going, or grab a ready-made starter plan.': 'शुरू करने के लिए अपना साप्ताहिक रूटीन बनाएँ, या बना-बनाया स्टार्टर प्लान ले लें।',
@@ -1197,7 +1193,6 @@ export default {
   'Local keeps everything on this phone. Connecting syncs to your own openGym server instead. You can switch later in Settings.': 'लोकल सब कुछ इसी फ़ोन पर रखता है। कनेक्ट करने पर आपके अपने openGym सर्वर से सिंक होता है। इसे बाद में सेटिंग्स में बदल सकते हैं।',
 
   // --- workout notes and planned warm-ups ---
-  '{0} (done)': '{0} (पूरा)',
   'Workout done': 'कसरत पूरी',
   'reps': 'रेप्स',
   'Most reps in a set per workout': 'प्रति कसरत एक सेट में सबसे ज़्यादा रेप्स',
@@ -1903,7 +1898,6 @@ export default {
   'Discard it': 'इसे हटा दें',
   'Use Fixed Week': 'नियत सप्ताह का उपयोग करें',
   'No rotation yet. Add routines to it in Plan.': 'अभी कोई रोटेशन नहीं। योजना में इसमें रूटीन जोड़ें।',
-  'Set up in Plan': 'योजना में सेट करें',
   'Round complete': 'चक्कर पूरा हुआ',
   'Next round starts {0}.': 'अगला चक्कर {0} से शुरू होगा।',
   'Pyramid sets': 'पिरामिड सेट',
@@ -2837,4 +2831,10 @@ export default {
   '{0} this week': 'इस हफ़्ते {0}',
   '{0} PR': '{0} PR',
   '{0} PRs': '{0} PR',
+
+  // --- the redesigned Training tab ---
+  'See all': 'सभी देखें',
+  'Nothing planned this week': 'इस हफ़्ते कुछ भी प्लान नहीं है',
+  'Pick exercises as you go': 'व्यायाम चलते-चलते चुनें',
+  'Start a freestyle workout': 'फ्रीस्टाइल वर्कआउट शुरू करें',
 }

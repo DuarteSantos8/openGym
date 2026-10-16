@@ -177,7 +177,6 @@ export default {
   'Exercises trained: {0}': 'Exercises trained: {0}',
   'Here': 'Here',
   'In Progress, under Training load': 'In Progress, under Training load',
-  'Library': 'Library',
   'Log past workout': 'Log past workout',
   'Main navigation': 'Main navigation',
   'New exercise': 'New exercise',
@@ -189,13 +188,11 @@ export default {
   'Progress': 'Progress',
   'Resume workout': 'Resume workout',
   'Routine name': 'Routine name',
-  'Start a different workout': 'Start a different workout',
   'Training': 'Training',
   'Training load': 'Training load',
   'Training settings': 'Training settings',
   'Weigh in': 'Weigh in',
   'Weight, measurements and photos': 'Weight, measurements and photos',
-  '{0} of your own': '{0} of your own',
   '{0}, workout in progress': '{0}, workout in progress',
   'History': 'Історія',
   'Settings': 'Налаштування',
@@ -374,7 +371,6 @@ export default {
   'Rest’s over. Next set!': 'Відпочинок скінчився. Наступний підхід!',
   'Hi {0}': 'Привіт, {0}',
   'This week': 'Цього тижня',
-  '{0} (in progress)': '{0} (триває)',
   'Resume ▶': 'Продовжити ▶',
   'Welcome!': 'Ласкаво просимо!',
   'Set up your weekly routine to get going, or grab a ready-made starter plan.': 'Налаштуй свій тижневий план, щоб почати, або візьми готовий стартовий план.',
@@ -1004,7 +1000,6 @@ export default {
   'Local keeps everything on this phone. Connecting syncs to your own openGym server instead. You can switch later in Settings.': 'Локальний режим зберігає все на цьому телефоні. Підключення натомість синхронізує дані з твоїм власним сервером openGym. Змінити можна пізніше в Налаштуваннях.',
 
   // --- workout notes and planned warm-ups ---
-  '{0} (done)': '{0} (зроблено)',
   'Workout done': 'Тренування зроблено',
   'reps': 'повт.',
   'Most reps in a set per workout': 'Найбільше повт. в підході за тренування',
@@ -1897,7 +1892,6 @@ export default {
   'Discard it': 'Скасувати її',
   'Use Fixed Week': 'Використати фіксований тиждень',
   'No rotation yet. Add routines to it in Plan.': 'Ротації поки немає. Додай до неї програми в Плані.',
-  'Set up in Plan': 'Налаштувати в Плані',
   'Round complete': 'Коло пройдено',
   'Next round starts {0}.': 'Наступне коло почнеться {0}.',
   'Pyramid sets': 'Піраміда',
@@ -2834,4 +2828,10 @@ export default {
   '{0} this week': '{0} цього тижня',
   '{0} PR': '{0} рекорд',
   '{0} PRs': { one: '{0} рекорд', few: '{0} рекорди', many: '{0} рекордів' },
+
+  // --- the redesigned Training tab ---
+  'See all': 'Показати все',
+  'Nothing planned this week': 'На цьому тижні нічого не заплановано',
+  'Pick exercises as you go': 'Обирай вправи по ходу тренування',
+  'Start a freestyle workout': 'Почати довільне тренування',
 }

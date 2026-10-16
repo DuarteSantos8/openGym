@@ -295,7 +295,6 @@ export const PT_BR_OVERRIDES = {
   'Skip': 'Pular',
   'Rest / skip this day': 'Descansar / pular este dia',
   'Workout deleted': 'Treino excluído',
-  '{0} (in progress)': '{0} (em andamento)',
   '“{0}” and its exercises will be removed.': '“{0}” e seus exercícios serão removidos.',
   'Sign-in failed': 'Falha ao entrar',
   "This browser doesn't support passkeys, and this instance requires an account. Try a browser or device with passkey support.": 'Este navegador não oferece suporte a chaves de acesso e este servidor exige uma conta. Tente usar outro navegador ou dispositivo compatível.',
@@ -1079,7 +1078,6 @@ export const PT_BR_OVERRIDES = {
   'Discard it': 'Descartar',
   'Use Fixed Week': 'Usar Semana fixa',
   'No rotation yet. Add routines to it in Plan.': 'Ainda sem rotação. Adicione rotinas no Plano.',
-  'Set up in Plan': 'Configurar no Plano',
   'Next round starts {0}.': 'A próxima volta começa em {0}.',
   'Add routine': 'Adicionar rotina',
   'A different rep target for each set, e.g. 12 · 8 · 6 · Max · 12.': 'Uma meta de repetições diferente para cada série, ex.: 12 · 8 · 6 · Máx · 12.',
@@ -1728,6 +1726,10 @@ export const PT_BR_OVERRIDES = {
   '{0} this week': '{0} nesta semana',
   '{0} PR': '{0} recorde',
   '{0} PRs': '{0} recordes',
+
+  // --- the redesigned Training tab ---
+  'Nothing planned this week': 'Nada planejado esta semana',
+  'Pick exercises as you go': 'Escolha os exercícios na hora',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

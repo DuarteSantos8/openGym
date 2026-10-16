@@ -177,7 +177,6 @@ export default {
   'Exercises trained: {0}': 'Exercises trained: {0}',
   'Here': 'Here',
   'In Progress, under Training load': 'In Progress, under Training load',
-  'Library': 'Library',
   'Log past workout': 'Log past workout',
   'Main navigation': 'Main navigation',
   'New exercise': 'New exercise',
@@ -189,13 +188,11 @@ export default {
   'Progress': 'Progress',
   'Resume workout': 'Resume workout',
   'Routine name': 'Routine name',
-  'Start a different workout': 'Start a different workout',
   'Training': 'Training',
   'Training load': 'Training load',
   'Training settings': 'Training settings',
   'Weigh in': 'Weigh in',
   'Weight, measurements and photos': 'Weight, measurements and photos',
-  '{0} of your own': '{0} of your own',
   '{0}, workout in progress': '{0}, workout in progress',
   'By muscle': 'По мышцам',
   'Explore muscles': 'Изучить мышцы',
@@ -386,7 +383,6 @@ export default {
   'Rest’s over. Next set!': 'Отдых окончен. Следующий подход!',
   'Hi {0}': 'Привет, {0}',
   'This week': 'Эта неделя',
-  '{0} (in progress)': '{0} (идёт)',
   'Resume ▶': 'Продолжить ▶',
   'Welcome!': 'Добро пожаловать!',
   'Set up your weekly routine to get going, or grab a ready-made starter plan.': 'Настройте свой недельный план, чтобы начать, или возьмите готовый стартовый план.',
@@ -1177,7 +1173,6 @@ export default {
   'Local keeps everything on this phone. Connecting syncs to your own openGym server instead. You can switch later in Settings.': 'Локальный режим хранит всё на этом телефоне. Подключение синхронизирует данные с вашим собственным сервером openGym. Изменить это можно позже в Настройках.',
 
   // --- workout notes and planned warm-ups ---
-  '{0} (done)': '{0} (сделано)',
   'Workout done': 'Тренировка сделана',
   'reps': 'повт.',
   'Most reps in a set per workout': 'Больше всего повт. в подходе за тренировку',
@@ -1859,7 +1854,6 @@ export default {
   'Discard it': 'Отменить её',
   'Use Fixed Week': 'Использовать фиксированную неделю',
   'No rotation yet. Add routines to it in Plan.': 'Ротации пока нет. Добавьте в неё программы в разделе «План».',
-  'Set up in Plan': 'Настроить в Плане',
   'Round complete': 'Круг пройден',
   'Next round starts {0}.': 'Следующий круг начнётся {0}.',
   // --- plural forms, read by tn(). Russian needs three where English has two, so these
@@ -2841,4 +2835,10 @@ export default {
   '{0} this week': '{0} на этой неделе',
   '{0} PR': '{0} рекорд',
   '{0} PRs': { one: '{0} рекорд', few: '{0} рекорда', many: '{0} рекордов' },
+
+  // --- the redesigned Training tab ---
+  'See all': 'Показать все',
+  'Nothing planned this week': 'На этой неделе ничего не запланировано',
+  'Pick exercises as you go': 'Выбирайте упражнения по ходу тренировки',
+  'Start a freestyle workout': 'Начать свободную тренировку',
 }

@@ -177,7 +177,6 @@ export default {
   'Exercises trained: {0}': 'Exercises trained: {0}',
   'Here': 'Here',
   'In Progress, under Training load': 'In Progress, under Training load',
-  'Library': 'Library',
   'Log past workout': 'Log past workout',
   'Main navigation': 'Main navigation',
   'New exercise': 'New exercise',
@@ -189,13 +188,11 @@ export default {
   'Progress': 'Progress',
   'Resume workout': 'Resume workout',
   'Routine name': 'Routine name',
-  'Start a different workout': 'Start a different workout',
   'Training': 'Training',
   'Training load': 'Training load',
   'Training settings': 'Training settings',
   'Weigh in': 'Weigh in',
   'Weight, measurements and photos': 'Weight, measurements and photos',
-  '{0} of your own': '{0} of your own',
   '{0}, workout in progress': '{0}, workout in progress',
   'By muscle': 'Kasa göre',
   'Explore muscles': 'Kasları keşfet',
@@ -392,7 +389,6 @@ export default {
   'Rest’s over. Next set!': 'Dinlenme bitti. Sıradaki set!',
   'Hi {0}': 'Selam {0}',
   'This week': 'Bu hafta',
-  '{0} (in progress)': '{0} (devam ediyor)',
   'Resume ▶': 'Devam et ▶',
   'Welcome!': 'Hoş geldin!',
   'Set up your weekly routine to get going, or grab a ready-made starter plan.': 'Başlamak için haftalık rutinini kur ya da hazır bir başlangıç planı kap.',
@@ -1197,7 +1193,6 @@ export default {
   'Local keeps everything on this phone. Connecting syncs to your own openGym server instead. You can switch later in Settings.': 'Yerel, her şeyi bu telefonda tutar. Bağlanmak ise kendi openGym sunucunla eşitler. Bunu sonra Ayarlar’dan değiştirebilirsin.',
 
   // --- workout notes and planned warm-ups ---
-  '{0} (done)': '{0} (tamamlandı)',
   'Workout done': 'Antrenman tamamlandı',
   'reps': 'tekrar',
   'Most reps in a set per workout': 'Antrenman başına bir sette en çok tekrar',
@@ -1903,7 +1898,6 @@ export default {
   'Discard it': 'Sil',
   'Use Fixed Week': 'Sabit günleri kullan',
   'No rotation yet. Add routines to it in Plan.': 'Henüz dönüşümlü plan yok. Plan’da rutin ekle.',
-  'Set up in Plan': "Plan'da ayarla",
   'Round complete': 'Tur tamamlandı',
   'Next round starts {0}.': 'Sıradaki tur {0} tarihinde başlıyor.',
   'Pyramid sets': 'Piramit setler',
@@ -2837,4 +2831,10 @@ export default {
   '{0} this week': 'Bu hafta {0}',
   '{0} PR': '{0} PR',
   '{0} PRs': '{0} PR',
+
+  // --- the redesigned Training tab ---
+  'See all': 'Tümünü gör',
+  'Nothing planned this week': 'Bu hafta planlanmış bir şey yok',
+  'Pick exercises as you go': 'Egzersizleri giderek seç',
+  'Start a freestyle workout': 'Serbest antrenman başlat',
 }

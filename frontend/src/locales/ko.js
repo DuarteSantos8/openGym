@@ -177,7 +177,6 @@ export default {
   'Exercises trained: {0}': 'Exercises trained: {0}',
   'Here': 'Here',
   'In Progress, under Training load': 'In Progress, under Training load',
-  'Library': 'Library',
   'Log past workout': 'Log past workout',
   'Main navigation': 'Main navigation',
   'New exercise': 'New exercise',
@@ -189,13 +188,11 @@ export default {
   'Progress': 'Progress',
   'Resume workout': 'Resume workout',
   'Routine name': 'Routine name',
-  'Start a different workout': 'Start a different workout',
   'Training': 'Training',
   'Training load': 'Training load',
   'Training settings': 'Training settings',
   'Weigh in': 'Weigh in',
   'Weight, measurements and photos': 'Weight, measurements and photos',
-  '{0} of your own': '{0} of your own',
   '{0}, workout in progress': '{0}, workout in progress',
   'By muscle': '근육별',
   'Explore muscles': '근육 탐색',
@@ -392,7 +389,6 @@ export default {
   'Rest’s over. Next set!': '휴식 끝. 다음 세트!',
   'Hi {0}': '안녕하세요 {0}',
   'This week': '이번 주',
-  '{0} (in progress)': '{0}(진행 중)',
   'Resume ▶': '이어하기 ▶',
   'Welcome!': '환영합니다!',
   'Set up your weekly routine to get going, or grab a ready-made starter plan.': '주간 루틴을 설정해 시작하거나, 미리 만들어진 스타터 계획을 가져오세요.',
@@ -1197,7 +1193,6 @@ export default {
   'Local keeps everything on this phone. Connecting syncs to your own openGym server instead. You can switch later in Settings.': '로컬 모드는 모든 것을 이 휴대폰에 보관합니다. 연결하면 대신 자신의 openGym 서버와 동기화됩니다. 나중에 설정에서 바꿀 수 있어요.',
 
   // --- workout notes and planned warm-ups ---
-  '{0} (done)': '{0}(완료)',
   'Workout done': '운동 완료',
   'reps': '회',
   'Most reps in a set per workout': '운동당 한 세트 최다 횟수',
@@ -1903,7 +1898,6 @@ export default {
   'Discard it': '삭제하기',
   'Use Fixed Week': '고정 주간 사용',
   'No rotation yet. Add routines to it in Plan.': '아직 로테이션이 없어요. 계획에서 루틴을 추가하세요.',
-  'Set up in Plan': '계획에서 설정',
   'Round complete': '이번 바퀴 완료',
   'Next round starts {0}.': '다음 바퀴는 {0}에 시작해요.',
   'Pyramid sets': '피라미드 세트',
@@ -2837,4 +2831,10 @@ export default {
   '{0} this week': '이번 주 {0}',
   '{0} PR': '{0} PR',
   '{0} PRs': '{0} PR',
+
+  // --- the redesigned Training tab ---
+  'See all': '모두 보기',
+  'Nothing planned this week': '이번 주 계획 없음',
+  'Pick exercises as you go': '운동은 하면서 고르세요',
+  'Start a freestyle workout': '자유 운동 시작',
 }

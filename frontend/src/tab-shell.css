@@ -22,10 +22,7 @@
 /* --- hubs --- */
 .hub-tiles{margin-bottom:16px}
 .tile.hub-tile{cursor:pointer;display:flex;flex-direction:column;gap:2px;min-height:96px}
-.hub-tile-i{font-size:22px;color:var(--acc-ink);margin-bottom:6px}
-.hub-tile-t{font-size:17px;font-weight:600;letter-spacing:-.012em}
-.hub-tile-s{font-size:13px;color:var(--label-2)}
-/* The same tile from StatTile (FoodHub): the icon over the title in .l, the line under it in .v. */
+/* StatTile's (FoodHub): the icon over the title in .l, the line under it in .v. */
 .tile.hub-tile .l{flex-direction:column;align-items:flex-start;gap:2px;color:var(--label);font-size:17px;font-weight:600;letter-spacing:-.012em}
 .tile.hub-tile .l .icn{font-size:22px;color:var(--acc-ink);margin-bottom:6px}
 .tile.hub-tile .v{font-size:13px;font-weight:400;letter-spacing:0;line-height:inherit;margin-top:0;color:var(--label-2)}
@@ -34,9 +31,6 @@
 .hub-card .hub-card-t{font-size:13px;color:var(--label-2)}
 .hub-card .hub-card-v{font-size:17px;font-weight:600;letter-spacing:-.012em;margin-top:1px}
 .hub-card .hub-card-n{font-size:13px;color:var(--label-2);margin-top:1px}
-/* "Resume · 12:34" on the Today card stays one tag, never broken over two lines. */
-.today-row .tag{white-space:nowrap;flex:none}
-.card>.today-row:first-child{margin-top:0}
 .empty strong{display:block;color:var(--label);font-weight:600;margin-bottom:4px}
 
 /* --- bottom bar --- */

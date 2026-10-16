@@ -5,6 +5,7 @@ import { useStore } from '../store/useStore.js'
 import { t, exerciseNameFor } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
 import CustomMedia, { CustomThumb } from './CustomMedia.jsx'
+import EquipmentThumb from './EquipmentThumb.jsx'
 
 // An exercise's picture, wherever one shows. A custom exercise goes to CustomMedia.jsx — its own
 // photo, GIF, video or link, from the local media store — and never through imgSrc/gifSrc, which
@@ -138,6 +139,6 @@ function BuiltinThumb({ ex }) {
   const body = useStore(s => figureOf(s.S))
   const src = ex.img ? imgSrc(ex, body) : null
   const [broken, setBroken] = useState(null)
-  if (!src || broken === src) return <div className="thumb thumb-x"><Icon name="dumbbell" /></div>
+  if (!src || broken === src) return <EquipmentThumb ex={ex} />
   return <img className="thumb" loading="lazy" decoding="async" draggable={false} src={src} alt="" onError={() => setBroken(src)} />
 }

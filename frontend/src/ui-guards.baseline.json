@@ -7,7 +7,6 @@
     "components/Passkeys.jsx": 2,
     "components/QueueRow.jsx": 7,
     "components/ServerSync.jsx": 2,
-    "components/TodayCard.jsx": 11,
     "sheets/body-weight.jsx": 32,
     "sheets/confirm-menu.jsx": 7,
     "sheets/equipment.jsx": 26,
@@ -62,7 +61,6 @@
     "components/PlusSheet.jsx": 1,
     "components/QueueRow.jsx": 3,
     "components/ServerSync.jsx": 1,
-    "components/TodayCard.jsx": 7,
     "components/WorkoutChips.jsx": 1,
     "components/WorkoutSettingsSheet.jsx": 1,
     "sheets/body-weight.jsx": 19,
@@ -87,7 +85,6 @@
     "views/RoutineEdit.jsx": 2,
     "views/Settings.jsx": 2,
     "views/Stats.jsx": 3,
-    "views/TrainHub.jsx": 2,
     "views/Workout.jsx": 3
   },
   "G4": []

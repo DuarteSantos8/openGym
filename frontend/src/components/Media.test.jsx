@@ -299,7 +299,7 @@ describe('Thumb — a custom exercise', () => {
     expect(asked).toEqual([POSTER])
   })
 
-  it('a video without a poster shows play; a link shows play for a video site and link otherwise; nothing shows the dumbbell', async () => {
+  it('a video without a poster shows play; a link shows play for a video site and link otherwise; nothing shows its equipment', async () => {
     await mountThumb(custom({ media: clip(30, { poster: undefined }) }))
     expect(host.querySelector('.thumb-x [data-icon="play"]')).toBeTruthy()
     await mountThumb(custom({ url: 'https://vimeo.com/1' }))
@@ -307,7 +307,10 @@ describe('Thumb — a custom exercise', () => {
     await mountThumb(custom({ url: 'https://exrx.net/x' }))
     expect(host.querySelector('.thumb-x [data-icon="link"]')).toBeTruthy()
     await mountThumb(custom({}))
-    expect(host.querySelector('.thumb-x [data-icon="dumbbell"]')).toBeTruthy()
+    expect(host.querySelector('.thumb-x [data-icon]')).toBeNull()
+    expect(host.querySelector('.thumb-x svg.lineart').dataset.scene).toBe('equipment')
+    await mountThumb(custom({ eq: 'dumbbell' }))
+    expect(host.querySelectorAll('.thumb-x rect.il-occ')).toHaveLength(2)
   })
 
   it('a poster that is not here shows the tile while nothing can fetch it', async () => {

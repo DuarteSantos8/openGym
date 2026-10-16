@@ -42,4 +42,19 @@ describe('Thumb', () => {
     const { host } = mount(<Thumb ex={{ id: 'c' }} />)
     expect(host.querySelector('.thumb-x')).toBeTruthy()
   })
+
+  it('the tile is the line art of what the exercise is done with', () => {
+    const scene = ex => mount(<Thumb ex={ex} />).host.querySelector('.thumb-x > svg.lineart')
+    expect(scene({ id: 'c', eq: 'barbell' }).dataset.scene).toBe('equipment')
+    // each piece of equipment draws its own: a barbell's two plates, the mat for bodyweight
+    expect(scene({ id: 'c', eq: 'barbell' }).querySelectorAll('rect.il-occ')).toHaveLength(2)
+    expect(scene({ id: 'd', eq: 'body weight' }).querySelectorAll('rect')).toHaveLength(1)
+    expect(scene({ id: 'e' }).querySelectorAll('rect')).toHaveLength(1)
+  })
+
+  it('a still that fails falls back to its equipment too', () => {
+    const { host } = mount(<Thumb ex={{ id: 'a', img: 'a.jpg', eq: 'cable' }} />)
+    act(() => { host.querySelector('img').dispatchEvent(new Event('error')) })
+    expect(host.querySelector('.thumb-x circle.il-occ')).toBeTruthy()
+  })
 })

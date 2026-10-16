@@ -32,8 +32,11 @@ const idx = () => window.history.state?.idx
 const tab = label => [...document.querySelectorAll('#tabbar button')].find(b => b.textContent === label)
 const lit = () => document.querySelector('#tabbar button[aria-current="page"]')?.textContent || null
 const button = text => [...document.querySelectorAll('button')].find(b => b.textContent.trim() === text)
-// The Training hub's four targets, and the centre +.
-const target = title => [...document.querySelectorAll('.hub-tile')].find(x => x.querySelector('.hub-tile-t').textContent === title)
+// The Training root's ways into its pages: History and Exercises on the action row, Routines'
+// See all; and the centre +.
+const target = title => (title === 'Routines'
+  ? [...document.querySelectorAll('.sec-h')].find(h => h.querySelector('.sec-h-t')?.textContent === 'Routines').querySelector('.sec-h-l')
+  : [...document.querySelectorAll('.act-b')].find(b => b.textContent === title))
 const plus = () => document.querySelector('#tabbar button.start')
 const click = async el => { await act(async () => { el.click() }); await settle() }
 // Home's action row, its first slot while a session runs.

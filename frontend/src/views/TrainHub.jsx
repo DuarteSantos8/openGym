@@ -1,18 +1,23 @@
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { t, tn } from '../lib/i18n.js'
+import { t } from '../lib/i18n.js'
 import { coachAvailable } from '../lib/coach.js'
 import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
-import { tappable } from '../lib/use-sheet-keyboard.js'
-import { scheduleModeOf } from '../lib/rotation.js'
-import Icon from '../components/Icon.jsx'
+import { useDiaryTarget } from '../lib/nutrition/selection.js'
 import { Page } from '../components/layout.jsx'
-import TodayCard from '../components/TodayCard.jsx'
+import { SectionHeader, TabSection } from '../components/tab-kit.jsx'
+import DayNav from '../components/DayNav.jsx'
+import TrainingHero from '../components/TrainingHero.jsx'
+import TrainActions from '../components/TrainActions.jsx'
+import TrainPlan from '../components/TrainPlan.jsx'
+import TrainRoutines from '../components/TrainRoutines.jsx'
 import { Row, Section } from '../components/ui.jsx'
 
-// The Training tab's root: today's session with the week, the four places training lives
-// (History, Exercises, Schedule, Routines), and the rows that are not a place of their own.
+// The Training tab's root (ux-redesign-tabs §4.1): the month and week on the date every tab
+// shares, the day's session, the action row, this week's plan, the first routines and freestyle,
+// then the places that are not training itself. Schedule, Routines and History stay pages of
+// their own, reached from Your plan's Edit, Routines' See all and the row.
 export default function TrainHub() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
@@ -20,32 +25,23 @@ export default function TrainHub() {
   const user = useStore(s => s.user)
   const coachMode = useStore(s => s.coachLocal?.mode)
   const showCoach = coachAvailable(config, user, { demo: DEMO, mobile: MOBILE, coachMode })
-  const ownEx = (S.customEx || []).filter(c => c && c.id).length
-
-  const targets = [
-    { path: '/train/history', icon: 'history', title: t('History'), sub: tn('{0} workout', '{0} workouts', S.workouts.length) },
-    { path: '/train/exercises', icon: 'dumbbell', title: t('Exercises'), sub: ownEx ? t('{0} of your own', ownEx) : t('Library') },
-    { path: '/train/schedule', icon: 'calendar', title: t('Schedule'), sub: scheduleModeOf(S) === 'rotation' ? t('Rotation') : t('Fixed Week') },
-    { path: '/train/routines', icon: 'clipboard', title: t('Routines'), sub: tn('{0} routine', '{0} routines', S.routines.length) },
-  ]
+  const { date } = useDiaryTarget(null)
+  // The row's last slot is Check in when it is on, so Coach keeps its way in here.
+  const coachRow = showCoach && S.checkIn !== false
 
   return <Page root title={t('Training')}>
-    <TodayCard />
-    <div className="tiles hub-tiles">
-      {targets.map(x => (
-        <div key={x.path} className="tile tappable hub-tile" role="button" {...tappable(() => nav(x.path))}>
-          <Icon name={x.icon} className="hub-tile-i" />
-          <div className="hub-tile-t">{x.title}</div>
-          <div className="hub-tile-s">{x.sub}</div>
-        </div>
-      ))}
-    </div>
-    <Section>
-      {!S.active && <Row icon="swap" iconTint="var(--blue)" title={t('Start a different workout')} accessory="chevron" onClick={() => nav('/train/workout')} />}
-      {S.checkIn !== false && <Row icon="qr" iconTint="var(--blue)" title={t('Gym check-in')} accessory="chevron" onClick={() => nav('/train/checkin')} />}
-      {showCoach && <Row icon="chat" iconTint="var(--green)" title={t('Coach')} accessory="chevron" onClick={() => nav('/train/coach')} />}
-      <Row icon="kettlebell" iconTint="var(--indigo)" title={t('Equipment')} accessory="chevron" onClick={() => nav('/me/equipment')} />
-      <Row icon="gear" iconTint="var(--grey)" title={t('Training settings')} accessory="chevron" onClick={() => nav('/me/workout')} />
-    </Section>
+    <DayNav />
+    <TabSection><TrainingHero date={date} /></TabSection>
+    <TabSection><TrainActions date={date} showCoach={showCoach} /></TabSection>
+    {S.routines.length > 0 && <TabSection><TrainPlan /></TabSection>}
+    <TabSection><TrainRoutines /></TabSection>
+    <TabSection>
+      <SectionHeader title={t('More')} />
+      <Section>
+        {coachRow && <Row glyph="chat" title={t('Coach')} accessory="chevron" onClick={() => nav('/train/coach')} />}
+        <Row glyph="kettlebell" title={t('Equipment')} accessory="chevron" onClick={() => nav('/me/equipment')} />
+        <Row glyph="gear" title={t('Training settings')} accessory="chevron" onClick={() => nav('/me/workout')} />
+      </Section>
+    </TabSection>
   </Page>
 }
