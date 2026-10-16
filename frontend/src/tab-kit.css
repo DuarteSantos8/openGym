@@ -170,7 +170,14 @@
 /* ---------------------------------------------------------------- blocks -- */
 
 /* HeroStatus: the tab's state, centred. */
-.hero{display:flex;flex-direction:column;align-items:center;gap:var(--space-2);padding-block:var(--space-11);text-align:center}
+:root{--hero-pad-top:var(--space-11)}
+/* Under the WeekStrip (past the sr-only status line DayNav renders between them) the strip's own
+   margin is the gap, so the hero starts higher; in a section it owns no bottom padding, the
+   shell's --gap-tab-section is the space below. */
+.wk-strip+.tab-sec,.wk-strip+.sr-only+.tab-sec{--hero-pad-top:var(--space-6)}
+.hero{display:flex;flex-direction:column;align-items:center;gap:var(--space-2);padding-block:var(--hero-pad-top) var(--space-11);text-align:center}
+.tab-sec>.hero{padding-bottom:0}
+.tab-sec>.act-row{padding-top:0}
 .hero-g{font-size:32px;--icon-stroke:1.7;color:var(--label);margin-bottom:var(--space-2)}
 .hero-e{font-size:var(--fs-subhead);color:var(--label-2)}
 .hero-t{font-size:var(--fs-large);font-weight:var(--fw-bold);letter-spacing:-.028em;line-height:1.1}
@@ -186,6 +193,28 @@
 .hero-ml{font-size:var(--fs-callout);color:var(--label)}
 .hero-ms{font-size:var(--fs-subhead);color:var(--label-2)}
 .hero .skel+.skel{margin-top:var(--space-2)}
+/* `action` (a ⋯ at the top end, 40px, 44px to tap), `link`, and the lines after the metrics. */
+.hero{position:relative}
+.hero.hero-has-a{padding-inline:calc(var(--hdr-btn) + var(--space-2))}
+.hero-a{position:absolute;top:var(--hero-pad-top);inset-inline-end:0}
+.hero-a>.iconbtn{width:var(--hdr-btn);height:var(--hdr-btn);font-size:20px}
+.hero-l{display:inline-flex;align-items:center;gap:2px;min-height:var(--tap-min);margin-block:-6px;font-size:var(--fs-callout);color:var(--acc-ink)}
+.hero-l .icn{font-size:14px;--icon-stroke:2.4}
+.hero>*+.hero-m{margin-top:var(--space-8)}
+.hero>.hero-a:first-child+.hero-m{margin-top:0}
+.hero-macros{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:var(--space-2) var(--space-8);margin-top:var(--space-6);
+  font-size:var(--fs-subhead);color:var(--label-2);font-variant-numeric:tabular-nums;
+}
+
+/* The metrics and the P/C/F line take back the column the ⋯ reserves, so the line stays on one. */
+.hero-has-a>.hero-m,.hero-has-a>.hero-macros{margin-inline:calc(-1 * (var(--hdr-btn) + var(--space-2)))}
+.hero-has-a>.hero-m{width:auto;align-self:stretch}
+
+/* TabSection: a tab root's sections, --gap-tab-section apart. */
+.tab-sec{margin-bottom:var(--gap-tab-section)}
+/* A section whose live rows are all absent takes no space. */
+.tab-sec:empty{display:none}
 
 /* ActionRow / ActionButton: 56px discs on the card surface, none filled (Owner decision 7). */
 .act-row{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:var(--space-4);padding-block:var(--space-4)}

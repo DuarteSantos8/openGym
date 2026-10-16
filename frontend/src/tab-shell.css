@@ -34,9 +34,9 @@
 .hub-card .hub-card-t{font-size:13px;color:var(--label-2)}
 .hub-card .hub-card-v{font-size:17px;font-weight:600;letter-spacing:-.012em;margin-top:1px}
 .hub-card .hub-card-n{font-size:13px;color:var(--label-2);margin-top:1px}
-.iconbtn.wk-nav{width:32px;height:32px;font-size:15px}
 /* "Resume · 12:34" on the Today card stays one tag, never broken over two lines. */
 .today-row .tag{white-space:nowrap;flex:none}
+.card>.today-row:first-child{margin-top:0}
 .empty strong{display:block;color:var(--label);font-weight:600;margin-bottom:4px}
 
 /* --- bottom bar --- */

@@ -7,7 +7,7 @@
     "components/Passkeys.jsx": 2,
     "components/QueueRow.jsx": 7,
     "components/ServerSync.jsx": 2,
-    "components/TodayCard.jsx": 14,
+    "components/TodayCard.jsx": 11,
     "sheets/body-weight.jsx": 32,
     "sheets/confirm-menu.jsx": 7,
     "sheets/equipment.jsx": 26,

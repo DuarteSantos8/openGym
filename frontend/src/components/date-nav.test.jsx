@@ -91,6 +91,15 @@ describe('WeekStrip', () => {
     expect(fri.querySelector('.wk-dot').className).toBe('wk-dot plan')
   })
 
+  it('reads marks from a function too, for whichever week it is swiped to', () => {
+    const marks = vi.fn(iso => (iso === '2026-10-22' ? 'ovr' : undefined))
+    render(<Strip marks={marks} />)
+    expect(marks).toHaveBeenCalledWith('2026-10-12')
+    key(days()[6], 'ArrowRight')
+    expect(days()[3].querySelector('.wk-dot').className).toBe('wk-dot ovr')
+    expect(days()[3].getAttribute('aria-label')).toBe('Thursday 22 October, Plan changed')
+  })
+
   it('throws in development on a mark it has no dot for', () => {
     expect(() => render(<Strip marks={{ [TODAY]: 'rest' }} />)).toThrow(/WeekStrip: marks="rest"/)
   })

@@ -12,5 +12,7 @@ export function useUnits() {
     energy: kcal => { const e = energyOf(kcal, settings); return fmt(e.value) + ' ' + e.unit },
     energyValue: kcal => fmt(energyOf(kcal, settings).value),
     water: ml => { const w = waterOf(ml, settings); return fmt(w.value) + ' ' + w.unit },
+    /** The water amount and its unit apart, for a big number with a small unit. */
+    waterParts: ml => { const w = waterOf(ml, settings); return { value: fmt(w.value), unit: w.unit } },
   }
 }

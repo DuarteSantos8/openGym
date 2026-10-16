@@ -1,41 +1,59 @@
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { fmtDur, todayISO } from '../lib/format.js'
-import { dateLocale, t, tn } from '../lib/i18n.js'
-import { tappable } from '../lib/use-sheet-keyboard.js'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { fmtDur, isoOf, todayISO } from '../lib/format.js'
+import { t, tn } from '../lib/i18n.js'
 import { useDiarySelection, useDiaryTarget } from '../lib/nutrition/selection.js'
 import { progressOf } from '../lib/nutrition/fasting.js'
 import { useNutrition } from '../lib/nutrition/store.js'
 import { useFasting, useNow } from '../lib/nutrition/use-fasting.js'
 import { useDiaryDay } from '../lib/nutrition/use-diary-day.js'
 import { useUnits } from '../lib/nutrition/use-units.js'
-import { Card, EmptyState, Stat, StatTile, Tiles } from '../components/blocks.jsx'
-import { Inline, Page } from '../components/layout.jsx'
+import { useScrolledPast } from '../lib/use-scrolled-past.js'
+import { Card, EmptyState, StatTile, Tiles } from '../components/blocks.jsx'
+import { Page } from '../components/layout.jsx'
+import { SectionHeader, TabSection } from '../components/tab-kit.jsx'
+import DayNav from '../components/DayNav.jsx'
+import KcalLeftBar from '../components/KcalLeftBar.jsx'
+import CaloriesCard from '../components/CaloriesCard.jsx'
+import WaterCard from '../components/WaterCard.jsx'
+import MealsCard from '../components/MealsCard.jsx'
 import YesterdayMealRow from '../components/YesterdayMealRow.jsx'
-import { Button } from '../components/ui.jsx'
 
-const grams = n => Math.round(n || 0).toLocaleString(dateLocale())
+// The pinned tab-root header (--hdr-h): the calories card counts as gone once it passes under it
+// (the hook adds the safe-area inset the header sits below).
+const HEADER_PX = 56
 
-const MACROS = [
-  { id: 'proteins', label: () => t('Protein') },
-  { id: 'carbohydrates', label: () => t('Carbs') },
-  { id: 'fat', label: () => t('Fat') },
-]
+// "2026-10-13" and a real day.
+const isDay = s => /^\d{4}-\d{2}-\d{2}$/.test(s) && isoOf(new Date(s + 'T12:00:00')) === s
 
-// The Nutrition tab's root: today in one card (it opens the diary on Home), yesterday's meal to
-// log again, and the places nutrition lives. A place gets a tile when its page exists.
+// The Nutrition tab's root: the diary for the day every tab shares (ux-redesign-tabs §4.2) —
+// energy and macros, water, the meals with their items and activity, yesterday's meal to log
+// again — then the places nutrition lives. A place gets a tile when its page exists.
+// `/food?date=YYYY-MM-DD` opens it on that day (today or before; a day to come is today).
 export default function FoodHub() {
   const nav = useNavigate()
-  const { on, status, settings, totals, target, macros, left, reload } = useDiaryDay(todayISO())
+  const [params, setParams] = useSearchParams()
+  const { date } = useDiaryTarget(null)
+  const day = useDiaryDay(date)
+  const { on, status, settings, target, left } = day
   const units = useUnits()
   const foods = useNutrition(s => s.foods)
   const meals = useNutrition(s => s.meals)
   const recipes = useNutrition(s => s.recipes)
   const { meal } = useDiaryTarget(settings)
+  const [kcalRef, kcalGone] = useScrolledPast(HEADER_PX)
 
   const fastingOn = on && settings?.fastingEnabled === true
   const fasting = useFasting()
   const now = useNow(!!fasting.active, 30_000)
+
+  // The deep link picks the day once, then leaves the address as the tab's own.
+  const linked = params.get('date')
+  useEffect(() => {
+    if (linked == null) return
+    if (isDay(linked)) useDiarySelection.getState().setDate(linked)
+    setParams({}, { replace: true })
+  }, [linked, setParams])
 
   useEffect(() => {
     if (!on) return
@@ -70,35 +88,16 @@ export default function FoodHub() {
     { path: '/food/fasting', icon: 'timer', title: t('Fasting'), sub: fastingSub },
   ]
 
-  // The card says today, so it opens Home on today, whichever date Home was left on.
-  const openToday = () => {
-    useDiarySelection.getState().setDate(null)
-    nav('/home')
-  }
-
   return <Page root title={t('Nutrition')}>
-    {status === 'error'
-      ? <Card>
-        <div className="small muted" role="alert">{t('Today’s diary did not load.')}</div>
-        <Button size="sm" variant="tinted" className="mt-4" onClick={reload}>{t('Try again')}</Button>
-      </Card>
-      : <Card {...tappable(openToday)}>
-        {status === 'ready' ? <>
-          <Stat value={units.energyValue(Math.abs(left))} />
-          <div className="small muted">{left >= 0 ? t('{0} left today', units.energyUnit) : t('{0} over today', units.energyUnit)}</div>
-          <Inline gap={10} className="mt-6">
-            {MACROS.map(m => {
-              const eaten = grams(totals[m.id])
-              const goal = macros[m.id]
-              return <div key={m.id} className="small">
-                <div className="muted">{m.label()}</div>
-                <b>{goal != null ? t('{0} of {1} g', eaten, grams(goal)) : t('{0} g', eaten)}</b>
-              </div>
-            })}
-          </Inline>
-        </> : <div className="small muted" role="status">{t('Loading…')}</div>}
-      </Card>}
-    <YesterdayMealRow settings={settings} meal={meal} />
+    <DayNav future="off" />
+    <KcalLeftBar left={kcalGone && status === 'ready' ? left : null} />
+    <TabSection>
+      <SectionHeader title={date === todayISO() ? t('Today’s diary') : t('Diary')} />
+      <CaloriesCard ref={kcalRef} day={day} />
+      <WaterCard date={date} water={day.water} ready={day.dayReady} />
+      <MealsCard date={date} day={day} />
+      {date === todayISO() && <YesterdayMealRow settings={settings} meal={meal} />}
+    </TabSection>
     <Tiles className="hub-tiles">
       {targets.map(x => <StatTile key={x.path} className="hub-tile" icon={x.icon} label={x.title} value={x.sub} onClick={() => nav(x.path)} />)}
     </Tiles>

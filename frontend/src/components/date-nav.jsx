@@ -14,14 +14,15 @@ const fmt = (iso, options) => noon(iso).toLocaleDateString(dateLocale(), options
 
 // The month of `date` as a button that opens the calendar (onPickDate gets the day picked there),
 // and "Today" at the other end. Today keeps its place while today is the date (hidden, not
-// removed), so the label never moves.
-export function MonthBar({ date, onPickDate, onToday }) {
+// removed), so the label never moves. `onPickFuture`: days after today are tappable in the calendar
+// and go there, not to onPickDate; without it they are dimmed.
+export function MonthBar({ date, onPickDate, onPickFuture, onToday }) {
   const today = todayISO()
   const month = fmt(date, { month: 'long', year: 'numeric' })
   return (
     <div className="month-bar">
       <button type="button" className="month-bar-l" aria-haspopup="dialog" aria-label={t('Choose a day, {0}', month)}
-        onClick={() => calendarSheet(date, { onPick: onPickDate })}>
+        onClick={() => calendarSheet(date, { onPick: onPickDate, onFuture: onPickFuture })}>
         <span>{month}</span><Icon name="chevronDown" />
       </button>
       <button type="button" className={cx('month-bar-today', date === today && 'off')} onClick={onToday}>{t('Today')}</button>
@@ -34,10 +35,12 @@ const MARK_LABEL = { done: () => t('Workout done'), plan: () => t('Planned'), ov
 const SWIPE_PX = 40
 
 // The week around `date`, a day each: selected, today, and a dot for what the day holds
-// (`marks`: { iso: 'done' | 'plan' | 'ovr' | 'noted' }). A tap selects a day (onSelect); a day
-// after `maxDate` cannot be picked. A horizontal swipe, or the arrow keys past either end, shows
-// the week before or after without changing the date. `weekStart` is a getDay() index.
+// (`marks`: { iso: 'done' | 'plan' | 'ovr' | 'noted' }, or a function of the iso for a strip that
+// can be swiped to any week). A tap selects a day (onSelect); a day after `maxDate` cannot be
+// picked. A horizontal swipe, or the arrow keys past either end, shows the week before or after
+// without changing the date. `weekStart` is a getDay() index.
 export function WeekStrip({ date, onSelect, marks = {}, maxDate, weekStart = MONDAY }) {
+  const markOf = typeof marks === 'function' ? marks : iso => marks[iso]
   const anchorOf = iso => isoOf(startOfWeek(iso, weekStart))
   const [view, setView] = useState(() => ({ anchor: anchorOf(date), date, weekStart, dir: 0 }))
   // A new date (picked here or anywhere else) or week start brings its own week back.
@@ -93,7 +96,7 @@ export function WeekStrip({ date, onSelect, marks = {}, maxDate, weekStart = MON
       onPointerDown={onPointerDown} onPointerUp={onPointerUp} onPointerCancel={() => { press.current = null }}>
       <div ref={grid} key={view.anchor} className={cx('wk-days', view.dir > 0 && 'from-next', view.dir < 0 && 'from-prev')}>
         {days.map((iso, i) => {
-          const mark = oneOf('WeekStrip', 'marks', marks[iso], MARKS)
+          const mark = oneOf('WeekStrip', 'marks', markOf(iso), MARKS)
           const label = [fmt(iso, { weekday: 'long', day: 'numeric', month: 'long' }), mark && MARK_LABEL[mark]()].filter(Boolean).join(', ')
           return (
             <button key={iso} type="button" className={cx('wk-d', iso === date && 'sel', iso === today && 'today')}

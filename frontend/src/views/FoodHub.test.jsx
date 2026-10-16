@@ -1,9 +1,9 @@
 // @vitest-environment happy-dom
-// The Nutrition hub against the foundation's fake: today's card, yesterday's meal to log again,
-// and the tile that opens Foods.
+// The Nutrition hub against the foundation's fake: the day's diary on the shared date, the
+// /food?date= deep link, yesterday's meal to log again, and the tiles that open the places.
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
@@ -73,43 +73,84 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe('today\'s card', () => {
-  it('shows what is left of the target and the macros against theirs', async () => {
+const kcalLeft = () => host.querySelector('.kcal-left')?.textContent
+
+describe('today\'s diary', () => {
+  it('is on Nutrition: what is left of the target, the macros against theirs, water and the meals', async () => {
     await openHub()
-    await settle(() => expect(host.textContent).toContain('kcal left today'))
     // 2,200 target, 228 + 450 logged.
-    expect(host.querySelector('.big').textContent).toBe('1,522')
-    expect(host.textContent).toContain('8 of 160 g')
-    expect(host.textContent).toContain('36 of 165 g')
-    expect(host.textContent).toContain('4 of 70 g')
+    await settle(() => expect(kcalLeft()).toBe('1,522'))
+    expect(host.querySelector('.sec-h-t').textContent).toBe('Today’s diary')
+    expect(host.textContent).toContain('8 / 160 g')
+    expect(host.textContent).toContain('36 / 165 g')
+    expect(host.textContent).toContain('4 / 70 g')
+    expect(host.textContent).toContain('250 ml / 2,500 ml')
+    expect([...host.querySelectorAll('.meal-name')].map(n => n.textContent)).toEqual(['Breakfast', 'Lunch', 'Dinner', 'Snacks'])
   })
 
-  it('says over when the day is past the target, and opens the diary on a tap', async () => {
+  it('says over when the day is past the target', async () => {
     nt.state.days[TODAY].items.push({ uuid: 'big', meal: 2, addedAt: `${TODAY}T19:00:00.000Z`, type: 'quick_calories', name: 'Quick Calories', nutrition: { calories: 2000 }, food_server_id: null })
     await openHub()
-    await settle(() => expect(host.textContent).toContain('kcal over today'))
-    expect(host.querySelector('.big').textContent).toBe('478')
-    tap(host.querySelector('.card'))
-    expect(host.textContent).toBe('HOME PAGE')
+    await settle(() => expect(kcalLeft()).toBe('478'))
+    expect(host.querySelector('.kcal-mid').textContent).toContain('kcal over')
   })
 
-  it('opens Home on today, whichever date Home was left on', async () => {
+  it('shows the day every tab shares: a day picked on Home is the diary here', async () => {
     useDiarySelection.getState().setDate(YESTERDAY)
     await openHub()
-    await settle(() => expect(host.textContent).toContain('kcal left today'))
-    tap(host.querySelector('.card'))
-    expect(host.textContent).toBe('HOME PAGE')
+    await settle(() => expect(nt.requests.some(r => r.path === `/nt/api/diary/${YESTERDAY}`)).toBe(true))
+    expect(host.querySelector('.sec-h-t').textContent).toBe('Diary')
+    // Yesterday's meal is offered on today only.
+    expect(buttonSaying('Log again')).toBeUndefined()
+    tap(buttonSaying('Today'))
+    await settle(() => expect(host.querySelector('.sec-h-t').textContent).toBe('Today’s diary'))
     expect(useDiarySelection.getState().day()).toBe(TODAY)
   })
 
   it('says the diary did not load, without the error text, and tries again', async () => {
     nt.failNext('GET', `/nt/api/diary/${TODAY}`, { status: 500, error: 'database is locked' })
     await openHub()
-    await settle(() => expect(host.querySelector('[role=alert]')?.textContent).toBe('Today’s diary did not load.'))
+    await settle(() => expect(host.querySelector('[role=alert]')?.textContent).toBe('The diary did not load.'))
     expect(host.textContent).not.toContain('database is locked')
-    expect(host.querySelector('.card').getAttribute('role')).toBeNull()
     tap(buttonSaying('Try again'))
-    await settle(() => expect(host.textContent).toContain('kcal left today'))
+    await settle(() => expect(kcalLeft()).toBe('1,522'))
+  })
+})
+
+describe('/food?date=', () => {
+  const openAt = path => {
+    host = document.createElement('div')
+    document.body.appendChild(host)
+    const root = createRoot(host)
+    mounted.push(root)
+    act(() => root.render(
+      <MemoryRouter initialEntries={[path]}>
+        <Routes><Route path="/food" element={<><FoodHub /><Where /></>} /></Routes>
+      </MemoryRouter>,
+    ))
+  }
+  // The address the page is left on, to see the link replaced.
+  function Where() { return <output data-where="">{useLocation().search}</output> }
+  const where = () => host.querySelector('[data-where]').textContent
+
+  it('opens the diary on that day and leaves the address as the tab\'s own', async () => {
+    openAt(`/food?date=${YESTERDAY}`)
+    await settle(() => expect(useDiarySelection.getState().day()).toBe(YESTERDAY))
+    await settle(() => expect(nt.requests.some(r => r.path === `/nt/api/diary/${YESTERDAY}`)).toBe(true))
+    expect(where()).toBe('')
+  })
+
+  it('a day to come is today, and a date that is not one changes nothing', async () => {
+    useDiarySelection.getState().setDate(YESTERDAY)
+    openAt('/food?date=2026-02-31')
+    await settle(() => expect(where()).toBe(''))
+    expect(useDiarySelection.getState().day()).toBe(YESTERDAY)
+    mounted.forEach(r => act(() => r.unmount()))
+    mounted.length = 0
+    document.body.innerHTML = ''
+    openAt('/food?date=2999-01-01')
+    await settle(() => expect(where()).toBe(''))
+    expect(useDiarySelection.getState().day()).toBe(TODAY)
   })
 })
 
@@ -197,7 +238,7 @@ describe('yesterday\'s meal', () => {
   it('offers nothing for a meal with nothing in it, or one that cannot be rebuilt', async () => {
     useDiarySelection.getState().setMeal(2)
     await openHub()
-    await settle(() => expect(host.textContent).toContain('kcal left today'))
+    await settle(() => expect(kcalLeft()).toBe('1,522'))
     expect(buttonSaying('Log again')).toBeUndefined()
 
     nt.state.days[YESTERDAY].items[0] = { ...nt.state.days[YESTERDAY].items[0], is_recipe: true }
@@ -206,7 +247,7 @@ describe('yesterday\'s meal', () => {
     mounted.forEach(r => act(() => r.unmount()))
     document.body.innerHTML = ''
     await openHub()
-    await settle(() => expect(host.textContent).toContain('kcal left today'))
+    await settle(() => expect(kcalLeft()).toBe('1,522'))
     expect(buttonSaying('Log again')).toBeUndefined()
   })
 })

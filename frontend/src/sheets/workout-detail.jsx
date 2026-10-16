@@ -28,6 +28,7 @@ import { workoutText } from '../lib/workout-text.js'
 import { workoutCardModel, layoutWorkoutCard, drawWorkoutCard, viewAspect, CARD_FONT } from '../lib/workout-card.js'
 import { copyText } from '../lib/clipboard.js'
 import { pinState } from '../lib/queue.js'
+import { workoutLabel } from '../lib/training-day.js'
 import { DAY_NOTE_LABEL, DAY_NOTE_ICON, dayNoteOf, dayNoteLine } from '../lib/day-notes.js'
 import { S, update, ui, toast } from './shared.js'
 import { confirmSheet } from './confirm-menu.jsx'
@@ -366,8 +367,10 @@ export const workoutDetailSheet = w => ui().openSheet(close => <WorkoutDetail w=
 
 /* ============================ calendar ============================ */
 // `onPick(iso)`: Home's date navigator. Every day is then a date to go to, and the days with food
-// logged in NutriTrace are marked beside the trained ones (the one calendar for both).
-function Calendar({ start, close, onPick }) {
+// logged in NutriTrace are marked beside the trained ones (the one calendar for both). Days to
+// come are dimmed there; `onFuture(iso)` makes them tappable and hands them over instead (Home
+// and Training: "change this day" for a day ahead, the picked date untouched).
+function Calendar({ start, close, onPick, onFuture }) {
   const st = useStore(s => s.S)
   const logged = useNutrition(s => s.logged)
   const [cur, setCur] = useState(() => {
@@ -408,8 +411,8 @@ function Calendar({ start, close, onPick }) {
     const dotCls = ws ? 'done' : note ? 'noted' : ovr && planned ? 'ovr' : planned ? 'plan' : ''
     const ate = !!onPick && logged.days.has(iso)
     cells.push(<button key={d} className={'cal-d' + (ws ? ' has' : '') + (note ? ' noted' : '') + (ate ? ' logged' : '') + (iso === todayISO() ? ' today' : '')}
-      title={note ? dayNoteLine(note, t) : undefined} disabled={!!onPick && iso > todayISO()} onClick={() => {
-      if (onPick) { close(); onPick(iso); return }
+      title={note ? dayNoteLine(note, t) : undefined} disabled={!!onPick && !onFuture && iso > todayISO()} onClick={() => {
+      if (onPick) { close(); if (onFuture && iso > todayISO()) onFuture(iso); else onPick(iso); return }
       if (!ws) { close(); dayOverrideSheet(iso); return }
       if (ws.length === 1) { close(); workoutDetailSheet(ws[0]); return }
       close(); ui().openSheet(c2 => <><h3>{fmtDate(iso, true)}</h3><div className="list">{ws.map(w => <WorkoutRow key={w.id} w={w} onClick={() => { c2(); workoutDetailSheet(w) }} />)}</div></>)
@@ -434,7 +437,7 @@ function Calendar({ start, close, onPick }) {
     <div className="small dim" style={{ textAlign: 'center', marginTop: 10 }}>{onPick ? t('Tap a day to see it') : t('Tap a trained day for details · tap any other day to plan a session')}</div>
   </>
 }
-export const calendarSheet = (start, { onPick } = {}) => ui().openSheet(close => <Calendar start={start} close={close} onPick={onPick} />)
+export const calendarSheet = (start, { onPick, onFuture } = {}) => ui().openSheet(close => <Calendar start={start} close={close} onPick={onPick} onFuture={onFuture} />)
 
 /* shared small workout row (used in lists) */
 export function WorkoutRow({ w, onClick }) {
@@ -443,7 +446,7 @@ export function WorkoutRow({ w, onClick }) {
   const mediaN = workoutMediaCount(w)
   return <div className="item" {...tappable(onClick)}>
     <span className="lrow-i" style={{ width: 34, height: 34, borderRadius: 8, fontSize: 19 }}><Icon name={glyph} /></span>
-    <div className="grow"><div className="tt">{w.name}</div>
+    <div className="grow"><div className="tt">{workoutLabel(w)}</div>
       <div className="ss">{[fmtDate(w.d, true), ...durPart(w.end - w.start), tn('{0} set', '{0} sets', setsDone(w)), fmtVol(w.vol, st.unit)].join(' · ')}</div></div>
     {mediaN > 0 && <span className="wrow-media" title={tn('{0} photo or video', '{0} photos or videos', mediaN)} aria-label={tn('{0} photo or video', '{0} photos or videos', mediaN)}><Icon name="image" />{mediaN}</span>}
     {w.prs && w.prs.length > 0 && <span className="pr"><Icon name="trophy" />{w.prs.length} PR</span>}

@@ -4,7 +4,7 @@ import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  ActionButton, ActionRow, HeroStatus, MacroGauge, MacroGauges, MediaRow, SectionHeader, StatSection, StickyActionBar,
+  ActionButton, ActionRow, HeroStatus, MacroGauge, MacroGauges, MediaRow, SectionHeader, StatSection, StickyActionBar, TabSection,
 } from './tab-kit.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -45,6 +45,23 @@ describe('HeroStatus', () => {
     expect($$('.hero-mi')).toHaveLength(2)
     expect($$('.hero-ml').map(e => e.textContent)).toEqual(['Left', 'Water'])
     expect($('.hero-ms').textContent).toBe('860 eaten')
+  })
+
+  it('puts the caption under the title, then the metrics, a link, an action (after the heading, shown at the top end) and lines after', () => {
+    const onLink = vi.fn()
+    render(<HeroStatus glyph="moon" title="Rest day" caption="Next: Push, Thursday" link={{ label: 'See workout', onClick: onLink }}
+      action={<button type="button" aria-label="Day options">…</button>}
+      metrics={[{ value: '1,240', label: 'kcal left' }, { value: '250', unit: 'ml', label: 'Water' }]}>
+      <p className="extra">8/160 g</p>
+    </HeroStatus>)
+    // The action follows the heading in reading order; CSS puts it at the top end.
+    const parts = ['hero-g', 'hero-t', 'hero-a', 'hero-c', 'hero-l', 'hero-m', 'extra']
+    const order = [...$('.hero').children].map(c => parts.find(p => c.classList.contains(p)))
+    expect(order).toEqual(parts)
+    expect($('.hero').classList.contains('hero-has-a')).toBe(true)
+    act(() => $('.hero-l').click())
+    expect(onLink).toHaveBeenCalled()
+    expect($('.hero-l').textContent).toBe('See workout')
   })
 
   it('stands skeletons in while it loads, announced once', () => {
@@ -105,6 +122,21 @@ describe('ActionRow / ActionButton', () => {
     expect($('.act-b').disabled).toBe(true)
     expect($('.act-b').getAttribute('aria-label')).toBe('Check in, 1 card due')
     expect($('.act-badge')).not.toBeNull()
+  })
+
+  it('takes a name of its own where the label alone does not say what it does', () => {
+    render(<ActionButton icon="droplet" label="+250 ml" ariaLabel="Add a glass of water, 250 ml" />)
+    expect($('.act-l').textContent).toBe('+250 ml')
+    expect($('.act-b').getAttribute('aria-label')).toBe('Add a glass of water, 250 ml')
+    render(<ActionButton icon="droplet" label="+250 ml" ariaLabel="Add a glass of water, 250 ml" badge="offline" />)
+    expect($('.act-b').getAttribute('aria-label')).toBe('Add a glass of water, 250 ml, offline')
+  })
+})
+
+describe('TabSection', () => {
+  it('is a section, spaced by the kit and not by the page', () => {
+    render(<TabSection><p>x</p></TabSection>)
+    expect($('section').className).toBe('tab-sec')
   })
 })
 

@@ -36,6 +36,8 @@ const button = text => [...document.querySelectorAll('button')].find(b => b.text
 const target = title => [...document.querySelectorAll('.hub-tile')].find(x => x.querySelector('.hub-tile-t').textContent === title)
 const plus = () => document.querySelector('#tabbar button.start')
 const click = async el => { await act(async () => { el.click() }); await settle() }
+// Home's action row, its first slot while a session runs.
+const homeResume = () => [...document.querySelectorAll('.act-b')].find(b => b.textContent === 'Resume')
 const go = async fn => { await act(async () => { fn() }); await settle() }
 const back = async () => { await act(async () => { window.history.back() }); await settle() }
 // One back press from here: does it leave the app (land on the marker under it)?
@@ -307,7 +309,7 @@ describe('a workout that has ended', () => {
   it('ended from Home, it leaves no Start screen under Home', async () => {
     running()
     await launch('#/home')
-    await click(document.querySelector('.today-row'))
+    await click(homeResume())
     expect(hash()).toBe('#/train/workout')
     await discard()
     expect(hash()).toBe('#/home')
@@ -436,7 +438,7 @@ describe('Nice! after a finished workout', () => {
   it('goes back where the session was opened, leaving no Start screen under it', async () => {
     running()
     await launch('#/home')
-    await click(document.querySelector('.today-row'))
+    await click(homeResume())
     expect(hash()).toBe('#/train/workout')
     await go(() => finishWorkout())
     await click(button('Finish anyway'))

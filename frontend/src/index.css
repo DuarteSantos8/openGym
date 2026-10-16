@@ -225,7 +225,7 @@ p a,.small a,.dim a,.sect-f a,.sp-version a,.sp-lic a{text-decoration:underline;
 /* A sheet takes the focus itself when it opens (lib/use-sheet-dialog.js): the dialog is where you
    are, not a control, so no ring around the whole sheet. Its controls keep theirs. */
 [role="dialog"][tabindex="-1"]:focus-visible{outline:none}
-button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp button,.sld
+button,.chip,.tile,.item,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp button,.sld
 {-webkit-user-select:none;user-select:none}
 
 /* icons inherit colour and optical size from their context */
@@ -549,27 +549,6 @@ h4.sec{
   :root[data-theme="light"] #tabbar{background:var(--bg-el)}
   #timer{background:var(--surface)}
   #toast{background:var(--surface-2)}
-}
-
-/* ------------------------------------------------------------ week strip -- */
-.week{display:flex;justify-content:space-between;gap:4px}
-.wday{
-  flex:1;text-align:center;padding:8px 2px 9px;border-radius:10px;
-  background:none;border:none;transition:background var(--fast);
-}
-.wday .lbl{font-size:11px;color:var(--label-3);font-weight:500;text-transform:uppercase;letter-spacing:.03em}
-.wday .num{font-size:17px;font-weight:400;margin:4px 0;letter-spacing:-.012em}
-.wday .dot{width:5px;height:5px;border-radius:50%;background:transparent;margin:0 auto}
-.wday .dot.plan{background:var(--label-3)}
-.wday .dot.ovr{background:var(--orange)}
-.wday .dot.done{background:var(--acc)}
-/* a day off with a note on it (#261, lib/day-notes.js): the same colour on every calendar */
-.wday .dot.noted{background:var(--indigo)}
-.wday:active{background:var(--surface-2)}
-.wday.today .num{
-  background:var(--acc);color:var(--on-acc);font-weight:600;
-  width:31px;height:31px;border-radius:50%;display:flex;align-items:center;
-  justify-content:center;margin:2px auto;
 }
 
 /* ----------------------------------------------------------------- list -- */

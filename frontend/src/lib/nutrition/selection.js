@@ -3,8 +3,8 @@ import { create } from 'zustand'
 import { todayISO } from '../format.js'
 import { defaultMeal } from './diary.js'
 
-// Where a log goes: the date Home shows (its date strip and calendar) and the meal the + sheet
-// names in "Logging to <date> · <meal>". One copy for Home, the + sheet and the Nutrition pages.
+// Where a log goes: the date Home and Nutrition show (their week strip and calendar) and the meal
+// the + sheet names in "Logging to <date> · <meal>". One copy for every tab and the + sheet.
 //
 // `date` null means today, whichever day that is by now, so an app left open overnight logs to
 // the new day. `meal` null means "by time of day" (diary.js defaultMeal, a Gains rule: NutriTrace
@@ -39,6 +39,20 @@ export const useDiarySelection = create((set, get) => ({
   target: (settings, now = new Date()) => targetOf(get(), settings, now),
   reset: () => set({ date: null, meal: null }),
 }))
+
+/** Back to today when the app returns from the background after MEAL_PICK_MS or more (ux-redesign
+ *  §4.4): a day picked yesterday evening is not where the morning's breakfast goes. A shorter
+ *  trip away keeps the picked day. Returns the uninstaller. */
+export function installDayReset(doc = document, now = () => Date.now()) {
+  let hiddenAt = null
+  const onChange = () => {
+    if (doc.visibilityState === 'hidden') { hiddenAt = now(); return }
+    if (hiddenAt != null && now() - hiddenAt >= MEAL_PICK_MS) useDiarySelection.getState().reset()
+    hiddenAt = null
+  }
+  doc.addEventListener('visibilitychange', onChange)
+  return () => doc.removeEventListener('visibilitychange', onChange)
+}
 
 /** { date, meal } for components, kept current: on a selection change, and every 30 s for the
  *  date rolling over at midnight, a hand pick expiring and the time of day moving the meal.

@@ -16,10 +16,12 @@ const STATUSES = ['ready', 'loading', 'error', 'empty']
 const EMPTY = '–'
 
 // A tab's state at a glance, centred: a glyph, an eyebrow (never a greeting), then a title or a
-// big value with its unit, and a caption; or `metrics`, two values side by side split by a
-// hairline. status: loading (skeletons at the same sizes), error (the caption and a retry),
-// empty (the value as a dash). tone="over": over a target, said in orange ink, not as an alarm.
-export function HeroStatus({ glyph, eyebrow, title, value, unit, caption, metrics, status = 'ready', tone, onRetry }) {
+// big value with its unit, and a caption; and/or `metrics`, two values side by side split by a
+// hairline, under the caption. `link` ({ label, onClick }): a text button under the caption (the
+// day's workout). `action`: one control at the top end (a ⋯ menu). `children`: quiet lines at
+// the end. status: loading (skeletons at the same sizes), error (the caption and a retry),
+// empty (the values as dashes). tone="over": over a target, said in orange ink, not as an alarm.
+export function HeroStatus({ glyph, eyebrow, title, value, unit, caption, metrics, link, action, status = 'ready', tone, onRetry, children }) {
   oneOf('HeroStatus', 'status', status, STATUSES)
   oneOf('HeroStatus', 'tone', tone, ['over'])
   if (status === 'loading') {
@@ -32,12 +34,16 @@ export function HeroStatus({ glyph, eyebrow, title, value, unit, caption, metric
     </div>
   }
   const shown = status === 'empty' ? EMPTY : value
-  return <div className="hero">
+  return <div className={cx('hero', action && 'hero-has-a')}>
     {glyph && <Icon name={glyph} className="hero-g" />}
     {eyebrow != null && <div className="hero-e">{eyebrow}</div>}
     {title != null
       ? <h2 className="hero-t">{title}</h2>
       : shown != null && <p className="hero-v"><span className="hero-num">{shown}</span>{unit && status !== 'empty' && <span className="hero-u">{unit}</span>}</p>}
+    {/* After the heading in reading order; placed at the top end by CSS. */}
+    {action && <div className="hero-a">{action}</div>}
+    {caption != null && <div className={cx('hero-c', tone === 'over' && 'ink-orange')}>{caption}</div>}
+    {link && <button type="button" className="hero-l" onClick={link.onClick}>{link.label}<Icon name="chevronRight" /></button>}
     {metrics && <div className="hero-m">
       {metrics.map(m => <div key={m.label} className="hero-mi">
         <p className="hero-v"><span className="hero-num">{status === 'empty' ? EMPTY : m.value}</span>{m.unit && status !== 'empty' && <span className="hero-u">{m.unit}</span>}</p>
@@ -45,9 +51,15 @@ export function HeroStatus({ glyph, eyebrow, title, value, unit, caption, metric
         {m.sub != null && <div className="hero-ms">{m.sub}</div>}
       </div>)}
     </div>}
-    {caption != null && <div className={cx('hero-c', tone === 'over' && 'ink-orange')}>{caption}</div>}
+    {children}
     {status === 'error' && onRetry && <Button variant="tinted" size="sm" className="mt-4" onClick={onRetry}>{t('Try again')}</Button>}
   </div>
+}
+
+// One section of a redesigned tab root: the root's sections sit --gap-tab-section apart, which is
+// the kit's rhythm and not the page's to choose.
+export function TabSection({ children }) {
+  return <section className="tab-sec">{children}</section>
 }
 
 // A row of two to four actions, equal widths. Per Owner decision 7 none of them is filled: the
@@ -59,11 +71,13 @@ export function ActionRow({ children }) {
 }
 
 // One action: a 56px disc with its icon, the label under it. `busy` swaps the icon for a spinner;
-// `badge` (words, e.g. "1 pending") adds a dot and says it to a screen reader.
-export function ActionButton({ icon, label, onClick, disabled = false, busy = false, badge }) {
+// `badge` (words, e.g. "1 pending") adds a dot and says it to a screen reader. `ariaLabel`: the
+// name where the label alone does not say what it does ("+250 ml").
+export function ActionButton({ icon, label, ariaLabel, onClick, disabled = false, busy = false, badge }) {
+  const name = ariaLabel || label
   return (
     <button type="button" className="act-b" onClick={onClick} disabled={disabled} aria-busy={busy || undefined}
-      aria-label={badge ? label + ', ' + badge : undefined}>
+      aria-label={badge ? name + ', ' + badge : ariaLabel}>
       <span className="act-d">
         {busy ? <span className="act-spin" aria-hidden="true" /> : <Icon name={icon} />}
         {badge && <span className="act-badge" aria-hidden="true" />}

@@ -6,9 +6,10 @@ import { tappable } from '../lib/use-sheet-keyboard.js'
 import { leftMs, progressOf } from '../lib/nutrition/fasting.js'
 import { useFasting, useFastingOn, useNow } from '../lib/nutrition/use-fasting.js'
 import Icon from './Icon.jsx'
+import { Card } from './blocks.jsx'
 
-// The running fast, on Home's Today card (ia-proposal §2): time fasted and how long is left. Not
-// there when fasting is off or nothing is running; tapping opens the Fasting page.
+// The running fast, a live row on Home (ux-redesign-tabs §1.4): time fasted and how long is left.
+// Not there when fasting is off or nothing is running; tapping opens the Fasting page.
 export default function TodayFastRow() {
   const nav = useNavigate()
   const on = useFastingOn()
@@ -19,12 +20,12 @@ export default function TodayFastRow() {
 
   if (!on || !active) return null
   const p = progressOf(active, now)
-  return <div className="today-fast" {...tappable(() => nav('/food/fasting'))}>
+  return <Card className="today-fast" {...tappable(() => nav('/food/fasting'))}>
     <span className="lrow-i tint-purple"><Icon name="timer" /></span>
     <div className="grow">
       <div className="ttl">{t('Fasting for {0}', fmtDur(p.elapsedMs))}</div>
       <div className="ss">{p.reached ? t('Goal reached') : t('{0} to go', fmtDur(leftMs(p.remainingMs)))}</div>
     </div>
     <Icon name="chevronRight" className="chev" />
-  </div>
+  </Card>
 }
