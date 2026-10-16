@@ -24,6 +24,7 @@ import { loadCfAccess } from '../lib/cf-access.js'
 import { loadCoachDevice, saveCoachDevice, coachDeviceSettings } from '../lib/coach-device.js'
 import { RTL_LANGS } from '../lib/i18n-core.js'
 import { DEFAULT_TEMPLATE_ID } from '../lib/structuralBalanceTemplates.js'
+import { normalizeProgrammeNamespace } from '../lib/programme-compat.js'
 
 import { WC_DEFAULT } from '../lib/workout-controls.js'
 import { sanitizeAccent } from '../lib/accent.js'
@@ -176,6 +177,10 @@ export const DEF = {
   // (lib/dumbbells.js). Single bells, lightest first. Kept per unit and stamped like the plates;
   // absent or empty = no list, and dumbbell lifts step by their increment as before.
   dumbbells: {},
+  // Reusable Programme definitions and their frozen lifecycle cycles. Hiding the surface keeps
+  // the data and any running workout intact.
+  programmeMode: false,
+  programmes: { version: 1, definitions: [], cycles: [] },
   // Gym check-in cards (see views/CheckIn.jsx). Each is a membership
   // code shown as a QR/barcode at the gym's turnstile — added by typing it, importing a photo
   // of the card, or scanning it. We only ever keep the code's VALUE, never a photo: the image
@@ -276,12 +281,21 @@ export function restartedState(cur) {
   return s
 }
 
+export function normalizeState(value) {
+  const source = value && typeof value === 'object' && !Array.isArray(value) ? clone(value) : {}
+  const programmes = normalizeProgrammeNamespace(source.programmes)
+  const programmeMode = Object.prototype.hasOwnProperty.call(source, 'programmeMode')
+    ? source.programmeMode === true
+    : programmes.definitions.length > 0 || programmes.cycles.length > 0
+  return sanitizeAccent(Object.assign(clone(DEF), source, { programmeMode, programmes }))
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(KEY)
     if (raw) {
       const saved = JSON.parse(raw)
-      const s = sanitizeAccent(Object.assign(clone(DEF), saved))
+      const s = normalizeState(saved)
       if (!saved.lang) s.lang = detectedLang()
       return s
     }
@@ -293,14 +307,15 @@ function loadState() {
 // weigh-ins and custom exercises. A custom exercise is all a new guest may have made — with its
 // photo or video, which the server counts as unreferenced until the state that names it lands —
 // so a profile created from such a copy takes it at once, like one holding a workout.
-const hasData = st => !!((st.workouts || []).length || (st.routines || []).length || (st.bodyweight || []).length || (st.customEx || []).length || (st.measurements || []).length)
+const hasData = st => !!((st.workouts || []).length || (st.routines || []).length || (st.bodyweight || []).length || (st.customEx || []).length || (st.measurements || []).length ||
+  (st.programmes?.definitions || []).length || (st.programmes?.cycles || []).length || (st.programmes?.legacyEntries || []).length)
 
 // Decide whether a pulled account state may replace the local saved state. A local active workout
 // is deliberately carried forward: the server stores completed/saved state, while the in-progress
 // session belongs to the device that is currently running it.
 export function restoredStateFor(local, remote, dirty = false) {
   if (!remote || (hasData(local) && (dirty || (remote._ts || 0) < (local._ts || 0)))) return null
-  const next = sanitizeAccent(Object.assign(clone(DEF), remote))
+  const next = normalizeState(remote)
   if (local.active) next.active = local.active
   return next
 }
@@ -530,11 +545,11 @@ export const useStore = create((set, get) => {
     return tag === null || tag === (seenOwner || '')
   }
   const readSaved = () => {
-    try { const raw = localStorage.getItem(KEY); return raw ? Object.assign(clone(DEF), JSON.parse(raw)) : null } catch { return null }
+    try { const raw = localStorage.getItem(KEY); return raw ? normalizeState(JSON.parse(raw)) : null } catch { return null }
   }
   // Another tab's copy joined into `mine`; `touched` when this change set the running workout.
   const joinTabs = (mine, theirs, touched) => {
-    const merged = Object.assign(clone(DEF), mergeStates(mine, theirs))
+    const merged = normalizeState(mergeStates(mine, theirs))
     merged.active = touched ? carryActive(mine, merged) : carryActive(theirs, merged)
     return merged
   }
@@ -677,10 +692,10 @@ export const useStore = create((set, get) => {
     if (legacy && legacy.owner === get().user?.id) {
       const lifted = liftLegacy(local, remote, legacy.fp, Math.max(Date.now(), highestStamp(local) + 1, highestStamp(remote) + 1))
       if (!lifted.resolved) keepAside(local, t('This device, before the update'))
-      local = Object.assign(clone(DEF), lifted.state)
+      local = normalizeState(lifted.state)
     }
     if (legacy) clearLegacy()
-    const merged = Object.assign(clone(DEF), mergeStates(local, remote))
+    const merged = normalizeState(mergeStates(local, remote))
     merged.active = carryActive(local, merged)
     // A pass of this app's rotation that the merge left complete (each copy finished a session of
     // it, or one copy's refill lost to the other's older queue) starts its next pass here, as the
@@ -1141,7 +1156,7 @@ export const useStore = create((set, get) => {
     reached()
     let asked = false
     const askAbout = async extras => {
-      if (!(extras.workouts || extras.bodyweight || extras.customEx || extras.routines || extras.setup) || typeof ask !== 'function') return false
+      if (!(extras.workouts || extras.bodyweight || extras.customEx || extras.routines || extras.setup || extras.programmes) || typeof ask !== 'function') return false
       asked = true
       return !!(await ask(extras))
     }
@@ -1153,7 +1168,7 @@ export const useStore = create((set, get) => {
       try { const r = await api('/api/data'); if (r && r.state) ({ state, rev } = r) } catch { /* the first read */ }
     }
     const takeServer = () => {
-      const copy = sanitizeAccent(Object.assign(clone(DEF), state))
+      const copy = normalizeState(state)
       copy.active = carryActive(get().S, copy)
       if (rev != null) adopt(copy, rev)
       else { dropSync(); persist(copy, false, false); markOwed(false) }
@@ -1279,7 +1294,7 @@ export const useStore = create((set, get) => {
     if (!who || of?.owner !== who || (owner && owner !== who) || of.ts !== (saved._ts || 0)) return
     try { if (!owner) localStorage.setItem('gym_owner', who) } catch { /* setUser writes it again */ }
     seenOwner = readOwner()
-    persist(sanitizeAccent(Object.assign(clone(DEF), saved)), false, false)
+    persist(normalizeState(saved), false, false)
     dropSync()
     markOwed(true)
   }
@@ -1431,7 +1446,7 @@ export const useStore = create((set, get) => {
       importRead = null
       const server = read?.state || null
       const now = Math.max(Date.now(), highestStamp(cur) + 1, highestStamp(server) + 1, highestStamp(backup) + 1)
-      const next = sanitizeAccent(Object.assign(clone(DEF), backup))
+      const next = normalizeState(backup)
       // A workout running here lives on this device only: no backup and no server copy holds it,
       // so the import keeps it (in the backup's unit). Only with none running does a backup taken
       // mid-workout bring its own session back. Both the replace and "Merge them in" dropped it.
@@ -1450,7 +1465,7 @@ export const useStore = create((set, get) => {
       const others = mergeWith.local ? mergeStates(cur, mergeWith.state) : mergeWith.state
       // The merge keeps the backup's reset stamp (prefer); a later one this copy or the server's
       // holds stays, as it does on a replace.
-      const merged = keepReset(others, keepReset(cur, Object.assign(clone(DEF), mergeStates(next, others, { prefer: 'a' }))))
+      const merged = keepReset(others, keepReset(cur, normalizeState(mergeStates(next, others, { prefer: 'a' }))))
       stampRestore(merged, [cur, mergeWith.state, next], now)
       merged._ts = now
       merged.active = carryActive({ unit: next.unit, active: running }, merged)
@@ -1641,7 +1656,7 @@ export const useStore = create((set, get) => {
           if (!serverMoved) { if (changed) await get().pushState(); else confirmed(S); return }
           if (!state) { writeSync(rev, 0); if (hasData(S)) await get().pushState(); return }
           if (!descends) { mergeInto(S, state, rev); pushPending = false; await get().pushState(); return }
-          if (!changed) { const next = sanitizeAccent(Object.assign(clone(DEF), state)); next.active = carryActive(S, next); adopt(next, rev); confirmed(get().S); return }
+          if (!changed) { const next = normalizeState(state); next.active = carryActive(S, next); adopt(next, rev); confirmed(get().S); return }
           mergeInto(S, state, rev)
           pushPending = false
           await get().pushState()
@@ -1889,7 +1904,7 @@ export const useStore = create((set, get) => {
         const saved = await nativeLoad()
         const S = get().S
         if (saved && (!hasData(S) || (saved._ts || 0) >= (S._ts || 0))) {
-          persist(sanitizeAccent(Object.assign(clone(DEF), saved)), false, false)
+          persist(normalizeState(saved), false, false)
         } else if (hasData(S)) {
           nativePersist(true)   // first run after an update from a file-less version: seed the mirror
         }

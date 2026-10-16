@@ -9,6 +9,11 @@ import { defaultBarWeight } from './bar.js'
 
 const LB_PER_KG = 2.2046226218
 
+const convUnitMarkers = (out, source, from, to) => {
+  for (const key of ['unit', 'weightUnit', 'loadUnit']) if (source?.[key] === from) out[key] = to
+  return out
+}
+
 export function convertWeight(value, from, to) {
   if (from === to || value == null || value === '' || !Number.isFinite(Number(value))) return value
   const v = Number(value)
@@ -28,12 +33,12 @@ export function convertBodyWeight(value, from, to) {
 const convSet = (set, from, to) => {
   if (!set || typeof set !== 'object') return set
   const out = { ...set }
-  if (isSideSet(set)) return syncSideAggregate({ ...set, sides: {
+  if (isSideSet(set)) return convUnitMarkers(syncSideAggregate({ ...set, sides: {
     L: convSet(set.sides.L, from, to), R: convSet(set.sides.R, from, to),
-  } })
+  } }), set, from, to)
   if (out.w != null) out.w = convertWeight(out.w, from, to)
-  if (Array.isArray(out.drops)) out.drops = out.drops.map(d => ({ ...d, w: convertWeight(d.w, from, to) }))
-  return out
+  if (Array.isArray(out.drops)) out.drops = out.drops.map(d => convSet(d, from, to))
+  return convUnitMarkers(out, set, from, to)
 }
 const convTarget = (cfg, from, to) => {
   if (!cfg || typeof cfg !== 'object') return cfg
@@ -41,10 +46,10 @@ const convTarget = (cfg, from, to) => {
   if (out.weight != null) out.weight = convertWeight(out.weight, from, to)
   // A per-exercise increment is a load too — 2.5 kg is 5 lb, not 2.5 lb.
   if (out.inc > 0 && (out.mode == null || out.mode === 'reps')) out.inc = convertWeight(out.inc, from, to)
-  if (Array.isArray(out.warmup)) out.warmup = out.warmup.map(w => (w && w.weight != null ? { ...w, weight: convertWeight(w.weight, from, to) } : w))
+  if (Array.isArray(out.warmup)) out.warmup = out.warmup.map(w => convTarget(w, from, to))
   // A pyramid's own weight per set; 0 ("no plan for this set") stays 0.
   if (Array.isArray(out.pyramidWeight)) out.pyramidWeight = out.pyramidWeight.map(w => (w > 0 ? convertWeight(w, from, to) : w))
-  return out
+  return convUnitMarkers(out, cfg, from, to)
 }
 // A bar is a stamped object, not a number: the 45 lb bar IS the 20 kg bar (44.1 lb), so an
 // override that equals the old unit's default for that bar type drops out and the new unit's
@@ -66,14 +71,40 @@ const convBarWeights = (bw, from, to) => {
 }
 const convEntry = (e, from, to) => {
   if (!e || typeof e !== 'object') return e
-  return {
+  return convUnitMarkers({
     ...e,
     ...(e.topW != null ? { topW: convertWeight(e.topW, from, to) } : {}),
     ...(e.target ? { target: convTarget(e.target, from, to) } : {}),
     // The plan the entry was built from (lib/session-start.js) carries the routine's weight too.
     ...(e.planned ? { planned: convTarget(e.planned, from, to) } : {}),
     ...(Array.isArray(e.sets) ? { sets: e.sets.map(s => convSet(s, from, to)) } : {}),
-  }
+  }, e, from, to)
+}
+const convRoutine = (routine, from, to) => routine && typeof routine === 'object'
+  ? { ...routine, ...(Array.isArray(routine.ex) ? { ex: routine.ex.map(cfg => convTarget(cfg, from, to)) } : {}) }
+  : routine
+const convProgrammeWeeks = (weeks, from, to) => weeks.map(week => ({
+  ...week,
+  days: (week.days || []).map(day => ({
+    ...day,
+    sessions: (day.sessions || []).map(session => {
+      const out = { ...session }
+      for (const key of ['routineSnapshot', 'routine', 'snapshot']) {
+        if (session?.[key] && typeof session[key] === 'object') out[key] = convRoutine(session[key], from, to)
+      }
+      return out
+    }),
+  })),
+}))
+const convProgrammeDefinition = (definition, from, to) => definition && typeof definition === 'object'
+  ? { ...definition, ...(Array.isArray(definition.weeks) ? { weeks: convProgrammeWeeks(definition.weeks, from, to) } : {}) }
+  : definition
+const convProgrammeCycle = (cycle, from, to) => {
+  if (!cycle || typeof cycle !== 'object') return cycle
+  const out = { ...cycle }
+  if (cycle.snapshot && typeof cycle.snapshot === 'object') out.snapshot = convProgrammeDefinition(cycle.snapshot, from, to)
+  if (cycle.programmeSnapshot && typeof cycle.programmeSnapshot === 'object') out.programmeSnapshot = convProgrammeDefinition(cycle.programmeSnapshot, from, to)
+  return out
 }
 
 /** A new state object with every weight expressed in `to`, and `unit` set to it. */
@@ -90,7 +121,7 @@ export function convertStateUnit(S, to) {
     const out = { ...s, entries: (s.entries || []).map(e => convEntry(e, from, to)) }
     if (out.bw != null) out.bw = bw(out.bw)
     if (Number.isFinite(out.vol)) out.vol = workoutVolume({ entries: out.entries.filter(e => Array.isArray(e?.sets)) })
-    return out
+    return convUnitMarkers(out, s, from, to)
   }
   const out = { ...S, unit: to }
   if (Array.isArray(S.bodyweight)) out.bodyweight = S.bodyweight.map(b => ({ ...b, w: bw(b.w) }))
@@ -103,7 +134,14 @@ export function convertStateUnit(S, to) {
   // switching back finds the old list as you left it. The dumbbell list (S.dumbbells) is kept per
   // unit the same way. The load kinds (S.loadKind) and what a dumbbell weight means (S.dbLoad)
   // hold no weight.
-  if (Array.isArray(S.routines)) out.routines = S.routines.map(r => ({ ...r, ex: (r.ex || []).map(cfg => convTarget(cfg, from, to)) }))
+  if (Array.isArray(S.routines)) out.routines = S.routines.map(r => convRoutine(r, from, to))
+  if (S.programmes && typeof S.programmes === 'object' && !Array.isArray(S.programmes)) {
+    out.programmes = {
+      ...S.programmes,
+      ...(Array.isArray(S.programmes.definitions) ? { definitions: S.programmes.definitions.map(definition => convProgrammeDefinition(definition, from, to)) } : {}),
+      ...(Array.isArray(S.programmes.cycles) ? { cycles: S.programmes.cycles.map(cycle => convProgrammeCycle(cycle, from, to)) } : {}),
+    }
+  }
   if (Array.isArray(S.workouts)) out.workouts = S.workouts.map(convSession)
   if (S.active) out.active = convSession(S.active)
   return out

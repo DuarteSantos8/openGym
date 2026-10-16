@@ -819,3 +819,11 @@ effect on an already-built image — the bundle has already made up its mind.
 They are only useful if you build the frontend yourself (`docker compose up -d --build`, or a
 `npm run build` with the variables exported). If you need to redirect media on a prebuilt
 image, do it in your reverse proxy instead.
+
+### Shared Programmes
+
+In Admin, use **Shared programmes** to publish a saved Programme from your account. Every signed-in account, including accounts registered later, can find it in Plan and import a separate copy. Import enables Programme mode; each person chooses their own start date.
+
+Publication saves a snapshot. Use **Update shared copy** after editing your Programme, or **Unshare** to remove it from the library. Neither action changes copies already imported or any workout history. Review exercise notes before sharing; account history, weigh-ins and private media are excluded. Guests cannot read the library.
+
+The catalogue is stored in data/shared-programmes.json and belongs in your normal data backup. No signup configuration or scheduled copy job is needed. Admin access uses the existing admin flag or ADMIN_UIDS configuration.

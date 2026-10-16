@@ -15,6 +15,7 @@ import {
 import webpush from 'web-push';
 import * as coachConfig from './coach/config.js';
 import * as coachJobs from './coach/jobs.js';
+import { sharedProgrammeRoutes } from './shared-programmes.js';
 import { coachRoutes } from './coach/routes.js';
 import { startCadence } from './coach/cadence.js';
 import { startWarmup } from './coach/warmup.js';
@@ -2573,6 +2574,7 @@ const routes = {
   // Routes live in coach/routes.js and are handed the helpers above rather than importing
   // them: they are closures over db and SECRET, and passing them in keeps that module free of
   // a cycle. Every one of them is inert while the feature is unconfigured.
+  ...sharedProgrammeRoutes({ data: DATA, json, readBody, readSession, requireAdmin, audit }),
   ...coachRoutes({ json, readBody, readSession, requireAdmin }),
 
   /* ---------- photos & videos ---------- */

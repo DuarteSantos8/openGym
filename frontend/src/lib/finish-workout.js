@@ -69,6 +69,8 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
   const entries = (active?.entries || []).map(entry => {
     const completed = {
       id: entry.id,
+      ...(entry.occurrenceId ? { occurrenceId: entry.occurrenceId } : {}),
+      ...(entry.unit ? { unit: entry.unit } : {}),
       // Only what was logged — the live-session bookkeeping on a row stays behind (finishedRow).
       sets: (entry.sets || []).map(finishedRow),
       topW: bestWeightForEntry(entry) || null,
@@ -114,6 +116,7 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
 
   return {
     id: active.id,
+    ...(active.unit ? { unit: active.unit } : {}),
     d: active.d,
     start: active.start,
     end,
@@ -123,6 +126,11 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
     bw: active.bw,
     entries,
     prs,
+    ...(active.programmeInstance || active.programmeInstanceId || active.cycleId ? { complete: !!active.entries?.length && active.entries.every(entry => entry.sets.length > 0 && entry.sets.every(hasCompletedWork)) } : {}),
+    ...(active.programmeId ? { programmeId: active.programmeId } : {}),
+    ...(active.cycleId ? { cycleId: active.cycleId } : {}),
+    ...(active.programmeInstanceId ? { programmeInstanceId: active.programmeInstanceId } : {}),
+    ...(active.programmeInstance ? { programmeInstance: { ...active.programmeInstance } } : {}),
     ...(allNoProg ? { excludeFromProgression: true } : {}),
     ...(sessionNote ? { note: sessionNote } : {}),
   }
