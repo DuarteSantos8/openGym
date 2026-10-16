@@ -279,6 +279,18 @@ describe('Stats muscle recovery view runtime', () => {
     expect(lastMap().load.chest).toBe(6)
   })
 
+  it('shows the selected muscle fatigue as a percentage with recovery forecast', async () => {
+    await mountStats()
+    await click(viewButton('Fatigue'))
+    await click(muscleCard().querySelector('[data-muscle="chest"]'))
+    const value = lastMap().load.chest
+    expect(value).toBeGreaterThan(0.5)
+    expect(muscleCard().textContent).toContain(`${Math.round(value * 100)}%`)
+    // Fatigued chest drops through both bands, so both forecasts render.
+    expect(muscleCard().textContent).toContain('Recovering in')
+    expect(muscleCard().textContent).toContain('Ready in')
+  })
+
   it('derives a pound-profile bodyweight in kg and passes it into the rendered Fatigue map', async () => {
     const bodyweightWorkout = workout('bodyweight', BASE_NOW, [
       entry('0001', [{ done: true, w: 0, r: 10 }]),
