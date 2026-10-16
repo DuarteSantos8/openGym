@@ -1,4 +1,4 @@
-import { cx, GAPS, oneOf, STEPS } from '../lib/ui-kit.js'
+import { actionCount, cx, GAPS, oneOf, STEPS } from '../lib/ui-kit.js'
 import RootHeader from './RootHeader.jsx'
 import SubHeader from './SubHeader.jsx'
 
@@ -7,15 +7,19 @@ import SubHeader from './SubHeader.jsx'
 // Sizes are steps on the space scale (lib/ui-kit.js); a value off the scale throws in development.
 // None of them sets a page width: that belongs to the shell (#app, --page-w).
 
-// A routed page: its header, then the page's content as it is (no wrapper). `root` is a tab's
-// root (large title and the avatar), which has no back and no action of its own; every other page
-// gets SubHeader with back and `action`.
-export function Page({ title, sub, action, onBack, root = false, children }) {
-  if (import.meta.env.DEV && root && (action || onBack)) {
-    throw new Error('Page: a root page takes no action or onBack (RootHeader shows the avatar)')
+// A routed page: its header, then the page's content as it is (no wrapper). The page names
+// itself and says which actions it has; how its header looks is the kit's (ui-guards G8 holds
+// every page to this). `root` is a tab's root: RootHeader, with the search, the avatar and at
+// most one context button (`action`), and `title` only as the page's name for a screen reader.
+// Every other page gets SubHeader: back, the title with `sub`, at most two actions, and
+// `heading` in place of the title where the title is itself a field (the routine editor).
+export function Page({ title, sub, action, onBack, heading, root = false, children }) {
+  if (import.meta.env.DEV && root && (onBack || sub != null || heading != null || actionCount(action) > 1)) {
+    throw new Error('Page: a root page takes no sub, heading or onBack, and one action at most (RootHeader shows the search and the avatar)')
   }
   return <>
-    {root ? <RootHeader title={title} sub={sub} /> : <SubHeader title={title} sub={sub} action={action} onBack={onBack} />}
+    {root ? <RootHeader title={title} action={action} />
+      : <SubHeader title={title} sub={sub} action={action} onBack={onBack}>{heading}</SubHeader>}
     {children}
   </>
 }

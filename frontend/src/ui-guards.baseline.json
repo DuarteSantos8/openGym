@@ -41,7 +41,7 @@
   },
   "G2css": {
     "admin.css": 1,
-    "index.css": 77,
+    "index.css": 72,
     "views/FocusView.css": 1
   },
   "G2js": {
@@ -90,11 +90,5 @@
     "views/TrainHub.jsx": 2,
     "views/Workout.jsx": 3
   },
-  "G4": [
-    "History",
-    "Muscles",
-    "ProgressHub",
-    "RoutineEdit",
-    "TrainHub"
-  ]
+  "G4": []
 }

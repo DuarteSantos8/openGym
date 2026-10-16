@@ -2,6 +2,7 @@ import { isValidElement } from 'react'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { cx, oneOf } from '../lib/ui-kit.js'
 import Icon from './Icon.jsx'
+import { Button } from './ui.jsx'
 
 // Content blocks. Each emits the exact classes and elements the pages build by hand today
 // (.card, .item, .tiles, .big, .empty, h4.sec, .tag, .chips), so index.css stays the one source
@@ -84,13 +85,33 @@ export function Stat({ value, unit, size }) {
 }
 
 // What a list says when it has nothing in it. With a title, the text sits under it in its own block.
-export function EmptyState({ icon, title, className, children }) {
-  return <div className={cx('empty', className)}>
-    {icon && <div className="ico"><Icon name={icon} /></div>}
+// `art` (a LineArt scene) leads it in place of `icon`; `action` ({ label, onClick, icon }) is its one
+// filled pill and `secondary` a plain one beside it. With none of those three, the markup is the
+// one this block always had.
+export function EmptyState({ icon, art, title, action, secondary, className, children }) {
+  return <div className={cx('empty', (art || action || secondary) && 'empty-x', className)}>
+    {art ? <div className="ico empty-art">{art}</div> : icon && <div className="ico"><Icon name={icon} /></div>}
     {title != null
       ? <><strong>{title}</strong>{children != null && <div>{children}</div>}</>
       : children}
+    {(action || secondary) && <div className="empty-acts">
+      {action && <Button variant="primary" shape="pill" icon={action.icon} onClick={action.onClick}>{action.label}</Button>}
+      {secondary && <Button shape="pill" icon={secondary.icon} onClick={secondary.onClick}>{secondary.label}</Button>}
+    </div>}
   </div>
+}
+
+// One quiet line with its icon, centred: a status in place of rows (paused, offline, an error).
+export function InlineNote({ icon, className, children, ...rest }) {
+  return <p className={cx('inote', className)} {...rest}>{icon && <Icon name={icon} />}<span>{children}</span></p>
+}
+
+// A grey block standing in for content still loading, at its size: `w` and `h` in px (a number)
+// or any length, `r` its radius. It says nothing to a screen reader; whatever holds it announces
+// the loading once (role=status).
+const len = v => (typeof v === 'number' ? v + 'px' : v)
+export function Skeleton({ w = '100%', h = 12, r = 4, className }) {
+  return <span className={cx('skel', className)} aria-hidden="true" style={{ '--skel-w': len(w), '--skel-h': len(h), '--skel-r': len(r) }} />
 }
 
 export function SectionTitle({ as: El = 'h4', className, children }) {

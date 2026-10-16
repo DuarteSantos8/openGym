@@ -8,6 +8,7 @@ import { startNativeKeyboard } from './lib/native-keyboard.js'
 import { startSwMessages } from './lib/sw-update.js'
 import './index.css'
 import './ui-kit.css'
+import './tab-kit.css'
 
 // App.jsx restores per-route scroll itself; the browser's own attempt races it.
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual'

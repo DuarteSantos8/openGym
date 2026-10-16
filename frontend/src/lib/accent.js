@@ -177,10 +177,13 @@ export function inkOnBoth(acc, acc2) {
 // vanish into the track, so it gets a hairline ring there (index.css .sw.on .knob).
 const KNOB_RING = 'rgba(0,0,0,.28)'
 const ACC_INK_MIN = 4.5
+// A stroke is a graphic, not text: the WCAG non-text bar.
+const GRAPHIC_MIN = 3
 
 /**
  * The CSS custom properties for the user's colour in `theme`, the same set a preset defines in
- * index.css: the accent, its pressed shade, the text on it, and the switch knob's ring. The soft
+ * index.css: the accent, its pressed shade, the text on it, the switch knob's ring, the accent as
+ * text (--acc-ink) and as a line-art stroke (--acc-graphic). The soft
  * and line tints are mixed from --acc in index.css and follow on their own. null for anything
  * but a valid hex.
  */
@@ -189,13 +192,19 @@ export function customAccentVars(hex, theme) {
   if (!c) return null
   const acc = readableIn(c, theme)
   const acc2 = mix(acc, '#000000', 0.25)
-  return {
+  const vars = {
     '--acc': acc, '--acc-2': acc2, '--on-acc': inkOnBoth(acc, acc2),
     '--knob-ring': contrast('#ffffff', acc) < 1.5 ? KNOB_RING : 'transparent',
     // the colour as text or an icon: 4.5:1 on the page, card, nested fill and the tint over it,
     // where the button fill only needs 3:1
     '--acc-ink': readableIn(c, theme, ACC_INK_MIN, [tintOver(acc, (THEMES[theme] || THEMES.dark).surface2)]),
   }
+  // The colour as a line-art stroke, as index.css draws a preset's: its ink in light, the accent in
+  // dark, lifted where it falls under 3:1 on the lit --acc-soft area it touches (a navy own colour
+  // does). accent.test.js holds it to 3:1 on every fill a scene sits on.
+  vars['--acc-graphic'] = theme === 'light' ? vars['--acc-ink']
+    : readableIn(c, theme, GRAPHIC_MIN, [tintOver(acc, (THEMES[theme] || THEMES.dark).surface2)])
+  return vars
 }
 
 /** The colour and its text colour for a preset key or a '#rrggbb' value (native notification). */
@@ -206,7 +215,7 @@ export function accentPair(v) {
   return { accent: ACCENTS[k], ink: ACCENT_INK[k] }
 }
 
-const CUSTOM_VARS = ['--acc', '--acc-2', '--on-acc', '--knob-ring', '--acc-ink']
+const CUSTOM_VARS = ['--acc', '--acc-2', '--on-acc', '--knob-ring', '--acc-ink', '--acc-graphic']
 
 /**
  * Puts the accent on the page root: a preset by `data-accent` (index.css does the rest), the

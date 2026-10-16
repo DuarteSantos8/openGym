@@ -1,5 +1,5 @@
 import { useStore } from '../store/useStore.js'
-import SubHeader from '../components/SubHeader.jsx'
+import { Page } from '../components/layout.jsx'
 import { t, tn } from '../lib/i18n.js'
 import { WorkoutRow, DayNoteRow, workoutDetailSheet, logPastWorkoutSheet } from '../sheets.jsx'
 import { Button } from '../components/ui.jsx'
@@ -19,12 +19,11 @@ export function historyRows(S) {
 export default function History() {
   const S = useStore(s => s.S)
   const rows = historyRows(S)
-  return <>
-    <SubHeader title={t('History')} sub={tn('{0} workout', '{0} workouts', S.workouts.length)} />
+  return <Page title={t('History')} sub={tn('{0} workout', '{0} workouts', S.workouts.length)}>
     <Button icon="plus" onClick={logPastWorkoutSheet} style={{ marginBottom: 12 }}>{t('Log a past workout')}</Button>
     {rows.length ? <div className="list">{rows.map(r => r.w
       ? <WorkoutRow key={r.w.id} w={r.w} onClick={() => workoutDetailSheet(r.w)} />
       : <DayNoteRow key={'note-' + r.d} iso={r.d} note={r.note} />)}</div>
       : <div className="empty"><div className="ico"><Icon name="history" /></div>{t('No workouts yet. Your first one will land here.')}</div>}
-  </>
+  </Page>
 }

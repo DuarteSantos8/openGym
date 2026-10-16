@@ -12,9 +12,8 @@ import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet, supersetSheet
 import { supersetMeta, setSupersetMeta } from '../lib/superset-meta.js'
 import { fmtRest } from '../lib/duration.js'
 import Icon from '../components/Icon.jsx'
-import SubHeader from '../components/SubHeader.jsx'
 import { Card, EmptyState, SectionTitle } from '../components/blocks.jsx'
-import { Inline, Spacer, Stack } from '../components/layout.jsx'
+import { Inline, Page, Spacer, Stack } from '../components/layout.jsx'
 import { glyphOf } from '../lib/glyphs.js'
 import { Button, Row, SelectRow, Switch } from '../components/ui.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
@@ -465,11 +464,10 @@ export default function RoutineEdit() {
   const missingCount = profile ? r.ex.filter(e => !exAvailable(S, exOr(e.id))).length : 0
   const swipe = workoutControls(S).swipeSets
 
-  return <div>
-    <SubHeader action={<button className="iconbtn" aria-label={t('Pick an icon')} onClick={() => glyphPicker(r.emoji, g => update(s => { s.routines.find(x => x.id === id).emoji = g }))}><Icon name={glyphOf(r.emoji)} /></button>}>
-      <input className="input fw-semibold fs-title3" defaultValue={r.name} aria-label={t('Routine name')} style={{ letterSpacing: '-.021em' }}
-        onChange={e => update(s => { s.routines.find(x => x.id === id).name = e.target.value.trim() || t('Routine') })} />
-    </SubHeader>
+  return <Page
+    action={<button className="iconbtn" aria-label={t('Pick an icon')} onClick={() => glyphPicker(r.emoji, g => update(s => { s.routines.find(x => x.id === id).emoji = g }))}><Icon name={glyphOf(r.emoji)} /></button>}
+    heading={<input className="input fw-semibold fs-title3" defaultValue={r.name} aria-label={t('Routine name')} style={{ letterSpacing: '-.021em' }}
+      onChange={e => update(s => { s.routines.find(x => x.id === id).name = e.target.value.trim() || t('Routine') })} />}>
 
     <div className="sect-b mb-8">
       <SelectRow icon="chartLine" title={t('Progression')} sheetTitle={t('Progression')}
@@ -595,5 +593,5 @@ export default function RoutineEdit() {
         nav('/train/routines')
       }
     })}>{t('Delete routine')}</Button>
-  </div>
+  </Page>
 }

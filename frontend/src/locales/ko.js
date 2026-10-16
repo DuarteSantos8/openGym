@@ -2808,4 +2808,20 @@ export default {
   'Recipe · 1 serving': 'Recipe · 1 serving',
   'Slide or tap to set your weight. We ask before your first workout each day so your curve stays honest.': 'Slide or tap to set your weight. We ask before your first workout each day so your curve stays honest.',
   'Updated': 'Updated',
+  // --- the tab-root header's search pill ---
+  'Search {0}': '{0} 검색',
+  'Exercises, routines, workouts': '운동, 루틴, 운동 기록',
+  'Search training': '훈련 검색',
+  'Foods, meals, days': '음식, 식사, 날짜',
+  'Search food': '음식 검색',
+  'Charts, exercises, workouts': '차트, 운동, 운동 기록',
+  'Search progress': '진행 상황 검색',
+  'Clear search': '검색어 지우기',
+  'Close search': '검색 닫기',
+  // --- the redesign's week strip and gauges ---
+  'Plan changed': '계획 변경됨',
+  'Trained on {0} of {1} days': '{1}일 중 {0}일 운동',
+  'of {0}': '/ {0}',
+  'over by {0}': '{0} 초과',
+  'Loading today': '오늘 불러오는 중',
 }

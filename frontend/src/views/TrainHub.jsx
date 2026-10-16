@@ -7,7 +7,7 @@ import { MOBILE } from '../lib/mobile.js'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { scheduleModeOf } from '../lib/rotation.js'
 import Icon from '../components/Icon.jsx'
-import RootHeader from '../components/RootHeader.jsx'
+import { Page } from '../components/layout.jsx'
 import TodayCard from '../components/TodayCard.jsx'
 import { Row, Section } from '../components/ui.jsx'
 
@@ -29,8 +29,7 @@ export default function TrainHub() {
     { path: '/train/routines', icon: 'clipboard', title: t('Routines'), sub: tn('{0} routine', '{0} routines', S.routines.length) },
   ]
 
-  return <div>
-    <RootHeader title={t('Training')} />
+  return <Page root title={t('Training')}>
     <TodayCard />
     <div className="tiles hub-tiles">
       {targets.map(x => (
@@ -48,5 +47,5 @@ export default function TrainHub() {
       <Row icon="kettlebell" iconTint="var(--indigo)" title={t('Equipment')} accessory="chevron" onClick={() => nav('/me/equipment')} />
       <Row icon="gear" iconTint="var(--grey)" title={t('Training settings')} accessory="chevron" onClick={() => nav('/me/workout')} />
     </Section>
-  </div>
+  </Page>
 }

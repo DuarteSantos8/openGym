@@ -14,7 +14,7 @@ import { headlines, presentMetrics, recoveryWindow } from '../lib/nutrition/well
 import { bwDeltaColor } from '../sheets.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import Icon from '../components/Icon.jsx'
-import RootHeader from '../components/RootHeader.jsx'
+import { Page } from '../components/layout.jsx'
 import { Segmented } from '../components/ui.jsx'
 import { rangeFrom, rangeOptions } from './Stats.jsx'
 
@@ -97,8 +97,7 @@ export default function ProgressHub() {
   const sets = inRange.reduce((n, w) => n + setsDone(w), 0)
   const open = path => nav(path + '?range=' + range)
 
-  return <div>
-    <RootHeader title={t('Progress')} />
+  return <Page root title={t('Progress')}>
     <Segmented className="seg-range" value={range} onChange={setRange} options={rangeOptions()} />
     <HubCard icon="scale" tint="var(--teal)" title={t('Body')}
       value={last ? fmtNum(last.w) + ' ' + S.unit : t('No weigh-ins yet')}
@@ -120,5 +119,5 @@ export default function ProgressHub() {
       value={recovery.length ? readout(recovery[0]) : t('No readings in this range')}
       note={recovery[1] ? readout(recovery[1]) : t('From your wearable')}
       onOpen={() => open('/progress/recovery')} />}
-  </div>
+  </Page>
 }

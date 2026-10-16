@@ -13,24 +13,50 @@
   /* space; 2-5 is the half step, 5px */
   --space-1:2px; --space-2:4px; --space-2-5:5px; --space-3:6px; --space-4:8px; --space-5:10px;
   --space-6:12px; --space-7:14px; --space-8:16px; --space-9:18px; --space-10:22px;
+  --space-11:24px; --space-12:32px;
 
-  /* rhythm */
+  /* rhythm. --gap-section stays 22 so the pages already on it do not move; a redesigned tab
+     root spaces its sections --gap-tab-section apart. */
   --gap-list:var(--space-4);
   --gap-row:var(--space-6);
   --gap-block:var(--space-6);
   --gap-section:var(--space-10);
+  --gap-tab-section:var(--space-12);
 
   /* type */
   --fs-caption:12px; --fs-footnote:13px; --fs-subhead:15px; --fs-callout:16px; --fs-body:17px;
   --fs-title3:20px; --fs-title2:22px; --fs-tile:26px; --fs-big:30px; --fs-large:34px;
+  --fs-display:48px;
   --fw-regular:400; --fw-medium:500; --fw-semibold:600; --fw-bold:700;
+  --ls-display:-.035em; --ls-title:-.02em;
 
-  /* layout (--page-w and --pad live in index.css) */
+  /* layout (--page-w, --pad and --app-top live in index.css) */
   --tap-min:44px; --row-min:46px; --item-min:60px;
+  --r-pill:999px;
+  /* The tab-root and sub-page headers: the bar and the 40px controls in it (52px to tap). */
+  --hdr-h:56px; --hdr-btn:40px;
+  /* An action button's disc, a row's + disc, a bare row glyph. */
+  --disc:56px; --disc-sm:36px; --glyph:24px;
+  /* A media row's lead (line art or a licensed picture, 4:3) and the exercise variant's thumb. */
+  --art-w:96px; --art-h:72px; --thumb-lg:56px;
+  /* What the tab bar takes from the bottom of the screen above --sab, measured from #tabbar in
+     Chrome: 63px on a phone; on desktop the bar floats 16px up and is 65px tall. */
+  --tabbar-h:63px;
+  --search-panel-w:680px;
+  /* Layers, beside index.css's 20/40 (pinned headers), 45 (connection row), 50 (tab bar), 60
+     (timer), 100 (#modal-root) and 200 (toast): the tab-root header over the search overlay. */
+  --z-search:47; --z-tab-hdr:48;
+
+  /* line art: two strokes only */
+  --il-w:2.5; --il-w-d:1.5;
+
+  /* motion: the draw-in and the gauges' sweep */
+  --ease-io:cubic-bezier(.65,0,.35,1); --hero:640ms;
 
   /* media: drawn over photos and video, the same in both themes */
   --on-media:#fff; --media-bg:#000; --knob:#fff;
 }
+@media (min-width:1000px){:root{--tabbar-h:81px}}
 
 /* ---------------------------------------------------------------- utilities -- */
 
@@ -57,6 +83,8 @@
 .g-8.g-8.g-8{gap:var(--space-8)}
 .g-9.g-9.g-9{gap:var(--space-9)}
 .g-10.g-10.g-10{gap:var(--space-10)}
+.g-11.g-11.g-11{gap:var(--space-11)}
+.g-12.g-12.g-12{gap:var(--space-12)}
 
 /* Inline: .row's alignment and wrapping */
 .wrap.wrap.wrap{flex-wrap:wrap}
@@ -78,6 +106,8 @@
 .sp-8.sp-8.sp-8{height:var(--space-8)}
 .sp-9.sp-9.sp-9{height:var(--space-9)}
 .sp-10.sp-10.sp-10{height:var(--space-10)}
+.sp-11.sp-11.sp-11{height:var(--space-11)}
+.sp-12.sp-12.sp-12{height:var(--space-12)}
 
 /* margins */
 .m-0.m-0.m-0{margin:0}
@@ -93,6 +123,8 @@
 .mb-8.mb-8.mb-8{margin-bottom:var(--space-8)}
 .mb-9.mb-9.mb-9{margin-bottom:var(--space-9)}
 .mb-10.mb-10.mb-10{margin-bottom:var(--space-10)}
+.mb-11.mb-11.mb-11{margin-bottom:var(--space-11)}
+.mb-12.mb-12.mb-12{margin-bottom:var(--space-12)}
 .mt-0.mt-0.mt-0{margin-top:0}
 .mt-1.mt-1.mt-1{margin-top:var(--space-1)}
 .mt-2.mt-2.mt-2{margin-top:var(--space-2)}
@@ -105,6 +137,8 @@
 .mt-8.mt-8.mt-8{margin-top:var(--space-8)}
 .mt-9.mt-9.mt-9{margin-top:var(--space-9)}
 .mt-10.mt-10.mt-10{margin-top:var(--space-10)}
+.mt-11.mt-11.mt-11{margin-top:var(--space-11)}
+.mt-12.mt-12.mt-12{margin-top:var(--space-12)}
 
 /* type */
 .fs-caption.fs-caption.fs-caption{font-size:var(--fs-caption)}

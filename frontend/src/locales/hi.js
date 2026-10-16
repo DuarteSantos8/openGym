@@ -2808,4 +2808,20 @@ export default {
   'Recipe · 1 serving': 'Recipe · 1 serving',
   'Slide or tap to set your weight. We ask before your first workout each day so your curve stays honest.': 'Slide or tap to set your weight. We ask before your first workout each day so your curve stays honest.',
   'Updated': 'Updated',
+  // --- the tab-root header's search pill ---
+  'Search {0}': '{0} में खोजें',
+  'Exercises, routines, workouts': 'व्यायाम, रूटीन, वर्कआउट',
+  'Search training': 'ट्रेनिंग में खोजें',
+  'Foods, meals, days': 'खाद्य, भोजन, दिन',
+  'Search food': 'भोजन खोजें',
+  'Charts, exercises, workouts': 'चार्ट, व्यायाम, वर्कआउट',
+  'Search progress': 'प्रगति में खोजें',
+  'Clear search': 'खोज साफ़ करें',
+  'Close search': 'खोज बंद करें',
+  // --- the redesign's week strip and gauges ---
+  'Plan changed': 'योजना बदली गई',
+  'Trained on {0} of {1} days': '{1} में से {0} दिन ट्रेनिंग',
+  'of {0}': '{0} में से',
+  'over by {0}': '{0} अधिक',
+  'Loading today': 'आज का डेटा लोड हो रहा है',
 }

@@ -1695,6 +1695,22 @@ export const PT_BR_OVERRIDES = {
   'Recipe · 1 serving': 'Recipe · 1 serving',
   'Slide or tap to set your weight. We ask before your first workout each day so your curve stays honest.': 'Slide or tap to set your weight. We ask before your first workout each day so your curve stays honest.',
   'Updated': 'Updated',
+  // --- the tab-root header's search pill ---
+  'Search {0}': 'Buscar no {0}',
+  'Exercises, routines, workouts': 'Exercícios, rotinas, treinos',
+  'Search training': 'Buscar treino',
+  'Foods, meals, days': 'Alimentos, refeições, dias',
+  'Search food': 'Buscar comida',
+  'Charts, exercises, workouts': 'Gráficos, exercícios, treinos',
+  'Search progress': 'Buscar progresso',
+  'Clear search': 'Limpar busca',
+  'Close search': 'Fechar busca',
+  // --- the redesign's week strip and gauges ---
+  'Plan changed': 'Plano alterado',
+  'Trained on {0} of {1} days': 'Treinou em {0} de {1} dias',
+  'of {0}': 'de {0}',
+  'over by {0}': '{0} acima',
+  'Loading today': 'Carregando hoje',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

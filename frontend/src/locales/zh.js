@@ -2808,4 +2808,20 @@ export default {
   'Recipe · 1 serving': 'Recipe · 1 serving',
   'Slide or tap to set your weight. We ask before your first workout each day so your curve stays honest.': 'Slide or tap to set your weight. We ask before your first workout each day so your curve stays honest.',
   'Updated': 'Updated',
+  // --- the tab-root header's search pill ---
+  'Search {0}': '搜索 {0}',
+  'Exercises, routines, workouts': '动作、训练计划、训练',
+  'Search training': '搜索训练',
+  'Foods, meals, days': '食物、餐食、日期',
+  'Search food': '搜索食物',
+  'Charts, exercises, workouts': '图表、动作、训练',
+  'Search progress': '搜索进度',
+  'Clear search': '清除搜索',
+  'Close search': '关闭搜索',
+  // --- the redesign's week strip and gauges ---
+  'Plan changed': '计划已更改',
+  'Trained on {0} of {1} days': '{1} 天中训练了 {0} 天',
+  'of {0}': '/ {0}',
+  'over by {0}': '超出 {0}',
+  'Loading today': '加载今日数据',
 }

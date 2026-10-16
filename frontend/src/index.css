@@ -72,9 +72,28 @@
   /* Dark separates surfaces by lightness alone, so a card casts nothing; light adds the two below. */
   --shadow-card: none;
   --shadow-overlay: 0 -8px 28px -12px rgba(0,0,0,.6);
+  /* a floating bar or panel (the desktop tab bar, the docked timer, the search panel) */
+  --shadow-float: 0 12px 40px -10px rgba(0,0,0,.5);
+  /* a segmented control's sliding thumb: dark separates it by lightness alone */
+  --shadow-thumb: none;
+
+  /* The native redesign's surfaces (fitness-eval ui-redesign-components §2, ui-search §12).
+     A selected day or segment is the label colour as a fill, with the page colour on it: about
+     18:1 in dark and 15:1 in light, whatever the accent (accent.test.js measures it). */
+  --sel-fill: var(--label);
+  --on-sel: var(--bg);
+  --bar-bg: color-mix(in srgb,var(--bg) 94%,transparent);
+  --ring-hair: inset 0 0 0 var(--hair) var(--sep);
+  --gauge-track: var(--surface-3);
+  --scrim: rgba(0,0,0,.35);
+  --skel: color-mix(in srgb,var(--label) 8%,transparent);
+  --skel-sheen: color-mix(in srgb,var(--label) 6%,transparent);
+  /* The accent as a line-art stroke: >= 3:1 on every fill a scene sits on. Dark draws the accent
+     itself; light its ink, since the light fills are too pale for the plain accent. */
+  --acc-graphic: var(--acc);
 
   /* geometry */
-  --r-sm:8px; --r:12px; --r-lg:16px; --r-xl:22px; --r-card:14px;
+  --r-sm:8px; --r:12px; --r-lg:16px; --r-xl:22px; --r-card:16px;
   --pad:16px;
   --icon-stroke:1.7;
 
@@ -87,6 +106,7 @@
      under the status and navigation bars, the app passes the bars themselves as --native-sat and
      --native-sab (MainActivity.java). The larger one wins, so a WebView that learns to report
      the bars does not count them twice. */
+  --app-top:8px;   /* #app's own top padding under the bars; a pinned header pulls itself over it */
   --sab:max(env(safe-area-inset-bottom,0px),var(--native-sab,0px));
   --sat:max(env(safe-area-inset-top,0px),var(--native-sat,0px));
   /* height of the connection indicator under the status bar, 0 while there is none — set by
@@ -120,6 +140,12 @@
   --macro-fat:     #b0369a;   /* 5.5:1 */
   --shadow-card: 0 1px 2px rgba(48,36,24,.05), 0 4px 12px -4px rgba(48,36,24,.06);
   --shadow-overlay: 0 -8px 28px -12px rgba(48,36,24,.2);
+  --shadow-float: 0 12px 40px -12px rgba(48,36,24,.22);
+  --shadow-thumb: 0 3px 8px rgba(48,36,24,.12), 0 1px 1px rgba(48,36,24,.06);
+  /* --surface-3 on white is about 1.3:1 and the empty arc vanished */
+  --gauge-track: #c8c4bd;
+  --scrim: rgba(26,24,20,.28);
+  --acc-graphic: var(--acc-ink);
 
   --blue:#007aff; --green:#34c759; --red:#ff3b30; --orange:#ff9500;
   --yellow:#ffcc00; --teal:#30b0c7; --indigo:#5856d6; --pink:#ff2d55;
@@ -231,7 +257,7 @@ html[data-motion=reduce] *{animation:none!important;transition:none!important}
 
 /* ---------------------------------------------------------------- layout -- */
 #app{
-  padding:calc(var(--sat) + var(--conn) + 8px) var(--pad) calc(88px + var(--sab));
+  padding:calc(var(--sat) + var(--conn) + var(--app-top)) var(--pad) calc(88px + var(--sab));
   max-width:var(--page-w);margin:0 auto;
 }
 /* Android 15 with the keyboard up: room to scroll the last field on a page above the keys.
@@ -796,10 +822,9 @@ body.chips-dragging *{cursor:inherit}
   width:calc((100% - 4px)/var(--n));
   transform:translateX(calc(100% * var(--i)));
   background:var(--surface);border-radius:7px;
-  box-shadow:0 3px 8px rgba(0,0,0,.12),0 1px 1px rgba(0,0,0,.06);
+  box-shadow:var(--shadow-thumb);
   transition:transform var(--med) var(--ease);
 }
-:root[data-theme="light"] .seg-sel{background:#fff}
 .seg button{
   position:relative;z-index:1;padding:6px 8px;font-size:14px;font-weight:500;
   letter-spacing:-.006em;color:var(--label);display:flex;align-items:center;
@@ -1964,8 +1989,8 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 
 /* --------------------------------------------------- desktop (≥1000px) --- */
 @media (min-width:1000px){
-  :root{--page-w:640px}
-  #app{padding-top:calc(var(--conn) + 32px);padding-bottom:calc(128px + var(--sab))}
+  :root{--page-w:640px;--app-top:32px}
+  #app{padding-bottom:calc(128px + var(--sab))}
   body.resting #app{padding-bottom:calc(220px + var(--sab))}
   body.no-tabbar #app{padding-bottom:calc(40px + var(--sab))}
   body.no-tabbar.resting #app{padding-bottom:calc(130px + var(--sab))}
@@ -1975,13 +2000,13 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   #tabbar{
     left:50%;right:auto;bottom:16px;transform:translateX(-50%);width:520px;
     border:var(--hair) solid var(--sep-op);border-radius:var(--r-xl);
-    padding:7px 10px 9px;box-shadow:0 12px 40px -10px rgba(0,0,0,.5);
+    padding:7px 10px 9px;box-shadow:var(--shadow-float);
   }
   #tabbar button.start{margin-top:-26px}
   .sheet{left:50%;right:auto;margin-left:-320px;width:640px;border-radius:var(--r-xl) var(--r-xl) 0 0}
   .center{width:340px}
   #timer{left:50%;right:auto;margin-left:-260px;width:520px;bottom:112px}
-  body.no-tabbar #timer{left:50%;right:auto;bottom:16px;border-radius:var(--r-xl);padding-bottom:10px;box-shadow:0 12px 40px -10px rgba(0,0,0,.5)}
+  body.no-tabbar #timer{left:50%;right:auto;bottom:16px;border-radius:var(--r-xl);padding-bottom:10px;box-shadow:var(--shadow-float)}
   .exmedia img,.exmedia video{height:380px}
   .hm-wrap{display:flex;flex-direction:column;align-items:center}
 }

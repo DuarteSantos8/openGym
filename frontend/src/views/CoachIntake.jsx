@@ -144,7 +144,7 @@ export default function CoachIntake() {
 
       {key === 'goal' && <>
         <div className="ob-eyebrow">{t('Your goal')}</div>
-        <h1 className="ob-h">{t('What are you training for?')}</h1>
+        <h2 className="ob-h">{t('What are you training for?')}</h2>
         <p className="ob-p">{t('The Coach builds the whole plan around this.')}</p>
         <div className="ob-choices">
           {GOALS.map(([v, text, icon]) => { const [title, sub] = text(); return <Choice key={v} on={p.goal === v} icon={icon} title={title} sub={sub} onClick={() => set({ goal: v })} /> })}
@@ -153,7 +153,7 @@ export default function CoachIntake() {
 
       {key === 'experience' && <>
         <div className="ob-eyebrow">{t('Experience')}</div>
-        <h1 className="ob-h">{t('Where are you starting from?')}</h1>
+        <h2 className="ob-h">{t('Where are you starting from?')}</h2>
         <p className="ob-p">{t('Sets the pace of progression, and how much the Coach assumes you know.')}</p>
         <div className="ob-choices">
           {EXPERIENCE.map(([v, text, icon]) => { const [title, sub] = text(); return <Choice key={v} on={p.experience === v} icon={icon} title={title} sub={sub} onClick={() => set({ experience: v })} /> })}
@@ -162,7 +162,7 @@ export default function CoachIntake() {
 
       {key === 'days' && <>
         <div className="ob-eyebrow">{t('Schedule')}</div>
-        <h1 className="ob-h">{t('How many days a week?')}</h1>
+        <h2 className="ob-h">{t('How many days a week?')}</h2>
         <p className="ob-p">{t('Pick what you will actually keep, not the best week you can imagine.')}</p>
         <div className="ob-days">
           {[1, 2, 3, 4, 5, 6, 7].map(n => <button key={n} className={'ob-day' + (p.daysPerWeek === n ? ' on' : '')} onClick={() => set({ daysPerWeek: n })}>{n}</button>)}
@@ -175,7 +175,7 @@ export default function CoachIntake() {
 
       {key === 'length' && <>
         <div className="ob-eyebrow">{t('Session length')}</div>
-        <h1 className="ob-h">{t('How long is a session?')}</h1>
+        <h2 className="ob-h">{t('How long is a session?')}</h2>
         <p className="ob-p">{t('The Coach fits the volume to the time you actually have, including rest between sets.')}</p>
         {/* A duration, not a clock time — so two wheels (hours, minutes in fives), never the
             native time input, which insists on AM/PM. */}
@@ -198,7 +198,7 @@ export default function CoachIntake() {
 
       {key === 'equipment' && <>
         <div className="ob-eyebrow">{t('Equipment')}</div>
-        <h1 className="ob-h">{t('What can you train with?')}</h1>
+        <h2 className="ob-h">{t('What can you train with?')}</h2>
         <p className="ob-p">{t('Pick everything you have access to. Leave it empty and the Coach will use the whole library.')}</p>
         <div className="ob-chips">
           {EQUIPMENT.map(e => <Chip key={e} on={p.equipment.includes(e)} onClick={() => toggleEq(e)}>{t(e)}</Chip>)}
@@ -207,7 +207,7 @@ export default function CoachIntake() {
 
       {key === 'limits' && <>
         <div className="ob-eyebrow">{t('Limits')}</div>
-        <h1 className="ob-h">{t('Anything to work around?')}</h1>
+        <h2 className="ob-h">{t('Anything to work around?')}</h2>
         <p className="ob-p">{t('Injuries, joints that complain, movements you cannot do, or practical limits like training at 6am in a flat.')}</p>
         <div className="ob-field">
           <TextArea rows={4} maxLength={600} value={p.limitations} onChange={e => set({ limitations: e.target.value })}
@@ -218,7 +218,7 @@ export default function CoachIntake() {
 
       {key === 'extras' && <>
         <div className="ob-eyebrow">{t('Almost there')}</div>
-        <h1 className="ob-h">{t('Anything else?')}</h1>
+        <h2 className="ob-h">{t('Anything else?')}</h2>
         <p className="ob-p">{t('All optional. The more the Coach knows, the less it guesses.')}</p>
         <div className="ob-sub mt-0">{t('Exercises you love')}</div>
         <div className="ob-field"><TextArea rows={2} maxLength={300} value={p.likes} onChange={e => set({ likes: e.target.value })} placeholder={t('e.g. “deadlifts, anything with a kettlebell”')} /></div>
@@ -257,7 +257,7 @@ function Consent({ onAgree, onDecline }) {
     : t('Sent to {0}, running on this server under the instance owner’s account.', info?.providerLabel || config?.coach?.providerLabel || t('the configured AI provider'))
   return <>
     <div className="ob-eyebrow">{t('Before we start')}</div>
-    <h1 className="ob-h">{t('Meet the Coach')}</h1>
+    <h2 className="ob-h">{t('Meet the Coach')}</h2>
     <p className="ob-p">{t('It designs your plan from a few answers and adjusts it from what you actually log. It never changes anything without your say-so, and you can undo every change.')}</p>
     <div className="ob-sub mt-0">{t('What it reads')}</div>
     <div className="ob-consent">

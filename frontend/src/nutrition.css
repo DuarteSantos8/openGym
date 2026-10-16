@@ -2,8 +2,6 @@
    activity rows, the food picker and the amount sheets. Reads the tokens in index.css only; the
    macro colours are --macro-* (always P · C · F, always labelled). Loaded after tab-shell.css. */
 
-.nt-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-
 /* Icon tints for the .lrow-i squares these cards lead with. */
 .tint-blue{--tint:var(--blue)}
 .tint-pink{--tint:var(--pink)}
@@ -15,9 +13,9 @@
 .home-tap{cursor:pointer}
 .home-streak{letter-spacing:-.021em}
 
-/* --- date strip: sticky under the header, the one date navigator --- */
+/* --- date strip: sticky under the pinned tab-root header, the one date navigator --- */
 .date-strip{
-  position:sticky;top:var(--sat);z-index:5;display:flex;align-items:center;gap:4px;
+  position:sticky;top:calc(var(--sat) + var(--conn) + var(--hdr-h));z-index:5;display:flex;align-items:center;gap:4px;
   margin:0 0 12px;padding:4px 0;background:var(--bg);
 }
 .date-strip-l{display:flex;align-items:center;gap:4px;font-size:17px;font-weight:600;letter-spacing:-.012em;padding:8px 4px;min-height:44px}

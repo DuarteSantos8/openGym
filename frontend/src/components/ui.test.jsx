@@ -2,7 +2,9 @@
 import React, { act, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { Slider, Stepper, NumberField, numWidthCh, SLIDER_GRAB_PX } from './ui.jsx'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { Slider, Stepper, NumberField, numWidthCh, SLIDER_GRAB_PX, Segmented, Button, Row } from './ui.jsx'
+import Icon from './Icon.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -311,5 +313,58 @@ describe('NumberField select on tap', () => {
     act(() => input.focus())
     act(() => input.blur())
     expect(mouseup(input).defaultPrevented).toBe(false)
+  })
+})
+
+// The redesign's additive props: each existing usage renders exactly what it did before them.
+describe('the redesign\'s additions to Segmented, Button and Row', () => {
+  const html = el => renderToStaticMarkup(el)
+  const OPTS = [{ value: 30, label: '1M' }, { value: 90, label: '3M' }]
+  const go = () => {}
+
+  it('Segmented keeps its markup, and takes tone="strong" and size="lg" as classes', () => {
+    const seg = '<span class="seg-sel" aria-hidden="true"></span><button class="" aria-pressed="false">'
+      + '<span>1M</span></button><button class="on" aria-pressed="true"><span>3M</span></button></div>'
+    expect(html(<Segmented options={OPTS} value={90} onChange={go} />)).toBe('<div class="seg " style="--n:2;--i:1">' + seg)
+    expect(html(<Segmented options={OPTS} value={90} onChange={go} className="seg-range" />)).toBe('<div class="seg seg-range" style="--n:2;--i:1">' + seg)
+    expect(html(<Segmented options={OPTS} value={90} onChange={go} tone="strong" size="lg" className="seg-range" />))
+      .toBe('<div class="seg seg-strong seg-lg seg-range" style="--n:2;--i:1">' + seg)
+    expect(() => html(<Segmented options={OPTS} value={90} onChange={go} tone="loud" />)).toThrow(/Segmented: tone="loud"/)
+  })
+
+  it('Button keeps its markup and takes shape="pill"', () => {
+    expect(html(<Button variant="primary" icon="plus">Log</Button>))
+      .toBe(html(<button className="btn primary "><Icon name="plus" /><span>Log</span></button>))
+    expect(html(<Button variant="primary" shape="pill">Log</Button>)).toBe('<button class="btn primary btn-pill "><span>Log</span></button>')
+    expect(() => html(<Button shape="round">x</Button>)).toThrow(/Button: shape="round"/)
+  })
+
+  it('Row keeps its markup, and leads with a bare glyph', () => {
+    expect(html(<Row icon="gear" title="Settings" accessory="chevron" onClick={go} />)).toBe(html(
+      <button className="lrow tap " onClick={go}><span className="lrow-i"><Icon name="gear" /></span>
+        <span className="lrow-m"><span className="lrow-t">Settings</span></span><Icon name="chevronRight" className="lrow-c" /></button>))
+    expect(html(<Row glyph="apple" title="Foods" subtitle="12 foods" accessory="chevron" onClick={go} />)).toBe(html(
+      <button className="lrow tap " onClick={go}><span className="lrow-g"><Icon name="apple" /></span>
+        <span className="lrow-m"><span className="lrow-t">Foods</span><span className="lrow-s">12 foods</span></span>
+        <Icon name="chevronRight" className="lrow-c" /></button>))
+  })
+
+  it('Row accessory="add" is no button itself: its text opens it and the + adds, each reachable', () => {
+    const onOpen = vi.fn(), onAdd = vi.fn()
+    act(() => root.render(<Row glyph="ruler" title="Waist" subtitle="82 cm" accessory="add" onOpen={onOpen} onAdd={onAdd} />))
+    const row = host.querySelector('.lrow')
+    expect(row.tagName).toBe('DIV')
+    expect(row.classList.contains('lrow-add')).toBe(true)
+    const [open, plus] = row.querySelectorAll('button')
+    expect(open.className).toBe('lrow-m lrow-open')
+    expect(plus.getAttribute('aria-label')).toBe('Add to Waist')
+    act(() => open.click())
+    act(() => plus.click())
+    expect([onOpen.mock.calls.length, onAdd.mock.calls.length]).toEqual([1, 1])
+    act(() => root.render(<Row title={<b>Hips</b>} accessory="add" onAdd={onAdd} addLabel="Log hips" />))
+    expect(host.querySelector('.lrow-plus').getAttribute('aria-label')).toBe('Log hips')
+    expect(host.querySelector('.lrow-open')).toBeNull()
+    expect(() => html(<Row title="x" accessory="add" onClick={go} />)).toThrow(/not onClick/)
+    expect(() => html(<Row title="x" accessory="arrow" />)).toThrow(/Row: accessory="arrow"/)
   })
 })

@@ -2,8 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { streakWeeks } from '../lib/history.js'
 import { todayISO } from '../lib/format.js'
-import { t, tn, dateLocale } from '../lib/i18n.js'
-import { BRAND } from '../brand.js'
+import { t, tn } from '../lib/i18n.js'
 import { calendarSheet, starterPlanSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Page, Inline, Spacer } from '../components/layout.jsx'
@@ -22,9 +21,9 @@ import { useDiaryTarget } from '../lib/nutrition/selection.js'
 import { useDiaryDay } from '../lib/nutrition/use-diary-day.js'
 import { useScrolledPast } from '../lib/use-scrolled-past.js'
 
-// The sticky date strip's height: the calories card counts as gone once it passes under it
-// (the hook adds the safe-area inset the strip sits below).
-const STRIP_PX = 52
+// The pinned tab-root header (--hdr-h) and the sticky date strip under it: the calories card
+// counts as gone once it passes under both (the hook adds the safe-area inset they sit below).
+const STRIP_PX = 56 + 52
 
 // Home is the day (ia-proposal §2): a date strip, the day's session, then the diary (energy and
 // macros, water, meals with their activity), weight and the week. On a day other than today
@@ -32,7 +31,6 @@ const STRIP_PX = 52
 export default function Home() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
-  const user = useStore(s => s.user)
   const { date } = useDiaryTarget(null)
   const day = useDiaryDay(date)
   const isToday = date === todayISO()
@@ -40,8 +38,7 @@ export default function Home() {
 
   const { done: doneThisWeek, planned: plannedPerWeek } = weekTally(S, todayISO())
 
-  return <Page root title={user ? t('Hi {0}', user.name) : BRAND.name}
-    sub={new Date().toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}>
+  return <Page root title={t('Home')}>
 
     <DiaryDateStrip date={date} left={day.on && kcalGone && day.status === 'ready' ? day.left : null} />
 

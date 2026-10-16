@@ -21,7 +21,11 @@ export const LEGACY_CSS = ['admin.css', 'coach.css', 'index.css', 'tab-shell.css
 // The only stylesheets whose :root rules may define colour tokens: the theme and the kit's tokens.
 export const THEME_FILES = ['index.css', 'ui-kit.css']
 // Where the hand-built markup G3 looks for is allowed: the primitives themselves.
-export const PRIMITIVE_FILES = ['components/blocks.jsx', 'components/layout.jsx', 'components/sheet-layout.jsx', 'components/ui.jsx']
+export const PRIMITIVE_FILES = [
+  'components/blocks.jsx', 'components/layout.jsx', 'components/sheet-layout.jsx', 'components/ui.jsx',
+  // the native redesign's kit
+  'components/date-nav.jsx', 'components/line-art.jsx', 'components/tab-kit.jsx',
+]
 // Routed views that draw their own chrome and never render <Page> (G4).
 export const PAGE_EXEMPT = ['FocusView', 'Login', 'MobileOnboarding', 'Workout']
 
@@ -378,6 +382,60 @@ export function routeViewsWithoutPage(src = SRC) {
     const { path, name } = imports[local]
     return !rendersPage(stripJs(readFileSync(join(src, path), 'utf8')), name)
   }).sort()
+}
+
+/* ------------------------------------------------------------ G8 page chrome -- */
+
+// A page names itself and its actions through <Page>; its header, and the spacing and width
+// around it, are the kit's and the shell's (owner rule, 2026-10-14). The header components and
+// layout.jsx are where a header is built; the full-screen views draw their own chrome.
+export const HEADER_FILES = ['components/layout.jsx', 'components/RootHeader.jsx', 'components/SubHeader.jsx']
+const HEADER_CLASSES = new Set(['hdr', 'tab-hdr', 'sub-hdr', 'root-hdr'])
+const exemptView = file => PAGE_EXEMPT.some(name => file === `views/${name}.jsx`)
+
+// Every place a page chooses its own header: importing a header component past <Page>, building
+// a header's classes by hand, or handing <Page> a class or a style of its own. `file: what`.
+export function pageChrome(src = SRC) {
+  const out = []
+  for (const s of jsxFiles(src)) {
+    const file = relative(src, s.path).split(sep).join('/')
+    if (HEADER_FILES.includes(file)) continue
+    const code = stripJs(s.text)
+    // static, dynamic and lazy imports, with or without the extension
+    for (const [, spec] of code.matchAll(/(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\(\s*)['"]([^'"]*\/(?:RootHeader|SubHeader)(?:\.jsx)?)['"]/g)) out.push(`${file}: imports ${spec.split('/').pop().replace(/(?:\.jsx)?$/, '.jsx')}`)
+    if (!exemptView(file)) {
+      if (file.startsWith('views/')) {
+        for (const m of code.matchAll(/<(header|h1)\b/g)) out.push(`${file}: renders its own <${m[1]}>`)
+      }
+      for (const m of code.matchAll(/\bclassName\s*=\s*/g)) {
+        const at = m.index + m[0].length
+        const end = code[at] === '{' ? closer(code, at) + 1 : /['"`]/.test(code[at]) ? skipString(code, at) : statementEnd(code, at)
+        const own = tokensIn(code.slice(at, end)).find(tok => HEADER_CLASSES.has(tok))
+        if (own) out.push(`${file}: builds .${own}`)
+      }
+    }
+    for (const m of code.matchAll(/<Page\b/g)) {
+      const attrs = tagAttributes(code, m.index)
+      if (/\s(?:className|style)\s*=/.test(attrs) || /\s\.\.\.spread\b/.test(attrs)) out.push(`${file}: styles <Page>`)
+    }
+  }
+  return [...new Set(out)].sort()
+}
+
+// The attribute names of the JSX tag that opens at `start`, with every {…} value and string
+// blanked out, up to the `>` that ends the tag. A `{...x}` spread shows as ` ...spread`, since
+// it can carry a className or a style the guard cannot see.
+function tagAttributes(code, start) {
+  let depth = 0, out = ''
+  for (let i = start + 1; i < code.length; i++) {
+    const c = code[i]
+    if (c === '"' || c === "'" || c === '`') { i = skipString(code, i) - 1; if (!depth) out += '""'; continue }
+    if (c === '{') { if (!depth && /^\{\s*\.\.\./.test(code.slice(i, i + 12))) out += ' ...spread'; depth++ }
+    else if (c === '}') depth--
+    else if (!depth && c === '>') break
+    else if (!depth) out += c
+  }
+  return out
 }
 
 /* ------------------------------------------------------------ G6 sheets facade -- */

@@ -20,7 +20,7 @@ import { openPlusSheet } from '../components/PlusSheet.jsx'
 import { bwSheet, calendarSheet } from '../sheets.jsx'
 import { weighInTime } from '../lib/bodyweight.js'
 
-vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }))
+vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn(), useLocation: () => ({ pathname: '/home' }) }))
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const TODAY = todayISO()

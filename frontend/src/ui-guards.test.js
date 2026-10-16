@@ -9,8 +9,8 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
-  BASELINE, LEGACY_CSS, LOWER, PAGE_EXEMPT, cssColours, cssFiles, handBuilt, jsColours, measure,
-  newCssViolations, ratchet, routeViewsWithoutPage, sheetsImporters, staticStyles,
+  BASELINE, HEADER_FILES, LEGACY_CSS, LOWER, PAGE_EXEMPT, PRIMITIVE_FILES, cssColours, cssFiles, handBuilt, jsColours, measure,
+  newCssViolations, pageChrome, ratchet, routeViewsWithoutPage, sheetsImporters, staticStyles,
 } from '../scripts/ui-guards-baseline.mjs'
 
 const baseline = JSON.parse(readFileSync(BASELINE, 'utf8'))
@@ -43,8 +43,65 @@ describe('UI guards (ratchet)', () => {
 
   it('G7: a new stylesheet holds no colour (outside a theme file\'s :root) and no page width', () => {
     const fresh = cssFiles().filter(f => !LEGACY_CSS.includes(f.file))
-    expect(fresh.map(f => f.file)).toContain('ui-kit.css')
+    expect(fresh.map(f => f.file)).toEqual(expect.arrayContaining(['ui-kit.css', 'tab-kit.css', 'nutrition.css']))
     expect(fresh.filter(f => newCssViolations(f.text, f.file) > 0).map(f => f.file)).toEqual([])
+  })
+
+  it('G8: no page chooses its own header: no header component past <Page>, no hand-built header, no own <header> or <h1> in a view, no class, style or spread on <Page>', () => {
+    expect(pageChrome()).toEqual([])
+  })
+})
+
+describe('G8 finds a page choosing its own chrome', () => {
+  it('an import of a header component, a header class, a class or style on <Page>; not the exempt views', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ui-guards-'))
+    try {
+      for (const d of ['views', 'components']) mkdirSync(join(dir, d))
+      writeFileSync(join(dir, 'views', 'A.jsx'), `import SubHeader from '../components/SubHeader.jsx'\nexport default () => <SubHeader title="A" />`)
+      writeFileSync(join(dir, 'views', 'B.jsx'), `export default () => <div className={cx('hdr', on && 'x')}><h1>B</h1></div>`)
+      writeFileSync(join(dir, 'views', 'C.jsx'), `export default () => <Page title="C" className="wide">x</Page>`)
+      writeFileSync(join(dir, 'views', 'D.jsx'), `export default () => <Page title={t('D')} action={<i style={{ x: 1 }} className="y" />}>x</Page>`)
+      writeFileSync(join(dir, 'views', 'Workout.jsx'), `export default () => <div className="hdr whdr-bar" />`)
+      writeFileSync(join(dir, 'components', 'layout.jsx'), `import RootHeader from './RootHeader.jsx'`)
+      expect(pageChrome(dir)).toEqual(['views/A.jsx: imports SubHeader.jsx', 'views/B.jsx: builds .hdr', 'views/B.jsx: renders its own <h1>', 'views/C.jsx: styles <Page>'])
+      expect(HEADER_FILES).toEqual(['components/layout.jsx', 'components/RootHeader.jsx', 'components/SubHeader.jsx'])
+    } finally { rmSync(dir, { recursive: true, force: true }) }
+  })
+
+  // One fixture per way past the guard; each must be caught on its own.
+  const caught = (source, file = 'views/X.jsx') => {
+    const dir = mkdtempSync(join(tmpdir(), 'ui-guards-'))
+    try {
+      for (const d of ['views', 'components']) mkdirSync(join(dir, d))
+      writeFileSync(join(dir, file), source)
+      return pageChrome(dir)
+    } finally { rmSync(dir, { recursive: true, force: true }) }
+  }
+
+  it('an import without the .jsx extension', () => {
+    expect(caught(`import SubHeader from '../components/SubHeader'\nexport default () => <Page title="X" />`)).toEqual(['views/X.jsx: imports SubHeader.jsx'])
+  })
+
+  it('a lazy or dynamic import', () => {
+    expect(caught(`const H = lazy(() => import('../components/RootHeader'))\nexport default () => <Page title="X" />`)).toEqual(['views/X.jsx: imports RootHeader.jsx'])
+    expect(caught(`const load = () => import('../components/SubHeader.jsx')\nexport default () => <Page title="X" />`)).toEqual(['views/X.jsx: imports SubHeader.jsx'])
+  })
+
+  it('a className held in a variable on <Page>', () => {
+    expect(caught(`export default () => <Page title="X" className={c}>x</Page>`)).toEqual(['views/X.jsx: styles <Page>'])
+  })
+
+  it('a spread on <Page>, of an object literal or of props', () => {
+    expect(caught(`export default () => <Page title="X" {...{ className }}>x</Page>`)).toEqual(['views/X.jsx: styles <Page>'])
+    expect(caught(`export default props => <Page title="X" {...props}>x</Page>`)).toEqual(['views/X.jsx: styles <Page>'])
+    expect(caught(`export default () => <Page title="X" action={<a {...p} />}>x</Page>`)).toEqual([])
+  })
+
+  it('a view that renders its own <header> or <h1>, but not a component', () => {
+    expect(caught(`export default () => <Page title="X"><header>x</header></Page>`)).toEqual(['views/X.jsx: renders its own <header>'])
+    expect(caught(`export default () => <Page title="X"><h1>x</h1></Page>`)).toEqual(['views/X.jsx: renders its own <h1>'])
+    expect(caught(`export default () => <h1>x</h1>`, 'components/Card.jsx')).toEqual([])
+    expect(caught(`export default () => <h1>x</h1>`, 'views/Login.jsx')).toEqual([])
   })
 })
 
@@ -147,6 +204,11 @@ describe('G3 counts hand-built primitive markup', () => {
 
   it('not a class that only starts like one', () => {
     expect(handBuilt(`<div className="card-x"><div className="hub-card"><div className="items"><div className="rows">`)).toBe(0)
+  })
+
+  it('not in the primitives, the redesign\'s included', () => {
+    expect(PRIMITIVE_FILES).toEqual(expect.arrayContaining(['components/date-nav.jsx', 'components/line-art.jsx', 'components/tab-kit.jsx']))
+    expect(Object.keys(now.G3).filter(f => PRIMITIVE_FILES.includes(f))).toEqual([])
   })
 })
 

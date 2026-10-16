@@ -10,7 +10,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import Icon from './Icon.jsx'
 import { Button } from './ui.jsx'
-import { Card, ItemRow, Tiles, StatTile, Stat, EmptyState, SectionTitle, Tag, Chip, ChipRow } from './blocks.jsx'
+import { Card, ItemRow, Tiles, StatTile, Stat, EmptyState, InlineNote, Skeleton, SectionTitle, Tag, Chip, ChipRow } from './blocks.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -164,6 +164,41 @@ describe('EmptyState', () => {
   it('takes a title alone, no icon, and a class (Stats.jsx)', () => {
     same(<EmptyState title="Nothing yet" className="small" />, <div className="empty small"><strong>Nothing yet</strong></div>)
     same(<EmptyState className="small">Fewer than two workouts.</EmptyState>, <div className="empty small">Fewer than two workouts.</div>)
+  })
+
+  // The redesign's additions; none of them touches the markup above.
+  it('leads with line art in place of the icon', () => {
+    same(<EmptyState art={<svg className="lineart" />} title="No weigh-ins yet">Log one to start the trend.</EmptyState>,
+      <div className="empty empty-x"><div className="ico empty-art"><svg className="lineart" /></div>
+        <strong>No weigh-ins yet</strong><div>Log one to start the trend.</div></div>)
+  })
+
+  it('ends with a filled pill and a plain one, side by side', () => {
+    const log = vi.fn(), goal = vi.fn()
+    same(<EmptyState title="No weigh-ins yet" action={{ label: 'Log weight', icon: 'plus', onClick: log }} secondary={{ label: 'Set a goal', onClick: goal }} />,
+      <div className="empty empty-x"><strong>No weigh-ins yet</strong><div className="empty-acts">
+        <Button variant="primary" shape="pill" icon="plus" onClick={log}>Log weight</Button>
+        <Button shape="pill" onClick={goal}>Set a goal</Button>
+      </div></div>)
+    const host = document.createElement('div')
+    const root = createRoot(host)
+    act(() => root.render(<EmptyState title="x" action={{ label: 'Log weight', onClick: log }} secondary={{ label: 'Set a goal', onClick: goal }} />))
+    act(() => host.querySelectorAll('button')[0].click())
+    act(() => host.querySelectorAll('button')[1].click())
+    expect([log.mock.calls.length, goal.mock.calls.length]).toEqual([1, 1])
+    act(() => root.unmount())
+  })
+})
+
+describe('InlineNote and Skeleton', () => {
+  it('InlineNote is one centred line with its icon', () => {
+    same(<InlineNote icon="cloudSlash" role="status">Online results come back when you reconnect</InlineNote>,
+      <p className="inote" role="status"><Icon name="cloudSlash" /><span>Online results come back when you reconnect</span></p>)
+  })
+
+  it('Skeleton is a hidden block at the size it stands in for, numbers in px', () => {
+    expect(html(<Skeleton w={48} h={48} r={8} />)).toBe('<span class="skel" aria-hidden="true" style="--skel-w:48px;--skel-h:48px;--skel-r:8px"></span>')
+    expect(html(<Skeleton w="58%" />)).toBe('<span class="skel" aria-hidden="true" style="--skel-w:58%;--skel-h:12px;--skel-r:4px"></span>')
   })
 })
 

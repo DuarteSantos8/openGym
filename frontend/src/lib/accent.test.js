@@ -19,6 +19,23 @@ const inkOf = (theme, key) => {
   const m = CSS.match(new RegExp(`:root${theme === 'light' ? '\\[data-theme="light"\\]' : ''}\\[data-accent="${key}"\\]\\s*\\{[^}]*--acc-ink:(#[0-9a-f]{6})`))
   return m ? m[1] : PRESET_FILL[theme][key]
 }
+// Light-theme gauge: the track must be visible on the card and page, and each macro arc must read on it.
+describe('light --gauge-track (index.css)', () => {
+  const light = CSS.slice(CSS.indexOf(':root[data-theme="light"] {'))
+  const token = name => light.match(new RegExp(`${name}:\\s*([^;]+);`))[1].trim()
+  const resolve = value => {
+    const cm = value.match(/^color-mix\(in srgb,\s*var\((--[\w-]+)\)\s*(\d+)%,\s*var\((--[\w-]+)\)\)$/)
+    return cm ? mix(resolve(token(cm[3])), resolve(token(cm[1])), Number(cm[2]) / 100) : value
+  }
+  const track = resolve(token('--gauge-track'))
+  it('is at least 1.5:1 against the card and the page', () => {
+    for (const name of ['--surface', '--bg']) expect(contrast(track, resolve(token(name))), `${track} on ${name}`).toBeGreaterThanOrEqual(1.5)
+  })
+  it('sits at least 2:1 under each macro arc', () => {
+    for (const name of ['--macro-protein', '--macro-carbs', '--macro-fat']) expect(contrast(resolve(token(name)), track), `${name} on ${track}`).toBeGreaterThanOrEqual(2)
+  })
+})
+
 describe('--acc-ink of the preset accents (index.css)', () => {
   for (const theme of ['dark', 'light']) for (const key of Object.keys(PRESET_FILL[theme])) {
     it(`${key} in ${theme}: 4.5:1 on the page, the card, the nested fill and the tint over it`, () => {
@@ -36,6 +53,83 @@ describe('--acc-ink of the preset accents (index.css)', () => {
     // The running workout's text now lives in the live dock (tab-shell.css), no longer on the +.
     expect(readFileSync('src/tab-shell.css', 'utf8')).toMatch(/#timer\.dock \.dock-sub\{[^}]*color:var\(--live-ink\)/)
   })
+})
+
+// A theme block's own value of a token (the first `:root {` is dark, `:root[data-theme="light"] {`
+// light), as written: '#0c0b0a', 'var(--acc-ink)'.
+const tokenIn = (theme, name) => {
+  const light = CSS.indexOf(':root[data-theme="light"] {')
+  const block = theme === 'light' ? CSS.slice(light, CSS.indexOf('}', light)) : CSS.slice(CSS.indexOf(':root {'), light)
+  return block.match(new RegExp(`--${name}:\\s*([^;]+);`))?.[1].trim() ?? null
+}
+// Custom accents across the sRGB cube, plus the ones the tests above single out.
+const OWN = (() => {
+  const out = ['#000033', '#ffffff', '#808080', '#ffff00', '#eb0037', '#fff6c2']
+  for (let r = 0; r < 256; r += 51) for (let g = 0; g < 256; g += 51) for (let b = 0; b < 256; b += 51) {
+    out.push('#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join(''))
+  }
+  return out
+})()
+
+describe('the redesign\'s accent-facing tokens, for every preset and own colour', () => {
+  // The fills a line-art scene sits on: the page, a card, the 96×72 art slot (--surface-2), and the
+  // one lit --acc-soft area per scene that every accent stroke touches.
+  const sceneFills = (theme, acc) => [...THEMES[theme].bgs, tintOver(acc, THEMES[theme].surface2)]
+
+  it('--acc-graphic is the accent in dark and its ink in light (index.css)', () => {
+    expect(tokenIn('dark', 'acc-graphic')).toBe('var(--acc)')
+    expect(tokenIn('light', 'acc-graphic')).toBe('var(--acc-ink)')
+    // no accent rule overrides it, so a preset gets exactly that
+    expect(CSS).not.toMatch(/\[data-accent="[a-z]+"\][^{]*\{[^}]*--acc-graphic/)
+  })
+
+  for (const theme of ['dark', 'light']) for (const key of Object.keys(PRESET_FILL[theme])) {
+    it(`${key} in ${theme}: the line-art accent clears 3:1 on every fill a scene sits on`, () => {
+      const graphic = theme === 'dark' ? PRESET_FILL.dark[key] : inkOf('light', key)
+      for (const bg of sceneFills(theme, PRESET_FILL[theme][key])) {
+        expect(contrast(graphic, bg), `${graphic} on ${bg}`).toBeGreaterThanOrEqual(3)
+      }
+    })
+  }
+
+  it('an own colour\'s --acc-graphic clears 3:1 on every fill a scene sits on, in both themes', () => {
+    for (const hex of OWN) for (const theme of ['dark', 'light']) {
+      const v = customAccentVars(hex, theme)
+      for (const bg of sceneFills(theme, v['--acc'])) {
+        expect(contrast(v['--acc-graphic'], bg), `${hex} ${theme} on ${bg}`).toBeGreaterThanOrEqual(3)
+      }
+    }
+    // and it is applied and taken off with the rest of the own colour
+    const el = document.createElement('html')
+    applyAccent(el, '#000033', 'dark')
+    expect(el.style.getPropertyValue('--acc-graphic')).toBe(customAccentVars('#000033', 'dark')['--acc-graphic'])
+    applyAccent(el, 'sky', 'dark')
+    expect(el.style.getPropertyValue('--acc-graphic')).toBe('')
+  })
+
+  it('--on-sel on --sel-fill (a selected day or segment) is the page colour on the label colour', () => {
+    expect(tokenIn('dark', 'sel-fill')).toBe('var(--label)')
+    expect(tokenIn('dark', 'on-sel')).toBe('var(--bg)')
+    // neither theme nor any accent redefines them: the pair is the theme's label and page colours
+    expect(tokenIn('light', 'sel-fill')).toBe(null)
+    expect(tokenIn('light', 'on-sel')).toBe(null)
+    expect(CSS).not.toMatch(/\[data-accent="[a-z]+"\][^{]*\{[^}]*--(?:sel-fill|on-sel)/)
+  })
+
+  for (const theme of ['dark', 'light']) {
+    it(`${theme}: --on-sel reads at least 7:1 on --sel-fill for every preset and own colour`, () => {
+      const fill = tokenIn(theme, 'label'), ink = tokenIn(theme, 'bg')
+      expect(fill).toMatch(/^#[0-9a-f]{6}$/)
+      expect(ink).toMatch(/^#[0-9a-f]{6}$/)
+      for (const key of Object.keys(PRESET_FILL[theme])) expect(contrast(ink, fill), key).toBeGreaterThanOrEqual(7)
+      for (const hex of OWN) {
+        const v = customAccentVars(hex, theme)
+        expect(v).not.toHaveProperty('--sel-fill')
+        expect(v).not.toHaveProperty('--on-sel')
+        expect(contrast(ink, fill), hex).toBeGreaterThanOrEqual(7)
+      }
+    })
+  }
 })
 
 describe('status colours as text (--yellow-ink, --orange-ink, --green-ink, --red-ink, --blue-ink)', () => {
@@ -205,7 +299,7 @@ describe('readable on the theme', () => {
 
 describe('CSS for the own colour', () => {
   it('derives the accent, its pressed shade and its text', () => {
-    expect(customAccentVars('#0a84ff', 'dark')).toEqual({ '--acc': '#0a84ff', '--acc-2': '#0863bf', '--on-acc': '#000000', '--knob-ring': 'transparent', '--acc-ink': '#47a3ff' })
+    expect(customAccentVars('#0a84ff', 'dark')).toEqual({ '--acc': '#0a84ff', '--acc-2': '#0863bf', '--on-acc': '#000000', '--knob-ring': 'transparent', '--acc-ink': '#47a3ff', '--acc-graphic': '#0a84ff' })
     const v = customAccentVars('#000033', 'dark')
     expect(v['--acc']).toBe(readableIn('#000033', 'dark'))
     expect(v['--on-acc']).toBe(inkOn(v['--acc']))

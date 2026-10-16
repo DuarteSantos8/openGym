@@ -1,5 +1,5 @@
-/* The tab shell: the four-tab bar with its sliding pill and centre +, the headers of a tab's root
-   and of the pages under it, the hubs' targets, the + sheet and the live dock. Kept out of
+/* The tab shell: the four-tab bar with its sliding pill and centre +, the hubs' targets, the +
+   sheet and the live dock. Kept out of
    index.css so the design tokens there can move independently; it only reads them.
    This file loads before index.css (App.jsx is imported first), so a rule here that has to win
    over one there is written one step more specific. */
@@ -17,24 +17,7 @@
 :root{--tab-pill:var(--acc-soft)}
 :root[data-theme="light"]{--tab-pill:color-mix(in srgb,var(--acc) 20%,transparent)}
 
-/* --- headers --- */
-/* A tab's root: the large title and the avatar (the way into Profile, and the sync dot). */
-.hdr.root-hdr{align-items:center}
-.avatar-btn{position:relative;flex:none;width:44px;height:44px;display:flex;align-items:center;justify-content:center}
-.avatar-c{
-  width:36px;height:36px;border-radius:50%;background:var(--surface-2);color:var(--label);
-  display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;
-}
-.avatar-c .icn{font-size:20px}
-:root[data-theme="light"] .avatar-c{background:var(--surface);box-shadow:var(--shadow-card)}
-.avatar-btn:active .avatar-c{opacity:.6}
-.avatar-btn .tab-dot{top:3px;right:3px;box-shadow:0 0 0 2px var(--bg)}
-/* The only sync indicator: --orange is 2:1 on the light ground, its ink 5.7:1. */
-:root[data-theme="light"] .avatar-btn .tab-dot{background:var(--orange-ink)}
-/* Every other page: back · title · the page's own action. */
-.hdr.sub-hdr{align-items:center;justify-content:flex-start}
-.sub-hdr-t{flex:1;min-width:0;margin-inline-start:6px}
-.hdr.sub-hdr>.hdr-actions{margin-inline-start:auto}
+/* The headers of a tab's root and of the pages under it live in tab-kit.css. */
 
 /* --- hubs --- */
 .hub-tiles{margin-bottom:16px}
