@@ -56,3 +56,27 @@ test('#313: repeating the duplicate in the repair round still fails as unusable,
   assert.equal(r.errorClass, 'unusable');
   assert.equal(s.calls.length, 2);
 });
+
+test('a malformed exercise in a new routine reaches the repair round and can be corrected', async () => {
+  const answer = ex => JSON.stringify({ coach_contract: 1, summary: 'Add conditioning', changes: [{
+    id: 'c1', type: 'add-routine', target: {}, why: 'Add conditioning', after: { name: 'Finisher', ex }
+  }] });
+  const s = stub([answer([null]), answer([{ id: '0549', sets: 2, reps: 12 }])]);
+  const r = await runPipeline({ adapter: s.adapter, cfg: {}, kind: 'review', payload });
+  assert.equal(r.ok, true);
+  assert.equal(r.result.changes[0].after.ex[0].id, '0549');
+  assert.equal(s.calls.length, 2);
+  assert.match(s.calls[1].prompt, /changes\[0\]\.after\.ex\[0\]/);
+});
+
+test('repeated malformed routine exercises stop after the one repair round as unusable', async () => {
+  const answer = JSON.stringify({ coach_contract: 1, summary: 'Add conditioning', changes: [{
+    id: 'c1', type: 'add-routine', target: {}, why: 'Add conditioning', after: { name: 'Finisher', ex: [false] }
+  }] });
+  const s = stub([answer, answer]);
+  const r = await runPipeline({ adapter: s.adapter, cfg: {}, kind: 'review', payload });
+  assert.equal(r.ok, false);
+  assert.equal(r.errorClass, 'unusable');
+  assert.equal(s.calls.length, 2);
+  assert.equal(r.result, undefined);
+});
