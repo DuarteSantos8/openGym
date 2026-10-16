@@ -6,7 +6,7 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { BRAND } from '../brand.js'
-import Icon from '../components/Icon.jsx'
+import BrandMark from '../components/BrandMark.jsx'
 import { Button } from '../components/ui.jsx'
 import { askAddDeviceData } from '../sheets.jsx'
 import { normalizeServerUrl } from '../lib/remote.js'
@@ -126,7 +126,7 @@ export function ConnectSheet({ close, initialUrl = '', again = false }) {
 export default function MobileOnboarding() {
   const { chooseLocalMode } = useStore()
   const head = <>
-    <div className="gate-logo ink-acc"><Icon name="dumbbell" /></div>
+    <div className="gate-logo"><BrandMark /></div>
     <h1 className="gate-title fs-large fw-bold">{BRAND.name}</h1>
   </>
   return (

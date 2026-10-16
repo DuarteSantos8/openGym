@@ -281,7 +281,7 @@ self.addEventListener('push', e => {
     await self.registration.showNotification(data.title || 'Gains', {
       body: data.body || '',
       icon: 'brand/icon-512.png',
-      badge: 'brand/icon-180.png',
+      badge: 'brand/badge-96.png',
       tag,
       renotify: true,
       // Where a tap goes (notificationTarget decides whether it is let through). Kept as given:

@@ -4,10 +4,10 @@ import { webauthnOK, passkeyLogin, passkeyRegister, passkeyError, bio } from '..
 import { hasData } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 import { BRAND } from '../brand.js'
+import BrandMark from '../components/BrandMark.jsx'
 import { DEMO, REPO } from '../lib/demo.js'
 import { guestAllowed } from '../lib/guest.js'
 import { useState, useRef, useEffect } from 'react'
-import Icon from '../components/Icon.jsx'
 import { Button, Segmented } from '../components/ui.jsx'
 import { askAddDeviceData } from '../sheets.jsx'
 import { passwordOn, PasswordRegisterForm, openPasswordSignIn } from '../components/PasswordAuth.jsx'
@@ -80,7 +80,7 @@ export default function Login() {
     catch (e) { if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') useUI.getState().toast(passkeyError(e, t('Sign-in failed'))) }
   }
   const head = <>
-    <div className="gate-logo ink-acc"><Icon name="dumbbell" /></div>
+    <div className="gate-logo"><BrandMark /></div>
     <h1 className="gate-title fs-large fw-bold">{BRAND.name}</h1>
   </>
 

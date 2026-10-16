@@ -55,6 +55,8 @@
 
   /* media: drawn over photos and video, the same in both themes */
   --on-media:#fff; --media-bg:#000; --knob:#fff;
+  /* The mark's groove is a hole cut with a luminance mask: white keeps the stroke, black cuts it. */
+  --mark-cut-on:#fff; --mark-cut-off:#000;
 }
 @media (min-width:1000px){:root{--tabbar-h:81px}}
 
@@ -190,3 +192,11 @@
 /* StatTile value sizes below the default 26px */
 .tile .v.v-sm{font-size:var(--fs-body)}
 .tile .v.v-xs{font-size:var(--fs-subhead)}
+
+/* The mark (components/BrandMark.jsx). boot-mark is where the splash holds the G: its centre 38px
+   above the screen's, the same place index.html draws it before any script runs. */
+.brand-mark.brand-mark.brand-mark{display:block;flex:none}
+.brand-mark .mark-keep{fill:var(--mark-cut-on)}
+.brand-mark .mark-cut{stroke:var(--mark-cut-off)}
+.boot-mark.boot-mark.boot-mark{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  box-sizing:border-box;padding-bottom:76px;font-size:56.4px;color:var(--label)}

@@ -1,6 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 512 512">
-  <!-- TEMPORARY placeholder: the letter G on the warm dark background. Replace this one file with
-       the designer's master (square, full bleed, 1024x1024) and run the commands in README.md. -->
-  <rect width="512" height="512" fill="#0c0b0a"/>
-  <path d="M340.9 171.1A120 120 0 1 0 376 256H264" fill="none" stroke="#30d158" stroke-width="44"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="1024" height="1024"><rect width="100" height="100" fill="#0c0b0a"/><defs><mask id="m" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"/><path d="M69.30 33.80A25.2 25.2 0 1 0 75.2 50V48.8H52.5" fill="none" stroke="#000" stroke-width="1.1" stroke-linejoin="round"/></mask></defs><path mask="url(#m)" d="M68.39 34.57A24 24 0 1 0 74 50H51" fill="none" stroke="#FFFFFF" stroke-width="8.4" stroke-miterlimit="4"/></svg>

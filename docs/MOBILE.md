@@ -245,16 +245,25 @@ into both native projects — re-run it after every web-code change before build
 
 ## App icons & splash screens
 
-`frontend/resources/icon.svg` is the 1024×1024 source (the app's dumbbell glyph on the
-app background). Generate all platform assets from it on a machine with the tooling:
+`frontend/resources/icon.svg` is the 1024×1024 source: the Gains G in white on `#0c0b0a`, full
+bleed (the same file as `public/brand/icon.svg`, see `public/brand/README.md`). What is in the shells
+was rendered from it by `frontend/scripts/brand-assets.py` (needs Pillow and a Chromium):
 
-```sh
-cd frontend
-npx @capacitor/assets generate --iconBackgroundColor '#0c0e12' --splashBackgroundColor '#0c0e12'
-```
+- **Android launcher:** `mipmap-*/ic_launcher.png` (rounded square), `ic_launcher_round.png` and the
+  adaptive icon's `ic_launcher_foreground.png` (the white G on transparent, inside the 66 dp safe
+  zone). The adaptive icon's background is the colour `ic_launcher_background` (`#0c0b0a`), set in
+  `values/ic_launcher_background.xml`.
+- **iOS:** `AppIcon.appiconset/AppIcon-512@2x.png`, 1024 px with no transparency.
+- **Launch screens:** the G alone, centred where the animated splash holds it (centre 38 dp above the
+  middle of the screen, 56 dp wide), light and dark: `#f5f4f1` with the dark ink, `#0c0b0a` with the
+  light ink. Android: `drawable*/splash.png` and the `-night` ones; iOS: `Splash.imageset`, one 1400 pt
+  square per scale that the storyboard centres without scaling, so the G is 56.4 pt on every screen. A launch
+  screen is a still, so the animation itself (the G drawing, then "gains") is played by the app once it
+  is running (`BootSplash`).
 
-(If the generator won't take the SVG directly, export it to `resources/icon.png` at
-1024×1024 first — any image tool can do it.)
+`npx @capacitor/assets generate` also works from `resources/icon.svg`, but it lays the adaptive icon
+out its own way (it insets both layers by 16.7%), so check the Android launcher and the splash
+afterwards: the screens above are not what it draws.
 
 ## Distribution — no app stores, no downloads yet
 

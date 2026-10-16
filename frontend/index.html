@@ -12,6 +12,11 @@
     var l = s.lang || ((navigator.language || '').slice(0, 2) === 'ar' ? 'ar' : 'en');
     document.documentElement.lang = l;
     document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
+    // The theme too, so the mark below is drawn in the right ink and a light profile never flashes
+    // dark. App.jsx resolveTheme is the source of truth and re-applies it.
+    var th = s.theme;
+    if (th !== 'light' && th !== 'dark') th = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.dataset.theme = th;
   } catch (e) {}
 </script>
 <title>Gains</title>
@@ -26,10 +31,13 @@
      icon comes out generic. iOS 26 reads the icon from the manifest, so this is where it shows. -->
 <link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 <link rel="apple-touch-icon" href="brand/icon-180.png">
-<link rel="icon" type="image/png" href="brand/icon-180.png">
+<link rel="icon" type="image/svg+xml" href="brand/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="brand/favicon-32.png">
+<link rel="icon" href="brand/favicon.ico" sizes="48x48">
 </head>
 <body>
-<div id="root"></div>
+<!-- The first frame, until React draws its own (BootMark in App.jsx is the same mark in the same place). -->
+<div id="root"><div class="boot-mark"><svg class="brand-mark" viewBox="21.8 21.8 56.4 56.4" width="1em" height="1em" aria-hidden="true" focusable="false"><defs><mask id="boot-groove" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"/><path d="M69.30 33.80A25.2 25.2 0 1 0 75.2 50V48.8H52.5" fill="none" stroke="#000" stroke-width="1.1" stroke-linejoin="round"/></mask></defs><path mask="url(#boot-groove)" d="M68.39 34.57A24 24 0 1 0 74 50H51" fill="none" stroke="currentColor" stroke-width="8.4" stroke-miterlimit="4"/></svg></div></div>
 <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
