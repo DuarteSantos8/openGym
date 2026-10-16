@@ -24,6 +24,7 @@
     "@zxing/library": "0.21.3",
     "jsqr": "^1.4.0",
     "lean-qr": "^2.7.3",
+    "motion": "^12.43.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.18.2",

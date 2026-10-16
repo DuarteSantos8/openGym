@@ -103,15 +103,15 @@ describe('SearchPill', () => {
     expect($('input').value).toBe('')
   })
 
-  it('asks the overlay to open on focus and points at it while it is open', () => {
+  it('asks the overlay to open on focus and points at its listbox while it is open', () => {
     const onOpen = vi.fn()
-    render(<Pill onOpen={onOpen} expanded controls="search-overlay" />)
+    render(<Pill onOpen={onOpen} expanded controls="search-list" />)
     act(() => $('input').focus())
     expect(onOpen).toHaveBeenCalledTimes(1)
     expect($('input').getAttribute('role')).toBe('combobox')
-    expect($('input').getAttribute('aria-haspopup')).toBe('dialog')
+    expect($('input').getAttribute('aria-haspopup')).toBe('listbox')
     expect($('input').getAttribute('aria-expanded')).toBe('true')
-    expect($('input').getAttribute('aria-controls')).toBe('search-overlay')
+    expect($('input').getAttribute('aria-controls')).toBe('search-list')
   })
 
   it('claims a combobox only with an overlay to open (onOpen)', () => {
@@ -159,7 +159,9 @@ describe('RootHeader (the tab-root header)', () => {
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null)
     at('/train', <RootHeader title="Training" action={<button className="iconbtn" aria-label="Filter">f</button>} />)
     const row = $('.tab-hdr-row')
-    expect([...row.children].map(c => c.className)).toEqual(['spill', 'iconbtn', 'avatar-btn'])
+    // The context button sits in its slot, which steps aside while search is open.
+    expect([...row.children].map(c => c.className)).toEqual(['spill', 'hdr-slot', 'avatar-btn'])
+    expect($('.hdr-slot .iconbtn').getAttribute('aria-label')).toBe('Filter')
     expect($('h1').className).toBe('sr-only')
     expect($('h1').textContent).toBe('Training')
     expect($('input').placeholder).toBe('Search training')
@@ -171,10 +173,14 @@ describe('RootHeader (the tab-root header)', () => {
     expect($('input').placeholder).toBe('Search progress')
   })
 
-  it('keeps what was typed in the pill', () => {
+  it('keeps what was typed in the pill while search is open', () => {
+    vi.spyOn(history, 'back').mockImplementation(() => {})
     at('/home', <RootHeader title="Home" />)
+    act(() => $('input').focus())
     typeInto($('input'), 'chicken')
     expect($('input').value).toBe('chicken')
+    act(() => $('.avatar-btn').click())
+    expect($('input').value).toBe('')
   })
 
   it('fades its hairline in once the page has scrolled more than 4px', () => {

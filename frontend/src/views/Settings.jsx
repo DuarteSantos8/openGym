@@ -32,7 +32,7 @@ import { syncMedia, fetchToStore } from '../lib/media-sync.js'
 import { getMediaStatus, subscribeMediaStatus, pendingRefCount } from '../lib/media-owed.js'
 import { limitsFrom, fmtMB, MB } from '../lib/media-limits.js'
 import { setRestAccent } from '../lib/rest-alert.js'
-import { CUSTOM, accentKey, adjustedIn, applyAccent, cleanHex, inkOn, isGrey } from '../lib/accent.js'
+import { CUSTOM, accentKey, accentLabel, adjustedIn, applyAccent, cleanHex, inkOn, isGrey } from '../lib/accent.js'
 import { checkForUpdate, downloadAndInstall, fetchChecksum, RELEASES_PAGE } from '../lib/update.js'
 import { forgetCoach } from '../lib/coach-api.js'
 import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration } from '../lib/duration.js'
@@ -1242,11 +1242,6 @@ function PushCard({ S, update, toast }) {
 // Equipment profiles ("Home", "Gym", ...) — each an id/name/eq-list; the active one filters
 // the Library, exercise picker, and flags routine entries that need something outside it
 // (see lib/equipment.js). Purely local/synced state — no server changes needed.
-// What the chosen accent is called: a preset's colour name, or the user's own.
-function accentLabel(S) {
-  const k = accentKey(S)
-  return k === CUSTOM ? t('Your own color') : t(ACCENT_NAMES[k] || 'Green')
-}
 
 /**
  * The presets, then one swatch for a colour of the user's own (lib/accent.js). With no colour

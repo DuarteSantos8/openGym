@@ -9,7 +9,7 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { todayISO } from '../lib/format.js'
 import { useNutrition } from '../lib/nutrition/store.js'
-import { clearOnlineSearchCache } from '../lib/nutrition/use-online-search.js'
+import { resetOnlineSearch } from '../lib/nutrition/use-online-search.js'
 import { createFakeNutriTrace, fixtureFoods, fixtureMeals, fixtureOffSearch, fixtureSettings } from '../lib/nutrition/fake-nutritrace.js'
 import { mealRows } from '../lib/nutrition/meal-rows.js'
 import { offResults } from '../lib/nutrition/off.js'
@@ -31,7 +31,7 @@ vi.mock('./CameraScan.jsx', () => ({
 }))
 const beep = vi.hoisted(() => vi.fn())
 vi.mock('../lib/sound.js', async orig => ({ ...(await orig()), beep }))
-vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }))
+vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn(), useLocation: () => ({ pathname: '/home', search: '' }) }))
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const TODAY = todayISO()
@@ -53,7 +53,7 @@ const puts = path => nt.requests.filter(r => r.method === 'PUT' && r.path === pa
 async function mount(el, settings = {}, extra = {}) {
   act(() => root.render(null))
   useUI.setState({ sheets: [] })
-  clearOnlineSearchCache()
+  resetOnlineSearch()
   useNutrition.getState().reset()
   nt = createFakeNutriTrace({ settings: { ...fixtureSettings(), ...settings }, ...extra })
   vi.stubGlobal('fetch', nt.fetch)

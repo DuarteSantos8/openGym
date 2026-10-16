@@ -18,18 +18,34 @@ export const emptyNav = () => ({ entries: [], idx: -1, top: -1, tab: 'home', sta
 // The tab on screen: the route's own, or for a shared page (Profile, the workout) the one under it.
 const tabFor = (nav, path) => tabOf(path.split('?')[0]) || nav.tab
 
-export function record(nav, { idx, path, navType }) {
+// Whether the position `i` of the mirror holds another tab's page. Only a search visit puts one on
+// a tab's stack (record's `keepTab`); everywhere else a page of another tab is a switch.
+const foreignAt = (nav, i) => {
+  const p = i >= 0 ? nav.entries[i] : null
+  const tab = p && tabOf(pathOnly(p))
+  return !!tab && tab !== nav.tab
+}
+
+/** Whether the page on screen is another tab's, opened on this tab's stack by a search visit: a
+ *  link followed from it, or the page replacing its own address, stays on that visit. */
+export const onVisitPage = nav => nav.idx >= 0 && foreignAt(nav, nav.idx)
+
+// `keepTab`: a page the global search opened on top of its overlay (lib/search/session.js). It
+// may be another tab's page, and it still sits on this tab's stack: back returns to the overlay.
+// So does whatever is opened from such a page, and a step back or forward onto one.
+export function record(nav, { idx, path, navType, keepTab = false }) {
   // No position (an entry nothing wrote one into): count it as the start of a history.
   const at = Number.isInteger(idx) && idx >= 0 ? idx : 0
   // Forward onto a page of a tab that was left: not this tab's page, nothing to mirror.
   if (navType === 'POP' && nav.idx >= 0 && at > nav.top) return { ...nav, idx: at }
+  const visit = keepTab || (navType === 'POP' ? foreignAt(nav, at) : onVisitPage(nav))
   const entries = navType === 'PUSH' ? nav.entries.slice(0, at) : nav.entries.slice()
   entries[at] = path
   // A push ends the history here; a pop or a replace leaves what is ahead (forward) as it was.
   // The first location of a document starts the live history wherever it is. A replace past the
   // top is the router taking over a sheet's entry (closeThenNav): live, as the page it became.
   const top = navType === 'PUSH' || nav.idx < 0 ? at : navType === 'REPLACE' ? Math.max(nav.top, at) : nav.top
-  return { ...nav, tab: tabFor(nav, path), entries, idx: at, top }
+  return { ...nav, tab: visit && nav.idx >= 0 ? nav.tab : tabFor(nav, path), entries, idx: at, top }
 }
 
 // A finished switch: what is ahead of here belongs to the tab that was left.
@@ -62,17 +78,20 @@ export function stackFor(nav, target, path) {
 // - another tab: its own stack comes back (plus `path`), this one is put aside;
 // - the tab on screen with `toRoot` (its bar button tapped again): back down to its root.
 // Null when there is nothing to do.
+// - another tab's bar button while a search visit shows its page (`toRoot`): that tab's root.
+// The stack put aside never keeps another tab's page (one a search visit put on top of it).
 export function planSwitch(nav, target, { path, toRoot = false, leaving } = {}) {
   if (!TABS.includes(target)) return null
-  const here = compact(leaving || nav.entries.slice(0, nav.idx + 1))
+  const own = p => { const tab = tabOf(pathOnly(p)); return !tab || tab === nav.tab }
+  const here = compact(leaving || nav.entries.slice(0, nav.idx + 1)).filter(own)
   if (target === nav.tab) {
     if (!toRoot) return null
-    if (here.length <= 1 && here[0] === TAB_ROOT[target]) return null
+    if (here.length <= 1 && here[0] === TAB_ROOT[target] && nav.entries.slice(0, nav.idx + 1).every(p => !p || own(p))) return null
     return { back: Math.max(0, nav.idx), stack: [TAB_ROOT[target]], nav }
   }
   return {
     back: Math.max(0, nav.idx),
-    stack: stackFor(nav, target, path),
+    stack: toRoot ? [TAB_ROOT[target]] : stackFor(nav, target, path),
     nav: { ...nav, tab: target, stacks: { ...nav.stacks, [nav.tab]: here } },
   }
 }

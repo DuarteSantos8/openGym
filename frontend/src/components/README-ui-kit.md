@@ -73,6 +73,9 @@ class throws in development, as everywhere in the kit.
 | `LineArt` (line-art) | `scene state` | `routine {days,next,scheduled}`, `mobility {minutes}`, `scale {kg}`, `equipment {eq}` (`equipmentOf(ex.eq)`). Two strokes, three inks (`--acc-graphic` for data), no figures, ≤8 paths; draws in once a session (`useDrawIn`), fades under reduced motion; `aria-hidden` |
 | `EmptyState` (blocks) | + `art action secondary` | `art` replaces the icon; `action`/`secondary` are `{label, onClick, icon}` pills. Without them the markup is unchanged |
 | `InlineNote`, `Skeleton` (blocks) | `icon children` / `w h r` | A quiet centred status line; a hidden loading block at its size (numbers are px) |
+| `Kbd` (blocks) | `children` | A key cap as a hint ("⌘ K", "esc"), never a control |
+| `Chip` (blocks) | + `size="lg" icon` | The 36px destination chip with a leading glyph (the search's shortcuts); neutral, never `.on` |
+| `AvatarButton` | `mode="close" onClose` | The same button turns into search's close; its content swaps (motion, lazily loaded), the chrome stays |
 | `Button` (ui) | + `shape="pill"` | 44px, `--r-pill`, sized to its label (`.btn-pill`) |
 | `Segmented` (ui) | + `tone="strong"` `size="lg"` | The selection fill for page sub-views and the Progress range; 36px buttons. The subtle default stays for in-card ranges |
 | `Row` (ui) | + `glyph`, `accessory="add"` with `onOpen onAdd addLabel` | A bare 24px lead icon; a + disc of its own ("Add to {title}") with the text opening the row, the row itself no button |

@@ -257,6 +257,15 @@ export function isWellnessDataQuery(params) {
   return (Date.parse(to + 'T12:00:00Z') - Date.parse(from + 'T12:00:00Z')) / 86400000 <= 366
 }
 
+// GET /api/diary/index (proposed hub rule, docs/reviews/api-diary-index.md §7): `since` (the
+// previous page's `next`: letters, digits, _ and -, 1 to 200 of them, never empty) and `limit`
+// (1 to 500), each at most once; nothing else.
+export function isDiaryIndexQuery(params) {
+  if (!onlyKeys(params, new Set(['since', 'limit']))) return false
+  const since = params.get('since')
+  return (since === null || /^[A-Za-z0-9_-]{1,200}$/.test(since)) && boundedInt(params.get('limit'), 500)
+}
+
 const isObject = v => typeof v === 'object' && v !== null && !Array.isArray(v)
 
 // fitness-hub src/nt-body-checks.ts, fasts: an instant as toISOString writes it (or with an offset),
@@ -328,6 +337,41 @@ function merge(server, client, deleted, tombstoned) {
   return out
 }
 
+/* ------------------------------------------------------------------ the diary index --------- */
+
+// server/routes/diary.js diaryIndexEntry, written on its own (not from lib/nutrition/diary.js) so a
+// drift between the two shows up in a test: kcal from the stored nutrition x quantity, a split
+// recipe as the sum of its children.
+const NEVER = '1970-01-01 00:00:00'
+const sqlTime = ms => new Date(ms).toISOString().slice(0, 19).replace('T', ' ')
+const itemKcal = item => {
+  if (Array.isArray(item._splitItems) && item._splitItems.length) return item._splitItems.reduce((sum, c) => sum + itemKcal(c), 0)
+  const calories = isObject(item.nutrition) && Object.keys(item.nutrition).length ? item.nutrition.calories : (item.calories ?? item.calories_kcal)
+  return (parseFloat(calories) || 0) * (parseFloat(item.quantity) || 1)
+}
+function indexEntry(day) {
+  const all = (day.items || []).filter(isObject)
+  const items = all.filter(i => typeof i.uuid === 'string' && typeof i.name === 'string').map(i => {
+    const foodId = i.is_recipe || i.food_server_id === null ? null : (i.food_server_id ?? i.id)
+    const parts = (Array.isArray(i._splitItems) ? i._splitItems : []).map(c => c?.name).filter(p => typeof p === 'string')
+    return {
+      uuid: i.uuid, name: i.name, ...(i.brand ? { brand: i.brand } : {}),
+      food_id: typeof foodId === 'number' ? foodId : null, meal: Number(i.meal) || 0, kcal: Math.round(itemKcal(i)),
+      ...(parts.length ? { parts } : {}),
+    }
+  })
+  return { date: day.date, rev: day.updated_at.replace(' ', 'T') + 'Z', kcal: Math.round(all.reduce((sum, i) => sum + itemKcal(i), 0)), items }
+}
+const encodeCursor = (u, d) => btoa(JSON.stringify({ u, d })).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '')
+function decodeCursor(since) {
+  try {
+    const c = JSON.parse(atob(since.replaceAll('-', '+').replaceAll('_', '/')))
+    return typeof c?.u === 'string' && typeof c?.d === 'string' ? c : null
+  } catch {
+    return null
+  }
+}
+
 /* ------------------------------------------------------------------ the fake ----------------- */
 
 export function createFakeNutriTrace({
@@ -373,7 +417,32 @@ export function createFakeNutriTrace({
     const [, , res, a, b] = seg
     const n = seg.length
     if (res === 'diary') {
-      if (method === 'GET' && n === 3) return json(Object.keys(state.days).map(answerDay))
+      if (method === 'GET' && n === 3) return json(Object.keys(state.days).filter(d => !state.days[d].deleted_at).map(answerDay))
+      // Must come before /:date, as on the server (route order, api-diary-index.md §4).
+      if (a === 'index' && n === 4) {
+        if (method !== 'GET') return notFound()
+        if (!isDiaryIndexQuery(query)) return json({ error: 'forbidden' }, 403)
+        const since = query.get('since')
+        const from = since ? decodeCursor(since) : { u: NEVER, d: '' }
+        if (!from) return json({ error: 'bad cursor', code: 'bad_cursor' }, 400)
+        const limit = Number(query.get('limit') || 200)
+        const rows = Object.values(state.days)
+          .map(d => ({ d, u: d.updated_at || NEVER }))
+          .filter(r => r.u > from.u || (r.u === from.u && r.d.date > from.d))
+          .sort((x, y) => (x.u < y.u ? -1 : x.u > y.u ? 1 : x.d.date < y.d.date ? -1 : 1))
+        const page = rows.slice(0, limit)
+        // The cursor never moves into the current second: a write may still land there.
+        const current = sqlTime(Date.now())
+        const settled = page.filter(r => r.u < current)
+        const last = settled[settled.length - 1]
+        const next = last ? encodeCursor(last.u, last.d.date) : (since || encodeCursor(from.u, from.d))
+        return json({
+          days: page.map(r => (r.d.deleted_at ? { date: r.d.date, rev: r.u.replace(' ', 'T') + 'Z', deleted: true } : indexEntry({ ...r.d, updated_at: r.u }))),
+          total: Object.values(state.days).filter(d => !d.deleted_at).length,
+          next,
+          has_more: rows.length > limit && settled.length === page.length,
+        })
+      }
       if (n !== 4 || !DATE.test(a)) return notFound()
       if (method === 'GET') return json(answerDay(a))
       if (method === 'PUT') {
@@ -388,6 +457,8 @@ export function createFakeNutriTrace({
           items: merge(cur.items, body.items || [], delItems, tombs.filter(t => t.kind === 'item').map(t => t.uuid)),
           water: merge(cur.water, body.water || [], delWater, tombs.filter(t => t.kind === 'water').map(t => t.uuid)),
           notes: 'notes' in body ? body.notes : cur.notes,
+          updated_at: sqlTime(Date.now()),
+          deleted_at: null,
         }
         const fresh = [...delItems.map(uuid => ({ kind: 'item', uuid })), ...delWater.map(uuid => ({ kind: 'water', uuid }))]
           .filter(t => !tombs.some(x => x.kind === t.kind && x.uuid === t.uuid))

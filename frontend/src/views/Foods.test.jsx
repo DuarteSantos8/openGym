@@ -11,7 +11,8 @@ import { useDiarySelection } from '../lib/nutrition/selection.js'
 import { useHubSync } from '../lib/nutrition/sync.js'
 import { todayISO } from '../lib/format.js'
 import { createFakeNutriTrace, fixtureFoods, fixtureSettings } from '../lib/nutrition/fake-nutritrace.js'
-import { clearOnlineSearchCache } from '../lib/nutrition/use-online-search.js'
+import { resetOnlineSearch } from '../lib/nutrition/use-online-search.js'
+import { noteAnswer, resetOffBudget } from '../lib/nutrition/off-budget.js'
 import Foods from './Foods.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -75,7 +76,8 @@ async function openPage() {
 }
 
 beforeEach(() => {
-  clearOnlineSearchCache()
+  resetOnlineSearch()
+  resetOffBudget()
   nt = createFakeNutriTrace({ foods: foodsFixture(), settings: { ...fixtureSettings(), foodCategories: ['Pantry', 'Bakery', { name: 'Dairy' }] } })
   vi.stubGlobal('fetch', nt.fetch)
   useStore.setState({ user: { id: 3, name: 'Ana' }, pushState: vi.fn(async () => {}) })
@@ -352,7 +354,7 @@ describe('online results', () => {
     expect(nt.requests.filter(r => r.path === '/nt/api/proxy')).toHaveLength(1)
   })
 
-  it('asks for more than a letter, and says when the hub rate limit hits', async () => {
+  it('asks for more than a letter, and when the hub rate limit hits waits out its pause, asking nothing', async () => {
     await openPage()
     tap(buttonSaying(page, 'Online'))
     type(page.querySelector('.searchf input'), 'n')
@@ -360,7 +362,85 @@ describe('online results', () => {
     expect(nt.requests.some(r => r.path === '/nt/api/proxy')).toBe(false)
     nt.failNext('GET', '/nt/api/proxy', { status: 429, error: 'rate limited' })
     type(page.querySelector('.searchf input'), 'nutella')
-    await settle(() => expect(page.textContent).toContain('Too many searches.'))
+    await settle(() => expect(page.textContent).toContain('Open Food Facts paused · back in'))
+    const asked = nt.requests.filter(r => r.path === '/nt/api/proxy').length
+    type(page.querySelector('.searchf input'), 'nutella spread')
+    await act(async () => { await new Promise(r => setTimeout(r, 600)) })
+    expect(nt.requests.filter(r => r.path === '/nt/api/proxy')).toHaveLength(asked)
+    expect(page.textContent).toContain('Open Food Facts paused · back in')
+    const note = [...page.querySelectorAll('[role=status]')].find(n => n.textContent.includes('paused'))
+    expect(note.closest('.sr-card')).not.toBeNull()
+    expect(note.querySelector('.sr-count').textContent).toMatch(/^\d+ s$/)
+    expect(buttonSaying(page, /Search Open Food Facts for/)).toBeUndefined()
+    await enter()
+    expect(nt.requests.filter(r => r.path === '/nt/api/proxy')).toHaveLength(asked)
+  })
+
+  const enter = () => act(async () => {
+    page.querySelector('.searchf input').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+    await new Promise(r => setTimeout(r, 30))
+  })
+  const proxied = () => nt.requests.filter(r => r.path === '/nt/api/proxy')
+
+  it('after a 429 whose pause is over, shows the ask as one row in a card, and Enter and the row each search', async () => {
+    noteAnswer({ status: 429, headers: new Headers({ 'Retry-After': '1', 'RateLimit-Remaining': '0' }) }, Date.now() - 5000)
+    await openPage()
+    tap(buttonSaying(page, 'Online'))
+    type(page.querySelector('.searchf input'), 'nutella')
+    await settle(() => expect(buttonSaying(page, 'Search Open Food Facts for “nutella”')).toBeDefined())
+    const row = buttonSaying(page, 'Search Open Food Facts for “nutella”')
+    expect(row.closest('.sr-card')).not.toBeNull()
+    expect(row.classList.contains('btn')).toBe(false)
+    expect(row.querySelector('.icn')).not.toBeNull()
+    expect(proxied()).toHaveLength(0)
+    await enter()
+    await settle(() => expect(names()).toEqual(['Nutella']))
+    expect(proxied()).toHaveLength(1)
+    expect(buttonSaying(page, /Search Open Food Facts for/)).toBeUndefined()
+  })
+
+  it('shows skeleton rows while it searches, and Enter asks nothing more', async () => {
+    const slow = nt.hold('GET', '/nt/api/proxy')
+    await openPage()
+    tap(buttonSaying(page, 'Online'))
+    type(page.querySelector('.searchf input'), 'nutella')
+    await settle(() => expect(page.querySelector('.sr-card .sr-skel')).not.toBeNull())
+    await enter()
+    expect(buttonSaying(page, /Search Open Food Facts for/)).toBeUndefined()
+    slow.release()
+    await settle(() => expect(names()).toEqual(['Nutella']))
+    expect(proxied()).toHaveLength(1)
+    expect(page.querySelector('.sr-skel')).toBeNull()
+  })
+
+  it('says it cannot reach Open Food Facts, with a Retry that searches again; Enter does not', async () => {
+    nt.failNext('GET', '/nt/api/proxy', 'offline')
+    await openPage()
+    tap(buttonSaying(page, 'Online'))
+    type(page.querySelector('.searchf input'), 'nutella')
+    await settle(() => expect(page.querySelector('[role=alert]')).not.toBeNull())
+    expect(page.querySelector('[role=alert]').textContent).toBe('The search did not finish: no connection.')
+    expect(page.querySelector('[role=alert]').closest('.sr-card')).not.toBeNull()
+    await enter()
+    expect(proxied()).toHaveLength(1)
+    tap(buttonSaying(page, 'Retry'))
+    await settle(() => expect(names()).toEqual(['Nutella']))
+    expect(proxied()).toHaveLength(2)
+  })
+
+  describe('offline', () => {
+    afterEach(() => { Reflect.deleteProperty(navigator, 'onLine') })
+
+    it('says online results come back on reconnect, with no row, and Enter asks nothing', async () => {
+      Object.defineProperty(navigator, 'onLine', { value: false, configurable: true })
+      await openPage()
+      tap(buttonSaying(page, 'Online'))
+      type(page.querySelector('.searchf input'), 'nutella')
+      await settle(() => expect(page.textContent).toContain('Online results come back when you reconnect'))
+      expect(buttonSaying(page, /Search Open Food Facts for/)).toBeUndefined()
+      await enter()
+      expect(proxied()).toHaveLength(0)
+    })
   })
 })
 

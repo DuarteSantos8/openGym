@@ -14,7 +14,8 @@
 // so for each theme it is checked against that theme's backgrounds and, when it would vanish into
 // them (navy on black, pale yellow on white), made lighter or darker just far enough to be read.
 // A grey goes further, so it never looks like a switched-off button (THEMES below, accent.test.js).
-import { ACCENTS, ACCENT_INK } from './format.js'
+import { ACCENTS, ACCENT_INK, ACCENT_NAMES } from './format.js'
+import { t } from './i18n-core.js'
 
 export const DEFAULT_ACCENT = 'lime'
 export const CUSTOM = 'custom'
@@ -49,6 +50,12 @@ export function accentKey(S) {
   if (typeof k === 'string' && Object.hasOwn(ACCENTS, k)) return k
   if (k === CUSTOM && cleanHex(S?.accentCustom)) return CUSTOM
   return DEFAULT_ACCENT
+}
+
+/** What the chosen accent is called: a preset's colour name, or the user's own. */
+export function accentLabel(S) {
+  const k = accentKey(S)
+  return k === CUSTOM ? t('Your own color') : t(ACCENT_NAMES[k] || 'Green')
 }
 
 /**

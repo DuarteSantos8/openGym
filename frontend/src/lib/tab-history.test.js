@@ -1,7 +1,7 @@
 // Per-tab back stacks over one linear history. The property that matters: history only ever holds
 // the tab on screen, so walking back never lands in another tab.
 import { describe, expect, it } from 'vitest'
-import { deadSteps, emptyNav, planSwitch, record, settle } from './tab-history.js'
+import { deadSteps, emptyNav, onVisitPage, planSwitch, record, settle } from './tab-history.js'
 
 const at = (nav, navType, path, idx) => record(nav, { idx, path, navType })
 const push = (nav, path) => at(nav, 'PUSH', path, nav.idx + 1)
@@ -164,5 +164,55 @@ describe('the forward history a switch leaves behind', () => {
     nav = at(nav, 'POP', '/train/history', 1)
     nav = at(nav, 'POP', '/train/exercises', 2)
     expect(deadSteps(nav)).toBe(0)
+  })
+})
+
+describe('a search visit (lib/search/session.js)', () => {
+  // Home, its search overlay's entry (pushed by hand, like a sheet's: no location of its own), and
+  // another tab's page opened from it.
+  const visiting = () => record(start('/home'), { idx: 2, path: '/food?date=2026-10-11&find=u1', navType: 'PUSH', keepTab: true })
+
+  it('keeps another tab\'s page on this tab\'s stack, so back walks to the overlay and Home', () => {
+    let nav = visiting()
+    expect(nav.tab).toBe('home')
+    expect(behind(nav)).toEqual(['/home', undefined, '/food?date=2026-10-11&find=u1'])
+    nav = at(nav, 'POP', '/home', 1)
+    expect(nav).toMatchObject({ tab: 'home', idx: 1 })
+  })
+
+  it('a tab tapped then never puts that page aside with this tab', () => {
+    const nav = go(visiting(), 'progress')
+    expect(nav.stacks.home).toEqual(['/home'])
+    expect(behind(nav)).toEqual(['/progress'])
+  })
+
+  it('a link followed from the visited page, or its address replaced, stays on the visit', () => {
+    let nav = visiting()
+    expect(onVisitPage(nav)).toBe(true)
+    nav = at(nav, 'REPLACE', '/food', 2)
+    expect(nav).toMatchObject({ tab: 'home', idx: 2 })
+    nav = push(nav, '/food/meals')
+    expect(nav.tab).toBe('home')
+    expect(behind(nav)).toEqual(['/home', undefined, '/food', '/food/meals'])
+    // Back down the visit and on to Home, and forward onto it again: still Home's stack.
+    nav = at(nav, 'POP', '/food', 2)
+    expect(nav.tab).toBe('home')
+    nav = at(nav, 'POP', '/home', 0)
+    expect(nav.tab).toBe('home')
+    expect(onVisitPage(nav)).toBe(false)
+    nav = at(nav, 'POP', '/food', 2)
+    expect(nav.tab).toBe('home')
+    // A tab of its own is never a visit: another tab's page from there is the switch it always was.
+    expect(onVisitPage(push(start('/home'), '/home'))).toBe(false)
+  })
+
+  it('this tab\'s own button goes back to its root; the lit one goes to that tab\'s root', () => {
+    expect(planSwitch(visiting(), 'home', { toRoot: true })).toMatchObject({ stack: ['/home'] })
+    let nav = start('/progress')
+    nav = push(nav, '/progress/body')
+    nav = go(nav, 'home')
+    nav = at(nav, 'POP', '/home', 1)
+    nav = record(nav, { idx: 2, path: '/progress/strength', navType: 'PUSH', keepTab: true })
+    expect(planSwitch(nav, 'progress', { toRoot: true })).toMatchObject({ stack: ['/progress'] })
   })
 })

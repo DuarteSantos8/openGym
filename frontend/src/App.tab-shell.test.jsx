@@ -15,6 +15,7 @@ import { useUI } from './store/useUI.js'
 import { finishWorkout, loadStarterPlan } from './sheets.jsx'
 import { nav } from './lib/nav.js'
 import { switchTab } from './lib/use-tab-nav.js'
+import { endSearch, setQuery, useSearch, visit } from './lib/search/session.js'
 
 vi.mock('./lib/sound.js', async importOriginal => ({ ...(await importOriginal()), setPlayOnSilent: vi.fn(), setVibrate: vi.fn(), setAlarmBuzzer: vi.fn() }))
 vi.mock('./lib/api.js', async importOriginal => {
@@ -180,6 +181,56 @@ describe('the review repros', () => {
     await back()
     expect(hash()).toBe('#/train')
     expect(await backLeavesApp()).toBe(true)
+  })
+})
+
+// The global search's visits (lib/search/session.js): a result opened from Home's overlay that is
+// another tab's page sits on Home's stack, lights the tab it belongs to, and back walks to the
+// overlay, then Home.
+describe('a search visit', () => {
+  const pill = () => document.querySelector('.spill-i')
+  const openOverlay = async query => {
+    await act(async () => { pill().focus() })
+    await go(() => setQuery(query))
+  }
+  afterEach(() => act(() => endSearch()))
+
+  it('lights the destination\'s tab, shows its root with an empty pill, and back returns to the overlay, then Home', async () => {
+    await launch('#/home')
+    await openOverlay('weigh')
+    await go(() => visit('/progress'))
+    expect(hash()).toBe('#/progress')
+    expect(lit()).toBe('Progress')
+    expect(useSearch.getState()).toMatchObject({ live: true, open: false, query: 'weigh' })
+    expect(pill().value).toBe('')
+    await back()
+    expect(useSearch.getState()).toMatchObject({ live: true, open: true })
+    expect(lit()).toBe('Home')
+    await back()
+    expect(useSearch.getState().live).toBe(false)
+    expect(hash()).toBe('#/home')
+    expect(await backLeavesApp()).toBe(true)
+  })
+
+  it('a link inside the visited page is no tab switch: back walks down it to the overlay', async () => {
+    await launch('#/home')
+    await openOverlay('body')
+    await go(() => visit('/progress'))
+    await go(() => nav('/progress/body'))
+    expect(hash()).toBe('#/progress/body')
+    expect(lit()).toBe('Progress')
+    expect(useSearch.getState()).toMatchObject({ live: true, open: false })
+    await back()
+    expect(hash()).toBe('#/progress')
+    await back()
+    expect(useSearch.getState()).toMatchObject({ live: true, open: true })
+    await back()
+    expect(hash()).toBe('#/home')
+    expect(useSearch.getState().live).toBe(false)
+    // Progress never got the visit's pages as its own stack.
+    await click(tab('Progress'))
+    expect(hash()).toBe('#/progress')
+    expect(idx()).toBe(0)
   })
 })
 

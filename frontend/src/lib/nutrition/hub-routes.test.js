@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { NtApi } from './api.js'
-import { createFakeNutriTrace, isOffProductQuery, isOffSearchQuery, isWellnessDataQuery } from './fake-nutritrace.js'
+import { createFakeNutriTrace, fixtureDay, isDiaryIndexQuery, isOffProductQuery, isOffSearchQuery, isWellnessDataQuery } from './fake-nutritrace.js'
 import { offProductUrl, offSearchUrl } from './off.js'
 
 describe('the wearable data routes', () => {
@@ -43,6 +43,41 @@ describe('the wearable data routes', () => {
     expect(await get('/nt/api/wellness/garmin/data?date=2026-10-14')).toBe(403)
     expect(await get('/nt/api/wellness/withings/data?from=2026-10-01&to=2026-10-15')).toBe(404)
     expect(await get('/nt/api/wellness/fitbit/sync')).toBe(404)
+  })
+})
+
+describe('the diary index route (api-diary-index.md §7)', () => {
+  const q = s => new URLSearchParams(s)
+
+  it('takes since and limit only, each in its shape', () => {
+    expect(isDiaryIndexQuery(q(''))).toBe(true)
+    expect(isDiaryIndexQuery(q('limit=200'))).toBe(true)
+    expect(isDiaryIndexQuery(q('since=eyJ1IjoiMjAyNiJ9'))).toBe(true)
+    expect(isDiaryIndexQuery(q('since=abc_-1&limit=500'))).toBe(true)
+    for (const bad of ['since=', 'since=a+b', 'since=a/b', 'since=a=', 'since=' + 'a'.repeat(201), 'limit=0', 'limit=501', 'limit=abc', 'limit=-1', 'limit=1e3', 'limit=0200', 'user=2', 'since=a&since=b']) {
+      expect(isDiaryIndexQuery(q(bad)), bad).toBe(false)
+    }
+  })
+
+  it('is what the client builds, pages by change, and refuses the rest', async () => {
+    const nt = createFakeNutriTrace({ days: { '2026-10-12': { ...fixtureDay('2026-10-12'), updated_at: '2026-10-12 09:00:00' }, '2026-10-14': fixtureDay('2026-10-14') } })
+    vi.stubGlobal('fetch', nt.fetch)
+    try {
+      const first = await NtApi.getDiaryIndex({ limit: 1 })
+      expect(first.days.map(d => d.date)).toEqual(['2026-10-12'])
+      expect(first).toMatchObject({ total: 2, has_more: true })
+      expect(first.days[0]).toMatchObject({ rev: '2026-10-12T09:00:00Z', kcal: 678 })
+      expect(first.days[0].items[0]).toEqual({ uuid: 'it-oats', name: 'Rolled oats', food_id: 11, meal: 0, kcal: 228 })
+      const second = await NtApi.getDiaryIndex({ since: first.next, limit: 1 })
+      expect(second.days.map(d => d.date)).toEqual(['2026-10-14'])
+      expect(nt.requests.map(r => r.path)).toEqual(['/nt/api/diary/index', '/nt/api/diary/index'])
+      const status = async (path, init) => (await nt.fetch(path, init)).status
+      expect(await status('/nt/api/diary/index?user=2')).toBe(403)
+      expect(await status('/nt/api/diary/index', { method: 'PUT', body: '{}' })).toBe(404)
+      expect(await status('/nt/api/diary/index?since=notacursor')).toBe(400)
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 })
 

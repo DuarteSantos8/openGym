@@ -9,7 +9,7 @@
 // navigation that lands in another tab's pages, from whatever code made it (a Profile row opening
 // Routines): the push is turned into a switch, so a tab's stack never holds another tab's page.
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
-import { emptyNav, deadSteps, planSwitch, record, settle } from './tab-history.js'
+import { emptyNav, deadSteps, onVisitPage, planSwitch, record, settle } from './tab-history.js'
 import { parentOf, tabOf } from './tab-route.js'
 import { onSheetEntry, sheetEntriesLive } from './nav.js'
 import { useUI } from '../store/useUI.js'
@@ -42,8 +42,11 @@ const historyIdx = () => globalThis.history?.state?.idx
 // A navigation into another tab's pages: to be carried out as a switch. Not a replace of the very
 // first entry, though: with nothing under it in the tab, that is a cold redirect (an old link, a
 // page sending a guest Home) and it only changes which tab is on screen.
+// Nor a page the global search opens on top of its overlay (`searchVisit`, lib/search/session.js),
+// nor a link followed from such a page or its own address replaced: they stay on this tab's
+// stack, so back walks down them to the overlay.
 function crossesTab(nav, location, navType) {
-  if (navType === 'POP' || nav.idx < 0) return false
+  if (navType === 'POP' || nav.idx < 0 || location.state?.searchVisit || onVisitPage(nav)) return false
   const target = tabOf(location.pathname)
   if (!target || target === nav.tab) return false
   const idx = historyIdx()
@@ -57,6 +60,9 @@ let api = { switchTab: () => {}, popToRoot: () => {}, back: () => {} }
 let switching = false
 // While a switch rebuilds the history, nothing else may walk it: the bar, the +, Android back.
 export const isSwitching = () => switching
+// Told when a switch starts: a search visit (lib/search/session.js) ends there.
+const switchListeners = new Set()
+export const onTabSwitch = fn => { switchListeners.add(fn); return () => switchListeners.delete(fn) }
 
 // Called as a sheet closes, it waits for the sheet's history entry to be walked off first
 // (Modals.jsx): two walks queued in the same moment are not reliably both carried out. Only then,
@@ -149,7 +155,10 @@ export function useTabNav({ navigate, location, navType }) {
 
   const run = useCallback((plan, { shownLocation, shownTab, target, retries = 0, intent = null }) => {
     if (!plan) { finish(pending.current); return }
-    if (!switching) setFrozen({ location: shownLocation, tab: shownTab })
+    if (!switching) {
+      setFrozen({ location: shownLocation, tab: shownTab })
+      for (const fn of switchListeners) fn()
+    }
     switching = true
     navRef.current = plan.nav
     saveNav(plan.nav)
@@ -186,7 +195,7 @@ export function useTabNav({ navigate, location, navType }) {
         run(plan, { shownLocation: lastShown.current || location, shownTab: nav.tab, target })
         return
       }
-      const next = record(nav, { idx, path, navType })
+      const next = record(nav, { idx, path, navType, keepTab: !!location.state?.searchVisit })
       navRef.current = next
       saveNav(next)
       lastShown.current = location
@@ -251,7 +260,14 @@ export function useTabNav({ navigate, location, navType }) {
   const doSwitch = useCallback((target, path) => {
     if (pending.current) return
     const nav = navRef.current
-    if (target === nav.tab) { if (path) navigate(path); return }
+    if (target === nav.tab) {
+      if (path) { navigate(path); return }
+      // This tab's own button while a search visit shows another tab's page on top of it: the
+      // visit ends, back at this tab's root.
+      const shownTab = tabOf(location.pathname)
+      if (shownTab && shownTab !== target) run(planSwitch(nav, target, { toRoot: true }), { shownLocation: location, shownTab, target })
+      return
+    }
     run(planSwitch(nav, target, { path }), { shownLocation: location, shownTab: nav.tab, target })
   }, [navigate, location, run])
 

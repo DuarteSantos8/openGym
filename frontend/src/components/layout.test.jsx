@@ -45,7 +45,9 @@ describe('Page', () => {
     const out = html(<MemoryRouter initialEntries={['/food']}><Page root title="Nutrition">x</Page></MemoryRouter>)
     expect(out).toContain('<h1 class="sr-only">Nutrition</h1>')
     expect(out.match(/<h1/g)).toHaveLength(1)
-    expect(out).not.toContain('role="combobox"')
+    // The pill is the global search's input now: a combobox that opens the overlay, closed.
+    expect(out).toContain('role="combobox"')
+    expect(out).toContain('aria-expanded="false"')
     expect(out).toContain('class="avatar-btn"')
   })
 

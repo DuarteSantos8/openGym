@@ -26,8 +26,12 @@
 }
 .tab-hdr.scrolled::after{opacity:1}
 .tab-hdr-row{display:flex;align-items:center;gap:var(--space-4);height:var(--hdr-h)}
-/* A context button: the avatar's chrome at the same size. */
-.tab-hdr-row>.iconbtn{width:var(--hdr-btn);height:var(--hdr-btn);font-size:20px;box-shadow:var(--ring-hair),var(--shadow-card)}
+/* A context button: the avatar's chrome at the same size. Its slot carries the row's gap ahead
+   of it, so the slot closing to 0 while search is open hands the pill all of that room
+   (search/header-motion.jsx ContextSlot). */
+.hdr-slot{flex:none;display:flex;margin-inline-start:calc(-1 * var(--space-4))}
+.hdr-slot-in{display:flex;padding-inline-start:var(--space-4)}
+.hdr-slot-in>.iconbtn{width:var(--hdr-btn);height:var(--hdr-btn);font-size:20px;box-shadow:var(--ring-hair),var(--shadow-card)}
 
 /* The search pill: the real input, 40px, the same surface as the avatar beside it. */
 .spill{

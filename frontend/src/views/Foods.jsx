@@ -4,7 +4,7 @@ import { useUI } from '../store/useUI.js'
 import { t, tn } from '../lib/i18n.js'
 import { nutritionAvailable } from '../lib/nutrition/api.js'
 import { energyOf, foodKcal } from '../lib/nutrition/diary.js'
-import { SORTS, categoriesOf, categoryChoices, fmtAmount, foodErrorText, per100Unit, searchErrorText, visibleFoods } from '../lib/nutrition/foods.js'
+import { SORTS, categoriesOf, categoryChoices, fmtAmount, foodErrorText, per100Unit, visibleFoods } from '../lib/nutrition/foods.js'
 import { categoryLabel, categoryName } from '../lib/nutrition/settings-lists.js'
 import { useNutrition } from '../lib/nutrition/store.js'
 import { settingOf } from '../lib/nutrition/use-nt-settings.js'
@@ -14,6 +14,7 @@ import { Card, Chip, ChipRow, EmptyState, ItemRow, Tag } from '../components/blo
 import { Page, Stack } from '../components/layout.jsx'
 import { foodDetailSheet } from '../components/FoodDetailSheet.jsx'
 import { foodEditSheet } from '../components/FoodEditSheet.jsx'
+import OnlineStatus from '../components/OnlineStatus.jsx'
 import { Button, SearchField, Segmented } from '../components/ui.jsx'
 
 const toast = m => useUI.getState().toast(m)
@@ -114,8 +115,7 @@ export default function Foods() {
   let body
   if (mode === 'online') {
     if (q.trim().length < MIN_QUERY) body = <EmptyState icon="globe">{t('Type a food to search Open Food Facts.')}</EmptyState>
-    else if (online.status === 'error') body = <EmptyState><div role="alert">{searchErrorText(online.error)}</div></EmptyState>
-    else if (online.status !== 'ready') body = <EmptyState><div role="status">{t('Searching…')}</div></EmptyState>
+    else if (online.status !== 'ready') body = <OnlineStatus online={online} query={q.trim()} />
     else if (!online.results.length) body = <EmptyState icon="magnifier">{t('No results online.')}</EmptyState>
     else body = <div className="list">{online.results.map(resultRow)}</div>
   } else if (foods.status === 'error' && !foods.list.length) {
@@ -143,7 +143,8 @@ export default function Foods() {
     action={<Button size="sm" variant="tinted" icon="plus" onClick={() => foodEditSheet({ settings })}>{t('New')}</Button>}>
     <Stack gap={5} className="mb-6">
       {offOn && <Segmented value={mode} onChange={setMode} options={[{ value: 'mine', label: t('My foods') }, { value: 'online', label: t('Online') }]} />}
-      <SearchField value={q} placeholder={mode === 'online' ? t('Search Open Food Facts') : t('Search your foods')} onChange={e => setQ(e.target.value)} onClear={() => setQ('')} />
+      <SearchField value={q} placeholder={mode === 'online' ? t('Search Open Food Facts') : t('Search your foods')} onChange={e => setQ(e.target.value)} onClear={() => setQ('')}
+        enterKeyHint="search" onKeyDown={e => { if (e.key === 'Enter' && mode === 'online' && online.status === 'tap') online.ask() }} />
       {mode === 'mine' && foods.list.length > 1 && <Segmented value={sort} onChange={setSort}
         options={SORTS.map(s => ({ value: s, label: s === 'alpha' ? t('A to Z') : s === 'recent' ? t('Recent') : t('Most used') }))} />}
       {mode === 'mine' && categories.length > 0 && <ChipRow>

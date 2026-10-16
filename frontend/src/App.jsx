@@ -30,6 +30,7 @@ import LiveDock from './components/LiveDock.jsx'
 import { openPlusSheet } from './components/PlusSheet.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import Modals from './components/Modals.jsx'
+import SearchHost from './components/search/SearchHost.jsx'
 import Toast from './components/Toast.jsx'
 import SyncBanner from './components/SyncBanner.jsx'
 import RestTimer from './components/RestTimer.jsx'
@@ -311,6 +312,8 @@ function Shell() {
           reading and tab order too. */}
       {docked ? <LiveDock /> : <RestTimer />}
       {!noTabs && <TabBar tab={tab} lit={tabOf(shown.pathname) === tab} onPlus={() => openPlusSheet(shown.pathname)} />}
+      {/* The global search's overlay and the history it lives in (lib/search/session.js). */}
+      {authed && !needsMobileOnboarding && <SearchHost />}
       <Modals />
       <Toast />
       <TimerFlash />

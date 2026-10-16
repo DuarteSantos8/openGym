@@ -331,7 +331,8 @@ function corpusOf(e) {
 
 // How many single-character edits (insert, delete, substitute, swap two neighbours) apart two
 // words are, or `max + 1` as soon as it is clear they are further apart than `max`.
-function editDistance(a, b, max) {
+// Exported for the global search, which holds settings, pages and foods to the same tolerance.
+export function editDistance(a, b, max) {
   if (Math.abs(a.length - b.length) > max) return max + 1
   let prev2 = null, prev = Array.from({ length: b.length + 1 }, (_, j) => j)
   for (let i = 1; i <= a.length; i++) {
@@ -352,7 +353,7 @@ function editDistance(a, b, max) {
 
 // Typos allowed in a query word against a name word: none below four letters ("row" and "curl"
 // are too common for a neighbour to mean anything), one up to six, two from seven.
-const typosFor = word => (word.length < 4 ? 0 : word.length < 7 ? 1 : 2)
+export const typosFor = word => (word.length < 4 ? 0 : word.length < 7 ? 1 : 2)
 
 // Allow typos (typosFor) in a query token against one name word, or against its first letters
 // once the token is long enough to be a word in progress ("dumbel" for "dumbbell").
@@ -361,7 +362,7 @@ const typosFor = word => (word.length < 4 ? 0 : word.length < 7 ? 1 : 2)
 // equipment words are shared by a whole slice of the catalogue, so one accidental neighbour
 // ("wrist" ~ "waist", "power" ~ "lower arms", "drucken" ~ "rucken") would list hundreds of
 // unrelated exercises ahead of the real hits (QA C26).
-function nearWordUncached(a, b) {
+export function nearWordUncached(a, b) {
   const max = typosFor(a)
   if (!max) return false
   if (editDistance(a, b, max) <= max) return true

@@ -10,7 +10,8 @@ import { useUI } from '../store/useUI.js'
 import { todayISO } from '../lib/format.js'
 import { useNutrition } from '../lib/nutrition/store.js'
 import { useDiarySelection } from '../lib/nutrition/selection.js'
-import { clearOnlineSearchCache } from '../lib/nutrition/use-online-search.js'
+import { noteAnswer, resetOffBudget } from '../lib/nutrition/off-budget.js'
+import { resetOnlineSearch } from '../lib/nutrition/use-online-search.js'
 import { offResults } from '../lib/nutrition/off.js'
 import { createFakeNutriTrace, fixtureDay, fixtureOffProduct } from '../lib/nutrition/fake-nutritrace.js'
 import FoodPicker from './FoodPicker.jsx'
@@ -64,7 +65,8 @@ beforeEach(() => {
   }))
   useNutrition.getState().reset()
   useDiarySelection.getState().reset()
-  clearOnlineSearchCache()
+  resetOnlineSearch()
+  resetOffBudget()
   useUI.setState({ sheets: [], toastMsg: '', toastAction: null })
   camera.hit = null
   host = document.createElement('div')
@@ -107,12 +109,105 @@ describe('the diary picker', () => {
     expect(titles(host).filter(n => n.startsWith('Nutella'))).toEqual(['Nutella jar'])
   })
 
-  it('says so when Open Food Facts cannot be reached, and your foods still work', async () => {
+  const enter = async () => {
+    await act(async () => { host.querySelector('input').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })) })
+    await settle(10)
+  }
+
+  it('says so when Open Food Facts cannot be reached, with a Retry that searches again, and your foods still work', async () => {
     nt.failNext('GET', '/nt/api/proxy', 'offline')
     await mount(<FoodPicker date={TODAY} meal="breakfast" mealName="Breakfast" />)
     await search(host, 'bread')
-    expect(host.querySelector('[role=alert]').textContent).toBe('The search did not finish: no connection.')
+    const alert = host.querySelector('[role=alert]')
+    expect(alert.textContent).toBe('The search did not finish: no connection.')
+    expect(alert.closest('.sr-card')).not.toBeNull()
     expect(titles(host)).toContain('Wholemeal bread')
+    expect(buttonIn(host, 'Search Open Food Facts for “bread”')).toBeUndefined()
+    const before = searches().length
+    await enter()
+    expect(searches()).toHaveLength(before)
+    await click(buttonIn(host, 'Retry'))
+    expect(searches()).toHaveLength(before + 1)
+    expect(host.querySelector('[role=alert]')).toBeNull()
+  })
+
+  it('shows skeleton rows, not text, while Open Food Facts is searching', async () => {
+    const slow = nt.hold('GET', '/nt/api/proxy')
+    await mount(<FoodPicker date={TODAY} meal="breakfast" mealName="Breakfast" />)
+    await search(host, 'nutella')
+    expect(host.querySelectorAll('.sr-skel .skel').length).toBeGreaterThan(0)
+    expect(host.querySelector('.sr-card .sr-skel')).not.toBeNull()
+    expect(host.querySelector('.fp-note')?.textContent ?? '').not.toContain('Searching')
+    expect(buttonIn(host, 'Search Open Food Facts for “nutella”')).toBeUndefined()
+    await enter()
+    expect(searches()).toHaveLength(1)
+    slow.release()
+    await settle(10)
+    expect(host.querySelector('.sr-skel')).toBeNull()
+    expect(titles(host)).toContain('Nutella')
+  })
+
+  describe('offline', () => {
+    afterEach(() => { Reflect.deleteProperty(navigator, 'onLine') })
+
+    it('says online results come back on reconnect, shows no row, asks nothing, then searches once back', async () => {
+      Object.defineProperty(navigator, 'onLine', { value: false, configurable: true })
+      await mount(<FoodPicker date={TODAY} meal="breakfast" mealName="Breakfast" />)
+      await search(host, 'nutella')
+      expect(host.textContent).toContain('Online results come back when you reconnect')
+      expect(host.querySelector('.sr-card .inote .icn')).not.toBeNull()
+      expect(buttonIn(host, 'Search Open Food Facts for “nutella”')).toBeUndefined()
+      await enter()
+      expect(searches()).toHaveLength(0)
+      Object.defineProperty(navigator, 'onLine', { value: true, configurable: true })
+      await act(async () => { window.dispatchEvent(new Event('online')) })
+      await settle(260)
+      expect(searches()).toHaveLength(1)
+      expect(titles(host)).toContain('Nutella')
+    })
+  })
+
+  it('announces the hub\'s pause in a status region, with the seconds to go', async () => {
+    nt.failNext('GET', '/nt/api/proxy', { status: 429, error: 'rate limited' })
+    await mount(<FoodPicker date={TODAY} meal="breakfast" mealName="Breakfast" />)
+    await search(host, 'bread')
+    const note = [...host.querySelectorAll('[role=status]')].find(n => n.textContent.includes('paused'))
+    expect(note?.textContent).toMatch(/Open Food Facts paused · back in \d+ s/)
+    expect(note.closest('.sr-card')).not.toBeNull()
+    expect(note.querySelector('.sr-count').textContent).toMatch(/^\d+ s$/)
+    expect(buttonIn(host, 'Search Open Food Facts for “bread”')).toBeUndefined()
+    const before = searches().length
+    await enter()
+    expect(searches()).toHaveLength(before)
+    expect(titles(host)).toContain('Wholemeal bread')
+  })
+
+  describe('after a 429 whose pause is over (the hub\'s bucket is empty, only a tap may spend it)', () => {
+    const ASK = 'Search Open Food Facts for “nutella”'
+    beforeEach(() => noteAnswer({ status: 429, headers: new Headers({ 'Retry-After': '1', 'RateLimit-Remaining': '0' }) }, Date.now() - 5000))
+
+    it('typing asks nothing, and the button is the search the person asks for', async () => {
+      await mount(<FoodPicker date={TODAY} meal="breakfast" mealName="Breakfast" />)
+      await search(host, 'nutella')
+      expect(searches()).toHaveLength(0)
+      const tapRow = buttonIn(host, ASK)
+      expect(tapRow.closest('.sr-card')).not.toBeNull()
+      expect(tapRow.getAttribute('role')).toBeNull()
+      expect(tapRow.querySelector('.icn')).not.toBeNull()
+      await click(tapRow)
+      expect(searches()).toHaveLength(1)
+      expect(titles(host)).toContain('Nutella')
+      expect(buttonIn(host, ASK)).toBeUndefined()
+    })
+
+    it('the search key is that search too', async () => {
+      await mount(<FoodPicker date={TODAY} meal="breakfast" mealName="Breakfast" />)
+      await search(host, 'nutella')
+      expect(searches()).toHaveLength(0)
+      await act(async () => { host.querySelector('input').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })) })
+      await settle(10)
+      expect(searches()).toHaveLength(1)
+    })
   })
 
   it('logs a picked online result, saving it as a food first', async () => {

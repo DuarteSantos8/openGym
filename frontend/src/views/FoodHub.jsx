@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { fmtDur, isoOf, todayISO } from '../lib/format.js'
 import { t, tn } from '../lib/i18n.js'
 import { useDiarySelection, useDiaryTarget } from '../lib/nutrition/selection.js'
@@ -32,6 +32,7 @@ const isDay = s => /^\d{4}-\d{2}-\d{2}$/.test(s) && isoOf(new Date(s + 'T12:00:0
 // `/food?date=YYYY-MM-DD` opens it on that day (today or before; a day to come is today).
 export default function FoodHub() {
   const nav = useNavigate()
+  const location = useLocation()
   const [params, setParams] = useSearchParams()
   const { date } = useDiaryTarget(null)
   const day = useDiaryDay(date)
@@ -47,13 +48,20 @@ export default function FoodHub() {
   const fasting = useFasting()
   const now = useNow(!!fasting.active, 30_000)
 
-  // The deep link picks the day once, then leaves the address as the tab's own.
+  // The deep link picks the day once, then leaves the address as the tab's own. `find` (a search's
+  // Day result, `?date=&find=<uuid>`) is kept for that day: its meal opens and the entry flashes
+  // once the day has loaded. The router state goes along with the replace: a search visit's
+  // `searchVisit` is what keeps this page on the stack of the tab it was opened from, and the
+  // date picked is the visit's, put back when it ends (lib/search/session.js).
   const linked = params.get('date')
+  const findParam = params.get('find')
+  const [find, setFind] = useState(null)
   useEffect(() => {
-    if (linked == null) return
-    if (isDay(linked)) useDiarySelection.getState().setDate(linked)
-    setParams({}, { replace: true })
-  }, [linked, setParams])
+    if (linked == null && findParam == null) return
+    if (linked != null && isDay(linked)) useDiarySelection.getState().setDate(linked)
+    setFind(findParam ? { date: linked != null && isDay(linked) ? linked : null, uuid: findParam } : null)
+    setParams({}, { replace: true, state: location.state })
+  }, [linked, findParam, setParams, location.state])
 
   useEffect(() => {
     if (!on) return
@@ -95,7 +103,7 @@ export default function FoodHub() {
       <SectionHeader title={date === todayISO() ? t('Today’s diary') : t('Diary')} />
       <CaloriesCard ref={kcalRef} day={day} />
       <WaterCard date={date} water={day.water} ready={day.dayReady} />
-      <MealsCard date={date} day={day} />
+      <MealsCard date={date} day={day} find={find && (!find.date || find.date === date) ? find.uuid : null} />
       {date === todayISO() && <YesterdayMealRow settings={settings} meal={meal} />}
     </TabSection>
     <Tiles className="hub-tiles">
