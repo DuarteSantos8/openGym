@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:fatigue-probe": "node scripts/fatigue-monotonic-probe.mjs"
+    "test:fatigue-probe": "node scripts/fatigue-monotonic-probe.mjs",
+    "check:thread-handoff": "node scripts/thread-handoff-check.mjs"
   },
   "license": "AGPL-3.0-or-later",
   "dependencies": {
@@ -39,6 +40,7 @@
     "@vitest/coverage-v8": "^4.1.11",
     "happy-dom": "^20.11.2",
     "linkedom": "^0.18.13",
+    "playwright": "^1.64.1",
     "vite": "^8.1.5",
     "vitest": "^4.1.10"
   }

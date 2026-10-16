@@ -21,6 +21,7 @@ import { appBase } from '../lib/app-base.js'
 import { linkTokenFromSearch, stripLinkFromUrl } from '../lib/device-link.js'
 import { loadRemote, chooseLocal, forgetRemote, connect, normalizeServerUrl, renewToken } from '../lib/remote.js'
 import { loadCfAccess } from '../lib/cf-access.js'
+import { forget as forgetOnboarding } from '../lib/onboarding/session.js'
 import { loadCoachDevice, saveCoachDevice, coachDeviceSettings } from '../lib/coach-device.js'
 import { RTL_LANGS } from '../lib/i18n-core.js'
 import { DEFAULT_TEMPLATE_ID } from '../lib/structuralBalanceTemplates.js'
@@ -934,6 +935,7 @@ export const useStore = create((set, get) => {
   const clearLocalSession = () => {
     const hadMedia = referencedHashes(get().S).size > 0
     get().setUser(null)
+    forgetOnboarding()   // signOut and signOutAll both end here, whoever was signed in
     localStorage.removeItem('gym_guest')
     forgetSync()
     releaseAdopt()   // the copy it was about is gone
@@ -1507,6 +1509,8 @@ export const useStore = create((set, get) => {
     // `adopt` (a sign-in, a pairing — { alwaysAsk } for a device link): adoptProfile follows and
     // decides what becomes of this copy; until it has, nothing is pulled or pushed (ADOPT_KEY).
     setUser(u, { adopt } = {}) {
+      // A half-finished onboarding is its person's alone: when who is signed in changes, it goes.
+      if ((get().user?.id ?? null) !== (u?.id ?? null)) forgetOnboarding()
       if (u) {
         // The local copy belongs to whoever last signed in here. When a session expires or is
         // revoked elsewhere, boot() only drops the user and the data stays; a different profile

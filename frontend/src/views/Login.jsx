@@ -7,6 +7,8 @@ import { BRAND } from '../brand.js'
 import BrandMark from '../components/BrandMark.jsx'
 import { DEMO, REPO } from '../lib/demo.js'
 import { guestAllowed } from '../lib/guest.js'
+import { nav } from '../lib/nav.js'
+import { nutritionAvailable } from '../lib/nutrition/api.js'
 import { useState, useRef, useEffect } from 'react'
 import { Button, Segmented } from '../components/ui.jsx'
 import { askAddDeviceData } from '../sheets.jsx'
@@ -39,7 +41,13 @@ function RegisterSheet({ close }) {
       const u = await passkeyRegister(n, code.trim())
       setUser(u); close()
       if (hasData(useStore.getState().S)) { await pushState(); useUI.getState().toast(t('Profile created, and this device’s data moved into it')) }
-      else { await pullState(); useUI.getState().toast(t('Welcome, {0}', u.name)) }
+      else {
+        await pullState()
+        // A new, empty profile on the web gets the first-run onboarding (goal, body, training,
+        // plan), which sets up its targets in both apps; where there is no hub it is skipped.
+        if (nutritionAvailable(u)) nav('/onboarding', { replace: true })
+        else useUI.getState().toast(t('Welcome, {0}', u.name))
+      }
     } catch (e) { if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') useUI.getState().toast(passkeyError(e, t('Registration failed'))) }
   }
   const choose = pwOn && webauthnOK() && <>

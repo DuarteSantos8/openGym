@@ -12,8 +12,8 @@
 //   · round caps + round joins, stroke width from --icon-stroke (1.7 default)
 //   · geometry snapped to .5 so it lands on pixel edges at 24px
 //
-// The nutrition glyphs (droplet, utensils, apple, cookingPot, scanBarcode, bookOpen, calendarCheck) are copied
-// from Lucide (https://lucide.dev), ISC License, Copyright (c) 2022 Lucide Contributors, with
+// The nutrition glyphs (droplet, utensils, apple, cookingPot, scanBarcode, bookOpen, calendarCheck) and the
+// onboarding's (scanFace … calendarClock) are copied from Lucide (https://lucide.dev), ISC License, Copyright (c) 2022 Lucide Contributors, with
 // portions (c) 2013-2022 Cole Bemis (Feather, MIT). Full text: NOTICE.md.
 
 // Lucide draws to the edge of a 24 box (2…22); this set lives in 3…21. Scaling by .9 around the
@@ -60,6 +60,16 @@ const P = {
   scanBarcode: lucide(<><path d="M3 7V5a2 2 0 0 1 2-2h2" /><path d="M17 3h2a2 2 0 0 1 2 2v2" /><path d="M21 17v2a2 2 0 0 1-2 2h-2" /><path d="M7 21H5a2 2 0 0 1-2-2v-2" /><path d="M8 7v10" /><path d="M12 7v10" /><path d="M16 7v10" /></>),
   bookOpen: lucide(<><path d="M12 7v14" /><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" /></>),
   calendarCheck: lucide(<><path d="M8 2v4" /><path d="M16 2v4" /><rect width="18" height="18" x="3" y="4" rx="2" /><path d="M3 10h18" /><path d="m9 16 2 2 4-4" /></>),
+  /* ---- the onboarding (Lucide) ---- */
+  scanFace: lucide(<><path d="M3 7V5a2 2 0 0 1 2-2h2" /><path d="M17 3h2a2 2 0 0 1 2 2v2" /><path d="M21 17v2a2 2 0 0 1-2 2h-2" /><path d="M7 21H5a2 2 0 0 1-2-2v-2" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><path d="M9 9h.01" /><path d="M15 9h.01" /></>),
+  keyRound: lucide(<><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z" /><circle cx="16.5" cy="7.5" r=".5" /></>),
+  circleHelp: lucide(<><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></>),
+  trendingDown: lucide(<><path d="M16 17h6v-6" /><path d="m22 17-8.5-8.5-5 5L2 7" /></>),
+  trendingUp: lucide(<><path d="M16 7h6v6" /><path d="m22 7-8.5 8.5-5-5L2 17" /></>),
+  scaleBalance: lucide(<><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" /><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" /><path d="M7 21h10" /><path d="M12 3v18" /><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2" /></>),
+  listChecks: lucide(<><path d="m3 17 2 2 4-4" /><path d="m3 7 2 2 4-4" /><path d="M13 6h8" /><path d="M13 12h8" /><path d="M13 18h8" /></>),
+  messagesSquare: lucide(<><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z" /><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1" /></>),
+  calendarClock: lucide(<><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5" /><path d="M16 2v4" /><path d="M8 2v4" /><path d="M3 10h5" /><path d="M17.5 17.5 16 16.3V14" /><circle cx="16" cy="16" r="6" /></>),
   lightbulb: <><path d="M9.2 16.4a5.6 5.6 0 1 1 5.6 0v1.8H9.2Z" /><path d="M10 20.6h4" /></>,
 
   /* ---- routine glyphs: what a training day actually is ---- */

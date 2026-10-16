@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef } from 'react'
 import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation, useNavigationType } from 'react-router-dom'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
@@ -37,9 +37,15 @@ import TimerFlash from './components/TimerFlash.jsx'
 import { openDeviceLinkRedeem } from './components/Passkeys.jsx'
 import Login from './views/Login.jsx'
 import MobileOnboarding from './views/MobileOnboarding.jsx'
+import { isFlowPath } from './lib/onboarding/flow.js'
+import { useOnboardingResume } from './lib/onboarding/use-onboarding-resume.js'
 import Home from './views/Home.jsx'
 import { BootMark } from './components/BrandMark.jsx'
 import BootSplash from './components/BootSplash.jsx'
+
+// The first-run onboarding is reached once per person, from an invite: its screens, art and
+// styles come in their own chunk, not in the load every launch pays for.
+const Onboarding = lazy(() => import('./views/onboarding/Onboarding.jsx'))
 import CheckIn from './views/CheckIn.jsx'
 import Plan from './views/Plan.jsx'
 import RoutineEdit from './views/RoutineEdit.jsx'
@@ -226,13 +232,17 @@ function Shell() {
   // live dock brings it back.
   const onWorkout = shown.pathname === '/train/workout'
   const inWorkout = onWorkout && !!S.active
+  // The first-run onboarding (views/onboarding): the invite landing and every step after it, a
+  // full-screen flow of its own on the web. The phone build has its own first launch.
+  const inFlow = !MOBILE && isFlowPath(shown.pathname)
+  useOnboardingResume({ user, ready, pathname: shown.pathname, navigate })
   useEffect(() => {
-    document.body.classList.toggle('no-tabbar', inWorkout)
+    document.body.classList.toggle('no-tabbar', inWorkout || inFlow)
     return () => document.body.classList.remove('no-tabbar')
-  }, [inWorkout])
+  }, [inWorkout, inFlow])
   // The chat owns the bottom of the screen as well: its composer sits where the tabs would be.
   // The first-launch card has no tabs either: they changed the route behind it.
-  const noTabs = inWorkout || shown.pathname === '/train/coach' || needsMobileOnboarding
+  const noTabs = inWorkout || inFlow || shown.pathname === '/train/coach' || needsMobileOnboarding
   // One live dock while a workout runs and you are elsewhere (it takes the rest bar's place).
   const docked = !noTabs && !onWorkout && workoutRunning(S)
   // No route of its own (a launch, a home-screen icon): straight into a running workout, else
@@ -249,9 +259,11 @@ function Shell() {
       {/* keyed on the route: a view that throws is contained, and switching tabs re-mounts the
           boundary, so the tab bar is always a way out. Held still and out of reach while a tab
           switch rebuilds the history under it (inert: no tap can start a navigation mid-walk). */}
-      <div id="app" className="vfade" key={shown.pathname} inert={switching || undefined}>
+      {/* The onboarding keeps one key for all its steps: its layout, and the thread in it, outlive
+          every screen, and it brings each screen in itself. */}
+      <div id="app" className={inFlow ? undefined : 'vfade'} key={inFlow ? 'onboarding' : shown.pathname} inert={switching || undefined}>
         <ErrorBoundary>
-          {!authed ? <Login /> : needsMobileOnboarding ? <MobileOnboarding /> : (
+          {inFlow && !needsMobileOnboarding ? <Suspense fallback={null}><Onboarding /></Suspense> :!authed ? <Login /> : needsMobileOnboarding ? <MobileOnboarding /> : (
             <Routes location={shown}>
               <Route path="/" element={<Navigate to={fallback} replace />} />
               {/* Home */}

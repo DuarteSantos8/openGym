@@ -11,7 +11,9 @@ under Settings, About & updates, Licences.
 ## Nutrition icons — Lucide
 
 The nutrition glyphs in `frontend/src/components/Icon.jsx` (`droplet`, `utensils`, `apple`,
-`cookingPot`, `scanBarcode`, `bookOpen`, `calendarCheck`) are copied from [**Lucide**](https://lucide.dev), under the
+`cookingPot`, `scanBarcode`, `bookOpen`, `calendarCheck`) and the onboarding glyphs (`scanFace`, `keyRound`,
+`circleHelp`, `trendingDown`, `trendingUp`, `scaleBalance`, `listChecks`, `messagesSquare`, `calendarClock`)
+are copied from [**Lucide**](https://lucide.dev), under the
 **ISC License**; portions of Lucide are derived from Feather by Cole Bemis under the MIT License.
 
 ```

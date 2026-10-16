@@ -1,0 +1,281 @@
+/* The first-run onboarding (views/onboarding, components/onboarding), ported from the approved
+   prototype v4 (fitness-eval: ux-onboarding.md §3b, ui-onboarding-round2.md, motion-onboarding-thread.md).
+   Tokens only: the accent is the person's own (--acc, --acc-ink, --acc-graphic). The page width
+   and its gutters are the shell's (#app); the layout (OnboardingLayout) owns the nav row, the
+   header block, the stage, the controls and the footer, and no screen sets its own. */
+
+.ob{--ob-slow:420ms;position:relative;isolation:isolate}
+
+/* ---- the nav row: back, progress, skip ---- */
+.ob-nav{
+  position:sticky;top:calc(var(--sat) + var(--conn));z-index:20;background:var(--bg);
+  height:44px;display:grid;grid-template-columns:minmax(44px,auto) 1fr minmax(44px,auto);align-items:center;
+  margin:0 calc(-1 * var(--pad));padding:0 4px;
+}
+.ob-nav.gone{visibility:hidden}
+.ob-nbtn{width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--acc-ink);border-radius:22px;transition:opacity var(--fast)}
+.ob-nbtn:active{opacity:.5}
+.ob-nbtn[disabled]{visibility:hidden}
+[dir="rtl"] .ob-nbtn .icn{transform:scaleX(-1)}
+.ob-nend{height:44px;padding:0 12px;font-size:17px;color:var(--acc-ink);white-space:nowrap;justify-self:end;transition:opacity var(--fast)}
+.ob-nend:active{opacity:.5}
+.ob-mid{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.ob-mid:has(.ob-left:empty){gap:0}
+.ob-prog{display:flex;gap:4px;width:min(100%,168px);transition:opacity var(--med)}
+.ob-left{font-size:var(--fs-caption);line-height:1.2;color:var(--label-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ob-prog.off{opacity:0}
+.ob-prog>span{flex:1;height:4px;border-radius:2px;background:var(--surface-3);overflow:hidden}
+.ob-prog>span>i{display:block;height:100%;background:var(--acc-graphic);transform:scaleX(var(--fill,0));transform-origin:left center;transition:transform var(--ob-slow) var(--ease)}
+[dir="rtl"] .ob-prog>span>i{transform-origin:right center}
+
+/* ---- the thread: one overlay line, only between screens ---- */
+.ob-thread{position:fixed;inset:0;width:100%;height:100%;z-index:10;pointer-events:none;contain:strict;overflow:hidden;visibility:hidden}
+.ob-thread path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+/* Claimed: the thread carries this line in, so the scene's own copy waits. */
+[data-thread-claim]{visibility:hidden}
+
+/* ---- a screen ---- */
+.ob-host{position:relative}
+.ob-screen{display:flex;flex-direction:column;min-height:calc(100dvh - var(--sat) - var(--conn) - var(--app-top) - 44px - 24px - var(--sab))}
+.ob-body{flex:1;padding-top:8px;padding-bottom:16px}
+.ob-screen.nonav .ob-body{padding-top:0}
+.ob-ttl{font-size:var(--fs-big);font-weight:700;letter-spacing:-.028em;line-height:1.1;margin:0}
+.ob-ttl:focus{outline:none}
+.ob-sub{font-size:15px;color:var(--label-2);margin:6px 0 0;letter-spacing:-.006em;line-height:1.35}
+/* Rule (b): on the goal-to-weight run the header holds 2 title + 2 subtitle lines, so every floor
+   lands on the same y and the thread holds still while the art above it swaps. */
+.ob-hd{display:flow-root}
+.ob-hd.fixed{min-height:calc(2 * 1.1 * var(--fs-big) + 6px + 2 * 1.35 * 15px)}
+.ob-stage{margin-top:16px}
+.ob-controls{margin-top:16px}
+/* The footer floats over what scrolls under it and never eats a tap meant for it. */
+.ob-foot{
+  position:sticky;bottom:0;z-index:5;pointer-events:none;margin:0 calc(-1 * var(--pad));
+  padding:24px var(--pad) calc(12px + var(--sab));
+  background:linear-gradient(to top,var(--bg) 72%,color-mix(in srgb,var(--bg) 0%,transparent));
+  display:flex;flex-direction:column;gap:6px;
+}
+.ob-foot > *{pointer-events:auto}
+body.kb-open .ob-foot{padding-top:8px;padding-bottom:8px}
+.ob-center{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;flex:1;padding-bottom:40px}
+
+/* ---- ChoiceCard ---- */
+.ob-ccs{display:flex;flex-direction:column;gap:8px}
+.ob-cc{
+  display:flex;align-items:center;gap:12px;min-height:68px;width:100%;text-align:start;
+  border-radius:var(--r-card);background:var(--surface);box-shadow:var(--shadow-card);padding:14px 16px;
+  transition:transform var(--fast) var(--ease),background var(--fast),box-shadow var(--fast);
+}
+.ob-cc.slim{min-height:56px;padding:10px 16px}
+.ob-cc.pressed{transform:scale(.98);background:var(--surface-2)}
+.ob-cc[aria-checked="true"]{background:var(--acc-soft);box-shadow:inset 0 0 0 2px var(--acc-graphic)}
+.ob-cc-g{width:36px;height:36px;border-radius:10px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none;transition:color var(--fast),background var(--fast)}
+.ob-cc[aria-checked="true"] .ob-cc-g{color:var(--acc-ink);background:transparent}
+.ob-cc-m{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.ob-cc-t{font-size:17px;font-weight:600;letter-spacing:-.012em}
+.ob-cc-s{font-size:15px;color:var(--label-2);letter-spacing:-.006em}
+.ob-cc-ind{width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--label-3);display:flex;align-items:center;justify-content:center;flex:none;color:var(--on-acc);font-size:14px}
+.ob-cc-ind .icn{--icon-stroke:3;opacity:0}
+.ob-cc[aria-checked="true"] .ob-cc-ind{background:var(--acc);box-shadow:none}
+.ob-cc[aria-checked="true"] .ob-cc-ind .icn{opacity:1;animation:ob-pop 180ms var(--ease) both}
+@keyframes ob-pop{from{transform:scale(.6)}to{transform:scale(1)}}
+
+/* chips in the sheets (experience, equipment) */
+.ob-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.ob-chip{min-height:44px;padding:0 16px;border-radius:22px;background:var(--surface-2);font-size:15px;font-weight:500;transition:background var(--fast),box-shadow var(--fast),color var(--fast)}
+.ob-chip:active{transform:scale(.97)}
+.ob-chip[aria-checked="true"]{background:var(--acc-soft);color:var(--acc-ink);box-shadow:inset 0 0 0 2px var(--acc-graphic)}
+.ob-slbl{font-size:13px;color:var(--label-2);margin:4px 4px 6px}
+.ob-fine{font-size:13px;color:var(--label-2);line-height:1.4;margin:0 0 12px}
+.ob-sheet-p{font-size:15px;color:var(--label-2);line-height:1.4;margin:0 0 12px}
+
+/* ---- line art (round 2 §1): the stage card, the 320-unit canvas ---- */
+.ob-stage-card{position:relative;border-radius:var(--r-card);background:var(--surface);box-shadow:var(--shadow-card);padding:12px;pointer-events:none}
+.ob-art{position:relative;width:min(100%,320px);margin:0 auto}
+.ob-art svg{display:block;width:100%;height:auto;overflow:visible}
+.ob-art,.ob-art *{pointer-events:none}
+.ob-art .il,.ob-art .il-acc,.ob-art .il-mute,.ob-art .il-floor{fill:none;stroke-width:var(--il-w);stroke-linecap:round;stroke-linejoin:round}
+.ob-art .il{stroke:var(--label-2)}
+.ob-art .il-acc{stroke:var(--acc-graphic)}
+.ob-art .il-mute{stroke:var(--label-3)}
+.ob-art .il-d{stroke-width:var(--il-w-d)}
+.ob-art .il-floor{stroke:var(--sep);stroke-width:var(--il-w-d)}
+.ob-art .il-occ{fill:var(--surface)}
+.ob-art .il-lit{fill:var(--acc-soft)}
+.ob-art .il-dot{fill:var(--acc-graphic)}
+.ob-ov{position:absolute;transform:translate(-50%,-50%);line-height:1;white-space:nowrap;font-weight:600;left:calc(var(--x) * 1%);top:calc(var(--y) * 1%)}
+.ob-cap{font-size:13px;color:var(--label-2);text-align:center;margin:8px 0 0;min-height:18px;transition:opacity var(--fast)}
+.ob-cap.fade{opacity:0}
+/* Draw-in, once a session (lib/use-draw-in.js): floor, structure back to front, accent last; 480ms
+   a path, 60ms apart, the accent over --hero, fills after 70% of their outline; parts that are
+   dashed or carry data fade at the end (--end). --lead starts it as the thread is about to land. */
+.ob-art.il-draw [pathLength="1"]:not([data-state]){stroke-dasharray:1;animation:ob-draw 480ms var(--ease-io) both;animation-delay:calc(var(--lead,0ms) + var(--i,0) * 60ms)}
+.ob-art.il-draw .il-acc[pathLength="1"]{animation-duration:var(--hero)}
+.ob-art.il-draw .il-occ[pathLength="1"],.ob-art.il-draw .il-lit[pathLength="1"]{animation-name:ob-draw,ob-fill}
+.ob-art.il-draw [data-late]{animation:ob-fade 160ms linear both;animation-delay:calc(var(--lead,0ms) + var(--end,480ms))}
+.ob-art.il-draw [data-thread-carried]{animation:none;stroke-dasharray:none}
+@keyframes ob-draw{0%{stroke-dashoffset:1;opacity:0}2%{opacity:1}100%{stroke-dashoffset:0;opacity:1}}
+@keyframes ob-fill{0%,70%{fill-opacity:0}100%{fill-opacity:1}}
+@keyframes ob-fade{from{opacity:0}}
+/* Reduced motion keeps one 120ms fade (index.css stops every other animation). */
+.ob .ob-art.rm-fade.rm-fade{animation:ob-fade 120ms linear both!important}
+.ob-still,.ob-still *{transition:none!important}
+
+/* the live target ring (3a–3d) */
+.ob-tgt{display:flex;align-items:center;gap:12px;margin-top:8px;padding-top:10px;border-top:var(--hair) solid var(--sep)}
+.ob-tgt.is-big{position:absolute;inset:0;display:block;margin:0;padding:0;border:0}
+.ob-tgt.is-big .ob-tgt-ring{position:absolute;inset-inline-start:5%;top:22.222%;width:27.5%;height:auto}
+.ob-tgt.is-big .ob-tgt-t{position:absolute;inset-inline-start:37.5%;inset-inline-end:5%;top:52.778%;transform:translateY(-50%)}
+.ob-tgt-ring{flex:none;overflow:visible;display:block}
+.ob-tgt-ring circle{fill:none}
+.ob-ring-bg{stroke:var(--surface-2)}
+.ob-ring-fg{stroke:var(--acc-graphic);stroke-linecap:round;transition:stroke-dashoffset var(--ob-slow) var(--ease)}
+.ob-tgt-n{font-size:20px;font-weight:600;letter-spacing:-.02em;line-height:1.15;font-variant-numeric:tabular-nums;contain:layout paint}
+.ob-tgt-u{font-size:13px;color:var(--label-2);line-height:1.3}
+.ob-tgt.is-big .ob-tgt-n{font-size:28px;letter-spacing:-.026em}
+
+/* ---- the pickers: ruler, wheel, tap to type ---- */
+.ob-pk{margin-top:12px}
+.ob-pk-read{display:flex;align-items:center;justify-content:center;gap:10px;min-height:52px}
+.ob-pk-num{display:inline-flex;align-items:baseline;gap:4px;min-height:48px;padding:4px 12px;border-radius:12px;font-size:34px;font-weight:600;letter-spacing:-.026em;line-height:1.1;color:var(--label);font-variant-numeric:tabular-nums;transition:color var(--fast),background var(--fast)}
+.ob-pk-num:active{background:var(--surface-2)}
+.ob-pk-v{text-decoration:underline dotted var(--label-3) 2px;text-underline-offset:7px}
+.ob-pk-num small{font-size:17px;font-weight:500;color:var(--label-2);letter-spacing:-.01em}
+.ob-pk.untouched .ob-pk-num{color:var(--label-3)}
+.ob-pk-in{width:140px;height:48px;font-size:28px;font-weight:600;text-align:center;background:var(--surface-2);border:0;border-radius:12px;outline:none;box-shadow:inset 0 0 0 2px var(--acc-graphic);color:var(--label)}
+.ob-uchip{display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 14px;border-radius:22px;background:var(--surface);box-shadow:var(--shadow-card);font-size:15px;font-weight:500;color:var(--label-2)}
+.ob-uchip .icn{font-size:13px}
+.ob-uchip:active{background:var(--surface-2)}
+.ob-ruler,.ob-wheel{position:relative;border-radius:var(--r-card);background:var(--surface);box-shadow:var(--shadow-card);cursor:grab;user-select:none;-webkit-user-select:none;direction:ltr}
+.ob-ruler.dragging,.ob-wheel.dragging{cursor:grabbing}
+.ob-ruler{height:76px;margin-top:8px;touch-action:pan-y}
+.ob-rul-in{position:absolute;inset:0;overflow:hidden;border-radius:inherit;-webkit-mask-image:linear-gradient(to right,transparent,var(--bg) 22%,var(--bg) 78%,transparent);mask-image:linear-gradient(to right,transparent,var(--bg) 22%,var(--bg) 78%,transparent)}
+.ob-rul-track{position:absolute;left:0;top:0;height:100%;width:calc(var(--w) * 1px);will-change:transform;transition:opacity var(--med)}
+.ob-rul-track svg{position:absolute;left:-2px;top:8px;overflow:visible}
+.ob-rul-track path{fill:none;stroke:var(--label-2);stroke-width:1.5;stroke-linecap:round}
+.ob-rul-lbl{position:absolute;top:44px;left:calc(var(--x) * 1px);transform:translateX(-50%);font-size:13px;color:var(--label-2);white-space:nowrap}
+.ob-rul-needle{position:absolute;left:50%;top:5px;width:3px;height:40px;margin-left:-1.5px;border-radius:2px;background:var(--acc-graphic);pointer-events:none;transition:background var(--fast)}
+.ob-pk.untouched .ob-rul-track{opacity:.5}
+.ob-pk.untouched .ob-rul-needle{background:var(--label-3)}
+.ob-wheel{height:132px;margin-top:4px;touch-action:none;overflow:hidden}
+.ob-wh-band{position:absolute;left:12px;right:12px;top:44px;height:44px;border-radius:10px;background:var(--surface-2);transition:box-shadow var(--fast)}
+.ob-pk:not(.untouched) .ob-wh-band{box-shadow:inset 0 0 0 1.5px var(--acc-line)}
+.ob-wh-in{position:absolute;inset:0;-webkit-mask-image:linear-gradient(to bottom,transparent,var(--bg) 34%,var(--bg) 66%,transparent);mask-image:linear-gradient(to bottom,transparent,var(--bg) 34%,var(--bg) 66%,transparent)}
+.ob-wh-track{position:absolute;left:0;right:0;top:0;will-change:transform}
+.ob-wh-row{height:44px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;color:var(--label-2);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.ob-wh-row.on{color:var(--label)}
+.ob-pk.untouched .ob-wh-row,.ob-pk.untouched .ob-wh-row.on{color:var(--label-3)}
+.ob-wheel.typing .ob-wh-in{visibility:hidden}
+/* The year's field sits beside the wheel (not in its slider), over the band: 4px margin + 44px. */
+.ob-pk:has(> .ob-wheel){position:relative}
+.ob-pk > .ob-pk-in{position:absolute;left:50%;top:48px;height:44px;margin-left:-70px;font-size:22px}
+
+/* "Why we ask" sits in the fixed header: its 44px target may reach 12px into the gap above the stage. */
+.ob-why{display:flex;width:max-content;align-items:center;gap:6px;min-height:44px;margin:2px 0 -12px;padding:0 2px;font-size:15px;color:var(--acc-ink)}
+.ob-why .icn{font-size:17px}
+
+/* ---- the scenes' moving parts: transform and opacity only ---- */
+.ob-off{opacity:0}
+.ob-ss-g{transform-box:view-box;transform-origin:160px 104px;transform:rotate(var(--r,0deg));transition:transform 520ms var(--ease-io)}
+.ob-ss-mound{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(var(--m,0));transition:transform 520ms var(--ease-io)}
+.ob-ss-part{transition:opacity var(--med) var(--ease)}
+.ob-k-part{transition:opacity var(--med) var(--ease)}
+.ob-k-tooth{transform-box:fill-box;transform-origin:50% 0;transform:scaleY(var(--s,0));transition:transform 140ms var(--ease)}
+.ob-k-a{font-size:13px;color:var(--label-2)}
+.ob-k-i{font-size:22px;color:var(--acc-ink)}
+body.kb-open .ob-kst{height:56px;padding:0;overflow:hidden}
+body.kb-open .ob-kst .ob-art{transform:scale(.5) translateX(-14px);transform-origin:50% 0}
+body.kb-open .ob-kst .ob-k-andrei{opacity:0}
+.ob-hmark,.ob-hcol,.ob-stape,.ob-sl-strip{transition:transform var(--ob-slow) var(--ease-io),opacity var(--med) var(--ease)}
+.ob-hmark{transform:translateY(var(--y,0px))}
+.ob-hcol{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(var(--s,0))}
+.ob-stape{transform:translateX(var(--x,0px))}
+.ob-live .ob-hmark,.ob-live .ob-hcol,.ob-live .ob-stape,.ob-live .ob-sl-strip{transition-duration:120ms,220ms}
+.ob-fadeable{transition:opacity var(--med) var(--ease)}
+.ob-sl-box{position:absolute;left:40%;top:49.3%;width:20%;height:10.4%;overflow:hidden}
+.ob-sl-strip{position:absolute;left:0;top:0;height:100%;width:1562.5%;transform:translateX(calc(var(--x,0) * 1%))}
+.ob-sl-strip span{position:absolute;top:0;left:calc(var(--at) * 1%);transform:translateX(-50%);font-size:12px;line-height:1.2;color:var(--label-2)}
+.ob-cal-yr{position:absolute;left:37.5%;top:41.7%;width:25%;height:47.2%;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:0 0 7px 7px}
+.ob-cal-v,.ob-cal-pg{font-size:22px;font-weight:600;letter-spacing:-.02em;color:var(--label);font-variant-numeric:tabular-nums}
+.ob-cal-pg{position:absolute;inset:0 2px 2px;display:flex;align-items:center;justify-content:center;background:var(--surface);transform-origin:50% 0;animation:ob-tear 220ms var(--ease) forwards}
+@keyframes ob-tear{to{transform:translateY(-6px) rotate(-4deg);opacity:0}}
+.ob-tw-l{position:absolute;inset:0;transition:opacity var(--med) var(--ease)}
+.ob-tw-l span{position:absolute;top:63%;left:calc(var(--x) * 1%);transform:translateX(-50%);font-size:12px;font-weight:500;color:var(--label-2);letter-spacing:.03em}
+.ob-tw-cap{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font-size:15px;font-weight:500;opacity:0;transition:opacity var(--med) var(--ease)}
+.ob-tw-cap.on{opacity:1}
+.ob-dim{opacity:.4}
+.ob-pr{transform-box:fill-box;transform-origin:0 50%;transition:transform 160ms var(--ease),opacity 160ms linear}
+.ob-pr.ob-off{transform:scaleX(0)}
+
+/* ---- 0 invite: floor, flap and sides, pocket; then the letter rises and your Home fills in ---- */
+.ob-disc{width:56px;height:56px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;flex:none;margin-bottom:14px}
+.ob-inv-letter{transform-box:view-box}
+.ob-inv-dot{transform-box:fill-box;transform-origin:center}
+.ob-art.il-draw .ob-inv-letter{animation:ob-rise 520ms var(--ease) 560ms both}
+.ob-art.il-draw .ob-inv-arc{stroke-dasharray:.72 1;animation:ob-arc var(--hero) var(--ease-io) 800ms both}
+.ob-art.il-draw .ob-inv-mac{animation-duration:320ms}
+.ob-art.il-draw .ob-inv-dot{animation:ob-dot 220ms var(--ease) both;animation-delay:calc(1100ms + var(--i,0) * 60ms)}
+@keyframes ob-rise{from{transform:translateY(64px);opacity:0}25%{opacity:1}to{transform:none;opacity:1}}
+@keyframes ob-arc{from{stroke-dashoffset:.72}to{stroke-dashoffset:0}}
+@keyframes ob-dot{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+/* the key's teeth come in once the key has drawn */
+.ob-art.il-draw .ob-k-tooth{animation:ob-fade 140ms linear 600ms both}
+
+/* ---- 1 name ---- */
+.ob-field{display:block;margin-top:16px;background:var(--surface);border-radius:var(--r-card);box-shadow:var(--shadow-card);transition:background var(--fast),box-shadow var(--fast)}
+.ob-field:focus-within{background:var(--surface-2);box-shadow:inset 0 0 0 2px var(--acc-graphic)}
+.ob-field input{width:100%;background:none;border:0;padding:15px 16px;font-size:17px;outline:none;color:var(--label)}
+.ob-field input::placeholder{color:var(--label-3)}
+.ob-reass{display:flex;gap:8px;align-items:flex-start;font-size:15px;color:var(--label-2);line-height:1.35;margin:0 0 8px}
+.ob-reass .icn{font-size:16px;margin-top:2px;flex:none}
+.ob-pk-err{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--label);padding:2px 0 6px}
+.ob-pk-err .icn{font-size:18px;color:var(--blue-ink);flex:none}
+.ob-pk-err .btn{margin-inline-start:auto}
+.ob-shake{animation:ob-shake 320ms ease-in-out}
+@keyframes ob-shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+.ob-spin{width:16px;height:16px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:ob-spin 800ms linear infinite;flex:none}
+@keyframes ob-spin{to{transform:rotate(360deg)}}
+
+/* ---- 1b passkey saved ---- */
+.ob-pass-svg{width:88px;height:88px;overflow:visible}
+.ob-pass-disc{fill:var(--acc-soft)}
+.ob-pass-arc{fill:none;stroke:var(--acc-graphic);stroke-width:3;stroke-linecap:round}
+.ob-pass-chk{fill:none;stroke:var(--acc-graphic);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.ob-pass-pop{transform-box:fill-box;transform-origin:center}
+.ob-pass-t{font-size:var(--fs-title2);font-weight:600;letter-spacing:-.02em;margin:20px 0 0}
+.ob-pass-s{font-size:15px;color:var(--label-2);margin:6px 0 0;width:min(100%,280px);line-height:1.35}
+
+/* ---- 4 training ---- */
+.ob-daysel{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.ob-daysel button{height:48px;border-radius:12px;background:var(--surface);box-shadow:var(--shadow-card);font-size:17px;font-weight:500;transition:transform var(--fast) var(--ease),background var(--fast),box-shadow var(--fast)}
+.ob-daysel button:active{transform:scale(.96);background:var(--surface-2)}
+.ob-daysel button[aria-checked="true"]{background:var(--acc-soft);color:var(--acc-ink);font-weight:700;box-shadow:inset 0 0 0 2px var(--acc-graphic)}
+.ob-dhint{font-size:13px;color:var(--label-2);margin:8px 4px 0}
+
+/* ---- 5a starter ---- */
+.ob-plan{background:var(--surface);border-radius:var(--r-card);box-shadow:var(--shadow-card);padding:16px}
+.ob-pl-name{font-size:var(--fs-title3);font-weight:600;letter-spacing:-.02em}
+.ob-pl-meta{font-size:15px;color:var(--label-2);margin-top:2px}
+.ob-pl-days{position:relative;display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:14px;padding-bottom:10px}
+/* the baseline the tiles stand on: its centre 8 below the tile bottoms (66 + 8) */
+.ob-pl-base{position:absolute;left:0;top:73px;width:100%;height:2px;overflow:visible;pointer-events:none}
+.ob-pl-base path{fill:none;stroke:var(--sep);stroke-width:var(--il-w-d);stroke-linecap:round}
+.ob-pday{height:66px;border-radius:10px;background:var(--surface-2);display:flex;flex-direction:column;align-items:center;padding-top:8px;font-size:11px;font-weight:500;letter-spacing:.03em;text-transform:uppercase;color:var(--label-2);transition:background var(--fast)}
+.ob-pday:active{background:var(--surface-3)}
+.ob-pill{position:absolute;top:30px;inset-inline-start:0;width:calc((100% - 24px) / 7);height:28px;display:flex;justify-content:center;pointer-events:none;transform:translateX(calc(var(--d) * (100% + 4px)));transition:transform 320ms var(--ease)}
+[dir="rtl"] .ob-pill{transform:translateX(calc(var(--d) * (-100% - 4px)))}
+.ob-pill b{min-width:30px;height:28px;padding:0 6px;border-radius:14px;background:var(--acc-soft);color:var(--acc-ink);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1.5px var(--acc-line);transition:background var(--fast),color var(--fast),transform var(--fast) var(--ease)}
+.ob-pill.sel b{background:var(--acc);color:var(--on-acc);box-shadow:none;transform:scale(1.08)}
+.ob-pl-hint{font-size:13px;color:var(--label-2);margin:8px 2px 0}
+.ob-pl-sess{margin-top:14px;transition:opacity 180ms linear}
+.ob-pl-st{font-size:13px;color:var(--label-2);margin-bottom:6px}
+.ob-exr{display:flex;align-items:center;gap:12px;padding:6px 0}
+.ob-exr+.ob-exr{border-top:var(--hair) solid var(--sep)}
+.ob-exth{width:40px;height:40px;border-radius:10px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--label-2);flex:none}
+.ob-exn{font-size:17px;letter-spacing:-.012em}
+.ob-exs{font-size:13px;color:var(--label-2)}
+.ob-pl-fit{display:flex;align-items:center;flex-wrap:wrap;gap:4px;font-size:15px;color:var(--label-2);margin-top:12px;padding-top:4px;border-top:var(--hair) solid var(--sep)}
+
+/* ---- the final step (placeholder) ---- */
+.ob-fin-art{width:min(100%,320px);height:16px;margin:0 auto;display:block;overflow:visible}
+.ob-fin-art path{fill:none;stroke:var(--sep);stroke-width:var(--il-w-d);stroke-linecap:round}

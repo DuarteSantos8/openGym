@@ -5,7 +5,8 @@ import { routineCount, todayISO, DAYN } from '../lib/format.js'
 import { streakWeeks } from '../lib/history.js'
 import { queueOf, queueView, weekTally } from '../lib/queue.js'
 import { nameOf, nextSession, trainingDay } from '../lib/training-day.js'
-import { Card } from './blocks.jsx'
+import { usePlanRefused } from '../lib/onboarding/use-plan-refused.js'
+import { Card, EmptyState } from './blocks.jsx'
 import { LineArt } from './line-art.jsx'
 import PlanWelcome from './PlanWelcome.jsx'
 import QueueRow from './QueueRow.jsx'
@@ -14,11 +15,24 @@ import { MediaRow, SectionHeader } from './tab-kit.jsx'
 // Home's "This week" (ux-redesign-tabs §1.6): sessions done against planned, the streak and the
 // next session, opening Training. A coach week or your own rotation adds its progress row, whose
 // chips start a session. Empty: Welcome (a starter plan or your own), or routines with nothing
-// scheduled.
+// scheduled. When the plan chosen at onboarding could not be set up (openGym refused it after the
+// rest went in), the empty state says so instead of the welcome, opening Training, until a plan
+// exists.
 export default function HomeWeek() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
+  const user = useStore(s => s.user)
+  const planRefused = usePlanRefused(user, S.routines.length > 0)
   const today = todayISO()
+
+  if (planRefused && !S.active) {
+    return <Card>
+      <EmptyState art={<LineArt scene="routine" state={{ days: 0 }} />} title={t('Your plan couldn’t be set up')}
+        action={{ label: t('Open Training'), onClick: () => nav('/train') }}>
+        {t('Pick one in Training.')}
+      </EmptyState>
+    </Card>
+  }
 
   if (!S.routines.length && !S.active) return <PlanWelcome />
 
