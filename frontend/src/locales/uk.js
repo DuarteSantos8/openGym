@@ -412,6 +412,8 @@ export default {
   'Fatigue': 'Втома',
   'Ready': 'Готовий',
   'Recovering': 'Відновлюється',
+  'Recovering {0}': 'Відновлюється {0}',
+  'Ready {0}': 'Готовий {0}',
   'Fatigued': 'Втомлений',
   'Fatigue shows how recently each muscle was trained. High means rest.': 'Втома показує, наскільки нещодавно тренувався кожен м’яз. Високий рівень означає, що пора відпочити.',
   'Strength shows retained muscle strength. Train again to reset it.': 'Сила показує, скільки м’язової сили збереглося. Повторне тренування скидає це значення.',

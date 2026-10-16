@@ -587,6 +587,8 @@ export default {
   'Fatigue': 'ความล้า',
   'Ready': 'พร้อม',
   'Recovering': 'กำลังฟื้นตัว',
+  'Recovering {0}': 'กำลังฟื้นตัว {0}',
+  'Ready {0}': 'พร้อม {0}',
   'Fatigued': 'ล้า',
   'Fatigue shows how recently each muscle was trained. High means rest.': 'ความล้าแสดงว่าแต่ละกล้ามเนื้อถูกฝึกเมื่อไหร่ ค่าสูงหมายถึงควรพัก',
   'Strength shows retained muscle strength. Train again to reset it.': 'ความแข็งแรงแสดงกำลังกล้ามเนื้อที่ยังคงเหลืออยู่ ฝึกอีกครั้งเพื่อรีเซ็ตค่านี้',

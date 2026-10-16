@@ -605,6 +605,8 @@ export default {
   'Fatigue': 'Ermüdung',
   'Ready': 'Bereit',
   'Recovering': 'In Erholung',
+  'Recovering {0}': 'In Erholung {0}',
+  'Ready {0}': 'Bereit {0}',
   'Fatigued': 'Ermüdet',
   'Fatigue shows how recently each muscle was trained. High means rest.': 'Die Ermüdung zeigt, wie lange das Training jedes Muskels zurückliegt. Ein hoher Wert bedeutet: Pause.',
   'Strength shows retained muscle strength. Train again to reset it.': 'Die Kraft zeigt, wie viel Muskelkraft erhalten ist. Trainiere erneut, um sie zurückzusetzen.',

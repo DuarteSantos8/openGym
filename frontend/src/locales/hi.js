@@ -586,6 +586,8 @@ export default {
   'Fatigue': 'थकान',
   'Ready': 'तैयार',
   'Recovering': 'पुनर्प्राप्ति में',
+  'Recovering {0}': 'पुनर्प्राप्ति में {0}',
+  'Ready {0}': 'तैयार {0}',
   'Fatigued': 'थकी हुई',
   'Fatigue shows how recently each muscle was trained. High means rest.': 'थकान बताती है कि हर मांसपेशी की ट्रेनिंग कितनी हाल की है। अधिक थकान होने पर आराम करें।',
   'Strength shows retained muscle strength. Train again to reset it.': 'शक्ति बताती है कि मांसपेशियों की कितनी ताकत बनी हुई है। इसे रीसेट करने के लिए फिर से ट्रेन करें।',

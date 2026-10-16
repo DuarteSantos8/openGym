@@ -576,6 +576,8 @@ export default {
   'Fatigue': 'Усталость',
   'Ready': 'Готова',
   'Recovering': 'Восстанавливается',
+  'Recovering {0}': 'Восстанавливается {0}',
+  'Ready {0}': 'Готова {0}',
   'Fatigued': 'Утомлена',
   'Fatigue shows how recently each muscle was trained. High means rest.': 'Усталость показывает, насколько недавно тренировалась каждая мышца. Высокий уровень означает, что пора отдохнуть.',
   'Strength shows retained muscle strength. Train again to reset it.': 'Сила показывает, сколько мышечной силы сохранилось. Повторная тренировка сбрасывает это значение.',
