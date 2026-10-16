@@ -176,6 +176,25 @@ test('a review cannot prescribe an odd total on a per-side exercise', () => {
   assert.equal(review([change({ type: 'reps', after: 17 })]).ok, true);
 });
 
+test('an added routine rejects malformed exercise entries without throwing or approving a blank exercise', () => {
+  for (const entry of [null, false, 0, '', [], {}, { id: 'not-in-the-library' }]) {
+    const input = JSON.parse(JSON.stringify({ changes: [change({
+      type: 'add-routine', target: {}, after: { name: 'Finisher', ex: [{ id: '0549', sets: 2, reps: 12 }, entry] }
+    })] }));
+    const result = validateReview(input, PLAN);
+    assert.equal(result.ok, false, JSON.stringify(entry));
+    assert.ok(result.errors.some(e => e.includes('changes[0].after.ex[1]')), JSON.stringify(result));
+    assert.equal(result.proposal, undefined);
+  }
+  // A valid library exercise and an existing custom exercise still survive the same path.
+  const input = { changes: [change({ type: 'add-routine', target: {}, after: {
+    name: 'Finisher', ex: [{ id: '0549', sets: 2, reps: 12 }, { id: 'cx-carry', sets: 3, reps: 10 }]
+  } })] };
+  const result = validateReview(input, PLAN, { customIds: ['cx-carry'] });
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.proposal.changes[0].after.ex.map(e => e.id), ['0549', 'cx-carry']);
+});
+
 /* ---------------- review change-sets ---------------- */
 
 test('an invented change type does nothing at all', () => {
