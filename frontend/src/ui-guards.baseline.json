@@ -27,14 +27,11 @@
     "views/History.jsx": 1,
     "views/Library.jsx": 3,
     "views/Login.jsx": 3,
-    "views/Measurements.jsx": 3,
     "views/MobileOnboarding.jsx": 2,
     "views/Plan.jsx": 1,
-    "views/ProgressHub.jsx": 3,
     "views/ProgressPhotos.jsx": 2,
     "views/RoutineEdit.jsx": 14,
     "views/Settings.jsx": 26,
-    "views/Stats.jsx": 34,
     "views/StructuralBalance.jsx": 8,
     "views/Workout.jsx": 18
   },
@@ -79,12 +76,9 @@
     "views/FocusView.jsx": 4,
     "views/History.jsx": 1,
     "views/Library.jsx": 1,
-    "views/Measurements.jsx": 1,
     "views/Plan.jsx": 1,
-    "views/ProgressHub.jsx": 3,
     "views/RoutineEdit.jsx": 2,
     "views/Settings.jsx": 2,
-    "views/Stats.jsx": 3,
     "views/Workout.jsx": 3
   },
   "G4": []

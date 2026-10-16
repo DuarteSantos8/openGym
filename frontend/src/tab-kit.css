@@ -284,6 +284,65 @@
 .stat-sec-l,.stat-sec-n{font-size:var(--fs-subhead);color:var(--label-2)}
 .stat-sec-n{margin-block:var(--space-4)}
 .stat-sec-f{margin-top:var(--space-6)}
+/* At 320px the art and two values leave the second no room in a longer language (ru "Изменение"):
+   the gaps and type step down a token so the labels fit instead of running out of the card. */
+@media (width <= 360px){
+  .stat-sec-b{gap:var(--space-4);--art-w:80px;--art-h:60px}
+  .stat-sec-v+.stat-sec-v{padding-inline-start:var(--space-4)}
+  .stat-sec-num{font-size:var(--fs-title2)}
+  .stat-sec-l{font-size:var(--fs-footnote)}
+}
+
+/* PeriodNav: 44px chevrons either side of a centred title and its sub. */
+.pnav{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:var(--space-4);margin-bottom:var(--space-6)}
+.pnav-b{width:var(--tap-min);height:var(--tap-min);font-size:18px}
+.pnav-t{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;text-align:center}
+.pnav-h{font-size:var(--fs-callout);font-weight:var(--fw-semibold);color:var(--label)}
+.pnav-s{font-size:var(--fs-footnote);color:var(--label-2)}
+
+/* StatCard: one reading picked out of a map or a list. */
+.card.stat-card{padding:var(--space-8)}
+.stat-card-h{display:flex;align-items:baseline;justify-content:space-between;gap:var(--space-4)}
+.stat-card-l{font-size:var(--fs-callout);font-weight:var(--fw-semibold);color:var(--label);min-width:0}
+.stat-card-m{font-size:var(--fs-footnote);color:var(--label-2);text-align:end}
+.stat-card-v{display:flex;align-items:baseline;flex-wrap:wrap;gap:var(--space-3);margin-top:var(--space-4);font-variant-numeric:tabular-nums}
+.stat-card-num{font-size:var(--fs-display);font-weight:var(--fw-bold);letter-spacing:var(--ls-display);line-height:1}
+.stat-card-u{font-size:var(--fs-callout);color:var(--label-2)}
+.stat-card-c{margin-top:var(--space-4);font-size:var(--fs-subhead);color:var(--label-2)}
+
+/* MuscleRow: a 10px dot in the muscle's level shade, the map's own ramp, so the list keys to it. */
+.mus-dot{flex:none;width:10px;height:10px;border-radius:50%;background:var(--bm-base)}
+.mus-dot.l1{background:color-mix(in srgb,var(--acc) 32%,var(--bm-base))}
+.mus-dot.l2{background:color-mix(in srgb,var(--acc) 56%,var(--bm-base))}
+.mus-dot.l3{background:color-mix(in srgb,var(--acc) 78%,var(--bm-base))}
+.mus-dot.l4{background:var(--acc)}
+.hm-fatigue .mus-dot.l4{background:var(--red)}
+.hm-fatigue .mus-dot.l3{background:var(--orange)}
+.hm-fatigue .mus-dot.l2{background:var(--yellow)}
+.hm-fatigue .mus-dot.l1{background:color-mix(in srgb,var(--yellow) 32%,var(--bm-base))}
+.hm-strength .mus-dot.l4{background:var(--yellow)}
+.mus-list{--bm-base:color-mix(in srgb,var(--label) 11%,var(--surface))}
+.lrow.mus-row+.lrow.mus-row::before{inset-inline-start:36px}
+.lrow.mus-row[aria-pressed="true"] .lrow-t{font-weight:var(--fw-semibold)}
+.mus-v{font-variant-numeric:tabular-nums;font-size:var(--fs-subhead)}
+
+/* The Strength chart's per-set legend: set 1 to 5 in the lines' own colours
+   (lib/use-exercise-progress.js SET_COLORS). */
+.set-key{flex:none;width:8px;height:8px;border-radius:50%}
+.set-key-1{background:var(--blue)}
+.set-key-2{background:var(--green)}
+.set-key-3{background:var(--orange)}
+.set-key-4{background:var(--purple)}
+.set-key-5{background:var(--pink)}
+
+/* The Effort card's histogram: the hard bins in the effort colour, the rest quiet. */
+.mrow .bar i.bar-hard{background:var(--yellow)}
+.mrow .bar i.bar-soft{background:var(--label-3)}
+
+/* BodyMap captions: Front / Back under each view. */
+.bm-fig{flex:1;min-width:0;margin:0;display:flex;flex-direction:column;align-items:center;gap:var(--space-2)}
+.bm-fig>.bm-v{width:100%}
+.bm-cap{font-size:var(--fs-footnote);color:var(--label-2)}
 
 /* MediaRow: an ItemRow led by art at 96×72, or the exercise variant's 56px thumb. */
 .item.item-lg{gap:var(--space-7);padding:var(--space-4)}
@@ -332,6 +391,10 @@
 .seg.seg-lg{border-radius:var(--r);padding:3px}
 .seg.seg-lg .seg-sel{top:3px;bottom:3px;inset-inline-start:3px;width:calc((100% - 6px)/var(--n));border-radius:9px}
 .seg.seg-lg button{min-height:36px;font-size:var(--fs-subhead)}
+/* A page's segments (up to five on Strength) share a 320px row: a label stays on one line and
+   gives back padding rather than wrapping or running into its neighbour. */
+.seg.seg-range button,.seg.seg-lg button{padding-inline:var(--space-2)}
+.seg.seg-range button span,.seg.seg-lg button span{white-space:nowrap}
 
 /* Row glyph and accessory="add". */
 .lrow-g{flex:none;display:flex;font-size:var(--glyph);color:var(--label)}

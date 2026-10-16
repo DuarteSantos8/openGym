@@ -376,11 +376,6 @@ h4.sec{
 .divider{height:var(--hair);background:var(--sep);margin:14px 0;border:0}
 .row{display:flex;align-items:center;gap:12px}
 .row.between{justify-content:space-between}
-/* The body-weight card header (Home and Stats): title on the left, Goal + Log on the right. In
-   German the title and the two buttons ("Ziel", "+ Eintragen") outgrow a 320px card by about
-   55px, so the button pair may drop to a second line — still flush right, hence the auto margin. */
-.bw-head{flex-wrap:wrap;row-gap:8px}
-.bw-head>.row{margin-inline-start:auto}
 
 /* ----------------------------------------------------------------- card -- */
 .card{
@@ -443,17 +438,6 @@ h4.sec{
 .lrow.danger,.lrow.danger .lrow-t{color:var(--red-ink)}
 /* A warning under a settings row reads at subtitle size: a sentence, not a row title. */
 .lrow.backup-lost .lrow-t{font-size:13px;line-height:1.3;color:var(--label-2);letter-spacing:0}
-/* The Stats exercise name gets its own line so long names cannot run into the title.
-   Two columns only — label/value on the left, chevron on the right — so this is for rows
-   WITHOUT an icon. `.lrow-i` is not placed here; on a row that has one it would auto-place
-   into the grid and push the layout around. Give it a leading column before using this
-   anywhere else. */
-.lrow.lrow-stack-value{
-  display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;
-}
-.lrow.lrow-stack-value .lrow-m{grid-column:1;grid-row:1}
-.lrow.lrow-stack-value .lrow-v{grid-column:1;grid-row:2;width:100%;max-width:none;text-align:start}
-.lrow.lrow-stack-value .lrow-c{grid-column:2;grid-row:1 / span 2;align-self:center}
 /* an (i) before a row's control: painted small and dim so the control stays the loud thing,
    but with a finger-sized target like everything else — the padding is the hit area and the
    vertical negative margin keeps it from making the row taller. The horizontal ones pull the
@@ -1750,7 +1734,6 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .stat-v{font-size:26px;font-weight:600;letter-spacing:-.026em;line-height:1.1}
 .mchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
 .mchip{font-size:12px;padding:4px 9px;border-radius:99px;background:var(--surface-2);color:var(--label-2)}
-.mchip.miss{background:color-mix(in srgb,var(--orange) 16%,transparent);color:var(--orange-ink)}
 
 /* --- stat tiles --- */
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
@@ -2064,8 +2047,6 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .plan [data-reorder-row]{transition:transform var(--fast) var(--ease)}
 .plan-link{margin-top:24px}
 .plan-empty{padding:28px 20px}
-/* Stats: the card Plan links to clears the sticky banners when it is scrolled to */
-#weekly-volume{scroll-margin-top:calc(var(--sat) + var(--conn) + 96px)}
 
 /* ------------------------------------------------- duration wheel picker -- */
 /* components/DurationWheel.jsx: two scroll-snap wheels under one highlight band. --dw-item is

@@ -349,12 +349,34 @@ describe('a page that redirects', () => {
 
 describe('back on a sub-page', () => {
   it('opened cold, it goes to the parent in its place', async () => {
-    await launch('#/progress/body/measurements')
+    await launch('#/progress/strength/balance')
     await click(document.querySelector('.sub-hdr button[aria-label="Back"]'))
-    expect(hash()).toBe('#/progress/body')
+    expect(hash()).toBe('#/progress/strength')
     await click(document.querySelector('.sub-hdr button[aria-label="Back"]'))
     expect(hash()).toBe('#/progress')
     expect(await backLeavesApp()).toBe(true)
+  })
+
+  it('a Body segment opened cold goes back to Progress, not to the Weight segment', async () => {
+    await launch('#/progress/body/measurements')
+    await click(document.querySelector('.sub-hdr button[aria-label="Back"]'))
+    expect(hash()).toBe('#/progress')
+    expect(await backLeavesApp()).toBe(true)
+  })
+
+  it('switching Body segments replaces the page, so back still goes to Progress', async () => {
+    await launch('#/progress')
+    await click([...document.querySelectorAll('.stat-sec-h button')].find(b => b.textContent === 'Body'))
+    expect(hash()).toMatch(/^#\/progress\/body\?range=\d+$/)
+    const segment = label => [...document.querySelectorAll('.seg button')].find(b => b.textContent === label)
+    await click(segment('Measurements'))
+    expect(hash()).toMatch(/^#\/progress\/body\/measurements\?range=\d+$/)
+    await click(segment('Photos'))
+    expect(hash()).toMatch(/^#\/progress\/body\/photos\?range=\d+$/)
+    expect(segment('Photos').getAttribute('aria-pressed')).toBe('true')
+    await click(document.querySelector('.sub-hdr button[aria-label="Back"]'))
+    expect(hash()).toBe('#/progress')
+    expect(idx()).toBe(0)
   })
 
   it('reached in the tab, it goes one step down the stack', async () => {
@@ -584,15 +606,25 @@ describe('the launch', () => {
     expect(hash()).toBe('#/train/workout')
   })
 
-  it('takes an old route to where it lives now, query kept', async () => {
+  it('takes an old route to where it lives now', async () => {
     await launch('#/stats?focus=weekly-volume')
-    // Into Training load, where the weekly volume card is; the hub is its parent, not stacked in.
-    expect(hash()).toBe('#/progress/load?focus=weekly-volume')
-    expect(document.getElementById('weekly-volume') || document.querySelector('.sub-hdr h1').textContent === 'Training load').toBeTruthy()
+    // Into Training load's Plan segment, where the weekly volume is; the hub is its parent, not
+    // stacked in.
+    expect(hash()).toBe('#/progress/load?view=plan')
+    expect(document.querySelector('.sub-hdr h1').textContent).toBe('Training load')
+    expect([...document.querySelectorAll('.seg button')].find(b => b.textContent === 'Plan').getAttribute('aria-pressed')).toBe('true')
     expect(idx()).toBe(0)
     await click(document.querySelector('.sub-hdr button[aria-label="Back"]'))
     expect(hash()).toBe('#/progress')
     expect(await backLeavesApp()).toBe(true)
+  })
+
+  it('turns Plan\'s old weekly-volume link into the Plan segment, in its place', async () => {
+    await launch('#/progress/load?focus=weekly-volume')
+    expect(hash()).toBe('#/progress/load?view=plan')
+    expect(idx()).toBe(0)
+    await click(document.querySelector('.sub-hdr button[aria-label="Back"]'))
+    expect(hash()).toBe('#/progress')
   })
 
   it('keeps the fragment of an old route', async () => {

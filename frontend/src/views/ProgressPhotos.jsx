@@ -22,8 +22,9 @@ import { useMediaPicker } from '../components/CustomMediaField.jsx'
 import { CustomThumb, MediaView, useMediaUrl } from '../components/CustomMedia.jsx'
 import { Button } from '../components/ui.jsx'
 import Icon from '../components/Icon.jsx'
-import { Page, Inline } from '../components/layout.jsx'
-import { EmptyState } from '../components/blocks.jsx'
+import { Inline } from '../components/layout.jsx'
+import { EmptyState, InlineNote } from '../components/blocks.jsx'
+import { ActionButton, ActionRow, TabSection } from '../components/tab-kit.jsx'
 
 const toast = m => useUI.getState().toast(m)
 
@@ -171,28 +172,33 @@ export default function ProgressPhotos() {
     else if (res === 'gone') toast(t('Workout deleted'))
   }
 
+  // [Add photo] [Compare]: a photo goes on today's logged workout, so with none yet the first slot
+  // goes to the workout and a line says why. Compare turns into Cancel while two are being picked.
+  const compare = comparing
+    ? <ActionButton icon="xmark" label={t('Cancel')} onClick={cancelCompare} />
+    : <ActionButton icon="sides" label={t('Compare')} onClick={() => setComparing(true)} disabled={photos.length < 2} />
   return <>
-    <Page title={t('Progress photos')} sub={tn('{0} photo', '{0} photos', photos.length)}
-      action={photos.length >= 2 && (comparing
-        ? <Button size="sm" variant="ghost" onClick={cancelCompare}>{t('Cancel')}</Button>
-        : <Button size="sm" variant="tinted" onClick={() => setComparing(true)}>{t('Compare')}</Button>)} />
-
-    {!comparing && showAdd && <Inline className="mb-8">
-      {today
-        ? <Button icon={busy ? 'image' : 'camera'} disabled={!canAdd} onClick={() => fileRef.current?.click()}>
-            {busy ? t('Loading…') : t('Add a photo to today')}
-          </Button>
-        : <Button icon="dumbbell" onClick={() => nav('/train/workout')}>{t('Log today’s workout to add a photo')}</Button>}
+    <TabSection>
+      {showAdd ? <ActionRow>
+        {today
+          ? <ActionButton icon="camera" label={t('Add photo')} busy={busy} disabled={!canAdd || busy || comparing} onClick={() => fileRef.current?.click()} />
+          : <ActionButton icon="dumbbell" label={t('Workout')} disabled={comparing} onClick={() => nav('/train/workout')} />}
+        {compare}
+      </ActionRow> : photos.length >= 2 && <Inline justify="end">
+        <Button size="sm" variant={comparing ? 'ghost' : 'tinted'} onClick={comparing ? cancelCompare : () => setComparing(true)}>{t(comparing ? 'Cancel' : 'Compare')}</Button>
+      </Inline>}
+      {showAdd && !today && !comparing && <InlineNote icon="info">{t('A photo goes on a workout: log today’s to add one.')}</InlineNote>}
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
-    </Inline>}
+    </TabSection>
 
-    {comparing && <div className="small dim mb-6">
-      {picked.length < 2 ? t('Pick two photos to compare.') : t('Ready! Open the comparison.')}
-    </div>}
+    <div className="small dim mb-6">
+      {comparing ? (picked.length < 2 ? t('Pick two photos to compare.') : t('Ready! Open the comparison.'))
+        : photos.length > 0 && tn('{0} photo', '{0} photos', photos.length)}
+    </div>
 
     {!photos.length
-      ? <EmptyState icon="image">
-          {t('No progress photos yet. The button above adds one to today, once today has a logged workout.')}
+      ? <EmptyState icon="image" title={t('No progress photos yet')}>
+          {t('Add one to a day you trained, and line them up here by date.')}
         </EmptyState>
       : groups.map(g => (
         <div key={g.d} className="mb-9">

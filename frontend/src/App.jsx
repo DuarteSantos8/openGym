@@ -42,16 +42,16 @@ import CheckIn from './views/CheckIn.jsx'
 import Plan from './views/Plan.jsx'
 import RoutineEdit from './views/RoutineEdit.jsx'
 import Workout from './views/Workout.jsx'
-import Stats from './views/Stats.jsx'
+import Body from './views/Body.jsx'
+import Strength from './views/Strength.jsx'
+import TrainingLoad from './views/TrainingLoad.jsx'
 import History from './views/History.jsx'
 import Library from './views/Library.jsx'
 import Muscles from './views/Muscles.jsx'
 import StructuralBalance from './views/StructuralBalance.jsx'
-import ProgressPhotos from './views/ProgressPhotos.jsx'
 import { SettingsRoute } from './views/Settings.jsx'
 import Admin from './views/Admin.jsx'
 import CoachChat from './views/CoachChat.jsx'
-import Measurements from './views/Measurements.jsx'
 import CoachIntake from './views/CoachIntake.jsx'
 import CoachSetup from './views/CoachSetup.jsx'
 import TrainHub from './views/TrainHub.jsx'
@@ -285,12 +285,12 @@ function Shell() {
               <Route path="/food/fasting" element={<Fasting />} />
               {/* Progress */}
               <Route path="/progress" element={<ProgressHub />} />
-              <Route path="/progress/body" element={<Stats section="body" />} />
-              <Route path="/progress/body/measurements" element={<Measurements />} />
-              <Route path="/progress/body/photos" element={<ProgressPhotos />} />
-              <Route path="/progress/strength" element={<Stats section="strength" />} />
+              <Route path="/progress/body" element={<Body segment="weight" />} />
+              <Route path="/progress/body/measurements" element={<Body segment="measurements" />} />
+              <Route path="/progress/body/photos" element={<Body segment="photos" />} />
+              <Route path="/progress/strength" element={<Strength />} />
               <Route path="/progress/strength/balance" element={<StructuralBalance />} />
-              <Route path="/progress/load" element={<Stats section="load" />} />
+              <Route path="/progress/load" element={<TrainingLoad />} />
               <Route path="/progress/trends" element={<Trends />} />
               <Route path="/progress/recovery" element={<Recovery />} />
               {/* Opened from any tab, on top of it: the workout and Profile. */}

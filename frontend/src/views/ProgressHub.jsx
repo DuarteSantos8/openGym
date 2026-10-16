@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { doneUnits, setsDone, streakWeeks, workoutDay } from '../lib/history.js'
 import { fmtNum } from '../lib/format.js'
-import { weighInTime } from '../lib/bodyweight.js'
+import { deltaTone, weighInTime } from '../lib/bodyweight.js'
 import { t, tn } from '../lib/i18n.js'
 import { nutritionAvailable } from '../lib/nutrition/api.js'
 import { useNutrition } from '../lib/nutrition/store.js'
@@ -11,55 +11,24 @@ import { seriesOf, summaryOf, unitOf, windowOf } from '../lib/nutrition/trends.j
 import { useFresh, useToday } from '../lib/nutrition/use-freshness.js'
 import { useTrends, useWellness } from '../lib/nutrition/use-trends.js'
 import { headlines, presentMetrics, recoveryWindow } from '../lib/nutrition/wellness.js'
-import { bwDeltaColor } from '../sheets.jsx'
-import { tappable } from '../lib/use-sheet-keyboard.js'
-import Icon from '../components/Icon.jsx'
+import { rangeFrom, rangeOptions, rangeStart, rememberRange, storedRange } from '../lib/progress-range.js'
+import { LB_TO_KG } from '../lib/recovery.js'
+import { bwSheet } from '../sheets.jsx'
 import { Page } from '../components/layout.jsx'
+import { ActionButton, ActionRow, StatSection, TabSection } from '../components/tab-kit.jsx'
+import { LineArt } from '../components/line-art.jsx'
+import LineChart from '../components/LineChart.jsx'
 import { Segmented } from '../components/ui.jsx'
-import { rangeFrom, rangeOptions } from './Stats.jsx'
+import { measurementLogSheet } from './Measurements.jsx'
 
-const DAY = 86400000
+const TONE = { toward: 'acc', away: 'danger' }
+const signed = n => (n > 0 ? '+' : n < 0 ? '−' : '') + fmtNum(Math.abs(n))
 
-// One live card that opens a pushed page: a title, the number that matters over the range, and a
-// line of context under it.
-function HubCard({ icon, tint, title, value, note, onOpen }) {
-  return (
-    <div className="card tappable hub-card" role="button" {...tappable(onOpen)}>
-      <div className="row between">
-        <div className="row" style={{ gap: 9, minWidth: 0 }}>
-          <span className="lrow-i" style={{ '--tint': tint }}><Icon name={icon} /></span>
-          <div style={{ minWidth: 0 }}>
-            <div className="hub-card-t">{title}</div>
-            <div className="hub-card-v">{value}</div>
-            {note && <div className="hub-card-n">{note}</div>}
-          </div>
-        </div>
-        <Icon name="chevronRight" className="chev" />
-      </div>
-    </div>
-  )
-}
-
-// What the Nutrition trends card says: the daily calorie average over the range and the protein
-// next to it, or why there is none yet.
-function trendsLine(status, summary, protein, unit, proteinUnit) {
-  if (status === 'error') return { value: t('Nutrition did not load'), note: t('Open to try again') }
-  if (status !== 'ready') return { value: t('Loading…'), note: null }
-  if (!summary) return { value: t('No food logged yet'), note: t('Calories, macros and any nutrient over time') }
-  return {
-    value: t('{0} {1} a day', fmtNum(summary.avg), unit),
-    note: protein
-      ? tn('{0} day logged · protein {1} {2}', '{0} days logged · protein {1} {2}', summary.count, fmtNum(protein.avg), proteinUnit)
-      : tn('{0} day logged', '{0} days logged', summary.count),
-  }
-}
-
-const readout = h => (h.unit ? t('{0} {1} {2}', h.label, fmtNum(h.avg), h.unit) : t('{0} {1}', h.label, fmtNum(h.avg)))
-
-// The Progress tab's root: one range for the whole page, and a card per area — Body, Strength,
-// Training load, Nutrition trends, Recovery — each opening its page at the same range. The last
-// two are the web app's: Nutrition trends needs NutriTrace, and Recovery shows only when a wearable
-// has reported something.
+// The Progress tab's root (ux-redesign-tabs §4.3, ui-redesign-components §4): the range for the
+// whole tab, the two things to log, then a card per area, each opening its page at the same
+// range. Nutrition trends needs NutriTrace, and Recovery shows only once a wearable has reported
+// something. The range is the address's when it has one (the tab's stack, a reload), else the one
+// this device picked last, else 3M.
 export default function ProgressHub() {
   const nav = useNavigate()
   const { search } = useLocation()
@@ -69,7 +38,7 @@ export default function ProgressHub() {
   const settings = useNutrition(s => s.settings.data)
   const trends = useTrends()
   const wellness = useWellness()
-  const range = rangeFrom(search, 90)
+  const range = rangeFrom(search, storedRange())
 
   const today = useToday()
   useEffect(() => {
@@ -82,42 +51,64 @@ export default function ProgressHub() {
   const protein = useMemo(() => summaryOf(seriesOf(trends.days, 'proteins', win, settings)), [trends.days, win, settings])
   const recovery = useMemo(() => headlines(wellness.byDate, recoveryWindow(range, today)), [wellness.byDate, range, today])
   const hasWearable = wellness.status === 'ready' && presentMetrics(wellness.byDate).length > 0
-  const trendsText = trendsLine(trends.status, calories, protein, unitOf('calories', settings), unitOf('proteins', settings))
-  // Kept in the address, so the tab's stack (and a reload) comes back to the range it was left on.
-  const setRange = v => nav('/progress?range=' + v, { replace: true })
-  const from = range ? Date.now() - range * DAY : 0
+
+  const setRange = v => { rememberRange(v); nav('/progress?range=' + v, { replace: true }) }
+  const open = path => nav(path + '?range=' + range)
+  const from = useMemo(() => rangeStart(range), [range])
   const at = w => new Date(workoutDay(w) + 'T12:00').getTime()
 
   const weights = S.bodyweight.filter(b => weighInTime(b) >= from)
-  const last = S.bodyweight[S.bodyweight.length - 1]
-  const change = weights.length > 1 ? weights[weights.length - 1].w - weights[0].w : null
+  const last = S.bodyweight.at(-1)
+  const change = weights.length > 1 ? weights.at(-1).w - weights[0].w : null
+  const spark = useMemo(() => weights.map(b => ({ t: weighInTime(b), y: b.w, d: b.d })), [S.bodyweight, from])
   const inRange = S.workouts.filter(w => at(w) >= from)
   const prs = inRange.reduce((n, w) => n + (Array.isArray(w.prs) ? w.prs.length : 0), 0)
   const lifted = new Set(inRange.flatMap(w => w.entries.filter(e => e.sets.some(s => doneUnits(s) > 0)).map(e => e.id))).size
   const sets = inRange.reduce((n, w) => n + setsDone(w), 0)
-  const open = path => nav(path + '?range=' + range)
+
+  const trendsStatus = trends.status === 'error' ? 'error' : trends.status !== 'ready' ? 'loading' : calories ? 'ready' : 'empty'
+  const kcal = unitOf('calories', settings)
 
   return <Page root title={t('Progress')}>
-    <Segmented className="seg-range" value={range} onChange={setRange} options={rangeOptions()} />
-    <HubCard icon="scale" tint="var(--teal)" title={t('Body')}
-      value={last ? fmtNum(last.w) + ' ' + S.unit : t('No weigh-ins yet')}
-      note={change === null ? t('Weight, measurements and photos')
-        : <span style={{ color: bwDeltaColor(change, last?.w || 0) }}>{(change > 0 ? '+' : '') + fmtNum(change) + ' ' + S.unit}</span>}
-      onOpen={() => open('/progress/body')} />
-    <HubCard icon="trophy" tint="var(--orange)" title={t('Strength')}
-      value={t('Personal records: {0}', prs)}
-      note={t('Exercises trained: {0}', lifted)}
-      onOpen={() => open('/progress/strength')} />
-    <HubCard icon="flame" tint="var(--red)" title={t('Training load')}
-      value={tn('{0} workout', '{0} workouts', inRange.length)}
-      note={tn('{0} set', '{0} sets', sets) + ' · ' + t('{0} week streak', streakWeeks(S))}
-      onOpen={() => open('/progress/load')} />
-    {nutrition && <HubCard icon="utensils" tint="var(--green)" title={t('Nutrition trends')}
-      value={trendsText.value} note={trendsText.note}
-      onOpen={() => open('/progress/trends')} />}
-    {nutrition && hasWearable && <HubCard icon="heart" tint="var(--pink)" title={t('Recovery')}
-      value={recovery.length ? readout(recovery[0]) : t('No readings in this range')}
-      note={recovery[1] ? readout(recovery[1]) : t('From your wearable')}
-      onOpen={() => open('/progress/recovery')} />}
+    <TabSection>
+      <Segmented tone="strong" size="lg" ariaLabel={t('Range')} value={range} onChange={setRange} options={rangeOptions()} />
+    </TabSection>
+    <TabSection>
+      <ActionRow>
+        <ActionButton icon="scale" label={t('Weigh in')} onClick={() => bwSheet()} />
+        <ActionButton icon="ruler" label={t('Log measurements')} onClick={() => measurementLogSheet()} />
+      </ActionRow>
+    </TabSection>
+    <TabSection>
+      <StatSection title={t('Body')} onOpen={() => open('/progress/body')}
+        art={<LineArt scene="scale" state={{ kg: last ? (S.unit === 'lb' ? last.w * LB_TO_KG : last.w) : null }} />}
+        status={last ? 'ready' : 'empty'}
+        values={last
+          ? [{ value: fmtNum(last.w), unit: S.unit, label: t('Latest') },
+            ...(change == null ? [] : [{ value: signed(change), unit: S.unit, label: t('Weight change'), tone: TONE[deltaTone(change, last.w, S.targetW)] }])]
+          : [{ label: t('Latest') }]}
+        note={last ? null : t('No weigh-ins yet')}
+        action={{ icon: 'plus', label: t('Log weight'), onClick: () => bwSheet() }}
+        footer={spark.length > 1 && <div className="chart"><LineChart points={spark} h={56} axes={false} unit={S.unit} goal={S.targetW} decorative /></div>} />
+      <StatSection title={t('Strength')} onOpen={() => open('/progress/strength')}
+        status={S.workouts.length ? 'ready' : 'empty'}
+        values={[{ value: prs, label: t('Personal records') }, { value: lifted, label: t('Exercises trained') }]}
+        note={S.workouts.length ? null : t('Finish a workout and your strength curves start here.')} />
+      <StatSection title={t('Training load')} onOpen={() => open('/progress/load')}
+        values={[{ value: inRange.length, label: t('Workouts') }, { value: sets, label: t('Sets') }]}
+        note={t('{0} week streak', streakWeeks(S))} />
+      {nutrition && <StatSection title={t('Nutrition trends')} onOpen={() => open('/progress/trends')}
+        status={trendsStatus}
+        values={[{ value: calories ? fmtNum(calories.avg) : null, unit: kcal, label: t('Calories a day') },
+          ...(protein ? [{ value: fmtNum(protein.avg), unit: unitOf('proteins', settings), label: t('Protein a day') }] : [])]}
+        note={trendsStatus === 'error' ? t('Nutrition did not load')
+          : trendsStatus === 'empty' ? t('No food logged yet')
+          : calories ? tn('{0} day logged', '{0} days logged', calories.count) : null}
+        onRetry={() => useTrends.getState().load({ force: true })} />}
+      {nutrition && hasWearable && <StatSection title={t('Recovery')} onOpen={() => open('/progress/recovery')}
+        status={recovery.length ? 'ready' : 'empty'}
+        values={recovery.slice(0, 2).map(h => ({ value: fmtNum(h.avg), unit: h.unit || undefined, label: h.label }))}
+        note={recovery.length ? t('From your wearable') : t('No readings in this range')} />}
+    </TabSection>
   </Page>
 }

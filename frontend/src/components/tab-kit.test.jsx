@@ -4,7 +4,8 @@ import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  ActionButton, ActionRow, HeroStatus, MacroGauge, MacroGauges, MediaRow, SectionHeader, StatSection, StickyActionBar, TabSection,
+  ActionButton, ActionRow, HeroStatus, MacroGauge, MacroGauges, MediaRow, MuscleRow, PeriodNav, SectionHeader, StatCard, StatSection,
+  StickyActionBar, TabSection,
 } from './tab-kit.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -237,6 +238,128 @@ describe('StatSection', () => {
     expect($('.stat-sec-v')).toBeNull()
     act(() => [...host.querySelectorAll('button')].find(b => b.textContent === 'Try again').click())
     expect(onRetry).toHaveBeenCalled()
+  })
+})
+
+describe('StatSection: action and tone', () => {
+  const pill = () => [...host.querySelectorAll('button')].find(b => b.classList.contains('btn-pill'))
+
+  it('puts the action pill in the empty state only, and it runs', () => {
+    const onClick = vi.fn()
+    const action = { icon: 'plus', label: 'Log weight', onClick }
+    render(<StatSection title="Body" status="empty" action={action} values={[{ label: 'Latest' }]} />)
+    expect(pill().textContent).toBe('Log weight')
+    expect(pill().querySelector('[data-icon="plus"]')).not.toBeNull()
+    act(() => pill().click())
+    expect(onClick).toHaveBeenCalledTimes(1)
+    for (const status of ['ready', 'loading', 'error']) {
+      render(<StatSection title="Body" status={status} action={action} values={[{ value: 1, label: 'Latest' }]} />)
+      expect(pill()).toBeUndefined()
+    }
+  })
+
+  it('colours a value\'s number with its ink tone, and only when it has a value', () => {
+    render(<StatSection title="Body" values={[{ value: '+2', label: 'Change', tone: 'danger' }, { value: '78', label: 'Latest' }]} />)
+    const [change, latest] = $$('.stat-sec-num')
+    expect(change.classList.contains('ink-danger')).toBe(true)
+    expect(latest.className).not.toMatch(/ink-/)
+    render(<StatSection title="Body" status="empty" values={[{ label: 'Change', tone: 'acc' }]} />)
+    expect($('.stat-sec-num').className).not.toMatch(/ink-/)
+  })
+
+  it.each(['danger', 'warn', 'orange', 'acc', 'ok'])('accepts the %s tone', tone => {
+    render(<StatSection title="x" values={[{ value: 1, label: 'a', tone }]} />)
+    expect($('.stat-sec-num').classList.contains('ink-' + tone)).toBe(true)
+  })
+
+  it('refuses a tone it does not know', () => {
+    expect(() => render(<StatSection title="x" values={[{ value: 1, label: 'a', tone: 'purple' }]} />)).toThrow(/tone="purple"/)
+  })
+})
+
+describe('PeriodNav', () => {
+  const nav = props => render(<PeriodNav title="Week of 12 Oct" sub="This week" prevLabel="Previous week" nextLabel="Next week" {...props} />)
+
+  it('shows the period with its sub, and steps either way', () => {
+    const onPrev = vi.fn(), onNext = vi.fn()
+    nav({ onPrev, onNext })
+    expect($('.pnav-h').textContent).toBe('Week of 12 Oct')
+    expect($('.pnav-s').textContent).toBe('This week')
+    act(() => $('button[aria-label="Previous week"]').click())
+    act(() => $('button[aria-label="Next week"]').click())
+    expect([onPrev.mock.calls.length, onNext.mock.calls.length]).toEqual([1, 1])
+  })
+
+  it('turns the next step off at the present, and either step off when told', () => {
+    const onNext = vi.fn()
+    nav({ onNext, nextDisabled: true })
+    expect($('button[aria-label="Next week"]').disabled).toBe(true)
+    expect($('button[aria-label="Previous week"]').disabled).toBe(false)
+    act(() => $('button[aria-label="Next week"]').click())
+    expect(onNext).not.toHaveBeenCalled()
+    nav({ prevDisabled: true })
+    expect($('button[aria-label="Previous week"]').disabled).toBe(true)
+  })
+
+  it('leaves out the sub when there is none', () => {
+    nav({ sub: undefined })
+    expect($('.pnav-s')).toBeNull()
+  })
+})
+
+describe('StatCard', () => {
+  it('is a label with its meta, a value with its unit, and a caption', () => {
+    render(<StatCard label="Chest" meta="3 of 5" value="12.4" unit="/ 12.4 sets" caption="Steady this week" />)
+    expect($('.card.stat-card')).not.toBeNull()
+    expect($('.stat-card-l').textContent).toBe('Chest')
+    expect($('.stat-card-m').textContent).toBe('3 of 5')
+    expect($('.stat-card-num').textContent).toBe('12.4')
+    expect($('.stat-card-u').textContent).toBe('/ 12.4 sets')
+    expect($('.stat-card-c').textContent).toBe('Steady this week')
+  })
+
+  it('leaves out the meta, unit and caption it is not given, and holds children', () => {
+    render(<StatCard label="Chest" value="12"><i className="kid" /></StatCard>)
+    expect($('.stat-card-m')).toBeNull()
+    expect($('.stat-card-u')).toBeNull()
+    expect($('.stat-card-c')).toBeNull()
+    expect($('.kid')).not.toBeNull()
+  })
+})
+
+describe('MuscleRow', () => {
+  it('is a row with a dot in its level shade, the name, sub and value', () => {
+    render(<MuscleRow level={3} title="Chest" subtitle="Last trained 2 days ago" value="8 sets" valueLabel="8 sets this week" />)
+    const row = $('.mus-row')
+    expect(row.tagName).toBe('DIV')
+    expect($('.mus-dot').classList.contains('l3')).toBe(true)
+    expect($('.lrow-t').textContent).toBe('Chest')
+    expect($('.lrow-s').textContent).toBe('Last trained 2 days ago')
+    expect($('.mus-v').textContent).toBe('8 sets')
+    expect($('.mus-v').getAttribute('aria-label')).toBe('8 sets this week')
+    expect($('.lrow-c')).toBeNull()
+    expect(row.hasAttribute('aria-pressed')).toBe(false)
+  })
+
+  it('defaults to level 0 and leaves out the sub and value it is not given', () => {
+    render(<MuscleRow title="Calves" />)
+    expect($('.mus-dot').classList.contains('l0')).toBe(true)
+    expect($('.lrow-s')).toBeNull()
+    expect($('.mus-v')).toBeNull()
+  })
+
+  it('is a pressed-state button with a chevron when it picks the muscle', () => {
+    const onClick = vi.fn()
+    render(<MuscleRow title="Chest" onClick={onClick} pressed />)
+    const row = $('.mus-row')
+    expect(row.tagName).toBe('BUTTON')
+    expect(row.getAttribute('type')).toBe('button')
+    expect(row.getAttribute('aria-pressed')).toBe('true')
+    expect($('.lrow-c')).not.toBeNull()
+    act(() => row.click())
+    expect(onClick).toHaveBeenCalledTimes(1)
+    render(<MuscleRow title="Chest" onClick={onClick} />)
+    expect($('.mus-row').getAttribute('aria-pressed')).toBe('false')
   })
 })
 

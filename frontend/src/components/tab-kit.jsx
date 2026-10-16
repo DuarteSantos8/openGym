@@ -143,12 +143,15 @@ export function SectionHeader({ title, link, onLink, onOpen }) {
 }
 
 // A card on the Progress root that opens its page: the title with a chevron is the one button;
-// under it an optional art lead and one or two values (`values`: [{ value, unit, label }]) split
-// by a hairline, then a footer (WeekDots, a pill). status: loading, empty (a dash and `note`),
-// error (`note` and a retry). No icon tile: the title names the section.
-export function StatSection({ title, onOpen, art, values = [], footer, status = 'ready', note, onRetry }) {
+// under it an optional art lead and one or two values (`values`: [{ value, unit, label, tone }],
+// tone an .ink-* colour for the number) split by a hairline, then a footer (a sparkline, a pill).
+// status: loading, empty (a dash, `note`, and `action` { label, icon, onClick } as the one pill
+// that fills it), error (`note` and a retry). No icon tile: the title names the section.
+const VALUE_TONES = ['danger', 'warn', 'orange', 'acc', 'ok']
+export function StatSection({ title, onOpen, art, values = [], footer, status = 'ready', note, action, onRetry }) {
   oneOf('StatSection', 'status', status, STATUSES)
   if (import.meta.env.DEV && values.length > 2) throw new Error('StatSection: one or two values')
+  for (const v of values) oneOf('StatSection', 'tone', v.tone, VALUE_TONES)
   return <section className="card stat-sec" aria-busy={status === 'loading' || undefined}>
     <h2 className="stat-sec-h"><button type="button" onClick={onOpen}><span>{title}</span><Icon name="chevronRight" /></button></h2>
     {status === 'loading'
@@ -156,14 +159,60 @@ export function StatSection({ title, onOpen, art, values = [], footer, status = 
       : <div className="stat-sec-b">
         {art && <span className="stat-sec-art">{art}</span>}
         {status !== 'error' && values.map(v => <div key={v.label} className="stat-sec-v">
-          <p className="stat-sec-num">{status === 'empty' ? EMPTY : v.value}{v.unit && status !== 'empty' && <span className="stat-sec-u">{v.unit}</span>}</p>
+          <p className={cx('stat-sec-num', status !== 'empty' && v.tone && 'ink-' + v.tone)}>{status === 'empty' ? EMPTY : v.value}{v.unit && status !== 'empty' && <span className="stat-sec-u">{v.unit}</span>}</p>
           <div className="stat-sec-l">{v.label}</div>
         </div>)}
       </div>}
     {note != null && status !== 'loading' && <p className="stat-sec-n">{note}</p>}
+    {status === 'empty' && action && <Button shape="pill" icon={action.icon} onClick={action.onClick}>{action.label}</Button>}
     {status === 'error' && onRetry && <Button variant="tinted" size="sm" onClick={onRetry}>{t('Try again')}</Button>}
     {footer && status === 'ready' && <div className="stat-sec-f">{footer}</div>}
   </section>
+}
+
+// A period to step through: chevrons either side of a centred title and its sub ("Week of 12
+// Oct", "This week"). The next step is off at the present (`nextDisabled`).
+export function PeriodNav({ title, sub, onPrev, onNext, prevLabel, nextLabel, prevDisabled = false, nextDisabled = false }) {
+  return <div className="pnav">
+    <button type="button" className="iconbtn pnav-b" aria-label={prevLabel} disabled={prevDisabled} onClick={onPrev}><Icon name="chevronLeft" /></button>
+    <div className="pnav-t">
+      <span className="pnav-h">{title}</span>
+      {sub != null && <span className="pnav-s">{sub}</span>}
+    </div>
+    <button type="button" className="iconbtn pnav-b" aria-label={nextLabel} disabled={nextDisabled} onClick={onNext}><Icon name="chevronRight" /></button>
+  </div>
+}
+
+// One reading picked out of a map or a list: its label with a meta line at the end, the value
+// at display size with its unit ("/ 12.4 sets"), and a caption.
+export function StatCard({ label, meta, value, unit, caption, children }) {
+  return <div className="card stat-card">
+    <div className="stat-card-h">
+      <span className="stat-card-l">{label}</span>
+      {meta != null && <span className="stat-card-m">{meta}</span>}
+    </div>
+    <p className="stat-card-v"><span className="stat-card-num">{value}</span>{unit != null && <span className="stat-card-u">{unit}</span>}</p>
+    {caption != null && <p className="stat-card-c">{caption}</p>}
+    {children}
+  </div>
+}
+
+// A muscle in an inset list, keyed to the map above it: a dot in the muscle's level shade (the
+// map's own .lN ramp, so a fatigue or strength map's container recolours both), its name and
+// sub, the value, and a chevron when the row picks the muscle. `pressed` says which one is
+// picked. Rows sit in a Section.
+export function MuscleRow({ level = 0, title, subtitle, value, valueLabel, onClick, pressed, ...rest }) {
+  const Tag = onClick ? 'button' : 'div'
+  return <Tag type={onClick ? 'button' : undefined} className={cx('lrow', 'mus-row', onClick && 'tap')} onClick={onClick}
+    aria-pressed={onClick ? !!pressed : undefined} {...rest}>
+    <span className={'mus-dot l' + level} aria-hidden="true" />
+    <span className="lrow-m">
+      <span className="lrow-t">{title}</span>
+      {subtitle != null && <span className="lrow-s">{subtitle}</span>}
+    </span>
+    {value != null && <span className="lrow-v mus-v" aria-label={valueLabel}>{value}</span>}
+    {onClick && <Icon name="chevronRight" className="lrow-c" />}
+  </Tag>
 }
 
 // A list row led by art at 96×72 (a LineArt scene or a licensed picture), or a 56px thumb in the

@@ -36,9 +36,14 @@ describe('back on a cold entry goes to the parent', () => {
     expect(parentOf('/train/history')).toBe('/train')
     expect(parentOf('/train/routines/abc')).toBe('/train/routines')
     expect(parentOf('/train/exercises/muscles')).toBe('/train/exercises')
-    expect(parentOf('/progress/body/measurements')).toBe('/progress/body')
     expect(parentOf('/progress/strength/balance')).toBe('/progress/strength')
     expect(parentOf('/progress/load')).toBe('/progress')
+  })
+
+  it('a Body segment to Progress: the three are one page, not a stack', () => {
+    expect(parentOf('/progress/body')).toBe('/progress')
+    expect(parentOf('/progress/body/measurements')).toBe('/progress')
+    expect(parentOf('/progress/body/photos')).toBe('/progress')
   })
 
   it('the Coach to Training, Profile pages to Profile, Profile and the workout to Home', () => {

@@ -4,7 +4,7 @@ import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { fmtDate, todayISO } from '../lib/format.js'
 import { workoutRunning } from '../lib/tab-route.js'
-import { closeThenNav } from '../lib/nav.js'
+import { closeThenNav, closeThenReplace } from '../lib/nav.js'
 import { useDialogFocus } from '../lib/use-dialog-focus.js'
 import { bwSheet, customExSheet, exerciseDetailSheet, logPastWorkoutSheet, startOrResume } from '../sheets.jsx'
 import { addRoutine } from '../views/Plan.jsx'
@@ -35,7 +35,8 @@ function hereRows(pathname) {
   if (under(pathname, '/train/exercises')) return [['dumbbell', 'var(--blue)', t('New exercise'), close => { close(); customExSheet(null, ex => exerciseDetailSheet(ex)) }]]
   if (under(pathname, '/progress/body')) return [
     ['ruler', 'var(--purple)', t('Log measurements'), close => { close(); measurementLogSheet() }],
-    ['camera', 'var(--pink)', t('Add photo'), close => closeThenNav(close, '/progress/body/photos')],
+    // Photos is a segment of the page the sheet is over: it takes that page's place, so back goes to Progress.
+    ['camera', 'var(--pink)', t('Add photo'), close => closeThenReplace(close, '/progress/body/photos')],
   ]
   return []
 }

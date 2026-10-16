@@ -41,7 +41,7 @@ export default function WeightCard({ date }) {
         <Icon name="target" />
         <span>{t('Goal')} {fmtNum(S.targetW)} {S.unit} · {Math.abs(S.targetW - bw.w) < 0.05 ? t('reached!') : t(S.targetW > bw.w ? '{0} to gain' : '{0} to lose', fmtNum(Math.abs(S.targetW - bw.w)) + ' ' + S.unit)}</span>
       </Inline>}
-      {points.length > 1 && <div className="chart bw-chart"><LineChart points={points} h={90} unit={S.unit} goal={S.targetW} /></div>}
+      {points.length > 1 && <div className="chart bw-chart"><LineChart points={points} h={90} unit={S.unit} goal={S.targetW} label={t('Weight')} /></div>}
       <Inline justify="end" className="mt-2">
         <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={weighInsSheet}>{t('All weigh-ins')}</Button>
       </Inline>

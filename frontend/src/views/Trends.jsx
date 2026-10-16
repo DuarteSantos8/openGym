@@ -19,7 +19,7 @@ import LineChart from '../components/LineChart.jsx'
 import { Card, EmptyState, SectionTitle, StatTile, Tiles } from '../components/blocks.jsx'
 import { Page, Stack } from '../components/layout.jsx'
 import { Button, Section, Segmented, SelectRow } from '../components/ui.jsx'
-import { rangeFrom, rangeOptions } from './Stats.jsx'
+import { rangeFrom, rangeOptions, storedRange } from '../lib/progress-range.js'
 
 const DAY = 86400000
 
@@ -35,7 +35,7 @@ export default function Trends() {
   const settings = useNutrition(s => s.settings)
   const { status, days, error } = useTrends()
   const fasting = useFasting()
-  const range = rangeFrom(search, 90)
+  const range = rangeFrom(search, storedRange())
   const metric = metricFrom(new URLSearchParams(search).get('metric'), settings.data)
   const fastingOn = settings.data?.fastingEnabled === true
 

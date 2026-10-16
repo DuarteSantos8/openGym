@@ -60,16 +60,21 @@ function View({ view, levels, onMuscle, selected }) {
  * the hardest-worked muscle in that same load, so it always reads as a balance. Pass ordered
  * `{ at, level, exclusive? }` `thresholds` for a fixed absolute scale (recovery views use this
  * to keep their semantic bands stable); omitting it preserves the balance behavior.
+ * `captions` names each view under it, Front and Back (the Training load page's MuscleMap).
  */
-export default function BodyMap({ load = {}, thresholds, body = 'male', onMuscle, selected, className = '' }) {
+export default function BodyMap({ load = {}, thresholds, body = 'male', onMuscle, selected, captions = false, className = '' }) {
   const paths = useBodyPaths()
   const levels = levelsOf(load, thresholds)
   const g = paths && (paths[body] || paths.male)
+  const view = (v, caption) => {
+    const map = <View view={v} levels={levels} onMuscle={onMuscle} selected={selected} />
+    return captions ? <figure className="bm-fig">{map}<figcaption className="bm-cap">{caption}</figcaption></figure> : map
+  }
   return (
     <div className={'bodymap ' + className}>
       {g ? <>
-        <View view={g.front} levels={levels} onMuscle={onMuscle} selected={selected} />
-        <View view={g.back} levels={levels} onMuscle={onMuscle} selected={selected} />
+        {view(g.front, t('Front'))}
+        {view(g.back, t('Back of the body'))}
       </> : <div className="bm-ph" aria-hidden="true" />}
     </div>
   )

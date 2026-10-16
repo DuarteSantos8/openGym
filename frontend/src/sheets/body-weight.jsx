@@ -8,7 +8,7 @@ import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button, Slider, NumberField } from '../components/ui.jsx'
 import { syncNow } from '../lib/nutrition/sync.js'
-import { weeklyWeights } from '../lib/bodyweight.js'
+import { deltaTone, weeklyWeights } from '../lib/bodyweight.js'
 import { S, update, ui, toast } from './shared.js'
 import { confirmSheet } from './confirm-menu.jsx'
 
@@ -158,7 +158,7 @@ function WeighIns() {
   return <>
     <h3 style={{ marginBottom: 2 }}>{t('Weigh-ins')}</h3>
     <div className="muted small" style={{ marginBottom: 10 }}>{tn('{0} weigh-in', '{0} weigh-ins', n)}</div>
-    <div className="chart"><LineChart points={points} h={140} unit={st.unit} goal={st.targetW} /></div>
+    <div className="chart"><LineChart points={points} h={140} unit={st.unit} goal={st.targetW} label={t('Weight')} /></div>
     <div className="small dim" style={{ marginTop: 6 }}>{t('Weekly average')}</div>
     {weeks.map(w => {
       // Only a change the display can show: at one decimal, 0.02 kg is "0", and an arrow over a
@@ -182,12 +182,8 @@ function WeighIns() {
 export const weighInsSheet = () => ui().openSheet(close => <WeighIns close={close} />)
 
 /* ============================ target weight ============================ */
-export function bwDeltaColor(delta, currentW) {
-  if (!delta) return 'var(--label-2)'
-  if (!S().targetW) return 'var(--label)'
-  const up = S().targetW > currentW
-  return (delta > 0) === up ? 'var(--acc-ink)' : 'var(--red-ink)'
-}
+const DELTA_COLOR = { none: 'var(--label-2)', plain: 'var(--label)', toward: 'var(--acc-ink)', away: 'var(--red-ink)' }
+export const bwDeltaColor = (delta, currentW) => DELTA_COLOR[deltaTone(delta, currentW, S().targetW)]
 function GoalSheet({ close }) {
   const st = S()
   const bw = lastBW(st)

@@ -176,10 +176,11 @@ describe('the Progress hub', () => {
     search = '?range=30'
     await mount(<ProgressHub />)
     expect(text()).toContain('Nutrition trends')
-    expect(text()).toContain('2,000 kcal a day')
-    expect(text()).toContain('2 days logged · protein 100 g')
-    expect(text()).toContain('Sleep 7.5 h')
-    expect(text()).toContain('Resting heart rate 54 bpm')
+    expect(text()).toContain('2,000kcalCalories a day')
+    expect(text()).toContain('100gProtein a day')
+    expect(text()).toContain('2 days logged')
+    expect(text()).toContain('7.5hSleep')
+    expect(text()).toContain('54bpmResting heart rate')
     await click(button('Nutrition trends'))
     expect(navigate).toHaveBeenLastCalledWith('/progress/trends?range=30')
     await click(button('Recovery'))
@@ -212,16 +213,16 @@ describe('the Progress hub', () => {
   it('refreshes its averages when the diary changes, and when it comes back to the front', async () => {
     useFake({ settings: fixtureSettings(), days: { [ago(1)]: diaryDay(1) } })
     await mount(<ProgressHub />)
-    expect(text()).toContain('2,000 kcal a day')
+    expect(text()).toContain('2,000kcalCalories a day')
     nt.state.days[ago(2)] = { ...diaryDay(2), items: [{ ...diaryDay(2).items[0], nutrition: { calories: 1000, proteins: 50 } }] }
     await act(async () => { document.dispatchEvent(new Event('visibilitychange')) })
     await settle()
-    expect(text()).toContain('1,500 kcal a day')
+    expect(text()).toContain('1,500kcalCalories a day')
     nt.state.days[ago(3)] = { ...diaryDay(3), items: [{ ...diaryDay(3).items[0], nutrition: { calories: 600, proteins: 50 } }] }
     // what a save on Home does: the store's days change
     await act(async () => { useNutrition.setState(s => ({ days: { ...s.days } })) })
     await settle()
-    expect(text()).toContain('1,200 kcal a day')
+    expect(text()).toContain('1,200kcalCalories a day')
   })
 
   it('keeps the Recovery card when the range has no readings', async () => {

@@ -5,7 +5,7 @@ import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import StructuralBalance from './StructuralBalance.jsx'
-import Stats from './Stats.jsx'
+import Strength from './Strength.jsx'
 import { buildDemoState } from '../lib/demoSeed.js'
 import { TEMPLATE_LIST } from '../lib/structuralBalanceTemplates.js'
 
@@ -204,20 +204,19 @@ describe('StructuralBalance view', () => {
   })
 })
 
-describe('the way in from Stats', () => {
-  it('is a card like the others that opens the screen, once there is a workout to read', () => {
-    const host = render(Stats, { section: 'strength' })
-    const card = [...host.querySelectorAll('.card')].find(c => c.querySelector('h2')?.textContent === 'Structural balance')
-    expect(card).toBeTruthy()
-    expect(card.textContent).toContain('See which lift is holding back the rest.')
-    const open = [...card.querySelectorAll('button')].find(b => b.textContent.includes('Open'))
-    act(() => open.click())
+describe('the way in from Strength', () => {
+  it('is a row that opens the screen, once there is a workout to read', () => {
+    const host = render(Strength)
+    const row = [...host.querySelectorAll('.lrow')].find(r => r.querySelector('.lrow-t')?.textContent === 'Structural balance')
+    expect(row).toBeTruthy()
+    expect(row.textContent).toContain('See which lift is holding back the rest.')
+    act(() => row.click())
     expect(navSpy).toHaveBeenCalledWith('/progress/strength/balance')
   })
 
   it('is not offered before the first workout', () => {
     useStore.setState({ S: clone(DEF), user: null })
-    const host = render(Stats, { section: 'strength' })
+    const host = render(Strength)
     expect(host.textContent).not.toContain('Structural balance')
   })
 })

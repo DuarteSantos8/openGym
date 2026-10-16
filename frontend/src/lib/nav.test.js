@@ -4,7 +4,7 @@
 // seemed to do nothing.
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { closeThenNav, nav, navToWorkout, setNav } from './nav.js'
+import { closeThenNav, closeThenReplace, nav, navToWorkout, noteSheetEntries, setNav } from './nav.js'
 
 let calls
 beforeEach(() => {
@@ -31,6 +31,42 @@ describe('nav', () => {
   it('pushes when the entry is not a sheet\'s (it was spent already)', () => {
     closeThenNav(() => {}, '/home')
     expect(calls).toEqual([['/home']])
+  })
+
+  describe('closeThenReplace', () => {
+    it('replaces the page at once when no sheet entry sits on it', () => {
+      const close = vi.fn()
+      closeThenReplace(close, '/progress/body/photos')
+      expect(close).toHaveBeenCalledOnce()
+      expect(calls).toEqual([['/progress/body/photos', { replace: true }]])
+    })
+
+    it('waits for the sheet\'s entry to be walked off, then replaces the page under it', () => {
+      history.pushState({ openGymSheet: true }, '')
+      noteSheetEntries(1)
+      const close = vi.fn()
+      closeThenReplace(close, '/progress/body/photos')
+      expect(close).toHaveBeenCalledOnce()
+      expect(calls).toEqual([])
+      window.dispatchEvent(new PopStateEvent('popstate'))
+      expect(calls).toEqual([['/progress/body/photos', { replace: true }]])
+      window.dispatchEvent(new PopStateEvent('popstate'))
+      expect(calls).toHaveLength(1)
+      noteSheetEntries(0)
+    })
+
+    it('replaces anyway when the walk-off never comes', () => {
+      vi.useFakeTimers()
+      history.pushState({ openGymSheet: true }, '')
+      noteSheetEntries(1)
+      closeThenReplace(() => {}, '/progress/body/photos')
+      vi.advanceTimersByTime(500)
+      expect(calls).toEqual([['/progress/body/photos', { replace: true }]])
+      window.dispatchEvent(new PopStateEvent('popstate'))
+      expect(calls).toHaveLength(1)
+      noteSheetEntries(0)
+      vi.useRealTimers()
+    })
   })
 
   it('starting from the routine chooser replaces its #/train/workout', () => {

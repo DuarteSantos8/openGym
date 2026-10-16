@@ -360,18 +360,19 @@ export function Row({ icon, iconTint, glyph, title, subtitle, value, accessory =
 // theme entirely — on dark mode it flashes a white sheet — and can't show more
 // than a bare label per option. This opens our own sheet with a checkmark on the
 // current value, which is also how iOS itself handles a long option list.
-export function SelectRow({ icon, iconTint, title, value, options, onChange, sheetTitle, stackedValue = false, search }) {
+export function SelectRow({ icon, iconTint, title, value, options, onChange, sheetTitle, search }) {
   const cur = options.find(o => o.value === value)
-  const open = () => {
-    const { openSheet } = require_ui()
-    const h = openSheet(close => <SelectSheet title={sheetTitle || title} value={value} options={options}
-      onChange={onChange} search={search} close={close} />)
-    return h
-  }
   return (
-    <Row icon={icon} iconTint={iconTint} title={title} value={cur ? cur.label : value} accessory="chevron" onClick={open}
-      className={stackedValue ? 'lrow-stack-value' : ''} />
+    <Row icon={icon} iconTint={iconTint} title={title} value={cur ? cur.label : value} accessory="chevron"
+      onClick={() => selectSheet({ title: sheetTitle || title, value, options, onChange, search })} />
   )
+}
+
+// SelectRow's sheet on its own, for a picker opened from something other than a row (the
+// Strength page's exercise card): the options with a check on `value`, and `search` to filter.
+export function selectSheet({ title, value, options, onChange, search }) {
+  const { openSheet } = require_ui()
+  return openSheet(close => <SelectSheet title={title} value={value} options={options} onChange={onChange} search={search} close={close} />)
 }
 
 function SelectSheet({ title, value, options, onChange, search, close }) {

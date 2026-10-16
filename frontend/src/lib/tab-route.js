@@ -5,6 +5,12 @@
 // Four tabs, each with its own stack: Home (/home), Training (/train/*), Nutrition (/food/*) and
 // Progress (/progress/*). Pages any tab can open sit on top of the tab that opened them and belong
 // to none: Profile (/me/*) and the full-screen workout (/train/workout).
+//
+// Deep links into Progress (ux-redesign-tabs §5 item 3), each taking ?range=30|90|365|0 too:
+//   /progress/body, /progress/body/measurements, /progress/body/photos   the Body page's segments
+//   /progress/strength?ex=<exercise id>                                   Strength on that exercise
+//   /progress/load?view=activity|muscles|plan|effort                      a Training load segment
+// The Body segments are one page, so a cold one's back goes to Progress, not to Weight.
 
 export const TABS = ['home', 'train', 'food', 'progress']
 export const TAB_ROOT = { home: '/home', train: '/train', food: '/food', progress: '/progress' }
@@ -30,6 +36,7 @@ export function parentOf(pathname = '') {
   if (under(pathname, '/train/coach')) return TAB_ROOT.train
   if (under(pathname, '/train/workout') || pathname === '/me') return TAB_ROOT.home
   if (under(pathname, '/me')) return '/me'
+  if (under(pathname, '/progress/body')) return TAB_ROOT.progress
   const tab = tabOf(pathname)
   if (!tab || pathname === TAB_ROOT[tab]) return TAB_ROOT.home
   return pathname.slice(0, pathname.lastIndexOf('/'))
@@ -62,10 +69,10 @@ const LEGACY = [
   ['/admin', '/me/admin'],
 ]
 
-// The whole new address for an old one, query and fragment kept. Plan's "Weekly muscle volume"
-// link (/stats?focus=weekly-volume) points into Training load, where that card lives now.
+// The whole new address for an old one, query and fragment kept. Plan's old "Weekly muscle
+// volume" link (/stats?focus=weekly-volume) opens Training load on its Plan segment.
 export function legacyPath(pathname = '', search = '', hash = '') {
-  if (pathname === '/stats' && /[?&]focus=weekly-volume\b/.test(search)) return '/progress/load' + search + hash
+  if (pathname === '/stats' && /[?&]focus=weekly-volume\b/.test(search)) return '/progress/load?view=plan' + hash
   for (const [from, to] of LEGACY) if (under(pathname, from)) return to + pathname.slice(from.length) + search + hash
   return null
 }

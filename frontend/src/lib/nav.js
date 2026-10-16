@@ -25,6 +25,30 @@ export function closeThenNav(close, to) {
   nav(to, replace ? { replace: true } : undefined)
 }
 
+// A sheet that swaps the page under it for a sibling (Progress › Body's Add photo from Weight):
+// the page must not stay in history, or back from the sibling lands on the page it replaced.
+// The sheet's entry is walked off first (Modals.jsx does it once the sheet closes), then the page
+// itself is replaced. Without a live sheet entry to walk off, the page is replaced at once.
+const WALK_OFF_MS = 400
+export function closeThenReplace(close, to) {
+  if (!onSheetEntry() || liveSheetEntries < 1) {
+    close()
+    nav(to, { replace: true })
+    return
+  }
+  let done = false
+  const go = () => {
+    if (done) return
+    done = true
+    clearTimeout(timer)
+    globalThis.removeEventListener('popstate', go)
+    nav(to, { replace: true })
+  }
+  const timer = setTimeout(go, WALK_OFF_MS)
+  globalThis.addEventListener('popstate', go)
+  close()
+}
+
 // Into the workout screen: from the routine chooser (already #/train/workout) or from a sheet's
 // entry, the session takes that entry, so one back leaves it rather than landing on itself.
 export function navToWorkout() {

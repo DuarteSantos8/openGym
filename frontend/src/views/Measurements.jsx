@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import {
@@ -9,10 +10,12 @@ import {
 } from '../lib/measurements.js'
 import { fmtDate, fmtNum, todayISO, uid } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
+import { rangeFrom, rangeOptions, storedRange } from '../lib/progress-range.js'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
-import { Page, Inline, Spacer } from '../components/layout.jsx'
-import { Card, EmptyState, SectionTitle } from '../components/blocks.jsx'
+import { Inline } from '../components/layout.jsx'
+import { Card, EmptyState } from '../components/blocks.jsx'
+import { ActionButton, ActionRow, HeroStatus, SectionHeader, TabSection } from '../components/tab-kit.jsx'
 import { SheetHeader, SheetActions } from '../components/sheet-layout.jsx'
 import { Button, NumberField, Row, Section, Segmented, SelectRow, Switch, TextField } from '../components/ui.jsx'
 import { confirmSheet } from '../sheets.jsx'
@@ -152,9 +155,13 @@ export function manageMeasurementsSheet() {
   return useUI.getState().openSheet(close => <ManageMeasurements close={close} />)
 }
 
+// Body › Measurements: [Log measurements] [Choose fields], the picked measurement's latest value and
+// change, its curve over the range the Progress root was on, then every check-in, each to edit or
+// delete.
 export default function Measurements() {
   const S = useStore(s => s.S)
-  const [range, setRange] = useState(90)
+  const { search } = useLocation()
+  const [range, setRange] = useState(() => rangeFrom(search, storedRange()))
   const available = useMemo(() => {
     const out = enabledMeasurementFields(S)
     for (const field of MEASUREMENT_FIELDS) {
@@ -185,39 +192,33 @@ export default function Measurements() {
     onConfirm: () => { update(state => { state.measurements = state.measurements.filter(e => e.d !== entry.d) }); toast(t('Measurements deleted')) },
   })
 
-  return <div>
-    <Page title={t('Body measurements')} sub={t('Circumference & composition')}
-      action={<button className="iconbtn" onClick={manageMeasurementsSheet} aria-label={t('Choose measurements')}><Icon name="gear" /></button>} />
+  return <>
+    <TabSection>
+      <ActionRow>
+        <ActionButton icon="plus" label={t('Log measurements')} onClick={() => measurementLogSheet()} />
+        <ActionButton icon="gear" label={t('Choose fields')} onClick={manageMeasurementsSheet} />
+      </ActionRow>
+    </TabSection>
 
-    <Card>
-      <Inline justify="between" className="mb-5">
-        <div>
-          <div className="muted small">{field ? t(field.label) : t('Body measurements')}</div>
-          {/* Stat takes no className, so the 3px top margin keeps this .big by hand. */}
-          <div className="big" style={{ marginTop: 3 }}>{latest ? <>{fmtNum(latest.y)} <span className="muted fs-callout">{unit}</span></> : '–'}</div>
-          {delta != null && delta !== 0 && <div className="small muted" style={{ marginTop: 3 }}>{delta > 0 ? '+' : ''}{fmtNum(delta)} {unit} {t('since previous')}</div>}
-        </div>
-        <Button size="sm" icon="plus" onClick={() => measurementLogSheet()}>{t('Log')}</Button>
-      </Inline>
-      {available.length > 0 && <div className="sect-b measure-select"><SelectRow
-        title={t('Measurement')} sheetTitle={t('Choose measurement')} value={key} onChange={setSelected}
-        options={available.map(f => ({ value: f.key, label: t(f.label) }))} />
-      </div>}
-      <Segmented className="seg-range" value={range} onChange={setRange}
-        options={[{ value: 30, label: '1M' }, { value: 90, label: '3M' }, { value: 365, label: '1Y' }, { value: 0, label: t('All') }]} />
-      <div className="chart"><LineChart points={points} h={170} unit={unit} color="var(--teal)" /></div>
-    </Card>
+    <TabSection>
+      {available.length ? <>
+        <HeroStatus eyebrow={t(field.label)} value={latest ? fmtNum(latest.y) : null} unit={unit} status={latest ? 'ready' : 'empty'}
+          caption={delta ? (delta > 0 ? '+' : '') + fmtNum(delta) + ' ' + unit + ' ' + t('since previous') : latest ? fmtDate(latest.d, true) : t('No measurements yet')} />
+        <Card>
+          <div className="sect-b measure-select"><SelectRow
+            title={t('Measurement')} sheetTitle={t('Choose measurement')} value={key} onChange={setSelected}
+            options={available.map(f => ({ value: f.key, label: t(f.label) }))} />
+          </div>
+          <Segmented className="seg-range" value={range} onChange={setRange} options={rangeOptions()} />
+          <div className="chart"><LineChart points={points} h={170} unit={unit} color="var(--teal)" label={t(field.label)} /></div>
+        </Card>
+      </> : <EmptyState icon="ruler" title={t('Nothing to chart yet')}
+        secondary={{ icon: 'gear', label: t('Choose measurements'), onClick: manageMeasurementsSheet }}>
+        {t('Choose the measurements you want to track, then log your first check-in.')}
+      </EmptyState>}
+    </TabSection>
 
-    {!available.length && <Card>
-      <div className="muted small">{t('Choose the measurements you want to track, then log your first check-in.')}</div>
-      <Spacer size={5} /><Button onClick={manageMeasurementsSheet}>{t('Choose measurements')}</Button>
-    </Card>}
-
-    {/* 18px / 2px / 10px: the kit has no inline-margin class, so the shorthand stays inline. */}
-    <Inline justify="between" style={{ margin: '18px 2px 10px' }}>
-      <SectionTitle className="m-0">{t('Measurement history')}</SectionTitle>
-      <Button size="sm" variant="ghost" icon="gear" onClick={manageMeasurementsSheet}>{t('Fields')}</Button>
-    </Inline>
+    <SectionHeader title={t('Measurement history')} />
     {recent.length ? <div className="list">{recent.map(entry => {
       const count = MEASUREMENT_KEYS.filter(k => entry[k] != null).length + (entry.other || []).filter(o => o.value != null).length
       const previewFields = enabledMeasurementFields(S).map(f => ({ field: f, value: shownValue(entry, f, S.unit) })).filter(x => x.value != null).slice(0, 3)
@@ -232,5 +233,5 @@ export default function Measurements() {
         {previewFields.length > 0 && <div className="measure-preview">{previewFields.map(({ field: f, value }) => <span key={f.key}>{t(f.label)} <b>{fmtNum(value)} {fieldUnit(f, S.unit)}</b></span>)}</div>}
       </Card>
     })}</div> : <EmptyState className="small">{t('No measurements yet')}</EmptyState>}
-  </div>
+  </>
 }

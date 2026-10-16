@@ -10,13 +10,14 @@ const W = 340   // viewBox width; the svg stretches to its container, height com
 //        more of it). Used for effort on the weight curve, where the two belong on one line:
 //        the same weight with less left in the tank is not the same session.
 //   note extra text for that point's tooltip.
-// opts: { h, unit, color, axes, goal, invert, series }
+// opts: { h, unit, color, axes, goal, invert, series, label, decorative }
+//   label names the chart for a screen reader ("Weight"); the sentence adds its first and last reading.
 //   invert flips the y axis, for a scale that counts down as it gets harder (RIR). Without it
 //   a curve of reps-in-reserve reads upside down, with the hardest sets at the floor.
 //   series draws several lines instead of one: [{ points, color }] (issue #145, one per set
 //   number). `points` then only anchors the hover — one per date, its `note` the tooltip — and
 //   the y axis spans every series.
-export default function LineChart({ points, h = 150, unit = '', color = 'var(--acc)', axes = true, goal = null, invert = false, series = null }) {
+export default function LineChart({ points, h = 150, unit = '', color = 'var(--acc)', axes = true, goal = null, invert = false, series = null, label = '', decorative = false }) {
   const svgRef = useRef(null)
   const wrapRef = useRef(null)
   const tipRef = useRef(null)
@@ -111,6 +112,15 @@ export default function LineChart({ points, h = 150, unit = '', color = 'var(--a
   const hoverPts = hoverSource.map((p, i) => ({ x: X(p.t), y: Y(p.y), t: p.t, iso: hoverDates[i], v: p.y, note: p.note }))
   const marked = points.some(p => p.m != null)
 
+  // The chart's name for a screen reader: what it shows, then where the line starts and ends.
+  // `decorative` hides a chart that repeats what its card already says (the hub's sparkline);
+  // with neither, a parent names it (ChartData wraps the chart in a labelled image).
+  const ends = multi && series[0].points.length ? series[0].points : pts
+  const first = ends[0], end = ends[ends.length - 1]
+  const dateOf = p => fmtDate(p.d || isoOf(new Date(p.t)), true, showYear)
+  const valueOf = p => fmtNum(p.y) + (unit ? ' ' + unit : '')
+  const name = label ? t('{0}: {1} on {2}, {3} on {4}', label, valueOf(first), dateOf(first), valueOf(end), dateOf(end)) : undefined
+
   const onMove = e => {
     const c = e.touches ? e.touches[0] : e
     if (!c || c.clientX === undefined) return
@@ -127,7 +137,7 @@ export default function LineChart({ points, h = 150, unit = '', color = 'var(--a
       onMouseMove={onMove} onMouseDown={onMove}
       onMouseLeave={() => setHover(null)}
       onTouchStart={onMove} onTouchMove={onMove}>
-      <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ aspectRatio: `${W}/${H}` }}>
+      <svg ref={svgRef} role={name ? 'img' : undefined} aria-label={name} aria-hidden={decorative || undefined} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ aspectRatio: `${W}/${H}` }}>
         <defs><linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor={color} stopOpacity=".28" />
           <stop offset="1" stopColor={color} stopOpacity="0" />

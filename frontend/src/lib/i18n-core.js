@@ -79,9 +79,14 @@ export const getLang = () => lang
 export const dateLocale = () => DATE_LOCALES[lang] || 'en-GB'
 export const getVersion = () => version
 
+// A key ending in " (short)" is a second, tighter wording of the English text before it, for a
+// place that is too narrow for some languages (a segment of five at 320px): packs translate it
+// shorter, and with no pack (English) it reads as the plain text.
+const SHORT = / \(short\)$/
+
 // Translate a source string; {0},{1}… are replaced with args (also on the English fallback).
 export function t(s, ...args) {
-  let v = dict[s] || s
+  let v = dict[s] || (typeof s === 'string' ? s.replace(SHORT, '') : s)
   // A plural key (an object of forms, read by tn()) reached through plain t() — a call site
   // that was not moved to tn(). Pick a form rather than crash on replaceAll.
   if (v && typeof v === 'object') {

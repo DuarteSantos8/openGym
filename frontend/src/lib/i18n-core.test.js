@@ -6,6 +6,28 @@ import {
 import { EXDB } from './exercises-data.js'
 import de from '../locales/de.js'
 
+describe('short wordings', () => {
+  it('reads as the plain English with no pack, and as the pack\'s own wording with one', () => {
+    _setLangState('en', {}, null, null)
+    expect(t('Effort (short)')).toBe('Effort')
+    _setLangState('de', { 'Effort (short)': 'Einsatz' }, null, null)
+    expect(t('Effort (short)')).toBe('Einsatz')
+    _setLangState('en', {}, null, null)
+  })
+
+  it('every pack words the nouns apart from the verb and the navigation they sat beside', async () => {
+    for (const lang of Object.keys(LANGS).filter(l => l !== 'en' && !DERIVED_LOCALES[l])) {
+      const pack = (await import(`../locales/${lang}.js`)).default
+      expect(pack['Weight change'], lang).toBeTruthy()
+      expect(pack['Back of the body'], lang).toBeTruthy()
+      expect(pack['Effort (short)'], lang).toBeTruthy()
+      expect(pack['Per set (short)'], lang).toBeTruthy()
+      if (pack['Change']) expect(pack['Weight change'], lang).not.toBe(pack['Change'])
+      if (pack['Back']) expect(pack['Back of the body'], lang).not.toBe(pack['Back'])
+    }
+  })
+})
+
 describe('baseLang', () => {
   it('maps a derived locale to the language whose packs it loads', () => {
     expect(baseLang('de-CH')).toBe('de')

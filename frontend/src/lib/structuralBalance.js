@@ -7,8 +7,10 @@ import { BALANCE_STATUSES, BORDERLINE_BAND_PCT, EVALUATION_MODES } from './struc
 
 const kgOf = (n, unit) => (unit === 'lb' ? Number(n) * LB_TO_KG : Number(n))
 
-// Mirrors the Stats.jsx `MuscleBalance` bodyweight read exactly (sort by date string, `.at(-1)`,
-// convert lb -> kg) rather than the unsorted-assuming `lastBW()` in history.js.
+// The user's own last registered bodyweight, in kg (sort by date string, `.at(-1)`, convert
+// lb -> kg) rather than the unsorted-assuming `lastBW()` in history.js. The body-mass part of a
+// bodyweight exercise's load here, in the fatigue and strength maps and in estimated effort, so
+// all of them read the same set the same way.
 export function bodyweightKgOf(S) {
   const entries = S.bodyweight || []
   if (!entries.length) return null

@@ -3,8 +3,9 @@ import React, { act, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { Slider, Stepper, NumberField, numWidthCh, SLIDER_GRAB_PX, Segmented, Button, Row } from './ui.jsx'
+import { Slider, Stepper, NumberField, numWidthCh, SLIDER_GRAB_PX, Segmented, Button, Row, SelectRow, bindUI, selectSheet } from './ui.jsx'
 import Icon from './Icon.jsx'
+import { useUI } from '../store/useUI.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -366,5 +367,84 @@ describe('the redesign\'s additions to Segmented, Button and Row', () => {
     expect(host.querySelector('.lrow-open')).toBeNull()
     expect(() => html(<Row title="x" accessory="add" onClick={go} />)).toThrow(/not onClick/)
     expect(() => html(<Row title="x" accessory="arrow" />)).toThrow(/Row: accessory="arrow"/)
+  })
+})
+
+describe('selectSheet', () => {
+  const OPTIONS = [
+    { value: 'bench', label: 'Bench press', subtitle: 'Chest' },
+    { value: 'squat', label: 'Squat' },
+    { value: 'row', label: 'Row' },
+  ]
+  const SEARCH = { placeholder: 'Search exercises', label: 'Search', emptyLabel: 'No match', match: (o, q) => o.label.toLowerCase().includes(q.trim().toLowerCase()) }
+  let sheet, sheetRoot
+
+  // Opens the sheet through the UI store and renders what it holds, as the shell does.
+  const open = args => {
+    bindUI(useUI)
+    useUI.getState().closeAll()
+    selectSheet(args)
+    const entry = useUI.getState().sheets.at(-1)
+    sheet = document.createElement('div')
+    document.body.appendChild(sheet)
+    sheetRoot = createRoot(sheet)
+    act(() => sheetRoot.render(entry.render(() => useUI.getState().closeSheet(entry.id))))
+    return entry
+  }
+  afterEach(() => {
+    if (sheetRoot) act(() => sheetRoot.unmount())
+    sheet?.remove()
+    sheetRoot = sheet = null
+    useUI.getState().closeAll()
+  })
+  const rows = () => [...sheet.querySelectorAll('.lrow')]
+
+  it('lists the options under the title, with a check on the current value and subtitles', () => {
+    open({ title: 'Choose exercise', value: 'squat', options: OPTIONS, onChange: vi.fn() })
+    expect(sheet.querySelector('h3').textContent).toBe('Choose exercise')
+    expect(rows().map(r => r.querySelector('.lrow-t').textContent)).toEqual(['Bench press', 'Squat', 'Row'])
+    expect(rows()[0].querySelector('.lrow-s').textContent).toBe('Chest')
+    expect(rows().map(r => !!r.querySelector('.lrow-k'))).toEqual([false, true, false])
+    expect(sheet.querySelector('.picker-search')).toBeNull()
+  })
+
+  it('picks an option: closes the sheet and reports the value', () => {
+    const onChange = vi.fn()
+    open({ title: 'Choose exercise', value: 'squat', options: OPTIONS, onChange })
+    act(() => rows()[2].click())
+    expect(onChange).toHaveBeenCalledWith('row')
+    expect(useUI.getState().sheets).toHaveLength(0)
+  })
+
+  it('filters with the search it is given, and says when nothing matches', () => {
+    open({ title: 'Choose exercise', value: 'squat', options: OPTIONS, onChange: vi.fn(), search: SEARCH })
+    const input = sheet.querySelector('.picker-search input')
+    expect(input.getAttribute('placeholder')).toBe('Search exercises')
+    const type = value => act(() => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, value)
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    type('sq')
+    expect(rows().map(r => r.querySelector('.lrow-t').textContent)).toEqual(['Squat'])
+    type('zzz')
+    expect(rows()).toHaveLength(0)
+    expect(sheet.querySelector('.empty').textContent).toContain('No match')
+  })
+
+  it('opens from a SelectRow with the row\'s title, or its sheetTitle, and shows the current label', () => {
+    bindUI(useUI)
+    const onChange = vi.fn()
+    act(() => root.render(<SelectRow title="Measurement" sheetTitle="Choose measurement" value="b" onChange={onChange}
+      options={[{ value: 'a', label: 'Waist' }, { value: 'b', label: 'Chest' }]} />))
+    const row = host.querySelector('.lrow')
+    expect(row.querySelector('.lrow-v').textContent).toBe('Chest')
+    act(() => row.click())
+    expect(useUI.getState().sheets).toHaveLength(1)
+  })
+
+  it('has no stacked-value layout on SelectRow any more', () => {
+    bindUI(useUI)
+    act(() => root.render(<SelectRow title="Measurement" value="a" stackedValue onChange={vi.fn()} options={[{ value: 'a', label: 'Waist' }]} />))
+    expect(host.querySelector('.lrow-stack-value')).toBeNull()
   })
 })

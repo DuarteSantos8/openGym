@@ -63,6 +63,21 @@ describe('BodyMap interaction semantics', () => {
     expect(event.defaultPrevented).toBe(key === ' ')
   })
 
+  it('names each view under it, Front then Back, when captions are on', async () => {
+    await renderMap({ captions: true })
+    const figures = [...container.querySelectorAll('figure.bm-fig')]
+    expect(figures).toHaveLength(2)
+    expect(figures.map(f => f.querySelector('figcaption.bm-cap').textContent)).toEqual(['Front', 'Back of the body'])
+    expect(figures.every(f => f.querySelector('svg'))).toBe(true)
+  })
+
+  it('draws the two views bare, with no captions, by default', async () => {
+    await renderMap()
+    expect(container.querySelector('figure')).toBeNull()
+    expect(container.querySelector('figcaption')).toBeNull()
+    expect(container.querySelectorAll('.bodymap > svg')).toHaveLength(2)
+  })
+
   it('labels the existing legend direction for assistive technology', () => {
     act(() => root.render(<BodyMapLegend />))
     expect(container.querySelector('.hm-legend').getAttribute('aria-label')).toBe('Less More')

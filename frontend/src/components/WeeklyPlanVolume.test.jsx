@@ -1,24 +1,9 @@
 // @vitest-environment happy-dom
-// Weekly muscle volume, as planned: it lived on Plan until v1.3.11 and is analysis, so it moved to
-// Stats, right after Muscle balance (Plan keeps a row that links here, /stats?focus=weekly-volume).
-// What it counts did not change: every weekday routine once, plus a running rotation's sessions.
+// Weekly muscle volume, as planned: every weekday routine once, plus a running rotation's sessions.
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-
-const mocks = vi.hoisted(() => ({ S: null }))
-vi.mock('../store/useStore.js', () => ({ useStore: selector => selector({ S: mocks.S }) }))
-vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn(), useLocation: () => ({ search: '', pathname: '/progress/load' }) }))
-vi.mock('../lib/use-tab-nav.js', () => ({ back: vi.fn(), isSwitching: () => false, switchTab: vi.fn(), popToRoot: vi.fn() }))
-vi.mock('../sheets.jsx', () => ({
-  bwSheet: vi.fn(), goalSheet: vi.fn(), calendarSheet: vi.fn(), workoutDetailSheet: vi.fn(),
-  exerciseHistorySheet: vi.fn(), WorkoutRow: () => React.createElement('div'), bwDeltaColor: () => '', weighInsSheet: vi.fn(),
-}))
-vi.mock('../components/Heatmap.jsx', () => ({ default: () => React.createElement('div') }))
-vi.mock('../components/LineChart.jsx', () => ({ default: () => React.createElement('div') }))
-vi.mock('../components/BodyMap.jsx', () => ({ default: () => React.createElement('div'), BodyMapLegend: () => null }))
-
-import Stats, { WeeklyPlanVolume } from './Stats.jsx'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import WeeklyPlanVolume from './WeeklyPlanVolume.jsx'
 
 const press = { id: 'press', n: 'Press', primaries: ['chest'], secondaries: ['triceps'], custom: true }
 const state = over => ({
@@ -32,17 +17,22 @@ beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
 })
-afterEach(() => { act(() => root.unmount()); host.remove(); window.location.hash = '' })
+afterEach(() => { act(() => root.unmount()); host.remove() })
 
 const card = () => host.querySelector('[data-weekly-muscle-volume]')
 const render = S => act(() => root.render(<WeeklyPlanVolume S={S} />))
 
-describe('Stats — weekly muscle volume from the plan', () => {
+describe('WeeklyPlanVolume — weekly muscle volume from the plan', () => {
   it('shows every non-zero effective-set total from the recurring schedule', () => {
     render(state())
     expect(card().textContent).toContain('Weekly muscle volume')
     expect(card().textContent).toContain('Chest2 sets')
     expect(card().textContent).toContain('Triceps0.8 sets')
+  })
+
+  it('does not carry the old scroll anchor', () => {
+    render(state())
+    expect(card().id).toBe('')
   })
 
   it('follows the weekly schedule: a routine on two days counts twice', () => {
@@ -78,32 +68,5 @@ describe('Stats — weekly muscle volume from the plan', () => {
     act(() => more.click())
     expect(card().querySelectorAll('.mrow').length).toBe(6)
     expect(card().querySelector('.weekly-plan-toggle').textContent).toBe('Show less')
-  })
-
-  it('sits on Stats right after Muscle balance, and only once there are routines', () => {
-    mocks.S = state()
-    act(() => root.render(<Stats section="load" />))
-    const balance = [...host.querySelectorAll('.card h2')].find(h => h.textContent.startsWith('Muscle balance'))?.closest('.card')
-    expect(balance).toBeTruthy()
-    expect(balance.nextElementSibling).toBe(card())
-    expect(card().id).toBe('weekly-volume')
-    mocks.S = state({ routines: [], week: {} })
-    act(() => root.render(<Stats section="load" />))
-    expect(card()).toBeNull()
-  })
-
-  it('scrolls itself into view when Plan links here', () => {
-    vi.useFakeTimers()
-    try {
-      window.location.hash = '#/progress/load?focus=weekly-volume'
-      mocks.S = state()
-      const scroll = vi.fn()
-      const orig = Element.prototype.scrollIntoView
-      Element.prototype.scrollIntoView = scroll
-      act(() => root.render(<Stats section="load" />))
-      act(() => { vi.advanceTimersByTime(50) })
-      Element.prototype.scrollIntoView = orig
-      expect(scroll).toHaveBeenCalledTimes(1)
-    } finally { vi.useRealTimers() }
   })
 })

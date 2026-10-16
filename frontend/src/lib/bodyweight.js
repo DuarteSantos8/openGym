@@ -12,6 +12,14 @@ export function weighInTime(b) {
   return Number.isFinite(at) ? at : Number(b?.t) || 0
 }
 
+/** How a change in weight reads against the goal: 'none' (no change), 'plain' (no goal to read
+ *  it against), 'toward' or 'away' from the goal. */
+export function deltaTone(delta, currentW, targetW) {
+  if (!delta) return 'none'
+  if (!targetW) return 'plain'
+  return (delta > 0) === (targetW > currentW) ? 'toward' : 'away'
+}
+
 /**
  * The weigh-ins grouped into weeks, newest week first. Each week carries its mean, how many
  * weigh-ins it holds, the change of its mean from the week before it that has any (null for the
