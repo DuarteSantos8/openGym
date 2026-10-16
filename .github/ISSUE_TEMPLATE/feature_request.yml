@@ -1,12 +1,12 @@
 name: Feature request
-description: Suggest an idea or improvement for openGym
+description: Suggest an idea or improvement for Gains
 labels: ["enhancement"]
 body:
   - type: textarea
     id: problem
     attributes:
       label: What problem does this solve?
-      description: What are you trying to do that openGym doesn't support today?
+      description: What are you trying to do that Gains doesn't support today?
     validations:
       required: true
 
@@ -23,7 +23,7 @@ body:
     attributes:
       label: Dependencies
       description: >
-        openGym is intentionally dependency-light — new packages (front or back) are a hard
+        Gains is intentionally dependency-light — new packages (front or back) are a hard
         sell. See [CONTRIBUTING.md](../../CONTRIBUTING.md).
       options:
         - label: This doesn't require adding a new dependency

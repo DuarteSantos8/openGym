@@ -112,7 +112,7 @@ come back from trying Gemini, and each chip shows a mark when it holds one.
 
 The model field is never a guess: **List models** asks the endpoint what it actually serves.
 For an Ollama box that means the admin decides what exists — `ollama pull` anything the
-hardware can hold and it appears in the picker on the next refresh; nothing in openGym pins
+hardware can hold and it appears in the picker on the next refresh; nothing in Gains pins
 you to a blessed list. The choice is remembered **per provider**, so trying a cloud model for
 a week and coming back to the local one restores exactly what was set before.
 
@@ -161,7 +161,7 @@ API_TARGET=coach docker compose up -d --build api
 claude setup-token
 ```
 
-Complete its normal browser sign-in and copy the token it prints. openGym never opens or handles
+Complete its normal browser sign-in and copy the token it prints. Gains never opens or handles
 that flow — it only ever receives the finished token. (Claude also accepts an Anthropic API key
 here, under the same chip; the setup token is the route for a Claude subscription.)
 
@@ -235,7 +235,7 @@ No job runs. That is a refusal, not a warning, on purpose — a warning moves th
 whoever clicks past it, and the decision is about spending somebody else's personal
 subscription. It is the same posture the payload allowlist takes.
 
-**The instance owner is responsible for their provider's terms.** openGym does not interpret
+**The instance owner is responsible for their provider's terms.** Gains does not interpret
 them on a self-hoster's behalf; it makes the shape that doesn't need the interpretation
 available, and refuses the shape that does.
 
@@ -445,7 +445,7 @@ in a device sync or in a user's own JSON export.
 The App-Store build has no server of its own, so the Coach there is a choice made in
 **Settings → AI Coach**, and until it is made nothing AI-related is loaded at all:
 
-- **Use my self-hosted openGym.** Pair the phone with your instance (the same pairing flow as
+- **Use my self-hosted Gains.** Pair the phone with your instance (the same pairing flow as
   syncing — **Settings → Account → Pair the mobile app** on the site, then the address and code on the
   phone). A paired phone is an ordinary profile: the Coach runs on your server with whatever
   provider the admin configured, under the rules above, and nothing on the phone changes.

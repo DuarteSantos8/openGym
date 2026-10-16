@@ -1,3 +1,6 @@
+> **Inherited packaging.** This flake and module come from the project Gains was forked from and still
+> build and run *that* project (its sources, names and options), not Gains. Porting them is not done.
+
 # openGym on NixOS — Flake & NixOS Module
 
 openGym can run natively on NixOS through its **Nix flake** and **NixOS module** — no Docker, no

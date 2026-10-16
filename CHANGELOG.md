@@ -1,5 +1,9 @@
 # Changelog
 
+> Gains has not cut releases of its own yet. Everything below is the history of the project it was
+> forked from (openGym), kept because Gains inherits that code; its version numbers, dates, issue and
+> `!NN` merge-request links refer to that project.
+
 ## v1.4.1 (2026-10-10)
 
 Bug fixes for v1.4.0, mostly the things you told us about on Discord and GitHub.

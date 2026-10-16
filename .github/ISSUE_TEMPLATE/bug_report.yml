@@ -1,5 +1,5 @@
 name: Bug report
-description: Something in openGym is broken or not working as expected
+description: Something in Gains is broken or not working as expected
 labels: ["bug"]
 body:
   - type: textarea
@@ -32,7 +32,7 @@ body:
   - type: dropdown
     id: setup
     attributes:
-      label: How are you running openGym?
+      label: How are you running Gains?
       options:
         - Self-hosted (docker compose)
         - Frontend dev server (npm run dev)
@@ -54,7 +54,7 @@ body:
       label: Is this about login / passkeys?
       description: >
         Most login issues are an `RP_ID`/`ORIGIN` mismatch — check your `.env` against the
-        domain you're accessing openGym from before reporting. See the
+        domain you're accessing Gains from before reporting. See the
         [self-hosting guide](../../docs/SELF_HOSTING.md).
       options:
         - label: Yes, this is a login/passkey issue and I've already checked RP_ID/ORIGIN

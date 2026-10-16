@@ -2,7 +2,7 @@
 
 The hub (the gateway's sync worker) syncs one profile at a time through `/api/sync/*`, each call
 carrying a short-lived hub token for that profile (`api/hub-token.js`). Until this route the hub had
-no way to ask openGym who exists. It learned about a person only after they opened the app and the
+no way to ask Gains who exists. It learned about a person only after they opened the app and the
 frontend called the hub's `sync/now`, so someone who logged a workout on another device, or came
 back after a while, was never polled.
 
@@ -82,7 +82,7 @@ and the route would have to ignore it). Three ways to give it a credential were 
 |---|---|
 | A. A per-profile-style token with `sub` set to a service principal and `scope=sync-list`, same audience | Works, but the only thing keeping it off the per-profile routes (and them off it) is the scope check. One mistaken `scopes: ['sync', 'sync-list']` on any route and a listing token reads profiles. |
 | **B. Its own audience (`opengym-sync-users`), scope `sync-list`, and `sub` = `hub`** | **Chosen.** Refused on every other route on audience *and* scope, and refused here on both too. No single mistake in a route's scope list lets one kind of token in as the other. |
-| C. A static API key in the environment | Rejected: no expiry, no one-use rule, nothing to rotate except by redeploying, and a second secret to leak. A hub token is already short-lived, single-use and signed with a key openGym holds only the public half of. |
+| C. A static API key in the environment | Rejected: no expiry, no one-use rule, nothing to rotate except by redeploying, and a second secret to leak. A hub token is already short-lived, single-use and signed with a key Gains holds only the public half of. |
 
 The decision is option B. The listing token, claim by claim:
 
@@ -111,7 +111,7 @@ itself is never logged.
 
 ## What the hub has to change
 
-openGym's side is this route and nothing else; the hub is a separate repo.
+Gains' side is this route and nothing else; the hub is a separate repo.
 
 1. **Mint a listing token** for `GET /api/sync/users`: the same ES256 key and issuer it uses now, with
    `aud: "opengym-sync-users"`, `scope: "sync-list"`, `sub: "hub"`, `iat`/`exp` (`exp - iat <= 60`) and

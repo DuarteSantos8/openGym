@@ -1,5 +1,8 @@
 # Roadmap
 
+> **Inherited, not Gains' plan.** This file is the roadmap of the project Gains was forked from (releases,
+> dates and milestones are theirs). It is kept for reference until Gains writes its own.
+
 Where openGym is going, in the order it is likely to land. Each block is a GitHub milestone; the
 issues and pull requests attached to it are the plan, this file is the readable summary.
 

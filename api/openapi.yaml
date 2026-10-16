@@ -1,16 +1,15 @@
-# openGym HTTP API: hand-written OpenAPI 3.1 spec.
+# Gains HTTP API: hand-written OpenAPI 3.1 spec.
 # Source of truth: api/server.js (a single framework-free Node file). Every route the
 # server registers is documented here; if you add a route there, add it here too.
-# Browsable version: https://opengym.ch/api.html
 openapi: 3.1.0
 
 info:
-  title: openGym API
+  title: Gains API
   version: 1.4.1
-  summary: Passkey (WebAuthn) auth + per-user state storage for openGym
+  summary: Passkey (WebAuthn) auth + per-user state storage for Gains
   description: |
-    The backend of [openGym](https://opengym.ch), a free, open-source
-    gym & body-weight tracker. A plain Node server, no framework, JSON-file storage,
+    The backend of [Gains](https://github.com/steradrian/gains), a free, open-source
+    self-hosted training and nutrition tracker. A plain Node server, no framework, JSON-file storage,
     HMAC-signed session cookies.
 
     ### Authentication
@@ -119,13 +118,13 @@ info:
     name: AGPL-3.0-or-later
     identifier: AGPL-3.0-or-later
   contact:
-    name: openGym
-    url: https://gitlab.com/DuarteSantos8/opengym
+    name: Gains
+    url: https://github.com/steradrian/gains
 
 servers:
   - url: /
-    description: Same origin as the openGym web app (the normal deployment)
-  - url: https://opengym.example.com
+    description: Same origin as the Gains web app (the normal deployment)
+  - url: https://gains.example.com
     description: Your self-hosted instance
 
 tags:

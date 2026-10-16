@@ -1,11 +1,11 @@
 # The exercise catalogue
 
-Every exercise openGym knows lives here, one file each, in plain JSON. The app is built from these
+Every exercise Gains knows lives here, one file each, in plain JSON. The app is built from these
 files, so a fix merged here is in the next release for everyone.
 
 - **Browse the list:** [browse/](browse/README.md), one page per body part, each exercise with a link to its picture.
 - **Report something without editing:** open an
-  [exercise issue](https://github.com/DuarteSantos8/openGym/issues/new?template=exercise.yml).
+  [exercise issue](https://github.com/steradrian/gains/issues/new?template=exercise.yml).
 
 ## What's where
 
@@ -76,8 +76,8 @@ lowercase like English.
 
 1. **Write it yourself.** Don't copy names, descriptions or steps from other apps, websites, books
    or datasets, and don't paste machine translation unreviewed. Short, correct, plain beats long.
-2. **The media is not open.** The pictures and animations are licensed from Gym visual for openGym
-   only (see [media/NOTICE.md](media/NOTICE.md)). Don't add, edit or replace media files, don't copy
+2. **The media is not open.** The pictures and animations are licensed from Gym visual to openGym
+   and used by this fork (see [media/NOTICE.md](media/NOTICE.md)). Don't add, edit or replace media files, don't copy
    them elsewhere, and don't feed them to any AI tool. Fixes to what an exercise *shows* go in an
    issue.
 3. **No medical advice.** Describe the movement, not treatments.

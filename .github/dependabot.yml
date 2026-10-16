@@ -1,6 +1,6 @@
 # Dependency updates, deliberately quiet.
 #
-# openGym is dependency-light on purpose: the frontend is React + Router + Zustand, and api/
+# Gains is dependency-light on purpose: the frontend is React + Router + Zustand, and api/
 # has two runtime dependencies. A default Dependabot setup would still open a PR per package
 # per week, which on a solo project means the alerts stop being read — the opposite of what
 # this is for. So: monthly, everything in an ecosystem grouped into a single PR, and a low

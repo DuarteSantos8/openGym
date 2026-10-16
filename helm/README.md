@@ -1,3 +1,7 @@
+> **Inherited packaging.** This chart comes from the project Gains was forked from. Its names and its
+> default images (`ghcr.io/duartesantos8/opengym-*`) are that project's: set `api.image.repository` and `web.image.repository` to your own
+> build before using it for Gains.
+
 # openGym Helm chart
 
 Installs openGym on Kubernetes: the API and the web container in a single pod, a PVC for the data, a

@@ -1,67 +1,50 @@
 <div align="center">
 
-<img src="assets/banner.png" alt="openGym" width="720">
+<img src="assets/banner.png" alt="Gains" width="720">
 
-**A self-hosted gym and body-weight tracker you actually own.**
+**A self-hosted training and nutrition tracker you own.**
 
-Plan your week, run guided workouts, log every set and your body weight,<br>
+Plan your week, run guided workouts, log every set, your food and your body weight,<br>
 on your phone, synced across your devices, behind your own passkey login.
 
-[![Discord](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fdiscord.com%2Fapi%2Finvites%2Fe62jY6fwVb%3Fwith_counts%3Dtrue&query=%24.approximate_member_count&suffix=%20members&label=Discord&logo=discord&logoColor=white&color=5865F2&style=for-the-badge)](https://discord.gg/e62jY6fwVb)
-[![Online](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fdiscord.com%2Fapi%2Finvites%2Fe62jY6fwVb%3Fwith_counts%3Dtrue&query=%24.approximate_presence_count&suffix=%20online&label=&logo=discord&logoColor=white&color=3BA55C&style=for-the-badge)](https://discord.gg/e62jY6fwVb)
-[![GitHub stars](https://img.shields.io/github/stars/DuarteSantos8/openGym?style=for-the-badge&logo=github&logoColor=white&color=24292f)](https://github.com/DuarteSantos8/openGym/stargazers)
-
-<a href="https://trendshift.io/repositories/88268?utm_source=repository-badge&amp;utm_medium=badge&amp;utm_campaign=badge-repository-88268" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/repositories/88268" alt="DuarteSantos8%2FopenGym | Trendshift" width="250" height="55"/></a>
-<a href="https://trendshift.io/repositories/88268?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-88268" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/88268/weekly?language=JavaScript" alt="DuarteSantos8%2FopenGym | Trendshift" width="250" height="55"/></a>
-
-[![Release](https://img.shields.io/github/v/release/DuarteSantos8/openGym?style=flat-square)](https://github.com/DuarteSantos8/openGym/releases)
-[![Downloads](https://img.shields.io/github/downloads/DuarteSantos8/openGym/total?style=flat-square&label=downloads)](https://github.com/DuarteSantos8/openGym/releases)
-[![Tests](https://img.shields.io/github/actions/workflow/status/DuarteSantos8/openGym/test.yml?branch=main&label=tests&style=flat-square)](https://github.com/DuarteSantos8/openGym/actions/workflows/test.yml)
-[![Pipeline](https://gitlab.com/DuarteSantos8/opengym/badges/main/pipeline.svg?style=flat-square)](https://gitlab.com/DuarteSantos8/opengym/-/pipelines)
-[![Coverage](https://gitlab.com/DuarteSantos8/opengym/badges/main/coverage.svg?job=test:frontend&style=flat-square)](https://gitlab.com/DuarteSantos8/opengym/-/pipelines?ref=main)
+[![Tests](https://img.shields.io/github/actions/workflow/status/steradrian/gains/test.yml?branch=main&label=tests&style=flat-square)](https://github.com/steradrian/gains/actions/workflows/test.yml)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-a3e635?style=flat-square)](LICENSE)
 
-[Website](https://opengym.ch) ·
-[Live demo](https://opengym.ch/demo/) ·
-[Android APK](https://github.com/DuarteSantos8/openGym/releases/latest) ·
 [Self-hosting guide](docs/SELF_HOSTING.md) ·
-[Roadmap](ROADMAP.md) ·
+[Phone app](docs/MOBILE.md) ·
+[Documentation](docs/README.md) ·
 [Changelog](CHANGELOG.md)
-
-<a href="https://buymeacoffee.com/duartesantos" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="45" width="163"></a>
-<a href="https://ko-fi.com/opengym" target="_blank"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support openGym on Ko-fi" height="45"></a>
 
 </div>
 
-<table align="center">
-<tr>
-<td align="center"><img src="assets/screenshots/home.png" alt="Home screen" width="230"><br><sub><b>Home</b> · today's workout and weight</sub></td>
-<td align="center"><img src="assets/screenshots/workout.png" alt="Workout screen" width="230"><br><sub><b>Guided workout</b> · demos and sets</sub></td>
-<td align="center"><img src="assets/screenshots/stats.png" alt="Stats screen" width="230"><br><sub><b>Stats</b> · heatmap, charts and PRs</sub></td>
-</tr>
-</table>
+> [!NOTE]
+> **Status: beta.** Gains is a personal project, run by one person for a few people who join by
+> invitation. There is no public instance, no store listing and no download page. You run your own
+> (below). Things change quickly and not everything in the guides has caught up with that yet.
 
-## Why openGym
+## Why Gains
 
-Most workout apps keep your data on their servers, push you towards a subscription, or vanish
-when the company does. openGym runs on your own box, keeps your data in a folder you control, and
-is yours to fork. It still behaves like a modern app: installable on the home screen, passkey
+Most workout and food apps keep your data on their servers, push you towards a subscription, or
+vanish when the company does. Gains runs on your own box, keeps your data in a folder you control,
+and is yours to fork. It still behaves like a modern app: installable on the home screen, passkey
 sign-in, works offline, syncs between your phone and your laptop.
 
 No account on someone else's server, no subscription, no ads, no telemetry. One
 `docker compose up` and it's running.
 
-The [in-browser demo](https://opengym.ch/demo/) is the real app with example data,
-if you want to try it before installing anything.
-
 ## Features
+
+**Nutrition**
+
+- A food diary by meal, with your own foods, saved meals and recipes, daily goals, a fasting timer
+  and trends over time. It lives in the same app and the same profile as your training.
 
 **Planning**
 
 - A routine per weekday over a library of **over 5,600 exercises** with animated demos, searchable and
   browsable by muscle on a body map. Filter by the equipment you own.
-- Four starter plans (Push/Pull/Legs, Upper/Lower, Full Body, 5×5) that load as ordinary,
-  editable routines.
+- Starter plans (Push/Pull/Legs, Upper/Lower, Full Body, 5×5) that load as ordinary, editable
+  routines.
 - Move a session to another day without touching the weekly plan. The week starts on Monday or
   Sunday, your choice.
 - Or skip the weekdays altogether: a **rotation** (A, B, C, A, ...) where the next session is
@@ -128,15 +111,14 @@ The full list of what changed release by release is in the [changelog](CHANGELOG
 You need [Docker](https://docs.docker.com/get-docker/) with Compose.
 
 ```bash
-git clone https://github.com/DuarteSantos8/openGym
-cd openGym
+git clone https://github.com/steradrian/gains
+cd gains
 cp .env.example .env
-docker compose pull      # prebuilt images, amd64 + arm64 (skip this to build from source)
-docker compose up -d
+docker compose up -d --build
 ```
 
 Open <http://localhost:8080>, tap **Create profile**, and you're in. The exercise animations are
-part of the image, so there's nothing else to download.
+part of the image, so there's nothing else to download. Building needs no Node on the host.
 
 To reach it from your phone with passkeys you need HTTPS on a domain; that's a two-line change in
 `.env`. The [self-hosting guide](docs/SELF_HOSTING.md) walks through Cloudflare Tunnel, Caddy,
@@ -144,10 +126,10 @@ Traefik and nginx, and there are separate guides for
 [HTTPS on a LAN](docs/SELF_HOSTING_HTTPS.md) and [Kubernetes](docs/SELF_HOSTING_KUBERNETES.md).
 
 > [!NOTE]
-> Images are published from the same tag to `ghcr.io/duartesantos8/opengym-{api,web}`
-> (what `docker-compose.yml` pulls) and `registry.gitlab.com/duartesantos8/opengym/{api,web}`. Swap
-> the `image:` lines if you prefer GitLab's registry, or run `docker compose up -d --build` to build
-> locally. Either way you don't need Node on the host.
+> Images for `linux/amd64` are also published to this repository's GitHub Container Registry
+> (`ghcr.io/steradrian/gains-api` and `gains-web`) on every push to `main`. `docker-compose.yml` still
+> names images from the project Gains was forked from, so use `--build` as above until it is
+> pointed at these.
 
 <details>
 <summary><b>Configuration reference</b> (all through <code>.env</code>)</summary>
@@ -188,9 +170,7 @@ variable. The [self-hosting guide](docs/SELF_HOSTING.md) covers every option in 
 The same codebase builds a standalone app with Capacitor: no account, no server, everything stays
 on the phone, with native reminders and a rest countdown in the notification shade.
 
-- **Android:** download the signed APK from the [latest release](https://github.com/DuarteSantos8/openGym/releases/latest)
-  or the [website](https://opengym.ch). Each build sits next to its `.sha256`, and
-  the app checks for updates itself. openGym is deliberately not on the Play Store.
+- **Android:** there is no download. Build the APK yourself ([docs/MOBILE.md](docs/MOBILE.md)).
 - **iPhone:** Apple doesn't allow installs outside the App Store. Self-host and add the PWA to your
   home screen from Safari, or build the native app onto your own device with Xcode.
 
@@ -213,8 +193,7 @@ Details and build instructions: [docs/MOBILE.md](docs/MOBILE.md).
 
 The training logic (progression rules, 1RM, how a logged session is read back) lives in pure
 functions under `frontend/src/lib/` with tests beside them. The HTTP API is documented as an
-OpenAPI spec in [`api/openapi.yaml`](api/openapi.yaml), browsable at
-[opengym.ch/api.html](https://opengym.ch/api.html).
+OpenAPI spec in [`api/openapi.yaml`](api/openapi.yaml); [docs/API.md](docs/API.md) says how to read it.
 
 ### How sync works
 
@@ -263,97 +242,46 @@ The [documentation index](docs/README.md) sorts every guide by who it's for. The
 | Contribute code | [Contributing](CONTRIBUTING.md) |
 | Report a security problem | [Security](SECURITY.md) |
 
-## Roadmap
+## Contributing
 
-A release roughly every two weeks, each small and themed. The full plan is in
-[ROADMAP.md](ROADMAP.md), and the issues sit in the
-[GitHub milestones](https://github.com/DuarteSantos8/openGym/milestones). The next two releases
-finish the community wishes, then comes a new exercise database and a themed release every
-two weeks after it.
+Gains is a personal project. Issues and pull requests are read as time allows; start with
+[CONTRIBUTING.md](CONTRIBUTING.md).
 
-| Release | When | Theme |
-|---|---|---|
-| v1.3.10 | released Oct 2026 | New design, rotation, swipe actions, safer sync |
-| v1.3.11 | next | Fixes, about thirty community pull requests, Health Connect, measurements |
-| v1.3.12 | Nov 2026 | Community features: focus view, widget, timer rework |
-| v1.4.0 | Nov 2026 | A new exercise database |
-| v1.4.1 to v1.4.4 | Dec 2026 and Jan 2027 | Programmes, the progression engine, cardio |
-| v1.4.5 to v1.4.10 | Jan to Apr 2027 | Search, accounts, the iOS app, Android and health, looks |
-| later | | Database storage |
+- **[Issues](https://github.com/steradrian/gains/issues)** for reproducible bugs. Login trouble is
+  almost always an `RP_ID`/`ORIGIN` mismatch; the [self-hosting guide](docs/SELF_HOSTING.md) covers it.
+- **[Pull requests](https://github.com/steradrian/gains/pulls)** against `main`.
 
-## Community
+## How Gains is built
 
-- **[Discord](https://discord.gg/e62jY6fwVb)** for release announcements, self-hosting help and
-  quick back-and-forth. Usually the fastest way to get an answer.
-- **[Discussions](https://github.com/DuarteSantos8/openGym/discussions)** for questions and ideas
-  you want the next person to find by searching.
-- **[Issues](https://github.com/DuarteSantos8/openGym/issues)** for reproducible bugs and agreed-on
-  work. Login trouble is almost always an `RP_ID`/`ORIGIN` mismatch; the
-  [self-hosting guide](docs/SELF_HOSTING.md) covers it.
-- **[Pull requests](https://github.com/DuarteSantos8/openGym/pulls)** are welcome; start with
-  [CONTRIBUTING.md](CONTRIBUTING.md).
+Gains is developed with [Claude Code](https://claude.com/claude-code), Anthropic's coding agent. A
+large share of the code, tests and documentation is drafted in Claude Code sessions, and the
+repository carries a [`CLAUDE.md`](CLAUDE.md) with the project context those sessions start from.
+The training logic is covered by unit tests, and pull requests run the frontend, API and MCP suites in CI.
 
-<a href="https://github.com/DuarteSantos8/openGym/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=DuarteSantos8/openGym&max=60" alt="Contributors">
-</a>
+The app itself doesn't need an LLM. Nothing in a default install calls an AI service. The AI coach and
+the MCP server are opt-in, and the coach only talks to the provider you configure, with your own key.
 
-### Where the code lives
+## License and credits
 
-GitHub is the home of the project. [gitlab.com/DuarteSantos8/opengym](https://gitlab.com/DuarteSantos8/opengym)
-is a mirror, updated by a GitHub Actions workflow on every push to `main` and every release tag. It
-exists because its CI builds the release artifacts: the signed APK, the multi-arch images and the
-SBOMs. Nothing is merged there by hand. In the changelog, `!NN` refers to a GitLab merge request
-from the weeks in August and September 2026 when the project lived there.
+**Gains is licensed under the [GNU AGPL v3.0](LICENSE).** You can self-host, use, modify and share
+it; if you run a modified version as a network service, you have to offer that version's source under
+the same license.
 
-## How openGym is built
+Gains is built on the work of others, and the AGPL requires keeping their notices:
 
-People have asked about this, so plainly: **openGym is developed with
-[Claude Code](https://claude.com/claude-code)**, Anthropic's coding agent. A large share of the
-code, tests and documentation is drafted in Claude Code sessions, and the repository carries a
-[`CLAUDE.md`](CLAUDE.md) with the project context those sessions start from.
+- It began as a fork of [**openGym**](https://github.com/DuarteSantos8/openGym) by Duarte Santos
+  (© 2026, AGPL-3.0): the training app, the API and the login. Modifications are © 2026 steradrian.
+- Its nutrition features come from [**NutriTrace**](https://github.com/traceapps/nutritrace) by the
+  Trace Apps authors (AGPL-3.0), through [steradrian/gains-nutrition](https://github.com/steradrian/gains-nutrition).
 
-What that does and doesn't mean:
-
-- **A person decides and ships.** What goes in, what gets reviewed and merged, and every release
-  are the maintainer's call. Changes are tested on a staging instance and on real phones before
-  they are tagged.
-- **Tests hold the logic in place.** The training logic is covered by unit tests, and pull requests
-  run the frontend, API and MCP suites in CI. That is the guard against plausible-looking code
-  that is wrong, whoever or whatever wrote it.
-- **The app itself doesn't need an LLM.** Nothing in a default install calls an AI service. The AI
-  coach and the MCP server are opt-in, and the coach only talks to the provider you configure, with
-  your own key.
-
-Community pull requests are written by their authors, with whatever tools they like, and reviewed
-the same way.
-
-## Support
-
-openGym is free and stays free: AGPL, no paid tier, nothing held back for sponsors. If it replaced a
-paid tracker for you and you'd like to chip in, there's a coffee button below. A star, a bug report
-or a pull request helps just as much.
-
-<a href="https://buymeacoffee.com/duartesantos" target="_blank">
-  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="60" width="217">
-</a>
-
-[![Star History Chart](https://api.star-history.com/svg?repos=duartesantos8/opengym&type=Date)](https://star-history.com/#DuarteSantos8/openGym&Date)
-
-## License
-
-**openGym's own code** is licensed under the [GNU AGPL v3.0](LICENSE). You can self-host, use,
-modify and share it; if you run a modified version as a network service, you have to offer that
-version's source under the same license.
+Neither project is affiliated with Gains or endorses it. The app shows these notices under Settings,
+About & updates, Licences.
 
 > [!IMPORTANT]
 > **The exercise media is not covered by that license.** The stills and animations are
 > © Aliaksandr Makatserchyk, [Gym visual](https://gymvisual.com/), licensed for use in openGym only:
 > 180 px in this repository and on self-hosted servers, larger only inside the app packages. A
 > non-commercial fork may keep them unmodified with the notice; anything else needs your own licence
-> from gymvisual.com. The exercise text in `catalogue/` is openGym's and open to contributions.
-
-**Contributing:** pull requests are signed off once with the [Contributor License Agreement](CLA.md):
-you keep the copyright in your work, openGym may use and relicense it (so the app can stay in the
-App Store and Google Play long term), and every version released under the AGPL stays AGPL.
+> from gymvisual.com. The exercise text in `catalogue/` is openGym's, under openGym's AGPL.
 
 Full third-party notices, including the body-diagram geometry, are in [NOTICE.md](NOTICE.md).

@@ -1,0 +1,15 @@
+<!doctype html>
+<!-- The README banner (banner.png, 1320x380). The mark and wordmark are the brand kit's (the wordmark
+     is outlined Jost, SIL OFL). Render with a Chromium whose window is taller than the picture (a
+     headless window paints its bottom rows white) and crop to 1320x380:
+       chrome --headless --hide-scrollbars --force-device-scale-factor=1 --window-size=1320,580 \
+              --screenshot=banner-raw.png file://$PWD/banner.html -->
+<html style="margin:0"><body style="margin:0;background:#fff">
+<div style="position:relative;width:1320px;height:380px;background:#fff">
+  <div style="position:absolute;inset:0;background:#111111;border-radius:44px;border:4px solid #2a2a2a;box-sizing:border-box"></div>
+  <img src="mark-white.svg" alt="" style="position:absolute;left:84px;top:80px;width:220px;height:220px">
+  <img src="wordmark-white.svg" alt="Gains" style="position:absolute;left:370px;top:70px;height:150px">
+  <div style="position:absolute;left:376px;top:240px;color:#a0a3a8;font:700 36px 'Liberation Sans',Arial,Helvetica,sans-serif">Self-hosted training &amp; nutrition tracker</div>
+  <div style="position:absolute;left:376px;top:296px;color:#6f737a;font:27px 'Liberation Sans',Arial,Helvetica,sans-serif">passkey login · own your data · docker · AGPL</div>
+</div>
+</body></html>

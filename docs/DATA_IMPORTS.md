@@ -14,8 +14,8 @@ Everything here lives in the app under **Settings → Data & backup**, except pl
 ## Workout history from another app
 
 Export a CSV from your old app, then pick it under **Settings → Data & backup → Import from another app**.
-openGym matches exercise names against its library; anything it doesn't recognise becomes one of
-your own exercises, so nothing in the file is dropped. Days that already have a workout in openGym
+Gains matches exercise names against its library; anything it doesn't recognise becomes one of
+your own exercises, so nothing in the file is dropped. Days that already have a workout in Gains
 are left alone, so importing the same file twice never duplicates anything.
 
 These exports work without any editing:
@@ -40,7 +40,7 @@ Other files work too, as long as they have a date, an exercise name and somethin
 With **Hevy Pro** you can skip the CSV:
 
 1. In Hevy, open [Settings → Developer](https://hevy.com/settings?developer) and create an API key.
-2. In openGym, go to **Settings → Data & backup → Import from Hevy** and paste the key. It's used for this
+2. In Gains, go to **Settings → Data & backup → Import from Hevy** and paste the key. It's used for this
    import only and isn't saved.
 3. Choose workouts, routines, weigh-ins or any mix, then confirm.
 
@@ -50,7 +50,7 @@ Routines always arrive as new plans; nothing you already have is overwritten.
 
 In the Health app on your iPhone, tap your profile picture, then **Export All Health Data**. Unzip
 the result and pick `export.xml` under **Import from another app**. The file is often hundreds of
-megabytes; openGym reads only the body-weight records from it, in whatever unit each one was saved
+megabytes; Gains reads only the body-weight records from it, in whatever unit each one was saved
 in, and keeps one weigh-in per day. Days that already have a weigh-in are left alone.
 
 A CSV with a date column and a weight column works the same way.
@@ -65,10 +65,10 @@ On the **Plan** screen, tap the share icon:
   never overwritten.
 - **Print / Save as PDF** gives you a clean printout.
 
-An export always contains every routine. To share only some of them, import the file into the
-[demo](https://opengym.ch/demo/), delete what you don't want, and export again. The
-demo keeps everything in your browser; nothing is uploaded. The same trick works for building a plan
-on a computer and then importing it into the phone app.
+An export always contains every routine. To share only some of them, import the file into a
+throwaway profile (or the guest mode, which keeps everything in your browser), delete what you don't
+want, and export again. The same trick works for building a plan on a computer and then importing it
+into the phone app.
 
 Writing a plan file by hand is possible but fiddly, because the exercise ids have to match the
 library.
@@ -82,7 +82,7 @@ library.
   workout or routine edit and keeps the newest 14. Point a sync app at that folder to get them off
   the phone — or, on Android, choose the sync app's own folder under Settings → Data & backup → **Backup folder**.
 
-If you host openGym yourself, backing up the `./data` folder covers every profile at once; see
+If you host Gains yourself, backing up the `./data` folder covers every profile at once; see
 [backups](SELF_HOSTING.md#6-backups).
 
 ## Your own CSV

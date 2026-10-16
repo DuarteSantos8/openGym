@@ -1,10 +1,10 @@
-# Self-hosting openGym on Kubernetes
+# Self-hosting Gains on Kubernetes
 
 Example manifests for a small cluster, contributed from a K3s setup with the Gateway API and
 cert-manager. Read [SELF_HOSTING.md](SELF_HOSTING.md) first: the passkey requirement (HTTPS,
 `RP_ID`, `ORIGIN`), the settings in `.env.example` and the backup advice apply here unchanged.
 
-openGym is pretty simple — a frontend and an API backend. The API keeps everything in plain JSON
+Gains is pretty simple — a frontend and an API backend. The API keeps everything in plain JSON
 files on a volume. The exercise pictures and animations are part of the web image, so nothing is
 downloaded at start-up. There are only a few resources to create:
 
@@ -16,8 +16,8 @@ downloaded at start-up. There are only a few resources to create:
   works as well), plus a cert-manager Certificate for the hostname.
 
 ```bash
-git clone https://github.com/DuarteSantos8/openGym   # or https://gitlab.com/DuarteSantos8/opengym — same repo
-cd openGym
+git clone https://github.com/steradrian/gains
+cd gains
 # In kubernetes/deployment.yaml, set RP_ID and ORIGIN in spec.template.spec.containers[api].env
 # to your hostname, and the hostname in kubernetes/httproute.yaml.
 kubectl apply -k kubernetes/
@@ -35,7 +35,9 @@ Notes:
   called `eg` in `envoy-gateway-system` with an `https` listener; change both to match your
   cluster. The Gateway has to terminate TLS; this was tested with
   [Envoy Gateway](https://gateway.envoyproxy.io) and [cert-manager](https://cert-manager.io).
-- The images are the published `ghcr.io/duartesantos8/opengym-api` and `opengym-web`. The AI
+- The manifests still name the images `ghcr.io/duartesantos8/opengym-api` and `opengym-web`, from the
+  project Gains was forked from: build and push your own (the repository publishes `linux/amd64` ones to
+  `ghcr.io/steradrian/gains-api` and `gains-web`) and change them in `kubernetes/deployment.yaml`. The AI
   Coach with an API key works on that same API image; the Claude and Codex sign-in providers
   need the `coach` build target, which is not published — build it yourself (see
   [AI_COACH.md](AI_COACH.md)).

@@ -1,6 +1,0 @@
-# Puts a "Sponsor" button on the repo header. The GitHub entry only works once the account is
-# enrolled in GitHub Sponsors (github.com/sponsors — identity check, Stripe payout account and
-# a tax form); until then the button is simply not shown.
-github: DuarteSantos8
-buy_me_a_coffee: duartesantos
-ko_fi: opengym

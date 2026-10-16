@@ -7,7 +7,7 @@ body:
       value: |
         Thanks for helping with the exercise catalogue! If you're comfortable with GitHub, a pull request that edits
         `catalogue/exercises/<id>.json` or `catalogue/i18n/<lang>.json` directly is even better: see
-        [catalogue/README.md](https://github.com/DuarteSantos8/openGym/blob/main/catalogue/README.md).
+        [catalogue/README.md](https://github.com/steradrian/gains/blob/main/catalogue/README.md).
         Please write in your own words and don't paste text from other websites or apps.
   - type: input
     id: exercise

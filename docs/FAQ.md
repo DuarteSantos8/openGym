@@ -4,15 +4,13 @@ Short answers, with a link to the long one.
 
 ### What does it cost?
 
-Nothing. openGym is open source under the AGPL: no subscription, no paid tier, no ads. If you'd like
-to support it anyway, there's [Buy Me a Coffee](https://buymeacoffee.com/duartesantos).
+Nothing. Gains is open source under the AGPL: no subscription, no paid tier, no ads.
 
 ### Do I need my own server?
 
 No, there are three ways to use it:
 
-- **Try it:** the [online demo](https://opengym.ch/demo/) runs entirely in your
-  browser with example data.
+- **Try it:** there is no public demo or instance. Gains is in a private beta; you run your own.
 - **Phone only:** the Android app needs no server and no account; everything stays on the phone.
   See [MOBILE.md](MOBILE.md).
 - **Your own instance:** `docker compose up` on any machine with Docker gives you sync between
@@ -21,15 +19,15 @@ No, there are three ways to use it:
 ### Is there an iPhone app?
 
 Not in the App Store, and Apple doesn't allow installing apps from anywhere else. On an iPhone you can
-self-host and add openGym to your home screen from Safari (it's a full PWA that works offline), or
+self-host and add Gains to your home screen from Safari (it's a full PWA that works offline), or
 build the native app onto your own phone with Xcode. Both are described in [MOBILE.md](MOBILE.md).
 An App Store build is on the [roadmap](../ROADMAP.md).
 
 ### Why isn't it on the Play Store?
 
-That's deliberate. The APK is signed, published with a `.sha256` next to every release, and the app
-checks for updates itself. Get it from the
-[latest release](https://github.com/DuarteSantos8/openGym/releases/latest).
+There is no store listing and no download yet: Gains is a personal project in a private beta. You
+build the Android app yourself ([docs/MOBILE.md](MOBILE.md)) or use your own instance as a
+home-screen app.
 
 ### Where is my data?
 
@@ -45,12 +43,12 @@ inside the web image, so not even those are downloaded. The AI coach, if an admi
 the training data it needs to the provider you configured; [AI_COACH.md](AI_COACH.md) lists exactly
 what. Push notifications go through your browser's push service, as all web push does.
 
-### Was openGym written with AI?
+### Was Gains written with AI?
 
 It's developed with [Claude Code](https://claude.com/claude-code), Anthropic's coding agent, and a
-large share of the code, tests and docs is drafted that way. The maintainer decides what goes in,
-reviews it, and tests every release on a staging instance and on real phones. The longer answer is in
-the [README](../README.md#how-opengym-is-built).
+large share of the code, tests and docs is drafted that way. The training logic is covered by unit
+tests that run on every pull request. The longer answer is in
+the [README](../README.md#how-gains-is-built).
 
 ### Does the app itself use AI?
 
@@ -99,13 +97,12 @@ an exercise and something measured. See [DATA_IMPORTS.md](DATA_IMPORTS.md).
 
 ### Can I reuse the exercise images in my own project?
 
-No. They are © Aliaksandr Makatserchyk, Gym visual, licensed for use in openGym only and not covered
-by openGym's license. Anything outside openGym needs your own licence from
-[gymvisual.com](https://gymvisual.com/). Details in [NOTICE.md](../NOTICE.md). The exercise text in
-[catalogue/](../catalogue/README.md) is a different story: that's openGym's, and fixes are welcome.
+No. They are © Aliaksandr Makatserchyk, Gym visual, licensed to the openGym project and not covered
+by the AGPL. Gains is a fork of openGym and uses them unmodified, at 180 px, non-commercially.
+Anything else needs your own licence from [gymvisual.com](https://gymvisual.com/). Details in
+[NOTICE.md](../NOTICE.md). The exercise text in [catalogue/](../catalogue/README.md) is a different
+story: that's openGym's, under openGym's AGPL, and fixes are welcome.
 
 ### Where do I ask something that isn't here?
 
-The [Discord](https://discord.gg/e62jY6fwVb) for a quick answer,
-[Discussions](https://github.com/DuarteSantos8/openGym/discussions) if the next person should be
-able to find it, [Issues](https://github.com/DuarteSantos8/openGym/issues) for a bug.
+Open an [issue](https://github.com/steradrian/gains/issues).

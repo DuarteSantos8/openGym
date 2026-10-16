@@ -1,11 +1,11 @@
 # HTTP API
 
-The complete openGym HTTP API — every route of `api/server.js`, with auth,
+The complete Gains HTTP API — every route of `api/server.js`, with auth,
 request/response schemas and the env-dependent behavior — is documented as a
 hand-written OpenAPI 3.1 spec:
 
 - **Spec (source of truth):** [`api/openapi.yaml`](../api/openapi.yaml)
-- **Browsable (Swagger UI):** https://opengym.ch/api.html
+- **Browsing it:** paste the file into any OpenAPI viewer (Swagger Editor, Redoc, Scalar).
 
 Lint it after changing routes:
 
