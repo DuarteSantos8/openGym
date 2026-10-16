@@ -437,8 +437,8 @@ export function validateReview(data, plan, ctx = {}) {
         // the routine the model asked for minus the exercises it could not have, and hand that
         // to someone as if it were what they were shown.
         const listed = Array.isArray(a.ex) ? a.ex : [];
-        const bad = listed.find(e => !e || !isStr(e.id) || !knownEx(e.id));
-        if (bad) { errors.push(`${where}.after.ex "${bad.id}" is not in the exercise library — use an id from the library provided in the payload`); return; }
+        const badIndex = listed.findIndex(e => !e || !isStr(e.id) || !knownEx(e.id));
+        if (badIndex !== -1) { errors.push(`${where}.after.ex[${badIndex}] "${listed[badIndex]?.id ?? '(missing id)'}" is not in the exercise library — use an id from the library provided in the payload`); return; }
         const offEq = listed.find(e => offEquipment(ctx, e.id));
         if (offEq) { errors.push(OFF_EQUIPMENT(`${where}.after.ex`, offEq.id)); return; }
         const ex = listed.slice(0, MAX_EX_PER_ROUTINE);
