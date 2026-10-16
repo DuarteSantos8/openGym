@@ -14,7 +14,7 @@ import BodyMap, { BodyMapLegend } from '../components/BodyMap.jsx'
 import { loadOfWeeklyPlan, loadOfWorkouts, muscleBalanceWindow, rankOf, MUSCLES, MUSCLE_NAME, musclesOf } from '../lib/muscles.js'
 import { fatigueOf, strengthOf, STRENGTH_FLOOR, LB_TO_KG } from '../lib/recovery.js'
 import { strengthExerciseRowsForMuscle } from '../lib/strength-exercises.js'
-import { fatigueStateOf } from '../lib/recovery-view.js'
+import { fatigueStateOf, fatigueRecoveryMs, fmtRecoveryIn } from '../lib/recovery-view.js'
 import { e1rmSeries, best1RM, formulaOf } from '../lib/onerm.js'
 import { currentDbLoad, workoutAs } from '../lib/dumbbells.js'
 import { maxRepsSeries } from '../lib/pyramid.js'
@@ -143,6 +143,10 @@ function MuscleBalance({ S }) {
     return t('Weeks since training: {0}', weeks)
   }
   const toggleSel = m => setSel(s => (s === m ? null : m))
+  // Selected-muscle detail for the Fatigue view: the same display value that
+  // shades the map, as a percentage, plus when it drops back through the bands.
+  const selFatigue = sel ? (fatigue[sel] || 0) : 0
+  const selRecovery = sel ? fatigueRecoveryMs(selFatigue, sel) : { toRecoveringMs: null, toReadyMs: null }
   const ws = weekStartOf(S)
   const currentWeek = weekKey(todayISO(), ws)
   const selectedWeekDate = new Date(currentWeek + 'T12:00:00')
@@ -254,9 +258,13 @@ function MuscleBalance({ S }) {
       <BodyMap className="tappable hm-fatigue" load={fatigue} thresholds={FATIGUE_LEVELS} body={S.body} selected={sel} onMuscle={toggleSel} />
       <FatigueLegend />
       <div className="muted small" style={{ marginTop: 10 }}>{t('Fatigue shows how recently each muscle was trained. High means rest.')}</div>
-      {sel && <div className="mrow" style={{ borderTop: 'var(--hair) solid var(--sep)', marginTop: 4, paddingTop: 10 }}>
-        <span className="nm"><b>{t(MUSCLE_NAME[sel])}</b></span>
-        <span className="v">{fatigueLabel(fatigue[sel])}</span>
+      {sel && <div style={{ borderTop: 'var(--hair) solid var(--sep)', marginTop: 4, paddingTop: 10 }}>
+        <div className="mrow">
+          <span className="nm"><b>{t(MUSCLE_NAME[sel])}</b></span>
+          <span className="v">{Math.round(selFatigue * 100)}% · {fatigueLabel(selFatigue)}</span>
+        </div>
+        {selRecovery.toRecoveringMs != null && <div className="small dim">{t('Recovering {0}', fmtRecoveryIn(selRecovery.toRecoveringMs))}</div>}
+        {selRecovery.toReadyMs != null && <div className="small dim">{t('Ready {0}', fmtRecoveryIn(selRecovery.toReadyMs))}</div>}
       </div>}
     </> : <>
       <h2>{t('Strength')}</h2>
