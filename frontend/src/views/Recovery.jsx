@@ -14,6 +14,7 @@ import { Card, EmptyState, StatTile, Tiles } from '../components/blocks.jsx'
 import { Page, Stack } from '../components/layout.jsx'
 import { Button, Segmented } from '../components/ui.jsx'
 import { rangeFrom, rangeOptions, storedRange } from '../lib/progress-range.js'
+import { Loading } from '../components/Loader.jsx'
 
 // Progress › Recovery (ia-proposal §3, B23 and B28 to B30): what a connected wearable reports,
 // sleep, heart and activity, over the hub's range. NutriTrace holds the data; the web app only
@@ -54,7 +55,7 @@ export default function Recovery() {
       </Stack>
     </Card>
   } else if (status !== 'ready') {
-    body = <div className="muted small fp-note" role="status">{t('Loading…')}</div>
+    body = <Loading className="muted small fp-note" />
   } else if (!metric) {
     body = <Card>
       <EmptyState icon="heart" title={t('No wearable data yet')}>{t('Connect a wearable in NutriTrace and its sleep, heart and activity readings show up here.')}</EmptyState>

@@ -22,6 +22,7 @@ import { limitsFrom, fmtMB, MB } from '../lib/media-limits.js'
 import { CustomThumb } from './CustomMedia.jsx'
 import { Row, Button } from './ui.jsx'
 import Icon from './Icon.jsx'
+import { Loader } from './Loader.jsx'
 
 const toast = m => useUI.getState().toast(m)
 
@@ -147,7 +148,7 @@ export default function CustomMediaField({ media, url, onChange }) {
         {/* Hidden on a server that will never take a file; shown but off where this browser
             cannot keep one, with the note below saying why. */}
         {showAdd && <Button variant="tinted" size="sm" icon={busy ? undefined : 'image'} disabled={!canAdd} onClick={() => fileRef.current?.click()}>
-          {busy ? t('Loading…') : m ? t('Change') : t('Add')}
+          {busy ? <><Loader size="xs" />{t('Loading…')}</> : m ? t('Change') : t('Add')}
         </Button>}
         {m && <Button variant="ghost" size="sm" icon="xmark" aria-label={t('Remove')} title={t('Remove')} disabled={busy} onClick={() => { setWarning(null); onChange({ media: null }) }} />}
       </div>

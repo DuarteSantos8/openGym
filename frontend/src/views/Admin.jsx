@@ -14,6 +14,7 @@ import { SheetHeader } from '../components/sheet-layout.jsx'
 import { Button } from '../components/ui.jsx'
 import AdminCoach from './AdminCoach.jsx'
 import '../admin.css'
+import { Loading } from '../components/Loader.jsx'
 
 // Admin-only operator dashboard (owner passkey + admin flag; guarded again server-side).
 // Deliberately English-only — it isn't part of the translated end-user surface, so it stays
@@ -59,7 +60,7 @@ function UserDetail({ id, onChanged, close }) {
   const toast = useUI(s => s.toast)
   const openSheet = useUI(s => s.openSheet)
   useEffect(() => { api('/api/admin/user?id=' + encodeURIComponent(id)).then(setD).catch(e => toast(e.message)) }, [id])
-  if (!d) return <div className="muted small">Loading…</div>
+  if (!d) return <Loading className="muted small" />
   const u = d.user
   // The document comes straight off the user's state file. PUT /api/data drops null and
   // shapeless entries now, but a file written before it did still answers with them, and this

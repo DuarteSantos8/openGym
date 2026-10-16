@@ -2787,6 +2787,7 @@ export default {
   'of {0}': '/ {0}',
   'over by {0}': '{0} fazla',
   'Loading today': 'Bugün yükleniyor',
+  'Loading Coach status…': 'Coach durumu yükleniyor…',
   // --- the global search ---
   '+{0} more': '+{0} daha',
   'Best match, {0}, opens {1}': 'En iyi eşleşme, {0}, {1} açar',

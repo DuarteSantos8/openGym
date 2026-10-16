@@ -117,7 +117,7 @@ describe('ActionRow / ActionButton', () => {
     expect($('.act-b').hasAttribute('aria-label')).toBe(false)
     render(<ActionButton icon="scanBarcode" label="Scan" busy />)
     expect($('.act-b').getAttribute('aria-busy')).toBe('true')
-    expect($('.act-spin')).not.toBeNull()
+    expect($('.act-d svg.loader.loader-icon')).not.toBeNull()   // 24px, the icon it replaces
     expect($('[data-icon]')).toBeNull()
     render(<ActionButton icon="qr" label="Check in" disabled badge="1 card due" />)
     expect($('.act-b').disabled).toBe(true)

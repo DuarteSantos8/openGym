@@ -2787,6 +2787,7 @@ export default {
   'of {0}': '/ {0}',
   'over by {0}': '{0} 초과',
   'Loading today': '오늘 불러오는 중',
+  'Loading Coach status…': '코치 상태 불러오는 중…',
   // --- the global search ---
   '+{0} more': '+{0}개 더',
   'Best match, {0}, opens {1}': '가장 일치하는 결과, {0}, {1} 열기',

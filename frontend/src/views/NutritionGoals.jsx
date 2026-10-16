@@ -15,6 +15,7 @@ import { EmptyState } from '../components/blocks.jsx'
 import { Page } from '../components/layout.jsx'
 import { Button, Row, Section, Segmented, SelectRow, Stepper, Switch, TextField } from '../components/ui.jsx'
 import { confirmSheet, goalSheet } from '../sheets.jsx'
+import { Loading } from '../components/Loader.jsx'
 
 const toast = message => useUI.getState().toast(message)
 
@@ -233,5 +234,5 @@ function GoalsBody() {
       <Button size="sm" onClick={form.reload}>{t('Try again')}</Button>
     </EmptyState>
   }
-  return <EmptyState className="small">{t('Loading…')}</EmptyState>
+  return <EmptyState className="small"><Loading /></EmptyState>
 }

@@ -2798,6 +2798,7 @@ export default {
   'of {0}': 'จาก {0}',
   'over by {0}': 'เกิน {0}',
   'Loading today': 'กำลังโหลดข้อมูลวันนี้',
+  'Loading Coach status…': 'กำลังโหลดสถานะโค้ช…',
   // --- the global search ---
   '+{0} more': 'อีก {0} รายการ',
   'Best match, {0}, opens {1}': 'ตรงที่สุด {0} เปิด {1}',

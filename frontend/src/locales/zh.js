@@ -2787,6 +2787,7 @@ export default {
   'of {0}': '/ {0}',
   'over by {0}': '超出 {0}',
   'Loading today': '加载今日数据',
+  'Loading Coach status…': '加载 Coach 状态…',
   // --- the global search ---
   '+{0} more': '还有 {0} 项',
   'Best match, {0}, opens {1}': '最佳匹配，{0}，打开{1}',

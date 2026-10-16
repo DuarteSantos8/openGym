@@ -24,6 +24,8 @@ shell's job.
 | hand-built `.lrow` | `<Row>` in a `<Section>` (ui.jsx) |
 | sheet `<h3>`, or `row between` + xmark | `<SheetHeader title sub onClose action>` (sheet-layout) |
 | spacer + primary Button (+ spacer + more) | `<SheetActions gap={4}>buttons</SheetActions>` (sheet-layout) |
+| a "Loading…" line in a div, `EmptyState` or card | `<Loading size inline className>words</Loading>` (Loader): the G drawing itself and the words, one `role=status` |
+| a loading animation where an icon would go | `<Loader size="xs"\|"sm"\|"md"\|"lg" />` (Loader): decoration, drawn in the text colour around it |
 
 An ItemRow with `onClick` is itself a `role=button`: give it no button, link or field inside (it
 warns in development). Make the child the control and drop the row's onClick, or move it out.
@@ -128,6 +130,17 @@ class throws in development, as everywhere in the kit.
   the inert page and focus return; only content marked `data-own-dialog-focus` (the + sheet, which
   runs the trap itself) is left alone. A sheet that replaces another in the same tap
   (`close(); nextSheet()`) inherits the opener of the one it replaced.
+
+## The loader
+
+The app's one loading animation is the G: `BrandMark` (an SVG cropped to the G, so the G fills the
+size the loader is given) with its stroke animated in `ui-kit.css` by dash offset. It takes the CSS
+`color` around it: muted in a muted line, the theme's ink elsewhere, white in a primary button, and
+the whole G, still, under Reduce motion. Sizes `xs sm md lg`, and `icon` (the 24px glyph size, for a
+button that swaps its icon for it). It is decoration (`aria-hidden`): the words next to it are
+announced. A list that is loading shows `Skeleton` rows, not a loader. `loading-lines.test.js` fails a page that draws "Loading…" as a bare word in an element. The
+string is fine where it is not a line of its own (a button label, a row subtitle, a tile value, an
+`aria-label`); in a button or a row, put `<Loader size="xs" />` where the icon goes.
 
 ## Guards (`src/ui-guards.test.js`, a ratchet)
 

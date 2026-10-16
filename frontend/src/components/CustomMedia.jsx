@@ -28,6 +28,7 @@ import { LOOP_MAX_SEC } from '../lib/media-limits.js'
 import { reducedMotion } from '../lib/reduced-motion.js'
 import Icon from './Icon.jsx'
 import EquipmentThumb from './EquipmentThumb.jsx'
+import { Loader } from './Loader.jsx'
 
 /** Opens a link after a tap: sanitised again here, since plan files and backups can bring any
  *  string in, and in a new browsing context with no opener and no Referer. */
@@ -308,7 +309,7 @@ function CustomVideo({ m, id, cls, name, toggle, mini, still }) {
       {toggle}
       {hint && (
         <span className="gifhint">
-          <Icon name={playing ? 'pause' : 'play'} />{loading ? t('Loading…') : playing ? t('tap to pause') : t('tap to play')}
+          {loading ? <Loader size="xs" /> : <Icon name={playing ? 'pause' : 'play'} />}{loading ? t('Loading…') : playing ? t('tap to pause') : t('tap to play')}
         </span>
       )}
     </div>

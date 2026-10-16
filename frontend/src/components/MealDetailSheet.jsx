@@ -14,6 +14,7 @@ import { mealEditSheet } from './MealEditSheet.jsx'
 import { EmptyState, ItemRow, SectionTitle, Tag } from './blocks.jsx'
 import { SheetActions, SheetHeader } from './sheet-layout.jsx'
 import { Button, NumberField, Row, Section } from './ui.jsx'
+import { Loading } from './Loader.jsx'
 
 const toast = m => useUI.getState().toast(m)
 
@@ -101,7 +102,7 @@ export function MealDetailSheet({ id, recipe, close }) {
     {meal.notes && <div className="small muted">{meal.notes}</div>}
     <SectionTitle>{t('Log')}</SectionTitle>
     {!target
-      ? <EmptyState><div role="status">{t('Loading…')}</div></EmptyState>
+      ? <EmptyState><Loading /></EmptyState>
       : <div className="small muted">{t('Logging to {0} · {1}', where, fmtDate(target.date, true))}</div>}
     {recipe && <label className="measure-date">
       <span>{t('Servings eaten')}</span>

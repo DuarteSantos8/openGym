@@ -27,3 +27,18 @@ point at these files. The name and colours live in `frontend/src/brand.js`; the 
 frame; `BootMark` (`src/components/BrandMark.jsx`) draws the same mark in the same place, so nothing
 jumps between them. `scripts/brand-assets.py` renders every raster in the app and the native shells from
 `icon.svg`; the native ones are listed in `docs/MOBILE.md`.
+
+## In motion
+
+- **Loader** (`src/components/Loader.jsx`, `lib/brand-motion.js`): the G draws itself along its stroke,
+  holds, erases, again (2.4 s), on a canvas sized by CSS. `<Loading>` pairs it with its words; the kit's
+  README says which to use where.
+- **Splash** (`src/components/BootSplash.jsx`, `lib/brand-splash.js`): over the page at launch, the G
+  already drawn (it is the still the first frame and the native launch image show), then "gains" arrives
+  letter by letter, each settling into its weight. It ends when the animation is over and the app has read
+  its state, then fades; a tap or Enter, Space or Escape ends it early. The page behind it is inert
+  while it plays (the dialogs' counted hold, `holdPage()` in `lib/use-dialog-focus.js`). Once per page load. Not played for
+  reduced motion (the device's setting or the app's switch) or without a canvas.
+- Both draw in the CSS colour of their canvas, so they follow the theme with no prop. The letters are
+  outlines (`lib/brand-glyphs.js`, 31 KB gzipped, from the kit; Jost, SIL OFL) loaded only when a splash
+  is going to play.

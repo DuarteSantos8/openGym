@@ -12,6 +12,7 @@ import OnlineStatus from './OnlineStatus.jsx'
 import SavedMealsGroup from './SavedMealsGroup.jsx'
 import { scanSheet } from './ScanSheet.jsx'
 import { Button, SearchField } from './ui.jsx'
+import { Loading } from './Loader.jsx'
 
 function FoodRow({ food, onPick, energy, disabled }) {
   return <ItemRow className="food-row" onClick={disabled ? undefined : () => onPick(food)} aria-disabled={disabled || undefined} title={food.name}
@@ -62,7 +63,7 @@ export default function FoodSearch({ onPick, scan = {}, savedMeals, autoFocus = 
 
     {!q && <>
       <SectionTitle>{t('Recent')}</SectionTitle>
-      {foods.status === 'loading' && !foods.list.length && <div className="muted small fp-note">{t('Loading…')}</div>}
+      {foods.status === 'loading' && !foods.list.length && <Loading className="muted small fp-note" />}
       {foods.status === 'ready' && !recents.length && <div className="muted small fp-note">{t('Foods you log show up here. Search to find one.')}</div>}
       {rows(recents)}
     </>}

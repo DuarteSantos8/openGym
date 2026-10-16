@@ -39,6 +39,7 @@ import Login from './views/Login.jsx'
 import MobileOnboarding from './views/MobileOnboarding.jsx'
 import Home from './views/Home.jsx'
 import { BootMark } from './components/BrandMark.jsx'
+import BootSplash from './components/BootSplash.jsx'
 import CheckIn from './views/CheckIn.jsx'
 import Plan from './views/Plan.jsx'
 import RoutineEdit from './views/RoutineEdit.jsx'
@@ -326,5 +327,5 @@ export default function App() {
     initBackButton().then(fn => { if (gone) fn(); else stop = fn })
     return () => { gone = true; stop?.() }
   }, [])
-  return <HashRouter><Shell /></HashRouter>
+  return <HashRouter><BootSplash /><Shell /></HashRouter>
 }

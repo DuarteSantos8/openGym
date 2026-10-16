@@ -21,6 +21,7 @@ import { useMediaPicker } from './CustomMediaField.jsx'
 import { CustomThumb, MediaView } from './CustomMedia.jsx'
 import { Button } from './ui.jsx'
 import Icon from './Icon.jsx'
+import { Loader } from './Loader.jsx'
 
 const toast = m => useUI.getState().toast(m)
 
@@ -96,7 +97,7 @@ export default function WorkoutMediaSection({ w, hint = false }) {
       ))}
       {showAdd && room > 0 && (
         <button type="button" className="wmedia-add" disabled={!canAdd} onClick={() => fileRef.current?.click()}>
-          <Icon name={busy ? 'image' : 'plus'} />
+          {busy ? <Loader size="xs" /> : <Icon name="plus" />}
           <span>{busy ? t('Loading…') : t('Add photo or video')}</span>
         </button>
       )}

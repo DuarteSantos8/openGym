@@ -2780,6 +2780,7 @@ export default {
   'of {0}': '/ {0}',
   'over by {0}': '超出 {0}',
   'Loading today': '載入今日資料',
+  'Loading Coach status…': '載入 Coach 狀態…',
   // --- the global search ---
   '+{0} more': '還有 {0} 項',
   'Best match, {0}, opens {1}': '最佳符合，{0}，開啟{1}',

@@ -20,6 +20,7 @@ import { Card, EmptyState, SectionTitle, StatTile, Tiles } from '../components/b
 import { Page, Stack } from '../components/layout.jsx'
 import { Button, Section, Segmented, SelectRow } from '../components/ui.jsx'
 import { rangeFrom, rangeOptions, storedRange } from '../lib/progress-range.js'
+import { LoadingList } from '../components/Loader.jsx'
 
 const DAY = 86400000
 
@@ -81,7 +82,7 @@ export default function Trends() {
       </Stack>
     </Card>
   } else if (status !== 'ready') {
-    body = <div className="muted small fp-note" role="status">{t('Loading…')}</div>
+    body = <LoadingList />
   } else {
     body = <>
       <Segmented className="seg-range" value={range} onChange={v => open({ range: v })} options={rangeOptions()} />

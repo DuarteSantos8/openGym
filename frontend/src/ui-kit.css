@@ -200,3 +200,38 @@
 .brand-mark .mark-cut{stroke:var(--mark-cut-off)}
 .boot-mark.boot-mark.boot-mark{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
   box-sizing:border-box;padding-bottom:76px;font-size:56.4px;color:var(--label)}
+
+/* Written .x.x.x like the utilities above: ui-kit-cascade.test.js holds every one-class rule in this
+   file to winning over index.css on every primitive's element.
+   The loader (components/Loader.jsx): the brand mark, cropped to the G, whose stroke draws itself in
+   the CSS colour it inherits, so a muted line gets a muted G and a primary button a white one. The
+   path is pathLength 1: the dash offset runs 1 (nothing) to 0 (all of it) to -1 (nothing again),
+   drawing for 44% of the 2.4 s loop, holding to 56%, then erasing. Reduced motion (the device's or
+   the app's switch) stops it on the whole G. */
+.loader.loader.loader{display:block;flex:none}
+.loader-xs.loader-xs.loader-xs{width:14px;height:14px}
+.loader-sm.loader-sm.loader-sm{width:20px;height:20px}
+.loader-md.loader-md.loader-md{width:32px;height:32px}
+.loader-lg.loader-lg.loader-lg{width:48px;height:48px}
+.loader-icon.loader-icon.loader-icon{width:var(--glyph);height:var(--glyph)}
+.loader .mark-path{stroke-dasharray:1 1;stroke-dashoffset:0;animation:loader-draw 2.4s infinite}
+@keyframes loader-draw{
+  0%{stroke-dashoffset:1;animation-timing-function:cubic-bezier(.65,0,.35,1)}
+  44%{stroke-dashoffset:0}
+  56%{stroke-dashoffset:0;animation-timing-function:cubic-bezier(.65,0,.35,1)}
+  100%{stroke-dashoffset:-1}
+}
+@media (prefers-reduced-motion:reduce){.loader .mark-path{animation:none;stroke-dashoffset:0}}
+html[data-motion=reduce] .loader .mark-path{animation:none;stroke-dashoffset:0}
+.loadrows.loadrows.loadrows{display:flex;flex-direction:column}
+.loadrow.loadrow.loadrow{display:flex;align-items:center;gap:var(--space-6);padding:var(--space-4) var(--space-7);min-height:64px}
+.loadrow-t.loadrow-t.loadrow-t{flex:1;display:flex;flex-direction:column;gap:6px}
+.loadline.loadline.loadline{display:flex;align-items:center;justify-content:center;gap:var(--space-4)}
+.loadline-inline.loadline-inline.loadline-inline{display:inline-flex;vertical-align:middle;gap:var(--space-3)}
+
+/* The splash (components/BootSplash.jsx): over everything, the page's own background, the canvas
+   in the page's ink. The still G (boot-mark) under the canvas goes once the canvas draws it. */
+.boot-splash.boot-splash.boot-splash{position:fixed;inset:0;z-index:1000;background:var(--bg);opacity:1;transition:opacity .25s ease}
+.boot-splash.boot-splash.boot-splash.leaving{opacity:0;pointer-events:none}
+.boot-splash-canvas.boot-splash-canvas.boot-splash-canvas{position:absolute;inset:0;width:100%;height:100%;color:var(--label)}
+.boot-splash[data-drawing] .boot-mark{visibility:hidden}

@@ -39,6 +39,7 @@ import { glyphOf } from '../lib/glyphs.js'
 import LineChart from '../components/LineChart.jsx'
 import { Button, Check, Switch, Section, Row, SelectRow } from '../components/ui.jsx'
 import '../coach.css'
+import { Loading } from '../components/Loader.jsx'
 
 export default function CoachChat() {
   const nav = useNavigate()
@@ -703,7 +704,7 @@ function CohortSheet({ S, update, toast }) {
         <Switch checked={sharing} disabled={busy || !d} onChange={share} />
       </Row>
     </Section>
-    {!d && <div className="chat-empty">{t('Loading…')}</div>}
+    {!d && <div className="chat-empty"><Loading /></div>}
     {d && sharing && !d.ok && <div className="chat-empty">{d.people != null
       ? t('Not enough people are sharing yet ({0} of {1} needed). Rope in your gym mates!', d.people, d.minPeople)
       : t('Not available right now.')}</div>}

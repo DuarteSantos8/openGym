@@ -12,6 +12,7 @@ import { Page } from '../components/layout.jsx'
 import { mealDetailSheet } from '../components/MealDetailSheet.jsx'
 import { mealEditSheet } from '../components/MealEditSheet.jsx'
 import { Button, SearchField } from '../components/ui.jsx'
+import { Loading } from '../components/Loader.jsx'
 
 // Nutrition › Saved meals (`recipes` false) and Nutrition › Recipes (true): NutriTrace's Meals and
 // Recipes tabs of its Foods page, each its own page here. Tap one to see what is in it and log it.
@@ -61,7 +62,7 @@ export default function MealCatalog({ recipes }) {
       <Button size="sm" variant="tinted" onClick={() => useNutrition.getState().loadMeals({ recipes, force: true })}>{t('Try again')}</Button>
     </EmptyState>
   } else if (catalog.status !== 'ready' && !catalog.list.length) {
-    body = <EmptyState><div role="status">{t('Loading…')}</div></EmptyState>
+    body = <EmptyState><Loading /></EmptyState>
   } else if (!catalog.list.length) {
     body = <EmptyState icon={icon} title={recipes ? t('No recipes yet') : t('No saved meals yet')}>
       {recipes ? t('Save a dish with its ingredients and log it by the serving.') : t('Save the foods you eat together and log them in one tap.')}

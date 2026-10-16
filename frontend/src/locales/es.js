@@ -2787,6 +2787,7 @@ export default {
   'of {0}': 'de {0}',
   'over by {0}': 'te pasas por {0}',
   'Loading today': 'Cargando hoy',
+  'Loading Coach status…': 'Cargando el estado del Coach…',
   // --- the global search ---
   '+{0} more': '+{0} más',
   'Best match, {0}, opens {1}': 'Mejor resultado, {0}, abre {1}',

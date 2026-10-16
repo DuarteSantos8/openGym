@@ -6,6 +6,7 @@ import { cx, oneOf } from '../lib/ui-kit.js'
 import Icon from './Icon.jsx'
 import { Skeleton } from './blocks.jsx'
 import { Button } from './ui.jsx'
+import { Loader } from './Loader.jsx'
 
 // The blocks the four tab roots are rebuilt from (fitness-eval ui-redesign-components §1; their
 // look is tab-kit.css). Every colour is a token, so the accent stays the user's: fills --acc,
@@ -79,7 +80,7 @@ export function ActionButton({ icon, label, ariaLabel, onClick, disabled = false
     <button type="button" className="act-b" onClick={onClick} disabled={disabled} aria-busy={busy || undefined}
       aria-label={badge ? name + ', ' + badge : ariaLabel}>
       <span className="act-d">
-        {busy ? <span className="act-spin" aria-hidden="true" /> : <Icon name={icon} />}
+        {busy ? <Loader size="icon" /> : <Icon name={icon} />}
         {badge && <span className="act-badge" aria-hidden="true" />}
       </span>
       <span className="act-l">{label}</span>

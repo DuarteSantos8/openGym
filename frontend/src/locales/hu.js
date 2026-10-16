@@ -2790,6 +2790,7 @@ export default {
   'of {0}': '/ {0}',
   'over by {0}': 'túllépés: {0}',
   'Loading today': 'A mai nap betöltése',
+  'Loading Coach status…': 'A Coach állapotának betöltése…',
   // --- the global search ---
   '+{0} more': '+{0} további',
   'Best match, {0}, opens {1}': 'Legjobb találat, {0}, megnyitja: {1}',

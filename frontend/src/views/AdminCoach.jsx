@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { useUI } from '../store/useUI.js'
 import { useStore } from '../store/useStore.js'
 import { api } from '../lib/api.js'
+import { t } from '../lib/i18n.js'
 import Icon from '../components/Icon.jsx'
 import { Inline, Spacer } from '../components/layout.jsx'
 import { Card, Chip, Tiles } from '../components/blocks.jsx'
 import { SheetHeader } from '../components/sheet-layout.jsx'
 import { Button, Switch, TextArea, TextField } from '../components/ui.jsx'
 import { confirmSheet } from '../sheets.jsx'
+import { Loading } from '../components/Loader.jsx'
 
 /* The operator's side of the Coach, laid out as a guided setup: one master switch, numbered
    steps that each say what they are for, and everything an owner rarely needs folded away
@@ -116,7 +118,7 @@ export default function AdminCoach() {
     setBusy(false)
   }
 
-  if (!d) return <Card><div className="muted small">Loading Coach status…</div></Card>
+  if (!d) return <Card><Loading className="muted small">{t('Loading Coach status…')}</Loading></Card>
 
   if (d.disabledByEnv) return <Card>
     <h2 className="mb-3">AI Coach</h2>

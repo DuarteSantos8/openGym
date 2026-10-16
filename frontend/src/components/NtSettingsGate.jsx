@@ -3,6 +3,7 @@ import { t } from '../lib/i18n.js'
 import { useNutrition } from '../lib/nutrition/store.js'
 import { Button } from './ui.jsx'
 import { EmptyState } from './blocks.jsx'
+import { Loading } from './Loader.jsx'
 
 // What a NutriTrace settings page shows until NutriTrace's settings are here: a loading line, or
 // the failure with a way to ask again. Once they are, the page itself, which reads them with
@@ -19,5 +20,5 @@ export default function NtSettingsGate({ children }) {
       <Button size="sm" onClick={() => useNutrition.getState().loadSettings({ force: true })}>{t('Try again')}</Button>
     </EmptyState>
   }
-  return <EmptyState className="small">{t('Loading…')}</EmptyState>
+  return <EmptyState className="small"><Loading /></EmptyState>
 }

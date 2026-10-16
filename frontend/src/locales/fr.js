@@ -2787,6 +2787,7 @@ export default {
   'of {0}': 'sur {0}',
   'over by {0}': 'dépassement de {0}',
   'Loading today': 'Chargement du jour',
+  'Loading Coach status…': 'Chargement de l’état du Coach…',
   // --- the global search ---
   '+{0} more': '+{0} de plus',
   'Best match, {0}, opens {1}': 'Meilleur résultat, {0}, ouvre {1}',

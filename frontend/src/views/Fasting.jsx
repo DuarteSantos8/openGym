@@ -15,6 +15,7 @@ import Icon from '../components/Icon.jsx'
 import { Card, EmptyState } from '../components/blocks.jsx'
 import { Page, Stack } from '../components/layout.jsx'
 import { Button, Row, Section } from '../components/ui.jsx'
+import { Loading } from '../components/Loader.jsx'
 
 const HISTORY_SHOWN = 20
 
@@ -76,7 +77,7 @@ export default function Fasting() {
       <EmptyState icon="timer" title={t('Fasting lives in the web app')}>{t('Sign in on the web app to track your fasts.')}</EmptyState>
     </Card>
   } else if (!settings.data && (settings.status === 'loading' || settings.status === 'idle')) {
-    body = <div className="muted small fp-note" role="status">{t('Loading…')}</div>
+    body = <Loading className="muted small fp-note" />
   } else if (!settings.data) {
     body = <Card>
       <Stack gap={4}>
@@ -100,7 +101,7 @@ export default function Fasting() {
           <Button variant="tinted" onClick={() => useFasting.getState().load({ force: true })}>{t('Try again')}</Button>
         </Stack>
       </Card>}
-      {status === 'loading' && <div className="muted small fp-note" role="status">{t('Loading…')}</div>}
+      {status === 'loading' && <Loading className="muted small fp-note" />}
       {status === 'ready' && <>
         <FastCard />
         <FastInsights />

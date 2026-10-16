@@ -34,6 +34,14 @@ function release(id) {
 // The opener of the dialog that closed last, for a dialog that opens in the same tick.
 let replaced = null
 
+// The page behind something that covers all of it (the splash) is out of reach for as long as it is
+// up, through the same counted hold the dialogs use, so a sheet opening or closing meanwhile cannot
+// lift it early, and it cannot lift a sheet's. Returns the release.
+export function holdPage() {
+  const held = BACKGROUND.filter(hold)
+  return () => held.forEach(release)
+}
+
 // A modal dialog's focus, for `el`: moved into it when it opens, kept inside it with Tab and
 // Shift+Tab, the page behind it made inert, and handed back to what opened it when it closes,
 // unless another sheet took its place (a row opening the next sheet), which then owns the focus.

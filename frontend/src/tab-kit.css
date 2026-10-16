@@ -241,8 +241,6 @@
   display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:anywhere;
 }
 .act-badge{position:absolute;top:2px;inset-inline-end:2px;width:10px;height:10px;border-radius:50%;background:var(--orange);box-shadow:0 0 0 2px var(--bg)}
-.act-spin{width:22px;height:22px;border-radius:50%;border:2px solid var(--label-3);border-top-color:var(--label);animation:act-spin .8s linear infinite}
-@keyframes act-spin{to{transform:rotate(1turn)}}
 
 /* MacroGauge: a 270° arc, the macro's own colour, the start cap always drawn. */
 .mg-row{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-6)}

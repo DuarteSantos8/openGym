@@ -2842,6 +2842,7 @@ export default {
   'of {0}': 'من {0}',
   'over by {0}': 'تجاوز بمقدار {0}',
   'Loading today': 'جارٍ تحميل اليوم',
+  'Loading Coach status…': 'جارٍ تحميل حالة المدرب…',
   // --- the global search ---
   '+{0} more': '+{0} أخرى',
   'Best match, {0}, opens {1}': 'أفضل نتيجة، {0}، تفتح {1}',
