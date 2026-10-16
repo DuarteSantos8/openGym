@@ -7,6 +7,8 @@ import {
   CHANGE_TYPES, SNAPSHOT_MAX, LOG_MAX, CONSENT_VERSION
 } from './coach.js'
 import { registerCustom } from './exercises.js'
+import { buildSets, modeOf } from './history.js'
+import { validateReview } from '../../../api/coach/core/validate.js'
 
 // The two runtimes share no build step, so the client's copy of the fingerprint logic is
 // checked against the server's actual source rather than against a transcribed expectation.
@@ -694,5 +696,37 @@ describe('what the log keeps, so a decision never makes a proposal vanish', () =
     expect(b.basedOn).toBeUndefined()
     expect(Object.keys(b.routines[0].ex[0])).not.toContain('secret')
     expect(lightBundle(null)).toBeNull()
+  })
+})
+
+
+describe('review-added prescriptions survive validation and application (#640)', () => {
+  it.each(['add-exercise', 'add-routine'])('%s keeps cardio targets through the actual validator, apply and workout builder', type => {
+    const initial = state()
+    const after = { id: '0549', mode: 'cardio', sets: 2, min: 15, speed: 10 }
+    const result = validateReview({ changes: [change({ type,
+      target: type === 'add-routine' ? {} : { routineId: 'r1' },
+      after: type === 'add-routine' ? { name: 'Finisher', ex: [after] } : after
+    })] }, initial)
+    expect(result.ok).toBe(true)
+    const updated = apply(initial, { id: 'cardio-review', ...result.proposal }, ['c1'])
+    const routine = type === 'add-routine' ? updated.routines.at(-1) : updated.routines[0]
+    const cfg = routine.ex.find(e => e.id === '0549')
+    expect(cfg).toMatchObject(after)
+    expect(modeOf(cfg)).toBe('cardio')
+    expect(cfg.reps).toBeUndefined()
+    expect(buildSets(updated, cfg)).toEqual([
+      { min: 15, speed: 10, done: false }, { min: 15, speed: 10, done: false }
+    ])
+  })
+
+  it.each([['reps', { reps: 12 }], ['time', { sec: 30 }]])('keeps existing %s prescriptions when adding a routine', (mode, target) => {
+    const initial = state()
+    const checked = validateReview({ changes: [change({ type: 'add-routine', target: {},
+      after: { name: 'Control', ex: [{ id: '0549', mode, sets: 2, ...target }] }
+    })] }, initial)
+    expect(checked.ok).toBe(true)
+    const updated = apply(initial, { id: 'control-review', ...checked.proposal }, ['c1'])
+    expect(updated.routines.at(-1).ex[0]).toMatchObject({ mode, sets: 2, ...target })
   })
 })

@@ -121,6 +121,22 @@ test('an unknown progression policy is rejected', () => {
   assert.ok(r.errors.some(e => e.includes('vibes')));
 });
 
+test('created cardio prescriptions retain their mode even on a non-cardio exercise (#640)', () => {
+  for (const id of ['0549', '1160']) {
+    const r = validatePlan({ routines: [{ name: 'Conditioning', ex: [{ id, mode: 'cardio', sets: 2, min: 15, speed: 10 }] }] });
+    assert.equal(r.ok, true);
+    assert.deepEqual(r.bundle.routines[0].ex[0], { id, sets: 2, mode: 'cardio', min: 15, speed: 10 });
+  }
+  // Invalid targets still use the existing safe defaults; keeping the mode must not bypass them.
+  const defaults = validatePlan({ routines: [{ name: 'Conditioning', ex: [{ id: '0549', mode: 'cardio', min: -1, speed: Infinity }] }] });
+  assert.deepEqual(defaults.bundle.routines[0].ex[0], { id: '0549', sets: 3, mode: 'cardio', min: 20, speed: 8 });
+  for (const [mode, target] of [['reps', { reps: 12 }], ['time', { sec: 30 }]]) {
+    const r = validatePlan({ routines: [{ name: 'Control', ex: [{ id: '0549', mode, sets: 2, ...target }] }] });
+    assert.equal(r.ok, true);
+    assert.deepEqual(r.bundle.routines[0].ex[0], { id: '0549', sets: 2, mode, ...target });
+  }
+});
+
 /* ---------------- the two v1.2.4 flags ---------------- */
 
 test('a created plan carries the rep ceiling and the two flags through unchanged', () => {
@@ -174,6 +190,24 @@ test('a review cannot prescribe an odd total on a per-side exercise', () => {
   assert.equal(review([change({ type: 'reps', target: tgt, after: 18 })]).ok, true);
   // The rule follows the plan, not the change: the same value on r1's 0001 is fine.
   assert.equal(review([change({ type: 'reps', after: 17 })]).ok, true);
+});
+
+test('review-added cardio exercises retain minutes and speed in both add paths (#640)', () => {
+  for (const type of ['add-exercise', 'add-routine']) {
+    const incoming = { id: '0549', mode: 'cardio', sets: 2, min: 15, speed: 10 };
+    const run = ex => review([change({ type, target: type === 'add-routine' ? {} : { routineId: 'r1' }, after: type === 'add-routine' ? { name: 'Finisher', ex: [ex] } : ex })]);
+    const valid = run(incoming);
+    assert.equal(valid.ok, true);
+    const clean = valid.proposal.changes[0].after;
+    const ex = type === 'add-routine' ? clean.ex[0] : clean;
+    assert.equal(ex.mode, 'cardio');
+    assert.equal(ex.min, 15);
+    assert.equal(ex.speed, 10);
+    const defaults = run({ ...incoming, min: -1, speed: Infinity });
+    const fallback = type === 'add-routine' ? defaults.proposal.changes[0].after.ex[0] : defaults.proposal.changes[0].after;
+    assert.equal(fallback.min, 20);
+    assert.equal(fallback.speed, 8);
+  }
 });
 
 /* ---------------- review change-sets ---------------- */

@@ -71,6 +71,7 @@ function cleanEx(e) {
   const o = { id: e.id, sets: e.sets }
   const mode = modeOf(e)
   if (mode === 'cardio') {
+    o.mode = 'cardio'
     if (e.min != null) o.min = e.min
     if (e.speed != null) o.speed = e.speed
   } else if (mode === 'time') {
