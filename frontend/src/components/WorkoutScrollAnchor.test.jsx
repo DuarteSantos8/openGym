@@ -115,3 +115,10 @@ it('cancels an older sheet correction when restoring the workout anchor', async 
   await render('0', [['0', 100, 200], ['1', 300, 650]])
   expect(cancel).toHaveBeenCalledOnce()
 })
+
+it('reclaims the trailing space when everything visible collapses at once (#642)', async () => {
+  await render('', [['0', 100, 700], ['1', 800, 650]])
+  // Finishing the last open exercise folds every visible unit into a summary line.
+  await render('0,1', [['0', 100, 100], ['1', 200, 100]], 300)
+  expect(container.firstChild.style.paddingBottom).toBe('')
+})
