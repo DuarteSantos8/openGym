@@ -1,6 +1,6 @@
 # The AI Coach
 
-Codex ChatGPT device-code sign-in: [登入與維護步驟](CHATGPT_SIGN_IN.md).
+Codex ChatGPT device-code sign-in: [sign-in and maintenance guide](CHATGPT_SIGN_IN.md).
 
 An optional AI that **designs** a training plan and **revises it from what you actually log**,
 running on your own server under your own provider account, off until an admin turns it on.

@@ -1,25 +1,25 @@
-# 以 ChatGPT 訂閱連接 AI Coach
+# Connect the AI Coach with your ChatGPT subscription
 
-本功能使用 Codex CLI 官方裝置碼登入，不需要 OpenAI Platform API key。請只在自己控制且信任的伺服器使用；ChatGPT 帳號必須具有 Codex 存取權，請求會使用該帳號的 Codex 額度並受方案與工作區限制。
+This feature uses the official Codex CLI device-code sign-in and does not require an OpenAI Platform API key. Use it only on a server you control and trust. Your ChatGPT account must have Codex access; requests consume that account's Codex allowance and remain subject to its plan and workspace limits.
 
-## 登入
+## Sign in
 
-1. 依 SELF_HOSTING.md 建置 API 的 `coach` 目標，保留 `./coach-auth:/coach-auth` 掛載；預設映像不含 Codex CLI。
-2. 使用自己的管理員 profile，在 Settings → Admin → AI Coach 啟用 Coach 並選擇 Codex。
-3. 選擇 **Sign in with ChatGPT** → **Start device sign-in**。若已有 Codex API key，先明確移除它。
-4. 在可信任的瀏覽器開啟顯示的 OpenAI 官方網址並輸入短效驗證碼，可用另一台裝置完成。必要時先在 ChatGPT 安全設定啟用裝置碼登入。不要在 openGym 輸入 ChatGPT 密碼。
-5. 完成後選擇 **Test the Coach** 驗證一次真實模型回答。登入成功只表示 CLI 完成授權，不保證模型可用或尚有額度。
+1. Follow [SELF_HOSTING.md](SELF_HOSTING.md) to build the API's `coach` target, keeping the `./coach-auth:/coach-auth` mount. The default image does not include the Codex CLI.
+2. Using your own administrator profile, go to Settings -> Admin -> AI Coach, enable the Coach, and select Codex.
+3. Choose **Sign in with ChatGPT** -> **Start device sign-in**. If a Codex API key is already configured, explicitly remove it first.
+4. Open the displayed official OpenAI URL in a trusted browser and enter the short-lived code. You can complete this step on another device. If required, first enable device-code sign-in in your ChatGPT security settings. Do not enter your ChatGPT password in openGym.
+5. After authorization, choose **Test the Coach** to verify a real model response. Successful sign-in means the CLI completed authorization; it does not guarantee model access or remaining allowance.
 
-openGym 只顯示固定的 OpenAI 驗證網址、短效代碼與狀態，不提供原始 CLI 輸出或 OAuth token。發起登入的 profile 立即成為此個人訂閱唯一可使用者，管理頁的測試也遵守這項限制。既有 API key 與其他供應商保持相容；API key 費用與 ChatGPT 訂閱分開。
+openGym displays only the fixed OpenAI verification URL, a short-lived code, and status. It does not expose raw CLI output or OAuth tokens. The profile that starts sign-in immediately becomes the only profile allowed to use this personal subscription, including through the administrator test action. Existing API-key authentication and other providers remain supported. API usage is billed separately from a ChatGPT subscription.
 
-## 保存與登出
+## Storage and sign-out
 
-Codex 在 `/coach-auth/auth.json` 管理可更新的登入憑證；`coach.json` 只保存種類、時間與 profile 綁定。`coach-auth` 位於 `data` 之外，只掛載 API，不提交 Git、不納入一般健身資料備份。重啟可沿用此專用快取，不讀取宿主機 Codex 登入。
+Codex manages refreshable credentials in `/coach-auth/auth.json`; `coach.json` stores only the credential type, timestamp, and profile binding. Keep `coach-auth` outside `data`, mount it only into the API, exclude it from Git, and keep it out of ordinary fitness-data backups. Restarts reuse this dedicated cache without reading the host's Codex login.
 
-關閉登入畫面或選擇 Cancel sign-in 會取消未完成流程；伺服器亦有十分鐘期限。切換供應商或停用 Coach 會取消未完成登入。已完成的連線透過 Credential → Remove 登出，這會呼叫 Codex logout 並移除專用快取。切換 API key 與訂閱時先移除原連線，避免默默改用不同計費來源。
+Closing the sign-in dialog or choosing **Cancel sign-in** cancels an unfinished attempt. The server also enforces a ten-minute timeout. Switching providers or disabling the Coach cancels a pending attempt. To disconnect a completed sign-in, choose **Credential -> Remove**; this runs Codex logout and removes the dedicated cache. Remove the current credential before switching between an API key and a subscription to avoid silently changing billing sources.
 
-授權撤銷或模型回報登入錯誤時，移除後重新登入；快取存在本身不是線上有效性的證明。重啟會終止未完成流程，未綁定快取不會自動授權任何 profile。
+If authorization is revoked or the model reports an authentication error, remove the credential and sign in again. A cache file alone does not prove that authorization is still valid online. Restarting terminates pending attempts; an unbound cache never automatically authorizes a profile.
 
-## 來源
+## Attribution
 
-參考改寫自 [alexpcosta/opengym 裝置碼登入](https://github.com/alexpcosta/opengym/blob/678bf5bf10446e8997a77d43e89c9b2721d8d0fc/api/coach/oauth.js)，保留新版每供應商設定與個人訂閱隔離。官方文件：[Codex authentication](https://learn.chatgpt.com/docs/auth)。
+Adapted from [alexpcosta/opengym's device-code sign-in implementation](https://github.com/alexpcosta/opengym/blob/678bf5bf10446e8997a77d43e89c9b2721d8d0fc/api/coach/oauth.js), retaining the current per-provider configuration and personal-subscription isolation. Official documentation: [Codex authentication](https://learn.chatgpt.com/docs/auth).
