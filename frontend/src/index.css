@@ -1681,6 +1681,26 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .mrow .bar{width:74px;height:5px;border-radius:3px;background:var(--surface-2);flex:none;overflow:hidden}
 .mrow .bar i{display:block;height:100%;background:var(--acc);border-radius:3px}
 .mrow .v{font-size:12px;color:var(--label-2);min-width:52px;text-align: end;flex:none}
+/* Selected-muscle fatigue detail: the legend's three bands as one bar, the value above
+   its marker, the 0–100% endpoints under it and each zone named beneath itself. Ready is
+   the map's unshaded base, so the left zone stays neutral; margins leave room for the
+   value bubble above the bar. */
+.fname{font-size:14px;padding:5px 0 0}
+.fbarwrap{position:relative;height:8px;margin-top:20px}
+.fbar{position:relative;display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--surface-2)}
+.fbar .zone{height:100%}
+.fbar .zone.ready{width:25%;background:color-mix(in srgb,var(--label) 14%,var(--surface-2))}
+.fbar .zone.recovering{width:25%;background:var(--yellow)}
+.fbar .zone.fatigued{width:50%;background:var(--red)}
+.fbarwrap .knob{position:absolute;top:-3px;bottom:-3px;width:3px;border-radius:2px;background:var(--label);box-shadow:0 0 0 1.5px var(--surface);pointer-events:none}
+.fbarwrap .fval{position:absolute;bottom:100%;margin-bottom:3px;transform:translateX(-50%);font-size:11px;font-weight:600;color:var(--label);white-space:nowrap;pointer-events:none}
+[dir="rtl"] .fbarwrap .fval{transform:translateX(50%)}
+.fends{display:flex;justify-content:space-between;font-size:10px;color:var(--label-3);margin-top:3px}
+.fzones{display:flex;font-size:10px;color:var(--label-3);line-height:1.2}
+.fzones .z{text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fzones .z.ready{width:25%}
+.fzones .z.recovering{width:25%}
+.fzones .z.fatigued{width:50%}
 /* A headline number inside a card — tile weight without a tile around it, for the pair of
    readings at the top of the effort card. */
 .stat-v{font-size:26px;font-weight:600;letter-spacing:-.026em;line-height:1.1}

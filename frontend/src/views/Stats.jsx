@@ -14,7 +14,7 @@ import BodyMap, { BodyMapLegend } from '../components/BodyMap.jsx'
 import { loadOfWeeklyPlan, loadOfWorkouts, muscleBalanceWindow, rankOf, MUSCLES, MUSCLE_NAME, musclesOf } from '../lib/muscles.js'
 import { fatigueOf, strengthOf, STRENGTH_FLOOR, LB_TO_KG } from '../lib/recovery.js'
 import { strengthExerciseRowsForMuscle } from '../lib/strength-exercises.js'
-import { fatigueStateOf } from '../lib/recovery-view.js'
+import { fatigueStateOf, fatigueRecoveryMs, fmtRecoveryIn } from '../lib/recovery-view.js'
 import { e1rmSeries, best1RM, formulaOf } from '../lib/onerm.js'
 import { currentDbLoad, workoutAs } from '../lib/dumbbells.js'
 import { maxRepsSeries } from '../lib/pyramid.js'
@@ -100,6 +100,33 @@ function FatigueLegend() {
   </div>
 }
 
+/* The three map bands as one zone bar: a marker at the selected muscle's value with the
+   percentage above it, the 0–100% endpoints below, and each band's name under its own
+   zone. Zones are the legend's own ramp (grey ready, yellow recovering, red fatigued) and
+   their boundaries match fatigueStateOf, so the bar and the map shade never disagree. */
+function FatigueBar({ value }) {
+  const pct = Math.round(Math.min(1, Math.max(0, value)) * 100)
+  const at = `clamp(0px, calc(${pct}% - 1.5px), calc(100% - 3px))`
+  const atValue = `clamp(16px, ${pct}%, calc(100% - 16px))`
+  return <>
+    <div className="fbarwrap">
+      <div className="fbar" role="img" aria-label={`${t('Fatigue')}: ${pct}% · ${fatigueLabel(value)}`}>
+        <span className="zone ready" />
+        <span className="zone recovering" />
+        <span className="zone fatigued" />
+      </div>
+      <span className="knob" style={{ insetInlineStart: at }} />
+      <span className="fval" style={{ insetInlineStart: atValue }}>{pct}%</span>
+    </div>
+    <div className="fends"><span>0%</span><span>100%</span></div>
+    <div className="fzones">
+      <span className="z ready">{t('Ready')}</span>
+      <span className="z recovering">{t('Recovering')}</span>
+      <span className="z fatigued">{t('Fatigued')}</span>
+    </div>
+  </>
+}
+
 function StrengthLegend() {
   return <div className="hm-legend hm-strength" aria-label={t('Strength')}>
     <span>1 <span className="dim">{t('full')}</span></span><div className="hm-c l4" /><div className="hm-c l3" /><div className="hm-c l2" />
@@ -143,6 +170,10 @@ function MuscleBalance({ S }) {
     return t('Weeks since training: {0}', weeks)
   }
   const toggleSel = m => setSel(s => (s === m ? null : m))
+  // Selected-muscle detail for the Fatigue view: the same display value that
+  // shades the map, as a percentage, plus when it drops back through the bands.
+  const selFatigue = sel ? (fatigue[sel] || 0) : 0
+  const selRecovery = sel ? fatigueRecoveryMs(selFatigue, sel) : { toRecoveringMs: null, toReadyMs: null }
   const ws = weekStartOf(S)
   const currentWeek = weekKey(todayISO(), ws)
   const selectedWeekDate = new Date(currentWeek + 'T12:00:00')
@@ -254,9 +285,11 @@ function MuscleBalance({ S }) {
       <BodyMap className="tappable hm-fatigue" load={fatigue} thresholds={FATIGUE_LEVELS} body={S.body} selected={sel} onMuscle={toggleSel} />
       <FatigueLegend />
       <div className="muted small" style={{ marginTop: 10 }}>{t('Fatigue shows how recently each muscle was trained. High means rest.')}</div>
-      {sel && <div className="mrow" style={{ borderTop: 'var(--hair) solid var(--sep)', marginTop: 4, paddingTop: 10 }}>
-        <span className="nm"><b>{t(MUSCLE_NAME[sel])}</b></span>
-        <span className="v">{fatigueLabel(fatigue[sel])}</span>
+      {sel && <div className="fdetail" style={{ borderTop: 'var(--hair) solid var(--sep)', marginTop: 4, paddingTop: 10 }}>
+        <div className="fname"><b>{t(MUSCLE_NAME[sel])}</b></div>
+        <FatigueBar value={selFatigue} />
+        {selRecovery.toRecoveringMs != null && <div className="small dim" style={{ marginTop: 6 }}>{t('Recovering {0}', fmtRecoveryIn(selRecovery.toRecoveringMs))}</div>}
+        {selRecovery.toReadyMs != null && <div className="small dim">{t('Ready {0}', fmtRecoveryIn(selRecovery.toReadyMs))}</div>}
       </div>}
     </> : <>
       <h2>{t('Strength')}</h2>
