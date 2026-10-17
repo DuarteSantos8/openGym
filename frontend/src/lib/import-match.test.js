@@ -143,3 +143,31 @@ describe('Hevy CSV uses the generated title map', () => {
     expect(pull.sets[1]).toMatchObject({ w: 52, r: 12, rpe: 8 })
   })
 })
+
+describe('Hevy titles land on the exercise Hevy shows', () => {
+  // Each Hevy template's thumbnail names its animation ("Lever-Seated-Leg-Curl"); these titles
+  // went to a different exercise, or to none.
+  it('corrects titles the map sent to a different exercise', () => {
+    expect(matchHevyTitle('Seated Leg Curl (Machine)')).toBe('0599')       // not the lying curl
+    expect(matchHevyTitle('Plank')).toBe('0463')                           // not the weighted plank
+    expect(matchHevyTitle('Air Bike')).toBe('3893')                        // the fan bike, not the crunch
+    expect(matchHevyTitle('Walking')).toBe('2258')                         // not the walking lunge
+    expect(matchHevyTitle('Triceps Dip')).toBe('0814')                     // body weight, not the machine
+    expect(matchHevyTitle('Overhead Press (Barbell)')).toBe('1165')        // standing, not seated
+    expect(matchHevyTitle('Crunch')).toBe('0274')                          // not the weighted crunch
+  })
+
+  it('matches titles the map left out', () => {
+    expect(matchHevyTitle('Nordic Hamstrings Curls')).toBe('7746')
+    expect(matchHevyTitle('Triceps Rope Pushdown')).toBe('0200')
+    expect(matchHevyTitle('Iso-Lateral Low Row')).toBe('4214')
+    expect(matchHevyTitle('Seated Cable Row - Bar Wide Grip')).toBe('0218')
+  })
+
+  it('gives a title and its weighted twin their own match in one file', () => {
+    const head = 'title,start_time,end_time,description,exercise_title,superset_id,exercise_notes,set_index,set_type,weight_kg,reps,distance_km,duration_seconds,rpe'
+    const row = title => `Push,2026-08-01 10:00:00,2026-08-01 11:00:00,,${title},,,0,normal,10,8,0,,`
+    const parsed = parseWorkoutCSV([head, row('Triceps Dip'), row('Triceps Dip (Weighted)')].join('\n'), { unit: 'kg' })
+    expect(parsed.workouts[0].entries.map(e => e.id)).toEqual(['0814', '1755'])
+  })
+})

@@ -78,7 +78,7 @@ describe('HEVY_ID_MAP', () => {
     C315DC2A: '0602', // Rear Delt Reverse Fly (Cable)
     FFDA283B: '0381', // Reverse Lunge (Dumbbell)
     '8BAB2735': '0318', // Seated Incline Curl (Dumbbell)
-    '9237BAD1': '0603', // Seated Shoulder Press (Machine)
+    '9237BAD1': '1454', // Seated Shoulder Press (Machine): its artwork is 1454, 0603's a landmine press
     B05C2C29: '0605', // Single Leg Standing Calf Raise (Machine)
     '3303376C': '2141', // Elliptical Trainer
     '99D5F10E': '0857', // Ab Wheel
