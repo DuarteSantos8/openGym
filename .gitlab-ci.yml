@@ -538,7 +538,7 @@ build:apk:
       npm run build:mobile
       VER="$(node -p "require('./package.json').version")"
       cd android
-      ./gradlew --no-daemon assembleRelease
+      ./gradlew --no-daemon :app:assembleRelease
       UNSIGNED=app/build/outputs/apk/release/app-release-unsigned.apk
       BT="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
       if [ -n "${ANDROID_KEYSTORE_B64:-}" ]; then

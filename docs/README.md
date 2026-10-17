@@ -9,6 +9,7 @@ Pick the part that matches what you're doing. If you just have a question, try t
 |---|---|
 | [FAQ](FAQ.md) | You have a quick question: iPhone, cost, where your data goes, AI, the exercise media |
 | [Phone app](MOBILE.md) | You want the Android APK or the iPhone options, or to connect the app to your own server |
+| [Wear OS watch](WEAR.md) | You have a Pixel Watch or another Wear OS watch and want to log sets from your wrist |
 | [Importing data](DATA_IMPORTS.md) | You're coming from FitNotes, Strong, Hevy or Apple Health, or sharing a plan with someone |
 | [AI coach](AI_COACH.md) | Your instance has the coach switched on and you want to know what it sees and can change |
 
@@ -47,6 +48,7 @@ Design notes for specific features, kept next to the code they describe:
 | [Set types](dev/SET_TYPES.md) | Drop sets and rest-pause: the set-row model and how totals are counted |
 | [Workout views](dev/LIST_VIEW.md) | The cards, list and compact layouts of the workout screen |
 | [Combine routines](dev/COMBINE_ROUTINES.md) | Spec for running more than one routine in a session |
+| [Wear OS watch](WEAR.md) | The watch recorder: wire format, delivery and acks, what to check on a real watch |
 
 ## Still stuck?
 

@@ -2242,4 +2242,12 @@ export default {
   'Your sports watch, calling you back.': 'O teu relógio desportivo a chamar-te de volta.',
   'Coach wants you back on the bar.': 'O coach quer-te de volta à barra.',
   'Gentle, for headphones or a quiet room.': 'Suave, para auscultadores ou uma sala sossegada.',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': 'Treino do relógio guardado: {0}',
+  'Your watch has a workout': 'O teu relógio tem um treino',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': 'Tens um treino a decorrer neste telemóvel. O do teu relógio ({0}) ainda não foi adicionado.',
+  'Save it as a separate workout': 'Guardar como treino à parte',
+  'Decide later': 'Decidir mais tarde',
+  'Discard the watch workout': 'Descartar o treino do relógio',
+  'Update openGym on this phone to read the workout from your watch.': 'Atualiza o openGym neste telemóvel para ler o treino do teu relógio.',
 }

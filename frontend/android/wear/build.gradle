@@ -1,0 +1,75 @@
+// The Wear OS companion (docs/WEAR.md). It records a workout on the watch and hands it to the phone
+// app over the Wearable Data Layer; the phone stays the only source of truth.
+//
+// The Data Layer pairs a watch app with a phone app only when BOTH have the same applicationId and
+// are signed with the same key. So applicationId is the phone's, and the debug variant carries the
+// same ".test" suffix the phone's debug variant does: install the debug watch app next to the debug
+// phone app, the release one next to the release one, never across. For the key: a debug build of
+// both on one machine shares ~/.android/debug.keystore; the release APKs are signed with the
+// project's release key after the build, exactly as the phone's is (docs/WEAR.md).
+apply plugin: 'com.android.application'
+apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'org.jetbrains.kotlin.plugin.compose'
+
+android {
+    namespace "ch.duartesantos.opengym.wear"
+    compileSdk rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId "ch.duartesantos.opengym"
+        minSdkVersion rootProject.ext.wearMinSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        // Its own counter: the watch APK is installed separately from the phone's. Keep the name
+        // in step with app/build.gradle and frontend/package.json.
+        versionCode 1
+        versionName "1.4.1"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+        debug {
+            applicationIdSuffix ".test"
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+    buildFeatures {
+        compose true
+    }
+    packaging {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+    testOptions {
+        // android.jar's org.json is a stub; the unit tests bring the real one (testImplementation below).
+        unitTests.returnDefaultValues = true
+    }
+}
+
+dependencies {
+    implementation "androidx.core:core-ktx:$androidxCoreVersion"
+    implementation "androidx.activity:activity-compose:1.9.3"
+    implementation "androidx.lifecycle:lifecycle-runtime-compose:2.8.7"
+    implementation "androidx.wear.compose:compose-material:1.4.0"
+    implementation "androidx.wear.compose:compose-foundation:1.4.0"
+    // Ambient mode (AmbientLifecycleObserver): without it Wear OS blurs the app behind the clock when
+    // the screen dims, and what is on screen stops moving until the watch is touched.
+    implementation "androidx.wear:wear:1.3.0"
+    // The workout on the watch face and in the launcher while the app is away (WorkoutService).
+    implementation "androidx.wear:wear-ongoing:1.0.0"
+    // Where the routine snapshot and the unsent sessions are kept, so none of it needs the phone.
+    implementation "androidx.datastore:datastore-preferences:1.1.1"
+    implementation "com.google.android.gms:play-services-wearable:$playServicesWearableVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1"
+
+    testImplementation "junit:junit:$junitVersion"
+    testImplementation "org.json:json:20240303"
+}

@@ -2297,4 +2297,12 @@ export default {
   'Your sports watch, calling you back.': 'ساعتك الرياضية تناديك للعودة.',
   'Coach wants you back on the bar.': 'المدرب يريدك أن تعود إلى البار.',
   'Gentle, for headphones or a quiet room.': 'هادئ، للسماعات أو لغرفة هادئة.',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': 'تم حفظ التمرين من الساعة: {0}',
+  'Your watch has a workout': 'لدى ساعتك تمرين',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': 'هناك تمرين جارٍ على هذا الهاتف. أما تمرين ساعتك ({0}) فلم يُضف بعد.',
+  'Save it as a separate workout': 'احفظه كتمرين منفصل',
+  'Decide later': 'قرّر لاحقًا',
+  'Discard the watch workout': 'تجاهل تمرين الساعة',
+  'Update openGym on this phone to read the workout from your watch.': 'حدّث openGym على هذا الهاتف لقراءة التمرين من ساعتك.',
 }

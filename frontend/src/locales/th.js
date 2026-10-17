@@ -2253,4 +2253,12 @@ export default {
   'Your sports watch, calling you back.': 'นาฬิกาสปอร์ตเรียกคุณกลับมาแล้ว',
   'Coach wants you back on the bar.': 'โค้ชอยากให้คุณกลับมาที่บาร์',
   'Gentle, for headphones or a quiet room.': 'เบา ๆ สำหรับหูฟังหรือห้องที่เงียบ',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': 'บันทึกการออกกำลังกายจากนาฬิกาแล้ว: {0}',
+  'Your watch has a workout': 'นาฬิกาของคุณมีการออกกำลังกาย',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': 'มีการออกกำลังกายที่กำลังทำอยู่บนโทรศัพท์เครื่องนี้ ส่วนของนาฬิกา ({0}) ยังไม่ได้เพิ่ม',
+  'Save it as a separate workout': 'บันทึกเป็นการออกกำลังกายแยกต่างหาก',
+  'Decide later': 'ตัดสินใจทีหลัง',
+  'Discard the watch workout': 'ทิ้งการออกกำลังกายจากนาฬิกา',
+  'Update openGym on this phone to read the workout from your watch.': 'อัปเดต openGym บนโทรศัพท์เครื่องนี้เพื่ออ่านการออกกำลังกายจากนาฬิกา',
 }

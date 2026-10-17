@@ -52,6 +52,10 @@ dependencies {
     // user turns it on. 1.1.0-alpha12 is the last release that builds with compileSdk 35 and AGP
     // 8.7; 1.1.0 stable asks for compileSdk 36 and AGP 8.9.1.
     implementation "androidx.health.connect:connect-client:$healthConnectVersion"
+    // The Wear OS companion (WearBridgePlugin, docs/WEAR.md): the Wearable Data Layer between this
+    // phone and the watch app. Nothing leaves the two devices, but the Data Layer is a part of Play
+    // services, so a phone without them simply has no watch (the plugin's calls fail, the page carries on).
+    implementation "com.google.android.gms:play-services-wearable:$playServicesWearableVersion"
     implementation project(':capacitor-android')
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"

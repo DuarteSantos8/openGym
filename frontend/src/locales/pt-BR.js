@@ -1403,6 +1403,14 @@ export const PT_BR_OVERRIDES = {
   'Gentle, for headphones or a quiet room.': 'Suave, para fones de ouvido ou um lugar silencioso.',
   'Fewer than two workouts in this period. Pick a longer one.': 'Menos de dois treinos neste período. Escolha um mais longo.',
   'Releases are checked on GitHub. The download is verified against its checksum before the installer opens.': 'As versões são verificadas no GitHub. O download é conferido pela soma de verificação antes de abrir o instalador.',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': 'Treino do relógio salvo: {0}',
+  'Your watch has a workout': 'Seu relógio tem um treino',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': 'Você tem um treino em andamento neste celular. O do seu relógio ({0}) ainda não foi adicionado.',
+  'Save it as a separate workout': 'Salvar como um treino separado',
+  'Decide later': 'Decidir depois',
+  'Discard the watch workout': 'Descartar o treino do relógio',
+  'Update openGym on this phone to read the workout from your watch.': 'Atualize o openGym neste celular para ler o treino do seu relógio.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

@@ -2242,4 +2242,12 @@ export default {
   'Your sports watch, calling you back.': 'Spor saatin seni geri çağırıyor.',
   'Coach wants you back on the bar.': 'Koç seni bara geri bekliyor.',
   'Gentle, for headphones or a quiet room.': 'Sakin, kulaklık ya da sessiz bir oda için.',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': 'Saatteki antrenman kaydedildi: {0}',
+  'Your watch has a workout': 'Saatinde bir antrenman var',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': 'Bu telefonda devam eden bir antrenman var. Saatindeki ({0}) henüz eklenmedi.',
+  'Save it as a separate workout': 'Ayrı bir antrenman olarak kaydet',
+  'Decide later': 'Sonra karar ver',
+  'Discard the watch workout': 'Saat antrenmanını at',
+  'Update openGym on this phone to read the workout from your watch.': 'Saatindeki antrenmanı okumak için bu telefonda openGym’i güncelle.',
 }
