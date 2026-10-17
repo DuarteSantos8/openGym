@@ -100,6 +100,20 @@ function FatigueLegend() {
   </div>
 }
 
+/* The three map bands as one zone bar, with the selected muscle's value marked. The
+   zones are the legend's own ramp (grey ready, yellow recovering, red fatigued), so the
+   bar reads without a caption; the percentage sits on the right as its numeric twin.
+   Boundaries match fatigueStateOf: 25% ready, 25% recovering, 50% fatigued. */
+function FatigueBar({ value }) {
+  const pct = Math.round(Math.min(1, Math.max(0, value)) * 100)
+  return <div className="fbar" role="img" aria-label={`${t('Fatigue')}: ${pct}% · ${fatigueLabel(value)}`}>
+    <span className="zone ready" />
+    <span className="zone recovering" />
+    <span className="zone fatigued" />
+    <span className="knob" style={{ insetInlineStart: pct + '%' }} />
+  </div>
+}
+
 function StrengthLegend() {
   return <div className="hm-legend hm-strength" aria-label={t('Strength')}>
     <span>1 <span className="dim">{t('full')}</span></span><div className="hm-c l4" /><div className="hm-c l3" /><div className="hm-c l2" />
@@ -261,9 +275,8 @@ function MuscleBalance({ S }) {
       {sel && <div style={{ borderTop: 'var(--hair) solid var(--sep)', marginTop: 4, paddingTop: 10 }}>
         <div className="mrow">
           <span className="nm"><b>{t(MUSCLE_NAME[sel])}</b></span>
-          <span className="v" aria-label={`${t('Fatigue')}: ${Math.round(selFatigue * 100)}% · ${fatigueLabel(selFatigue)}`}>
-            {t('Fatigue')} {Math.round(selFatigue * 100)}% · {fatigueLabel(selFatigue)}
-          </span>
+          <FatigueBar value={selFatigue} />
+          <span className="v" style={{ minWidth: 44 }}>{Math.round(selFatigue * 100)}%</span>
         </div>
         {selRecovery.toRecoveringMs != null && <div className="small dim">{t('Recovering {0}', fmtRecoveryIn(selRecovery.toRecoveringMs))}</div>}
         {selRecovery.toReadyMs != null && <div className="small dim">{t('Ready {0}', fmtRecoveryIn(selRecovery.toReadyMs))}</div>}

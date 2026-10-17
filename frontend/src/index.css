@@ -1681,6 +1681,17 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .mrow .bar{width:74px;height:5px;border-radius:3px;background:var(--surface-2);flex:none;overflow:hidden}
 .mrow .bar i{display:block;height:100%;background:var(--acc);border-radius:3px}
 .mrow .v{font-size:12px;color:var(--label-2);min-width:52px;text-align: end;flex:none}
+/* Selected-muscle fatigue: the legend's three bands as one bar, wider than the set
+   bars around it, with a marker at the value. Ready is the map's unshaded base, so the
+   left zone stays neutral; the marker is the value, the zones are the thresholds. */
+.mrow .fbar{position:relative;display:flex;flex:1;min-width:60px;height:8px;border-radius:4px;overflow:hidden;background:var(--surface-2)}
+.fbar .zone{height:100%}
+.fbar .zone.ready{width:25%;background:color-mix(in srgb,var(--label) 14%,var(--surface-2))}
+.fbar .zone.recovering{width:25%;background:var(--yellow)}
+.fbar .zone.fatigued{width:50%;background:var(--red)}
+.fbar .knob{position:absolute;top:-2px;bottom:-2px;width:3px;margin-inline-start:-1.5px;border-radius:2px;background:var(--label);box-shadow:0 0 0 1.5px var(--surface)}
+/* The name yields to the bar here: the muscle label is short and the bar is the reading. */
+.mrow:has(.fbar) .nm{flex:0 1 auto;max-width:38%}
 /* A headline number inside a card — tile weight without a tile around it, for the pair of
    readings at the top of the effort card. */
 .stat-v{font-size:26px;font-weight:600;letter-spacing:-.026em;line-height:1.1}
