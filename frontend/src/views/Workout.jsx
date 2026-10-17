@@ -47,6 +47,11 @@ import { MUSCLE_NAME } from '../lib/muscles.js'
 import FocusView from './FocusView.jsx'
 import { scanOnce } from '../components/CameraScan.jsx'
 import { normalizeQr, resolveScan, scanTargetRoutineId, withExQr, currentExerciseFor, qrCodesFor } from '../lib/exercise-qr.js'
+import { handleScannedCode } from '../lib/scan-dispatch.js'
+import { parseLfUrl } from '../lib/lfopen/qr.js'
+import { normalizeResult, cardioSetFromResult, findResult } from '../lib/lfopen/result.js'
+import { exerciseForKind } from '../lib/lfopen/devices.js'
+import { placeResult, applyResultSet } from '../lib/lfopen/assign.js'
 import { withMeaning, historyAs, dbLoadFor, entryDbLoad, bellsIn, ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
@@ -1373,7 +1378,7 @@ function ActiveWorkout() {
   // The picker's add, and a scanned code's (scanExercise). `routine` names the routine whose block
   // it joins when that is not the current exercise's; `routineToo` also puts it into that routine
   // itself — the one add here that changes the plan, and only when you said so.
-  const addExerciseToSession = (ex, { quick = false, routine: target, routineToo = false } = {}) => {
+  const addExerciseToSession = (ex, { quick = false, quiet = false, routine: target, routineToo = false } = {}) => {
     // A freehand add inherits the current unit's routine (its `rid`) so it lands in that
     // routine's block in a combined session and gets a real prescription; a routine-less
     // freestyle session has no `rid` to inherit. It inherits the block's `noProg` too: an
@@ -1427,16 +1432,94 @@ function ActiveWorkout() {
     // button. Quick-add commits with the same default (or, freestyle, last-session) config
     // the sheet would have opened with; tapping the row still opens that sheet for anyone
     // who wants to set sets/reps first.
-    if (quick) { commit(seed || defaultConfig(ex.id)); useUI.getState().toast(t('“{0}” added to {1}', exerciseNameText(ex), routine ? routine.name : t('Freestyle'))) }
+    if (quick) { commit(seed || defaultConfig(ex.id)); if (!quiet) useUI.getState().toast(t('“{0}” added to {1}', exerciseNameText(ex), routine ? routine.name : t('Freestyle'))) }
     // The confirm names what it changes: this workout, and the routine only when asked to.
     else exConfigSheet(ex, null, commit, null, routine, seed, null, intoRoutine ? t('Add to workout and routine') : t('Add to this workout'))
   }
   // A QR code on a machine (lib/exercise-qr.js, set on the exercise's detail page): scanned here,
   // it shows that exercise. One the session does not hold is offered for the routine and this
   // workout, or this workout alone; a code no exercise has yet can be given to one on the spot.
+  // One scanner for every kind of code (lib/scan-dispatch.js): a Life Fitness console's first,
+  // then the exercise stickers, which take anything else exactly as before.
   const scanExercise = async () => {
     const code = normalizeQr((await scanOnce())?.value)
-    if (code) goToScanned(code)
+    if (code) handleScannedCode(code, [lfScanHandler, { match: c => c, handle: goToScanned }])
+  }
+  // A Life Fitness cardio console (lib/lfopen, docs/LIFE_FITNESS_CARDIO_CONNECT.md). The code it
+  // shows at the end of a workout carries the whole summary: it becomes a cardio set on the
+  // machine's exercise — the one you are on without a question, any other after one. The code
+  // from its connect menu wants a live Bluetooth link, which this app does not make (yet): say
+  // so, and point at the end-of-workout code instead.
+  const lfScanHandler = {
+    match: parseLfUrl,
+    handle: m => {
+      const ui = useUI.getState()
+      if (m.kind === 'ble') {
+        menuSheet({
+          title: t('Live connection not available'),
+          subtitle: t('The live connection to the machine isn’t available here. Just keep training: at the end, the machine shows a QR code. Scan it here and your workout data comes across.'),
+          items: [{ icon: 'check', accent: true, label: t('OK') }],
+        })
+        return
+      }
+      if (m.kind === 'unsupported') { ui.toast(t('This Life Fitness code isn’t one openGym can use.')); return }
+      const res = m.kind === 'result' ? normalizeResult(m.data) : null
+      if (!res) { ui.toast(t('That Life Fitness code could not be read.')); return }
+      const st = useStore.getState().S
+      const set = cardioSetFromResult(res, { level: n => t('Level {0}', fmtNum(n)) })
+      const dup = findResult(st, set.lf)
+      if (dup) {
+        ui.toast(dup.where === 'active' ? t('This result is already in this workout.') : t('This result was already saved on {0}.', fmtDate(dup.d, true)))
+        return
+      }
+      const exId = exerciseForKind(res.kind, st.customEx)
+      if (exId) { placeLfResult(exId, set); return }
+      // A console LFconnect's own table does not know: you say which exercise it was.
+      const picker = exercisePicker(ex => { picker?.close(); placeLfResult(ex.id, set) }, { title: t('Which exercise was this?') })
+    },
+  }
+  const placeLfResult = (exId, set) => {
+    const st = useStore.getState().S
+    if (!st.active) return
+    const ex = exOr(exId)
+    const name = exerciseNameText(ex)
+    const preview = [t('{0} min', fmtNum(set.min)), set.note.replace(/^Life Fitness( · )?/, '')].filter(Boolean).join(' · ')
+    const activeId = st.active.id
+    // Into the entry's open planned set (or after its sets); Undo puts its sets back as they were.
+    const saveAt = idx => {
+      let before = null
+      update(s => {
+        const e = s.active?.id === activeId ? s.active.entries[idx] : null
+        if (!e || e.id !== exId) return
+        before = JSON.parse(JSON.stringify(e.sets || []))
+        applyResultSet(e, set)
+        s.active.cur = idx
+      })
+      if (!before) return
+      showCurrent()
+      useUI.getState().toast(t('Life Fitness result added to {0}', name), {
+        action: t('Undo'),
+        onAction: () => update(s => { const e = s.active?.id === activeId ? s.active.entries[idx] : null; if (e && e.id === exId) e.sets = before }),
+      })
+    }
+    const place = placeResult(st.active, exId)
+    if (place.kind === 'current') { saveAt(place.idx); return }
+    if (place.kind === 'inWorkout') {
+      menuSheet({
+        title: t('Life Fitness result'), subtitle: preview,
+        items: [{ icon: 'check', accent: true, label: t('Add to “{0}”', name), sub: t('Already in this workout'), onClick: () => saveAt(place.idx) }],
+      })
+      return
+    }
+    menuSheet({
+      title: t('Add “{0}” to this workout?', name), subtitle: preview,
+      items: [{ icon: 'plusCircle', accent: true, label: t('Add and take the data'),
+        onClick: () => {
+          addExerciseToSession(ex, { quick: true, quiet: true })
+          const now = useStore.getState().S.active
+          if (now?.id === activeId && now.entries[now.cur]?.id === exId) saveAt(now.cur)
+        } }],
+    })
   }
   const goToScanned = code => {
     const st = useStore.getState().S
