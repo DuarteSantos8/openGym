@@ -41,7 +41,7 @@ function hevyApiKey() {
  */
 // Titles whose closest catalogue entry is a different movement — better a custom exercise than
 // a wrong one. Keep in sync with the note at the top of the generated map.
-const NEVER_BY_TITLE = new Set(['crunch', 'side plank', 'squat (machine)', 'triceps extension (cable)', 'rear delt reverse fly (cable)'])
+const NEVER_BY_TITLE = new Set(['side plank', 'squat (machine)', 'rear delt reverse fly (cable)'])
 
 const BY_TITLE = {
   // Reported from a real import as customs — same lifts, Hevy vocabulary.
@@ -55,7 +55,7 @@ const BY_TITLE = {
   'reverse lunge (dumbbell)': '0381',
   'reverse lunge (barbell)': '0078',
   'seated incline curl (dumbbell)': '0318',
-  'seated shoulder press (machine)': '0603',
+  'seated shoulder press (machine)': '1454',
   'single leg standing calf raise (machine)': '0605',
 
   // Shared with import-csv ALIAS_EX / cardio pins.
@@ -75,11 +75,11 @@ const BY_TITLE = {
   'face pull': '0203',
   'hack squat (machine)': '0743',
   'iso-lateral row (machine)': '0571',
-  'seated cable row - bar grip': '0218',
-  'reverse grip lat pulldown (cable)': '0673',
+  'seated cable row - bar grip': '0180',
+  'reverse grip lat pulldown (cable)': '0208',
   'single arm lateral raise (cable)': '0192',
   'plate front raise': '0310',
-  'back extension (weighted hyperextension)': '0573',
+  'back extension (weighted hyperextension)': '5035',
   'behind the back bicep wrist curl (barbell)': '0104',
   'butterfly (pec deck)': '0596',
   'chest fly (machine)': '0596',
@@ -98,7 +98,7 @@ const BY_TITLE = {
   'bench press (dumbbell)': '0289',
   'incline bench press (barbell)': '0047',
   'incline bench press (dumbbell)': '0314',
-  'overhead press (barbell)': '0091',
+  'overhead press (barbell)': '1165',
   'overhead press (dumbbell)': '0405',
   'shoulder press (machine)': '0603',
   'shoulder press (dumbbell)': '0405',
@@ -115,7 +115,7 @@ const BY_TITLE = {
   'lat pulldown - wide grip (cable)': '2330',
   'leg press (machine)': '0739',
   'leg extension (machine)': '0585',
-  'seated leg curl (machine)': '0586',
+  'seated leg curl (machine)': '0599',
   'lying leg curl (machine)': '0586',
   'goblet squat (dumbbell)': '1760',
   'goblet squat (kettlebell)': '0534',
@@ -128,10 +128,10 @@ const BY_TITLE = {
   'push up': '0662',
   'push-up': '0662',
   'chest dip': '0251',
-  'plank': '2135',
+  'plank': '0463',
   'russian twist': '0687',
   'hanging leg raise': '0472',
-  'hanging knee raise': '0472',
+  'hanging knee raise': '9819',
   'cable crunch': '0175',
   'standing calf raise (machine)': '0605',
   'seated calf raise (machine)': '0594',
@@ -147,6 +147,42 @@ const BY_TITLE = {
   'kickback (dumbbell)': '0333',
   'lateral raise (dumbbell)': '0334',
   'good morning (barbell)': '0044',
+
+  // Checked against Hevy's own artwork: a template's thumbnail is named after the catalogue
+  // animation it shows (14541201-Lever-Seated-Shoulder-Press.jpg is 1454), so these titles take
+  // that entry, or the closest one where the catalogue lacks it (standing leg curls, lying neck curls).
+  'air bike': '3893',
+  'back extension (hyperextension)': '1860',
+  'band pullaparts': '4568',
+  'behind the back curl (cable)': '4838',
+  'calf extension (machine)': '2315',
+  'crunch': '0274',
+  'ez bar biceps curl': '0447',
+  'iso-lateral chest press (machine)': '0576',
+  'iso-lateral high row (machine)': '0581',
+  'iso-lateral low row': '4214',
+  'lat pulldown (machine)': '0579',
+  'lying neck curls': '10780',
+  'nordic hamstrings curls': '7746',
+  'romanian deadlift (smith machine)': '1597',
+  'seated cable row - bar wide grip': '0218',
+  'seated cable row - v grip (cable)': '2661',
+  'seated overhead press (dumbbell)': '0290',
+  'shoulder press (machine plates)': '0587',
+  'single arm cable row': '7564',
+  'single arm tricep extension (dumbbell)': '0362',
+  'single leg extensions': '7108',
+  'single leg standing calf raise': '5052',
+  'skullcrusher (dumbbell)': '0351',
+  'standing leg curls': '4347',
+  'straight arm lat pulldown (cable)': '0238',
+  'triceps dip': '0814',
+  'triceps dip (weighted)': '1755',
+  'triceps extension (cable)': '0149',
+  'triceps extension (dumbbell)': '0430',
+  'triceps pressdown': '1605',
+  'triceps rope pushdown': '0200',
+  'walking': '2258',
 }
 
 const EQ_PAREN = {
