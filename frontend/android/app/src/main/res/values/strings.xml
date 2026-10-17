@@ -8,4 +8,10 @@
     <string name="rest_channel_name">Rest timer</string>
     <string name="rest_quiet_channel_name">Rest timer, without vibration</string>
     <string name="rest_channel_desc">Rest between sets, in the notification shade. The lock screen shows it only when notifications are allowed there.</string>
+    <string name="wear_channel_name">Watch</string>
+    <string name="wear_channel_desc">Workouts recorded on your watch, waiting to be saved in openGym.</string>
+    <string name="wear_session_title">Workout from your watch</string>
+    <string name="wear_session_text">Open openGym to save it.</string>
+    <string name="wear_request_title">Your watch asked for a routine</string>
+    <string name="wear_request_text">Open openGym to send it.</string>
 </resources>
