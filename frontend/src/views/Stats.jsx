@@ -100,18 +100,31 @@ function FatigueLegend() {
   </div>
 }
 
-/* The three map bands as one zone bar, with the selected muscle's value marked. The
-   zones are the legend's own ramp (grey ready, yellow recovering, red fatigued), so the
-   bar reads without a caption; the percentage sits on the right as its numeric twin.
-   Boundaries match fatigueStateOf: 25% ready, 25% recovering, 50% fatigued. */
+/* The three map bands as one zone bar: a marker at the selected muscle's value with the
+   percentage above it, the 0–100% endpoints below, and each band's name under its own
+   zone. Zones are the legend's own ramp (grey ready, yellow recovering, red fatigued) and
+   their boundaries match fatigueStateOf, so the bar and the map shade never disagree. */
 function FatigueBar({ value }) {
   const pct = Math.round(Math.min(1, Math.max(0, value)) * 100)
-  return <div className="fbar" role="img" aria-label={`${t('Fatigue')}: ${pct}% · ${fatigueLabel(value)}`}>
-    <span className="zone ready" />
-    <span className="zone recovering" />
-    <span className="zone fatigued" />
-    <span className="knob" style={{ insetInlineStart: `clamp(0px, calc(${pct}% - 1.5px), calc(100% - 3px))` }} />
-  </div>
+  const at = `clamp(0px, calc(${pct}% - 1.5px), calc(100% - 3px))`
+  const atValue = `clamp(16px, ${pct}%, calc(100% - 16px))`
+  return <>
+    <div className="fbarwrap">
+      <div className="fbar" role="img" aria-label={`${t('Fatigue')}: ${pct}% · ${fatigueLabel(value)}`}>
+        <span className="zone ready" />
+        <span className="zone recovering" />
+        <span className="zone fatigued" />
+      </div>
+      <span className="knob" style={{ insetInlineStart: at }} />
+      <span className="fval" style={{ insetInlineStart: atValue }}>{pct}%</span>
+    </div>
+    <div className="fends"><span>0%</span><span>100%</span></div>
+    <div className="fzones">
+      <span className="z ready">{t('Ready')}</span>
+      <span className="z recovering">{t('Recovering')}</span>
+      <span className="z fatigued">{t('Fatigued')}</span>
+    </div>
+  </>
 }
 
 function StrengthLegend() {
@@ -272,13 +285,10 @@ function MuscleBalance({ S }) {
       <BodyMap className="tappable hm-fatigue" load={fatigue} thresholds={FATIGUE_LEVELS} body={S.body} selected={sel} onMuscle={toggleSel} />
       <FatigueLegend />
       <div className="muted small" style={{ marginTop: 10 }}>{t('Fatigue shows how recently each muscle was trained. High means rest.')}</div>
-      {sel && <div style={{ borderTop: 'var(--hair) solid var(--sep)', marginTop: 4, paddingTop: 10 }}>
-        <div className="mrow">
-          <span className="nm"><b>{t(MUSCLE_NAME[sel])}</b></span>
-          <FatigueBar value={selFatigue} />
-          <span className="v" style={{ minWidth: 44 }}>{Math.round(selFatigue * 100)}%</span>
-        </div>
-        {selRecovery.toRecoveringMs != null && <div className="small dim">{t('Recovering {0}', fmtRecoveryIn(selRecovery.toRecoveringMs))}</div>}
+      {sel && <div className="fdetail" style={{ borderTop: 'var(--hair) solid var(--sep)', marginTop: 4, paddingTop: 10 }}>
+        <div className="fname"><b>{t(MUSCLE_NAME[sel])}</b></div>
+        <FatigueBar value={selFatigue} />
+        {selRecovery.toRecoveringMs != null && <div className="small dim" style={{ marginTop: 6 }}>{t('Recovering {0}', fmtRecoveryIn(selRecovery.toRecoveringMs))}</div>}
         {selRecovery.toReadyMs != null && <div className="small dim">{t('Ready {0}', fmtRecoveryIn(selRecovery.toReadyMs))}</div>}
       </div>}
     </> : <>
