@@ -2242,4 +2242,13 @@ export default {
   'Your sports watch, calling you back.': 'आपकी स्पोर्ट्स घड़ी आपको वापस बुला रही है।',
   'Coach wants you back on the bar.': 'कोच आपको बार पर वापस चाहते हैं।',
   'Gentle, for headphones or a quiet room.': 'धीमी, हेडफ़ोन या शांत कमरे के लिए।',
+
+  // --- AI Coach on the phone: the BYOK limits (#527) ---
+  'Advanced': 'उन्नत',
+  'Max output tokens': 'अधिकतम आउटपुट टोकन',
+  'The ceiling on one answer. Reasoning models count its hidden thinking against it, so raise it if a plan is cut off.': 'एक उत्तर की सीमा। तर्क करने वाले मॉडल अपनी छिपी सोच को इसमें गिनते हैं, इसलिए यदि कोई योजना कट जाए तो इसे बढ़ाएँ।',
+  'Daily runs': 'प्रतिदिन रन',
+  'Every Coach run is one request on your provider account. 0 means no limit.': 'कोच का हर रन आपके प्रदाता खाते पर एक अनुरोध है। 0 का अर्थ है कोई सीमा नहीं।',
+  'Max message length': 'अधिकतम संदेश लंबाई',
+  'How long a message, refinement or review note can be.': 'संदेश, सुधार अनुरोध या समीक्षा नोट कितना लंबा हो सकता है।',
 }

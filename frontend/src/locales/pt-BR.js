@@ -1403,6 +1403,15 @@ export const PT_BR_OVERRIDES = {
   'Gentle, for headphones or a quiet room.': 'Suave, para fones de ouvido ou um lugar silencioso.',
   'Fewer than two workouts in this period. Pick a longer one.': 'Menos de dois treinos neste período. Escolha um mais longo.',
   'Releases are checked on GitHub. The download is verified against its checksum before the installer opens.': 'As versões são verificadas no GitHub. O download é conferido pela soma de verificação antes de abrir o instalador.',
+
+  // --- AI Coach on the phone: the BYOK limits (#527) ---
+  'Advanced': 'Avançado',
+  'Max output tokens': 'Máximo de tokens de saída',
+  'The ceiling on one answer. Reasoning models count its hidden thinking against it, so raise it if a plan is cut off.': 'O limite de uma resposta. Modelos de raciocínio contam o pensamento oculto nesse limite, então aumente se um plano for cortado.',
+  'Daily runs': 'Execuções por dia',
+  'Every Coach run is one request on your provider account. 0 means no limit.': 'Cada execução do Treinador é uma requisição na sua conta do provedor. 0 significa sem limite.',
+  'Max message length': 'Comprimento máximo da mensagem',
+  'How long a message, refinement or review note can be.': 'Quanto pode ter uma mensagem, um pedido de refinamento ou uma nota de análise.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

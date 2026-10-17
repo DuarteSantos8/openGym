@@ -2297,4 +2297,13 @@ export default {
   'Your sports watch, calling you back.': 'ساعتك الرياضية تناديك للعودة.',
   'Coach wants you back on the bar.': 'المدرب يريدك أن تعود إلى البار.',
   'Gentle, for headphones or a quiet room.': 'هادئ، للسماعات أو لغرفة هادئة.',
+
+  // --- AI Coach on the phone: the BYOK limits (#527) ---
+  'Advanced': 'متقدم',
+  'Max output tokens': 'الحد الأقصى لرموز الإخراج',
+  'The ceiling on one answer. Reasoning models count its hidden thinking against it, so raise it if a plan is cut off.': 'الحد الأقصى للإجابة الواحدة. تحتسب النماذج الاستدلالية تفكيرها الخفي ضمن هذا الحد، لذا ارفعه إذا قُطع خطتك.',
+  'Daily runs': 'عمليات التشغيل اليومية',
+  'Every Coach run is one request on your provider account. 0 means no limit.': 'كل تشغيل للمدرب هو طلب واحد على حساب مزودك. تعني 0 بلا حد.',
+  'Max message length': 'الحد الأقصى لطول الرسالة',
+  'How long a message, refinement or review note can be.': 'كم يمكن أن يطول نص رسالة أو طلب تعديل أو ملاحظة مراجعة.',
 }

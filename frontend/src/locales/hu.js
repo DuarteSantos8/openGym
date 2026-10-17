@@ -2245,4 +2245,13 @@ export default {
   'Your sports watch, calling you back.': 'A sportórád visszahív.',
   'Coach wants you back on the bar.': 'Az edző visszavár a rúdhoz.',
   'Gentle, for headphones or a quiet room.': 'Halk, fülhallgatóhoz vagy csendes helyre.',
+
+  // --- AI Coach on the phone: the BYOK limits (#527) ---
+  'Advanced': 'Speciális',
+  'Max output tokens': 'Max. kimeneti token',
+  'The ceiling on one answer. Reasoning models count its hidden thinking against it, so raise it if a plan is cut off.': 'Egy válasz felső korlátja. A gondolkodó modellek a rejtett gondolkodásukat is beleszámítják, ezért emeld meg, ha egy terv elvágódik.',
+  'Daily runs': 'Napi futtatások',
+  'Every Coach run is one request on your provider account. 0 means no limit.': 'Minden Edző-futtatás egy kérés a szolgáltatói fiókodon. A 0 azt jelenti, nincs korlát.',
+  'Max message length': 'Max. üzenethossz',
+  'How long a message, refinement or review note can be.': 'Milyen hosszú lehet egy üzenet, finomítási kérés vagy elemzési megjegyzés.',
 }

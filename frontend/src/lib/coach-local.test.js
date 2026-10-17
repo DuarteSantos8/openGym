@@ -24,7 +24,7 @@ vi.mock('./capacitor-fetch.js', () => ({
 }))
 
 const local = await import('./coach-local.js')
-const { _resetCoachDevice, loadCoachDevice, saveCoachDevice } = await import('./coach-device.js')
+const { _resetCoachDevice, loadCoachDevice, saveCoachDevice, COACH_LIMITS } = await import('./coach-device.js')
 const { applyChangeSet, markStale, planHash } = await import('./coach.js')
 const { todayISO } = await import('./format.js')
 const { EXERCISES } = await import('../../../api/coach/core/library-data.js')
@@ -153,9 +153,43 @@ describe('the Coach on a phone with its own key', () => {
 
     // The cap is keyed by the LOCAL date (todayISO), not the UTC one: in the evening in the
     // Americas the two differ, and a UTC stamp here read as yesterday's record and let the run through.
-    await saveCoachDevice({ daily: { d: todayISO(), n: local.LOCAL_DAILY_CAP } })
+    const cap = COACH_LIMITS.daily.def
+    await saveCoachDevice({ daily: { d: todayISO(), n: cap } })
     await expect(local.localReview(state())).rejects.toMatchObject({ code: 'cap' })
-    expect((await local.localStatus()).cap).toEqual({ used: local.LOCAL_DAILY_CAP, limit: local.LOCAL_DAILY_CAP })
+    expect((await local.localStatus()).cap).toEqual({ used: cap, limit: cap })
+  })
+
+  it('reads the daily cap from the device dial, and 0 is no limit', async () => {
+    await saveCoachDevice({ limits: { daily: 3 }, daily: { d: todayISO(), n: 3 } })
+    await expect(local.localReview(state())).rejects.toMatchObject({ code: 'cap' })
+    expect((await local.localStatus()).cap).toEqual({ used: 3, limit: 3 })
+
+    // The documented "unlimited": stored runs above any limit no longer refuse the next one.
+    await saveCoachDevice({ limits: { daily: 0 } })
+    await local.localReview(state())
+    const s = await settle()
+    expect(s.pending).toBeTruthy()
+    expect(s.cap).toEqual({ used: 4, limit: 0 })
+  })
+
+  it('sends the device output-token ceiling on the wire', async () => {
+    await saveCoachDevice({ limits: { maxOutputTokens: 48000 } })
+    await local.localReview(state())
+    await settle()
+    expect(wire.calls[0].body.max_completion_tokens).toBe(48000)
+  })
+
+  it('clips free text to the device message dial, clamped to the floor', async () => {
+    // Below the floor is raised to it and reported as such, both to the composer and to the clip.
+    await saveCoachDevice({ limits: { maxMessageLen: 50 } })
+    expect((await local.localStatus()).maxMessageLen).toBe(COACH_LIMITS.maxMessageLen.min)
+
+    const note = 'x'.repeat(500)
+    await local.localReview(state(), note)
+    await settle()
+    const sent = wire.calls[0].body.messages[1].content
+    expect(sent).toContain('"userNote":"' + 'x'.repeat(COACH_LIMITS.maxMessageLen.min) + '"')
+    expect(sent).not.toContain('x'.repeat(COACH_LIMITS.maxMessageLen.min + 1))
   })
 
   it('a proposal waits in the device file, expires, and is cleared by resolve', async () => {

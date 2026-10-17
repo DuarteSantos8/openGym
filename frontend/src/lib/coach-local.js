@@ -11,7 +11,9 @@
 // dispatches to the demo provider, so the screens never learn that there is no server.
 //
 // What is different from the server, and on purpose:
-//   - the user pays. There is no cfg.caps to lean on, so a local daily cap is not optional.
+//   - the user pays. There is no cfg.caps to lean on, so a local daily cap is not optional —
+//     but on a LAN model even that is friction, so it is one of the three dials the setup
+//     screen's Advanced section keeps in the device file (#527).
 //   - the pseudonym is drawn at random once and kept, rather than derived from a secret.
 //   - a proposal waits in the device file, not in S, so it survives an app kill without
 //     riding into a backup or a sync.
@@ -24,13 +26,12 @@ import gemini from '../../../api/coach/core/adapters/gemini.js'
 import compatible from '../../../api/coach/core/adapters/compatible.js'
 import { nativeFetch } from './capacitor-fetch.js'
 import { getApiKey } from './coach-secrets.js'
-import { loadCoachDevice, saveCoachDevice } from './coach-device.js'
+import { loadCoachDevice, saveCoachDevice, coachLimits } from './coach-device.js'
 import { planHash } from './coach.js'
 import { todayISO } from './format.js'
 import { t, getLang } from './i18n.js'
 
 export const ADAPTERS = { anthropic, openai, gemini, compatible }
-export const LOCAL_DAILY_CAP = 10
 // Five minutes is right for a cloud API and wrong for a model on somebody's laptop; the
 // OpenAI-compatible endpoint is the one that may be local, so it gets the long budget.
 export const TIMEOUT_MS = 5 * 60000
@@ -73,7 +74,7 @@ async function capState() {
   const d = await loadCoachDevice()
   const today = todayISO()
   const used = d.daily && d.daily.d === today ? d.daily.n : 0
-  return { used, limit: LOCAL_DAILY_CAP }
+  return { used, limit: coachLimits(d).daily }
 }
 async function bumpDaily() {
   const { used } = await capState()
@@ -85,15 +86,18 @@ async function bumpDaily() {
 export async function localStatus() {
   const d = await loadCoachDevice()
   if (d.pending && d.pending.expiresAt && d.pending.expiresAt < Date.now()) await saveCoachDevice({ pending: null })
-  return { job, pending: (await loadCoachDevice()).pending || null, cap: await capState(), lastError, last }
+  return { job, pending: (await loadCoachDevice()).pending || null, cap: await capState(), lastError, last, maxMessageLen: coachLimits(d).maxMessageLen }
 }
 
-export const localReview = (S, note) => start(S, 'review', { note: note ? String(note).slice(0, 1000) : null })
+export const localReview = async (S, note) => {
+  const d = await loadCoachDevice()
+  return start(S, 'review', { note: note ? String(note).slice(0, coachLimits(d).maxMessageLen) : null })
+}
 export const localPlan = (S, intake) => start(S, 'create', { intake: intake || null })
 export const localRefine = async (S, text) => {
   const d = await loadCoachDevice()
   const pendingCreate = d.pending && d.pending.kind === 'create' ? d.pending : null
-  return start(S, 'create', { refine: String(text || '').slice(0, 1000), previous: pendingCreate?.bundle || null, iteration: (pendingCreate?.iteration || 1) + 1 })
+  return start(S, 'create', { refine: String(text || '').slice(0, coachLimits(d).maxMessageLen), previous: pendingCreate?.bundle || null, iteration: (pendingCreate?.iteration || 1) + 1 })
 }
 export const localDebrief = (S, workoutId) => start(S, 'debrief', { workoutId: workoutId || null })
 export async function localResolve() { await saveCoachDevice({ pending: null }); return { ok: true } }
@@ -129,7 +133,8 @@ async function start(S, kind, opts) {
   const adapter = ADAPTERS[d.provider]
   if (d.mode !== 'byok' || !adapter) throw Object.assign(new Error(t('The Coach isn’t set up on this phone.')), { status: 503, code: 'off' })
   const cap = await capState()
-  if (cap.used >= cap.limit) throw Object.assign(new Error(t('The Coach is taking a breather. You’ve used today’s {0} runs on this phone.', cap.limit)), { status: 429, code: 'cap' })
+  // 0 is the documented "no limit" (the dial's own floor), same as the instance cap.
+  if (cap.limit > 0 && cap.used >= cap.limit) throw Object.assign(new Error(t('The Coach is taking a breather. You’ve used today’s {0} runs on this phone.', cap.limit)), { status: 429, code: 'cap' })
 
   await bumpDaily()
   job = { id: 'local-' + Date.now().toString(36), kind, state: 'running', startedAt: Date.now() }
@@ -148,7 +153,7 @@ async function run(S, kind, opts, d, adapter) {
   const attempt = await runPipeline({
     adapter, cfg: cfgOf(d), kind, payload,
     model: d.model || HTTP_PROVIDERS[d.provider].defaultModel, timeoutMs: timeoutFor(d.provider),
-    invokeOpts: { env: envOf(d, key), fetch: nativeFetch }
+    invokeOpts: { env: envOf(d, key), fetch: nativeFetch, maxTokens: coachLimits(d).maxOutputTokens }
   })
   if (!attempt.ok) {
     // There is no admin card on a phone, so the reason has to reach the person holding it:
