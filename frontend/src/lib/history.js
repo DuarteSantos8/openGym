@@ -385,7 +385,11 @@ function lastEntryIn(S, exId, rid) {
     // none — modeOf() falls back to the body part for them, which is what they were.
     if (done.length) {
       const slot = entryRoutineId(w, en)
-      return { d: w.d, sets: done, target: en.target || null, ...(slot ? { rid: slot } : {}), ...(en.planned ? { planned: en.planned } : {}) }
+      // The entry's warm-up rows ride along (done or not — a warm-up that was in the finished
+      // session is one the lifter set up) so "start from your last session" can carry them
+      // over. `sets` stays work-only: every existing caller reads what it always read.
+      const warmups = en.sets.filter(isWarmupRow)
+      return { d: w.d, sets: done, target: en.target || null, ...(slot ? { rid: slot } : {}), ...(en.planned ? { planned: en.planned } : {}), ...(warmups.length ? { warmups } : {}) }
     }
   }
   return null
