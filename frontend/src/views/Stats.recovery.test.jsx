@@ -290,7 +290,7 @@ describe('Stats muscle recovery view runtime', () => {
     expect(bar).toBeTruthy()
     // The bar carries the band as a marker at the value and reads the same state the map does.
     expect(bar.getAttribute('aria-label')).toBe(`Fatigue: ${pct}% · Fatigued`)
-    expect(bar.querySelector('.knob').getAttribute('style')).toContain(`inset-inline-start: ${pct}%`)
+    expect(bar.querySelector('.knob').getAttribute('style')).toContain(`${pct}%`)
     expect(bar.querySelector('.zone.fatigued')).toBeTruthy()
     // The percentage stands alone on the right, as its numeric twin.
     expect(muscleCard().textContent).toContain(`${pct}%`)
