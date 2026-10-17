@@ -14,6 +14,8 @@ License: AGPL-3.0-or-later.
 ```
 frontend/  React 19 + Vite app (src/views, src/components, src/store, src/lib). Builds to static files.
            android/ + ios/ are the Capacitor shells for the standalone mobile app (docs/MOBILE.md).
+           android/wear/ is the Kotlin Wear OS companion (docs/WEAR.md): a recorder that sends
+           finished sessions to the phone over the Wearable Data Layer (lib/wear-bridge.js).
 api/       backend — server.js (Node, no framework), deps: @simplewebauthn/server, web-push.
            coach/ is the optional AI coach; openapi.yaml documents every route.
 web/       multi-stage Dockerfile (builds frontend → nginx) + nginx.conf.template (serves app, proxies /api).
