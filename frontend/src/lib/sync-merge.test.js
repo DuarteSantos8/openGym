@@ -867,6 +867,44 @@ describe('an entry edited on two devices keeps both edits, field by field', () =
   })
 })
 
+// QR codes on the machines (S.exQr, lib/exercise-qr.js) are stamped per exercise like a note: a
+// code given to one exercise on the phone and one taken off another on the desktop both survive.
+describe('exercise QR codes merge per exercise', () => {
+  const start = () => base({ _ts: 100, exQr: { '0025': ['RACK-1'], '0043': ['TOWER'] } })
+  const onPhone = () => {
+    const a = start(), next = clone(a)
+    next.exQr['0652'] = ['TOWER']          // the tower's code also stands for a face pull now
+    next._ts = 300
+    return stampEdits(a, next, 300)
+  }
+  const onDesktop = () => {
+    const b = start(), next = clone(b)
+    delete next.exQr['0025']               // the rack's code unassociated
+    next.bodyweight = [{ d: '2026-09-05', w: 79, t: 900 }]
+    next._ts = 900
+    return stampEdits(b, next, 900)
+  }
+
+  it('keeps each exercise’s codes from the copy that changed them, a removal included', () => {
+    expect(onPhone().edited).toEqual({ 'exQr.0652': 300 })
+    expect(onDesktop().edited).toEqual({ 'exQr.0025': 900 })
+    for (const m of [mergeStates(onPhone(), onDesktop()), mergeStates(onDesktop(), onPhone())]) {
+      expect(m.exQr).toEqual({ '0043': ['TOWER'], '0652': ['TOWER'] })
+    }
+  })
+
+  it('a reset wipes them like the notes', () => {
+    const S = start()
+    expect(resetIdsOf(S).exQr).toEqual(['0025', '0043'])
+    expect(sinceReset(S, 1000, resetIdsOf(S)).exQr).toEqual({})
+    expect(sinceReset(S, 1000).exQr).toEqual({})
+  })
+
+  it('a guest’s codes count in the sign-in question', () => {
+    expect(localExtras(base({ exQr: { '0025': ['RACK-1'] } }), base()).setup).toBe(1)
+  })
+})
+
 describe('settings and plan days keep the change made last', () => {
   // B, offline, sets Wednesday and the rest timer; A logs a weigh-in later and flips the sound.
   const start = () => base({ _ts: 100, week: { 1: ['r1'] }, restSec: 90, sound: true, exNotes: { '0025': 'seat 4' } })

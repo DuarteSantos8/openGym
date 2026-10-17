@@ -40,6 +40,7 @@ const mocks = vi.hoisted(() => {
     workoutSettingsSheet: vi.fn(),
     nav: vi.fn(),
     setNoteSheet: vi.fn(),
+    scanOnce: vi.fn(),
   }
   state.stopRest = vi.fn(() => { state.timer = null })
   state.stopWork = vi.fn(() => { state.work = null })
@@ -106,6 +107,7 @@ vi.mock('../sheets.jsx', () => ({
   addRoutineToSessionSheet: vi.fn(),
 }))
 vi.mock('../components/Media.jsx', () => ({ default: () => null }))
+vi.mock('../components/CameraScan.jsx', () => ({ default: () => null, scanOnce: (...a) => mocks.scanOnce(...a) }))
 vi.mock('../components/WorkoutThumb.jsx', () => ({
   default: ({ onExpand }) => React.createElement('button', { className: 'wthumb', 'aria-label': 'Expand', onClick: onExpand }),
   hasWorkoutMedia: () => true,
@@ -2329,6 +2331,145 @@ describe('the plan line', () => {
   })
 })
 
+// A QR code on a machine (lib/exercise-qr.js): the header's scan button shows the exercise it
+// stands for, offers one the session does not hold for the routine and the workout, and lets a
+// code no exercise has yet be given to one on the spot.
+describe('scanning an exercise code', () => {
+  const scanButton = () => buttonNamed('Scan exercise code')
+  const scan = async value => {
+    mocks.scanOnce.mockResolvedValueOnce(value == null ? null : { value, fmt: 'qrcode' })
+    await click(scanButton())
+    await act(async () => {})
+  }
+  const lastMenu = () => mocks.menuSheet.mock.calls.at(-1)[0]
+  const menuItem = (menu, label) => menu.items.filter(Boolean).find(it => it.label === label)
+  const routineEntry = (id, done) => exercise(id, done, { rid: 'r1' })
+  const withRoutine = extra => ({ routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60, mode: 'reps' }] }], active: { routineIds: ['r1'] }, ...extra })
+
+  beforeEach(() => {
+    mocks.scanOnce.mockReset()
+    mocks.menuSheet.mockReset()
+    mocks.exConfigSheet.mockReset()
+    mocks.confirmSheet.mockReset()
+    mocks.exercisePicker.mockReset()
+    mocks.toast.mockReset()
+  })
+  afterEach(unmount)
+
+  it('jumps to the exercise of the session the code stands for', async () => {
+    await mount([routineEntry('0025', [false]), routineEntry('0043', [false])], 0, withRoutine({ exQr: { '0043': ['RACK-2'] } }))
+    await scan('  RACK-2 ')
+    expect(mocks.S.active.cur).toBe(1)
+    expect(mocks.toast).toHaveBeenCalledWith('Barbell Full Squat')
+    expect(mocks.menuSheet).not.toHaveBeenCalled()
+  })
+
+  it('does nothing when the scan is cancelled', async () => {
+    await mount([routineEntry('0025', [false])], 0, withRoutine({ exQr: { '0025': ['B'] } }))
+    await scan(null)
+    expect(mocks.S.active.cur).toBe(0)
+    expect(mocks.menuSheet).not.toHaveBeenCalled()
+    expect(mocks.confirmSheet).not.toHaveBeenCalled()
+  })
+
+  it('asks whether an exercise the session lacks joins the routine too, and adds it to both', async () => {
+    await mount([routineEntry('0025', [false])], 0, withRoutine({ exQr: { '0294': ['CURL'] } }))
+    await scan('CURL')
+    const menu = lastMenu()
+    expect(menu.title).toBe('“Dumbbell Biceps Curl” isn’t in this workout')
+    expect(menu.items.filter(Boolean).map(it => it.label)).toEqual(['Add to “Push” and this workout', 'Only this workout'])
+
+    await act(async () => { menuItem(menu, 'Add to “Push” and this workout').onClick() })
+    const [ex, , commit, , routine, , , saveLabel] = mocks.exConfigSheet.mock.calls.at(-1)
+    expect(ex.id).toBe('0294')
+    expect(routine.id).toBe('r1')
+    expect(saveLabel).toBe('Add to workout and routine')
+    await act(async () => { commit({ sets: 3, reps: 10, weight: 12, mode: 'reps' }) })
+
+    expect(mocks.S.active.entries.map(e => [e.id, e.rid])).toEqual([['0025', 'r1'], ['0294', 'r1']])
+    expect(mocks.S.active.cur).toBe(1)
+    expect(mocks.S.routines[0].ex.map(e => e.id)).toEqual(['0025', '0294'])
+    expect(mocks.S.routines[0].ex[1]).toMatchObject({ sets: 3, reps: 10, weight: 12 })
+  })
+
+  it('adds it to this workout alone and leaves the routine as it is', async () => {
+    await mount([routineEntry('0025', [false])], 0, withRoutine({ exQr: { '0294': ['CURL'] } }))
+    await scan('CURL')
+    await act(async () => { menuItem(lastMenu(), 'Only this workout').onClick() })
+    const [, , commit, , , , , saveLabel] = mocks.exConfigSheet.mock.calls.at(-1)
+    expect(saveLabel).toBe('Add to this workout')
+    await act(async () => { commit({ sets: 3, reps: 10, weight: 12, mode: 'reps' }) })
+    expect(mocks.S.active.entries.map(e => e.id)).toEqual(['0025', '0294'])
+    expect(mocks.S.routines[0].ex.map(e => e.id)).toEqual(['0025'])
+  })
+
+  it('offers only this workout in a freestyle session', async () => {
+    await mount([exercise('0025', [false])], 0, { exQr: { '0294': ['CURL'] }, active: { routineIds: [] } })
+    await scan('CURL')
+    expect(lastMenu().items.filter(Boolean).map(it => it.label)).toEqual(['Only this workout'])
+  })
+
+  it('asks which exercise a code on several of them means', async () => {
+    await mount([routineEntry('0025', [false])], 0, withRoutine({ exQr: { '0294': ['TOWER'], '0043': ['TOWER'] } }))
+    await scan('TOWER')
+    const pick = lastMenu()
+    expect(pick.title).toBe('Which exercise?')
+    expect(pick.items.map(it => it.label)).toEqual(['Dumbbell Biceps Curl', 'Barbell Full Squat'])
+    await act(async () => { pick.items[1].onClick() })
+    expect(lastMenu().title).toBe('“Barbell Full Squat” isn’t in this workout')
+  })
+
+  it('offers an unknown code to the exercise the session is on first', async () => {
+    await mount([routineEntry('0025', [false]), routineEntry('0043', [false])], 1, withRoutine({ exQr: {} }))
+    await scan('NEW-ONE')
+    const menu = lastMenu()
+    expect(menu.title).toBe('Unknown code')
+    expect(menu.items.filter(Boolean).map(it => [it.label, it.sub])).toEqual([
+      ['Add to “Barbell Full Squat”', 'This exercise has no code yet'],
+      ['Pick another exercise', undefined],
+    ])
+    await act(async () => { menuItem(menu, 'Add to “Barbell Full Squat”').onClick() })
+    expect(mocks.S.exQr).toEqual({ '0043': ['NEW-ONE'] })
+    expect(mocks.S.active.cur).toBe(1)
+    expect(mocks.toast).toHaveBeenCalledWith('Code added to Barbell Full Squat')
+  })
+
+  it('adds a second code to the current exercise', async () => {
+    await mount([routineEntry('0025', [false])], 0, withRoutine({ exQr: { '0025': ['RACK-A'] } }))
+    await scan('RACK-B')
+    const menu = lastMenu()
+    expect(menuItem(menu, 'Add to “Barbell Bench Press”').sub).toBe('Next to the codes it already has')
+    await act(async () => { menuItem(menu, 'Add to “Barbell Bench Press”').onClick() })
+    expect(mocks.S.exQr).toEqual({ '0025': ['RACK-A', 'RACK-B'] })
+    // From now on either code finds it.
+    mocks.menuSheet.mockReset()
+    await scan('RACK-A')
+    expect(mocks.menuSheet).not.toHaveBeenCalled()
+    expect(mocks.toast).toHaveBeenLastCalledWith('Barbell Bench Press')
+  })
+
+  it('gives an unknown code to another exercise you pick, then shows it', async () => {
+    await mount([routineEntry('0025', [false]), routineEntry('0043', [false])], 0, withRoutine({ exQr: {} }))
+    await scan('NEW-ONE')
+    await act(async () => { menuItem(lastMenu(), 'Pick another exercise').onClick() })
+    const [onPick] = mocks.exercisePicker.mock.calls.at(-1)
+    await act(async () => { onPick({ id: '0043' }) })
+    expect(mocks.S.exQr).toEqual({ '0043': ['NEW-ONE'] })
+    expect(mocks.S.active.cur).toBe(1)
+  })
+
+  it('offers only the picker for an unknown code in an empty session', async () => {
+    await mount([], 0, { exQr: {}, active: { routineIds: [] } })
+    await scan('NEW-ONE')
+    expect(lastMenu().items.filter(Boolean).map(it => it.label)).toEqual(['Pick another exercise'])
+  })
+
+  it('has no scan button in the editor of a saved workout or a workout logged afterwards', async () => {
+    await mount([exercise('0025', [false])], 0, { active: { backfill: true, routineIds: [] } })
+    expect(scanButton()).toBeNull()
+  })
+})
+
 describe('workout view header menu', () => {
   const openMenu = async () => {
     const btn = container.querySelector('button[aria-label="Workout options"]')
@@ -2350,7 +2491,7 @@ describe('workout view header menu', () => {
     const menu = await openMenu()
     expect(menu.sections.map(g => g.title)).toEqual([undefined, 'Add', 'This workout', undefined])
     expect(menuItemsOf(menu).map(it => it.label)).toEqual([
-      'Workout settings', 'Add exercise', 'Add routine', 'Rename workout', 'Layout', 'Add session note', 'Don’t count for progression', 'Discard workout',
+      'Workout settings', 'Add exercise', 'Scan exercise code', 'Add routine', 'Rename workout', 'Layout', 'Add session note', 'Don’t count for progression', 'Discard workout',
     ])
     expect(item(menu, 'Workout settings').sub).toBe('1:30 rest · Silent')
     expect(item(menu, 'Discard workout').danger).toBe(true)
@@ -3441,5 +3582,99 @@ describe('the workout screen chrome (v1.3.11)', () => {
     await unmount()
     await mount([exercise('plain-bench', [false])], 0, { gifSize: 'mini', active: { workoutView: 'compact' } })
     expect(container.querySelector('.wthumb')).toBeNull()
+  })
+})
+
+// A Life Fitness console's codes (lib/lfopen): the end-of-workout code becomes a cardio set on the
+// machine's exercise, the connect code explains why there is no live link here.
+describe('scanning a Life Fitness code', () => {
+  const BIKE = '2138' // the catalogue's stand-in for an upright bike (lib/lfopen/devices.js)
+  const summary = (extra = {}) => ({ id: 'guid-1', t: 42, et: 1800, c: 312, d: { v: 12.5, u: 1 }, ahr: 142, ...extra })
+  const resultCode = extra => 'https://lfconnect.com/q?t=c&r=' + Buffer.from(JSON.stringify(summary(extra))).toString('base64')
+  const scan = async value => {
+    mocks.scanOnce.mockResolvedValueOnce({ value, fmt: 'qrcode' })
+    await click(buttonNamed('Scan exercise code'))
+    await act(async () => {})
+  }
+  const lastMenu = () => mocks.menuSheet.mock.calls.at(-1)[0]
+  const lfSet = () => mocks.S.active.entries.flatMap(e => e.sets.map(s => [e.id, s])).find(([, s]) => s.lf)
+
+  beforeEach(() => {
+    mocks.scanOnce.mockReset()
+    mocks.menuSheet.mockReset()
+    mocks.exercisePicker.mockReset()
+    mocks.toast.mockReset()
+  })
+  afterEach(unmount)
+
+  it('on the machine’s exercise: the set is filled without a question, with Undo', async () => {
+    await mount([exercise('0025', [true]), exercise(BIKE, [false])], 1)
+    await scan(resultCode())
+    expect(mocks.menuSheet).not.toHaveBeenCalled()
+    const [id, set] = lfSet()
+    expect(id).toBe(BIKE)
+    expect(set).toMatchObject({ min: 30, speed: 25, done: true, lf: 'guid-1' })
+    expect(set.note).toContain('312 kcal')
+    expect(mocks.S.active.entries[1].sets).toHaveLength(1)
+    const [msg, opts] = mocks.toast.mock.calls.at(-1)
+    expect(msg).toMatch(/^Life Fitness result added to /)
+    await act(async () => { opts.onAction() })
+    expect(lfSet()).toBeUndefined()
+  })
+
+  it('the same code twice: already there', async () => {
+    await mount([exercise(BIKE, [false])], 0)
+    await scan(resultCode())
+    await scan(resultCode())
+    expect(mocks.toast).toHaveBeenLastCalledWith('This result is already in this workout.')
+    expect(mocks.S.active.entries[0].sets.filter(s => s.lf)).toHaveLength(1)
+  })
+
+  it('the exercise further down the session: asked, then filled there', async () => {
+    await mount([exercise('0025', [false]), exercise(BIKE, [false])], 0)
+    await scan(resultCode())
+    expect(lastMenu().title).toBe('Life Fitness result')
+    expect(lastMenu().subtitle).toContain('30 min')
+    expect(lfSet()).toBeUndefined()
+    await act(async () => { lastMenu().items[0].onClick() })
+    expect(lfSet()[0]).toBe(BIKE)
+    expect(mocks.S.active.cur).toBe(1)
+  })
+
+  it('not in the session: offered, added and filled', async () => {
+    await mount([exercise('0025', [false])], 0, { active: { routineIds: [] } })
+    await scan(resultCode())
+    expect(lastMenu().title).toMatch(/^Add “.+” to this workout\?$/)
+    await act(async () => { lastMenu().items[0].onClick() })
+    expect(mocks.S.active.entries.map(e => e.id)).toEqual(['0025', BIKE])
+    expect(lfSet()).toEqual([BIKE, expect.objectContaining({ lf: 'guid-1', done: true })])
+  })
+
+  it('the connect code: no live link here, nothing changes', async () => {
+    await mount([exercise(BIKE, [false])], 0)
+    const before = structuredClone(mocks.S)
+    await scan('https://lfconnect.com/q?t=c&a=7F3A&u=9c1e&l=SN1&x=2')
+    expect(lastMenu().title).toBe('Live connection not available')
+    expect(lastMenu().items.map(it => it.label)).toEqual(['OK'])
+    expect(mocks.S).toEqual(before)
+  })
+
+  it('a broken result code says so', async () => {
+    await mount([exercise(BIKE, [false])], 0)
+    await scan('https://lfconnect.com/q?t=c&r=bm90IGpzb24=')
+    expect(mocks.toast).toHaveBeenLastCalledWith('That Life Fitness code could not be read.')
+  })
+
+  it('a console the model table does not know: you pick the exercise', async () => {
+    await mount([exercise('0025', [false])], 0)
+    await scan(resultCode({ t: 9999 }))
+    expect(mocks.exercisePicker).toHaveBeenCalled()
+    expect(mocks.exercisePicker.mock.calls.at(-1)[1]).toEqual({ title: 'Which exercise was this?' })
+  })
+
+  it('an exercise sticker still works as before', async () => {
+    await mount([exercise('0025', [false]), exercise('0043', [false])], 0, { exQr: { '0043': ['RACK-2'] } })
+    await scan('RACK-2')
+    expect(mocks.S.active.cur).toBe(1)
   })
 })
