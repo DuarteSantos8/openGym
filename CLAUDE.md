@@ -17,6 +17,9 @@ media are licensed separately (NOTICE.md).
 frontend/   React 19 + Vite app (src/views, src/components, src/store, src/lib, src/sheets.jsx).
             android/ + ios/ are the Capacitor shells (docs/MOBILE.md); ios/ also holds the watch
             app (Watch, WatchCore, WatchWidgets), the widgets and the animation-pack downloader.
+            android/wear/ is the Kotlin Wear OS companion (docs/WEAR.md): a recorder that sends
+            finished sessions to the Play build of the phone app over the Wearable Data Layer
+            (lib/wear-bridge.js).
 api/        Backend: server.js (plain node:http) plus small testable modules beside it.
             coach/ is the optional AI coach; coach/core/ is shared with the phone apps.
             openapi.yaml documents every route.
