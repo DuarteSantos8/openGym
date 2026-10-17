@@ -47,6 +47,8 @@ import { MUSCLE_NAME } from '../lib/muscles.js'
 import FocusView from './FocusView.jsx'
 import { scanOnce } from '../components/CameraScan.jsx'
 import { normalizeQr, resolveScan, scanTargetRoutineId, withExQr, currentExerciseFor, qrCodesFor } from '../lib/exercise-qr.js'
+import { parseScaleQr } from '../lib/bodyscan.js'
+import { bodyScanImportSheet } from './BodyScan.jsx'
 import { withMeaning, historyAs, dbLoadFor, entryDbLoad, bellsIn, ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
@@ -1434,9 +1436,14 @@ function ActiveWorkout() {
   // A QR code on a machine (lib/exercise-qr.js, set on the exercise's detail page): scanned here,
   // it shows that exercise. One the session does not hold is offered for the routine and this
   // workout, or this workout alone; a code no exercise has yet can be given to one on the spot.
+  // A body-composition scale's code is not a machine's: it opens the scan import instead of
+  // being offered to an exercise as its code.
   const scanExercise = async () => {
     const code = normalizeQr((await scanOnce())?.value)
-    if (code) goToScanned(code)
+    if (!code) return
+    const scale = parseScaleQr(code)
+    if (scale) bodyScanImportSheet(scale)
+    else goToScanned(code)
   }
   const goToScanned = code => {
     const st = useStore.getState().S

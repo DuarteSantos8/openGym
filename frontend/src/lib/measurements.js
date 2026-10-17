@@ -1,6 +1,9 @@
 // Body measurements are stored in centimetres, regardless of the profile's weight unit.
 // Keeping one canonical unit means changing kg/lb never relabels old circumference values as
 // something they are not. The UI converts at its edge: kg profiles see cm, lb profiles see in.
+// A day's entry can also carry a body-composition scan (`scan`, lib/bodyscan.js), read through the
+// `scan:<field>` keys below.
+import { cleanScan, scanDisplay, scanUnit, scanValue } from './bodyscan.js'
 
 export const MEASUREMENT_FIELDS = [
   { key: 'neck', label: 'Neck', group: 'Torso' },
@@ -32,6 +35,18 @@ const valid = v => Number.isFinite(+v) && +v > 0 ? round(+v) : null
 
 export const measurementUnit = unit => unit === 'lb' ? 'in' : 'cm'
 export const toMeasurementDisplay = (cm, unit) => cm == null ? null : round(unit === 'lb' ? cm / 2.54 : cm)
+/** The unit a measurement key shows in: cm/in, % for body fat, a scan field's own. */
+export function measurementUnitFor(key, unit) {
+  if (key === 'bodyFat') return '%'
+  if (String(key).startsWith('scan:')) return scanUnit(key.slice(5), unit)
+  return measurementUnit(unit)
+}
+/** A stored value as that key shows it (measurementUnitFor). */
+export function measurementDisplay(key, value, unit) {
+  if (value == null || key === 'bodyFat') return value
+  if (String(key).startsWith('scan:')) return scanDisplay(key.slice(5), value, unit)
+  return toMeasurementDisplay(value, unit)
+}
 export const fromMeasurementDisplay = (value, unit) => value == null ? null : valid(unit === 'lb' ? +value * 2.54 : +value)
 
 export function emptyMeasurement(date, custom = []) {
@@ -48,6 +63,8 @@ export function normalizeMeasurementEntry(raw = {}, custom = []) {
   entry.t = Number.isFinite(+raw.t) ? +raw.t : entry.t
   for (const key of MEASUREMENT_KEYS) entry[key] = valid(raw[key])
   if (entry.bodyFat != null && entry.bodyFat > 100) entry.bodyFat = null
+  const scan = cleanScan(raw.scan)
+  if (scan) entry.scan = scan
 
   const known = new Map(custom.map(c => [c.id, c]))
   const seen = new Set()
@@ -66,6 +83,7 @@ export function normalizeMeasurementEntry(raw = {}, custom = []) {
 function mergeMeasurementEntries(a, b) {
   const entry = { ...a, t: b.t }
   for (const key of MEASUREMENT_KEYS) entry[key] = b[key] ?? a[key]
+  if (b.scan) entry.scan = b.scan
   const other = new Map(a.other.map(o => [o.id, o]))
   for (const o of b.other) {
     const prev = other.get(o.id)
@@ -107,6 +125,7 @@ export function normalizeMeasurementsState(state) {
 
 export function measurementValue(entry, key) {
   if (!entry) return null
+  if (key.startsWith('scan:')) return scanValue(entry.scan, key.slice(5))
   if (!key.startsWith('other:')) return valid(entry[key])
   return valid((entry.other || []).find(o => o.id === key.slice(6))?.value)
 }
@@ -130,12 +149,11 @@ export function enabledMeasurementFields(state) {
 export function measurementSeries(state, key, range = 0, now = Date.now()) {
   const cutoff = range ? now - range * 86400000 : -Infinity
   const unit = state.unit || 'kg'
-  const percent = key === 'bodyFat'
   return (state.measurements || []).map(entry => {
     const raw = measurementValue(entry, key)
     const at = new Date(entry.d + 'T12:00:00').getTime()
     if (raw == null || at < cutoff) return null
-    return { t: at, d: entry.d, y: percent ? raw : toMeasurementDisplay(raw, unit) }
+    return { t: at, d: entry.d, y: measurementDisplay(key, raw, unit) }
   }).filter(Boolean)
 }
 
@@ -148,6 +166,6 @@ export function latestMeasurement(state, key) {
 }
 
 export function measurementEntryHasValues(entry) {
-  return MEASUREMENT_KEYS.some(k => valid(entry?.[k]) != null) ||
+  return !!cleanScan(entry?.scan) || MEASUREMENT_KEYS.some(k => valid(entry?.[k]) != null) ||
     (entry?.other || []).some(o => valid(o?.value) != null)
 }

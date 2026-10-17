@@ -645,6 +645,11 @@ body.chips-dragging *{cursor:inherit}
 .measure-select{margin-bottom:10px;background:var(--surface-2)}
 .measure-preview{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:11px;padding-top:10px;border-top:1px solid var(--sep);font-size:12px;color:var(--label-2)}
 .measure-preview b{color:var(--label);font-weight:500}
+.bodyscan-tiles .tile .v{font-size:20px}
+.bodyscan-seg{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:4px}
+.bodyscan-seg th,.bodyscan-seg td{padding:6px 4px;border-top:1px solid var(--sep);text-align:right;font-weight:400}
+.bodyscan-seg thead th{border-top:0;color:var(--label-2);font-size:12px}
+.bodyscan-seg tbody th{text-align:left;color:var(--label-2)}
 .measure-home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .measure-home-grid button{background:var(--surface-2);border-radius:10px;padding:10px;text-align:left;min-width:0}
 .measure-home-grid span,.measure-home-grid i{display:block;font-size:11px;color:var(--label-2);font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

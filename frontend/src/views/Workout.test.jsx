@@ -41,6 +41,7 @@ const mocks = vi.hoisted(() => {
     nav: vi.fn(),
     setNoteSheet: vi.fn(),
     scanOnce: vi.fn(),
+    bodyScanImportSheet: vi.fn(),
   }
   state.stopRest = vi.fn(() => { state.timer = null })
   state.stopWork = vi.fn(() => { state.work = null })
@@ -108,6 +109,7 @@ vi.mock('../sheets.jsx', () => ({
 }))
 vi.mock('../components/Media.jsx', () => ({ default: () => null }))
 vi.mock('../components/CameraScan.jsx', () => ({ default: () => null, scanOnce: (...a) => mocks.scanOnce(...a) }))
+vi.mock('./BodyScan.jsx', () => ({ bodyScanImportSheet: (...a) => mocks.bodyScanImportSheet(...a) }))
 vi.mock('../components/WorkoutThumb.jsx', () => ({
   default: ({ onExpand }) => React.createElement('button', { className: 'wthumb', 'aria-label': 'Expand', onClick: onExpand }),
   hasWorkoutMedia: () => true,
@@ -2370,6 +2372,16 @@ describe('scanning an exercise code', () => {
     expect(mocks.S.active.cur).toBe(0)
     expect(mocks.menuSheet).not.toHaveBeenCalled()
     expect(mocks.confirmSheet).not.toHaveBeenCalled()
+  })
+
+  it('a body scale’s code opens the scan import and is not offered to an exercise', async () => {
+    mocks.bodyScanImportSheet.mockReset()
+    await mount([routineEntry('0025', [false])], 0, withRoutine())
+    const values = Array.from({ length: 64 }, (_, i) => i + 1)
+    await scan('[' + values.join(',') + ']')
+    expect(mocks.bodyScanImportSheet).toHaveBeenCalledWith(values)
+    expect(mocks.menuSheet).not.toHaveBeenCalled()
+    expect(mocks.S.exQr || {}).toEqual({})
   })
 
   it('asks whether an exercise the session lacks joins the routine too, and adds it to both', async () => {
