@@ -2246,4 +2246,12 @@ export default {
   'Your sports watch, calling you back.': 'Ваши спортивные часы зовут вас обратно.',
   'Coach wants you back on the bar.': 'Тренер ждёт вас обратно у штанги.',
   'Gentle, for headphones or a quiet room.': 'Тихий, для наушников или спокойного зала.',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': 'Тренировка с часов сохранена: {0}',
+  'Your watch has a workout': 'На ваших часах есть тренировка',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': 'На этом телефоне идёт тренировка. Тренировка с часов ({0}) пока не добавлена.',
+  'Save it as a separate workout': 'Сохранить как отдельную тренировку',
+  'Decide later': 'Решить позже',
+  'Discard the watch workout': 'Отбросить тренировку с часов',
+  'Update openGym on this phone to read the workout from your watch.': 'Обновите openGym на этом телефоне, чтобы прочитать тренировку с часов.',
 }

@@ -2321,4 +2321,12 @@ export default {
   'Your sports watch, calling you back.': 'আপনার স্পোর্টস ঘড়ি আপনাকে ফিরে ডাকছে।',
   'Coach wants you back on the bar.': 'কোচ আপনাকে আবার বারে চান।',
   'Gentle, for headphones or a quiet room.': 'মৃদু, হেডফোন বা শান্ত ঘরের জন্য।',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': 'ওয়াচের ওয়ার্কআউট সেভ হয়েছে: {0}',
+  'Your watch has a workout': 'আপনার ওয়াচে একটি ওয়ার্কআউট আছে',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': 'এই ফোনে একটি ওয়ার্কআউট চলছে। ওয়াচের ওয়ার্কআউটটি ({0}) এখনও যোগ করা হয়নি।',
+  'Save it as a separate workout': 'আলাদা ওয়ার্কআউট হিসেবে সেভ করুন',
+  'Decide later': 'পরে ঠিক করব',
+  'Discard the watch workout': 'ওয়াচের ওয়ার্কআউট বাদ দিন',
+  'Update openGym on this phone to read the workout from your watch.': 'ওয়াচের ওয়ার্কআউট পড়তে এই ফোনে openGym আপডেট করুন।',
 }

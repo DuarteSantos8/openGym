@@ -2235,4 +2235,12 @@ export default {
   'Your sports watch, calling you back.': '你的運動手錶在叫你回來。',
   'Coach wants you back on the bar.': '教練等你回到槓鈴前。',
   'Gentle, for headphones or a quiet room.': '輕柔，適合耳機或安靜的房間。',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': '已儲存手錶上的訓練：{0}',
+  'Your watch has a workout': '你的手錶上有一次訓練',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': '這支手機上正在進行一次訓練。手錶上的訓練（{0}）尚未新增。',
+  'Save it as a separate workout': '另存為獨立的訓練',
+  'Decide later': '稍後決定',
+  'Discard the watch workout': '捨棄手錶訓練',
+  'Update openGym on this phone to read the workout from your watch.': '請更新這支手機上的 openGym，以讀取手錶上的訓練。',
 }

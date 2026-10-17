@@ -2239,4 +2239,12 @@ export default {
   'Your sports watch, calling you back.': 'Ваш спортивний годинник кличе вас назад.',
   'Coach wants you back on the bar.': 'Тренер чекає вас назад біля штанги.',
   'Gentle, for headphones or a quiet room.': 'Тихий, для навушників або спокійної кімнати.',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': 'Тренування з годинника збережено: {0}',
+  'Your watch has a workout': 'На вашому годиннику є тренування',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': 'На цьому телефоні триває тренування. Тренування з годинника ({0}) ще не додано.',
+  'Save it as a separate workout': 'Зберегти як окреме тренування',
+  'Decide later': 'Вирішити пізніше',
+  'Discard the watch workout': 'Відхилити тренування з годинника',
+  'Update openGym on this phone to read the workout from your watch.': 'Оновіть openGym на цьому телефоні, щоб прочитати тренування з годинника.',
 }

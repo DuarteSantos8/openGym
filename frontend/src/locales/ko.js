@@ -2242,4 +2242,12 @@ export default {
   'Your sports watch, calling you back.': '스포츠 시계가 다시 부르고 있어요.',
   'Coach wants you back on the bar.': '코치가 바 앞으로 돌아오래요.',
   'Gentle, for headphones or a quiet room.': '이어폰이나 조용한 곳에 어울려요.',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': '워치 운동을 저장했어요: {0}',
+  'Your watch has a workout': '워치에 운동 기록이 있어요',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': '이 휴대전화에서 진행 중인 운동이 있어요. 워치의 운동({0})은 아직 추가되지 않았어요.',
+  'Save it as a separate workout': '별도의 운동으로 저장',
+  'Decide later': '나중에 결정',
+  'Discard the watch workout': '워치 운동 버리기',
+  'Update openGym on this phone to read the workout from your watch.': '워치의 운동을 읽으려면 이 휴대전화의 openGym을 업데이트하세요.',
 }
