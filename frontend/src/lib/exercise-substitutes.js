@@ -1,5 +1,5 @@
 // Reviewed catalogue IDs only: names alone also match stretches, holds and different movements.
-// shortcut: unclassified exercises remain browsable; extend these families as substitutions are reviewed.
+// shortcut: unclassified movements use a labelled muscle/type fallback; extend families after review.
 export const SUBSTITUTE_FAMILIES = {
   'flat press': ['0025', '0289', '1254', '0151', '0576', '0577', '0748', '0662'],
   'incline press': ['0047', '0314', '4544', '0169', '0757'],
@@ -28,4 +28,16 @@ export function suggestedSubstitutes(list, exercise) {
   if (!family || !exercise.tg) return []
   return list.filter(candidate => !candidate.custom && candidate.id !== exercise.id &&
     candidate.tg === exercise.tg && familyOf.get(candidate.id) === family).slice(0, 3)
+}
+
+// Prefer the same type and primary muscle, then related muscles, then a labelled type change.
+export function relatedSubstitutes(list, exercise) {
+  if (!exercise?.tg || !exercise.cat) return []
+  const candidates = list.filter(candidate => candidate.id !== exercise.id)
+  const sameType = candidates.filter(candidate => candidate.cat === exercise.cat)
+  const sameMuscle = sameType.filter(candidate => candidate.tg === exercise.tg)
+  if (sameMuscle.length) return sameMuscle.slice(0, 3)
+  const muscles = new Set([exercise.tg, exercise.mg, ...(exercise.sm || [])].filter(Boolean))
+  const related = sameType.filter(candidate => [candidate.tg, candidate.mg, ...(candidate.sm || [])].some(muscle => muscle && muscles.has(muscle)))
+  return (related.length ? related : candidates.filter(candidate => candidate.tg === exercise.tg)).slice(0, 3)
 }

@@ -120,7 +120,23 @@ describe('swap suggestions and optional muscle filter', () => {
     const host = renderTop()
     expect(isOn(chipByText(host, 'All'))).toBe(true)
     expect(sameChip(host)).toBeUndefined()
+    expect(host.textContent).toContain('No suitable suggestions with these filters.')
   })
+})
+
+it('shows a labelled suggestions section for Dead Hang Stretch with a gym profile', () => {
+  const S = structuredClone(DEF)
+  S.equipProfiles = [{ id: 'gm', name: 'gm', equipment: ['pull-up bar'], accV: 1 }]
+  S.activeEquipId = 'gm'; S.equipFilterOn = true
+  useStore.setState({ S, user: null })
+  exercisePicker(vi.fn(), { like: '5055', title: 'Swap exercise' })
+  const host = renderTop()
+  const section = host.querySelector('section[aria-label="Suggested substitutes"]')
+  expect(section).not.toBeNull()
+  expect(section.textContent).toContain('Same muscle and exercise type. The movement may differ.')
+  expect(section.querySelectorAll('.item')).toHaveLength(3)
+  expect(section.textContent).not.toContain('dead hang stretch')
+  expect(host.textContent).toContain('All other exercises')
 })
 
 describe('gym selection in a swap', () => {
