@@ -40,6 +40,12 @@ describe('Home body-weight card preference', () => {
     expect(weightHeading()).toBeTruthy()
   })
 
+  it('has the body-scale scan button next to Goal and Log', () => {
+    mountWith(true)
+    const card = weightHeading().closest('.card')
+    expect(card.querySelector('button[aria-label="Scan body scan code"]')).toBeTruthy()
+  })
+
   it('hides only the Home card when disabled', () => {
     mountWith(false)
     expect(weightHeading()).toBeFalsy()

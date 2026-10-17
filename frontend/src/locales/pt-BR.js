@@ -1449,6 +1449,13 @@ export const PT_BR_OVERRIDES = {
   'Trunk': 'Tronco',
   'Left leg': 'Perna esquerda',
   'Right leg': 'Perna direita',
+  // --- Body data tab ---
+  'Body data': 'Dados corporais',
+  'Changes since {0}': 'Mudanças desde {0}',
+  'Muscle mass, fat mass, water and more, each with its own curve.': 'Massa muscular, massa gorda, água e mais, cada um com sua curva.',
+  'Scan the QR code your gym’s body-composition scale shows after a measurement. Weight, body fat, muscle mass and the segment analysis then show here.': 'Escaneie o código QR que a balança de análise corporal da sua academia mostra após a medição. O peso, a gordura corporal, a massa muscular e a análise segmentar aparecem aqui.',
+  'Segment analysis': 'Análise segmentar',
+  'Training': 'Treino',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

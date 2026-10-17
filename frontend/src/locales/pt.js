@@ -2321,4 +2321,11 @@ export default {
   'Trunk': 'Tronco',
   'Left leg': 'Perna esquerda',
   'Right leg': 'Perna direita',
+  // --- Body data tab ---
+  'Body data': 'Dados corporais',
+  'Changes since {0}': 'Alterações desde {0}',
+  'Muscle mass, fat mass, water and more, each with its own curve.': 'Massa muscular, massa gorda, água e mais, cada um com a sua curva.',
+  'Scan the QR code your gym’s body-composition scale shows after a measurement. Weight, body fat, muscle mass and the segment analysis then show here.': 'Lê o código QR que a balança de análise corporal do teu ginásio mostra após a medição. O peso, a gordura corporal, a massa muscular e a análise segmentar aparecem aqui.',
+  'Segment analysis': 'Análise segmentar',
+  'Training': 'Treino',
 }

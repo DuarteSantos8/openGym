@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { SCAN_FIELDS, SCAN_SEGMENTS, parseScaleQr, readScan, scanDisplay, scanReadable, scanUnit } from '../lib/bodyscan.js'
@@ -7,7 +7,8 @@ import { fmtDate, fmtNum, todayISO } from '../lib/format.js'
 import { normalizeQr } from '../lib/exercise-qr.js'
 import { t } from '../lib/i18n.js'
 import { scanOnce } from '../components/CameraScan.jsx'
-import { Button, Switch } from '../components/ui.jsx'
+import BodyMap from '../components/BodyMap.jsx'
+import { Button, Segmented, SelectRow, Switch } from '../components/ui.jsx'
 
 // A body-composition scale's QR code (lib/bodyscan.js): scanned from Body measurements or from a
 // workout's scan button, shown before it is saved, then kept on the day's check-in.
@@ -15,14 +16,28 @@ import { Button, Switch } from '../components/ui.jsx'
 const toast = message => useUI.getState().toast(message)
 const MAIN = SCAN_FIELDS.filter(f => !f.seg)
 
-/** The scan's headline numbers as tiles; `values` is readScan's `{ key: value }`. */
-function ScanTiles({ values, unit }) {
+/*
+ * How a field moved since the scan before, as it shows ("+0.4"), or null. Neutral on purpose:
+ * whether less fat or more water is the better news depends on what you are after.
+ */
+function deltaText(key, now, before, unit) {
+  if (now == null || before == null) return null
+  const d = Math.round((scanDisplay(key, now, unit) - scanDisplay(key, before, unit)) * 10) / 10
+  return d ? (d > 0 ? '+' : '−') + fmtNum(Math.abs(d)) : null
+}
+
+/** The scan's headline numbers as tiles; `values` is readScan's `{ key: value }`, `prev` the scan before. */
+function ScanTiles({ values, unit, prev }) {
   const shown = MAIN.filter(f => values[f.key] != null)
   if (!shown.length) return null
-  return <div className="tiles bodyscan-tiles">{shown.map(f => <div className="tile" key={f.key}>
-    <div className="l">{t(f.label)}</div>
-    <div className="v">{fmtNum(scanDisplay(f.key, values[f.key], unit))} <span className="muted" style={{ fontSize: '.9rem', fontWeight: 400 }}>{scanUnit(f.key, unit)}</span></div>
-  </div>)}</div>
+  return <div className="tiles bodyscan-tiles">{shown.map(f => {
+    const d = prev && deltaText(f.key, values[f.key], prev[f.key], unit)
+    return <div className="tile" key={f.key}>
+      <div className="l">{t(f.label)}</div>
+      <div className="v">{fmtNum(scanDisplay(f.key, values[f.key], unit))} <span className="muted" style={{ fontSize: '.9rem', fontWeight: 400 }}>{scanUnit(f.key, unit)}</span></div>
+      {d && <div className="bodyscan-delta">{d}</div>}
+    </div>
+  })}</div>
 }
 
 /** Lean and fat mass per arm, leg and the trunk, when the scan has them. */
@@ -106,4 +121,78 @@ export function BodyScanCard({ entry, unit }) {
       <ScanSegments values={values} unit={unit} />
     </> : <div className="muted small">{unreadableNote(scan)}</div>}
   </div>
+}
+
+/*
+ * The segment analysis: the body from the front, the trunk above it, each arm and leg beside it
+ * — your right on the left, as the scale and a mirror show you. Lean or fat mass, by toggle.
+ */
+function SegmentFigure({ values, prev, unit, body }) {
+  const [part, setPart] = useState('lean')
+  const u = unit === 'lb' ? 'lb' : 'kg'
+  if (!SCAN_SEGMENTS.some(s => values[s.seg + 'Lean'] != null || values[s.seg + 'Fat'] != null)) return null
+  const box = seg => {
+    const key = seg + (part === 'lean' ? 'Lean' : 'Fat')
+    const label = SCAN_SEGMENTS.find(s => s.seg === seg).label
+    const d = prev && deltaText(key, values[key], prev[key], unit)
+    return <div className={'bodyseg-box bodyseg-' + seg} key={seg}>
+      <div className="bodyseg-n">{t(label)}</div>
+      <div className="bodyseg-v">{values[key] == null ? '–' : <>{fmtNum(scanDisplay(key, values[key], unit))} <span>{u}</span></>}</div>
+      {d && <div className="bodyscan-delta">{d}</div>}
+    </div>
+  }
+  return <>
+    <h2 style={{ margin: '18px 2px 10px' }}>{t('Segment analysis')}</h2>
+    <Segmented value={part} onChange={setPart} options={[{ value: 'lean', label: t('Lean mass') }, { value: 'fat', label: t('Fat') }]} />
+    <div className="bodyseg">
+      {box('trunk')}
+      <div className="bodyseg-side">{box('armR')}{box('legR')}</div>
+      <div className="bodyseg-fig"><BodyMap side="front" body={body} /></div>
+      <div className="bodyseg-side">{box('armL')}{box('legL')}</div>
+    </div>
+  </>
+}
+
+/**
+ * Stats' Body data tab: one body scan at a time (the latest unless you pick another), its numbers
+ * with how they moved since the scan before, and the segment analysis. `onTrends` opens Body
+ * measurements, where each value has its curve.
+ */
+export function BodyData({ S, onTrends }) {
+  const scans = useMemo(() => (S.measurements || []).filter(e => e?.scan).slice().reverse(), [S.measurements])
+  const [day, setDay] = useState(null)
+  const idx = Math.max(0, scans.findIndex(e => e.d === day))
+  const entry = scans[idx]
+  if (!entry) return <div className="card">
+    <h2>{t('Body data')}</h2>
+    <div className="muted small" style={{ marginBottom: 12 }}>{t('Scan the QR code your gym’s body-composition scale shows after a measurement. Weight, body fat, muscle mass and the segment analysis then show here.')}</div>
+    <Button variant="primary" icon="qr" onClick={scanBodyScale}>{t('Scan body scan code')}</Button>
+  </div>
+  const values = readScan(entry.scan)
+  const before = scans.slice(idx + 1).find(e => scanReadable(e.scan))
+  const prev = before ? readScan(before.scan) : null
+  return <>
+    <div className="card">
+      <div className="row between" style={{ gap: 10 }}>
+        <div style={{ minWidth: 0 }}>
+          <div className="muted small">{t('Body scan')}</div>
+          <b>{fmtDate(entry.d, true)}</b>
+          {before && <div className="small dim" style={{ marginTop: 2 }}>{t('Changes since {0}', fmtDate(before.d, true))}</div>}
+        </div>
+        <Button size="sm" variant="tinted" icon="qr" onClick={scanBodyScale}>{t('Scan')}</Button>
+      </div>
+      {scans.length > 1 && <div className="sect-b" style={{ marginTop: 10 }}><SelectRow
+        title={t('Measurement')} sheetTitle={t('Choose measurement')} value={entry.d} onChange={setDay}
+        options={scans.map(e => ({ value: e.d, label: fmtDate(e.d, true) }))} /></div>}
+    </div>
+    {scanReadable(entry.scan) ? <>
+      <ScanTiles values={values} unit={S.unit} prev={prev} />
+      <SegmentFigure values={values} prev={prev} unit={S.unit} body={S.body} />
+    </> : <div className="card muted small">{unreadableNote(entry.scan)}</div>}
+    {onTrends && <div className="card row between" style={{ alignItems: 'center', gap: 12, marginTop: 12 }}>
+      <div style={{ minWidth: 0 }}><h2 style={{ margin: 0 }}>{t('Body measurements')}</h2>
+        <div className="muted small" style={{ marginTop: 4 }}>{t('Muscle mass, fat mass, water and more, each with its own curve.')}</div></div>
+      <Button size="sm" variant="tinted" trailingIcon="chevronRight" style={{ flexShrink: 0 }} onClick={onTrends}>{t('Open')}</Button>
+    </div>}
+  </>
 }

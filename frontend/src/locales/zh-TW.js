@@ -2314,4 +2314,11 @@ export default {
   'Trunk': '軀幹',
   'Left leg': '左腿',
   'Right leg': '右腿',
+  // --- Body data tab ---
+  'Body data': '身體數據',
+  'Changes since {0}': '自 {0} 以來的變化',
+  'Muscle mass, fat mass, water and more, each with its own curve.': '肌肉量、脂肪量、水分等，各有自己的曲線。',
+  'Scan the QR code your gym’s body-composition scale shows after a measurement. Weight, body fat, muscle mass and the segment analysis then show here.': '掃描健身房體組成體重計在測量後顯示的 QR 碼。體重、體脂、肌肉量和分段分析將顯示在這裡。',
+  'Segment analysis': '分段分析',
+  'Training': '訓練',
 }

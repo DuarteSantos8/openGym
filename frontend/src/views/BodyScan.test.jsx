@@ -12,7 +12,7 @@ import { parseScaleQr } from '../lib/bodyscan.js'
 
 const scanned = vi.hoisted(() => ({ value: null }))
 vi.mock('../components/CameraScan.jsx', () => ({ default: () => null, scanOnce: async () => scanned.value }))
-const { bodyScanImportSheet, scanBodyScale, BodyScanCard } = await import('./BodyScan.jsx')
+const { bodyScanImportSheet, scanBodyScale, BodyScanCard, BodyData } = await import('./BodyScan.jsx')
 
 const SAMPLE_64 = '[87.0,64.3,22.7,26.1,36.2,46.9,76.5,1.4,1.3,1.3,0.0,0.1,1.8,1.8,1.8,1.5,1.5,2.2,2.4,3.9,4.0,29.6,9.2,9.0,1.1,1.1,13.5,2.9,2.8,43.0,8.0,4.1,29.7,17.2,13.3,1758.0,30.1,73.8,138.4,240.0,121.0,-13.2,-13.2,0.0,67.4,0.95,170.0,8.7,17.4,2.8,4.9,11.0,15.2,13.6,16.6,22.2,27.1,19.8,34.1,4.7,15.2,40.0,4.0,4.0]'
 const values = parseScaleQr(SAMPLE_64)
@@ -96,5 +96,55 @@ describe('body scan import', () => {
     const host = mount(<BodyScanCard entry={{ d: '2026-01-03', scan: { len: 95, v: Array(95).fill(1) } }} unit="kg" />)
     expect(host.textContent).toContain('95 values')
     expect(host.querySelector('.tile')).toBeNull()
+  })
+})
+
+// Stats' Body data tab: the latest scan, what moved since the one before, and the segment
+// analysis with a lean/fat toggle. Without a scan it says how to get one.
+describe('Body data tab', () => {
+  beforeEach(() => {
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true
+    document.body.innerHTML = ''
+  })
+  afterEach(() => { act(() => { roots.splice(0).forEach(r => r.unmount()) }) })
+
+  const older = values.slice(); older[0] = 88.0; older[19] = 3.7; older[24] = 1.3
+  const S = { unit: 'kg', measurements: [
+    { d: '2025-12-01', t: 1, scan: { len: 64, v: older } },
+    { d: '2026-01-03', t: 2, scan: { len: 64, v: values } },
+  ] }
+  const box = (host, seg) => host.querySelector('.bodyseg-' + seg)
+
+  it('without a scan: what to do, and the scan button', () => {
+    const host = mount(<BodyData S={{ unit: 'kg', measurements: [{ d: '2026-01-03', waist: 90 }] }} />)
+    expect(host.textContent).toContain('Scan the QR code')
+    expect(button(host, 'Scan body scan code')).toBeTruthy()
+    expect(host.querySelector('.bodyseg')).toBeNull()
+  })
+
+  it('the latest scan, with how it moved since the one before', () => {
+    const host = mount(<BodyData S={S} />)
+    expect(host.textContent).toContain('Changes since')
+    const weight = [...host.querySelectorAll('.tile')].find(el => el.querySelector('.l').textContent === 'Weight')
+    expect(weight.querySelector('.v').textContent).toContain('87')
+    expect(weight.querySelector('.bodyscan-delta').textContent).toBe('−1')
+  })
+
+  it('the segments around the figure, lean mass first, fat on the toggle', () => {
+    const host = mount(<BodyData S={S} />)
+    expect(['trunk', 'armR', 'armL', 'legR', 'legL'].every(seg => box(host, seg))).toBe(true)
+    expect(box(host, 'armR').textContent).toContain('Right arm')
+    expect(box(host, 'armR').querySelector('.bodyseg-v').textContent).toBe('3.9 kg')
+    expect(box(host, 'armR').querySelector('.bodyscan-delta').textContent).toBe('+0.2')
+    act(() => button(host, 'Fat').click())
+    expect(box(host, 'trunk').querySelector('.bodyseg-v').textContent).toBe('13.5 kg')
+    expect(box(host, 'armR').querySelector('.bodyscan-delta').textContent).toBe('−0.2')
+  })
+
+  it('a lone scan has nothing to compare with', () => {
+    const host = mount(<BodyData S={{ unit: 'lb', measurements: [S.measurements[1]] }} />)
+    expect(host.textContent).not.toContain('Changes since')
+    expect(host.querySelector('.bodyscan-delta')).toBeNull()
+    expect(box(host, 'trunk').querySelector('.bodyseg-v').textContent).toBe('65.3 lb')
   })
 })
