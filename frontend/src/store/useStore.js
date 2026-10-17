@@ -140,6 +140,10 @@ export const DEF = {
   // every time you do the movement ("seat 4, pin 7"). Distinct from a routine's `note`, which
   // belongs to one exercise in one plan, and from a session note, which belongs to one day.
   exNotes: {},
+  // QR codes stuck on the machines, keyed by exercise id: { [exId]: [code, …] } (lib/exercise-qr.js).
+  // Scanning one in a running workout jumps to that exercise. A code may sit on several exercises
+  // (one cable tower, many movements) and an exercise may have several codes (two identical racks).
+  exQr: {},
   // Favourite exercise ids (issue #6) — sorted to the top of the picker/Library. Personal, so
   // it syncs with the profile but is never part of a shared plan bundle (lib/favourites.js).
   favEx: [],

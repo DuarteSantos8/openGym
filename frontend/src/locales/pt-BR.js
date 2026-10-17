@@ -1403,6 +1403,25 @@ export const PT_BR_OVERRIDES = {
   'Gentle, for headphones or a quiet room.': 'Suave, para fones de ouvido ou um lugar silencioso.',
   'Fewer than two workouts in this period. Pick a longer one.': 'Menos de dois treinos neste período. Escolha um mais longo.',
   'Releases are checked on GitHub. The download is verified against its checksum before the installer opens.': 'As versões são verificadas no GitHub. O download é conferido pela soma de verificação antes de abrir o instalador.',
+  // --- exercise QR codes ---
+  'Your sheet is ready': 'Sua folha está pronta',
+  'Choose “Print” in the share sheet. The code prints at 3 × 3 cm.': 'Escolha “Imprimir” no menu de compartilhamento. O código é impresso com 3 × 3 cm.',
+  'Print or share': 'Imprimir ou compartilhar',
+  'Hold the phone about 20 cm from the code.': 'Segure o celular a cerca de 20 cm do código.',
+  'No exercise has this code yet.': 'Nenhum exercício tem este código ainda.',
+  'Code deleted': 'Código excluído',
+  'It stays on {0} and still finds it when scanned.': 'Continua em {0} e ainda o encontra ao escanear.',
+  'No camera available here.': 'Não há câmera disponível aqui.',
+  'No other exercise has it: the code is deleted, and scanning it no longer finds an exercise.': 'Nenhum outro exercício o tem: o código é excluído e escaneá-lo não encontra mais um exercício.',
+  'Put a QR code on the machine: scanning it in a running workout jumps straight to this exercise.': 'Coloque um código QR na máquina: escaneado durante um treino, ele leva direto a este exercício.',
+  'Scan code': 'Escanear código',
+  'Scan exercise code': 'Escanear código do exercício',
+  'Scan in a running workout to jump to this exercise': 'Escaneie durante um treino para ir a este exercício',
+  'Scanning it asks which one you mean': 'Ao escanear, pergunta qual você quer',
+  'The same code, on a page about this exercise': 'O mesmo código, em uma página sobre este exercício',
+  'Which exercise is this code for?': 'Para qual exercício é este código?',
+  'Which exercise?': 'Qual exercício?',
+  '{0} no longer has it': '{0} deixa de tê-lo',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
