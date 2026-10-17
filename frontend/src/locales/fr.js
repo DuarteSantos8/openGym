@@ -2563,4 +2563,12 @@ export default {
   'Everything but dumbbells': 'Tout sauf les haltères',
   'None, so dumbbell lifts stay hidden.': 'Aucun, donc les exercices aux haltères restent cachés.',
   'openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last year. Older workouts stay as they are.': 'openGym ne lit que lorsqu’il est ouvert : fréquence cardiaque des séances du dernier jour, pesées de la dernière année. Les séances plus anciennes restent telles quelles.',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': 'Séance de la montre enregistrée : {0}',
+  'Your watch has a workout': 'Votre montre a une séance',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': 'Une séance est en cours sur ce téléphone. Celle de votre montre ({0}) n’a pas encore été ajoutée.',
+  'Save it as a separate workout': 'L’enregistrer comme séance à part',
+  'Decide later': 'Décider plus tard',
+  'Discard the watch workout': 'Supprimer la séance de la montre',
+  'Update openGym on this phone to read the workout from your watch.': 'Mettez openGym à jour sur ce téléphone pour lire la séance de votre montre.',
 }

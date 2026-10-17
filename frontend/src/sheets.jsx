@@ -161,7 +161,7 @@ function MenuSheet({ title, titleClass = '', subtitle, items, sections, close })
   </>
 }
 export function menuSheet(opts) {
-  ui().openSheet(close => <MenuSheet {...opts} close={close} />)
+  return ui().openSheet(close => <MenuSheet {...opts} close={close} />)
 }
 
 // Themed replacement for window.confirm — callback-based (no blocking).
@@ -3734,10 +3734,19 @@ export function finishWorkoutSheet({ onDiscard } = {}) {
 // what the phone's Finish and save runs.
 export const finishWorkoutNow = () => doFinishWorkout()
 function doFinishWorkout() {
+  const A = S().active
+  if (A) completeWorkout(A)
+}
+// A session recorded on the watch (lib/wear-bridge.js) is closed by the very same code as the
+// Finish button. `external` means it is not the phone's own `S.active`: that one, if there is one,
+// is left exactly as it was, and nothing that belongs to a live session (the rest timer, the hold,
+// the beeps, the summary sheet) is touched. `end` is when the watch says it ended.
+export function finishWatchWorkout(active, { end } = {}) {
+  completeWorkout(active, { external: true, end })
+}
+function completeWorkout(A, { external = false, end } = {}) {
   const st = S()
-  const A = st.active
-  if (!A) return
-  const past = !!A.backfill
+  const past = !external && !!A.backfill
   const prs = []
   const e1prs = []
   // A workout logged into the past is held against the history before it, the way an edit of a
@@ -3755,7 +3764,7 @@ function doFinishWorkout() {
     if (rec && !prs.includes(e.id)) e1prs.push({ id: e.id, ...rec })
   })
   const w = buildCompletedWorkout(A, {
-    end: past ? backfillEnd(A) : sessionEnd(A),
+    end: past ? backfillEnd(A) : end > A.start ? end : sessionEnd(A),
     prs,
     snapshotFor: e => isCustomEx(EXIDX[e.id]) ? exerciseMuscleSnapshot(EXIDX[e.id]) : null,
   })
@@ -3780,12 +3789,13 @@ function doFinishWorkout() {
       })
       s.workouts.push(w)
     }
-    s.active = null
+    if (!external) s.active = null
     // A rotation pass this app manages starts its next pass the moment the last session lands
     // (lib/rotation.js). A planner's queue is left alone: it completes and waits for its writer.
     refillAfter(s, w)
   })
   useStore.getState().autoBackupNow()
+  if (external) { toast(t('Workout from your watch saved: {0}', w.name)); return }
   useUI.getState().stopRest()
   // A hold still counting (a plank left unchecked, then Finish early) goes with the workout, as
   // on Discard: its bar is app-wide and would chime over the summary, and its callback writes

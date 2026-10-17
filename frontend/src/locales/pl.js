@@ -2563,4 +2563,12 @@ export default {
   'Everything but dumbbells': 'Wszystko oprócz hantli',
   'None, so dumbbell lifts stay hidden.': 'Brak, więc ćwiczenia z hantlami są ukryte.',
   'openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last year. Older workouts stay as they are.': 'openGym czyta tylko, gdy jest otwarty: tętno z treningów z ostatniej doby, pomiary wagi z ostatniego roku. Starsze treningi zostają bez zmian.',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': 'Trening z zegarka zapisany: {0}',
+  'Your watch has a workout': 'Twój zegarek ma trening',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': 'Na tym telefonie trwa trening. Ten z zegarka ({0}) nie został jeszcze dodany.',
+  'Save it as a separate workout': 'Zapisz jako osobny trening',
+  'Decide later': 'Zdecyduj później',
+  'Discard the watch workout': 'Odrzuć trening z zegarka',
+  'Update openGym on this phone to read the workout from your watch.': 'Zaktualizuj openGym na tym telefonie, aby odczytać trening z zegarka.',
 }

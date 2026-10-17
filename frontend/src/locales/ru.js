@@ -2567,4 +2567,12 @@ export default {
   'Everything but dumbbells': 'Всё, кроме гантелей',
   'None, so dumbbell lifts stay hidden.': 'Нет, поэтому упражнения с гантелями скрыты.',
   'openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last year. Older workouts stay as they are.': 'openGym читает данные, только пока открыт: пульс тренировок за последние сутки, взвешивания за последний год. Старые тренировки остаются как есть.',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': 'Тренировка с часов сохранена: {0}',
+  'Your watch has a workout': 'На ваших часах есть тренировка',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': 'На этом телефоне идёт тренировка. Тренировка с часов ({0}) пока не добавлена.',
+  'Save it as a separate workout': 'Сохранить как отдельную тренировку',
+  'Decide later': 'Решить позже',
+  'Discard the watch workout': 'Отбросить тренировку с часов',
+  'Update openGym on this phone to read the workout from your watch.': 'Обновите openGym на этом телефоне, чтобы прочитать тренировку с часов.',
 }

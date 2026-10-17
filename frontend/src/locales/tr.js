@@ -2563,4 +2563,12 @@ export default {
   'Everything but dumbbells': 'Dambıl hariç her şey',
   'None, so dumbbell lifts stay hidden.': 'Yok, bu yüzden dambıl hareketleri gizli kalır.',
   'openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last year. Older workouts stay as they are.': 'openGym yalnızca açıkken okur: son bir günün antrenmanları için nabız, son bir yılın tartılmaları. Daha eski antrenmanlar olduğu gibi kalır.',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': 'Saatteki antrenman kaydedildi: {0}',
+  'Your watch has a workout': 'Saatinde bir antrenman var',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': 'Bu telefonda devam eden bir antrenman var. Saatindeki ({0}) henüz eklenmedi.',
+  'Save it as a separate workout': 'Ayrı bir antrenman olarak kaydet',
+  'Decide later': 'Sonra karar ver',
+  'Discard the watch workout': 'Saat antrenmanını at',
+  'Update openGym on this phone to read the workout from your watch.': 'Saatindeki antrenmanı okumak için bu telefonda openGym’i güncelle.',
 }

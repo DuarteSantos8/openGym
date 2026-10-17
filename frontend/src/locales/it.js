@@ -2563,4 +2563,12 @@ export default {
   'Everything but dumbbells': 'Tutto tranne i manubri',
   'None, so dumbbell lifts stay hidden.': 'Nessuno, quindi gli esercizi con manubri restano nascosti.',
   'openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last year. Older workouts stay as they are.': 'openGym legge solo mentre è aperto: battito degli allenamenti dell’ultimo giorno, pesate dell’ultimo anno. Gli allenamenti più vecchi restano come sono.',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': 'Allenamento dall’orologio salvato: {0}',
+  'Your watch has a workout': 'Il tuo orologio ha un allenamento',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': 'Hai un allenamento in corso su questo telefono. Quello del tuo orologio ({0}) non è ancora stato aggiunto.',
+  'Save it as a separate workout': 'Salvalo come allenamento a parte',
+  'Decide later': 'Decidi dopo',
+  'Discard the watch workout': 'Scarta l’allenamento dell’orologio',
+  'Update openGym on this phone to read the workout from your watch.': 'Aggiorna openGym su questo telefono per leggere l’allenamento del tuo orologio.',
 }

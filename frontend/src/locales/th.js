@@ -2574,4 +2574,12 @@ export default {
   'Everything but dumbbells': 'ทุกอย่างยกเว้นดัมเบล',
   'None, so dumbbell lifts stay hidden.': 'ไม่มี ท่าที่ใช้ดัมเบลจึงถูกซ่อนไว้',
   'openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last year. Older workouts stay as they are.': 'openGym อ่านเฉพาะตอนที่เปิดอยู่: อัตราการเต้นของหัวใจของการฝึกในวันล่าสุด และน้ำหนักในหนึ่งปีล่าสุด การฝึกที่เก่ากว่านั้นจะเหมือนเดิม',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': 'บันทึกการออกกำลังกายจากนาฬิกาแล้ว: {0}',
+  'Your watch has a workout': 'นาฬิกาของคุณมีการออกกำลังกาย',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': 'มีการออกกำลังกายที่กำลังทำอยู่บนโทรศัพท์เครื่องนี้ ส่วนของนาฬิกา ({0}) ยังไม่ได้เพิ่ม',
+  'Save it as a separate workout': 'บันทึกเป็นการออกกำลังกายแยกต่างหาก',
+  'Decide later': 'ตัดสินใจทีหลัง',
+  'Discard the watch workout': 'ทิ้งการออกกำลังกายจากนาฬิกา',
+  'Update openGym on this phone to read the workout from your watch.': 'อัปเดต openGym บนโทรศัพท์เครื่องนี้เพื่ออ่านการออกกำลังกายจากนาฬิกา',
 }

@@ -2618,4 +2618,12 @@ export default {
   'Everything but dumbbells': 'كل شيء ما عدا الدمبلز',
   'None, so dumbbell lifts stay hidden.': 'لا شيء، لذا تبقى تمارين الدمبل مخفية.',
   'openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last year. Older workouts stay as they are.': 'يقرأ openGym فقط وهو مفتوح: نبض القلب لتمارين آخر يوم، وقياسات الوزن لآخر سنة. تبقى التمارين الأقدم كما هي.',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': 'تم حفظ التمرين من الساعة: {0}',
+  'Your watch has a workout': 'لدى ساعتك تمرين',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': 'هناك تمرين جارٍ على هذا الهاتف. أما تمرين ساعتك ({0}) فلم يُضف بعد.',
+  'Save it as a separate workout': 'احفظه كتمرين منفصل',
+  'Decide later': 'قرّر لاحقًا',
+  'Discard the watch workout': 'تجاهل تمرين الساعة',
+  'Update openGym on this phone to read the workout from your watch.': 'حدّث openGym على هذا الهاتف لقراءة التمرين من ساعتك.',
 }

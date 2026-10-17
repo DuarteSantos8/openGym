@@ -2563,4 +2563,12 @@ export default {
   'Everything but dumbbells': '덤벨 빼고 전부',
   'None, so dumbbell lifts stay hidden.': '없음, 그래서 덤벨 운동은 숨겨져요.',
   'openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last year. Older workouts stay as they are.': 'openGym은 열려 있을 때만 읽어요: 최근 하루 동안의 운동 심박수와 최근 1년의 체중 기록. 그보다 오래된 운동은 그대로 둬요.',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': '워치 운동을 저장했어요: {0}',
+  'Your watch has a workout': '워치에 운동 기록이 있어요',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': '이 휴대전화에서 진행 중인 운동이 있어요. 워치의 운동({0})은 아직 추가되지 않았어요.',
+  'Save it as a separate workout': '별도의 운동으로 저장',
+  'Decide later': '나중에 결정',
+  'Discard the watch workout': '워치 운동 버리기',
+  'Update openGym on this phone to read the workout from your watch.': '워치의 운동을 읽으려면 이 휴대전화의 openGym을 업데이트하세요.',
 }

@@ -2642,4 +2642,12 @@ export default {
   'Everything but dumbbells': 'ডাম্বেল ছাড়া সবকিছু',
   'None, so dumbbell lifts stay hidden.': 'একটাও নেই, তাই ডাম্বেলের ব্যায়াম লুকানো থাকবে।',
   'openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last year. Older workouts stay as they are.': 'openGym শুধু খোলা থাকলেই পড়ে: শেষ এক দিনের ওয়ার্কআউটের হার্ট রেট, শেষ এক বছরের ওজন। পুরোনো ওয়ার্কআউট যেমন আছে তেমনই থাকে।',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': 'ওয়াচের ওয়ার্কআউট সেভ হয়েছে: {0}',
+  'Your watch has a workout': 'আপনার ওয়াচে একটি ওয়ার্কআউট আছে',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': 'এই ফোনে একটি ওয়ার্কআউট চলছে। ওয়াচের ওয়ার্কআউটটি ({0}) এখনও যোগ করা হয়নি।',
+  'Save it as a separate workout': 'আলাদা ওয়ার্কআউট হিসেবে সেভ করুন',
+  'Decide later': 'পরে ঠিক করব',
+  'Discard the watch workout': 'ওয়াচের ওয়ার্কআউট বাদ দিন',
+  'Update openGym on this phone to read the workout from your watch.': 'ওয়াচের ওয়ার্কআউট পড়তে এই ফোনে openGym আপডেট করুন।',
 }

@@ -1656,6 +1656,14 @@ export const PT_BR_OVERRIDES = {
   'Everything but dumbbells': 'Tudo menos halteres',
   'None, so dumbbell lifts stay hidden.': 'Nenhum, então os exercícios com halteres ficam escondidos.',
   'openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last year. Older workouts stay as they are.': 'O openGym só lê enquanto está aberto: frequência cardíaca dos treinos do último dia, pesagens do último ano. Os treinos mais antigos ficam como estão.',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': 'Treino do relógio salvo: {0}',
+  'Your watch has a workout': 'Seu relógio tem um treino',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': 'Você tem um treino em andamento neste celular. O do seu relógio ({0}) ainda não foi adicionado.',
+  'Save it as a separate workout': 'Salvar como um treino separado',
+  'Decide later': 'Decidir depois',
+  'Discard the watch workout': 'Descartar o treino do relógio',
+  'Update openGym on this phone to read the workout from your watch.': 'Atualize o openGym neste celular para ler o treino do seu relógio.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

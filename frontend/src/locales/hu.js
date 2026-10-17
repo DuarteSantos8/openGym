@@ -2566,4 +2566,12 @@ export default {
   'Everything but dumbbells': 'Minden, kivéve a kézisúlyzót',
   'None, so dumbbell lifts stay hidden.': 'Nincs, így a kézisúlyzós gyakorlatok rejtve maradnak.',
   'openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last year. Older workouts stay as they are.': 'Az openGym csak nyitott állapotban olvas: az utolsó nap edzéseinek pulzusát és az utolsó egy év mérlegeléseit. A régebbi edzések maradnak, ahogy vannak.',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': 'Az órán rögzített edzés mentve: {0}',
+  'Your watch has a workout': 'Az órádon van egy edzés',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': 'Ezen a telefonon éppen edzés folyik. Az órádról érkezőt ({0}) még nem adtuk hozzá.',
+  'Save it as a separate workout': 'Mentés külön edzésként',
+  'Decide later': 'Később döntök',
+  'Discard the watch workout': 'Az órás edzés elvetése',
+  'Update openGym on this phone to read the workout from your watch.': 'Frissítsd az openGymet ezen a telefonon, hogy beolvashasd az órád edzését.',
 }

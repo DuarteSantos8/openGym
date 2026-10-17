@@ -2563,4 +2563,12 @@ export default {
   'Everything but dumbbells': 'डंबल के अलावा सब कुछ',
   'None, so dumbbell lifts stay hidden.': 'कोई नहीं, इसलिए डंबल वाली एक्सरसाइज़ छिपी रहेंगी।',
   'openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last year. Older workouts stay as they are.': 'openGym सिर्फ़ तब पढ़ता है जब वह खुला हो: पिछले एक दिन के वर्कआउट की धड़कन, पिछले एक साल का वज़न। पुराने वर्कआउट जैसे हैं वैसे ही रहते हैं।',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': 'वॉच की वर्कआउट सेव हो गई: {0}',
+  'Your watch has a workout': 'आपकी वॉच में एक वर्कआउट है',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': 'इस फ़ोन पर एक वर्कआउट चल रही है। आपकी वॉच की वर्कआउट ({0}) अभी जोड़ी नहीं गई है।',
+  'Save it as a separate workout': 'अलग वर्कआउट के रूप में सेव करें',
+  'Decide later': 'बाद में तय करें',
+  'Discard the watch workout': 'वॉच की वर्कआउट हटाएँ',
+  'Update openGym on this phone to read the workout from your watch.': 'वॉच की वर्कआउट पढ़ने के लिए इस फ़ोन पर openGym अपडेट करें।',
 }

@@ -2563,4 +2563,12 @@ export default {
   'Everything but dumbbells': '除哑铃外的全部',
   'None, so dumbbell lifts stay hidden.': '没有，所以哑铃动作会隐藏。',
   'openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last year. Older workouts stay as they are.': 'openGym 只在打开时读取：最近一天训练的心率，最近一年的称重。更早的训练保持不变。',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': '已保存手表上的训练：{0}',
+  'Your watch has a workout': '你的手表上有一次训练',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': '这部手机上正在进行一次训练。手表上的训练（{0}）尚未添加。',
+  'Save it as a separate workout': '另存为单独的训练',
+  'Decide later': '稍后决定',
+  'Discard the watch workout': '放弃手表训练',
+  'Update openGym on this phone to read the workout from your watch.': '请更新这部手机上的 openGym，以读取手表上的训练。',
 }
