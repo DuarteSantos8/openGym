@@ -261,7 +261,9 @@ function MuscleBalance({ S }) {
       {sel && <div style={{ borderTop: 'var(--hair) solid var(--sep)', marginTop: 4, paddingTop: 10 }}>
         <div className="mrow">
           <span className="nm"><b>{t(MUSCLE_NAME[sel])}</b></span>
-          <span className="v">{Math.round(selFatigue * 100)}% · {fatigueLabel(selFatigue)}</span>
+          <span className="v" aria-label={`${t('Fatigue')}: ${Math.round(selFatigue * 100)}% · ${fatigueLabel(selFatigue)}`}>
+            {t('Fatigue')} {Math.round(selFatigue * 100)}% · {fatigueLabel(selFatigue)}
+          </span>
         </div>
         {selRecovery.toRecoveringMs != null && <div className="small dim">{t('Recovering {0}', fmtRecoveryIn(selRecovery.toRecoveringMs))}</div>}
         {selRecovery.toReadyMs != null && <div className="small dim">{t('Ready {0}', fmtRecoveryIn(selRecovery.toReadyMs))}</div>}

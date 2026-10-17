@@ -286,6 +286,9 @@ describe('Stats muscle recovery view runtime', () => {
     const value = lastMap().load.chest
     expect(value).toBeGreaterThan(0.5)
     expect(muscleCard().textContent).toContain(`${Math.round(value * 100)}%`)
+    // The percentage reads as fatigue, not as completion or recovery: the label
+    // names what is measured and the verdict interprets the band.
+    expect(muscleCard().textContent).toContain('Fatigue ' + Math.round(value * 100) + '%')
     // Fatigued chest drops through both bands, so both forecasts render.
     expect(muscleCard().textContent).toContain('Recovering in')
     expect(muscleCard().textContent).toContain('Ready in')
