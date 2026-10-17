@@ -49,6 +49,27 @@ export function tempData() {
   return dir;
 }
 
+/* Fixture days, counted back from today.
+ *
+ * The Coach's review window reaches twelve weeks back from the real "today"
+ * (coach/core/payload.js reviewWindow), so a fixture dated in the calendar stops being history
+ * the day it falls out of it -- the suite then failed on every day after the date it was written
+ * on. Every fixture day below is therefore an offset from now, which keeps the distance each
+ * test means (a week apart, a fortnight, a day later) whatever day the suite runs. The form is
+ * the one payload.js builds: toISOString().slice(0, 10).
+ */
+export function daysAgo(n) {
+  return new Date(Date.now() - n * 86400000).toISOString().slice(0, 10);
+}
+
+/** The fixture's "last workout" day -- what sampleState used to hard-code as 2026-07-20. */
+export const FIXTURE_DAY = daysAgo(7);
+
+/** FIXTURE_DAY moved by `delta` days; negative is earlier (fixtureDay(-14) is a fortnight before). */
+export function fixtureDay(delta) {
+  return daysAgo(7 - delta);
+}
+
 export function writeState(dir, uid, S) {
   fs.writeFileSync(path.join(dir, 'state-' + uid + '.json'), JSON.stringify(S));
 }
@@ -68,10 +89,10 @@ export function sampleState(over = {}) {
     week: { 1: 'r1', 3: 'r1', 5: 'r1' },
     dayPlan: {},
     exWeights: { '0001': { w: 20 } },
-    bodyweight: [{ d: '2026-07-01', w: 78 }, { d: '2026-07-20', w: 78.5 }],
+    bodyweight: [{ d: fixtureDay(-19), w: 78 }, { d: FIXTURE_DAY, w: 78.5 }],
     customEx: [],
     workouts: [{
-      id: 'w1', d: '2026-07-20', name: 'Full body A', start: 1000, end: 1000 + 45 * 60000, vol: 600, prs: [],
+      id: 'w1', d: FIXTURE_DAY, name: 'Full body A', start: 1000, end: 1000 + 45 * 60000, vol: 600, prs: [],
       entries: [{
         id: '0001', target: { sets: 3, reps: 10, weight: 20 },
         sets: [{ w: 20, r: 10, done: true, rpe: 9.5 }, { w: 20, r: 9, done: true, rpe: 10 }, { w: 20, r: 8, done: true, rpe: 10 }]
