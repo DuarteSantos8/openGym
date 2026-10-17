@@ -1,3 +1,4 @@
+import { LOCAL } from '../lib/local.js'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { webauthnOK, passkeyLogin, passkeyRegister, passkeyError, bio } from '../lib/api.js'
@@ -80,6 +81,14 @@ export default function Login() {
     <h1 style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-.028em', margin: '10px 0 4px' }}>openGym</h1>
   </>
   const wrap = { display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '78vh', textAlign: 'center' }
+
+  if (LOCAL) return (
+    <div className="narrow" style={wrap}>
+      {head}
+      <p>Personal local app. Export backups regularly from Settings → Data &amp; backup.</p>
+      <Button variant="primary" icon="play" onClick={() => setGuest(true)}>Open openGym</Button>
+    </div>
+  )
 
   // Demo build: no backend to sign in against — the only way in is the local guest profile.
   if (DEMO) return (

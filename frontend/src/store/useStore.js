@@ -1,3 +1,4 @@
+import { LOCAL } from '../lib/local.js'
 import { create } from 'zustand'
 import { api, setRemoteAuth } from '../lib/api.js'
 import { localTZ } from '../lib/format.js'
@@ -1908,6 +1909,11 @@ export const useStore = create((set, get) => {
         // the choice. Picking local (even with no data yet) persists that choice below and this
         // never asks again.
         finishBoot({ needsMobileOnboarding: !remote && !hasData(get().S) })
+        return
+      }
+      if (LOCAL) {
+        get().setGuest(true)
+        finishBoot()
         return
       }
       // Demo build (GitHub Pages): no backend at all — seed once, stay in guest mode.
