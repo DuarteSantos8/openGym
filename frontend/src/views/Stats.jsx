@@ -110,7 +110,7 @@ function FatigueBar({ value }) {
     <span className="zone ready" />
     <span className="zone recovering" />
     <span className="zone fatigued" />
-    <span className="knob" style={{ insetInlineStart: pct + '%' }} />
+    <span className="knob" style={{ insetInlineStart: `clamp(0px, calc(${pct}% - 1.5px), calc(100% - 3px))` }} />
   </div>
 }
 
