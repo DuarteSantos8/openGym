@@ -1,5 +1,14 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Gym": "الصالة الرياضية",
+  "All equipment": "كل المعدات",
+  "Search results": "نتائج البحث",
+  "All exercises": "كل التمارين",
+  "Replacing {0}": "استبدال {0}",
+  "Suggested substitutes": "بدائل مقترحة",
+  "Same movement and muscle": "نفس الحركة والعضلة",
+  "All other exercises": "كل التمارين الأخرى",
+  "No matches. Try another search or equipment profile.": "لا توجد نتائج. جرّب بحثًا آخر أو ملف معدات آخر.",
   'Confirm': 'تأكيد',
   'Cancel': 'إلغاء',
   'Press back again to exit': 'اضغط زر الرجوع مرة أخرى للخروج',

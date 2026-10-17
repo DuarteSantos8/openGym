@@ -1,5 +1,14 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Gym": "Зал",
+  "All equipment": "Всё оборудование",
+  "Search results": "Результаты поиска",
+  "All exercises": "Все упражнения",
+  "Replacing {0}": "Замена: {0}",
+  "Suggested substitutes": "Предлагаемые замены",
+  "Same movement and muscle": "То же движение и мышца",
+  "All other exercises": "Все остальные упражнения",
+  "No matches. Try another search or equipment profile.": "Ничего не найдено. Попробуйте другой запрос или профиль оборудования.",
   'Confirm': 'Подтвердить',
   'Cancel': 'Отмена',
   'Press back again to exit': 'Нажмите «Назад» ещё раз, чтобы выйти',

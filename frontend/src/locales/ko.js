@@ -1,5 +1,14 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Gym": "헬스장",
+  "All equipment": "모든 장비",
+  "Search results": "검색 결과",
+  "All exercises": "모든 운동",
+  "Replacing {0}": "{0} 교체",
+  "Suggested substitutes": "추천 대체 운동",
+  "Same movement and muscle": "같은 동작과 근육",
+  "All other exercises": "그 외 모든 운동",
+  "No matches. Try another search or equipment profile.": "검색 결과가 없습니다. 다른 검색어나 장비 프로필을 사용해 보세요.",
   'Confirm': '확인',
   'Cancel': '취소',
   'Press back again to exit': '뒤로를 한 번 더 누르면 종료됩니다',

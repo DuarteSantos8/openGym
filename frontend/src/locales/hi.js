@@ -1,5 +1,14 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Gym": "जिम",
+  "All equipment": "सभी उपकरण",
+  "Search results": "खोज के परिणाम",
+  "All exercises": "सभी व्यायाम",
+  "Replacing {0}": "{0} बदलें",
+  "Suggested substitutes": "सुझाए गए विकल्प",
+  "Same movement and muscle": "समान गति और मांसपेशी",
+  "All other exercises": "अन्य सभी व्यायाम",
+  "No matches. Try another search or equipment profile.": "कोई परिणाम नहीं। दूसरी खोज या उपकरण प्रोफ़ाइल आज़माएँ।",
   'Confirm': 'पुष्टि करें',
   'Cancel': 'रद्द करें',
   'Press back again to exit': 'बाहर निकलने के लिए फिर से बैक दबाएँ',

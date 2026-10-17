@@ -1,5 +1,14 @@
 // Spanish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Gym": "Gimnasio",
+  "All equipment": "Todo el equipo",
+  "Search results": "Resultados de búsqueda",
+  "All exercises": "Todos los ejercicios",
+  "Replacing {0}": "Sustituir {0}",
+  "Suggested substitutes": "Alternativas sugeridas",
+  "Same movement and muscle": "Mismo movimiento y músculo",
+  "All other exercises": "Todos los demás ejercicios",
+  "No matches. Try another search or equipment profile.": "Sin resultados. Prueba otra búsqueda o perfil de equipo.",
   'Confirm': 'Confirmar',
   'Cancel': 'Cancelar',
   'Press back again to exit': 'Pulsa atrás otra vez para salir',

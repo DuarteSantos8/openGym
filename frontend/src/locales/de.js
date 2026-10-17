@@ -1,5 +1,14 @@
 // German UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Gym": "Trainingsort",
+  "All equipment": "Alle Geräte",
+  "Search results": "Suchergebnisse",
+  "All exercises": "Alle Übungen",
+  "Replacing {0}": "{0} ersetzen",
+  "Suggested substitutes": "Vorgeschlagene Alternativen",
+  "Same movement and muscle": "Gleiche Bewegung und gleicher Muskel",
+  "All other exercises": "Alle anderen Übungen",
+  "No matches. Try another search or equipment profile.": "Keine Treffer. Versuche eine andere Suche oder ein anderes Geräteprofil.",
   // --- generic ---
   'Confirm': 'Bestätigen',
   'Cancel': 'Abbrechen',

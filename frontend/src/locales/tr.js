@@ -1,5 +1,14 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Gym": "Spor salonu",
+  "All equipment": "Tüm ekipmanlar",
+  "Search results": "Arama sonuçları",
+  "All exercises": "Tüm egzersizler",
+  "Replacing {0}": "{0} yerine",
+  "Suggested substitutes": "Önerilen alternatifler",
+  "Same movement and muscle": "Aynı hareket ve kas",
+  "All other exercises": "Diğer tüm egzersizler",
+  "No matches. Try another search or equipment profile.": "Sonuç yok. Başka bir arama veya ekipman profili deneyin.",
   'Confirm': 'Onayla',
   'Cancel': 'İptal',
   'Press back again to exit': 'Çıkmak için geri tuşuna tekrar basın',
