@@ -1,0 +1,53 @@
+<resources>
+    <string name="channel_name">Entreno</string>
+    <string name="notification_resting">Descanso</string>
+    <string name="notification_set">Serie %1$d de %2$d · %3$s</string>
+
+    <string name="home_title">Rutinas</string>
+    <string name="home_refresh">Actualizar desde el móvil</string>
+    <string name="home_empty">Aún no hay rutinas. Abre openGym en el móvil y toca Actualizar.</string>
+    <string name="home_asking">Preguntando al móvil…</string>
+    <string name="home_cancel">Cancelar</string>
+    <string name="home_unreachable">No llego al móvil. Abre openGym allí e inténtalo de nuevo.</string>
+    <string name="home_missing">Esa rutina ya no está en el móvil.</string>
+    <string name="home_use_last">Usar la última copia</string>
+    <string name="home_retry">Reintentar</string>
+    <string name="home_exercises">%1$d ejercicios</string>
+    <string name="home_waiting">%1$d entreno(s) esperando al móvil</string>
+    <string name="home_send_again">Enviar de nuevo</string>
+    <string name="home_skipped">%1$d ejercicio(s) de cardio no están en el reloj</string>
+
+    <string name="set_of">Serie %1$d / %2$d</string>
+    <string name="set_warmup">Calentamiento %1$d / %2$d</string>
+    <string name="step_drop">Drop %1$d</string>
+    <string name="step_burst">Mini-serie %1$d / %2$d</string>
+    <string name="step_activation">Activación</string>
+    <string name="label_weight">Peso</string>
+    <string name="label_reps">Reps</string>
+    <string name="label_seconds">Segundos</string>
+    <string name="label_failure">al fallo</string>
+    <string name="label_max">máx</string>
+    <string name="confirm">Hecho</string>
+    <string name="menu">Más</string>
+    <string name="menu_skip">Saltar esta serie</string>
+    <string name="menu_stop_bursts">Ya está, sin más mini-series</string>
+    <string name="menu_undo">Deshacer la última</string>
+    <string name="menu_finish">Terminar entreno</string>
+    <string name="menu_discard">Descartar entreno</string>
+    <string name="menu_back">Volver</string>
+
+    <string name="rest_title">Descanso</string>
+    <string name="rest_next">Sigue: %1$s</string>
+    <string name="rest_skip">Saltar</string>
+
+    <string name="rest_until">Hasta las %1$s</string>
+    <string name="exercise_done">Hecho · %1$d / %2$d series</string>
+    <string name="exercise_hint">Desliza para ir al siguiente ejercicio</string>
+
+    <string name="done_title">Todas las series hechas</string>
+    <string name="done_summary">%1$d series en %2$d min</string>
+    <string name="done_send">Guardar en el móvil</string>
+    <string name="done_back">Volver a la última serie</string>
+    <string name="sent_title">Guardado aquí</string>
+    <string name="sent_text">Pasa al móvil en cuanto esté a mano.</string>
+</resources>

@@ -1,0 +1,193 @@
+{
+  "v": 1,
+  "kind": "snapshot",
+  "routineId": "push",
+  "name": "Push",
+  "unit": "kg",
+  "ts": 1750000000000,
+  "skipped": [
+    {
+      "id": "3666",
+      "name": "Exercise 3666"
+    }
+  ],
+  "exercises": [
+    {
+      "id": "0025",
+      "name": "Exercise 0025",
+      "mode": "reps",
+      "perSide": false,
+      "step": 1.25,
+      "ctx": {
+        "target": {
+          "id": "0025",
+          "sets": 2,
+          "reps": 5,
+          "weight": 60,
+          "prog": "off",
+          "restSec": 120,
+          "warmupSets": 1,
+          "warmupRestSec": 30,
+          "inc": 1.25
+        },
+        "planned": {
+          "sets": 2,
+          "reps": 5,
+          "weight": 60
+        }
+      },
+      "sets": [
+        {
+          "w": 30,
+          "r": 5,
+          "phase": "warmup",
+          "rest": 120
+        },
+        {
+          "w": 60,
+          "r": 5,
+          "rest": 120
+        },
+        {
+          "w": 60,
+          "r": 5,
+          "rest": 120
+        }
+      ]
+    },
+    {
+      "id": "0025",
+      "name": "Exercise 0025",
+      "mode": "reps",
+      "perSide": false,
+      "step": 2.5,
+      "ctx": {
+        "target": {
+          "id": "0025",
+          "sets": 1,
+          "reps": 8,
+          "weight": 40,
+          "prog": "off",
+          "restSec": 60,
+          "intensifier": {
+            "type": "dropset",
+            "count": 2,
+            "pct": 20
+          }
+        },
+        "planned": {
+          "sets": 1,
+          "reps": 8,
+          "weight": 40
+        }
+      },
+      "sets": [
+        {
+          "w": 40,
+          "r": 8,
+          "type": "dropset",
+          "drops": [
+            {
+              "w": 32.5,
+              "r": 8
+            },
+            {
+              "w": 25,
+              "r": 8
+            }
+          ],
+          "rest": 60
+        }
+      ]
+    },
+    {
+      "id": "0025",
+      "name": "Exercise 0025",
+      "mode": "reps",
+      "perSide": false,
+      "step": 2.5,
+      "ctx": {
+        "target": {
+          "id": "0025",
+          "sets": 1,
+          "reps": 10,
+          "weight": 30,
+          "prog": "off",
+          "restSec": 90,
+          "intensifier": {
+            "type": "restpause",
+            "totalReps": 12,
+            "restSec": 15
+          }
+        },
+        "planned": {
+          "sets": 1,
+          "reps": 10,
+          "weight": 30
+        }
+      },
+      "sets": [
+        {
+          "w": 30,
+          "r": 10,
+          "phase": "warmup",
+          "rest": 90
+        },
+        {
+          "w": 30,
+          "r": 12,
+          "type": "restpause",
+          "clusters": [
+            {
+              "r": 6,
+              "restSec": 15
+            },
+            {
+              "r": 3,
+              "restSec": 15
+            },
+            {
+              "r": 2,
+              "restSec": 15
+            },
+            {
+              "r": 1,
+              "restSec": 15
+            }
+          ],
+          "rest": 90
+        }
+      ]
+    },
+    {
+      "id": "0025",
+      "name": "Exercise 0025",
+      "mode": "time",
+      "perSide": false,
+      "step": 5,
+      "ctx": {
+        "target": {
+          "id": "0025",
+          "mode": "time",
+          "sets": 1,
+          "sec": 40,
+          "weight": 0,
+          "prog": "off",
+          "restSec": 45
+        },
+        "planned": {
+          "sets": 1,
+          "sec": 40,
+          "weight": 0
+        }
+      },
+      "sets": [
+        {
+          "w": 0,
+          "sec": 40,
+          "rest": 45
+        }
+      ]
+    }
+  ]
+}

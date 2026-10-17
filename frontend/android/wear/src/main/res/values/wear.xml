@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Advertised to the phone app, which looks the watch up by this name (res/values/wear.xml
+         over there declares opengym_phone). -->
+    <string-array name="android_wear_capabilities">
+        <item>opengym_watch</item>
+    </string-array>
+    <color name="ic_launcher_background">#0C0E12</color>
+</resources>
