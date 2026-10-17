@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- Wear OS companion (docs/WEAR.md), Play build only: the Wearable Data Layer is a part of
+             Play services. Play services starts this service when the watch sends a finished
+             session or asks for a routine, even with the app closed. It does nothing itself:
+             WearBridgePlugin hands it on to the page, or leaves a notification to open the app by.
+             exported="true" is how Play services binds it. -->
+        <service
+            android:name=".WearBridgeService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
+                <data android:scheme="wear" android:host="*" android:pathPrefix="/opengym/session/" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+                <data android:scheme="wear" android:host="*" android:path="/opengym/request" />
+            </intent-filter>
+        </service>
+    </application>
+</manifest>

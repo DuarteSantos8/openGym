@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Advertised to the watch app (frontend/android/wear): it finds this phone by this name
+         before asking it for a routine. The watch declares opengym_watch the same way. -->
+    <string-array name="android_wear_capabilities">
+        <item>opengym_phone</item>
+    </string-array>
+    <string name="wear_channel_name">Watch</string>
+    <string name="wear_channel_desc">Workouts recorded on your watch, waiting to be saved in openGym.</string>
+    <string name="wear_session_title">Workout from your watch</string>
+    <string name="wear_session_text">Open openGym to save it.</string>
+    <string name="wear_request_title">Your watch asked for a routine</string>
+    <string name="wear_request_text">Open openGym to send it.</string>
+</resources>
