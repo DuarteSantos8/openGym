@@ -1,5 +1,14 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Gym": "Зал",
+  "All equipment": "Усе обладнання",
+  "Search results": "Результати пошуку",
+  "All exercises": "Усі вправи",
+  "Replacing {0}": "Заміна: {0}",
+  "Suggested substitutes": "Запропоновані заміни",
+  "Same movement and muscle": "Той самий рух і м’яз",
+  "All other exercises": "Усі інші вправи",
+  "No matches. Try another search or equipment profile.": "Нічого не знайдено. Спробуйте інший запит або профіль обладнання.",
   'Confirm': 'Підтвердити',
   'Cancel': 'Скасувати',
   'Press back again to exit': 'Натисни «Назад» ще раз, щоб вийти',

@@ -1,5 +1,14 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Gym": "健身房",
+  "All equipment": "所有器材",
+  "Search results": "搜索结果",
+  "All exercises": "所有动作",
+  "Replacing {0}": "替换 {0}",
+  "Suggested substitutes": "建议替代动作",
+  "Same movement and muscle": "相同动作模式和肌群",
+  "All other exercises": "所有其他动作",
+  "No matches. Try another search or equipment profile.": "无匹配结果。请尝试其他搜索词或器材配置。",
   'Confirm': '确认',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回退出',

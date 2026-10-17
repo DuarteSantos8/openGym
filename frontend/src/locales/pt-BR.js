@@ -1405,4 +1405,13 @@ export const PT_BR_OVERRIDES = {
   'Releases are checked on GitHub. The download is verified against its checksum before the installer opens.': 'As versões são verificadas no GitHub. O download é conferido pela soma de verificação antes de abrir o instalador.',
 }
 
-export default { ...pt, ...PT_BR_OVERRIDES }
+export default {
+  "Gym": "Academia",
+  "All equipment": "Todos os equipamentos",
+  "Search results": "Resultados da busca",
+  "All exercises": "Todos os exercícios",
+  "Replacing {0}": "Substituir {0}",
+  "Suggested substitutes": "Alternativas sugeridas",
+  "Same movement and muscle": "Mesmo movimento e músculo",
+  "All other exercises": "Todos os outros exercícios",
+  "No matches. Try another search or equipment profile.": "Nenhum resultado. Tente outra busca ou perfil de equipamentos.", ...pt, ...PT_BR_OVERRIDES }

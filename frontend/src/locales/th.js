@@ -1,5 +1,14 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Gym": "ยิม",
+  "All equipment": "อุปกรณ์ทั้งหมด",
+  "Search results": "ผลการค้นหา",
+  "All exercises": "ท่าออกกำลังกายทั้งหมด",
+  "Replacing {0}": "แทนที่ {0}",
+  "Suggested substitutes": "ท่าทดแทนที่แนะนำ",
+  "Same movement and muscle": "รูปแบบการเคลื่อนไหวและกล้ามเนื้อเดียวกัน",
+  "All other exercises": "ท่าออกกำลังกายอื่นทั้งหมด",
+  "No matches. Try another search or equipment profile.": "ไม่พบผลลัพธ์ ลองค้นหาใหม่หรือเลือกโปรไฟล์อุปกรณ์อื่น",
   // --- generic ---
   'Confirm': 'ยืนยัน',
   'Cancel': 'ยกเลิก',

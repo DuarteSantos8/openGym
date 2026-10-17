@@ -1,5 +1,14 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Gym": "Edzőterem",
+  "All equipment": "Minden eszköz",
+  "Search results": "Keresési eredmények",
+  "All exercises": "Minden gyakorlat",
+  "Replacing {0}": "{0} cseréje",
+  "Suggested substitutes": "Javasolt alternatívák",
+  "Same movement and muscle": "Azonos mozgás és izom",
+  "All other exercises": "Minden más gyakorlat",
+  "No matches. Try another search or equipment profile.": "Nincs találat. Próbálj más keresést vagy eszközprofilt.",
   // --- generic ---
   'Confirm': 'Megerősítés',
   'Cancel': 'Mégse',

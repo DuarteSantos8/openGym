@@ -1,5 +1,14 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Gym": "জিম",
+  "All equipment": "সব সরঞ্জাম",
+  "Search results": "অনুসন্ধানের ফলাফল",
+  "All exercises": "সব ব্যায়াম",
+  "Replacing {0}": "{0} প্রতিস্থাপন করুন",
+  "Suggested substitutes": "প্রস্তাবিত বিকল্প",
+  "Same movement and muscle": "একই নড়াচড়া ও পেশি",
+  "All other exercises": "অন্য সব ব্যায়াম",
+  "No matches. Try another search or equipment profile.": "কোনো ফলাফল নেই। অন্য অনুসন্ধান বা সরঞ্জাম প্রোফাইল ব্যবহার করুন।",
   'Confirm': 'নিশ্চিত করুন',
   'Cancel': 'বাতিল',
   'Press back again to exit': 'বের হতে আবার ব্যাক চাপুন',
