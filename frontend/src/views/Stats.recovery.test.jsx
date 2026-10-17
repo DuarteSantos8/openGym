@@ -279,17 +279,21 @@ describe('Stats muscle recovery view runtime', () => {
     expect(lastMap().load.chest).toBe(6)
   })
 
-  it('shows the selected muscle fatigue as a percentage with recovery forecast', async () => {
+  it('shows the selected muscle fatigue as a zone bar, percent and forecast', async () => {
     await mountStats()
     await click(viewButton('Fatigue'))
     await click(muscleCard().querySelector('[data-muscle="chest"]'))
     const value = lastMap().load.chest
     expect(value).toBeGreaterThan(0.5)
-    expect(muscleCard().textContent).toContain(`${Math.round(value * 100)}%`)
-    // The percentage reads as fatigue, not as completion or recovery: the label
-    // names what is measured and the verdict interprets the band.
-    expect(muscleCard().textContent).toContain('Fatigue ' + Math.round(value * 100) + '%')
-    // Fatigued chest drops through both bands, so both forecasts render.
+    const pct = Math.round(value * 100)
+    const bar = muscleCard().querySelector('.fbar')
+    expect(bar).toBeTruthy()
+    // The bar carries the band as a marker at the value and reads the same state the map does.
+    expect(bar.getAttribute('aria-label')).toBe(`Fatigue: ${pct}% · Fatigued`)
+    expect(bar.querySelector('.knob').getAttribute('style')).toContain(`inset-inline-start: ${pct}%`)
+    expect(bar.querySelector('.zone.fatigued')).toBeTruthy()
+    // The percentage stands alone on the right, as its numeric twin.
+    expect(muscleCard().textContent).toContain(`${pct}%`)
     expect(muscleCard().textContent).toContain('Recovering in')
     expect(muscleCard().textContent).toContain('Ready in')
   })
