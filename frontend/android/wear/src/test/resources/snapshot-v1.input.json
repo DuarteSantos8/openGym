@@ -1,0 +1,69 @@
+{
+  "state": {
+    "unit": "kg",
+    "workouts": [],
+    "exWeights": {},
+    "routines": [],
+    "restSec": 90
+  },
+  "routine": {
+    "id": "push",
+    "name": "Push",
+    "prog": "off",
+    "ex": [
+      {
+        "id": "0025",
+        "sets": 2,
+        "reps": 5,
+        "weight": 60,
+        "prog": "off",
+        "restSec": 120,
+        "warmupSets": 1,
+        "warmupRestSec": 30,
+        "inc": 1.25
+      },
+      {
+        "id": "0025",
+        "sets": 1,
+        "reps": 8,
+        "weight": 40,
+        "prog": "off",
+        "restSec": 60,
+        "intensifier": {
+          "type": "dropset",
+          "count": 2,
+          "pct": 20
+        }
+      },
+      {
+        "id": "0025",
+        "sets": 1,
+        "reps": 10,
+        "weight": 30,
+        "prog": "off",
+        "restSec": 90,
+        "intensifier": {
+          "type": "restpause",
+          "totalReps": 12,
+          "restSec": 15
+        }
+      },
+      {
+        "id": "0025",
+        "mode": "time",
+        "sets": 1,
+        "sec": 40,
+        "weight": 0,
+        "prog": "off",
+        "restSec": 45
+      },
+      {
+        "id": "3666",
+        "mode": "cardio",
+        "sets": 1,
+        "min": 20,
+        "speed": 5
+      }
+    ]
+  }
+}

@@ -1,0 +1,171 @@
+{
+  "unit": "kg",
+  "exercises": [
+    {
+      "sets": [
+        {
+          "phase": "warmup",
+          "r": 5,
+          "at": 1750000060000,
+          "w": 30,
+          "done": true
+        },
+        {
+          "r": 5,
+          "at": 1750000120000,
+          "w": 60,
+          "done": true
+        },
+        {
+          "r": 4,
+          "at": 1750000180000,
+          "w": 60,
+          "done": true
+        }
+      ],
+      "ctx": {
+        "planned": {
+          "reps": 5,
+          "sets": 2,
+          "weight": 60
+        },
+        "target": {
+          "reps": 5,
+          "sets": 2,
+          "warmupSets": 1,
+          "restSec": 120,
+          "weight": 60,
+          "id": "0025",
+          "warmupRestSec": 30,
+          "prog": "off",
+          "inc": 1.25
+        }
+      },
+      "id": "0025"
+    },
+    {
+      "sets": [{
+        "r": 8,
+        "drops": [
+          {
+            "r": 8,
+            "w": 32.5
+          },
+          {
+            "r": 6,
+            "w": 25
+          }
+        ],
+        "at": 1750000360000,
+        "w": 40,
+        "type": "dropset",
+        "done": true
+      }],
+      "ctx": {
+        "planned": {
+          "reps": 8,
+          "sets": 1,
+          "weight": 40
+        },
+        "target": {
+          "reps": 8,
+          "sets": 1,
+          "restSec": 60,
+          "weight": 40,
+          "intensifier": {
+            "pct": 20,
+            "count": 2,
+            "type": "dropset"
+          },
+          "id": "0025",
+          "prog": "off"
+        }
+      },
+      "id": "0025"
+    },
+    {
+      "sets": [
+        {
+          "phase": "warmup",
+          "r": 10,
+          "at": 1750000420000,
+          "w": 30,
+          "done": true
+        },
+        {
+          "r": 11,
+          "at": 1750000660000,
+          "w": 30,
+          "type": "restpause",
+          "done": true,
+          "clusters": [
+            {
+              "r": 6,
+              "restSec": 15
+            },
+            {
+              "r": 3,
+              "restSec": 15
+            },
+            {
+              "r": 2,
+              "restSec": 15
+            }
+          ]
+        }
+      ],
+      "ctx": {
+        "planned": {
+          "reps": 10,
+          "sets": 1,
+          "weight": 30
+        },
+        "target": {
+          "reps": 10,
+          "sets": 1,
+          "restSec": 90,
+          "weight": 30,
+          "intensifier": {
+            "restSec": 15,
+            "type": "restpause",
+            "totalReps": 12
+          },
+          "id": "0025",
+          "prog": "off"
+        }
+      },
+      "id": "0025"
+    },
+    {
+      "sets": [{
+        "sec": 35,
+        "at": 1750000720000,
+        "w": 0,
+        "done": true
+      }],
+      "ctx": {
+        "planned": {
+          "sec": 40,
+          "sets": 1,
+          "weight": 0
+        },
+        "target": {
+          "mode": "time",
+          "sec": 40,
+          "sets": 1,
+          "restSec": 45,
+          "weight": 0,
+          "id": "0025",
+          "prog": "off"
+        }
+      },
+      "id": "0025"
+    }
+  ],
+  "v": 1,
+  "name": "Push",
+  "start": 1750000000000,
+  "end": 1750000900000,
+  "id": "aaaaaaaa-0000-4000-8000-000000000001",
+  "routineId": "push"
+}

@@ -1,0 +1,54 @@
+<resources>
+    <string name="app_name">openGym</string>
+    <string name="channel_name">Workout</string>
+    <string name="notification_resting">Rest</string>
+    <string name="notification_set">Set %1$d of %2$d · %3$s</string>
+
+    <string name="home_title">Routines</string>
+    <string name="home_refresh">Refresh from phone</string>
+    <string name="home_empty">No routines yet. Open openGym on your phone, then tap Refresh.</string>
+    <string name="home_asking">Asking your phone…</string>
+    <string name="home_cancel">Cancel</string>
+    <string name="home_unreachable">Can\'t reach your phone. Open openGym there and try again.</string>
+    <string name="home_missing">That routine is no longer on your phone.</string>
+    <string name="home_use_last">Use the last copy</string>
+    <string name="home_retry">Try again</string>
+    <string name="home_exercises">%1$d exercises</string>
+    <string name="home_waiting">%1$d workout(s) waiting for your phone</string>
+    <string name="home_send_again">Send again</string>
+    <string name="home_skipped">%1$d cardio exercise(s) are not on the watch</string>
+
+    <string name="set_of">Set %1$d / %2$d</string>
+    <string name="set_warmup">Warm-up %1$d / %2$d</string>
+    <string name="step_drop">Drop %1$d</string>
+    <string name="step_burst">Mini-set %1$d / %2$d</string>
+    <string name="step_activation">Activation</string>
+    <string name="label_weight">Weight</string>
+    <string name="label_reps">Reps</string>
+    <string name="label_seconds">Seconds</string>
+    <string name="label_failure">to failure</string>
+    <string name="label_max">max</string>
+    <string name="confirm">Done</string>
+    <string name="menu">More</string>
+    <string name="menu_skip">Skip this set</string>
+    <string name="menu_stop_bursts">That\'s all, no more mini-sets</string>
+    <string name="menu_undo">Undo last</string>
+    <string name="menu_finish">Finish workout</string>
+    <string name="menu_discard">Discard workout</string>
+    <string name="menu_back">Back</string>
+
+    <string name="rest_title">Rest</string>
+    <string name="rest_next">Next: %1$s</string>
+    <string name="rest_skip">Skip</string>
+
+    <string name="rest_until">Until %1$s</string>
+    <string name="exercise_done">Done · %1$d / %2$d sets</string>
+    <string name="exercise_hint">Swipe for the next exercise</string>
+
+    <string name="done_title">All sets done</string>
+    <string name="done_summary">%1$d sets in %2$d min</string>
+    <string name="done_send">Save on phone</string>
+    <string name="done_back">Back to the last set</string>
+    <string name="sent_title">Saved here</string>
+    <string name="sent_text">It goes to your phone as soon as it\'s in reach.</string>
+</resources>

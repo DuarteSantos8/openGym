@@ -1,0 +1,8 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- A dumbbell, centred in the adaptive icon's safe zone. -->
+    <path android:fillColor="#30D158" android:pathData="M30,44h6v20h-6zM72,44h6v20h-6zM24,48h6v12h-6zM78,48h6v12h-6zM36,51h36v6h-36z" />
+</vector>
