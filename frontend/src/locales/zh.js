@@ -2242,4 +2242,13 @@ export default {
   'Your sports watch, calling you back.': '你的运动手表在叫你回来。',
   'Coach wants you back on the bar.': '教练等你回到杠铃前。',
   'Gentle, for headphones or a quiet room.': '轻柔，适合耳机或安静的房间。',
+
+  // --- AI Coach on the phone: the BYOK limits (#527) ---
+  'Advanced': '高级',
+  'Max output tokens': '最大输出 token 数',
+  'The ceiling on one answer. Reasoning models count its hidden thinking against it, so raise it if a plan is cut off.': '单次回答的上限。推理模型会把隐藏的思考计入其中，所以如果计划被截断，就把它调高。',
+  'Daily runs': '每日运行次数',
+  'Every Coach run is one request on your provider account. 0 means no limit.': '教练每次运行都会向你的提供商账户发送一次请求。0 表示不限制。',
+  'Max message length': '最大消息长度',
+  'How long a message, refinement or review note can be.': '消息、修改要求或点评备注可以有多长。',
 }

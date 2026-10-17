@@ -2242,4 +2242,13 @@ export default {
   'Your sports watch, calling you back.': 'Spor saatin seni geri çağırıyor.',
   'Coach wants you back on the bar.': 'Koç seni bara geri bekliyor.',
   'Gentle, for headphones or a quiet room.': 'Sakin, kulaklık ya da sessiz bir oda için.',
+
+  // --- AI Coach on the phone: the BYOK limits (#527) ---
+  'Advanced': 'Gelişmiş',
+  'Max output tokens': 'Maks. çıktı token’ı',
+  'The ceiling on one answer. Reasoning models count its hidden thinking against it, so raise it if a plan is cut off.': 'Tek bir yanıtın üst sınırı. Akıl yürüten modeller gizli düşünmelerini bu sınıra sayar; bir plan kesilirse bunu yükselt.',
+  'Daily runs': 'Günlük çalıştırma',
+  'Every Coach run is one request on your provider account. 0 means no limit.': 'Her Koç çalıştırması sağlayıcı hesabında bir istektir. 0 sınırsız demektir.',
+  'Max message length': 'Maks. mesaj uzunluğu',
+  'How long a message, refinement or review note can be.': 'Bir mesajın, iyileştirme isteğinin veya inceleme notunun ne kadar uzun olabileceği.',
 }

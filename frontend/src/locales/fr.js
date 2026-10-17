@@ -2242,4 +2242,13 @@ export default {
   'Your sports watch, calling you back.': 'Ta montre de sport te rappelle.',
   'Coach wants you back on the bar.': 'Le coach te veut de retour à la barre.',
   'Gentle, for headphones or a quiet room.': 'Tout doux, pour un casque ou une pièce calme.',
+
+  // --- AI Coach on the phone: the BYOK limits (#527) ---
+  'Advanced': 'Avancé',
+  'Max output tokens': 'Jetons de sortie max.',
+  'The ceiling on one answer. Reasoning models count its hidden thinking against it, so raise it if a plan is cut off.': 'Le plafond d’une réponse. Les modèles de raisonnement comptent leur réflexion cachée dans ce plafond, alors augmentez-le si un plan est coupé.',
+  'Daily runs': 'Exécutions par jour',
+  'Every Coach run is one request on your provider account. 0 means no limit.': 'Chaque exécution du Coach est une requête sur votre compte fournisseur. 0 signifie aucune limite.',
+  'Max message length': 'Longueur maximale du message',
+  'How long a message, refinement or review note can be.': 'La longueur autorisée d’un message, d’une demande de révision ou d’une note d’analyse.',
 }

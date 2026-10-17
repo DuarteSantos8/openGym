@@ -2253,4 +2253,13 @@ export default {
   'Your sports watch, calling you back.': 'นาฬิกาสปอร์ตเรียกคุณกลับมาแล้ว',
   'Coach wants you back on the bar.': 'โค้ชอยากให้คุณกลับมาที่บาร์',
   'Gentle, for headphones or a quiet room.': 'เบา ๆ สำหรับหูฟังหรือห้องที่เงียบ',
+
+  // --- AI Coach on the phone: the BYOK limits (#527) ---
+  'Advanced': 'ขั้นสูง',
+  'Max output tokens': 'จำนวนโทเคนเอาต์พุตสูงสุด',
+  'The ceiling on one answer. Reasoning models count its hidden thinking against it, so raise it if a plan is cut off.': 'เพดานของคำตอบหนึ่งครั้ง โมเดลที่คิดวิเคราะห์จะนับการคิดที่ซ่อนอยู่รวมในเพดานนี้ ดังนั้นให้เพิ่มค่านี้หากแผนถูกตัดขาด',
+  'Daily runs': 'จำนวนครั้งต่อวัน',
+  'Every Coach run is one request on your provider account. 0 means no limit.': 'โค้ชแต่ละครั้งคือหนึ่งคำขอในบัญชีผู้ให้บริการของคุณ 0 หมายถึงไม่จำกัด',
+  'Max message length': 'ความยาวข้อความสูงสุด',
+  'How long a message, refinement or review note can be.': 'ข้อความ คำขอปรับแก้ หรือบันทึกการวิเคราะห์ยาวได้เท่าใด',
 }

@@ -454,8 +454,11 @@ The App-Store build has no server of its own, so the Coach there is a choice mad
   the same single repair round as the server, in the app. The key is kept in the platform's
   secure storage — Keychain on iOS, the Keystore-backed store on Android — and never in the
   app's state, so it cannot ride along in a backup, an export or a sync. You pay: the screen
-  says which host each request goes to and what leaves the device before you choose, and a
-  local daily cap stands in for the one an admin would have set.
+  says which host each request goes to and what leaves the device before you choose. An
+  **Advanced** section on the same screen is the phone's admin card — since there is no
+  instance, you are the admin: the daily cap (0 for no limit), the output-token ceiling a
+  reasoning model needs raised, and the maximum message length, with the same ranges the
+  server clamps to.
 
   A compatible endpoint has to be **`https://`** here. Android does not let apps send
   unencrypted `http://` traffic, so a model on your LAN at `http://ollama.lan:11434` cannot be
