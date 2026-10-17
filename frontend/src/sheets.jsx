@@ -1,7 +1,7 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
-import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
+import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx, imgSrc, figureOf } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V } from './lib/equipment.js'
 import { fmtDate, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
@@ -17,6 +17,7 @@ import CustomMediaField from './components/CustomMediaField.jsx'
 import WorkoutMediaSection, { workoutMediaCount } from './components/WorkoutMedia.jsx'
 import { mediaOf, normalizeMediaRef, cleanUrl, workoutMediaOf } from './lib/media-refs.js'
 import { syncMedia } from './lib/media-sync.js'
+import { mediaStore } from './lib/media-store.js'
 import LineChart from './components/LineChart.jsx'
 import Stepper from './components/Stepper.jsx'
 import { durationSheet } from './components/DurationWheel.jsx'
@@ -32,7 +33,11 @@ import { sameMuscleFirst, swapMuscleOf } from './lib/similar-exercises.js'
 import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWeightsOf, normalizeMuscleGroups, hasExplicitMuscleMetadata, inMuscleOrder } from './lib/muscles.js'
 import { parseImport, mergeImport } from './lib/import-csv.js'
 import { importHevyData, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines } from './lib/import-hevy.js'
-import { buildPlanBundle, parsePlan, mergePlan, printPlan, planPrintHTML } from './lib/plan-share.js'
+import { buildPlanBundle, parsePlan, mergePlan, printPlan, planPrintHTML, printHtmlInFrame } from './lib/plan-share.js'
+import { normalizeQr, newExerciseQr, shortQrLabel, qrCodesFor, withExQr, withoutExQr, moveExQr, withoutExercise, othersWithCode, exerciseQrPrintHTML } from './lib/exercise-qr.js'
+import { renderQrToCanvas } from './lib/qr.js'
+import { A4_MM, PX_PER_MM, drawExerciseSheet, iosHomeScreenApp, jpegPdf } from './lib/print-sheet.js'
+import { scanOnce } from './components/CameraScan.jsx'
 import { estimate1RM, best1RM, is1RMRecord, REP_CAP, formulaOf, FORMULA_NAMES } from './lib/onerm.js'
 import { exerciseHistory } from './lib/exercise-history.js'
 import { isBellEx, dbLoadOf, dbLoadFor, withDbLoad, withMeaning, historyAs, entryDbLoad, currentDbLoad, isOneArm, ownedWeightsFor, dumbbellsOf, ownsDumbbells, withDumbbells, presetWeights, cleanWeights } from './lib/dumbbells.js'
@@ -1015,6 +1020,7 @@ function ExerciseDetail({ ex, close }) {
     {/* No one-rep max on an assistance machine: the load is the help you were given, so the
         calculator would answer "your 1RM is 23 kg" about a number that gets smaller as you get
         stronger (issue #232). Cardio has none for the same kind of reason. */}
+    <ExerciseQrCodes ex={ex} />
     {!isCardio(ex) && !isAssisted(ex) && <OneRM ex={ex} />}
     {instrFor(ex).length > 0 &&<><h4 className="sec">{t('How to')}{getLang() !== 'en' && !instrTranslated(ex) && <span className="dim" style={{ textTransform: 'none', letterSpacing: 0 }}> · {t('instructions in English')}</span>}</h4><ol className="steps-list">{instrFor(ex).map((s, i) => <li key={i}>{s}</li>)}</ol></>}
     {/* The catalogue is community-edited (catalogue/README.md): a wrong muscle, a clumsy step or a
@@ -1025,6 +1031,189 @@ function ExerciseDetail({ ex, close }) {
   </>
 }
 export const exerciseDetailSheet = ex => ui().openSheet(close => <ExerciseDetail ex={ex} close={close} />)
+
+/* ============================ exercise QR codes ============================ */
+// The codes on the machines that stand for this exercise (S.exQr, lib/exercise-qr.js): scanned
+// in a running workout, one jumps straight to it. A code gets here by scanning what the gym put
+// on the machine, or as a fresh one of our own, printed on a page about the exercise to cut out.
+const nameOfEx = id => exerciseNameText(exOr(id))
+const namesOf = ids => ids.map(nameOfEx).join(', ')
+
+function ExerciseQrCodes({ ex }) {
+  const map = useStore(s => s.S.exQr)
+  const codes = qrCodesFor(map, ex.id)
+  const assign = code => update(s => { s.exQr = withExQr(s.exQr, ex.id, code) })
+  const scan = async () => {
+    const code = normalizeQr((await scanOnce())?.value)
+    if (!code) return
+    if (qrCodesFor(S().exQr, ex.id).includes(code)) { toast(t('This exercise already has this code')); return }
+    const others = othersWithCode(S().exQr, ex.id, code)
+    if (!others.length) { assign(code); toast(t('Code added')); return }
+    // One code on two exercises is a cable tower, or a wrong scan: ask which.
+    menuSheet({
+      title: t('This code is already on {0}', namesOf(others)),
+      items: [
+        { icon: 'swap', label: t('Move it to this exercise'), sub: t('{0} no longer has it', namesOf(others)),
+          onClick: () => { update(s => { s.exQr = moveExQr(s.exQr, ex.id, code) }); toast(t('Code moved')) } },
+        { icon: 'plus', label: t('Use it for both'), sub: t('Scanning it asks which one you mean'),
+          onClick: () => { assign(code); toast(t('Code added')) } },
+      ],
+    })
+  }
+  // A fresh code is the exercise's at once: the page to print is only its copy on paper.
+  const create = () => {
+    const code = newExerciseQr()
+    assign(code)
+    toast(t('Code added'))
+    printExerciseQr(ex, code)
+  }
+  // Only this exercise lets go of the code. Another exercise that has it too keeps it, and a scan
+  // still finds that one; the last one to let go deletes the code.
+  const unassociate = code => {
+    const others = othersWithCode(S().exQr, ex.id, code)
+    confirmSheet({
+      title: t('Unassociate this code?'),
+      message: others.length
+        ? t('It stays on {0} and still finds it when scanned.', namesOf(others))
+        : t('No other exercise has it: the code is deleted, and scanning it no longer finds an exercise.'),
+      confirmText: t('Unassociate'), danger: !others.length,
+      onConfirm: () => {
+        update(s => { s.exQr = withoutExQr(s.exQr, ex.id, code) })
+        toast(others.length ? t('Code unassociated') : t('Code deleted'))
+      },
+    })
+  }
+  const codeMenu = code => menuSheet({
+    title: shortQrLabel(code),
+    items: [
+      { icon: 'note', label: t('Print again'), sub: t('The same code, on a page about this exercise'), onClick: () => printExerciseQr(ex, code) },
+      { icon: 'trash', label: t('Unassociate'), danger: true, onClick: () => unassociate(code) },
+    ],
+  })
+  return <>
+    <h4 className="sec">{t('QR codes')}{codes.length > 0 && <span className="dim"> · {codes.length}</span>}</h4>
+    {codes.length > 0
+      ? <div className="list">
+          {codes.map(code => {
+            const others = othersWithCode(map, ex.id, code)
+            return <div key={code} className="item" {...tappable(() => codeMenu(code))}>
+              <span className="lrow-i"><Icon name="qr" /></span>
+              <div className="grow">
+                <div className="tt nocap" style={{ wordBreak: 'break-all' }}>{shortQrLabel(code)}</div>
+                {others.length > 0 && <div className="ss">{t('Also on {0}', namesOf(others))}</div>}
+              </div>
+              <Icon name="more" className="dim" />
+            </div>
+          })}
+        </div>
+      : <div className="small dim" style={{ lineHeight: 1.5 }}>{t('Put a QR code on the machine: scanning it in a running workout jumps straight to this exercise.')}</div>}
+    {/* More than one is fine: two identical racks each with their own sticker, or the gym's
+        code next to one printed here. The buttons say so once there is a first. */}
+    <div className="row" style={{ gap: 8, marginTop: 8 }}>
+      <Button icon="qr" style={{ flex: 1 }} onClick={scan}>{codes.length ? t('Add another code') : t('Scan code')}</Button>
+      <Button icon="note" style={{ flex: 1 }} onClick={create}>{codes.length ? t('Print another code') : t('Print new code')}</Button>
+    </div>
+    {codes.length > 0 && <div className="small dim" style={{ lineHeight: 1.5, marginTop: 6 }}>{t('An exercise can have several codes, and a code can belong to several exercises.')}</div>}
+  </>
+}
+
+const blobToDataUrl = blob => new Promise((resolve, reject) => {
+  const r = new FileReader()
+  r.onload = () => resolve(String(r.result || ''))
+  r.onerror = () => reject(r.error)
+  r.readAsDataURL(blob)
+})
+
+// The exercise's picture for its printed page, read into the page (lib/exercise-qr.js says why):
+// a custom exercise's own photo or GIF from the media store, a built-in's still frame from the
+// dataset, its web address when the dataset's host will not let us read it. '' for none.
+async function exercisePictureFor(ex) {
+  try {
+    if (isCustomEx(ex)) {
+      const m = mediaOf(ex)
+      if (!m || (m.kind !== 'image' && m.kind !== 'gif')) return ''
+      const rec = await mediaStore.get(m.hash)
+      return rec?.blob ? await blobToDataUrl(rec.blob) : ''
+    }
+    if (!ex.img && !ex.gif) return ''
+    const src = new URL(imgSrc(ex, figureOf(S())), location.href).href
+    try {
+      const res = await fetch(src, { credentials: 'same-origin' })
+      if (res.ok) return await blobToDataUrl(await res.blob())
+    } catch { /* not readable from here: the address will do */ }
+    return src
+  } catch {
+    return ''
+  }
+}
+
+/** One A4 page about the exercise with `code` at 3 × 3 cm, to cut out and stick on the machine. */
+export async function printExerciseQr(ex, code) {
+  const name = exerciseNameText(ex)
+  try {
+    const canvas = document.createElement('canvas')
+    const [, imageUrl] = await Promise.all([renderQrToCanvas(canvas, code), exercisePictureFor(ex)])
+    const sheet = {
+      name, description: descFor(ex), tags: detailTags(ex).map(tg => tg.label), steps: instrFor(ex),
+    }
+    // The app on an iPhone's home screen cannot print a web page at all (lib/print-sheet.js): the
+    // sheet goes out as a PDF through the share sheet instead, whose Print keeps it at size.
+    if (!MOBILE && iosHomeScreenApp()) { await shareExerciseSheet(sheet, canvas, imageUrl); return }
+    const html = exerciseQrPrintHTML({ ...sheet, qrDataUrl: canvas.toDataURL('image/png'), imageUrl })
+    // Android's print manager refuses a job without a name.
+    if (MOBILE) await printHtml(html, name || t('QR code')).catch(() => { /* dismissed */ })
+    else printHtmlInFrame(html)
+  } catch {
+    toast(t('Could not print the code'))
+  }
+}
+
+const loadImage = src => new Promise((resolve, reject) => {
+  const img = new Image()
+  img.onload = () => resolve(img)
+  img.onerror = reject
+  img.src = src
+})
+
+// The sheet drawn at 200 dpi and wrapped as a one-page A4 PDF, then handed to the share sheet.
+// Sharing needs a tap of its own (the one on "Print new code" is spent by the time the picture
+// and the code are ready), so a small sheet asks for it. Without a share sheet the PDF is saved.
+async function shareExerciseSheet(sheet, qrCanvas, imageUrl) {
+  const page = document.createElement('canvas')
+  page.width = Math.round(A4_MM.w * PX_PER_MM)
+  page.height = Math.round(A4_MM.h * PX_PER_MM)
+  // Only a picture read into the page: one drawn from another origin would taint the canvas.
+  const picture = imageUrl && imageUrl.startsWith('data:image/') ? await loadImage(imageUrl).catch(() => null) : null
+  drawExerciseSheet(page.getContext('2d'), {
+    ...sheet, qr: qrCanvas, picture, rtl: document.documentElement.dir === 'rtl',
+    labels: { caption: t('Scan in a running workout to jump to this exercise'), howTo: t('How to') },
+  })
+  const jpeg = await new Promise((resolve, reject) => page.toBlob(b => (b ? resolve(b) : reject(new Error('toBlob'))), 'image/jpeg', 0.95))
+  const pdf = jpegPdf(new Uint8Array(await jpeg.arrayBuffer()), page.width, page.height)
+  const fileName = (sheet.name || 'openGym').replace(/[\\/:*?"<>|]+/g, ' ').trim() + ' – QR.pdf'
+  const file = new File([pdf], fileName, { type: 'application/pdf' })
+  confirmSheet({
+    title: t('Your sheet is ready'),
+    message: t('Choose “Print” in the share sheet. The code prints at 3 × 3 cm.'),
+    confirmText: t('Print or share'),
+    onConfirm: () => {
+      if (navigator.canShare?.({ files: [file] })) {
+        navigator.share({ files: [file], title: sheet.name }).catch(e => { if (e?.name !== 'AbortError') saveFile(file) })
+      } else saveFile(file)
+    },
+  })
+}
+
+function saveFile(file) {
+  const url = URL.createObjectURL(file)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = file.name
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 60000)
+}
 
 /* ============================ exercise history ============================ */
 // What you did on this exercise before, reachable mid-workout (issue #43): the curve first,
@@ -1256,6 +1445,7 @@ export function deleteCustomEx(ex, afterDelete) {
         s.routines.forEach(r => { r.ex = r.ex.filter(e => e.id !== ex.id); cleanupSg(r.ex) })
         delete s.exWeights[ex.id]
         s.favEx = (s.favEx || []).filter(id => id !== ex.id)
+        if (s.exQr) s.exQr = withoutExercise(s.exQr, ex.id)
       })
       toast(t('Exercise deleted'))
       afterDelete && afterDelete()

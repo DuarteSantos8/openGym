@@ -6,8 +6,10 @@ import {
   MEASUREMENT_FIELDS, MEASUREMENT_KEYS, emptyMeasurement, enabledMeasurementFields,
   fromMeasurementDisplay, latestMeasurement, measurementEntryHasValues,
   measurementSeries, measurementUnit, measurementValue, normalizeMeasurementEntry,
-  toMeasurementDisplay, normalizeMeasurementsState,
+  toMeasurementDisplay, normalizeMeasurementsState, measurementUnitFor,
 } from '../lib/measurements.js'
+import { SCAN_FIELDS, SCAN_SERIES } from '../lib/bodyscan.js'
+import { BodyScanCard, scanBodyScale } from './BodyScan.jsx'
 import { fmtDate, fmtNum, todayISO, uid } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import LineChart from '../components/LineChart.jsx'
@@ -164,6 +166,11 @@ export default function Measurements() {
       const key = 'other:' + custom.id
       if (latestMeasurement(S, key) && !out.some(f => f.key === key)) out.push({ key, label: custom.name, custom: true, group: 'Other' })
     }
+    // What a body scan measured that the form does not (muscle mass, water, …), once one has it.
+    for (const f of SCAN_FIELDS.filter(x => SCAN_SERIES.includes(x.key))) {
+      const key = 'scan:' + f.key
+      if (latestMeasurement(S, key)) out.push({ key, label: f.label, group: 'Scan' })
+    }
     return out
   }, [S])
   const fallback = available.find(f => f.key === 'waist')?.key || available[0]?.key || null
@@ -171,12 +178,13 @@ export default function Measurements() {
   const key = available.some(f => f.key === selected) ? selected : fallback
   const field = available.find(f => f.key === key)
   const points = key ? measurementSeries(S, key, range) : []
-  const unit = key === 'bodyFat' ? '%' : measurementUnit(S.unit)
+  const unit = key ? measurementUnitFor(key, S.unit) : measurementUnit(S.unit)
   const all = key ? measurementSeries(S, key) : []
   const latest = all.at(-1)
   const previous = all.at(-2)
   const delta = latest && previous ? Math.round((latest.y - previous.y) * 10) / 10 : null
   const recent = [...S.measurements].reverse()
+  const lastScan = recent.find(e => e.scan)
 
   const remove = entry => confirmSheet({
     title: t('Delete measurements?'),
@@ -189,6 +197,7 @@ export default function Measurements() {
     <div className="hdr">
       <button className="iconbtn" onClick={() => nav('/home')} aria-label={t('Home')}><Icon name="chevronLeft" /></button>
       <div style={{ flex: 1, marginLeft: 10 }}><h1>{t('Body measurements')}</h1><div className="sub">{t('Circumference & composition')}</div></div>
+      <button className="iconbtn" onClick={scanBodyScale} aria-label={t('Scan body scan code')} title={t('Scan body scan code')}><Icon name="qr" /></button>
       <button className="iconbtn" onClick={manageMeasurementsSheet} aria-label={t('Choose measurements')}><Icon name="gear" /></button>
     </div>
 
@@ -210,6 +219,8 @@ export default function Measurements() {
       <div className="chart"><LineChart points={points} h={170} unit={unit} color="var(--teal)" /></div>
     </div>
 
+    <BodyScanCard entry={lastScan} unit={S.unit} />
+
     {!available.length && <div className="card">
       <div className="muted small">{t('Choose the measurements you want to track, then log your first check-in.')}</div>
       <div style={{ height: 10 }} /><Button onClick={manageMeasurementsSheet}>{t('Choose measurements')}</Button>
@@ -224,7 +235,7 @@ export default function Measurements() {
       const previewFields = enabledMeasurementFields(S).map(f => ({ field: f, value: shownValue(entry, f, S.unit) })).filter(x => x.value != null).slice(0, 3)
       return <div className="card measure-history" key={entry.d}>
         <div className="row between">
-          <div><b>{fmtDate(entry.d, true)}</b><div className="small dim" style={{ marginTop: 2 }}>{t(count === 1 ? '{0} measurement' : '{0} measurements', count)}</div></div>
+          <div><b>{fmtDate(entry.d, true)}</b><div className="small dim" style={{ marginTop: 2 }}>{[count > 0 && t(count === 1 ? '{0} measurement' : '{0} measurements', count), entry.scan && t('Body scan')].filter(Boolean).join(' · ')}</div></div>
           <div className="row" style={{ gap: 4 }}>
             <button className="iconbtn" onClick={() => measurementLogSheet(entry.d)} aria-label={t('Edit')}><Icon name="pencil" /></button>
             <button className="iconbtn" style={{ color: 'var(--red)' }} onClick={() => remove(entry)} aria-label={t('Delete')}><Icon name="trash" /></button>

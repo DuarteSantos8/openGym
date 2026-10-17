@@ -645,6 +645,22 @@ body.chips-dragging *{cursor:inherit}
 .measure-select{margin-bottom:10px;background:var(--surface-2)}
 .measure-preview{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:11px;padding-top:10px;border-top:1px solid var(--sep);font-size:12px;color:var(--label-2)}
 .measure-preview b{color:var(--label);font-weight:500}
+.bodyscan-tiles .tile .v{font-size:20px}
+.bodyscan-delta{font-size:12px;color:var(--label-2);margin-top:3px;font-variant-numeric:tabular-nums}
+.bodyseg{display:grid;grid-template-columns:1fr minmax(0,1.15fr) 1fr;gap:10px;margin-top:12px;padding:14px 12px;border-radius:var(--r-card);background:linear-gradient(160deg,color-mix(in srgb,var(--red) 34%,var(--surface)),color-mix(in srgb,var(--orange) 28%,var(--surface)))}
+.bodyseg .bodyseg-trunk{grid-column:1/-1;justify-self:center;min-width:min(60%,240px)}
+.bodyseg-side{display:flex;flex-direction:column;justify-content:space-around;gap:16px;min-width:0}
+.bodyseg-fig{display:flex;align-items:center;min-width:0}
+.bodyseg-fig .bodymap{width:100%}
+.bodyseg-fig .bm-v{max-height:300px}
+.bodyseg-box{background:color-mix(in srgb,var(--surface) 62%,transparent);border-radius:12px;padding:10px}
+.bodyseg-n{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bodyseg-v{font-size:17px;font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums}
+.bodyseg-v span{font-size:12px;font-weight:400;color:var(--label-2)}
+.bodyscan-seg{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:4px}
+.bodyscan-seg th,.bodyscan-seg td{padding:6px 4px;border-top:1px solid var(--sep);text-align:right;font-weight:400}
+.bodyscan-seg thead th{border-top:0;color:var(--label-2);font-size:12px}
+.bodyscan-seg tbody th{text-align:left;color:var(--label-2)}
 .measure-home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .measure-home-grid button{background:var(--surface-2);border-radius:10px;padding:10px;text-align:left;min-width:0}
 .measure-home-grid span,.measure-home-grid i{display:block;font-size:11px;color:var(--label-2);font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -2135,3 +2151,4 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 [dir="rtl"] *{letter-spacing:0}
 .exfix-link{display:inline-flex;align-items:center;gap:5px;margin:14px 0 4px;color:var(--label-3);text-decoration:none}
 .list .similar-label{margin:16px 2px 6px;grid-column:1/-1}
+.stats-tabs{margin:0 0 14px}

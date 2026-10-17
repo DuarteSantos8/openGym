@@ -27,6 +27,7 @@ import { anchorsByWorkout, resolveSetRir } from '../lib/recovery.js'
 import { Button, Segmented, SelectRow } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { isWarmupRow } from '../lib/workout-model.js'
+import { BodyData } from './BodyScan.jsx'
 
 // Set 1 to 5 on the per-set chart — system colours, so each line keeps its hue in dark mode.
 const SET_COLORS = ['var(--blue)', 'var(--green)', 'var(--orange)', 'var(--purple)', 'var(--pink)']
@@ -408,6 +409,9 @@ export default function Stats() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
   const [range, setRange] = useState(90)
+  // Training or Body data (a body-composition scale's scans, views/BodyScan.jsx). /stats?tab=body
+  // opens on the second; the query sits in the hash, as with focus= below.
+  const [tab, setTab] = useState(() => (/[?&]tab=body\b/.test(window.location.hash || '') ? 'body' : 'training'))
   // Plan's "Weekly muscle volume" row lands here (/stats?focus=weekly-volume). The router is a
   // HashRouter, so the query sits in the hash; the scroll waits a frame for the page's own
   // scroll-to-top on navigation to have happened first.
@@ -632,9 +636,16 @@ export default function Stats() {
   if (showEff) exOpts.push({ value: 'effort', label: t('Effort') })
   if (showMax) exOpts.push({ value: 'max', label: t('Max reps') })
 
-  return <>
+  const head = <>
     <div className="hdr"><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
       <button className="iconbtn" onClick={() => nav('/history')} aria-label={t('History')}><Icon name="history" /></button></div>
+    <div className="stats-tabs"><Segmented value={tab} onChange={setTab}
+      options={[{ value: 'training', label: t('Training') }, { value: 'body', label: t('Body data') }]} /></div>
+  </>
+  if (tab === 'body') return <>{head}<BodyData S={S} onTrends={() => nav('/measurements')} /></>
+
+  return <>
+    {head}
 
     <div className="tiles">
       <div className="tile"><div className="l"><Icon name="dumbbell" />{t('Workouts')}</div><div className="v">{workouts.length}</div></div>
