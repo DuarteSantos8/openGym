@@ -1406,6 +1406,10 @@ export const PT_BR_OVERRIDES = {
 }
 
 export default {
+  "Same muscle and exercise type. The movement may differ.": "Mesmo músculo e tipo de exercício. O movimento pode variar.",
+  "Related muscles and exercise type. The movement may differ.": "Músculos relacionados e mesmo tipo de exercício. O movimento pode variar.",
+  "Same muscle, different exercise type. Check suitability.": "Mesmo músculo, tipo de exercício diferente. Confira se é adequado.",
+  "No suitable suggestions with these filters. Browse below or change gym.": "Nenhuma sugestão adequada a estes filtros. Explore a lista ou mude de academia.",
   "Gym": "Academia",
   "All equipment": "Todos os equipamentos",
   "Search results": "Resultados da busca",

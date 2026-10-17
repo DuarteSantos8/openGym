@@ -1,4 +1,8 @@
 export default {
+  "Same muscle and exercise type. The movement may differ.": "相同肌群與動作類型。運動方式可能不同。",
+  "Related muscles and exercise type. The movement may differ.": "相關肌群與相同動作類型。運動方式可能不同。",
+  "Same muscle, different exercise type. Check suitability.": "相同肌群，不同動作類型。請確認是否合適。",
+  "No suitable suggestions with these filters. Browse below or change gym.": "目前篩選條件下沒有合適建議。請瀏覽下方清單或切換健身房。",
   "Gym": "健身房",
   "All equipment": "所有器材",
   "Search results": "搜尋結果",

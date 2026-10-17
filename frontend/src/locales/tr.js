@@ -1,5 +1,9 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Same muscle and exercise type. The movement may differ.": "Aynı kas ve egzersiz türü. Hareket farklı olabilir.",
+  "Related muscles and exercise type. The movement may differ.": "İlgili kaslar ve aynı egzersiz türü. Hareket farklı olabilir.",
+  "Same muscle, different exercise type. Check suitability.": "Aynı kas, farklı egzersiz türü. Uygunluğunu kontrol edin.",
+  "No suitable suggestions with these filters. Browse below or change gym.": "Bu filtrelerle uygun öneri yok. Listeye göz atın veya spor salonunu değiştirin.",
   "Gym": "Spor salonu",
   "All equipment": "Tüm ekipmanlar",
   "Search results": "Arama sonuçları",

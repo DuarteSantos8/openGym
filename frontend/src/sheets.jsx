@@ -29,7 +29,7 @@ import BodyMap from './components/BodyMap.jsx'
 import MuscleExplorer from './components/MuscleExplorer.jsx'
 import ExerciseViewToggle from './components/ExerciseViewToggle.jsx'
 import { sameMuscleFirst, swapMuscleOf } from './lib/similar-exercises.js'
-import { suggestedSubstitutes } from './lib/exercise-substitutes.js'
+import { suggestedSubstitutes, relatedSubstitutes } from './lib/exercise-substitutes.js'
 import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWeightsOf, normalizeMuscleGroups, hasExplicitMuscleMetadata, inMuscleOrder } from './lib/muscles.js'
 import { parseImport, mergeImport } from './lib/import-csv.js'
 import { importHevyData, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines } from './lib/import-hevy.js'
@@ -1311,7 +1311,9 @@ function ExercisePicker({ onPick, title, close, like }) {
   const narrowedList = eqOn ? eqFiltered.filter(e => e.eq === eqOn) : eqFiltered
   const ranked = q.trim() ? sortYoursFirst(narrowedList, st, usage) : sortFavouritesFirst(narrowedList, st)
   const f = bp === SAME ? sameMuscleFirst(ranked, likeEx) : ranked
-  const suggested = likeEx && !q.trim() && bp !== '★' && bp !== '☆' ? suggestedSubstitutes(f, likeEx) : []
+  const showSuggestions = !!like && !q.trim() && bp !== '★' && bp !== '☆'
+  const closeMatches = showSuggestions ? suggestedSubstitutes(f, likeEx) : []
+  const suggested = closeMatches.length ? closeMatches : showSuggestions ? relatedSubstitutes(f, likeEx) : []
   const remaining = f.filter(e => !suggested.includes(e))
   const chosenCount = Object.keys(usage).length
   const favCount = (st.favEx || []).length
@@ -1395,9 +1397,13 @@ function ExercisePicker({ onPick, title, close, like }) {
       <button className={'chip nocap' + (!eqOn ? ' on' : '')} onClick={() => { setEq(''); setShown(50) }}>{t('Any equipment')}</button>
       {eqOpts.map(x => <button key={x} className={'chip' + (eqOn === x ? ' on' : '')} onClick={() => { setEq(x); setShown(50) }}>{t(x)}</button>)}
     </div>}
-    {suggested.length > 0 && <section aria-label={t('Suggested substitutes')}>
+    {showSuggestions && <section aria-label={t('Suggested substitutes')}>
       <h4 className="sec">{t('Suggested substitutes')}</h4>
-      <p className="small dim" style={{ margin: '0 0 8px' }}>{t('Same movement and muscle')}</p>
+      <p className="small dim" style={{ margin: '0 0 8px' }}>{closeMatches.length ? t('Same movement and muscle') : suggested.length
+        ? suggested.some(e => e.cat !== likeEx.cat) ? t('Same muscle, different exercise type. Check suitability.')
+          : suggested.some(e => e.tg !== likeEx.tg) ? t('Related muscles and exercise type. The movement may differ.')
+          : t('Same muscle and exercise type. The movement may differ.')
+        : t('No suitable suggestions with these filters. Browse below or change gym.')}</p>
       <div className={'list' + (st.exerciseView === 'cards' ? ' ex-grid' : '')}>{suggested.map(pickRow)}</div>
     </section>}
     {like && <h4 className="sec">{q.trim() ? t('Search results') : suggested.length ? t('All other exercises') : t('All exercises')}</h4>}

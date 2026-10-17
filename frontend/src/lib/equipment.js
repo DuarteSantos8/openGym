@@ -16,7 +16,7 @@ export function accessoriesOf(ex) {
   const n = ex.n.toLowerCase()
   const need = []
   if (/\bbench\b|\bincline\b|\bdecline\b/.test(n)) need.push('bench')
-  if (/pull-up|pull up|chin-up|\bchin\b|hanging|muscle-up|muscle up/.test(n)) need.push('pull-up bar')
+  if (/pull-up|pull up|chin-up|\bchin\b|hanging|dead hang|muscle-up|muscle up/.test(n)) need.push('pull-up bar')
   return need
 }
 
