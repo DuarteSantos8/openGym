@@ -5,7 +5,7 @@ import { useUI } from './store/useUI.js'
 import { bindUI } from './components/ui.jsx'
 import { setWeightDecimals } from './lib/format.js'
 import { accentValue, applyAccent } from './lib/accent.js'
-import { setLang, useLang, baseLang } from './lib/i18n.js'
+import { t, setLang, useLang, baseLang } from './lib/i18n.js'
 import { effectiveLang } from './lib/default-lang.js'
 import { setPlayOnSilent, setVibrate, setAlarmBuzzer } from './lib/sound.js'
 import { buzzAsAlarm } from './lib/rest-alert.js'
@@ -47,6 +47,7 @@ import Measurements from './views/Measurements.jsx'
 import Health from './views/Health.jsx'
 import CoachIntake from './views/CoachIntake.jsx'
 import CoachSetup from './views/CoachSetup.jsx'
+import { initMusicReturn } from './lib/music/index.js'
 
 // last known scrollY per route, so back-navigation can put the page where it was
 const scrollPositions = new Map()
@@ -134,6 +135,12 @@ function Shell() {
     if (MOBILE || !user || !ready) return
     syncPushSubscription().catch(() => {})
   }, [user?.id, ready])
+  // Back from Spotify's sign-in (Settings → Workout → Music player): the page's own address in a
+  // browser, the app's opengym://spotify link on the phone (lib/music/index.js).
+  useEffect(() => initMusicReturn(ok => {
+    useUI.getState().toast(ok ? t('Spotify connected') : t('Could not connect to Spotify.'))
+    window.dispatchEvent(new Event('opengym:spotify'))
+  }), [])
   // Opened from a device-link QR code (#95): once boot knows who is here, the sheet that redeems
   // it opens by itself — over the sign-in screen, or over the app for a guest or a signed-in
   // browser. Once per visit; closed, the code stays for the sign-in screen's own button.

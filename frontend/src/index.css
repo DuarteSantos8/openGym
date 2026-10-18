@@ -895,6 +895,18 @@ body.chips-dragging *{cursor:inherit}
 .exhd{align-items:center}
 .wprog{height:4px;background:var(--surface-2);border-radius:99px;overflow:hidden;margin-bottom:16px}
 .wprog i{display:block;height:100%;background:var(--acc);border-radius:99px;transition:width var(--med) var(--ease)}
+/* The music bar (components/MusicBar.jsx): what plays under the progress line, one compact row. */
+.musicbar{display:flex;align-items:center;gap:10px;margin:-6px 0 14px;padding:6px 6px 6px 8px;border-radius:14px;background:var(--surface)}
+.whdr.stick .musicbar{margin:0 0 10px}
+.mb-art{flex:none;width:36px;height:36px;border-radius:8px;object-fit:cover;display:grid;place-items:center;background:var(--surface-2);color:var(--pink)}
+.mb-art svg{width:20px;height:20px}
+.mb-txt{flex:1;min-width:0}
+.mb-title{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mb-sub{font-size:12px;color:var(--label-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mb-sub.warn{color:var(--orange);white-space:normal}
+.mb-acts{flex:none;display:flex;align-items:center;gap:2px}
+.mb-acts .iconbtn{width:36px;height:36px;background:transparent}
+.mb-acts .mb-play{background:var(--surface-2);border-radius:99px}
 .exmedia{position:relative;border-radius:var(--r-lg);overflow:hidden;background:#fff;margin-bottom:12px}
 .exmedia img{width:100%;height:320px;object-fit:contain;display:block}
 .exmedia .gifhint,.exmedia .giftoggle{

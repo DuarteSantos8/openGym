@@ -20,6 +20,7 @@
 		AA0100000000000000000004 /* PrintPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = AA0100000000000000000003 /* PrintPlugin.m */; };
 		AA0200000000000000000002 /* HealthKitPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0200000000000000000001 /* HealthKitPlugin.swift */; };
 		AA0200000000000000000004 /* AppViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0200000000000000000003 /* AppViewController.swift */; };
+		AA0200000000000000000009 /* MusicPlayerPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0200000000000000000008 /* MusicPlayerPlugin.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 		AA0100000000000000000003 /* PrintPlugin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PrintPlugin.m; sourceTree = "<group>"; };
 		AA0200000000000000000001 /* HealthKitPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitPlugin.swift; sourceTree = "<group>"; };
 		AA0200000000000000000003 /* AppViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppViewController.swift; sourceTree = "<group>"; };
+		AA0200000000000000000008 /* MusicPlayerPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicPlayerPlugin.swift; sourceTree = "<group>"; };
 		AA0200000000000000000005 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		504EC30C1FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		504EC30E1FED79650016851F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -91,6 +93,7 @@
 				AA0100000000000000000003 /* PrintPlugin.m */,
 				AA0200000000000000000001 /* HealthKitPlugin.swift */,
 				AA0200000000000000000003 /* AppViewController.swift */,
+				AA0200000000000000000008 /* MusicPlayerPlugin.swift */,
 				AA0200000000000000000005 /* App.entitlements */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
@@ -232,6 +235,7 @@
 				AA0100000000000000000004 /* PrintPlugin.m in Sources */,
 				AA0200000000000000000002 /* HealthKitPlugin.swift in Sources */,
 				AA0200000000000000000004 /* AppViewController.swift in Sources */,
+				AA0200000000000000000009 /* MusicPlayerPlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

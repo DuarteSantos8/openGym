@@ -43,7 +43,8 @@ everything as one file at any time under **Settings → Data & backup**.
 Your instance has no telemetry and phones home to nobody. The exercise pictures and animations ship
 inside the web image, so not even those are downloaded. The AI coach, if an admin turns it on, sends
 the training data it needs to the provider you configured; [AI_COACH.md](AI_COACH.md) lists exactly
-what. Push notifications go through your browser's push service, as all web push does.
+what. Push notifications go through your browser's push service, as all web push does. The music bar,
+if you choose Spotify for it, talks to Spotify from your device, nothing else.
 
 ### Was openGym written with AI?
 
@@ -103,6 +104,20 @@ No. They are © Aliaksandr Makatserchyk, Gym visual, licensed for use in openGym
 by openGym's license. Anything outside openGym needs your own licence from
 [gymvisual.com](https://gymvisual.com/). Details in [NOTICE.md](../NOTICE.md). The exercise text in
 [catalogue/](../catalogue/README.md) is a different story: that's openGym's, and fixes are welcome.
+
+### Can I control my music during a workout?
+
+Yes: Settings → Workout → Music player puts what is playing at the top of the workout, with
+previous, pause and next.
+
+- **Spotify**, in the browser and in the apps. Make an app on
+  [developer.spotify.com](https://developer.spotify.com/dashboard) (it's free, the one Client ID can
+  serve your whole household), add the redirect URI the settings page shows you (`opengym://spotify`
+  in the phone apps, the instance's own address in a browser, which Spotify accepts on https only)
+  and paste the Client ID into openGym. Each device signs in once; the tokens stay on it. Pausing
+  and skipping need Spotify Premium, as for any app.
+- **Apple Music**, in the iPhone app: the Music app's player, nothing to set up beyond allowing
+  access the first time.
 
 ### Where do I ask something that isn't here?
 
