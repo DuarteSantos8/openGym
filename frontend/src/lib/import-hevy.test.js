@@ -74,7 +74,7 @@ describe('HEVY_ID_MAP', () => {
     B5D3A742: '0410', // Bulgarian Split Squat (Dumbbell)
     '914F3A96': '0327', // Chest Supported Incline Row (Dumbbell)
     '98237BA2': '0826', // Knee Raise Parallel Bars
-    '4E5257DE': '2616', // Lat Pulldown - Close Grip (Cable)
+    '4E5257DE': '6392', // Lat Pulldown - Close Grip (Cable)
     C315DC2A: '0602', // Rear Delt Reverse Fly (Cable)
     FFDA283B: '0381', // Reverse Lunge (Dumbbell)
     '8BAB2735': '0318', // Seated Incline Curl (Dumbbell)
@@ -117,7 +117,7 @@ describe('parseHevyWorkouts', () => {
     expect(elliptical).toBeTruthy()
     expect(elliptical.sets[0]).toMatchObject({ min: 3, done: true })
 
-    const pulldown = entries.find(e => e.id === '2616')
+    const pulldown = entries.find(e => e.id === '6392')
     expect(pulldown).toBeTruthy()
     expect(pulldown.sets[0]).toMatchObject({ w: 25, r: 15, phase: 'warmup' })
     expect(pulldown.sets[1]).toMatchObject({ w: 52, r: 15, rpe: 8 })
@@ -137,7 +137,7 @@ describe('parseHevyWorkouts', () => {
 
   it('converts kg weights into a lb profile', () => {
     const parsed = parseHevyWorkouts([WORKOUT], TEMPLATES, { unit: 'lb' })
-    const pulldown = parsed.workouts[0].entries.find(e => e.id === '2616')
+    const pulldown = parsed.workouts[0].entries.find(e => e.id === '6392')
     expect(pulldown.sets.find(s => s.r === 15 && !s.phase).w).toBeCloseTo(114.6, 0)
     expect(parsed.converted).toBe(true)
   })
@@ -272,7 +272,7 @@ describe('parseHevyRoutines', () => {
     const [cardio, pull, row] = parsed.routines[0].ex
     expect(cardio.id).toBe('2141')
     expect(cardio).toMatchObject({ sets: 1, min: 3 })
-    expect(pull.id).toBe('2616')
+    expect(pull.id).toBe('6392')
     expect(pull).toMatchObject({ sets: 3, reps: 15, weight: 52, warmupSets: 1 })
     expect(row.id).toBe('0327')
     expect(pull.sg).toBeTruthy()
@@ -305,7 +305,7 @@ describe('buildHevyExerciseMap', () => {
   it('indexes every template id from the static map', () => {
     const map = buildHevyExerciseMap(TEMPLATES)
     expect(map.get('3303376C')).toBe('2141')
-    expect(map.get('4E5257DE')).toBe('2616')
+    expect(map.get('4E5257DE')).toBe('6392')
     expect(map.get('DEADBEEF')).toBeNull()
     expect(map.size).toBe(TEMPLATES.length)
   })

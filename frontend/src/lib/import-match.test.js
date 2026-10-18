@@ -125,7 +125,7 @@ describe('Hevy CSV uses the generated title map', () => {
 
   it('resolves English Hevy titles through HEVY_TITLE_MAP before the word-bag', () => {
     expect(matchHevyTitle('Bulgarian Split Squat (Dumbbell)')).toBe('0410')
-    expect(matchHevyTitle('Lat Pulldown - Close Grip (Cable)')).toBe('2616')
+    expect(matchHevyTitle('Lat Pulldown - Close Grip (Cable)')).toBe('6392')
     expect(matchHevyTitle('Reverse Lunge (Dumbbell)')).toBe('0381')
     // Since v1.4 the word-bag finds the new "dumbbell bulgarian split squat" on its own; the
     // map still wins, so a Hevy history keeps landing on the id earlier imports used.
@@ -137,8 +137,8 @@ describe('Hevy CSV uses the generated title map', () => {
     expect(parsed.source).toBe('Hevy')
     expect(parsed.created).toBe(0)
     const ids = parsed.workouts[0].entries.map(e => e.id).sort()
-    expect(ids).toEqual(['0410', '0381', '2616'].sort())
-    const pull = parsed.workouts[0].entries.find(e => e.id === '2616')
+    expect(ids).toEqual(['0410', '0381', '6392'].sort())
+    const pull = parsed.workouts[0].entries.find(e => e.id === '6392')
     expect(pull.sets[0]).toMatchObject({ w: 25, r: 15, phase: 'warmup' })
     expect(pull.sets[1]).toMatchObject({ w: 52, r: 12, rpe: 8 })
   })
@@ -162,6 +162,15 @@ describe('Hevy titles land on the exercise Hevy shows', () => {
     expect(matchHevyTitle('Triceps Rope Pushdown')).toBe('0200')
     expect(matchHevyTitle('Iso-Lateral Low Row')).toBe('4214')
     expect(matchHevyTitle('Seated Cable Row - Bar Wide Grip')).toBe('0218')
+  })
+
+  it('follows Hevy\'s artwork for common lifts too', () => {
+    expect(matchHevyTitle('Lat Pulldown (Cable)')).toBe('0150')
+    expect(matchHevyTitle('Face Pull')).toBe('7744')
+    expect(matchHevyTitle('Butterfly (Pec Deck)')).toBe('1030')
+    expect(matchHevyTitle('Triceps Pushdown')).toBe('0201')
+    expect(matchHevyTitle('Chest Dip (Weighted)')).toBe('1755')
+    expect(matchHevyTitle('Single Arm Curl (Cable)')).toBe('0190')    // was left unmatched
   })
 
   it('gives a title and its weighted twin their own match in one file', () => {
