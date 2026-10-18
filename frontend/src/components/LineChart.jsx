@@ -95,9 +95,10 @@ export default function LineChart({ points, h = 150, unit = '', color = 'var(--a
         ticks.push(tk)
       }
       if (ticks.length === 1) ticks[0] = { ...ticks[0], t: (t0 + t1) / 2, anchor: 'middle' }
-    } else if (t1 - t0 > 366 * 864e5) {
-      // Over more than a year a month name comes round again ("Apr | Jul | Oct | Jan | Apr"), so
-      // each month says its year: "Apr '25".
+    } else if (ticks.length >= 13) {
+      // Twelve month names come round again from the thirteenth month on ("Apr | … | Mar | Apr"),
+      // so each month then says its year: "Apr '25". Counted in months, not milliseconds, so a span
+      // of exactly a year and a day, or one across a clock change, is caught as well.
       for (const tk of ticks) tk.txt += " '" + String(new Date(tk.t).getFullYear()).slice(2)
     }
     const every = Math.max(1, Math.ceil(ticks.length / 7))

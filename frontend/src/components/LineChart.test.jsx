@@ -139,4 +139,11 @@ describe('LineChart x axis', () => {
     expect(new Set(long).size).toBe(long.length)
     expect(xLabels([at(2025, 10, 20, 12, 50), at(2026, 9, 30, 12, 60)]).every(l => !l.includes("'"))).toBe(true)
   })
+
+  it('gives the months their year at exactly 366 days, where Apr comes round again', () => {
+    const edge = xLabels([at(2025, 3, 31, 0, 50), at(2026, 4, 1, 0, 60)])
+    expect(edge[0]).toBe("Apr '25")
+    expect(edge.at(-1)).toBe("Apr '26")
+    expect(new Set(edge).size).toBe(edge.length)
+  })
 })
