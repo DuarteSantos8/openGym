@@ -256,6 +256,12 @@ export function checkName(exercise, german) {
     add('movement', `Write "Beinbeugen" in "${name}": a leg curl bends the knee, and "Beinstrecken" is the leg extension.`)
   }
 
+  // The mirror of the rule above, so a future batch cannot slip the other way either: an
+  // extension is the one movement "Beinbeugen" must never name, for the same reason in reverse.
+  if (/leg extension/iu.test(english) && /beinbeugen/iu.test(name)) {
+    add('movement', `Write "Beinstrecken" in "${name}": a leg extension straightens the knee, and "Beinbeugen" is the leg curl.`)
+  }
+
   // Inverted English-leak check: anything the German name shares with the English one is a leak
   // unless it is on the loanword list. An enumerated list of forbidden English words missed a
   // different word every time it was written.
