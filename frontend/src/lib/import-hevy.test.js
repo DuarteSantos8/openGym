@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import {
   matchHevyTemplate, buildHevyExerciseMap, parseHevyWorkouts, parseHevyBodyweight,
-  parseHevyRoutines, mergeHevyRoutines, localWhen, importHevyData, HevyApiError, HEVY_ID_MAP,
+  parseHevyRoutines, mergeHevyRoutines, localWhen, importHevyData, HevyApiError, HEVY_ID_MAP, hevySummaryCounts,
 } from './import-hevy.js'
 import { EXIDX } from './exercises.js'
 import { mergeImport } from './import-csv.js'
@@ -318,5 +318,24 @@ describe('parseHevyWorkouts past midnight', () => {
     const [w] = parseHevyWorkouts([late], TEMPLATES, { unit: 'kg' }).workouts
     expect(w.d).toBe('2026-09-06')
     expect((w.end - w.start) / 60000).toBe(50)
+  })
+})
+
+describe('hevySummaryCounts', () => {
+  // One library exercise and one custom one, in both a workout and a routine.
+  const exercises = [
+    { title: 'Lat Pulldown - Close Grip (Cable)', exercise_template_id: '4E5257DE', superset_id: null, sets: [{ type: 'normal', weight_kg: 50, reps: 10 }] },
+    { title: 'Lying Neck Rotation', exercise_template_id: 'my-own-template', superset_id: null, sets: [{ type: 'normal', weight_kg: 2, reps: 15 }] },
+  ]
+  const workout = { id: 'w1', title: 'Neck', start_time: '2026-01-12T10:00:00Z', end_time: '2026-01-12T11:00:00Z', exercises }
+  const routine = { id: 'r1', title: 'Neck', exercises }
+
+  it('counts an exercise in both the workouts and the routines once, from the parts switched on', () => {
+    const w = parseHevyWorkouts([workout], TEMPLATES, { unit: 'kg' })
+    const r = parseHevyRoutines([routine], TEMPLATES, { unit: 'kg' })
+    expect([w.matched + r.matched, w.created + r.created]).toEqual([2, 2])   // the sums count each twice
+    expect(hevySummaryCounts(w, r)).toEqual({ matched: 1, created: 1 })
+    expect(hevySummaryCounts(w, r, { workouts: false })).toEqual({ matched: 1, created: 1 })
+    expect(hevySummaryCounts(w, r, { workouts: false, routines: false })).toEqual({ matched: 0, created: 0 })
   })
 })
