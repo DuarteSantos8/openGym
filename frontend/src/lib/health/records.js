@@ -277,8 +277,11 @@ export function dailyValues(S, type) {
     } else if (m.daily === 'mean') v = rs.reduce((s, r) => s + Number(r.v), 0) / rs.length
     else if (m.daily === 'max') v = Math.max(...rs.map(r => Number(r.v)))
     else v = Number(last.v)
-    const lo = rs.some(r => r.lo != null) ? Math.min(...rs.map(r => r.lo ?? r.v)) : undefined
-    const hi = rs.some(r => r.hi != null) ? Math.max(...rs.map(r => r.hi ?? r.v)) : undefined
+    // The day's lowest and highest: what the readings carry, or for several readings of a mean
+    // (blood pressure taken morning and evening) the readings themselves.
+    const spread = rs.some(r => r.lo != null || r.hi != null) || (m.daily === 'mean' && rs.length > 1)
+    const lo = spread ? Math.min(...rs.map(r => Number(r.lo ?? r.v))) : undefined
+    const hi = spread ? Math.max(...rs.map(r => Number(r.hi ?? r.v))) : undefined
     out.push({ d, t: last.t, v, n: rs.length, src: last.src, ...(lo != null ? { lo } : {}), ...(hi != null ? { hi } : {}) })
   }
   out.sort((a, b) => (a.d < b.d ? -1 : 1))

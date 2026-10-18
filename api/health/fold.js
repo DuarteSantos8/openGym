@@ -9,7 +9,10 @@
  *   - a day's total (steps, energy, food; minutes of a category; how many times something
  *     happened) is keyed by its type and day; two sources on one day (an iPhone and a Watch
  *     counting the same walk) give the larger total, not the two added up
- *   - every other measurement is the day's mean (heart rate also its lowest and highest)
+ *   - every other measurement is the day's mean (heart rate, blood oxygen and a few more also its
+ *     lowest and highest), and one taken by hand (blood pressure, glucose, a temperature) is kept
+ *     one an hour, keyed by its type and the hour: a reading as it was, or a sensor's hour as its
+ *     mean, lowest and highest
  *   - sleep is the asleep time of a night, overlapping spans of several sources merged first, on
  *     the day it ended
  *   - a symptom or a flow is the day's highest level, a test the day's latest answer
@@ -59,6 +62,7 @@ export function createFolder({ since = '', src = APPLE_HEALTH } = {}) {
   const sums = new Map();
   const ranges = new Map();
   const levels = new Map();
+  const hours = new Map();
   const sleep = [];
   let used = 0;
 
@@ -108,15 +112,24 @@ export function createFolder({ since = '', src = APPLE_HEALTH } = {}) {
     const n = canonical(type, Number(v), unit);
     if (!Number.isFinite(n)) return false;
     used++;
+    const l = lo == null ? NaN : canonical(type, lo, unit), h = hi == null ? NaN : canonical(type, hi, unit);
     if (kind === 'sample') {
       const sid = `${type}:${a.ms}`;
       samples.set(sid, { type, v: round(n, 3), t: a.ms, d: a.d, sid, src });
     } else if (kind === 'sum') total(type, a.d, source, n);
+    else if (kind === 'hour') {
+      // The hour it falls in, the same instant on every device: its first reading's time and day.
+      const hour = Math.floor(a.ms / 3600000) * 3600000;
+      const key = `${type}|${hour}`;
+      const r = hours.get(key) || { n: 0, sum: 0, lo: Infinity, hi: -Infinity, t: Infinity, d: a.d, hour };
+      r.n++; r.sum += n; r.lo = Math.min(r.lo, Number.isFinite(l) ? l : n); r.hi = Math.max(r.hi, Number.isFinite(h) ? h : n);
+      if (a.ms < r.t) { r.t = a.ms; r.d = a.d; }
+      hours.set(key, r);
+    }
     else {
       const key = `${type}|${a.d}`;
       const r = ranges.get(key) || { n: 0, sum: 0, lo: Infinity, hi: -Infinity };
       // A point that is itself a summary (a day's or an hour's Min/Avg/Max) brings its own range.
-      const l = lo == null ? NaN : canonical(type, lo, unit), h = hi == null ? NaN : canonical(type, hi, unit);
       r.n++; r.sum += n; r.lo = Math.min(r.lo, Number.isFinite(l) ? l : n); r.hi = Math.max(r.hi, Number.isFinite(h) ? h : n);
       ranges.set(key, r);
     }
@@ -152,10 +165,17 @@ export function createFolder({ since = '', src = APPLE_HEALTH } = {}) {
       const dec = TYPES[type].unit === 'count' ? 0 : 2;
       if (v > 0) out.push({ type, v: round(v, dec), t: noon(d), d, sid: `${type}:${d}`, src });
     }
+    // A day's or an hour's lowest and highest, to the decimals the type is shown with.
+    const span = (type, r) => ({ lo: round(r.lo, TYPES[type].dec), hi: round(r.hi, TYPES[type].dec) });
     for (const [key, r] of ranges) {
       const [type, d] = key.split('|');
-      out.push({ type, v: round(r.sum / r.n, 2), t: noon(d), d, sid: `${type}:${d}`, src,
-        ...(kindOf(type) === 'range' ? { lo: Math.round(r.lo), hi: Math.round(r.hi) } : {}) });
+      out.push({ type, v: round(r.sum / r.n, 2), t: noon(d), d, sid: `${type}:${d}`, src, ...(kindOf(type) === 'range' ? span(type, r) : {}) });
+    }
+    for (const [key, r] of hours) {
+      const type = key.split('|')[0];
+      const v = round(r.sum / r.n, 3);
+      // One reading is itself; several (a sensor) carry their range.
+      out.push({ type, v, t: r.t, d: r.d, sid: `${type}:${r.hour}`, src, ...(r.lo !== r.hi ? span(type, r) : {}) });
     }
     for (const [key, l] of levels) {
       const [type, d] = key.split('|');
@@ -190,7 +210,7 @@ const listOf = v => (Array.isArray(v) ? v : typeof v === 'string' ? v.split(/\r?
 // "80,5" from a phone set to a comma-decimal language is 80.5.
 const number = x => Number(typeof x === 'string' ? x.replace(/\s/g, '').replace(',', '.') : x);
 // The kinds a Shortcut sends as numbers (Find Health Samples' Value), every measurement and total.
-const NUMERIC = new Set(['sample', 'sum', 'range', 'mean']);
+const NUMERIC = new Set(['sample', 'sum', 'range', 'mean', 'hour']);
 
 /**
  * The readings in a Shortcut's request body:

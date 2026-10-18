@@ -41,7 +41,7 @@ export const GROUPS = {
   workouts: { label: 'Workouts', icon: 'dumbbell', color: 'var(--green)' },
 }
 
-const DAILY = { sample: 'last', sum: 'sum', range: 'mean', mean: 'mean', sleep: 'sum', min: 'sum', ev: 'sum', lvl: 'max', val: 'last', wo: 'sum' }
+const DAILY = { sample: 'last', sum: 'sum', range: 'mean', mean: 'mean', hour: 'mean', sleep: 'sum', min: 'sum', ev: 'sum', lvl: 'max', val: 'last', wo: 'sum' }
 // The cards that had a look of their own before the catalogue; every other type takes its group's.
 const LOOK = {
   weight: ['scale', 'var(--blue)'], bmi: ['person', 'var(--indigo)'], bodyFat: ['chartLine', 'var(--orange)'],
