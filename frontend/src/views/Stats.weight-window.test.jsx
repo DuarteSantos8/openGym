@@ -77,6 +77,17 @@ describe('Stats: body weight reads the weigh-in\'s own date', () => {
     expect(bwChart().points.map(p => p.d)).toEqual([ago(5), ago(0)])
   })
 
+  it('a weigh-in corrected today stays outside the window, whatever its stamp says', () => {
+    // stampChange re-stamps `t` at Date.now() on every later edit too, so correcting a typo in
+    // a five-year-old entry leaves it carrying today's stamp; its own date keeps it out of the
+    // 30-day window instead of pulling the old weight in as a fresh measurement.
+    const corrected = { d: '2021-01-05', w: 90, t: Date.now() }   // edited a moment ago
+    mount([corrected, { d: ago(3), w: 76.7, t: stamp }, { d: ago(0), w: 76.5, t: stamp }])
+    expect(tile().querySelector('.v').textContent).toBe(deltaTile(76.5 - 76.7))
+    press('1M')
+    expect(bwChart().points.map(p => p.d)).toEqual([ago(3), ago(0)])
+  })
+
   it('the ranges cut by date: a 2021-2022 import has no month and no year, and All still shows it all', () => {
     mount(imported)
     press('1M')
