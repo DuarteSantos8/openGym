@@ -147,6 +147,17 @@ describe('the root', () => {
     expect(mocks.navs).toEqual([['/settings/alerts'], ['/coach/setup'], ['/settings/account']])
   })
 
+  it('in a hosted app, an admin gets the Coach row too, straight to the Coach card of the admin dashboard', () => {
+    mocks.user = { id: 'u1', name: 'Dana' }
+    mount()
+    expect(titles()).not.toContain('AI Coach')
+    mocks.user = { id: 'u1', name: 'Dana', admin: true }
+    mount()
+    expect(rowTitled('AI Coach').textContent).toContain('Admin')
+    act(() => rowTitled('AI Coach').click())
+    expect(mocks.navs).toEqual([['/admin', { state: { section: 'coach' } }]])
+  })
+
   it('searches every setting and a hit goes to its page with the row to flash', () => {
     mount()
     const input = host.querySelector('.sp-search input')

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { api } from '../lib/api.js'
@@ -253,6 +253,15 @@ function AuditCard({ tick }) {
 
 export default function Admin() {
   const nav = useNavigate()
+  // Opened from Settings → AI Coach (the hosted app's way to the Coach, which is the server's):
+  // straight to the Coach card rather than the top of the page.
+  const toCoach = useLocation().state?.section === 'coach'
+  const coachRef = useRef(null)
+  useEffect(() => {
+    if (!toCoach) return
+    const tm = setTimeout(() => coachRef.current?.scrollIntoView({ block: 'start' }), 50)
+    return () => clearTimeout(tm)
+  }, [toCoach])
   const user = useStore(s => s.user)
   const openSheet = useUI(s => s.openSheet)
   const [users, setUsers] = useState(null)
@@ -319,7 +328,7 @@ export default function Admin() {
 
     {/* The Coach setup. Renders nothing at all unless the instance offers the Coach, so an admin
         page on a box that never enabled it is byte-for-byte the page it was before. */}
-    <AdminCoach />
+    <div ref={coachRef} className="adm-coach-anchor"><AdminCoach /></div>
 
     <InvitesCard invites={invites} reload={loadInvites} inviteOnly={inviteOnly} />
 

@@ -49,7 +49,8 @@ own (see [On the phone](#on-the-phone)).
 The entry appears only when all of these hold:
 
 - **The master switch is on.** That is **Set up the Coach** on the admin card
-  (**Settings → Account → Admin dashboard**, the **AI Coach** card), and afterwards the toggle at the top
+  (**Settings → Account → Admin dashboard**, the **AI Coach** card; an admin also finds it as
+  **Settings → AI Coach**), and afterwards the toggle at the top
   of the same card. A provider that is connected and passes **Test the Coach** is not enough
   on its own: with the switch off, the server tells every app there is no Coach, and the card
   reads *Off right now — nobody sees it anywhere in the app*.
