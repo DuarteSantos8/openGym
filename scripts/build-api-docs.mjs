@@ -135,6 +135,7 @@ const TAGS = {
   // spec needs a line here.
   coach: { title: 'AI Coach', side: 'Plans, reviews, debriefs' },
   health: { title: 'Health', side: 'Apple Health readings from an iPhone Shortcut' },
+  music: { title: 'Music', side: 'Spotify on the account, for the workout' },
   admin: { title: 'Admin', side: 'Users, invites, audit log, Coach' }
 }
 

@@ -223,6 +223,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <a class="side-link" href="#media"><b>Media</b><span>Photos &amp; videos of your exercises &amp; workouts</span></a>
   <a class="side-link" href="#coach"><b>AI Coach</b><span>Plans, reviews, debriefs</span></a>
   <a class="side-link" href="#health"><b>Health</b><span>Apple Health readings from an iPhone Shortcut</span></a>
+  <a class="side-link" href="#music"><b>Music</b><span>Spotify on the account, for the workout</span></a>
   <a class="side-link" href="#admin"><b>Admin</b><span>Users, invites, audit log, Coach</span></a>
   <a class="side-link" href="#schemas"><b>Schemas</b><span>The state blob, the error shape &amp; co.</span></a>
   <p class="side-label">More</p>
@@ -246,7 +247,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.1</span>
-    <span>73 endpoints</span>
+    <span>79 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -2606,6 +2607,250 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s5">503</span>
     <span class="p-desc">The profile's file cannot be read.</span>
+  </div>
+    </div>
+  </div>
+</details>
+  </div>
+</section>
+
+<section class="api-sec" id="music">
+  <h2>Music</h2>
+  <p class="sub">Spotify on the account, for the music bar of a workout. Offered when the instance has a Spotify app (<code>SPOTIFY_CLIENT_ID</code>); each profile connects its own Spotify account once and every device signed in to it can then show and steer what plays.</p>
+  <div class="eps">
+
+<details class="ep" id="op-getSpotify">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/music/spotify</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Whether this instance offers Spotify, and whether the profile connected it</span>
+  </summary>
+  <div class="ep-body">
+<p><code>available</code> false: no <code>SPOTIFY_CLIENT_ID</code> on this instance (the app then offers a Spotify app of the person's own, per device, instead). <code>redirect</code> is the address to register in the Spotify app.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The connection's state.<span class="r-sig">{ available: boolean, connected: boolean, name: string | null, redirect: string <span class="p-hint">(uri)</span> }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-deleteSpotify">
+  <summary>
+    <span class="m delete">DELETE</span>
+    <span class="ep-path"><code>/api/music/spotify</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Disconnect Spotify from the profile</span>
+  </summary>
+  <div class="ep-body">
+<p>Forgets the tokens. Access can also be removed from the Spotify account's own settings.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Disconnected.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-connectSpotify">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/music/spotify/connect</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The Spotify sign-in address</span>
+  </summary>
+  <div class="ep-body">
+<p>Open the returned <code>url</code> (the phone app in the system browser). Spotify comes back to <code>GET /api/music/spotify/callback</code>. <code>app: true</code> sends the browser on to the phone app's <code>opengym://spotify</code> link afterwards; otherwise to <code>back</code>, the app's own address on this instance (anything else is ignored).</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">app</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">back</span>
+    <span class="p-type">string <span class="p-hint">(uri)</span></span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The address.<span class="r-sig">{ url: string <span class="p-hint">(uri)</span> }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Spotify is not offered on this instance.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-spotifyCallback">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/music/spotify/callback</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Where Spotify sends the browser back after the sign-in</span>
+  </summary>
+  <div class="ep-body">
+<p>Called by Spotify, not by the app. The <code>state</code> names the sign-in this server started; it needs no session. Redirects to <code>opengym://spotify?connected=1</code> (or <code>failed=1</code>) for the phone app, or to the app's page with <code>?spotify=connected</code> (or <code>failed</code>).</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public: no authentication required.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">code</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">state<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">error</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s3">302</span>
+    <span class="p-desc">Back to the app.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Unknown or expired sign-in.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Spotify is not offered on this instance.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-getSpotifyPlayer">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/music/spotify/player</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">What plays on the profile's Spotify</span>
+  </summary>
+  <div class="ep-body">
+<p><code>track</code> is null when nothing plays. Errors carry a <code>code</code>: <code>auth</code> (409, not connected, or access was removed in Spotify), <code>busy</code> (429), <code>failed</code> (502).</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">What plays.<span class="r-sig">{ track: null | object }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Spotify is not offered on this instance.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">Not connected (<code>code: auth</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Spotify is rate limiting (<code>code: busy</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">502</span>
+    <span class="p-desc">Spotify did not answer (<code>code: failed</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-controlSpotifyPlayer">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/music/spotify/player</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Play, pause, next or previous</span>
+  </summary>
+  <div class="ep-body">
+<p>On the device that plays the account. Spotify only lets Premium accounts be steered: <code>premium</code> (403); <code>device</code> (404) when no device is playing the account.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">action<em class="p-req" title="required">required</em></span>
+    <span class="p-type">&quot;play&quot; | &quot;pause&quot; | &quot;next&quot; | &quot;previous&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Unknown action.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">The Spotify account is not Premium (<code>code: premium</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No device plays the account (<code>code: device</code>), or Spotify is not offered here.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">Not connected (<code>code: auth</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Too many requests (<code>code: busy</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">502</span>
+    <span class="p-desc">Spotify did not answer (<code>code: failed</code>).</span>
   </div>
     </div>
   </div>

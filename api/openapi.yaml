@@ -157,6 +157,11 @@ tags:
     description: >-
       Health readings an iPhone Shortcut read from Apple Health, which no website can read
       itself. The Shortcut signs in with a key of its own, made in Settings → Health.
+  - name: music
+    description: >-
+      Spotify on the account, for the music bar of a workout. Offered when the instance has a
+      Spotify app (`SPOTIFY_CLIENT_ID`); each profile connects its own Spotify account once and
+      every device signed in to it can then show and steer what plays.
   - name: coach
     description: >-
       AI Coach: plans, reviews and debriefs. Every route here answers 503 unless the
@@ -2568,6 +2573,143 @@ paths:
         '409': { $ref: '#/components/responses/CoachRefused' }
         '429': { $ref: '#/components/responses/CoachRefused' }
         '503': { $ref: '#/components/responses/CoachOff' }
+
+  /api/music/spotify:
+    get:
+      tags: [music]
+      operationId: getSpotify
+      summary: Whether this instance offers Spotify, and whether the profile connected it
+      description: |
+        `available` false: no `SPOTIFY_CLIENT_ID` on this instance (the app then offers a Spotify app
+        of the person's own, per device, instead). `redirect` is the address to register in the
+        Spotify app.
+      responses:
+        '200':
+          description: The connection's state.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  available: { type: boolean }
+                  connected: { type: boolean }
+                  name: { oneOf: [{ type: string }, { type: 'null' }], description: The Spotify account's display name. }
+                  redirect: { type: string, format: uri }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    delete:
+      tags: [music]
+      operationId: deleteSpotify
+      summary: Disconnect Spotify from the profile
+      description: Forgets the tokens. Access can also be removed from the Spotify account's own settings.
+      responses:
+        '200': { description: Disconnected. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/music/spotify/connect:
+    post:
+      tags: [music]
+      operationId: connectSpotify
+      summary: The Spotify sign-in address
+      description: |
+        Open the returned `url` (the phone app in the system browser). Spotify comes back to
+        `GET /api/music/spotify/callback`. `app: true` sends the browser on to the phone app's
+        `opengym://spotify` link afterwards; otherwise to `back`, the app's own address on this
+        instance (anything else is ignored).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                app: { type: boolean }
+                back: { type: string, format: uri }
+      responses:
+        '200':
+          description: The address.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url: { type: string, format: uri }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: Spotify is not offered on this instance. }
+
+  /api/music/spotify/callback:
+    get:
+      tags: [music]
+      operationId: spotifyCallback
+      summary: Where Spotify sends the browser back after the sign-in
+      description: |
+        Called by Spotify, not by the app. The `state` names the sign-in this server started; it
+        needs no session. Redirects to `opengym://spotify?connected=1` (or `failed=1`) for the
+        phone app, or to the app's page with `?spotify=connected` (or `failed`).
+      security: []
+      parameters:
+        - { name: code, in: query, schema: { type: string } }
+        - { name: state, in: query, required: true, schema: { type: string } }
+        - { name: error, in: query, schema: { type: string } }
+      responses:
+        '302': { description: Back to the app. }
+        '400': { description: Unknown or expired sign-in. }
+        '404': { description: Spotify is not offered on this instance. }
+
+  /api/music/spotify/player:
+    get:
+      tags: [music]
+      operationId: getSpotifyPlayer
+      summary: What plays on the profile's Spotify
+      description: |
+        `track` is null when nothing plays. Errors carry a `code`: `auth` (409, not connected, or
+        access was removed in Spotify), `busy` (429), `failed` (502).
+      responses:
+        '200':
+          description: What plays.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  track:
+                    oneOf:
+                      - type: 'null'
+                      - type: object
+                        properties:
+                          id: { type: string }
+                          playing: { type: boolean }
+                          title: { type: string }
+                          artist: { type: string }
+                          art: { type: string, description: A cover of 64 px or more (https), or empty. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: Spotify is not offered on this instance. }
+        '409': { description: 'Not connected (`code: auth`).' }
+        '429': { description: 'Spotify is rate limiting (`code: busy`).' }
+        '502': { description: 'Spotify did not answer (`code: failed`).' }
+    post:
+      tags: [music]
+      operationId: controlSpotifyPlayer
+      summary: Play, pause, next or previous
+      description: |
+        On the device that plays the account. Spotify only lets Premium accounts be steered:
+        `premium` (403); `device` (404) when no device is playing the account.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action: { type: string, enum: [play, pause, next, previous] }
+      responses:
+        '200': { description: Done. }
+        '400': { description: Unknown action. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: 'The Spotify account is not Premium (`code: premium`).' }
+        '404': { description: 'No device plays the account (`code: device`), or Spotify is not offered here.' }
+        '409': { description: 'Not connected (`code: auth`).' }
+        '429': { description: 'Too many requests (`code: busy`).' }
+        '502': { description: 'Spotify did not answer (`code: failed`).' }
 
   /api/health/key:
     get:

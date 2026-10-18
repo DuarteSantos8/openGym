@@ -1818,6 +1818,10 @@ export const PT_BR_OVERRIDES = {
   'Music': 'Música',
   'Previous track': 'Faixa anterior',
   'Spotify Client ID': 'Client ID do Spotify',
+  'Connected to your account': 'Conectado à sua conta',
+  'Connected to your account as {0}': 'Conectado à sua conta como {0}',
+  'Spotify is linked to your openGym account: every device you sign in on can show and control it.': 'O Spotify está vinculado à sua conta do openGym: qualquer dispositivo em que você entrar pode mostrá-lo e controlá-lo.',
+
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

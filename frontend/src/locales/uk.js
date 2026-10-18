@@ -2654,4 +2654,7 @@ export default {
   'Start Spotify on one of your devices first.': 'Спершу запустіть Spotify на одному зі своїх пристроїв.',
   'The Music app on this iPhone.': 'Застосунок «Музика» на цьому iPhone.',
   'The music player did not answer.': 'Музичний плеєр не відповідає.',
+  'Connected to your account': 'Підключено до вашого акаунта',
+  'Connected to your account as {0}': 'Підключено до вашого акаунта як {0}',
+  'Spotify is linked to your openGym account: every device you sign in on can show and control it.': 'Spotify прив\'язано до вашого акаунта openGym: кожен пристрій, на якому ви ввійшли, може показувати його й керувати ним.',
 }

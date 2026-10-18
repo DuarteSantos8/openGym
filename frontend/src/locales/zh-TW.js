@@ -2650,4 +2650,7 @@ export default {
   'Start Spotify on one of your devices first.': '請先在你的某部裝置上開啟 Spotify。',
   'The Music app on this iPhone.': '這部 iPhone 上的「音樂」App。',
   'The music player did not answer.': '音樂播放器沒有回應。',
+  'Connected to your account': '已連結到你的帳號',
+  'Connected to your account as {0}': '已以 {0} 的身分連結到你的帳號',
+  'Spotify is linked to your openGym account: every device you sign in on can show and control it.': 'Spotify 已連結到你的 openGym 帳號：你登入的每部裝置都能顯示並控制它。',
 }

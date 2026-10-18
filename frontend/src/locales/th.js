@@ -2668,4 +2668,7 @@ export default {
   'Start Spotify on one of your devices first.': 'เปิด Spotify บนอุปกรณ์เครื่องใดเครื่องหนึ่งของคุณก่อน',
   'The Music app on this iPhone.': 'แอปเพลงบน iPhone เครื่องนี้',
   'The music player did not answer.': 'เครื่องเล่นเพลงไม่ตอบสนอง',
+  'Connected to your account': 'เชื่อมต่อกับบัญชีของคุณแล้ว',
+  'Connected to your account as {0}': 'เชื่อมต่อกับบัญชีของคุณในชื่อ {0}',
+  'Spotify is linked to your openGym account: every device you sign in on can show and control it.': 'Spotify เชื่อมโยงกับบัญชี openGym ของคุณแล้ว อุปกรณ์ทุกเครื่องที่คุณลงชื่อเข้าใช้สามารถแสดงและควบคุมได้',
 }

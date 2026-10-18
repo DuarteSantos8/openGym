@@ -2660,4 +2660,7 @@ export default {
   'Start Spotify on one of your devices first.': 'Előbb indítsd el a Spotifyt valamelyik eszközödön.',
   'The Music app on this iPhone.': 'A Zene app ezen az iPhone-on.',
   'The music player did not answer.': 'A zenelejátszó nem válaszol.',
+  'Connected to your account': 'Csatlakoztatva a fiókodhoz',
+  'Connected to your account as {0}': 'Csatlakoztatva a fiókodhoz mint {0}',
+  'Spotify is linked to your openGym account: every device you sign in on can show and control it.': 'A Spotify az openGym-fiókodhoz van kötve: minden eszköz, amelyen bejelentkezel, megjelenítheti és vezérelheti.',
 }
