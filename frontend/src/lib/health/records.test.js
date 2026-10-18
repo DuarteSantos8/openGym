@@ -4,7 +4,7 @@ import {
   makeRecord, normalizeHealthState, importRecords, withoutSource, compositionMeasurements, saveComposition,
   deleteComposition, bridgeWeights, weighInsWithoutSource, dailyValues, derivedBmi, latestOf, seriesOf, historyOf, importId,
 } from './records.js'
-import { readingsFromSamples, readingsFromDays, readingsFromSleep, APPLE_HEALTH } from './apple-health.js'
+import { readingsFromSamples, readingsFromDays, readingsFromHours, readingsFromSleep, APPLE_HEALTH } from './apple-health.js'
 import { applyReadings, readSince, FIRST_DAYS, OVERLAP_DAYS } from './sync.js'
 import { toDisplay, fromDisplay, displayUnit, fmtHealth, fmtHealthDelta, fmtMinutes, fmtFeetInches } from './units.js'
 import { mergeHealth, mergeStates, stampChange, stampHealth } from '../sync-merge.js'
@@ -249,5 +249,22 @@ describe('a change too small to show', () => {
     expect(fmtHealthDelta('spo2', -0.4, { unit: 'kg' })).toBe('')
     expect(fmtHealthDelta('spo2', 2, { unit: 'kg' })).toBe('+2 %')
     expect(fmtHealthDelta('sleep', 0.2, { unit: 'kg' })).toBe('')
+  })
+})
+
+describe('measurements taken by hand', () => {
+  const at = h => new Date(`2026-10-12T${String(h).padStart(2, '0')}:00:00`).getTime()
+  it('the iPhone reads them an hour at a time, each hour its own reading', () => {
+    const r = readingsFromHours('systolic', [{ start: at(7), value: 140, min: 140, max: 140 }, { start: at(21), value: 120, min: 120, max: 120 }])
+    expect(r.map(x => [x.v, x.t, x.lo])).toEqual([[140, at(7), undefined], [120, at(21), undefined]])
+    expect(r[0].sid).toBe(`systolic:${at(7)}`)
+    expect(readingsFromHours('glucose', [{ start: at(8), value: 95.5, min: 90, max: 101 }])[0]).toMatchObject({ v: 95.5, lo: 90, hi: 101 })
+  })
+  it('a day of several readings shows their mean, with the lowest and the highest', () => {
+    const S = { unit: 'kg', bodyweight: [], health: [] }
+    applyReadings(S, readingsFromHours('systolic', [{ start: at(7), value: 140 }, { start: at(21), value: 120 }]), { now: 1 })
+    const day = dailyValues(S, 'systolic').at(-1)
+    expect([day.v, day.lo, day.hi, day.n]).toEqual([130, 120, 140, 2])
+    expect(historyOf(S, 'systolic').map(x => x.v)).toEqual([120, 140])
   })
 })

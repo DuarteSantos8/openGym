@@ -9,6 +9,8 @@
 // says, and folded by the same code that folds Health's export and an iPhone Shortcut
 // (api/health/fold.js) — so a reading has the same id whichever way it came in:
 //   - body readings: every sample
+//   - blood pressure, glucose and the other measurements taken by hand: an hour at a time, so a
+//     reading in the morning and one in the evening stay two (HealthKit's hourly statistics)
 //   - a day's totals and every other measurement: HealthKit's own daily statistics, which already
 //     leave out the overlap of an iPhone and a Watch counting the same steps; one reading per day,
 //     recomputed until the day is over (heart rate also its lowest and highest)
@@ -68,6 +70,20 @@ export function readingsFromDays(type, days) {
   return f.readings()
 }
 
+/**
+ * HealthKit's hourly statistics of a measurement taken by hand (blood pressure, glucose…) as
+ * readings: one per hour that has any, its time the hour's own, folded as an export's samples are.
+ */
+export function readingsFromHours(type, hours) {
+  if (!TYPES[type]) return []
+  const f = createFolder()
+  for (const h of list(hours)) {
+    const v = num(h?.value), t = num(h?.start)
+    if (v != null && t != null) f.add({ type, v, unit: unitOf(type), start: localTime(t), lo: num(h.min), hi: num(h.max) })
+  }
+  return f.readings()
+}
+
 /** Nights of sleep as readings: minutes asleep, on the day the night ended. */
 export function readingsFromSleep(nights) {
   const out = []
@@ -115,6 +131,7 @@ const plugin = () => pluginP || (pluginP = (async () => {
 async function readType(HK, type, start, end) {
   const x = TYPES[type]
   if (x.kind === 'sample') return readingsFromSamples(type, (await HK.querySamples({ type: x.hk, unit: nativeUnit(x.unit), start, end }))?.samples)
+  if (x.kind === 'hour') return readingsFromHours(type, (await HK.queryDaily({ type: x.hk, unit: nativeUnit(x.unit), start, end, stat: 'range', hourly: true }))?.days)
   if (STAT[x.kind]) return readingsFromDays(type, (await HK.queryDaily({ type: x.hk, unit: nativeUnit(x.unit), start, end, stat: STAT[x.kind] }))?.days)
   if (x.kind === 'sleep') return readingsFromSleep((await HK.querySleep({ start, end }))?.nights)
   if (x.kind === 'wo') return readingsFromWorkouts((await HK.queryWorkouts({ start, end }))?.workouts)

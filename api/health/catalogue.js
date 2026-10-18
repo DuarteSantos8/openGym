@@ -11,6 +11,10 @@
  *                 sum     the day's total (steps, energy, food)
  *                 range   the day's mean, with its lowest and highest (heart rate)
  *                 mean    the day's mean (every other measurement)
+ *                 hour    one reading an hour, kept with its time: a measurement taken by hand
+ *                         (blood pressure, glucose, a temperature) is kept as it was, and a sensor
+ *                         that measures every few minutes gives the hour's mean, lowest and
+ *                         highest — never more than 24 a day
  *                 sleep   minutes asleep of the night, on the day it ended
  *                 min     minutes of the category's spans that started that day (mindfulness)
  *                 ev      how many times that day (a notification, a toothbrushing)
@@ -77,7 +81,7 @@ const ROWS = [
   ['heartRate', Q + 'HeartRate', 'heart', 'range', 'bpm', 'plain', 0, 20, 250, 'Heart rate', CORE],
   ['restingHeartRate', Q + 'RestingHeartRate', 'heart', 'mean', 'bpm', 'plain', 0, 20, 200, 'Resting heart rate', CORE],
   ['walkingHeartRate', Q + 'WalkingHeartRateAverage', 'heart', 'mean', 'bpm', 'plain', 0, 20, 250, 'Walking heart rate average', { hae: 'walking_heart_rate_average' }],
-  ['hrv', Q + 'HeartRateVariabilitySDNN', 'heart', 'mean', 'ms', 'time', 0, 1, 500, 'Heart rate variability', { hae: 'heart_rate_variability' }],
+  ['hrv', Q + 'HeartRateVariabilitySDNN', 'heart', 'range', 'ms', 'time', 0, 1, 500, 'Heart rate variability', { hae: 'heart_rate_variability' }],
   ['hrRecovery', Q + 'HeartRateRecoveryOneMinute', 'heart', 'mean', 'bpm', 'plain', 0, 0, 150, 'Heart rate recovery'],
   ['vo2max', Q + 'VO2Max', 'heart', 'mean', 'mL/kg·min', 'plain', 1, 5, 100, 'Cardio fitness', { hae: 'vo2_max' }],
   ['afibBurden', Q + 'AtrialFibrillationBurden', 'heart', 'mean', '%', 'percent', 1, 0, 100, 'AFib history'],
@@ -86,21 +90,21 @@ const ROWS = [
   ['irregularRhythm', C + 'IrregularHeartRhythmEvent', 'heart', 'ev', 'count', 'plain', 0, 0, 100, 'Irregular rhythm notifications'],
   ['lowCardioFitness', C + 'LowCardioFitnessEvent', 'heart', 'ev', 'count', 'plain', 0, 0, 100, 'Low cardio fitness notifications'],
   // ---- vitals and respiratory
-  ['spo2', Q + 'OxygenSaturation', 'vitals', 'mean', '%', 'percent', 0, 50, 100, 'Blood oxygen', { hae: 'blood_oxygen_saturation' }],
-  ['respiratoryRate', Q + 'RespiratoryRate', 'vitals', 'mean', 'count/min', 'plain', 1, 1, 100, 'Respiratory rate', { hae: 'respiratory_rate' }],
-  ['bodyTemperature', Q + 'BodyTemperature', 'vitals', 'mean', 'degC', 'temp', 1, 25, 45, 'Body temperature', { hae: 'body_temperature' }],
-  ['wristTemperature', Q + 'AppleSleepingWristTemperature', 'vitals', 'mean', 'degC', 'temp', 2, 25, 45, 'Wrist temperature', { hae: 'apple_sleeping_wrist_temperature' }],
-  ['systolic', Q + 'BloodPressureSystolic', 'vitals', 'mean', 'mmHg', 'plain', 0, 40, 300, 'Systolic blood pressure', { hae: 'blood_pressure_systolic' }],
-  ['diastolic', Q + 'BloodPressureDiastolic', 'vitals', 'mean', 'mmHg', 'plain', 0, 20, 200, 'Diastolic blood pressure', { hae: 'blood_pressure_diastolic' }],
-  ['glucose', Q + 'BloodGlucose', 'vitals', 'mean', 'mg/dL', 'glucose', 0, 10, 1000, 'Blood glucose', { hae: 'blood_glucose' }],
+  ['spo2', Q + 'OxygenSaturation', 'vitals', 'range', '%', 'percent', 0, 50, 100, 'Blood oxygen', { hae: 'blood_oxygen_saturation' }],
+  ['respiratoryRate', Q + 'RespiratoryRate', 'vitals', 'range', 'count/min', 'plain', 1, 1, 100, 'Respiratory rate', { hae: 'respiratory_rate' }],
+  ['bodyTemperature', Q + 'BodyTemperature', 'vitals', 'hour', 'degC', 'temp', 1, 25, 45, 'Body temperature', { hae: 'body_temperature' }],
+  ['wristTemperature', Q + 'AppleSleepingWristTemperature', 'vitals', 'range', 'degC', 'temp', 2, 25, 45, 'Wrist temperature', { hae: 'apple_sleeping_wrist_temperature' }],
+  ['systolic', Q + 'BloodPressureSystolic', 'vitals', 'hour', 'mmHg', 'plain', 0, 40, 300, 'Systolic blood pressure', { hae: 'blood_pressure_systolic' }],
+  ['diastolic', Q + 'BloodPressureDiastolic', 'vitals', 'hour', 'mmHg', 'plain', 0, 20, 200, 'Diastolic blood pressure', { hae: 'blood_pressure_diastolic' }],
+  ['glucose', Q + 'BloodGlucose', 'vitals', 'hour', 'mg/dL', 'glucose', 0, 10, 1000, 'Blood glucose', { hae: 'blood_glucose' }],
   ['perfusion', Q + 'PeripheralPerfusionIndex', 'vitals', 'mean', '%', 'percent', 1, 0, 100, 'Perfusion index'],
   ['electrodermal', Q + 'ElectrodermalActivity', 'vitals', 'mean', 'mcS', 'plain', 2, 0, 100, 'Electrodermal activity'],
-  ['bloodAlcohol', Q + 'BloodAlcoholContent', 'vitals', 'mean', '%', 'percent', 3, 0, 1, 'Blood alcohol content'],
+  ['bloodAlcohol', Q + 'BloodAlcoholContent', 'vitals', 'hour', '%', 'percent', 3, 0, 1, 'Blood alcohol content'],
   ['insulin', Q + 'InsulinDelivery', 'vitals', 'sum', 'IU', 'plain', 1, 0, 1000, 'Insulin delivery'],
   ['inhaler', Q + 'InhalerUsage', 'vitals', 'sum', 'count', 'plain', 0, 0, 100, 'Inhaler usage'],
-  ['fvc', Q + 'ForcedVitalCapacity', 'vitals', 'mean', 'L', 'volumeL', 2, 0, 10, 'Forced vital capacity'],
-  ['fev1', Q + 'ForcedExpiratoryVolume1', 'vitals', 'mean', 'L', 'volumeL', 2, 0, 10, 'Forced expiratory volume'],
-  ['peakFlow', Q + 'PeakExpiratoryFlowRate', 'vitals', 'mean', 'L/min', 'plain', 0, 0, 1000, 'Peak expiratory flow'],
+  ['fvc', Q + 'ForcedVitalCapacity', 'vitals', 'hour', 'L', 'volumeL', 2, 0, 10, 'Forced vital capacity'],
+  ['fev1', Q + 'ForcedExpiratoryVolume1', 'vitals', 'hour', 'L', 'volumeL', 2, 0, 10, 'Forced expiratory volume'],
+  ['peakFlow', Q + 'PeakExpiratoryFlowRate', 'vitals', 'hour', 'L/min', 'plain', 0, 0, 1000, 'Peak expiratory flow'],
   ['uvExposure', Q + 'UVExposure', 'vitals', 'mean', 'count', 'plain', 0, 0, 20, 'UV index'],
   // ---- sleep
   ['sleep', C + 'SleepAnalysis', 'sleep', 'sleep', 'min', 'time', 0, 0, 1440, 'Sleep', { core: true, hae: 'sleep_analysis' }],
@@ -166,7 +170,7 @@ const ROWS = [
   // ---- cycle tracking
   ['menstrualFlow', C + 'MenstrualFlow', 'cycle', 'lvl', '', 'plain', 0, 1, 4, 'Menstrual flow', { cat: 'flow' }],
   ['spotting', C + 'IntermenstrualBleeding', 'cycle', 'ev', 'count', 'plain', 0, 0, 100, 'Spotting'],
-  ['basalTemperature', Q + 'BasalBodyTemperature', 'cycle', 'mean', 'degC', 'temp', 2, 30, 45, 'Basal body temperature', { hae: 'basal_body_temperature' }],
+  ['basalTemperature', Q + 'BasalBodyTemperature', 'cycle', 'hour', 'degC', 'temp', 2, 30, 45, 'Basal body temperature', { hae: 'basal_body_temperature' }],
   ['ovulationTest', C + 'OvulationTestResult', 'cycle', 'val', '', 'plain', 0, 1, 4, 'Ovulation test', { cat: 'ovulation' }],
   ['cervicalMucus', C + 'CervicalMucusQuality', 'cycle', 'val', '', 'plain', 0, 1, 5, 'Cervical mucus', { cat: 'mucus' }],
   ['pregnancyTest', C + 'PregnancyTestResult', 'cycle', 'val', '', 'plain', 0, 1, 3, 'Pregnancy test', { cat: 'test' }],

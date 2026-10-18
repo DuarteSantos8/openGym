@@ -7,7 +7,7 @@ import { TYPES, BY_HK, canonical, categoryValue, workoutKey } from '../health/ca
 import { createFolder, readingsFromShortcut } from '../health/fold.js';
 
 test('every row is whole: a known kind, a HealthKit identifier, a range that holds', () => {
-  const kinds = new Set(['sample', 'sum', 'range', 'mean', 'sleep', 'min', 'ev', 'lvl', 'val', 'wo']);
+  const kinds = new Set(['sample', 'sum', 'range', 'mean', 'hour', 'sleep', 'min', 'ev', 'lvl', 'val', 'wo']);
   for (const x of Object.values(TYPES)) {
     assert.ok(kinds.has(x.kind), x.type);
     assert.match(x.hk, /^HK(Quantity|Category|Workout)TypeIdentifier/, x.type);
@@ -85,4 +85,42 @@ test('a Shortcut may send any measurement or total the catalogue lists', () => {
   const x = Object.fromEntries(r.readings.map(y => [y.type, y.v]));
   assert.deepEqual(x, { spo2: 96, dietWater: 1500 });
   assert.equal(r.skipped, 1, 'a symptom is not a number a Shortcut sends');
+});
+
+test('a measurement taken by hand is kept one an hour: each reading as it was, a sensor as its range', () => {
+  const f = createFolder();
+  // blood pressure in the morning and in the evening: two readings, each at its own time
+  f.add({ type: 'systolic', v: 140, unit: 'mmHg', start: '2026-10-12T07:10:00+02:00' });
+  f.add({ type: 'systolic', v: 120, unit: 'mmHg', start: '2026-10-12T21:05:00+02:00' });
+  // a glucose sensor every 5 minutes in one hour: one reading, its mean, lowest and highest
+  for (let i = 0; i < 12; i++) f.add({ type: 'glucose', v: 90 + i, unit: 'mg/dL', start: `2026-10-12T08:${String(i * 5).padStart(2, '0')}:00+02:00` });
+  const r = f.readings();
+  const bp = r.filter(x => x.type === 'systolic').sort((a, b) => a.t - b.t);
+  assert.deepEqual(bp.map(x => [x.v, x.t, x.lo, x.hi]), [
+    [140, Date.parse('2026-10-12T07:10:00+02:00'), undefined, undefined],
+    [120, Date.parse('2026-10-12T21:05:00+02:00'), undefined, undefined]]);
+  assert.equal(bp[0].sid, 'systolic:' + Date.parse('2026-10-12T07:00:00+02:00'));
+  const g = r.filter(x => x.type === 'glucose');
+  assert.equal(g.length, 1);
+  assert.deepEqual([g[0].v, g[0].lo, g[0].hi, g[0].t], [95.5, 90, 101, Date.parse('2026-10-12T08:00:00+02:00')]);
+});
+
+test('a day of a sensor never makes more than 24 readings, and a later read of the day lands on the same ones', () => {
+  const read = n => {
+    const f = createFolder();
+    for (let i = 0; i < n; i++) f.add({ type: 'glucose', v: 100, unit: 'mg/dL', start: new Date(Date.parse('2026-10-12T00:00:00+02:00') + i * 300000).toISOString() });
+    return f.readings();
+  };
+  const all = read(288), morning = read(100);
+  assert.equal(all.length, 24);
+  assert.ok(morning.every(m => all.some(a => a.sid === m.sid)), 'the same hours, the same ids');
+});
+
+test('a day\'s lowest and highest keep the decimals the type is shown with', () => {
+  const f = createFolder();
+  f.add({ type: 'wristTemperature', v: 35.62, unit: 'degC', start: '2026-10-12', lo: 35.41, hi: 35.88 });
+  f.add({ type: 'spo2', v: 0.96, unit: '%', start: '2026-10-12', lo: 0.91, hi: 0.99 });
+  const x = Object.fromEntries(f.readings().map(r => [r.type, r]));
+  assert.deepEqual([x.wristTemperature.lo, x.wristTemperature.hi], [35.41, 35.88]);
+  assert.deepEqual([x.spo2.v, x.spo2.lo, x.spo2.hi], [96, 91, 99]);
 });
