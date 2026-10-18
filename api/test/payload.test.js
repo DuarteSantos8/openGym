@@ -100,6 +100,19 @@ test('the review window is bounded even for someone with years of history', () =
   assert.ok(oldest >= limit, 'nothing older than the week cap gets in');
 });
 
+test('the shared session can never age out of the review window (#663)', () => {
+  // sampleState()'s training day used to be the literal 2026-07-20, which sat inside the
+  // Coach's 12-week window until 2026-10-13 and fell out the day after: the fixture's only
+  // session stopped reaching review payloads and ten tests went red on untouched main. The
+  // day is measured from today now, so this pin is the one that would catch a literal
+  // creeping back in.
+  const S = sampleState();
+  assert.ok(payload.reviewWindow(S, null).some(w => w.id === 'w1'),
+    'sampleState() always carries its one session through reviewWindow()');
+  const p = payload.build(S, { handle: handleFor('u1'), kind: 'review' });
+  assert.equal(p.window.workouts.length, 1, 'a review payload built from the shared fixture always carries the session');
+});
+
 test('creation payload carries working weights so baselines start from evidence', () => {
   const p = payload.build(sampleState(), { handle: handleFor('u1'), kind: 'create' });
   assert.equal(p.task, 'create');
@@ -211,6 +224,11 @@ test('declined changes are carried forward so the Coach does not nag', () => {
 
 /* ---------- debriefs and the cohort ---------- */
 const debriefState = () => sampleState({
+  // The debrief path takes every date from the session itself and never from the wall clock,
+  // so this fixture stays on the calendar on purpose. The body-weight pair is written out
+  // explicitly so it still sits inside the debrief's four-week look-back now that
+  // sampleState()'s own pair rolls with today (#663).
+  bodyweight: [{ d: '2026-07-01', w: 78 }, { d: '2026-07-20', w: 78.5 }],
   workouts: [
     { id: 'w0', d: '2026-07-06', name: 'Full body A', start: 1000, end: 1000 + 40 * 60000, vol: 500, prs: [], entries: [{ id: '0001', sets: [{ w: 18, r: 10, done: true }] }] },
     { id: 'wx', d: '2026-07-10', name: 'Other', start: 1000, end: 1000 + 30 * 60000, vol: 100, prs: [], entries: [{ id: '0007', sets: [{ sec: 45, done: true }] }] },

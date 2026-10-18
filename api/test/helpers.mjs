@@ -53,6 +53,24 @@ export function writeState(dir, uid, S) {
   fs.writeFileSync(path.join(dir, 'state-' + uid + '.json'), JSON.stringify(S));
 }
 
+/** A day string n days before today, in the same 'YYYY-MM-DD' shape the state's own dates
+ * use. The cadence and nudge suites already take their dates as arguments and build them this
+ * way: a date a test means to sit inside a rolling window has to be measured from today,
+ * never written as a literal. */
+const daysAgo = n => {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d.toISOString().slice(0, 10);
+};
+
+/* The shared profile's training day: recent enough that the Coach's 12-week reviewWindow()
+ * still carries it whenever the suite runs. It used to be the literal 2026-07-20, which held
+ * until 2026-10-13 and fell out of the window the day after — the fixture's only session
+ * dropped out of every review payload and ten tests went red on untouched main (#663).
+ * Tests that echo the day back out of a built payload import this instead of recomputing it,
+ * so the assertion and the fixture cannot drift apart again. */
+export const workoutDay = daysAgo(1);
+
 /** A profile that has consented and has some history — the usual starting point. */
 export function sampleState(over = {}) {
   return {
@@ -68,10 +86,10 @@ export function sampleState(over = {}) {
     week: { 1: 'r1', 3: 'r1', 5: 'r1' },
     dayPlan: {},
     exWeights: { '0001': { w: 20 } },
-    bodyweight: [{ d: '2026-07-01', w: 78 }, { d: '2026-07-20', w: 78.5 }],
+    bodyweight: [{ d: daysAgo(30), w: 78 }, { d: workoutDay, w: 78.5 }],
     customEx: [],
     workouts: [{
-      id: 'w1', d: '2026-07-20', name: 'Full body A', start: 1000, end: 1000 + 45 * 60000, vol: 600, prs: [],
+      id: 'w1', d: workoutDay, name: 'Full body A', start: 1000, end: 1000 + 45 * 60000, vol: 600, prs: [],
       entries: [{
         id: '0001', target: { sets: 3, reps: 10, weight: 20 },
         sets: [{ w: 20, r: 10, done: true, rpe: 9.5 }, { w: 20, r: 9, done: true, rpe: 10 }, { w: 20, r: 8, done: true, rpe: 10 }]
