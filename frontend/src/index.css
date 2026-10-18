@@ -421,6 +421,9 @@ h4.sec{
    "Resume") is cut with an ellipsis rather than spilling into the tab beside it. */
 #tabbar button{min-width:0}
 #tabbar button>span:last-child{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* One size for every name (TabBar.jsx useFitLabels sets --tab-fs when the longest would not fit),
+   on a line of fixed height, so a smaller name never moves its icon down. */
+#tabbar .tab-l{font-size:var(--tab-fs,10px);line-height:13px;height:13px}
 .tab-dot{
   position:absolute;top:-1px;right:-3px;width:8px;height:8px;border-radius:50%;
   background:var(--orange);box-shadow:0 0 0 2px var(--bg-el);pointer-events:none;

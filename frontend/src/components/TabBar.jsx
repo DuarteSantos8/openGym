@@ -13,30 +13,40 @@ import { useConnectionTrouble } from './SyncBanner.jsx'
 // fresh one — on a bar that is fixed on screen, and once a second for the whole of a rest. The
 // state it took with it is the DOM node itself: focus, the :active tint, any in-flight transition.
 function Tab({ active, icon, label, onClick, dot }) {
-  const text = useFit(label)
   return (
     <button className={active ? 'on' : ''} onClick={onClick} aria-label={dot ? label + ', ' + t('Connection problem') : undefined}>
-      <span className="tab-ic"><Icon name={icon} />{dot && <span className="tab-dot" aria-hidden="true" />}</span><span ref={text}>{label}</span>
+      <span className="tab-ic"><Icon name={icon} />{dot && <span className="tab-dot" aria-hidden="true" />}</span><span className="tab-l">{label}</span>
     </button>
   )
 }
 
 // Seven tabs share a phone's width, and a long name ("Impostazioni", "Einstellungen") is wider than
-// its tab. Rather than cut it, its text is set a little smaller until it fits, never below 8px;
-// every other tab keeps the bar's size. Measured again whenever the name changes (the language).
-function useFit(label) {
-  const ref = useRef(null)
+// its tab. Rather than cut it, the names are set a little smaller until the longest fits, never
+// below 8px: all of them together (--tab-fs), so the bar keeps one size of type instead of a
+// different one under each icon. Measured again when the names change (the language) or the bar's
+// width does (a phone turned sideways).
+function useFitLabels(ref, key) {
   useLayoutEffect(() => {
-    const el = ref.current
-    if (!el) return
-    el.style.fontSize = ''
-    const room = el.clientWidth, need = el.scrollWidth
-    if (!room || need <= room) return
-    const size = parseFloat(getComputedStyle(el).fontSize) || 10
-    // Two pixels to spare: the widths are whole pixels, the text is not.
-    el.style.fontSize = Math.max(8, Math.floor(size * (room - 2) / need * 10) / 10) + 'px'
-  }, [label])
-  return ref
+    const bar = ref.current
+    if (!bar) return
+    const fit = () => {
+      bar.style.removeProperty('--tab-fs')
+      let size = 0, scale = 1
+      for (const el of bar.querySelectorAll('.tab-l')) {
+        size = size || parseFloat(getComputedStyle(el).fontSize) || 10
+        const room = el.clientWidth, need = el.scrollWidth
+        // Two pixels to spare: the widths are whole pixels, the text is not.
+        if (room && need > room) scale = Math.min(scale, (room - 2) / need)
+      }
+      if (scale < 1) bar.style.setProperty('--tab-fs', Math.max(8, Math.floor(size * scale * 10) / 10) + 'px')
+    }
+    fit()
+    if (typeof ResizeObserver === 'undefined') return
+    let w = bar.clientWidth
+    const ro = new ResizeObserver(() => { if (bar.clientWidth !== w) { w = bar.clientWidth; fit() } })
+    ro.observe(bar)
+    return () => ro.disconnect()
+  }, [key])
 }
 
 export default function TabBar({ onStart }) {
@@ -48,6 +58,8 @@ export default function TabBar({ onStart }) {
   // With the connection banner switched off, a sync problem shows as a dot on Settings, where the
   // connection lives (#369, #330).
   const trouble = useConnectionTrouble()
+  const barRef = useRef(null)
+  useFitLabels(barRef, [t('Home'), t('Plan'), t('Stats'), t('Health'), t('Exercises'), t('Settings')].join('|'))
   if (!user && !isGuest) return null
   const cur = loc.pathname.split('/')[1] || 'home'
   const on = k => cur === k || (cur === 'history' && k === 'stats') || (cur === 'muscles' && k === 'library') || (cur === 'structural-balance' && k === 'stats')
@@ -63,7 +75,7 @@ export default function TabBar({ onStart }) {
   }
 
   return (
-    <nav id="tabbar">
+    <nav id="tabbar" ref={barRef}>
       {/* Three tabs, Start in the middle, three tabs: Settings has its own place instead of a gear
           on Home. */}
       <Tab active={on('home')} icon="house" label={t('Home')} onClick={() => nav('/home')} />

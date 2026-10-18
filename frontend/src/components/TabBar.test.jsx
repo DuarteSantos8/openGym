@@ -115,3 +115,25 @@ describe('the tab icons and labels', () => {
     } finally { vi.useRealTimers() }
   })
 })
+
+// A name wider than its tab makes every name smaller, by the same amount: one size of type across
+// the bar, not a smaller one under one icon (happy-dom has no layout, so the widths are given).
+describe('the names under the icons', () => {
+  it('share one size, the one the longest needs', () => {
+    const cw = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientWidth')
+    const sw = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollWidth')
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, get() { return this.classList.contains('tab-l') ? 50 : 375 } })
+    Object.defineProperty(HTMLElement.prototype, 'scrollWidth', { configurable: true, get() { return this.textContent === 'Settings' ? 60 : 30 } })
+    host.style.fontSize = '10px'   // the bar's size (index.css)
+    try {
+      act(() => { root.render(<TabBar onStart={() => {}} />) })
+      // 10px × 48 / 60
+      expect(host.querySelector('#tabbar').style.getPropertyValue('--tab-fs')).toBe('8px')
+      expect(host.querySelectorAll('.tab-l')).toHaveLength(6)
+      host.querySelectorAll('.tab-l').forEach(el => expect(el.style.fontSize).toBe(''))
+    } finally {
+      if (cw) Object.defineProperty(HTMLElement.prototype, 'clientWidth', cw); else delete HTMLElement.prototype.clientWidth
+      if (sw) Object.defineProperty(HTMLElement.prototype, 'scrollWidth', sw); else delete HTMLElement.prototype.scrollWidth
+    }
+  })
+})
