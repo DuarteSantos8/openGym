@@ -13,6 +13,9 @@
  *     lowest and highest), and one taken by hand (blood pressure, glucose, a temperature) is kept
  *     one an hour, keyed by its type and the hour: a reading as it was, or a sensor's hour as its
  *     mean, lowest and highest
+ *   - while recent (catalogue.js hourlyFrom: heart rate 90 days, the rest 30), a total and a mean
+ *     are kept an hour at a time too, keyed by the hour; a total a source already summed for a
+ *     whole day (a bare date) stays that day's
  *   - sleep is the asleep time of a night, overlapping spans of several sources merged first, on
  *     the day it ended
  *   - a symptom or a flow is the day's highest level, a test the day's latest answer
@@ -20,7 +23,7 @@
  *
  * Plain JavaScript, loadable by bare node (the server) and by Vite (the app). Values arrive in
  * whatever unit the phone used and leave in the catalogue's canonical units. */
-import { TYPES, WORKOUT, canonical, categoryValue, workoutKey, EXTRA_FIELDS, trimImported } from './catalogue.js';
+import { TYPES, WORKOUT, canonical, categoryValue, workoutKey, EXTRA_FIELDS, trimImported, HOURLY_KINDS, hourlyFrom } from './catalogue.js';
 import { COMPOSITION } from './composition.js';
 
 export { canonical };
@@ -58,9 +61,10 @@ export function phoneTime(s) {
  * shape frontend/src/lib/health/records.js imports: { type, v, t, d, sid, src, lo?, hi?, a?, kc?, km? }.
  * `since` (YYYY-MM-DD) drops what is older. Both return false for what they could not use.
  */
-export function createFolder({ since = '', src = APPLE_HEALTH } = {}) {
+export function createFolder({ since = '', src = APPLE_HEALTH, now = Date.now() } = {}) {
   const samples = new Map();
   const sums = new Map();
+  const hourSums = new Map();
   const ranges = new Map();
   const levels = new Map();
   const hours = new Map();
@@ -114,11 +118,20 @@ export function createFolder({ since = '', src = APPLE_HEALTH } = {}) {
     if (!Number.isFinite(n)) return false;
     used++;
     const l = lo == null ? NaN : canonical(type, lo, unit), h = hi == null ? NaN : canonical(type, hi, unit);
+    // A recent total or mean goes by the hour, unless what came is already a whole day's.
+    const byHour = HOURLY_KINDS.has(kind) && !ISO_DAY.test(String(start).trim()) && a.d >= hourlyFrom(type, now);
     if (kind === 'sample') {
       const sid = `${type}:${a.ms}`;
       samples.set(sid, { type, v: round(n, 3), t: a.ms, d: a.d, sid, src });
+    } else if (kind === 'sum' && byHour) {
+      const hour = Math.floor(a.ms / 3600000) * 3600000;
+      const key = `${type}|${hour}`;
+      const r = hourSums.get(key) || { d: a.d, at: a.ms, bySrc: new Map() };
+      if (a.ms < r.at) { r.at = a.ms; r.d = a.d; }
+      r.bySrc.set(source, (r.bySrc.get(source) || 0) + n);
+      hourSums.set(key, r);
     } else if (kind === 'sum') total(type, a.d, source, n);
-    else if (kind === 'hour') {
+    else if (kind === 'hour' || byHour) {
       // The hour it falls in, the same instant on every device: its first reading's time and day.
       const hour = Math.floor(a.ms / 3600000) * 3600000;
       const key = `${type}|${hour}`;
@@ -175,8 +188,16 @@ export function createFolder({ since = '', src = APPLE_HEALTH } = {}) {
     for (const [key, r] of hours) {
       const type = key.split('|')[0];
       const v = round(r.sum / r.n, 3);
-      // One reading is itself; several (a sensor) carry their range.
-      out.push({ type, v, t: r.t, d: r.d, sid: `${type}:${r.hour}`, src, ...(r.lo !== r.hi ? span(type, r) : {}) });
+      // One reading is itself; several (a sensor) carry their range, for the kinds that show one.
+      const ranged = kindOf(type) === 'hour' || kindOf(type) === 'range';
+      out.push({ type, v, t: r.t, d: r.d, sid: `${type}:${r.hour}`, src, ...(ranged && r.lo !== r.hi ? span(type, r) : {}) });
+    }
+    // An hour's total: the larger of two sources' counts of it, as for a day.
+    for (const [key, r] of hourSums) {
+      const [type, hour] = key.split('|');
+      const v = Math.max(...r.bySrc.values());
+      const dec = TYPES[type].unit === 'count' ? 0 : 2;
+      if (v > 0) out.push({ type, v: round(v, dec), t: Number(hour), d: r.d, sid: `${type}:${hour}`, src });
     }
     for (const [key, l] of levels) {
       const [type, d] = key.split('|');

@@ -6,6 +6,12 @@ import assert from 'node:assert/strict';
 import { TYPES, BY_HK, canonical, categoryValue, workoutKey } from '../health/catalogue.js';
 import { createFolder, readingsFromShortcut } from '../health/fold.js';
 
+// These readings are from October 2026: read a while later, they are old, and fold a day at a
+// time as they always did (hourly folding of recent readings has tests of its own).
+const realNow = Date.now;
+Date.now = () => Date.parse('2027-06-01T00:00:00Z');
+test.after(() => { Date.now = realNow; });
+
 test('every row is whole: a known kind, a HealthKit identifier, a range that holds', () => {
   const kinds = new Set(['sample', 'sum', 'range', 'mean', 'hour', 'sleep', 'min', 'ev', 'lvl', 'val', 'wo']);
   for (const x of Object.values(TYPES)) {
