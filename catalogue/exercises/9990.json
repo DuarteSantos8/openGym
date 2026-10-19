@@ -10,6 +10,7 @@
     "lats"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "An isometric hold pressing the inner forearm into a wall to work the shoulder rotators. There is no movement, only steady tension.",
   "instructions": [
     "Stand sideways to a wall with your elbow bent to 90 degrees and tucked at your side.",
