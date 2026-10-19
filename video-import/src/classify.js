@@ -126,6 +126,16 @@ export function classify(blocks, { hints = [], parts = [], cuts = [], timed = fa
     Object.assign(gap, { kind: 'work', key: `${base} ${other}`, text: `${base} (${other})`, conf: Math.min(0.5, b.conf || 0), variants: { [`${base} ${other}`]: 1 }, fromSide: true })
   }
 
+  // A countdown nobody named, between two rests and next to a move that was named, is a move all the
+  // same (the screen that named it was lost): it stays in the section, unnamed, for the review screen.
+  for (let i = 1; i + 1 < bs.length; i++) {
+    const b = bs[i]
+    if (b.kind !== 'gap' || !b.timed || b.dur < MIN_TIMED || b.dur > MAX_WORK) continue
+    if (!isRestish(bs[i - 1]) || !isRestish(bs[i + 1]) || bs[i - 1].dur > MAX_REST || bs[i + 1].dur > MAX_REST) continue
+    if (bs[i - 2]?.kind !== 'work' && bs[i + 2]?.kind !== 'work') continue
+    Object.assign(b, { kind: 'work', key: '', text: '', conf: 0, variants: {}, unnamed: true })
+  }
+
   // Interval flags: work, short, followed by a short rest.
   const flag = bs.map((b, i) => b.kind === 'work' && b.dur <= MAX_WORK && isRestish(bs[i + 1]) && bs[i + 1].dur <= MAX_REST && hintFor(b, hints) == null)
 
@@ -244,12 +254,13 @@ function intervalSection(slice) {
     const nx = slice[i + 1]
     works.push({ b: slice[i], rest: isRestish(nx) ? nx.dur : 0 })
   }
-  const { rounds, period } = detectRounds(works.map(w => w.b.key), sameMove)
+  // Moves nobody named are never the same move: each keeps a row of its own.
+  const { rounds, period } = detectRounds(works.map((w, i) => (w.b.unnamed ? '\u0000' + i : w.b.key)), sameMove)
   // One row per exercise, in the order the video first does them.
   const groups = []
   for (const w of works) {
-    const g = groups.find(x => sameMove(x.key, w.b.key))
-    if (g) g.items.push(w); else groups.push({ key: w.b.key, items: [w] })
+    const g = w.b.unnamed ? null : groups.find(x => !x.unnamed && sameMove(x.key, w.b.key))
+    if (g) g.items.push(w); else groups.push({ key: w.b.key, unnamed: !!w.b.unnamed, items: [w] })
   }
   // A short rest is the break between intervals; a longer one (after the last exercise of a
   // round) is the break between rounds, which the routine has no place for — the row takes the

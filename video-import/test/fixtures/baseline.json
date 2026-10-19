@@ -27,8 +27,8 @@
     "sections": 1
   },
   "_G5wIxplwB8": {
-    "frames": 0.915,
-    "sequence": 0.857,
+    "frames": 0.967,
+    "sequence": 0.957,
     "boundaries": 1,
     "startError": 0.129,
     "sections": 1
@@ -101,10 +101,10 @@
     "sections": 1
   },
   "t-3H2KnjH6E": {
-    "frames": 0.809,
-    "sequence": 0.722,
-    "boundaries": 0.928,
-    "startError": 0.344,
+    "frames": 0.85,
+    "sequence": 0.778,
+    "boundaries": 0.958,
+    "startError": 0.353,
     "sections": 1
   }
 }

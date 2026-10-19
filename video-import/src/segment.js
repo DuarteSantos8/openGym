@@ -19,7 +19,7 @@
 //  5. Runs shorter than MIN_BLOCK seconds are noise: a caption caught mid-transition. They are
 //     folded into the block before them.
 
-import { normName, restOf, parseTimer, mode, sameName, cleanCaption, repairCaption, plausibleCaption, editDistance, median } from './text.js'
+import { normName, restOf, parseTimer, mode, sameName, cleanCaption, repairCaption, snapToLibrary, plausibleCaption, editDistance, median } from './text.js'
 
 export const MIN_BLOCK = 3       // seconds: anything shorter is a transition, not an exercise
 const BRIDGE = 2                 // seconds without a reading that a run may span
@@ -30,7 +30,7 @@ function labelOf(f) {
   // "(R)" and "(L)" would be lost as single letters once the caption is a key: spelled out.
   // A closing bracket the OCR lost at the end of a caption does not make "(R" any less a side, and a
   // small white "R" is read as "P" now and then.
-  const raw = repairCaption(cleanCaption(String(f.name || '').replace(/[([{]\s*([rlpRLP])\s*(?:[)\]}]|$)/g, (_, x) => (/[rp]/i.test(x) ? '(right)' : '(left)'))))
+  const raw = snapToLibrary(repairCaption(cleanCaption(String(f.name || '').replace(/[([{]\s*([rlpRLP])\s*(?:[)\]}]|$)/g, (_, x) => (/[rp]/i.test(x) ? '(right)' : '(left)')))))
   const key = normName(raw)
   const timer = parseTimer(f.timer)
   // A reading Tesseract itself doubts is noise more often than a name: a shadow, the edge of the

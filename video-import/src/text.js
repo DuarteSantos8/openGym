@@ -279,6 +279,25 @@ const PROTECTED = new Set(['rest', 'next', 'warm', 'cool', 'down', 'round', 'rou
 
 const FUNCTION_WORDS = new Set(['in', 'to', 'on', 'of', 'up', 'at', 'by', 'or', 'and', 'the', 'with', 'for', 'off', 'out', 'over'])
 
+/** The vocabulary word that `letters` are an ordered part of (starting and ending as they do), when one is clearly meant. */
+function completeAll(letters, minLen, maxExtra) {
+  return vocab().filter(v => v.length >= minLen && v.length <= letters.length + maxExtra && v[0] === letters[0] && v[v.length - 1] === letters[letters.length - 1] && isSubsequence(letters, v))
+}
+function completes(letters, minLen, maxExtra) {
+  const found = vocab().filter(v => v.length >= minLen && v.length <= letters.length + maxExtra && v[0] === letters[0] && v[v.length - 1] === letters[letters.length - 1] && isSubsequence(letters, v))
+  if (!found.length) return null
+  found.sort((a, b) => a.length - b.length)
+  return found.every(v => v.startsWith(found[0]) || found[0].startsWith(v)) ? found[0] : null
+}
+const isSubsequence = (a, b) => { let i = 0; for (const c of b) if (c === a[i]) i++; return i === a.length }
+/** The vocabulary word an unfinished one begins: "squ" → "squat". */
+function startsWord(prefix, maxExtra) {
+  const found = vocab().filter(v => v.length > prefix.length && v.length <= prefix.length + maxExtra && v.startsWith(prefix))
+  if (!found.length) return null
+  found.sort((a, b) => a.length - b.length)
+  return found.every(v => v.startsWith(found[0])) ? found[0] : null
+}
+
 const asCase = (orig, w) => (orig === orig.toUpperCase() ? w.toUpperCase() : /^\p{Lu}/u.test(orig) ? w[0].toUpperCase() + w.slice(1) : w)
 
 /**
@@ -289,7 +308,8 @@ const asCase = (orig, w) => (orig === orig.toUpperCase() ? w.toUpperCase() : /^\
  * or a bracket in it is left alone.
  */
 export function repairCaption(text) {
-  const parts = String(text || '').split(/(\s+)/)
+  // A hyphen joins words that are mended one by one: "Single-Armirow" → "Single-Arm Irow"... each piece on its own.
+  const parts = String(text || '').replace(/(?<=\p{L})V\/(?=\p{L})/gu, 'W').split(/(\s+)/).map(p => (/^\s*$/.test(p) || !/\p{L}-\p{L}/u.test(p) ? p : p.split('-').map(x => repairCaption(x)).join('-')))
   const idx = parts.map((p, i) => (/^\s*$/.test(p) ? -1 : i)).filter(i => i >= 0)
   const known = VOCAB_SET()
   const plain = w => /^\p{L}+$/u.test(w)
@@ -298,14 +318,23 @@ export function repairCaption(text) {
   const knows = w => known.has(w) || known.has(w.replace(/s$/, '')) || known.has(w.replace(/es$/, '')) || known.has(w + 's') || known.has(w + 'es')
   for (let k = 0; k < idx.length; k++) {
     const i = idx[k], w = parts[i], lw = w.toLowerCase()
-    if (!plain(w) || lw.length < 2) continue
+    if (!plain(w) || lw.length < 1) continue
     // Two pieces that are one word: "bic" + "s", "lat" + "al", "du" + "bell" (not two words the
     // library knows: "side" + "squat" are two).
     const j = idx[k + 1]
     const lj = j != null ? parts[j].toLowerCase() : ''
+    // Two capitals on their own between words ("bent O R overhand"): the middle of a word the OCR
+    // lost the rest of.
+    if (lw.length === 1 && j != null && lj.length === 1 && plain(parts[j]) && !/^[ai]$/.test(lw)) {
+      // Of the words these could be part of, the one the library puts next to its neighbours.
+      const before = idx[k - 1] != null ? parts[idx[k - 1]].toLowerCase() : '', after = idx[k + 2] != null ? parts[idx[k + 2]].toLowerCase() : ''
+      const cands = completeAll(lw + lj, 3, 3).filter(c => bigrams().has(before + ' ' + c) || bigrams().has(c + ' ' + after))
+      const done = cands.length === 1 ? cands[0] : completes(lw + lj, 3, 3)
+      if (done) { parts[i] = asCase(w, done); parts[j] = ''; if (parts[j - 1] != null && /^\s+$/.test(parts[j - 1])) parts[j - 1] = ''; k++; continue }
+    }
     if (j != null && plain(parts[j]) && !(knows(lw) && knows(lj)) && !PROTECTED.has(lw) && !PROTECTED.has(lj) && !FUNCTION_WORDS.has(lj) &&
       !(lw.length >= 4 && knows(lw)) && lw.length + lj.length >= 4) {
-      const joined = nearWord(lw + lj, 2, 6)
+      const joined = nearWord(lw + lj, 2, 6) || completes(lw + lj, 6, 3)
       // The piece in front is the start of the word it was cut from; a word that is just one of the
       // pieces again ("pronated" + "fl") is a piece of debris after a word, not half of one.
       if (joined && joined.startsWith(lw) && joined !== lw && joined !== lj) {
@@ -316,7 +345,25 @@ export function repairCaption(text) {
       }
     }
     if (lw.length < 3 || knows(lw) || PROTECTED.has(lw)) continue
-    const fixed = limit(lw.length) ? nearWord(lw, limit(lw.length)) : null
+    // Two words run together, with at most a stray letter between: "snowangels", "rackisplit".
+    if (lw.length >= 7) {
+      let glued = null
+      for (let c = 3; c <= lw.length - 3 && !glued; c++) {
+        for (const junk of [0, 1]) {
+          const a = lw.slice(0, c), b = lw.slice(c + junk)
+          if (b.length >= 3 && knows(a) && knows(b) && !PROTECTED.has(a) && !PROTECTED.has(b)) { glued = [a, b]; break }
+        }
+      }
+      if (glued) { parts[i] = asCase(w, glued[0]) + ' ' + asCase(w, glued[1]); continue }
+    }
+    // An unfinished word ("squ") is finished only where the library puts the result next to its neighbours.
+    const prefixed = () => {
+      if (lw.length < 3 || lw.length > 4) return null
+      const done = startsWord(lw, 3)
+      const before = idx[k - 1] != null ? parts[idx[k - 1]].toLowerCase() : '', after = idx[k + 1] != null ? parts[idx[k + 1]].toLowerCase() : ''
+      return done && (bigrams().has(before + ' ' + done) || bigrams().has(done + ' ' + after)) ? done : null
+    }
+    const fixed = (limit(lw.length) ? nearWord(lw, limit(lw.length)) : null) || prefixed()
     if (fixed) parts[i] = asCase(w, fixed)
   }
   return parts.join('').replace(/\s+/g, ' ').trim()
@@ -330,10 +377,74 @@ export function repairCaption(text) {
 export function plausibleCaption(text) {
   const words = (String(text || '').toLowerCase().match(/\p{L}{3,}/gu) || []).filter(w => !PROTECTED.has(w))
   if (words.length < 2) return true
-  const known = VOCAB_SET()
+  const known = libraryWords()
   // "next" and "rest" are screens' words, not evidence of a name.
   const knows = w => !PROTECTED.has(w) && !FUNCTION_WORDS.has(w) && (known.has(w) || known.has(w.replace(/s$/, '')) || known.has(w.replace(/es$/, '')) || known.has(w + 's'))
   // "pushups", "deadbugs": two words the library knows, run together.
   const compound = w => { for (let i = 2; i <= w.length - 2; i++) if (knows(w.slice(0, i)) && knows(w.slice(i))) return true; return false }
   return words.some(w => knows(w) || compound(w))
+}
+
+
+/* ------------------------------------------------ snap to a library name */
+
+let NAMES = null
+const library = () => {
+  if (NAMES) return NAMES
+  let list = []
+  try { list = JSON.parse(fs.readFileSync(new URL('./names.json', import.meta.url), 'utf8')) } catch { /* no library: nothing to snap to */ }
+  NAMES = { list, set: new Set(list), tri: list.map(trigrams) }
+  return NAMES
+}
+let BIGRAMS = null
+/** Pairs of neighbouring words in the library's names: "bent over", "split squat". */
+const bigrams = () => {
+  if (BIGRAMS) return BIGRAMS
+  BIGRAMS = new Set()
+  for (const n of library().list) { const w = n.split(' '); for (let i = 0; i + 1 < w.length; i++) BIGRAMS.add(w[i] + ' ' + w[i + 1]) }
+  return BIGRAMS
+}
+let ALL_WORDS = null
+/** Every word of every library name, rare ones too (the repair vocabulary leaves those out). */
+const libraryWords = () => (ALL_WORDS ??= new Set(library().list.flatMap(n => n.split(' ')).filter(w => w.length >= 3)))
+function trigrams(s) {
+  const t = new Set(), p = ' ' + s + ' '
+  for (let i = 0; i + 3 <= p.length; i++) t.add(p.slice(i, i + 3))
+  return t
+}
+const snapped = new Map()
+
+/**
+ * A caption a couple of letters off an exercise the library lists ("Dumbbell Su Squat" for "Dumbbell
+ * Sumo Squat") is that exercise: the library's own spelling, in the caption's case. Anything that is
+ * already a library name, is short, or is not close to exactly one name is left as it is.
+ */
+export function snapToLibrary(text) {
+  const norm = String(text || '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim()
+  if (norm.length < 10 || /\d/.test(norm)) return text
+  if (snapped.has(norm)) return snapped.get(norm) ?? text
+  const lib = library()
+  let result = null
+  if (!lib.set.has(norm)) {
+    const mine = trigrams(norm)
+    let best = null, bestD = Infinity, tie = false
+    for (let i = 0; i < lib.list.length; i++) {
+      const n = lib.list[i]
+      if (Math.abs(n.length - norm.length) > 3) continue
+      let shared = 0
+      for (const g of mine) if (lib.tri[i].has(g)) shared++
+      if (shared < mine.size * 0.6) continue
+      const d = editDistance(norm, n)
+      if (d < bestD) { bestD = d; best = n; tie = false } else if (d === bestD) tie = true
+    }
+    // Only a word the OCR broke may change: every word of the caption that is a real one stays.
+    const known = VOCAB_SET()
+    const solid = norm.split(' ').filter(w => w.length >= 2 && (known.has(w) || known.has(w.replace(/s$/, '')) || FUNCTION_WORDS.has(w) || PROTECTED.has(w)))
+    if (best && !tie && bestD >= 1 && bestD <= 2 && norm.length >= 14 && solid.every(w => best.split(' ').includes(w))) result = best
+  }
+  snapped.set(norm, result)
+  if (!result) return text
+  // The library's words, in the caption's own case.
+  const upper = text === String(text).toUpperCase()
+  return upper ? result.toUpperCase() : result.replace(/\b\w/g, c => c.toUpperCase())
 }
