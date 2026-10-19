@@ -391,15 +391,80 @@ export const EXTRA_FIELDS = ['lo', 'hi', 'a', 'kc', 'km'];
 // cannot all stay. Past this many, the oldest readings of the other kinds go first and the core
 // ones (weight, body composition, steps, distance, energy, heart rate, sleep, workouts) last;
 // what the user typed is never counted or dropped.
-export const MAX_IMPORTED = 12000;
+export const MAX_IMPORTED = 15000;
+
+/* ---------- an hour at a time, for a while ---------- */
+
+// A day's total (steps, energy…) and a measurement's mean (heart rate, blood oxygen, speed…) are
+// kept an hour at a time while they are recent, so a day can be read hour by hour on any device,
+// and as one reading a day once they are older: heart rate for 90 days, everything else for 30.
+// What decides is the reading's local day (`d`), the same on every device and on the server.
+export const HOURLY_KINDS = new Set(['sum', 'mean', 'range']);
+const HOURLY_DAYS = { heartRate: 90 };
+export const hourlyDays = type => HOURLY_DAYS[type] ?? 30;
+/** The first day (YYYY-MM-DD) whose readings of `type` are kept an hour at a time, at `now`. */
+export function hourlyFrom(type, now = Date.now()) {
+  return new Date(now - (hourlyDays(type) - 1) * 86400000).toISOString().slice(0, 10);
+}
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+const roundTo = (n, dec) => { const f = 10 ** dec; return Math.round(n * f) / f; };
 
 /**
- * Health records within MAX_IMPORTED: the input if it fits, otherwise a new list without the
- * oldest imported readings — the same records whichever device or server runs it, so every copy
+ * Health records with the hours of a day that has grown old folded into that day's one reading
+ * (its total, or its mean with the lowest and highest), and, for a recent day that has its hours,
+ * the day's single reading of the same source left out, so a day is never counted twice. The same
+ * records whichever device or server runs it; the input itself when nothing changes.
+ */
+export function compactHourly(health, now = Date.now()) {
+  if (!Array.isArray(health)) return health;
+  const groups = new Map();
+  for (const r of health) {
+    const t = r && TYPES[r.type];
+    if (!t || !HOURLY_KINDS.has(t.kind) || !r.src || r.src === 'manual' || r.sid == null || !DAY.test(r.d || '')) continue;
+    const rest = String(r.sid).slice(r.type.length + 1);
+    const hourly = /^\d+$/.test(rest);
+    if (!hourly && !DAY.test(rest)) continue;
+    const key = r.src + '|' + r.type + '|' + r.d;
+    let g = groups.get(key);
+    if (!g) groups.set(key, g = { hours: [], days: [] });
+    (hourly ? g.hours : g.days).push(r);
+  }
+  const drop = new Set(), add = [];
+  for (const [key, g] of groups) {
+    if (!g.hours.length) continue;
+    const [src, type, d] = key.split('|');
+    g.days.forEach(r => drop.add(r));
+    if (d >= hourlyFrom(type, now)) continue;
+    const t = TYPES[type];
+    const vs = g.hours.map(r => Number(r.v)).filter(Number.isFinite);
+    if (!vs.length) continue;
+    const sum = vs.reduce((a, b) => a + b, 0);
+    const rec = {
+      id: src + ':' + type + ':' + d, type, v: t.kind === 'sum' ? roundTo(sum, t.unit === 'count' ? 0 : 2) : roundTo(sum / vs.length, 2),
+      u: t.unit, t: Date.parse(d + 'T12:00:00Z'), d, src, sid: type + ':' + d,
+    };
+    if (t.kind === 'range') {
+      rec.lo = roundTo(Math.min(...g.hours.map(r => Number(r.lo ?? r.v))), t.dec);
+      rec.hi = roundTo(Math.max(...g.hours.map(r => Number(r.hi ?? r.v))), t.dec);
+    }
+    rec.c = Math.min(...g.hours.map(r => Number(r.c) || 0));
+    rec._ts = Math.max(...g.hours.map(r => Number(r._ts) || 0));
+    g.hours.forEach(r => drop.add(r));
+    add.push(rec);
+  }
+  if (!drop.size) return health;
+  return [...health.filter(r => !drop.has(r)), ...add]
+    .sort((a, b) => (Number(a?.t) || 0) - (Number(b?.t) || 0) || (String(a?.id) < String(b?.id) ? -1 : String(a?.id) > String(b?.id) ? 1 : 0));
+}
+
+/**
+ * Health records within MAX_IMPORTED, with old hours folded into days first (compactHourly): the
+ * input if it fits, otherwise a new list without the oldest imported readings — the same records whichever device or server runs it, so every copy
  * of a profile settles on the same set.
  */
-export function trimImported(health, max = MAX_IMPORTED) {
+export function trimImported(health, max = MAX_IMPORTED, now = Date.now()) {
   if (!Array.isArray(health)) return health;
+  health = compactHourly(health, now);
   const imported = health.filter(r => r && r.src && r.src !== 'manual');
   if (imported.length <= max) return health;
   const core = r => (TYPES[r.type] && TYPES[r.type].core ? 1 : 0);
