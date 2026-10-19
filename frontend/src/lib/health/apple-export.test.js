@@ -1,8 +1,13 @@
-import { describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { deflateRawSync } from 'node:zlib'
 import { createScanner, readAppleHealthExport, readingsFromExportText } from './apple-export.js'
 import { phoneTime } from '../../../../api/health/fold.js'
 import { applyReadings } from './sync.js'
+
+// These readings are from October 2026: read a while later, they are old, and fold a day at a
+// time as they always did (hourly folding of recent readings has tests of its own).
+beforeAll(() => { vi.spyOn(Date, 'now').mockReturnValue(Date.parse('2027-06-01T00:00:00Z')) })
+afterAll(() => { vi.restoreAllMocks() })
 
 const rec = (type, value, start, { unit = '', end = start, source = 'iPhone', extra = '' } = {}) =>
   `<Record type="${type}" sourceName="${source}" unit="${unit}" creationDate="${start}" startDate="${start}" endDate="${end}" value="${value}"${extra}>\n</Record>\n`

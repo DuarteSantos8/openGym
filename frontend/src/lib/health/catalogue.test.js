@@ -27,7 +27,7 @@ describe('every name the health area shows is translated', () => {
 })
 
 describe('the cap on imported readings', () => {
-  const rec = (i, type, src = 'apple-health') => ({ id: `${src}:${type}:${i}`, type, v: 1, u: '', t: i, d: '2026-01-01', src, sid: `${type}:${i}`, c: 1, _ts: 1 })
+  const rec = (i, type, src = 'apple-health') => ({ id: `${src}:${type}:${i}`, type, v: 1, u: '', t: i, d: '2026-01-01', src, sid: `${type}:x${i}`, c: 1, _ts: 1 })
   it('drops the oldest of the other kinds first, keeps the core ones and never touches what was typed', () => {
     const health = [rec(1, 'spo2'), rec(2, 'steps'), rec(3, 'spo2'), rec(4, 'steps'), rec(0, 'bodyFat', 'manual')]
     const out = trimImported(health, 2)
