@@ -25,7 +25,9 @@ docker compose --profile video-import run --rm -v "$PWD/video-import/test/fixtur
   node src/cli.js <youtube-url> --video --out /tmp/vi --fixture /out/<videoId>.json
 ```
 
-The suggested name/timer boxes are used unless the corpus entry has `"roi": { "name": "x,y,w,h",
+Pass `--rois data/video-import/<user id>.json` (and mount `./data`) to use the boxes you drew
+for each channel in the app; that file is where the API keeps them. Otherwise the suggested
+name/timer boxes are used, unless the corpus entry has `"roi": { "name": "x,y,w,h",
 "timer": "x,y,w,h" }` (fractions of the frame, as `--name`/`--timer` take them). The stills
 in `test/.record/<id>` (gitignored) show whether the boxes were right.
 

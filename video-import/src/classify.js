@@ -111,6 +111,21 @@ export function classify(blocks, { hints = [], parts = [], cuts = [], timed = fa
     }
   }
 
+  // A move done on one side, a short rest ("SWITCH SIDES"), then a countdown as long that nobody
+  // named: the other side of the same move. Not when that other side comes up named right after
+  // (the unnamed one is then something else, the second move of a superset).
+  for (let i = 0; i + 2 < bs.length; i++) {
+    const b = bs[i], gap = bs[i + 2]
+    if (b.kind !== 'work' || !isRestish(bs[i + 1]) || bs[i + 1].dur > MAX_REST) continue
+    if (!gap || gap.kind !== 'gap' || !gap.timed || Math.abs(gap.dur - b.dur) > 3) continue
+    const { base, side } = sideOf(b.text || b.key)
+    if (!side) continue
+    const other = side === 'R' ? 'left' : 'right'
+    const later = bs.slice(i + 3, i + 5).find(x => x.kind === 'work')
+    if (later && sideOf(later.text || later.key).side && sameName(sideOf(later.text || later.key).base, base)) continue
+    Object.assign(gap, { kind: 'work', key: `${base} ${other}`, text: `${base} (${other})`, conf: Math.min(0.5, b.conf || 0), variants: { [`${base} ${other}`]: 1 }, fromSide: true })
+  }
+
   // Interval flags: work, short, followed by a short rest.
   const flag = bs.map((b, i) => b.kind === 'work' && b.dur <= MAX_WORK && isRestish(bs[i + 1]) && bs[i + 1].dur <= MAX_REST && hintFor(b, hints) == null)
 

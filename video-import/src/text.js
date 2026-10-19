@@ -43,7 +43,10 @@ export const SAME_NAME = 0.75
 const REST_WORDS = [
   'rest', 'break', 'recover', 'recovery', 'relax', 'pause', 'pausa', 'przerwa', 'odpoczynek',
   'descanso', 'repos', 'ruhe', 'erholung', 'riposo', 'rust', 'get ready', 'prepare', 'ready',
-  'przygotuj sie', 'transition'
+  'przygotuj sie', 'transition',
+  // The pause between the two sides of a move. Never "switch" alone: "switch lunges" is a move.
+  'switch sides', 'switch side', 'change sides', 'change side', 'other side', 'zmiana strony',
+  'zmien strone', 'seitenwechsel', 'cambio de lado', 'changez de cote'
 ]
 const REST_RE = new RegExp('(^|\\s)(' + REST_WORDS.join('|') + ')(\\s|$)')
 // "next: burpees", "up next burpees", "next up - burpees", "nastepne: …", "als nachstes …"
@@ -209,6 +212,9 @@ export function sameName(a, b) {
  * arrow as "!", a stray "l" or "E". Edge words with fewer than two letters go; a real short word
  * ("UP" in "PUSH UP") has two and stays.
  */
+// "(R)", "(left)": a side in brackets, as the caption shows it or as segment.js spells it out.
+const SIDE_TOKEN = /^[([{]\s*(r|l|right|left)\s*[)\]}]/i
+
 export function cleanCaption(raw) {
   const words = String(raw || '').trim().split(/\s+/).filter(Boolean)
   const letters = w => (w.match(/\p{L}/gu) || []).length
@@ -216,9 +222,20 @@ export function cleanCaption(raw) {
   // except the I and O that the edge of a frame reads as.
   const keepsLead = words.length > 1 && /^[A-HJ-NP-Z]$/.test(words[0]) && /^[^a-z]*$/.test(words.slice(1).join(' ')) && letters(words[1]) >= 2
   while (!keepsLead && words.length && letters(words[0]) < 2) words.shift()
-  while (words.length && letters(words[words.length - 1]) < 2) words.pop()
-  // A caption in capitals that ends in a short mixed-case word ("SUMO SQUAT Ll"): debris too.
-  const caps = words.length > 1 && /^[^a-z]*$/.test(words.slice(0, -1).join(' '))
-  if (caps && words[words.length - 1].length <= 2 && /[a-z]/.test(words[words.length - 1])) words.pop()
+  // A side in brackets ends the caption, and a set counter ("(1/2)", "(20SEC …") too, counter and
+  // all: what OCR reads after them is the picture ("GLUTE BRIDGE (1,2) g Iy").
+  const end = words.findIndex((w, i) => i > 0 && (SIDE_TOKEN.test(w) || /^\(\s*\d/.test(w)))
+  if (end > 0) words.splice(/^\(\s*\d/.test(words[end]) ? end : end + 1)
+  // A caption in capitals ("ROW to PUSH" counts: a joining word may be small) that ends in short
+  // words with small letters ("SUMO SQUAT Ll", "PUSH ur", "RAISE (L) ww v"): debris too.
+  const capsish = w => !/[a-z]/.test(w) || /^(to|and|with|on|of|in|x)$/.test(w)
+  for (;;) {
+    const last = words[words.length - 1]
+    if (!last) break
+    if (letters(last) < 2 && !SIDE_TOKEN.test(last)) { words.pop(); continue }
+    const caps = words.length > 1 && words.slice(0, -1).every(capsish) && words.slice(0, -1).some(w => letters(w) >= 3)
+    if (caps && last.length <= 3 && /[a-z]/.test(last) && !capsish(last)) { words.pop(); continue }
+    break
+  }
   return words.join(' ')
 }

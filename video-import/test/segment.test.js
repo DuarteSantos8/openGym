@@ -221,3 +221,15 @@ test('a short mixed-case word after a caption in capitals is debris (cDq-nFmD0rI
   assert.equal(cleanCaption('PIKE PUSH UPS Bl'), 'PIKE PUSH UPS')
   assert.equal(cleanCaption('Push ups'), 'Push ups')
 })
+
+test('a side in brackets or a set counter ends a caption; short small-letter debris after capitals goes (IEJMnNGAGY4)', async () => {
+  const { cleanCaption } = await import('../src/text.js')
+  assert.equal(cleanCaption('NEXT GLUTE BRIDGE (1,2) g Iy'), 'NEXT GLUTE BRIDGE')
+  assert.equal(cleanCaption('NEXT HEEL ELEVATED SQUATS (1 2 ~N -'), 'NEXT HEEL ELEVATED SQUATS')
+  assert.equal(cleanCaption('NEXT LEAN IN LATERAL RAISE (L) S WS W b -'), 'NEXT LEAN IN LATERAL RAISE (L)')
+  assert.equal(cleanCaption('SIDE PLANK DIPS (right) - bl'), 'SIDE PLANK DIPS (right)')
+  assert.equal(cleanCaption('NEXT RENEGADE ROW to PUSH ur'), 'NEXT RENEGADE ROW to PUSH')
+  assert.equal(cleanCaption('DIAMOND PUSH UP (20SEC NORMAL 20SEC KNEE DOWN)'), 'DIAMOND PUSH UP')
+  // Mixed case is left alone: its small words are words.
+  assert.equal(cleanCaption('Push up to Down Dog'), 'Push up to Down Dog')
+})

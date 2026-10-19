@@ -213,3 +213,16 @@ test('30 s on, 30 s off is an interval block of 30/30, in two rounds', async () 
   assert.deepEqual([iv.work, iv.rest, iv.rounds], [30, 30, 2])
   assert.deepEqual(iv.rows.map(r => [r.key, r.sec, r.rest, r.rounds]), [['squats', 30, 30, 2], ['lunges', 30, 30, 2], ['burpees', 30, 30, 2]])
 })
+
+test('a named side, "SWITCH SIDES", then a countdown as long that nobody named is the other side (IEJMnNGAGY4)', async () => {
+  const { timerPhases } = await import('../src/segment.js')
+  const named = [['NEXT: DEAD BUG', 15], ['DEAD BUG', 40], ['NEXT: SIDE PLANK DIPS (RIGHT)', 15], ['SIDE PLANK DIPS (RIGHT)', 40]]
+  const draft = classify(timerPhases(framesOf([...named, ['SWITCH SIDES', 15], ['', 40], ['NEXT: LEG DROPS', 15], ['LEG DROPS', 40], ['NEXT: COMMANDOS', 15], ['COMMANDOS', 40]])), { timed: true })
+  const rows = draft.sections.flatMap(s => s.rows)
+  const left = rows.find(r => r.occurrences.some(o => o.start === 125))
+  assert.ok(left, 'the unnamed 40 s after SWITCH SIDES is a row')
+  assert.match(left.key, /side plank dips.*left/)
+  // A superset's second move between the two named sides stays unnamed: it is not a side.
+  const ss = classify(timerPhases(framesOf([...named, ['REST', 15], ['', 40], ['REST', 15], ['SIDE PLANK DIPS (LEFT)', 40], ['NEXT: LEG DROPS', 15], ['LEG DROPS', 40]])), { timed: true })
+  assert.ok(!ss.sections.flatMap(s => s.rows).some(r => /left/.test(r.key) && r.occurrences.some(o => o.start === 125)))
+})

@@ -2,9 +2,10 @@
 // pointing anyone at it, and for seeing why one reads badly. Not used by the server.
 //
 //   docker compose --profile video-import run --rm -v "$PWD/out:/out" video-import \
-//     node src/cli.js <youtube-url> [--video] [--name x,y,w,h[;x,y,w,h]] [--file video.mp4] [--timer x,y,w,h] [--out /out] [--fixture /out/<id>.json]
+//     node src/cli.js <youtube-url> [--video] [--name x,y,w,h[;x,y,w,h]] [--file video.mp4] [--timer x,y,w,h] [--out /out] [--fixture /out/<id>.json] [--rois data/video-import/<user>.json]
 //
-// Without --name/--timer it uses the suggested boxes. With --out it writes the ROI stills there
+// Without --name/--timer it uses the boxes the app saved for the channel (--rois), else the
+// suggested ones. With --out it writes the ROI stills there
 // and the full result as result.json, so the boxes can be checked by eye, and every second's raw
 // reading as frames.json. --fixture writes a regression fixture (test/fixtures/README.md) with
 // the readings and the current draft as an UNREVIEWED starting point for the expected answer.
@@ -53,7 +54,10 @@ try {
     log(`video ${dims.width}x${dims.height}, ${Math.round(dims.duration)} s, ${(fs.statSync(file).size / 1e6).toFixed(1)} MB`)
     const setup = await roiSetup(file, { workDir, dims })
     log('suggested boxes', JSON.stringify(setup.suggest))
-    const roi = { name: box(opt('--name')) || setup.suggest.name, timer: box(opt('--timer')) || setup.suggest.timer }
+    // --rois: the boxes the app saved for this channel (data/video-import/<user>.json).
+    const saved = opt('--rois') ? JSON.parse(fs.readFileSync(opt('--rois'), 'utf8')).rois?.[source.channelId] : null
+    if (saved) log('saved boxes for this channel', JSON.stringify(saved))
+    const roi = { name: box(opt('--name')) || saved?.name || setup.suggest.name, timer: box(opt('--timer')) || saved?.timer || setup.suggest.timer }
     if (out) {
       fs.mkdirSync(out, { recursive: true })
       setup.samples.forEach((s, i) => fs.writeFileSync(path.join(out, `sample-${i}-${Math.round(s.t)}s.jpg`), Buffer.from(s.src.split(',')[1], 'base64')))

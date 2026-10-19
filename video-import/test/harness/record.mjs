@@ -2,7 +2,9 @@
 // through src/cli.js. Needs YouTube, ffmpeg and the OCR, so it runs in the worker image:
 //
 //   docker compose --profile video-import run --rm -v "$PWD/video-import/test:/app/test" video-import \
-//     node test/harness/record.mjs [--status calibrated] [--channel "Rowan Row"] [<videoId>…]
+//     node test/harness/record.mjs [--status calibrated] [--channel "Rowan Row"] [--rois <file>] [<videoId>…]
+//
+// --rois: the boxes the app saved per channel, data/video-import/<user id>.json (mount ./data).
 //
 // A video read from its chapters alone (no --video) still goes through the frames, so every
 // fixture has readings. A failure is logged and the next video goes on. The fixtures come out
@@ -19,7 +21,7 @@ const root = path.join(here, '..', '..')
 const corpus = JSON.parse(fs.readFileSync(path.join(here, '..', 'corpus.json'), 'utf8')).videos
 const args = process.argv.slice(2)
 const opt = k => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : null }
-const ids = args.filter((a, i) => !a.startsWith('--') && !['--status', '--channel'].includes(args[i - 1]))
+const ids = args.filter((a, i) => !a.startsWith('--') && !['--status', '--channel', '--rois'].includes(args[i - 1]))
 
 const todo = corpus.filter(v => (ids.length ? ids.includes(v.id) : v.status !== 'skip')
   && (!opt('--status') || v.status === opt('--status'))
@@ -34,6 +36,7 @@ for (const v of todo) {
   const a = ['src/cli.js', `https://www.youtube.com/watch?v=${v.id}`, '--video', '--out', out, '--fixture', path.join(DIR, `${v.id}.json`)]
   if (v.roi?.name) a.push('--name', v.roi.name)
   if (v.roi?.timer) a.push('--timer', v.roi.timer)
+  if (opt('--rois')) a.push('--rois', path.resolve(opt('--rois')))
   const r = spawnSync('node', a, { cwd: root, stdio: 'inherit' })
   if (r.status !== 0 || !fs.existsSync(path.join(DIR, `${v.id}.json`))) failed.push(v.id)
 }
