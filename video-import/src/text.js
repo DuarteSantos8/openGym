@@ -1,6 +1,7 @@
 // Text helpers shared by the OCR reader, the chapter parser and the segmenter. Pure, no I/O.
 
 /** Lowercase letters and single spaces only: what two readings of the same caption share. */
+import fs from 'node:fs'
 export function normName(s) {
   return String(s || '')
     .normalize('NFKD').replace(/[̀-ͯ]/g, '')
@@ -238,4 +239,85 @@ export function cleanCaption(raw) {
     break
   }
   return words.join(' ')
+}
+
+
+/* ------------------------------------------------------------ word repair */
+
+let VOCAB = null
+const vocab = () => {
+  if (VOCAB) return VOCAB
+  try { VOCAB = fs.readFileSync(new URL('./vocab.json', import.meta.url), 'utf8') } catch { VOCAB = '[]' }
+  VOCAB = JSON.parse(VOCAB)
+  return VOCAB
+}
+const VOCAB_SET = () => (vocab().set ??= new Set(vocab()))
+const nearest = new Map()
+
+/**
+ * The vocabulary word within `max` edits of `w`, nearer than any other (or the longest of a few
+ * that are forms of one another: "bicep", "biceps"); null when none or unsure.
+ */
+function nearWord(w, max, minLen = 0) {
+  const key = w + '|' + max + '|' + minLen
+  if (nearest.has(key)) return nearest.get(key)
+  let bestD = max + 1, tied = []
+  for (const v of vocab()) {
+    if (v.length < minLen || Math.abs(v.length - w.length) > max) continue
+    const d = editDistance(w, v)
+    if (d < bestD) { bestD = d; tied = [v] } else if (d === bestD) tied.push(v)
+  }
+  tied.sort((a, b) => b.length - a.length)
+  const kin = tied.length > 0 && tied.every(v => tied[0].startsWith(v))
+  const out = bestD <= max && tied.length && (tied.length === 1 || kin) ? tied[0] : null
+  nearest.set(key, out)
+  return out
+}
+
+// The words of the screens around a workout: not exercise names, and not the library's to mend.
+const PROTECTED = new Set(['rest', 'next', 'warm', 'cool', 'down', 'round', 'rounds', 'work', 'switch', 'sides', 'get', 'ready', 'start', 'finish', 'break', 'water', 'cooldown', 'warmup', 'stretch', 'stretches', 'workout', 'seconds', 'minute', 'minutes', 'first', 'repeat'])
+
+const FUNCTION_WORDS = new Set(['in', 'to', 'on', 'of', 'up', 'at', 'by', 'or', 'and', 'the', 'with', 'for', 'off', 'out', 'over'])
+
+const asCase = (orig, w) => (orig === orig.toUpperCase() ? w.toUpperCase() : /^\p{Lu}/u.test(orig) ? w[0].toUpperCase() + w.slice(1) : w)
+
+/**
+ * Mends the words OCR broke in a caption, from the words the exercise library uses: "Squa" →
+ * "Squat", "Bic S Curl" → "Biceps Curl". A word the library knows stays; one it does not is
+ * replaced by the library word it is one or two edits from, when there is exactly one such nearest
+ * word; two short pieces that join into such a word ("Lat Al") become it. Anything with a digit
+ * or a bracket in it is left alone.
+ */
+export function repairCaption(text) {
+  const parts = String(text || '').split(/(\s+)/)
+  const idx = parts.map((p, i) => (/^\s*$/.test(p) ? -1 : i)).filter(i => i >= 0)
+  const known = VOCAB_SET()
+  const plain = w => /^\p{L}+$/u.test(w)
+  const limit = n => (n >= 10 ? 2 : n >= 6 ? 1 : 0)
+  // The library lists "burpee" and "curl": a plural or a singular of a word it knows is known.
+  const knows = w => known.has(w) || known.has(w.replace(/s$/, '')) || known.has(w.replace(/es$/, '')) || known.has(w + 's') || known.has(w + 'es')
+  for (let k = 0; k < idx.length; k++) {
+    const i = idx[k], w = parts[i], lw = w.toLowerCase()
+    if (!plain(w) || lw.length < 2) continue
+    // Two pieces that are one word: "bic" + "s", "lat" + "al", "du" + "bell" (not two words the
+    // library knows: "side" + "squat" are two).
+    const j = idx[k + 1]
+    const lj = j != null ? parts[j].toLowerCase() : ''
+    if (j != null && plain(parts[j]) && !(knows(lw) && knows(lj)) && !PROTECTED.has(lw) && !PROTECTED.has(lj) && !FUNCTION_WORDS.has(lj) &&
+      !(lw.length >= 4 && knows(lw)) && lw.length + lj.length >= 4) {
+      const joined = nearWord(lw + lj, 2, 6)
+      // The piece in front is the start of the word it was cut from; a word that is just one of the
+      // pieces again ("pronated" + "fl") is a piece of debris after a word, not half of one.
+      if (joined && joined.startsWith(lw) && joined !== lw && joined !== lj) {
+        parts[i] = asCase(w, joined); parts[j] = ''
+        if (parts[j - 1] != null && /^\s+$/.test(parts[j - 1])) parts[j - 1] = ''
+        k++
+        continue
+      }
+    }
+    if (lw.length < 3 || knows(lw) || PROTECTED.has(lw)) continue
+    const fixed = limit(lw.length) ? nearWord(lw, limit(lw.length)) : null
+    if (fixed) parts[i] = asCase(w, fixed)
+  }
+  return parts.join('').replace(/\s+/g, ' ').trim()
 }

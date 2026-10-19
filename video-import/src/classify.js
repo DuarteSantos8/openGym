@@ -227,7 +227,14 @@ function rowFrom(blocks, extra) {
 const sameMove = (a, b) => {
   if (!sameName(a, b)) return false
   const x = sideOf(a), y = sideOf(b)
-  return !(x.side && y.side && x.side !== y.side)
+  if (x.side && y.side && x.side !== y.side) return false
+  // "Lateral raise" and "Lateral raise pulses": a whole word more is another move, not the same
+  // caption read short.
+  const ta = String(a).split(/\s+/).filter(Boolean), tb = String(b).split(/\s+/).filter(Boolean)
+  const [short, long] = ta.length <= tb.length ? [ta, tb] : [tb, ta]
+  const extra = long.filter(w => !short.includes(w))
+  if (short.length >= 3 && short.every(w => long.includes(w)) && extra.length && extra.every(w => w.length >= 4)) return false
+  return true
 }
 
 function intervalSection(slice) {
@@ -276,7 +283,9 @@ function intervalSection(slice) {
  */
 export function splitBlocks(section) {
   if (section.kind !== 'interval') return [section]
-  const seq = section.rows.flatMap(r => (r.occurrences || []).map(o => ({ start: o.start, row: r }))).sort((a, b) => a.start - b.start)
+  const seq = section.rows.flatMap(r => (r.occurrences || []).map(o => ({ start: o.start, dur: o.dur, row: r }))).sort((a, b) => a.start - b.start)
+  const byBreaks = splitAtBreaks(section, seq)
+  if (byBreaks) return byBreaks
   const keys = seq.map(x => x.row.key)
   const repeats = ks => ks.length >= 4 && detectRounds(ks, sameMove).period > 0
   const split = (from) => {
@@ -299,6 +308,43 @@ export function splitBlocks(section) {
       ...section, rows, start: part[0].start, end: i === bounds.length - 2 ? section.end : last.start + Math.max(...rows.map(r => r.sec || 0)),
       rounds: Math.max(...rows.map(r => r.rounds || 1))
     }
+  })
+}
+
+/**
+ * A section whose moves are cut into equal groups by a rest much longer than the others, again
+ * and again — ten moves, a minute, ten moves, a minute — is one section per group. One long
+ * pause alone is what mergeIntervals reads as a block cut in two by someone fetching dumbbells;
+ * the same pause coming back at a steady count is the video's own structure.
+ */
+function splitAtBreaks(section, seq) {
+  if (seq.length < 9) return null
+  const gaps = seq.slice(1).map((x, i) => x.start - (seq[i].start + seq[i].dur))
+  const usual = median(gaps.filter(g => g > 0)) || 0
+  if (!usual) return null
+  const cuts = []
+  gaps.forEach((g, i) => { if (g >= Math.max(45, usual * 1.5)) cuts.push(i + 1) })
+  if (cuts.length < 2) return null
+  const bounds = [0, ...cuts, seq.length]
+  const sizes = bounds.slice(1).map((b, i) => b - bounds[i])
+  if (Math.max(...sizes) - Math.min(...sizes) > 1 || Math.min(...sizes) < 3) return null
+  // The same moves in every group are rounds of one block (a longer rest between rounds), not
+  // sections: groups are sections when their moves are mostly their own.
+  const names = bounds.slice(0, -1).map((a, i) => new Set(seq.slice(a, bounds[i + 1]).map(x => x.row.key)))
+  for (let i = 0; i < names.length; i++) for (let j = i + 1; j < names.length; j++) {
+    const shared = [...names[i]].filter(k => [...names[j]].some(m => sameName(k, m))).length
+    if (shared >= Math.min(names[i].size, names[j].size) * 0.5) return null
+  }
+  return bounds.slice(0, -1).map((a, i) => {
+    const part = seq.slice(a, bounds[i + 1])
+    const rows = []
+    for (const x of part) {
+      let row = rows.find(r => r.src === x.row)
+      if (!row) { row = { ...x.row, src: x.row, occurrences: [] }; rows.push(row) }
+      row.occurrences.push({ start: x.start, dur: x.dur })
+    }
+    for (const r of rows) { r.rounds = r.occurrences.length; r.thumbT = r.occurrences[0].start + Math.floor(r.occurrences[0].dur / 2); delete r.src }
+    return { ...section, rows, start: part[0].start, end: i === bounds.length - 2 ? section.end : part[part.length - 1].start + part[part.length - 1].dur, rounds: Math.max(...rows.map(r => r.rounds)) }
   })
 }
 

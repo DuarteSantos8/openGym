@@ -66,10 +66,15 @@ export async function analyse(file, roi, { workDir, signal, hints = [], parts = 
   const crops = await extractCrops(file, roi, { ...d, workDir, signal, onProgress: f => progress('frames', f) })
   progress('ocr', 0)
   const hasTimer = crops.timers.some(l => l.some(Boolean))
-  const share = hasTimer ? 0.7 / crops.names.length : 1 / crops.names.length
+  const share = hasTimer ? 0.7 / crops.names.length : 1 / crops.names.length   // per name box (mask and plain together)
   const names = []
   for (let b = 0; b < crops.names.length; b++) {
-    names.push(await readAll(crops.names[b], 'name', { workDir, signal, onProgress: f => progress('ocr', share * (b + f)) }))
+    names.push(await readAll(crops.names[b], 'name', { workDir, signal, onProgress: f => progress('ocr', share * (b + f) / 2) }))
+    // The plain crops too (where something looked like text): a caption half faded in is read
+    // whole from them, and in pieces from the mask.
+    if (crops.namesPlain?.[b]?.some(Boolean)) {
+      names.push(await readAll(crops.namesPlain[b], 'name', { workDir, signal, onProgress: f => progress('ocr', share * (b + 0.5 + f / 2)) }))
+    }
   }
   const clocks = []
   for (let c = 0; hasTimer && c < crops.timers.length; c++) {

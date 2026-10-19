@@ -116,6 +116,7 @@ export async function extractCrops(file, roi, { width, height, duration, workDir
     out[k + 'Alt'] = []
     let last = null   // { px, path } of the crop the previous second used
     for (let i = 0; i < n; i++) {
+      let altDone = false
       // The masks are plain JavaScript over every second of the video: hand the event loop back
       // now and then, so the job's progress (and a cancel) are still answered while they run.
       if (i % 25 === 24) await new Promise(r => setImmediate(r))
@@ -135,13 +136,21 @@ export async function extractCrops(file, roi, { width, height, duration, workDir
         px = textMask(gray, ow, oh)
         if (!px) {
           const b = binarize(gray)
-          if (blank(b)) { out[k].push(null); last = null; continue }
+          if (blank(b)) { out[k].push(null); out[k + 'Alt'].push(null); last = null; continue }
           px = b.px
+        } else if (px.some(v => v === 0)) {
+          // A mask keeps the cores of the strokes: a caption that is thin or half faded in (a
+          // transition) comes out in pieces, and the same crop untouched reads fine. Where
+          // something looks like text, the plain crop is read as well; each second keeps the
+          // better of the two (pipeline.js).
+          out[k + 'Alt'].push(keep(gray, k + 'Alt'))
+          altDone = true
         }
       }
       // A caption over a moving picture is never byte-identical from one second to the next.
       // Within NEAR of the crop just read it is the same caption, and is not read again. The
       // timer changes every second by design, so it only shares exact copies.
+      if (!k.startsWith('timer') && !altDone) out[k + 'Alt'].push(null)
       if (!k.startsWith('timer') && last && difference(px, last.px) < NEAR) { out[k].push(last.path); continue }
       const p = keep(px, k)
       last = { px, path: p }
@@ -155,6 +164,8 @@ export async function extractCrops(file, roi, { width, height, duration, workDir
     seconds: len,
     scene: sceneChanges(sceneRaw, SCENE_W * SCENE_H).slice(0, len),
     names: boxes.map((_, i) => out['name' + i]),
+    // The same boxes, the crop as it is (no mask) where something looked like text, else null.
+    namesPlain: boxes.map((_, i) => out['name' + i + 'Alt']),
     // Every reading of every timer, one list each: per box, at the start and half a second in,
     // in each polarity. The countdown keeps whichever fits.
     timers: clocks.flatMap((_, j) => ['timer' + j, 'timer' + j + 'B'].flatMap(k => [out[k], out[k + 'Alt']])).map(l => l || new Array(len).fill(null))
