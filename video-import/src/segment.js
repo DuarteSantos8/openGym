@@ -424,6 +424,38 @@ export function countdownRuns(frames) {
   }
   for (let k = runs.length - 1; k >= 0; k--) if (runs[k].drop) runs.splice(k, 1)
   runs.sort((a, b) => a.start - b.start)
+  // A chain of moves back to back (a warm-up, a cool-down of holds) is a grid of one length: the
+  // ones off it by a couple of seconds are caught early or late, not shorter or longer.
+  {
+    const real = runs.filter(r => r.top >= 12)
+    let from = 0
+    while (from < real.length) {
+      let to = from
+      while (to + 1 < real.length && Math.abs(real[to + 1].start - (real[to].start + real[to].top + 1)) <= 3) to++
+      let chain = real.slice(from, to + 1)
+      from = to + 1
+      if (chain.length < 4) continue
+      const L = Math.round(median(chain.map(r => r.top + 1)) / 5) * 5
+      // A rest or a get-ready at either end is not part of the grid.
+      while (chain.length && Math.abs(chain[0].top + 1 - L) > 5) chain = chain.slice(1)
+      while (chain.length && Math.abs(chain[chain.length - 1].top + 1 - L) > 5) chain = chain.slice(0, -1)
+      if (chain.length < 4 || L < 20 || L > 60 || chain.some(r => Math.abs(r.top + 1 - L) > 5)) continue
+      const rem = chain.map(r => ((r.start % L) + L) % L)
+      // The remainder most of them share exactly (a first move caught a second early is the odd one out).
+      let phase = rem[0], most = 0, exact = 0
+      for (const c of rem) {
+        const n = rem.filter(x => Math.min(Math.abs(x - c), L - Math.abs(x - c)) <= 1).length
+        const e = rem.filter(x => x === c).length
+        if (n > most || (n === most && e > exact)) { most = n; phase = c; exact = e }
+      }
+      if (most < chain.length * 0.6) continue
+      for (const r of chain) {
+        const g = phase + L * Math.round((r.start - phase) / L)
+        if (Math.abs(g - r.start) > 4 || g === r.start && r.top + 1 === L) continue
+        r.start = g; r.top = L - 1
+      }
+    }
+  }
   return runs.map((r, i) => {
     const next = runs[i + 1]?.start ?? both.length
     // It reaches zero `top` seconds after it showed `top`, and is gone a second later.
@@ -464,7 +496,8 @@ export function timerPhases(frames) {
     // in a countdown of forty. A caption is on screen for a good part of its countdown.
     if (mine.length < MIN_CAPTION_SECONDS && mine.length / (b - a) < MIN_CAPTION_COVER) {
       const sure = mine.reduce((s, n) => s + (n.l.conf || 0), 0) / mine.length
-      if (mine.length < 3 || sure < 75) return null
+      // A few seconds of a caption made only of words the library knows is a blurred NEXT screen, not noise.
+      if (mine.length < 3 || (sure < 75 && !(sure >= 45 && knownShare(first) >= 0.99))) return null
     }
     // The fullest reading: a caption that types itself out is read short at first.
     const longest = Math.max(...mine.map(n => n.l.key.length))
@@ -495,7 +528,7 @@ export function timerPhases(frames) {
     const pl = p && r.start - p.end <= 6 + (i - 1 - a) * MIN_EXERCISE ? len(p) : null
     const nl = n && n.start - r.end <= 6 + (z - i - 1) * MIN_EXERCISE ? len(n) : null
     if (pl == null && nl == null) return false
-    return (pl == null || len(r) <= pl * 0.7) && (nl == null || len(r) <= nl * 0.7)
+    return (pl == null || len(r) <= pl * 0.8) && (nl == null || len(r) <= nl * 0.8)
   }
   const blocks = []
   let pending = null    // a name announced for the run that comes next
@@ -549,7 +582,7 @@ export function timerPhases(frames) {
     }
     at = r.end
     const c = caps[i]
-    const lateIn = c && (c.first - r.start) / len(r) >= 0.5
+    const lateIn = c && (c.first - r.start) / len(r) >= 0.4
     // "REST" over a good part of a countdown makes it a rest, even when the name it announces
     // was read more surely: that name is what comes next.
     if (c && c.kind !== 'rest' && c.restShare >= 0.4) {

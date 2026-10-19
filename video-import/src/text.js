@@ -321,7 +321,7 @@ export function repairCaption(text) {
   const idx = parts.map((p, i) => (/^\s*$/.test(p) ? -1 : i)).filter(i => i >= 0)
   const known = VOCAB_SET()
   const plain = w => /^\p{L}+$/u.test(w)
-  const limit = n => (n >= 10 ? 2 : n >= 6 ? 1 : 0)
+  const limit = n => (n >= 10 ? 2 : n >= 5 ? 1 : 0)
   // The library lists "burpee" and "curl": a plural or a singular of a word it knows is known.
   const knows = w => known.has(w) || known.has(w.replace(/s$/, '')) || known.has(w.replace(/es$/, '')) || known.has(w + 's') || known.has(w + 'es')
   for (let k = 0; k < idx.length; k++) {
@@ -359,7 +359,8 @@ export function repairCaption(text) {
       for (let c = 3; c <= lw.length - 3 && !glued; c++) {
         for (const junk of [0, 1]) {
           const a = lw.slice(0, c), b = lw.slice(c + junk)
-          if (b.length >= 3 && knows(a) && knows(b) && !PROTECTED.has(a) && !PROTECTED.has(b)) { glued = [a, b]; break }
+          const ok = w => knows(w) || FUNCTION_WORDS.has(w) || w === 'hold'
+          if (b.length >= 3 && ok(a) && ok(b) && !(FUNCTION_WORDS.has(a) && FUNCTION_WORDS.has(b))) { glued = [a, b]; break }
         }
       }
       if (glued) { parts[i] = asCase(w, glued[0]) + ' ' + asCase(w, glued[1]); continue }

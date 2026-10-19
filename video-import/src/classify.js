@@ -131,7 +131,8 @@ export function classify(blocks, { hints = [], parts = [], cuts = [], timed = fa
   for (let i = 1; i + 1 < bs.length; i++) {
     const b = bs[i]
     if (b.kind !== 'gap' || !b.timed || b.dur < MIN_TIMED || b.dur > MAX_WORK) continue
-    if (!isRestish(bs[i - 1]) || !isRestish(bs[i + 1]) || bs[i - 1].dur > MAX_REST || bs[i + 1].dur > MAX_REST) continue
+    // The rest after the last move of a block is the longer one between blocks: only the one before counts.
+    if (!isRestish(bs[i - 1]) || !isRestish(bs[i + 1]) || bs[i - 1].dur > MAX_REST) continue
     if (bs[i - 2]?.kind !== 'work' && bs[i + 2]?.kind !== 'work') continue
     Object.assign(b, { kind: 'work', key: '', text: '', conf: 0, variants: {}, unnamed: true })
   }

@@ -3,7 +3,7 @@
     "frames": 0.997,
     "sequence": 1,
     "boundaries": 1,
-    "startError": 0.135,
+    "startError": 0.115,
     "sections": 1
   },
   "IEJMnNGAGY4": {
@@ -20,10 +20,10 @@
     "sections": 1
   },
   "UoYLPbPi938": {
-    "frames": 0.993,
+    "frames": 0.994,
     "sequence": 0.982,
     "boundaries": 0.991,
-    "startError": 0.109,
+    "startError": 0.055,
     "sections": 1
   },
   "_G5wIxplwB8": {
@@ -101,10 +101,10 @@
     "sections": 1
   },
   "t-3H2KnjH6E": {
-    "frames": 0.888,
-    "sequence": 0.861,
-    "boundaries": 0.958,
-    "startError": 0.353,
+    "frames": 0.946,
+    "sequence": 0.944,
+    "boundaries": 1,
+    "startError": 0.333,
     "sections": 1
   }
 }
