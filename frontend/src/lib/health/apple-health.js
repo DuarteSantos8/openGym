@@ -11,14 +11,15 @@
 //   - body readings: every sample
 //   - blood pressure, glucose and the other measurements taken by hand: an hour at a time, so a
 //     reading in the morning and one in the evening stay two (HealthKit's hourly statistics)
-//   - a day's totals and every other measurement: HealthKit's own daily statistics, which already
-//     leave out the overlap of an iPhone and a Watch counting the same steps; one reading per day,
-//     recomputed until the day is over (heart rate also its lowest and highest)
+//   - a day's totals and every other measurement: HealthKit's own statistics, which already
+//     leave out the overlap of an iPhone and a Watch counting the same steps: an hour at a time
+//     while recent (heart rate 90 days, the rest 30), one reading per day before that (heart rate
+//     also its lowest and highest)
 //   - sleep: the minutes asleep of each night, given to the day it ended on
 //   - symptoms, cycle tracking, notifications, mindfulness: the category's samples, a day at a time
 //   - workouts: one reading each, with the activity, its energy and distance
 // Thousands of heart-rate samples a day would not fit the synced profile (the server takes 5 MB
-// per document), which is why everything but body readings and workouts arrives a day at a time.
+// per document), which is why nothing but body readings and workouts arrives sample by sample.
 import { MOBILE } from '../mobile.js'
 import { isoOf } from '../format.js'
 import { TYPES } from '../../../../api/health/catalogue.js'
@@ -71,8 +72,9 @@ export function readingsFromDays(type, days) {
 }
 
 /**
- * HealthKit's hourly statistics of a measurement taken by hand (blood pressure, glucose…) as
- * readings: one per hour that has any, its time the hour's own, folded as an export's samples are.
+ * HealthKit's hourly statistics as readings: of a measurement taken by hand (blood pressure,
+ * glucose…), and of a recent day's totals and means (catalogue.js hourlyFrom). One per hour that
+ * has any, its time the hour's own, folded as an export's samples are.
  */
 export function readingsFromHours(type, hours) {
   if (!TYPES[type]) return []
@@ -132,7 +134,15 @@ async function readType(HK, type, start, end) {
   const x = TYPES[type]
   if (x.kind === 'sample') return readingsFromSamples(type, (await HK.querySamples({ type: x.hk, unit: nativeUnit(x.unit), start, end }))?.samples)
   if (x.kind === 'hour') return readingsFromHours(type, (await HK.queryDaily({ type: x.hk, unit: nativeUnit(x.unit), start, end, stat: 'range', hourly: true }))?.days)
-  if (STAT[x.kind]) return readingsFromDays(type, (await HK.queryDaily({ type: x.hk, unit: nativeUnit(x.unit), start, end, stat: STAT[x.kind] }))?.days)
+  if (STAT[x.kind]) {
+    // The recent days an hour at a time (catalogue.js hourlyFrom), the older ones a day at a time.
+    const from = new Date(hourlyFrom(type) + 'T00:00:00').getTime()
+    const ask = (a, b, hourly) => HK.queryDaily({ type: x.hk, unit: nativeUnit(x.unit), start: a, end: b, stat: STAT[x.kind], ...(hourly ? { hourly: true } : {}) })
+    const out = []
+    if (start < from) out.push(...readingsFromDays(type, (await ask(start, Math.min(end, from), false))?.days))
+    if (end > from) out.push(...readingsFromHours(type, (await ask(Math.max(start, from), end, true))?.days))
+    return out
+  }
   if (x.kind === 'sleep') return readingsFromSleep((await HK.querySleep({ start, end }))?.nights)
   if (x.kind === 'wo') return readingsFromWorkouts((await HK.queryWorkouts({ start, end }))?.workouts)
   return readingsFromCategory(type, (await HK.queryCategory({ type: x.hk, start, end }))?.samples)
