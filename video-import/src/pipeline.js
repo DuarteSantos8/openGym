@@ -45,6 +45,18 @@ export async function roiSetup(file, { workDir, signal, dims } = {}) {
 }
 
 /**
+ * The per-second readings → blocks and the draft. Pure: no files, no OCR, no video. The worker
+ * and the regression fixtures (test/fixtures) both go through here, so a fixture tests exactly
+ * what a real import would do with the same readings.
+ */
+export function draftFromFrames(frames, { hints = [], parts = [] } = {}) {
+  const phases = timerPhases(frames)
+  const blocks = phases || segment(frames)
+  const draft = classify(blocks, { hints, parts, cuts: cutsOf(frames.map(f => f.scene || 0)), timed: !!phases })
+  return { blocks, draft, timed: !!phases }
+}
+
+/**
  * file + roi → { frames, blocks, draft, stats }.
  * `progress(stage, fraction)` for the job: 'frames' then 'ocr' then 'thumbs'.
  */
@@ -77,9 +89,7 @@ export async function analyse(file, roi, { workDir, signal, hints = [], parts = 
   // countdowns over a good part of the video — not how clean every reading is: a timer shown
   // only during the work, or read in one of its four readings, still runs the show. The
   // captions alone otherwise.
-  const phases = timerPhases(frames)
-  const blocks = phases || segment(frames)
-  const draft = classify(blocks, { hints, parts, cuts: cutsOf(frames.map(f => f.scene)), timed: !!phases })
+  const { blocks, draft } = draftFromFrames(frames, { hints, parts })
   progress('thumbs', 0)
   const rows = draft.sections.flatMap(s => s.rows)
   for (let i = 0; i < rows.length; i++) {

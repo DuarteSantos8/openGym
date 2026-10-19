@@ -2,11 +2,12 @@
 // pointing anyone at it, and for seeing why one reads badly. Not used by the server.
 //
 //   docker compose --profile video-import run --rm -v "$PWD/out:/out" video-import \
-//     node src/cli.js <youtube-url> [--video] [--name x,y,w,h[;x,y,w,h]] [--file video.mp4] [--timer x,y,w,h] [--out /out]
+//     node src/cli.js <youtube-url> [--video] [--name x,y,w,h[;x,y,w,h]] [--file video.mp4] [--timer x,y,w,h] [--out /out] [--fixture /out/<id>.json]
 //
 // Without --name/--timer it uses the suggested boxes. With --out it writes the ROI stills there
 // and the full result as result.json, so the boxes can be checked by eye, and every second's raw
-// reading as frames.json.
+// reading as frames.json. --fixture writes a regression fixture (test/fixtures/README.md) with
+// the readings and the current draft as an UNREVIEWED starting point for the expected answer.
 
 import fs from 'node:fs'
 import os from 'node:os'
@@ -18,6 +19,8 @@ import { classify } from './classify.js'
 import { analyse, roiSetup } from './pipeline.js'
 import { probe } from './frames.js'
 import { cleanBox } from './roi-suggest.js'
+import { ENGINE } from './ocr.js'
+import { run } from './proc.js'
 
 const args = process.argv.slice(2)
 const flag = k => args.includes(k)
@@ -63,6 +66,21 @@ try {
     result = { source, method: 'video', roi, draft: res.draft, blocks: res.blocks }
     // Every second's raw reading, for tuning the segmentation offline without reading the video again.
     if (out) fs.writeFileSync(path.join(out, 'frames.json'), JSON.stringify(res.frames))
+    const fixture = opt('--fixture')
+    if (fixture) {
+      const ver = await run(ENGINE === 'paddle' ? 'python3' : 'tesseract', ENGINE === 'paddle' ? ['-c', 'import paddleocr; print(paddleocr.__version__)'] : ['--version']).then(r => (r.stdout || r.stderr || '').split('\n')[0].trim()).catch(() => '')
+      fs.mkdirSync(path.dirname(fixture), { recursive: true })
+      fs.writeFileSync(fixture, fixtureJson({
+        version: 1,
+        source: { videoId: yt.id, url: yt.url, title: source.title, channel: source.channel, channelId: source.channelId, duration: source.duration },
+        capture: { engine: ENGINE, engineVersion: ver, roi, date: new Date().toISOString().slice(0, 10) },
+        inputs: { hints: meta.hints || [], parts: meta.parts || [] },
+        expected: { reviewed: false, timeline: timelineOf(res.draft, res.frames.length), sections: sectionsOf(res.draft) },
+        notes: '',
+        frames: res.frames
+      }))
+      log(`fixture written to ${fixture} — correct "expected" by watching the video, then set reviewed: true`)
+    }
   }
   log(`done in ${Math.round((Date.now() - t0) / 1000)} s`)
   if (out) fs.writeFileSync(path.join(out, 'result.json'), JSON.stringify(result, null, 1))
@@ -73,4 +91,31 @@ try {
   }
 } finally {
   fs.rmSync(workDir, { recursive: true, force: true })
+}
+
+// The draft as a fixture's timeline: [label, seconds] from t=0, rows by name, the rest 'rest'.
+function timelineOf(draft, seconds) {
+  const label = Array(seconds).fill('rest')
+  for (const s of draft.sections) for (const r of s.rows) for (const o of r.occurrences || []) {
+    for (let t = o.start; t < o.start + o.dur && t < seconds; t++) label[t] = r.name || '?'
+  }
+  const out = []
+  for (const l of label) { const last = out[out.length - 1]; if (last && last[0] === l) last[1]++; else out.push([l, 1]) }
+  return out
+}
+
+function sectionsOf(draft) {
+  return draft.sections.map(s => s.kind === 'interval'
+    ? { kind: s.kind, rounds: s.rounds, work: s.work, rest: s.rest, exercises: s.rows.map(r => r.name) }
+    : { kind: s.kind, exercises: s.rows.map(r => r.name) })
+}
+
+// Readable diffs: everything indented, but one frame and one timeline step per line.
+function fixtureJson(f) {
+  const { frames, expected, ...head } = f
+  const body = JSON.stringify(head, null, 2).replace(/\n}$/, '')
+  const tl = expected.timeline.map(x => '      ' + JSON.stringify(x)).join(',\n')
+  const secs = JSON.stringify(expected.sections, null, 2).replace(/\n/g, '\n    ')
+  const fr = frames.map(x => '    ' + JSON.stringify(x)).join(',\n')
+  return `${body},\n  "expected": {\n    "reviewed": ${expected.reviewed},\n    "timeline": [\n${tl}\n    ],\n    "sections": ${secs}\n  },\n  "frames": [\n${fr}\n  ]\n}\n`
 }
