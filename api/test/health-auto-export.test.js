@@ -5,6 +5,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { isAutoExport, readingsFromAutoExport, readingsFromShortcut } from '../health/fold.js';
 
+// These readings are from October 2026: read a while later, they are old, and fold a day at a
+// time as they always did (hourly folding of recent readings has tests of its own).
+const realNow = Date.now;
+Date.now = () => Date.parse('2027-06-01T00:00:00Z');
+test.after(() => { Date.now = realNow; });
+
 const BODY = {
   data: {
     metrics: [

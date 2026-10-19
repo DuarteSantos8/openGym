@@ -17,7 +17,7 @@ const SECRET = crypto.randomBytes(32).toString('hex');
 const UID = 'u_health_1';
 
 function mintSession(uid, sv = 0) {
-  const payload = `${uid}:${Date.now() + 86400000}:${sv}`;
+  const payload = `${uid}:${Date.now() + 1000 * 86400000}:${sv}`;
   return payload + '.' + crypto.createHmac('sha256', SECRET).update(payload).digest('base64url');
 }
 const session = () => ({ Cookie: `gymsid=${mintSession(UID)}`, 'Content-Type': 'application/json', 'Sec-Fetch-Site': 'same-origin' });
@@ -29,8 +29,10 @@ async function startServer(t, state, env = {}) {
     users: [{ id: UID, name: 'One', created: new Date().toISOString() }], creds: [], subs: [], invites: []
   }));
   if (state) fs.writeFileSync(path.join(dataDir, `state-${UID}.json`), JSON.stringify(state));
-  const child = spawn(process.execPath, ['server.js'], {
-    cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
+  // On a clock the test sets (fake-clock.mjs): June 2027 unless a test moves it, so the October 2026
+  // readings below are old and fold a day at a time.
+  const child = spawn(process.execPath, ['--import', './test/fake-clock.mjs', 'server.js'], {
+    cwd: API, stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
     env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost', ...env }
   });
   const h = { log: '', dataDir };
@@ -39,6 +41,12 @@ async function startServer(t, state, env = {}) {
   t.after(() => { child.kill('SIGKILL'); fs.rmSync(dataDir, { recursive: true, force: true }); });
   h.port = await boundPort(child, () => h.log);
   h.api = `http://127.0.0.1:${h.port}`;
+  h.at = now => new Promise(resolve => {
+    const done = m => { if (m && m.now === now) { child.off('message', done); resolve(); } };
+    child.on('message', done);
+    child.send({ now });
+  });
+  await h.at(Date.parse('2027-06-01T00:00:00Z'));
   h.disk = () => JSON.parse(fs.readFileSync(path.join(dataDir, `state-${UID}.json`), 'utf8'));
   h.db = () => JSON.parse(fs.readFileSync(path.join(dataDir, 'db.json'), 'utf8'));
   return h;
@@ -114,6 +122,27 @@ test('samples are folded into the profile as a new revision, once', async t => {
   const more = await send(h, key, { metrics: { steps: { values: '12000', dates: '2026-10-12' } } });
   assert.deepEqual({ added: more.body.added, updated: more.body.updated }, { added: 0, updated: 1 });
   assert.equal(h.disk().health.filter(x => x.type === 'steps' && x.d === '2026-10-12').length, 1);
+});
+
+test('recent readings land an hour at a time, and fold into their day once they are old', async t => {
+  const h = await startServer(t, { _rev: 1, _ts: 1, unit: 'kg', workouts: [], routines: [], bodyweight: [], health: [] });
+  await h.at(Date.parse('2026-10-13T00:00:00Z'));
+  const key = (await call(h, 'POST', '/api/health/key', { headers: session() })).body.key;
+  const recent = { metrics: {
+    heartRate: { values: ['60', '80', '140'], dates: ['2026-10-12T09:00:00+00:00', '2026-10-12T09:30:00+00:00', '2026-10-12T10:00:00+00:00'] },
+    activeEnergy: { values: ['120', '30'], dates: ['2026-10-12T09:00:00+00:00', '2026-10-12T18:00:00+00:00'] },
+  } };
+  assert.equal((await send(h, key, recent)).status, 200);
+  const hours = h.disk().health;
+  assert.deepEqual(hours.filter(r => r.type === 'heartRate').map(r => [r.v, r.lo ?? null, r.hi ?? null]), [[70, 60, 80], [140, null, null]]);
+  assert.deepEqual(hours.filter(r => r.type === 'activeEnergy').map(r => r.v), [120, 30]);
+  assert.ok(hours.every(r => /:\d+$/.test(r.sid)), 'kept by the hour');
+  // Months later, the next push folds the old hours into their day: heart rate after 90 days.
+  await h.at(Date.parse('2027-02-01T00:00:00Z'));
+  assert.equal((await send(h, key, { metrics: { weight: { values: ['80'], dates: ['2027-01-31T07:00:00+00:00'] } } })).status, 200);
+  const days = h.disk().health;
+  assert.deepEqual(days.filter(r => r.type === 'heartRate').map(r => [r.sid, r.v, r.lo, r.hi]), [['heartRate:2026-10-12', 105, 60, 140]]);
+  assert.deepEqual(days.filter(r => r.type === 'activeEnergy').map(r => [r.sid, r.v]), [['activeEnergy:2026-10-12', 150]]);
 });
 
 test('a reading the user deleted is not brought back, and bad requests are refused', async t => {
