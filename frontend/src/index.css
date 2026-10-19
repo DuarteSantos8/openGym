@@ -907,6 +907,14 @@ body.chips-dragging *{cursor:inherit}
 .mb-acts{flex:none;display:flex;align-items:center;gap:2px}
 .mb-acts .iconbtn{width:36px;height:36px;background:transparent}
 .mb-acts .mb-play{background:var(--surface-2);border-radius:99px}
+/* Docked above the tab bar on every other screen (components/MusicDock.jsx). */
+.music-dock{position:fixed;inset-inline-start:12px;inset-inline-end:12px;bottom:calc(84px + var(--sab));z-index:45;animation:slideup var(--med) var(--ease)}
+.music-dock .musicbar{margin:0;background:color-mix(in srgb,var(--surface) 97%,transparent);-webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);box-shadow:0 10px 30px -10px rgba(0,0,0,.55)}
+body.has-music-dock #app{padding-bottom:calc(150px + var(--sab))}
+@media (min-width:1000px){
+  .music-dock{left:50%;right:auto;margin-left:-260px;width:520px;bottom:112px}
+  body.has-music-dock #app{padding-bottom:calc(200px + var(--sab))}
+}
 .exmedia{position:relative;border-radius:var(--r-lg);overflow:hidden;background:#fff;margin-bottom:12px}
 .exmedia img{width:100%;height:320px;object-fit:contain;display:block}
 .exmedia .gifhint,.exmedia .giftoggle{

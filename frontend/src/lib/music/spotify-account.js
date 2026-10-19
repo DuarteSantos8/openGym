@@ -7,6 +7,11 @@
 // device's own Spotify app is the way (spotify.js).
 import { api } from '../api.js'
 import { MOBILE } from '../mobile.js'
+import { spotifyConnected } from './spotify.js'
+
+const MODE = 'og.spotify.mode'
+const remember = m => { try { localStorage.setItem(MODE, m) } catch { /* private window */ } }
+const recall = () => { try { return localStorage.getItem(MODE) } catch { return null } }
 
 // The server's answer, kept a minute so the bar's every-few-seconds poll does not ask it each time.
 let status = null
@@ -18,11 +23,16 @@ export async function accountStatus(force = false) {
   try {
     status = await api('/api/music/spotify')
     statusAt = Date.now()
+    remember(status.available ? 'account' : 'device')
   } catch (e) {
-    // No account here (signed out, a guest, a phone without a server): for the minute. A server
-    // that did not answer is asked again on the next poll, not taken as "no Spotify here".
-    const none = e && (e.status === 401 || e.status === 404 || e.code === 'not-paired')
-    status = none ? { available: false, connected: false } : { available: false, connected: false, unknown: true }
+    // No account here (signed out, a guest, a phone without a server, a host with no API): for the
+    // minute. A server that did not answer is asked again on the next poll, and meanwhile the way
+    // this device used last time stands (a device signed in to Spotify on its own still is).
+    const none = e && (e.status === 401 || e.status === 404 || e.code === 'not-paired' || e.code === 'bad-response')
+    const last = recall()
+    if (none) { status = { available: false, connected: false }; remember('device') }
+    else if (last === 'device' || (!last && spotifyConnected())) status = { available: false, connected: false }
+    else status = { available: false, connected: false, unknown: true }
     statusAt = none ? Date.now() : 0
   }
   return status

@@ -48,6 +48,7 @@ import Health from './views/Health.jsx'
 import CoachIntake from './views/CoachIntake.jsx'
 import CoachSetup from './views/CoachSetup.jsx'
 import { initMusicReturn } from './lib/music/index.js'
+import MusicDock from './components/MusicDock.jsx'
 
 // last known scrollY per route, so back-navigation can put the page where it was
 const scrollPositions = new Map()
@@ -247,6 +248,7 @@ function Shell() {
           including on the sign-in screen, when the server has just ended the session. */}
       <SyncBanner />
       {!noTabs && <TabBar onStart={startFlow} />}
+      {!noTabs && <MusicDock />}
       <RestTimer />
       <Modals />
       <Toast />

@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const api = vi.hoisted(() => ({ api: vi.fn() }))
 vi.mock('../api.js', () => api)
-const device = vi.hoisted(() => ({ spotifyNowPlaying: vi.fn(), spotifyControl: vi.fn(), finishSpotify: vi.fn(), APP_REDIRECT: 'opengym://spotify' }))
+const device = vi.hoisted(() => ({ spotifyNowPlaying: vi.fn(), spotifyControl: vi.fn(), finishSpotify: vi.fn(), spotifyConnected: vi.fn(() => false), APP_REDIRECT: 'opengym://spotify' }))
 vi.mock('./spotify.js', () => device)
 
 import { nowPlaying, control, initMusicReturn } from './index.js'
@@ -15,6 +15,7 @@ import { forgetAccountStatus } from './spotify-account.js'
 const refusal = (status, code) => Object.assign(new Error('x'), { status, data: code ? { code } : {} })
 
 beforeEach(() => {
+  localStorage.clear()
   forgetAccountStatus()
   api.api.mockReset(); device.spotifyNowPlaying.mockReset(); device.spotifyControl.mockReset()
 })
@@ -62,9 +63,23 @@ describe('Spotify on the device', () => {
   })
 
   it('but a server that did not answer is a failure to retry, not a switch', async () => {
+    api.api.mockResolvedValueOnce({ available: true, connected: true })
+    api.api.mockResolvedValueOnce({ track: null })
+    await nowPlaying('spotify')
+    forgetAccountStatus()
     api.api.mockRejectedValue(Object.assign(new Error('timeout'), { code: 'timeout' }))
     await expect(nowPlaying('spotify')).rejects.toMatchObject({ code: 'failed' })
     expect(device.spotifyNowPlaying).not.toHaveBeenCalled()
+  })
+
+  it('while the server is down, a device that used its own Spotify app keeps doing so', async () => {
+    api.api.mockResolvedValueOnce({ available: false, connected: false })
+    device.spotifyNowPlaying.mockResolvedValue(null)
+    await nowPlaying('spotify')
+    forgetAccountStatus()
+    api.api.mockRejectedValue(Object.assign(new Error('502'), { status: 502 }))
+    expect(await nowPlaying('spotify')).toBe(null)
+    expect(device.spotifyNowPlaying).toHaveBeenCalledTimes(2)
   })
 })
 
