@@ -2,10 +2,10 @@
   "about": "Videos to record as regression fixtures (test/fixtures/README.md). 'calibrated': the heuristics were tuned on it and it needs a fixture first. 'candidate': found by title search, not yet run; check the channel when recording (status 'skip' + a note when it is the wrong channel, has no on-screen names, or reads from chapters). 'look' says what it should add to the set.",
   "videos": [
     { "id": "B7-F2UcHmqk", "channel": "Juice & Toya", "status": "calibrated", "look": "62 min dumbbells, 5 groups × 5 × 2 rounds, names only on NEXT screens, timer in a ring" },
-    { "id": "UoYLPbPi938", "channel": "Juice & Toya", "status": "calibrated", "look": "work timer on the floor, rest timer elsewhere" },
+    { "id": "UoYLPbPi938", "channel": "Juice & Toya", "status": "calibrated", "look": "work timer in a ring on the floor, rest timer in a ring top left (an app ad over part of a rest)", "roi": { "name": "0.374,0.885,0.246,0.078", "timer": "0.45,0.78,0.4,0.21;0,0.02,0.16,0.33" } },
     { "id": "cDq-nFmD0rI", "channel": "Rowan Row", "status": "calibrated", "look": "captions in capitals, moves sharing all but their first word; the move (or REST) under a progress bar top right, timer in a ring beside it, the next move bottom left in the last seconds of the rest", "roi": { "name": "0.62,0.095,0.27,0.07;0.011,0.888,0.299,0.113", "timer": "0.885,0.01,0.11,0.2" } },
-    { "id": "_G5wIxplwB8", "channel": "Rowan Row", "status": "calibrated", "look": "30/30 no repeat, no chapters" },
-    { "id": "OfV5kHgRpmM", "channel": "Oliver Sjostrom", "status": "calibrated", "look": "(R)/(L) sides in brackets" },
+    { "id": "_G5wIxplwB8", "channel": "Rowan Row", "status": "calibrated", "look": "30/30 no repeat, no chapters; indoor gym, the move (or REST) under a progress bar top right, the timer in a ring beside it", "roi": { "name": "0.59,0.125,0.32,0.075", "timer": "0.88,0.02,0.115,0.2" } },
+    { "id": "OfV5kHgRpmM", "channel": "Oliver Sjostrom", "status": "calibrated", "look": "(R)/(L) sides in brackets; the move only as \"Next: …\" top left during the rest, the body part (not the move) boxed bottom left, a thin timer ring top right", "roi": { "name": "0.05,0.075,0.36,0.09", "timer": "0.86,0.04,0.11,0.2" } },
     { "id": "IEJMnNGAGY4", "channel": "Chris & Edi", "status": "calibrated", "look": "strength sets 50/30, circuits 40-45/25, chapter per exercise" },
     { "id": "t-3H2KnjH6E", "channel": "Juice & Toya", "status": "calibrated", "look": "kettlebells; the work timer in a dashed ring on the floor that moves with the camera, the rest timer in a ring top left", "roi": { "name": "0.374,0.885,0.246,0.078", "timer": "0.45,0.78,0.4,0.21;0,0.02,0.16,0.26" } },
 
