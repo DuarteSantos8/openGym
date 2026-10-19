@@ -22,7 +22,7 @@
 // per document), which is why nothing but body readings and workouts arrives sample by sample.
 import { MOBILE } from '../mobile.js'
 import { isoOf } from '../format.js'
-import { TYPES } from '../../../../api/health/catalogue.js'
+import { TYPES, hourlyFrom } from '../../../../api/health/catalogue.js'
 import { APPLE_HEALTH, createFolder } from '../../../../api/health/fold.js'
 
 export { APPLE_HEALTH }
