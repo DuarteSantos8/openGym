@@ -27,10 +27,10 @@ export default function IntervalGroup({ unit, onComplete }) {
     }
     setRunning(false)
   }
-  const valid = own => {
+  const valid = (own, allowSheet = false) => {
     const a = useStore.getState().S.active
     return run.current === own && a?.id === own.id && signature(a) === own.signature
-      && !document.hidden && !(useUI.getState().sheets?.length)
+      && !document.hidden && (allowSheet || !useUI.getState().sheets?.length)
   }
   const startNext = own => {
     if (!valid(own)) { stop(); return }
@@ -62,7 +62,9 @@ export default function IntervalGroup({ unit, onComplete }) {
   useEffect(() => {
     const own = run.current
     if (!own) return
-    if (!valid(own)) { stop(); return }
+    if (!valid(own, own.phase === 'rest')) { stop(); return }
+    // Keep recovery counting under its editor, but never start a set behind a sheet.
+    if (sheets.length) return
     if (own.phase === 'rest' && (!timer || timer.ready)) startNext(own)
     else if ((own.phase === 'work' || own.phase === 'prep') && work?.owner?.interval !== own.token) stop()
     else if (own.phase === 'rest' && timer?.forIdx !== own.timer?.forIdx) stop()
