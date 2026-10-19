@@ -37,6 +37,22 @@ const bottom = () => host.querySelector('#tabbar .start')
 const top = () => [...host.querySelectorAll('button')].find(b => !b.closest('#tabbar') && /^(Start|Stop) intervals$/.test(b.textContent))
 const advance = ms => act(() => vi.advanceTimersByTime(ms))
 
+it.each(['Home', 'Plan', 'Stats', 'Exercises'])('preserves the prep deadline through %s and back to the workout', async tab => {
+  await act(async () => root.render(<App />))
+  await act(async () => top().click())
+  advance(1000)
+  const endsAt = useUI.getState().work.endsAt
+  await act(async () => [...host.querySelectorAll('#tabbar button')].find(b => b.textContent === tab).click())
+  expect(useUI.getState().work?.owner.prep).toBe(true)
+  expect(useUI.getState().work?.endsAt).toBe(endsAt)
+  await act(async () => bottom().click())
+  expect(window.location.hash).toBe('#/workout')
+  expect(useUI.getState().work?.endsAt).toBe(endsAt)
+  advance(2000)
+  expect(useUI.getState().work?.owner).toMatchObject({ idx: 0, i: 0 })
+  expect(useStore.getState().S.active.entries[0].sets[0].done).toBe(false)
+})
+
 it.each(['cards', 'list', 'compact', 'focus'])('starts preparation and automatic work/rest from the bottom in %s view', async workoutView => {
   useStore.getState().update(s => { s.active.workoutView = workoutView }, false)
   await act(async () => root.render(<App />))
@@ -72,14 +88,14 @@ it('stops top-started preparation from the bottom without logging work and clear
   expect(bottom().getAttribute('aria-label')).toBe('Resume')
 })
 
-it('finishes the entire interval group after navigating Home and does not replay sets on return', async () => {
+it.each([1000, 3000])('finishes the group after navigating Home at %i ms and does not replay sets on return', async elapsed => {
   await act(async () => root.render(<App />))
   await act(async () => top().click())
-  advance(3000)
+  advance(elapsed)
   await act(async () => [...host.querySelectorAll('#tabbar button')].find(b => b.textContent === 'Home').click())
   expect(window.location.hash).toBe('#/home')
-  expect(useUI.getState().work?.owner.idx).toBe(0)
-  advance(12000)
+  expect(useUI.getState().work?.owner).toMatchObject(elapsed < 3000 ? { prep: true } : { idx: 0 })
+  advance(15000 - elapsed)
   const completed = structuredClone(useStore.getState().S.active.entries)
   expect(completed.every(e => e.sets.every(s => s.done && s.sec === 2 && s.at))).toBe(true)
   expect(useUI.getState().work).toBeNull()
