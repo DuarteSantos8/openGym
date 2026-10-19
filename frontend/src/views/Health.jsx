@@ -14,6 +14,7 @@ import {
 import { chartValue, displayUnit, fmtHealth, fmtHealthDelta, fmtMinutes, fromDisplay, toDisplay } from '../lib/health/units.js'
 import { PROVIDERS, sourceLabel } from '../lib/health/providers.js'
 import LineChart from '../components/LineChart.jsx'
+import SegmentalAnalysis from '../components/SegmentalAnalysis.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button, NumberField, Segmented } from '../components/ui.jsx'
 import { confirmSheet } from '../sheets.jsx'
@@ -21,6 +22,7 @@ import { confirmSheet } from '../sheets.jsx'
 // Every write leaves S.health in shape (normalizeHealthState): one record per id, in time order.
 const update = fn => useStore.getState().update(s => { fn(s); normalizeHealthState(s) })
 const toast = m => useUI.getState().toast(m)
+const MANUAL_SRC = 'manual'
 const openSheet = render => useUI.getState().openSheet(render)
 
 const RANGE_OPTS = () => [{ value: 'week', label: '7d' }, { value: 'month', label: '30d' }, { value: 'year', label: '1Y' }, { value: 'all', label: t('All') }]
@@ -72,6 +74,19 @@ function CompositionForm({ g, close }) {
     onConfirm: () => { update(s => { s.health = deleteComposition(s.health, g) }); close(); toast(t('Measurement deleted')) },
   })
 
+  // A scale's cloud (RENPHO) owns its readings: the next sync would bring an edit back, so they are
+  // shown as they came, with the source, and can only be deleted.
+  if (source && source.src && source.src !== MANUAL_SRC) return <>
+    <h3>{fmtDate(source.d, true)} · {fmtTime(source.t)}</h3>
+    <div className="muted small" style={{ marginBottom: 12 }}>{t('From {0}. It updates with every sync, so it is not edited here.', t(sourceLabel(source.src)))}</div>
+    <div className="list">{Object.entries(source.values).filter(([k]) => !metricOf(k)?.seg).map(([k, v]) => <div key={k} className="mrow" style={{ minHeight: 40 }}>
+      <span className="nm">{label(k)}</span><b>{fmtHealth(k, v, S)}</b>
+    </div>)}</div>
+    <div style={{ height: 14 }} />
+    <Button className="dim" style={{ color: 'var(--red)' }} icon="trash" onClick={remove}>{t('Delete')}</Button>
+    <div style={{ height: 8 }} />
+    <Button variant="ghost" className="dim" onClick={close}>{t('Done')}</Button>
+  </>
   return <>
     <h3>{source ? t('Edit measurement') : t('New measurement')}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>{t('From a body composition scale or analyser. Fill only what it measured.')}</div>
@@ -217,7 +232,7 @@ export default function Health() {
   const tabs = HEALTH_GROUPS.filter(g => MAIN_TABS.includes(g) || typesInGroup(g).some(k => present.has(k)))
   const core = tab === 'body' ? BODY_CORE : GROUP_CORE[tab] || []
   const shown = tab === 'overview' ? OVERVIEW_TYPES.filter(k => hasData(S, k))
-    : [...core, ...typesInGroup(tab).filter(k => !core.includes(k) && present.has(k))]
+    : [...core, ...typesInGroup(tab).filter(k => !core.includes(k) && present.has(k) && !HEALTH_METRICS[k].seg)]
   const measurements = tab === 'body' ? compositionMeasurements(S.health) : []
 
   return <div className="narrow">
@@ -243,6 +258,7 @@ export default function Health() {
     {tab === 'workouts' && <><h4 className="sec" style={{ marginTop: 18 }}>{t('History')}</h4><WorkoutList S={S} /></>}
 
     {tab === 'body' && <>
+      <SegmentalAnalysis health={S.health} />
       <div className="row between" style={{ margin: '18px 2px 10px' }}>
         <h4 className="sec" style={{ margin: 0 }}>{t('Measurements')}</h4>
         <Button size="sm" variant="ghost" icon="plus" onClick={() => compositionSheet()}>{t('Log')}</Button>
@@ -250,9 +266,9 @@ export default function Health() {
       {measurements.length ? <div className="list">{measurements.slice(0, 50).map(m => <button key={m.g} className="card measure-history" style={{ width: '100%', textAlign: 'start' }} onClick={() => compositionSheet(m.g)}>
         <div className="row between">
           <b>{fmtDate(m.d, true)} · {fmtTime(m.t)}</b>
-          <Icon name="pencil" />
+          <span className="row small dim" style={{ gap: 6 }}>{t(sourceLabel(m.src))}<Icon name={m.src && m.src !== MANUAL_SRC ? 'chevronRight' : 'pencil'} /></span>
         </div>
-        <div className="measure-preview">{Object.entries(m.values).slice(0, 6).map(([k, v]) => <span key={k}>{label(k)} <b>{fmtHealth(k, v, S)}</b></span>)}</div>
+        <div className="measure-preview">{Object.entries(m.values).filter(([k]) => !metricOf(k)?.seg).slice(0, 6).map(([k, v]) => <span key={k}>{label(k)} <b>{fmtHealth(k, v, S)}</b></span>)}</div>
       </button>)}</div> : <div className="empty small">{t('No measurements yet')}</div>}
     </>}
   </div>

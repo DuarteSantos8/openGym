@@ -21,6 +21,7 @@
  * Plain JavaScript, loadable by bare node (the server) and by Vite (the app). Values arrive in
  * whatever unit the phone used and leave in the catalogue's canonical units. */
 import { TYPES, WORKOUT, canonical, categoryValue, workoutKey, EXTRA_FIELDS, trimImported } from './catalogue.js';
+import { COMPOSITION } from './composition.js';
 
 export { canonical };
 export const APPLE_HEALTH = 'apple-health';
@@ -354,16 +355,21 @@ export function mergeReadings(S, readings, now) {
   let added = 0, updated = 0;
   const weights = [];
   for (const raw of list(readings)) {
-    const t0 = TYPES[raw?.type];
+    // A scale's cloud (api/providers) also sends the body composition values Apple Health has no
+    // type for (composition.js).
+    const t0 = TYPES[raw?.type] || COMPOSITION[raw?.type];
     const v = Number(raw?.v), t = Number(raw?.t);
     if (!t0 || !Number.isFinite(v) || !Number.isFinite(t) || v < t0.min || v > t0.max || !ISO_DAY.test(raw.d || '') || raw.sid == null) continue;
     const src = String(raw.src || APPLE_HEALTH), sid = String(raw.sid);
     const key = `${src}|${raw.type}|${sid}`;
     const i = at.get(key);
     const fields = { v, t, d: raw.d, ...extrasOf(raw) };
+    // The readings of one weigh-in share `g` (lib/health/records.js), so the body composition form
+    // opens them together.
+    if (raw.g != null && raw.g !== '') fields.g = String(raw.g);
     if (i != null) {
       const cur = health[i];
-      if (cur.v === fields.v && cur.t === fields.t && cur.d === fields.d && sameExtras(cur, fields)) continue;
+      if (cur.v === fields.v && cur.t === fields.t && cur.d === fields.d && (cur.g ?? null) === (fields.g ?? null) && sameExtras(cur, fields)) continue;
       health[i] = { ...cur, ...fields, _ts: now };
       updated++;
     } else {

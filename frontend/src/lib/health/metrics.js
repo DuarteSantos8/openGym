@@ -21,6 +21,7 @@
 // A type this list does not know (one a newer version of the app added) is still kept by
 // lib/health/records.js, just not shown — an older app must not drop a newer one's data.
 import { TYPES, LEVELS } from '../../../../api/health/catalogue.js'
+import { COMPOSITION } from '../../../../api/health/composition.js'
 
 export const HEALTH_GROUPS = ['overview', 'body', 'activity', 'heart', 'vitals', 'sleep', 'mobility', 'hearing', 'nutrition',
   'cycle', 'symptoms', 'mindfulness', 'workouts']
@@ -62,18 +63,24 @@ for (const x of Object.values(TYPES)) {
     ...(x.cat ? { levels: LEVELS[x.cat] } : {}), ...(BIA.has(x.type) ? { bia: true } : {}),
   }
 }
-// What only a body composition scale or analyser measures: typed in the "+" form.
-const own = (label, unit, dim, dec, min, max, icon, color) => ({ label, unit, dim, daily: 'last', group: 'body', bia: true, dec, min, max, icon, color, kind: 'sample' })
-Object.assign(HEALTH_METRICS, {
-  fatMass: own('Fat mass', 'kg', 'mass', 1, 0.5, 400, 'chartLine', 'var(--orange)'),
-  muscleMass: own('Muscle mass', 'kg', 'mass', 1, 1, 300, 'arm', 'var(--green)'),
-  bodyWater: own('Body water', '%', 'none', 1, 10, 90, 'gauge', 'var(--teal)'),
-  visceralFat: own('Visceral fat', '', 'none', 1, 1, 60, 'target', 'var(--red)'),
-  boneMass: own('Bone mass', 'kg', 'mass', 1, 0.1, 20, 'shield', 'var(--grey)'),
-  protein: own('Protein', '%', 'none', 1, 1, 50, 'bolt', 'var(--purple)'),
-  bmr: own('Basal metabolic rate', 'kcal', 'none', 0, 300, 6000, 'flame', 'var(--orange)'),
-  metabolicAge: own('Metabolic age', 'years', 'none', 0, 5, 120, 'hourglass', 'var(--grey)'),
-})
+// What only a body composition scale or analyser measures (api/health/composition.js, shared with
+// the server): the "+" form offers the ones marked for it; a segmental reading (`seg`) is shown in
+// the body tab's segmental analysis instead of a card of its own.
+const LOOK_BIA = {
+  fatMass: ['chartLine', 'var(--orange)'], muscleMass: ['arm', 'var(--green)'], bodyWater: ['gauge', 'var(--teal)'],
+  visceralFat: ['target', 'var(--red)'], boneMass: ['shield', 'var(--grey)'], protein: ['bolt', 'var(--purple)'],
+  bmr: ['flame', 'var(--orange)'], metabolicAge: ['hourglass', 'var(--grey)'], skeletalMuscle: ['arm', 'var(--mint)'],
+  subcutaneousFat: ['chartLine', 'var(--yellow)'], smi: ['figureStrength', 'var(--indigo)'], whr: ['ruler', 'var(--teal)'],
+  bodyScore: ['star', 'var(--yellow)'], cardiacIndex: ['heart', 'var(--pink)'], impedance: ['bolt', 'var(--grey)'],
+  impedance2: ['bolt', 'var(--grey)'],
+}
+for (const x of Object.values(COMPOSITION)) {
+  const [icon, color] = LOOK_BIA[x.type] || (x.seg?.kind === 'segMuscle' ? ['arm', 'var(--green)'] : x.seg?.kind === 'segFat' ? ['chartLine', 'var(--orange)'] : ['bolt', 'var(--grey)'])
+  HEALTH_METRICS[x.type] = {
+    label: x.label, unit: x.unit, dim: x.dim, daily: 'last', group: 'body', bia: x.form !== false, dec: x.dec, min: x.min, max: x.max,
+    icon, color, kind: 'sample', ...(x.seg ? { seg: x.seg } : {}),
+  }
+}
 
 // The form's order: weight first, then what a scale reports, height last.
 const FORM = ['weight', 'bmi', 'bodyFat', 'fatMass', 'leanMass', 'muscleMass', 'bodyWater', 'visceralFat', 'boneMass', 'protein', 'bmr', 'metabolicAge']

@@ -2146,3 +2146,16 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 [dir="rtl"] *{letter-spacing:0}
 .exfix-link{display:inline-flex;align-items:center;gap:5px;margin:14px 0 4px;color:var(--label-3);text-decoration:none}
 .list .similar-label{margin:16px 2px 6px;grid-column:1/-1}
+
+/* Segmental analysis (components/SegmentalAnalysis.jsx): left against right, per limb. */
+.seg-card{padding:12px 14px;margin-bottom:10px}
+.seg-h{font-weight:600;margin-bottom:8px}
+.seg-pair{margin-bottom:10px}
+.seg-bar{display:grid;grid-template-columns:44px 1fr 48px;align-items:center;gap:8px;margin-top:4px}
+.seg-track{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.seg-track i{display:block;height:100%;border-radius:99px;background:var(--seg,var(--acc))}
+.seg-val{text-align:end;font-variant-numeric:tabular-nums}
+.seg-trunk{padding-top:6px;border-top:var(--hair) solid var(--sep)}
+.seg-imp{display:grid;grid-template-columns:1fr auto auto;gap:6px 14px;font-variant-numeric:tabular-nums}
+.seg-imp b{text-align:end}
+

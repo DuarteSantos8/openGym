@@ -30,5 +30,9 @@ export const PROVIDERS = [appleHealth]
 
 export const providerById = id => PROVIDERS.find(p => p.id === id) || null
 
+// Sources the server reads for the profile (api/providers): no provider object on the device, only
+// a name for the readings they bring.
+const SERVER_SOURCES = { renpho: 'RENPHO' }
+
 /** The label of a record's source: a provider's, 'Manual' for the user's own entries. */
-export const sourceLabel = src => (src === 'manual' || !src ? 'Manual' : providerById(src)?.label || src)
+export const sourceLabel = src => (src === 'manual' || !src ? 'Manual' : providerById(src)?.label || SERVER_SOURCES[src] || src)

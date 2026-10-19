@@ -2569,6 +2569,123 @@ paths:
         '429': { $ref: '#/components/responses/CoachRefused' }
         '503': { $ref: '#/components/responses/CoachOff' }
 
+  /api/renpho:
+    get:
+      tags: [health]
+      operationId: getRenpho
+      summary: The profile's RENPHO Health connection
+      description: |
+        `connected` false and nothing else when there is none. Otherwise the RENPHO e-mail, when it
+        was connected and last synced (ms), what the last sync did, its error if it failed (`code`:
+        `auth` when RENPHO no longer accepts the sign-in, `rejected`, `network`, `format`,
+        `failed`), whether one is running, the openGym types the readings carried (`fields`), the
+        RENPHO fields this version does not know (`unknown`, kept in the raw copy all the same) and
+        whether any segmental values came. Never the password or RENPHO's session.
+      responses:
+        '200':
+          description: The connection.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  connected: { type: boolean }
+                  email: { type: string }
+                  connectedAt: { oneOf: [{ type: integer }, { type: 'null' }] }
+                  lastSync: { oneOf: [{ type: integer }, { type: 'null' }] }
+                  lastResult:
+                    oneOf:
+                      - type: 'null'
+                      - type: object
+                        properties:
+                          measurements: { type: integer }
+                          added: { type: integer }
+                          updated: { type: integer }
+                          complete: { type: boolean }
+                  error:
+                    oneOf:
+                      - type: 'null'
+                      - type: object
+                        properties:
+                          code: { type: string }
+                          message: { type: string }
+                          at: { type: integer }
+                  syncing: { type: boolean }
+                  fields: { type: array, items: { type: string } }
+                  unknown: { type: array, items: { type: string } }
+                  segmental: { type: boolean }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    delete:
+      tags: [health]
+      operationId: deleteRenpho
+      summary: Disconnect RENPHO Health
+      description: Forgets the sign-in and the raw copy. The readings already imported stay in the profile.
+      responses:
+        '200': { description: Disconnected. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/renpho/connect:
+    post:
+      tags: [health]
+      operationId: connectRenpho
+      summary: Connect a RENPHO Health account
+      description: |
+        Signs in to RENPHO with the account's e-mail and password (sealed on the server with the
+        instance's encryption, used again only when RENPHO's session has expired). The first sync,
+        of the whole history, starts at once; the answer does not wait for it. RENPHO publishes no
+        API: this uses the one the RENPHO Health app uses.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+                areaCode: { type: string, description: 'Two letters, US by default.' }
+      responses:
+        '200': { description: 'Connected; the same body as `GET /api/renpho`.' }
+        '400': { description: 'E-mail or password missing, or an area code that is not two letters (`code: missing`).' }
+        '401': { description: 'RENPHO did not accept the sign-in (`code: auth`).' }
+        '429': { description: 'Too many sign-ins (`code: busy`).' }
+        '502': { description: 'RENPHO could not be reached or answered unexpectedly (`code: network`, `format`).' }
+
+  /api/renpho/sync:
+    post:
+      tags: [health]
+      operationId: syncRenpho
+      summary: Sync RENPHO Health now
+      description: |
+        Starts a sync and answers at once (`GET /api/renpho` says when it is done). Idempotent:
+        readings are matched by RENPHO's own id, so running it again adds nothing twice.
+      responses:
+        '200': { description: 'Started; the same body as `GET /api/renpho`.' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { description: 'Not connected (`code: not-connected`).' }
+        '429': { description: 'Too many syncs (`code: busy`).' }
+
+  /api/renpho/raw:
+    get:
+      tags: [health]
+      operationId: getRenphoRaw
+      summary: RENPHO's readings as RENPHO sent them
+      description: |
+        The profile's raw copy: per reading, `provider`, `external_id`, `external_timestamp` (ms),
+        `synced_at` (ms) and `raw_provider_data`, every field RENPHO sent, unknown ones included.
+      responses:
+        '200':
+          description: The raw copy.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  provider: { type: string }
+                  measurements: { type: object, additionalProperties: { type: object } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
   /api/health/key:
     get:
       tags: [health]

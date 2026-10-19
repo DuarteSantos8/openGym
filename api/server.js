@@ -34,6 +34,8 @@ import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from 
 import { effectiveRoutineId } from './queue.js';
 import { stampPut, highestStamp } from './sync-stamps.js';
 import { readingsFromShortcut, readingsFromAutoExport, isAutoExport, mergeReadings } from './health/fold.js';
+import { createRenphoService } from './providers/renpho/service.js';
+import { createRenphoClient, BASE_URL as RENPHO_DEFAULT_URL } from './providers/renpho/client.js';
 import { atomicWrite as durableWrite } from './durable.js';
 import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
 
@@ -1796,6 +1798,69 @@ function healthKeyUser(req) {
   return user && !user.disabled ? user : null;
 }
 
+/* ---------- readings a provider's cloud sent, into a profile ----------
+ * The same fold as POST /api/health/samples: the readings merged by source and the source's own id
+ * (mergeReadings), and a new revision written only when something changed. */
+function mergeIntoState(uid, readings) {
+  const cur = readStateStrict(uid);
+  if (cur === UNREADABLE) throw Object.assign(new Error('state unreadable'), { code: 'failed' });
+  if (!cur) throw Object.assign(new Error('no profile yet'), { code: 'failed' });
+  const now = Math.max(Date.now(), highestStamp(cur) + 1);
+  const { added, updated } = mergeReadings(cur, readings, now);
+  if (added || updated) {
+    cur._ts = now;
+    cur._rev = (cur._rev || 0) + 1;
+    cur._wids = [...(Array.isArray(cur._wids) ? cur._wids : []), ...(cur._wid ? [cur._wid] : [])]
+      .filter(x => typeof x === 'string').slice(-WID_KEEP);
+    cur._wid = crypto.randomBytes(8).toString('hex');
+    atomicWrite(stateFile(uid), JSON.stringify(cur));
+    stateCache.delete(uid);
+  }
+  return { added, updated };
+}
+
+/* ---------- RENPHO Health (api/providers/renpho) ----------
+ * A profile connects its RENPHO account in Settings → Health; the readings of its scale come into
+ * the health area with src 'renpho', every RENPHO_SYNC_HOURS (6 by default; 0 turns the timer off,
+ * "Sync now" still works). RENPHO's whole readings are kept beside the state, one file a profile. */
+const providerFile = (name, uid) => path.join(DATA, 'providers', name + '-' + uid.replace(/[^a-zA-Z0-9_-]/g, '') + '.json');
+// RENPHO_BASE_URL: only if RENPHO moves its cloud (or for the tests' stand-in); https only.
+const RENPHO_BASE = (() => {
+  const v = String(process.env.RENPHO_BASE_URL || '').trim().replace(/\/$/, '');
+  if (!v) return RENPHO_DEFAULT_URL;
+  if (/^https:\/\//.test(v) || /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(v)) return v;
+  console.error('RENPHO_BASE_URL ignored: not an https address');
+  return RENPHO_DEFAULT_URL;
+})();
+const RENPHO = createRenphoService({
+  client: createRenphoClient({ baseUrl: RENPHO_BASE }),
+  seal: obj => coachConfig.encrypt(obj), unseal: blob => coachConfig.decrypt(blob), save: () => saveDb(),
+  merge: mergeIntoState,
+  readRaw: uid => { try { return JSON.parse(fs.readFileSync(providerFile('renpho', uid), 'utf8')); } catch { return null; } },
+  writeRaw: (uid, obj) => {
+    fs.mkdirSync(path.join(DATA, 'providers'), { recursive: true, mode: 0o700 });
+    atomicWrite(providerFile('renpho', uid), JSON.stringify(obj), 0o600);
+  },
+  removeRaw: uid => fs.unlinkSync(providerFile('renpho', uid)),
+  log: (ev, uid, msg) => console.log(ev, uid, msg || ''),
+});
+// A sign-in is RENPHO's password check: a handful an hour is plenty for a person, and keeps this
+// server from being anyone's way to try passwords against RENPHO.
+const RENPHO_CONNECT_BURST = createWindow({ max: 10, windowMs: 3600000 });
+const RENPHO_SYNC_BURST = createWindow({ max: 60, windowMs: 3600000 });
+const RENPHO_EVERY_MS = (() => {
+  const h = Number(process.env.RENPHO_SYNC_HOURS ?? 6);
+  return Number.isFinite(h) && h > 0 ? h * 3600000 : 0;
+})();
+if (RENPHO_EVERY_MS) {
+  // One profile at a time, checked every ten minutes, so many profiles never hit RENPHO at once.
+  setInterval(() => {
+    const next = RENPHO.due(db.users, RENPHO_EVERY_MS)[0];
+    if (next) RENPHO.sync(next).catch(() => { /* kept on the row as its error */ });
+  }, 600000).unref();
+}
+const RENPHO_STATUS = { auth: 401, rejected: 401, network: 502, format: 502, failed: 502 };
+
 const MEDIA_BURST = createWindow({ max: MEDIA_LIMITS.uploadsPerHour, windowMs: 3600000 });
 // Deleting everything unreferenced is what "Reset everything" does; ten an hour is plenty.
 const MEDIA_SWEEPS = createWindow({ max: 10, windowMs: 3600000 });
@@ -2378,6 +2443,56 @@ const routes = {
     json(res, 200, { ok: true, added, updated, skipped: r.skipped });
   },
 
+  // RENPHO Health: whether this profile is connected, when it last synced, what came.
+  'GET /api/renpho': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    json(res, 200, RENPHO.status(user));
+  },
+  // Signs in to RENPHO with the account's e-mail and password; the first sync starts at once and
+  // the answer does not wait for it (GET /api/renpho says when it is done).
+  'POST /api/renpho/connect': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const wait = RENPHO_CONNECT_BURST.take(user.id);
+    if (wait) return json(res, 429, { error: 'too many sign-ins, try again later', code: 'busy', retryAfter: wait }, { 'Retry-After': String(wait) });
+    const body = await readBody(req);
+    if (typeof body.email !== 'string' || typeof body.password !== 'string' || !body.email.trim() || !body.password) return json(res, 400, { error: 'e-mail and password are needed', code: 'missing' });
+    if (body.areaCode != null && !/^[A-Za-z]{2}$/.test(String(body.areaCode))) return json(res, 400, { error: 'the area code is two letters', code: 'missing' });
+    try {
+      await RENPHO.connect(user, { email: body.email, password: body.password, areaCode: body.areaCode });
+    } catch (e) {
+      const code = e.code === 'auth' ? 'auth' : e.code || 'failed';
+      return json(res, RENPHO_STATUS[code] || 502, { error: e.message, code });
+    }
+    RENPHO.sync(user).catch(() => { /* kept on the row as its error */ });
+    json(res, 200, RENPHO.status(user));
+  },
+  // Sync now. The answer does not wait for RENPHO either.
+  'POST /api/renpho/sync': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    if (!user.renpho) return json(res, 409, { error: 'RENPHO is not connected', code: 'not-connected' });
+    const wait = RENPHO_SYNC_BURST.take(user.id);
+    if (wait) return json(res, 429, { error: 'too many syncs, try again later', code: 'busy', retryAfter: wait }, { 'Retry-After': String(wait) });
+    RENPHO.sync(user).catch(() => { /* kept on the row as its error */ });
+    json(res, 200, RENPHO.status(user));
+  },
+  'DELETE /api/renpho': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    if (user.renpho) RENPHO.disconnect(user);
+    json(res, 200, { ok: true });
+  },
+  // RENPHO's readings as RENPHO sent them, every field: the profile's own copy, to download.
+  'GET /api/renpho/raw': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    let raw = null;
+    try { raw = JSON.parse(fs.readFileSync(providerFile('renpho', user.id), 'utf8')); } catch { /* none yet */ }
+    json(res, 200, raw || { provider: 'renpho', measurements: {} });
+  },
+
   'GET /api/push/public-key': async (req, res) => json(res, 200, { key: vapid.publicKey }),
 
   'POST /api/push/subscribe': async (req, res) => {
@@ -2576,6 +2691,7 @@ const routes = {
     // The training history and any Coach credential of theirs, both outside db.json.
     try { fs.unlinkSync(stateFile(u.id)); } catch { /* already gone */ }
     try { coachConfig.clearProfileAuth(u.id); } catch { /* nothing stored */ }
+    try { fs.unlinkSync(providerFile('renpho', u.id)); } catch { /* none kept */ }
     // Their photos and videos — the one place a profile's folder under uploads/ is removed.
     try { MEDIA.removeUser(u.id); } catch (e) { console.error('media: could not remove uploads of', u.id, e.message); }
     saveDb();
