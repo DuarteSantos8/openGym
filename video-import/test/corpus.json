@@ -7,7 +7,7 @@
     { "id": "_G5wIxplwB8", "channel": "Rowan Row", "status": "calibrated", "look": "30/30 no repeat, no chapters; indoor gym, the move (or REST) under a progress bar top right, the timer in a ring beside it", "roi": { "name": "0.59,0.125,0.32,0.115", "timer": "0.88,0.02,0.115,0.2" } },
     { "id": "OfV5kHgRpmM", "channel": "Oliver Sjostrom", "status": "calibrated", "look": "(R)/(L) sides in brackets; the move only as \"Next: …\" top left during the rest, the body part (not the move) boxed bottom left, a thin timer ring top right", "roi": { "name": "0.05,0.075,0.5,0.09", "timer": "0.86,0.04,0.11,0.2" } },
     { "id": "IEJMnNGAGY4", "channel": "Chris & Edi", "status": "calibrated", "look": "strength sets 50/30, circuits 40-45/25, chapter per exercise" },
-    { "id": "t-3H2KnjH6E", "channel": "Juice & Toya", "status": "calibrated", "look": "kettlebells; the work timer in a dashed ring on the floor that moves with the camera, the rest timer in a ring top left", "roi": { "name": "0.17,0.88,0.66,0.1;0,0.02,0.25,0.08;0,0.9,0.3,0.08", "timer": "0.45,0.78,0.4,0.21;0,0.02,0.16,0.26" } },
+    { "id": "t-3H2KnjH6E", "channel": "Juice & Toya", "status": "calibrated", "look": "kettlebells; the work timer in a dashed ring on the floor that moves with the camera, the rest timer in a ring top left", "roi": { "name": "0.17,0.88,0.66,0.1;0,0.035,0.27,0.09;0,0.88,0.38,0.12", "timer": "0.45,0.78,0.4,0.21;0,0.02,0.16,0.26" } },
 
     { "id": "qf37QFT08YQ", "channel": "Juice & Toya", "status": "candidate", "look": "20 min dumbbells no repeat, 40/20, one longer rest halfway" },
     { "id": "lp2pYv-IJMM", "channel": "Juice & Toya", "status": "candidate", "look": "30 min cardio HIIT, no equipment" },

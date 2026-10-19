@@ -217,6 +217,12 @@ export function sameName(a, b) {
 const SIDE_TOKEN = /^[([{]\s*(r|l|right|left)\s*[)\]}]/i
 
 export function cleanCaption(raw) {
+  // A euro sign or a cent sign in a word is a C; a token of nothing but marks is a bar or a dot of the
+  // picture; a first word a letter or two off "NEXT" (NEXTI|, Neat)) is the NEXT label.
+  raw = String(raw || '').replace(/[€¢]/g, 'C').split(/\s+/).filter(w => /[\p{L}\p{N}]/u.test(w) || w === '&' || w === '+' || w === '/').map((w, k) => (k === 0 && /\p{L}{3}/u.test(w) && editDistance(w.toLowerCase().replace(/[^a-z]/g, ''), 'next') <= 1 && /^[A-Za-z]{3,5}[^A-Za-z]*$/.test(w) ? 'NEXT' : w)).join(' ')
+  // A bracket the OCR read as a digit starts a note ("9ncar narmal 2ncor"): the caption ends before it.
+  raw = String(raw || '').split(/\s+/).reduce((acc, w, k, all) => (acc.cut || (k >= 2 && /^\d\p{L}{3,}$/u.test(w)) ? { ...acc, cut: true } : { ...acc, words: [...acc.words, w] }), { words: [], cut: false }).words.join(' ')
+    .replace(/(\p{L})\1{2,}/gu, '$1')
   const words = String(raw || '').trim().split(/\s+/).filter(Boolean)
   const letters = w => (w.match(/\p{L}/gu) || []).length
   // A capital on its own in front of a caption in capitals is a word of it ("V UPS", "X JUMPS"),
@@ -337,7 +343,7 @@ export function repairCaption(text) {
       const joined = nearWord(lw + lj, 2, 6) || completes(lw + lj, 6, 3)
       // The piece in front is the start of the word it was cut from; a word that is just one of the
       // pieces again ("pronated" + "fl") is a piece of debris after a word, not half of one.
-      if (joined && joined.startsWith(lw) && joined !== lw && joined !== lj) {
+      if (joined && joined.startsWith(lw.slice(0, Math.max(2, lw.length - 2))) && joined !== lw && joined !== lj) {
         parts[i] = asCase(w, joined); parts[j] = ''
         if (parts[j - 1] != null && /^\s+$/.test(parts[j - 1])) parts[j - 1] = ''
         k++
@@ -440,7 +446,7 @@ export function snapToLibrary(text) {
     // Only a word the OCR broke may change: every word of the caption that is a real one stays.
     const known = VOCAB_SET()
     const solid = norm.split(' ').filter(w => w.length >= 2 && (known.has(w) || known.has(w.replace(/s$/, '')) || FUNCTION_WORDS.has(w) || PROTECTED.has(w)))
-    if (best && !tie && bestD >= 1 && bestD <= 2 && norm.length >= 14 && solid.every(w => best.split(' ').includes(w))) result = best
+    if (best && !tie && bestD >= 1 && bestD <= (norm.length >= 16 ? 3 : 2) && norm.length >= 14 && solid.every(w => best.split(' ').includes(w))) result = best
   }
   snapped.set(norm, result)
   if (!result) return text

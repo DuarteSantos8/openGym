@@ -138,6 +138,9 @@ export async function extractCrops(file, roi, { width, height, duration, workDir
           const b = binarize(gray)
           if (blank(b)) { out[k].push(null); out[k + 'Alt'].push(null); last = null; continue }
           px = b.px
+          // Low-contrast white text on a light wall has no mask; the crop as it is reads fine.
+          out[k + 'Alt'].push(keep(gray, k + 'Alt'))
+          altDone = true
         } else if (px.some(v => v === 0)) {
           // A mask keeps the cores of the strokes: a caption that is thin or half faded in (a
           // transition) comes out in pieces, and the same crop untouched reads fine. Where
