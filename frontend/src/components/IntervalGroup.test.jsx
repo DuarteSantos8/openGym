@@ -5,6 +5,8 @@ import { beforeEach, afterEach, expect, it, vi } from 'vitest'
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ ok: true })) }))
 vi.mock('../lib/sound.js', () => ({ unlock: vi.fn(), beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn() }))
 import IntervalGroup from './IntervalGroup.jsx'
+import RestTimer, { adjustRestSheet } from './RestTimer.jsx'
+import Modals from './Modals.jsx'
 import { useStore } from '../store/useStore.js'
 import { useUI, restoreWork, WORK_KEY } from '../store/useUI.js'
 
@@ -14,6 +16,7 @@ const advance = ms => act(() => vi.advanceTimersByTime(ms))
 const state = () => useStore.getState().S.active
 const start = () => act(() => [...el.querySelectorAll('button')].find(b => b.textContent.includes('Start intervals')).click())
 beforeEach(() => {
+  globalThis.IS_REACT_ACT_ENVIRONMENT = true
   vi.useFakeTimers()
   Object.defineProperty(document, 'hidden', { value: false, configurable: true })
   original = useStore.getState().S
@@ -78,6 +81,61 @@ it('stops its rest when unmounted', () => {
   expect(useUI.getState().timer).toBeNull()
   advance(5000)
   expect(state().entries[1].sets[0].done).toBe(false)
+})
+
+it('keeps an interval rest running when its editor is swiped closed unchanged', () => {
+  start(); advance(2000)
+  act(() => useUI.getState().addRest(30))
+  const endsAt = useUI.getState().timer.endsAt
+  const overlay = document.createElement('div')
+  document.body.appendChild(overlay)
+  const overlayRoot = createRoot(overlay)
+  vi.spyOn(history, 'go').mockImplementation(() => {})
+  try {
+    act(() => overlayRoot.render(<><RestTimer /><Modals /></>))
+    act(() => adjustRestSheet())
+    expect(useUI.getState().timer?.endsAt).toBe(endsAt)
+    advance(1000)
+    const sheet = overlay.querySelector('.sheet')
+    act(() => {
+      sheet.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0, clientY: 100 }))
+      sheet.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientY: 220 }))
+      sheet.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientY: 220 }))
+    })
+    advance(200)
+    expect(useUI.getState().sheets).toHaveLength(0)
+    expect(useUI.getState().timer?.endsAt).toBe(endsAt)
+    expect(overlay.querySelector('#timer .t').textContent).toBe('0:30')
+    advance(30000)
+    expect(useUI.getState().work?.owner.idx).toBe(1)
+  } finally {
+    act(() => overlayRoot.unmount())
+    overlay.remove()
+    useUI.setState({ sheets: [] })
+    vi.restoreAllMocks()
+  }
+})
+
+it('waits at Ready while a sheet is open, then starts the next interval on close', () => {
+  start(); advance(2000)
+  let editor
+  act(() => { editor = useUI.getState().openSheet(() => null) })
+  advance(5000)
+  expect(useUI.getState().timer?.ready).toBe(true)
+  expect(useUI.getState().work).toBeNull()
+  expect(state().entries[1].sets[0].done).toBe(false)
+  act(() => editor.close())
+  expect(useUI.getState().work?.owner.idx).toBe(1)
+})
+
+it('still cancels a resting interval if its workout is edited under a sheet', () => {
+  start(); advance(2000)
+  act(() => adjustRestSheet())
+  act(() => useStore.getState().update(s => { s.active.entries[0].sets[1].sec = 10 }))
+  expect(useUI.getState().timer).toBeNull()
+  act(() => useUI.getState().closeAll())
+  advance(5000)
+  expect(useUI.getState().work).toBeNull()
 })
 
 it('prepares once without logging a set, uses group work time, and allows zero round rest', () => {
