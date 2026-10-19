@@ -17,13 +17,13 @@ export default function IntervalGroup({ unit, onComplete }) {
   complete.current = onComplete
   const [running, setRunning] = useState(false)
   const signature = a => JSON.stringify(a?.entries)
-  const stop = () => {
+  const stop = ({ keepRest = false } = {}) => {
     const own = run.current
     run.current = null
     if (own) {
       const ui = useUI.getState()
       if (ui.work?.owner?.interval === own.token) ui.stopWork()
-      if (own.phase === 'rest' && ui.timer?.forIdx === own.timer?.forIdx && ui.timer?.forSet === own.timer?.forSet) ui.stopRest()
+      if (!keepRest && own.phase === 'rest' && ui.timer?.forIdx === own.timer?.forIdx && ui.timer?.forSet === own.timer?.forSet) ui.stopRest()
     }
     setRunning(false)
   }
@@ -73,7 +73,8 @@ export default function IntervalGroup({ unit, onComplete }) {
     const hidden = () => { if (document.hidden) stop() }
     document.addEventListener('visibilitychange', hidden)
     window.addEventListener('pagehide', hidden)
-    return () => { document.removeEventListener('visibilitychange', hidden); window.removeEventListener('pagehide', hidden); stop() }
+    // Navigation ends automatic set progression, not the rest countdown shown app-wide.
+    return () => { document.removeEventListener('visibilitychange', hidden); window.removeEventListener('pagehide', hidden); stop({ keepRest: true }) }
   }, [])
   const ready = intervalGroupReady(active.entries, unit)
   const next = nextIntervalSet(active.entries, unit)
