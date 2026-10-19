@@ -197,7 +197,7 @@ function RoiStep({ job, onDone, onCancel, busy }) {
   const [names, setNames] = useState(suggested.slice(0, MAX_NAME_BOXES))
   // Up to three timers: a video can count the work in one place and the rest in another, or move
   // the work timer part-way through.
-  const [timers, setTimers] = useState(setup.suggest?.timer ? [setup.suggest.timer] : [])
+  const [timers, setTimers] = useState(setup.suggest?.timers?.length ? setup.suggest.timers.slice(0, 3) : setup.suggest?.timer ? [setup.suggest.timer] : [])
   const [drawing, setDrawing] = useState(null)
   const [keep, setKeep] = useState(true)
   const drag = useRef(null)

@@ -8,6 +8,7 @@ import { readCrops } from './ocr.js'
 import { segment, timerPhases } from './segment.js'
 import { classify, cutsOf } from './classify.js'
 import { suggestRois } from './roi-suggest.js'
+import { suggestTimers } from './timer-suggest.js'
 import { run } from './proc.js'
 
 const STRIP_MIN = 60      // seconds: a row longer than this, read as one, gets a strip of stills
@@ -41,7 +42,14 @@ export async function roiSetup(file, { workDir, signal, dims } = {}) {
       frames.push({ tsv: stdout, width: d.width, height: d.height })
     } catch (e) { if (e.cancelled) throw e } finally { fs.rmSync(p, { force: true }) }
   }
-  return { samples, suggest: suggestRois(frames), width: d.width, height: d.height }
+  const suggest = suggestRois(frames)
+  // A countdown in a ring is not something a whole-frame read picks out: read the corners and the
+  // floor for numbers that count. What counts is the timer, whatever the whole frames said.
+  try {
+    const timers = await suggestTimers(file, { workDir, dims: d, signal })
+    if (timers.length) Object.assign(suggest, { timer: timers[0], timers })
+  } catch (e) { if (e.cancelled) throw e }
+  return { samples, suggest, width: d.width, height: d.height }
 }
 
 /**

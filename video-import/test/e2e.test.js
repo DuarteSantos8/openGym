@@ -76,6 +76,11 @@ test('a generated follow-along video reads back as warm-up, 3 rounds of interval
       assert.ok(n.y < 0.95 && n.y + n.h > 0.8, 'the suggested name box covers the caption: ' + JSON.stringify(n))
     }
 
+    // The countdown in the top right corner is found by its counting, not by a whole-frame read.
+    assert.ok(setup.suggest.timer, 'a timer box is suggested')
+    const tm = setup.suggest.timer
+    assert.ok(tm.x + tm.w > 0.8 && tm.x < 0.95 && tm.y < 0.15, 'the suggested timer box covers the countdown: ' + JSON.stringify(tm))
+
     const stages = new Set()
     const out = await analyse(file, ROI, { workDir: dir, progress: s => stages.add(s) })
     assert.deepEqual([...stages], ['frames', 'ocr', 'thumbs'])

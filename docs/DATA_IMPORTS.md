@@ -62,7 +62,9 @@ paste the link under **Plan → share icon → Import from a video**, check the 
    looks at one frame per second.
 3. **The first time for a channel, you mark the boxes**: one around the exercise name and one
    around the timer. You get three stills from the video, with a suggestion already drawn (labels
-   that never change, such as "NEXT", are not suggested). If the names appear in more than one
+   that never change, such as "NEXT", are not suggested; the timer is found by its counting: a
+   few seconds of the video are read in a grid of places, and a box whose numbers go down by one
+   is the timer, even in a ring on the floor). If the names appear in more than one
    place, for example in a big preview during the workout and a small one in the warm-up, draw a
    box around each one (up to three). The boxes are saved for that channel, so its next video skips
    this step. If they turn out wrong, use *Mark the boxes again* on the review screen.
