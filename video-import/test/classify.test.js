@@ -202,6 +202,13 @@ test('one exercise read two ways in two rounds, one round apart, is one row (B7-
   assert.deepEqual(s[0].rows.map(x => [x.key, x.rounds]), [['overhead tuck', 2], ['drop sit up', 2], ['v sit', 2], ['plank', 2]])
 })
 
+test('two different moves read clearly, one section apart, stay two rows (_G5wIxplwB8, no repeat)', async () => {
+  const { pairRounds } = await import('../src/classify.js')
+  const r = (name, starts, conf = 0.9) => ({ name, key: name, conf, sec: 30, rest: 30, rounds: starts.length, variants: [name], occurrences: starts.map(start => ({ start, dur: 30 })) })
+  const s = pairRounds([{ kind: 'interval', rows: [r('dumbbell floor press', [467]), r('lateral raise', [600, 1230]), r('dumbbell shrug', [1639]), r('front raise', [700, 1330]), r('dumbbell bent over overhand row', [1095]), r('dumbbell push press', [2269])] }])
+  assert.equal(s[0].rows.length, 6)
+})
+
 test('30 s on, 30 s off is an interval block of 30/30, in two rounds', async () => {
   const { timerPhases } = await import('../src/segment.js')
   const f = []

@@ -558,8 +558,12 @@ export function pairRounds(sections) {
       if (!s.rows.includes(a)) continue
       // Never the left and the right of one move: those are two exercises, not two readings.
       const sides = x => sideOf(x.key).side
+      // Read two ways means one of the readings is doubtful: two names both read clearly are two
+      // moves, however alike they start ("Dumbbell shrug", "Dumbbell push press" — a no-repeat
+      // workout whose sections are as long as each other).
+      const twoWays = x => !a.key || !x.key || Math.min(a.conf || 0, x.conf || 0) < 0.6
       const b = single.find(x => x !== a && s.rows.includes(x) && Math.abs(x.occurrences[0].start - a.occurrences[0].start - lap) <= 3 &&
-        !(sides(a) && sides(x) && sides(a) !== sides(x)))
+        !(sides(a) && sides(x) && sides(a) !== sides(x)) && twoWays(x))
       if (!b) continue
       const [keep, drop] = (b.conf || 0) > (a.conf || 0) ? [b, a] : [a, b]
       const joined = combineRows(a, b)
