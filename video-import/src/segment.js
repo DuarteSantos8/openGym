@@ -19,7 +19,7 @@
 //  5. Runs shorter than MIN_BLOCK seconds are noise: a caption caught mid-transition. They are
 //     folded into the block before them.
 
-import { normName, restOf, parseTimer, mode, sameName, cleanCaption, repairCaption, editDistance, median } from './text.js'
+import { normName, restOf, parseTimer, mode, sameName, cleanCaption, repairCaption, plausibleCaption, editDistance, median } from './text.js'
 
 export const MIN_BLOCK = 3       // seconds: anything shorter is a transition, not an exercise
 const BRIDGE = 2                 // seconds without a reading that a run may span
@@ -39,7 +39,7 @@ function labelOf(f) {
   // frame or a shadow read as text, not a name.
   // A hashtag, a handle or an ask to subscribe is the channel talking, not a move.
   const hasWord = /\p{L}{3,}/u.test(raw) && !/[#@]|\.com\b|subscribe|follow us|like\s*&|juice\s*and\s*toya/i.test(raw)
-  if (!hasWord || key.replace(/\s/g, '').length < MIN_CHARS || (f.nameConf != null && Number(f.nameConf) < MIN_CONF)) return { kind: 'none', key: '', raw: '', timer, conf: 0 }
+  if (!hasWord || !plausibleCaption(raw) || key.replace(/\s/g, '').length < MIN_CHARS || (f.nameConf != null && Number(f.nameConf) < MIN_CONF)) return { kind: 'none', key: '', raw: '', timer, conf: 0 }
   // "NEXT" on its own (the name it announces read elsewhere, or not at all) names nothing.
   if (/^(n|m)e[xk]t?$|^up next$|^next up$|^nex$/.test(key) || (key.length === 4 && editDistance(key, 'next') <= 1)) return { kind: 'none', key: '', raw: '', timer, conf: 0 }
   const r = restOf(key)
@@ -242,7 +242,8 @@ export function countdownRuns(frames) {
     const cands = both[t]
     if (!cands.length) continue
     if (cands.some(x => fitsOne(t, x))) { cur.last = t; continue }
-    let x = cands.find(y => (y >= 3 || (cur && y >= 0)) && confirmedAs(t, y))
+    // No countdown in these videos starts above 99: "141" is a "41" with a piece of the ring in front.
+    let x = cands.find(y => y <= 99 && (y >= 3 || (cur && y >= 0)) && confirmedAs(t, y))
     // A reading confirmed only by the lenient matches (a lost tens digit, a stray 1) can be a few
     // misreads that happen to chain: 29 for 40. A reading in the same second that the next four
     // seconds follow exactly is the count.
@@ -278,10 +279,24 @@ export function countdownRuns(frames) {
     if (x >= 3) { if (cur) runs.push(cur); cur = { start: t, top: x, last: t } }
   }
   if (cur) runs.push(cur)
+  // The countdowns on either side of one, past a few seconds of "5, 4, 3" noise.
+  const around = r => {
+    const i = runs.indexOf(r)
+    let a = i - 1, z = i + 1
+    while (a >= 0 && runs[a].top < 12) a--
+    while (z < runs.length && runs[z].top < 12) z++
+    return { pr: runs[a], nx: runs[z] }
+  }
+  const backToBack = r => {
+    const { pr, nx } = around(r)
+    return !!pr && !!nx && r.start - (pr.start + pr.top + 1) <= 4 && nx.start - (r.start + r.top + 1) <= 4 && pr.top + 1 >= 25 && nx.top + 1 >= 25
+  }
   // A countdown first caught at 23 when its neighbours start at 29 began a few seconds earlier,
   // as far as the quiet seconds before it allow: OCR missed its first readings, not the video.
   runs.forEach((r, i) => {
     const near = runs.slice(Math.max(0, i - 5), i + 6).filter(x => x !== r && x.top > r.top && x.top <= r.top * 1.5).map(x => x.top)
+    // Moves back to back with no rest (a warm-up of 30 s holds beside 40 s works) are not the neighbours' length.
+    if (backToBack(r)) return
     if (near.length < 2) return
     const usual = mode(near).value
     const room = r.start - (i ? runs[i - 1].start + runs[i - 1].top + 1 : 0)
@@ -320,7 +335,8 @@ export function countdownRuns(frames) {
   // late, or with a misread number — are on it too: they end where the beat puts them (within a few
   // seconds of where they were read to end) and are as long as the whole ones. A long rest (a
   // minute and more) starts a new part and may shift the beat.
-  const workLike = r => r.top + 1 >= 25 && r.top + 1 <= 55
+  // Moves back to back with no rest between (a warm-up, a cool-down of holds) keep their own beat.
+  const workLike = r => r.top + 1 >= 25 && r.top + 1 <= 55 && !backToBack(r)
   const partsOf = []
   {
     let cur = []
@@ -388,6 +404,26 @@ export function countdownRuns(frames) {
     }
   }
   for (let k = runs.length - 1; k >= 0; k--) if (runs[k].drop) runs.splice(k, 1)
+  // A slot on the beat, between ones whose countdowns were read, where only scraps of a countdown were
+  // (a few seconds here, a few there, counting the right numbers): the move was there all the same.
+  for (const { part, beat, phase, L: own } of beats) {
+    const L = own >= globalL - 6 ? globalL : own
+    const wholeEnds = part.filter(r => runs.includes(r) && r.top + 1 >= L - 3).map(r => r.start + r.top + 1)
+    if (wholeEnds.length < 3) continue
+    const lo = Math.min(...wholeEnds), hi = Math.max(...wholeEnds)
+    for (let g = phase + beat * Math.round((lo - phase) / beat); g <= hi; g += beat) {
+      if (runs.some(r => Math.abs(r.start + r.top + 1 - g) <= 3 && r.top + 1 >= L - 3)) continue
+      const inside = runs.filter(r => r.start < g - 2 && r.start + r.top + 1 > g - L + 2)
+      if (!inside.length || inside.some(r => r.top + 1 >= L - 3 || r.start < g - L - 3)) continue
+      let hit = 0
+      for (let t = g - L; t < g; t++) if (both[t]?.length && agrees(t, g - t - 1)) hit++
+      if (hit < 8) continue
+      for (const r of inside) r.drop = true
+      runs.push({ start: g - L, top: L - 1, last: g - 1, filled: true })
+    }
+  }
+  for (let k = runs.length - 1; k >= 0; k--) if (runs[k].drop) runs.splice(k, 1)
+  runs.sort((a, b) => a.start - b.start)
   return runs.map((r, i) => {
     const next = runs[i + 1]?.start ?? both.length
     // It reaches zero `top` seconds after it showed `top`, and is gone a second later.
@@ -455,8 +491,8 @@ export function timerPhases(frames) {
     while (runs[a] && len(runs[a]) < MIN_EXERCISE && runs[a + 1].start - runs[a].end <= 2) a--
     while (runs[z] && len(runs[z]) < MIN_EXERCISE && runs[z].start - runs[z - 1].end <= 2) z++
     const p = runs[a], n = runs[z]
-    const pl = p && r.start - p.end <= 2 + (i - 1 - a) * MIN_EXERCISE ? len(p) : null
-    const nl = n && n.start - r.end <= 2 + (z - i - 1) * MIN_EXERCISE ? len(n) : null
+    const pl = p && r.start - p.end <= 6 + (i - 1 - a) * MIN_EXERCISE ? len(p) : null
+    const nl = n && n.start - r.end <= 6 + (z - i - 1) * MIN_EXERCISE ? len(n) : null
     if (pl == null && nl == null) return false
     return (pl == null || len(r) <= pl * 0.7) && (nl == null || len(r) <= nl * 0.7)
   }
@@ -520,6 +556,13 @@ export function timerPhases(frames) {
       pending = asNext(c)
       return
     }
+    // A long countdown (the minute between two blocks) with a name that only comes up in its last
+    // stretch, and a countdown with nothing on it after: the rest, announcing that countdown's move.
+    if (c && c.kind !== 'rest' && len(r) >= 45 && (c.first - r.start) / len(r) >= 0.6 && bare(i + 1)) {
+      blocks.push(block(r, { kind: 'rest', key: 'rest', text: 'REST', conf: c.conf, variants: {}, next: c.key }))
+      pending = asNext(c)
+      return
+    }
     if (c && c.kind === 'rest') {
       const named = c.next ? { key: normName(c.next), raw: c.next, conf: c.conf, variants: { [normName(c.next)]: 1 }, first: c.first } : null
       // "REST", or a "Next: …" over the whole of a short countdown: a rest. A "Next: …" that comes
@@ -541,7 +584,7 @@ export function timerPhases(frames) {
 
     // An announcement is no longer than what it announces; a countdown much longer than the bare
     // ones round it is the exercise itself, with its name on screen (and the bare ones the rests).
-    const announces = !endsNamed && c && c.cover >= 0.6 && (c.first - r.start) / len(r) < 0.3 && bare(i + 1) && (i === 0 || bare(i - 1)) &&
+    const announces = !endsNamed && c && c.cover >= 0.5 && (c.first - r.start) / len(r) < 0.3 && bare(i + 1) && (i === 0 || bare(i - 1)) &&
       len(r) <= len(runs[i + 1]) * 1.1
     // Short between two longer ones, but named from its start by a caption of its own that the
     // next countdown, named too, does not repeat: a move of its own (a 30 s warm-up move between

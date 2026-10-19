@@ -321,3 +321,19 @@ export function repairCaption(text) {
   }
   return parts.join('').replace(/\s+/g, ' ').trim()
 }
+
+/**
+ * Whether a caption could be an exercise's name: two or more words of three letters and not one of
+ * them is a word the exercise library (or a screen) knows is OCR noise — "Wtm Cinnc Ctoctrwl".
+ * One word is let through: a rare move has a rare name.
+ */
+export function plausibleCaption(text) {
+  const words = (String(text || '').toLowerCase().match(/\p{L}{3,}/gu) || []).filter(w => !PROTECTED.has(w))
+  if (words.length < 2) return true
+  const known = VOCAB_SET()
+  // "next" and "rest" are screens' words, not evidence of a name.
+  const knows = w => !PROTECTED.has(w) && !FUNCTION_WORDS.has(w) && (known.has(w) || known.has(w.replace(/s$/, '')) || known.has(w.replace(/es$/, '')) || known.has(w + 's'))
+  // "pushups", "deadbugs": two words the library knows, run together.
+  const compound = w => { for (let i = 2; i <= w.length - 2; i++) if (knows(w.slice(0, i)) && knows(w.slice(i))) return true; return false }
+  return words.some(w => knows(w) || compound(w))
+}
