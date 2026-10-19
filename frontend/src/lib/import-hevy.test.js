@@ -75,6 +75,10 @@ describe('HEVY_ID_MAP', () => {
     '914F3A96': '0327', // Chest Supported Incline Row (Dumbbell)
     '98237BA2': '0826', // Knee Raise Parallel Bars
     '4E5257DE': '6392', // Lat Pulldown - Close Grip (Cable)
+    C315DC2A: '0225', // Rear Delt Reverse Fly (Cable): its artwork is 0225, 0602's a lever machine
+    '3D1CDC75': '2950', // Belt Squat (Machine): its artwork, an exercise added to the catalogue after the map
+    E3EDA509: '0715', // Side Plank: its artwork, not the hip adduction its title matched
+    CC35A01F: '1875', // Squat (Machine): a plate-loaded lever squat, as its artwork, not the barbell squat
     FFDA283B: '0381', // Reverse Lunge (Dumbbell)
     '8BAB2735': '0318', // Seated Incline Curl (Dumbbell)
     '9237BAD1': '1454', // Seated Shoulder Press (Machine): its artwork is 1454, 0603's a landmine press
@@ -89,13 +93,8 @@ describe('HEVY_ID_MAP', () => {
     })
   }
 
-  it('leaves the never-by-title lifts out of the id map as well', () => {
-    // Side Plank, Squat (Machine), Rear Delt Reverse Fly (Cable)
-    for (const id of ['E3EDA509', 'CC35A01F', 'C315DC2A']) expect(HEVY_ID_MAP[id]).toBeUndefined()
-  })
-
   it('leaves catalogue gaps unmapped (import as custom)', () => {
-    for (const id of ['68CE0B9B', '0222DB42', 'D1CD146F']) {
+    for (const id of ['E23F1F2B', '6D54A050', '911A58D3']) {
       expect(HEVY_ID_MAP[id]).toBeUndefined()
       expect(matchHevyTemplate({ id, title: 'whatever' })).toBeNull()
     }
