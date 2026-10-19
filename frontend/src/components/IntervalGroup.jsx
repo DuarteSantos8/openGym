@@ -76,6 +76,7 @@ export default function IntervalGroup({ unit, onComplete }) {
   const ready = intervalGroupReady(active.entries, unit)
   const next = nextIntervalSet(active.entries, unit)
   const start = () => {
+    if (!next || document.hidden || useUI.getState().sheets.length || useStore.getState().S.active?.id !== active.id) return
     stop()
     unlock(useStore.getState().S.sound)
     const own = { id: active.id, signature: signature(active), token: uid(), next, phase: 'work' }
@@ -89,8 +90,18 @@ export default function IntervalGroup({ unit, onComplete }) {
       }, { interval: own.token, prep: true })
     } else startNext(own)
   }
+  const action = useRef(null)
+  action.current = running ? stop : start
+  const canRun = !!next
+  useEffect(() => {
+    useUI.setState({ intervalAction: running || canRun ? {
+      sessionId: active.id, label: running ? t('Stop intervals') : t('Start intervals'),
+      icon: running ? 'pause' : 'play', run: () => action.current?.(),
+    } : null })
+    return () => { useUI.setState({ intervalAction: null }) }
+  }, [active.id, running, canRun])
   return <div className="card">
-    <Button icon={running ? 'pause' : 'play'} disabled={!running && !next} onClick={running ? stop : start}>
+    <Button variant="primary" icon={running ? 'pause' : 'play'} disabled={!running && !next} onClick={running ? stop : start}>
       {running ? t('Stop intervals') : t('Start intervals')}
     </Button>
     <p className="small muted">{ready

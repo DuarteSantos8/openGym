@@ -175,17 +175,17 @@ function Shell() {
   }, [loc.pathname, navType])
   // bound to the workout, not to the route — checking Stats mid-session keeps the screen on
   useWakeLock(!!S.active && !S.active.editingWorkoutId && S.keepAwake !== false)
-  // A running workout has the whole screen (v1.3.11): no tab bar, and the rest bar docks to the
-  // bottom edge in its place. Its header's ⌄ goes back to the app, where the tab bar's Resume
-  // brings it back.
+  // Intervals keep the bottom start/stop control available; other workouts use the full screen.
   const inWorkout = loc.pathname === '/workout' && !!S.active
+  const intervalAction = useUI(s => s.intervalAction)
+  const hideWorkoutTabs = inWorkout && intervalAction?.sessionId !== S.active.id
   useEffect(() => {
-    document.body.classList.toggle('no-tabbar', inWorkout)
+    document.body.classList.toggle('no-tabbar', hideWorkoutTabs)
     return () => document.body.classList.remove('no-tabbar')
-  }, [inWorkout])
+  }, [hideWorkoutTabs])
   // The chat owns the bottom of the screen as well: its composer sits where the tabs would be.
   // The first-launch card has no tabs either: they changed the route behind it.
-  const noTabs = inWorkout || loc.pathname === '/coach' || needsMobileOnboarding
+  const noTabs = hideWorkoutTabs || loc.pathname === '/coach' || needsMobileOnboarding
 
   const authed = user || isGuest
   if (!ready && !authed) return (
