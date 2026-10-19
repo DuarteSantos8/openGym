@@ -83,6 +83,56 @@ describe('MuscleExplorer body-part chips keep the equipment filter', () => {
   })
 })
 
+// Issue #669 (the same gap as #521, in another view): the Add exercise picker has a Favourites
+// chip, but its "By muscle" view - this explorer with `onPick` - had none, so the button
+// disappeared as soon as you browsed by muscle. 4087 and 0005 are band biceps curls; neither
+// trains the calves.
+describe('MuscleExplorer in a picker keeps the Favourites chip (#669)', () => {
+  const favChip = host =>
+    [...host.querySelectorAll('.chips .chip')].find(b => b.textContent.trim().startsWith('Favourites'))
+  const rowNames = host => [...host.querySelectorAll('.list .item .tt')].map(el => el.textContent.trim())
+
+  beforeEach(() => { mocks.S.favEx = ['4087', '0005'] })
+
+  it('offers Favourites for the chosen muscle and narrows the list to them', () => {
+    const host = render({ onPick: vi.fn() })
+    act(() => { muscleChip(host, 'Biceps').click() })
+    const chip = favChip(host)
+    expect(chip, 'the picker view has a Favourites chip, so its By muscle view must too').toBeTruthy()
+    expect(chip.textContent).toContain('(2)')
+
+    act(() => { chip.click() })
+    expect(isOn(favChip(host))).toBe(true)
+    expect(rowNames(host).sort()).toEqual(['band 45 degrees biceps curl', 'band alternate biceps curl'])
+  })
+
+  it('has no Favourites chip for a muscle none of them train', () => {
+    const host = render({ onPick: vi.fn() })
+    act(() => { muscleChip(host, 'Calves').click() })
+    expect(favChip(host)).toBeFalsy()
+  })
+
+  it('falls back to every exercise when the next muscle has no favourites, without forgetting the choice', () => {
+    const host = render({ onPick: vi.fn() })
+    act(() => { muscleChip(host, 'Biceps').click() })
+    act(() => { favChip(host).click() })
+
+    act(() => { muscleChip(host, 'Calves').click() })
+    expect(favChip(host)).toBeFalsy()
+    expect(isOn(chipByText(host, 'All'))).toBe(true)
+    expect(rowNames(host).length).toBeGreaterThan(2)
+
+    act(() => { muscleChip(host, 'Biceps').click() })
+    expect(isOn(favChip(host)), 'back on a muscle with favourites, the choice applies again').toBe(true)
+  })
+
+  it('leaves the Library\'s muscle browser as it was: no Favourites chip without onPick', () => {
+    const host = render({ onDetail: vi.fn(), onPlan: vi.fn() })
+    act(() => { muscleChip(host, 'Biceps').click() })
+    expect(favChip(host)).toBeFalsy()
+  })
+})
+
 describe('MuscleExplorer search: the × and live count the Library has (#338)', () => {
   function type(el, value) {
     Object.getOwnPropertyDescriptor(el.constructor.prototype, 'value').set.call(el, value)

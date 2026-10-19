@@ -38,7 +38,12 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan }) {
   ])), [catalog])
   const pick = muscle => { setSelected(muscle === selected ? null : muscle); setEq(''); setShown(40) }
   const targeted = selected ? catalog.filter(e => musclesOf(e)[selected]) : []
-  const base = searchExercises(targeted.filter(e => !bp || e.bp === bp), q)
+  // As a picker, the same Favourites chip the picker's own list has (issue #669, as #521 was for
+  // the Type row), counted for the chosen muscle. A muscle none of them train gets no chip, and a
+  // Favourites choice it leaves empty is ignored for this view, not forgotten - the eqOn rule.
+  const favHere = onPick ? targeted.filter(e => isFav(S, e.id)) : []
+  const bpOn = bp === '☆' && !favHere.length ? '' : bp
+  const base = searchExercises(bpOn === '☆' ? favHere : targeted.filter(e => !bpOn || e.bp === bpOn), q)
   const eqOpts = equipmentOf(base)
   const eqOn = eqOpts.includes(eq) ? eq : ''
   // Favourites float to the top of whatever the filters left (issue #6), the rest keeps its order.
@@ -46,7 +51,7 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan }) {
   const choose = ex => onPick ? onPick(ex) : onDetail(ex)
   // The live count and the × of the Library's search (#338): the count while a search or a
   // filter narrows the muscle's list, the × while there is text.
-  const narrowed = !!(q.trim() || bp || eqOn)
+  const narrowed = !!(q.trim() || bpOn || eqOn)
 
   return <>
     {profile && <div className="small dim row" style={{ margin: '-4px 2px 10px', gap: 6, alignItems: 'center' }}>
@@ -82,8 +87,9 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan }) {
           eqOn fallback above drops it only for this view if the new body part has nothing under
           it, without forgetting the choice. "All" clears it, since it spans every body part. */}
       <div className="chips" style={{ marginBottom: eqOpts.length > 1 ? 8 : 12 }}>
-        <button className={'chip nocap' + (!bp ? ' on' : '')} onClick={() => { setBp(''); setEq(''); setShown(40) }}>{t('All')}</button>
-        {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} onClick={() => { setBp(b); setShown(40) }}>{t(b)}</button>)}
+        {favHere.length > 0 && <button className={'chip' + (bpOn === '☆' ? ' on' : '')} onClick={() => { setBp('☆'); setEq(''); setShown(40) }}><Icon name="starFill" className="fav-star" />{t('Favourites')} ({favHere.length})</button>}
+        <button className={'chip nocap' + (!bpOn ? ' on' : '')} onClick={() => { setBp(''); setEq(''); setShown(40) }}>{t('All')}</button>
+        {BODYPARTS.map(b => <button key={b} className={'chip' + (bpOn === b ? ' on' : '')} onClick={() => { setBp(b); setShown(40) }}>{t(b)}</button>)}
       </div>
       {eqOpts.length > 1 && <div className="chips" style={{ marginBottom: 12 }}>
         <button className={'chip nocap' + (!eqOn ? ' on' : '')} onClick={() => { setEq(''); setShown(40) }}>{t('Any equipment')}</button>
