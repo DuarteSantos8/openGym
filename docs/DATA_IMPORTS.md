@@ -150,6 +150,10 @@ A 30-minute video takes a few minutes of CPU on one core.
 failing with "could not read the video", rebuild the worker:
 `docker compose --profile video-import build --pull --no-cache video-import`.
 
+**A channel it reads badly?** Record the video as a regression fixture (the per-second readings
+plus what you saw watching it) and the reading rules are checked against it from then on, without
+the video: see `video-import/test/fixtures/README.md`.
+
 ### What it can't do
 
 - **No text on screen, no import.** A video that only shows the instructor (and has no chapters)

@@ -131,6 +131,34 @@ test('timer first: a short countdown between two long ones is a rest that names 
   assert.deepEqual(timerPhases(g).map(b => [b.kind, b.key, b.dur]), [['gap', '', 30], ['work', 'arm circles', 30], ['work', 'swing step', 30], ['work', 'toe touch', 30]])
 })
 
+test('timer first: a short named countdown between two longer named ones is a move of its own, not a rest (fixture harness)', async () => {
+  const { timerPhases } = await import('../src/segment.js')
+  // A warm-up of 60, 30 and 45 s moves with no rests: the 30 s one is short next to both, but
+  // its name is its own and the next move shows a different one.
+  const blocks = timerPhases(framesOf([['JUMPING JACKS', 60], ['ARM CIRCLES', 30], ['HIGH KNEES', 45], ['BURPEES', 40], ['REST', 20], ['PLANK JACKS', 40]]))
+  assert.deepEqual(blocks.map(b => [b.kind, b.key, b.dur]).slice(0, 3), [['work', 'jumping jacks', 60], ['work', 'arm circles', 30], ['work', 'high knees', 45]])
+  // The same short countdown showing the next move's name is still the rest that announces it.
+  const rest = timerPhases(framesOf([['SQUATS', 40], ['LUNGES', 20], ['LUNGES', 40], ['PUSH UPS', 20], ['PUSH UPS', 40], ['PLANK', 20], ['PLANK', 40]]))
+  assert.deepEqual(rest.map(b => [b.kind, b.dur]).slice(0, 3), [['work', 40], ['rest', 20], ['work', 40]])
+})
+
+test('timer first: a Tabata\'s 10 s rest right after a countdown to 1 is a countdown of its own, not a stray 1 and 0', async () => {
+  const { timerPhases } = await import('../src/segment.js')
+  const blocks = timerPhases(framesOf([['SQUAT JUMPS', 20], ['REST', 10], ['PUSH UPS', 20], ['REST', 10], ['SQUAT JUMPS', 20], ['REST', 10], ['PUSH UPS', 20]]))
+  assert.deepEqual(blocks.map(b => [b.kind, b.dur]).slice(0, 4), [['work', 20], ['rest', 10], ['work', 20], ['rest', 10]])
+})
+
+test('timer first: 30 on, 30 off — a workout ends on a move, so which of named and bare is the work', async () => {
+  const { timerPhases } = await import('../src/segment.js')
+  const moves = ['SQUATS', 'PUSH UPS', 'LUNGES', 'PLANK']
+  // The name over the work, the rest a bare countdown: the video ends on a named countdown.
+  const work = timerPhases(framesOf(moves.flatMap(e => [[e, 30], ['', 30]]).slice(0, -1)))
+  assert.deepEqual(work.map(b => [b.kind, b.key]).slice(0, 3), [['work', 'squats'], ['rest', 'rest'], ['work', 'push ups']])
+  // The name over the rest before each move: the video ends on a bare one, and the names announce.
+  const rest = timerPhases(framesOf(moves.flatMap(e => [[e, 30], ['', 30]])))
+  assert.deepEqual(rest.map(b => [b.kind, b.key]).slice(0, 2), [['rest', 'rest'], ['work', 'squats']])
+})
+
 test('a lone R or L in brackets is a side (OfV5kHgRpmM)', async () => {
   const { sideOf, sameName } = await import('../src/text.js')
   assert.deepEqual(sideOf('Side plank hold (R)'), { base: 'side plank hold', side: 'R' })

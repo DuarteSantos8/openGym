@@ -206,8 +206,9 @@ export function countdownRuns(frames) {
   let cur = null
   // A reading fits the run when it is the count it should be — or that count with a stray "1" in
   // front (a piece of the ring round the digits read as a one: 8 as 18).
-  // Or with its tens digit lost (a heavy "3" the OCR skipped: 35 read as 5).
-  const matches = (e, x) => Math.abs(e - x) <= 1 || (x >= 10 && x < 20 && e < 10 && Math.abs(e - (x - 10)) <= 1) || (x < 10 && e >= 10 && e % 10 === x)
+  // Or with its tens digit lost (a heavy "3" the OCR skipped: 35 read as 5). Not once the count
+  // is down to zero: a "10" then is the next countdown (a Tabata's 10 s rest), not a stray 1 and 0.
+  const matches = (e, x) => Math.abs(e - x) <= 1 || (x >= 10 && x < 20 && e >= 1 && e < 10 && Math.abs(e - (x - 10)) <= 1) || (x < 10 && e >= 10 && e % 10 === x)
   const fitsOne = (t, x) => cur && matches(cur.top - (t - cur.start), x)
   const confirmedAs = (t, x) => {
     let ok = 0, bad = 0
@@ -323,6 +324,13 @@ export function timerPhases(frames) {
     for (let t = q.start; t < q.start + len(q) / 2; t++) if (labels[t]?.key) return false
     return true
   }
+  // Which of named-then-bare it is, when lengths can't say (30 s on, 30 s off): a workout ends
+  // on a move, not on a rest. When the last countdown has its name on screen from its start,
+  // follows a bare one of its length and nothing counts down after it, the named countdowns are
+  // the moves and the bare ones the rests.
+  const named = j => caps[j] && caps[j].cover >= 0.6 && (caps[j].first - runs[j].start) / len(runs[j]) < 0.3
+  const L = runs.length - 1
+  const endsNamed = L > 0 && named(L) && bare(L - 1) && Math.abs(len(runs[L]) - len(runs[L - 1])) <= len(runs[L]) * 0.1
   let at = 0
   runs.forEach((r, i) => {
     // Seconds with no countdown between two runs: read the old way, caption by caption. What was
@@ -384,11 +392,19 @@ export function timerPhases(frames) {
 
     // An announcement is no longer than what it announces; a countdown much longer than the bare
     // ones round it is the exercise itself, with its name on screen (and the bare ones the rests).
-    const announces = c && c.cover >= 0.6 && (c.first - r.start) / len(r) < 0.3 && bare(i + 1) && (i === 0 || bare(i - 1)) &&
+    const announces = !endsNamed && c && c.cover >= 0.6 && (c.first - r.start) / len(r) < 0.3 && bare(i + 1) && (i === 0 || bare(i - 1)) &&
       len(r) <= len(runs[i + 1]) * 1.1
+    // Short between two longer ones, but named from its start by a caption of its own that the
+    // next countdown, named too, does not repeat: a move of its own (a 30 s warm-up move between
+    // a 60 s and a 45 s one), not a rest announcing the next. A rest that announces shows the
+    // next move's name, or comes before a countdown with nothing on it.
+    const ownMove = c && c.cover >= 0.6 && (c.first - r.start) / len(r) < 0.3 && caps[i + 1] && !bare(i + 1) &&
+      !sameName(caps[i + 1].key, c.key) && !(caps[i - 1] && sameName(caps[i - 1].key, c.key))
+    // Named moves with bare countdowns between them: those are the rests.
+    const bareRest = endsNamed && !c && named(i - 1) && named(i + 1)
     // A countdown of a few seconds is a "get ready" or the last seconds of a rest shown where the
     // work timer will be, never an exercise.
-    if (restAt(i) || announces || len(r) < MIN_EXERCISE) {
+    if ((restAt(i) && !ownMove) || announces || bareRest || len(r) < MIN_EXERCISE) {
       blocks.push(block(r, { kind: 'rest', key: 'rest', text: 'NEXT', conf: c?.conf || 0, variants: {}, next: c?.key || null }))
       pending = asNext(c) || pending
       return

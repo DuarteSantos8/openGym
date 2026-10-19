@@ -1,0 +1,62 @@
+{
+  "synthetic-30-30-bare-rest": {
+    "frames": 1,
+    "sequence": 1,
+    "boundaries": 1,
+    "startError": 0,
+    "sections": 1
+  },
+  "synthetic-30-30-named-rest": {
+    "frames": 1,
+    "sequence": 1,
+    "boundaries": 1,
+    "startError": 0
+  },
+  "synthetic-captions-only": {
+    "frames": 1,
+    "sequence": 1,
+    "boundaries": 1,
+    "startError": 0,
+    "sections": 1
+  },
+  "synthetic-hiit-countdown": {
+    "frames": 1,
+    "sequence": 1,
+    "boundaries": 1,
+    "startError": 0,
+    "sections": 1
+  },
+  "synthetic-hiit-countup": {
+    "frames": 1,
+    "sequence": 1,
+    "boundaries": 1,
+    "startError": 0,
+    "sections": 1
+  },
+  "synthetic-next-screens": {
+    "frames": 1,
+    "sequence": 1,
+    "boundaries": 1,
+    "startError": 0,
+    "sections": 1
+  },
+  "synthetic-nonstop": {
+    "frames": 1,
+    "sequence": 1,
+    "boundaries": 1,
+    "startError": 0
+  },
+  "synthetic-sides": {
+    "frames": 1,
+    "sequence": 1,
+    "boundaries": 1,
+    "startError": 0
+  },
+  "synthetic-tabata": {
+    "frames": 1,
+    "sequence": 1,
+    "boundaries": 1,
+    "startError": 0,
+    "sections": 1
+  }
+}

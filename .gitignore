@@ -30,3 +30,6 @@ frontend/bundle-size.json
 
 # Local planning notes
 docs/superpowers/plans/
+
+# video-import fixture recording: stills and raw results (test/harness/record.mjs)
+video-import/test/.record/
