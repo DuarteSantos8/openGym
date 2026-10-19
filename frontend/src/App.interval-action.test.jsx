@@ -5,6 +5,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import App from './App.jsx'
 import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
+import { stopIntervals } from './store/interval-run.js'
 
 vi.mock('./lib/sound.js', () => ({ setPlayOnSilent: vi.fn(), setVibrate: vi.fn(), setAlarmBuzzer: vi.fn(), beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
 vi.mock('./lib/api.js', async original => ({ ...await original(), api: vi.fn(() => Promise.resolve({})), beacon: vi.fn() }))
@@ -28,7 +29,7 @@ beforeEach(() => {
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
 })
 afterEach(() => {
-  act(() => root.unmount()); host.remove()
+  act(() => { stopIntervals(); root.unmount() }); host.remove()
   useUI.getState().stopRest(); useUI.getState().stopWork()
   useStore.setState(original); localStorage.clear(); vi.useRealTimers()
 })
@@ -69,4 +70,21 @@ it('stops top-started preparation from the bottom without logging work and clear
   await act(async () => [...host.querySelectorAll('#tabbar button')].find(b => b.textContent === 'Plan').click())
   expect(useUI.getState().intervalAction).toBeNull()
   expect(bottom().getAttribute('aria-label')).toBe('Resume')
+})
+
+it('finishes the entire interval group after navigating Home and does not replay sets on return', async () => {
+  await act(async () => root.render(<App />))
+  await act(async () => top().click())
+  advance(3000)
+  await act(async () => [...host.querySelectorAll('#tabbar button')].find(b => b.textContent === 'Home').click())
+  expect(window.location.hash).toBe('#/home')
+  expect(useUI.getState().work?.owner.idx).toBe(0)
+  advance(12000)
+  const completed = structuredClone(useStore.getState().S.active.entries)
+  expect(completed.every(e => e.sets.every(s => s.done && s.sec === 2 && s.at))).toBe(true)
+  expect(useUI.getState().work).toBeNull()
+  await act(async () => bottom().click())
+  expect(window.location.hash).toBe('#/workout')
+  advance(10000)
+  expect(useStore.getState().S.active.entries).toEqual(completed)
 })

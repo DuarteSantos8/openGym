@@ -5,6 +5,7 @@ import { beforeEach, afterEach, expect, it, vi } from 'vitest'
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ ok: true })) }))
 vi.mock('../lib/sound.js', () => ({ unlock: vi.fn(), beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn() }))
 import IntervalGroup from './IntervalGroup.jsx'
+import { stopIntervals, useIntervalRun } from '../store/interval-run.js'
 import RestTimer, { adjustRestSheet } from './RestTimer.jsx'
 import Modals from './Modals.jsx'
 import { useStore } from '../store/useStore.js'
@@ -29,7 +30,7 @@ beforeEach(() => {
   })} />))
 })
 afterEach(() => {
-  act(() => root.unmount())
+  act(() => { stopIntervals(); root.unmount() })
   el.remove()
   useUI.getState().stopWork(); useUI.getState().stopRest()
   useStore.setState({ S: original })
@@ -49,11 +50,11 @@ it('runs two rounds with exercise and round rests, overrides overtime, and stops
   expect(state().entries[2].sets.some(s => s.done)).toBe(false)
   expect(useUI.getState().work).toBeNull()
 })
-it('stops when hidden without logging the interrupted set or restarting on return', () => {
+it('continues the whole group while hidden', () => {
   start(); advance(1000)
   act(() => { Object.defineProperty(document, 'hidden', { value: true, configurable: true }); document.dispatchEvent(new Event('visibilitychange')) })
-  advance(10000)
-  expect(state().entries[0].sets[0].done).toBe(false)
+  advance(12000)
+  expect(state().entries.slice(0, 2).every(e => e.sets.every(s => s.done))).toBe(true)
   expect(useUI.getState().work).toBeNull()
 })
 it('stops on a replacement workout and never writes to it', () => {
@@ -62,20 +63,42 @@ it('stops on a replacement workout and never writes to it', () => {
   advance(5000)
   expect(state().entries[0].sets[0].done).toBe(false)
 })
-it('stops on a sheet or an exercise edit', () => {
+
+it.each(['visibilitychange', 'pagehide'])('keeps recovery through %s and catches up after suspended ticks', event => {
+  start(); advance(2000)
+  act(() => useUI.getState().addRest(30))
+  const endsAt = useUI.getState().timer.endsAt
+  act(() => {
+    // pagehide can arrive before visibilitychange reports hidden.
+    if (event === 'visibilitychange') Object.defineProperty(document, 'hidden', { value: true, configurable: true })
+    ;(event === 'pagehide' ? window : document).dispatchEvent(new Event(event))
+  })
+  expect(useUI.getState().timer?.endsAt).toBe(endsAt)
+  act(() => {
+    vi.setSystemTime(Date.now() + 5000)
+    Object.defineProperty(document, 'hidden', { value: false, configurable: true })
+    document.dispatchEvent(new Event('visibilitychange'))
+  })
+  expect(useUI.getState().timer?.left).toBe(26)
+  advance(26000)
+  expect(useUI.getState().work?.owner.idx).toBe(1)
+  advance(10000)
+  expect(state().entries.slice(0, 2).every(e => e.sets.every(s => s.done))).toBe(true)
+})
+it('stops on an exercise edit but not on a sheet', () => {
   start()
   act(() => useStore.getState().update(s => { s.active.entries[0].sets[0].sec = 10 }))
   expect(useUI.getState().work).toBeNull()
   start()
   act(() => useUI.setState({ sheets: [{ id: 'settings' }] }))
-  expect(useUI.getState().work).toBeNull()
+  expect(useUI.getState().work).not.toBeNull()
 })
 it('does not restore or complete an automatic hold after a reload', () => {
   localStorage.setItem(WORK_KEY, JSON.stringify({ endsAt: Date.now() - 1000, total: 2, owner: { idx: 0, i: 0, id: '0025', interval: 'old-run' } }))
   expect(restoreWork()).toBe(false)
   expect(state().entries[0].sets[0].done).toBe(false)
 })
-it('keeps its rest when leaving the workout without starting another set', () => {
+it('continues every remaining set after leaving the workout', () => {
   start(); advance(2000)
   act(() => useUI.getState().addRest(30))
   const endsAt = useUI.getState().timer.endsAt
@@ -84,9 +107,9 @@ it('keeps its rest when leaving the workout without starting another set', () =>
   advance(5000)
   expect(useUI.getState().timer?.left).toBe(26)
   advance(26000)
-  expect(useUI.getState().timer?.ready).toBe(true)
-  expect(useUI.getState().work).toBeNull()
-  expect(state().entries[1].sets[0].done).toBe(false)
+  expect(useUI.getState().work?.owner.idx).toBe(1)
+  advance(10000)
+  expect(state().entries.slice(0, 2).every(e => e.sets.every(s => s.done))).toBe(true)
 })
 
 it('still stops its rest when Stop intervals is explicitly pressed', () => {
@@ -130,16 +153,15 @@ it('keeps an interval rest running when its editor is swiped closed unchanged', 
   }
 })
 
-it('waits at Ready while a sheet is open, then starts the next interval on close', () => {
+it('continues through work and rest while a sheet is open', () => {
   start(); advance(2000)
   let editor
   act(() => { editor = useUI.getState().openSheet(() => null) })
   advance(5000)
-  expect(useUI.getState().timer?.ready).toBe(true)
-  expect(useUI.getState().work).toBeNull()
-  expect(state().entries[1].sets[0].done).toBe(false)
+  expect(state().entries[1].sets[0].done).toBe(true)
   act(() => editor.close())
-  expect(useUI.getState().work?.owner.idx).toBe(1)
+  advance(10000)
+  expect(useIntervalRun.getState().run).toBeNull()
 })
 
 it('still cancels a resting interval if its workout is edited under a sheet', () => {
@@ -171,4 +193,22 @@ it('stopping preparation leaves every set unfinished', () => {
   advance(5000)
   expect(state().entries.every(e => e.sets.every(s => !s.done))).toBe(true)
   expect(useUI.getState().work).toBeNull()
+})
+
+it('a manually started replacement timer is not cancelled by the old sequence', () => {
+  start(); advance(2000)
+  act(() => useUI.getState().startRest(90, 2))
+  expect(useIntervalRun.getState().run).toBeNull()
+  expect(useUI.getState().timer).toMatchObject({ total: 90, forIdx: 2 })
+})
+
+it('holds a paused rest without progressing, then continues when resumed', () => {
+  start(); advance(2000)
+  act(() => useUI.getState().pauseRest())
+  advance(60000)
+  expect(state().entries[1].sets[0].done).toBe(false)
+  expect(useUI.getState().timer.paused).toBe(true)
+  act(() => useUI.getState().resumeRest())
+  advance(1000)
+  expect(useUI.getState().work?.owner.idx).toBe(1)
 })
