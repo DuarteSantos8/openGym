@@ -33,3 +33,13 @@ test('every root-level module server.js needs is on the Dockerfile COPY line', (
   assert.deepEqual(missing, [], `add ${missing.join(', ')} to the COPY line in api/Dockerfile`);
   for (const f of copied) assert.ok(fs.existsSync(path.join(API, f)), `${f} is copied but does not exist`);
 });
+
+// A directory server.js imports from (coach/, health/, providers/…) is copied whole by a line of
+// its own, `COPY dir ./dir`; one that is not breaks the image the same way.
+test('every directory server.js imports from is copied whole', () => {
+  const copied = new Set([...read('Dockerfile').matchAll(/^COPY\s+([\w-]+)\s+\.\/\1\s*$/gm)].map(m => m[1]));
+  const used = new Set([...read('server.js').matchAll(/from\s+['"]\.\/([\w-]+)\//g)].map(m => m[1]));
+  assert.ok(used.has('health'), 'the walk finds health/');
+  const missing = [...used].filter(d => !copied.has(d));
+  assert.deepEqual(missing, [], `add COPY ${missing.join(', ')} to api/Dockerfile`);
+});
