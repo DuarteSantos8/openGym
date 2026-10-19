@@ -28,7 +28,9 @@ export const MIN_CONF = 40       // Tesseract's own confidence (0–100) below w
 
 function labelOf(f) {
   // "(R)" and "(L)" would be lost as single letters once the caption is a key: spelled out.
-  const raw = cleanCaption(String(f.name || '').replace(/[([{]\s*([rlRL])\s*[)\]}]/g, (_, x) => (/r/i.test(x) ? '(right)' : '(left)')))
+  // A closing bracket the OCR lost at the end of a caption does not make "(R" any less a side, and a
+  // small white "R" is read as "P" now and then.
+  const raw = cleanCaption(String(f.name || '').replace(/[([{]\s*([rlpRLP])\s*(?:[)\]}]|$)/g, (_, x) => (/[rp]/i.test(x) ? '(right)' : '(left)')))
   const key = normName(raw)
   const timer = parseTimer(f.timer)
   // A reading Tesseract itself doubts is noise more often than a name: a shadow, the edge of the
@@ -210,26 +212,63 @@ export function countdownRuns(frames) {
   // is down to zero: a "10" then is the next countdown (a Tabata's 10 s rest), not a stray 1 and 0.
   const matches = (e, x) => Math.abs(e - x) <= 1 || (x >= 10 && x < 20 && e >= 1 && e < 10 && Math.abs(e - (x - 10)) <= 1) || (x < 10 && e >= 10 && e % 10 === x)
   const fitsOne = (t, x) => cur && matches(cur.top - (t - cur.start), x)
-  const confirmedAs = (t, x) => {
+  // How well the next seconds carry a reading on as a countdown: ok - bad, or null when they do
+  // not (fewer than two seconds agree, or more disagree than agree).
+  const confirmation = (t, x) => {
     let ok = 0, bad = 0
     for (let k = 1; k <= 4 && t + k < both.length; k++) {
       const c = both[t + k]
       if (!c.length) continue
       if (c.some(y => matches(x - k, y))) ok++; else bad++
     }
-    return ok >= 2 && ok > bad
+    if (ok >= 2 && ok > bad) return ok - bad
+    // Over a ring and a busy floor the first seconds read badly (37 as 31, 36 as 33). Four seconds
+    // that mostly agree and a few more that do too make a countdown, though a poor one at its start.
+    if (ok >= 2 && ok === bad) {
+      let more = 0
+      for (let k = 5; k <= 8 && t + k < both.length; k++) if (both[t + k].some(y => matches(x - k, y))) more++
+      if (more >= 3) return 1
+    }
+    return null
+  }
+  const confirmedAs = (t, x) => confirmation(t, x) != null
+  const exactSeconds = (t, x, span = 4) => {
+    let n = 0
+    for (let k = 1; k <= span && t + k < both.length; k++) if (both[t + k].some(y => Math.abs(x - k - y) <= 1)) n++
+    return n
   }
   for (let t = 0; t < both.length; t++) {
     const cands = both[t]
     if (!cands.length) continue
     if (cands.some(x => fitsOne(t, x))) { cur.last = t; continue }
-    const x = cands.find(y => (y >= 3 || (cur && y >= 0)) && confirmedAs(t, y))
+    let x = cands.find(y => (y >= 3 || (cur && y >= 0)) && confirmedAs(t, y))
+    // A reading confirmed only by the lenient matches (a lost tens digit, a stray 1) can be a few
+    // misreads that happen to chain: 29 for 40. A reading in the same second that the next four
+    // seconds follow exactly is the count.
+    if (x != null && exactSeconds(t, x) < 3) x = cands.find(y => y !== x && y >= 3 && confirmedAs(t, y) && exactSeconds(t, y) >= 3) ?? x
+    // A heavy tens digit the OCR keeps skipping turns 38, 37, 36… into 8, 7, 6…: a nine-second
+    // countdown. Where the tens come back now and then (34, then 3, 2, then 31) it was one forty
+    // seconds long. A "3, 2, 1" before the next countdown has no single digits after its first
+    // two-digit reading, and stays what it is.
+    if (x != null && x < 10) {
+      for (const a of [x + 10, x + 20, x + 30, x + 40]) {
+        const full = [], bare = []
+        for (let k = 1; k <= 9 && t + k < both.length; k++) {
+          if (both[t + k].some(y => y >= 10 && Math.abs(a - k - y) <= 1)) full.push(k)
+          else if (both[t + k].some(y => y < 10 && y === (a - k) % 10)) bare.push(k)
+        }
+        if (full.length >= 2 && bare.length >= 3 && bare.some(k => k > full[0])) { x = a; break }
+      }
+    }
     if (x == null) continue
     // A confirmed reading a little off the count (OCR caught the first seconds late, or misread
     // a few): the same countdown, re-anchored. A new countdown is a jump up, or one that starts
     // after the current one is over.
     const e = cur ? cur.top - (t - cur.start) : -1
-    if (cur && e >= 3 && x <= e + 3 && e - x <= 5) { cur.top = x + (t - cur.start); cur.last = t; continue }
+    // A run only a few seconds old whose start was a stray reading (39 read as 29) is moved up to
+    // the count the confirmed reading gives, as far as a countdown of the usual length allows.
+    const young = cur && t - cur.start <= 8 && cur.last - cur.start >= 1
+    if (cur && e >= 3 && ((x <= e + 3 && e - x <= 5) || (young && x > e && x + (t - cur.start) <= 60 && x >= 20))) { cur.top = x + (t - cur.start); cur.last = t; continue }
     // A countdown does not jump down: a lower reading while one is still running is a misread
     // ("3" for 23) — unless the next three seconds carry it on exactly, which a run whose start
     // was misread high (58 for 48) and the real next countdown do, and stray digits do not.
@@ -256,6 +295,7 @@ export function countdownRuns(frames) {
   }).filter(r => r.end - r.start >= MIN_RUN && !(r.end - r.start < 15 && r.top > (r.end - r.start) * 2 + 5))
 }
 const MIN_RUN = 5
+const MIN_CAPTION_SECONDS = 8, MIN_CAPTION_COVER = 0.25
 const MIN_EXERCISE = 10
 
 /**
@@ -282,6 +322,12 @@ export function timerPhases(frames) {
     for (const n of named) weight[n.l.key] = (weight[n.l.key] || 0) + (n.l.conf || 0.5) * Math.min(1, n.l.key.length / 12)
     const first = Object.entries(weight).sort((x, y) => y[1] - x[1])[0][0]
     const mine = named.filter(n => sameName(n.l.key, first) || n.l.key === first)
+    // Over a bare floor the box now and then reads a word out of the picture: a handful of seconds
+    // in a countdown of forty. A caption is on screen for a good part of its countdown.
+    if (mine.length < MIN_CAPTION_SECONDS && mine.length / (b - a) < MIN_CAPTION_COVER) {
+      const sure = mine.reduce((s, n) => s + (n.l.conf || 0), 0) / mine.length
+      if (mine.length < 3 || sure < 75) return null
+    }
     // The fullest reading: a caption that types itself out is read short at first.
     const longest = Math.max(...mine.map(n => n.l.key.length))
     const full = mine.filter(n => n.l.key.length >= longest * 0.9)

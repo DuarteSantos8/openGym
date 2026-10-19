@@ -1,10 +1,10 @@
 {
   "B7-F2UcHmqk": {
-    "frames": 0.901,
-    "sequence": 0.912,
-    "boundaries": 0.936,
-    "startError": 0.098,
-    "sections": 0.435
+    "frames": 0.992,
+    "sequence": 1,
+    "boundaries": 0.981,
+    "startError": 0.118,
+    "sections": 1
   },
   "IEJMnNGAGY4": {
     "frames": 1,
@@ -13,18 +13,18 @@
     "startError": 0
   },
   "OfV5kHgRpmM": {
-    "frames": 0.904,
-    "sequence": 0.889,
-    "boundaries": 0.944,
-    "startError": 0.643,
-    "sections": 0.913
+    "frames": 0.98,
+    "sequence": 0.978,
+    "boundaries": 0.989,
+    "startError": 0.614,
+    "sections": 1
   },
   "UoYLPbPi938": {
-    "frames": 0.877,
-    "sequence": 0.873,
-    "boundaries": 0.774,
-    "startError": 0.073,
-    "sections": 0.526
+    "frames": 0.976,
+    "sequence": 0.964,
+    "boundaries": 0.973,
+    "startError": 0.148,
+    "sections": 1
   },
   "cDq-nFmD0rI": {
     "frames": 0.885,

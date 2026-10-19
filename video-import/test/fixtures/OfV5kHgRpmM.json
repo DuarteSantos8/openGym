@@ -93,15 +93,15 @@
       ["rest",20],
       ["Front Lunges",40],
       ["rest",20],
+      ["Narrow Squat",40],
+      ["rest",20],
+      ["Front Lunges",40],
+      ["rest",20],
       ["Sumo Squat",40],
       ["rest",20],
       ["SL Glute Bridge (right)",40],
       ["rest",20],
       ["SL Glute Bridge (left)",40],
-      ["rest",20],
-      ["Narrow Squat",40],
-      ["rest",20],
-      ["Front Lunges",40],
       ["rest",20],
       ["Sumo Squat",40],
       ["rest",20],
@@ -185,7 +185,15 @@
         "rest": 20,
         "exercises": [
           "Narrow Squat",
-          "Front Lunges",
+          "Front Lunges"
+        ]
+      },
+      {
+        "kind": "interval",
+        "rounds": 2,
+        "work": 40,
+        "rest": 20,
+        "exercises": [
           "Sumo Squat",
           "SL Glute Bridge (right)",
           "SL Glute Bridge (left)"

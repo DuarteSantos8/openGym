@@ -195,7 +195,7 @@ export function classify(blocks, { hints = [], parts = [], cuts = [], timed = fa
     const i = (parts || []).findIndex(p => (s.start + s.end) / 2 >= p.start && (s.start + s.end) / 2 < p.end)
     if (i >= 0) { s.part = i; s.label = parts[i].label }
   }
-  const out = harmonise(pairRounds(mergeIntervals(built)), { cuts, timed })
+  const out = harmonise(pairRounds(mergeIntervals(built)), { cuts, timed }).flatMap(splitBlocks)
   // A section is as many rounds as its exercises were done.
   for (const s of out) if (s.kind === 'interval' && s.rows.length) s.rounds = Math.max(...s.rows.map(r => r.rounds))
   let n = 0
@@ -223,6 +223,13 @@ function rowFrom(blocks, extra) {
   }
 }
 
+/** The same move, except that its left and its right are two: sameName alone takes them for one. */
+const sameMove = (a, b) => {
+  if (!sameName(a, b)) return false
+  const x = sideOf(a), y = sideOf(b)
+  return !(x.side && y.side && x.side !== y.side)
+}
+
 function intervalSection(slice) {
   const works = []
   for (let i = 0; i < slice.length; i++) {
@@ -230,11 +237,11 @@ function intervalSection(slice) {
     const nx = slice[i + 1]
     works.push({ b: slice[i], rest: isRestish(nx) ? nx.dur : 0 })
   }
-  const { rounds, period } = detectRounds(works.map(w => w.b.key))
+  const { rounds, period } = detectRounds(works.map(w => w.b.key), sameMove)
   // One row per exercise, in the order the video first does them.
   const groups = []
   for (const w of works) {
-    const g = groups.find(x => sameName(x.key, w.b.key))
+    const g = groups.find(x => sameMove(x.key, w.b.key))
     if (g) g.items.push(w); else groups.push({ key: w.b.key, items: [w] })
   }
   // A short rest is the break between intervals; a longer one (after the last exercise of a
@@ -259,6 +266,40 @@ function intervalSection(slice) {
     roundRest: roundRest.length ? snapSec(median(roundRest)) : 0,
     rows
   }
+}
+
+/**
+ * An interval section whose moves are two blocks done one after the other, each in rounds of its
+ * own with other moves — [A B A B C D E C D E] — is two sections, [A B] twice and [C D E] twice, not
+ * five moves in two rounds. Split where the names before the cut never come back after it and each
+ * side repeats; a section that is one block, or whose moves do not repeat, stays as it is.
+ */
+export function splitBlocks(section) {
+  if (section.kind !== 'interval') return [section]
+  const seq = section.rows.flatMap(r => (r.occurrences || []).map(o => ({ start: o.start, row: r }))).sort((a, b) => a.start - b.start)
+  const keys = seq.map(x => x.row.key)
+  const repeats = ks => ks.length >= 4 && detectRounds(ks, sameMove).period > 0
+  const split = (from) => {
+    for (let cut = from + 4; cut <= keys.length - 4; cut++) {
+      const head = keys.slice(from, cut), tail = keys.slice(cut)
+      if (!repeats(head) || !repeats(tail)) continue
+      if (head.some(h => tail.some(t => sameMove(h, t)))) continue
+      return [cut, ...split(cut)]
+    }
+    return []
+  }
+  const cuts = split(0)
+  if (!cuts.length) return [section]
+  const bounds = [0, ...cuts, seq.length]
+  return bounds.slice(0, -1).map((a, i) => {
+    const part = seq.slice(a, bounds[i + 1])
+    const rows = section.rows.filter(r => part.some(x => x.row === r))
+    const last = part[part.length - 1]
+    return {
+      ...section, rows, start: part[0].start, end: i === bounds.length - 2 ? section.end : last.start + Math.max(...rows.map(r => r.sec || 0)),
+      rounds: Math.max(...rows.map(r => r.rounds || 1))
+    }
+  })
 }
 
 function looseSection(kind, blocks) {
