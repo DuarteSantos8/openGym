@@ -75,9 +75,23 @@ it('does not restore or complete an automatic hold after a reload', () => {
   expect(restoreWork()).toBe(false)
   expect(state().entries[0].sets[0].done).toBe(false)
 })
-it('stops its rest when unmounted', () => {
+it('keeps its rest when leaving the workout without starting another set', () => {
   start(); advance(2000)
+  act(() => useUI.getState().addRest(30))
+  const endsAt = useUI.getState().timer.endsAt
   act(() => root.render(null))
+  expect(useUI.getState().timer?.endsAt).toBe(endsAt)
+  advance(5000)
+  expect(useUI.getState().timer?.left).toBe(26)
+  advance(26000)
+  expect(useUI.getState().timer?.ready).toBe(true)
+  expect(useUI.getState().work).toBeNull()
+  expect(state().entries[1].sets[0].done).toBe(false)
+})
+
+it('still stops its rest when Stop intervals is explicitly pressed', () => {
+  start(); advance(2000)
+  act(() => el.querySelector('button').click())
   expect(useUI.getState().timer).toBeNull()
   advance(5000)
   expect(state().entries[1].sets[0].done).toBe(false)
