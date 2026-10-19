@@ -1,9 +1,9 @@
 {
   "B7-F2UcHmqk": {
-    "frames": 0.992,
+    "frames": 0.997,
     "sequence": 1,
-    "boundaries": 0.981,
-    "startError": 0.118,
+    "boundaries": 1,
+    "startError": 0.135,
     "sections": 1
   },
   "IEJMnNGAGY4": {
@@ -20,10 +20,10 @@
     "sections": 1
   },
   "UoYLPbPi938": {
-    "frames": 0.988,
+    "frames": 0.993,
     "sequence": 0.982,
-    "boundaries": 0.973,
-    "startError": 0.148,
+    "boundaries": 0.991,
+    "startError": 0.109,
     "sections": 1
   },
   "_G5wIxplwB8": {
@@ -101,10 +101,10 @@
     "sections": 1
   },
   "t-3H2KnjH6E": {
-    "frames": 0.396,
-    "sequence": 0.385,
-    "boundaries": 0.341,
-    "startError": 0.467,
-    "sections": 0.455
+    "frames": 0.7,
+    "sequence": 0.611,
+    "boundaries": 0.725,
+    "startError": 0.4,
+    "sections": 1
   }
 }

@@ -19,7 +19,7 @@
 //  5. Runs shorter than MIN_BLOCK seconds are noise: a caption caught mid-transition. They are
 //     folded into the block before them.
 
-import { normName, restOf, parseTimer, mode, sameName, cleanCaption, repairCaption, editDistance } from './text.js'
+import { normName, restOf, parseTimer, mode, sameName, cleanCaption, repairCaption, editDistance, median } from './text.js'
 
 export const MIN_BLOCK = 3       // seconds: anything shorter is a transition, not an exercise
 const BRIDGE = 2                 // seconds without a reading that a run may span
@@ -37,7 +37,8 @@ function labelOf(f) {
   // instructor's arm, a logo half in the box. Below MIN_CONF it counts as nothing on screen.
   // A name has a word: three letters in a row at least. "Al-Ul", "V;;ﬁ", "Ey Ww" are the edge of a
   // frame or a shadow read as text, not a name.
-  const hasWord = /\p{L}{3,}/u.test(raw)
+  // A hashtag, a handle or an ask to subscribe is the channel talking, not a move.
+  const hasWord = /\p{L}{3,}/u.test(raw) && !/[#@]|\.com\b|subscribe|follow us|like\s*&|juice\s*and\s*toya/i.test(raw)
   if (!hasWord || key.replace(/\s/g, '').length < MIN_CHARS || (f.nameConf != null && Number(f.nameConf) < MIN_CONF)) return { kind: 'none', key: '', raw: '', timer, conf: 0 }
   // "NEXT" on its own (the name it announces read elsewhere, or not at all) names nothing.
   if (/^(n|m)e[xk]t?$|^up next$|^next up$|^nex$/.test(key) || (key.length === 4 && editDistance(key, 'next') <= 1)) return { kind: 'none', key: '', raw: '', timer, conf: 0 }
@@ -268,7 +269,7 @@ export function countdownRuns(frames) {
     // A run only a few seconds old whose start was a stray reading (39 read as 29) is moved up to
     // the count the confirmed reading gives, as far as a countdown of the usual length allows.
     const young = cur && t - cur.start <= 8 && cur.last - cur.start >= 1
-    if (cur && e >= 3 && ((x <= e + 3 && e - x <= 5) || (young && x > e && x + (t - cur.start) <= 60 && x >= 20))) { cur.top = x + (t - cur.start); cur.last = t; continue }
+    if (cur && e >= 3 && ((x <= e + 3 && e - x <= 5 && (e - x <= 1 || exactSeconds(t, x) >= 3)) || (young && x > e && x + (t - cur.start) <= 60 && x >= 20))) { cur.top = x + (t - cur.start); cur.last = t; continue }
     // A countdown does not jump down: a lower reading while one is still running is a misread
     // ("3" for 23) — unless the next three seconds carry it on exactly, which a run whose start
     // was misread high (58 for 48) and the real next countdown do, and stray digits do not.
@@ -287,6 +288,106 @@ export function countdownRuns(frames) {
     const back = Math.min(usual - r.top, room)
     if (back > 0) { r.start -= back; r.top += back }
   })
+  // A countdown caught late by ten seconds or more (the first digits of a number on a floor ring
+  // are the ones the OCR loses) is longer than it looks if the seconds before it, which read as
+  // noise, agree with the count it would have had: the last digit, or the whole number, again and
+  // again. The lengths to try are the ones the video's other countdowns have.
+  const lengths = {}
+  for (const r of runs) { const L = r.top + 1; if (L >= 20) lengths[L] = (lengths[L] || 0) + 1 }
+  const usual = Object.keys(lengths).map(Number).filter(L => lengths[L] >= 3).sort((a, b) => a - b)
+  const agrees = (t, p) => both[t].some(y => y === p || (y < 10 && y === p % 10) || (y >= 10 && Math.abs(y - p) <= 1))
+  runs.forEach((r, i) => {
+    const len = r.top + 1
+    let p = i - 1
+    while (p >= 0 && runs[p].top < 12 && r.start - (runs[p].start + runs[p].top + 1) < 40) p--
+    const floor = p >= 0 ? runs[p].start + runs[p].top + 1 : 0
+    let best = null
+    for (const L of usual) {
+      const d = L - len
+      if (d < 6 || r.start - d < floor) continue
+      let seen = 0, hit = 0
+      for (let t = r.start - d; t < r.start; t++) {
+        if (!both[t].length) continue
+        seen++
+        if (agrees(t, r.top + (r.start - t))) hit++
+      }
+      if (hit >= 4 && hit >= seen * 0.45 && (!best || hit / d > best.score)) best = { d, score: hit / d }
+    }
+    if (best) { r.start -= best.d; r.top += best.d }
+  })
+  // Workouts keep a beat: each move starts a whole period after the one before (40 s on and 20 s
+  // off, every 60 s). Where most of a part's work countdowns sit on one beat, the others — caught
+  // late, or with a misread number — are on it too: they end where the beat puts them (within a few
+  // seconds of where they were read to end) and are as long as the whole ones. A long rest (a
+  // minute and more) starts a new part and may shift the beat.
+  const workLike = r => r.top + 1 >= 25 && r.top + 1 <= 55
+  const partsOf = []
+  {
+    let cur = []
+    for (const r of runs) {
+      if (r.top + 1 >= 50 && cur.length) { partsOf.push(cur); cur = [] }
+      if (workLike(r)) cur.push(r)
+    }
+    if (cur.length) partsOf.push(cur)
+  }
+  const beats = []
+  for (const part of partsOf) {
+    if (part.length < 6) continue
+    const ends = part.map(r => r.start + r.top + 1)
+    const diffs = ends.slice(1).map((e, k) => e - ends[k]).filter(d => d >= 40 && d <= 200)
+    if (diffs.length < 5) continue
+    // The period: a whole number of seconds a person would set (60, not 61).
+    const beat = Math.round(median(diffs) / 5) * 5
+    if (beat < 40 || beat > 100) continue
+    const within = diffs.filter(d => { const k = Math.max(1, Math.round(d / beat)); return Math.abs(d - k * beat) <= 6 }).length
+    if (within < diffs.length * 0.6) continue
+    // The beat's phase: the most common remainder (a few seconds either side count as one).
+    const rem = ends.map(e => e % beat)
+    let phase = 0, most = -1
+    for (const c of rem) {
+      const n = rem.filter(x => Math.min(Math.abs(x - c), beat - Math.abs(x - c)) <= 4).length
+      if (n > most) { most = n; phase = c }
+    }
+    if (most < part.length * 0.5) continue
+    // The beat's phase, centred on the ends that sit near it; whole is the long end of what ends there.
+    const near = part.map(r => r.start + r.top + 1).filter(e => { const o = ((e - phase) % beat + beat) % beat; return Math.min(o, beat - o) <= 5 })
+    const toOff = e => { const o = ((e - phase) % beat + beat) % beat; return o > beat / 2 ? o - beat : o }
+    // Countdowns read whole end where the beat does; the ones read short end a little early.
+    const full = part.filter(r => r.top + 1 >= 38 && Math.abs(toOff(r.start + r.top + 1)) <= 6).map(r => r.start + r.top + 1)
+    // With none read whole, the ones read least short are the best guess: the late end of the spread.
+    const upper = list => list.slice().sort((a, b) => a - b)[Math.min(list.length - 1, Math.floor(list.length * 0.8))]
+    const centre = phase + Math.round(full.length >= 2 ? median(full.map(toOff)) : upper(near.map(toOff)))
+    const whole = part.filter(r => { const o = (((r.start + r.top + 1) - centre) % beat + beat) % beat; return Math.min(o, beat - o) <= 5 && r.top + 1 >= 35 }).map(r => r.top + 1)
+    if (whole.length < 2) continue
+    // The longest of them, as a length a person would set (40, not 41 or 39).
+    const L = Math.round(Math.max(...whole.filter(x => x <= 62)) / 5) * 5
+    beats.push({ part, beat, phase: centre, L })
+  }
+  // One workout, one work length: a part whose countdowns were all read short takes the longest
+  // length the other parts found, when it is within a few seconds of its own.
+  const globalL = beats.length ? Math.max(...beats.map(b => b.L)) : 0
+  for (const { part, beat, phase, L: own } of beats) {
+    const L = own >= globalL - 6 ? globalL : own
+    // The ends are read well (a countdown is read best as it runs out); the starts are what a floor
+    // ring loses. A run shorter than the whole ones, ending on the beat, began a whole length before.
+    for (const r of part) {
+      const e0 = r.start + r.top + 1
+      const g = phase + beat * Math.round((e0 - phase) / beat)
+      if (Math.abs(g - e0) > 7 || e0 - r.start >= L - 2) continue
+      const start = g - L
+      // A few seconds of "5, 4, 3" in front of it is noise it swallows, not a countdown in the way.
+      const at = runs.indexOf(r)
+      let p = at - 1
+      while (p >= 0 && runs[p].top < 12 && runs[p].start >= start - 3) p--
+      const prev = runs[p]
+      if (prev && start < prev.start + prev.top + 1 - 2) continue
+      for (let k = at - 1; k > p; k--) runs[k].drop = true
+      // ...and the same noise at its tail, where the countdown it was cut short by now runs on.
+      for (let k = at + 1; k < runs.length && runs[k].start < g + 3; k++) if (runs[k].top < 12) runs[k].drop = true
+      r.start = start; r.top = L - 1
+    }
+  }
+  for (let k = runs.length - 1; k >= 0; k--) if (runs[k].drop) runs.splice(k, 1)
   return runs.map((r, i) => {
     const next = runs[i + 1]?.start ?? both.length
     // It reaches zero `top` seconds after it showed `top`, and is gone a second later.
@@ -367,8 +468,10 @@ export function timerPhases(frames) {
   const bare = j => {
     const q = runs[j]
     if (!q) return false
-    for (let t = q.start; t < q.start + len(q) / 2; t++) if (labels[t]?.key) return false
-    return true
+    // A word or two read out of the picture now and then (a few seconds, not a caption) is nothing.
+    let named = 0
+    for (let t = q.start; t < q.start + len(q) / 2; t++) if (labels[t]?.key) named++
+    return named <= Math.max(2, len(q) * 0.1)
   }
   // Which of named-then-bare it is, when lengths can't say (30 s on, 30 s off): a workout ends
   // on a move, not on a rest. When the last countdown has its name on screen from its start,
