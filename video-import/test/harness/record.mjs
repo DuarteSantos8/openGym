@@ -2,13 +2,14 @@
 // through src/cli.js. Needs YouTube, ffmpeg and the OCR, so it runs in the worker image:
 //
 //   docker compose --profile video-import run --rm -v "$PWD/video-import/test:/app/test" video-import \
-//     node test/harness/record.mjs [--status calibrated] [--channel "Rowan Row"] [--rois <file>] [<videoId>…]
+//     node test/harness/record.mjs [--status calibrated] [--channel "Rowan Row"] [--rois <file>] [--again] [<videoId>…]
 //
 // --rois: the boxes the app saved per channel, data/video-import/<user id>.json (mount ./data).
 //
 // A video read from its chapters alone (no --video) still goes through the frames, so every
 // fixture has readings. A failure is logged and the next video goes on. The fixtures come out
-// unreviewed: watch each video and correct `expected` (test/fixtures/README.md).
+// unreviewed: watch each video and correct `expected` (test/fixtures/README.md). --again records
+// the named videos even when they have a fixture (new boxes): a reviewed answer is kept.
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -26,7 +27,7 @@ const ids = args.filter((a, i) => !a.startsWith('--') && !['--status', '--channe
 const todo = corpus.filter(v => (ids.length ? ids.includes(v.id) : v.status !== 'skip')
   && (!opt('--status') || v.status === opt('--status'))
   && (!opt('--channel') || v.channel === opt('--channel'))
-  && !fs.existsSync(path.join(DIR, `${v.id}.json`)))
+  && (args.includes('--again') && ids.includes(v.id) || !fs.existsSync(path.join(DIR, `${v.id}.json`))))
 
 console.error(`${todo.length} video(s) to record`)
 const failed = []
@@ -38,6 +39,6 @@ for (const v of todo) {
   if (v.roi?.timer) a.push('--timer', v.roi.timer)
   if (opt('--rois')) a.push('--rois', path.resolve(opt('--rois')))
   const r = spawnSync('node', a, { cwd: root, stdio: 'inherit' })
-  if (r.status !== 0 || !fs.existsSync(path.join(DIR, `${v.id}.json`))) failed.push(v.id)
+  if (r.status !== 0) failed.push(v.id)
 }
 if (failed.length) { console.error(`\nno fixture for: ${failed.join(' ')} (stills in test/.record/<id>)`); process.exitCode = 1 }

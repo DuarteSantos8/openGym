@@ -3,11 +3,11 @@
   "videos": [
     { "id": "B7-F2UcHmqk", "channel": "Juice & Toya", "status": "calibrated", "look": "62 min dumbbells, 5 groups × 5 × 2 rounds, names only on NEXT screens, timer in a ring" },
     { "id": "UoYLPbPi938", "channel": "Juice & Toya", "status": "calibrated", "look": "work timer on the floor, rest timer elsewhere" },
-    { "id": "cDq-nFmD0rI", "channel": "Rowan Row", "status": "calibrated", "look": "captions in capitals, moves sharing all but their first word" },
+    { "id": "cDq-nFmD0rI", "channel": "Rowan Row", "status": "calibrated", "look": "captions in capitals, moves sharing all but their first word; the move (or REST) under a progress bar top right, timer in a ring beside it, the next move bottom left in the last seconds of the rest", "roi": { "name": "0.62,0.095,0.27,0.07;0.011,0.888,0.299,0.113", "timer": "0.885,0.01,0.11,0.2" } },
     { "id": "_G5wIxplwB8", "channel": "Rowan Row", "status": "calibrated", "look": "30/30 no repeat, no chapters" },
     { "id": "OfV5kHgRpmM", "channel": "Oliver Sjostrom", "status": "calibrated", "look": "(R)/(L) sides in brackets" },
     { "id": "IEJMnNGAGY4", "channel": "Chris & Edi", "status": "calibrated", "look": "strength sets 50/30, circuits 40-45/25, chapter per exercise" },
-    { "id": "t-3H2KnjH6E", "channel": null, "status": "calibrated", "look": "one of the four calibration videos of 800538e5" },
+    { "id": "t-3H2KnjH6E", "channel": "Juice & Toya", "status": "calibrated", "look": "kettlebells; the work timer in a dashed ring on the floor that moves with the camera, the rest timer in a ring top left", "roi": { "name": "0.374,0.885,0.246,0.078", "timer": "0.45,0.78,0.4,0.21;0,0.02,0.16,0.26" } },
 
     { "id": "qf37QFT08YQ", "channel": "Juice & Toya", "status": "candidate", "look": "20 min dumbbells no repeat, 40/20, one longer rest halfway" },
     { "id": "lp2pYv-IJMM", "channel": "Juice & Toya", "status": "candidate", "look": "30 min cardio HIIT, no equipment" },

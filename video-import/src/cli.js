@@ -74,16 +74,20 @@ try {
     if (fixture) {
       const ver = await run(ENGINE === 'paddle' ? 'python3' : 'tesseract', ENGINE === 'paddle' ? ['-c', 'import paddleocr; print(paddleocr.__version__)'] : ['--version']).then(r => (r.stdout || r.stderr || '').split('\n')[0].trim()).catch(() => '')
       fs.mkdirSync(path.dirname(fixture), { recursive: true })
+      // Recording a reviewed video again (new boxes, a new OCR): new readings, the same answer.
+      let kept = null
+      try { const old = JSON.parse(fs.readFileSync(fixture, 'utf8')); if (old.expected?.reviewed) kept = old } catch {}
+      if (kept) log('keeping the reviewed expected answer and notes of the fixture being replaced')
       fs.writeFileSync(fixture, fixtureJson({
         version: 1,
         source: { videoId: yt.id, url: yt.url, title: source.title, channel: source.channel, channelId: source.channelId, duration: source.duration },
         capture: { engine: ENGINE, engineVersion: ver, roi, date: new Date().toISOString().slice(0, 10) },
         inputs: { hints: meta.hints || [], parts: meta.parts || [] },
-        expected: { reviewed: false, timeline: timelineOf(res.draft, res.frames.length), sections: sectionsOf(res.draft) },
-        notes: '',
+        expected: kept?.expected || { reviewed: false, timeline: timelineOf(res.draft, res.frames.length), sections: sectionsOf(res.draft) },
+        notes: kept?.notes || '',
         frames: res.frames
       }))
-      log(`fixture written to ${fixture} — correct "expected" by watching the video, then set reviewed: true`)
+      log(`fixture written to ${fixture}` + (kept ? '' : ' — correct "expected" by watching the video, then set reviewed: true'))
     }
   }
   log(`done in ${Math.round((Date.now() - t0) / 1000)} s`)
@@ -119,7 +123,7 @@ function fixtureJson(f) {
   const { frames, expected, ...head } = f
   const body = JSON.stringify(head, null, 2).replace(/\n}$/, '')
   const tl = expected.timeline.map(x => '      ' + JSON.stringify(x)).join(',\n')
-  const secs = JSON.stringify(expected.sections, null, 2).replace(/\n/g, '\n    ')
+  const secs = expected.sections ? JSON.stringify(expected.sections, null, 2).replace(/\n/g, '\n    ') : null
   const fr = frames.map(x => '    ' + JSON.stringify(x)).join(',\n')
-  return `${body},\n  "expected": {\n    "reviewed": ${expected.reviewed},\n    "timeline": [\n${tl}\n    ],\n    "sections": ${secs}\n  },\n  "frames": [\n${fr}\n  ]\n}\n`
+  return `${body},\n  "expected": {\n    "reviewed": ${expected.reviewed},\n    "timeline": [\n${tl}\n    ]${secs ? `,\n    "sections": ${secs}` : ''}\n  },\n  "frames": [\n${fr}\n  ]\n}\n`
 }

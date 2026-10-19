@@ -29,7 +29,8 @@ Pass `--rois data/video-import/<user id>.json` (and mount `./data`) to use the b
 for each channel in the app; that file is where the API keeps them. Otherwise the suggested
 name/timer boxes are used, unless the corpus entry has `"roi": { "name": "x,y,w,h",
 "timer": "x,y,w,h" }` (fractions of the frame, as `--name`/`--timer` take them). The stills
-in `test/.record/<id>` (gitignored) show whether the boxes were right.
+in `test/.record/<id>` (gitignored) show whether the boxes were right. With new boxes, record
+again with `record.mjs --again <id>`: a reviewed `expected` and its notes are kept.
 
 1. The fixture comes out with `expected` pre-filled **from the current draft** and
    `reviewed: false`. Unreviewed fixtures are skipped by the test.
