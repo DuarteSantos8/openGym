@@ -911,10 +911,6 @@ body.chips-dragging *{cursor:inherit}
 .music-dock{position:fixed;inset-inline-start:12px;inset-inline-end:12px;bottom:calc(84px + var(--sab));z-index:45;animation:slideup var(--med) var(--ease)}
 .music-dock .musicbar{margin:0;background:color-mix(in srgb,var(--surface) 97%,transparent);-webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);box-shadow:0 10px 30px -10px rgba(0,0,0,.55)}
 body.has-music-dock #app{padding-bottom:calc(150px + var(--sab))}
-@media (min-width:1000px){
-  .music-dock{left:50%;right:auto;margin-left:-260px;width:520px;bottom:112px}
-  body.has-music-dock #app{padding-bottom:calc(200px + var(--sab))}
-}
 .exmedia{position:relative;border-radius:var(--r-lg);overflow:hidden;background:#fff;margin-bottom:12px}
 .exmedia img{width:100%;height:320px;object-fit:contain;display:block}
 .exmedia .gifhint,.exmedia .giftoggle{
@@ -1966,6 +1962,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   body.no-tabbar #timer{left:50%;right:auto;bottom:16px;border-radius:var(--r-xl);padding-bottom:10px;box-shadow:0 12px 40px -10px rgba(0,0,0,.5)}
   .exmedia img,.exmedia video{height:380px}
   .hm-wrap{display:flex;flex-direction:column;align-items:center}
+  /* The docked music bar, beside the rest bar's place. */
+  .music-dock{left:50%;right:auto;margin-left:-260px;width:520px;bottom:112px}
+  body.has-music-dock #app{padding-bottom:calc(200px + var(--sab))}
 }
 
 /* ------------------------------------------------------- gym check-in -- */
