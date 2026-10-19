@@ -423,6 +423,27 @@ describe('list_workouts', () => {
     })
   })
 
+  // A unilateral set is one row carrying both sides, and setsDone() counts each side that was
+  // done, so the planned count has to count sides too — the app pairs it with setUnitsTotal().
+  // Counting rows read a fully done per-side session as twice the plan (#691).
+  test('a per-side session counts planned sets in the same units as done ones', () => {
+    const CURL = '0294'
+    const side = rDone => ({
+      w: 20, r: 16, done: rDone,
+      sides: { L: { w: 20, r: 8, done: true }, R: { w: 20, r: 8, done: rDone } }
+    })
+    S.workouts = [{
+      id: 'w1', d: '2026-07-06', start: Date.parse('2026-07-06T10:00:00'), end: Date.parse('2026-07-06T11:00:00'), name: 'S',
+      entries: [{ id: CURL, target: { sets: 3, reps: 8, weight: 20, perSide: true }, sets: [side(true), side(true), side(false)] }]
+    }]
+    _seedStateForTests(S)
+    const listed = call('list_workouts').workouts[0]
+    expect(listed.sets_done).toBe(5)
+    expect(listed.sets_planned).toBe(6)
+    expect(listed.sets_ratio).toBe('5/6')
+    expect(call('get_workout', { workout_id: 'w1' }).sets_planned).toBe(6)
+  })
+
   test('date range filter narrows results (closed interval, both endpoints inclusive)', () => {
     const all = call('list_workouts')
     expect(all.workouts.length).toBeGreaterThan(2)
