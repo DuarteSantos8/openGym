@@ -19,7 +19,7 @@
 //  5. Runs shorter than MIN_BLOCK seconds are noise: a caption caught mid-transition. They are
 //     folded into the block before them.
 
-import { normName, restOf, parseTimer, mode, sameName, cleanCaption, repairCaption, snapToLibrary, plausibleCaption, editDistance, median } from './text.js'
+import { normName, restOf, parseTimer, mode, sameName, cleanCaption, repairCaption, snapToLibrary, plausibleCaption, knownShare, editDistance, median } from './text.js'
 
 export const MIN_BLOCK = 3       // seconds: anything shorter is a transition, not an exercise
 const BRIDGE = 2                 // seconds without a reading that a run may span
@@ -456,7 +456,8 @@ export function timerPhases(frames) {
     // The caption that speaks loudest: seen most, read surest, longest — not merely the most
     // frequent, which a few seconds of noise read as "hfli" can be.
     const weight = {}
-    for (const n of named) weight[n.l.key] = (weight[n.l.key] || 0) + (n.l.conf || 0.5) * Math.min(1, n.l.key.length / 12)
+    // Words the library knows count for more: a reading seen less often but made of real words beats a garble seen more.
+    for (const n of named) weight[n.l.key] = (weight[n.l.key] || 0) + (n.l.conf || 0.5) * Math.min(1, n.l.key.length / 12) * (0.35 + knownShare(n.l.key))
     const first = Object.entries(weight).sort((x, y) => y[1] - x[1])[0][0]
     const mine = named.filter(n => sameName(n.l.key, first) || n.l.key === first)
     // Over a bare floor the box now and then reads a word out of the picture: a handful of seconds

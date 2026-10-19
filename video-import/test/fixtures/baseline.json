@@ -7,7 +7,7 @@
     "sections": 1
   },
   "IEJMnNGAGY4": {
-    "frames": 1,
+    "frames": 0.998,
     "sequence": 1,
     "boundaries": 1,
     "startError": 0.143
@@ -34,8 +34,8 @@
     "sections": 1
   },
   "cDq-nFmD0rI": {
-    "frames": 0.923,
-    "sequence": 0.906,
+    "frames": 0.981,
+    "sequence": 1,
     "boundaries": 1,
     "startError": 0,
     "sections": 1

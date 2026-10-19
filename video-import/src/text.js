@@ -217,12 +217,14 @@ export function sameName(a, b) {
 const SIDE_TOKEN = /^[([{]\s*(r|l|right|left)\s*[)\]}]/i
 
 export function cleanCaption(raw) {
+  // A set count in front ("5 x PUSH UPS") is not part of the name.
+  raw = String(raw || '').replace(/^\s*\S?\s*\d+\s*[xX×]\s+/, '')
   // A euro sign or a cent sign in a word is a C; a token of nothing but marks is a bar or a dot of the
   // picture; a first word a letter or two off "NEXT" (NEXTI|, Neat)) is the NEXT label.
   raw = String(raw || '').replace(/[€¢]/g, 'C').split(/\s+/).filter(w => /[\p{L}\p{N}]/u.test(w) || w === '&' || w === '+' || w === '/').map((w, k) => (k === 0 && /\p{L}{3}/u.test(w) && editDistance(w.toLowerCase().replace(/[^a-z]/g, ''), 'next') <= 1 && /^[A-Za-z]{3,5}[^A-Za-z]*$/.test(w) ? 'NEXT' : w)).join(' ')
   // A bracket the OCR read as a digit starts a note ("9ncar narmal 2ncor"): the caption ends before it.
   raw = String(raw || '').split(/\s+/).reduce((acc, w, k, all) => (acc.cut || (k >= 2 && /^\d\p{L}{3,}$/u.test(w)) ? { ...acc, cut: true } : { ...acc, words: [...acc.words, w] }), { words: [], cut: false }).words.join(' ')
-    .replace(/(\p{L})\1{2,}/gu, '$1')
+    .replace(/(\p{L})\1{2,}/giu, '$1')
   const words = String(raw || '').trim().split(/\s+/).filter(Boolean)
   const letters = w => (w.match(/\p{L}/gu) || []).length
   // A capital on its own in front of a caption in capitals is a word of it ("V UPS", "X JUMPS"),
@@ -453,4 +455,14 @@ export function snapToLibrary(text) {
   // The library's words, in the caption's own case.
   const upper = text === String(text).toUpperCase()
   return upper ? result.toUpperCase() : result.replace(/\b\w/g, c => c.toUpperCase())
+}
+
+
+/** The share of a caption's words (three letters or more) that the exercise library knows: 1 for "push ups to downwards dog", near 0 for "pushups to nawnwarns nac". */
+export function knownShare(text) {
+  const words = (String(text || '').toLowerCase().match(/\p{L}{3,}/gu) || []).filter(w => !PROTECTED.has(w) && !FUNCTION_WORDS.has(w))
+  if (!words.length) return 0
+  const known = libraryWords()
+  const knows = w => known.has(w) || known.has(w.replace(/s$/, '')) || known.has(w.replace(/es$/, '')) || known.has(w + 's')
+  return words.filter(knows).length / words.length
 }
