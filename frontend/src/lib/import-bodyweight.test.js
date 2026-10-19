@@ -5,8 +5,8 @@ const record = (day, value, unit) => `<Record type="HKQuantityTypeIdentifierBody
 
 describe('Apple Health body-weight units', () => {
   it.each([
-    ['kg', [80, 81.6]],
-    ['lb', [176.4, 180]],
+    ['kg', [80, 81.65]],
+    ['lb', [176.37, 180]],
   ])('converts each record into %s independently', (unit, expected) => {
     const parsed = parseBodyweight(record('01', 80, 'kg') + record('02', 180, 'lb'), { unit })
     expect(parsed.bodyweight.map(b => b.w)).toEqual(expected)
@@ -20,8 +20,8 @@ describe('Apple Health body-weight units', () => {
   })
 
   it('preserves conversion for single-unit XML and CSV exports', () => {
-    expect(parseBodyweight(record('01', 180, 'lb')).bodyweight[0].w).toBe(81.6)
-    expect(parseBodyweight('Date,Weight (lbs)\n2026-09-01,180').bodyweight[0].w).toBe(81.6)
+    expect(parseBodyweight(record('01', 180, 'lb')).bodyweight[0].w).toBe(81.65)
+    expect(parseBodyweight('Date,Weight (lbs)\n2026-09-01,180').bodyweight[0].w).toBe(81.65)
     expect(parseBodyweight(record('01', 80, 'kg')).converted).toBe(false)
   })
 })

@@ -347,6 +347,12 @@ const effortNum = (raw, zeroMeansRated) => {
   return Math.min(10, Math.round(n * 100) / 100)
 }
 const LB_TO_KG = 0.45359237
+// A converted weight is kept to the hundredth, which Weight decimals can show (#139): 45 lb is
+// 20.41 kg, and a tenth would make it 20.4, which reads back as 44.97 lb. A weight typed into the
+// app is never rounded at all, so an import shouldn't be the one place that drops precision.
+export const roundWeight = w => Math.round(w * 100) / 100
+// Hevy's CSV writes a line break inside a note as the two characters `\n`.
+const hevyNote = s => s.replace(/\\r\\n|\\n/g, '\n')
 // Past these a cell is broken, not a record (the heaviest lifts ever logged stay well under).
 const MAX_KG = 2000, MAX_REPS = 1000, MAX_KM = 1000, MAX_BODY_KG = 650
 const p2 = n => String(n).padStart(2, '0')
@@ -523,7 +529,7 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
 
     const reps = Math.round(num(cell(r, 'reps')))
     const secs = num(cell(r, 'seconds'))
-    const setNote = cell(r, 'note')
+    const setNote = source === 'Hevy' ? hevyNote(cell(r, 'note')) : cell(r, 'note')
     const mins = secs > 0 ? Math.round(secs / 60 * 10) / 10 : toMinutes(cell(r, 'time'))
     const km = map.distanceKm !== undefined && cell(r, 'distanceKm')
       ? num(cell(r, 'distanceKm'))
@@ -607,7 +613,7 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
       byDate.set(sessionKey, day)
     }
     if (!day.name) day.name = cell(r, 'workoutName') || ''
-    if (!day.note) day.note = cell(r, 'workoutNote')
+    if (!day.note) day.note = source === 'Hevy' ? hevyNote(cell(r, 'workoutNote')) : cell(r, 'workoutNote')
     // The end is kept as time since the start day's midnight, so a session that runs past
     // midnight ends on the next day's clock plus 24 h rather than before it began.
     if (map.endTime !== undefined) { const e = parseWhen(cell(r, 'endTime')); if (e && e.t != null) day.end = e.t + daysBetween(when.d, e.d) * 86400000 }
@@ -640,8 +646,8 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
   // "185 lb" into 185 kg.
   const fileUnit = sawLb && !sawKg ? 'lb' : sawKg && !sawLb ? 'kg' : ''
   const mixedUnits = sawLb && sawKg
-  const toKg = x => Math.round(x * LB_TO_KG * 10) / 10
-  const toLb = x => Math.round(x / LB_TO_KG * 10) / 10
+  const toKg = x => roundWeight(x * LB_TO_KG)
+  const toLb = x => roundWeight(x / LB_TO_KG)
   // A row without its own unit follows the file's, and a file that says nothing is taken
   // to already be in the profile's unit.
   const convRow = s => {
@@ -752,7 +758,7 @@ export function parseBodyweight(text, { unit = 'kg' } = {}) {
     const w = sourceUnit && sourceUnit !== unit
       ? (sourceUnit === 'lb' ? b.w * LB_TO_KG : b.w / LB_TO_KG)
       : b.w
-    return Math.round(w * 10) / 10
+    return roundWeight(w)
   }
   const dates = [...out.keys()].sort()
   return {

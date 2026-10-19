@@ -9,7 +9,7 @@ import { EXIDX, canonicalExId } from './exercises.js'
 import { uid } from './format.js'
 import { isWarmupRow } from './workout-model.js'
 import { HEVY_ID_MAP, HEVY_TITLE_MAP } from './hevy-id-map.js'
-import { daysBetween, importId, priorCustom } from './import-csv.js'
+import { daysBetween, importId, priorCustom, roundWeight } from './import-csv.js'
 
 export { HEVY_ID_MAP, HEVY_TITLE_MAP }
 export const HEVY_API = 'https://api.hevyapp.com'
@@ -211,8 +211,8 @@ function makeResolver(templates, customEx) {
 
 const toProfileWeight = (wKg, unit) => {
   if (wKg == null || !isFinite(wKg)) return 0
-  if (unit === 'lb') return Math.round(wKg / LB_TO_KG * 10) / 10
-  return Math.round(wKg * 10) / 10
+  if (unit === 'lb') return roundWeight(wKg / LB_TO_KG)
+  return roundWeight(wKg)
 }
 
 /**
@@ -449,8 +449,7 @@ export function parseHevyBodyweight(measurements, { unit = 'kg' } = {}) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) continue
     let w = Number(m.weight_kg)
     if (!isFinite(w) || w <= 0) continue
-    if (unit === 'lb') w = Math.round(w / LB_TO_KG * 10) / 10
-    else w = Math.round(w * 10) / 10
+    w = roundWeight(unit === 'lb' ? w / LB_TO_KG : w)
     const t = m.created_at ? new Date(m.created_at).getTime() : new Date(d + 'T12:00:00').getTime()
     out.set(d, { d, w, t: isFinite(t) ? t : new Date(d + 'T12:00:00').getTime() })
   }

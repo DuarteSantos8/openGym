@@ -135,6 +135,12 @@ describe('parseHevyWorkouts', () => {
     expect(parsed.unmatchedNames).toContain('My Invented Landmine Twist')
   })
 
+  it('keeps a weight to the hundredth: 20.41 kg is 45 lb', () => {
+    const w = { ...WORKOUT, exercises: [{ ...WORKOUT.exercises[1], sets: [{ ...WORKOUT.exercises[1].sets[1], weight_kg: 20.41 }] }] }
+    expect(parseHevyWorkouts([w], TEMPLATES, { unit: 'kg' }).workouts[0].entries[0].sets[0].w).toBe(20.41)
+    expect(parseHevyWorkouts([w], TEMPLATES, { unit: 'lb' }).workouts[0].entries[0].sets[0].w).toBe(45)
+  })
+
   it('converts kg weights into a lb profile', () => {
     const parsed = parseHevyWorkouts([WORKOUT], TEMPLATES, { unit: 'lb' })
     const pulldown = parsed.workouts[0].entries.find(e => e.id === '2616')
@@ -169,6 +175,12 @@ describe('parseHevyBodyweight', () => {
       { id: 1, date: '2026-08-23', weight_kg: 83.2, created_at: '2026-08-23T18:22:48.070Z' },
     ], { unit: 'kg' })
     expect(parsed.bodyweight).toEqual([{ d: '2026-08-23', w: 83.2, t: expect.any(Number) }])
+  })
+
+  it('keeps the hundredth, in either unit', () => {
+    const m = [{ id: 1, date: '2026-08-23', weight_kg: 83.25, created_at: '2026-08-23T18:22:48.070Z' }]
+    expect(parseHevyBodyweight(m, { unit: 'kg' }).bodyweight[0].w).toBe(83.25)
+    expect(parseHevyBodyweight(m, { unit: 'lb' }).bodyweight[0].w).toBe(183.53)
   })
 })
 
