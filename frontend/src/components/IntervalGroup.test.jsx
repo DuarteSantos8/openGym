@@ -195,6 +195,27 @@ it('stopping preparation leaves every set unfinished', () => {
   expect(useUI.getState().work).toBeNull()
 })
 
+it.each(['visibilitychange', 'pagehide', 'sheet'])('keeps preparation through %s and starts work once', async event => {
+  act(() => useStore.getState().update(s => { s.active.entries[0].target.sgPrep = 3 }))
+  start(); advance(1000)
+  const endsAt = useUI.getState().work.endsAt
+  await act(async () => {
+    if (event === 'sheet') {
+      const sheet = useUI.getState().openSheet(() => null)
+      sheet.close()
+    } else {
+      Object.defineProperty(document, 'hidden', { value: true, configurable: true })
+      ;(event === 'pagehide' ? window : document).dispatchEvent(new Event(event))
+    }
+  })
+  expect(useUI.getState().work?.endsAt).toBe(endsAt)
+  advance(2000)
+  expect(useUI.getState().work?.owner).toMatchObject({ idx: 0, i: 0 })
+  expect(state().entries[0].sets[0].done).toBe(false)
+  advance(2000)
+  expect(state().entries[0].sets[0].done).toBe(true)
+})
+
 it('a manually started replacement timer is not cancelled by the old sequence', () => {
   start(); advance(2000)
   act(() => useUI.getState().startRest(90, 2))
