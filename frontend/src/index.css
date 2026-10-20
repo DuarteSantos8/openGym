@@ -460,6 +460,17 @@ h4.sec{
   #timer{background:var(--surface)}
   #toast{background:var(--surface-2)}
 }
+/* The setting itself, read directly. The @supports fallback above only fires where backdrop-filter
+   is missing; a browser that has it keeps the bars see-through even with Reduce Transparency on.
+   Same opaque fills, on every translucent surface. */
+@media (prefers-reduced-transparency: reduce){
+  #tabbar,#timer,#toast,.conn-bar,.whdr.stick{-webkit-backdrop-filter:none;backdrop-filter:none}
+  #tabbar{background:var(--bg-el)}
+  :root[data-theme="light"] #tabbar{background:#f9f9fb}
+  #timer{background:var(--surface)}
+  #toast{background:var(--surface-2)}
+  .conn-bar,.whdr.stick{background:var(--bg)}
+}
 
 /* ------------------------------------------------------------ week strip -- */
 .week{display:flex;justify-content:space-between;gap:4px}
