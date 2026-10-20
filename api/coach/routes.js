@@ -305,7 +305,10 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       if (!envVar) {
         return json(res, 400, { error: `${provider} does not take a credential of type "${type}"` });
       }
-      const token = String(body.token || '').trim();
+      // No key or setup token contains whitespace. Removing all of it, not just the ends, saves a
+      // `claude setup-token` paste that brought the terminal's line wrap along: with the break
+      // inside, Claude Code treats every job as signed out ("Not logged in").
+      const token = String(body.token || '').replace(/\s+/g, '');
       if (!token) return json(res, 400, { error: 'no token supplied' });
       cfgStore.saveAuth(provider, {
         type, account: String(body.account || '').slice(0, 120), data: cfgStore.encrypt({ token }), connectedAt: new Date().toISOString()

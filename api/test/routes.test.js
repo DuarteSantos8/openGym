@@ -300,3 +300,17 @@ test('an admin can store extra headers for the compatible endpoint; framing name
   assert.equal((await call('GET /api/admin/coach')).body.headers, null);
   assert.equal('headers' in cfg.load().providerOptions.compatible, false);
 });
+
+test('a token pasted with a line break from a wrapped terminal is stored without it', async () => {
+  // `claude setup-token` prints a ~108-character token that wraps across two terminal lines, and
+  // copying it brings the break along. Claude Code then treats the job as signed out ("Not logged
+  // in"). No setup token or API key contains whitespace, so connect removes all of it.
+  fresh({ provider: 'claude' });
+  const { call } = harness();
+  const r = await call('POST /api/admin/coach/connect', { type: 'cli-token', token: '  sk-ant-oat01-abc\ndef\r\n ghi  ' });
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  const cred = cfg.credentialFor(undefined);
+  assert.equal(cred.ok, true);
+  assert.equal(cred.auth.token, 'sk-ant-oat01-abcdefghi');
+  assert.equal(cfg.jobEnv('/tmp', cred).CLAUDE_CODE_OAUTH_TOKEN, 'sk-ant-oat01-abcdefghi');
+});
