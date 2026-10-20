@@ -2242,4 +2242,8 @@ export default {
   'Your sports watch, calling you back.': 'Spor saatin seni geri çağırıyor.',
   'Coach wants you back on the bar.': 'Koç seni bara geri bekliyor.',
   'Gentle, for headphones or a quiet room.': 'Sakin, kulaklık ya da sessiz bir oda için.',
+  // --- custom measurement units (#699) ---
+  "Measurement unit": "Ölçü birimi",
+  "Logged values keep their type. Add a new measurement to use a different type.": "Kaydedilen değerler türlerini korur. Farklı bir tür için yeni bir ölçüm ekle.",
+  "{0} must be between 0 and 100%.": "{0}, %0 ile %100 arasında olmalı.",
 }

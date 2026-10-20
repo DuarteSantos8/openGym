@@ -2297,4 +2297,8 @@ export default {
   'Your sports watch, calling you back.': 'ساعتك الرياضية تناديك للعودة.',
   'Coach wants you back on the bar.': 'المدرب يريدك أن تعود إلى البار.',
   'Gentle, for headphones or a quiet room.': 'هادئ، للسماعات أو لغرفة هادئة.',
+  // --- custom measurement units (#699) ---
+  "Measurement unit": "وحدة القياس",
+  "Logged values keep their type. Add a new measurement to use a different type.": "تحتفظ القيم المسجلة بنوعها. أضف قياسًا جديدًا لاستخدام نوع مختلف.",
+  "{0} must be between 0 and 100%.": "يجب أن تكون قيمة {0} بين 0 و100٪.",
 }

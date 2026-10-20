@@ -1403,6 +1403,10 @@ export const PT_BR_OVERRIDES = {
   'Gentle, for headphones or a quiet room.': 'Suave, para fones de ouvido ou um lugar silencioso.',
   'Fewer than two workouts in this period. Pick a longer one.': 'Menos de dois treinos neste período. Escolha um mais longo.',
   'Releases are checked on GitHub. The download is verified against its checksum before the installer opens.': 'As versões são verificadas no GitHub. O download é conferido pela soma de verificação antes de abrir o instalador.',
+  // --- custom measurement units (#699) ---
+  "Measurement unit": "Unidade de medida",
+  "Logged values keep their type. Add a new measurement to use a different type.": "Os valores salvos mantêm seu tipo. Adicione uma nova medida para usar outro tipo.",
+  "{0} must be between 0 and 100%.": "{0} deve estar entre 0 e 100%.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

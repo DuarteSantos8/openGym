@@ -2242,4 +2242,8 @@ export default {
   'Your sports watch, calling you back.': '你的运动手表在叫你回来。',
   'Coach wants you back on the bar.': '教练等你回到杠铃前。',
   'Gentle, for headphones or a quiet room.': '轻柔，适合耳机或安静的房间。',
+  // --- custom measurement units (#699) ---
+  "Measurement unit": "测量单位",
+  "Logged values keep their type. Add a new measurement to use a different type.": "已记录的数值会保留原有类型。如需其他类型，请添加新的测量项。",
+  "{0} must be between 0 and 100%.": "{0}必须在 0% 到 100% 之间。",
 }

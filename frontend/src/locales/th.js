@@ -2253,4 +2253,8 @@ export default {
   'Your sports watch, calling you back.': 'นาฬิกาสปอร์ตเรียกคุณกลับมาแล้ว',
   'Coach wants you back on the bar.': 'โค้ชอยากให้คุณกลับมาที่บาร์',
   'Gentle, for headphones or a quiet room.': 'เบา ๆ สำหรับหูฟังหรือห้องที่เงียบ',
+  // --- custom measurement units (#699) ---
+  "Measurement unit": "หน่วยวัด",
+  "Logged values keep their type. Add a new measurement to use a different type.": "ค่าที่บันทึกไว้จะคงประเภทเดิม หากต้องการประเภทอื่น ให้เพิ่มรายการวัดใหม่",
+  "{0} must be between 0 and 100%.": "{0} ต้องอยู่ระหว่าง 0 ถึง 100%",
 }

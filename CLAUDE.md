@@ -85,6 +85,14 @@ directly; the mirror is fast-forward only.
   - CONTRIBUTING.md is explicit: **anything that decides what you lift next, or reads a logged
     session back, is a pure helper here with a unit test beside it** — not verifiable by
     clicking, and the progression engine has already had two bugs that only a test caught.
+- **Body measurements (`lib/measurements.js`, `views/Measurements.jsx`)** — one check-in per day.
+  Built-in circumferences and legacy custom fields store cm and follow the profile's cm/in
+  display. Custom definitions may specify `unit: 'cm' | 'in' | '%' | 'kg' | 'lb'`; that display
+  choice stays fixed when the profile switches kg/lb. Custom values store canonical cm, kg
+  (to 0.001 kg so a tenth of a pound round-trips), or percent (0–100). Each custom reading also
+  carries its unit, preserving its meaning in backups without definitions. Once values exist,
+  the unit selector permits cm/in or kg/lb conversions within the recorded type; a different
+  type needs a new field. No data migration, dependency or server schema change is required.
 - **`views/`** — one file per screen (Home, Workout, Plan, Library, Stats, History, Settings,
   Admin, Login, RoutineEdit), routed by `react-router-dom` from `App.jsx`.
 - **`components/`** — shared UI (charts, modals, timers); `instr/` holds per-language exercise

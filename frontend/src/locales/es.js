@@ -2242,4 +2242,8 @@ export default {
   'Your sports watch, calling you back.': 'Tu reloj deportivo te llama de vuelta.',
   'Coach wants you back on the bar.': 'El coach te quiere de vuelta en la barra.',
   'Gentle, for headphones or a quiet room.': 'Suave, para auriculares o una sala tranquila.',
+  // --- custom measurement units (#699) ---
+  "Measurement unit": "Unidad de medida",
+  "Logged values keep their type. Add a new measurement to use a different type.": "Los valores registrados conservan su tipo. Añade una nueva medida para usar otro tipo.",
+  "{0} must be between 0 and 100%.": "{0} debe estar entre 0 y 100 %.",
 }

@@ -2321,4 +2321,8 @@ export default {
   'Your sports watch, calling you back.': 'আপনার স্পোর্টস ঘড়ি আপনাকে ফিরে ডাকছে।',
   'Coach wants you back on the bar.': 'কোচ আপনাকে আবার বারে চান।',
   'Gentle, for headphones or a quiet room.': 'মৃদু, হেডফোন বা শান্ত ঘরের জন্য।',
+  // --- custom measurement units (#699) ---
+  "Measurement unit": "পরিমাপের একক",
+  "Logged values keep their type. Add a new measurement to use a different type.": "লগ করা মানের ধরন অপরিবর্তিত থাকে। অন্য ধরন ব্যবহার করতে নতুন পরিমাপ যোগ করুন।",
+  "{0} must be between 0 and 100%.": "{0} অবশ্যই ০ থেকে ১০০%-এর মধ্যে হতে হবে।",
 }
