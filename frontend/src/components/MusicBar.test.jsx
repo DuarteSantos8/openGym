@@ -49,8 +49,25 @@ describe('MusicBar', () => {
     music.nowPlaying.mockRejectedValue(Object.assign(new Error('x'), { code: 'auth' }))
     await mount()
     await flush()
-    expect(host.querySelector('.mb-sub').textContent).toBe('Connect Spotify in Settings → Workout.')
+    expect(host.querySelector('.mb-sub').textContent).toBe('Connect Spotify in Settings → Features.')
     expect(btn('Next track')).toBe(null)
+  })
+
+  it('says the player did not answer rather than stand empty, and keeps a song it already had', async () => {
+    music.nowPlaying.mockRejectedValue(Object.assign(new Error('x'), { code: 'failed' }))
+    await mount()
+    await flush()
+    expect(host.querySelector('.mb-title').textContent).toBe('Spotify')
+    expect(host.querySelector('.mb-sub').textContent).toBe('The music player did not answer.')
+    music.nowPlaying.mockResolvedValue({ id: '1', playing: true, title: 'Song', artist: 'Band', art: '' })
+    await act(async () => { document.dispatchEvent(new Event('visibilitychange')) })
+    await flush()
+    expect(host.querySelector('.mb-title').textContent).toBe('Song')
+    music.nowPlaying.mockRejectedValue(Object.assign(new Error('x'), { code: 'failed' }))
+    await act(async () => { document.dispatchEvent(new Event('visibilitychange')) })
+    await flush()
+    expect(host.querySelector('.mb-title').textContent).toBe('Song')
+    expect(host.querySelector('.mb-sub').textContent).toBe('Band')
   })
 
   it('says Premium is needed when a control is refused', async () => {

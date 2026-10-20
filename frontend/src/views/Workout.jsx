@@ -31,7 +31,7 @@ import { afterScrollRestore, scrollRestorePending } from '../components/Modals.j
 import { effortColor } from '../lib/effort.js'
 import Elapsed from '../components/Elapsed.jsx'
 import MusicBar from '../components/MusicBar.jsx'
-import { musicSource } from '../lib/music/index.js'
+import { shownSource } from '../lib/music/index.js'
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
 import { defaultIncrement, weightIncrement, stepWeight } from '../lib/progression.js'
@@ -929,7 +929,7 @@ function ActiveWorkout() {
   // timed sets stays, since counting a hold is how its duration gets entered.
   const startRest = (A.backfill || editing) ? () => {} : liveRest
   // The music bar is for a session being done now, not one being typed in afterwards.
-  const music = (A.backfill || editing) ? '' : musicSource(S)
+  const music = (A.backfill || editing) ? '' : shownSource(S)
   const units = supersetUnits(A.entries)
   const cur = Number.isInteger(A.cur)
     ? Math.min(Math.max(A.cur, 0), Math.max(0, A.entries.length - 1))

@@ -9,7 +9,7 @@ vi.mock('../api.js', () => api)
 const device = vi.hoisted(() => ({ spotifyNowPlaying: vi.fn(), spotifyControl: vi.fn(), finishSpotify: vi.fn(), spotifyConnected: vi.fn(() => false), APP_REDIRECT: 'opengym://spotify' }))
 vi.mock('./spotify.js', () => device)
 
-import { nowPlaying, control, initMusicReturn } from './index.js'
+import { nowPlaying, control, initMusicReturn, shownSource } from './index.js'
 import { forgetAccountStatus } from './spotify-account.js'
 
 const refusal = (status, code) => Object.assign(new Error('x'), { status, data: code ? { code } : {} })
@@ -83,13 +83,22 @@ describe('Spotify on the device', () => {
   })
 })
 
+describe('the music bar switch', () => {
+  it('turned off, the bar shows no player; the choice is still there for when it is back on', () => {
+    expect(shownSource({ music: 'spotify' })).toBe('spotify')
+    expect(shownSource({ music: 'spotify', musicBar: false })).toBe('')
+    expect(shownSource({ music: 'spotify', musicBar: true })).toBe('spotify')
+    expect(shownSource({ musicBar: true })).toBe('')
+  })
+})
+
 describe('the way back from the account\'s sign-in', () => {
   it('reads ?spotify= off the address and takes it away', () => {
-    history.replaceState(null, '', '/?spotify=connected#/settings/workout')
+    history.replaceState(null, '', '/?spotify=connected#/settings/features')
     const done = vi.fn()
     initMusicReturn(done)
     expect(done).toHaveBeenCalledWith(true)
     expect(location.search).toBe('')
-    expect(location.hash).toBe('#/settings/workout')
+    expect(location.hash).toBe('#/settings/features')
   })
 })

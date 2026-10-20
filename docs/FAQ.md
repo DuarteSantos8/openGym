@@ -107,7 +107,7 @@ by openGym's license. Anything outside openGym needs your own licence from
 
 ### Can I control my music during a workout?
 
-Yes: Settings → Workout → Music player puts what is playing at the top of the workout, with
+Yes: Settings → Features → Music player puts what is playing at the top of the workout, with
 previous, pause and next.
 
 - **Spotify, on your openGym account**, when your instance offers it (its operator set
@@ -123,6 +123,9 @@ previous, pause and next.
   Either way, pausing and skipping need Spotify Premium, as for any app.
 - **Apple Music**, in the iPhone app: the Music app's player, nothing to set up beyond allowing
   access the first time.
+
+The **Music bar** switch on the same page hides the bar everywhere and keeps the rest: the player
+you chose and Spotify's connection are still there when you turn it back on.
 
 ### Where do I ask something that isn't here?
 

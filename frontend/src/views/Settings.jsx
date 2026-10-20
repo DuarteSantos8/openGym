@@ -47,6 +47,7 @@ import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem } from '.
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
 import { PAGES, ROOT_GROUPS, pageVisible, searchSettings, pageTrail } from './settings-pages.js'
 import MusicSettings from '../components/MusicSettings.jsx'
+import { musicBarOn, musicSource } from '../lib/music/index.js'
 
 /* Settings (v1.3.11). The root is one screen: an account card, eleven rows that each open a page
    (/settings/<page>), and a search over every row. Rare things live one level further down
@@ -397,7 +398,7 @@ export default function Settings({ page = null, find = null, via = null }) {
     sound: !!S.sound, playOnSilent: playOnSilentSupported(), canVibrate, vibrate: S.vibrate !== false,
     profiles: (S.equipProfiles || []).length > 0, nameLang: EXERCISE_NAME_LANGS.includes(baseLang(lang)),
     pushOK: !MOBILE && pushSupported(), reminderOn: !!S.reminder?.on, nudge: !!S.reminder?.nudge,
-    autoBackup: !!S.autoBackup, synced: !!sync, installTip: !MOBILE && !standalone(), androidWeb: IS_ANDROID,
+    autoBackup: !!S.autoBackup, musicBar: musicBarOn(S), synced: !!sync, installTip: !MOBILE && !standalone(), androidWeb: IS_ANDROID,
   }
   const mode = scheduleModeOf(S)
   const layout = ['list', 'compact', 'focus'].includes(S.workoutView) ? S.workoutView : 'cards'
@@ -413,6 +414,7 @@ export default function Settings({ page = null, find = null, via = null }) {
     units: () => (S.unit || 'kg') + ' · ' + (LANGS[lang] || lang),
     equipment: () => (S.equipFilterOn && activeProfile ? activeProfile.name : t('Everything')),
     look: () => themeLabel + ' · ' + accentLabel(S),
+    features: () => (musicBarOn(S) && musicSource(S) ? { spotify: 'Spotify', apple: 'Apple Music' }[musicSource(S)] : t('Off')),
     coach: () => (coachLocal?.mode === 'server' ? t('Your server') : coachLocal?.mode === 'byok' ? t('Your API key') : t('Off')),
     data: () => '',
     health: () => '',
@@ -513,11 +515,14 @@ export default function Settings({ page = null, find = null, via = null }) {
             onChange={v => update(s => { s.gifSize = v })} />
         </Row>
       </Section>
-      <MusicSettings />
       <Section>
         <Row icon="wrench" iconTint="var(--grey)" title={t('Fine-tuning')} subtitle={t('Buttons, timed sets')} accessory="chevron" onClick={() => open('advanced')} />
       </Section>
     </>,
+
+    // Things to turn on and off. The music bar is the first; its player and Spotify rows sit under
+    // its switch, and stay set while it is off.
+    features: () => <MusicSettings />,
 
     advanced: () => {
       // S.wc overlays DEF.wc, so a profile from before these switches existed reads as the lean default.

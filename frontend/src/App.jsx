@@ -136,7 +136,7 @@ function Shell() {
     if (MOBILE || !user || !ready) return
     syncPushSubscription().catch(() => {})
   }, [user?.id, ready])
-  // Back from Spotify's sign-in (Settings → Workout → Music player): the page's own address in a
+  // Back from Spotify's sign-in (Settings → Features → Music player): the page's own address in a
   // browser, the app's opengym://spotify link on the phone (lib/music/index.js).
   useEffect(() => initMusicReturn(ok => {
     useUI.getState().toast(ok ? t('Spotify connected') : t('Could not connect to Spotify.'))

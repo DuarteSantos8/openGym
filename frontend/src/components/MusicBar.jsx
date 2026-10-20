@@ -9,7 +9,7 @@ const POLL = 5000
 const REFRESH = 700
 
 const PROBLEM = {
-  auth: () => t('Connect Spotify in Settings → Workout.'),
+  auth: () => t('Connect Spotify in Settings → Features.'),
   premium: () => t('Spotify Premium is needed to control the music.'),
   device: () => t('Start Spotify on one of your devices first.'),
   denied: () => t('Allow openGym to use Apple Music in the iPhone settings.'),
@@ -18,27 +18,34 @@ const PROBLEM = {
 
 /**
  * What plays, under the workout's header, with previous / play-pause / next (S.music, Settings →
- * Workout → Music player). Asked every few seconds while the page is visible, never in the
+ * Features → Music player). Asked every few seconds while the page is visible, never in the
  * background. A problem it cannot get past (not connected, no Premium) is said in the bar instead
- * of the song; one that may pass (no answer) keeps the last song and tries again.
+ * of the song; one that may pass (no answer) keeps the last song and tries again — or, before any
+ * song came, says so, rather than leave an empty bar holding its place above the tab bar.
  */
 export default function MusicBar({ source }) {
   const [track, setTrack] = useState(undefined)   // undefined: not asked yet; null: nothing plays
   const [problem, setProblem] = useState('')
   const timer = useRef(null)
   const alive = useRef(true)
+  const answered = useRef(false)
 
   const ask = () => {
     clearTimeout(timer.current)
     if (document.visibilityState === 'hidden') return
     nowPlaying(source).then(
-      tr => { if (!alive.current) return; setTrack(tr); setProblem('') },
-      e => { if (!alive.current) return; if (e.code === 'auth' || e.code === 'denied') { setProblem(e.code); setTrack(null) } }
+      tr => { if (!alive.current) return; answered.current = true; setTrack(tr); setProblem('') },
+      e => {
+        if (!alive.current) return
+        if (e.code === 'auth' || e.code === 'denied') { setProblem(e.code); setTrack(null) }
+        else if (!answered.current) setProblem('failed')
+      }
     ).finally(() => { if (alive.current) timer.current = setTimeout(ask, POLL) })
   }
 
   useEffect(() => {
     alive.current = true
+    answered.current = false
     setTrack(undefined); setProblem('')
     ask()
     const onVis = () => { if (document.visibilityState === 'visible') ask() }
@@ -59,7 +66,7 @@ export default function MusicBar({ source }) {
   const playing = !!track?.playing
   const name = source === 'apple' ? 'Apple Music' : 'Spotify'
   const blocked = problem === 'auth' || problem === 'denied'
-  const line1 = blocked ? name : track?.title || (track ? name : t('Nothing playing'))
+  const line1 = blocked || track === undefined ? name : track?.title || (track ? name : t('Nothing playing'))
   const line2 = problem ? PROBLEM[problem]() : track ? track.artist : name
   return <div className="musicbar" role="group" aria-label={t('Music')}>
     {track?.art ? <img className="mb-art" src={track.art} alt="" /> : <span className="mb-art"><Icon name="music" /></span>}

@@ -66,12 +66,12 @@ test('a sign-in address for the profile, and a way back to the app only', async 
   assert.equal(new URL(web).searchParams.get('client_id'), CLIENT);
   const r1 = await call(h, 'GET', `/api/music/spotify/callback?error=access_denied&state=${stateOf(web)}`, { headers: {} });
   assert.equal(r1.status, 302);
-  assert.equal(r1.location, 'https://gym.example.com/?spotify=failed#/settings/workout');
+  assert.equal(r1.location, 'https://gym.example.com/?spotify=failed#/settings/features');
 
   // Somewhere else is never a way back: the instance's own address instead.
   const foreign = (await call(h, 'POST', '/api/music/spotify/connect', { body: { back: 'https://evil.example/' } })).body.url;
   const r2 = await call(h, 'GET', `/api/music/spotify/callback?error=access_denied&state=${stateOf(foreign)}`, { headers: {} });
-  assert.equal(r2.location, 'https://gym.example.com/?spotify=failed#/settings/workout');
+  assert.equal(r2.location, 'https://gym.example.com/?spotify=failed#/settings/features');
 
   // The phone app: its own link.
   const app = (await call(h, 'POST', '/api/music/spotify/connect', { body: { app: true } })).body.url;

@@ -1,4 +1,4 @@
-// The music bar of a workout (components/MusicBar.jsx) and the Music rows of Settings → Workout:
+// The music bar of a workout (components/MusicBar.jsx) and the Music rows of Settings → Features:
 // which player S.music names, and one shape for all of them.
 //
 //   nowPlaying(source)        { id, playing, title, artist, art } or null when nothing plays
@@ -27,6 +27,19 @@ export function musicSource(S) {
   if (S.music === 'spotify') return 'spotify'
   if (S.music === 'apple' && appleMusicDevice()) return 'apple'
   return ''
+}
+
+/**
+ * Whether the music bar shows (Settings → Features). Off hides it everywhere and nothing else: the
+ * player chosen and Spotify's connection stay, so turning it back on brings the same bar back.
+ */
+export function musicBarOn(S) {
+  return S.musicBar !== false
+}
+
+/** The player the bar shows, or '' while there is none or the bar is off. */
+export function shownSource(S) {
+  return musicBarOn(S) ? musicSource(S) : ''
 }
 
 const notConnected = () => Object.assign(new Error('not connected'), { code: 'auth' })

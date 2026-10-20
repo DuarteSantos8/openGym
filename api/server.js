@@ -2424,7 +2424,7 @@ const routes = {
     const r = await SPOTIFY.finish(q, id => db.users.find(u => u.id === id && !u.disabled));
     if (!r) return json(res, 400, { error: 'unknown or expired sign-in' });
     const done = r.ok ? 'connected' : 'failed';
-    const to = r.app ? 'opengym://spotify?' + done + '=1' : (r.back || ORIGIN.replace(/\/$/, '') + '/') + '?spotify=' + done + '#/settings/workout';
+    const to = r.app ? 'opengym://spotify?' + done + '=1' : (r.back || ORIGIN.replace(/\/$/, '') + '/') + '?spotify=' + done + '#/settings/features';
     res.writeHead(302, { Location: to, 'Cache-Control': 'no-store' });
     res.end();
   },

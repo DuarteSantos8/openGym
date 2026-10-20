@@ -3,17 +3,19 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { MOBILE } from '../lib/mobile.js'
-import { appleMusicDevice, musicSource } from '../lib/music/index.js'
+import { appleMusicDevice, musicBarOn, musicSource } from '../lib/music/index.js'
 import { connectSpotify, disconnectSpotify, spotifyConnected, redirectUri } from '../lib/music/spotify.js'
 import { accountStatus, connectAccount, disconnectAccount } from '../lib/music/spotify-account.js'
 import { authorizeAppleMusic } from '../lib/music/apple-music.js'
-import { Section, Row, SelectRow, TextField, Button } from './ui.jsx'
+import { Section, Row, SelectRow, Switch, TextField, Button } from './ui.jsx'
 
 // Spotify only takes an https redirect for a web page, or a loopback one (127.0.0.1, ::1).
 const httpsOK = () => MOBILE || location.protocol === 'https:' || ['127.0.0.1', '[::1]', 'localhost'].includes(location.hostname)
 
 /**
- * Settings → Workout → Music: which player the workout's music bar steers (components/MusicBar.jsx).
+ * Settings → Features → Music: whether the music bar shows (components/MusicDock.jsx, and at the
+ * top of a workout) and which player it steers (components/MusicBar.jsx). Turning the bar off
+ * hides it and keeps the rest — the player chosen, Spotify's connection — for when it comes back.
  *
  * Spotify, two ways. On an instance that has a Spotify app of its own (SPOTIFY_CLIENT_ID), the
  * profile connects its Spotify account once and every device signed in to it can steer the music
@@ -83,8 +85,13 @@ export default function MusicSettings() {
         </>
     if (!connected) footer = t('Make an app on developer.spotify.com, add this redirect URI to it and paste its Client ID here: {0}', redirectUri())
   }
-  return <Section title={t('Music')} footer={footer}>
-    <SelectRow icon="music" iconTint="var(--pink)" title={t('Music player')} value={source || 'off'} options={options} onChange={choose} />
-    {rows}
+  const bar = musicBarOn(S)
+  return <Section title={t('Music')} footer={bar ? footer : t('Off hides the music bar everywhere. The player and Spotify stay connected: turn it back on whenever you like.')}>
+    <Row icon="music" iconTint="var(--pink)" title={t('Music bar')}
+      subtitle={t('Above the tab bar and at the top of a workout.')}>
+      <Switch aria-label={t('Music bar')} checked={bar} onChange={v => update(s => { if (v) delete s.musicBar; else s.musicBar = false })} />
+    </Row>
+    {bar && <SelectRow icon="music" iconTint="var(--pink)" title={t('Music player')} value={source || 'off'} options={options} onChange={choose} />}
+    {bar && rows}
   </Section>
 }

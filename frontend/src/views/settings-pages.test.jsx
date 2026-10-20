@@ -80,7 +80,7 @@ const titles = () => [...host.querySelectorAll('.lrow .lrow-t')].map(e => e.text
 const guestWeb = {
   user: null, mobile: false, android: false, demo: false, wakeOK: true, hasMedia: false, pwOn: false, webauthn: false,
   sound: true, playOnSilent: false, canVibrate: true, vibrate: true, profiles: true, nameLang: false,
-  pushOK: false, reminderOn: false, nudge: false, autoBackup: false, synced: false, installTip: true, androidWeb: false,
+  pushOK: false, reminderOn: false, nudge: false, autoBackup: false, synced: false, installTip: true, androidWeb: false, musicBar: true,
 }
 
 describe('the root', () => {
@@ -89,7 +89,8 @@ describe('the root', () => {
     expect(host.querySelector('.sp-acct .lrow-t').textContent).toBe('Guest')
     expect(host.querySelector('.sp-acct .lrow-s').textContent).toBe('Your data lives on this device. Sign in to sync.')
     // a guest in a browser has no reminders (no push server) and no Coach page (the server's Coach)
-    expect(titles()).toEqual(['Guest', 'Workout', 'Timer alerts', 'Plan & schedule', 'Units & language', 'Equipment', 'Look & Home', 'Health', 'Data & backup', 'About & updates'])
+    expect(titles()).toEqual(['Guest', 'Workout', 'Timer alerts', 'Plan & schedule', 'Units & language', 'Equipment', 'Look & Home', 'Features', 'Health', 'Data & backup', 'About & updates'])
+    expect(rowTitled('Features').querySelector('.lrow-v').textContent).toBe('Off')
     expect(rowTitled('Workout').querySelector('.lrow-v').textContent).toBe('1:30 rest · Cards')
     expect(rowTitled('Timer alerts').querySelector('.lrow-v').textContent).toBe('Sound · Vibrate')
     expect(rowTitled('Plan & schedule').querySelector('.lrow-v').textContent).toMatch(/^Fixed Week · Mon/)
@@ -263,7 +264,7 @@ describe('the pages', () => {
   it('each search entry is a row on its page (guest in a browser)', () => {
     const byPage = {}
     for (const e of SEARCH) if (pageVisible(PAGES[e.page].parent || e.page, guestWeb) && (!e.when || e.when(guestWeb))) (byPage[e.page] ||= []).push(e.title)
-    expect(Object.keys(byPage).sort()).toEqual(['about', 'advanced', 'alerts', 'data', 'equipment', 'health', 'look', 'plan', 'units', 'workout'])
+    expect(Object.keys(byPage).sort()).toEqual(['about', 'advanced', 'alerts', 'data', 'equipment', 'features', 'health', 'look', 'plan', 'units', 'workout'])
     for (const [page, want] of Object.entries(byPage)) {
       mount(page)
       const have = titles()
@@ -273,9 +274,9 @@ describe('the pages', () => {
 
   it('every old row has a home: the Workout page holds the rest, logging and the before/during rows', () => {
     mount('workout')
-    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Rest', 'Logging', 'Before and during', 'Music'])
+    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Rest', 'Logging', 'Before and during'])
     expect(titles()).toEqual(['Rest timer', 'Rest-pause rest', 'Effort per set', 'Shown under each exercise', 'Layout',
-      'Collapse completed exercises', 'Weigh in before workouts', 'Keep screen awake', 'Exercise animations', 'Music player', 'Fine-tuning'])
+      'Collapse completed exercises', 'Weigh in before workouts', 'Keep screen awake', 'Exercise animations', 'Fine-tuning'])
     // QA 10-05: the "screen stays on" line is the awake row's own subtitle, not a section footer
     // that read as if it explained the animations above it.
     expect(rowTitled('Keep screen awake').querySelector('.lrow-s').textContent).toMatch(/^The screen stays on/)
@@ -294,6 +295,23 @@ describe('the pages', () => {
     act(() => sw.click())
     expect(mocks.S.collapseCompleted).toBe(true)
     expect('collapseCompleted' in mocks.S.active).toBe(false)
+  })
+
+  it('Features turns the music bar off and on, and the player chosen stays for when it is back', () => {
+    mocks.S.music = 'spotify'
+    mount('features')
+    const sw = () => rowTitled('Music bar').querySelector('[role="switch"]')
+    expect(sw().getAttribute('aria-checked')).toBe('true')
+    expect(titles()).toContain('Music player')
+    act(() => sw().click())
+    expect(mocks.S.musicBar).toBe(false)
+    expect(mocks.S.music).toBe('spotify')
+    mount('features')
+    expect(titles()).not.toContain('Music player')
+    act(() => sw().click())
+    expect('musicBar' in mocks.S).toBe(false)
+    mount('features')
+    expect(titles()).toContain('Music player')
   })
 
   it('the Fine-tuning switches write S.wc as the old Workout controls sheet did', () => {

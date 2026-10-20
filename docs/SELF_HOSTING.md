@@ -566,7 +566,7 @@ are not encrypted at rest — whoever can read that folder can see them.
 
 ### Spotify in the workout (optional)
 
-The workout's music bar (Settings → Workout → Music player) can steer Spotify through your
+The workout's music bar (Settings → Features → Music player) can steer Spotify through your
 instance, so everyone on it connects their Spotify account once and controls it from any device
 they sign in on, the phone app included:
 
