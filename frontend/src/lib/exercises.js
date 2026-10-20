@@ -28,6 +28,8 @@ const SECONDARY_ADDITIONS = {
   '0293': ['rear deltoids'], // dumbbell bent over row
   '0499': ['rear deltoids'], // inverted row
   '0861': ['rear deltoids'], // cable seated row
+  '4133': ['lower back'], // kettlebell suitcase deadlift (#693)
+  '10189': ['lower back'], // weighted plate deadlift rear lunge with overhead press (#693)
 }
 
 // Secondary muscles for an exercise, with the small conservative additions applied as an
