@@ -46,11 +46,12 @@ export const workoutAt = w => {
 //   reps   — weight × reps      sets look like { w, r }
 //   time   — a work duration    sets look like { sec, w }   (w = 0 for bodyweight)
 //   cardio — duration + speed   sets look like { min, speed }
-// An entry without `mode` behaves exactly as before, so every existing plan, workout and
-// plan file is read unchanged and nothing needs migrating.
+// Older cardio configs have min/speed but no mode. Keep reading those as cardio even if the
+// catalogue later corrects the exercise's body part (e.g. jumping jacks, issue #678).
 export function modeOf(cfg) {
   const m = cfg && cfg.mode
   if (m === 'reps' || m === 'time' || m === 'cardio') return m
+  if (cfg?.min != null || cfg?.speed != null) return 'cardio'
   return isCardio(cfg && cfg.id) ? 'cardio' : 'reps'
 }
 export const isTimed = cfg => modeOf(cfg) === 'time'
