@@ -166,6 +166,7 @@ export function httpAdapter(spec) {
       if (!chosen) return { code: 1, text: '', stderr: `no model chosen for ${id} (pick one from the list the endpoint serves)` };
 
       let body = spec.body({ model: chosen, prompt, system: system || null, schema: schema || null, maxTokens });
+      let retriedWithStrictSchema = false;
       let retriedWithoutJsonMode = false;
       let transientRetries = 0;
       for (;;) {
@@ -186,6 +187,18 @@ export function httpAdapter(spec) {
           if (RETRY_STATUSES.has(res.status) && transientRetries < RETRY_DELAYS_MS.length && !(signal && signal.aborted)) {
             await sleep(opts.retryDelayMs != null ? opts.retryDelayMs : RETRY_DELAYS_MS[transientRetries], signal);
             transientRetries++;
+            continue;
+          }
+          // A hosted validator that enforces strict JSON Schema refuses the flat schemas on
+          // additionalProperties (OpenRouter, #701). The strict copy is a wire-only change —
+          // local grammar-sampling servers keep getting the flat shape they can convert — and
+          // only after the endpoint itself said no to it, so Ollama, LM Studio and vLLM never
+          // see a request they did not already ask for.
+          if (res.status === 400 && spec.withStrictSchema && !retriedWithStrictSchema
+            && body.response_format && body.response_format.type === 'json_schema'
+            && /additionalProperties|must be explicitly set/i.test(msg)) {
+            body = spec.withStrictSchema(body);
+            retriedWithStrictSchema = true;
             continue;
           }
           // Some OpenAI-compatible servers reject the JSON-mode flag outright. Once, without it.
