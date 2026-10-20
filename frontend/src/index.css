@@ -391,16 +391,22 @@ h4.sec{
    the content under a navigation bar. 94% keeps a hint of movement behind the glass without
    letting text through. The blur is also down from 24px to 10px: this is a fixed element, so
    the WebView recomposites the blurred region on every scroll frame, and on Android that is
-   the single most expensive thing on the screen. See @supports below for the no-blur case. */
+   the single most expensive thing on the screen. See @supports below for the no-blur case.
+
+   The bar floats: a capsule inset from the screen edges, as Apple's HIG describes the iOS tab
+   bar ("the bar floats at the bottom"), and as the desktop layout below already does. Opacity
+   and blur stay as above; only the shape changes. It sits 14px into the home-indicator inset and
+   never closer than 8px to the edge, so its top stays well under #app's 88px bottom padding. */
 #tabbar{
-  position:fixed;inset-inline-start:0;inset-inline-end:0;bottom:0;z-index:50;
+  position:fixed;inset-inline-start:12px;inset-inline-end:12px;bottom:max(8px,calc(var(--sab) - 14px));z-index:50;
   display:flex;justify-content:space-around;align-items:flex-end;
-  padding:7px 6px calc(6px + var(--sab));
+  padding:6px 4px 5px;
   background:color-mix(in srgb,var(--bg-el) 94%,transparent);
   -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);
-  border-top:var(--hair) solid var(--sep-op);
+  border:var(--hair) solid var(--sep-op);border-radius:999px;
+  box-shadow:0 10px 30px -12px rgba(0,0,0,.5);
 }
-:root[data-theme="light"] #tabbar{background:rgba(249,249,251,.94)}
+:root[data-theme="light"] #tabbar{background:rgba(249,249,251,.94);box-shadow:0 10px 30px -14px rgba(0,0,0,.28)}
 #tabbar button{
   flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
   color:var(--label-3);font-size:10px;font-weight:500;letter-spacing:.005em;padding-top:3px;
@@ -1925,7 +1931,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   .cols .tiles,.center .tiles{grid-template-columns:1fr 1fr}   /* a 300px dialog has no room for four */
   #tabbar{
     left:50%;right:auto;bottom:16px;transform:translateX(-50%);width:520px;
-    border:var(--hair) solid var(--sep-op);border-radius:var(--r-xl);
+    border:var(--hair) solid var(--sep-op);border-radius:999px;
     padding:7px 10px 9px;box-shadow:0 12px 40px -10px rgba(0,0,0,.5);
   }
   #tabbar button.start{margin-top:-26px}
