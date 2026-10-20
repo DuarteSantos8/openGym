@@ -107,6 +107,7 @@ beforeEach(() => {
     '/api/admin/coach/connect': { ok: true },
     '/api/admin/coach/models': { ok: true, models: ['a', 'b'] },
     '/api/admin/coach/test': { ok: true },
+    '/api/admin/coach/auth-mode': { ok: true, authMode: 'profile' },
   }
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
   sheetHost = document.createElement('div'); document.body.appendChild(sheetHost); sheetRoot = createRoot(sheetHost)
@@ -790,5 +791,73 @@ describe('AdminCoach — readiness and the step count', () => {
     expect(host.textContent).toContain('secret')
     // …and the way out is offered, not just described.
     expect(btn('Add API key')).toBeTruthy()
+  })
+})
+
+describe('AdminCoach — whose account pays (shared instance account, or each profile its own)', () => {
+  const modeButtons = () => [btn('Shared instance account'), btn('Each profile connects its own')]
+
+  it('offers the two modes, with the current one pressed and its explanation underneath', async () => {
+    await mount()
+    const [shared, own] = modeButtons()
+    expect(shared).toBeTruthy()
+    expect(own).toBeTruthy()
+    expect(shared.getAttribute('aria-pressed')).toBe('true')
+    expect(own.getAttribute('aria-pressed')).toBe('false')
+    expect(host.textContent).toContain('One API key for the whole instance')
+  })
+
+  it('switching to "each profile" posts the mode and re-reads the card', async () => {
+    await mount()
+    mocks.routes['/api/admin/coach'] = status({ authMode: 'profile', profilesConnected: 0 })
+    await tap(modeButtons()[1])
+    expect(sent('/api/admin/coach/auth-mode')).toEqual([
+      { path: '/api/admin/coach/auth-mode', method: 'POST', body: { mode: 'profile' } }
+    ])
+    expect(sent('/api/admin/coach')).toHaveLength(2)
+    expect(modeButtons()[1].getAttribute('aria-pressed')).toBe('true')
+    // A switch deletes nothing, so it never touches the credential routes.
+    expect(sent('/api/admin/coach/disconnect')).toHaveLength(0)
+  })
+
+  it('in profile mode it says each person connects their own, that nothing falls back, and how many have', async () => {
+    mocks.routes['/api/admin/coach'] = status({ authMode: 'profile', profilesConnected: 2 })
+    await mount()
+    const text = host.textContent
+    expect(text).toContain('Each person connects their own account under Coach → Your account')
+    expect(text).toContain('nothing falls back to the shared account')
+    expect(text).toContain('2 profiles have connected one for Claude')
+    expect(text).not.toContain('One API key for the whole instance')
+  })
+
+  it('an instance with no shared credential is still ready once every profile brings its own, and the shared test is off', async () => {
+    mocks.routes['/api/admin/coach'] = status({ authMode: 'profile', profilesConnected: 0, auth: { state: 'none' } })
+    await mount()
+    expect(host.querySelector('.adm-pill').textContent).toBe('ready')
+    expect(btn('Test the Coach').disabled).toBe(true)
+    expect(host.textContent).toContain('There is no shared account to test')
+    expect(host.textContent).toContain('Each profile connects its own account in the Coach menu')
+  })
+
+  it('switching back posts "instance", and pressing the current mode again sends nothing', async () => {
+    mocks.routes['/api/admin/coach'] = status({ authMode: 'profile', profilesConnected: 1 })
+    await mount()
+    await tap(modeButtons()[1])
+    expect(sent('/api/admin/coach/auth-mode')).toHaveLength(0)
+
+    mocks.routes['/api/admin/coach'] = status({ authMode: 'instance' })
+    await tap(modeButtons()[0])
+    expect(sent('/api/admin/coach/auth-mode')).toEqual([
+      { path: '/api/admin/coach/auth-mode', method: 'POST', body: { mode: 'instance' } }
+    ])
+    expect(modeButtons()[0].getAttribute('aria-pressed')).toBe('true')
+  })
+
+  it('a refused switch toasts the reason and leaves the card as it was', async () => {
+    await mount()
+    mocks.routes['/api/admin/coach/auth-mode'] = new Error('forbidden')
+    await tap(modeButtons()[1])
+    expect(mocks.toast).toHaveBeenCalledWith('forbidden')
+    expect(modeButtons()[0].getAttribute('aria-pressed')).toBe('true')
   })
 })
