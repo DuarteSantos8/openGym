@@ -836,7 +836,7 @@ export default {
   '{0}/side': '{0}/侧',
   '{0} reps in every set! Add a set and go back to {1}.': '每组都做到 {0} 次！加一组，次数回到 {1}。',
   '{0} sets of {1}. Time to add weight or try a harder variation.': '{0} 组 × {1} 次。该加重量或换个更难的变式了。',
-  '{0} per side': '每侧 {0} 次',
+  '{0} per side': '每侧 {0}',
   'Per side': '每侧',
   'You still log the total: {0} is {1} per side.': '你记录的仍然是总数：{0} 表示每侧 {1} 次。',
 
