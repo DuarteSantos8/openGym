@@ -4,13 +4,13 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})) }))
-vi.mock('../sheets.jsx', () => ({ exercisePicker: vi.fn(() => ({ close: vi.fn() })) }))
+vi.mock('../sheets.jsx', () => ({ exerciseDetailSheet: vi.fn(), exercisePicker: vi.fn(() => ({ close: vi.fn() })) }))
 vi.mock('./Media.jsx', () => ({ Thumb: () => null }))
 
 import RoutineWarmup from './RoutineWarmup.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
-import { exercisePicker } from '../sheets.jsx'
+import { exerciseDetailSheet, exercisePicker } from '../sheets.jsx'
 import { EXIDX } from '../lib/exercises.js'
 import { suggestWarmup } from '../lib/warmup-suggestions.js'
 import { exerciseNameFor } from '../lib/i18n.js'
@@ -141,6 +141,41 @@ describe('warm-up suggestions in Plan', () => {
   it('disables suggestions until the routine has main exercises', () => {
     mount()
     expect(button('Suggest for this routine').disabled).toBe(true)
+  })
+
+  it('returns from an exercise preview to the edited suggestion draft without saving it', () => {
+    exerciseDetailSheet.mockImplementation(ex => useUI.getState().openSheet(close => <div>
+      <h3>{exerciseNameFor(ex)}</h3><button onClick={close}>Close preview</button>
+    </div>))
+    mount(undefined, lifting)
+    const expected = suggestWarmup(useStore.getState().S, lifting)
+    const sheet = preview()
+    act(() => sheet.querySelector('.item-open').click())
+    const settings = openLastSheet()
+    act(() => button('Repetitions', settings).click())
+    const input = settings.querySelector('input')
+    act(() => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, '12')
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    act(() => button('Save', settings).click())
+    const draft = sheet.textContent
+    const parent = useUI.getState().sheets[0]
+    const thumb = sheet.querySelector('button.wthumb')
+    expect(thumb.getAttribute('aria-label')).toBe(`Details: ${exerciseNameFor(EXIDX[expected[0].id])}`)
+    act(() => thumb.click())
+    expect(exerciseDetailSheet).toHaveBeenCalledWith(EXIDX[expected[0].id])
+    expect(useUI.getState().sheets).toHaveLength(2)
+    const detail = openLastSheet()
+    act(() => button('Close preview', detail).click())
+    expect(useUI.getState().sheets).toEqual([parent])
+    expect(sheet.textContent).toBe(draft)
+    expect(stored()).toBeUndefined()
+    act(() => button('Add warm-up', sheet).click())
+    expect(stored().steps[0]).toEqual({ id: expected[0].id, mode: 'reps', reps: 12 })
+    act(() => host.querySelector('button.wthumb').click())
+    expect(exerciseDetailSheet).toHaveBeenLastCalledWith(EXIDX[expected[0].id])
+    expect(stored().steps[0]).toEqual({ id: expected[0].id, mode: 'reps', reps: 12 })
   })
 
   it('previews ordered movement names, targets and muscle context before adding', () => {

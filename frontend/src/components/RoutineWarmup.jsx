@@ -6,7 +6,7 @@ import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import { warmupProposal } from '../lib/warmup-suggestions.js'
 import { WARMUP_IDS, MAX_WARMUP_STEPS, WARMUP_TIME_LIMITS, WARMUP_REP_LIMITS, normalizeWarmup, defaultWarmupStep } from '../../../api/training/guided-warmup.js'
-import { exercisePicker } from '../sheets.jsx'
+import { exerciseDetailSheet, exercisePicker } from '../sheets.jsx'
 import { Thumb } from './Media.jsx'
 import Icon from './Icon.jsx'
 import { Button, Row, Section, Segmented, Stepper, Switch } from './ui.jsx'
@@ -15,6 +15,14 @@ const warmupOf = routine => normalizeWarmup(routine?.warmup) || { enabled: false
 const matches = (step, snapshot) => step && JSON.stringify(step) === snapshot
 const routineSnapshot = routine => JSON.stringify({ ex: routine?.ex, warmup: routine?.warmup })
 const targetText = step => (step.mode === 'time' ? t('{0} s', step.sec) : t('{0} reps', step.reps)) + (step.perSide ? ' · ' + t('Per side') : '')
+
+function MovementThumb({ ex }) {
+  const label = `${t('Details')}: ${exerciseNameFor(ex)}`
+  return <button type="button" className="wthumb" aria-label={label} title={label} onClick={() => exerciseDetailSheet(ex)}>
+    <Thumb ex={ex} />
+    <span className="wthumb-x" aria-hidden="true"><Icon name="expand" /></span>
+  </button>
+}
 
 function SuggestionPreview({ steps, muscleNames, replacing, close, onSave }) {
   const [draft, setDraft] = useState(() => structuredClone(steps))
@@ -41,7 +49,7 @@ function SuggestionPreview({ steps, muscleNames, replacing, close, onSave }) {
       const ex = exOr(step.id)
       return <li className="item" key={step.id}>
         <span className="dim small" style={{ minWidth: '1ch' }}>{index + 1}</span>
-        <Thumb ex={ex} />
+        <MovementThumb ex={ex} />
         <button type="button" className="grow item-open" onClick={() => editMovement(index)}>
           <span className={`tt ${exerciseNameClass(ex)}`}>{exerciseNameFor(ex)}</span>
           <span className="ss">{targetText(step)}</span>
@@ -183,7 +191,7 @@ export default function RoutineWarmup({ routineId }) {
     {!!warmup.steps.length && <div className="list" style={{ marginTop: 8 }}>{warmup.steps.map((step, index) => {
       const ex = exOr(step.id)
       return <div className="item" key={`${step.id}-${index}`}>
-        <Thumb ex={ex} />
+        <MovementThumb ex={ex} />
         <button type="button" className="grow item-open" onClick={() => editMovement(index)}>
           <span className={`tt ${exerciseNameClass(ex)}`}>{exerciseNameFor(ex)}</span>
           <span className="ss">{targetText(step)}</span>

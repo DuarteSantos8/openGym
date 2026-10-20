@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Warm-up thumbnails open the exercise's animated details from suggestions and saved sequences.
+  Closing the preview returns to the current draft without adding or changing movements.
+
 - Plan can suggest warm-up movements from a routine’s muscles and available equipment. Preview
   and edit the sequence before saving; replacing a manual warm-up requires an explicit choice.
   Suggestions must be refreshed if their muscle targets or available movements change.
