@@ -2,18 +2,18 @@
 .exercise-goal-toolbar{margin:14px 0;gap:8px;flex-wrap:wrap}
 .exercise-goal-list{display:grid;gap:10px}
 .exercise-goal{display:block;width:100%;text-align:start;color:var(--label);font:inherit;background:var(--surface);border:1px solid var(--sep);border-radius:12px;padding:16px;min-width:0}
-.exercise-goal:focus-visible{outline:2px solid var(--acc-ink);outline-offset:-3px}
+.exercise-goal:focus-visible{outline:2px solid var(--acc-ink, color-mix(in srgb, var(--acc) 50%, white));outline-offset:-3px}
 .exercise-goal-top{display:flex;justify-content:space-between;gap:12px;margin-bottom:12px}
 .exercise-goal-title{min-width:0;flex:1;overflow-wrap:anywhere}
 .exercise-goal-title b,.exercise-goal-title span,.exercise-goal-numbers b,.exercise-goal-numbers span{display:block}
 .exercise-goal-title b{font-size:14px}.exercise-goal-title span,.exercise-goal-numbers span{margin-top:3px}
 .exercise-goal-numbers{text-align:end;flex-shrink:0;max-width:48%;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
 .exercise-goal-track{height:5px;background:var(--sep);border-radius:3px;overflow:hidden;margin-bottom:9px}
-.exercise-goal-track>span{display:block;height:100%;background:var(--acc-ink)}
+.exercise-goal-track>span{display:block;height:100%;background:var(--acc-ink, color-mix(in srgb, var(--acc) 50%, white))}
 .exercise-goal-track>span.is-achieved{background:var(--yellow)}
-:root[data-theme="light"] .exercise-goal-track>span.is-achieved{background:var(--yellow-ink)}
+:root[data-theme="light"] .exercise-goal-track>span.is-achieved{background:var(--yellow-ink, var(--yellow))}
 .exercise-goal-status{display:flex;flex-wrap:wrap;gap:3px 12px;margin-top:6px;font-size:11px;line-height:1.4}
-.exercise-goal-status:empty{display:none}.exercise-goal-achieved{color:var(--yellow-ink)}
+.exercise-goal-status:empty{display:none}.exercise-goal-achieved{color:var(--yellow-ink, var(--yellow))}
 .exercise-goal-numbers .exercise-goal-status{justify-content:flex-end}.exercise-goal-numbers .exercise-goal-status span{margin:0}
 .exercise-goal-bar{position:relative}.exercise-goal-bar.has-indicator{padding-top:18px}
 .exercise-goal-marker{position:absolute;top:15px;height:10px;width:2px;background:var(--label);transform:translateX(-1px);pointer-events:none}
@@ -38,3 +38,7 @@
 .exercise-goal-facts>div{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--sep)}
 .exercise-goal-facts dd{margin:0;text-align:end}.exercise-goal-form .row{justify-content:flex-end}
 @media(max-width:360px){.exercise-goal-top{gap:6px}}
+
+:root[data-theme="light"] .exercise-goal-track>span{background:var(--acc-ink, color-mix(in srgb, var(--acc) 50%, black))}
+:root[data-theme="light"] .exercise-goal-track>span.is-achieved{background:var(--yellow-ink, #775600)}
+:root[data-theme="light"] .exercise-goal-achieved{color:var(--yellow-ink, #775600)}
