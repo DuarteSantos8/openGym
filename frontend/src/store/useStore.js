@@ -91,8 +91,8 @@ export const DEF = {
   // A note per day off (#261): { [iso]: { tag, text, _ts } } (lib/day-notes.js). A noted day is
   // excused from the missed-day nudge; each day merges on its own stamp (lib/sync-merge.js).
   dayNotes: {},
-  // Body measurements (#82): one check-in per day, values in cm whatever the weight unit
-  // (lib/measurements.js); merged across devices like weigh-ins (lib/sync-merge.js).
+  // Body measurements (#82, #699): one check-in per day; canonical cm, kg or % according to
+  // the field's unit (lib/measurements.js); merged like weigh-ins (lib/sync-merge.js).
   measurements: [], measurementEnabled: null, customMeasurements: [],
   queue: null,   // a planner's floating week (lib/queue.js) — via the API, or by this rotation feature (below)
   // The in-app rotation's reusable definition — { id, sequence, label } (lib/rotation.js). Never

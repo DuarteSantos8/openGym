@@ -2242,4 +2242,8 @@ export default {
   'Your sports watch, calling you back.': 'आपकी स्पोर्ट्स घड़ी आपको वापस बुला रही है।',
   'Coach wants you back on the bar.': 'कोच आपको बार पर वापस चाहते हैं।',
   'Gentle, for headphones or a quiet room.': 'धीमी, हेडफ़ोन या शांत कमरे के लिए।',
+  // --- custom measurement units (#699) ---
+  "Measurement unit": "माप की इकाई",
+  "Logged values keep their type. Add a new measurement to use a different type.": "दर्ज किए गए मानों का प्रकार बना रहता है। दूसरे प्रकार के लिए नया माप जोड़ें।",
+  "{0} must be between 0 and 100%.": "{0} का मान 0 से 100% के बीच होना चाहिए।",
 }

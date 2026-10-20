@@ -2242,4 +2242,8 @@ export default {
   'Your sports watch, calling you back.': '스포츠 시계가 다시 부르고 있어요.',
   'Coach wants you back on the bar.': '코치가 바 앞으로 돌아오래요.',
   'Gentle, for headphones or a quiet room.': '이어폰이나 조용한 곳에 어울려요.',
+  // --- custom measurement units (#699) ---
+  "Measurement unit": "측정 단위",
+  "Logged values keep their type. Add a new measurement to use a different type.": "기록된 값의 유형은 유지됩니다. 다른 유형을 사용하려면 새 측정 항목을 추가하세요.",
+  "{0} must be between 0 and 100%.": "{0} 값은 0~100% 사이여야 합니다.",
 }

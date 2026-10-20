@@ -2246,4 +2246,8 @@ export default {
   'Your sports watch, calling you back.': 'Ваши спортивные часы зовут вас обратно.',
   'Coach wants you back on the bar.': 'Тренер ждёт вас обратно у штанги.',
   'Gentle, for headphones or a quiet room.': 'Тихий, для наушников или спокойного зала.',
+  // --- custom measurement units (#699) ---
+  "Measurement unit": "Единица измерения",
+  "Logged values keep their type. Add a new measurement to use a different type.": "Тип записанных значений сохраняется. Для другого типа добавьте новое измерение.",
+  "{0} must be between 0 and 100%.": "Значение «{0}» должно быть от 0 до 100%.",
 }

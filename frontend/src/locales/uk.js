@@ -2239,4 +2239,8 @@ export default {
   'Your sports watch, calling you back.': 'Ваш спортивний годинник кличе вас назад.',
   'Coach wants you back on the bar.': 'Тренер чекає вас назад біля штанги.',
   'Gentle, for headphones or a quiet room.': 'Тихий, для навушників або спокійної кімнати.',
+  // --- custom measurement units (#699) ---
+  "Measurement unit": "Одиниця вимірювання",
+  "Logged values keep their type. Add a new measurement to use a different type.": "Тип записаних значень зберігається. Для іншого типу додайте нове вимірювання.",
+  "{0} must be between 0 and 100%.": "Значення «{0}» має бути від 0 до 100%.",
 }
