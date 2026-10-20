@@ -2277,10 +2277,10 @@ export default {
   // Warm-up suggestions
   'Suggest for this routine': 'Предложить для этой программы',
   'Suggested warm-up': 'Предложенная разминка',
-  'Based on this routine’s muscles: {0}. You can edit the movements after saving.': 'На основе мышц этой программы: {0}. После сохранения движения можно изменить.',
+  'Based on this routine’s muscles: {0}. Edit the movements before adding them.': 'На основе мышц этой программы: {0}. Измени движения перед добавлением.',
   'Replace your current warm-up with these movements?': 'Заменить текущую разминку этими движениями?',
   'Replace warm-up': 'Заменить разминку',
   'Add warm-up': 'Добавить разминку',
   'No warm-up suggestions are available for this routine. Add movements manually.': 'Для этой программы нет предложений по разминке. Добавь движения вручную.',
-  'Routine changed. Open suggestions again to review an updated warm-up.': 'Программа изменилась. Открой предложения снова, чтобы проверить обновлённую разминку.',
+  'Plan or equipment changed. Open suggestions again to review an updated warm-up.': 'План или оборудование изменились. Открой предложения снова, чтобы проверить обновлённую разминку.',
 }

@@ -2266,10 +2266,10 @@ export default {
   // Warm-up suggestions
   'Suggest for this routine': '為此課表推薦',
   'Suggested warm-up': '推薦暖身',
-  'Based on this routine’s muscles: {0}. You can edit the movements after saving.': '根據此課表訓練的肌肉：{0}。儲存後可以編輯動作。',
+  'Based on this routine’s muscles: {0}. Edit the movements before adding them.': '根據此課表訓練的肌肉：{0}。新增前可編輯動作。',
   'Replace your current warm-up with these movements?': '用這些動作取代目前的暖身？',
   'Replace warm-up': '取代暖身',
   'Add warm-up': '新增暖身',
   'No warm-up suggestions are available for this routine. Add movements manually.': '此課表暫無暖身推薦。請手動新增動作。',
-  'Routine changed. Open suggestions again to review an updated warm-up.': '課表已變更。請重新開啟推薦，檢視更新後的暖身。',
+  'Plan or equipment changed. Open suggestions again to review an updated warm-up.': '課表或器材已變更。請重新開啟推薦，檢視更新後的暖身。',
 }

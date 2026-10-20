@@ -2293,10 +2293,10 @@ export default {
   // Warm-up suggestions
   'Suggest for this routine': 'Für diese Routine vorschlagen',
   'Suggested warm-up': 'Vorgeschlagenes Aufwärmen',
-  'Based on this routine’s muscles: {0}. You can edit the movements after saving.': 'Basierend auf den Muskeln dieser Routine: {0}. Du kannst die Bewegungen nach dem Speichern bearbeiten.',
+  'Based on this routine’s muscles: {0}. Edit the movements before adding them.': 'Basierend auf den Muskeln dieser Routine: {0}. Bearbeite die Bewegungen, bevor du sie hinzufügst.',
   'Replace your current warm-up with these movements?': 'Dein aktuelles Aufwärmen durch diese Bewegungen ersetzen?',
   'Replace warm-up': 'Aufwärmen ersetzen',
   'Add warm-up': 'Aufwärmen hinzufügen',
   'No warm-up suggestions are available for this routine. Add movements manually.': 'Für diese Routine gibt es keine Aufwärmvorschläge. Füge Bewegungen manuell hinzu.',
-  'Routine changed. Open suggestions again to review an updated warm-up.': 'Die Routine wurde geändert. Öffne die Vorschläge erneut, um ein angepasstes Aufwärmen zu prüfen.',
+  'Plan or equipment changed. Open suggestions again to review an updated warm-up.': 'Plan oder Ausrüstung wurden geändert. Öffne die Vorschläge erneut, um ein angepasstes Aufwärmen zu prüfen.',
 }

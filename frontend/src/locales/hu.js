@@ -2276,10 +2276,10 @@ export default {
   // Warm-up suggestions
   'Suggest for this routine': 'Javaslat ehhez a rutinhoz',
   'Suggested warm-up': 'Javasolt bemelegítés',
-  'Based on this routine’s muscles: {0}. You can edit the movements after saving.': 'A rutin izmai alapján: {0}. Mentés után szerkesztheted a mozdulatokat.',
+  'Based on this routine’s muscles: {0}. Edit the movements before adding them.': 'A rutin izmai alapján: {0}. Hozzáadás előtt szerkeszd a mozdulatokat.',
   'Replace your current warm-up with these movements?': 'Lecseréled a jelenlegi bemelegítést ezekre a mozdulatokra?',
   'Replace warm-up': 'Bemelegítés cseréje',
   'Add warm-up': 'Bemelegítés hozzáadása',
   'No warm-up suggestions are available for this routine. Add movements manually.': 'Ehhez a rutinhoz nincs bemelegítési javaslat. Adj hozzá mozdulatokat kézzel.',
-  'Routine changed. Open suggestions again to review an updated warm-up.': 'A rutin megváltozott. Nyisd meg újra a javaslatokat a frissített bemelegítés áttekintéséhez.',
+  'Plan or equipment changed. Open suggestions again to review an updated warm-up.': 'A terv vagy a felszerelés megváltozott. Nyisd meg újra a javaslatokat a frissített bemelegítés áttekintéséhez.',
 }

@@ -2284,10 +2284,10 @@ export default {
   // Warm-up suggestions
   'Suggest for this routine': 'แนะนำสำหรับรูทีนนี้',
   'Suggested warm-up': 'การวอร์มอัปที่แนะนำ',
-  'Based on this routine’s muscles: {0}. You can edit the movements after saving.': 'อิงตามกล้ามเนื้อของรูทีนนี้: {0} คุณแก้ไขท่าได้หลังบันทึก',
+  'Based on this routine’s muscles: {0}. Edit the movements before adding them.': 'อิงตามกล้ามเนื้อของรูทีนนี้: {0} แก้ไขท่าก่อนเพิ่ม',
   'Replace your current warm-up with these movements?': 'แทนที่การวอร์มอัปปัจจุบันด้วยท่าเหล่านี้หรือไม่?',
   'Replace warm-up': 'แทนที่การวอร์มอัป',
   'Add warm-up': 'เพิ่มการวอร์มอัป',
   'No warm-up suggestions are available for this routine. Add movements manually.': 'ไม่มีคำแนะนำการวอร์มอัปสำหรับรูทีนนี้ เพิ่มท่าด้วยตนเอง',
-  'Routine changed. Open suggestions again to review an updated warm-up.': 'รูทีนเปลี่ยนแล้ว เปิดคำแนะนำอีกครั้งเพื่อตรวจดูการวอร์มอัปที่ปรับใหม่',
+  'Plan or equipment changed. Open suggestions again to review an updated warm-up.': 'แผนหรืออุปกรณ์เปลี่ยนแล้ว เปิดคำแนะนำอีกครั้งเพื่อตรวจดูการวอร์มอัปที่ปรับใหม่',
 }

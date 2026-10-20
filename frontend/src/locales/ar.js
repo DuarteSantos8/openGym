@@ -2328,10 +2328,10 @@ export default {
   // Warm-up suggestions
   'Suggest for this routine': 'اقتراح لهذا الروتين',
   'Suggested warm-up': 'الإحماء المقترح',
-  'Based on this routine’s muscles: {0}. You can edit the movements after saving.': 'بناءً على عضلات هذا الروتين: {0}. يمكنك تعديل الحركات بعد الحفظ.',
+  'Based on this routine’s muscles: {0}. Edit the movements before adding them.': 'بناءً على عضلات هذا الروتين: {0}. عدّل الحركات قبل إضافتها.',
   'Replace your current warm-up with these movements?': 'هل تريد استبدال إحمائك الحالي بهذه الحركات؟',
   'Replace warm-up': 'استبدال الإحماء',
   'Add warm-up': 'إضافة إحماء',
   'No warm-up suggestions are available for this routine. Add movements manually.': 'لا تتوفر اقتراحات إحماء لهذا الروتين. أضف الحركات يدويًا.',
-  'Routine changed. Open suggestions again to review an updated warm-up.': 'تغيّر الروتين. افتح الاقتراحات مجددًا لمراجعة إحماء محدّث.',
+  'Plan or equipment changed. Open suggestions again to review an updated warm-up.': 'تغيّرت الخطة أو المعدات. افتح الاقتراحات مجددًا لمراجعة إحماء محدّث.',
 }

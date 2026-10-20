@@ -2352,10 +2352,10 @@ export default {
   // Warm-up suggestions
   'Suggest for this routine': 'এই রুটিনের জন্য পরামর্শ দিন',
   'Suggested warm-up': 'প্রস্তাবিত ওয়ার্ম-আপ',
-  'Based on this routine’s muscles: {0}. You can edit the movements after saving.': 'এই রুটিনের পেশির ভিত্তিতে: {0}। সংরক্ষণ করার পরে মুভমেন্টগুলো সম্পাদনা করতে পারবেন।',
+  'Based on this routine’s muscles: {0}. Edit the movements before adding them.': 'এই রুটিনের পেশির ভিত্তিতে: {0}। যোগ করার আগে মুভমেন্টগুলো সম্পাদনা করুন।',
   'Replace your current warm-up with these movements?': 'আপনার বর্তমান ওয়ার্ম-আপের বদলে এই মুভমেন্টগুলো রাখবেন?',
   'Replace warm-up': 'ওয়ার্ম-আপ প্রতিস্থাপন করুন',
   'Add warm-up': 'ওয়ার্ম-আপ যোগ করুন',
   'No warm-up suggestions are available for this routine. Add movements manually.': 'এই রুটিনের জন্য ওয়ার্ম-আপের পরামর্শ নেই। নিজে মুভমেন্ট যোগ করুন।',
-  'Routine changed. Open suggestions again to review an updated warm-up.': 'রুটিন বদলেছে। হালনাগাদ ওয়ার্ম-আপ পর্যালোচনা করতে পরামর্শগুলো আবার খুলুন।',
+  'Plan or equipment changed. Open suggestions again to review an updated warm-up.': 'পরিকল্পনা বা সরঞ্জাম বদলেছে। হালনাগাদ ওয়ার্ম-আপ পর্যালোচনা করতে পরামর্শগুলো আবার খুলুন।',
 }

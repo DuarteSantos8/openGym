@@ -1,8 +1,9 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { WARMUP_MOVEMENTS, normalizeWarmup } from '../../../api/training/guided-warmup.js'
 import { EXIDX } from './exercises.js'
 import { ACC_V, exAvailable } from './equipment.js'
-import { suggestWarmup } from './warmup-suggestions.js'
+import * as equipment from './equipment.js'
+import { suggestWarmup, warmupProposal } from './warmup-suggestions.js'
 
 const definitions = steps => steps.map(step => WARMUP_MOVEMENTS.find(movement => movement.id === step.id))
 const coverage = steps => new Set(definitions(steps).flatMap(movement => movement.coverage))
@@ -73,5 +74,37 @@ describe('muscle-based warm-up suggestions', () => {
     expect(suggestWarmup(state, exercises)[0].sec).toBe(30)
     expect(state).toEqual(beforeState)
     expect(exercises).toEqual(beforeExercises)
+  })
+
+  it('returns canonical target context from the same custom metadata used for selection', () => {
+    const state = { customEx: [{ id: 'custom', primaries: ['delts', 'pectorals'], secondaries: ['triceps'] }] }
+    const proposal = warmupProposal(state, [{ id: 'custom' }])
+    expect(proposal.targetMuscles).toEqual(['deltoids', 'chest', 'triceps'])
+    expect(proposal.steps).toEqual(suggestWarmup(state, [{ id: 'custom' }]))
+    const changed = { customEx: [{ id: 'custom', primaries: ['calves'] }] }
+    expect(warmupProposal(changed, [{ id: 'custom' }]).snapshot).not.toBe(proposal.snapshot)
+  })
+
+  it('ignores unrelated custom edits and equivalent equipment profiles in proposal snapshots', () => {
+    const exercises = [{ id: '0025' }]
+    const original = warmupProposal({}, exercises)
+    const changed = warmupProposal({
+      customEx: [{ id: 'unused', primaries: ['calves'] }], equipFilterOn: true,
+      activeEquipId: 'home', equipProfiles: [{ id: 'home', name: 'Renamed home', equipment: [], accV: ACC_V }],
+    }, exercises)
+    expect(changed.snapshot).toBe(original.snapshot)
+  })
+
+  it('invalidates a proposal when changed equipment availability changes its movements', () => {
+    // Current candidates are bodyweight; keep the guard valid if a reviewed candidate
+    // later needs equipment without altering the licensed catalogue in this test.
+    const available = vi.spyOn(equipment, 'exAvailable').mockImplementation((state, ex) =>
+      !(state.activeEquipId === 'restricted' && ex.id === '3905'))
+    try {
+      const before = warmupProposal({}, [{ id: '0025' }])
+      const after = warmupProposal({ activeEquipId: 'restricted' }, [{ id: '0025' }])
+      expect(after.steps).not.toEqual(before.steps)
+      expect(after.snapshot).not.toBe(before.snapshot)
+    } finally { available.mockRestore() }
   })
 })

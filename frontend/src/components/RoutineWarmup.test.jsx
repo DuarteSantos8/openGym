@@ -14,6 +14,7 @@ import { exercisePicker } from '../sheets.jsx'
 import { EXIDX } from '../lib/exercises.js'
 import { suggestWarmup } from '../lib/warmup-suggestions.js'
 import { exerciseNameFor } from '../lib/i18n.js'
+import * as equipment from '../lib/equipment.js'
 import { WARMUP_IDS, defaultWarmupStep } from '../../../api/training/guided-warmup.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -184,7 +185,7 @@ describe('warm-up suggestions in Plan', () => {
     const afterChange = structuredClone(useStore.getState().S.routines)
     act(() => button('Replace warm-up', sheet).click())
     expect(useStore.getState().S.routines).toEqual(afterChange)
-    expect(toast).toHaveBeenCalledWith('Routine changed. Open suggestions again to review an updated warm-up.')
+    expect(toast).toHaveBeenCalledWith('Plan or equipment changed. Open suggestions again to review an updated warm-up.')
     toast.mockRestore()
   })
 
@@ -196,5 +197,80 @@ describe('warm-up suggestions in Plan', () => {
     expect(useUI.getState().sheets).toEqual([])
     expect(toast).toHaveBeenCalledWith('No warm-up suggestions are available for this routine. Add movements manually.')
     toast.mockRestore()
+  })
+
+  it('rejects a preview after the source custom exercise’s muscle metadata changes', () => {
+    mount(undefined, [{ id: 'custom-press' }])
+    act(() => useStore.getState().update(s => { s.customEx = [{ id: 'custom-press', primaries: ['chest'] }] }))
+    const sheet = preview()
+    expect(sheet.textContent).toContain('Chest')
+    act(() => useStore.getState().update(s => { s.customEx[0].primaries = ['calves'] }))
+    const toast = vi.spyOn(useUI.getState(), 'toast')
+    act(() => button('Add warm-up', sheet).click())
+    expect(stored()).toBeUndefined()
+    expect(toast).toHaveBeenCalledWith('Plan or equipment changed. Open suggestions again to review an updated warm-up.')
+    toast.mockRestore()
+  })
+
+  it('keeps a preview valid after an unrelated custom exercise changes', () => {
+    mount(undefined, lifting)
+    act(() => useStore.getState().update(s => { s.customEx = [{ id: 'unused', primaries: ['chest'] }] }))
+    const sheet = preview()
+    const expected = suggestWarmup(useStore.getState().S, lifting)
+    act(() => useStore.getState().update(s => { s.customEx[0].primaries = ['calves'] }))
+    act(() => button('Add warm-up', sheet).click())
+    expect(stored()).toEqual({ enabled: true, steps: expected })
+  })
+
+  it('rejects a preview if equipment availability changes its proposal', () => {
+    const available = vi.spyOn(equipment, 'exAvailable').mockImplementation((state, ex) =>
+      !(state.activeEquipId === 'restricted' && ex.id === '3905'))
+    try {
+      mount(undefined, lifting)
+      const sheet = preview()
+      act(() => useStore.getState().update(s => { s.activeEquipId = 'restricted' }))
+      act(() => button('Add warm-up', sheet).click())
+      expect(stored()).toBeUndefined()
+    } finally { available.mockRestore() }
+  })
+
+  it.each(['confirm', 'cancel'])('keeps edited, reordered and removed preview movements as drafts until %s', action => {
+    const manual = { enabled: false, steps: [defaultWarmupStep(first)] }
+    const exercises = [...lifting, { id: '0043' }, { id: '0293' }]
+    mount(manual, exercises)
+    const expected = suggestWarmup(useStore.getState().S, exercises)
+    expect(expected.length).toBeGreaterThan(2)
+    const sheet = preview()
+    const firstTarget = sheet.querySelector('li .ss').textContent
+    act(() => sheet.querySelector('.item-open').click())
+    let settings = openLastSheet()
+    // A nested cancel leaves both the sequence and the parent preview open.
+    act(() => settings.querySelector('[role="switch"]').click())
+    act(() => button('Cancel', settings).click())
+    expect(useUI.getState().sheets).toHaveLength(1)
+    expect(sheet.querySelector('li .ss').textContent).toBe(firstTarget)
+    act(() => sheet.querySelector('.item-open').click())
+    settings = openLastSheet()
+    act(() => button('Repetitions', settings).click())
+    const input = settings.querySelector('input')
+    act(() => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, '42')
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    if (settings.querySelector('[role="switch"]').getAttribute('aria-checked') !== 'true') act(() => settings.querySelector('[role="switch"]').click())
+    act(() => button('Save', settings).click())
+    expect(useUI.getState().sheets).toHaveLength(1)
+    expected[0] = { id: expected[0].id, mode: 'reps', reps: 42, perSide: true }
+    expect(sheet.querySelector('li .ss').textContent).toBe('42 reps · Per side')
+    act(() => sheet.querySelector('[aria-label="Move down"]').click())
+    expected.splice(1, 0, expected.shift())
+    act(() => [...sheet.querySelectorAll('.item-open')].at(-1).click())
+    settings = openLastSheet()
+    act(() => button('Remove', settings).click())
+    expected.pop()
+    expect(sheet.querySelectorAll('li')).toHaveLength(expected.length)
+    expect(stored()).toEqual(manual)
+    act(() => button(action === 'confirm' ? 'Replace warm-up' : 'Cancel', sheet).click())
+    expect(stored()).toEqual(action === 'confirm' ? { enabled: true, steps: expected } : manual)
   })
 })

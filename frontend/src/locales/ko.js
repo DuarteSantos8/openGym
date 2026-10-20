@@ -2273,10 +2273,10 @@ export default {
   // Warm-up suggestions
   'Suggest for this routine': '이 루틴에 맞게 추천',
   'Suggested warm-up': '추천 워밍업',
-  'Based on this routine’s muscles: {0}. You can edit the movements after saving.': '이 루틴의 근육을 기준으로 추천합니다: {0}. 저장 후 동작을 수정할 수 있습니다.',
+  'Based on this routine’s muscles: {0}. Edit the movements before adding them.': '이 루틴의 근육을 기준으로 추천합니다: {0}. 추가하기 전에 동작을 수정하세요.',
   'Replace your current warm-up with these movements?': '현재 워밍업을 이 동작들로 바꾸시겠습니까?',
   'Replace warm-up': '워밍업 바꾸기',
   'Add warm-up': '워밍업 추가',
   'No warm-up suggestions are available for this routine. Add movements manually.': '이 루틴에 맞는 워밍업 추천이 없습니다. 동작을 직접 추가하세요.',
-  'Routine changed. Open suggestions again to review an updated warm-up.': '루틴이 변경되었습니다. 추천을 다시 열어 업데이트된 워밍업을 확인하세요.',
+  'Plan or equipment changed. Open suggestions again to review an updated warm-up.': '플랜 또는 장비가 변경되었습니다. 추천을 다시 열어 업데이트된 워밍업을 확인하세요.',
 }

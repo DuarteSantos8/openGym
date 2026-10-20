@@ -4,6 +4,7 @@
 
 - Plan can suggest warm-up movements from a routine’s muscles and available equipment. Preview
   and edit the sequence before saving; replacing a manual warm-up requires an explicit choice.
+  Suggestions must be refreshed if their muscle targets or available movements change.
 
 - Routines can now include a separate guided warm-up. Choose existing movements in Plan and
   follow their animations, timers or repetition targets before the working exercises. Preparation
