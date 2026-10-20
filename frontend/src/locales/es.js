@@ -2263,7 +2263,7 @@ export default {
   'Target': 'Objetivo',
   'Timer covers both sides. Switch sides halfway through.': 'El temporizador incluye ambos lados. Cambia de lado a mitad de tiempo.',
   'Timer finished. Continue when you are ready.': 'Tiempo terminado. Continúa cuando estés listo.',
-  'Up to 8 movements per warm-up.': 'Hasta 8 movimientos por calentamiento.',
+  'Up to {0} movements per warm-up.': 'Hasta {0} movimientos por calentamiento.',
   'Warm-up is off. Your movements are saved for later.': 'El calentamiento está desactivado. Tus movimientos quedan guardados para después.',
   'Warm-up progress': 'Progreso del calentamiento',
   'Warm-up timer': 'Temporizador de calentamiento',

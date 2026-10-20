@@ -99,12 +99,13 @@ describe('a routine’s guided warm-up', () => {
     expect(stored().enabled).toBe(false)
   })
 
-  it('reads the current sequence in a picker callback and stops at eight', () => {
+  it('reads the current sequence in a picker callback and allows the full curated collection once', () => {
     mount()
     act(() => button('Add movement').click())
     const onPick = exercisePicker.mock.calls.at(-1)[0]
-    act(() => { for (const id of WARMUP_IDS.slice(0, 9)) onPick(EXIDX[id], true) })
-    expect(stored().steps).toHaveLength(8)
+    act(() => { for (const id of [...WARMUP_IDS, first]) onPick(EXIDX[id], true) })
+    expect(stored().steps.map(step => step.id)).toEqual(WARMUP_IDS)
+    expect(host.textContent).toContain(`Up to ${WARMUP_IDS.length} movements per warm-up.`)
     expect(button('Add movement').disabled).toBe(true)
   })
 

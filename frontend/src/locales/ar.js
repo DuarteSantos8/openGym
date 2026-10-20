@@ -2318,7 +2318,7 @@ export default {
   'Target': 'الهدف',
   'Timer covers both sides. Switch sides halfway through.': 'يشمل المؤقت كلا الجانبين. بدّل الجانب عند منتصف الوقت.',
   'Timer finished. Continue when you are ready.': 'انتهى الوقت. تابع عندما تكون مستعدًا.',
-  'Up to 8 movements per warm-up.': 'حتى 8 حركات لكل إحماء.',
+  'Up to {0} movements per warm-up.': 'حتى {0} حركات لكل إحماء.',
   'Warm-up is off. Your movements are saved for later.': 'الإحماء معطّل. حركاتك محفوظة لوقت لاحق.',
   'Warm-up progress': 'تقدّم الإحماء',
   'Warm-up timer': 'مؤقت الإحماء',

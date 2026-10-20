@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { WARMUP_IDS, defaultWarmupStep, normalizeWarmup } from '../../../api/training/guided-warmup.js'
 import { createGuidedWarmup, pendingGuidedWarmup, applyGuidedWarmupAction, warmupRemainingMs, completedGuidedWarmup, repeatGuidedWarmup } from './guided-warmup-session.js'
 
 const shoulders = { id: '3905', mode: 'time', sec: 30 }
@@ -25,6 +26,18 @@ describe('guided warm-up session snapshot', () => {
     expect(pendingGuidedWarmup({ ...active, editingWorkoutId: 'old' })).toBe(false)
     expect(pendingGuidedWarmup({ ...active, backfill: true })).toBe(false)
     expect(pendingGuidedWarmup({ ...active, warmup: { ...active.warmup, current: 50 } })).toBe(false)
+  })
+
+  it('combines two valid routines with eight and five distinct movements without truncation', () => {
+    const steps = WARMUP_IDS.map(defaultWarmupStep)
+    const first = routine(...steps.slice(0, 8)), second = routine(...steps.slice(8))
+    expect(first.warmup.steps).toHaveLength(8)
+    expect(second.warmup.steps).toHaveLength(5)
+    expect(normalizeWarmup(first.warmup)).toEqual(first.warmup)
+    expect(normalizeWarmup(second.warmup)).toEqual(second.warmup)
+    const combined = createGuidedWarmup([first, second, routine({ ...steps[0], sec: 90 })], 1000)
+    expect(combined.steps).toEqual(steps.map(step => ({ ...step, status: 'pending' })))
+    expect(combined.steps).toHaveLength(WARMUP_IDS.length)
   })
 })
 
@@ -96,6 +109,27 @@ describe('deadline countdown and explicit progress', () => {
     const repeated = repeatGuidedWarmup(summary, 9000)
     expect(repeated).toMatchObject({ current: 0, status: 'in_progress', startedAt: 9000 })
     expect(repeated.steps.every(step => step.status === 'pending')).toBe(true)
+    expect(repeated.timer).toBeUndefined()
+  })
+
+  it('retains all thirteen movements through completion, summary and repeat with fresh progress', () => {
+    const steps = WARMUP_IDS.map(defaultWarmupStep)
+    const active = session(...steps)
+    action(active, 'start_timer', 2000)
+    for (let index = 0; index < steps.length; index++) action(active, 'done', 3000 + index * 1000)
+    expect(pendingGuidedWarmup(active)).toBe(false)
+    const summary = completedGuidedWarmup(active.warmup)
+    expect(summary.steps).toEqual(steps.map(step => ({ ...step, status: 'done' })))
+    expect(summary.timer).toBeUndefined()
+    const before = structuredClone(summary)
+    const repeated = repeatGuidedWarmup(summary, 90000)
+    expect(repeated).toEqual({
+      status: 'in_progress', current: 0, startedAt: 90000,
+      steps: steps.map(step => ({ ...step, status: 'pending' })),
+    })
+    expect(summary).toEqual(before)
+    expect(pendingGuidedWarmup({ id: 'repeated', warmup: repeated })).toBe(true)
+    expect(repeated.endedAt).toBeUndefined()
     expect(repeated.timer).toBeUndefined()
   })
 })

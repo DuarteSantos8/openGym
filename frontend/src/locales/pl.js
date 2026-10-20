@@ -2263,7 +2263,7 @@ export default {
   'Target': 'Cel',
   'Timer covers both sides. Switch sides halfway through.': 'Minutnik obejmuje obie strony. Zmień stronę w połowie czasu.',
   'Timer finished. Continue when you are ready.': 'Czas minął. Kontynuuj, gdy będziesz gotowy.',
-  'Up to 8 movements per warm-up.': 'Do 8 ruchów na rozgrzewkę.',
+  'Up to {0} movements per warm-up.': 'Do {0} ruchów na rozgrzewkę.',
   'Warm-up is off. Your movements are saved for later.': 'Rozgrzewka jest wyłączona. Twoje ruchy są zapisane na później.',
   'Warm-up progress': 'Postęp rozgrzewki',
   'Warm-up timer': 'Minutnik rozgrzewki',

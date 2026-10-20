@@ -2263,7 +2263,7 @@ export default {
   'Target': '목표',
   'Timer covers both sides. Switch sides halfway through.': '타이머에 양쪽 시간이 모두 포함됩니다. 절반이 지나면 방향을 바꾸세요.',
   'Timer finished. Continue when you are ready.': '시간이 끝났습니다. 준비되면 계속하세요.',
-  'Up to 8 movements per warm-up.': '워밍업당 최대 8개 동작.',
+  'Up to {0} movements per warm-up.': '워밍업당 최대 {0}개 동작.',
   'Warm-up is off. Your movements are saved for later.': '워밍업이 꺼져 있습니다. 동작은 나중을 위해 저장됩니다.',
   'Warm-up progress': '워밍업 진행 상황',
   'Warm-up timer': '워밍업 타이머',

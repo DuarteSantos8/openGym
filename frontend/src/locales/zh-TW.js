@@ -2256,7 +2256,7 @@ export default {
   'Target': '目標',
   'Timer covers both sides. Switch sides halfway through.': '計時包含兩側。時間過半時換邊。',
   'Timer finished. Continue when you are ready.': '計時結束。準備好後繼續。',
-  'Up to 8 movements per warm-up.': '每次暖身最多 8 個動作。',
+  'Up to {0} movements per warm-up.': '每次暖身最多 {0} 個動作。',
   'Warm-up is off. Your movements are saved for later.': '暖身已關閉。你的動作已儲存，供以後使用。',
   'Warm-up progress': '暖身進度',
   'Warm-up timer': '暖身計時器',

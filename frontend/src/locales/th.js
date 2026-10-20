@@ -2274,7 +2274,7 @@ export default {
   'Target': 'เป้าหมาย',
   'Timer covers both sides. Switch sides halfway through.': 'เวลานี้รวมทั้งสองข้าง เปลี่ยนข้างเมื่อผ่านไปครึ่งเวลา',
   'Timer finished. Continue when you are ready.': 'หมดเวลาแล้ว ดำเนินการต่อเมื่อพร้อม',
-  'Up to 8 movements per warm-up.': 'สูงสุด 8 ท่าต่อการวอร์มอัป',
+  'Up to {0} movements per warm-up.': 'สูงสุด {0} ท่าต่อการวอร์มอัป',
   'Warm-up is off. Your movements are saved for later.': 'ปิดการวอร์มอัปอยู่ ท่าของคุณถูกบันทึกไว้ใช้ภายหลัง',
   'Warm-up progress': 'ความคืบหน้าการวอร์มอัป',
   'Warm-up timer': 'ตัวจับเวลาวอร์มอัป',

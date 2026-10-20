@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { WARMUP_MOVEMENTS, WARMUP_IDS, MAX_WARMUP_STEPS, defaultWarmupStep, normalizeWarmup } from '../training/guided-warmup.js';
+import { WARMUP_MOVEMENTS, WARMUP_IDS, MAX_WARMUP_STEPS, WARMUP_TIME_LIMITS, WARMUP_REP_LIMITS, defaultWarmupStep, normalizeWarmup } from '../training/guided-warmup.js';
 import { EXDB } from '../../frontend/src/lib/exercises-data.js';
 
 test('reviewed movements resolve to existing equipment-free catalogue animations', () => {
@@ -55,10 +55,10 @@ test('bounds and rounds time and repetitions and only accepts literal per-side f
     { id: '3905', mode: 'reps', reps: 9.4 },
   ] }).steps;
   assert.deepEqual(steps, [
-    { id: '1368', mode: 'time', sec: 5 },
-    { id: '1368', mode: 'time', sec: 180, perSide: true },
-    { id: '3502', mode: 'reps', reps: 1 },
-    { id: '3502', mode: 'reps', reps: 50 },
+    { id: '1368', mode: 'time', sec: WARMUP_TIME_LIMITS.min },
+    { id: '1368', mode: 'time', sec: WARMUP_TIME_LIMITS.max, perSide: true },
+    { id: '3502', mode: 'reps', reps: WARMUP_REP_LIMITS.min },
+    { id: '3502', mode: 'reps', reps: WARMUP_REP_LIMITS.max },
     { id: '3905', mode: 'time', sec: 21 },
     { id: '3905', mode: 'reps', reps: 9 },
   ]);
@@ -68,7 +68,12 @@ test('limits valid steps without letting invalid imported entries consume the al
   const steps = [null, ...Array.from({ length: 20 }, (_, i) => ({ id: '3905', mode: 'time', sec: 20 + i }))];
   const result = normalizeWarmup({ enabled: true, steps });
   assert.equal(result.steps.length, MAX_WARMUP_STEPS);
-  assert.deepEqual(result.steps.map(step => step.sec), [20, 21, 22, 23, 24, 25, 26, 27]);
+  assert.deepEqual(result.steps.map(step => step.sec), Array.from({ length: MAX_WARMUP_STEPS }, (_, i) => 20 + i));
   assert.deepEqual(normalizeWarmup(result), result);
 });
 
+test('retains every distinct curated movement instead of an arbitrary sequence cap', () => {
+  const steps = WARMUP_IDS.map(defaultWarmupStep);
+  assert.equal(MAX_WARMUP_STEPS, WARMUP_IDS.length);
+  assert.deepEqual(normalizeWarmup({ enabled: true, steps }), { enabled: true, steps });
+});

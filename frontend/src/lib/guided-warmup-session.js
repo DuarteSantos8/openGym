@@ -1,4 +1,4 @@
-import { normalizeWarmup, MAX_WARMUP_STEPS } from '../../../api/training/guided-warmup.js'
+import { normalizeWarmup } from '../../../api/training/guided-warmup.js'
 
 // A separate session snapshot: changing a routine never changes preparation already under way.
 export function createGuidedWarmup(routines, now = Date.now()) {
@@ -7,7 +7,7 @@ export function createGuidedWarmup(routines, now = Date.now()) {
     const config = normalizeWarmup(routine?.warmup)
     if (!config?.enabled) continue
     for (const step of config.steps) {
-      if (seen.has(step.id) || steps.length === MAX_WARMUP_STEPS) continue
+      if (seen.has(step.id)) continue
       seen.add(step.id)
       steps.push({ ...step, status: 'pending' })
     }
