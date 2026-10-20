@@ -3,6 +3,9 @@ import { routineFromSession, saveSessionAsRoutine } from './session-routines.js'
 import { buildCompletedWorkout } from './finish-workout.js'
 import { buildSessionEntries } from './session-start.js'
 import { makeSideSet, setSideField, toggleSide, isWarmupRow } from './workout-model.js'
+import { createGuidedWarmup } from './guided-warmup-session.js'
+import { WARMUP_IDS, defaultWarmupStep } from '../../../api/training/guided-warmup.js'
+import { buildPlanBundle, parsePlan, mergePlan } from './plan-share.js'
 
 const row = (patch = {}) => ({ w: 40, r: 8, done: true, ...patch })
 const entry = (id, target, sets, extra = {}) => ({ id, target, sets, ...extra })
@@ -214,5 +217,85 @@ describe('a routine saved from a planned session', () => {
     const st = stateOf([source])
     const saved = train(st, source, { r: 9 })
     expect(routineFromSession(saved, 'Copy', []).ex[0]).not.toHaveProperty('prog')
+  })
+})
+
+
+describe('saving guided preparation as a routine', () => {
+  const steps = [
+    { id: '3905', mode: 'time', sec: 30 },
+    { id: '3502', mode: 'reps', reps: 10, perSide: true },
+  ]
+  const session = warmup => ({
+    id: 'saved-workout', name: 'Push',
+    entries: [entry('0025', { mode: 'reps', reps: 8, sets: 1 }, [row()])],
+    ...(warmup === undefined ? {} : { warmup }),
+  })
+
+  it.each(['complete', 'skipped'])('copies %s preparation targets with no session state', status => {
+    const saved = session({
+      status, current: 1, startedAt: 1000, endedAt: 31000, durationSec: 30,
+      timer: { endsAt: 50000 },
+      steps: steps.map((step, i) => ({ ...step, status: i === 0 ? 'done' : 'skipped', startedAt: 1000, endedAt: 2000 })),
+    })
+    const before = structuredClone(saved)
+    const state = { routines: [] }
+    const id = saveSessionAsRoutine(state, saved)
+    const routine = state.routines.find(r => r.id === id)
+    expect(routine.warmup).toEqual({ enabled: true, steps })
+    expect(routine.ex).toHaveLength(1)
+    const next = createGuidedWarmup([routine], 90000)
+    expect(next).toMatchObject({ status: 'in_progress', current: 0, startedAt: 90000 })
+    expect(next.steps).toEqual(steps.map(step => ({ ...step, status: 'pending' })))
+    expect(next).not.toHaveProperty('timer')
+    expect(next).not.toHaveProperty('endedAt')
+    routine.warmup.steps[0].sec = 60
+    expect(saved).toEqual(before)
+  })
+
+  it('leaves legacy routine copies identical apart from their generated identity', () => {
+    const saved = session()
+    const legacy = routineFromSession(saved)
+    const malformed = routineFromSession({ ...saved, warmup: { status: 'complete', steps: 'bad' } })
+    expect(legacy).not.toHaveProperty('warmup')
+    expect(malformed).not.toHaveProperty('warmup')
+    expect({ ...malformed, id: legacy.id }).toEqual(legacy)
+  })
+
+  it('drops unfinished or malformed preparation and filters invalid movements', () => {
+    for (const warmup of [null, [], true, { status: 'in_progress', steps }, { status: 'complete', steps: [] },
+      { status: 'complete', steps: [{ id: '0025', mode: 'time', sec: 30 }] },
+      { status: 'skipped', steps: [{ id: '3905', mode: 'time', sec: '30' }] }]) {
+      expect(routineFromSession(session(warmup))).not.toHaveProperty('warmup')
+    }
+    const routine = routineFromSession(session({ status: 'complete', steps: [
+      { id: 'missing', mode: 'reps', reps: 5 },
+      { ...steps[1], status: 'done', note: 'session only', timer: { remainingMs: 2000 } },
+    ] }))
+    expect(routine.warmup).toEqual({ enabled: true, steps: [steps[1]] })
+  })
+
+  it('keeps every movement of a combined workout through saving, sharing and starting again', () => {
+    const allSteps = WARMUP_IDS.map(defaultWarmupStep)
+    expect(allSteps).toHaveLength(13)
+    const combined = createGuidedWarmup([
+      { warmup: { enabled: true, steps: allSteps.slice(0, 8) } },
+      { warmup: { enabled: true, steps: allSteps.slice(8) } },
+    ], 1000)
+    expect(combined.steps).toHaveLength(13)
+    const saved = buildCompletedWorkout({
+      ...session(), start: 1000,
+      warmup: { ...combined, status: 'complete', endedAt: 301000, steps: combined.steps.map(step => ({ ...step, status: 'done' })) },
+    }, { end: 400000 })
+    expect(saved.warmup.steps).toHaveLength(13)
+    const state = { unit: 'kg', routines: [], customEx: [], week: {} }
+    saveSessionAsRoutine(state, saved)
+    expect(state.routines[0].warmup).toEqual({ enabled: true, steps: allSteps })
+    const imported = { unit: 'kg', routines: [], customEx: [], week: {} }
+    mergePlan(imported, parsePlan(JSON.stringify(buildPlanBundle(state, 'Combined'))))
+    expect(imported.routines[0].warmup).toEqual({ enabled: true, steps: allSteps })
+    const next = createGuidedWarmup(imported.routines, 900000)
+    expect(next.steps).toEqual(allSteps.map(step => ({ ...step, status: 'pending' })))
+    expect(next).toMatchObject({ status: 'in_progress', current: 0, startedAt: 900000 })
   })
 })

@@ -3,7 +3,7 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { exOr } from '../lib/exercises.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
-import { WARMUP_IDS, MAX_WARMUP_STEPS, normalizeWarmup, defaultWarmupStep } from '../../../api/training/guided-warmup.js'
+import { WARMUP_IDS, MAX_WARMUP_STEPS, WARMUP_TIME_LIMITS, WARMUP_REP_LIMITS, normalizeWarmup, defaultWarmupStep } from '../../../api/training/guided-warmup.js'
 import { exercisePicker } from '../sheets.jsx'
 import { Thumb } from './Media.jsx'
 import Icon from './Icon.jsx'
@@ -19,8 +19,10 @@ function MovementSettings({ step, close, onSave, onRemove }) {
   const [perSide, setPerSide] = useState(step.perSide === true)
   const ex = exOr(step.id)
   const save = () => {
-    const target = Math.round(mode === 'time' ? sec : reps) || 0
-    onSave({ id: step.id, mode, ...(mode === 'time' ? { sec: Math.max(5, Math.min(180, target)) } : { reps: Math.max(1, Math.min(50, target)) }), ...(perSide ? { perSide: true } : {}) })
+    const target = { id: step.id, mode, ...(mode === 'time' ? { sec } : { reps }), ...(perSide ? { perSide: true } : {}) }
+    const saved = normalizeWarmup({ enabled: true, steps: [target] }).steps[0]
+    if (!saved) return
+    onSave(saved)
     close()
   }
   return <div>
@@ -35,8 +37,8 @@ function MovementSettings({ step, close, onSave, onRemove }) {
       </Row>
       <Row title={mode === 'time' ? t('Duration') : t('Repetitions')}>
         {mode === 'time'
-          ? <Stepper value={sec} min={5} max={180} step={5} decimal={false} unit={t('s')} onChange={setSec} />
-          : <Stepper value={reps} min={1} max={50} decimal={false} onChange={setReps} />}
+          ? <Stepper value={sec} min={WARMUP_TIME_LIMITS.min} max={WARMUP_TIME_LIMITS.max} step={5} decimal={false} unit={t('s')} onChange={setSec} />
+          : <Stepper value={reps} min={WARMUP_REP_LIMITS.min} max={WARMUP_REP_LIMITS.max} decimal={false} onChange={setReps} />}
       </Row>
       <Row title={t('Per side')} subtitle={t('Complete the target on each side.')}>
         <Switch aria-label={t('Per side')} checked={perSide} onChange={setPerSide} />
@@ -121,7 +123,7 @@ export default function RoutineWarmup({ routineId }) {
     <div className="small dim" style={{ margin: '8px 2px 16px' }}>
       {!warmup.steps.length ? t('Add movements to build a guided warm-up.')
         : !warmup.enabled ? t('Warm-up is off. Your movements are saved for later.')
-        : warmup.steps.length >= MAX_WARMUP_STEPS ? t('Up to 8 movements per warm-up.') : null}
+        : warmup.steps.length >= MAX_WARMUP_STEPS ? t('Up to {0} movements per warm-up.', MAX_WARMUP_STEPS) : null}
     </div>
   </section>
 }

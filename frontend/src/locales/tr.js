@@ -2263,7 +2263,7 @@ export default {
   'Target': 'Hedef',
   'Timer covers both sides. Switch sides halfway through.': 'Zamanlayıcı iki tarafı da kapsar. Sürenin yarısında taraf değiştir.',
   'Timer finished. Continue when you are ready.': 'Süre doldu. Hazır olduğunda devam et.',
-  'Up to 8 movements per warm-up.': 'Her ısınmada en fazla 8 hareket.',
+  'Up to {0} movements per warm-up.': 'Her ısınmada en fazla {0} hareket.',
   'Warm-up is off. Your movements are saved for later.': 'Isınma kapalı. Hareketlerin daha sonrası için kayıtlı.',
   'Warm-up progress': 'Isınma ilerlemesi',
   'Warm-up timer': 'Isınma zamanlayıcısı',

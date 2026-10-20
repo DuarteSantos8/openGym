@@ -2260,7 +2260,7 @@ export default {
   'Target': 'Ціль',
   'Timer covers both sides. Switch sides halfway through.': 'Таймер розраховано на обидві сторони. Зміни сторону посередині відліку.',
   'Timer finished. Continue when you are ready.': 'Час вийшов. Продовжуй, коли будеш готовий.',
-  'Up to 8 movements per warm-up.': 'До 8 рухів на розминку.',
+  'Up to {0} movements per warm-up.': 'До {0} рухів на розминку.',
   'Warm-up is off. Your movements are saved for later.': 'Розминку вимкнено. Твої рухи збережено на потім.',
   'Warm-up progress': 'Прогрес розминки',
   'Warm-up timer': 'Таймер розминки',

@@ -2263,7 +2263,7 @@ export default {
   'Target': '目标',
   'Timer covers both sides. Switch sides halfway through.': '计时包含两侧。时间过半时换边。',
   'Timer finished. Continue when you are ready.': '计时结束。准备好后继续。',
-  'Up to 8 movements per warm-up.': '每次热身最多 8 个动作。',
+  'Up to {0} movements per warm-up.': '每次热身最多 {0} 个动作。',
   'Warm-up is off. Your movements are saved for later.': '热身已关闭。你的动作已保存，供以后使用。',
   'Warm-up progress': '热身进度',
   'Warm-up timer': '热身计时器',

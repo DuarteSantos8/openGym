@@ -2263,7 +2263,7 @@ export default {
   'Target': 'Objectif',
   'Timer covers both sides. Switch sides halfway through.': 'Le minuteur couvre les deux côtés. Change de côté à mi-parcours.',
   'Timer finished. Continue when you are ready.': 'Temps écoulé. Continue quand tu es prêt.',
-  'Up to 8 movements per warm-up.': 'Jusqu’à 8 mouvements par échauffement.',
+  'Up to {0} movements per warm-up.': 'Jusqu’à {0} mouvements par échauffement.',
   'Warm-up is off. Your movements are saved for later.': 'L’échauffement est désactivé. Tes mouvements sont enregistrés pour plus tard.',
   'Warm-up progress': 'Progression de l’échauffement',
   'Warm-up timer': 'Minuteur d’échauffement',

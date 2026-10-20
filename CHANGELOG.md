@@ -5,7 +5,8 @@
 - Routines can now include a separate guided warm-up. Choose existing movements in Plan and
   follow their animations, timers or repetition targets before the working exercises. Preparation
   resumes after reopening the app, travels with plan files, and stays out of lifting volume,
-  records and progression. Total session time includes preparation.
+  records and progression. Combined workouts keep every distinct movement, and saving a
+  workout as a routine carries its preparation forward. Total session time includes preparation.
 
 ## v1.4.1 (2026-10-10)
 

@@ -2266,7 +2266,7 @@ export default {
   'Target': 'Cél',
   'Timer covers both sides. Switch sides halfway through.': 'Az időzítő mindkét oldalra vonatkozik. Félidőben válts oldalt.',
   'Timer finished. Continue when you are ready.': 'Lejárt az idő. Folytasd, amikor készen állsz.',
-  'Up to 8 movements per warm-up.': 'Legfeljebb 8 mozdulat bemelegítésenként.',
+  'Up to {0} movements per warm-up.': 'Legfeljebb {0} mozdulat bemelegítésenként.',
   'Warm-up is off. Your movements are saved for later.': 'A bemelegítés ki van kapcsolva. A mozdulataid későbbre mentve maradnak.',
   'Warm-up progress': 'Bemelegítés előrehaladása',
   'Warm-up timer': 'Bemelegítési időzítő',

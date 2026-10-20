@@ -2263,7 +2263,7 @@ export default {
   'Target': 'लक्ष्य',
   'Timer covers both sides. Switch sides halfway through.': 'टाइमर में दोनों तरफ़ का समय शामिल है। आधे समय पर तरफ़ बदलें।',
   'Timer finished. Continue when you are ready.': 'समय पूरा हुआ। तैयार होने पर आगे बढ़ें।',
-  'Up to 8 movements per warm-up.': 'हर वार्म-अप में अधिकतम 8 मूवमेंट।',
+  'Up to {0} movements per warm-up.': 'हर वार्म-अप में अधिकतम {0} मूवमेंट।',
   'Warm-up is off. Your movements are saved for later.': 'वार्म-अप बंद है। आपके मूवमेंट बाद के लिए सेव हैं।',
   'Warm-up progress': 'वार्म-अप की प्रगति',
   'Warm-up timer': 'वार्म-अप टाइमर',

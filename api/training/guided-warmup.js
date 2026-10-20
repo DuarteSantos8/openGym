@@ -20,7 +20,9 @@ Object.freeze(WARMUP_MOVEMENTS)
 
 export const WARMUP_IDS = Object.freeze(WARMUP_MOVEMENTS.map(movement => movement.id))
 const BY_ID = new Map(WARMUP_MOVEMENTS.map(movement => [movement.id, movement]))
-export const MAX_WARMUP_STEPS = 8
+export const MAX_WARMUP_STEPS = WARMUP_IDS.length
+export const WARMUP_TIME_LIMITS = Object.freeze({ min: 5, max: 180 })
+export const WARMUP_REP_LIMITS = Object.freeze({ min: 1, max: 50 })
 
 export function defaultWarmupStep(id) {
   const movement = BY_ID.get(id)
@@ -35,7 +37,7 @@ function normalizeStep(value) {
   const key = value.mode === 'time' ? 'sec' : 'reps'
   // Imported strings, booleans and Infinity are not durations or repetition counts.
   if (typeof value[key] !== 'number' || !Number.isFinite(value[key])) return undefined
-  const [min, max] = value.mode === 'time' ? [5, 180] : [1, 50]
+  const { min, max } = value.mode === 'time' ? WARMUP_TIME_LIMITS : WARMUP_REP_LIMITS
   return {
     id: value.id,
     mode: value.mode,

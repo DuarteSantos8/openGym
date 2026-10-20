@@ -2342,7 +2342,7 @@ export default {
   'Target': 'লক্ষ্য',
   'Timer covers both sides. Switch sides halfway through.': 'টাইমারে উভয় দিকের সময় অন্তর্ভুক্ত। অর্ধেক সময়ে দিক বদলান।',
   'Timer finished. Continue when you are ready.': 'সময় শেষ। প্রস্তুত হলে এগিয়ে যান।',
-  'Up to 8 movements per warm-up.': 'প্রতি ওয়ার্ম-আপে সর্বোচ্চ 8টি মুভমেন্ট।',
+  'Up to {0} movements per warm-up.': 'প্রতি ওয়ার্ম-আপে সর্বোচ্চ {0}টি মুভমেন্ট।',
   'Warm-up is off. Your movements are saved for later.': 'ওয়ার্ম-আপ বন্ধ আছে। আপনার মুভমেন্টগুলো পরের জন্য সংরক্ষিত আছে।',
   'Warm-up progress': 'ওয়ার্ম-আপের অগ্রগতি',
   'Warm-up timer': 'ওয়ার্ম-আপ টাইমার',

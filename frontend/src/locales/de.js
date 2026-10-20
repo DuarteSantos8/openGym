@@ -2283,7 +2283,7 @@ export default {
   'Target': 'Ziel',
   'Timer covers both sides. Switch sides halfway through.': 'Der Timer gilt für beide Seiten. Wechsle nach der Hälfte die Seite.',
   'Timer finished. Continue when you are ready.': 'Zeit abgelaufen. Mach weiter, wenn du bereit bist.',
-  'Up to 8 movements per warm-up.': 'Bis zu 8 Bewegungen pro Aufwärmen.',
+  'Up to {0} movements per warm-up.': 'Bis zu {0} Bewegungen pro Aufwärmen.',
   'Warm-up is off. Your movements are saved for later.': 'Das Aufwärmen ist ausgeschaltet. Deine Bewegungen bleiben für später gespeichert.',
   'Warm-up progress': 'Aufwärmfortschritt',
   'Warm-up timer': 'Aufwärmtimer',
