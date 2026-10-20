@@ -1,6 +1,7 @@
-/* An hour at a time while recent (catalogue.js hourlyFrom, compactHourly; fold.js): the totals and
-   means of the last days kept per hour, heart rate for 90 days and the rest for 30, folded into one
-   reading a day once they are older, the same way on every device and on the server. */
+/* An hour at a time while recent (catalogue.js hourlyFrom, compactHourly; fold.js): heart rate of
+   the last 90 days kept per hour, folded into one reading a day once it is older; every other total
+   and mean a day at a time, and hours of them kept before folded into their day — the same way on
+   every device and on the server. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { hourlyFrom, compactHourly, trimImported } from '../health/catalogue.js';
@@ -10,13 +11,13 @@ const NOW = Date.parse('2026-10-19T12:00:00Z');
 const at = (d, hh, mm = 0) => `${d}T${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:00+00:00`;
 const hourMs = (d, hh) => Date.parse(`${d}T${String(hh).padStart(2, '0')}:00:00Z`);
 
-test('the window: heart rate 90 days, everything else 30', () => {
+test('the window: heart rate 90 days, everything else never', () => {
   assert.equal(hourlyFrom('heartRate', NOW), '2026-07-22');
-  assert.equal(hourlyFrom('steps', NOW), '2026-09-20');
-  assert.equal(hourlyFrom('spo2', NOW), '2026-09-20');
+  assert.equal(hourlyFrom('steps', NOW), '9999-12-31');
+  assert.equal(hourlyFrom('spo2', NOW), '9999-12-31');
 });
 
-test('recent totals and means come an hour at a time; older ones, and whole-day totals, a day at a time', () => {
+test('recent heart rate comes an hour at a time; totals, other means and older heart rate a day at a time', () => {
   const f = createFolder({ now: NOW });
   const add = (type, v, start, source = 'iPhone', more = {}) => f.add({ type, v, unit: type === 'heartRate' ? 'count/min' : 'count', start, source, ...more });
   add('steps', 300, at('2026-10-18', 9, 5));
@@ -28,11 +29,13 @@ test('recent totals and means come an hour at a time; older ones, and whole-day 
   add('heartRate', 70, at('2026-08-01', 7, 0));           // 79 days ago: still hourly for heart rate
   add('steps', 5000, at('2026-08-01', 7, 0));             // but not for steps
   add('steps', 9000, '2026-10-17');                       // a day's total a Shortcut already summed
+  add('heartRate', 50, at('2026-07-01', 7, 0));           // 110 days ago: a day of its own
   const r = f.readings();
   const by = sid => r.find(x => x.sid === sid);
-  assert.equal(by(`steps:${hourMs('2026-10-18', 9)}`).v, 500, 'an hour of two sources: the larger, not both');
-  assert.equal(by(`steps:${hourMs('2026-10-18', 14)}`).v, 800);
-  assert.equal(by(`steps:${hourMs('2026-10-18', 9)}`).t, hourMs('2026-10-18', 9));
+  // Steps are the day's total, never by the hour.
+  assert.ok(by('steps:2026-10-18'), 'a day of steps');
+  assert.ok(!r.some(x => x.type === 'steps' && /:\d+$/.test(x.sid)), 'no hours of steps');
+  assert.equal(by('heartRate:2026-07-01').v, 50);
   const hr = by(`heartRate:${hourMs('2026-10-18', 9)}`);
   assert.equal(hr.v, 75);
   assert.equal(hr.lo, 60);
@@ -40,7 +43,6 @@ test('recent totals and means come an hour at a time; older ones, and whole-day 
   assert.ok(by(`heartRate:${hourMs('2026-08-01', 7)}`));
   assert.equal(by('steps:2026-08-01').v, 5000);
   assert.equal(by('steps:2026-10-17').v, 9000);
-  assert.ok(!r.some(x => x.sid === 'steps:2026-10-18'), 'a recent day of samples has no day reading');
 });
 
 test('a Shortcut sending times gets hours too', () => {
@@ -78,11 +80,17 @@ test('an old day\'s hours become its one reading: the total, or the mean with it
   assert.equal(compactHourly(later, Date.parse('2027-01-15T12:00:00Z')), later);
 });
 
-test('a recent day with its hours does not also count the same source\'s day reading', () => {
+test('a recent day of heart rate with its hours does not also count the same source\'s day reading', () => {
   const d = '2026-10-18';
-  const health = [rec('steps', `steps:${hourMs(d, 9)}`, 500, d), rec('steps', 'steps:2026-10-18', 9000, d), rec('steps', 'steps:2026-10-17', 7000, '2026-10-17')];
+  const health = [rec('heartRate', `heartRate:${hourMs(d, 9)}`, 70, d), rec('heartRate', 'heartRate:2026-10-18', 65, d), rec('heartRate', 'heartRate:2026-10-17', 60, '2026-10-17')];
   const out = compactHourly(health, NOW);
-  assert.deepEqual(out.map(r => r.sid).sort(), ['steps:2026-10-17', `steps:${hourMs(d, 9)}`].sort());
+  assert.deepEqual(out.map(r => r.sid).sort(), ['heartRate:2026-10-17', `heartRate:${hourMs(d, 9)}`].sort());
+});
+
+test('steps kept by the hour before, even yesterday\'s, fold into their day', () => {
+  const d = '2026-10-18';
+  const out = compactHourly([rec('steps', `steps:${hourMs(d, 9)}`, 500, d), rec('steps', `steps:${hourMs(d, 14)}`, 800, d)], NOW);
+  assert.deepEqual(out.map(r => [r.sid, r.v]), [['steps:2026-10-18', 1300]]);
 });
 
 test('trimImported folds old hours first, so two copies settle on the same records', () => {
