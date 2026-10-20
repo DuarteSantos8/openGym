@@ -233,3 +233,23 @@ test('a named side, "SWITCH SIDES", then a countdown as long that nobody named i
   const ss = classify(timerPhases(framesOf([...named, ['REST', 15], ['', 40], ['REST', 15], ['SIDE PLANK DIPS (LEFT)', 40], ['NEXT: LEG DROPS', 15], ['LEG DROPS', 40]])), { timed: true })
   assert.ok(!ss.sections.flatMap(s => s.rows).some(r => /left/.test(r.key) && r.occurrences.some(o => o.start === 125)))
 })
+
+test('"(one side)", "SWITCH SIDE!", then a countdown as long that nobody named is the same move on the other side (ScInpT_5dIQ)', async () => {
+  const { timerPhases } = await import('../src/segment.js')
+  const draft = classify(timerPhases(framesOf([
+    ['UP NEXT SHOULDER PRESS', 20], ['SHOULDER PRESS', 55],
+    ['UP NEXT STATIC LUNGE (ONE SIDE)', 20], ['STATIC LUNGE (ONE SIDE)', 55],
+    ['SWITCH SIDE!', 20], ['', 55],
+    ['UP NEXT PULLOVER', 20], ['PULLOVER', 55]
+  ])), { timed: true })
+  const rows = draft.sections.flatMap(s => s.rows)
+  const other = rows.find(r => r.occurrences.some(o => o.start === 170))
+  assert.ok(other, 'the unnamed 55 s after SWITCH SIDE! is a row')
+  assert.match(other.key, /static lunge/)
+  // A superset's second move after an ordinary rest is not the other side.
+  const ss = classify(timerPhases(framesOf([
+    ['UP NEXT STATIC LUNGE (ONE SIDE)', 20], ['STATIC LUNGE (ONE SIDE)', 55],
+    ['REST', 20], ['', 55], ['UP NEXT PULLOVER', 20], ['PULLOVER', 55]
+  ])), { timed: true })
+  assert.ok(!ss.sections.flatMap(s => s.rows).some(r => /static lunge/.test(r.key) && r.occurrences.some(o => o.start === 95)))
+})

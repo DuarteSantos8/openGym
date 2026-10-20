@@ -16,12 +16,14 @@
 //    per-side row.
 
 import { detectRounds } from './rounds.js'
-import { similarity, sameName, sideOf, sectionTitle, displayName, median, snapSec, mode, SAME_NAME } from './text.js'
+import { similarity, sameName, sideOf, normName, sectionTitle, displayName, median, snapSec, mode, SAME_NAME } from './text.js'
 
 export const MAX_WORK = 120
 export const MAX_REST = 60
 export const SECTION_BREAK = 120   // a rest this long ends an interval section
 const MIN_INTERVALS = 3
+// What a rest says when it is the pause between the two sides of one move.
+const SWITCH_RE = /\b(switch|change|other)\b.*\bsides?\b|\bsides?\b.*\b(switch|change)\b/
 const MIN_TIMED = 10   // seconds: a timed hold shorter than this is a countdown to the next thing
 
 // A gap the countdown measured (a move nobody named) is a move, not a rest.
@@ -119,7 +121,16 @@ export function classify(blocks, { hints = [], parts = [], cuts = [], timed = fa
     if (b.kind !== 'work' || !isRestish(bs[i + 1]) || bs[i + 1].dur > MAX_REST) continue
     if (!gap || gap.kind !== 'gap' || !gap.timed || Math.abs(gap.dur - b.dur) > 3) continue
     const { base, side } = sideOf(b.text || b.key)
-    if (!side) continue
+    if (!side) {
+      // "STATIC LUNGE (ONE SIDE)": no left or right named, so the rest has to say it is the switch
+      // ("SWITCH SIDE!"); the countdown after it is the same move again. An ordinary REST is not
+      // enough, it may be the second move of a superset.
+      const one = /\b(one|each|per) side\b/.test(normName(b.text || b.key))
+      if (one && SWITCH_RE.test(normName(bs[i + 1].text || bs[i + 1].key || ''))) {
+        Object.assign(gap, { kind: 'work', key: b.key, text: b.text, conf: Math.min(0.5, b.conf || 0), variants: { ...(b.variants || {}) }, fromSide: true })
+      }
+      continue
+    }
     const other = side === 'R' ? 'left' : 'right'
     const later = bs.slice(i + 3, i + 5).find(x => x.kind === 'work')
     if (later && sideOf(later.text || later.key).side && sameName(sideOf(later.text || later.key).base, base)) continue
