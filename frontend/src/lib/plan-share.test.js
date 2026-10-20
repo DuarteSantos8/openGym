@@ -60,6 +60,82 @@ describe('plan-share units', () => {
   })
 })
 
+describe('guided warm-up plan portability', () => {
+  const warmup = {
+    enabled: true,
+    steps: [
+      { id: '3905', mode: 'time', sec: 30 },
+      { id: '3502', mode: 'reps', reps: 10, perSide: true },
+    ],
+  }
+  const withWarmup = value => {
+    const source = stateWith({ warmupSets: 2 })
+    source.routines[0].warmup = value
+    return source
+  }
+
+  it('exports, imports and merges ordered preparation separately from working exercises', () => {
+    const source = withWarmup(warmup)
+    const exported = buildPlanBundle(source, 'Plan')
+    const parsed = parsePlan(JSON.stringify(exported), 'lb')
+    const target = { unit: 'lb', routines: [], customEx: [], week: {} }
+    mergePlan(target, parsed)
+
+    expect(exported.routines[0].warmup).toEqual(warmup)
+    expect(parsed.routines[0].warmup).toEqual(warmup)
+    expect(target.routines[0].warmup).toEqual(warmup)
+    expect(parsed.exerciseCount).toBe(1)
+    expect(target.routines[0].ex).toHaveLength(1)
+    expect(target.routines[0].ex[0].warmupSets).toBe(2)
+    target.routines[0].warmup.steps[0].sec = 60
+    expect(source.routines[0].warmup.steps[0].sec).toBe(30)
+    expect(parsed.routines[0].warmup.steps[0].sec).toBe(30)
+  })
+
+  it('keeps a disabled sequence for later re-enabling', () => {
+    const disabled = { ...warmup, enabled: false }
+    const parsed = parsePlan(buildPlanBundle(withWarmup(disabled), 'Plan'))
+    const target = { routines: [], customEx: [], week: {} }
+    mergePlan(target, parsed)
+    expect(target.routines[0].warmup).toEqual(disabled)
+  })
+
+  it('leaves legacy routines without a warm-up field at every boundary', () => {
+    const exported = buildPlanBundle(stateWith({}), 'Plan')
+    const parsed = parsePlan(JSON.stringify(exported))
+    const target = { routines: [], customEx: [], week: {} }
+    mergePlan(target, parsed)
+    for (const routine of [exported.routines[0], parsed.routines[0], target.routines[0]]) {
+      expect(routine).not.toHaveProperty('warmup')
+    }
+    expect(exported.routines[0]).toEqual({ id: 'r1', name: 'Push', emoji: undefined, ex: [{ id: '0025', sets: 3, reps: 5, weight: 100 }] })
+  })
+
+  it('drops malformed configurations on export, import and direct merge', () => {
+    for (const malformed of [null, true, [], { enabled: 'yes', steps: [] }, { enabled: true, steps: 'bad' }]) {
+      const source = withWarmup(malformed)
+      expect(buildPlanBundle(source, 'Plan').routines[0]).not.toHaveProperty('warmup')
+      const raw = { opengym_plan: 1, ...source }
+      expect(parsePlan(raw).routines[0]).not.toHaveProperty('warmup')
+      const target = { routines: [], customEx: [], week: {} }
+      mergePlan(target, raw)
+      expect(target.routines[0]).not.toHaveProperty('warmup')
+    }
+  })
+
+  it('filters unknown movements and strips non-prescription fields from imported steps', () => {
+    const raw = { opengym_plan: 1, ...withWarmup({ enabled: true, extra: 'ignored', steps: [
+      { id: 'custom-warmup', mode: 'time', sec: 30 },
+      { id: '0025', mode: 'reps', reps: 10 },
+      { id: '3905', mode: 'time', sec: '30' },
+      { id: '3502', mode: 'reps', reps: 10, perSide: true, weight: 500, note: '<script>' },
+    ] }) }
+    const parsed = parsePlan(raw)
+    expect(parsed.routines[0].warmup).toEqual({ enabled: true, steps: [warmup.steps[1]] })
+    expect(parsed.exerciseCount).toBe(1)
+  })
+})
+
 describe('what survives a shared plan', () => {
   it('carries Per side on a timed hold, and on reps work; never on cardio', () => {
     const hold = roundTrip({ mode: 'time', sec: 30, sets: 2, reps: undefined, weight: undefined, side: true })

@@ -95,3 +95,27 @@ describe('planPrintHTML prints the exercise as it is prescribed', () => {
     expect(text(html)).toContain('Dropsatz 2×')
   })
 })
+
+
+describe('planPrintHTML guided warm-up', () => {
+  const warmup = { enabled: true, steps: [
+    { id: '3905', mode: 'time', sec: 30 },
+    { id: '3502', mode: 'reps', reps: 10, perSide: true },
+  ] }
+  const withWarmup = enabled => ({ ...S, routines: [{ ...S.routines[0], warmup: { ...warmup, enabled } }] })
+
+  it('prints preparation before working exercises without adding to their count', () => {
+    const body = text(planPrintHTML(withWarmup(true), '', { routineId: 'push' }))
+    expect(body).toContain('Warm-up')
+    expect(body).toContain('arm circles 30s')
+    expect(body).toContain('10 reps · per side')
+    expect(body).toContain('3 exercises')
+    expect(body.indexOf('Warm-up')).toBeLessThan(body.indexOf('barbell bench press'))
+  })
+
+  it('omits disabled preparation from the printable workout', () => {
+    const html = planPrintHTML(withWarmup(false), '', { routineId: 'push' })
+    expect(html).not.toContain('<div class="warmup">')
+    expect(text(html)).not.toContain('arm circles')
+  })
+})

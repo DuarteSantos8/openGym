@@ -21,6 +21,7 @@ import { t, exerciseNameFor, exerciseNameClass, getLang, RTL_LANGS } from './i18
 import { convertWeight } from './units.js'
 import { fmtSpeed, speedUnitOf } from './speed.js'
 import { MUSCLES, inMuscleOrder } from './muscles.js'
+import { normalizeWarmup } from '../../../api/training/guided-warmup.js'
 
 const PLAN_FMT = 1
 const WEEK_DAYS = [1, 2, 3, 4, 5, 6, 0]   // every getDay() index; only the reader's own
@@ -64,6 +65,13 @@ function convertedBundle(bundle, destinationUnit) {
       ex: (r.ex || []).map(e => convertedExercise(e, sourceUnit, destinationUnit))
     }))
   }
+}
+
+// Warm-up preparation is separate from working exercises and is never converted as a load.
+// Use the same gate at each boundary, including callers that merge a bundle directly.
+function warmupFields(r) {
+  const warmup = normalizeWarmup(r.warmup)
+  return warmup ? { warmup } : {}
 }
 
 // Keep only the meaningful config fields, so the file stays small and readable.
@@ -197,6 +205,7 @@ export function buildPlanBundle(S, name) {
     id: r.id, name: r.name, emoji: r.emoji,
     ...(r.prog ? { prog: r.prog } : {}),
     ...(r.excludeFromProgression === true ? { excludeFromProgression: true } : {}),
+    ...warmupFields(r),
     ex: (r.ex || []).map(cleanEx)
   }))
   const usedIds = new Set(routines.flatMap(r => r.ex.map(e => e.id)))
@@ -232,8 +241,9 @@ export function parsePlan(raw, destinationUnit = 'kg') {
   const customEx = (Array.isArray(data.customEx) ? data.customEx : []).filter(c => c && c.id)
   const known = new Set(customEx.map(c => c.id))
   let dropped = 0
-  const routines = data.routines.filter(r => r && Array.isArray(r.ex)).map(r => ({
+  const routines = data.routines.filter(r => r && Array.isArray(r.ex)).map(({ warmup, ...r }) => ({
     ...r,
+    ...warmupFields({ warmup }),
     ex: r.ex.filter(e => {
       const ok = !!e && (known.has(e.id) || !!EXIDX[e.id])
       if (!ok) dropped++
@@ -304,6 +314,7 @@ export function mergePlan(s, bundle, { schedule } = {}) {
       emoji: r.emoji,
       ...(r.prog ? { prog: r.prog } : {}),
       ...(r.excludeFromProgression === true ? { excludeFromProgression: true } : {}),
+      ...warmupFields(r),
       ex: (r.ex || []).map(e => ({ ...e, id: exIdMap[e.id] || canonicalExId(e.id) }))
     })
   })
@@ -362,6 +373,18 @@ function units(ex) {
   return out
 }
 
+function warmupHTML(r) {
+  const warmup = normalizeWarmup(r.warmup)
+  if (!warmup?.enabled || !warmup.steps.length) return ''
+  const rows = warmup.steps.map(step => {
+    const ex = EXIDX[step.id]
+    const target = step.mode === 'time' ? `${step.sec}s` : `${step.reps} ${t('reps')}`
+    const side = step.perSide ? ` · ${t('per side')}` : ''
+    return `<div class="ex"><div class="ex-row"><div class="ex-n ${exerciseNameClass(ex)}">${esc(exerciseNameFor(ex))}</div><div class="ex-s">${esc(target + side)}</div></div></div>`
+  }).join('')
+  return `<div class="warmup"><h3 class="block">${esc(t('Warm-up'))}</h3>${rows}</div>`
+}
+
 // `bare` leaves out the routine's own heading, for a page that is this one routine and already
 // names it at the top.
 function routineHTML(r, unit, { bare = false, speedUnit } = {}) {
@@ -382,6 +405,7 @@ function routineHTML(r, unit, { bare = false, speedUnit } = {}) {
   const count = exCount(r.ex.length)
   return `<section class="routine">
     ${bare ? '' : `<div class="r-head"><h2>${esc(r.name)}</h2><span class="r-count">${esc(count)}</span></div>`}
+    ${warmupHTML(r)}
     <div class="ex-list">${rows || `<div class="ex empty">${esc(t('No exercises yet.'))}</div>`}</div>
   </section>`
 }
@@ -446,6 +470,7 @@ export function planPrintHTML(S, owner, { routineId } = {}) {
   .r-head h2 { font-size: 18px; letter-spacing: -.01em; margin: 0; text-transform: capitalize; }
   .r-count { font-size: 12px; color: #8a90a0; white-space: nowrap; }
 
+  .warmup { border-bottom: 1px solid #e4e6ec; margin-bottom: 10px; padding-bottom: 10px; }
   .ex-list { display: flex; flex-direction: column; }
   .ex { display: flex; flex-direction: column; padding: 6px 0; break-inside: avoid; page-break-inside: avoid; }
   .ex + .ex, .ss + .ex, .ex + .ss { border-top: 1px solid #f2f3f6; }

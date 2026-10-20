@@ -45,6 +45,8 @@ import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEn
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import FocusView from './FocusView.jsx'
+import GuidedWarmup from './GuidedWarmup.jsx'
+import { pendingGuidedWarmup } from '../lib/guided-warmup-session.js'
 import { withMeaning, historyAs, dbLoadFor, entryDbLoad, bellsIn, ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
@@ -2085,5 +2087,6 @@ function ActiveWorkout() {
 
 export default function Workout() {
   const active = useStore(s => s.S.active)
+  if (pendingGuidedWarmup(active)) return <GuidedWarmup />
   return active ? <ActiveWorkout /> : <StartChooser />
 }

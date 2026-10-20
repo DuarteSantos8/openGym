@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+- Warm-up thumbnails open the exercise's animated details from suggestions and saved sequences.
+  Closing the preview returns to the current draft without adding or changing movements.
+
+- Plan can suggest warm-up movements from a routine’s muscles and available equipment. Preview
+  and edit the sequence before saving; replacing a manual warm-up requires an explicit choice.
+  Suggestions must be refreshed if their muscle targets or available movements change.
+
+- Routines can now include a separate guided warm-up. Choose existing movements in Plan and
+  follow their animations, timers or repetition targets before the working exercises. Preparation
+  resumes after reopening the app, travels with plan files, and stays out of lifting volume,
+  records and progression. Combined workouts keep every distinct movement, and saving a
+  workout as a routine carries its preparation forward. Total session time includes preparation.
+
 ## v1.4.1 (2026-10-10)
 
 Bug fixes for v1.4.0, mostly the things you told us about on Discord and GitHub.

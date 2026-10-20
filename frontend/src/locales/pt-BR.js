@@ -1403,6 +1403,19 @@ export const PT_BR_OVERRIDES = {
   'Gentle, for headphones or a quiet room.': 'Suave, para fones de ouvido ou um lugar silencioso.',
   'Fewer than two workouts in this period. Pick a longer one.': 'Menos de dois treinos neste período. Escolha um mais longo.',
   'Releases are checked on GitHub. The download is verified against its checksum before the installer opens.': 'As versões são verificadas no GitHub. O download é conferido pela soma de verificação antes de abrir o instalador.',
+  // Guided warm-up
+  'Add movements to build a guided warm-up.': 'Adicione movimentos para criar um aquecimento guiado.',
+  'Complete both sides before continuing.': 'Complete ambos os lados antes de continuar.',
+  'Complete the target on each side.': 'Complete a meta de cada lado.',
+  'Follow these movements before your working sets.': 'Faça estes movimentos antes das séries de trabalho.',
+  'Target': 'Meta',
+  'Timer covers both sides. Switch sides halfway through.': 'O temporizador inclui ambos os lados. Troque de lado na metade do tempo.',
+  'Timer finished. Continue when you are ready.': 'O tempo terminou. Continue quando estiver pronto.',
+  'Warm-up is off. Your movements are saved for later.': 'O aquecimento está desativado. Seus movimentos ficam salvos para depois.',
+  // Warm-up suggestions
+  'Based on this routine’s muscles: {0}. Edit the movements before adding them.': 'Com base nos músculos desta rotina: {0}. Edite os movimentos antes de adicioná-los.',
+  'No warm-up suggestions are available for this routine. Add movements manually.': 'Não há sugestões de aquecimento para esta rotina. Adicione movimentos manualmente.',
+  'Plan or equipment changed. Open suggestions again to review an updated warm-up.': 'O plano ou o equipamento mudou. Abra novamente as sugestões para revisar um aquecimento atualizado.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

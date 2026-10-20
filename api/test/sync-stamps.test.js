@@ -140,6 +140,29 @@ test('an older app saving a routine keeps the pyramid it does not know', () => {
   assert.ok(next.routines[0]._f.ex >= NOW);   // its weight change is still an edit of its own
 });
 
+test('routine warm-up preparation survives an older writer and has its own edit stamp', () => {
+  const cur = stored();
+  const warmup = { enabled: true, steps: [{ id: '3905', mode: 'time', sec: 30 }] };
+  cur.routines[0].warmup = warmup;
+  const older = clone(cur);
+  delete older.routines[0].warmup;
+  older.routines[0].name = 'Push A';
+  stampPut(cur, older, { overRead: true, stamped: false, now: NOW });
+  assert.deepEqual(older.routines[0].warmup, warmup);
+  assert.equal(cur.routines[0].name, 'Push');
+
+  // The current client can intentionally disable the sequence; it is one routine field,
+  // independent of the lifting prescription and its edit stamp.
+  const next = clone(older);
+  next.routines[0].warmup.enabled = false;
+  stampPut(older, next, { overRead: true, stamped: false, now: NOW + 100 });
+  const saved = clone(next).routines[0];
+  assert.deepEqual(saved.warmup, { ...warmup, enabled: false });
+  assert.ok(saved._f.warmup >= NOW + 100);
+  assert.equal(saved._f.ex, undefined);
+  assert.deepEqual(saved.ex, cur.routines[0].ex);
+});
+
 test('an older app keeps the fields it does not know everywhere: settings, entries, sets', () => {
   const cur = stored();
   cur.accentCustom = '#ff00aa'; cur.showRir = true;

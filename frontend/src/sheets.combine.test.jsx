@@ -5,6 +5,7 @@ import { beginWorkout } from './sheets.jsx'
 import { EXDB } from './lib/exercises.js'
 import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
+import { defaultWarmupStep } from '../../api/training/guided-warmup.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 const ids = EXDB.filter(e => e.bp !== 'cardio').slice(0, 3).map(e => e.id)
@@ -66,4 +67,35 @@ describe('beginWorkout with a routine-id list', () => {
     act(() => beginWorkout(['core', 'gone', 'core'], null))
     expect(useStore.getState().S.active.routineIds).toEqual(['core'])
   })
+
+  it('snapshots one guided warm-up before the unchanged combined working entries', () => {
+    const baseline = () => {
+      act(() => beginWorkout(['strength', 'core'], null))
+      return structuredClone(useStore.getState().S.active.entries)
+    }
+    const main = baseline()
+    useStore.getState().update(s => {
+      s.active = null
+      s.routines[0].warmup = { enabled: true, steps: [defaultWarmupStep('3905')] }
+      s.routines[1].warmup = { enabled: true, steps: [defaultWarmupStep('3905'), defaultWarmupStep('3502')] }
+    })
+    act(() => beginWorkout(['strength', 'core'], null))
+    const active = useStore.getState().S.active
+    expect(active.entries).toEqual(main)
+    expect(active.warmup).toMatchObject({ status: 'in_progress', current: 0 })
+    expect(active.warmup.steps.map(s => s.id)).toEqual(['3905', '3502'])
+    useStore.getState().update(s => { s.routines[0].warmup.steps[0].sec = 60 })
+    expect(active.warmup.steps[0].sec).toBe(30)
+  })
+
+  it('does not introduce a preparation stage for disabled or empty routines', () => {
+    useStore.getState().update(s => {
+      s.routines[0].warmup = { enabled: false, steps: [defaultWarmupStep('3905')] }
+    })
+    act(() => beginWorkout(['strength'], null))
+    expect(useStore.getState().S.active).not.toHaveProperty('warmup')
+    act(() => beginWorkout([], null))
+    expect(useStore.getState().S.active).not.toHaveProperty('warmup')
+  })
+
 })
