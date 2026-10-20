@@ -34,8 +34,8 @@ const ROWS = [
 export const SEGMENTS = ['leftArm', 'rightArm', 'trunk', 'leftLeg', 'rightLeg'];
 const SEG_LABEL = { leftArm: 'left arm', rightArm: 'right arm', trunk: 'trunk', leftLeg: 'left leg', rightLeg: 'right leg' };
 export const SEG_KINDS = {
-  segFat: { label: 'Fat', min: 0, max: 400, dec: 1, unit: '' },
-  segMuscle: { label: 'Muscle', min: 0, max: 400, dec: 1, unit: '' },
+  segFat: { label: 'Fat', min: 0, max: 400, dec: 2, unit: '' },
+  segMuscle: { label: 'Muscle', min: 0, max: 400, dec: 2, unit: '' },
   imp20: { label: 'Impedance 20 kHz', min: 1, max: 5000, dec: 0, unit: 'Ω' },
   imp100: { label: 'Impedance 100 kHz', min: 1, max: 5000, dec: 0, unit: 'Ω' },
 };

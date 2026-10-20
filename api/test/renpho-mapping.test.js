@@ -64,6 +64,29 @@ test('segmental fat, muscle and impedances, in either spelling or inside extraFi
   assert.equal(by(mapMeasurement({ ...BASE, fatTrunk: 7, extraField: { fatTrunk: 8 } })).segFatTrunk, 7);
 });
 
+test('the RENPHO Health app\'s segment names: la/ra/t/ll/rl masses in kg, impedances per hand, foot and body', () => {
+  const m = mapMeasurement({
+    ...BASE, bodyScore: 81,
+    laBodyFatMass: 0.9, laBodyFatPct: 140, laMuscleMass: 3.1, laMuscle: 105, raBodyFatMass: 0.95, raMuscleMass: 3.2,
+    tBodyFatMass: 8.1, tMuscleMass: 23.5, llBodyFatMass: 2.4, llMuscleMass: 8.8, rlBodyFatMass: 2.5, rlMuscleMass: 8.9,
+    z20HandL: 260, z20HandR: 265, z20Body: 25, z20FootL: 250, z20FootR: 255,
+    z100HandL: 225, z100HandR: 230, z100Body: 20, z100FootL: 215, z100FootR: 220,
+    bfmMax: 14, smmStd: 28, weightTarget: 65, appleHealthSync: '1,1', reportId: 'P1', syncTimeStamp: 1760000000123,
+  });
+  const v = by(m);
+  assert.equal(v.bodyScore, 81);
+  assert.equal(v.segFatLeftArm, 0.9);
+  assert.equal(v.segMuscleLeftArm, 3.1);
+  assert.equal(v.segFatTrunk, 8.1);
+  assert.equal(v.segMuscleRightLeg, 8.9);
+  assert.equal(v.imp20LeftArm, 260);
+  assert.equal(v.imp20Trunk, 25);
+  assert.equal(v.imp100RightLeg, 220);
+  assert.equal(Object.keys(v).filter(k => /^(segFat|segMuscle|imp20|imp100)/.test(k)).length, 20);
+  // The share of the standard, the reference ranges and the app's switches are not values, nor unknown.
+  assert.deepEqual(m.unknown, []);
+});
+
 test('a reading RENPHO marks invalid brings no values', () => {
   const m = mapMeasurement({ ...BASE, invalidFlag: 1 });
   assert.equal(m.readings.length, 0);

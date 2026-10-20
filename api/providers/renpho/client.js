@@ -102,7 +102,9 @@ export function createRenphoClient({ fetchFn = fetch, baseUrl = BASE_URL, timeou
     let env;
     try { env = JSON.parse(text); } catch { throw new RenphoError('format', 'RENPHO answered with something other than JSON'); }
     const ok = SUCCESS.has(env?.code) || String(env?.msg || '').toLowerCase() === 'success';
-    if (!ok) throw new RenphoError('rejected', `RENPHO refused the request (code ${env?.code ?? '?'})`);
+    // RENPHO's own words with its code, so a refusal says why (wrong password, too many sign-ins…).
+    const why = String(env?.msg ?? '').replace(/\s+/g, ' ').trim().slice(0, 120);
+    if (!ok) throw new RenphoError('rejected', `RENPHO refused the request (code ${env?.code ?? '?'}${why ? ': ' + why : ''})`);
     if (env.data == null || env.data === '') return null;
     try { return losslessParse(decrypt(env.data)); } catch { throw new RenphoError('format', 'RENPHO sent data this version cannot read'); }
   }
@@ -117,7 +119,7 @@ export function createRenphoClient({ fetchFn = fetch, baseUrl = BASE_URL, timeou
         bindingList: { deviceTypes: SCALE_TYPES },
       });
     } catch (e) {
-      if (e.code === 'rejected') throw new RenphoError('auth', 'RENPHO did not accept this e-mail and password');
+      if (e.code === 'rejected') throw new RenphoError('auth', 'RENPHO did not accept the sign-in: ' + e.message.replace(/^RENPHO refused the request /, ''));
       throw e;
     }
     const l = data?.login;

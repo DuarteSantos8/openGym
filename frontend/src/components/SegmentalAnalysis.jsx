@@ -30,7 +30,7 @@ function Pair({ title, left, right }) {
     {[[t('Left'), left], [t('Right'), right]].map(([side, v]) => <div key={side} className="seg-bar">
       <span className="seg-side dim small">{side}</span>
       <span className="seg-track"><i style={{ width: (v == null ? 0 : v / max * 100) + '%' }} /></span>
-      <b className="seg-val small">{fmt(v)}</b>
+      <b className="seg-val small">{fmt(v, 2)}</b>
     </div>)}
   </div>
 }
@@ -41,7 +41,7 @@ function Block({ kind, title, values, color }) {
   return <div className="card seg-card" style={{ '--seg': color }}>
     <div className="seg-h">{title}</div>
     {PAIRS.map(([l, r, name]) => (v(l) != null || v(r) != null) && <Pair key={name} title={t(name)} left={v(l)} right={v(r)} />)}
-    {v('trunk') != null && <div className="row between small seg-trunk"><span>{t('Trunk')}</span><b>{fmt(v('trunk'))}</b></div>}
+    {v('trunk') != null && <div className="row between small seg-trunk"><span>{t('Trunk')}</span><b>{fmt(v('trunk'), 2)}</b></div>}
   </div>
 }
 

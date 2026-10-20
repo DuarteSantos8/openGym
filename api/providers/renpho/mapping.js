@@ -42,6 +42,7 @@ const PLAIN = {
   whr: ['whr', AS_IS],
   seawhrvalue: ['whr', AS_IS],
   score: ['bodyScore', AS_IS],
+  bodyscore: ['bodyScore', AS_IS],
   heartrate: ['heartRate', AS_IS],
   cardiacindex: ['cardiacIndex', AS_IS],
   resistance: ['impedance', AS_IS],
@@ -57,13 +58,35 @@ for (const part of SEGMENTS) {
   for (const n of ['resistance20', 'impedance20', 'res20']) SEGMENTAL[n + p] = segType('imp20', part);
   for (const n of ['resistance100', 'impedance100', 'res100']) SEGMENTAL[n + p] = segType('imp100', part);
 }
+// The RENPHO Health app's own spelling (eight-electrode scales, 2026): a prefix per segment — la,
+// ra left and right arm, t trunk, ll, rl left and right leg — with the fat and muscle in kg
+// (laBodyFatMass, tMuscleMass…), and the impedances per hand, foot and body (z20HandL, z100Body…).
+const PREFIX = { la: 'leftArm', ra: 'rightArm', t: 'trunk', ll: 'leftLeg', rl: 'rightLeg' };
+const LIMB = { handl: 'leftArm', handr: 'rightArm', body: 'trunk', footl: 'leftLeg', footr: 'rightLeg' };
+for (const [pre, part] of Object.entries(PREFIX)) {
+  SEGMENTAL[pre + 'bodyfatmass'] = segType('segFat', part);
+  SEGMENTAL[pre + 'musclemass'] = segType('segMuscle', part);
+}
+for (const [limb, part] of Object.entries(LIMB)) {
+  SEGMENTAL['z20' + limb] = segType('imp20', part);
+  SEGMENTAL['z100' + limb] = segType('imp100', part);
+}
 // What a reading carries besides values: known, so the rest can be reported as unknown.
 const META = new Set(['id', 'timestamp', 'localcreatedat', 'timezone', 'internalmodel', 'scaletype', 'scalename', 'mac',
   'gender', 'height', 'heightunit', 'birthday', 'waistline', 'hip', 'categorytype', 'persontype', 'invalidflag',
   'weightunit', 'bodyshape', 'createdat', 'updatedat', 'actualresistance', 'actualsecresistance', 'method', 'sportflag',
   'extrafield', 'headvalue', 'headunit', 'babypicture', 'devicetype', 'isauto', 'isnew', 'displaymoduletype',
   'subuserid', 'buserid', 'bodytype', 'createdstamp', 'stature', 'remark', 'pregnantflag', 'category', 'muscle',
-  'leftweight', 'rightweight', 'accuracyflag', 'originresistances', 'userid', 'scaleuserid']);
+  'leftweight', 'rightweight', 'accuracyflag', 'originresistances', 'userid', 'scaleuserid',
+  // The RENPHO Health app's: each value's reference range and target, the segments as a share of
+  // their standard, the app's own switches and ids. Kept in the raw reading, not values of their own.
+  'bfmctrl', 'bfmmax', 'bfmmin', 'bfmstd', 'bfpmax', 'bfpmin', 'bfpstd', 'bmimax', 'bmimin', 'bmistd', 'bmrmax', 'bmrmin',
+  'bmrstd', 'bonemax', 'bonemin', 'ffmctrl', 'musclemassmax', 'musclemassmin', 'proteinmassmax', 'proteinmassmin', 'smmmax',
+  'smmmin', 'smmstd', 'watermassmax', 'watermassmin', 'weightcontrol', 'weightmax', 'weightmin', 'weightstd', 'weighttarget',
+  ...Object.keys(PREFIX).flatMap(p => ['bodyfatpct', 'bodyfatstd', 'muscle', 'musclestd'].map(n => p + n)),
+  'appid', 'appversion', 'applehealthauth', 'applehealthsync', 'fitbitauth', 'fitbitsync', 'healthconnectauth',
+  'healthconnectsync', 'samsunghealthauth', 'samsunghealthsync', 'babymode', 'pregnantmode', 'reportid', 'synctimestamp',
+  'measureage', 'obesitydegree', 'sinewratio', 'smmmass']);
 
 const num = v => (v === null || v === undefined || v === '' || typeof v === 'boolean') ? NaN : Number(v);
 

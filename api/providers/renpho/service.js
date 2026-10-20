@@ -157,8 +157,16 @@ export function createRenphoService({ seal, unseal, save, merge, readRaw, writeR
   /** The profiles whose readings are due: connected, not refused, last sync older than `everyMs`. */
   function due(users, everyMs) {
     const t = now();
-    return users.filter(u => u.renpho && !u.disabled && u.renpho.error?.code !== 'auth' && !running.has(u.id) &&
-      t - (u.renpho.lastSync || 0) >= everyMs);
+    return users.filter(u => {
+      const r = u.renpho;
+      if (!r || u.disabled || running.has(u.id)) return false;
+      // A failed sync waits as well, so RENPHO is never asked again every ten minutes (signing in
+      // over and over is what gets an account refused): an hour after a passing problem, the whole
+      // interval after a refused sign-in, which is tried again then rather than given up on.
+      const e = r.error;
+      if (e?.at) return t - e.at >= (e.code === 'auth' ? everyMs : Math.min(everyMs, 3600000));
+      return t - (r.lastSync || 0) >= everyMs;
+    });
   }
 
   return { status, connect, disconnect, sync, due };
