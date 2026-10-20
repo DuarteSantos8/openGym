@@ -113,6 +113,30 @@
 :root[data-theme="light"][data-accent="pink"],
 :root[data-theme="light"][data-accent="red"]   { --on-acc:#fff }
 
+/* Increase Contrast (iOS, macOS) and the other platforms' high-contrast settings. Apple's HIG
+   asks custom colours to supply a "significantly more differentiated increased contrast option";
+   the system colours below are the increased-contrast values from its colour table. Secondary
+   text and hairlines get firmer too, since those are what fade first. The brighter dark-theme
+   accents fall under 3:1 with white on a filled button (blue 2.2:1, red 2.9:1), so every accent
+   takes black text there; the darker light-theme ones keep the inks chosen above. */
+@media (prefers-contrast: more){
+  :root{
+    --blue:#5cb8ff; --green:#4ad968; --red:#ff6165; --orange:#ffa056;
+    --yellow:#fedf43; --teal:#3bddec; --indigo:#a7aaff; --pink:#ff8ac4;
+    --purple:#ea8dff; --mint:#54dfcb; --brown:#dba679; --grey:#aeaeb2;
+    --label-2:rgba(235,235,245,.78); --label-3:rgba(235,235,245,.55); --label-4:rgba(235,235,245,.36);
+    --sep:rgba(84,84,88,.95); --sep-op:rgba(84,84,88,.8);
+  }
+  :root:not([data-theme="light"]){ --on-acc:#000 }
+  :root[data-theme="light"]{
+    --blue:#1e6ef4; --green:#008932; --red:#e9152d; --orange:#c55300;
+    --yellow:#a16a00; --teal:#008198; --indigo:#564ade; --pink:#e7124d;
+    --purple:#b02fc2; --mint:#008575; --brown:#956d51; --grey:#6c6c70;
+    --label-2:rgba(60,60,67,.82); --label-3:rgba(60,60,67,.6); --label-4:rgba(60,60,67,.4);
+    --sep:rgba(60,60,67,.6); --sep-op:rgba(60,60,67,.5);
+  }
+}
+
 /* ---------------------------------------------------------------- reset -- */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{
