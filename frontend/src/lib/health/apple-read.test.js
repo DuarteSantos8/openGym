@@ -36,10 +36,10 @@ describe('reading Apple Health', () => {
     expect(hr.some(r => /:\d{4}-\d{2}-\d{2}$/.test(r.sid))).toBe(true)
   })
 
-  it('a day total read since yesterday is read by the hour only', async () => {
+  it('a day total is read a day at a time, even since yesterday', async () => {
     const { appleHealth } = await import('./apple-health.js')
     const out = await appleHealth.fetchMeasurements({ types: ['steps'], since: NOW - 86400000, until: NOW })
-    expect(calls.map(c => [c.stat, !!c.hourly])).toEqual([['sum', true]])
+    expect(calls.map(c => [c.stat, !!c.hourly])).toEqual([['sum', false]])
     expect(out.filter(r => r.type === 'steps')).toHaveLength(1)
   })
 })

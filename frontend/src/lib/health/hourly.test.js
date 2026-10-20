@@ -22,9 +22,10 @@ describe('a day read from its hours', () => {
 })
 
 describe('tidying the profile on the device', () => {
-  it('folds the hours of an old day into the day, keeps the recent ones', () => {
-    const S = { health: [rec('steps', '2026-09-01', 9, 500), rec('steps', '2026-09-01', 10, 200), rec('steps', '2026-10-18', 9, 300)] }
+  it('folds steps kept by the hour into their day, and keeps recent heart rate by the hour', () => {
+    const S = { health: [rec('steps', '2026-09-01', 9, 500), rec('steps', '2026-09-01', 10, 200), rec('steps', '2026-10-18', 9, 300),
+      rec('heartRate', '2026-10-18', 9, 70)] }
     normalizeHealthState(S)
-    expect(S.health.map(r => [r.sid, r.v])).toEqual([['steps:2026-09-01', 700], [`steps:${hour('2026-10-18', 9)}`, 300]])
+    expect(S.health.map(r => [r.sid, r.v])).toEqual([['steps:2026-09-01', 700], [`heartRate:${hour('2026-10-18', 9)}`, 70], ['steps:2026-10-18', 300]])
   })
 })

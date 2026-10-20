@@ -13,8 +13,8 @@
  *     lowest and highest), and one taken by hand (blood pressure, glucose, a temperature) is kept
  *     one an hour, keyed by its type and the hour: a reading as it was, or a sensor's hour as its
  *     mean, lowest and highest
- *   - while recent (catalogue.js hourlyFrom: heart rate 90 days, the rest 30), a total and a mean
- *     are kept an hour at a time too, keyed by the hour; a total a source already summed for a
+ *   - while recent (catalogue.js hourlyFrom: heart rate, for 90 days) a mean is kept an hour
+ *     at a time too, keyed by the hour; a total a source already summed for a
  *     whole day (a bare date) stays that day's
  *   - sleep is the asleep time of a night, overlapping spans of several sources merged first, on
  *     the day it ended
