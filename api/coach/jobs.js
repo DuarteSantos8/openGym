@@ -210,6 +210,9 @@ export function enqueue(uid, opts) {
   const cred = cfgStore.credentialFor(uid);
   if (!cred.ok) {
     if (cred.reason === 'shared-account') throw new CoachError('shared', cred.message);
+    // Per-profile mode: this profile has not connected its own account. Its own code so the
+    // Coach screen can point at the "Your account" row instead of saying the Coach is off.
+    if (cred.mode === 'profile') throw new CoachError('account', cred.message);
     throw new CoachError('off', 'this profile has no provider account connected');
   }
   // Spending is what binds: a personal credential (setup token, OAuth) belongs to the first
@@ -455,17 +458,42 @@ function removeJobDir(jobDir, ids) {
   try { fs.rmSync(jobDir, { recursive: true, force: true }); } catch { /* leaked, not fatal */ }
 }
 
-export async function testRun() {
+const testing = new Set();      // uids with a per-profile connection test in flight
+
+/**
+ * The real adapter, a trivial round trip, no user data anywhere near it. With no `uid` it is the
+ * admin's "Test the Coach": instance mode runs the bound profile's credential, and per-profile
+ * mode refuses honestly, because there is no instance credential and an admin cannot test one
+ * that belongs to a profile. With a `uid` it is that profile's "Test my connection", run on the
+ * caller's own credential and nobody else's.
+ */
+export async function testRun(uid = null) {
   const cfg = cfgStore.load();
   const adapter = adapterFor(cfg.provider);
   if (!adapter) return { ok: false, error: 'no provider configured' };
+  let cred;
+  if (uid) {
+    if (cfg.authMode !== 'profile') return { ok: false, error: 'this instance uses one shared account; the admin tests it' };
+    cred = cfgStore.credentialFor(uid);
+    if (!cred.ok) return { ok: false, error: cred.message || cfgStore.NO_PROFILE_ACCOUNT_REFUSAL };
+    if (testing.has(uid)) return { ok: false, error: 'a test is already running' };
+    testing.add(uid);
+  } else if (cfg.authMode === 'profile' && cfg.provider !== 'fixture') {
+    return { ok: false, error: 'each profile uses its own account on this instance, so there is no shared one to test; every user has a Test button of their own' };
+  }
+  try {
+    return await roundTrip(cfg, adapter, cred);
+  } finally {
+    if (uid) testing.delete(uid);
+  }
+}
+
+async function roundTrip(cfg, adapter, cred) {
   const jobDir = adapter.spawns === false ? null : fs.mkdtempSync(path.join(os.tmpdir(), 'coach-test-'));
   try {
-    // No user asked for this, so there is no profile whose account is being spent. In instance
-    // mode that is the bound profile's credential — the one the round-trip is meant to prove —
-    // and in per-profile mode it is nobody's, which is the honest answer: an admin cannot test
-    // a credential that belongs to a profile.
-    const env = cfgStore.jobEnv(jobDir || os.tmpdir(), cfgStore.credentialFor(cfgStore.boundUidFor(cfg)));
+    // `cred` is the caller's own when a profile asked; otherwise there is no profile, and the
+    // account tested is the bound profile's — the one the round trip is meant to prove.
+    const env = cfgStore.jobEnv(jobDir || os.tmpdir(), cred || cfgStore.credentialFor(cfgStore.boundUidFor(cfg)));
     const ids = jobDir && unprivilegedIds();
     if (ids) shareJobDir(jobDir, ids);
     const check = await adapter.check(cfg, env);

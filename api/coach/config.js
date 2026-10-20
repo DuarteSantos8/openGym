@@ -226,10 +226,50 @@ export function clearProfileAuth(uid) {
   try { fs.unlinkSync(profileAuthFile(uid)); return true; } catch { return false; }
 }
 
+/** How many profiles have their own credential filed for this provider — a count for the admin
+ *  card, read off the file names and their plain `provider` field, nothing decrypted. */
+export function countProfileAuth(provider = load().provider) {
+  let n = 0;
+  try {
+    for (const f of fs.readdirSync(DATA)) {
+      const m = /^coach-auth-([A-Za-z0-9_-]{1,64})\.json$/.exec(f);
+      if (!m) continue;
+      const rec = loadProfileAuth(m[1]);
+      if (rec && rec.data && (!rec.provider || rec.provider === provider)) n++;
+    }
+  } catch { /* no data dir yet */ }
+  return n;
+}
+
+/** Which credential types the configured provider takes — the same rule POST /connect enforces,
+ *  in one place so the admin route, the profile route and the UI cannot disagree. */
+export function envVarFor(provider, type) {
+  const meta = PROVIDERS[provider];
+  if (!meta) return null;
+  return (type === 'cli-token' || type === 'oauth') ? meta.oauthEnv : type === 'apikey' ? meta.apiKeyEnv : null;
+}
+export function acceptedTypes(provider) {
+  const meta = PROVIDERS[provider];
+  if (!meta) return [];
+  const out = [];
+  if (meta.oauthEnv && meta.setupToken) out.push('cli-token');
+  if (meta.apiKeyEnv) out.push('apikey');
+  return out;
+}
+
+/** Instance or per-profile. Switching never touches a stored credential: the instance one stays
+ *  filed in coach.json (and its binding with it) for switching back, and profile files stay on
+ *  disk — the mode only decides which of them is read. */
+export function setAuthMode(mode) {
+  return save({ authMode: mode === 'profile' ? 'profile' : 'instance' });
+}
+
 /* ---------- which credential pays for this job ---------- */
 
 export const SHARED_ACCOUNT_REFUSAL =
   'This instance is configured with a single shared account. Ask your admin to enable per-profile sign-in.';
+export const NO_PROFILE_ACCOUNT_REFUSAL =
+  'This instance has every profile use its own account. Connect yours in the Coach settings (Your account) first.';
 
 /**
  * Resolve the credential for one profile, or say why there isn't one. Never throws and never
@@ -244,10 +284,16 @@ export function credentialFor(uid) {
   if (cfg.provider === 'fixture') return { ok: true, auth: null, mode: cfg.authMode };
 
   if (cfg.authMode === 'profile') {
+    // Only this profile's own file is ever read: no fallback to the instance credential, and no
+    // path by which one uid resolves another's token. A record filed for a different provider
+    // than the one configured now is skipped rather than sent: an Anthropic key must not be
+    // handed to an OpenAI endpoint because the admin switched chips. (A record with no
+    // `provider` predates the route that writes one; it is still bound by the type check.)
     const rec = loadProfileAuth(uid);
-    const auth = rec && rec.data ? decrypt(rec.data) : null;
-    if (!auth || !auth.token) return { ok: false, reason: 'no-credential', mode: 'profile' };
-    return { ok: true, auth, type: rec.type, account: rec.account || null, mode: 'profile' };
+    const usable = rec && rec.data && (!rec.provider || rec.provider === cfg.provider) && !!envVarFor(cfg.provider, rec.type);
+    const auth = usable ? decrypt(rec.data) : null;
+    if (!auth || !auth.token) return { ok: false, reason: 'no-credential', message: NO_PROFILE_ACCOUNT_REFUSAL, mode: 'profile' };
+    return { ok: true, auth, type: rec.type, account: rec.account || null, connectedAt: rec.connectedAt || null, mode: 'profile' };
   }
 
   // instance mode
@@ -296,7 +342,15 @@ export function accountFor(uid) {
     account: c.ok ? (c.account || null) : null,
     connected: !!c.ok,
     reason: c.ok ? null : c.reason,
-    message: c.ok ? null : (c.message || null)
+    message: c.ok ? null : (c.message || null),
+    // Profile mode only: what this profile may connect, and what it has connected. The type and
+    // time are metadata; the token itself never leaves this module except through jobEnv.
+    ...(cfg.authMode === 'profile' ? {
+      accepts: acceptedTypes(cfg.provider),
+      keyPlaceholder: providerMeta(cfg).keyPlaceholder || null,
+      type: c.ok ? (c.type || null) : null,
+      connectedAt: c.ok ? (c.connectedAt || null) : null
+    } : {})
   };
 }
 

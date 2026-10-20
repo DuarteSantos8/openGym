@@ -22,9 +22,17 @@ const USER_ERROR = {
   // Verbatim, because it tells the user the one thing that resolves it and names who resolves
   // it. A vaguer message here turns into a support question for the person running the box.
   shared: cfgStore.SHARED_ACCOUNT_REFUSAL,
+  // Per-profile mode, and this profile has not connected its own account. Same reasoning: the
+  // one thing that resolves it, named.
+  account: cfgStore.NO_PROFILE_ACCOUNT_REFUSAL,
   unprivileged: 'the Coach is switched off on this instance for safety reasons'
 };
-const HTTP_FOR = { off: 503, busy: 409, cap: 429, consent: 403, shared: 409, unprivileged: 503 };
+const HTTP_FOR = { off: 503, busy: 409, cap: 429, consent: 403, shared: 409, account: 409, unprivileged: 503 };
+
+/* No key or setup token contains whitespace. Removing all of it, not just the ends, saves a
+   `claude setup-token` paste that brought the terminal's line wrap along: with the break
+   inside, Claude Code treats every job as signed out ("Not logged in"). */
+const cleanToken = raw => String(raw || '').replace(/\s+/g, '');
 
 export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
   /** Every user route starts the same way: signed in, feature on, feature reachable. The class
@@ -138,6 +146,45 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       json(res, 200, { ok: true });
     },
 
+    /* ---------- a profile's own account (authMode: profile) ----------
+       The credential goes to coach-auth-<uid>.json, encrypted, and only that uid's jobs ever
+       read it. It is accepted once and never echoed back by any route. Instance mode has no
+       such thing — one account is the admin's to file — so these answer 409 there. */
+
+    'POST /api/coach/credential': async (req, res) => {
+      const user = guard(req, res); if (!user) return;
+      if (cfgStore.load().authMode !== 'profile') return json(res, 409, { error: 'this instance uses one shared account; the admin connects it', code: 'instance-mode' });
+      const body = await readBody(req);
+      // The provider is the admin's choice, and a profile credential must be one that provider
+      // takes: the same rule as the admin connect route, against the configured provider only.
+      const provider = cfgStore.load().provider;
+      const type = String(body.type || '');
+      if (!cfgStore.envVarFor(provider, type)) return json(res, 400, { error: `${provider} does not take a credential of type "${type}"` });
+      const token = cleanToken(body.token);
+      if (!token) return json(res, 400, { error: 'no token supplied' });
+      cfgStore.saveProfileAuth(user.id, {
+        provider, type, account: String(body.account || '').slice(0, 120), data: cfgStore.encrypt({ token }), connectedAt: new Date().toISOString()
+      });
+      json(res, 200, { ok: true });
+    },
+
+    // Session only, like forget: a profile must be able to remove its own credential even after
+    // the Coach has been switched off.
+    'DELETE /api/coach/credential': async (req, res) => {
+      const user = readSession(req);
+      if (!user) return json(res, 401, { error: 'not signed in' });
+      if (cfgStore.load().authMode !== 'profile') return json(res, 409, { error: 'this instance uses one shared account; the admin connects it', code: 'instance-mode' });
+      cfgStore.clearProfileAuth(user.id);
+      json(res, 200, { ok: true });
+    },
+
+    // "Test my connection": the admin's round trip, on the caller's own credential.
+    'POST /api/coach/credential/test': async (req, res) => {
+      const user = guard(req, res); if (!user) return;
+      if (cfgStore.load().authMode !== 'profile') return json(res, 409, { error: 'this instance uses one shared account; the admin tests it', code: 'instance-mode' });
+      json(res, 200, await jobs.testRun(user.id));
+    },
+
     /* ------------------------------ admin ------------------------------ */
 
     'GET /api/admin/coach': async (req, res) => {
@@ -176,6 +223,8 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
         community: !!cfg.community,
         runtime: { ok: !!check.ok, version: check.version || null, error: check.error || null, needsKey: !!check.needsKey },
         authMode: cfg.authMode,
+        // Profile mode: how many profiles have connected their own account for this provider.
+        profilesConnected: cfg.authMode === 'profile' ? cfgStore.countProfileAuth(cfg.provider) : null,
         boundUid: cfgStore.boundUidFor(cfg),
         /* Whether a credential is filed, and whose — never the credential. `unreadable` is its
            own state rather than "not connected" because it has a specific cause and a specific
@@ -298,17 +347,11 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       // prepared ahead of switching; by default it is the active provider's.
       const provider = body.provider !== undefined ? String(body.provider) : cfg.provider;
       if (!cfgStore.PROVIDERS[provider]) return json(res, 400, { error: 'unknown provider' });
-      const meta = cfgStore.PROVIDERS[provider];
       const type = String(body.type || '');
-      const envVar = (type === 'cli-token' || type === 'oauth') ? meta.oauthEnv
-        : type === 'apikey' ? meta.apiKeyEnv : null;
-      if (!envVar) {
+      if (!cfgStore.envVarFor(provider, type)) {
         return json(res, 400, { error: `${provider} does not take a credential of type "${type}"` });
       }
-      // No key or setup token contains whitespace. Removing all of it, not just the ends, saves a
-      // `claude setup-token` paste that brought the terminal's line wrap along: with the break
-      // inside, Claude Code treats every job as signed out ("Not logged in").
-      const token = String(body.token || '').replace(/\s+/g, '');
+      const token = cleanToken(body.token);
       if (!token) return json(res, 400, { error: 'no token supplied' });
       cfgStore.saveAuth(provider, {
         type, account: String(body.account || '').slice(0, 120), data: cfgStore.encrypt({ token }), connectedAt: new Date().toISOString()
@@ -325,10 +368,17 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       json(res, 200, { ok: true });
     },
 
-    /* Still absent: `authMode`, and with it the per-profile credential routes. Instance mode is
-       the whole of what these two routes serve, and per-profile needs its own connect/clear pair
-       against saveProfileAuth/clearProfileAuth — a switch with nothing on the other side is worse
-       than no switch, so it waits for the PR that builds that side. */
+    /* Whose account pays: one shared instance account, or one per profile. Only the switch moves.
+       Nothing is deleted either way — the instance credential and its binding stay filed for
+       switching back, and a profile's own file stays where it is. What changes is which of them
+       credentialFor reads. */
+    'POST /api/admin/coach/auth-mode': async (req, res) => {
+      if (!requireAdmin(req, res)) return;
+      const body = await readBody(req);
+      if (body.mode !== 'instance' && body.mode !== 'profile') return json(res, 400, { error: 'mode must be "instance" or "profile"' });
+      cfgStore.setAuthMode(body.mode);
+      json(res, 200, { ok: true, authMode: cfgStore.load().authMode });
+    },
 
     /* Whose account this profile is about to spend. Its own route because both the Coach screen
        and the admin card must state it, and neither should be inferring it from settings. */
