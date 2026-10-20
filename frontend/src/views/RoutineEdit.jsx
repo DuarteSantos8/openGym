@@ -23,6 +23,7 @@ import { MOBILE, printHtml } from '../lib/mobile.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC } from '../lib/progression.js'
 import BodyMap from '../components/BodyMap.jsx'
+import RoutineWarmup from '../components/RoutineWarmup.jsx'
 import { loadOfRoutine, rankOf, MUSCLE_NAME } from '../lib/muscles.js'
 
 export const ROUTINE_LONG_PRESS_MS = 380
@@ -502,6 +503,8 @@ export default function RoutineEdit() {
         <div className="small">{t('{0} of {1} exercises need equipment outside "{2}"', missingCount, r.ex.length, profile.name)}</div>
       </div>
     </div>}
+
+    <RoutineWarmup routineId={id} />
 
     {/* "Add exercise" heads the list (v1.3.11): with it under the last exercise, a long routine
         had to be scrolled to the bottom before anything could be added. */}

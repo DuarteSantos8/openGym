@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Routines can now include a separate guided warm-up. Choose existing movements in Plan and
+  follow their animations, timers or repetition targets before the working exercises. Preparation
+  resumes after reopening the app, travels with plan files, and stays out of lifting volume,
+  records and progression. Total session time includes preparation.
+
 ## v1.4.1 (2026-10-10)
 
 Bug fixes for v1.4.0, mostly the things you told us about on Discord and GitHub.

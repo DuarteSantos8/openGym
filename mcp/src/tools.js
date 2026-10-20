@@ -18,6 +18,7 @@ import {
 import { loadOfWorkouts, rankOf, levelsOf } from '../../frontend/src/lib/muscles.js'
 import { policyFor } from '../../frontend/src/lib/progression.js'
 import { buildSessionEntries, startsFromLast } from '../../frontend/src/lib/session-start.js'
+import { normalizeWarmup } from '../../api/training/guided-warmup.js'
 
 /* ---------- helpers ---------- */
 
@@ -105,12 +106,30 @@ function prTable(S, formula) {
   return [...byId.values()].sort((a, b) => b.est - a.est)
 }
 
+// Keep guided preparation separate from working exercises, sets and progression.
+function routineWarmup(r, detail = false) {
+  const warmup = normalizeWarmup(r.warmup)
+  if (!warmup) return {}
+  return { warmup: {
+    enabled: warmup.enabled,
+    step_count: warmup.steps.length,
+    ...(detail ? { steps: warmup.steps.map((step, i) => ({
+      position: i + 1,
+      id: step.id,
+      name: exOr(step.id).n,
+      mode: step.mode,
+      ...(step.mode === 'time' ? { sec: step.sec } : { reps: step.reps }),
+      ...(step.perSide ? { per_side: true } : {})
+    })) } : {})
+  } }
+}
+
 /* ---------- the 8 tools ---------- */
 
 /** list_routines — names + counts of each routine in the user's plan. */
 export const listRoutines = {
   name: 'list_routines',
-  description: 'List the workout routines saved in the user\'s openGym profile (the same list the Plan screen shows). Each routine is a named set of exercises with set/rep targets. Use this to discover the plan structure before diving into a specific routine or today\'s workout.',
+  description: 'List the workout routines saved in the user\'s openGym profile (the same list the Plan screen shows). Each routine is a named set of exercises with set/rep targets. Guided warm-up preparation, when configured, is reported separately and does not count as working exercises. Use this to discover the plan structure before diving into a specific routine or today\'s workout.',
   schema: {},
   handler: () => {
     const S = getState()
@@ -122,6 +141,7 @@ export const listRoutines = {
         name: r.name,
         emoji: r.emoji || null,
         exercise_count: (r.ex || []).length,
+        ...routineWarmup(r),
         superset_groups: [...new Set((r.ex || []).map(e => e.sg).filter(Boolean))].length || 0,
         policy: policyFor(null, r, 'reps'),
         exclude_from_progression: r.excludeFromProgression === true
@@ -133,7 +153,7 @@ export const listRoutines = {
 /** get_routine — the full exercise list for one routine, including set/rep targets. */
 export const getRoutine = {
   name: 'get_routine',
-  description: 'Get the full exercise list for a single routine (the same view the routine editor shows). Returns mode (reps/time/cardio), set/rep/weight targets (a `pyramid` list of per-set rep targets, \'max\' meaning as many reps as possible, when the exercise uses pyramid sets, with `pyramid_rest_sec` and `pyramid_weight` per set where planned, 0 meaning the exercise\'s rest or last time\'s weight), superset links, any per-exercise custom increment or Epley deload factor, and each exercise\'s own rest in seconds (absent means it inherits the global rest timer). Use routine_id from list_routines.',
+  description: 'Get the full exercise list for a single routine (the same view the routine editor shows). Returns mode (reps/time/cardio), set/rep/weight targets (a `pyramid` list of per-set rep targets, \'max\' meaning as many reps as possible, when the exercise uses pyramid sets, with `pyramid_rest_sec` and `pyramid_weight` per set where planned, 0 meaning the exercise\'s rest or last time\'s weight), superset links, any per-exercise custom increment or Epley deload factor, and each exercise\'s own rest in seconds (absent means it inherits the global rest timer). Guided warm-up preparation, when configured, is returned separately with enabled state and ordered timed or repetition steps. Use routine_id from list_routines.',
   schema: { routine_id: z.string().min(1) },
   handler: ({ routine_id }) => {
     const S = getState()
@@ -148,6 +168,7 @@ export const getRoutine = {
       policy_name: policyName(policyFor(null, r, 'reps')),
       exclude_from_progression: r.excludeFromProgression === true,
       unit: S.unit || 'kg',
+      ...routineWarmup(r, true),
       exercises: (r.ex || []).map((cfg, i) => {
         const ex = exerciseOf(cfg.id, S)
         const mode = modeOf(cfg)
