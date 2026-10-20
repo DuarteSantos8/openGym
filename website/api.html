@@ -245,7 +245,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.1</span>
-    <span>69 endpoints</span>
+    <span>73 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -2433,11 +2433,135 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">The account this profile's jobs would run on.<span class="r-sig">{ mode: &quot;instance&quot; | &quot;profile&quot;, provider: string, providerLabel: string, account: string | null, connected: boolean, reason: string | null, message: string | null }</span></span>
+    <span class="p-desc">The account this profile's jobs would run on.<span class="r-sig">{ mode: &quot;instance&quot; | &quot;profile&quot;, provider: string, providerLabel: string, account: string | null, connected: boolean, reason: string | null, message: string | null, accepts: (&quot;cli-token&quot; | &quot;apikey&quot;)[], keyPlaceholder: string | null, type: string | null, connectedAt: string | null }</span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
     <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postCoachCredential">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/coach/credential</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Connect this profile's own provider account</span>
+  </summary>
+  <div class="ep-body">
+<p>Per-profile mode only (<code>authMode: profile</code>); <code>409</code> with <code>code: instance-mode</code> otherwise. The credential is encrypted into this profile's own <code>coach-auth-&lt;uid&gt;.json</code> (mode 0600, outside the synced state and every export) and is read only by this profile's jobs. There is no fallback to the instance credential and no way for one profile's credential to be used by another.</p>
+<p>The provider is the admin's choice. <code>type</code> has to be one the configured provider takes (<code>cli-token</code> or <code>oauth</code> for a provider with an OAuth variable, <code>apikey</code> for one with an API-key variable). All whitespace is stripped from the token, so a setup token pasted with its terminal line wrap still works. The token is accepted once and never returned by any route.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">type<em class="p-req" title="required">required</em></span>
+    <span class="p-type">&quot;cli-token&quot; | &quot;oauth&quot; | &quot;apikey&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">token<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Never returned by any route, ever.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">account</span>
+    <span class="p-type">string <span class="p-hint">(&le; 120 chars)</span></span>
+    <span class="p-desc">A label for whose account this is.</span>
+  </div>
+</div>
+<pre><code>{
+  &quot;type&quot;: &quot;apikey&quot;,
+  &quot;token&quot;: &quot;sk-…&quot;,
+  &quot;account&quot;: &quot;me@example.com&quot;
+}</code></pre>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Filed.<span class="r-sig"><a href="#schema-Ok">Ok</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">A credential type the configured provider does not take, or no token.<span class="r-sig"><code>{&quot;error&quot;:&quot;no token supplied&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">The instance uses one shared account (<code>code: instance-mode</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">The Coach is not set up on this instance (switched off, or no provider connected). Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed. <code>code</code> is <code>off</code>, the class a job refused at enqueue for the same reason carries; the app shows its own line for it.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-deleteCoachCredential">
+  <summary>
+    <span class="m delete">DELETE</span>
+    <span class="ep-path"><code>/api/coach/credential</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Disconnect this profile's own provider account</span>
+  </summary>
+  <div class="ep-body">
+<p>Removes this profile's credential file. Needs a session only, like <code>forget</code>: a profile must be able to remove its own credential even after the Coach has been switched off. <code>409</code> with <code>code: instance-mode</code> when the instance uses one shared account.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Removed (or there was nothing to remove).<span class="r-sig"><a href="#schema-Ok">Ok</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">The instance uses one shared account (<code>code: instance-mode</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postCoachCredentialTest">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/coach/credential/test</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Test this profile's own connection</span>
+  </summary>
+  <div class="ep-body">
+<p>The admin's round trip (one fixed question, no user data), run on the caller's own credential and nobody else's. Always 200 when it ran: the outcome is in the body. <code>409</code> with <code>code: instance-mode</code> when the instance uses one shared account.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The result of the round trip.<span class="r-sig">{ ok: boolean, version: string, error: string }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">The instance uses one shared account (<code>code: instance-mode</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">The Coach is not set up on this instance (switched off, or no provider connected). Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed. <code>code</code> is <code>off</code>, the class a job refused at enqueue for the same reason carries; the app shows its own line for it.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -3144,6 +3268,47 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">400</span>
     <span class="p-desc">Unknown provider.<span class="r-sig"><code>{&quot;error&quot;:&quot;unknown provider&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postAdminCoachAuthMode">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/coach/auth-mode</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Whose account pays, the instance or each profile</span>
+  </summary>
+  <div class="ep-body">
+<p><code>instance</code> is one account filed by the admin (an API key shared under the daily caps; a personal credential binds to the first profile that spends it). <code>profile</code> has each profile connect its own through <code>POST /api/coach/credential</code>; a profile with none is refused, and there is no fallback to the instance credential.</p>
+<p>Switching deletes nothing: the instance credential and its binding stay filed for switching back, and profile credentials stay where they are.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">mode<em class="p-req" title="required">required</em></span>
+    <span class="p-type">&quot;instance&quot; | &quot;profile&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Switched.<span class="r-sig">{ ok: always true, authMode: &quot;instance&quot; | &quot;profile&quot; }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Not one of the two modes.</span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -5006,6 +5171,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">authMode</span>
     <span class="p-type">&quot;instance&quot; | &quot;profile&quot;</span>
     <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">profilesConnected</span>
+    <span class="p-type">integer | null</span>
+    <span class="p-desc">Profile mode only. How many profiles have connected their own account for this provider.</span>
   </div>
   <div class="prow">
     <span class="p-name">boundUid</span>
