@@ -2235,4 +2235,6 @@ export default {
   'Your sports watch, calling you back.': '你的運動手錶在叫你回來。',
   'Coach wants you back on the bar.': '教練等你回到槓鈴前。',
   'Gentle, for headphones or a quiet room.': '輕柔，適合耳機或安靜的房間。',
+  "Current strength": "目前力量",
+  "Show the decay-adjusted estimate on goal bars.": "在目標進度條上顯示經力量衰減調整的估計值。",
 }

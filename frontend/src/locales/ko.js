@@ -2242,4 +2242,6 @@ export default {
   'Your sports watch, calling you back.': '스포츠 시계가 다시 부르고 있어요.',
   'Coach wants you back on the bar.': '코치가 바 앞으로 돌아오래요.',
   'Gentle, for headphones or a quiet room.': '이어폰이나 조용한 곳에 어울려요.',
+  "Current strength": "현재 근력",
+  "Show the decay-adjusted estimate on goal bars.": "목표 막대에 근력 감소를 반영한 추정치를 표시합니다.",
 }
