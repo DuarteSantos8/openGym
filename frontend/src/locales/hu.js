@@ -1702,6 +1702,8 @@ export default {
   // --- AI Coach: why a job failed or was refused (lib/coach-api.js JOB_ERRORS, BYOK_ERRORS) ---
   'The Coach isn’t set up on this instance.': 'Az Edző nincs beállítva ezen a példányon.',
   'The Coach is taking a rest day. Try again tomorrow.': 'Az Edzőnek pihenőnapja van. Próbáld újra holnap.',
+  'Connect your own account first: Coach menu → Your account.': 'Előbb kapcsold össze a saját fiókodat: Edző menü → Fiókod.',
+  'Your account': 'Fiókod',
   'The Coach took too long and gave up.': 'Az Edző túl sokáig gondolkodott, és feladta.',
   'The Coach couldn’t sign in to its provider. The instance owner needs to check its setup.': 'Az Edző nem tudott bejelentkezni a szolgáltatójához. A példány tulajdonosának ellenőriznie kell a beállítást.',
   'The Coach isn’t installed properly on this instance.': 'Az Edző nincs megfelelően telepítve ezen a példányon.',

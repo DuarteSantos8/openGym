@@ -1036,6 +1036,8 @@ export const PT_BR_OVERRIDES = {
   'Enter how long it took (at least 1 minute).': 'Informe quanto tempo levou (pelo menos 1 minuto).',
   // --- AI Coach: why a job failed or was refused (lib/coach-api.js JOB_ERRORS, BYOK_ERRORS) ---
   'The Coach is taking a rest day. Try again tomorrow.': 'O Treinador tirou o dia de descanso. Tente de novo amanhã.',
+  'Connect your own account first: Coach menu → Your account.': 'Conecte primeiro a sua própria conta: menu do Treinador → Sua conta.',
+  'Your account': 'Sua conta',
   'The Coach took too long and gave up.': 'O Treinador demorou demais e desistiu.',
   'The Coach couldn’t sign in to its provider. The instance owner needs to check its setup.': 'O Treinador não conseguiu fazer login no provedor. O proprietário da instância precisa verificar a configuração.',
   'The Coach couldn’t run. The instance owner needs to check its setup.': 'O Treinador não conseguiu rodar. O proprietário da instância precisa verificar a configuração.',

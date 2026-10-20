@@ -1710,6 +1710,8 @@ export default {
   // --- AI Coach: why a job failed or was refused (lib/coach-api.js JOB_ERRORS, BYOK_ERRORS) ---
   'The Coach isn’t set up on this instance.': 'ยังไม่ได้ตั้งค่าโค้ชบนอินสแตนซ์นี้',
   'The Coach is taking a rest day. Try again tomorrow.': 'วันนี้โค้ชขอพักผ่อน ลองใหม่พรุ่งนี้นะ',
+  'Connect your own account first: Coach menu → Your account.': 'เชื่อมต่อบัญชีของคุณเองก่อน: เมนูโค้ช → บัญชีของคุณ',
+  'Your account': 'บัญชีของคุณ',
   'The Coach took too long and gave up.': 'โค้ชใช้เวลานานเกินไปจึงยกเลิก',
   'The Coach couldn’t sign in to its provider. The instance owner needs to check its setup.': 'โค้ชเข้าสู่ระบบผู้ให้บริการไม่ได้ เจ้าของอินสแตนซ์ต้องตรวจสอบการตั้งค่า',
   'The Coach isn’t installed properly on this instance.': 'ติดตั้งโค้ชบนอินสแตนซ์นี้ไม่ถูกต้อง',

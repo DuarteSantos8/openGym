@@ -1702,6 +1702,8 @@ export default {
   // --- AI Coach: why a job failed or was refused (lib/coach-api.js JOB_ERRORS, BYOK_ERRORS) ---
   'The Coach isn’t set up on this instance.': '이 인스턴스에는 코치가 설정되어 있지 않습니다.',
   'The Coach is taking a rest day. Try again tomorrow.': '코치가 오늘은 휴식일이에요. 내일 다시 시도하세요.',
+  'Connect your own account first: Coach menu → Your account.': '먼저 본인 계정을 연결하세요: 코치 메뉴 → 내 계정.',
+  'Your account': '내 계정',
   'The Coach took too long and gave up.': '코치가 너무 오래 걸려서 중단했습니다.',
   'The Coach couldn’t sign in to its provider. The instance owner needs to check its setup.': '코치가 제공자에 로그인하지 못했습니다. 인스턴스 소유자가 설정을 확인해야 합니다.',
   'The Coach isn’t installed properly on this instance.': '이 인스턴스에 코치가 제대로 설치되어 있지 않습니다.',

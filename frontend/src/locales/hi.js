@@ -1702,6 +1702,8 @@ export default {
   // --- AI Coach: why a job failed or was refused (lib/coach-api.js JOB_ERRORS, BYOK_ERRORS) ---
   'The Coach isn’t set up on this instance.': 'इस इंस्टेंस पर कोच सेट नहीं है।',
   'The Coach is taking a rest day. Try again tomorrow.': 'आज कोच का रेस्ट डे है। कल फिर कोशिश करें।',
+  'Connect your own account first: Coach menu → Your account.': 'पहले अपना खुद का खाता जोड़ें: कोच मेनू → आपका खाता।',
+  'Your account': 'आपका खाता',
   'The Coach took too long and gave up.': 'कोच को बहुत देर लगी और उसने हार मान ली।',
   'The Coach couldn’t sign in to its provider. The instance owner needs to check its setup.': 'कोच अपने प्रदाता में साइन इन नहीं कर सका। इंस्टेंस स्वामी को इसका सेटअप जाँचना होगा।',
   'The Coach isn’t installed properly on this instance.': 'इस इंस्टेंस पर कोच ठीक से इंस्टॉल नहीं है।',
