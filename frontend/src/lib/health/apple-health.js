@@ -12,8 +12,8 @@
 //   - blood pressure, glucose and the other measurements taken by hand: an hour at a time, so a
 //     reading in the morning and one in the evening stay two (HealthKit's hourly statistics)
 //   - a day's totals and every other measurement: HealthKit's own statistics, which already
-//     leave out the overlap of an iPhone and a Watch counting the same steps: an hour at a time
-//     while recent (heart rate 90 days, the rest 30), one reading per day before that (heart rate
+//     leave out the overlap of an iPhone and a Watch counting the same steps: heart rate an hour at a
+//     time while recent (90 days), everything else and older heart rate one reading per day (heart rate
 //     also its lowest and highest)
 //   - sleep: the minutes asleep of each night, given to the day it ended on
 //   - symptoms, cycle tracking, notifications, mindfulness: the category's samples, a day at a time
