@@ -124,7 +124,7 @@ test('samples are folded into the profile as a new revision, once', async t => {
   assert.equal(h.disk().health.filter(x => x.type === 'steps' && x.d === '2026-10-12').length, 1);
 });
 
-test('recent readings land an hour at a time, and fold into their day once they are old', async t => {
+test('recent heart rate lands an hour at a time and folds into its day once it is old; other totals a day at a time', async t => {
   const h = await startServer(t, { _rev: 1, _ts: 1, unit: 'kg', workouts: [], routines: [], bodyweight: [], health: [] });
   await h.at(Date.parse('2026-10-13T00:00:00Z'));
   const key = (await call(h, 'POST', '/api/health/key', { headers: session() })).body.key;
@@ -135,8 +135,9 @@ test('recent readings land an hour at a time, and fold into their day once they 
   assert.equal((await send(h, key, recent)).status, 200);
   const hours = h.disk().health;
   assert.deepEqual(hours.filter(r => r.type === 'heartRate').map(r => [r.v, r.lo ?? null, r.hi ?? null]), [[70, 60, 80], [140, null, null]]);
-  assert.deepEqual(hours.filter(r => r.type === 'activeEnergy').map(r => r.v), [120, 30]);
-  assert.ok(hours.every(r => /:\d+$/.test(r.sid)), 'kept by the hour');
+  assert.ok(hours.filter(r => r.type === 'heartRate').every(r => /:\d+$/.test(r.sid)), 'heart rate kept by the hour');
+  // Every other total is the day's, at once.
+  assert.deepEqual(hours.filter(r => r.type === 'activeEnergy').map(r => [r.sid, r.v]), [['activeEnergy:2026-10-12', 150]]);
   // Months later, the next push folds the old hours into their day: heart rate after 90 days.
   await h.at(Date.parse('2027-02-01T00:00:00Z'));
   assert.equal((await send(h, key, { metrics: { weight: { values: ['80'], dates: ['2027-01-31T07:00:00+00:00'] } } })).status, 200);

@@ -395,16 +395,23 @@ export const MAX_IMPORTED = 15000;
 
 /* ---------- an hour at a time, for a while ---------- */
 
-// A day's total (steps, energy…) and a measurement's mean (heart rate, blood oxygen, speed…) are
-// kept an hour at a time while they are recent, so a day can be read hour by hour on any device,
-// and as one reading a day once they are older: heart rate for 90 days, everything else for 30.
-// What decides is the reading's local day (`d`), the same on every device and on the server.
+// Heart rate is kept an hour at a time while it is recent (90 days), so a day can be read hour by
+// hour on any device, and as one reading a day once it is older. Every other total and mean is one
+// reading a day: kept by the hour, a hundred kinds of data would fill the profile's room (a
+// profile holds MAX_IMPORTED readings) and push two years of history out. Hours of them kept
+// before are folded into their day like any old hour. What decides is the reading's local day
+// (`d`), the same on every device and on the server.
 export const HOURLY_KINDS = new Set(['sum', 'mean', 'range']);
 const HOURLY_DAYS = { heartRate: 90 };
-export const hourlyDays = type => HOURLY_DAYS[type] ?? 30;
-/** The first day (YYYY-MM-DD) whose readings of `type` are kept an hour at a time, at `now`. */
+export const hourlyDays = type => HOURLY_DAYS[type] ?? 0;
+/**
+ * The first day (YYYY-MM-DD) whose readings of `type` are kept an hour at a time, at `now`; a day
+ * no reading reaches ('9999-12-31') for a type kept a day at a time.
+ */
 export function hourlyFrom(type, now = Date.now()) {
-  return new Date(now - (hourlyDays(type) - 1) * 86400000).toISOString().slice(0, 10);
+  const n = hourlyDays(type);
+  if (!n) return '9999-12-31';
+  return new Date(now - (n - 1) * 86400000).toISOString().slice(0, 10);
 }
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const roundTo = (n, dec) => { const f = 10 ** dec; return Math.round(n * f) / f; };
