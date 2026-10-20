@@ -60,4 +60,3 @@ export function normalizeWarmup(value) {
   }
   return { enabled: value.enabled, steps }
 }
-
