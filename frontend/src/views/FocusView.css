@@ -1,4 +1,7 @@
-.focus-view{display:grid;gap:12px}
+/* One column that never grows past the screen (#655). A grid track's minimum is its widest
+   child's min-content, so a long row of set dots used to widen the whole card, and the
+   badges and superset line then sat on one line past the right edge. */
+.focus-view{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
 .focus-superset-inline{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:12px;padding-bottom:12px;border-bottom:var(--hair) solid var(--sep);color:var(--acc);font-size:13px}
 .focus-superset-inline strong{font-weight:600}
 .focus-superset-inline span{color:var(--label-2)}
@@ -37,11 +40,13 @@
 .focus-secondary{display:grid;grid-template-columns:1fr 44px;gap:8px;margin-top:8px}
 .focus-secondary>.iconbtn{width:44px;height:44px;border:1px solid var(--sep);border-radius:8px}
 .focus-skip{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border:1px solid var(--sep);border-radius:8px;color:var(--label)}
-.focus-pager{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:8px}
+.focus-pager{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:8px}
 .focus-pager>button{display:grid;place-items:center;width:44px;height:44px;border:1px solid var(--sep);border-radius:50%;color:var(--label)}
 .focus-pager>button:disabled{opacity:.3}
-.focus-dots{display:flex;align-items:center;justify-content:center;gap:4px}
-.focus-dots button{position:relative;width:44px;height:44px}
+.focus-dots{display:flex;align-items:center;justify-content:center;gap:4px;min-width:0}
+/* 44px each while they fit; with many sets they share the row and keep the dot, the arrows
+   either side stay full size. */
+.focus-dots button{position:relative;flex:0 1 44px;min-width:0;height:44px}
 .focus-dots button::after{content:'';position:absolute;left:50%;top:50%;width:6px;height:6px;border-radius:50%;background:var(--label-3);transform:translate(-50%,-50%)}
 .focus-dots button.active::after{width:9px;height:9px;background:var(--acc)}
 .focus-dots button.done::after{box-shadow:0 0 0 2px var(--acc-line)}
