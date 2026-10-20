@@ -2270,4 +2270,13 @@ export default {
   's': '秒',
   '{0} reps': '{0} 次',
   '{0} s': '{0} 秒',
+  // Warm-up suggestions
+  'Suggest for this routine': '为此训练日推荐',
+  'Suggested warm-up': '推荐热身',
+  'Based on this routine’s muscles: {0}. You can edit the movements after saving.': '根据此训练日训练的肌肉：{0}。保存后可以编辑动作。',
+  'Replace your current warm-up with these movements?': '用这些动作替换当前热身？',
+  'Replace warm-up': '替换热身',
+  'Add warm-up': '添加热身',
+  'No warm-up suggestions are available for this routine. Add movements manually.': '此训练日暂无热身推荐。请手动添加动作。',
+  'Routine changed. Open suggestions again to review an updated warm-up.': '训练日已更改。请重新打开推荐，查看更新后的热身。',
 }

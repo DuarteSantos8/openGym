@@ -2270,4 +2270,13 @@ export default {
   's': 'से.',
   '{0} reps': '{0} दोहराव',
   '{0} s': '{0} से.',
+  // Warm-up suggestions
+  'Suggest for this routine': 'इस रूटीन के लिए सुझाव दें',
+  'Suggested warm-up': 'सुझाया गया वार्म-अप',
+  'Based on this routine’s muscles: {0}. You can edit the movements after saving.': 'इस रूटीन की मांसपेशियों के आधार पर: {0}। सेव करने के बाद आप मूवमेंट बदल सकते हैं।',
+  'Replace your current warm-up with these movements?': 'अपने मौजूदा वार्म-अप की जगह ये मूवमेंट रखें?',
+  'Replace warm-up': 'वार्म-अप बदलें',
+  'Add warm-up': 'वार्म-अप जोड़ें',
+  'No warm-up suggestions are available for this routine. Add movements manually.': 'इस रूटीन के लिए वार्म-अप के सुझाव उपलब्ध नहीं हैं। मूवमेंट मैन्युअल रूप से जोड़ें।',
+  'Routine changed. Open suggestions again to review an updated warm-up.': 'रूटीन बदल गया है। अपडेट किए गए वार्म-अप की समीक्षा के लिए सुझाव फिर से खोलें।',
 }

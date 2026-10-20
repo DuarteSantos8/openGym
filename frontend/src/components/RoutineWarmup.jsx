@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
-import { exOr } from '../lib/exercises.js'
+import { EXIDX, exOr } from '../lib/exercises.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
+import { musclesOf, MUSCLES, MUSCLE_NAME } from '../lib/muscles.js'
+import { suggestWarmup } from '../lib/warmup-suggestions.js'
 import { WARMUP_IDS, MAX_WARMUP_STEPS, normalizeWarmup, defaultWarmupStep } from '../../../api/training/guided-warmup.js'
 import { exercisePicker } from '../sheets.jsx'
 import { Thumb } from './Media.jsx'
@@ -11,6 +13,31 @@ import { Button, Row, Section, Segmented, Stepper, Switch } from './ui.jsx'
 
 const warmupOf = routine => normalizeWarmup(routine?.warmup) || { enabled: false, steps: [] }
 const matches = (step, snapshot) => step && JSON.stringify(step) === snapshot
+const routineSnapshot = routine => JSON.stringify({ ex: routine?.ex, warmup: routine?.warmup })
+const targetText = step => (step.mode === 'time' ? t('{0} s', step.sec) : t('{0} reps', step.reps)) + (step.perSide ? ' · ' + t('Per side') : '')
+
+function SuggestionPreview({ steps, muscleNames, replacing, close, onSave }) {
+  return <div>
+    <h3 style={{ margin: '0 0 12px' }}>{t('Suggested warm-up')}</h3>
+    <p className="small dim">{t('Based on this routine’s muscles: {0}. You can edit the movements after saving.', muscleNames)}</p>
+    <ol className="list" style={{ listStyle: 'none', padding: 0 }}>{steps.map((step, index) => {
+      const ex = exOr(step.id)
+      return <li className="item" key={step.id}>
+        <span className="dim small" style={{ minWidth: '1ch' }}>{index + 1}</span>
+        <Thumb ex={ex} />
+        <div className="grow">
+          <div className={`tt ${exerciseNameClass(ex)}`}>{exerciseNameFor(ex)}</div>
+          <div className="ss">{targetText(step)}</div>
+        </div>
+      </li>
+    })}</ol>
+    {replacing && <p className="small">{t('Replace your current warm-up with these movements?')}</p>}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 16 }}>
+      <Button variant="primary" onClick={() => { onSave(); close() }}>{replacing ? t('Replace warm-up') : t('Add warm-up')}</Button>
+      <Button variant="ghost" onClick={close}>{t('Cancel')}</Button>
+    </div>
+  </div>
+}
 
 function MovementSettings({ step, close, onSave, onRemove }) {
   const [mode, setMode] = useState(step.mode)
@@ -93,6 +120,34 @@ export default function RoutineWarmup({ routineId }) {
     const [step] = next.steps.splice(index, 1)
     next.steps.splice(target, 0, step)
   })
+  const suggest = () => {
+    const state = useStore.getState().S
+    const current = state.routines.find(r => r.id === routineId)
+    if (!current?.ex?.length) return
+    const steps = suggestWarmup(state, current.ex)
+    if (!steps.length) {
+      useUI.getState().toast(t('No warm-up suggestions are available for this routine. Add movements manually.'))
+      return
+    }
+    const snapshot = routineSnapshot(current)
+    const muscles = new Set(current.ex.flatMap(entry => {
+      const ex = (state.customEx || []).find(ex => ex.id === entry.id) || EXIDX[entry.id] || entry
+      return Object.keys(musclesOf(ex))
+    }))
+    const muscleNames = MUSCLES.filter(muscle => muscles.has(muscle)).map(muscle => t(MUSCLE_NAME[muscle])).join(', ')
+    useUI.getState().openSheet(close => <SuggestionPreview steps={steps} muscleNames={muscleNames}
+      replacing={warmupOf(current).steps.length > 0} close={close} onSave={() => {
+        const live = useStore.getState().S.routines.find(r => r.id === routineId)
+        if (!live || routineSnapshot(live) !== snapshot) {
+          useUI.getState().toast(t('Routine changed. Open suggestions again to review an updated warm-up.'))
+          return
+        }
+        useStore.getState().update(s => {
+          const routine = s.routines.find(r => r.id === routineId)
+          if (routine && routineSnapshot(routine) === snapshot) routine.warmup = { enabled: true, steps: structuredClone(steps) }
+        })
+      }} />)
+  }
   return <section aria-label={t('Guided warm-up')}>
     <div className="row between plan-sec-h">
       <h4 className="sec">{t('Guided warm-up')}</h4>
@@ -103,14 +158,15 @@ export default function RoutineWarmup({ routineId }) {
         <Switch aria-label={t('Guided warm-up')} checked={warmup.enabled} onChange={enabled => edit(next => { next.enabled = enabled })} />
       </Row>
     </div>
+    <Button variant="ghost" icon="sunrise" onClick={suggest} disabled={!routine.ex?.length}
+      style={{ width: '100%', justifyContent: 'flex-start', marginTop: 4 }}>{t('Suggest for this routine')}</Button>
     {!!warmup.steps.length && <div className="list" style={{ marginTop: 8 }}>{warmup.steps.map((step, index) => {
       const ex = exOr(step.id)
-      const target = step.mode === 'time' ? t('{0} s', step.sec) : t('{0} reps', step.reps)
       return <div className="item" key={`${step.id}-${index}`}>
         <Thumb ex={ex} />
         <button type="button" className="grow item-open" onClick={() => editMovement(index)}>
           <span className={`tt ${exerciseNameClass(ex)}`}>{exerciseNameFor(ex)}</span>
-          <span className="ss">{target}{step.perSide ? ' · ' + t('Per side') : ''}</span>
+          <span className="ss">{targetText(step)}</span>
         </button>
         <div style={{ display: 'flex', flex: 'none', gap: 2 }}>
           <button className="iconbtn" aria-label={t('Move up')} disabled={index === 0} onClick={() => move(index, -1)}><Icon name="chevronUp" /></button>

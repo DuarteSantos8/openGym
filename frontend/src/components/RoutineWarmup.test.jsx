@@ -12,6 +12,8 @@ import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { exercisePicker } from '../sheets.jsx'
 import { EXIDX } from '../lib/exercises.js'
+import { suggestWarmup } from '../lib/warmup-suggestions.js'
+import { exerciseNameFor } from '../lib/i18n.js'
 import { WARMUP_IDS, defaultWarmupStep } from '../../../api/training/guided-warmup.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -20,9 +22,9 @@ const first = WARMUP_IDS[0], second = WARMUP_IDS[1]
 const stored = () => useStore.getState().S.routines[0]?.warmup
 const button = (label, container = host) => [...container.querySelectorAll('button')].find(b => b.textContent.trim() === label)
 
-function mount(warmup) {
+function mount(warmup, ex = []) {
   const S = structuredClone(DEF)
-  S.routines = [{ id: 'r1', name: 'Push day', ex: [], ...(warmup ? { warmup } : {}) }]
+  S.routines = [{ id: 'r1', name: 'Push day', ex, ...(warmup ? { warmup } : {}) }]
   useStore.setState({ S, user: null })
   act(() => root.render(<RoutineWarmup routineId="r1" />))
 }
@@ -124,5 +126,75 @@ describe('a routine’s guided warm-up', () => {
     act(() => useStore.getState().update(s => { s.routines[0].warmup.steps[0] = defaultWarmupStep(second) }))
     act(() => button('Save', sheet).click())
     expect(stored().steps).toEqual([defaultWarmupStep(second)])
+  })
+})
+
+describe('warm-up suggestions in Plan', () => {
+  const lifting = [{ id: '0025', sets: 3, mode: 'reps', reps: 8 }]
+  const preview = () => {
+    act(() => button('Suggest for this routine').click())
+    return openLastSheet()
+  }
+
+  it('disables suggestions until the routine has main exercises', () => {
+    mount()
+    expect(button('Suggest for this routine').disabled).toBe(true)
+  })
+
+  it('previews ordered movement names, targets and muscle context before adding', () => {
+    mount(undefined, lifting)
+    const expected = suggestWarmup(useStore.getState().S, lifting)
+    expect(expected.length).toBeGreaterThan(0)
+    const sheet = preview()
+    expect(stored()).toBeUndefined()
+    expect(sheet.textContent).toContain('Based on this routine’s muscles:')
+    expect(sheet.textContent).toContain('Chest')
+    expect([...sheet.querySelectorAll('li .tt')].map(el => el.textContent)).toEqual(expected.map(step => exerciseNameFor(EXIDX[step.id])))
+    expect([...sheet.querySelectorAll('li .ss')].every(el => /\d+ (s|reps)/.test(el.textContent))).toBe(true)
+    act(() => button('Add warm-up', sheet).click())
+    expect(stored()).toEqual({ enabled: true, steps: expected })
+    // Suggestions become the same editable rows as a manually selected sequence.
+    act(() => host.querySelector('.item-open').click())
+    expect(openLastSheet().querySelector('input')).not.toBeNull()
+  })
+
+  it('requires explicit replacement and Cancel preserves the manual sequence', () => {
+    const manual = { enabled: false, steps: [defaultWarmupStep(first)] }
+    mount(manual, lifting)
+    let sheet = preview()
+    expect(button('Add warm-up', sheet)).toBeUndefined()
+    expect(sheet.textContent).toContain('Replace your current warm-up with these movements?')
+    act(() => button('Cancel', sheet).click())
+    expect(stored()).toEqual(manual)
+    sheet = preview()
+    const expected = suggestWarmup(useStore.getState().S, lifting)
+    act(() => button('Replace warm-up', sheet).click())
+    expect(stored()).toEqual({ enabled: true, steps: expected })
+  })
+
+  it.each(['exercises', 'warmup', 'deleted'])('refuses to overwrite a routine when %s changed during preview', kind => {
+    mount({ enabled: true, steps: [defaultWarmupStep(first)] }, lifting)
+    const sheet = preview()
+    const toast = vi.spyOn(useUI.getState(), 'toast')
+    act(() => useStore.getState().update(s => {
+      if (kind === 'exercises') s.routines[0].ex.push({ id: '0025', reps: 12 })
+      if (kind === 'warmup') s.routines[0].warmup.steps = [defaultWarmupStep(second)]
+      if (kind === 'deleted') s.routines = []
+    }))
+    const afterChange = structuredClone(useStore.getState().S.routines)
+    act(() => button('Replace warm-up', sheet).click())
+    expect(useStore.getState().S.routines).toEqual(afterChange)
+    expect(toast).toHaveBeenCalledWith('Routine changed. Open suggestions again to review an updated warm-up.')
+    toast.mockRestore()
+  })
+
+  it('explains an empty result without changing the routine', () => {
+    mount(undefined, [{ id: 'unknown-exercise' }])
+    const toast = vi.spyOn(useUI.getState(), 'toast')
+    act(() => button('Suggest for this routine').click())
+    expect(stored()).toBeUndefined()
+    expect(useUI.getState().sheets).toEqual([])
+    expect(toast).toHaveBeenCalledWith('No warm-up suggestions are available for this routine. Add movements manually.')
+    toast.mockRestore()
   })
 })

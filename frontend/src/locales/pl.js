@@ -2270,4 +2270,13 @@ export default {
   's': 's',
   '{0} reps': '{0} powt.',
   '{0} s': '{0} s',
+  // Warm-up suggestions
+  'Suggest for this routine': 'Zaproponuj dla tego planu',
+  'Suggested warm-up': 'Proponowana rozgrzewka',
+  'Based on this routine’s muscles: {0}. You can edit the movements after saving.': 'Na podstawie mięśni w tym planie: {0}. Możesz edytować ruchy po zapisaniu.',
+  'Replace your current warm-up with these movements?': 'Zastąpić obecną rozgrzewkę tymi ruchami?',
+  'Replace warm-up': 'Zastąp rozgrzewkę',
+  'Add warm-up': 'Dodaj rozgrzewkę',
+  'No warm-up suggestions are available for this routine. Add movements manually.': 'Brak propozycji rozgrzewki dla tego planu. Dodaj ruchy ręcznie.',
+  'Routine changed. Open suggestions again to review an updated warm-up.': 'Plan się zmienił. Otwórz propozycje ponownie, aby przejrzeć zaktualizowaną rozgrzewkę.',
 }

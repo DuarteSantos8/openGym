@@ -2270,4 +2270,13 @@ export default {
   's': 's',
   '{0} reps': '{0} rip.',
   '{0} s': '{0} s',
+  // Warm-up suggestions
+  'Suggest for this routine': 'Suggerisci per questa routine',
+  'Suggested warm-up': 'Riscaldamento suggerito',
+  'Based on this routine’s muscles: {0}. You can edit the movements after saving.': 'In base ai muscoli di questa routine: {0}. Puoi modificare i movimenti dopo il salvataggio.',
+  'Replace your current warm-up with these movements?': 'Sostituire il riscaldamento attuale con questi movimenti?',
+  'Replace warm-up': 'Sostituisci riscaldamento',
+  'Add warm-up': 'Aggiungi riscaldamento',
+  'No warm-up suggestions are available for this routine. Add movements manually.': 'Non ci sono suggerimenti di riscaldamento per questa routine. Aggiungi movimenti manualmente.',
+  'Routine changed. Open suggestions again to review an updated warm-up.': 'La routine è cambiata. Riapri i suggerimenti per rivedere un riscaldamento aggiornato.',
 }

@@ -1412,6 +1412,10 @@ export const PT_BR_OVERRIDES = {
   'Timer covers both sides. Switch sides halfway through.': 'O temporizador inclui ambos os lados. Troque de lado na metade do tempo.',
   'Timer finished. Continue when you are ready.': 'O tempo terminou. Continue quando estiver pronto.',
   'Warm-up is off. Your movements are saved for later.': 'O aquecimento está desativado. Seus movimentos ficam salvos para depois.',
+  // Warm-up suggestions
+  'Based on this routine’s muscles: {0}. You can edit the movements after saving.': 'Com base nos músculos desta rotina: {0}. Você pode editar os movimentos depois de salvar.',
+  'No warm-up suggestions are available for this routine. Add movements manually.': 'Não há sugestões de aquecimento para esta rotina. Adicione movimentos manualmente.',
+  'Routine changed. Open suggestions again to review an updated warm-up.': 'A rotina mudou. Abra novamente as sugestões para revisar um aquecimento atualizado.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

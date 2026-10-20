@@ -2270,4 +2270,13 @@ export default {
   's': 'sn',
   '{0} reps': '{0} tekrar',
   '{0} s': '{0} sn',
+  // Warm-up suggestions
+  'Suggest for this routine': 'Bu rutin için öner',
+  'Suggested warm-up': 'Önerilen ısınma',
+  'Based on this routine’s muscles: {0}. You can edit the movements after saving.': 'Bu rutinin kaslarına göre: {0}. Kaydettikten sonra hareketleri düzenleyebilirsin.',
+  'Replace your current warm-up with these movements?': 'Mevcut ısınmanı bu hareketlerle değiştirmek ister misin?',
+  'Replace warm-up': 'Isınmayı değiştir',
+  'Add warm-up': 'Isınma ekle',
+  'No warm-up suggestions are available for this routine. Add movements manually.': 'Bu rutin için ısınma önerisi yok. Hareketleri elle ekle.',
+  'Routine changed. Open suggestions again to review an updated warm-up.': 'Rutin değişti. Güncellenmiş bir ısınmayı incelemek için önerileri yeniden aç.',
 }

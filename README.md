@@ -66,7 +66,8 @@ if you want to try it before installing anything.
   Sunday, your choice.
 - Or skip the weekdays altogether: a **rotation** (A, B, C, A, ...) where the next session is
   simply the next one you haven't done, however the week went.
-- A guided warm-up per routine: choose movements and time or repetition targets in Plan, then
+- A guided warm-up per routine: choose movements and time or repetition targets in Plan, or preview
+  suggestions for the routine’s muscles, then
   follow their animations before the working exercises. Skip or resume preparation at any point.
 - Supersets, warm-up sets, drop sets and rest-pause, timed exercises (planks, hangs, carries),
   cardio by time and speed, rest time per exercise, planned deloads.
