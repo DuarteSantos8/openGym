@@ -2242,4 +2242,6 @@ export default {
   'Your sports watch, calling you back.': 'आपकी स्पोर्ट्स घड़ी आपको वापस बुला रही है।',
   'Coach wants you back on the bar.': 'कोच आपको बार पर वापस चाहते हैं।',
   'Gentle, for headphones or a quiet room.': 'धीमी, हेडफ़ोन या शांत कमरे के लिए।',
+  "Current strength": "वर्तमान शक्ति",
+  "Show the decay-adjusted estimate on goal bars.": "लक्ष्य की पट्टियों पर समय के साथ शक्ति में कमी के अनुसार समायोजित अनुमान दिखाएँ।",
 }

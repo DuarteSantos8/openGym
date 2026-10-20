@@ -10,7 +10,7 @@ import { buildDemoState } from '../lib/demoSeed.js'
 import { TEMPLATE_LIST } from '../lib/structuralBalanceTemplates.js'
 
 const navSpy = vi.fn()
-vi.mock('react-router-dom', () => ({ useNavigate: () => navSpy }))
+vi.mock('react-router-dom', () => ({ useSearchParams: () => [new URLSearchParams(), () => {}], useNavigate: () => navSpy }))
 
 const clone = value => JSON.parse(JSON.stringify(value))
 globalThis.IS_REACT_ACT_ENVIRONMENT = true

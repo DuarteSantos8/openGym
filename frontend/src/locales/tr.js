@@ -2242,4 +2242,6 @@ export default {
   'Your sports watch, calling you back.': 'Spor saatin seni geri çağırıyor.',
   'Coach wants you back on the bar.': 'Koç seni bara geri bekliyor.',
   'Gentle, for headphones or a quiet room.': 'Sakin, kulaklık ya da sessiz bir oda için.',
+  "Current strength": "Mevcut güç",
+  "Show the decay-adjusted estimate on goal bars.": "Hedef çubuklarında güç kaybına göre ayarlanmış tahmini göster.",
 }

@@ -2242,4 +2242,6 @@ export default {
   'Your sports watch, calling you back.': 'Tu reloj deportivo te llama de vuelta.',
   'Coach wants you back on the bar.': 'El coach te quiere de vuelta en la barra.',
   'Gentle, for headphones or a quiet room.': 'Suave, para auriculares o una sala tranquila.',
+  "Current strength": "Fuerza actual",
+  "Show the decay-adjusted estimate on goal bars.": "Mostrar en las barras la estimación ajustada por pérdida de fuerza.",
 }

@@ -2246,4 +2246,6 @@ export default {
   'Your sports watch, calling you back.': 'Ваши спортивные часы зовут вас обратно.',
   'Coach wants you back on the bar.': 'Тренер ждёт вас обратно у штанги.',
   'Gentle, for headphones or a quiet room.': 'Тихий, для наушников или спокойного зала.',
+  "Current strength": "Текущая сила",
+  "Show the decay-adjusted estimate on goal bars.": "Показывать на шкалах целей оценку с учётом снижения силы.",
 }
