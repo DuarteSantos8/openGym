@@ -81,6 +81,18 @@ describe('Spotify player', () => {
     expect(JSON.parse(localStorage.getItem('og.spotify')).refresh).toBe('R')
   })
 
+  it('a tap during a poll shares the one refresh, so a replaced refresh token cannot sign out', async () => {
+    const fetchFn = vi.fn()
+      .mockResolvedValueOnce(json(200, { access_token: 'A', refresh_token: 'R', expires_in: 0 }))
+      .mockResolvedValueOnce(json(200, { access_token: 'B', refresh_token: 'R2', expires_in: 3600 }))
+      .mockResolvedValue({ ok: true, status: 204 })
+    await signIn(fetchFn)
+    await Promise.all([spotifyNowPlaying(fetchFn), spotifyControl('next', fetchFn)])
+    const refreshes = fetchFn.mock.calls.filter(c => new URLSearchParams(c[1].body || '').get('grant_type') === 'refresh_token')
+    expect(refreshes).toHaveLength(1)
+    expect(JSON.parse(localStorage.getItem('og.spotify')).refresh).toBe('R2')
+  })
+
   it('names why a control failed: Premium, or no device', async () => {
     const fetchFn = vi.fn()
       .mockResolvedValueOnce(json(200, { access_token: 'A', refresh_token: 'R', expires_in: 3600 }))

@@ -106,6 +106,21 @@ test('nothing playing is null; controls name Premium and no device', async () =>
   assert.equal(env.calls[4].init.method, 'PUT');
 });
 
+test('two requests with an old token share one refresh, so a replaced refresh token cannot disconnect', async () => {
+  const env = setup([
+    res(200, { access_token: 'A', refresh_token: 'R', expires_in: 0 }), res(200, {}),
+    res(200, { access_token: 'B', refresh_token: 'R2', expires_in: 3600 }),
+    res(204), res(204)
+  ]);
+  const user = { id: 'u1' };
+  await connect(env, user);
+  await Promise.all([env.sp.nowPlaying(user), env.sp.control(user, 'next')]);
+  const refreshes = env.calls.filter(c => new URLSearchParams(c.init.body || '').get('grant_type') === 'refresh_token');
+  assert.equal(refreshes.length, 1);
+  assert.ok(user.spotify.tokens);
+  assert.equal(JSON.parse(user.spotify.tokens.slice(7)).refresh, 'R2');
+});
+
 test('a refresh token Spotify no longer honours disconnects the profile', async () => {
   const env = setup([res(200, { access_token: 'A', refresh_token: 'R', expires_in: 0 }), res(200, {}), res(400, { error: 'invalid_grant' })]);
   const user = { id: 'u1' };

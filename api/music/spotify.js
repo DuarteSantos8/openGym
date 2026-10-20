@@ -3,7 +3,7 @@
  *
  * The instance's operator registers one Spotify app (developer.spotify.com) and gives the server
  * its Client ID (SPOTIFY_CLIENT_ID, and SPOTIFY_CLIENT_SECRET if they want the classic flow; PKCE
- * otherwise). Each person then connects their own Spotify account once, from Settings → Workout:
+ * otherwise). Each person then connects their own Spotify account once, from Settings → Features:
  * the sign-in comes back here (/api/music/spotify/callback), and the tokens are kept on their
  * user row, encrypted with the instance's secret like the Coach's credentials. After that every
  * device of the profile, the phone app paired to this server included, reads what plays and
@@ -56,6 +56,7 @@ export function trackOf(j) {
 export function createSpotify(cfg, { seal, unseal, save, fetchFn = fetch, now = Date.now }) {
   const pending = new Map();   // state → { uid, verifier, app, back, exp }
   const cache = new Map();     // uid → { at, track }
+  const refreshing = new Map(); // uid → the refresh under way
 
   const sweep = () => { const t = now(); for (const [k, v] of pending) if (v.exp < t) pending.delete(k); };
 
@@ -123,16 +124,24 @@ export function createSpotify(cfg, { seal, unseal, save, fetchFn = fetch, now = 
     const t = user.spotify?.tokens ? unseal(user.spotify.tokens) : null;
     if (!t || !t.refresh) throw err('auth', 409, 'not connected');
     if (!force && t.access && t.exp - 60000 > now()) return t.access;
-    try {
-      const j = await tokenRequest({ grant_type: 'refresh_token', refresh_token: t.refresh });
-      const n = keep(user, j, t);
-      save();
-      return n.access;
-    } catch (e) {
-      // A refresh token Spotify no longer honours (access removed in the Spotify account): connect again.
-      if (e.code === 'auth') { delete user.spotify; save(); throw err('auth', 409, 'not connected'); }
-      throw e;
-    }
+    // One refresh at a time per profile: Spotify may hand out a new refresh token and stop honouring
+    // the old one, so a second refresh racing the first (two devices polling, a tap during a poll)
+    // would read as access removed and disconnect the account.
+    if (refreshing.has(user.id)) return refreshing.get(user.id);
+    const run = (async () => {
+      try {
+        const j = await tokenRequest({ grant_type: 'refresh_token', refresh_token: t.refresh });
+        const n = keep(user, j, t);
+        save();
+        return n.access;
+      } catch (e) {
+        // A refresh token Spotify no longer honours (access removed in the Spotify account): connect again.
+        if (e.code === 'auth') { delete user.spotify; save(); throw err('auth', 409, 'not connected'); }
+        throw e;
+      }
+    })().finally(() => refreshing.delete(user.id));
+    refreshing.set(user.id, run);
+    return run;
   }
 
   async function call(user, method, p) {

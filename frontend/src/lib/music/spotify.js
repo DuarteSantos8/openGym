@@ -96,19 +96,26 @@ export async function finishSpotify(search, fetchFn = fetch) {
   return true
 }
 
+// One refresh at a time: Spotify may replace the refresh token, and a second refresh racing the
+// first (a tap during a poll) with the old one would read as access removed and sign out.
+let refreshing = null
 async function accessToken(fetchFn, force) {
   const t = read(TOKENS)
   if (!t || !t.refresh) throw Object.assign(new Error('not connected'), { code: 'auth' })
   if (!force && t.access && t.exp - 60000 > Date.now()) return t.access
-  try {
-    const j = await tokenRequest({ grant_type: 'refresh_token', refresh_token: t.refresh, client_id: t.clientId }, fetchFn)
-    save(j, t.clientId, t)
-    return j.access_token
-  } catch (e) {
-    // A refresh token Spotify no longer knows (revoked, app deleted): sign in again.
-    if (e.status === 400 || e.status === 401) { write(TOKENS, null); throw Object.assign(new Error('not connected'), { code: 'auth' }) }
-    throw e
-  }
+  if (refreshing) return refreshing
+  refreshing = (async () => {
+    try {
+      const j = await tokenRequest({ grant_type: 'refresh_token', refresh_token: t.refresh, client_id: t.clientId }, fetchFn)
+      save(j, t.clientId, t)
+      return j.access_token
+    } catch (e) {
+      // A refresh token Spotify no longer knows (revoked, app deleted): sign in again.
+      if (e.status === 400 || e.status === 401) { write(TOKENS, null); throw Object.assign(new Error('not connected'), { code: 'auth' }) }
+      throw e
+    }
+  })().finally(() => { refreshing = null })
+  return refreshing
 }
 
 async function call(method, path, fetchFn) {
