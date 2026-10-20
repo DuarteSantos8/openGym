@@ -185,9 +185,17 @@ export default function Measurements() {
     onConfirm: () => { update(state => { state.measurements = state.measurements.filter(e => e.d !== entry.d) }); toast(t('Measurements deleted')) },
   })
 
+  // Back the way you came when there is a way (the browser's back, Android's back, this button
+  // all do the same); a /measurements page opened with nothing behind it goes up to Stats,
+  // the only page that routes here.
+  const back = () => {
+    if ((window.history.state?.idx || 0) > 0) nav(-1)
+    else nav('/stats', { replace: true })
+  }
+
   return <div className="narrow">
     <div className="hdr">
-      <button className="iconbtn" onClick={() => nav('/home')} aria-label={t('Home')}><Icon name="chevronLeft" /></button>
+      <button className="iconbtn" onClick={back} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
       <div style={{ flex: 1, marginLeft: 10 }}><h1>{t('Body measurements')}</h1><div className="sub">{t('Circumference & composition')}</div></div>
       <button className="iconbtn" onClick={manageMeasurementsSheet} aria-label={t('Choose measurements')}><Icon name="gear" /></button>
     </div>
