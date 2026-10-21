@@ -19,6 +19,7 @@ import { e1rmSeries, best1RM, formulaOf } from '../lib/onerm.js'
 import { currentDbLoad, workoutAs } from '../lib/dumbbells.js'
 import { maxRepsSeries } from '../lib/pyramid.js'
 import { perSetSessions, perSetLines, dropOffSet } from '../lib/per-set.js'
+import { relativeSeries } from '../lib/relative-strength.js'
 import {
   hasEffort, hasEstimableEffort, displayScale, scaleName, toScale, avgRir, effortSummary, effortWeeks,
   effortHistogram, isHardSet, HARD_RIR, MIN_RATED
@@ -418,6 +419,8 @@ export default function Stats() {
   }, [])
   const [exId, setExId] = useState(null)
   const [exMetric, setExMetric] = useState('top')
+  // What the Body weight view measures the lift by: 'e1rm' (default) or the heaviest set.
+  const [relBasis, setRelBasis] = useState('e1rm')
   // Exercise progress over a date range (issue #511), All by default. Only the chart follows it:
   // "Best:" and the recent sessions under it stay all-time.
   const [exRange, setExRange] = useState(0)
@@ -613,6 +616,23 @@ export default function Stats() {
     const series = perSet.series.map(s => ({ ...s, points: s.points.filter(p => p.t >= exFrom) })).filter(s => s.points.length)
     return { anchors: perSet.anchors.filter(p => p.t >= exFrom), series, ns: series.map(s => s.n) }
   }, [perSet, exFrom])
+  // Progress against body weight: the lift's effective load (body weight included for bodyweight
+  // and assisted work) as a share of the body weight at the time, so it only rises when you got
+  // stronger for your size. Both bases are memoised on the same inputs as e1Pts, for the same reason.
+  // On a top-set basis a bare bodyweight exercise is a flat 100%, so that basis is only offered
+  // when it actually varies.
+  const relE1 = useMemo(() => (curEx && curMode === 'reps' ? relativeSeries(S, curEx, { basis: 'e1rm' }) : []), [S, curEx, curMode])
+  const relTop = useMemo(() => (curEx && curMode === 'reps' ? relativeSeries(S, curEx, { basis: 'top' }) : []), [S, curEx, curMode])
+  const canRelE1 = relE1.length >= 2 && !relE1.some(p => p.assisted)
+  const canRelTop = relTop.length >= 2 && relTop.some(p => Math.abs(p.y - relTop[0].y) > 1e-9)
+  const relUsed = relBasis === 'top' ? (canRelTop ? 'top' : 'e1rm') : (canRelE1 ? 'e1rm' : 'top')
+  const relPts = relUsed === 'top' ? relTop : relE1
+  const relChartPts = useMemo(() => relPts.filter(p => p.t >= exFrom).map(p => ({
+    t: p.t, y: p.y * 100, d: p.d,
+    note: (relUsed === 'e1rm' ? t('Est. 1RM') + ' ' : '') + fmtNum(p.load) + ' ' + S.unit + ' @ ' + fmtNum(p.bw) + ' ' + S.unit,
+  })), [relPts, relUsed, exFrom, S.unit])
+  const showRel = canRelE1 || canRelTop
+  const onRel = showRel && exMetric === 'bodyweight'
   const onSets = !!perSet && exMetric === 'sets'
   const onE1 = showE1 && exMetric === 'e1rm'
   const onEff = showEff && exMetric === 'effort'
@@ -623,7 +643,7 @@ export default function Stats() {
     m: exRir[i] == null ? null : 1 - Math.min(4, Math.max(0, exRir[i])) / 4,
     note: exRir[i] == null ? undefined : hd + ' ' + fmtNum(toScale(kind, exRir[i]))
   })).filter(inExRange)
-  const chartPts = onSets ? perSetChart.anchors : onMax ? maxChartPts : onEff ? effPts : onE1 ? e1ChartPts : topPts
+  const chartPts = onSets ? perSetChart.anchors : onRel ? relChartPts : onMax ? maxChartPts : onEff ? effPts : onE1 ? e1ChartPts : topPts
   // A line needs two workouts. A range that holds fewer says so, instead of a lone dot or an empty box.
   const rangeTooShort = exRange !== 0 && chartPts.length < 2
   const exOpts = [{ value: 'top', label: t('Top set') }]
@@ -631,6 +651,7 @@ export default function Stats() {
   if (showE1) exOpts.push({ value: 'e1rm', label: t('Est. 1RM') })
   if (showEff) exOpts.push({ value: 'effort', label: t('Effort') })
   if (showMax) exOpts.push({ value: 'max', label: t('Max reps') })
+  if (showRel) exOpts.push({ value: 'bodyweight', label: t('Bodyweight') })
 
   return <>
     <div className="hdr"><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
@@ -706,13 +727,17 @@ export default function Stats() {
                 match: (option, query) => matchExercise(matcherOf(option.value), query),
               }} />
           </div>
-          {exOpts.length > 1 && <Segmented className="seg-range" value={onMax ? 'max' : onEff ? 'effort' : onE1 ? 'e1rm' : onSets ? 'sets' : 'top'} onChange={setExMetric} options={exOpts} />}
+          {exOpts.length > 1 && <Segmented className="seg-range" value={onRel ? 'bodyweight' : onMax ? 'max' : onEff ? 'effort' : onE1 ? 'e1rm' : onSets ? 'sets' : 'top'} onChange={setExMetric} options={exOpts} />}
           <Segmented className="seg-range" value={exRange} onChange={setExRange} options={rangeOptions()} />
+          {onRel && canRelE1 && canRelTop && <Segmented className="seg-range" value={relUsed} onChange={setRelBasis}
+            options={[{ value: 'e1rm', label: t('Est. 1RM') }, { value: 'top', label: t('Top set') }]} />}
           <div className="chart">
             {rangeTooShort
               ? <div className="empty small">{t('Fewer than two workouts in this period. Pick a longer one.')}</div>
               : onSets
               ? <LineChart points={perSetChart.anchors} series={perSetChart.series} h={150} unit={perSet.metric === 'reps' ? t('reps') : S.unit} />
+              : onRel
+              ? <LineChart points={relChartPts} h={150} unit="% BW" />
               : onMax
               ? <LineChart points={maxChartPts} h={150} unit={t('reps')} color="var(--blue)" />
               : onEff
@@ -727,9 +752,17 @@ export default function Stats() {
           <div style={{ marginTop: 8 }}>{exList.map((p, i) => <div key={i} className="row between small" style={{ padding: '6px 0', borderBottom: 'var(--hair) solid var(--sep)' }}>
             <span className="muted">{fmtDate(p.d, true)}</span><span>{p.sets.map(s => setLabel(curEx, s, p.target, speedUnit)).join('  ')}</span></div>)}</div>
           <div className="small dim" style={{ marginTop: 8 }}>
-            {onSets ? (perSet.metric === 'reps' ? t('Reps in each working set, one line per set number') : t('Estimated 1RM of each working set, one line per set number')) : onMax ? <>{t('Most reps in a Max set per workout')} · {t('Best:')}{' '}<b className="accent">{maxBest} {t('reps')}</b></> : onEff ? t('Average effort per workout') : onE1 ? t('Estimated 1RM per workout') : curCardio ? t('Top speed per workout') : curTimed ? t('Longest hold per workout') : repsOnly ? t('Most reps in a set per workout') : t('Best set weight per workout')}
-            {onEff || onMax || onSets ? '' : <> · {t('Best:')}{' '}<b className="accent">{fmtNum(onE1 ? e1Best.est : exBest)} {onE1 ? S.unit : exUnit}</b></>}
+            {onSets ? (perSet.metric === 'reps' ? t('Reps in each working set, one line per set number') : t('Estimated 1RM of each working set, one line per set number')) : onRel ? (relUsed === 'top' ? t('Heaviest set as a share of body weight, per workout') : t('Estimated 1RM as a share of body weight, per workout')) : onMax ? <>{t('Most reps in a Max set per workout')} · {t('Best:')}{' '}<b className="accent">{maxBest} {t('reps')}</b></> : onEff ? t('Average effort per workout') : onE1 ? t('Estimated 1RM per workout') : curCardio ? t('Top speed per workout') : curTimed ? t('Longest hold per workout') : repsOnly ? t('Most reps in a set per workout') : t('Best set weight per workout')}
+            {onRel ? <> · {t('Best:')}{' '}<b className="accent">{fmtNum(Math.max(0, ...relPts.map(p => p.y * 100)))} % BW</b></>
+              : onEff || onMax || onSets ? '' : <> · {t('Best:')}{' '}<b className="accent">{fmtNum(onE1 ? e1Best.est : exBest)} {onE1 ? S.unit : exUnit}</b></>}
           </div>
+          {onRel && !rangeTooShort && (() => {
+            const inRange = relPts.filter(p => p.t >= exFrom)
+            const first = inRange[0], last = inRange[inRange.length - 1]
+            return <div className="small dim" style={{ marginTop: 4 }}>
+              {t('Body weight over this period: {0} → {1}. Bodyweight and assisted exercises count your body weight as part of the load.', fmtNum(first.bw) + ' ' + S.unit, fmtNum(last.bw) + ' ' + S.unit)}
+            </div>
+          })()}
           {onSets && (perSet.drop || perSet.hidden > 0) && <div className="small dim" style={{ marginTop: 4 }}>
             {perSet.drop && t('Where you most often drop off: set {0} ({1} of {2} workouts)', perSet.drop.n, perSet.drop.count, perSet.drop.of)}
             {perSet.drop && perSet.hidden > 0 ? ' · ' : ''}
@@ -738,7 +771,7 @@ export default function Stats() {
           {onE1 && <div className="small dim" style={{ marginTop: 4 }}>
             {t('Best estimate from {0} on {1}. An estimate, not a tested max.', fmtNum(e1Best.w) + ' ' + S.unit + ' × ' + e1Best.r, fmtDate(e1Best.d, true))}
           </div>}
-          {!onEff && !onE1 && !onMax && !onSets && showEff && <div className="small dim" style={{ marginTop: 4 }}>
+          {!onEff && !onE1 && !onMax && !onSets && !onRel && showEff && <div className="small dim" style={{ marginTop: 4 }}>
             {t('A fuller dot means less left in the tank. The same weight at a lower {0} is progress the line alone doesn’t show.', hd)}
           </div>}
         </> : <div className="muted small">{t('Finish your first workout and your progress curves will show up here.')}</div>}

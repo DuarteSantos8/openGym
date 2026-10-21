@@ -2242,4 +2242,7 @@ export default {
   'Your sports watch, calling you back.': 'Spor saatin seni geri çağırıyor.',
   'Coach wants you back on the bar.': 'Koç seni bara geri bekliyor.',
   'Gentle, for headphones or a quiet room.': 'Sakin, kulaklık ya da sessiz bir oda için.',
+  'Heaviest set as a share of body weight, per workout': 'Antrenman başına vücut ağırlığına oranla en ağır set',
+  'Estimated 1RM as a share of body weight, per workout': 'Antrenman başına vücut ağırlığına oranla tahmini 1RM',
+  'Body weight over this period: {0} → {1}. Bodyweight and assisted exercises count your body weight as part of the load.': 'Bu dönemdeki vücut ağırlığı: {0} → {1}. Vücut ağırlığı ve destekli egzersizlerde vücut ağırlığın yükün bir parçası sayılır.',
 }

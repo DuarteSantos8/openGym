@@ -2242,4 +2242,7 @@ export default {
   'Your sports watch, calling you back.': '스포츠 시계가 다시 부르고 있어요.',
   'Coach wants you back on the bar.': '코치가 바 앞으로 돌아오래요.',
   'Gentle, for headphones or a quiet room.': '이어폰이나 조용한 곳에 어울려요.',
+  'Heaviest set as a share of body weight, per workout': '운동별 체중 대비 가장 무거운 세트',
+  'Estimated 1RM as a share of body weight, per workout': '운동별 체중 대비 추정 1RM',
+  'Body weight over this period: {0} → {1}. Bodyweight and assisted exercises count your body weight as part of the load.': '이 기간의 체중: {0} → {1}. 맨몸 운동과 보조 운동에서는 체중이 부하의 일부로 계산됩니다.',
 }

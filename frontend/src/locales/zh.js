@@ -2242,4 +2242,7 @@ export default {
   'Your sports watch, calling you back.': '你的运动手表在叫你回来。',
   'Coach wants you back on the bar.': '教练等你回到杠铃前。',
   'Gentle, for headphones or a quiet room.': '轻柔，适合耳机或安静的房间。',
+  'Heaviest set as a share of body weight, per workout': '每次训练中最重一组占体重的比例',
+  'Estimated 1RM as a share of body weight, per workout': '每次训练的预估 1RM 占体重的比例',
+  'Body weight over this period: {0} → {1}. Bodyweight and assisted exercises count your body weight as part of the load.': '此期间的体重：{0} → {1}。自重和辅助动作会把你的体重计入负重。',
 }

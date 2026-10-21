@@ -2242,4 +2242,7 @@ export default {
   'Your sports watch, calling you back.': 'आपकी स्पोर्ट्स घड़ी आपको वापस बुला रही है।',
   'Coach wants you back on the bar.': 'कोच आपको बार पर वापस चाहते हैं।',
   'Gentle, for headphones or a quiet room.': 'धीमी, हेडफ़ोन या शांत कमरे के लिए।',
+  'Heaviest set as a share of body weight, per workout': 'प्रति वर्कआउट शरीर के वज़न के अनुपात में सबसे भारी सेट',
+  'Estimated 1RM as a share of body weight, per workout': 'प्रति वर्कआउट शरीर के वज़न के अनुपात में अनुमानित 1RM',
+  'Body weight over this period: {0} → {1}. Bodyweight and assisted exercises count your body weight as part of the load.': 'इस अवधि में शरीर का वज़न: {0} → {1}। बॉडीवेट और असिस्टेड व्यायामों में आपके शरीर का वज़न लोड का हिस्सा माना जाता है।',
 }

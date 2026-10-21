@@ -2245,4 +2245,7 @@ export default {
   'Your sports watch, calling you back.': 'A sportórád visszahív.',
   'Coach wants you back on the bar.': 'Az edző visszavár a rúdhoz.',
   'Gentle, for headphones or a quiet room.': 'Halk, fülhallgatóhoz vagy csendes helyre.',
+  'Heaviest set as a share of body weight, per workout': 'A legnehezebb sorozat a testsúly arányában, edzésenként',
+  'Estimated 1RM as a share of body weight, per workout': 'Becsült 1RM a testsúly arányában, edzésenként',
+  'Body weight over this period: {0} → {1}. Bodyweight and assisted exercises count your body weight as part of the load.': 'Testsúly ebben az időszakban: {0} → {1}. A testsúlyos és segített gyakorlatoknál a testsúlyod is a terhelés részének számít.',
 }

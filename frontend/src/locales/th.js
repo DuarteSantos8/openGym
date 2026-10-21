@@ -2253,4 +2253,7 @@ export default {
   'Your sports watch, calling you back.': 'นาฬิกาสปอร์ตเรียกคุณกลับมาแล้ว',
   'Coach wants you back on the bar.': 'โค้ชอยากให้คุณกลับมาที่บาร์',
   'Gentle, for headphones or a quiet room.': 'เบา ๆ สำหรับหูฟังหรือห้องที่เงียบ',
+  'Heaviest set as a share of body weight, per workout': 'เซ็ตที่หนักที่สุดเทียบกับน้ำหนักตัว ต่อการเทรนแต่ละครั้ง',
+  'Estimated 1RM as a share of body weight, per workout': '1RM โดยประมาณเทียบกับน้ำหนักตัว ต่อการเทรนแต่ละครั้ง',
+  'Body weight over this period: {0} → {1}. Bodyweight and assisted exercises count your body weight as part of the load.': 'น้ำหนักตัวในช่วงนี้: {0} → {1} ท่าที่ใช้น้ำหนักตัวและท่าที่มีตัวช่วยจะนับน้ำหนักตัวของคุณเป็นส่วนหนึ่งของน้ำหนักที่ยก',
 }
