@@ -25,7 +25,7 @@ import { supersetMeta } from '../lib/superset-meta.js'
 import WorkoutThumb, { hasWorkoutMedia } from '../components/WorkoutThumb.jsx'
 import { workoutSettingsSheet } from '../components/WorkoutSettingsSheet.jsx'
 import { durationSheet } from '../components/DurationWheel.jsx'
-import { REST_MAX, fmtRest } from '../lib/duration.js'
+import { REST_MAX, fmtRest, restWheelValue, restFromWheel } from '../lib/duration.js'
 import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, exitWorkoutEdit, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet, finishWorkoutSheet } from '../sheets.jsx'
 import { afterScrollRestore, scrollRestorePending } from '../components/Modals.jsx'
 import { effortColor } from '../lib/effort.js'
@@ -1449,7 +1449,7 @@ function ActiveWorkout() {
     ],
   })
   // An exercise's own rest, from its ⋯ menu: the same wheel as the default rest timer, where 0:00
-  // means "no rest of its own", so the default applies. Like everything edited on the exercise
+  // means "no rest of its own", so the default applies; with none it opens on the default. Like everything edited on the exercise
   // from inside the session it is this session's; the menu's Update routine offers to keep it.
   const openExerciseRest = idx => {
     const state = useStore.getState().S
@@ -1459,13 +1459,13 @@ function ActiveWorkout() {
     const entryId = entry.id
     durationSheet({
       title: t('Rest for this exercise'),
-      value: entry.target?.restSec > 0 ? entry.target.restSec : 0, max: REST_MAX,
+      value: restWheelValue(entry.target?.restSec, state.restSec), max: REST_MAX,
       off: t('Default ({0})', fmtRest(state.restSec)),
-      footer: t('Rest after each set of this exercise. 0:00 means your default rest.'),
+      footer: t('Rest after each set of this exercise. Left on your default rest ({0}), it follows the default when you change it.', fmtRest(state.restSec)),
       onDone: v => update(s => {
         const e = s.active?.id === activeId ? s.active.entries?.[idx] : null
         if (!e || e.id !== entryId) return
-        e.target = { ...(e.target || {}), restSec: v }
+        e.target = { ...(e.target || {}), restSec: restFromWheel(v, e.target?.restSec, state.restSec) }
       }),
     })
   }

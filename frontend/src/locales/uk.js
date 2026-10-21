@@ -178,7 +178,7 @@ export default {
   'Remove drop': 'Прибрати дроп-сет',
   'Remove burst': 'Прибрати серію',
   'Rest (s)': 'Відпочинок (с)',
-  'Rest after each set of this exercise. 0:00 means your default rest.': 'Відпочинок після кожного підходу цієї вправи. 0:00 означає твій відпочинок за замовчуванням.',
+  'Rest after each set of this exercise. Left on your default rest ({0}), it follows the default when you change it.': 'Відпочинок після кожного підходу цієї вправи. Якщо залишити відпочинок за замовчуванням ({0}), він змінюватиметься разом із ним.',
   'Drop-set / rest-pause': 'Дроп-сет / рест-пауза',
   'Intensifier': 'Інтенсифікатор',
   'None': 'Немає',

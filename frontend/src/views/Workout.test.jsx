@@ -3397,13 +3397,16 @@ describe('the workout screen chrome (v1.3.11)', () => {
     ])
   })
 
-  it('sets an exercise’s own rest on the wheel, 0:00 meaning the default', async () => {
+  it('sets an exercise’s own rest on the wheel, opening on the default, 0:00 meaning the default', async () => {
     await mount([exercise('plain-bench', [false])])
     await openMore()
     expect(item('Rest timer').sub).toBe('Default (1:30)')
     item('Rest timer').onClick()
     const opts = mocks.durationSheet.mock.calls.at(-1)[0]
-    expect(opts).toMatchObject({ title: 'Rest for this exercise', value: 0, max: 900, off: 'Default (1:30)' })
+    expect(opts).toMatchObject({ title: 'Rest for this exercise', value: 90, max: 900, off: 'Default (1:30)' })
+    // Done on the default keeps "no rest of its own".
+    await act(async () => { opts.onDone(90) })
+    expect(mocks.S.active.entries[0].target.restSec).toBe(0)
     await act(async () => { opts.onDone(135) })
     expect(mocks.S.active.entries[0].target.restSec).toBe(135)
     await rerender()

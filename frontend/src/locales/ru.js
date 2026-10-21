@@ -190,7 +190,7 @@ export default {
   'Remove drop': 'Убрать дроп-сет',
   'Remove burst': 'Убрать серию',
   'Rest (s)': 'Отдых (с)',
-  'Rest after each set of this exercise. 0:00 means your default rest.': 'Отдых после каждого подхода этого упражнения. 0:00 значит ваш отдых по умолчанию.',
+  'Rest after each set of this exercise. Left on your default rest ({0}), it follows the default when you change it.': 'Отдых после каждого подхода этого упражнения. Если оставить отдых по умолчанию ({0}), он будет меняться вместе с ним.',
   'Drop-set / rest-pause': 'Дроп-сет / рест-пауза',
   'Intensifier': 'Интенсификатор',
   'None': 'Нет',

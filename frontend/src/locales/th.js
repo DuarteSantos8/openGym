@@ -893,7 +893,7 @@ export default {
   'Keep replacement in this group': 'เก็บท่าใหม่ไว้ในกลุ่มนี้',
   'Insert after this group': 'แทรกหลังกลุ่มนี้',
   'Logged sets stay with the original exercise. The replacement will be inserted afterward.': 'เซ็ตที่บันทึกแล้วจะอยู่กับท่าเดิม ท่าใหม่จะถูกแทรกไว้ถัดไป',
-  'Rest after each set of this exercise. 0:00 means your default rest.': 'พักหลังแต่ละเซ็ตของท่านี้ ตั้งที่ 0:00 จะใช้เวลาพักค่าเริ่มต้นของคุณ',
+  'Rest after each set of this exercise. Left on your default rest ({0}), it follows the default when you change it.': 'พักหลังแต่ละเซ็ตของท่านี้ ถ้าปล่อยไว้ที่เวลาพักเริ่มต้น ({0}) จะเปลี่ยนตามเมื่อคุณเปลี่ยนค่าเริ่มต้น',
   'Vibrate': 'การสั่น',
   'Weigh in before workouts': 'ชั่งน้ำหนักก่อนออกกำลังกาย',
   'Asks for your body weight when a workout starts. Off starts the session straight away.': 'ถามน้ำหนักตัวเมื่อเริ่มออกกำลังกาย ถ้าปิด เซสชันจะเริ่มทันที',

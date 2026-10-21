@@ -885,7 +885,7 @@ export default {
   'Keep replacement in this group': 'A csere maradjon ebben a csoportban',
   'Insert after this group': 'Beszúrás a csoport után',
   'Logged sets stay with the original exercise. The replacement will be inserted afterward.': 'A naplózott sorozatok az eredeti gyakorlatnál maradnak. A csere utána kerül beszúrásra.',
-  'Rest after each set of this exercise. 0:00 means your default rest.': 'Pihenő a gyakorlat minden sorozata után. 0:00 esetén az alapértelmezett pihenőd érvényes.',
+  'Rest after each set of this exercise. Left on your default rest ({0}), it follows the default when you change it.': 'Pihenő a gyakorlat minden sorozata után. Az alapértelmezett pihenődön ({0}) hagyva követi azt, ha módosítod.',
   'Vibrate': 'Rezgés',
   'Weigh in before workouts': 'Súlymérés edzés előtt',
   'Asks for your body weight when a workout starts. Off starts the session straight away.': 'Edzés indításakor rákérdez a testsúlyodra. Kikapcsolva az edzés azonnal indul.',

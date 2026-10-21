@@ -196,7 +196,7 @@ export default {
   'Remove drop': 'Usuń serię zniżkującą',
   'Remove burst': 'Usuń serię rest-pause',
   'Rest (s)': 'Odpoczynek (s)',
-  'Rest after each set of this exercise. 0:00 means your default rest.': 'Odpoczynek po każdej serii tego ćwiczenia. 0:00 oznacza domyślną przerwę.',
+  'Rest after each set of this exercise. Left on your default rest ({0}), it follows the default when you change it.': 'Odpoczynek po każdej serii tego ćwiczenia. Zostawiony na domyślnej przerwie ({0}), zmienia się razem z nią.',
   'Drop-set / rest-pause': 'Seria zniżkująca / rest-pause',
   'Intensifier': 'Technika intensyfikująca',
   'None': 'Brak',

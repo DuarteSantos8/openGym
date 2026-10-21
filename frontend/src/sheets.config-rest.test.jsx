@@ -8,7 +8,8 @@ import { useUI } from './store/useUI.js'
 import { exConfigSheet } from './sheets.jsx'
 
 // v1.3.11: an exercise's own rest is set on the same wheel as the default rest timer, where 0:00
-// means "no rest of its own" and the row says which default applies then.
+// means "no rest of its own" and the row says which default applies then. With none of its own
+// the wheel opens on that default, and Done there still saves "none of its own".
 const ex = EXDB.find(e => e.id === '0009')
 const mounted = []
 
@@ -32,7 +33,7 @@ describe('exercise settings: rest on the wheel', () => {
   })
   afterEach(() => { act(() => { mounted.splice(0).forEach(([root, host]) => { root.unmount(); host.remove() }) }) })
 
-  it('reads Default with the default rest when the exercise has none, and saves what the wheel picks', () => {
+  it('reads Default with the default rest when the exercise has none, and the wheel opens on it', () => {
     const onSave = vi.fn()
     exConfigSheet(ex, { sets: 3, reps: 10, weight: 40, mode: 'reps', restSec: 0 }, onSave)
     const host = render(useUI.getState().sheets.at(-1))
@@ -40,14 +41,29 @@ describe('exercise settings: rest on the wheel', () => {
     act(() => restRow(host).click())
     const wheel = render(useUI.getState().sheets.at(-1))
     expect(wheel.querySelector('h3').textContent).toBe('Rest for this exercise')
-    expect(wheel.querySelector('.dw-read').textContent).toBe('Default (2:00)')
-    // The copy names the wheel's 0:00, not a "0" the row never shows (QA 10-05).
-    expect(host.textContent).toContain('0:00 means your default rest.')
+    expect(wheel.querySelector('.dw-read').textContent).toBe('2:00')
+    // The copy says what the default does, not a "0" the row never shows (QA 10-05).
+    expect(host.textContent).toContain('Left on your default rest (2:00), it follows the default when you change it.')
+    expect(wheel.textContent).toContain('Left on your default rest (2:00)')
     expect(host.textContent).not.toMatch(/Leave at 0/)
-    // Done keeps 0:00, the default; the value shown stays the default's.
+    // Done on the default keeps "no rest of its own", so a later default still applies.
     act(() => [...wheel.querySelectorAll('button')].find(b => b.textContent === 'Done').click())
     act(() => save(host))
     expect(onSave.mock.calls[0][0].restSec || 0).toBe(0)
+  })
+
+  it('saves a rest moved off the default as the exercise’s own', () => {
+    const onSave = vi.fn()
+    exConfigSheet(ex, { sets: 3, reps: 10, weight: 40, mode: 'reps', restSec: 0 }, onSave)
+    const host = render(useUI.getState().sheets.at(-1))
+    act(() => restRow(host).click())
+    const wheel = render(useUI.getState().sheets.at(-1))
+    const sec = wheel.querySelectorAll('[role="spinbutton"]')[1]
+    act(() => { sec.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })) })
+    expect(wheel.querySelector('.dw-read').textContent).toBe('2:01')
+    act(() => [...wheel.querySelectorAll('button')].find(b => b.textContent === 'Done').click())
+    act(() => save(host))
+    expect(onSave.mock.calls[0][0].restSec).toBe(121)
   })
 
   it('shows an exercise’s own rest as a time, and the wheel opens on it', () => {

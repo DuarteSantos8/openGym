@@ -196,7 +196,7 @@ export default {
   'Remove drop': 'Remover queda',
   'Remove burst': 'Remover rajada',
   'Rest (s)': 'Descanso (s)',
-  'Rest after each set of this exercise. 0:00 means your default rest.': 'Descanso depois de cada série deste exercício. Em 0:00 fica o teu descanso predefinido.',
+  'Rest after each set of this exercise. Left on your default rest ({0}), it follows the default when you change it.': 'Descanso depois de cada série deste exercício. Deixado no teu descanso predefinido ({0}), acompanha-o quando o mudares.',
   'Drop-set / rest-pause': 'Séries decrescentes / rest-pause',
   'Intensifier': 'Intensificador',
   'None': 'Nenhum',
