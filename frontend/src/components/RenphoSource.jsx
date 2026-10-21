@@ -23,7 +23,8 @@ const ERRORS = {
   busy: () => t('Too many attempts. Try again in a while.'),
   missing: () => t('Enter the e-mail and password of your RENPHO account.'),
 }
-const errorText = code => (ERRORS[code] || ERRORS.failed)()
+// RENPHO's own code and words, when it gave any ("50012: …"), after ours: what to look up or tell.
+const errorText = (code, reason) => (ERRORS[code] || ERRORS.failed)() + (reason ? ' — RENPHO: ' + reason : '')
 const ago = ms => {
   const min = Math.round((Date.now() - ms) / 60000)
   if (min < 1) return t('just now')
@@ -68,7 +69,7 @@ export default function RenphoSource() {
       toast(t('RENPHO connected. Importing your measurements…'))
     } catch (e) {
       setForm(f => ({ ...f, password: '' }))
-      toast(errorText(e.data?.code))
+      toast(errorText(e.data?.code, e.data?.reason))
     } finally { setBusy(false) }
   }
   const syncNow = async () => {
@@ -104,7 +105,7 @@ export default function RenphoSource() {
       <Row icon="history" iconTint="var(--blue)" title={t('Last sync')}
         value={st.syncing ? t('Syncing…') : st.lastSync ? ago(st.lastSync) : t('Not yet')}
         subtitle={st.lastResult && !st.syncing ? t('{0} measurements · {1} new · {2} updated', st.lastResult.measurements, st.lastResult.added, st.lastResult.updated) : null} />
-      {st.error && <Row icon="warning" iconTint="var(--orange)" title={t('Last sync failed')} subtitle={errorText(st.error.code)} />}
+      {st.error && <Row icon="warning" iconTint="var(--orange)" title={t('Last sync failed')} subtitle={errorText(st.error.code, st.error.reason)} />}
       {fields.length > 0 && <Row icon="scale" iconTint="var(--teal)" title={t('Values received')} subtitle={fields.join(', ')}
         value={st.segmental ? t('Segmental too') : null} />}
       <Row icon="reset" iconTint="var(--green)" title={t('Sync now')}>

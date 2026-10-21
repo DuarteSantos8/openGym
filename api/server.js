@@ -34,7 +34,7 @@ import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from 
 import { effectiveRoutineId } from './queue.js';
 import { stampPut, highestStamp } from './sync-stamps.js';
 import { readingsFromShortcut, readingsFromAutoExport, isAutoExport, mergeReadings } from './health/fold.js';
-import { createRenphoService } from './providers/renpho/service.js';
+import { createRenphoService, reasonOf } from './providers/renpho/service.js';
 import { createRenphoClient, BASE_URL as RENPHO_DEFAULT_URL } from './providers/renpho/client.js';
 import { atomicWrite as durableWrite } from './durable.js';
 import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
@@ -2463,7 +2463,8 @@ const routes = {
       await RENPHO.connect(user, { email: body.email, password: body.password, areaCode: body.areaCode });
     } catch (e) {
       const code = e.code === 'auth' ? 'auth' : e.code || 'failed';
-      return json(res, RENPHO_STATUS[code] || 502, { error: e.message, code });
+      const reason = reasonOf(e);
+      return json(res, RENPHO_STATUS[code] || 502, { error: e.message, code, ...(reason ? { reason } : {}) });
     }
     RENPHO.sync(user).catch(() => { /* kept on the row as its error */ });
     json(res, 200, RENPHO.status(user));

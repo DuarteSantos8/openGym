@@ -85,4 +85,21 @@ describe('RENPHO Health card', () => {
     expect(m.toast).toHaveBeenCalledWith('RENPHO did not accept the e-mail and password. Connect again.')
     expect(input('Password').value).toBe('')
   })
+
+  it('RENPHO\'s own reason, when it gave one, follows ours: on the toast and on the failed sync', async () => {
+    m.api.mockImplementation(async (p, o) => {
+      if (p === '/api/renpho' && !o) return { connected: false }
+      throw Object.assign(new Error('x'), { status: 401, data: { code: 'auth', reason: '50012: account locked' } })
+    })
+    await mount()
+    type(input('E-mail'), 'me@example.com')
+    type(input('Password'), 'pw')
+    await act(async () => { button('Connect').click() })
+    expect(m.toast).toHaveBeenCalledWith('RENPHO did not accept the e-mail and password. Connect again. — RENPHO: 50012: account locked')
+    act(() => root.unmount()); root = createRoot(host)
+    m.api.mockReset()
+    m.api.mockResolvedValue({ connected: true, email: 'me@example.com', lastSync: null, error: { code: 'rejected', reason: '401: token expired' } })
+    await mount()
+    expect(host.textContent).toContain('RENPHO refused the request. Try again, or connect again. — RENPHO: 401: token expired')
+  })
 })

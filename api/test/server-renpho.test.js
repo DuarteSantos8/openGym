@@ -134,6 +134,7 @@ test('RENPHO Health end to end', async t => {
   const bad = await call(h, A, 'POST', '/api/renpho/connect', { email: 'a@example.com', password: 'nope' });
   assert.equal(bad.status, 401);
   assert.equal(bad.body.code, 'auth');
+  assert.equal(bad.body.reason, '30001: fail', 'RENPHO\'s own code and words, to say why');
   assert.deepEqual((await call(h, A, 'GET', '/api/renpho')).body, { connected: false });
   assert.equal((await call(h, A, 'POST', '/api/renpho/connect', { email: 'a@example.com' })).status, 400);
 
@@ -209,6 +210,7 @@ test('RENPHO Health end to end', async t => {
   await call(h, B, 'POST', '/api/renpho/sync');
   const sb = await synced(h, B, Date.now() - 1);
   assert.equal(sb.error.code, 'auth');
+  assert.equal(sb.error.reason, '30001: fail');
   assert.ok(renphoRecords(h.state(B), B).length > 0);
 
   // Disconnect: the account and the raw copy are gone; the readings stay in the profile.

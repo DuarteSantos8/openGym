@@ -24,9 +24,16 @@ const MESSAGES = {
   format: 'RENPHO answered in a way this version does not understand',
   failed: 'The sync failed',
 };
+// RENPHO's own code and words for a refusal ("50012: …"), kept so Settings can say why; nothing
+// of the request is in it, only what RENPHO answered.
+export const reasonOf = e => {
+  const m = /\(code ([^)]*)\)/.exec(String(e?.message || ''));
+  return m ? m[1].slice(0, 160) : null;
+};
 const problem = e => {
   const code = e instanceof RenphoError || MESSAGES[e?.code] ? e.code : 'failed';
-  return { code, message: MESSAGES[code] || MESSAGES.failed };
+  const reason = reasonOf(e);
+  return { code, message: MESSAGES[code] || MESSAGES.failed, ...(reason ? { reason } : {}) };
 };
 
 /**
