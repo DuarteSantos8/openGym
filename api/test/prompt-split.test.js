@@ -15,10 +15,16 @@ const workout = (d, done = true) => ({
   d, start: 1, end: 60001, name: 'A',
   entries: [{ id: '0001', target: { sets: 3, reps: 8, weight: 60 }, sets: [{ done, w: 60, r: 8, rir: 2 }] }]
 });
+/* A date n days before today. A review reads only the last twelve weeks, so a workout dated on
+ * the calendar (these were August 2026) drops out of the payload once it ages past that, and
+ * the compaction test below failed from 2026-10-25 (#663). The clock is read once per file so
+ * the sessions keep their order across midnight. */
+const NOW = new Date();
+const daysAgo = n => { const d = new Date(NOW); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); };
 
 test('the rules half of the prompt is byte-identical across jobs of the same task', () => {
-  const a = buildPromptParts('review', build(S([workout('2026-08-01')]), { handle: 'h1', kind: 'review' }));
-  const b = buildPromptParts('review', build(S([workout('2026-08-20')]), { handle: 'h2', kind: 'review' }));
+  const a = buildPromptParts('review', build(S([workout(daysAgo(21))]), { handle: 'h1', kind: 'review' }));
+  const b = buildPromptParts('review', build(S([workout(daysAgo(2))]), { handle: 'h2', kind: 'review' }));
   assert.equal(a.system, b.system);              // the whole point: a prefix cache can hit
   assert.notEqual(a.user, b.user);
   assert.ok(a.user.includes('## Payload'));
@@ -26,7 +32,7 @@ test('the rules half of the prompt is byte-identical across jobs of the same tas
 });
 
 test('a repair round changes only the user half', () => {
-  const p = build(S([workout('2026-08-01')]), { handle: 'h1', kind: 'review' });
+  const p = build(S([workout(daysAgo(21))]), { handle: 'h1', kind: 'review' });
   const clean = buildPromptParts('review', p);
   const repaired = buildPromptParts('review', p, { previous: '{"x":1}', errors: ['bad id'] });
   assert.equal(clean.system, repaired.system);
@@ -34,7 +40,7 @@ test('a repair round changes only the user half', () => {
 });
 
 test('buildPrompt is exactly the two parts joined, so the CLI adapters lose nothing', () => {
-  const p = build(S([workout('2026-08-01')]), { handle: 'h1', kind: 'review' });
+  const p = build(S([workout(daysAgo(21))]), { handle: 'h1', kind: 'review' });
   const parts = buildPromptParts('review', p);
   assert.equal(buildPrompt('review', p), parts.system + '\n\n---\n\n' + parts.user);
 });
@@ -76,7 +82,8 @@ test('the create schema caps the two arrays the validator caps, so a repeating m
 });
 
 test('older sessions in a review window are compacted, the recent ones keep full sets', () => {
-  const many = Array.from({ length: FULL_DETAIL_SESSIONS + 4 }, (_, i) => workout('2026-08-' + String(i + 1).padStart(2, '0')));
+  const n = FULL_DETAIL_SESSIONS + 4;
+  const many = Array.from({ length: n }, (_, i) => workout(daysAgo(n - i)));
   const p = build(S(many), { handle: 'h1', kind: 'review' });
   const w = p.window.workouts;
   assert.equal(w.length, many.length);

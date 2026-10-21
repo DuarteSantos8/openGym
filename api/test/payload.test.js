@@ -419,7 +419,11 @@ test('a session note reaches the model whole, bounded only at the app\'s own cap
     id: 'w' + d, d, name: 'A', start: 0, end: 60000, prs: [], note,
     entries: [{ id: '0001', target: { sets: 3, reps: 10, weight: 20 }, sets: [{ w: 20, r: 10, done: true }] }]
   });
-  S.workouts = [mk('2026-09-02', whole), mk('2026-09-03', 'y'.repeat(payload.NOTE_MAX + 100))];   // only a document edited outside the app carries the second
+  // Dated back from today: a review reads only the last twelve weeks, and calendar dates here
+  // (2026-09-02/03) would drop out of the window on 2026-11-26 (#663).
+  const now = new Date();
+  const day = n => { const d = new Date(now); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); };
+  S.workouts = [mk(day(2), whole), mk(day(1), 'y'.repeat(payload.NOTE_MAX + 100))];   // only a document edited outside the app carries the second
   const p = payload.build(S, { handle: handleFor('u1'), kind: 'review' });
   const [full, edited] = p.window.workouts;
   assert.equal(full.compact, undefined, 'both sessions are in full detail');
