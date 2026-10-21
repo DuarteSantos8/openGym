@@ -144,7 +144,9 @@ const planAndLogFields = {
   'logged entry id': S => { S.workouts[0].entries[0].id = INJECT; },
   'logged target': S => { S.workouts[0].entries[0].target = { sets: INJECT, reps: INJECT, sec: INJECT, weight: INJECT }; },
   'logged set values': S => { Object.assign(S.workouts[0].entries[0].sets[0], { w: INJECT, r: INJECT, sec: INJECT, min: INJECT, speed: INJECT, rir: INJECT, rpe: INJECT }); },
-  'body-weight weigh-in': S => { S.bodyweight.push({ d: '2026-07-21', w: INJECT }, { d: '2026-07-21' + INJECT, w: 80 }); },
+  // Dated on the fixture's session day so both rows reach the review and the debrief windows;
+  // a date past either window is dropped before the bounds are ever exercised.
+  'body-weight weigh-in': S => { S.bodyweight.push({ d: workoutDay, w: INJECT }, { d: workoutDay + INJECT, w: 80 }); },
   'target body weight': S => { S.targetW = INJECT; }
 };
 
@@ -157,6 +159,18 @@ test('every plan, log and id field is bounded too, for a create, a review and a 
       assert.ok(json.length < 100_000, `${field}: the ${kind} payload stays small (${json.length})`);
       assert.ok(!json.includes(INJECT.slice(0, payload.ID_MAX + 1)), `${field}: no more of it than an id's length reaches a ${kind}`);
     }
+  }
+});
+
+test('the poisoned weigh-ins reach the window, so the bound above has something to cut', () => {
+  // Only the session-day weigh-in: the fixture's older one sits near the debrief's 28-day edge,
+  // where a run crossing midnight or a DST change would pull it in.
+  const S = sampleState({ bodyweight: [{ d: workoutDay, w: 78.5 }] });
+  planAndLogFields['body-weight weigh-in'](S);
+  for (const kind of ['review', 'debrief']) {
+    // The weight that is not a number is dropped; the date with a payload behind it keeps its day.
+    assert.deepEqual(payload.build(S, { handle: 'h'.repeat(16), kind }).bodyweight.series,
+      [{ d: workoutDay, w: 78.5 }, { d: workoutDay, w: 80 }], kind);
   }
 });
 
