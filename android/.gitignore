@@ -1,0 +1,22 @@
+# 签名密钥（绝不提交到版本库）
+key.properties
+*.keystore
+*.jks
+*.p12
+
+# APK 签名元数据
+*.idsig
+
+# 根目录旧版 APK（只保留 releases/）
+/*.apk
+
+# 构建产物
+build_manual/
+app/build/
+.gradle/
+build/
+
+# IDE
+.idea/
+*.iml
+local.properties

@@ -1,0 +1,5 @@
+-keep class cn.litaku.gym.** { *; }
+-keepattributes JavascriptInterface
+-keepattributes *Annotation*
+-dontwarn okhttp3.**
+-dontwarn okio.**
