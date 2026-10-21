@@ -1,46 +1,87 @@
-// Browser-side QR decoding for the gym check-in — the PWA half of lib/scan.js. The app build
+// Browser-side QR/barcode decoding for the gym check-in — the PWA half of lib/scan.js. The app build
 // hands scanning to ML Kit; here in a browser tab (installed PWA on a phone, most often) we do
 // it ourselves: draw the source — an uploaded photo or a live <video> frame — onto an offscreen
 // canvas and decode the pixels.
 //
 // Two decoders, tried in order:
 //   1. BarcodeDetector — the browser's own (Chrome/Edge on Android, Samsung Internet). Native
-//      speed and quality when it exists; asked for QR only.
-//   2. jsQR (Apache-2.0, see NOTICE.md) — pure JS, works everywhere including iOS Safari, which
+//      speed and quality when it exists; asked for the formats we can redraw.
+//   2. ZXing (Apache-2.0, see NOTICE.md) — pure JS, works everywhere including iOS Safari, which
 //      has no BarcodeDetector. Loaded with a dynamic import so it only ships when someone scans.
 //
 // decodeImageData is the pure core (pixels in, string out) and is what the unit test exercises;
 // decodeSource wraps it with the canvas plumbing the browser paths need.
-import { normalizeFmt } from './qr.js'
+import { canRenderFmt, normalizeFmt } from './qr.js'
 
-let _jsqr = null
-async function loadJsQr() {
-  if (!_jsqr) _jsqr = (await import('jsqr')).default
-  return _jsqr
+let _zxing = null
+async function loadZxing() {
+  if (!_zxing) _zxing = await import('@zxing/library')
+  return _zxing
 }
 
 let _detector = null
-function nativeDetector() {
-  if (_detector !== null) return _detector
-  try {
-    _detector = (typeof BarcodeDetector === 'function') ? new BarcodeDetector({ formats: ['qr_code'] }) : false
-  } catch (e) { _detector = false }
+async function nativeDetector() {
+  if (_detector === null) _detector = (async () => {
+    try {
+      if (typeof BarcodeDetector !== 'function') return false
+      const supported = await BarcodeDetector.getSupportedFormats()
+      const formats = supported.filter(canRenderFmt)
+      return formats.length ? new BarcodeDetector({ formats }) : false
+    } catch (e) { return false }
+  })()
   return _detector
 }
 
 // { data, width, height } (an ImageData or anything shaped like one) → { value, fmt } | null.
-// jsQR only; the native detector wants a drawable, not raw pixels, so it lives in decodeSource.
+// ZXing's RGBLuminanceSource takes grayscale bytes, not ImageData's interleaved RGBA bytes.
 export async function decodeImageData(img) {
   if (!img || !img.data || !img.width || !img.height) return null
-  const jsQR = await loadJsQr()
-  const hit = jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' })
-  return hit && hit.data ? { value: hit.data, fmt: 'qrcode' } : null
+  const { BarcodeFormat, BinaryBitmap, DecodeHintType, HybridBinarizer, MultiFormatReader, RGBLuminanceSource } = await loadZxing()
+  const { width, height, data } = img
+  if (data.length < width * height * 4) return null
+  const luminance = new Uint8ClampedArray(width * height)
+  for (let i = 0; i < luminance.length; i++) {
+    const p = i * 4, alpha = data[p + 3] / 255
+    luminance[i] = (data[p] + 2 * data[p + 1] + data[p + 2]) / 4 * alpha + 255 * (1 - alpha)
+  }
+  const hints = new Map([
+    [DecodeHintType.POSSIBLE_FORMATS, Object.entries(BarcodeFormat)
+      .filter(([name, value]) => typeof value === 'number' && canRenderFmt(name)).map(([, value]) => value)],
+    [DecodeHintType.TRY_HARDER, true],
+    [DecodeHintType.RETURN_CODABAR_START_END, true],
+    // Preserve the GS1 marker/separators so validation can refuse codes that need FNC1 rather
+    // than silently losing those markers and saving a different plain Code 128 payload.
+    [DecodeHintType.ASSUME_GS1, true],
+  ])
+  const reader = new MultiFormatReader()
+  reader.setHints(hints)
+  // RGBLuminanceSource cannot rotate itself. Try a quarter turn too so portrait photos of
+  // membership cards work, and preserve the old QR fallback's support for inverted codes.
+  for (let rotation = 0; rotation < 2; rotation++) {
+    let pixels = luminance, w = width, h = height
+    if (rotation) {
+      pixels = new Uint8ClampedArray(luminance.length)
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) pixels[x * height + height - y - 1] = luminance[y * width + x]
+      }
+      w = height; h = width
+    }
+    const source = new RGBLuminanceSource(pixels, w, h)
+    for (const input of [source, source.invert()]) {
+      try {
+        const hit = reader.decodeWithState(new BinaryBitmap(new HybridBinarizer(input)))
+        const value = hit.getText(), fmt = normalizeFmt(BarcodeFormat[hit.getBarcodeFormat()])
+        if (value && canRenderFmt(fmt)) return { value, fmt }
+      } catch (e) { /* no readable code in this orientation */ }
+    }
+  }
+  return null
 }
 
 // Decode from anything drawImage accepts: <video>, <img>, ImageBitmap, canvas. The source is
-// scaled down to at most MAX px on its long edge — plenty for a QR, and it keeps jsQR fast enough
-// to run on every few video frames on a phone. Reuses one canvas across calls.
-const MAX = 800
+// scaled down to at most MAX px on its long edge, retaining enough detail for narrow barcode
+// bars while keeping decoding practical on a phone. Reuses one canvas across calls.
+const MAX = 1280
 let _canvas = null
 export async function decodeSource(source) {
   const sw = source.videoWidth || source.naturalWidth || source.width || 0
@@ -53,13 +94,13 @@ export async function decodeSource(source) {
   const ctx = _canvas.getContext('2d', { willReadFrequently: true })
   ctx.drawImage(source, 0, 0, w, h)
 
-  const det = nativeDetector()
+  const det = await nativeDetector()
   if (det) {
     try {
       const found = await det.detect(_canvas)
-      const b = found && found.find(x => x.rawValue)
-      if (b) return { value: b.rawValue, fmt: normalizeFmt(b.format) || 'qrcode' }
-    } catch (e) { /* fall through to jsQR */ }
+      const b = found && found.find(x => x.rawValue && canRenderFmt(x.format))
+      if (b) return { value: b.rawValue, fmt: normalizeFmt(b.format) }
+    } catch (e) { /* fall through to ZXing */ }
   }
   return decodeImageData(ctx.getImageData(0, 0, w, h))
 }
