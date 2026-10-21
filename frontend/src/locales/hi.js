@@ -196,7 +196,7 @@ export default {
   'Remove drop': 'ड्रॉप सेट हटाएं',
   'Remove burst': 'बर्स्ट हटाएं',
   'Rest (s)': 'आराम (सेकंड)',
-  'Rest after each set of this exercise. 0:00 means your default rest.': 'इस एक्सरसाइज़ के हर सेट के बाद आराम। 0:00 पर आपका डिफ़ॉल्ट आराम लागू होता है।',
+  'Rest after each set of this exercise. Left on your default rest ({0}), it follows the default when you change it.': 'इस एक्सरसाइज़ के हर सेट के बाद आराम। डिफ़ॉल्ट आराम ({0}) पर छोड़ने पर, उसे बदलने से यह भी बदल जाएगा।',
   'Drop-set / rest-pause': 'ड्रॉप सेट / रेस्ट-पॉज़',
   'Intensifier': 'इंटेंसिफायर',
   'None': 'कोई नहीं',

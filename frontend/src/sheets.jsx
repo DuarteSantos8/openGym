@@ -21,7 +21,7 @@ import LineChart from './components/LineChart.jsx'
 import Stepper from './components/Stepper.jsx'
 import { durationSheet } from './components/DurationWheel.jsx'
 import { SG_NAME_MAX } from './lib/superset-meta.js'
-import { REST_MAX, fmtRest } from './lib/duration.js'
+import { REST_MAX, fmtRest, restWheelValue, restFromWheel } from './lib/duration.js'
 import Icon from './components/Icon.jsx'
 import { Button, Slider, Switch, Segmented, SelectRow, Row, TextField, NumberField, MultiSelectRow } from './components/ui.jsx'
 import { glyphOf, GLYPH_GROUPS, DEFAULT_GLYPH } from './lib/glyphs.js'
@@ -1875,19 +1875,20 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         explanation under them, and outside every mode branch because a heavy triple, a plank
         and a cardio interval all rest — they just do not all want the same break. */}
     {/* On the same wheel as the default rest timer (v1.3.11): 0:00 is "no rest of its own", so
-        the default applies, and the row says which default that is. */}
+        the default applies, and the row says which default that is. With none of its own the
+        wheel opens on the default, and Done there keeps it 0 (restWheelValue). */}
     <div className="sect-b cfg-rest" style={{ marginBottom: 6 }}>
       <Row icon="timer" iconTint="var(--orange)" title={t('Rest for this exercise')} accessory="chevron"
         value={c.restSec > 0 ? fmtRest(c.restSec) : t('Default ({0})', fmtRest(st.restSec))}
         onClick={() => durationSheet({
-          title: t('Rest for this exercise'), value: c.restSec > 0 ? c.restSec : 0, max: REST_MAX,
+          title: t('Rest for this exercise'), value: restWheelValue(c.restSec, st.restSec), max: REST_MAX,
           off: t('Default ({0})', fmtRest(st.restSec)),
-          footer: t('Rest after each set of this exercise. 0:00 means your default rest.'),
-          onDone: v => setC(x => ({ ...x, restSec: v })),
+          footer: t('Rest after each set of this exercise. Left on your default rest ({0}), it follows the default when you change it.', fmtRest(st.restSec)),
+          onDone: v => setC(x => ({ ...x, restSec: restFromWheel(v, x.restSec, st.restSec) })),
         })} />
     </div>
     <div className="small dim" style={{ marginBottom: 18 }}>
-      {t('Rest after each set of this exercise. 0:00 means your default rest.')}
+      {t('Rest after each set of this exercise. Left on your default rest ({0}), it follows the default when you change it.', fmtRest(st.restSec))}
     </div>
     {/* ---------- bodyweight + per side (issues #31/#32/#33) ---------- */}
     {!cardio && <div className="sect-b" style={{ marginBottom: 8 }}>

@@ -53,3 +53,10 @@ export function durationText(sec, { off = null } = {}) {
 
 /** The rest timer's own wording for a row or a preview: "1:30" or "Off". */
 export const fmtRest = sec => fmtDuration(sec, { off: t('Off') })
+
+// An exercise's own rest on the wheel, where 0 is "no rest of its own" and the default `def`
+// applies. With none of its own the wheel opens on the default rather than on 0:00, so the dials
+// show the rest that applies; Done on the default keeps it 0, so the exercise still follows the
+// default when that changes. An exercise with its own rest opens on it and saves what is picked.
+export const restWheelValue = (own, def) => (own > 0 ? own : def > 0 ? def : 0)
+export const restFromWheel = (sec, own, def) => (!(own > 0) && sec === def ? 0 : sec)

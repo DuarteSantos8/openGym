@@ -749,7 +749,7 @@ export default {
   'Keep replacement in this group': 'إبقاء البديل في هذه المجموعة',
   'Insert after this group': 'إدراج بعد هذه المجموعة',
   'Logged sets stay with the original exercise. The replacement will be inserted afterward.': 'تبقى المجموعات المسجلة مع التمرين الأصلي. سيُدرج البديل بعده.',
-  'Rest after each set of this exercise. 0:00 means your default rest.': 'الراحة بعد كل مجموعة من هذا التمرين. عند 0:00 تُستخدم راحتك الافتراضية.',
+  'Rest after each set of this exercise. Left on your default rest ({0}), it follows the default when you change it.': 'الراحة بعد كل مجموعة من هذا التمرين. إذا تُركت على راحتك الافتراضية ({0})، فستتبعها عند تغييرها.',
   'Import from Hevy': 'استيراد من Hevy',
   'Pull your history with a Hevy Pro API key': 'اسحب سجلك باستخدام مفتاح Hevy Pro API',
   'Pull your history with a Hevy Pro API key. The key is only used for this import and is not saved.': 'اسحب سجلك باستخدام مفتاح Hevy Pro API. يُستخدم المفتاح لهذا الاستيراد فقط ولا يُحفظ.',

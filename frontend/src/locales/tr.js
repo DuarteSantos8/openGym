@@ -196,7 +196,7 @@ export default {
   'Remove drop': 'Düşüş setini kaldır',
   'Remove burst': 'Patlamayı kaldır',
   'Rest (s)': 'Dinlenme (sn)',
-  'Rest after each set of this exercise. 0:00 means your default rest.': 'Bu egzersizin her setinden sonraki dinlenme. 0:00’da varsayılan dinlenmen geçerli olur.',
+  'Rest after each set of this exercise. Left on your default rest ({0}), it follows the default when you change it.': 'Bu egzersizin her setinden sonraki dinlenme. Varsayılan dinlenmende ({0}) bırakırsan, onu değiştirdiğinde o da değişir.',
   'Drop-set / rest-pause': 'Düşüş seti / rest-pause',
   'Intensifier': 'Yoğunlaştırıcı',
   'None': 'Yok',

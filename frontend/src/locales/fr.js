@@ -196,7 +196,7 @@ export default {
   'Remove drop': 'Retirer le drop set',
   'Remove burst': 'Retirer la rafale',
   'Rest (s)': 'Repos (s)',
-  'Rest after each set of this exercise. 0:00 means your default rest.': 'Repos après chaque série de cet exercice. À 0:00, c’est ton repos par défaut.',
+  'Rest after each set of this exercise. Left on your default rest ({0}), it follows the default when you change it.': 'Repos après chaque série de cet exercice. Laissé sur ton repos par défaut ({0}), il le suit quand tu le changes.',
   'Drop-set / rest-pause': 'Drop-set / rest-pause',
   'Intensifier': 'Intensificateur',
   'None': 'Aucun',
