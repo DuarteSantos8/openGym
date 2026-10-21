@@ -104,17 +104,17 @@ language-model assistance. They are not copied from a separate Portuguese
 dataset. Their review status and translation policy are documented alongside
 the source files.
 
-## Gym check-in QR codes
+## Gym check-in QR codes and barcodes
 
-The gym check-in feature (a saved membership code shown as a QR code on the phone, added by
-typing, importing a photo, or scanning with the camera) uses three third-party packages. All are
-permissively licensed and compatible with openGym's AGPL, and all load on demand: the QR renderer
+The gym check-in feature (a saved membership code shown on the phone, added by importing a photo
+or scanning with the camera) uses four third-party packages. All are permissively licensed and
+compatible with openGym's AGPL, and all load on demand: the QR/barcode renderers
 and the browser decoder only when a card is shown or scanned, the ML Kit plugin only in the
 Android/iOS app.
 
-### QR/barcode rendering — `lean-qr`
+### QR rendering — `lean-qr`
 
-openGym renders each saved code on the phone with [**lean-qr**](https://github.com/davidje13/lean-qr)
+openGym renders saved QR codes on the phone with [**lean-qr**](https://github.com/davidje13/lean-qr)
 by David Evans, used under the **MIT License** and reproduced below. Only the code's stored value
 is kept; the picture is generated fresh from that value each time it is shown, never stored.
 It runs the same way in the app and in the browser/PWA.
@@ -143,13 +143,45 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Camera scan & photo decode in the browser — `jsQR`
+### Barcode rendering — `JsBarcode`
+
+openGym renders supported one-dimensional barcodes with
+[**JsBarcode**](https://github.com/lindell/JsBarcode) by Johan Lindell, under the **MIT License**
+reproduced below. The stored symbology is preserved when regenerating the image; the barcode is
+not converted to a QR code. JsBarcode has no runtime dependencies and loads only for barcodes.
+
+```
+Copyright (c) 2016 Johan Lindell (johan@lindell.me)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### Camera scan & photo decode in the browser — `@zxing/library`
 
 In a browser (including the installed PWA), reading a code from the camera or from an imported
-photo uses [**jsQR**](https://github.com/cozmo/jsQR) by Cosmo Wolfe, under the **Apache License
-2.0** (text at <https://www.apache.org/licenses/LICENSE-2.0> and in the package's own `LICENSE`).
-Where the browser has a native `BarcodeDetector`, that is tried first and jsQR is the fallback.
-Video frames are decoded in memory and never uploaded or stored.
+photo uses [**ZXing JS**](https://github.com/zxing-js/library), a port of ZXing by its contributors.
+The distributed `LICENSE` and decoder source headers carry the **Apache License 2.0** (text at
+<https://www.apache.org/licenses/LICENSE-2.0> and in the package's own `LICENSE`; version 0.21.3's
+package metadata separately declares MIT). The `0.21.x` line supports the project's Node 22 CI.
+Where the browser has a native `BarcodeDetector`, that is tried first and ZXing is the fallback.
+Both QR codes and the supported barcode formats can therefore be read in browsers without the
+native detector. Video frames are decoded in memory and never uploaded or stored.
 
 ### Camera scan & photo decode in the app — `@capacitor-mlkit/barcode-scanning`
 

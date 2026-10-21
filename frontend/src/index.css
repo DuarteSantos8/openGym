@@ -1938,7 +1938,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 }
 
 /* ------------------------------------------------------- gym check-in -- */
-/* Mobile-only feature (views/CheckIn.jsx): saved membership codes shown as QR, swiped
+/* Gym check-in (views/CheckIn.jsx): saved QR codes and barcodes, swiped
    through horizontally. The rail is a scroll-snap track — one card per viewport, no JS
    carousel — with a trailing "+" card to add another. */
 .ci-rail{
@@ -1967,7 +1967,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* The QR itself: lean-qr paints 1 module per pixel, so scale it up with the browser's
    nearest-neighbour so every module stays a crisp square instead of a blurred blob. White
    quiet-zone padding is baked in by the renderer; the plate underneath just frames it. */
-.ci-qr-plate{background:#fff;border-radius:var(--r-lg);padding:16px}
+.ci-qr-plate{background:#fff;border-radius:var(--r-lg);padding:16px;max-width:100%;box-sizing:border-box}
 .qr-canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;transition:opacity var(--fast)}
 /* the trailing add card — a big + on a dashed outline, same footprint as a real card */
 .ci-add{
