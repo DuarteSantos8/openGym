@@ -2262,4 +2262,7 @@ export default {
   'Your sports watch, calling you back.': 'Deine Sportuhr ruft dich zurück.',
   'Coach wants you back on the bar.': 'Der Coach will dich zurück an der Stange.',
   'Gentle, for headphones or a quiet room.': 'Leise, für Kopfhörer oder einen ruhigen Raum.',
+  'Heaviest set as a share of body weight, per workout': 'Schwerster Satz im Verhältnis zum Körpergewicht, pro Training',
+  'Estimated 1RM as a share of body weight, per workout': 'Geschätztes 1RM im Verhältnis zum Körpergewicht, pro Training',
+  'Body weight over this period: {0} → {1}. Bodyweight and assisted exercises count your body weight as part of the load.': 'Körpergewicht in diesem Zeitraum: {0} → {1}. Bei Körpergewichts- und assistierten Übungen zählt dein Körpergewicht als Teil der Last.',
 }

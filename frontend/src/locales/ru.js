@@ -2246,4 +2246,7 @@ export default {
   'Your sports watch, calling you back.': 'Ваши спортивные часы зовут вас обратно.',
   'Coach wants you back on the bar.': 'Тренер ждёт вас обратно у штанги.',
   'Gentle, for headphones or a quiet room.': 'Тихий, для наушников или спокойного зала.',
+  'Heaviest set as a share of body weight, per workout': 'Самый тяжёлый подход как доля от веса тела, по тренировкам',
+  'Estimated 1RM as a share of body weight, per workout': 'Расчётный 1ПМ как доля от веса тела, по тренировкам',
+  'Body weight over this period: {0} → {1}. Bodyweight and assisted exercises count your body weight as part of the load.': 'Вес тела за этот период: {0} → {1}. В упражнениях с собственным весом и в гравитронных вес вашего тела входит в нагрузку.',
 }

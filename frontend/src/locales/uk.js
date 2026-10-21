@@ -2239,4 +2239,7 @@ export default {
   'Your sports watch, calling you back.': 'Ваш спортивний годинник кличе вас назад.',
   'Coach wants you back on the bar.': 'Тренер чекає вас назад біля штанги.',
   'Gentle, for headphones or a quiet room.': 'Тихий, для навушників або спокійної кімнати.',
+  'Heaviest set as a share of body weight, per workout': 'Найважчий підхід як частка ваги тіла, за тренуваннями',
+  'Estimated 1RM as a share of body weight, per workout': 'Розрахунковий 1ПМ як частка ваги тіла, за тренуваннями',
+  'Body weight over this period: {0} → {1}. Bodyweight and assisted exercises count your body weight as part of the load.': 'Вага тіла за цей період: {0} → {1}. У вправах із власною вагою та з допомогою вага вашого тіла входить у навантаження.',
 }

@@ -1402,6 +1402,7 @@ export const PT_BR_OVERRIDES = {
   'Coach wants you back on the bar.': 'O coach quer você de volta na barra.',
   'Gentle, for headphones or a quiet room.': 'Suave, para fones de ouvido ou um lugar silencioso.',
   'Fewer than two workouts in this period. Pick a longer one.': 'Menos de dois treinos neste período. Escolha um mais longo.',
+  'Body weight over this period: {0} → {1}. Bodyweight and assisted exercises count your body weight as part of the load.': 'Peso corporal neste período: {0} → {1}. Nos exercícios com peso corporal e assistidos, o seu peso corporal conta como parte da carga.',
   'Releases are checked on GitHub. The download is verified against its checksum before the installer opens.': 'As versões são verificadas no GitHub. O download é conferido pela soma de verificação antes de abrir o instalador.',
 }
 

@@ -35,6 +35,7 @@ import { importHevyData, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines } fr
 import { buildPlanBundle, parsePlan, mergePlan, printPlan, planPrintHTML } from './lib/plan-share.js'
 import { estimate1RM, best1RM, is1RMRecord, REP_CAP, formulaOf, FORMULA_NAMES } from './lib/onerm.js'
 import { exerciseHistory } from './lib/exercise-history.js'
+import { relativeSeries } from './lib/relative-strength.js'
 import { isBellEx, dbLoadOf, dbLoadFor, withDbLoad, withMeaning, historyAs, entryDbLoad, currentDbLoad, isOneArm, ownedWeightsFor, dumbbellsOf, ownsDumbbells, withDumbbells, presetWeights, cleanWeights } from './lib/dumbbells.js'
 import { policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS, MAX_TRIPLE_SETS, weightIncrement } from './lib/progression.js'
 import { normalizeRepRange } from './lib/rep-range.js'
@@ -1037,9 +1038,34 @@ function ExerciseHistory({ exId }) {
   const ex = exOr(exId)
   const h = useMemo(() => exerciseHistory(st, exId), [st.workouts, exId])
   const [curve, setCurve] = useState('top')
-  const onE1 = curve === 'e1rm' && h.e1rmPoints.length > 0
+  // Against body weight, as in Stats: the estimated 1RM (body weight included for bodyweight and
+  // assisted work) as a % of the body weight then. Only for rep work, and only once two sessions
+  // have a body weight to compare with.
+  const formula = formulaOf(st)
+  // The 1RM estimate refuses sets above ~12 reps (lib/onerm.js REP_CAP), so a calf raise or a leg
+  // press done for 15-20 has none; its curve then follows the heaviest set instead (as Stats does),
+  // when that one varies. An assistance machine has no 1RM either, and is always the heaviest set.
+  const { pts: rel, top: relTop } = useMemo(() => {
+    if (h.metric !== 'weight' && h.metric !== 'reps') return { pts: [], top: false }
+    const toPct = p => ({ t: p.t, d: p.d, y: p.y * 100, assisted: p.assisted })
+    const est = relativeSeries(st, exId, { basis: 'e1rm', formula })
+    if (est.length >= 2) return { pts: est.map(toPct), top: est.some(p => p.assisted) }
+    const top = relativeSeries(st, exId, { basis: 'top', formula })
+    const varies = top.length >= 2 && top.some(p => Math.abs(p.y - top[0].y) > 1e-9)
+    return varies ? { pts: top.map(toPct), top: true } : { pts: [], top: false }
+  }, [st.workouts, st.bodyweight, st.dbLoad, exId, h.metric, formula])
+  const canRel = rel.length >= 2
+  const onRel = curve === 'bodyweight' && canRel
+  const onE1 = !onRel && curve === 'e1rm' && h.e1rmPoints.length > 0
   const unit = h.metric === 'weight' ? st.unit : h.metric === 'reps' ? t('reps') : h.metric === 'sec' ? 's' : t('min')
   const e1Best = useMemo(() => Math.max(0, ...h.e1rmPoints.map(p => p.y)), [h])
+  const relBest = useMemo(() => Math.max(0, ...rel.map(p => p.y)), [rel])
+  const curveOpts = []
+  if (h.e1rmPoints.length > 0 && h.metric === 'weight') curveOpts.push({ value: 'top', label: t('Top set') }, { value: 'e1rm', label: t('Est. 1RM') })
+  if (canRel) {
+    if (!curveOpts.length) curveOpts.push({ value: 'top', label: h.metric === 'reps' ? t('Max reps') : t('Top set') })
+    curveOpts.push({ value: 'bodyweight', label: t('Bodyweight') })
+  }
   if (!h.total) return <>
     <h3 className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h3>
     <div className="empty"><div className="ico"><Icon name="history" /></div>{t('No sessions logged yet')}</div>
@@ -1052,15 +1078,15 @@ function ExerciseHistory({ exId }) {
     <h3 className={exerciseNameClass(ex)} style={{ marginBottom: 2 }}>{exerciseNameFor(ex)}</h3>
     <div className="muted small" style={{ marginBottom: 10 }}>{t('Exercise history')} · {tn('{0} session', '{0} sessions', h.total)}</div>
     {/* Only reps work with a load produces an estimate, so the toggle is absent for the rest. */}
-    {h.e1rmPoints.length > 0 && h.metric === 'weight' && <Segmented className="seg-range" value={curve} onChange={setCurve}
-      options={[{ value: 'top', label: t('Top set') }, { value: 'e1rm', label: t('Est. 1RM') }]} />}
+    {curveOpts.length > 1 && <Segmented className="seg-range" value={onRel ? 'bodyweight' : onE1 ? 'e1rm' : 'top'} onChange={setCurve} options={curveOpts} />}
     <div className="chart" style={{ marginTop: 8 }}>
-      <LineChart points={onE1 ? h.e1rmPoints : h.points} h={140} unit={onE1 ? st.unit : unit} color="var(--blue)" />
+      <LineChart points={onRel ? rel : onE1 ? h.e1rmPoints : h.points} h={140} unit={onRel ? '% BW' : onE1 ? st.unit : unit} color="var(--blue)" />
     </div>
     <div className="small row" style={{ margin: '6px 0 4px', gap: 5 }}>
       <Icon name="trophy" style={{ fontSize: 14, color: 'var(--yellow)' }} />
-      {t('Best:')} <b className="accent">{fmtNum(onE1 ? e1Best : h.best)} {onE1 ? st.unit : unit}</b>
+      {t('Best:')} <b className="accent">{onRel ? fmtNum(relBest) + ' % BW' : fmtNum(onE1 ? e1Best : h.best) + ' ' + (onE1 ? st.unit : unit)}</b>
     </div>
+    {onRel && <div className="small dim">{relTop ? t('Heaviest set as a share of body weight, per workout') : t('Estimated 1RM as a share of body weight, per workout')}</div>}
     <h4 className="sec">{h.sessions.length < h.total ? t('Last {0} sessions', h.sessions.length) : t('Sessions')}</h4>
     <div className="list">
       {h.sessions.map(s => <div key={s.id} className="item" style={{ alignItems: 'flex-start' }}>

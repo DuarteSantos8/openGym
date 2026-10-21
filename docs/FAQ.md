@@ -92,6 +92,16 @@ phone has seen. One case it gets wrong on purpose: if the old phone sets somethi
 what it was before, after another device changed it, the other device's change wins. Once every
 device is updated, nobody has to guess.
 
+### How does the Bodyweight chart in Stats count my body weight?
+
+Under Exercise progress, Bodyweight shows the heaviest set (or the estimated 1RM) as a percentage of
+your body weight at the time (an exercise's History sheet has the same tab, on the estimated 1RM), so it only rises when you got stronger for your size. For bodyweight
+and assisted exercises your body weight is part of the load: a weighted pull-up counts body weight
+plus the added weight, an assisted machine body weight minus the assistance. Dumbbells and kettlebells
+count both together, whichever way the exercise's weight is set to be read (one-arm work counts one). The body weight comes
+from the weight you logged with the workout, or from your weigh-ins (nearest within 30 days). A
+workout with neither is left out, and the chart only appears with at least two workouts.
+
 ### I'm moving from another app. Can I bring my history?
 
 FitNotes, Strong and Hevy work out of the box, Apple Health for body weight, and any CSV with a date,
