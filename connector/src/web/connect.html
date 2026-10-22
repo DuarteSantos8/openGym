@@ -54,7 +54,12 @@ async function onGo() {
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ cid, credential: credToJSON(cred) }),
   })
-  say(next.ok ? 'Connected.' : 'Could not connect.')
+  if (!next.ok) return say('Could not connect.')
+  // Only the connector's own answer, and only Claude's callback or a loopback app, is ever followed.
+  const { redirect } = await next.json()
+  if (typeof redirect !== 'string' || !/^(https:\/\/claude\.ai\/api\/mcp\/auth_callback\?|http:\/\/(127\.0\.0\.1|localhost|\[::1\]):\d+\/[^@]*$)/.test(redirect)) return say('Could not connect.')
+  say('Connected.')
+  location.assign(redirect)
 }
 
 document.getElementById('go').addEventListener('click', () => onGo().catch(() => say('Could not connect.')))

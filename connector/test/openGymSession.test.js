@@ -436,10 +436,10 @@ test('served connector HTML contains neither a connection ID nor dynamic account
   })
 })
 
-test('POST /connector/connect is not routed yet (Task 3 adds it behind sameOrigin and an auth cookie)', async () => {
+test('POST /connector/connect without the server-issued OAuth cookie is refused', async () => {
   await withServer(async base => {
-    const res = await fetch(`${base}/connector/connect`, { method: 'POST', headers: { 'sec-fetch-site': 'same-origin' }, body: '{}' })
-    assert.equal(res.status, 404)
+    const res = await fetch(`${base}/connector/connect`, { method: 'POST', headers: { 'sec-fetch-site': 'same-origin', 'content-type': 'application/json' }, body: '{}' })
+    assert.equal(res.status, 403)
   })
 })
 
@@ -450,7 +450,7 @@ test('connect.html is static and never touches login/verify, pairing, tokens or 
   assert.match(pageSrc, /\/connector\/connect/)
   assert.ok(!/<script[^>]+src=/i.test(pageSrc), 'no external scripts')
   assert.match(pageSrc, /Content-Security-Policy/)
-  assert.ok(pageScript && !/location\.(assign|href|replace)/.test(pageScript), 'page never navigates')
+  assert.ok(pageScript && !/location\.(href|replace)|window\.open/.test(pageScript), 'only location.assign, only for the server redirect')
 })
 
 test('connect.html uses the same passkey conversion as frontend/src/lib/api.js', () => {
@@ -463,23 +463,24 @@ test('connect.html uses the same passkey conversion as frontend/src/lib/api.js',
 
 // Runs the real inline script against stubbed browser APIs and returns what it asked the network for.
 async function runPage({ options = async () => ({ ok: true, json: async () => ({ cid: 'cid-1', options: { challenge: 'AAEC', allowCredentials: [{ id: 'AQID', type: 'public-key' }] } }) }),
-  connectRes = async () => ({ ok: true, status: 200, json: async () => ({ connectionId: 'SECRET-ID' }) }),
+  connectRes = async () => ({ ok: true, status: 200, json: async () => ({ redirect: 'https://claude.ai/api/mcp/auth_callback?code=C&state=S' }) }),
   get = async () => ({
     id: 'cred-1', rawId: new Uint8Array([1, 2]).buffer, type: 'public-key', authenticatorAttachment: null,
     getClientExtensionResults: () => ({}),
     response: { clientDataJSON: new Uint8Array([3]).buffer, authenticatorData: new Uint8Array([4]).buffer, signature: new Uint8Array([5]).buffer, userHandle: null },
   }) } = {}) {
-  const calls = [], els = {}, handlers = {}
+  const calls = [], els = {}, handlers = {}, nav = []
   const el = id => (els[id] ??= { textContent: '', addEventListener: (ev, fn) => { handlers[ev] = fn } })
   const sandbox = {
     atob, btoa, Uint8Array, ArrayBuffer,
     document: { getElementById: el },
     navigator: { credentials: { get } },
+    location: { assign: u => nav.push(u) },
     fetch: async (url, init = {}) => { calls.push({ url, init }); return url.startsWith('/api/login/options') ? options() : url === '/connector/connect' ? connectRes() : { ok: false } },
   }
   vm.runInContext(pageScript, vm.createContext(sandbox))
   await handlers.click()
-  return { calls, out: els.out.textContent }
+  return { calls, nav, out: els.out.textContent }
 }
 
 test('page sends openGym only for login options and the connector only the assertion', async () => {
@@ -496,6 +497,20 @@ test('page sends openGym only for login options and the connector only the asser
   assert.deepEqual(Object.keys(body.credential).sort(), ['authenticatorAttachment', 'clientExtensionResults', 'id', 'rawId', 'response', 'type'])
   assert.deepEqual(body.credential.response, { clientDataJSON: 'Aw', authenticatorData: 'BA', signature: 'BQ', userHandle: null })
   assert.equal(out, 'Connected.', 'fixed message; the response body is never rendered')
+})
+
+test('page follows only the redirect the connector returned, and only to an allowed target', async () => {
+  const ok = await runPage()
+  assert.deepEqual(ok.nav, ['https://claude.ai/api/mcp/auth_callback?code=C&state=S'])
+  const loop = await runPage({ connectRes: async () => ({ ok: true, status: 200, json: async () => ({ redirect: 'http://127.0.0.1:8123/cb?code=C' }) }) })
+  assert.deepEqual(loop.nav, ['http://127.0.0.1:8123/cb?code=C'])
+  for (const redirect of ['https://evil.test/x', 'javascript:alert(1)', 'data:text/html,x', '//evil.test', 'http://evil.test/cb', 'https://claude.ai/api/mcp/auth_callback.evil.test', 'https://claude.ai/api/mcp/auth_callback/x', 'http://127.0.0.1:80@evil.test/', 7, null, undefined]) {
+    const r = await runPage({ connectRes: async () => ({ ok: true, status: 200, json: async () => ({ redirect }) }) })
+    assert.deepEqual(r.nav, [], String(redirect))
+    assert.equal(r.out, 'Could not connect.')
+  }
+  const failed = await runPage({ connectRes: async () => ({ ok: false, status: 403, json: async () => ({ redirect: 'https://claude.ai/api/mcp/auth_callback?code=C' }) }) })
+  assert.deepEqual(failed.nav, [])
 })
 
 test('page shows only a generic failure when anything goes wrong', async () => {
