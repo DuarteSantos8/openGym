@@ -7,6 +7,7 @@ import { EXIDX } from './exercises.js'
 import { hasCompletedWork, isWarmupRow } from './workout-model.js'
 import { fmtDate, fmtNum, fmtVol, durPart, capWords } from './format.js'
 import { t, exerciseNameClass } from './i18n-core.js'
+import { fmtHr } from './heart-rate.js'
 
 /**
  * `unit` is the profile's, `nameOf(entry)` the exercise's display name, `speedUnit` the one cardio
@@ -19,6 +20,7 @@ export function workoutText(w, { unit, nameOf, speedUnit }) {
     ...durPart((w.end || 0) - (w.start || 0)),
     fmtVol(w.vol ?? workoutVolume(w), unit),
     ...(w.bw ? [t('Body weight') + ' ' + fmtNum(w.bw) + ' ' + unit] : []),
+    ...(w.hr ? [fmtHr(w.hr)] : []),
   ]
   const blocks = [[[w.name, fmtDate(w.d, true, true)].filter(Boolean).join(' · '), facts.join(' · ')].join('\n')]
   // Work sets only: the text is what you trained, the work the volume above counts. Warm-ups are

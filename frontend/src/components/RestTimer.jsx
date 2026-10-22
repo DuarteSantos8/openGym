@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { REST_MAX } from '../lib/duration.js'
+import { useRestReadiness } from '../lib/use-rest-readiness.js'
 import { durationSheet } from './DurationWheel.jsx'
 import { Button } from './ui.jsx'
 import Icon from './Icon.jsx'
@@ -79,6 +80,7 @@ export default function RestTimer() {
   const timer = useUI(s => s.timer)
   const work = useUI(s => s.work)
   const { addRest, stopRest, pauseRest, resumeRest, finishWorkEarly, stopWork } = useUI()
+  useRestReadiness()
   const on = work || timer
   const actsRef = useRef(null)
   const skipFits = useSkipFits(actsRef, [!!timer && !work, t('Skip'), t('Dismiss')])
@@ -112,13 +114,16 @@ export default function RestTimer() {
   // its two faces (data-alt, a hidden line in index.css): the row never reflows when the rest
   // turns Ready, so a thumb on +15 never lands on −15.
   const label = timer.kind === 'switch' ? t('Switch sides') : timer.paused ? t('Paused') : t('Rest')
+  // Rest by heart rate: the heart rate is back down. It takes the label's place, about as wide as
+  // Paused, so the row does not reflow; Skip is still what ends the rest.
+  const hrReady = !!timer.hrReady && !timer.ready
   return (
     <div id="timer" className={'rest' + (timer.paused ? ' paused' : '') + (timer.kind === 'switch' ? ' switch' : '') + (timer.ready ? ' ready' : '')}>
       <div className="bar" aria-hidden="true"><i style={{ width: pct + '%' }} /></div>
       <button type="button" className="tclock" onClick={adjustRestSheet}
-        aria-label={(timer.ready ? t('Ready') : clock(timer.left)) + '. ' + t('Change the time left')}>
+        aria-label={(timer.ready ? t('Ready') : clock(timer.left)) + '. ' + (hrReady ? t('Heart rate recovered: ready for the next set') + '. ' : '') + t('Change the time left')}>
         <span className="t" role={timer.ready ? 'status' : undefined} data-alt={timer.ready ? '0:00' : t('Ready')}>{timer.ready ? t('Ready') : clock(timer.left)}</span>
-        <span className="lbl">{label}<Icon name="chevronDown" /></span>
+        <span className="lbl">{hrReady ? <span className="hr-ready">♥ {t('Ready')}</span> : label}<Icon name="chevronDown" /></span>
       </button>
       <div className="acts" ref={actsRef}>
         <Button size="sm" className="adj" icon="minus" onClick={() => addRest(-15)}>15s</Button>

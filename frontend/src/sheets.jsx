@@ -17,6 +17,7 @@ import CustomMediaField from './components/CustomMediaField.jsx'
 import WorkoutMediaSection, { workoutMediaCount } from './components/WorkoutMedia.jsx'
 import { mediaOf, normalizeMediaRef, cleanUrl, workoutMediaOf } from './lib/media-refs.js'
 import { syncMedia } from './lib/media-sync.js'
+import { watchStartSession, watchEndSession } from './lib/watch-link.js'
 import LineChart from './components/LineChart.jsx'
 import Stepper from './components/Stepper.jsx'
 import { durationSheet } from './components/DurationWheel.jsx'
@@ -62,6 +63,8 @@ import { editCompletedSession, editLeftEmpty, editedRecord, editChangesNothing }
 import { stampWorkout } from './lib/sync-merge.js'
 import { weeklyWeights } from './lib/bodyweight.js'
 import { workoutText } from './lib/workout-text.js'
+import { fmtHr } from './lib/heart-rate.js'
+import HrSparkline from './components/HrSparkline.jsx'
 import { workoutCardModel, layoutWorkoutCard, drawWorkoutCard, viewAspect, CARD_FONT } from './lib/workout-card.js'
 import { copyText } from './lib/clipboard.js'
 import { queueRemaining, pinState } from './lib/queue.js'
@@ -2516,7 +2519,8 @@ function WorkoutDetail({ w, close }) {
   const grouped = groups.length > 1 || (groups[0] && groups[0].rid && (w.routineIds || []).length > 1)
   return <>
     <h3>{w.name}</h3>
-    <div className="muted small" style={{ marginBottom: 12 }}>{[fmtDate(w.d, true), ...durPart(w.end - w.start), fmtVol(w.vol, st.unit), ...(w.bw ? [fmtNum(w.bw) + ' ' + st.unit] : [])].join(' · ')}</div>
+    <div className="muted small" style={{ marginBottom: 12 }}>{[fmtDate(w.d, true), ...durPart(w.end - w.start), fmtVol(w.vol, st.unit), ...(w.bw ? [fmtNum(w.bw) + ' ' + st.unit] : []), ...(w.hr ? [fmtHr(w.hr)] : [])].join(' · ')}</div>
+    {w.hr && <HrSparkline hr={w.hr} />}
     {grouped ? groups.map(g => {
       const r = g.rid ? st.routines.find(x => x.id === g.rid) : null
       const items = g.items.map(i => w.entries[i])
@@ -2789,6 +2793,8 @@ export function beginWorkout(routineIds, bw) {
       workoutView: st.workoutView || 'cards',
     }
   })
+  // The watch app records the session alongside (lib/watch-link.js); nothing waits on it.
+  watchStartSession(S().active)
   useUI.getState().stopRest()
   navToWorkout()
 }
@@ -2810,6 +2816,7 @@ export function repeatWorkout(w, close) {
         workoutView: s.workoutView || 'cards',
       }
     })
+    watchStartSession(S().active)
     useUI.getState().stopRest()
     if (close) closeThenNav(close, '/workout'); else navToWorkout()
     if (skipped) toast(tn('{0} exercise no longer exists and was left out.', '{0} exercises no longer exist and were left out.', skipped))
@@ -3305,8 +3312,10 @@ function CardioDone({ st, w }) {
   </div>
 }
 
-function FinishSummary({ w, prs, e1prs = [], close }) {
+function FinishSummary({ w: shown, wid, prs, e1prs = [], close }) {
   const st = useStore(s => s.S)
+  // From the store, so the heart rate read back after it opened (attachHeartRate) shows here.
+  const w = useStore(s => (wid != null ? s.S.workouts.find(x => x.id === wid) : null)) || shown
   return <div style={{ textAlign: 'center', padding: '8px 0' }}>
     <div style={{ fontSize: 44, display: 'flex', justifyContent: 'center', color: 'var(--acc)' }}><Icon name="trophy" /></div>
     <h3 style={{ margin: '8px 0' }}>{t('Workout complete!')}</h3>
@@ -3315,6 +3324,7 @@ function FinishSummary({ w, prs, e1prs = [], close }) {
       <div className="tile"><div className="l">{t('Volume')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{fmtVol(w.vol, st.unit)}</div></div>
       <div className="tile"><div className="l">{t('Sets')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{setsWorkCount(setsDone(w), workSetsDone(w))}</div></div>
       <div className="tile"><div className="l">{t('PRs')}</div><div className="v" style={{ fontSize: 20 }}>{prs.length || '–'}</div></div>
+      {w.hr && <div className="tile"><div className="l">{t('Heart rate')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{t('{0} avg', w.hr.avg)} <span className="small dim">{t('{0} max', w.hr.max)}</span></div></div>}
     </div>
     {(prs.length > 0 || e1prs.length > 0) && <div style={{ textAlign: 'start', marginBottom: 12 }}>
       {prs.map(id => <div key={id} className="small accent row" style={{ gap: 5 }}><Icon name="trophy" style={{ fontSize: 13 }} />{t('New PR:')} <span className={exerciseNameClass(EXIDX[id])}>{EXIDX[id] ? exerciseNameFor(EXIDX[id]) : id}</span></div>)}
@@ -3411,12 +3421,20 @@ function doFinishWorkout() {
     // (lib/rotation.js). A planner's queue is left alone: it completes and waits for its writer.
     refillAfter(s, w)
   })
+  if (!past) watchEndSession(A.id)
   useStore.getState().autoBackupNow()
   useUI.getState().stopRest()
   // A hold still counting (a plank left unchecked, then Finish early) goes with the workout, as
   // on Discard: its bar is app-wide and would chime over the summary, and its callback writes
   // into s.active, which is gone. What it held is not logged, like any set left unchecked.
   useUI.getState().stopWork()
+  // The watch's heart rate lands in Health a few seconds after its session ends: read twice, and
+  // once more when the watch app says it saved the workout (useStore, initWatchLink).
+  if (shown.id != null) {
+    const attach = () => useStore.getState().attachHeartRate(shown.id).catch(() => {})
+    setTimeout(attach, 8000)
+    setTimeout(attach, 30000)
+  }
   beep(snd(), 880, 0.15); beep(snd(), 1100, 0.15, 0.18); beep(snd(), 1320, 0.3, 0.36)
-  ui().openSheet(close => <FinishSummary w={shown} prs={prs} e1prs={e1prs} close={close} />, { kind: 'center', locked: true })
+  ui().openSheet(close => <FinishSummary w={shown} wid={shown.id} prs={prs} e1prs={e1prs} close={close} />, { kind: 'center', locked: true })
 }

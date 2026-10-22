@@ -113,3 +113,20 @@ describe('RestTimer switch-sides pause', () => {
     expect(host.querySelector('#timer')).toBeNull()
   })
 })
+
+describe('RestTimer heart rate ready', () => {
+  it('shows the heart chip in place of the label while the countdown carries on, Skip still there', () => {
+    act(() => useUI.getState().startRest(90, 0))
+    mount()
+    expect(host.querySelector('#timer .hr-ready')).toBeNull()
+    act(() => useUI.getState().setHrReady(true))
+    expect(host.querySelector('#timer .lbl .hr-ready').textContent).toBe('♥ Ready')
+    expect(host.querySelector('#timer .lbl').textContent).not.toContain('Rest')
+    expect(host.querySelector('#timer .tclock').getAttribute('aria-label')).toContain('Heart rate recovered')
+    act(() => vi.advanceTimersByTime(5000))
+    expect(host.querySelector('#timer .t').textContent).toBe('1:25')
+    expect(host.querySelector('#timer .skip .on').textContent).toBe('Skip')
+    act(() => useUI.getState().startRest(60, 1))
+    expect(host.querySelector('#timer .hr-ready')).toBeNull()
+  })
+})
