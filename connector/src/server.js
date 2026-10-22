@@ -18,7 +18,11 @@ export function createServer({ origin, prefix }) {
       if (pathname === `${prefix}/.well-known/oauth-protected-resource`) return send(res, 200, d.protectedResource)
       if (pathname === `/.well-known/oauth-authorization-server${prefix}`) return send(res, 200, d.authorizationServer)
       if (pathname === `${prefix}/connect`) {
-        res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' })
+        res.writeHead(200, {
+          'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff',
+          'x-frame-options': 'DENY',
+          'content-security-policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
+        })
         return res.end(connectPage)
       }
     }

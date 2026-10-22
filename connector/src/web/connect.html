@@ -47,22 +47,14 @@ function say(t) { document.getElementById('out').textContent = t }
 
 async function onGo() {
   say('')
-  const { cid, options } = await (await fetch('/api/login/options', { method: 'POST', body: '{}', credentials: 'same-origin' })).json()
+  const { cid, options } = await (await fetch('/api/login/options', { method: 'POST', body: '{}', credentials: 'omit' })).json()
   const cred = await navigator.credentials.get({ publicKey: toRequestOptions(options) })
-  const verified = await fetch('/api/login/verify', {
-    method: 'POST', credentials: 'same-origin',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ cid, credential: credToJSON(cred) }),
-  })
-  if (!verified.ok) { say('Could not connect.'); return }
-  const { user } = await verified.json()
   const next = await fetch('/connector/connect', {
     method: 'POST', credentials: 'same-origin', redirect: 'error',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ userId: user && user.id }),
+    body: JSON.stringify({ cid, credential: credToJSON(cred) }),
   })
-  if (!next.ok) { say('Could not connect.'); return }
-  say('Connected.')
+  say(next.ok ? 'Connected.' : 'Could not connect.')
 }
 
 document.getElementById('go').addEventListener('click', () => onGo().catch(() => say('Could not connect.')))
