@@ -2263,6 +2263,8 @@ export default {
   'Remove “{0}”': '“{0}” 빼기',
   'That’s plenty of backups.': '대체 운동은 이 정도면 충분해요.',
   'Your backups': '내 대체 운동',
+  'Do {0} instead': '대신 {0} 하기',
+  'Planned backup': '계획된 대체 운동',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': '여기엔 더할 무게가 없어요. 반복 수를 늘리고, 그다음 세트를 늘려요.',
   // --- #523 skip completed ---

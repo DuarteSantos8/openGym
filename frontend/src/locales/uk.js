@@ -2260,6 +2260,8 @@ export default {
   'Remove “{0}”': 'Прибрати «{0}»',
   'That’s plenty of backups.': 'Замін уже досить.',
   'Your backups': 'Ваші заміни',
+  'Do {0} instead': 'Зробити натомість {0}',
+  'Planned backup': 'Запланована заміна',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'Тут нічого додавати у вазі: ростуть повторення, потім підходи.',
   // --- #523 skip completed ---

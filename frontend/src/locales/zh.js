@@ -2263,6 +2263,8 @@ export default {
   'Remove “{0}”': '移除“{0}”',
   'That’s plenty of backups.': '备选动作已经够多了。',
   'Your backups': '你的备选动作',
+  'Do {0} instead': '改做{0}',
+  'Planned backup': '预设备选动作',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': '这里不用加重量：先加次数，再加组数。',
   // --- #523 skip completed ---

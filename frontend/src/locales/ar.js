@@ -2318,6 +2318,8 @@ export default {
   'Remove “{0}”': 'إزالة «{0}»',
   'That’s plenty of backups.': 'هذا عدد كافٍ من البدائل.',
   'Your backups': 'بدائلك',
+  'Do {0} instead': 'قم بـ{0} بدلاً من ذلك',
+  'Planned backup': 'بديل مخطط',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'لا وزن يُضاف هنا: يزيد التمرين بالتكرارات ثم بالمجموعات.',
   // --- #523 skip completed ---

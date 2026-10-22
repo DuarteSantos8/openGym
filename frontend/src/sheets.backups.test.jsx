@@ -5,7 +5,8 @@ import { createRoot } from 'react-dom/client'
 import { EXDB, EXIDX } from './lib/exercises.js'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
-import { exConfigSheet, exercisePicker } from './sheets.jsx'
+import { exConfigSheet, exercisePicker, swapActiveWorkoutExercise } from './sheets.jsx'
+import { buildSessionEntries } from './lib/session-start.js'
 import { exerciseNameFor } from './lib/i18n.js'
 import { exerciseNameText } from './lib/format.js'
 
@@ -97,5 +98,55 @@ describe('the swap picker', () => {
     exercisePicker(() => {}, { title: 'Swap exercise', like: '0025' })
     const host = render(useUI.getState().sheets.at(-1))
     expect([...host.querySelectorAll('h4.sec')].map(h => h.textContent)).not.toContain('Your backups')
+  })
+})
+
+describe('a swap to one of the slot\'s backups (#649)', () => {
+  const BENCH = '0025'
+  const INCLINE = '0047'
+  const ROW = '0027'
+  const routine = { id: 'main', name: 'Main', ex: [{ id: BENCH, sets: 3, reps: 8, weight: 80, restSec: 150, subs: [INCLINE] }] }
+  const start = () => {
+    useStore.setState(st => {
+      const S = { ...st.S, unit: 'kg', restSec: 120, routines: [routine], workouts: [] }
+      const entries = buildSessionEntries(S, routine).map(e => ({ ...e, rid: 'main' }))
+      return { S: { ...S, active: { id: 'swap-test', d: '2026-09-23', start: 1, routineIds: ['main'], routineId: 'main', name: 'Main', bw: null, cur: 0, entries } } }
+    })
+    swapActiveWorkoutExercise(0)
+    return useUI.getState().sheets.at(-1)
+  }
+  const entry = () => useStore.getState().S.active.entries[0]
+
+  it('the "+" on a backup commits at the slot\'s plan, with the bench as the first backup', () => {
+    const picker = start()
+    act(() => picker.render(picker.close).props.onPick(EXIDX[INCLINE], true))
+    expect(entry().id).toBe(INCLINE)
+    expect([entry().target.sets, entry().target.reps, entry().target.restSec]).toEqual([3, 8, 150])
+    expect(entry().target.subs).toEqual([BENCH])
+    expect(useUI.getState().sheets).toHaveLength(0)
+  })
+
+  it('tapping the backup\'s row opens the config sheet on those numbers, and a save goes through it', () => {
+    const picker = start()
+    act(() => picker.render(picker.close).props.onPick(EXIDX[INCLINE]))
+    const config = useUI.getState().sheets.at(-1)
+    const initial = config.render(config.close).props.initial
+    expect([initial.id, initial.sets, initial.reps, initial.restSec, initial.subs]).toEqual([INCLINE, 3, 8, 150, [BENCH]])
+    act(() => config.render(config.close).props.onSave({ ...initial, reps: 6 }))
+    expect(entry().id).toBe(INCLINE)
+    expect(entry().target.reps).toBe(6)
+    // The picker is gone with the swap (the sheet closes itself on a real Save).
+    expect(useUI.getState().sheets.some(x => x.id === picker.id)).toBe(false)
+  })
+
+  it('any other exercise still starts from its own defaults, as a swap always has', () => {
+    const picker = start()
+    act(() => picker.render(picker.close).props.onPick(EXIDX[ROW], true))
+    expect(entry().id).toBe(ROW)
+    expect([entry().target.sets, entry().target.reps]).toEqual([3, 10])
+    expect('subs' in entry().target).toBe(false)
+    const again = start()
+    act(() => again.render(again.close).props.onPick(EXIDX[ROW]))
+    expect(useUI.getState().sheets.at(-1).render(() => {}).props.initial).toBeNull()
   })
 })

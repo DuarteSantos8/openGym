@@ -1436,6 +1436,8 @@ export const PT_BR_OVERRIDES = {
   'Machine taken? Pick what you’d do instead, and a swap mid-workout offers these first.': 'Máquina ocupada? Escolha o que você faria no lugar dela, e uma troca no meio do treino mostra estes primeiro.',
   'Remove “{0}”': 'Remover “{0}”',
   'Your backups': 'Seus substitutos',
+  'Do {0} instead': 'Fazer {0} no lugar',
+  'Planned backup': 'Substituto planejado',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'Aqui não há peso para acrescentar: sobe em repetições e depois em séries.',
   // --- #523 skip completed ---
