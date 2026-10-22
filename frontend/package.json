@@ -34,10 +34,10 @@
     "@capacitor/cli": "^7.6.8",
     "@capacitor/ios": "^7.6.8",
     "@vitejs/plugin-react": "^6.0.3",
-    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/coverage-v8": "^4.1.12",
     "happy-dom": "^20.11.2",
     "linkedom": "^0.18.13",
-    "vite": "^8.1.5",
-    "vitest": "^4.1.10"
+    "vite": "^8.1.6",
+    "vitest": "^4.1.12"
   }
 }
