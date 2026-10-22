@@ -1,19 +1,20 @@
 import http from 'node:http'
+import crypto, { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { discovery } from './oauth.js'
+import { AUTH_TTL_MS, MAX_STATE, discovery, redirectAllowed, sealAuth, openAuth } from './oauth.js'
 import { createGrants, GrantError } from './grants.js'
-import { connect, createPending, sameOrigin } from './openGymSession.js'
+import { connect, createPending, pickAssertion, sameOrigin } from './openGymSession.js'
 
 const connectPage = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'web/connect.html'))
 const COOKIE = '__Host-gym-oauth'
 const MAX_BODY = 8192
-const MAX_PENDING = 1000
+const MAX_SPENT = 10000
 
 function oauthCookie(req) {
   const values = (req.headers.cookie || '').split(';').map(s => s.trim()).filter(s => s.startsWith(`${COOKIE}=`)).map(s => s.slice(COOKIE.length + 1))
-  return values.length === 1 && /^[A-Za-z0-9_-]{43}$/.test(values[0]) ? values[0] : null
+  return values.length === 1 && /^[A-Za-z0-9_-]{80,2048}$/.test(values[0]) ? values[0] : null
 }
 
 function bodyOf(req) {
@@ -37,9 +38,9 @@ function bodyOf(req) {
   })
 }
 
-export function createServer({ origin, prefix, apiBase, key } = {}) {
+export function createServer({ origin, prefix, apiBase, key = crypto.randomBytes(32) } = {}) {
   const d = discovery({ origin, prefix })
-  const pending = new Map(), connections = new Map()
+  const pending = new Map(), connections = new Map(), spent = new Map()
   const grants = createGrants({ connections, key, apiBase })
   const send = (res, status, body, headers = {}) => {
     res.writeHead(status, { 'content-type': 'application/json', 'cache-control': 'no-store', ...headers })
@@ -62,14 +63,13 @@ export function createServer({ origin, prefix, apiBase, key } = {}) {
           const clientId = url.searchParams.get('client_id'), redirectUri = url.searchParams.get('redirect_uri')
           const codeChallenge = url.searchParams.get('code_challenge')
           grants.checkAuthorizeRequest({ clientId, redirectUri, codeChallenge, codeChallengeMethod: 'S256' })
-          // Bound to a server-issued cookie. Discard the previous pending request if overwritten.
-          const old = oauthCookie(req)
-          if (old) pending.delete(old)
-          for (const [id, p] of pending) if (p.exp <= Date.now()) pending.delete(id)
-          if (pending.size >= MAX_PENDING) return send(res, 503, { error: 'temporarily_unavailable' })
-          const id = createPending(pending)
-          Object.assign(pending.get(id), { clientId, redirectUri, codeChallenge, state: url.searchParams.get('state') })
-          res.writeHead(303, { location: `${prefix}/connect`, 'cache-control': 'no-store', 'set-cookie': `${COOKIE}=${id}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=300` })
+          const state = url.searchParams.get('state')
+          if (state != null && state.length > MAX_STATE) return send(res, 400, { error: 'invalid_request' })
+          // Authorization request state is AEAD-sealed into an HttpOnly cookie; GET /authorize does
+          // not allocate server state. A temporary Map is used solely for createPending()'s ID mint.
+          const id = createPending(new Map())
+          const sealed = sealAuth({ id, clientId, redirectUri, codeChallenge, state, exp: Date.now() + AUTH_TTL_MS }, key)
+          res.writeHead(303, { location: `${prefix}/connect`, 'cache-control': 'no-store', 'set-cookie': `${COOKIE}=${sealed}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=300` })
           return res.end()
         }
         if (pathname === `${prefix}/connect`) {
@@ -83,18 +83,28 @@ export function createServer({ origin, prefix, apiBase, key } = {}) {
       }
       if (req.method === 'POST' && pathname === `${prefix}/connect`) {
         if (!sameOrigin(req.headers, origin)) return send(res, 403, { error: 'forbidden' })
-        const id = oauthCookie(req), p = id && pending.get(id)
+        const raw = oauthCookie(req), p = raw && openAuth(raw, key)
         if (!p) return send(res, 403, { error: 'invalid_request' })
         if (Number(req.headers['content-length']) > MAX_BODY) return send(res, 413, { error: 'too_large' })
-        const body = await bodyOf(req)
-        // Never accept a pending ID, claimed user or session cookie from the body. Only the passkey assertion.
-        const { cid, credential } = body
-        await connect({ cid, credential }, { pending, pendingId: id, store: connections, apiBase, key })
-        const code = grants.issueAuthorizationCode({ connectionId: id, clientId: p.clientId, redirectUri: p.redirectUri, codeChallenge: p.codeChallenge, codeChallengeMethod: 'S256' })
-        const redirect = new URL(p.redirectUri)
-        redirect.searchParams.set('code', code)
-        if (p.state !== null) redirect.searchParams.set('state', p.state)
-        return send(res, 200, { redirect: redirect.href }, { 'set-cookie': `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` })
+        // Spend the cookie's nonce before any await so a concurrent twin fails immediately.
+        const id = p.id, hash = createHash('sha256').update(id).digest('base64url')
+        const now = Date.now()
+        for (const [h, exp] of spent) if (exp <= now) spent.delete(h)
+        if (spent.has(hash) || spent.size >= MAX_SPENT) return send(res, spent.has(hash) ? 403 : 503, { error: spent.has(hash) ? 'invalid_request' : 'temporarily_unavailable' })
+        spent.set(hash, p.exp)
+        pending.set(id, { exp: p.exp })
+        try {
+          let assertion
+          try { assertion = pickAssertion(await bodyOf(req)) } catch (e) { spent.delete(hash); throw e }
+          await connect(assertion, { pending, pendingId: id, store: connections, apiBase, key })
+          const code = grants.issueAuthorizationCode({ connectionId: id, clientId: p.clientId, redirectUri: p.redirectUri, codeChallenge: p.codeChallenge, codeChallengeMethod: 'S256' })
+          const redirect = new URL(p.redirectUri)
+          redirect.searchParams.set('code', code)
+          if (p.state !== null) redirect.searchParams.set('state', p.state)
+          if (!redirectAllowed(redirect.href, true)) throw new Error('invalid_request')
+          return send(res, 200, { redirect: redirect.href }, { 'set-cookie': `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` })
+        } catch (e) { connections.delete(id); throw e }
+        finally { pending.delete(id) }
       }
       if (req.method === 'POST' && pathname === `${prefix}/register`) {
         const body = await bodyOf(req)

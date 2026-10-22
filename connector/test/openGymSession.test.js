@@ -443,6 +443,12 @@ test('POST /connector/connect without the server-issued OAuth cookie is refused'
   })
 })
 
+test('connect.html uses the same redirectAllowed source as oauth.js', () => {
+  const oauth = readFileSync(fileURLToPath(new URL('../src/oauth.js', import.meta.url)), 'utf8')
+  const fn = oauth.match(/export function redirectAllowed\(uri, withParams\) \{[\s\S]*?\n\}\n/)[0].replace('export ', '')
+  assert.ok(pageSrc.includes(fn), 'page must contain the server function, not a parallel regex')
+})
+
 test('connect.html is static and never touches login/verify, pairing, tokens or account ids', () => {
   assert.ok(!/\{\{|<%|\$\{user|__USER__|__DATA__/.test(pageSrc))
   assert.ok(!/bearer|pair|token|verify|userId|connectionId/i.test(pageSrc))
@@ -472,7 +478,7 @@ async function runPage({ options = async () => ({ ok: true, json: async () => ({
   const calls = [], els = {}, handlers = {}, nav = []
   const el = id => (els[id] ??= { textContent: '', addEventListener: (ev, fn) => { handlers[ev] = fn } })
   const sandbox = {
-    atob, btoa, Uint8Array, ArrayBuffer,
+    atob, btoa, Uint8Array, ArrayBuffer, URL,
     document: { getElementById: el },
     navigator: { credentials: { get } },
     location: { assign: u => nav.push(u) },
@@ -502,9 +508,14 @@ test('page sends openGym only for login options and the connector only the asser
 test('page follows only the redirect the connector returned, and only to an allowed target', async () => {
   const ok = await runPage()
   assert.deepEqual(ok.nav, ['https://claude.ai/api/mcp/auth_callback?code=C&state=S'])
-  const loop = await runPage({ connectRes: async () => ({ ok: true, status: 200, json: async () => ({ redirect: 'http://127.0.0.1:8123/cb?code=C' }) }) })
-  assert.deepEqual(loop.nav, ['http://127.0.0.1:8123/cb?code=C'])
-  for (const redirect of ['https://evil.test/x', 'javascript:alert(1)', 'data:text/html,x', '//evil.test', 'http://evil.test/cb', 'https://claude.ai/api/mcp/auth_callback.evil.test', 'https://claude.ai/api/mcp/auth_callback/x', 'http://127.0.0.1:80@evil.test/', 7, null, undefined]) {
+  const loop = await runPage({ connectRes: async () => ({ ok: true, status: 200, json: async () => ({ redirect: 'http://127.0.0.1:8123/callback?code=C' }) }) })
+  assert.deepEqual(loop.nav, ['http://127.0.0.1:8123/callback?code=C'])
+  for (const redirect of [
+    'https://evil.test/x', 'javascript:alert(1)', 'data:text/html,x', '//evil.test', 'http://evil.test/cb',
+    'https://claude.ai/api/mcp/auth_callback.evil.test', 'https://claude.ai/api/mcp/auth_callback/x',
+    'http://127.0.0.1:80@evil.test/', 'http://127.0.0.1:8123/cb?code=C', 'http://127.0.0.1:8123/callback/extra',
+    'http://127.0.0.1:8123/callback/../x', 7, null, undefined,
+  ]) {
     const r = await runPage({ connectRes: async () => ({ ok: true, status: 200, json: async () => ({ redirect }) }) })
     assert.deepEqual(r.nav, [], String(redirect))
     assert.equal(r.out, 'Could not connect.')

@@ -43,6 +43,23 @@ function credToJSON(cred) {
   return out
 }
 
+function redirectAllowed(uri, withParams) {
+  if (typeof uri !== 'string' || uri.length > 4096) return false
+  const q = uri.indexOf('?')
+  const head = q < 0 ? uri : uri.slice(0, q)
+  if (/[\\%#]|\.\./.test(head) || (q >= 0 && (!withParams || /[#\\]/.test(uri.slice(q))))) return false
+  let u
+  try { u = new URL(uri) } catch { return false }
+  if (u.username || u.password || u.hash || head !== u.origin + u.pathname) return false
+  if (q >= 0) {
+    const keys = [...u.searchParams.keys()]
+    if (!keys.length || keys.length !== new Set(keys).size || keys.some(k => k !== 'code' && k !== 'state')) return false
+  }
+  if (head === 'https://claude.ai/api/mcp/auth_callback') return true
+  return u.protocol === 'http:' && ['127.0.0.1', '[::1]', 'localhost'].includes(u.hostname)
+    && /^[1-9][0-9]{0,4}$/.test(u.port) && Number(u.port) <= 65535 && u.pathname === '/callback'
+}
+
 function say(t) { document.getElementById('out').textContent = t }
 
 async function onGo() {
@@ -55,9 +72,9 @@ async function onGo() {
     body: JSON.stringify({ cid, credential: credToJSON(cred) }),
   })
   if (!next.ok) return say('Could not connect.')
-  // Only the connector's own answer, and only Claude's callback or a loopback app, is ever followed.
+  // Only the connector's own answer, checked by the same allowlist the server uses.
   const { redirect } = await next.json()
-  if (typeof redirect !== 'string' || !/^(https:\/\/claude\.ai\/api\/mcp\/auth_callback\?|http:\/\/(127\.0\.0\.1|localhost|\[::1\]):\d+\/[^@]*$)/.test(redirect)) return say('Could not connect.')
+  if (!redirectAllowed(redirect, true)) return say('Could not connect.')
   say('Connected.')
   location.assign(redirect)
 }

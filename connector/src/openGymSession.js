@@ -22,7 +22,7 @@ function assertKey(key) {
   }
 }
 
-function pickAssertion(a) {
+export function pickAssertion(a) {
   if (!a || typeof a !== 'object' || Array.isArray(a)) throw new HandoffError('bad-assertion')
   const { cid, credential } = a
   if (typeof cid !== 'string' || !cid || cid.length > MAX_CID) throw new HandoffError('bad-assertion')

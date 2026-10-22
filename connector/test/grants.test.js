@@ -15,11 +15,11 @@ const verifier = 'a'.repeat(43)
 const challenge = crypto.createHash('sha256').update(verifier).digest('base64url')
 const assertion = { cid: 'cid-1', credential: { id: 'cred', response: {} } }
 
-function fixture({ apiBase = 'http://unused' } = {}) {
+function fixture({ apiBase = 'http://unused', maxClients } = {}) {
   const connections = new Map()
   const stores = { codes: new Map(), access: new Map(), refreshTokens: new Map() }
   let time = Date.now(), n = 0
-  const grants = createGrants({ connections, key, apiBase, now: () => time, ...stores })
+  const grants = createGrants({ connections, key, apiBase, now: () => time, maxClients, ...stores })
   const client = grants.registerClient({ redirect_uris: [callback, 'http://127.0.0.1:9876/callback'] })
   // each call is a fresh, already-connected openGym user session (what connect() would have stored)
   const connect = (userId = 'uid1') => { const id = `connection-${++n}`; connections.set(id, { userId, sealed: sealBearer(bearer, key, userId) }); return id }
@@ -30,10 +30,16 @@ function fixture({ apiBase = 'http://unused' } = {}) {
 
 test('registration allowlists exact Claude callback and loopback redirects only', () => {
   const { grants } = fixture()
-  for (const url of ['https://claude.ai/api/mcp/auth_callback/extra', 'https://claude.ai.evil.test/api/mcp/auth_callback', 'https://claude.ai/other', 'http://example.test/cb', 'http://127.0.0.1.evil.test:123/cb', 'http://localhost:0/cb', 'http://localhost:123/cb#fragment', 'http://localhost:123/cb?x=1', 'http://localhost/cb', 'http://user@localhost:123/cb']) {
+  for (const url of [
+    'https://claude.ai/api/mcp/auth_callback/extra', 'https://claude.ai.evil.test/api/mcp/auth_callback', 'https://claude.ai/other',
+    'http://example.test/cb', 'http://127.0.0.1.evil.test:123/cb', 'http://localhost:0/cb', 'http://localhost:123/cb#fragment',
+    'http://localhost:123/cb?x=1', 'http://localhost/cb', 'http://user@localhost:123/cb', 'http://localhost:3000/auth',
+    'http://[::1]:5000/cb', 'http://127.0.0.1:9876/other', 'http://127.0.0.1:9876/callback/..', 'http://127.0.0.1:9876/call%2Fback',
+    'http://127.0.0.1:9876\\callback', 'http://127.0.0.1:9876/callback%2e%2e',
+  ]) {
     assert.throws(() => grants.registerClient({ redirect_uris: [url] }), /invalid_client_metadata/, url)
   }
-  for (const url of ['http://localhost:3000/auth', 'http://[::1]:5000/cb']) {
+  for (const url of ['http://localhost:3000/callback', 'http://[::1]:5000/callback', 'http://127.0.0.1:9876/callback']) {
     assert.equal(grants.registerClient({ redirect_uris: [url] }).redirect_uris[0], url)
   }
   assert.throws(() => grants.registerClient({ redirect_uris: [callback], token_endpoint_auth_method: 'client_secret_post' }), /invalid_client_metadata/)
@@ -170,7 +176,7 @@ test('OAuth HTTP flow uses server cookie, same-origin gate and stored openGym su
     assert.equal(authorize.status, 303)
     assert.equal(authorize.headers.get('location'), '/connector/connect')
     const cookie = authorize.headers.get('set-cookie')
-    assert.match(cookie, /__Host-gym-oauth=[A-Za-z0-9_-]{43}; Path=\/; HttpOnly; Secure; SameSite=Lax/)
+    assert.match(cookie, /__Host-gym-oauth=[A-Za-z0-9_-]{80,2048}; Path=\/; HttpOnly; Secure; SameSite=Lax/)
     assert.ok(!cookie.includes(bearer))
     const withCookie = { cookie: cookie.split(';')[0], origin, 'sec-fetch-site': 'same-origin' }
     const hostile = await post('/connector/connect', { ...assertion, pendingId: 'connected' }, { ...withCookie, 'sec-fetch-site': 'cross-site' })
@@ -230,5 +236,102 @@ test('authorize never redirects on a bad request and sets no cookie; a failed co
     assert.equal((await post('/connector/connect', assertion, headers)).status, 403, 'a completed connect spends the pending record')
     assert.equal((await post('/connector/token', { grant_type: 'password', client_id: client.client_id })).status, 400)
     assert.equal((await fetch(`${base}/connector/token`, { method: 'POST', body: 'grant_type=refresh_token' })).status, 400, 'content-type is required')
+  } finally { await new Promise(r => server.close(r)); await new Promise(r => upstream.api.close(r)) }
+})
+
+test('hostile registration cannot delete a live client or its grant', async () => {
+  const { grants, client, connect, code, exchange } = fixture({ maxClients: 1 })
+  assert.throws(() => grants.registerClient({ redirect_uris: [callback] }), /temporarily_unavailable/)
+  const t = exchange(code())
+  assert.ok(t.access_token)
+  assert.throws(() => grants.registerClient({ redirect_uris: [callback] }), /temporarily_unavailable/)
+  const rotated = await grants.refresh({ refreshToken: t.refresh_token, clientId: client.client_id })
+  assert.ok(rotated.access_token)
+  const extra = grants.issueAuthorizationCode({ connectionId: connect(), clientId: client.client_id, redirectUri: callback, codeChallenge: challenge })
+  assert.ok(extra.length >= 43)
+})
+
+test('oversized or unreadable /api/me identity permanently revokes; 5xx does not', async () => {
+  let status = 200, body = JSON.stringify({ user: { id: 'uid1' } })
+  const api = http.createServer((req, res) => {
+    res.writeHead(status, { 'content-type': 'application/json' })
+    res.end(body)
+  })
+  await new Promise(r => api.listen(0, '127.0.0.1', r))
+  try {
+    const f = fixture({ apiBase: `http://127.0.0.1:${api.address().port}` })
+    const t = f.exchange(f.code())
+    assert.equal(await f.grants.bearerForAccessToken(t.access_token), bearer)
+    body = JSON.stringify({ user: { id: 'uid1', pad: 'x'.repeat(9000) } })
+    assert.equal(await f.grants.bearerForAccessToken(t.access_token), null)
+    body = JSON.stringify({ user: { id: 'uid1' } })
+    assert.equal(await f.grants.bearerForAccessToken(t.access_token), null, 'oversized 200 revokes')
+    await assert.rejects(() => f.grants.refresh({ refreshToken: t.refresh_token, clientId: f.client.client_id }), /invalid_grant/)
+
+    const t2 = f.exchange(f.code())
+    body = '{"user":'
+    assert.equal(await f.grants.bearerForAccessToken(t2.access_token), null)
+    body = JSON.stringify({ user: { id: 'uid1' } })
+    assert.equal(await f.grants.bearerForAccessToken(t2.access_token), null, 'unreadable 200 revokes')
+
+    const t3 = f.exchange(f.code())
+    status = 503
+    body = 'down'
+    assert.equal(await f.grants.bearerForAccessToken(t3.access_token), null)
+    status = 200
+    body = JSON.stringify({ user: { id: 'uid1' } })
+    assert.equal(await f.grants.bearerForAccessToken(t3.access_token), bearer, '5xx is transient')
+  } finally { await new Promise(r => api.close(r)) }
+})
+
+test('two concurrent POSTs with one pending cookie: one login, one fail, one grant', async () => {
+  const upstream = await apiServer()
+  const server = createServer({ origin, prefix, apiBase: upstream.url, key })
+  await new Promise(r => server.listen(0, '127.0.0.1', r))
+  const base = `http://127.0.0.1:${server.address().port}`
+  try {
+    const post = (path, data, headers = {}) => fetch(base + path, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(data), redirect: 'manual' })
+    const client = await (await post('/connector/register', { redirect_uris: [callback] })).json()
+    const params = new URLSearchParams({ client_id: client.client_id, redirect_uri: callback, response_type: 'code', code_challenge: challenge, code_challenge_method: 'S256', state: 's', resource: `${origin}${prefix}/mcp` })
+    const authorize = await fetch(base + '/connector/authorize?' + params, { redirect: 'manual' })
+    const headers = { cookie: authorize.headers.get('set-cookie').split(';')[0], origin, 'sec-fetch-site': 'same-origin' }
+    const [a, b] = await Promise.all([post('/connector/connect', assertion, headers), post('/connector/connect', assertion, headers)])
+    const statuses = [a.status, b.status].sort()
+    assert.deepEqual(statuses, [200, 403])
+    const ok = a.status === 200 ? a : b
+    const body = await ok.json()
+    assert.ok(body.redirect)
+    const logins = upstream.calls.filter(c => c.path === '/api/login/verify')
+    assert.equal(logins.length, 1)
+    const tokens = await (await post('/connector/token', { grant_type: 'authorization_code', client_id: client.client_id, redirect_uri: callback, code: new URL(body.redirect).searchParams.get('code'), code_verifier: verifier })).json()
+    assert.ok(tokens.access_token)
+  } finally { await new Promise(r => server.close(r)); await new Promise(r => upstream.api.close(r)) }
+})
+
+test('authorization request lives in the cookie, not a server pending map; a failed issue drops the connection', async () => {
+  const upstream = await apiServer()
+  const server = createServer({ origin, prefix, apiBase: upstream.url, key })
+  await new Promise(r => server.listen(0, '127.0.0.1', r))
+  const base = `http://127.0.0.1:${server.address().port}`
+  try {
+    const post = (path, data, headers = {}) => fetch(base + path, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(data), redirect: 'manual' })
+    const client = await (await post('/connector/register', { redirect_uris: [callback] })).json()
+    const params = new URLSearchParams({ client_id: client.client_id, redirect_uri: callback, response_type: 'code', code_challenge: challenge, code_challenge_method: 'S256', state: 's', resource: `${origin}${prefix}/mcp` })
+    const first = await fetch(base + '/connector/authorize?' + params, { redirect: 'manual' })
+    const cookie1 = first.headers.get('set-cookie').split(';')[0]
+    const second = await fetch(base + '/connector/authorize?' + params, { redirect: 'manual' })
+    const cookie2 = second.headers.get('set-cookie').split(';')[0]
+    assert.notEqual(cookie1, cookie2)
+    const headers1 = { cookie: cookie1, origin, 'sec-fetch-site': 'same-origin' }
+    const headers2 = { cookie: cookie2, origin, 'sec-fetch-site': 'same-origin' }
+    const a = await post('/connector/connect', assertion, headers1)
+    const b = await post('/connector/connect', assertion, headers2)
+    assert.equal(a.status, 200)
+    assert.equal(b.status, 200, 'second authorize does not evict the first cookie')
+    const f = fixture()
+    const id = f.connect()
+    assert.equal(f.connections.has(id), true)
+    assert.throws(() => f.grants.issueAuthorizationCode({ connectionId: id, clientId: 'unregistered', redirectUri: callback, codeChallenge: challenge }), /invalid_request/)
+    assert.equal(f.connections.has(id), false, 'failed issue deletes the stored connection')
   } finally { await new Promise(r => server.close(r)); await new Promise(r => upstream.api.close(r)) }
 })

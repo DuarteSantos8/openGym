@@ -1,6 +1,6 @@
 import crypto from 'node:crypto'
 import { openBearer } from './openGymSession.js'
-import { ACCESS_TTL_MS, CODE_TTL_MS, GRANT_MAX_MS, REFRESH_TTL_MS, allowedRedirect, pkceChallengeOk } from './oauth.js'
+import { ACCESS_TTL_MS, CODE_TTL_MS, GRANT_MAX_MS, REFRESH_TTL_MS, redirectAllowed, pkceChallengeOk } from './oauth.js'
 
 export class GrantError extends Error {
   constructor(code) {
@@ -14,6 +14,7 @@ const fail = code => { throw new GrantError(code) }
 const TOKEN = /^[A-Za-z0-9_-]{43}$/
 const VERIFIER = /^[A-Za-z0-9\-._~]{43,128}$/
 const MAX_CLIENTS = 1000
+const CLIENT_IDLE_MS = 3_600_000 // an unused registration older than this may be reclaimed, only at the cap
 const MAX_ME = 8192
 
 const sha = s => crypto.createHash('sha256').update(s).digest('base64url')
@@ -28,7 +29,7 @@ function mint(map) {
 // `connections` is the Task 2 store ({userId, sealed}); a grant is bound to one connection and
 // takes its openGym user from that stored record, never from anything the browser sent.
 export function createGrants({
-  connections, key, apiBase, now = Date.now,
+  connections, key, apiBase, now = Date.now, maxClients = MAX_CLIENTS,
   codes = new Map(), access = new Map(), refreshTokens = new Map(),
 } = {}) {
   if (!connections || typeof connections.get !== 'function') throw new TypeError('connections required')
@@ -62,14 +63,26 @@ export function createGrants({
     return { access_token: at, token_type: 'Bearer', expires_in: ACCESS_TTL_MS / 1000, refresh_token: rt }
   }
 
+  // At the cap, only a client that never got a grant and is older than any authorization flow can
+  // be reclaimed (a flow lasts minutes). A client with a grant is never deleted; if none can be
+  // reclaimed, registration fails closed instead.
+  function reclaimIdleClient() {
+    const live = new Set([...grants.values(), ...codes.values()].map(r => r.clientId))
+    const ts = t()
+    for (const [id, c] of clients) {
+      if (!live.has(id) && ts - c.created >= CLIENT_IDLE_MS) { clients.delete(id); return }
+    }
+    fail('temporarily_unavailable')
+  }
+
   function registerClient(meta = {}) {
     const uris = meta && meta.redirect_uris
-    if (!Array.isArray(uris) || !uris.length || uris.length > 10 || uris.some(u => typeof u !== 'string' || !allowedRedirect(u))) fail('invalid_client_metadata')
+    if (!Array.isArray(uris) || !uris.length || uris.length > 10 || uris.some(u => !redirectAllowed(u, false))) fail('invalid_client_metadata')
     if ((meta.token_endpoint_auth_method ?? 'none') !== 'none') fail('invalid_client_metadata')
-    if (clients.size >= MAX_CLIENTS) clients.delete(clients.keys().next().value) // oldest goes; it just re-registers
+    if (clients.size >= maxClients) reclaimIdleClient()
     const client_id = crypto.randomBytes(32).toString('base64url')
     const redirect_uris = [...new Set(uris)]
-    clients.set(client_id, { redirect_uris })
+    clients.set(client_id, { redirect_uris, created: t() })
     return {
       client_id, redirect_uris, token_endpoint_auth_method: 'none',
       grant_types: ['authorization_code', 'refresh_token'], response_types: ['code'],
@@ -85,9 +98,15 @@ export function createGrants({
 
   function issueAuthorizationCode({ connectionId, clientId, redirectUri, codeChallenge, codeChallengeMethod } = {}) {
     sweep()
-    try { checkAuthorizeRequest({ clientId, redirectUri, codeChallenge, codeChallengeMethod }) } catch (e) { fail(e.code === 'invalid_client' ? 'invalid_request' : e.code) }
+    try { checkAuthorizeRequest({ clientId, redirectUri, codeChallenge, codeChallengeMethod }) } catch (e) {
+      if (typeof connectionId === 'string' && !bound.has(connectionId)) connections.delete(connectionId)
+      fail(e.code === 'invalid_client' ? 'invalid_request' : e.code)
+    }
     const conn = typeof connectionId === 'string' && connections.has(connectionId) ? connections.get(connectionId) : null
-    if (!conn || typeof conn.userId !== 'string' || !conn.userId || bound.has(connectionId)) fail('invalid_grant')
+    if (!conn || typeof conn.userId !== 'string' || !conn.userId || bound.has(connectionId)) {
+      if (typeof connectionId === 'string') connections.delete(connectionId)
+      fail('invalid_grant')
+    }
     bound.add(connectionId)
     const code = mint(codes)
     codes.set(sha(code), { clientId, redirectUri, challenge: codeChallenge, connectionId, userId: conn.userId, exp: t() + CODE_TTL_MS })
@@ -152,17 +171,34 @@ export function createGrants({
     let bearer
     try { bearer = conn && conn.userId === g.userId ? openBearer(conn.sealed, key, g.userId) : null } catch { bearer = null }
     if (!bearer) { kill(rec.grantId); return null }
-    let status, data
+    // Only the status and the user id matter. The body is streamed under a hard cap; a transport
+    // failure (network, timeout, mid-body reset) is transient, but a 200 whose identity cannot be
+    // read (oversized, not JSON, no id) is not something to keep a grant on.
+    let status, data = null, text = ''
     try {
       const res = await fetch(`${apiBase}/api/me`, {
         headers: { authorization: `Bearer ${bearer}`, accept: 'application/json' },
         redirect: 'manual', signal: AbortSignal.timeout(10000),
       })
       status = res.status
-      const text = await res.text()
-      if (text.length > MAX_ME) return null
-      data = status === 200 ? JSON.parse(text) : null
+      if (status === 200) {
+        const chunks = []
+        let n = 0, over = false
+        if (res.body) {
+          const reader = res.body.getReader()
+          for (;;) {
+            const step = await reader.read()
+            if (step.done) break
+            n += step.value.length
+            if (n > MAX_ME) { over = true; await reader.cancel().catch(() => {}); break }
+            chunks.push(step.value)
+          }
+        }
+        if (over) { kill(rec.grantId); return null }
+        text = Buffer.concat(chunks).toString('utf8')
+      } else if (res.body) await res.body.cancel().catch(() => {})
     } catch { return null }
+    if (status === 200) { try { data = JSON.parse(text) } catch { data = null } }
     if (status === 200 && data && data.user && data.user.id === g.userId) return grants.get(rec.grantId) === g ? bearer : null
     if (status === 200 || status === 401 || status === 403 || (status >= 300 && status < 400)) kill(rec.grantId)
     return null
