@@ -46,11 +46,13 @@ that week, and Claude uses the person's history to choose weights.
   `https://gym.areum.cl/connector/mcp`. Everything else keeps going to `127.0.0.1:8090`.
   Connector GET pages never embed account data: the existing service worker can already hold
   old cache entries, even after the approved bypass is shipped.
-- **Getting a session for the person, without touching openGym:** the connector's sign-in
-  page runs openGym's own passkey login (`POST /api/login/options` and `/verify`, same
-  origin), then `POST /api/pair/create` with that session, then redeems the code with
-  `POST /api/pair/redeem`. That yields a Bearer session for that person, the same one a paired
-  phone holds. The connector keeps it server-side, encrypted at rest; Claude never sees it.
+- **Getting a session for the person, without touching the openGym API:** the connector's
+  page obtains an openGym passkey assertion on `gym.areum.cl` and submits it to the connector.
+  The connector calls `POST /api/login/verify` itself, trusting the returned user identity
+  rather than a browser-provided user ID. It sends only that response's fresh cookie to
+  `POST /api/pair/create`, then redeems the code via `POST /api/pair/redeem` without a cookie.
+  The connector discards the login cookie, encrypts the resulting Bearer at rest, and never
+  returns the Bearer or pairing code to the browser or Claude.
 - **Revocation:** each Claude connection can be revoked in the connector. openGym's own
   "sign out everywhere" and password reset invalidate the Bearer. Disabling an account blocks
   API calls while disabled but does not bump its session version: re-enabling it can revive an
