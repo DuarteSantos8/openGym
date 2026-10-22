@@ -218,7 +218,7 @@ export function defaultConfig(id, mode) {
 // one-arm or one-leg exercise, at ten reps a side (per-side reps are both sides' total). Kept out
 // of `defaultConfig` itself, which is also spread under saved targets: a lift switched off per
 // side is stored without the flag, and must not get it back.
-export function newConfig(id, mode) {
+export function pickedExerciseConfig(id, mode) {
   const cfg = defaultConfig(id, mode)
   if (!isOneLimb(id) || !('mode' in cfg)) return cfg
   return { ...cfg, side: true, ...(cfg.mode === 'reps' ? { reps: 20 } : {}) }

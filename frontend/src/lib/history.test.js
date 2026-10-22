@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, newConfig, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, completedRepsOf, metricRowsForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, sessionSections, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded, entryRoutineId, setsRepsOf } from './history.js'
+import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, pickedExerciseConfig, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, completedRepsOf, metricRowsForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, sessionSections, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded, entryRoutineId, setsRepsOf } from './history.js'
 import { makeSideSet, setSideField, toggleSide, WEIGHT_ORIGIN_MANUAL } from './workout-model.js'
 import { EXDB } from './exercises.js'
 import { todayISO, isoOf } from './format.js'
@@ -336,18 +336,18 @@ describe('defaultConfig', () => {
   })
 })
 
-describe('newConfig', () => {
+describe('pickedExerciseConfig', () => {
   it('starts a one-arm or one-leg exercise per side, ten reps a side', () => {
     // 4837 dumbbell single arm bent over row, 1027 assisted single leg press
-    expect(newConfig('4837')).toMatchObject({ mode: 'reps', side: true, reps: 20 })
-    expect(isPerSide(newConfig('1027'))).toBe(true)
-    expect(newConfig('4837', 'time')).toMatchObject({ mode: 'time', side: true, sec: 45 })
+    expect(pickedExerciseConfig('4837')).toMatchObject({ mode: 'reps', side: true, reps: 20 })
+    expect(isPerSide(pickedExerciseConfig('1027'))).toBe(true)
+    expect(pickedExerciseConfig('4837', 'time')).toMatchObject({ mode: 'time', side: true, sec: 45 })
   })
   it('leaves everything else as defaultConfig has it', () => {
-    expect(newConfig('1801')).toEqual(defaultConfig('1801'))   // one arm lat stretch
-    expect(newConfig('0667')).toEqual(defaultConfig('0667'))   // raise single leg push up
-    expect(newConfig(LIFT)).toEqual(defaultConfig(LIFT))
-    expect(newConfig(CARDIO)).toEqual(defaultConfig(CARDIO))
+    expect(pickedExerciseConfig('1801')).toEqual(defaultConfig('1801'))   // one arm lat stretch
+    expect(pickedExerciseConfig('0667')).toEqual(defaultConfig('0667'))   // raise single leg push up
+    expect(pickedExerciseConfig(LIFT)).toEqual(defaultConfig(LIFT))
+    expect(pickedExerciseConfig(CARDIO)).toEqual(defaultConfig(CARDIO))
   })
   it('keeps defaultConfig flat, so a saved target without the flag stays one row a set', () => {
     expect('side' in defaultConfig('4837')).toBe(false)
