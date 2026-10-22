@@ -10,6 +10,7 @@ import { armRestAlert, bindNativeRest, disarmRestAlert, holdRestAlert, toneNativ
 import { useStore } from './useStore.js'
 import { REST_MAX } from '../lib/duration.js'
 import { accentValue } from '../lib/accent.js'
+import { watchRest } from '../lib/watch-link.js'
 
 // Fire-and-forget: lets the server push a "rest over" alert if this tab gets suspended
 // before the local timer completes. No-ops for guests / offline. The device id keeps the
@@ -154,6 +155,9 @@ const ownerDone = wk => !wk?.owner ? null : (elapsed, { abandoned = false } = {}
     st.at = Date.now()
   }, true)
 }
+// The Apple Watch shows the rest too (lib/watch-link.js): told of every change, never of a tick,
+// since it counts down from endsAt on its own.
+const mirrorRest = get => { watchRest(get().timer) }
 const stopRestTicking = () => {
   if (timerInt) clearInterval(timerInt); timerInt = null
   if (timerTick) document.removeEventListener('visibilitychange', timerTick); timerTick = null
@@ -295,6 +299,7 @@ export const useUI = create((set, get) => ({
     set({ timer: { left: sec, total: sec, endsAt, forIdx, ...(forSet != null ? { forSet } : {}), ...(kind === 'switch' ? { kind } : {}) } })
     bookRestEnd(endsAt, sec, kind)
     runRest(set, get)
+    mirrorRest(get)
   },
   // Holding the rest where it is — a longer break than planned, a machine to wait for, a phone
   // call (#193). Paused time does not count: the countdown stops, and so does everything that
@@ -309,6 +314,7 @@ export const useUI = create((set, get) => ({
     const left = Math.max(1, Math.round((tm.endsAt - Date.now()) / 1000))
     holdRestAlert(left, tm.total)
     set({ timer: { ...tm, left, paused: true } })
+    mirrorRest(get)
   },
   // Carrying on from where the pause held it: the end moves out by however long the pause was,
   // and the push that announces it is booked again for the new time.
@@ -323,6 +329,7 @@ export const useUI = create((set, get) => ({
     set({ timer: { ...rest, endsAt } })
     bookRestEnd(endsAt, tm.total, tm.kind)
     runRest(set, get)
+    mirrorRest(get)
   },
   addRest(sec) {
     const tm = get().timer
@@ -338,10 +345,11 @@ export const useUI = create((set, get) => ({
     const total = Math.max(tm.total || left, left)
     // Paused, there is no end to move and nothing booked on the server: the time is simply held,
     // and the notification holds the new figure.
-    if (tm.paused) { set({ timer: { ...tm, left, total } }); holdRestAlert(left, total); return }
+    if (tm.paused) { set({ timer: { ...tm, left, total } }); holdRestAlert(left, total); mirrorRest(get); return }
     const endsAt = tm.endsAt + sec * 1000
     set({ timer: { ...tm, left, total, endsAt } })
     bookRestEnd(endsAt, total, tm.kind)
+    mirrorRest(get)
   },
   // The active list changed shape (an exercise removed or inserted at `at`): keep the rest
   // pointing at the same exercise. Returns nothing; the caller decides whether to stop instead.
@@ -361,10 +369,12 @@ export const useUI = create((set, get) => ({
     if (paused) {
       stopRestTicking()
       set({ timer: { left, total, endsAt, forIdx, ...kind, paused: true } })
+      mirrorRest(get)
       return
     }
     const ticking = !!timerInt && !!tm && !tm.paused && !tm.ready
     set({ timer: { left, total, endsAt, forIdx, ...kind } })
+    mirrorRest(get)
     if (ticking) return
     // As in resumeRest: a hide from while it was held or over is no catch-up of this countdown.
     pageHiddenAt = document.hidden ? Date.now() : null
@@ -377,6 +387,7 @@ export const useUI = create((set, get) => ({
     disarmRestAlert()
     if (get().timer) cancelPushRestTimer()
     set({ timer: null })
+    mirrorRest(get)
   },
 
   /* ---- work timer (issue #16) ----

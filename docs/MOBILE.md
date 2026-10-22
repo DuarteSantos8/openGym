@@ -218,6 +218,78 @@ Worth checking on a real device after changes here: turning it on shows Health C
 permission screen; a finished workout appears in Health Connect within a few seconds; deleting it
 in openGym removes it there; turning it off with "remove" leaves no openGym record behind.
 
+### Apple Health (iOS)
+
+Settings > **Apple Health** is the same card on the iOS app, writing to Apple Health through
+HealthKit. Everything above about what is written, when, the fingerprints in `opengym-health.json`
+and turning it off holds unchanged: `src/lib/health-sync.js` drives both, and only the native plugin
+differs (`ios/App/App/HealthKitPlugin.swift`, the five methods of `HealthConnectPlugin.java` plus
+`readHeartRate`).
+
+- **What is written:** each finished workout as an `HKWorkout` (strength training, walking,
+  running, cycling, elliptical, stair climbing or "other", from the same session type as on
+  Android), with openGym as the brand and the title and the sets as metadata, since HealthKit has
+  no notes field. Each weigh-in as a body mass sample in kilograms.
+- **No duplicates.** Every object carries openGym's id as `HKMetadataKeyExternalUUID`. HealthKit has
+  no replace-by-id, so writing a record again deletes what this app saved under that id first. An
+  object with that id from another source (the watch app, below) is left alone and not written over.
+- **Permissions:** writing workouts and body mass; reading workouts and body mass (without read
+  access a query only returns this app's own objects, so a watch-saved workout could not be
+  recognised) and heart rate (asked now so turning on the heart-rate switch does not ask again). HealthKit
+  never tells an app whether writing was denied, so
+  the card cannot know up front; a denial shows as a refused write, and the row then points to
+  Health > Sharing > Apps, the only place to allow it again.
+- **Heart rate:** with the second switch on (`readHr` in `opengym-health.json`, off by default),
+  the heart rate Health holds for a finished workout's window, from the Apple Watch or any other
+  source, is read back 8 and 30 seconds after Finish, at launch and on return to the foreground,
+  and kept on the workout as `w.hr` (average, peak, low and at most 240 points,
+  `src/lib/heart-rate.js`). It shows on the finish summary, in the workout's detail sheet and in
+  Copy as text, and syncs like the rest of the workout; Android and the web never set it.
+- **Where it shows:** every iPhone has Health; there is nothing to install. On an iPad without
+  Health data the card is not shown.
+- **Project setup:** `App/App.entitlements` carries the HealthKit capability (set as
+  `CODE_SIGN_ENTITLEMENTS` for both configurations), and `Info.plist` has
+  `NSHealthShareUsageDescription` and `NSHealthUpdateUsageDescription`. The signing team's App ID
+  needs HealthKit enabled.
+
+Worth checking on a real device after changes here: turning it on shows Health's permission
+sheet; a finished workout appears in Health > Browse > Activity > Workouts; deleting it in openGym
+removes it there; turning it off with "remove" leaves no openGym object behind.
+
+### Apple Watch (iOS)
+
+The iOS app embeds a small watchOS app (`ios/App/OpenGymWatch/`, SwiftUI, watchOS 11+, target
+`OpenGymWatch` added by `ios/App/scripts/add-watch-target.rb`). While a workout runs on the phone,
+the watch runs an `HKWorkoutSession`, so Health samples heart rate at workout rate and keeps one
+workout with that heart rate attached. There is no set logging on the watch.
+
+- **The link** (`src/lib/watch-link.js`, `ios/App/App/WatchLinkPlugin.swift`): starting a workout
+  launches the watch app through HealthKit and sends it the workout's id, name and start, by
+  WatchConnectivity message when the watch app is reachable and by `transferUserInfo` otherwise;
+  Finish sends the end the same way, Discard tells the watch to throw its session away. The rest
+  timer goes as the application context, where only the latest counts, and the watch counts down
+  from its end on its own: a tap at 10 seconds, the notification haptic at zero, +15 s and Skip
+  sent back to the phone's timer. The watch sends heart rate at most every 2 seconds (shown as
+  ♥ bpm in the workout header while it is fresh) and every change of its session's state.
+- **No duplicates:** the watch saves its workout with the same `opengym-w-<id>` external id the
+  phone's Health export uses. The export holds back a workout the watch is recording, for good
+  once the watch says it saved it, and writes it itself when the watch says it failed or has said
+  nothing 10 minutes after the end. The watch in turn does not save a workout Health already has
+  under that id, and discards a session whose end reaches it more than 10 minutes late.
+- **The switch:** Settings > Apple Health > **Apple Watch** shows with a paired watch (`useWatch`
+  in `opengym-watch.json`, on by default); without the watch app installed it says where to
+  install it. Nothing is sent while it is off. A session left running by a killed app is ended,
+  or thrown away, at the next launch.
+- **Project setup:** the App target depends on `OpenGymWatch` and embeds it in `Watch/` (the
+  "Embed Watch Content" phase). The watch target has its own HealthKit entitlement
+  (`OpenGymWatch/OpenGymWatch.entitlements`), the `workout-processing` background mode
+  (`OpenGymWatch/Info.plist`) and the bundle id `ch.duartesantos.opengym.watchkitapp`, so a
+  rewrite of the app's id moves both. The signing team needs HealthKit on that App ID too.
+
+Worth checking on a real phone and watch after changes here: starting a workout opens the watch
+app into it; the header shows the heart rate within a few seconds; a rest shows on the wrist and
++15 s there moves the phone's timer; after Finish, Health has one openGym workout with heart rate.
+
 ## Prerequisites
 
 - Node 20+

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, forwardRef, useSyncExternalStore } from 'react'
 import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
-import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange } from '../lib/health-sync.js'
+import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange, setReadHr } from '../lib/health-sync.js'
+import { watchStatus, loadWatchPref, setUseWatch } from '../lib/watch-link.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { formulaOf, FORMULA_NAMES } from '../lib/onerm.js'
@@ -22,7 +23,7 @@ import { wakeLockSupported } from '../lib/wakelock.js'
 import { t, tn, LANGS, INSTR_LANGS, EXERCISE_NAME_LANGS, baseLang, dateLocale } from '../lib/i18n.js'
 import { effectiveLang } from '../lib/default-lang.js'
 import { DEMO, REPO } from '../lib/demo.js'
-import { MOBILE, isAndroid, shareExport, shareExportBlob, syncReminder } from '../lib/mobile.js'
+import { MOBILE, isAndroid, isIOS, shareExport, shareExportBlob, syncReminder } from '../lib/mobile.js'
 import { NUDGE_COPY, NUDGE_TONES, toneOf } from '../lib/nudge.js'
 import { referencedFiles } from '../lib/media-refs.js'
 import { mediaStore } from '../lib/media-store.js'
@@ -151,6 +152,7 @@ export default function Settings({ page = null, find = null, via = null }) {
   // --- update check state ---
   const [updateInfo, setUpdateInfo] = useState(null) // { hasUpdate, latestVersion, apkUrl, hashUrl } | null
   const [android, setAndroid] = useState(false)
+  const [ios, setIos] = useState(false)
   const [checking, setChecking] = useState(false)
   // Where auto-backup writes on this Android phone, for the Auto-backup row's own subtitle.
   const [backupDir] = useBackupFolder(MOBILE && android && !!S.autoBackup)
@@ -162,7 +164,11 @@ export default function Settings({ page = null, find = null, via = null }) {
     // from even asking (and from calling GitHub on every Settings visit). Only the pages
     // that show it ask: the root (for nothing but `android`) skips the release check.
     if (!MOBILE) return
-    isAndroid().then(ok => { setAndroid(ok); if (ok && page === 'about') checkForUpdate().then(setUpdateInfo).catch(() => {}) })
+    isAndroid().then(ok => {
+      setAndroid(ok)
+      if (ok && page === 'about') checkForUpdate().then(setUpdateInfo).catch(() => {})
+      if (!ok) isIOS().then(setIos).catch(() => {})
+    })
   }, [page])
 
   // A search hit: scroll its row (or button) into view and flash it once. A row that shows only
@@ -784,7 +790,7 @@ export default function Settings({ page = null, find = null, via = null }) {
         {/* Android only: the system folder picker (#161). iOS shows Documents in Files already. */}
         {MOBILE && android && S.autoBackup && <BackupFolderRow />}
       </Section>
-      {MOBILE && android && <HealthConnectCard S={S} toast={toast} />}
+      {MOBILE && (android || ios) && <HealthCard S={S} toast={toast} platform={android ? 'android' : 'ios'} />}
       <Section title={t('Bring data in')}>
         <Row icon="download" iconTint="var(--teal)" title={t('Import backup')} accessory="chevron" onClick={() => fileRef.current.click()} />
         <Row icon="download" iconTint="var(--teal)" title={t('Import from another app')}
@@ -1433,7 +1439,34 @@ function RegisterInline({ close, setUser, pushState, pullState, toast }) {
 // its own file (lib/health-sync.js) and not in S, so it never switches on anywhere else. The card
 // stays out of the way on a phone without Health Connect, and only points to installing it on
 // Android 13 and lower, where it is an app of its own.
-function HealthConnectCard({ S, toast }) {
+//
+// iOS app: the same card for Apple Health. Health is built in, so there is nothing to install,
+// and HealthKit never asks twice: a withdrawn permission is given back in Health itself.
+const healthCopy = platform => platform === 'ios' ? {
+  name: t('Apple Health'),
+  write: t('Write to Apple Health'),
+  open: t('Open Apple Health'),
+  footer: t('Workouts and weigh-ins go to Apple Health when you finish or change them.'),
+  denied: t('Apple Health permission not granted'),
+  failed: t('Could not write to Apple Health'),
+  writing: t('Writing to Apple Health'),
+  stop: t('Stop writing to Apple Health?'),
+  stopSub: t('What openGym already wrote can stay in Apple Health as your data, or be removed from it.'),
+  removeFailed: t('Could not remove it from Apple Health'),
+} : {
+  name: t('Health Connect'),
+  write: t('Write to Health Connect'),
+  open: t('Open Health Connect'),
+  footer: t('Workouts and weigh-ins go to Health Connect when you finish or change them. openGym reads nothing back.'),
+  denied: t('Health Connect permission not granted'),
+  failed: t('Could not write to Health Connect'),
+  writing: t('Writing to Health Connect'),
+  stop: t('Stop writing to Health Connect?'),
+  stopSub: t('What openGym already wrote can stay in Health Connect as your data, or be removed from it.'),
+  removeFailed: t('Could not remove it from Health Connect'),
+}
+
+function HealthCard({ S, toast, platform }) {
   const [st, setSt] = useState(null)
   const [h, setH] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -1443,11 +1476,24 @@ function HealthConnectCard({ S, toast }) {
     const off = onHealthChange(f => { if (!gone) setH(f) })
     return () => { gone = true; off() }
   }, [])
+  const ios = platform === 'ios'
+  // The Apple Watch app (lib/watch-link.js): asked once, when the card opens on iOS.
+  const [watch, setWatch] = useState(null)
+  useEffect(() => {
+    if (!ios) return undefined
+    let gone = false
+    Promise.all([watchStatus(), loadWatchPref()])
+      .then(([w, f]) => { if (!gone) setWatch({ ...w, useWatch: f.useWatch }) })
+      .catch(() => {})
+    return () => { gone = true }
+  }, [ios])
   if (!st || !h || st.status === 'unsupported') return null
+  if (ios && st.status !== 'available') return null
+  const c = healthCopy(platform)
 
   if (st.status !== 'available') return (
-    <Section title={t('Health Connect')}>
-      <Row icon="heart" iconTint="var(--red)" title={t('Health Connect')}
+    <Section title={c.name}>
+      <Row icon="heart" iconTint="var(--red)" title={c.name}
         subtitle={st.status === 'update'
           ? t('Update Health Connect to share workouts and weigh-ins with other apps.')
           : t('Install Health Connect to share workouts and weigh-ins with other apps.')}
@@ -1461,21 +1507,21 @@ function HealthConnectCard({ S, toast }) {
       const r = await enableHealth(S)
       if (r.health) setH(r.health)
       else setH(await loadHealth())
-      if (r.ok) toast(t('Writing to Health Connect'))
-      else toast(r.reason === 'denied' ? t('Health Connect permission not granted') : t('Could not write to Health Connect'))
-    } catch { toast(t('Could not write to Health Connect')) }
+      if (r.ok) toast(c.writing)
+      else toast(r.reason === 'denied' ? c.denied : c.failed)
+    } catch { toast(c.failed) }
     setBusy(false)
   }
   const turnOff = removeWritten => async () => {
     setBusy(true)
     try { setH(await disableHealth({ removeWritten })) }
-    catch { toast(t('Could not remove it from Health Connect')) }
+    catch { toast(c.removeFailed) }
     setBusy(false)
   }
   // Off can mean two things for what is already there, so it asks; closing the sheet keeps it on.
   const askOff = () => menuSheet({
-    title: t('Stop writing to Health Connect?'),
-    subtitle: t('What openGym already wrote can stay in Health Connect as your data, or be removed from it.'),
+    title: c.stop,
+    subtitle: c.stopSub,
     items: [
       { icon: 'check', label: t('Stop, keep what it wrote'), onClick: turnOff(false) },
       { icon: 'trash', label: t('Stop and remove what it wrote'), danger: true, onClick: turnOff(true) },
@@ -1483,16 +1529,28 @@ function HealthConnectCard({ S, toast }) {
   })
 
   return (
-    <Section title={t('Health Connect')}
-      footer={h.on ? t('Workouts and weigh-ins go to Health Connect when you finish or change them. openGym reads nothing back.') : null}>
-      <Row icon="heart" iconTint="var(--red)" title={t('Write to Health Connect')}
+    <Section title={c.name} footer={h.on ? (ios && h.readHr ? c.footer + ' ' + t('Heart rate is read back for your workouts.') : c.footer) : null}>
+      <Row icon="heart" iconTint="var(--red)" title={c.write}
         subtitle={t('Finished workouts and weigh-ins, from this phone only.')}>
         <Switch checked={!!h.on} disabled={busy} onChange={v => (v ? turnOn() : askOff())} />
       </Row>
       {h.on && h.error === 'permission' && <Row icon="warning" iconTint="var(--orange)"
-        title={t('Permission withdrawn. Tap to allow again')} accessory="chevron" onClick={turnOn} />}
-      {h.on && <Row icon="list" iconTint="var(--blue)" title={t('Open Health Connect')}
-        accessory="chevron" onClick={() => openHealthConnect().catch(() => {})} />}
+        title={t('Permission withdrawn. Tap to allow again')}
+        subtitle={ios ? t('Allow openGym in Health > Sharing > Apps') : undefined}
+        accessory="chevron" onClick={ios ? () => openHealthConnect('health').catch(() => {}) : turnOn} />}
+      {ios && h.on && <Row icon="heart" iconTint="var(--red)" title={t('Read heart rate from Apple Health')}
+        subtitle={t('Heart rate recorded by your Apple Watch during a workout shows on the workout.')}>
+        <Switch checked={!!h.readHr} disabled={busy} onChange={v => setReadHr(v).then(setH).catch(() => {})} />
+      </Row>}
+      {h.on && <Row icon="list" iconTint="var(--blue)" title={c.open}
+        accessory="chevron" onClick={() => openHealthConnect(ios ? 'health' : undefined).catch(() => {})} />}
+      {ios && watch?.paired && <Row icon="stopwatch" iconTint="var(--red)" title={t('Apple Watch')}
+        subtitle={watch.appInstalled
+          ? t('Starts a workout on your watch when you start one here: heart rate live, rest timer on your wrist.')
+          : t('Install openGym on your watch from the Watch app on this iPhone.')}>
+        <Switch checked={watch.appInstalled && !!watch.useWatch} disabled={!watch.appInstalled}
+          onChange={v => setUseWatch(v).then(f => setWatch(w => ({ ...w, useWatch: f.useWatch }))).catch(() => {})} />
+      </Row>}
     </Section>
   )
 }
