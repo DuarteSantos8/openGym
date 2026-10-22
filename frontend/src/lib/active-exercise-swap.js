@@ -1,4 +1,10 @@
 import { supersetUnits, unitOf } from './history.js'
+import { plannedConfigOf } from './session-start.js'
+import { replaceSlotExercise } from './routines.js'
+import { cleanBackups } from './routine-backups.js'
+import { EXIDX } from './exercises.js'
+import { exerciseNameText } from './format.js'
+import { t } from './i18n.js'
 
 function hasLoggedSet(entry) {
   return Array.isArray(entry?.sets) && entry.sets.some(set => set?.done === true)
@@ -45,3 +51,36 @@ export function swapActiveExercise(active, index, replacement, {
   active.cur = insertAt
   return { inserted: true, index: insertAt }
 }
+
+/**
+ * What a slot's planned backup opens with when it takes the slot mid-session (#649): the slot's
+ * own plan — sets, reps or seconds, the rest, the warm-ups, the progression settings — carried
+ * the way the routine editor's Replace carries it (lib/routines.js replaceSlotExercise), so the
+ * weight is the backup's own where it has been logged in this routine, and the bodyweight and
+ * assisted rules apply. Today's target is not the plan: a double-progression aim or a back-off
+ * step moved it off, and the stamps that describe this session of the exercise being left (the
+ * dumbbell meaning, the per-set aims, the back-off step) are not carried (plannedConfigOf).
+ *
+ * The exercise leaving the slot becomes the first backup of the one taking it, so the bench is
+ * one tap away again once it frees up; the list stays within MAX_BACKUPS, and never names the
+ * exercise now in the slot.
+ */
+export function backupSessionConfig(entry, backupId, S) {
+  const { dbLoad: _meaning, rowReps: _aims, backoffStep: _step, ...planned } = plannedConfigOf(entry)
+  const cfg = replaceSlotExercise(planned, backupId, S, entry?.rid)
+  const subs = cleanBackups([entry?.id, ...(Array.isArray(planned.subs) ? planned.subs : [])], backupId)
+  if (subs.length) cfg.subs = subs
+  else delete cfg.subs
+  return cfg
+}
+
+/**
+ * The slot's planned backups as items for the exercise's ⋯ menu, one tap each (#649), shared
+ * by the Cards/List menu (views/Workout.jsx) and the Focus one (views/FocusView.jsx). Only
+ * catalogue exercises, the way the backups sheet lists them; `onSwapToBackup(id)` does the swap
+ * (sheets.jsx swapActiveWorkoutExerciseToBackup). No handler, no items.
+ */
+export const backupMenuItems = (entry, onSwapToBackup, { icon = 'swap', disabled = false } = {}) =>
+  onSwapToBackup ? cleanBackups(entry?.target?.subs, entry?.id, id => !!EXIDX[id]).map(id => ({
+    icon, label: t('Do {0} instead', exerciseNameText(EXIDX[id])), sub: t('Planned backup'), onClick: () => onSwapToBackup(id), disabled,
+  })) : []

@@ -51,7 +51,7 @@ import { refillAfter } from './lib/rotation.js'
 import { isWarmupRow, hasCompletedWork } from './lib/workout-model.js'
 import { saveSessionAsRoutine, routineAdditions, addToRoutine } from './lib/session-routines.js'
 import { repeatSessionEntries } from './lib/session-repeat.js'
-import { swapActiveExercise } from './lib/active-exercise-swap.js'
+import { swapActiveExercise, backupSessionConfig } from './lib/active-exercise-swap.js'
 import { useSheetKeyboard, useRevealActiveChip, tappable } from './lib/use-sheet-keyboard.js'
 import { useAutoMore } from './lib/use-auto-more.js'
 import { isFav, toggleFav, sortFavouritesFirst, sortYoursFirst } from './lib/favourites.js'
@@ -1486,60 +1486,86 @@ export const exercisePicker = (onPick, { title, like, actionIcon, backups } = {}
 
 /** Start a safe swap for one exact active-workout occurrence. */
 export function swapActiveWorkoutExercise(index) {
-  const active = S().active
-  if (!active?.entries?.[index]) return
+  const slot = S().active?.entries?.[index]
+  if (!slot) return
 
   // The "+" on a picker row commits with the default config, exactly as it does in the add
   // flows; tapping the row still opens the config sheet first.
   // Worded for the session, not the routine: a swap changes today's workout only.
-  const picker = exercisePicker((ex, quick) => quick ? swapTo(ex, defaultConfig(ex.id)) : exConfigSheet(ex, null, cfg => swapTo(ex, cfg), null, null, null, null, t('Use in this workout')), { title: t('Swap exercise'), like: active.entries[index].id, backups: active.entries[index].target?.subs })
-  function swapTo(ex, cfg) {
-    // The picker is a chooser here, not a stack you keep adding from: one swap, then back to
-    // the workout. (The add flow deliberately leaves it open.)
-    picker.close()
+  // One of the slot's planned backups (lib/routine-backups.js) takes the slot with the slot's
+  // own plan instead (#649, backupSessionConfig): the "+" commits at those numbers and the sheet
+  // opens on them. Read when picked, not now: a sync can land while the picker is open.
+  const backups = cleanBackups(slot.target?.subs, slot.id, id => !!EXIDX[id])
+  const carriedFor = ex => {
     const st = S()
     const current = st.active?.entries?.[index]
-    if (!current) return
-    // A swap is an in-place substitution — routine identity is unchanged, so the replacement
-    // keeps the slot's own `rid` and reads its prescription from that routine (not a
-    // session-wide one). A slot with no `rid` is freestyle.
-    const slotRoutine = current.rid ? st.routines.find(r => r.id === current.rid) : null
-    // Same rows the add flow builds (buildSessionEntry).
-    const built = buildSessionEntry(st, ex.id, cfg, slotRoutine, current)
-    const replacement = {
-      id: ex.id,
-      ...built,
-      ...(current.rid ? { rid: current.rid } : {}),
-      // A slot kept out of progression stays out once swapped. Replaced in place the entry keeps
-      // it anyway; inserted beside logged sets, the replacement would otherwise count as a
-      // regular session of the new exercise. Only a deload or rehab slot is built without a
-      // prescription (above): one kept out by hand keeps the marker and its Undo on the card,
-      // and an Undo must leave numbers that are right to count.
-      ...(current.noProg === true ? { noProg: true } : {}),
-    }
-
-    const apply = options => {
-      // A timed callback closes over entry/set indexes. Invalidate it, and the current rest,
-      // before the selected occurrence can be replaced or a new entry shifts those indexes.
-      ui().stopWork()
-      ui().stopRest()
-      update(state => { swapActiveExercise(state.active, index, replacement, options) }, true)
-    }
-    const logged = (current.sets || []).some(set => set.done === true)
-    if (!logged) { apply(); return }
-
-    if (current.sg) {
-      swapGroupSheet(groupDisposition => apply({ loggedConfirmed: true, groupDisposition }))
-      return
-    }
-
-    confirmSheet({
-      title: t('Swap exercise?'),
-      message: t('Logged sets stay with the original exercise. The replacement will be inserted afterward.'),
-      confirmText: t('Continue'),
-      onConfirm: () => apply({ loggedConfirmed: true })
-    })
+    return current && backups.includes(ex.id) ? backupSessionConfig(current, ex.id, st) : null
   }
+  const picker = exercisePicker((ex, quick) => {
+    const carried = carriedFor(ex)
+    if (quick) { picker.close(); swapActiveEntryTo(index, ex, carried || defaultConfig(ex.id)); return }
+    exConfigSheet(ex, null, cfg => { picker.close(); swapActiveEntryTo(index, ex, cfg) }, null, null, carried, null, t('Use in this workout'))
+  }, { title: t('Swap exercise'), like: slot.id, backups: slot.target?.subs })
+}
+
+/**
+ * One tap from the exercise's ⋯ menu (#649): a planned backup takes the slot with the slot's
+ * plan (backupSessionConfig). Only an id the slot lists, and the same confirmation as any swap
+ * once sets are logged; a toast says what happened, since no sheet did.
+ */
+export function swapActiveWorkoutExerciseToBackup(index, id) {
+  const st = S()
+  const current = st.active?.entries?.[index]
+  const ex = EXIDX[id]
+  if (!current || !ex || !cleanBackups(current.target?.subs, current.id, x => !!EXIDX[x]).includes(id)) return
+  swapActiveEntryTo(index, ex, backupSessionConfig(current, id, st), { toast: true })
+}
+
+/** The swap itself: `ex` with `cfg` into the slot at `index`, the way the picker commits one. */
+function swapActiveEntryTo(index, ex, cfg, { toast = false } = {}) {
+  const st = S()
+  const current = st.active?.entries?.[index]
+  if (!current) return
+  // A swap is an in-place substitution — routine identity is unchanged, so the replacement
+  // keeps the slot's own `rid` and reads its prescription from that routine (not a
+  // session-wide one). A slot with no `rid` is freestyle.
+  const slotRoutine = current.rid ? st.routines.find(r => r.id === current.rid) : null
+  // Same rows the add flow builds (buildSessionEntry).
+  const built = buildSessionEntry(st, ex.id, cfg, slotRoutine, current)
+  const replacement = {
+    id: ex.id,
+    ...built,
+    ...(current.rid ? { rid: current.rid } : {}),
+    // A slot kept out of progression stays out once swapped. Replaced in place the entry keeps
+    // it anyway; inserted beside logged sets, the replacement would otherwise count as a
+    // regular session of the new exercise. Only a deload or rehab slot is built without a
+    // prescription (above): one kept out by hand keeps the marker and its Undo on the card,
+    // and an Undo must leave numbers that are right to count.
+    ...(current.noProg === true ? { noProg: true } : {}),
+  }
+
+  const apply = options => {
+    // A timed callback closes over entry/set indexes. Invalidate it, and the current rest,
+    // before the selected occurrence can be replaced or a new entry shifts those indexes.
+    ui().stopWork()
+    ui().stopRest()
+    update(state => { swapActiveExercise(state.active, index, replacement, options) }, true)
+    if (toast) ui().toast(t('Replaced with “{0}”', exerciseNameText(ex)))
+  }
+  const logged = (current.sets || []).some(set => set.done === true)
+  if (!logged) { apply(); return }
+
+  if (current.sg) {
+    swapGroupSheet(groupDisposition => apply({ loggedConfirmed: true, groupDisposition }))
+    return
+  }
+
+  confirmSheet({
+    title: t('Swap exercise?'),
+    message: t('Logged sets stay with the original exercise. The replacement will be inserted afterward.'),
+    confirmText: t('Continue'),
+    onConfirm: () => apply({ loggedConfirmed: true })
+  })
 }
 
 /** A logged superset member being swapped: the replacement stays in the group or goes after it. */
