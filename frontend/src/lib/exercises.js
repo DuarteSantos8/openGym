@@ -203,6 +203,18 @@ export const isVideoSrc = src => /\.(mp4|webm)(\?|$)/i.test(src || '')
 // Cardio exercises log time + speed instead of weight × reps.
 export const isCardio = idOrEx => (typeof idOrEx === 'string' ? EXIDX[idOrEx] : idOrEx)?.bp === 'cardio'
 
+// Exercises done one arm or leg at a time, by their catalogue name: "single leg", "one arm",
+// "single-arm", "unilateral". Stretches and rollers are mobility, not sets, and a single-leg
+// push-up or plank is a two-arm exercise with a leg lifted. Like `isBodyweightEq`, this only seeds
+// a fresh config (`side: true`); the flag lives on the config, so either way can be switched.
+const ONE_LIMB = /\b(single|one)[\s-]+(arm|leg|hand)\b|\bunilateral\b/i
+const NOT_ONE_LIMB = /stretch|\broll(er|ball)?\b|two to one|single leg (push|plank)|leg push up/i
+export const isOneLimb = idOrEx => {
+  const ex = typeof idOrEx === 'string' ? EXIDX[idOrEx] : idOrEx
+  if (!ex || ex.custom || ex.bp === 'cardio') return false
+  return ONE_LIMB.test(ex.n || '') && !NOT_ONE_LIMB.test(ex.n || '')
+}
+
 // Exercises the dataset already knows carry no external load (issue #32) — a quarter of the
 // catalogue. This seeds the `bw` flag on a fresh config so a push-up never asks for a weight
 // nobody was going to enter. It is only the default: the flag lives on the config, so a dip
