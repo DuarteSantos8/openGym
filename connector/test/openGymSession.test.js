@@ -5,6 +5,7 @@ import crypto from 'node:crypto'
 import vm from 'node:vm'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import { createServer } from '../src/server.js'
 import {
   establishSession, connect, sealBearer, openBearer, sameOrigin, HandoffError,
 } from '../src/openGymSession.js'
@@ -193,12 +194,12 @@ test('the key must be exactly 32 bytes', () => {
 })
 
 // ---- connect(): what the browser is allowed to see -----------------------------------------
-test('connect stores the bearer sealed and returns only a connection id', async () => {
+test('connect stores the bearer sealed under the caller-bound connection id', async () => {
   const store = new Map()
-  const out = await connect(COOKIE, { ...opts(), key: KEY, store })
-  assert.deepEqual(Object.keys(out), ['connectionId'])
-  assert.match(out.connectionId, /^[A-Za-z0-9_-]{20,}$/)
-  const rec = store.get(out.connectionId)
+  const expectedConnectionId = 'caller-bound-connection-id'
+  const out = await connect(COOKIE, { ...opts(), key: KEY, store, expectedConnectionId })
+  assert.deepEqual(out, { connectionId: expectedConnectionId })
+  const rec = store.get(expectedConnectionId)
   assert.equal(rec.userId, 'uid1')
   assert.equal(openBearer(rec.sealed, KEY, 'uid1'), BEARER)
   const everything = JSON.stringify(out) + JSON.stringify(rec)
@@ -207,13 +208,21 @@ test('connect stores the bearer sealed and returns only a connection id', async 
 
 test('connect stores nothing when the handoff fails', async () => {
   const store = new Map()
-  await assert.rejects(() => connect(COOKIE, { ...opts({ loginUserId: 'uid2' }), key: KEY, store }), e => e.code === 'mismatch')
-  await assert.rejects(() => connect(COOKIE, { ...opts(), key: crypto.randomBytes(5), store }), /32/)
+  const expectedConnectionId = 'caller-bound-connection-id'
+  await assert.rejects(() => connect(COOKIE, { ...opts({ loginUserId: 'uid2' }), key: KEY, store, expectedConnectionId }), e => e.code === 'mismatch')
+  await assert.rejects(() => connect(COOKIE, { ...opts(), key: crypto.randomBytes(5), store, expectedConnectionId }), /32/)
   assert.equal(store.size, 0)
 })
 
+test('connect rejects missing or non-string caller ID before spending a pairing code', async () => {
+  for (const expectedConnectionId of [undefined, null, 7, {}, '']) {
+    await assert.rejects(() => connect(COOKIE, { ...opts(), key: KEY, store: new Map(), expectedConnectionId }), /connection id/i)
+  }
+  assert.deepEqual(routes(), [])
+})
+
 test('connect checks the key before it spends a pairing code', async () => {
-  await assert.rejects(() => connect(COOKIE, { ...opts(), key: undefined, store: new Map() }), /32/)
+  await assert.rejects(() => connect(COOKIE, { ...opts(), key: undefined, store: new Map(), expectedConnectionId: 'caller-bound-connection-id' }), /32/)
   assert.deepEqual(routes(), [])
 })
 
@@ -239,6 +248,27 @@ test('connect.html is static: no account data, no templating, never handles pair
   assert.match(pageSrc, /\/api\/login\/verify/)
   assert.ok(!/<script[^>]+src=/i.test(pageSrc), 'no external scripts')
   assert.match(pageSrc, /Content-Security-Policy/)
+  assert.ok(!/connectionId/i.test(pageSrc))
+  assert.match(pageSrc, /say\('Connected\.'\)/)
+  assert.match(pageSrc, /say\('Could not connect\.'\)/)
+  assert.ok(!/say\([^)]*connectionId/.test(pageSrc))
+})
+
+test('served connector HTML contains neither a connection ID nor dynamic account values', async () => {
+  const server = createServer({ origin: 'https://gym.areum.cl', prefix: '/connector' })
+  await new Promise(r => server.listen(0, '127.0.0.1', r))
+  try {
+    const res = await fetch(`http://127.0.0.1:${server.address().port}/connector/connect`)
+    assert.equal(res.status, 200)
+    assert.match(res.headers.get('content-type'), /^text\/html/)
+    const html = await res.text()
+    assert.ok(!html.includes('connectionId'), 'the page never reads or displays a connection ID')
+    assert.ok(!html.includes('caller-bound-connection-id'))
+    assert.ok(!html.includes(BEARER))
+    assert.ok(!html.includes(CODE))
+    assert.ok(!html.includes('uid1'))
+    assert.ok(!html.includes('Ana'))
+  } finally { await new Promise(r => server.close(r)) }
 })
 
 test('connect.html uses the same passkey conversion as frontend/src/lib/api.js', () => {

@@ -111,12 +111,12 @@ export function openBearer(sealed, key, userId) {
   return Buffer.concat([d.update(enc), d.final()]).toString('utf8')
 }
 
-export async function connect(cookieJar, { apiBase, loginUserId, key, store } = {}) {
+export async function connect(cookieJar, { apiBase, loginUserId, expectedConnectionId, key, store } = {}) {
+  if (typeof expectedConnectionId !== 'string' || !expectedConnectionId) throw new TypeError('connection id required')
   assertKey(key)
   const { user, bearer } = await establishSession(cookieJar, { apiBase, loginUserId })
-  const connectionId = crypto.randomBytes(18).toString('base64url')
-  store.set(connectionId, { userId: user.id, sealed: sealBearer(bearer, key, user.id) })
-  return { connectionId }
+  store.set(expectedConnectionId, { userId: user.id, sealed: sealBearer(bearer, key, user.id) })
+  return { connectionId: expectedConnectionId }
 }
 
 export function sameOrigin(headers, origin) {

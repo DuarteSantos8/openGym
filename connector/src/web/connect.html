@@ -54,7 +54,7 @@ async function onGo() {
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ cid, credential: credToJSON(cred) }),
   })
-  if (!verified.ok) { say('Sign-in failed.'); return }
+  if (!verified.ok) { say('Could not connect.'); return }
   const { user } = await verified.json()
   const next = await fetch('/connector/connect', {
     method: 'POST', credentials: 'same-origin', redirect: 'error',
@@ -62,8 +62,7 @@ async function onGo() {
     body: JSON.stringify({ userId: user && user.id }),
   })
   if (!next.ok) { say('Could not connect.'); return }
-  const { connectionId } = await next.json()
-  say(connectionId ? 'Connected. Keep this tab — Claude will finish from here.' : 'Could not connect.')
+  say('Connected.')
 }
 
 document.getElementById('go').addEventListener('click', () => onGo().catch(() => say('Could not connect.')))
