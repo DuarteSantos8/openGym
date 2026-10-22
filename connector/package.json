@@ -1,0 +1,12 @@
+{
+  "name": "opengym-connector",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Remote MCP connector for openGym: OAuth-protected Streamable HTTP endpoint for Claude.",
+  "license": "AGPL-3.0-or-later",
+  "main": "src/server.js",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  }
+}
