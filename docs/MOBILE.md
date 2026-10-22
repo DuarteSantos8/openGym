@@ -218,6 +218,44 @@ Worth checking on a real device after changes here: turning it on shows Health C
 permission screen; a finished workout appears in Health Connect within a few seconds; deleting it
 in openGym removes it there; turning it off with "remove" leaves no openGym record behind.
 
+### Apple Health (iOS)
+
+Settings > **Apple Health** is the same card on the iOS app, writing to Apple Health through
+HealthKit. Everything above about what is written, when, the fingerprints in `opengym-health.json`
+and turning it off holds unchanged: `src/lib/health-sync.js` drives both, and only the native plugin
+differs (`ios/App/App/HealthKitPlugin.swift`, the five methods of `HealthConnectPlugin.java` plus
+`readHeartRate`).
+
+- **What is written:** each finished workout as an `HKWorkout` (strength training, walking,
+  running, cycling, elliptical, stair climbing or "other", from the same session type as on
+  Android), with openGym as the brand and the title and the sets as metadata, since HealthKit has
+  no notes field. Each weigh-in as a body mass sample in kilograms.
+- **No duplicates.** Every object carries openGym's id as `HKMetadataKeyExternalUUID`. HealthKit has
+  no replace-by-id, so writing a record again deletes what this app saved under that id first. An
+  object with that id from another source (a future watch app) is left alone and not written over.
+- **Permissions:** writing workouts and body mass; reading workouts and body mass (without read
+  access a query only returns this app's own objects, so a watch-saved workout could not be
+  recognised) and heart rate (asked now so turning on the heart-rate switch does not ask again). HealthKit
+  never tells an app whether writing was denied, so
+  the card cannot know up front; a denial shows as a refused write, and the row then points to
+  Health > Sharing > Apps, the only place to allow it again.
+- **Heart rate:** with the second switch on (`readHr` in `opengym-health.json`, off by default),
+  the heart rate Health holds for a finished workout's window, from the Apple Watch or any other
+  source, is read back 8 and 30 seconds after Finish, at launch and on return to the foreground,
+  and kept on the workout as `w.hr` (average, peak, low and at most 240 points,
+  `src/lib/heart-rate.js`). It shows on the finish summary, in the workout's detail sheet and in
+  Copy as text, and syncs like the rest of the workout; Android and the web never set it.
+- **Where it shows:** every iPhone has Health; there is nothing to install. On an iPad without
+  Health data the card is not shown.
+- **Project setup:** `App/App.entitlements` carries the HealthKit capability (set as
+  `CODE_SIGN_ENTITLEMENTS` for both configurations), and `Info.plist` has
+  `NSHealthShareUsageDescription` and `NSHealthUpdateUsageDescription`. The signing team's App ID
+  needs HealthKit enabled.
+
+Worth checking on a real device after changes here: turning it on shows Health's permission
+sheet; a finished workout appears in Health > Browse > Activity > Workouts; deleting it in openGym
+removes it there; turning it off with "remove" leaves no openGym object behind.
+
 ## Prerequisites
 
 - Node 20+

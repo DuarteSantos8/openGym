@@ -1,29 +1,42 @@
-// Health Connect on the Android app (#200): turning it on, and keeping it in step with the log.
-// What gets written is worked out in lib/health-connect.js; this file owns the native plugin
-// (HealthConnectPlugin.java) and the phone's own record of what it wrote.
+// Health Connect on the Android app (#200), Apple Health on the iOS app: turning it on, and
+// keeping it in step with the log. What gets written is worked out in lib/health-connect.js; this
+// file owns the native plugin (HealthConnectPlugin.java, HealthKitPlugin.swift: one method
+// contract) and the phone's own record of what it wrote.
 //
 // It is a fact about this phone, not about the training log: kept in its own file in the app's
 // data directory, never in S, so it does not sync to a server, ride in a backup, or switch on a
 // second phone. Off until the user turns it on; nothing is asked of Health Connect before that.
 //
-// The web build never gets here (MOBILE is a build-time flag), and iOS answers 'unsupported'.
-import { MOBILE, isAndroid, readJsonFile, writeJsonFile } from './mobile.js'
+// The web build never gets here (MOBILE is a build-time flag).
+//
+// HealthKit hides whether the user allowed writing: on iOS `granted` only says the request was
+// made, and a denial shows up as a refused write ('permission').
+import { MOBILE, isAndroid, isIOS, readJsonFile, writeJsonFile } from './mobile.js'
 import { healthRecords, planSync, writtenIds } from './health-connect.js'
 import { exerciseNameFor } from './i18n-core.js'
 import { EXIDX } from './exercises.js'
 import { speedUnitOf } from './speed.js'
+import { hrSummary } from './heart-rate.js'
 
 export const HEALTH_FILE = 'opengym-health.json'
-const OFF = { on: false, written: {}, at: 0, error: null }
+const OFF = { on: false, written: {}, at: 0, error: null, readHr: false }
 
 // Wrapped in an object, as in rest-alert.js: a Capacitor plugin proxy answers `then`, so a
 // promise resolved with the bare proxy never settles.
 let pluginP = null
 const plugin = () => pluginP || (pluginP = (async () => {
-  if (!(await isAndroid())) return null
+  const name = (await isAndroid()) ? 'HealthConnect' : (await isIOS()) ? 'HealthKit' : null
+  if (!name) return null
   const { registerPlugin } = await import('@capacitor/core')
-  return { HC: registerPlugin('HealthConnect') }
+  return { HC: registerPlugin(name) }
 })().catch(() => null))
+
+/** The store this phone writes to, as the Settings card names it. */
+export async function healthPlatformName() {
+  if (await isAndroid()) return 'Health Connect'
+  if (await isIOS()) return 'Apple Health'
+  return null
+}
 
 // The file's content, read once and then kept here: a save while it is off (the usual case) must
 // not cost a file read, and every change to it goes through saveHealth anyway.
@@ -46,10 +59,14 @@ export async function healthStatus() {
   } catch { return { status: 'unsupported', granted: false } }
 }
 
-/** Health Connect's own screen for what apps wrote, or its store page where it is missing. */
-export async function openHealthConnect() {
+/**
+ * Health Connect's own screen for what apps wrote, or its store page where it is missing. On iOS
+ * the app's page in Settings (there is no public link to Health's own sharing screen), or with
+ * 'health' the Health app itself.
+ */
+export async function openHealthConnect(target) {
   const p = await plugin()
-  if (p) await p.HC.openSettings()
+  if (p) await p.HC.openSettings(target ? { target } : {})
 }
 
 const nameOf = e => (EXIDX[e.id] ? exerciseNameFor(EXIDX[e.id]) : (e.n || e.id))
@@ -166,7 +183,7 @@ export async function disableHealth({ removeWritten = false } = {}) {
 // Back in the foreground: a change synced from another device while the phone was away, or a
 // permission the user granted again in Health Connect's own settings, is picked up then.
 let started = false
-export function initHealthSync(getState) {
+export function initHealthSync(getState, onLaunch) {
   if (!MOBILE || started) return
   started = true
   import('@capacitor/app').then(({ App }) => {
@@ -174,5 +191,30 @@ export function initHealthSync(getState) {
   }).catch(() => {})
   // Once at launch, for a workout finished just before the app was closed. Reading the file here
   // also settles whether it is on, which the saves wait for (syncHealth).
-  setTimeout(() => loadHealth().then(() => syncHealth(getState())).catch(() => {}), 3000)
+  // Heart rate for a workout finished just before is read back then too (onLaunch).
+  setTimeout(() => loadHealth().then(() => { Promise.resolve(onLaunch?.()).catch(() => {}); return syncHealth(getState()) }).catch(() => {}), 3000)
+}
+
+/** Whether heart rate is read back from Apple Health for finished workouts. */
+export async function setReadHr(on) {
+  const out = { ...(await loadHealth()), readHr: !!on }
+  await saveHealth(out)
+  told(out)
+  return out
+}
+
+/**
+ * The heart rate Apple Health holds for the workout's window, as its w.hr summary (lib/heart-rate.js).
+ * Null when it is off, on Android (Health Connect is write-only here), or when the read fails.
+ */
+export async function fetchHeartRate(w) {
+  if (!MOBILE || !w?.start || !w?.end) return null
+  try {
+    const h = await loadHealth()
+    if (!h.on || !h.readHr || !(await isIOS())) return null
+    const p = await plugin()
+    if (!p) return null
+    const r = await p.HC.readHeartRate({ start: w.start, end: w.end })
+    return hrSummary(r?.samples, w.start, w.end)
+  } catch { return null }
 }

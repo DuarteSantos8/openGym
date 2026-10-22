@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- **Apple Health on iPhone.** The iOS app can write finished workouts and weigh-ins to Apple
+  Health, like the Android app does with Health Connect: Settings > Apple Health, off until you
+  turn it on, this phone only, and turning it off asks whether to keep or remove what it wrote.
+- **Heart rate from your Apple Watch.** With Settings > Apple Health > Read heart rate on, a
+  workout finished on the iPhone shows the heart rate your watch recorded during it: average and
+  peak on the finish screen, a small graph in the workout's details, and a line in Copy as text.
+
 ## v1.4.1 (2026-10-10)
 
 Bug fixes for v1.4.0, mostly the things you told us about on Discord and GitHub.

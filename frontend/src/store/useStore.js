@@ -7,10 +7,11 @@ import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { rememberDefaultLang } from '../lib/default-lang.js'
 import { guestAllowed } from '../lib/guest.js'
 import { MOBILE, initReminderSync, nativeLoad, nativeSave, onAppActive, readJsonFile, syncReminder, writeAutoBackup, writeJsonFile } from '../lib/mobile.js'
-import { initHealthSync, syncHealth } from '../lib/health-sync.js'
+import { fetchHeartRate, initHealthSync, syncHealth } from '../lib/health-sync.js'
+import { betterHr } from '../lib/heart-rate.js'
 import { refillIfComplete } from '../lib/rotation.js'
 import { liftLegacy } from '../lib/sync-legacy.js'
-import { mergeStates, localExtras, stampChange, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
+import { mergeStates, localExtras, stampChange, stampWorkout, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
 import { convertStateUnit } from '../lib/units.js'
 import { pendingRefCount, settleMedia, loadPending } from '../lib/media-owed.js'
 import { referencedHashes } from '../lib/media-refs.js'
@@ -473,7 +474,7 @@ export const useStore = create((set, get) => {
   }
 
   initReminderSync(() => get().S)
-  initHealthSync(() => get().S)
+  initHealthSync(() => get().S, () => get().refreshLastHeartRate())
 
   // Mobile build: the file mirror, and beside it whose copy it is and which one (its `_ts`) —
   // restoreFromMirror takes the file back only for that account, and only while the two agree,
@@ -660,7 +661,7 @@ export const useStore = create((set, get) => {
   window.addEventListener('focus', () => checkRev())
   window.addEventListener('pageshow', e => { if (e.persisted) checkRev() })
   window.addEventListener('online', () => checkRev(true))   // also retries a push that failed offline
-  onAppActive(() => checkRev())
+  onAppActive(() => { checkRev(); get().refreshLastHeartRate().catch(() => {}) })
   schedulePoll()
 
   // Both copies changed: keep both sides' entries, let the newer copy decide the rest
@@ -1316,6 +1317,28 @@ export const useStore = create((set, get) => {
     coachLocal: null,
     async setCoachLocal(patch) {
       set({ coachLocal: coachDeviceSettings(await saveCoachDevice(patch)) })
+    },
+
+    // Heart rate from Apple Health for a finished workout (iOS, when turned on): kept only when the
+    // fetch brings more samples than the workout has, since the watch's land in Health late.
+    async attachHeartRate(id) {
+      const w = get().S.workouts?.find(x => x.id === id)
+      if (!w) return
+      const hr = await fetchHeartRate(w)
+      const now = get().S.workouts?.find(x => x.id === id)
+      if (!hr || !now || betterHr(now.hr, hr) !== hr) return
+      get().update(s => {
+        const x = s.workouts.find(y => y.id === id)
+        if (x) { x.hr = hr; stampWorkout(x) }
+      })
+    },
+    // At launch and back in the foreground: the last workout of the past day still without one.
+    refreshLastHeartRate() {
+      const since = Date.now() - 24 * 3600000
+      const last = (get().S.workouts || [])
+        .filter(w => w.end > since && !w.hr)
+        .reduce((a, w) => (!a || w.end > a.end ? w : a), null)
+      return last ? get().attachHeartRate(last.id) : Promise.resolve()
     },
 
     // Mutate a draft of S via producer fn, then persist + schedule sync. Every routine the change

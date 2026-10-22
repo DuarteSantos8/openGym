@@ -46,6 +46,11 @@ describe('workoutText', () => {
     ].join('\n'))
   })
 
+  it('adds the heart rate Apple Health had for it to the facts line', () => {
+    const hr = { avg: 132, max: 171, min: 80, n: 3, s: [] }
+    expect(workoutText({ ...w, hr }, { unit: 'kg', nameOf }).split('\n')[1]).toBe('58 min · 1,790 kg · Body weight 80 kg · 132 avg · 171 max')
+  })
+
   it('leaves out what was not trained and what was never recorded', () => {
     const bare = { d: '2026-09-03', start: 5, end: 5, name: 'Legs', entries: [
       { id: 'bench', target: { mode: 'reps' }, sets: [{ w: 40, r: 8, done: true, phase: 'warmup' }] },
