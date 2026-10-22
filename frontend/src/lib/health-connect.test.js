@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { healthRecords, planSync, recordKey, sessionRecord, sessionType, SESSION_TYPES, TEXT_MAX, weightRecord, writtenIds } from './health-connect.js'
+import { HK_ACTIVITY, healthRecords, planSync, recordKey, sessionRecord, sessionType, SESSION_TYPES, TEXT_MAX, weightRecord, writtenIds } from './health-connect.js'
 
 // #200: what the Android app writes to Health Connect, worked out from the state alone.
 const nameOf = e => ({ '0025': 'barbell bench press', '3666': 'walking on incline treadmill', '2138': 'stationary bike run v. 3' })[e.id] || e.id
@@ -137,5 +137,20 @@ describe('writtenIds', () => {
   it('lists what this phone wrote, by type', () => {
     expect(writtenIds({ a: { k: 'session', h: '1' }, b: { k: 'weight', h: '2' }, c: { k: 'other' } }))
       .toEqual({ sessions: ['a'], weights: ['b'] })
+  })
+})
+
+describe('HK_ACTIVITY', () => {
+  it('gives every session type the HealthKit activity the iOS side writes', () => {
+    expect(HK_ACTIVITY).toEqual({
+      strength_training: 'traditionalStrengthTraining',
+      walking: 'walking',
+      running: 'running',
+      biking_stationary: 'cycling',
+      elliptical: 'elliptical',
+      stair_climbing_machine: 'stairClimbing',
+      other_workout: 'other',
+    })
+    expect(Object.keys(HK_ACTIVITY).sort()).toEqual([...SESSION_TYPES].sort())
   })
 })

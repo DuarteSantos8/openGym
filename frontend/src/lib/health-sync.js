@@ -1,13 +1,17 @@
-// Health Connect on the Android app (#200): turning it on, and keeping it in step with the log.
-// What gets written is worked out in lib/health-connect.js; this file owns the native plugin
-// (HealthConnectPlugin.java) and the phone's own record of what it wrote.
+// Health Connect on the Android app (#200), Apple Health on the iOS app: turning it on, and
+// keeping it in step with the log. What gets written is worked out in lib/health-connect.js; this
+// file owns the native plugin (HealthConnectPlugin.java, HealthKitPlugin.swift: one method
+// contract) and the phone's own record of what it wrote.
 //
 // It is a fact about this phone, not about the training log: kept in its own file in the app's
 // data directory, never in S, so it does not sync to a server, ride in a backup, or switch on a
 // second phone. Off until the user turns it on; nothing is asked of Health Connect before that.
 //
-// The web build never gets here (MOBILE is a build-time flag), and iOS answers 'unsupported'.
-import { MOBILE, isAndroid, readJsonFile, writeJsonFile } from './mobile.js'
+// The web build never gets here (MOBILE is a build-time flag).
+//
+// HealthKit hides whether the user allowed writing: on iOS `granted` only says the request was
+// made, and a denial shows up as a refused write ('permission').
+import { MOBILE, isAndroid, isIOS, readJsonFile, writeJsonFile } from './mobile.js'
 import { healthRecords, planSync, writtenIds } from './health-connect.js'
 import { exerciseNameFor } from './i18n-core.js'
 import { EXIDX } from './exercises.js'
@@ -20,10 +24,18 @@ const OFF = { on: false, written: {}, at: 0, error: null }
 // promise resolved with the bare proxy never settles.
 let pluginP = null
 const plugin = () => pluginP || (pluginP = (async () => {
-  if (!(await isAndroid())) return null
+  const name = (await isAndroid()) ? 'HealthConnect' : (await isIOS()) ? 'HealthKit' : null
+  if (!name) return null
   const { registerPlugin } = await import('@capacitor/core')
-  return { HC: registerPlugin('HealthConnect') }
+  return { HC: registerPlugin(name) }
 })().catch(() => null))
+
+/** The store this phone writes to, as the Settings card names it. */
+export async function healthPlatformName() {
+  if (await isAndroid()) return 'Health Connect'
+  if (await isIOS()) return 'Apple Health'
+  return null
+}
 
 // The file's content, read once and then kept here: a save while it is off (the usual case) must
 // not cost a file read, and every change to it goes through saveHealth anyway.
@@ -46,10 +58,14 @@ export async function healthStatus() {
   } catch { return { status: 'unsupported', granted: false } }
 }
 
-/** Health Connect's own screen for what apps wrote, or its store page where it is missing. */
-export async function openHealthConnect() {
+/**
+ * Health Connect's own screen for what apps wrote, or its store page where it is missing. On iOS
+ * the app's page in Settings (there is no public link to Health's own sharing screen), or with
+ * 'health' the Health app itself.
+ */
+export async function openHealthConnect(target) {
   const p = await plugin()
-  if (p) await p.HC.openSettings()
+  if (p) await p.HC.openSettings(target ? { target } : {})
 }
 
 const nameOf = e => (EXIDX[e.id] ? exerciseNameFor(EXIDX[e.id]) : (e.n || e.id))

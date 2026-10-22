@@ -40,7 +40,7 @@ vi.mock('../lib/push.js', () => ({ pushSupported: () => false, enablePush: vi.fn
 vi.mock('../lib/wakelock.js', () => ({ wakeLockSupported: () => false }))
 vi.mock('../lib/mobile.js', () => ({
   get MOBILE() { return mocks.MOBILE },
-  isAndroid: () => Promise.resolve(false), shareExport: vi.fn(), syncReminder: vi.fn(),
+  isAndroid: () => Promise.resolve(false), isIOS: () => Promise.resolve(false), shareExport: vi.fn(), syncReminder: vi.fn(),
 }))
 vi.mock('./MobileOnboarding.jsx', () => ({ ConnectSheet: () => null }))
 vi.mock('../sheets.jsx', () => ({
