@@ -1434,6 +1434,7 @@ body.chips-dragging *{cursor:inherit}
   display:inline-flex;align-items:center;gap:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 #timer .lbl .icn{font-size:10px;flex:none;opacity:.8}
+#timer .lbl .hr-ready{color:var(--red);font-weight:600;background:color-mix(in srgb,var(--red) 16%,transparent);border-radius:6px;padding:0 5px;overflow:hidden;text-overflow:ellipsis}
 #timer .acts{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex:1 1 auto;min-width:0}
 #timer .acts .btn{padding-top:11px;padding-bottom:11px}   /* sweaty hands, mid-set */
 #timer .acts .adj{padding-inline:9px;gap:2px}

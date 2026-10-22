@@ -45,7 +45,7 @@ vi.mock('../lib/wakelock.js', () => ({ wakeLockSupported: () => false }))
 // MOBILE is read at render time through a getter so one module mock serves both builds.
 vi.mock('../lib/mobile.js', () => ({
   get MOBILE() { return mocks.MOBILE },
-  isAndroid: () => Promise.resolve(mocks.android),
+  isAndroid: () => Promise.resolve(mocks.android), isIOS: () => Promise.resolve(false),
   shareExport: vi.fn(), syncReminder: vi.fn(),
 }))
 vi.mock('../lib/update.js', () => ({

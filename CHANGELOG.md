@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased
+
+- **Apple Health on iPhone.** The iOS app can write finished workouts and weigh-ins to Apple
+  Health, like the Android app does with Health Connect: Settings > Apple Health, off until you
+  turn it on, this phone only, and turning it off asks whether to keep or remove what it wrote.
+- **Heart rate from your Apple Watch.** With Settings > Apple Health > Read heart rate on, a
+  workout finished on the iPhone shows the heart rate your watch recorded during it: average and
+  peak on the finish screen, a small graph in the workout's details, and a line in Copy as text.
+- **openGym on Apple Watch.** Starting a workout on the iPhone starts one on your watch: live
+  heart rate in the workout header, the rest timer on your wrist with a tap at 10 seconds, +15 s
+  and Skip, and one workout with its heart rate saved to Health. Settings > Apple Health >
+  Apple Watch turns it off.
+- **Rest by heart rate.** With the Apple Watch app, Settings > Apple Health > Rest by heart rate
+  says when you are ready for the next set: once your heart rate is back under your target
+  (110 bpm by default, or taken from your last workout) and at least 45 s have passed, the rest
+  bar shows ♥ Ready and the watch turns green with a tap. The timer still runs as the limit.
+- **Log sets from your Apple Watch.** Swipe up on the watch for the set you are on: load and
+  reps on two dials you turn with the Digital Crown, and Completed logs it on the iPhone, starts
+  the rest and moves on to the next set. Timed and cardio sets stay on the phone.
+
 ## v1.4.1 (2026-10-10)
 
 Bug fixes for v1.4.0, mostly the things you told us about on Discord and GitHub.

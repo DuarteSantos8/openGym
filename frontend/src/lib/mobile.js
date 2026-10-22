@@ -33,6 +33,17 @@ export async function isAndroid() {
   }
 }
 
+// The iOS shell, for what only exists there (HealthKit instead of Health Connect).
+export async function isIOS() {
+  if (!MOBILE) return false
+  try {
+    const { Capacitor } = await import('@capacitor/core')
+    return Capacitor.getPlatform() === 'ios'
+  } catch (e) {
+    return false
+  }
+}
+
 const FILE = 'opengym-state.json'
 
 export async function nativeLoad() {

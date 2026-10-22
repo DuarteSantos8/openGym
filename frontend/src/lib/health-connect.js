@@ -26,6 +26,17 @@ const CARDIO_TYPES = {
   '2311': 'stair_climbing_machine',
 }
 export const SESSION_TYPES = ['strength_training', 'walking', 'running', 'biking_stationary', 'elliptical', 'stair_climbing_machine', 'other_workout']
+// The same types as HealthKit activities, for the iOS app (HealthKitPlugin.swift maps each name to
+// its HKWorkoutActivityType). The records stay as they are; only the native side differs.
+export const HK_ACTIVITY = {
+  strength_training: 'traditionalStrengthTraining',
+  walking: 'walking',
+  running: 'running',
+  biking_stationary: 'cycling',
+  elliptical: 'elliptical',
+  stair_climbing_machine: 'stairClimbing',
+  other_workout: 'other',
+}
 
 export function sessionType(w) {
   const done = (w?.entries || []).filter(e => (e.sets || []).some(hasCompletedWork))

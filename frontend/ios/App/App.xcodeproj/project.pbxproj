@@ -7,34 +7,107 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		146803DF8F844BA55440B41A /* WorkoutSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E54965BDD56AB28D493146 /* WorkoutSessionManager.swift */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
+		459F5BD54CD4D5D30A383561 /* PhoneMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E9AB7CCFF7798993CBAC4DA /* PhoneMessage.swift */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
-		AA0000000000000000000002 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000001 /* SceneDelegate.swift */; };
 		504EC30D1FED79650016851F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30B1FED79650016851F /* Main.storyboard */; };
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		52E44F45B09492872566A0C8 /* ConnectivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F250D1DEBC72E99B3DF52FC2 /* ConnectivityManager.swift */; };
+		641A527C4B618072010D6A5C /* EndedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F4550B3D3F6C9B604F8CFF0 /* EndedView.swift */; };
+		654EE3012A6BC9C637FED7A4 /* OpenGymWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 6110B79F7462816A3FAB52BA /* OpenGymWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		6DAD8CB9339AD874153A733B /* OpenGymWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97F15F5BEB3208C7EA78BE34 /* OpenGymWatchApp.swift */; };
+		7CCBF6A337F9B8DE8EFF41CA /* ActiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C262493F6988873ABABC9C3 /* ActiveView.swift */; };
+		851820D7E7A87CD68A21752E /* RestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CEAC25E6EB0165CE175408A /* RestView.swift */; };
+		94DC089812B4057F442A5900 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E9D921A750166787E649317B /* Assets.xcassets */; };
+		963BCE480F303EFFC111AF71 /* SessionStore+Rest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACC75596889A4B7E67EC017 /* SessionStore+Rest.swift */; };
+		9668D1CD541AA27D2DD4378A /* WatchAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82A07C36CD213E53D3FAF838 /* WatchAppDelegate.swift */; };
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
+		AA0000000000000000000002 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000001 /* SceneDelegate.swift */; };
 		AA0100000000000000000002 /* PrintPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0100000000000000000001 /* PrintPlugin.swift */; };
 		AA0100000000000000000004 /* PrintPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = AA0100000000000000000003 /* PrintPlugin.m */; };
+		AA0100000000000000000006 /* BridgeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0100000000000000000005 /* BridgeViewController.swift */; };
+		AA0100000000000000000008 /* HealthKitPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0100000000000000000007 /* HealthKitPlugin.swift */; };
+		AA010000000000000000000A /* HealthKitPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = AA0100000000000000000009 /* HealthKitPlugin.m */; };
+		AA010000000000000000000D /* WatchLinkPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA010000000000000000000C /* WatchLinkPlugin.swift */; };
+		AA010000000000000000000F /* WatchLinkPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = AA010000000000000000000E /* WatchLinkPlugin.m */; };
+		BB0700000000000000000002 /* SessionStore+Set.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0700000000000000000001 /* SessionStore+Set.swift */; };
+		BB0700000000000000000004 /* SetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0700000000000000000003 /* SetView.swift */; };
+		BB0700000000000000000006 /* DialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0700000000000000000005 /* DialView.swift */; };
+		C5367BC470CD3205DE4DC11D /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94262A0728AA9011E3D3B332 /* SessionStore.swift */; };
+		C9799D934FC8F0825DCA38E2 /* BuildStamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 685D23740A7FBB47E495C41A /* BuildStamp.swift */; };
+		E6684CB9C3B086268EAC0382 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B8DA33CD4455EB5201AD5C8 /* RootView.swift */; };
+		ECFBBE66D6FC5DB5E8BDF12F /* IdleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17260DBD247C23973D4C2C77 /* IdleView.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		9212EBCDEDF56183FD7EE8BA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0F8FCA60A707D969B480827D;
+			remoteInfo = OpenGymWatch;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8E8579FD3A365CEB98CAE0F8 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				654EE3012A6BC9C637FED7A4 /* OpenGymWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		17260DBD247C23973D4C2C77 /* IdleView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IdleView.swift; sourceTree = "<group>"; };
+		2F4550B3D3F6C9B604F8CFF0 /* EndedView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EndedView.swift; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
+		47E54965BDD56AB28D493146 /* WorkoutSessionManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutSessionManager.swift; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		AA0000000000000000000001 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		AA0100000000000000000001 /* PrintPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintPlugin.swift; sourceTree = "<group>"; };
-		AA0100000000000000000003 /* PrintPlugin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PrintPlugin.m; sourceTree = "<group>"; };
 		504EC30C1FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		504EC30E1FED79650016851F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
+		5ACC75596889A4B7E67EC017 /* SessionStore+Rest.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "SessionStore+Rest.swift"; sourceTree = "<group>"; };
+		5B8DA33CD4455EB5201AD5C8 /* RootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		6110B79F7462816A3FAB52BA /* OpenGymWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenGymWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		685D23740A7FBB47E495C41A /* BuildStamp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BuildStamp.swift; sourceTree = "<group>"; };
+		6CEAC25E6EB0165CE175408A /* RestView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RestView.swift; sourceTree = "<group>"; };
+		76432007F41D7168B5E196C9 /* OpenGymWatch.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = OpenGymWatch.entitlements; sourceTree = "<group>"; };
+		7C262493F6988873ABABC9C3 /* ActiveView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ActiveView.swift; sourceTree = "<group>"; };
+		7E9AB7CCFF7798993CBAC4DA /* PhoneMessage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PhoneMessage.swift; sourceTree = "<group>"; };
+		82A07C36CD213E53D3FAF838 /* WatchAppDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchAppDelegate.swift; sourceTree = "<group>"; };
+		94262A0728AA9011E3D3B332 /* SessionStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
+		97F15F5BEB3208C7EA78BE34 /* OpenGymWatchApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OpenGymWatchApp.swift; sourceTree = "<group>"; };
+		AA0000000000000000000001 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		AA0100000000000000000001 /* PrintPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintPlugin.swift; sourceTree = "<group>"; };
+		AA0100000000000000000003 /* PrintPlugin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PrintPlugin.m; sourceTree = "<group>"; };
+		AA0100000000000000000005 /* BridgeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BridgeViewController.swift; sourceTree = "<group>"; };
+		AA0100000000000000000007 /* HealthKitPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitPlugin.swift; sourceTree = "<group>"; };
+		AA0100000000000000000009 /* HealthKitPlugin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HealthKitPlugin.m; sourceTree = "<group>"; };
+		AA010000000000000000000B /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
+		AA010000000000000000000C /* WatchLinkPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchLinkPlugin.swift; sourceTree = "<group>"; };
+		AA010000000000000000000E /* WatchLinkPlugin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WatchLinkPlugin.m; sourceTree = "<group>"; };
 		AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.release.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig"; sourceTree = "<group>"; };
+		BB0700000000000000000001 /* SessionStore+Set.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "SessionStore+Set.swift"; sourceTree = "<group>"; };
+		BB0700000000000000000003 /* SetView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SetView.swift; sourceTree = "<group>"; };
+		BB0700000000000000000005 /* DialView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DialView.swift; sourceTree = "<group>"; };
+		CDF7675CDA68D0F711153D94 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E9D921A750166787E649317B /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F250D1DEBC72E99B3DF52FC2 /* ConnectivityManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConnectivityManager.swift; sourceTree = "<group>"; };
 		FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -44,6 +117,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B9FEFA3C6F2AA5B96C041ECA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -58,6 +138,22 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		3C772A0AC6C029848D98966B /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				7C262493F6988873ABABC9C3 /* ActiveView.swift */,
+				2F4550B3D3F6C9B604F8CFF0 /* EndedView.swift */,
+				17260DBD247C23973D4C2C77 /* IdleView.swift */,
+				6CEAC25E6EB0165CE175408A /* RestView.swift */,
+				BB0700000000000000000005 /* DialView.swift */,
+				BB0700000000000000000003 /* SetView.swift */,
+				5B8DA33CD4455EB5201AD5C8 /* RootView.swift */,
+				685D23740A7FBB47E495C41A /* BuildStamp.swift */,
+			);
+			name = Views;
+			path = Views;
+			sourceTree = "<group>";
+		};
 		504EC2FB1FED79650016851F = {
 			isa = PBXGroup;
 			children = (
@@ -65,6 +161,7 @@
 				504EC3051FED79650016851F /* Products */,
 				7F8756D8B27F46E3366F6CEA /* Pods */,
 				27E2DDA53C4D2A4D1A88CE4A /* Frameworks */,
+				675A322739853252AE5C7C2E /* OpenGymWatch */,
 			);
 			sourceTree = "<group>";
 		};
@@ -72,6 +169,7 @@
 			isa = PBXGroup;
 			children = (
 				504EC3041FED79650016851F /* App.app */,
+				6110B79F7462816A3FAB52BA /* OpenGymWatch.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -84,6 +182,12 @@
 				AA0000000000000000000001 /* SceneDelegate.swift */,
 				AA0100000000000000000001 /* PrintPlugin.swift */,
 				AA0100000000000000000003 /* PrintPlugin.m */,
+				AA0100000000000000000005 /* BridgeViewController.swift */,
+				AA0100000000000000000007 /* HealthKitPlugin.swift */,
+				AA0100000000000000000009 /* HealthKitPlugin.m */,
+				AA010000000000000000000C /* WatchLinkPlugin.swift */,
+				AA010000000000000000000E /* WatchLinkPlugin.m */,
+				AA010000000000000000000B /* App.entitlements */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
 				504EC3101FED79650016851F /* LaunchScreen.storyboard */,
@@ -92,6 +196,26 @@
 				50B271D01FEDC1A000F3C39B /* public */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		675A322739853252AE5C7C2E /* OpenGymWatch */ = {
+			isa = PBXGroup;
+			children = (
+				F250D1DEBC72E99B3DF52FC2 /* ConnectivityManager.swift */,
+				97F15F5BEB3208C7EA78BE34 /* OpenGymWatchApp.swift */,
+				7E9AB7CCFF7798993CBAC4DA /* PhoneMessage.swift */,
+				5ACC75596889A4B7E67EC017 /* SessionStore+Rest.swift */,
+				BB0700000000000000000001 /* SessionStore+Set.swift */,
+				94262A0728AA9011E3D3B332 /* SessionStore.swift */,
+				3C772A0AC6C029848D98966B /* Views */,
+				82A07C36CD213E53D3FAF838 /* WatchAppDelegate.swift */,
+				47E54965BDD56AB28D493146 /* WorkoutSessionManager.swift */,
+				E9D921A750166787E649317B /* Assets.xcassets */,
+				CDF7675CDA68D0F711153D94 /* Info.plist */,
+				76432007F41D7168B5E196C9 /* OpenGymWatch.entitlements */,
+			);
+			name = OpenGymWatch;
+			path = OpenGymWatch;
 			sourceTree = "<group>";
 		};
 		7F8756D8B27F46E3366F6CEA /* Pods */ = {
@@ -106,6 +230,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		0F8FCA60A707D969B480827D /* OpenGymWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E16CE7006C39831E86CC7C3E /* Build configuration list for PBXNativeTarget "OpenGymWatch" */;
+			buildPhases = (
+				6C88F5C916EE52B0ED853B4C /* Sources */,
+				B9FEFA3C6F2AA5B96C041ECA /* Frameworks */,
+				5666ECFB70B5FA35A8F670F6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OpenGymWatch;
+			productName = OpenGymWatch;
+			productReference = 6110B79F7462816A3FAB52BA /* OpenGymWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
 		504EC3031FED79650016851F /* App */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 504EC3161FED79650016851F /* Build configuration list for PBXNativeTarget "App" */;
@@ -115,10 +256,12 @@
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
 				9592DBEFFC6D2A0C8D5DEB22 /* [CP] Embed Pods Frameworks */,
+				8E8579FD3A365CEB98CAE0F8 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				D6CC1FE3D11F0F478336539D /* PBXTargetDependency */,
 			);
 			name = App;
 			productName = App;
@@ -134,6 +277,10 @@
 				LastSwiftUpdateCheck = 920;
 				LastUpgradeCheck = 920;
 				TargetAttributes = {
+					0F8FCA60A707D969B480827D = {
+						CreatedOnToolsVersion = 16.0;
+						ProvisioningStyle = Automatic;
+					};
 					504EC3031FED79650016851F = {
 						CreatedOnToolsVersion = 9.2;
 						LastSwiftMigration = 1100;
@@ -150,13 +297,12 @@
 				Base,
 			);
 			mainGroup = 504EC2FB1FED79650016851F;
-			packageReferences = (
-			);
 			productRefGroup = 504EC3051FED79650016851F /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				504EC3031FED79650016851F /* App */,
+				0F8FCA60A707D969B480827D /* OpenGymWatch */,
 			);
 		};
 /* End PBXProject section */
@@ -172,6 +318,14 @@
 				50379B232058CBB4000EE86E /* capacitor.config.json in Resources */,
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5666ECFB70B5FA35A8F670F6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				94DC089812B4057F442A5900 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -222,10 +376,47 @@
 				AA0000000000000000000002 /* SceneDelegate.swift in Sources */,
 				AA0100000000000000000002 /* PrintPlugin.swift in Sources */,
 				AA0100000000000000000004 /* PrintPlugin.m in Sources */,
+				AA0100000000000000000006 /* BridgeViewController.swift in Sources */,
+				AA0100000000000000000008 /* HealthKitPlugin.swift in Sources */,
+				AA010000000000000000000A /* HealthKitPlugin.m in Sources */,
+				AA010000000000000000000D /* WatchLinkPlugin.swift in Sources */,
+				AA010000000000000000000F /* WatchLinkPlugin.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C88F5C916EE52B0ED853B4C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				52E44F45B09492872566A0C8 /* ConnectivityManager.swift in Sources */,
+				6DAD8CB9339AD874153A733B /* OpenGymWatchApp.swift in Sources */,
+				459F5BD54CD4D5D30A383561 /* PhoneMessage.swift in Sources */,
+				963BCE480F303EFFC111AF71 /* SessionStore+Rest.swift in Sources */,
+				BB0700000000000000000002 /* SessionStore+Set.swift in Sources */,
+				C5367BC470CD3205DE4DC11D /* SessionStore.swift in Sources */,
+				7CCBF6A337F9B8DE8EFF41CA /* ActiveView.swift in Sources */,
+				641A527C4B618072010D6A5C /* EndedView.swift in Sources */,
+				ECFBBE66D6FC5DB5E8BDF12F /* IdleView.swift in Sources */,
+				851820D7E7A87CD68A21752E /* RestView.swift in Sources */,
+				BB0700000000000000000006 /* DialView.swift in Sources */,
+				BB0700000000000000000004 /* SetView.swift in Sources */,
+				E6684CB9C3B086268EAC0382 /* RootView.swift in Sources */,
+				9668D1CD541AA27D2DD4378A /* WatchAppDelegate.swift in Sources */,
+				146803DF8F844BA55440B41A /* WorkoutSessionManager.swift in Sources */,
+				C9799D934FC8F0825DCA38E2 /* BuildStamp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D6CC1FE3D11F0F478336539D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = OpenGymWatch;
+			target = 0F8FCA60A707D969B480827D /* OpenGymWatch */;
+			targetProxy = 9212EBCDEDF56183FD7EE8BA /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		504EC30B1FED79650016851F /* Main.storyboard */ = {
@@ -359,6 +550,7 @@
 			baseConfigurationReference = FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = App/Info.plist;
@@ -379,6 +571,7 @@
 			baseConfigurationReference = AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = App/Info.plist;
@@ -392,6 +585,73 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
+		};
+		549F83F4F1BE8D91DE49D223 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = OpenGymWatch/OpenGymWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = OpenGymWatch/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = openGym;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "openGym reads heart rate recorded during your workouts.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "openGym writes your finished workouts and weigh-ins to Health.";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = ch.duartesantos.opengym;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ch.duartesantos.opengym.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Release;
+		};
+		983C64D0ACF1D9E82B4DA4A5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = OpenGymWatch/OpenGymWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = OpenGymWatch/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = openGym;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "openGym reads heart rate recorded during your workouts.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "openGym writes your finished workouts and weigh-ins to Health.";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = ch.duartesantos.opengym;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ch.duartesantos.opengym.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Debug;
 		};
 /* End XCBuildConfiguration section */
 
@@ -410,6 +670,15 @@
 			buildConfigurations = (
 				504EC3171FED79650016851F /* Debug */,
 				504EC3181FED79650016851F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E16CE7006C39831E86CC7C3E /* Build configuration list for PBXNativeTarget "OpenGymWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				549F83F4F1BE8D91DE49D223 /* Release */,
+				983C64D0ACF1D9E82B4DA4A5 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

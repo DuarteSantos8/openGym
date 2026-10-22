@@ -7,10 +7,14 @@ import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { rememberDefaultLang } from '../lib/default-lang.js'
 import { guestAllowed } from '../lib/guest.js'
 import { MOBILE, initReminderSync, nativeLoad, nativeSave, onAppActive, readJsonFile, syncReminder, writeAutoBackup, writeJsonFile } from '../lib/mobile.js'
-import { initHealthSync, syncHealth } from '../lib/health-sync.js'
+import { fetchHeartRate, initHealthSync, syncHealth } from '../lib/health-sync.js'
+import { betterHr } from '../lib/heart-rate.js'
+import { initWatchLink, watchSet } from '../lib/watch-link.js'
+import { currentSetFor } from '../lib/watch-set.js'
+import { applySetDone, afterSetDone } from '../lib/set-done.js'
 import { refillIfComplete } from '../lib/rotation.js'
 import { liftLegacy } from '../lib/sync-legacy.js'
-import { mergeStates, localExtras, stampChange, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
+import { mergeStates, localExtras, stampChange, stampWorkout, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
 import { convertStateUnit } from '../lib/units.js'
 import { pendingRefCount, settleMedia, loadPending } from '../lib/media-owed.js'
 import { referencedHashes } from '../lib/media-refs.js'
@@ -133,6 +137,8 @@ export const DEF = {
   // keeps the column it had. See effortOf.
   // nudge/tone: the missed-workout nudge (lib/nudge.js), opt-in, rides on the reminder.
   reminder: { on: false, time: '08:00', tz: null, nudge: false, tone: 'friendly' }, effort: null, autoBackup: false,
+  // Rest by heart rate (lib/hr-readiness.js, the Apple Watch app): read through hrReadyOf, never raw.
+  hrReady: { on: false, bpm: 110, floorSec: 45 },
   // Equipment profiles (issue: filter Library/picker/routines by what you actually own —
   // e.g. "Home" vs "Gym" — building on the session-only equipment filter from issue #6).
   equipProfiles: [], activeEquipId: null, equipFilterOn: false,
@@ -473,7 +479,21 @@ export const useStore = create((set, get) => {
   }
 
   initReminderSync(() => get().S)
-  initHealthSync(() => get().S)
+  initHealthSync(() => get().S, () => get().refreshLastHeartRate())
+  // The watch app: its saved workout carries the heart rate, read back at once; one it could not
+  // save is the Health export's to write after all; its +15 s and Skip work the phone's timer;
+  // its Completed logs the set here, and a session it starts gets the current set at once.
+  initWatchLink({
+    getState: () => get().S,
+    onSetDone: ev => { get().logWatchSet(ev).catch(() => {}) },
+    onRunning: () => sendWatchSet(true),
+    onEnded: id => get().attachHeartRate(id).catch(() => {}),
+    onFailed: () => syncHealth(get().S).catch(() => {}),
+    onRestAction: action => import('./useUI.js').then(({ useUI }) => {
+      if (action === 'add15') useUI.getState().addRest(15)
+      else if (action === 'skip') useUI.getState().stopRest()
+    }).catch(() => {}),
+  })
 
   // Mobile build: the file mirror, and beside it whose copy it is and which one (its `_ts`) —
   // restoreFromMirror takes the file back only for that account, and only while the two agree,
@@ -660,7 +680,7 @@ export const useStore = create((set, get) => {
   window.addEventListener('focus', () => checkRev())
   window.addEventListener('pageshow', e => { if (e.persisted) checkRev() })
   window.addEventListener('online', () => checkRev(true))   // also retries a push that failed offline
-  onAppActive(() => checkRev())
+  onAppActive(() => { checkRev(); get().refreshLastHeartRate().catch(() => {}) })
   schedulePoll()
 
   // Both copies changed: keep both sides' entries, let the newer copy decide the rest
@@ -1316,6 +1336,49 @@ export const useStore = create((set, get) => {
     coachLocal: null,
     async setCoachLocal(patch) {
       set({ coachLocal: coachDeviceSettings(await saveCoachDevice(patch)) })
+    },
+
+    // A set ticked on the watch (Completed), through the same flow as a tick on the workout screen
+    // (lib/set-done.js). The phone stays the record: a set from another workout, one already done,
+    // or one that moved since the watch saw it changes nothing, and the watch is sent what is
+    // current instead. True when it was logged.
+    async logWatchSet(ev) {
+      const { useUI } = await import('./useUI.js')
+      const A = get().S.active
+      if (!A || A.backfill || A.editingWorkoutId || ev?.id == null || String(A.id) !== String(ev.id)) return false
+      const { idx, i } = ev
+      const e = A.entries?.[idx]
+      const set = e?.sets?.[i]
+      if (!set || String(e.id) !== String(ev.entryId) || set.done) { sendWatchSet(true); return false }
+      const load = v => (Number.isFinite(v) && v >= 0 ? v : undefined)
+      const at = Number(ev.at) > 0 ? Number(ev.at) : Date.now()
+      let result = null
+      get().update(s => { result = applySetDone(s, idx, i, { at, w: load(ev.w), r: load(ev.r) }) })
+      afterSetDone({ get, update: get().update, useUI, S: get().S, idx, i, result })
+      useUI.getState().toast(t('Set logged from your watch'))
+      return true
+    },
+
+    // Heart rate from Apple Health for a finished workout (iOS, when turned on): kept only when the
+    // fetch brings more samples than the workout has, since the watch's land in Health late.
+    async attachHeartRate(id) {
+      const w = get().S.workouts?.find(x => x.id === id)
+      if (!w) return
+      const hr = await fetchHeartRate(w)
+      const now = get().S.workouts?.find(x => x.id === id)
+      if (!hr || !now || betterHr(now.hr, hr) !== hr) return
+      get().update(s => {
+        const x = s.workouts.find(y => y.id === id)
+        if (x) { x.hr = hr; stampWorkout(x) }
+      })
+    },
+    // At launch and back in the foreground: the last workout of the past day still without one.
+    refreshLastHeartRate() {
+      const since = Date.now() - 24 * 3600000
+      const last = (get().S.workouts || [])
+        .filter(w => w.end > since && !w.hr)
+        .reduce((a, w) => (!a || w.end > a.end ? w : a), null)
+      return last ? get().attachHeartRate(last.id) : Promise.resolve()
     },
 
     // Mutate a draft of S via producer fn, then persist + schedule sync. Every routine the change
@@ -1979,5 +2042,24 @@ export const useStore = create((set, get) => {
     }
   }
 })
+
+// The watch's current set (lib/watch-set.js) follows every change to the active workout: a tick,
+// an edit, a reorder, the finish. Sent again only when it changed, unless `force`.
+let watchSetTm = null
+let watchSetSent
+function sendWatchSet(force = false) {
+  const payload = currentSetFor(useStore.getState().S)
+  const key = JSON.stringify(payload)
+  if (!force && key === watchSetSent) return
+  watchSet(payload).then(ok => { if (ok) watchSetSent = key }).catch(() => {})
+}
+export function followWatchSet(delay = 300) {
+  return useStore.subscribe((st, prev) => {
+    if (st.S?.active === prev.S?.active) return
+    clearTimeout(watchSetTm)
+    watchSetTm = setTimeout(() => sendWatchSet(), delay)
+  })
+}
+if (MOBILE) followWatchSet()
 
 export { hasData }
