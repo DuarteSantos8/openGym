@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; connect-src 'self'; style-src 'unsafe-inline'">
+<title>Connect Claude</title>
+<style>
+  body { font: 16px/1.4 system-ui, sans-serif; margin: 2rem; }
+  button { font: inherit; padding: .4rem .8rem; }
+</style>
+</head>
+<body>
+<p>Sign in with your openGym passkey to connect Claude.</p>
+<button id="go" type="button">Connect</button>
+<p id="out"></p>
+<script>
+const bufToB64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+const b64uToBuf = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)).buffer
+
+function toRequestOptions(o) {
+  o.challenge = b64uToBuf(o.challenge)
+  ;(o.allowCredentials || []).forEach(c => { c.id = b64uToBuf(c.id) })
+  return o
+}
+function credToJSON(cred) {
+  const r = cred.response
+  const out = {
+    id: cred.id, rawId: bufToB64u(cred.rawId), type: cred.type,
+    clientExtensionResults: cred.getClientExtensionResults ? cred.getClientExtensionResults() : {},
+    authenticatorAttachment: cred.authenticatorAttachment || null,
+    response: { clientDataJSON: bufToB64u(r.clientDataJSON) }
+  }
+  if (r.attestationObject) {
+    out.response.attestationObject = bufToB64u(r.attestationObject)
+    out.response.transports = r.getTransports ? r.getTransports() : ['internal']
+  }
+  if (r.authenticatorData) {
+    out.response.authenticatorData = bufToB64u(r.authenticatorData)
+    out.response.signature = bufToB64u(r.signature)
+    out.response.userHandle = r.userHandle ? bufToB64u(r.userHandle) : null
+  }
+  return out
+}
+
+function say(t) { document.getElementById('out').textContent = t }
+
+async function onGo() {
+  say('')
+  const { cid, options } = await (await fetch('/api/login/options', { method: 'POST', body: '{}', credentials: 'same-origin' })).json()
+  const cred = await navigator.credentials.get({ publicKey: toRequestOptions(options) })
+  const verified = await fetch('/api/login/verify', {
+    method: 'POST', credentials: 'same-origin',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ cid, credential: credToJSON(cred) }),
+  })
+  if (!verified.ok) { say('Sign-in failed.'); return }
+  const { user } = await verified.json()
+  const next = await fetch('/connector/connect', {
+    method: 'POST', credentials: 'same-origin', redirect: 'error',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ userId: user && user.id }),
+  })
+  if (!next.ok) { say('Could not connect.'); return }
+  const { connectionId } = await next.json()
+  say(connectionId ? 'Connected. Keep this tab — Claude will finish from here.' : 'Could not connect.')
+}
+
+document.getElementById('go').addEventListener('click', () => onGo().catch(() => say('Could not connect.')))
+</script>
+</body>
+</html>
