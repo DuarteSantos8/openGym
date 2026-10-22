@@ -16,7 +16,7 @@ managed by your NixOS configuration. This document covers both.
 | --- | --- |
 | `packages.opengym-frontend` | The React/Vite PWA, built with `buildNpmPackage`. Static files land in `$out/share/opengym`, with the exercise stills and animations from `catalogue/media` in `exercise-media/` next to them. |
 | `packages.opengym-api` | The Node.js API (`node server.js`, wrapped as `bin/opengym-api`). |
-| `packages.opengym-mcp` | The read-only MCP server for LLM clients (`bin/opengym-mcp`). |
+| `packages.opengym-mcp` | The MCP server for LLM clients (`bin/opengym-mcp`): read tools, plus `log_workout` once paired (`mcp/README.md`). |
 | `packages.default` | Alias for `opengym-frontend`. |
 | `apps.opengym` | Runs the **full local stack** — API + frontend (exercise media included) behind a throwaway Caddy (`nix run .#opengym`, default `http://localhost:8080`). |
 | `apps.default` | Alias for `opengym`. |
@@ -405,7 +405,7 @@ old `/var/lib/opengym/media` directory is no longer used and can be deleted.
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `mcp.enable` | `bool` | `false` | Run the read-only MCP server as a systemd service (reads the same `dataDir`). Off unless you point an LLM client at it. |
+| `mcp.enable` | `bool` | `false` | Run the MCP server as a systemd service (reads the same `dataDir`; its one write tool goes through the api). Off unless you point an LLM client at it. |
 | `mcp.uid` | `string \| null` | `null` | The openGym user ID (from `db.json` `"users"[].id`) the MCP server serves. Leave unset to auto-pick when exactly one user exists; with multiple users it must be set (the server otherwise exits listing them). |
 
 ### Option → environment mapping

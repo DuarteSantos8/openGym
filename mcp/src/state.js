@@ -5,6 +5,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 const DATA_DIR = process.env.OPENGYM_DATA || path.join(process.cwd(), 'data')
+// Whether a data directory was asked for, as opposed to the ./data guess.
+const DATA_SET = !!process.env.OPENGYM_DATA
 
 // null = no state file (brand-new account); undefined = not yet loaded.
 let _state = undefined
@@ -144,6 +146,27 @@ export function getUser() {
 }
 
 export const dataDir = () => DATA_DIR
+
+// The profile this server is set up for, which log_workout holds a token against: OPENGYM_UID
+// when it is given, whether or not its data is readable here, else the one the data directory
+// names. null only when nothing names one: no OPENGYM_UID, no OPENGYM_DATA and no ./data, the
+// remote-server setup. A data directory that was asked for and cannot be read, or that holds
+// several profiles, throws: a broken mount is no licence to write to whichever profile the token is.
+export function localUid() {
+  if (_uid !== null) return _uid
+  const envUid = (process.env.OPENGYM_UID || '').trim()
+  if (envUid) return envUid
+  if (!DATA_SET && !fs.existsSync(DATA_DIR)) return null
+  init()
+  return _uid
+}
+
+// Drop the cached state, so the next read sees a write log_workout just made without waiting for
+// the watcher. Only meaningful when this data directory is the one the server writes.
+export function invalidate() {
+  _state = undefined
+  _loadedMtime = 0
+}
 
 // Test-only: work against a passed-in state, not the disk.
 export function _seedStateForTests(state) {

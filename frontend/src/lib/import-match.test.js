@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { matchExercise, matchHevyTitle, parseWorkoutCSV, detectSource } from './import-csv.js'
+import { matchExercise, matchHevyTitle, parseWorkoutCSV, detectSource, exerciseCandidates } from './import-csv.js'
 import { EXIDX } from './exercises.js'
 
 // The names other apps actually export, and the catalogue entry each has to land on.
@@ -141,5 +141,28 @@ describe('Hevy CSV uses the generated title map', () => {
     const pull = parsed.workouts[0].entries.find(e => e.id === '2616')
     expect(pull.sets[0]).toMatchObject({ w: 25, r: 15, phase: 'warmup' })
     expect(pull.sets[1]).toMatchObject({ w: 52, r: 12, rpe: 8 })
+  })
+})
+
+describe('exerciseCandidates: what a name could mean, for a caller that must not guess', () => {
+  it('a curated alias or a unique exact name is the answer', () => {
+    expect(exerciseCandidates('dumbbell curl')).toEqual({ id: '0294', candidates: [], kind: 'alias' })
+    expect(exerciseCandidates('Bench Press (Barbell)')).toEqual({ id: '0025', candidates: [], kind: 'alias' })
+  })
+  it('an exact name the catalogue spells twice is every entry, not the first (matchExercise keeps the first)', () => {
+    expect(exerciseCandidates('lever chest press')).toEqual({ id: null, candidates: ['0576', '0577'], kind: 'exact' })
+    expect(matchExercise('lever chest press')).toBe('0576')
+  })
+  it('several equally near entries are candidates, the closest first', () => {
+    const r = exerciseCandidates('plank')
+    expect(r).toMatchObject({ id: null, kind: 'near' })
+    expect(r.candidates.length).toBeGreaterThan(1)
+    expect(r.candidates.every(id => EXIDX[id].n.includes('plank'))).toBe(true)
+  })
+  it('nothing near: the entries sharing the most words, at most the limit; nothing at all for no words', () => {
+    const r = exerciseCandidates('zercher frobnicate curl', 3)
+    expect(r).toMatchObject({ id: null, kind: 'none' })
+    expect(r.candidates.length).toBeLessThanOrEqual(3)
+    expect(exerciseCandidates('  ')).toMatchObject({ id: null, candidates: [] })
   })
 })

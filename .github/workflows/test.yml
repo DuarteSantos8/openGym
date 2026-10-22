@@ -74,9 +74,16 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: mcp/package-lock.json
+          cache-dependency-path: |
+            mcp/package-lock.json
+            api/package-lock.json
       - run: npm ci
         working-directory: mcp
+      # log_workout's end-to-end test drives the real api/server.js, so the api's own
+      # dependencies are here too (same install as the api job). Without them that test fails
+      # under CI rather than skipping, so a green run means it ran.
+      - run: npm ci --omit=optional
+        working-directory: api
       - run: npm test
         working-directory: mcp
       # The one check the vitest suite structurally cannot make. The MCP server is a bare node
