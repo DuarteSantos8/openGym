@@ -39,8 +39,10 @@ function freshState() {
 
 // Pin "today" before building state so dayPlan/week alignment matches the assertions below.
 // `toFake: ['Date']` only — keeps fs.watch and the rest of the event loop real.
+// Local noon, not UTC noon: the demo seed's evening check reads local hours, and UTC noon is
+// already evening east of UTC+6 (#732).
 beforeAll(() => {
-  vi.useFakeTimers({ now: new Date(FAKE_TODAY_ISO + 'T12:00:00Z'), toFake: ['Date'] })
+  vi.useFakeTimers({ now: new Date(FAKE_TODAY_ISO + 'T12:00:00'), toFake: ['Date'] })
   S = freshState()
   _seedStateForTests(S)
 })
@@ -267,7 +269,7 @@ describe('get_week_plan', () => {
     expect(after.today_routine_id).toBeNull()
     expect(after.today_routine_name).toBeNull()
     // The override is surfaced on the matching weekday entry.
-    const todayWd = new Date(FAKE_TODAY_ISO + 'T12:00:00Z').getDay()
+    const todayWd = new Date(FAKE_TODAY_ISO + 'T12:00:00').getDay()
     expect(after.weekdays.find(d => d.weekday === todayWd).override_for_today_or_null).toBe('rest')
   })
 
@@ -892,7 +894,7 @@ describe('muscle_balance', () => {
   describe('the reported cutoff is a local date, like every other date in this API', () => {
     const TZ = process.env.TZ
     beforeAll(() => { process.env.TZ = 'Asia/Tokyo'; vi.setSystemTime(new Date('2026-07-27T08:00:00')) })
-    afterAll(() => { process.env.TZ = TZ; vi.setSystemTime(new Date(FAKE_TODAY_ISO + 'T12:00:00Z')) })
+    afterAll(() => { process.env.TZ = TZ; vi.setSystemTime(new Date(FAKE_TODAY_ISO + 'T12:00:00')) })
 
     // Workouts imported without a clock (no w.start) fall back to their date at local noon, so
     // they are the probe for which calendar dates the window really accepts.
@@ -961,7 +963,7 @@ describe('shared: no-state fallback', () => {
 // beats the confirmed working weight, which beats the routine's own number — because getting
 // it backwards is how a coach ends up telling someone to squat a weight the app never shows.
 describe('preview_session', () => {
-  const WD = new Date(FAKE_TODAY_ISO + 'T12:00:00Z').getDay()
+  const WD = new Date(FAKE_TODAY_ISO + 'T12:00:00').getDay()
 
   // One routine, one exercise, scheduled for the pinned "today". Nothing from the demo seed,
   // so the arithmetic below is checkable by hand.
