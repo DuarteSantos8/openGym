@@ -82,7 +82,10 @@ export function mediaLimits(env = process.env) {
 // `workouts: true`: this server keeps the files a logged workout's `media` names (its GC walks
 // workouts[].media), so a signed-in client may offer attaching them. A server from before says
 // nothing, and the client offers them on custom exercises only.
-export const mediaConfig = l => ({ imageMB: l.imageMB, gifMB: l.gifMB, videoMB: l.videoMB, videoSec: l.videoSec, quotaMB: l.quotaMB, workouts: true });
+// `days: true`: it keeps the files of progress photos filed under a day (`dayPhotos`, a photo for
+// a day without a workout, #557) too. An older server would sweep those, so the app files a photo
+// under a day only where this says so.
+export const mediaConfig = l => ({ imageMB: l.imageMB, gifMB: l.gifMB, videoMB: l.videoMB, videoSec: l.videoSec, quotaMB: l.quotaMB, workouts: true, days: true });
 
 /* ---------------------------------------------------------------- errors */
 
@@ -300,6 +303,9 @@ export function referencedHashes(state) {
     if (!isObj(w) || !Array.isArray(w.media)) continue;
     for (const m of w.media) if (isObj(m)) ref(m);
   }
+  // Progress photos filed under a day rather than a workout (frontend lib/day-photos.js):
+  // dayPhotos[<hash>] = { d, m, _ts }, a cleared one only { _ts }.
+  if (isObj(state.dayPhotos)) for (const e of Object.values(state.dayPhotos)) if (isObj(e) && isObj(e.m)) ref(e.m);
   return out;
 }
 

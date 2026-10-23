@@ -15,6 +15,8 @@ map $request_uri $api_request_uri {
 
 server {
     listen ${NGINX_PORT};
+    # No nginx version in the Server header or on its own error pages.
+    server_tokens off;
     root /usr/share/nginx/html;
     index index.html;
     # Every redirect nginx sends (the unknown-path one below, and /api to /api/) carries a
@@ -24,13 +26,14 @@ server {
 
     # Sent on every response below. NOTE: an `add_header` inside a location replaces the whole
     # inherited set rather than adding to it, so the two locations further down that set their
-    # own Cache-Control have to repeat these three. Deliberately not a full Content-Security-
-    # Policy: only frame-ancestors, which no part of the app depends on. TLS, HSTS and any
-    # stricter policy stay the reverse proxy's job (see SECURITY.md).
+    # own Cache-Control have to repeat these. The Content-Security-Policy is CONTENT_SECURITY_POLICY
+    # (default in web/Dockerfile): scripts only from this origin plus the one inline script in
+    # index.html, by its hash, so an injected <script> or handler does not run. TLS and HSTS stay
+    # the reverse proxy's job (see SECURITY.md).
     add_header X-Frame-Options "DENY" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header Referrer-Policy "same-origin" always;
-    add_header Content-Security-Policy "frame-ancestors 'none'" always;
+    add_header Content-Security-Policy "${CONTENT_SECURITY_POLICY}" always;
 
     # API → backend container.
     # `^~` so this prefix beats the regex locations below: without it a request for a path such
@@ -139,7 +142,7 @@ server {
         add_header X-Frame-Options "DENY" always;
         add_header X-Content-Type-Options "nosniff" always;
         add_header Referrer-Policy "same-origin" always;
-        add_header Content-Security-Policy "frame-ancestors 'none'" always;
+        add_header Content-Security-Policy "${CONTENT_SECURITY_POLICY}" always;
     }
 
     # The exercise stills and animations, licensed from Gym visual for openGym only (NOTICE.md).
@@ -154,7 +157,7 @@ server {
         add_header X-Frame-Options "DENY" always;
         add_header X-Content-Type-Options "nosniff" always;
         add_header Referrer-Policy "same-origin" always;
-        add_header Content-Security-Policy "frame-ancestors 'none'" always;
+        add_header Content-Security-Policy "${CONTENT_SECURITY_POLICY}" always;
         location ~* \.(png|jpg|jpeg|gif|webp|avif|mp4)$ {
             rewrite ^\Q${BASE_PATH}\E/(.*)$ /$1 break;
             add_header Cache-Control "public, max-age=2592000, immutable";
@@ -162,7 +165,7 @@ server {
             add_header X-Frame-Options "DENY" always;
             add_header X-Content-Type-Options "nosniff" always;
             add_header Referrer-Policy "same-origin" always;
-            add_header Content-Security-Policy "frame-ancestors 'none'" always;
+            add_header Content-Security-Policy "${CONTENT_SECURITY_POLICY}" always;
         }
     }
 
@@ -177,7 +180,7 @@ server {
         add_header X-Frame-Options "DENY" always;
         add_header X-Content-Type-Options "nosniff" always;
         add_header Referrer-Policy "same-origin" always;
-        add_header Content-Security-Policy "frame-ancestors 'none'" always;
+        add_header Content-Security-Policy "${CONTENT_SECURITY_POLICY}" always;
     }
 
     gzip on;

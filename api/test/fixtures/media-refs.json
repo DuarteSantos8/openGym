@@ -1,5 +1,5 @@
 {
-  "about": "Which blob hashes a state references. api/media.js referencedHashes() and frontend/src/lib/media-refs.js referencedHashes() must both give `expect` (compared as sorted lists) for every `state` here: the server keeps and the client keeps exactly this set. Each of customEx[].media.hash, customEx[].media.poster.hash and the same two of every entry of workouts[].media counts on its own when it matches /^[0-9a-f]{64}$/ — deliberately looser than normalizeMediaRef, because this set decides what is kept.",
+  "about": "Which blob hashes a state references. api/media.js referencedHashes() and frontend/src/lib/media-refs.js referencedHashes() must both give `expect` (compared as sorted lists) for every `state` here: the server keeps and the client keeps exactly this set. Each of customEx[].media.hash, customEx[].media.poster.hash the same two of every entry of workouts[].media and of every dayPhotos entry's `m` count on its own when it matches /^[0-9a-f]{64}$/ \u2014 deliberately looser than normalizeMediaRef, because this set decides what is kept.",
   "referencedHashes": [
     {
       "name": "no state at all",
@@ -867,6 +867,62 @@
           ]
         },
         "workouts": []
+      },
+      "expect": []
+    },
+    {
+      "name": "progress photos filed under a day (dayPhotos), a cleared one and junk among them",
+      "state": {
+        "dayPhotos": {
+          "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd": {
+            "d": "2026-10-02",
+            "m": {
+              "kind": "image",
+              "hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "mime": "image/webp",
+              "size": 1000,
+              "width": 800,
+              "height": 600,
+              "at": 1,
+              "poster": {
+                "hash": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+                "mime": "image/webp",
+                "size": 100,
+                "width": 480,
+                "height": 360
+              }
+            },
+            "_ts": 5
+          },
+          "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff": {
+            "_ts": 6
+          },
+          "x": 3,
+          "y": {
+            "d": "2026-10-03",
+            "m": {
+              "kind": "image",
+              "hash": "not-a-hash"
+            },
+            "_ts": 7
+          }
+        }
+      },
+      "expect": [
+        "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+      ]
+    },
+    {
+      "name": "dayPhotos that is not a map",
+      "state": {
+        "dayPhotos": [
+          {
+            "m": {
+              "hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+            }
+          }
+        ]
       },
       "expect": []
     }
