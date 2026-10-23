@@ -11,7 +11,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
    code sheet with its proof, QR and expiry; and the other device's redeem sheet. The API and the passkey prompts are stand-ins; what each step
    sends, and what it says back in the UI language, is the point. */
 const mocks = vi.hoisted(() => {
-  const state = { webauthn: true, sheets: [], answers: {}, calls: [], store: {} }
+  const state = { webauthn: true, sheets: [], answers: {}, calls: [], store: {}, MOBILE: false }
   state.toast = vi.fn()
   state.setUser = vi.fn()
   state.adoptProfile = vi.fn(async () => ({}))
@@ -50,6 +50,7 @@ vi.mock('../lib/api.js', () => ({
   passwordLogin: vi.fn(), passwordRegister: vi.fn(), passwordResetRedeem: vi.fn(),
 }))
 vi.mock('../lib/clipboard.js', () => ({ copyText: (...a) => mocks.copyText(...a) }))
+vi.mock('../lib/mobile.js', () => ({ get MOBILE() { return mocks.MOBILE } }))
 vi.mock('../sheets.jsx', () => ({ askAddDeviceData: mocks.askAddDeviceData }))
 // lean-qr loads on demand; what matters here is what the QR code carries.
 vi.mock('./QrCanvas.jsx', () => ({ default: ({ value }) => <canvas data-qr={value} /> }))
@@ -370,6 +371,32 @@ describe('Settings: a code for another device', () => {
     expect(host.querySelector('canvas')).toBeNull()
     await click(host, 'Make a new code')
     expect(button(host, 'Confirm with a passkey')).toBeTruthy()
+  })
+})
+
+// #551: the phone app paired to a server makes the code too, to sign in on a computer.
+describe('a code for another device, from the paired phone app', () => {
+  afterEach(() => { mocks.MOBILE = false; mocks.store = {} })
+  it('confirms with the password only, and the link points at the paired server', async () => {
+    mocks.MOBILE = true
+    mocks.store = { sync: { server: 'https://gym.example.com' } }
+    mocks.answers['GET /api/account/passkeys'] = { ...LIST, password: true }
+    mocks.answers['POST /api/account/device-link'] = { code: 'K7WQ-2MZP-4HXA', expires: Date.now() + 600000 }
+    const host = mount(<DeviceLinkSheet close={() => {}} />)
+    await settle()
+    expect(button(host, 'Confirm with a passkey')).toBeUndefined()
+    type(byPlaceholder(host, 'Current password'), 'correct horse battery staple')
+    await submit(host)
+    expect(mocks.calls.at(-1)).toEqual({ path: '/api/account/device-link', method: 'POST', body: { current: 'correct horse battery staple' } })
+    expect(host.querySelector('canvas').dataset.qr).toBe('https://gym.example.com/?link=K7WQ-2MZP-4HXA')
+  })
+  it('without a password says where to make it instead, and sends nothing', async () => {
+    mocks.MOBILE = true
+    mocks.answers['GET /api/account/passkeys'] = { ...LIST, password: false }
+    const host = mount(<DeviceLinkSheet close={() => {}} />)
+    await settle()
+    expect(host.textContent).toContain('Make the code in a browser signed in to this profile')
+    expect(mocks.calls.filter(c => c.method !== 'GET')).toEqual([])
   })
 })
 

@@ -129,15 +129,25 @@ export function restoreRoutine(s, snap) {
  *
  * Picking the exercise that is already in the slot replaces nothing, and changes nothing.
  */
+// The slot's planned substitutes stay with the slot (lib/routine-backups.js), less the exercise
+// that now fills it: a backup of itself means nothing.
+function dropSelfBackup(out) {
+  if (!Array.isArray(out.subs)) return out
+  const subs = out.subs.filter(x => x !== out.id)
+  if (subs.length) out.subs = subs
+  else delete out.subs
+  return out
+}
+
 export function replaceSlotExercise(slot, id, S, rid) {
   const old = slot || {}
   if (old.id === id) return { ...old }
   if ((modeOf(old) === 'cardio') !== isCardio(id)) {
-    const kept = ['sg', 'note', 'restSec'].filter(key => old[key] != null)
-    return { id, ...defaultConfig(id), ...Object.fromEntries(kept.map(key => [key, old[key]])) }
+    const kept = ['sg', 'note', 'restSec', 'subs'].filter(key => old[key] != null)
+    return dropSelfBackup({ id, ...defaultConfig(id), ...Object.fromEntries(kept.map(key => [key, old[key]])) })
   }
   const { id: _replaced, bodyweight: _flag, assisted: _assisted, side: _side, ...carried } = old
-  const out = { id, ...carried }
+  const out = dropSelfBackup({ id, ...carried })
   if (isCardio(id)) return out
   if (isBw(old) !== isBodyweightEq(id)) {
     out.weight = 0

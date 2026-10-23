@@ -157,6 +157,10 @@ export const DEF = {
   // lib/bar.js). Personal equipment, so it syncs with the account but never travels in a
   // shared plan. Logged weights stay the total — this only feeds the plate math.
   barWeights: {},
+  // Your bars, per unit: { kg: { 'olympic barbell': 15, … }, lb: { … } } (lib/bar.js
+  // ownBarDefault). What every exercise of that bar type without its own barWeights entry
+  // starts from. Not in DEF on purpose: absent means the built-in bars, and a plain setting
+  // like restSec for the sync (stamped as a whole in `edited`).
   // Plate inventory, per unit: { lb: { 45: 1, 35: 1, …, _ts }, kg: { … } } — pairs of each size
   // you own (lib/plates.js), stamped with when the list was last changed so a sync keeps the
   // later one (lib/sync-merge.js). Kept per unit: a 45 lb plate is not a 20.4 kg one, so a unit
@@ -604,11 +608,16 @@ export const useStore = create((set, get) => {
     }
     meta.set(S, { base, owed: owed || !saved || (!!joined && storedOwed()) })
     if (!saved) saveOwed(true)
+    // The running workout changed (a set ticked, a workout started or finished): on a phone it goes
+    // to the file at once rather than after the usual wait. localStorage alone is not enough there:
+    // the WebView writes it to disk on its own schedule, and an app killed within that moment (or
+    // iOS ending it in the background before the page's timers run again) lost the last set.
+    const workoutMoved = MOBILE && JSON.stringify(get()?.S?.active ?? null) !== JSON.stringify(S.active ?? null)
     set({ S })
     // A copy that replaces the last one wholesale and keeps an older stamp — adopted from the
     // server — goes to the file at once. Until it does, the file holds the copy it replaced,
     // which looks newer, and a start in between would take that one back (restoreFromMirror).
-    if (MOBILE) nativePersist(!stamp)
+    if (MOBILE) nativePersist(!stamp || workoutMoved)
     if (push && get().user) {
       // Before boot has pulled, the copy in hand may be older than the server's: a push now
       // would carry it with a stale (or no) baseRev. It waits for finishBoot.
@@ -782,6 +791,9 @@ export const useStore = create((set, get) => {
   }
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush() })
   window.addEventListener('pagehide', flush)   // Safari kills the home-screen app without a visibilitychange at times
+  // The phone app: Capacitor's own "going to the background" too, in case the WebView's
+  // visibilitychange comes late or not at all before iOS suspends the page.
+  document.addEventListener('pause', flush)
 
   // The owner check in setUser only runs in the tab that signs in. Another tab of the same
   // browser still holding the previous profile, or a guest's copy, would keep writing it over the
@@ -1308,6 +1320,11 @@ export const useStore = create((set, get) => {
        always did, and a configured one is the only place any of it appears. */
     config: null,
     needsMobileOnboarding: false,   // mobile build only — set true by boot() on a genuine first launch
+    // Mobile build only: the first-start permission steps (views/PermissionSteps.jsx) are due.
+    // Set when that first launch's choice is made; never persisted, the steps keep their own
+    // once-per-device record (lib/onboarding-perms.js).
+    permSteps: false,
+    finishPermSteps() { set({ permSteps: false }) },
     // A one-time device-link code this page was opened with (?link=, #95), until it is redeemed.
     // Never persisted: the code is good for minutes and belongs to this one visit.
     linkCode: null,
@@ -1320,6 +1337,13 @@ export const useStore = create((set, get) => {
 
     // Mutate a draft of S via producer fn, then persist + schedule sync. Every routine the change
     // touched carries the time of it, for a conflict to keep the version edited last.
+    // The copy as it is now, on disk: the file mirror on a phone (written at once, not after the
+    // usual wait), localStorage everywhere (persist writes it on every change). What hands a change
+    // over from somewhere that keeps its own copy until told (the watch's and the Live Activity's
+    // queues) waits for this before it lets go of it.
+    saveNow() {
+      return MOBILE ? nativePersist(true) : Promise.resolve()
+    },
     update(mut, push = true) {
       const prev = get().S
       const S = clone(prev)
@@ -1399,7 +1423,14 @@ export const useStore = create((set, get) => {
     // them in instead (importBackup). null when there are none, when nobody is signed in, or when
     // the server cannot be asked — the replace then goes as it always has.
     async importConflict(backup) {
-      if (!get().user) return null
+      // No account (a phone in local mode, a guest): this copy is the only one there is, so the
+      // workouts it holds that the backup lacks are asked about the same way, never just replaced.
+      if (!get().user) {
+        const key = w => entryKey('workouts', w)
+        const inBackup = new Set((Array.isArray(backup?.workouts) ? backup.workouts : []).filter(Boolean).map(key))
+        const here = (get().S.workouts || []).filter(w => w && !inBackup.has(key(w))).length
+        return here ? { workouts: here, state: get().S, rev: null, device: true } : null
+      }
       let res
       try { res = await api('/api/data') } catch { return null }
       const state = res?.state
@@ -1436,6 +1467,15 @@ export const useStore = create((set, get) => {
       // so the import keeps it (in the backup's unit). Only with none running does a backup taken
       // mid-workout bring its own session back. Both the replace and "Merge them in" dropped it.
       const running = carryActive(cur, next) || next.active || null
+      // No account: "Merge them in" joins this copy's own entries into the backup's.
+      if (mergeWith?.device && !uid) {
+        const merged = keepReset(cur, Object.assign(clone(DEF), mergeStates(next, cur, { prefer: 'a' })))
+        stampRestore(merged, [cur, next], now)
+        merged._ts = now
+        merged.active = carryActive({ unit: next.unit, active: running }, merged)
+        persist(merged, false)
+        return
+      }
       if (!mergeWith?.state || !uid) {
         stampRestore(next, [cur, server], now)
         // …and like a reset of what it replaces: an unsent change of another device from before it
@@ -1741,7 +1781,7 @@ export const useStore = create((set, get) => {
         if (typeof ask !== 'function') ask = (await import('../sheets.jsx')).askAddDeviceData
         const r = await get().adoptProfile(ask, { alwaysAsk: !!m.alwaysAsk })
         // A phone whose pairing ended here: what connectToServer does after its own adoption.
-        if (MOBILE) { await nativePersist(true); if (get().needsMobileOnboarding) set({ needsMobileOnboarding: false }) }
+        if (MOBILE) { await nativePersist(true); if (get().needsMobileOnboarding) set({ needsMobileOnboarding: false, permSteps: true }) }
         return r
       } catch { return null }
     },
@@ -1773,7 +1813,7 @@ export const useStore = create((set, get) => {
     // asks again.
     async chooseLocalMode() {
       await chooseLocal()
-      set({ needsMobileOnboarding: false })
+      set({ needsMobileOnboarding: false, permSteps: true })
     },
     // Redeems the pairing code shown in the browser (Settings → "Pair the mobile app") and
     // switches this device over to that account, same as signing in on the web does — the same
@@ -1789,7 +1829,9 @@ export const useStore = create((set, get) => {
       await get().refreshConfig()   // what this server offers (the Coach, guest mode) — see boot()
       await get().adoptProfile(ask)
       await nativePersist(true)   // the file holds this account's copy before anything else can happen
-      set({ needsMobileOnboarding: false })
+      // Paired from the first-launch screen: the permission steps come next. From Settings later
+      // on, nothing new is asked here.
+      set(st => ({ needsMobileOnboarding: false, permSteps: st.permSteps || st.needsMobileOnboarding }))
     },
     // Leaves remote mode and drops back to local-only, the way signOut does: never with changes
     // the server has not seen, unless `force` keeps them aside first. Same result as signOut;
@@ -1821,6 +1863,30 @@ export const useStore = create((set, get) => {
       if (!left.owed && !(await stashActive())) return { owed: true, count: 0, stashed: false }
       await clearLocalSession()
       return left.owed ? owedResult(left, { stashed: true }) : { owed: false }
+    },
+
+    // Settings → "Delete my account": the server removes the profile and everything of it
+    // (POST /api/account/delete, `name` typed back to confirm, `proof` the owner's: a passkey
+    // assertion or the current password, from ProveOwner in components/PasswordAuth.jsx), then
+    // this device ends where a sign-out leaves it, and a phone goes back to local-only as a
+    // disconnect does. Nothing is kept aside: there is no account left for kept changes or a
+    // running workout to come back to. The request is not swallowed: refused (the name, the
+    // proof, the last admin) or not answered, nothing here changes and the caller says why.
+    async deleteAccount(name, proof = {}) {
+      const uid = get().user?.id
+      await api('/api/account/delete', { method: 'POST', body: JSON.stringify({ name, ...proof }) })
+      await stopTimers()
+      const all = await readStashes()
+      const key = stashKey(serverBase(), uid)
+      if (all[key]) { delete all[key]; await writeStashes(all) }
+      await clearLocalSession()
+      if (MOBILE) {
+        await forgetRemote()
+        pairedBase = null
+        setSync({ server: null })
+        get().setGuest(true)
+        set({ ready: true })
+      }
     },
 
     // Demo build only: drop the seeded example profile back in (Settings → "Reset demo data").
