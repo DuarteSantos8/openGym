@@ -60,19 +60,39 @@ const track = r => {
 export const awaitedJob = () => awaited
 export const settleAwaited = id => { if (!id || awaited === id) awaited = null }
 
+/* The one question before anything leaves for an AI provider (Apple 5.1.2(i), and plain manners).
+   Asked here, at the single door every job goes through, so no screen can start one around it:
+   the provider and host come from the same disclosure the intake shows, and a yes is kept per
+   provider and host on this device (lib/coach-consent.js). The demo answers locally and a model
+   on your own network is not a third party, so neither asks. "Not now" rejects with code
+   'declined' and `quiet`, which the screens let pass without a toast: you said no, you know. */
+export const coachVia = () => (DEMO ? 'demo' : LOCAL() ? 'device' : 'server')
+export const isDeclined = e => e?.code === 'declined'
+export async function ensureAiConsent() {
+  if (DEMO) return true
+  const { consentTarget, hasAiConsent, allowAi } = await import('./coach-consent.js')
+  const target = consentTarget(await disclosure(), coachVia())
+  if (!target || target.local || await hasAiConsent(target)) return true
+  const { askAiConsent } = await import('../components/CoachConsentSheet.jsx')
+  if (await askAiConsent(target)) { await allowAi(target); return true }
+  throw Object.assign(new Error(t('Okay, nothing was sent.')), { code: 'declined', quiet: true, data: { code: 'declined' } })
+}
+const asked = fn => async (...a) => { await ensureAiConsent(); return fn(...a) }
+
 export const coachStatus = async () => DEMO ? (await demo()).demoStatus() : LOCAL() ? (await local()).localStatus() : api('/api/coach/status')
 const _requestReview = async note => DEMO ? (await demo()).demoReview(S()) : LOCAL() ? (await local()).localReview(S(), note) : api('/api/coach/review', { method: 'POST', body: JSON.stringify({ note: note || '', lang: getLang() }) })
-export const requestReview = (...a) => _requestReview(...a).then(track)
+export const requestReview = (...a) => asked(_requestReview)(...a).then(track)
 const _requestPlan = async intake => DEMO ? (await demo()).demoPlan(S(), intake) : LOCAL() ? (await local()).localPlan(S(), intake) : api('/api/coach/plan', { method: 'POST', body: JSON.stringify({ intake, lang: getLang() }) })
-export const requestPlan = (...a) => _requestPlan(...a).then(track)
+export const requestPlan = (...a) => asked(_requestPlan)(...a).then(track)
 const _refinePlan = async text => DEMO ? (await demo()).demoRefine(S()) : LOCAL() ? (await local()).localRefine(S(), text) : api('/api/coach/plan', { method: 'POST', body: JSON.stringify({ refine: text, lang: getLang() }) })
-export const refinePlan = (...a) => _refinePlan(...a).then(track)
+export const refinePlan = (...a) => asked(_refinePlan)(...a).then(track)
 const _requestDebrief = async workoutId => DEMO ? (await demo()).demoDebrief(S(), workoutId) : LOCAL() ? (await local()).localDebrief(S(), workoutId) : api('/api/coach/debrief', { method: 'POST', body: JSON.stringify({ workoutId: workoutId || null, lang: getLang() }) })
-export const requestDebrief = (...a) => _requestDebrief(...a).then(track)
+export const requestDebrief = (...a) => asked(_requestDebrief)(...a).then(track)
 // A question in the chat, answered in words (the `ask` job). The session running here goes along
-// (lib/coach-context.js): the server never holds it.
+// (lib/coach-context.js): the server never holds it. What is typed is sent to the model, so it
+// asks for the AI data sharing consent first, as every other job does.
 const _askCoach = async text => DEMO ? (await demo()).demoAsk(S(), text) : LOCAL() ? (await local()).localAsk(S(), text, todayForCoach(S())) : api('/api/coach/ask', { method: 'POST', body: JSON.stringify({ text, today: todayForCoach(S()), lang: getLang() }) })
-export const askCoach = (...a) => _askCoach(...a).then(track)
+export const askCoach = (...a) => asked(_askCoach)(...a).then(track)
 // The room: anonymous medians across the profiles on this instance that opted in. Only a
 // server has a room; a phone with its own key and the demo both answer locally.
 export const cohortStats = async () => DEMO ? (await demo()).demoCohort(S()) : LOCAL() ? { ok: false, enabled: false } : api('/api/coach/cohort')

@@ -1,8 +1,7 @@
 # openGym — GitLab CI/CD
 #
-# This is the pipeline that actually gates and ships the project. It replaces the
-# GitHub Actions workflows (.github/, dormant since the account suspension) and the
-# gitea.com ones (.gitea/, kept only so the mirror stays buildable).
+# GitHub is openGym's home and its Actions (.github/) test and publish it; GitLab is a mirror
+# (.github/workflows/mirror.yml), and this pipeline keeps it building and tested.
 #
 # What it does, in order:
 #   test        — frontend, MCP and api (Coach) suites on every branch, MR and tag, each with a
@@ -503,7 +502,8 @@ build:web-check:
 
 # The official signed APK. Signing keys live in protected CI variables, so they only
 # exist on protected refs (main and v* tags) — a fork's MR builds an unsigned APK and
-# cannot get at the key. Sideload-only by design: openGym is on no app store.
+# cannot get at the key. This is the sideloaded APK; the store builds are made on the release
+# machine (docs/APP_STORES.md).
 #
 # Needs three CI/CD variables (Settings → CI/CD → Variables), all *protected*:
 #   ANDROID_KEYSTORE_B64       file    base64 of opengym-release.keystore
@@ -538,8 +538,10 @@ build:apk:
       npm run build:mobile
       VER="$(node -p "require('./package.json').version")"
       cd android
-      ./gradlew --no-daemon assembleRelease
-      UNSIGNED=app/build/outputs/apk/release/app-release-unsigned.apk
+      # The sideload flavour: the APK that updates itself (the play flavour is the Google Play
+      # build, built and signed on the release machine as an .aab, docs/APP_STORES.md).
+      ./gradlew --no-daemon assembleSideloadRelease
+      UNSIGNED=app/build/outputs/apk/sideload/release/app-sideload-release-unsigned.apk
       BT="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
       if [ -n "${ANDROID_KEYSTORE_B64:-}" ]; then
         base64 -d "$ANDROID_KEYSTORE_B64" > "$CI_PROJECT_DIR/.ks.jks"
@@ -591,18 +593,15 @@ build:apk:
     reports:
       dotenv: apk.env
     expire_in: 30 days
+  # Since v1.4.2 the released APK is built and signed on the release machine with the app's
+  # larger animations and published on GitHub (docs/APP_STORES.md). This mirror's APK would be a
+  # second, different file with the same version number, so it is only built on request now:
+  # one click on main or a merge request, never on a tag.
   rules:
     - !reference [.rules, not_on_schedule]
-    - *release_tag
-    # Every main push builds a signed APK (~9 minutes on the project runner; while the shared
-    # runners paid for it, this was a manual job). The newest one is always at
-    #   $CI_PROJECT_URL/-/jobs/artifacts/main/browse?job=build:apk
-    # which is the "try what is on main" build — and a red job here means the release tag
-    # would have failed the same way, so it is caught before the tag.
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    # Merge requests: one click away, so a fork MR does not cost nine runner minutes for an
-    # APK nobody asked for.
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_TAG
+      when: never
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_PIPELINE_SOURCE == "merge_request_event"
       when: manual
       allow_failure: true
 
@@ -838,8 +837,6 @@ release:
   needs:
     - job: build:images
       artifacts: true
-    - job: build:apk
-      artifacts: true
     - job: verify:stack
       artifacts: false
     - job: verify:scan
@@ -875,7 +872,7 @@ release:
       | \`$CI_REGISTRY_IMAGE/api\` | \`$SEMVER\` \`$MINOR\` \`latest\` | \`$IMAGE_DIGEST_API\` |
       | \`$CI_REGISTRY_IMAGE/web\` | \`$SEMVER\` \`$MINOR\` \`latest\` | \`$IMAGE_DIGEST_WEB\` |
 
-      Both images are linux/amd64 + linux/arm64. Android: \`openGym-$APK_VERSION.apk\`, SHA-256 \`$APK_SHA256\` — check it with \`sha256sum -c openGym-$APK_VERSION.apk.sha256\`. Built from $CI_COMMIT_SHA.
+      Both images are linux/amd64 + linux/arm64. The Android APK and the store apps are on the GitHub release: https://github.com/DuarteSantos8/openGym/releases/tag/$CI_COMMIT_TAG. Built from $CI_COMMIT_SHA.
       EOF
       cat release-notes.md
   release:
@@ -884,12 +881,9 @@ release:
     description: release-notes.md
     assets:
       links:
-        - name: "openGym-$APK_VERSION.apk (Android, sideload)"
-          url: "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/opengym-android/$APK_VERSION/openGym-$APK_VERSION.apk"
+        - name: "Android APK (GitHub release)"
+          url: "https://github.com/DuarteSantos8/openGym/releases/tag/$CI_COMMIT_TAG"
           link_type: package
-        - name: "openGym-$APK_VERSION.apk.sha256 (checksum)"
-          url: "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/opengym-android/$APK_VERSION/openGym-$APK_VERSION.apk.sha256"
-          link_type: other
         - name: "Container images (api + web)"
           url: "$CI_PROJECT_URL/container_registry"
           link_type: image

@@ -101,6 +101,13 @@ ENV BASE_PATH=""
 # Above the API's own video cap (MEDIA_VIDEO_MAX_MB, 40 by default) so the API, which says why,
 # is the one that refuses a file — raise both together.
 ENV MEDIA_UPLOAD_MAX=48m
+# Sent on every page and file. Scripts run only from this origin, plus the one inline script in
+# frontend/index.html by its hash (src/lib/csp.test.js keeps the two in step). connect-src stays
+# open to any https: and http: address: the Coach on a device talks to the provider the person
+# chose, an Ollama on their LAN included, and the update check asks GitHub. Behind a proxy that
+# injects a script of its own (analytics), set this to a policy that allows it, or to
+# "frame-ancestors 'none'" for the old header.
+ENV CONTENT_SECURITY_POLICY="default-src 'self'; script-src 'self' 'sha256-z/iOLe5i8fD4VNlIXz/4hEayGLTQzoTc52dIY51OjYc='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https: http:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 
 # Probe the port nginx was actually told to listen on (NGINX_PORT is configurable, so a
 # hardcoded http://localhost/ breaks on any instance that changed it), and address it as

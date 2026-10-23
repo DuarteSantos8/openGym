@@ -49,6 +49,8 @@ vi.mock('../lib/coach-api.js', () => ({
   setCohortShare: vi.fn(() => Promise.resolve({ ok: true })),
   jobErrorText: () => 'err',
   JOB_ERRORS: { busy: 'the app’s busy line' },
+  ensureAiConsent: vi.fn(() => Promise.resolve(true)),
+  isDeclined: e => e?.code === 'declined',
 }))
 vi.mock('../sheets.jsx', () => ({ startFlow: vi.fn(), confirmSheet: vi.fn() }))
 vi.mock('../lib/api.js', () => ({
@@ -131,5 +133,16 @@ describe('a request the server refuses', () => {
     mount()
     await send('x')
     expect(mocks.toast).toHaveBeenCalledWith('Network unreachable')
+  })
+
+  it('"Not now" on the data-sharing question is an answer: no toast, no chat line, the text stays', async () => {
+    const before = mocks.S.coach.chat.length
+    // A message in the chat is a question (askCoach), which asks for the consent first too.
+    vi.mocked(askCoach).mockRejectedValueOnce(Object.assign(new Error('Okay, nothing was sent.'), { code: 'declined', quiet: true, data: { code: 'declined' } }))
+    mount()
+    await send('look at my squats')
+    expect(mocks.toast).not.toHaveBeenCalled()
+    expect(mocks.S.coach.chat).toHaveLength(before)
+    expect(host.querySelector('.composer textarea').value).toBe('look at my squats')
   })
 })

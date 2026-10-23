@@ -179,7 +179,15 @@ body.no-tabbar #app{padding-bottom:calc(24px + var(--sab))}
 body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
 .workout-end-spacer{height:0}
 @keyframes viewfade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-#app.vfade{animation:viewfade var(--med) var(--ease)}
+#app > .page.vfade{animation:viewfade var(--med) var(--ease)}
+/* The page an edge swipe back returns to (App.jsx Page `under`, lib/edge-swipe-back.js): laid
+   out where #app lays out a page, fixed under the current one, at the scroll position it was
+   left at (.page-in is moved up by it), hidden until the finger has committed to the swipe. */
+#app > .page.under{
+  position:fixed;top:0;left:0;right:0;bottom:0;z-index:0;overflow:hidden;
+  padding:inherit;max-width:inherit;margin:0 auto;
+  visibility:hidden;pointer-events:none;will-change:transform;
+}
 
 /* Connection indicator (components/SyncBanner.jsx): pinned under the status bar for as long as
    the app is not connected to a server. It carries the page's own ground and blur, like the
@@ -610,6 +618,10 @@ h4.sec{
 .chip:active{background:var(--surface-2)}
 .chip.on{background:var(--acc);color:var(--on-acc);font-weight:500}
 .chip.on .dim{color:color-mix(in srgb,var(--on-acc) 62%,transparent)}
+/* A chip with an icon in front (the day note's Sick / Travelling / …): the icon is a block, so
+   without this the label wrapped under it and every chip became a two-line button. One line
+   each; a row wider than the sheet scrolls sideways like every .chips strip. */
+.chip.ichip{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .chip .qstate{text-transform:none}
 /* On a phone these rows scroll by swipe. On a pointer device lib/hchips.js lets you
    click-drag anywhere on the row to pull it along; a grab cursor on rows that actually
@@ -1504,7 +1516,10 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
   animation:sheetup .34s var(--ease);
   overscroll-behavior:contain;touch-action:pan-y;will-change:transform;
 }
-.sheet:has(.picker-search){
+/* A sheet with a field (.picker-search) or marked .kb-lift (the connect sheet) stands on the
+   keyboard instead of letting the system scroll the pinned page to reach the field: see
+   lib/use-sheet-keyboard.js for the two variables. */
+.sheet:has(.picker-search),.sheet:has(.kb-lift){
   bottom:max(var(--picker-keyboard-bottom,0px),var(--native-kb,0px));
   /* with the keyboard up the sheet is capped by the visual viewport — which still starts
      under the notch, hence the inset here too */
@@ -1681,12 +1696,16 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .mrow .bar{width:74px;height:5px;border-radius:3px;background:var(--surface-2);flex:none;overflow:hidden}
 .mrow .bar i{display:block;height:100%;background:var(--acc);border-radius:3px}
 .mrow .v{font-size:12px;color:var(--label-2);min-width:52px;text-align: end;flex:none}
+/* The Week view's "done/planned · %" (#573): wider than a set count, and as wide on every row, so
+   the bars line up the way they do in 30d, 90d and All. */
+.mrow .v.cmp{min-width:92px;font-variant-numeric:tabular-nums;white-space:nowrap}
 /* A headline number inside a card — tile weight without a tile around it, for the pair of
    readings at the top of the effort card. */
 .stat-v{font-size:26px;font-weight:600;letter-spacing:-.026em;line-height:1.1}
 .mchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
 .mchip{font-size:12px;padding:4px 9px;border-radius:99px;background:var(--surface-2);color:var(--label-2)}
 .mchip.miss{background:color-mix(in srgb,var(--orange) 16%,transparent);color:var(--orange)}
+button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
 
 /* --- stat tiles --- */
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
@@ -1724,11 +1743,14 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 }
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 /* With an action (Undo): the message, then the button at the end, and the toast takes taps. */
-#toast.has-action{pointer-events:auto;display:flex;align-items:center;gap:6px;padding:4px 6px 4px 18px;text-align:start}
+#toast.has-action{pointer-events:auto;display:flex;align-items:center;gap:6px;padding:4px 6px 4px 6px;text-align:start}
 #toast.has-action .toast-msg{flex:1;min-width:0;padding:7px 0}
 #toast .toast-act{flex:none;display:inline-flex;align-items:center;gap:5px;color:var(--acc);font-weight:700;padding:8px 12px;border-radius:14px;min-height:36px}
 #toast .toast-act:active{background:color-mix(in srgb,var(--label) 10%,transparent)}
 #toast .toast-act .icn{font-size:16px}
+#toast .toast-x{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;color:var(--label-2)}
+#toast .toast-x:active{background:color-mix(in srgb,var(--label) 10%,transparent)}
+#toast .toast-x .icn{font-size:15px}
 body.no-tabbar #toast{bottom:calc(24px + var(--sab))}
 body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 
@@ -2135,3 +2157,15 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 [dir="rtl"] *{letter-spacing:0}
 .exfix-link{display:inline-flex;align-items:center;gap:5px;margin:14px 0 4px;color:var(--label-3);text-decoration:none}
 .list .similar-label{margin:16px 2px 6px;grid-column:1/-1}
+
+/* The edge swipe back (lib/edge-swipe-back.js): the page follows the finger, the one it goes
+   back to slides in underneath with a shade over it. The sliding page's own ground reaches the
+   screen's edges (--eb-*: how far #app's padding and margins leave it short of them). */
+.edge-back-shade{position:fixed;inset:0;background:#000;opacity:.35;pointer-events:none;z-index:1}
+.edge-back-page{position:relative;z-index:2;will-change:transform}
+.edge-back-page::before{
+  content:'';position:absolute;z-index:-1;pointer-events:none;background:var(--bg);
+  top:calc(-1 * var(--eb-t,0px));bottom:calc(-1 * var(--eb-b,0px));
+  left:calc(-1 * var(--eb-l,0px));right:calc(-1 * var(--eb-r,0px));
+  box-shadow:0 0 28px rgba(0,0,0,.28);
+}

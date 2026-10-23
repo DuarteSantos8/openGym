@@ -107,13 +107,34 @@ export function recordKey(rec) {
 }
 
 /**
+ * The record ids openGym has on record as deleted: a workout or a weigh-in day removed on this
+ * device or on another one whose removal synced in (S.deleted, lib/sync-merge.js stampDeletions;
+ * a negative stamp is an add-back), and everything a "Reset everything" wiped (S.resetIds).
+ * Only these are taken out of Health: a copy that merely lacks a workout (signed out, a guest
+ * copy, a state not loaded yet) never empties Apple Health or Health Connect.
+ */
+export function goneIds(S) {
+  const out = new Set()
+  const del = S?.deleted && typeof S.deleted === 'object' ? S.deleted : {}
+  for (const [k, at] of Object.entries(del.workouts || {})) if (Number(at) > 0) out.add('opengym-w-' + k)
+  for (const [k, at] of Object.entries(del.bodyweight || {})) if (Number(at) > 0) out.add('opengym-bw-' + k)
+  const reset = S?.resetIds && typeof S.resetIds === 'object' ? S.resetIds : {}
+  for (const k of Array.isArray(reset.workouts) ? reset.workouts : []) out.add('opengym-w-' + k)
+  // A weigh-in is named by its day and time there ("2026-09-17|1758…"); Health knows it by day.
+  for (const k of Array.isArray(reset.bodyweight) ? reset.bodyweight : []) out.add('opengym-bw-' + String(k).split('|')[0])
+  return out
+}
+
+/**
  * What a sync has to do, given the records now and `written`, what this phone wrote before
  * ({ [id]: { k: 'session' | 'weight', h: recordKey } }). New and changed records are written,
  * records that are gone from openGym (a deleted workout, a removed weigh-in) are removed.
- * Returns { sessions, weights, remove: { sessions: [id], weights: [id] }, written } — `written`
- * being what the phone has written once the sync went through.
+ * With `gone` (goneIds), only a record on record as deleted is removed; one that is merely
+ * missing stays written, and goes once its deletion arrives. Returns { sessions, weights,
+ * remove: { sessions: [id], weights: [id] }, written } — `written` being what the phone has
+ * written once the sync went through.
  */
-export function planSync({ sessions, weights }, written = {}) {
+export function planSync({ sessions, weights }, written = {}, gone = null) {
   const next = {}
   const out = { sessions: [], weights: [], remove: { sessions: [], weights: [] } }
   const take = (list, k, into) => {
@@ -128,6 +149,7 @@ export function planSync({ sessions, weights }, written = {}) {
   take(weights, 'weight', out.weights)
   for (const [id, was] of Object.entries(written || {})) {
     if (next[id]) continue
+    if (gone && !gone.has(id)) { next[id] = was; continue }
     if (was?.k === 'session') out.remove.sessions.push(id)
     else if (was?.k === 'weight') out.remove.weights.push(id)
   }

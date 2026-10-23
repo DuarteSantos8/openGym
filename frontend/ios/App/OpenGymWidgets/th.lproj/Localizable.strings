@@ -1,0 +1,6 @@
+/* Written by ios/ci/widget-strings.mjs: change it there. */
+"Today’s workout" = "การฝึกวันนี้";
+"Your plan for today, the week ahead and your streak." = "แผนวันนี้ สัปดาห์ข้างหน้า และสถิติต่อเนื่องของคุณ";
+"Streak" = "ต่อเนื่อง";
+"Weeks in a row with a workout." = "จำนวนสัปดาห์ติดต่อกันที่มีการฝึก";
+"Open openGym once to see your plan here." = "เปิด openGym สักครั้งเพื่อดูแผนของคุณที่นี่";
