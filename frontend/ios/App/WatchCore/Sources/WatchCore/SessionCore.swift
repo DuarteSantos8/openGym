@@ -67,6 +67,13 @@ enum SessionCore {
         side.map { "\(exId)#\(si)#\($0)" } ?? "\(exId)#\(si)"
     }
 
+    /// A workout that ended on the phone: whether the watch keeps its Apple Health copy. Only when the
+    /// phone logged it; a phone too old to send the list is taken at its word, as before.
+    static func savesEnded(_ ended: ActiveWorkout, _ snap: Snapshot) -> Bool {
+        guard let id = ended.id, let saved = snap.saved else { return true }
+        return saved.contains(id)
+    }
+
     /// A snapshot from the phone, over what the watch has.
     static func applySnapshot(_ s0: SessionState, _ snap: Snapshot) -> SessionState {
         var s = s0
@@ -263,8 +270,8 @@ enum SessionCore {
         return (s, event)
     }
 
-    /// The session finished here.
-    static func finish(_ s0: SessionState, at: Double, id: String) -> (SessionState, Event?) {
+    /// The session finished here, or discarded here (the phone drops it unsaved).
+    static func finish(_ s0: SessionState, at: Double, id: String, discard: Bool = false) -> (SessionState, Event?) {
         guard let w = s0.workout else { return (s0, nil) }
         var s = s0
         s.workout = nil
@@ -272,7 +279,7 @@ enum SessionCore {
         s.skipped = nil
         s.startedHere = nil
         if let wid = w.id { s.finishedHere = Array((s.finishedHere + [wid]).suffix(5)) }
-        return (s, ["id": id, "type": "finish", "wid": w.id ?? "", "at": at])
+        return (s, ["id": id, "type": discard ? "discard" : "finish", "wid": w.id ?? "", "at": at])
     }
 
     /// The set to do next in an exercise: the one picked, or the first not done.

@@ -262,7 +262,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                                                        startedAt: self.workoutSeenAt.map { $0.timeIntervalSince1970 * 1000 }, endedOnPhone: true)
                 }
                 self.ran(ended.id)
-                self.health.end(save: true) { totals in self.addTotals(totals) }
+                self.health.end(save: SessionCore.savesEnded(ended, snap)) { totals in self.addTotals(totals) }
                 self.dropClips()
                 self.stopHold()
                 self.skipRest()
@@ -503,6 +503,21 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         send(event: ev)
         state = next
         Haptics.finished()
+    }
+
+    /// Discards the session: nothing saved here or in Apple Health, and the phone drops it too.
+    func discard() {
+        closeRest(at: Date())
+        let (next, event) = SessionCore.finish(state, at: Date().timeIntervalSince1970 * 1000, id: UUID().uuidString, discard: true)
+        guard let ev = event else { return }
+        health.end(save: false)
+        stopHold()
+        skipRest()
+        dropClips()
+        send(event: ev)
+        state = next
+        summary = nil
+        Haptics.discarded()
     }
 
     func skipRest() {
@@ -804,4 +819,5 @@ enum Haptics {
     static func start() { play([(0, .start)]) }
     static func finished() { play([(0, .stop), (0.5, .success), (0.9, .success)]) }
     static func skip() { play([(0, .directionDown)]) }
+    static func discarded() { play([(0, .stop)]) }
 }
