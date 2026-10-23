@@ -366,6 +366,41 @@ describe('Stats estimated effort', () => {
     expect(head, 'expected an Effort card for rated history').toBeTruthy()
     expect(head.textContent).not.toContain('estimated')
   })
+
+  it('estimates the unrated rest when the only ratings are imported failures', async () => {
+    // The v1.4.0 import case: six sets taken to failure across six sessions, every
+    // other set unrated. Averaging rated sets only would read 0 RIR / 100% hard.
+    const day = (ago, w, fw) => workout(`import-${ago}`, BASE_NOW - ago * DAY, [
+      entry('0025', [
+        set(true, { w, r: 8 }), set(true, { w, r: 8 }),
+        set(true, { w: 40, r: 5 }),
+        set(true, { w: fw, r: 9, failure: true }),
+      ]),
+    ])
+    resetFixture([
+      day(80, 60, 62.5), day(65, 60, 62.5), day(50, 62.5, 65),
+      day(35, 62.5, 65), day(15, 65, 67.5), day(5, 65, 67.5),
+    ])
+    await mountStats()
+    const card = effortHead()?.closest('.card')
+    expect(card, 'expected an Effort card for failure-marked imports').toBeTruthy()
+    expect(effortHead().textContent).toContain('estimated')
+    // Six imported failures plus estimates for the eighteen unrated sets.
+    expect(card.textContent).toContain('6 rated · 18 estimated of 24 sets')
+    // The average speaks for the whole training, not just the failures.
+    const [avg, hard] = [...card.querySelectorAll('.stat-v')].map(el => el.textContent.trim())
+    expect(avg).toMatch(/RIR$/)
+    expect(parseFloat(avg)).toBeGreaterThan(0)
+    expect(hard).not.toBe('100%')
+    // The failures stay a visible spike at the hard end of the histogram.
+    const zeroBin = [...card.querySelectorAll('.mrow')]
+      .find(row => row.querySelector('.nm')?.textContent.trim() === 'RIR 0')
+    expect(zeroBin?.querySelector('.v').textContent).toContain('6')
+
+    // The resolver applies on every window, not just the default 90d.
+    await click(buttonWithText(card.querySelector('.seg'), '30d'))
+    expect(card.textContent).toContain('2 rated · 6 estimated of 8 sets')
+  })
 })
 
 describe('Stats strength exercise rows', () => {
