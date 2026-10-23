@@ -10,6 +10,7 @@
 // against its SHA-256 by the native Install plugin and handed to the system installer.
 
 import { MOBILE } from './mobile.js'
+import { BUILTIN_PX } from './anim-quality.js'
 
 const REPO = 'DuarteSantos8/openGym'
 const LATEST_URL = `https://api.github.com/repos/${REPO}/releases/latest`
@@ -63,10 +64,35 @@ async function fetchLatest() {
   const latestVersion = String(latest.tag_name || '').replace(/^v/, '')
   if (!latestVersion) return { hasUpdate: false, latestVersion: __APP_VERSION__, apkUrl: null, hashUrl: null }
   const hasUpdate = compareSemver(latestVersion, __APP_VERSION__) > 0
-  const assets = latest.assets || []
-  const apk = assets.find(a => /\.apk$/i.test(a.name))
-  const hash = assets.find(a => /\.apk\.sha256$/i.test(a.name))
+  const { apk, hash } = pickApk(latest.assets || [])
   return { hasUpdate, latestVersion, apkUrl: apk?.browser_download_url || null, hashUrl: hash?.browser_download_url || null }
+}
+
+/**
+ * Since v1.4.2 a release carries three sideloaded APKs, the same app with different animations
+ * built in: Standard (180 px, openGym-<v>.apk), Plus (240 px, openGym-Plus-<v>.apk) and HD
+ * (360 px, openGym-HD-<v>.apk). Each installed APK only ever updates to its own kind, so a phone
+ * that picked HD keeps HD, and nobody is handed a download twice the size they never asked for.
+ * The build says which kind it is (VITE_APK_VARIANT, set by scripts/android/build-release.sh); a
+ * build without it goes by what it has built in.
+ * The checksum is the one named after the chosen APK, never just the first .sha256 in the list.
+ * A release without an APK of this kind: no direct download (the update row then opens the
+ * releases page), rather than quietly swapping it for another kind.
+ * Phones from before v1.4.2 take the first .apk of the list, and GitHub sorts assets by name:
+ * "openGym-1…" comes before "openGym-HD-…" and "openGym-Plus-…", so they land on Standard.
+ */
+const ENV = import.meta.env || {}
+export const APK_VARIANTS = ['standard', 'plus', 'hd']
+export const APK_VARIANT = APK_VARIANTS.includes(ENV.VITE_APK_VARIANT)
+  ? ENV.VITE_APK_VARIANT
+  : (BUILTIN_PX >= 360 ? 'hd' : BUILTIN_PX > 180 ? 'plus' : 'standard')
+const tagged = (name, tag) => new RegExp(`(^|[-_.])${tag}([-_.]|$)`, 'i').test(name)
+/** Which kind an APK file name is: 'hd', 'plus' or 'standard'. */
+export const apkKind = name => tagged(name, 'hd') ? 'hd' : tagged(name, 'plus') ? 'plus' : 'standard'
+export function pickApk(assets, variant = APK_VARIANT) {
+  const apk = assets.find(a => /\.apk$/i.test(a.name) && apkKind(a.name) === variant) || null
+  const hash = apk ? assets.find(a => a.name === `${apk.name}.sha256`) || null : null
+  return { apk, hash }
 }
 
 /**
