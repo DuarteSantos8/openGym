@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { healthRecords, planSync, recordKey, sessionRecord, sessionType, SESSION_TYPES, TEXT_MAX, weightRecord, writtenIds } from './health-connect.js'
+import { goneIds, healthRecords, planSync, recordKey, sessionRecord, sessionType, SESSION_TYPES, TEXT_MAX, weightRecord, writtenIds } from './health-connect.js'
 
 // #200: what the Android app writes to Health Connect, worked out from the state alone.
 const nameOf = e => ({ '0025': 'barbell bench press', '3666': 'walking on incline treadmill', '2138': 'stationary bike run v. 3' })[e.id] || e.id
@@ -118,6 +118,20 @@ describe('planSync', () => {
     const plan = planSync({ sessions: [], weights: [] }, written)
     expect(plan.remove).toEqual({ sessions: ['opengym-w-w1'], weights: ['opengym-bw-2026-09-17'] })
     expect(plan.written).toEqual({})
+  })
+  it('with the deletions on record, removes only those and keeps the merely missing as written', () => {
+    const { written } = planSync(records(), {})
+    const plan = planSync({ sessions: [], weights: [] }, written, new Set(['opengym-bw-2026-09-17']))
+    expect(plan.remove).toEqual({ sessions: [], weights: ['opengym-bw-2026-09-17'] })
+    expect(Object.keys(plan.written)).toEqual(['opengym-w-w1'])
+  })
+  it('goneIds reads removals, add-backs and a reset', () => {
+    const ids = goneIds({
+      deleted: { workouts: { a: 5, b: -6 }, bodyweight: { '2026-09-01': 7 }, routines: { r: 9 } },
+      resetIds: { workouts: ['c'], bodyweight: ['2026-09-02|123', '2026-09-03|'] },
+    })
+    expect([...ids].sort()).toEqual(['opengym-bw-2026-09-01', 'opengym-bw-2026-09-02', 'opengym-bw-2026-09-03', 'opengym-w-a', 'opengym-w-c'])
+    expect(goneIds(null).size).toBe(0)
   })
   it('writes one record for two workouts that share an id', () => {
     const twice = { sessions: [...records().sessions, { ...records().sessions[0], title: 'Copy' }], weights: [] }
