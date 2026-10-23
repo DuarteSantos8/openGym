@@ -483,7 +483,8 @@ export async function startWatchSync ({ useStore, useUI }) {
       // With Apple Health on: the deleted workouts, so the watch removes the copies it saved.
       if (healthOn) { const gone = healthGoneFor(S); if (gone.length) snap.healthGone = gone }
       // No workout running: which ones were saved, so a discard on the phone stays out of Health.
-      if (!snap.active) snap.saved = savedIdsFor(S)
+      // Not with the watch switched off mid-workout: that sends no workout, but nothing was discarded.
+      if (!S.active) snap.saved = savedIdsFor(S)
       const json = JSON.stringify(fitSnapshot(snap))
       if (json !== lastSent) {
         const r = await p.WatchBridge.sendSnapshot({ json })
