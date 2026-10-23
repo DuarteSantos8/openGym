@@ -135,6 +135,7 @@ test('tools/list documents exact tool and input names; irreversible tools demand
     assert.match(tool.description, /irreversible/i)
     assert.match(tool.description, /confirmation link/i)
   }
+  assert.match(tools.find(x => x.name === 'delete_workouts_bulk').description, /mutually exclusive \(exactly one\)/)
   for (const name of ['delete_routine', 'delete_workout', 'delete_routines_bulk', 'delete_workouts_bulk', 'disable_account', 'delete_account', 'clear_audit_log', 'disconnect_coach', 'sweep_media', 'request_create_invite', 'request_revoke_invite', 'request_password_reset', 'request_connect_coach', 'forget_coach']) {
     const d = tools.find(x => x.name === name).description
     assert.match(d, /confirmation link/i, name)
@@ -177,9 +178,9 @@ test('bulk deletes: only a {url} link; invalid, 26+, future or unknown selection
   const f = await fixture(t)
   f.s.profile.workouts.push({ id: 'w2', name: 'Tue', d: '2026-10-20', entries: [], media: [{ url: '/media/private.webp', bytes: 5 }] })
   for (const [name, args] of [
-    ['delete_workouts_bulk', {}], ['delete_workouts_bulk', { ids: [] }], ['delete_workouts_bulk', { ids: ['w1', 'w1'] }],
+    ['delete_workouts_bulk', { ids: [] }], ['delete_workouts_bulk', { ids: ['w1', 'w1'] }],
     ['delete_workouts_bulk', { ids: Array.from({ length: 26 }, (_, i) => `w${i}`) }], ['delete_workouts_bulk', { before: '2099-01-01' }],
-    ['delete_workouts_bulk', { ids: ['w1'], before: '2026-10-21' }], ['delete_workouts_bulk', { ids: ['w1', 'nope'] }], ['delete_routines_bulk', { ids: ['w1'] }],
+    ['delete_workouts_bulk', { ids: ['w1', 'nope'] }], ['delete_routines_bulk', { ids: ['w1'] }],
   ]) {
     const r = await f.tool(name, args)
     assert.equal(r.isError, true, JSON.stringify(args))
@@ -217,6 +218,25 @@ test('bulk deletes: only a {url} link; invalid, 26+, future or unknown selection
   assert.deepEqual(f.s.profile.routines.map(x => x.id), ['r1'])
   assert.equal((await page('execute', again, { cid: 'cid-1', credential })).status, 400, 'replay refused')
   assert.equal(f.hits('/api/data', 'PUT'), puts + 1)
+})
+
+test('bulk deletes: missing or mixed selection names the argument, mints no link, writes nothing', async t => {
+  const f = await fixture(t)
+  const puts = f.hits('/api/data', 'PUT')
+  for (const [name, args, message] of [
+    ['delete_workouts_bulk', {}, 'give exactly one of ids or before'],
+    ['delete_workouts_bulk', { ids: ['w1'], before: '2026-01-01' }, 'give exactly one of ids or before'],
+    ['delete_routines_bulk', {}, 'give ids'],
+  ]) {
+    const r = await f.tool(name, args)
+    assert.equal(r.isError, true, name)
+    assert.equal(r.data.error, message)
+    assert.equal(Object.hasOwn(r.data, 'url'), false, name)
+    assert.doesNotMatch(JSON.stringify(r.data), /https?:\/\/|confirm#/)
+  }
+  assert.equal(f.hits('/api/data', 'PUT'), puts)
+  assert.equal(f.s.profile.routines.length, 1)
+  assert.equal(f.s.profile.workouts.length, 1)
 })
 
 test('admin actions mint nothing for a non-admin caller and execute nothing', async t => {

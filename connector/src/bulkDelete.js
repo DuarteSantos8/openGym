@@ -4,6 +4,9 @@ const hash = value => crypto.createHash('sha256').update(JSON.stringify(value)).
 export class BulkLimitError extends Error {
   constructor() { super('too many targets; narrow the request') }
 }
+export class BulkSelectionError extends Error {
+  constructor(message) { super(message) }
+}
 const refuse = () => { throw new Error('invalid_bulk_selection') }
 const stale = () => { throw new Error('invalid_confirmation') }
 const date = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) &&

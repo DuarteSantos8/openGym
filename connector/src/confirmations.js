@@ -1,6 +1,6 @@
 import crypto from 'node:crypto'
 import { openBearer, mintLoginOptions, verifyFreshPasskey } from './openGymSession.js'
-import { validateBulkSelection, resolveBulkTargets, deleteTargets, bulkDigest, BulkLimitError } from './bulkDelete.js'
+import { validateBulkSelection, resolveBulkTargets, deleteTargets, bulkDigest, BulkLimitError, BulkSelectionError } from './bulkDelete.js'
 
 const ID = /^[A-Za-z0-9_-]{43}$/
 const TTL = 5 * 60_000
@@ -353,5 +353,10 @@ export function createBulkTools(confirmations) {
   const selection = (kind, { ids, before } = {}) => ({ kind, ...(ids !== undefined ? { ids } : {}), ...(before !== undefined ? { before } : {}) })
   return [
     ['delete_routines_bulk', 'routines'], ['delete_workouts_bulk', 'workouts'],
-  ].map(([name, kind]) => ({ name, handler: (connectionId, args) => confirmations.requestConfirmation({ type: `delete-${kind}-bulk`, targetId: 'bulk', params: { selection: selection(kind, args) } }, connectionId) }))
+  ].map(([name, kind]) => ({ name, handler: (connectionId, args = {}) => {
+    const hasIds = Object.hasOwn(args, 'ids'), hasBefore = Object.hasOwn(args, 'before')
+    if (kind === 'workouts' && hasIds === hasBefore) throw new BulkSelectionError('give exactly one of ids or before')
+    if (kind === 'routines' && !hasIds) throw new BulkSelectionError('give ids')
+    return confirmations.requestConfirmation({ type: `delete-${kind}-bulk`, targetId: 'bulk', params: { selection: selection(kind, args) } }, connectionId)
+  } }))
 }
