@@ -3941,3 +3941,33 @@ describe('the Lock Screen\'s Done (Live Activity)', () => {
     expect(mocks.S.active.entries[0].sets[0].done).toBe(false)
   })
 })
+
+describe('ticking the held row when no rest starts', () => {
+  const pressStart = async (index = 0) => {
+    const button = container.querySelectorAll('button.setgo')[index]
+    expect(button).toBeTruthy()
+    await act(async () => { button.dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    await rerender()
+  }
+  const timed = (sec = 30) => exercise('timed-plank', [false, false], {
+    target: { mode: 'time', sec, weight: 0, bodyweight: true },
+    sets: [{ sec, w: 0, done: false }, { sec, w: 0, done: false }],
+  })
+  it('rest timer Off: the tick ends the hold and logs what was held', async () => {
+    await mount([timed(30)], 0, { restSec: 0 })
+    await pressStart(0)
+    mocks.work = { left: 12, total: 30, endsAt: Date.now() + 12_000, label: 'timed-plank', owner: { idx: 0, i: 0, id: 'timed-plank' } }
+    await rerender()
+    await toggleSet(0)
+    expect(mocks.stopWork).toHaveBeenCalled()
+    expect(mocks.S.active.entries[0].sets[0]).toMatchObject({ sec: 18, done: true })
+  })
+  it('and a late end of that hold cannot write the target over the row', async () => {
+    await mount([timed(30)], 0, { restSec: 0 })
+    await pressStart(0)
+    await toggleSet(0)
+    mocks.S.active.entries[0].sets[0].sec = 18
+    await act(async () => { mocks.startWork.mock.calls[0][2](30) })
+    expect(mocks.S.active.entries[0].sets[0].sec).toBe(18)
+  })
+})

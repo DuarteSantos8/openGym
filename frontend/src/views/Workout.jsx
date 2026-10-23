@@ -1834,6 +1834,7 @@ function ActiveWorkout() {
       mutEntry(idx, en => { if (en.sets[i].planSec == null && !en.sets[i].done) en.sets[i].planSec = plan; en.sets[i].sec = elapsed })
       return
     }
+    if (held.sets[i].done) return
     mutEntry(idx, en => { en.sets[i].sec = elapsed; delete en.sets[i].planSec })
     // `fromHold`: the hold ended by itself or by its Done, which is what lets it chain the next one.
     // `away`: the marker went to another exercise while it ran (not where it stood as the hold
@@ -1877,6 +1878,14 @@ function ActiveWorkout() {
     // button tap, and a focused input with its keyboard gone is what leaves the tab bar
     // mid-screen on iOS (lib/viewport-guard.js).
     if (typeof document !== 'undefined') { const a = document.activeElement; if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA')) a.blur?.() }
+    const held = useUI.getState().work
+    let heldElapsed = null
+    if (!side && held && holdAt && holdAt.idx === idx && holdAt.i === i) {
+      // Still in its get-ready count, nothing has been held: the tick is an ordinary one.
+      if (!held.prep) heldElapsed = Math.max(1, held.total - held.left)
+      holdAt = null
+      useUI.getState().stopWork()
+    }
     const m = modeAt(idx)
     const cardioEntry = m === 'cardio'
     let exJustDone = false, workoutDone = false, checked = false
@@ -1887,6 +1896,7 @@ function ActiveWorkout() {
       if (side) e.sets[i] = toggleSide(e.sets[i], side)
       else e.sets[i].done = !e.sets[i].done
       checked = e.sets[i].done
+      if (heldElapsed != null && checked) e.sets[i].sec = heldElapsed
       // When the work happened, for the session's end (lib/finish-workout.js sessionEnd).
       if (!editing && (side ? e.sets[i].sides[side].done : checked)) e.sets[i].at = Date.now()
       // A finished row has no use for a plan set aside by a hold that did not finish.

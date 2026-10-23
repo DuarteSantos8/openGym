@@ -77,6 +77,17 @@ describe('a flow block with a get-ready count', { timeout: 20000 }, () => {
     expect(sets()).toEqual(['x35,x35', 'x35,x35', 'x35,x35'])
   })
 
+  it('ticking the held row during the count logs the plan, not a one-second hold', () => {
+    render(warmup())
+    click(btn('Start warm-up'))
+    tick(1000)
+    click(btn('Rows'))
+    tick(1000)
+    click(container.querySelector('.setrow .chk'))
+    expect(sets()[0]).toBe('x35,.35')
+    expect(w()).toBe(null)
+  })
+
   it('Space during the count starts the hold, running or paused, as the bar\'s Start does', () => {
     render(warmup())
     click(btn('Start warm-up'))
