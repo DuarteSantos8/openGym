@@ -63,6 +63,7 @@ const MEASURES = Object.fromEntries(['neck', 'shoulders', 'chest', 'waist', 'hip
   'wristLeft', 'wristRight', 'thighLeft', 'thighRight', 'calfLeft', 'calfRight', 'ankleLeft', 'ankleRight', 'bodyFat'].map(k => [k, num]))
 
 const READS = {
+  search_exercises: ['Find exercise IDs by name for planning; respects the active equipment profile and profile language. Returns text only.', obj({ query: str(80), limit: int }, ['query'])],
   list_routines: ['List the saved routines: ids, names and exercise counts.', obj()],
   get_routine: ['Full detail of one routine by routine_id.', obj({ routine_id: ID }, ['routine_id'])],
   preview_session: ['Preview the next session of a routine (routine_id, optional ISO date) with planned sets and weights.', obj({ routine_id: ID, date: DATE })],
@@ -165,12 +166,12 @@ export function createMcpHttp({ origin, prefix, apiBase, key, connections, grant
   // connection (and passkey user) that asked for it.
   const confirm = confirmations || createConfirmations({ connections, key, apiBase, origin, prefix, store, executors: createAdminExecutors({ apiBase }) })
   const handlers = list => Object.fromEntries(list.map(t => [t.name, t.handler]))
-  const read = handlers(createMcpTools(store.readProfile))
+  const read = handlers(createMcpTools(store.readProfile, { origin }))
   const admin = handlers(createAdminTools({ apiBase, confirmations: confirm }))
   const link = { ...handlers(createDestructiveTools(confirm)), ...admin }
   const edit = {
     update_week_plan: async (bearer, a) => {
-      const done = await updatePlanEdit(store, bearer, a)
+      const done = await updatePlanEdit(store, bearer, a, { origin })
       if (done instanceof PlanChoiceRequiredError) throw new ToolError('a live queue is active: choose between the live queue and the fixed week in openGym before editing')
       return done
     },

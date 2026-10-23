@@ -21,18 +21,19 @@ function targetOf(profile, type, id) {
   let digest
   try { digest = hash(JSON.stringify(target)) } catch { invalid() }
   if (typeof target.name !== 'string' || !target.name || target.name.length > 200) invalid()
+  const exercises = Array.isArray(target.ex) ? target.ex.length : Array.isArray(target.entries) ? target.entries.length : 0
+  const media = Array.isArray(target.media) && target.media.length > 0
   return {
     digest,
-    summary: type === 'delete-routine'
-      ? { type, id, name: target.name }
-      : { type, id, name: target.name, ...(typeof target.d === 'string' && target.d && target.d.length <= 200 ? { date: target.d } : {}) },
+    summary: { type, id, name: target.name, ...(typeof target.d === 'string' && target.d && target.d.length <= 200 ? { date: target.d } : {}),
+      effect: type === 'delete-routine' ? `Removes this routine and ${exercises} planned exercise${exercises === 1 ? '' : 's'}.` : `Removes this logged workout, its ${exercises} exercise${exercises === 1 ? '' : 's'}${media ? ', and its linked photos or videos' : ''}.` },
   }
 }
 
 function pickSummary(summary) {
   if (!summary || typeof summary !== 'object' || Array.isArray(summary)) invalid()
   const out = {}
-  for (const key of ['type', 'id', 'name', 'date']) {
+  for (const key of ['type', 'id', 'name', 'date', 'effect']) {
     const value = summary[key]
     if (value == null) continue
     if (typeof value !== 'string' || !value || value.length > 200) invalid()

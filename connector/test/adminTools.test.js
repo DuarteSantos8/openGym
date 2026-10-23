@@ -217,6 +217,7 @@ test('each destructive route runs only after passkey confirmation, once, with th
     const before = f.mutations().length
     const { summary, result } = await approve(f, name, args)
     assert.ok(summary.type && summary.id, name)
+    if (name === 'delete_account') assert.match(summary.effect, /training history.*photos or videos/)
     assert.deepEqual(result, expected, name)
     const calls = f.mutations().slice(before)
     assert.equal(calls.length, 1, name)

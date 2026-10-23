@@ -1,6 +1,7 @@
 import { createReadModel } from './readModel.js'
 
 const TOOLS = [
+  ['search_exercises', 'searchExercises'],
   ['list_routines', 'listRoutines'],
   ['get_routine', 'getRoutine'],
   ['preview_session', 'previewSession'],
@@ -12,10 +13,10 @@ const TOOLS = [
   ['muscle_balance', 'muscleBalance']
 ]
 
-export function createMcpTools(readProfile) {
+export function createMcpTools(readProfile, { origin } = {}) {
   if (typeof readProfile !== 'function') throw new TypeError('readProfile required')
   return TOOLS.map(([name, method]) => ({
     name,
-    handler: async (bearer, args = {}) => createReadModel(await readProfile(bearer))[method](args)
+    handler: async (bearer, args = {}) => createReadModel(await readProfile(bearer), { origin })[method](args)
   }))
 }

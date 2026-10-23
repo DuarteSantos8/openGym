@@ -208,7 +208,7 @@ function accountExecutor(apiBase, type, route, bodyOf, result) {
     },
     inspect: async ({ bearer }, id) => {
       const a = await account(apiBase, bearer, id)
-      return { summary: { type, id, name: a.name }, digest: hash([type, a]) }
+      return { summary: { type, id, name: a.name, effect: type === 'delete-account' ? 'Permanently removes this account, its training history, credentials, and uploaded photos or videos.' : 'Locks this account out until an admin enables it again.' }, digest: hash([type, a]) }
     },
     execute: async ({ bearer }, id) => { await send(apiBase, bearer, 'POST', route, bodyOf(id)); return result(id) },
   }

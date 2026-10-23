@@ -3,7 +3,7 @@ import { exAvailable } from '../../frontend/src/lib/equipment.js'
 import { queueOf } from '../../frontend/src/lib/queue.js'
 import { ProfileConflictError } from './profileStore.js'
 
-const urlOf = id => `https://gym.areum.cl/#/plan/r/${id}`
+const urlOf = (origin, id) => `${origin}/#/plan/r/${encodeURIComponent(id)}`
 const object = x => x !== null && typeof x === 'object' && !Array.isArray(x)
 const idOf = x => typeof x === 'string' && x.length > 0 && !/[\u0000-\u001f]/.test(x)
 const finite = x => typeof x === 'number' && Number.isFinite(x)
@@ -84,7 +84,7 @@ function createdBy(existing, name, patches) {
   return patches.every((p, i) => list[i] && list[i].id === p.id && targets.every(k => !Object.hasOwn(p, k) || list[i][k] === p[k]))
 }
 
-function routinesOf(profile, request) {
+function routinesOf(profile, request, origin) {
   if (!Array.isArray(profile.routines) || !Array.isArray(request.routines)) throw new Error('invalid routines')
   const seen = new Set()
   return request.routines.map(raw => {
@@ -100,7 +100,7 @@ function routinesOf(profile, request) {
       if (!raw.name) throw new Error('routine name required')
       if (seen.has(raw.creationId)) throw new Error('duplicate routine')
       seen.add(raw.creationId)
-      return { id: raw.creationId, name: raw.name, ex, url: urlOf(raw.creationId), isNew: true }
+      return { id: raw.creationId, name: raw.name, ex, url: urlOf(origin, raw.creationId), isNew: true }
     }
     const existing = profile.routines.find(r => r.id === raw.id)
     if (!existing) throw new Error('unknown routine')
@@ -108,7 +108,7 @@ function routinesOf(profile, request) {
     seen.add(existing.id)
     // An existing routine keeps whatever name it has when the edit is applied; only an explicit
     // rename travels in the edit, so a 409 retry never writes back a stale name.
-    return { id: existing.id, ...(raw.name != null ? { name: raw.name } : {}), ex, url: urlOf(existing.id), isNew: false }
+    return { id: existing.id, ...(raw.name != null ? { name: raw.name } : {}), ex, url: urlOf(origin, existing.id), isNew: false }
   })
 }
 
@@ -134,11 +134,11 @@ function requireEdit(edit) {
   }
 }
 
-export function proposeWeek(profile, request) {
+export function proposeWeek(profile, request, { origin = 'https://gym.areum.cl' } = {}) {
   if (!object(profile) || !object(request) || !object(request.week) || Object.keys(request).some(key => !['week', 'routines'].includes(key))) throw new Error('invalid week request')
   const blocked = choice(profile)
   if (blocked) return blocked
-  const routines = routinesOf(profile, request)
+  const routines = routinesOf(profile, request, origin)
   if (new Set(routines.map(r => r.id)).size !== routines.length) throw new Error('duplicate routine')
   const known = new Set([...(profile.routines || []).map(r => r.id), ...routines.map(r => r.id)])
   return { type: 'week', unit: profile.unit || 'kg', routines, week: weekPatch(request.week, known) }
@@ -177,12 +177,12 @@ export function applyPlanEdit(profile, edit) {
 // is handed on every attempt, so a 409 retry re-reads names, exercises and queue from fresh data and
 // no caller can supply `name` or `isNew`. The first state's unit is pinned: the request's numbers are
 // in that unit, and a retry that finds the other one must not save them.
-export async function updatePlanEdit(store, bearer, request) {
+export async function updatePlanEdit(store, bearer, request, { origin = 'https://gym.areum.cl' } = {}) {
   let unit
   let applied
   try {
     const profile = await store.updateProfile(bearer, current => {
-      const edit = proposeWeek(current, request)
+      const edit = proposeWeek(current, request, { origin })
       if (edit instanceof PlanChoiceRequiredError) throw edit
       if (unit === undefined) unit = edit.unit
       else if (edit.unit !== unit) throw new Error('unit mismatch')
@@ -190,7 +190,7 @@ export async function updatePlanEdit(store, bearer, request) {
       return applyPlanEdit(current, edit)
     })
     return {
-      routines: applied.routines.map(({ id }) => ({ id, name: profile.routines.find(r => r.id === id)?.name, url: urlOf(id) })),
+      routines: applied.routines.map(({ id }) => ({ id, name: profile.routines.find(r => r.id === id)?.name, url: urlOf(origin, id) })),
       unit: profile.unit || 'kg',
     }
   } catch (error) {

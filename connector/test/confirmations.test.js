@@ -68,6 +68,7 @@ for (const [type, targetId] of [['delete-routine', 'r1'], ['delete-workout', 'w1
     assert.ok([...f.service.pending.keys()].every(k => k.length === 43 && k !== id))
     const details = await f.service.details(id)
     assert.equal(details.summary.id, targetId)
+    assert.match(details.summary.effect, type === 'delete-routine' ? /routine/ : /workout/)
     assert.match(details.digest, /^[A-Za-z0-9_-]{43}$/)
     assert.ok(!JSON.stringify(details).includes('/media/') && !JSON.stringify(details).includes('private profile'))
     const { cid, options } = await f.service.challenge(id)
@@ -87,6 +88,15 @@ for (const [type, targetId] of [['delete-routine', 'r1'], ['delete-workout', 'w1
     assert.equal(f.puts, 1)
   })
 }
+
+test('workout deletion warns about linked photos without returning their paths', async t => {
+  const f = await fixture(); t.after(f.close)
+  f.profile = { ...f.profile, workouts: f.profile.workouts.map(w => w.id === 'w1' ? { ...w, media: [{ hash: 'private-photo-hash', url: '/media/private.webp' }] } : w) }
+  const id = idOf((await f.service.requestConfirmation({ type: 'delete-workout', targetId: 'w1' }, 'conn1')).url)
+  const details = await f.service.details(id)
+  assert.match(details.summary.effect, /linked photos or videos/)
+  assert.doesNotMatch(JSON.stringify(details.summary), /private-photo-hash|private\.webp/)
+})
 
 test('superseding request, expired ID, revoked connection, and other user all fail without writes', async t => {
   let clock = 1000

@@ -5,7 +5,11 @@ import {
   modeOf, workoutVolume, setsDone, effectiveRoutine, effectiveRoutineIds, lastEntryFor, workoutAt
 } from '../../frontend/src/lib/history.js'
 import { queueView, queueNext, pinState } from '../../frontend/src/lib/queue.js'
-import { exOr, EXIDX } from '../../frontend/src/lib/exercises.js'
+import { CATALOGUE, exOr, EXIDX } from '../../frontend/src/lib/exercises.js'
+import { exAvailable } from '../../frontend/src/lib/equipment.js'
+import { readFileSync } from 'node:fs'
+import { baseLang } from '../../frontend/src/lib/i18n-core.js'
+import { EXERCISE_NAME_LANGS } from '../../frontend/src/lib/catalogue-langs.js'
 import { isWarmupRow, isFailureSet } from '../../frontend/src/lib/workout-model.js'
 import { bestSetOf, best1RM, e1rmSeries, DEFAULT_FORMULA, REP_CAP } from '../../frontend/src/lib/onerm.js'
 import { loadOfWorkouts, rankOf, levelsOf } from '../../frontend/src/lib/muscles.js'
@@ -15,7 +19,7 @@ import { buildSessionEntries, startsFromLast } from '../../frontend/src/lib/sess
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const FORMULAS = new Set(['epley', 'brzycki', 'lombardi'])
 const PERIODS = new Set(['week', 'month', 'all'])
-const ROUTINE_URL = id => `https://gym.areum.cl/#/plan/r/${id}`
+const routineUrl = (origin, id) => `${origin}/#/plan/r/${encodeURIComponent(id)}`
 
 const localIso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
 const todayIso = () => localIso(new Date())
@@ -118,7 +122,7 @@ function entryView(e, S) {
   const mode = modeOf(cfg)
   return {
     id: e.id,
-    name: ex.n,
+    name: nameOf(S, ex),
     body_part: ex.bp || null,
     ...(ex.missing ? { unknown: true } : {}),
     mode,
@@ -144,7 +148,7 @@ function prTable(S, formula) {
       const prev = byId.get(e.id)
       if (!prev || best.est > prev.est) {
         const ex = exerciseOf(e.id, S)
-        byId.set(e.id, { exId: e.id, exName: ex.n, bp: ex.bp || null, est: best.est, w: best.w, r: best.r, date: w.d })
+        byId.set(e.id, { exId: e.id, exName: nameOf(S, ex), bp: ex.bp || null, est: best.est, w: best.w, r: best.r, date: w.d })
       }
     }
   }
@@ -169,13 +173,39 @@ const SOURCE_TEXT = {
   routine_plan: "the routine's own target"
 }
 
+const namePacks = new Map()
+function namesFor(lang) {
+  const base = baseLang(lang)
+  if (base === 'en' || !EXERCISE_NAME_LANGS.includes(base)) return null
+  if (!namePacks.has(base)) {
+    const url = new URL(`../../frontend/src/exercise-names/${base}.js`, import.meta.url)
+    try { namePacks.set(base, JSON.parse(readFileSync(url, 'utf8').replace(/^.*?export default /s, ''))) }
+    catch { namePacks.set(base, null) }
+  }
+  return namePacks.get(base)
+}
+
+// Name packs are data, not a process-global language toggle. Custom exercises have no translated id.
+function nameOf(S, ex) {
+  const translated = S.names && !S.customEx.some(custom => custom.id === ex.id) && S.names[ex.id]
+  return typeof translated === 'string' && translated ? translated : ex.n
+}
+
+function searchExercises(S, { query, limit = 20 } = {}) {
+  if (typeof query !== 'string' || !query.trim() || query.length > 80 || !Number.isInteger(limit) || limit < 1 || limit > 50) throw new Error('invalid exercise search')
+  const needle = query.trim().toLocaleLowerCase(S.lang || 'en')
+  const matches = [...CATALOGUE, ...S.customEx].filter(ex => ex && typeof ex.id === 'string' &&
+    exAvailable(S, ex) && (nameOf(S, ex).toLocaleLowerCase(S.lang || 'en').includes(needle) || ex.n?.toLocaleLowerCase(S.lang || 'en').includes(needle)))
+  return { unit: S.unit || 'kg', exercises: matches.slice(0, limit).map(ex => ({ id: ex.id, name: nameOf(S, ex), body_part: ex.bp || null, equipment: ex.eq || null })) }
+}
+
 function listRoutines(S) {
   return {
     unit: S.unit || 'kg',
     routines: S.routines.map(r => ({
       id: r.id,
       name: r.name,
-      url: ROUTINE_URL(r.id),
+      url: routineUrl(S.origin, r.id),
       emoji: r.emoji || null,
       exercise_count: (r.ex || []).length,
       superset_groups: [...new Set((r.ex || []).map(e => e.sg).filter(Boolean))].length || 0,
@@ -193,7 +223,7 @@ function getRoutine(S, { routine_id } = {}) {
   return {
     id: r.id,
     name: r.name,
-    url: ROUTINE_URL(r.id),
+    url: routineUrl(S.origin, r.id),
     emoji: r.emoji || null,
     policy: policyFor(null, r, 'reps'),
     policy_name: policyName(policyFor(null, r, 'reps')),
@@ -205,7 +235,7 @@ function getRoutine(S, { routine_id } = {}) {
       return {
         position: i + 1,
         id: cfg.id,
-        name: ex.n,
+        name: nameOf(S, ex),
         body_part: ex.bp || null,
         ...(ex.missing ? { unknown: true } : {}),
         mode,
@@ -358,7 +388,7 @@ function getWorkout(S, { date, workout_id } = {}) {
     duration: w.end && w.start ? friendlyDuration(w.end - w.start) : null,
     prs: (w.prs || []).map(pid => {
       const ex = exerciseOf(pid, S)
-      return ex.missing ? pid : ex.n
+      return ex.missing ? pid : nameOf(S, ex)
     }),
     entries: (w.entries || []).map(e => entryView(e, S))
   }
@@ -395,7 +425,7 @@ function estimateOneRm(S, { exercise_id, formula } = {}) {
       (w.entries || []).some(e => e.id === exerciseId && (e.sets || []).some(s => s.done)))
     const unknown = !!ex.missing && !trainedAtAll
     return {
-      exercise: { id: exerciseId, name: ex.n, body_part: ex.bp || null, ...(unknown ? { unknown: true } : {}) },
+      exercise: { id: exerciseId, name: nameOf(S, ex), body_part: ex.bp || null, ...(unknown ? { unknown: true } : {}) },
       formula: f,
       formula_note: `Estimates use the ${f} formula. Cap at ${REP_CAP} reps applies; r=1 is treated as the measurement, not an estimate.`,
       best: best ? { est: best.est, w: best.w, r: best.r, date: best.d } : null,
@@ -470,7 +500,7 @@ function previewSession(S, { routine_id, date } = {}) {
     return {
       position: i + 1,
       id: cfg.id,
-      name: ex.n,
+      name: nameOf(S, ex),
       ...(ex.missing ? { unknown: true } : {}),
       mode,
       policy: plan.policy,
@@ -547,10 +577,13 @@ function previewSession(S, { routine_id, date } = {}) {
   }
 }
 
-export function createReadModel(profile) {
+export function createReadModel(profile, { origin = 'https://gym.areum.cl' } = {}) {
   const S = shape(structuredClone(profile))
+  S.origin = origin
+  S.names = namesFor(S.lang)
   return {
     listRoutines: () => listRoutines(S),
+    searchExercises: args => searchExercises(S, args),
     getRoutine: args => getRoutine(S, args),
     getWeek: () => getWeek(S),
     listWorkouts: args => listWorkouts(S, args),

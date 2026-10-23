@@ -13,6 +13,7 @@ WORKDIR /app
 COPY connector/package.json connector/package.json
 COPY connector/src connector/src
 COPY frontend/src/lib frontend/src/lib
+COPY frontend/src/exercise-names frontend/src/exercise-names
 COPY mcp/src/labels.js mcp/src/labels.js
 WORKDIR /app/connector
 

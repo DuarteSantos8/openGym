@@ -90,7 +90,7 @@ test('tools/list documents exact tool and input names; irreversible tools demand
     'change_setting', 'clear_audit_log', 'delete_account', 'delete_routine', 'delete_workout', 'disable_account', 'disconnect_coach',
     'estimate_1rm', 'get_audit_log', 'get_bodyweight', 'get_coach_status', 'get_routine', 'get_user', 'get_week_plan', 'get_workout',
     'list_invites', 'list_routines', 'list_users', 'list_workouts', 'log_body_weight', 'log_measurement', 'log_workout',
-    'muscle_balance', 'preview_session', 'sweep_media', 'update_week_plan',
+    'muscle_balance', 'preview_session', 'search_exercises', 'sweep_media', 'update_week_plan',
   ])
   const plan = tools.find(x => x.name === 'update_week_plan').inputSchema
   assert.deepEqual(props('update_week_plan'), ['routines', 'week'])

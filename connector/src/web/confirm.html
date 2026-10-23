@@ -46,7 +46,7 @@ function credentialJSON(cred) {
   }
 }
 post('details').then(({ summary, digest: value }) => {
-  target.textContent = summary.type + ': ' + summary.name + ' (' + summary.id + ')' + (summary.date ? ' — ' + summary.date : '')
+  target.textContent = summary.type + ': ' + summary.name + ' (' + summary.id + ')' + (summary.date ? ' — ' + summary.date : '') + (summary.effect ? '. ' + summary.effect : '')
   digest.textContent = 'Target fingerprint: ' + value
   button.disabled = false
 }).catch(() => say('Confirmation unavailable. Request a new link.'))

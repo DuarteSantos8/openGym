@@ -120,6 +120,7 @@ test('Dockerfile: node:22-alpine, non-root, no data volume, no installs, no bake
   const d = read('Dockerfile')
   assert.match(d, /^FROM node:22-alpine\b/m)
   assert.match(d, /^USER node$/m)
+  assert.match(d, /^COPY frontend\/src\/exercise-names frontend\/src\/exercise-names$/m)
   assert.match(d, /^CMD \["node", "src\/main\.js"\]$/m)
   assert.match(d, /org\.opencontainers\.image\.licenses="AGPL-3\.0-or-later"/)
   assert.doesNotMatch(d, /^\s*VOLUME\b/m)

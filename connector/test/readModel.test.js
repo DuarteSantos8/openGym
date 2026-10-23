@@ -36,8 +36,8 @@ const profile = () => {
 }
 
 test('routine reads preserve targets, rests, units, URLs and unknown exercise IDs without media', () => {
-  const model = createReadModel(profile())
-  assert.equal(model.listRoutines().routines[1].url, 'https://gym.areum.cl/#/plan/r/queued')
+  const model = createReadModel(profile(), { origin: 'https://gym.example.test' })
+  assert.equal(model.listRoutines().routines[1].url, 'https://gym.example.test/#/plan/r/queued')
   const r = model.getRoutine({ routine_id: 'queued' })
   assert.equal(r.unit, 'lb')
   assert.equal(r.exercises[0].id, 'unlisted-exercise')
@@ -64,6 +64,20 @@ test('workout, bodyweight, 1RM and muscle reads stay on injected profile', () =>
   assert.equal(model.muscleBalance({ period: 'all' }).workouts_in_period, 1)
 })
 
+test('exercise names follow the profile language and equipment filter', async () => {
+  const p = profile()
+  p.lang = 'es'
+  p.equipFilterOn = true
+  p.activeEquipId = 'home'
+  p.equipProfiles = [{ id: 'home', accV: 1, equipment: ['body weight'] }]
+  const model = createReadModel(p, { origin: 'https://gym.example.test' })
+  const found = model.searchExercises({ query: 'flexión arquero', limit: 5 })
+  assert.ok(found.exercises.some(e => e.id === '3294' && e.name === 'flexión arquero'))
+  assert.ok(found.exercises.every(e => e.id && e.name && !e.media))
+  assert.ok(found.exercises.every(e => e.equipment === 'body weight'))
+  assert.equal(model.getRoutine({ routine_id: 'fixed' }).exercises[0].name, 'Unknown exercise')
+})
+
 test('reject invalid calendar dates, empty IDs and invalid options at the boundary', () => {
   const model = createReadModel(profile())
   assert.throws(() => model.previewSession({ date: '2026-02-30' }), /date/i)
@@ -73,14 +87,15 @@ test('reject invalid calendar dates, empty IDs and invalid options at the bounda
   assert.throws(() => model.estimateOneRm({ formula: 'fake' }), /formula/i)
 })
 
-test('nine MCP tools fetch each bearer profile independently; no image data travels', async () => {
+test('MCP tools fetch each bearer profile independently; no image data travels', async () => {
   const tools = createMcpTools(async bearer => ({
     ...profile(),
     routines: [{ id: bearer, name: bearer, ex: [] }],
     workouts: [],
     queue: null,
   }))
-  assert.equal(tools.length, 9)
+  assert.equal(tools.length, 10)
+  assert.ok(tools.some(tool => tool.name === 'search_exercises'))
   const list = tools.find(tool => tool.name === 'list_routines')
   assert.equal((await list.handler('one', {})).routines[0].id, 'one')
   assert.equal((await list.handler('two', {})).routines[0].id, 'two')
