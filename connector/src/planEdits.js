@@ -156,16 +156,28 @@ export function applyPlanEdit(profile, edit) {
   return next
 }
 
-export async function updatePlanEdit(store, bearer, edit) {
-  if (edit instanceof PlanChoiceRequiredError) return edit
-  requireEdit(edit)
+// Takes the caller's request, never a prebuilt edit: the patch rebuilds the edit from the state it
+// is handed on every attempt, so a 409 retry re-reads names, exercises and queue from fresh data and
+// no caller can supply `name` or `isNew`. The first state's unit is pinned: the request's numbers are
+// in that unit, and a retry that finds the other one must not save them.
+export async function updatePlanEdit(store, bearer, request) {
+  let unit
+  let applied
   try {
-    const profile = await store.updateProfile(bearer, current => applyPlanEdit(current, edit))
+    const profile = await store.updateProfile(bearer, current => {
+      const edit = proposeWeek(current, request)
+      if (edit instanceof PlanChoiceRequiredError) throw edit
+      if (unit === undefined) unit = edit.unit
+      else if (edit.unit !== unit) throw new Error('unit mismatch')
+      applied = edit
+      return applyPlanEdit(current, edit)
+    })
     return {
-      routines: edit.routines.map(({ id }) => ({ id, name: profile.routines.find(r => r.id === id)?.name, url: urlOf(id) })),
+      routines: applied.routines.map(({ id }) => ({ id, name: profile.routines.find(r => r.id === id)?.name, url: urlOf(id) })),
       unit: profile.unit || 'kg',
     }
   } catch (error) {
+    if (error instanceof PlanChoiceRequiredError) return error
     if (error instanceof ProfileConflictError) throw new Error('profile conflict')
     throw error
   }

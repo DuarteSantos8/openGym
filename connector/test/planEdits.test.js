@@ -13,6 +13,20 @@ const base = () => ({
   week: { 1: ['old'], 3: ['untouched'] }, queue: null,
 })
 const request = () => ({ routines: [{ id: 'old', name: 'New name', ex: [{ id: exId, sets: 4, reps: 6, weight: 120, restSec: 90 }] }], week: { 1: ['old'] } })
+// Stands in for profileStore: runs the patch once per state (each later state is a 409 refetch)
+// and records every state the patch produced, i.e. everything that would have been PUT.
+const fakeStore = (...states) => {
+  const store = {
+    produced: [],
+    async updateProfile(bearer, patch, options) {
+      assert.equal(options?.allowDelete, undefined)
+      let last
+      for (const state of states) { last = patch(structuredClone(state)); store.produced.push(last) }
+      return last
+    },
+  }
+  return store
+}
 
 test('propose only describes; apply sets existing ID, preserves unrelated records, week days, unit and source', () => {
   const profile = base()
@@ -98,8 +112,7 @@ test('duplicate existing exercise slots reject before mutation', () => {
 })
 
 test('empty exercise lists and empty weekdays are rejected without writing', async () => {
-  let writes = 0
-  const store = { updateProfile() { writes++; throw new Error('wrote') } }
+  const store = fakeStore(base())
   const profile = base()
   const before = structuredClone(profile)
   assert.throws(() => proposeWeek(profile, { routines: [{ id: 'old', ex: [] }], week: {} }), /invalid/i)
@@ -107,9 +120,9 @@ test('empty exercise lists and empty weekdays are rejected without writing', asy
   assert.throws(() => applyPlanEdit(profile, { type: 'week', unit: 'lb', routines: [{ id: 'old', name: 'Old', ex: [], isNew: false }], week: {} }), /invalid/i)
   assert.throws(() => applyPlanEdit(profile, { type: 'week', unit: 'lb', routines: [], week: { 1: [] } }), /invalid/i)
   assert.deepEqual(profile, before)
-  assert.equal(writes, 0)
-  await assert.rejects(() => updatePlanEdit(store, 'token', { type: 'week', unit: 'lb', routines: [{ id: 'old', name: 'Old', ex: [] }], week: {} }), /invalid/i)
-  assert.equal(writes, 0)
+  await assert.rejects(() => updatePlanEdit(store, 'token', { routines: [{ id: 'old', ex: [] }], week: {} }), /invalid/i)
+  await assert.rejects(() => updatePlanEdit(store, 'token', { routines: [{ id: 'old', ex: [{ id: exId }] }], week: { 1: [] } }), /invalid/i)
+  assert.equal(store.produced.length, 0)
 })
 
 test('equipment filter uses active profile, catalogue and profile customs; unknown IDs rejected', () => {
@@ -153,27 +166,24 @@ test('live queue and fixed week require explicit choice; updateProfile never cal
   assert.deepEqual(choice.queue, { name: 'Coach week', ids: ['untouched'], names: ['Other'] })
   assert.deepEqual(choice.week.ids, ['old', 'untouched'])
   assert.deepEqual(choice.week.names, ['Old', 'Other'])
-  let writes = 0
-  const store = { updateProfile() { writes++; throw new Error('called updateProfile') } }
-  assert.equal(await updatePlanEdit(store, 'bearer', choice), choice)
-  assert.equal(writes, 0)
-  assert.throws(() => applyPlanEdit(s, request()), /invalid edit/i)
+  const store = fakeStore(s)
+  const answered = await updatePlanEdit(store, 'bearer', request())
+  assert.ok(answered instanceof PlanChoiceRequiredError)
+  assert.deepEqual(answered.queue, choice.queue)
+  assert.deepEqual(answered.week, choice.week)
+  assert.equal(store.produced.length, 0)
+  // A queue that appears only after a 409 stops the retry; nothing is produced for that state.
+  const late = fakeStore(base(), s)
+  assert.ok(await updatePlanEdit(late, 'bearer', request()) instanceof PlanChoiceRequiredError)
+  assert.equal(late.produced.length, 1)
   assert.throws(() => applyPlanEdit(s, proposeWeek(base(), request())), PlanChoiceRequiredError)
-  assert.equal(writes, 0)
 })
 
 test('updateProfile patch returns complete idempotent profile without deletion options', async () => {
-  const initial = base()
-  const edit = proposeWeek(initial, request())
-  let writes = 0
-  const store = { updateProfile: async (bearer, patch, options) => {
-    assert.equal(bearer, 'token')
-    assert.equal(options?.allowDelete, undefined)
-    writes++
-    return patch(structuredClone(initial))
-  } }
-  const result = await updatePlanEdit(store, 'token', edit)
-  assert.equal(writes, 1)
+  const store = fakeStore(base())
+  const result = await updatePlanEdit(store, 'token', request())
+  assert.equal(store.produced.length, 1)
+  assert.equal(store.produced[0].routines.length, 2)
   assert.equal(result.routines.find(r => r.id === 'old').url, 'https://gym.areum.cl/#/plan/r/old')
   assert.equal(result.unit, 'lb')
   assert.equal(result.profile, undefined)
@@ -186,7 +196,7 @@ test('persistent conflict hides profile, bearer and media', async () => {
     customEx: [{ id: 'x', img: '/media/planted.gif', gif: 'base64abc' }],
   }
   const store = { updateProfile: async () => { throw new ProfileConflictError(planted) } }
-  await assert.rejects(() => updatePlanEdit(store, 'secret-bearer-token', proposeWeek(base(), request())), e => {
+  await assert.rejects(() => updatePlanEdit(store, 'secret-bearer-token', request()), e => {
     assert.equal(e.profile, undefined)
     assert.equal(e.cause, undefined)
     const text = [e.message, e.stack, e.name, JSON.stringify(e)].join('\n')
@@ -194,4 +204,35 @@ test('persistent conflict hides profile, bearer and media', async () => {
     assert.match(e.message, /conflict/i)
     return true
   })
+})
+
+test('exercise-only request keeps a routine renamed before the 409 retry', async () => {
+  const phone = base()
+  phone.routines[0].name = 'Phone'
+  const store = fakeStore(base(), phone)
+  const result = await updatePlanEdit(store, 'token', { routines: [{ id: 'old', ex: [{ id: exId, weight: 120 }] }], week: {} })
+  assert.equal(store.produced.length, 2)
+  assert.equal(store.produced[0].routines[0].name, 'Old')
+  assert.equal(store.produced[1].routines[0].name, 'Phone')
+  assert.equal(store.produced[1].routines[0].ex[0].weight, 120)
+  assert.equal(result.routines[0].name, 'Phone')
+  // An explicit rename in the request still wins on every attempt.
+  const named = await updatePlanEdit(fakeStore(base(), phone), 'token', { routines: [{ id: 'old', name: 'Chosen', ex: [{ id: exId, weight: 120 }] }], week: {} })
+  assert.equal(named.routines[0].name, 'Chosen')
+})
+
+test('updatePlanEdit takes a request, never a prebuilt edit that could force a rename or skip a patch', async () => {
+  const store = fakeStore(base())
+  const edit = proposeWeek(base(), { routines: [{ id: 'old', ex: [{ id: exId, weight: 120 }] }], week: {} })
+  await assert.rejects(() => updatePlanEdit(store, 'token', edit), /invalid/i)
+  await assert.rejects(() => updatePlanEdit(store, 'token', { type: 'week', unit: 'lb', routines: [{ id: 'old', name: 'Forced', ex: [{ id: exId }], isNew: true }], week: {} }), /invalid/i)
+  assert.equal(store.produced.length, 0)
+})
+
+test('a unit change between attempts rejects instead of saving the old numbers', async () => {
+  const kg = { ...base(), unit: 'kg' }
+  const store = fakeStore(base(), kg)
+  await assert.rejects(() => updatePlanEdit(store, 'token', { routines: [{ id: 'old', ex: [{ id: exId, weight: 120 }] }], week: {} }), /unit/i)
+  assert.equal(store.produced.length, 1)
+  assert.equal(store.produced[0].unit, 'lb')
 })
