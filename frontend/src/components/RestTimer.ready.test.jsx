@@ -8,7 +8,7 @@ import { useStore } from '../store/useStore.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), countdown: vi.fn(), hush: vi.fn(), holdSession: vi.fn() }))
 
 let host, root, originalS
 
@@ -105,7 +105,11 @@ describe('RestTimer switch-sides pause', () => {
     useUI.setState({ toastMsg: '' })
     act(() => useUI.getState().startRest(10, 0, { kind: 'switch' }))
     mount()
-    expect(host.querySelector('#timer.switch .lbl')?.textContent).toBe('Switch sides')
+    // One word and no chevron: the label is as wide as the clock, and "Switch sides" with the
+    // chevron did not fit there (RestTimer.jsx). The clock still opens the wheel.
+    expect(host.querySelector('#timer.switch .lbl')?.textContent).toBe('Switch')
+    expect(host.querySelector('#timer.switch .lbl svg, #timer.switch .lbl .icn')).toBeNull()
+    expect(host.querySelector('#timer .tclock').tagName).toBe('BUTTON')
     expect(host.querySelector('#timer .t').textContent).toBe('0:10')
     act(() => vi.advanceTimersByTime(10_000))
     expect(useUI.getState().timer).toBeNull()

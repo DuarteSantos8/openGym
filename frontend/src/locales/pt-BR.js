@@ -33,6 +33,15 @@ export const PT_BR_OVERRIDES = {
   'Not synced yet. Tap to retry.': 'Ainda não sincronizado. Toque para tentar de novo.',
   'Enter a positive step to use this progression rule.': 'Digite um passo positivo para usar esta regra de progressão.',
   'Layout': 'Layout',
+  // --- flow blocks: a warm-up or cool-down run as one hands-free screen ---
+  'Round {0} of {1}': 'Rodada {0} de {1}',
+  'Cool-down': 'Desaquecimento',
+  'Start cool-down': 'Começar desaquecimento',
+  'Resume cool-down': 'Retomar desaquecimento',
+  'Cool-down complete': 'Desaquecimento concluído',
+  'Get ready': 'Prepare-se',
+  'Get ready before each hold': 'Prepare-se antes de cada sustentação',
+  'Warm-ups and cool-downs that run themselves count down before each hold, so you can get into position.': 'Aquecimentos e desaquecimentos que seguem sozinhos fazem uma contagem regressiva antes de cada sustentação, para você se posicionar.',
   'No sessions logged yet': 'Ainda não há sessões registradas',
   'What should change?': 'O que deve mudar?',
   'Coach is thinking…': 'O Coach está pensando…',
@@ -1152,6 +1161,7 @@ export const PT_BR_OVERRIDES = {
   'That address answers, but it isn’t an openGym server. Check the URL.': 'Esse endereço responde, mas não é um servidor openGym. Verifique a URL.',
   'That address answers, but a login page or proxy rule replied instead of openGym. Let /api/ through to openGym unchanged. See “Phone app and CORS” in docs/SELF_HOSTING.md.': 'Esse endereço responde, mas quem respondeu foi uma página de login ou uma regra do proxy, não o openGym. Deixe o /api/ chegar ao openGym sem alterações. Veja “Phone app and CORS” em docs/SELF_HOSTING.md.',
   'Switch sides': 'Troque de lado',
+  'Switch': 'Troque',
   'Saves a dated copy to “{0}” after finishing a workout or editing a routine, and keeps the newest {1}.': 'Salva uma cópia datada em “{0}” depois de terminar um treino ou editar uma rotina, e mantém as {1} mais recentes.',
   'Saves a dated copy to the folder you chose after finishing a workout or editing a routine, and keeps the newest {0}.': 'Salva uma cópia datada na pasta que você escolheu depois de terminar um treino ou editar uma rotina, e mantém as {0} mais recentes.',
   'Your routines in a loop': 'Suas rotinas em ciclo',
@@ -1535,6 +1545,12 @@ export const PT_BR_OVERRIDES = {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'Este dispositivo tem 1 treino que não está neste backup. Substituir exclui esse treino.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'Este dispositivo tem {0} treinos que não estão neste backup. Substituir exclui esses treinos.',
+  // --- a sound for each kind of rest (#165) ---
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'Ouça o que vem a seguir sem olhar. Até você escolher um, cada um toca o som acima, como sempre fazem as isometrias e a pausa para trocar de lado.',
+  'Next round': 'Próxima rodada',
+  'Next exercise': 'Próximo exercício',
+  // --- what the timer bar says it times (#165) ---
+  'Round': 'Rodada',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

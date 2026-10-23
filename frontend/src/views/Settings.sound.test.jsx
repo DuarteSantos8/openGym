@@ -2,13 +2,13 @@
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import Settings, { RestSoundSheet } from './Settings.jsx'
+import Settings, { RestSoundSheet, RestKindSoundSheet } from './Settings.jsx'
 import { chime, unlock } from '../lib/sound.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const mocks = vi.hoisted(() => {
-  const state = { S: null }
+  const state = { S: null, openSheet: null, restartCountdown: null }
   state.snapshot = () => ({
     S: state.S,
     user: null,
@@ -28,7 +28,7 @@ vi.mock('../store/useStore.js', () => {
   return { useStore, DEF: { reminder: { time: '17:30' } }, hasData: () => false }
 })
 vi.mock('../store/useUI.js', () => {
-  const snap = () => ({ toast: vi.fn(), openSheet: vi.fn() })
+  const snap = () => ({ toast: vi.fn(), openSheet: mocks.openSheet || vi.fn(), restartCountdown: mocks.restartCountdown || vi.fn() })
   const useUI = selector => selector ? selector(snap()) : snap()
   useUI.getState = snap
   return { useUI }
@@ -130,6 +130,15 @@ describe('Settings — Play a sound unlocks audio from the tap', () => {
     expect(mocks.S.sound).toBe(false)
     expect(unlock).not.toHaveBeenCalled()
   })
+
+  // A timer already counting picks up a Sounds change straight away (store/useUI.js).
+  it('a timer already counting has its count-in queued again, or called off', () => {
+    mocks.restartCountdown = vi.fn()
+    mount()
+    act(() => { switchIn(rowTitled('Play a sound')).click() })
+    expect(mocks.restartCountdown).toHaveBeenCalledTimes(1)
+    mocks.restartCountdown = null
+  })
 })
 
 describe('Settings — optional timed-set overtime', () => {
@@ -228,7 +237,7 @@ describe('Settings — which sound', () => {
     // the mocked store does not re-render on its own: render again to read the new tick
     const render = () => act(() => root.render(<RestSoundSheet close={close} />))
     render()
-    expect([...host.querySelectorAll('.lrow-t')].map(e => e.textContent)).toEqual(['Chime (louder)', 'Classic beeps', 'Bell', 'Beep-beep', 'Whistle', 'Soft'])
+    expect([...host.querySelector('.sect').querySelectorAll('.lrow-t')].map(e => e.textContent)).toEqual(['Chime (louder)', 'Classic beeps', 'Bell', 'Beep-beep', 'Whistle', 'Soft'])
     expect(rowTitled('Chime (louder)').querySelector('.lrow-k')).toBeTruthy()
 
     act(() => { rowTitled('Bell').click() })
@@ -250,4 +259,55 @@ describe('Settings — which sound', () => {
     act(() => { [...host.querySelectorAll('button')].find(b => b.textContent === 'Done').click() })
     expect(close).toHaveBeenCalled()
   })
+
+  // A kind of rest can end with a sound of its own (S.restSoundByKind), picked in a sheet of its
+  // own from the same six and heard as it is picked; "Same as …" takes the kind out again.
+  it('lists the three kinds of rest under the sounds, each on Same as above until given one', () => {
+    mocks.S.restSound = 'bell'
+    mocks.S.restSoundByKind = { round: 'whistle' }
+    mocks.openSheet = vi.fn()
+    act(() => root.render(<RestSoundSheet close={vi.fn()} />))
+    expect(host.textContent).toContain('A sound for each kind of rest')
+    expect(rowTitled('Next set').querySelector('.lrow-v').textContent).toBe('Same as above')
+    expect(rowTitled('Next round').querySelector('.lrow-v').textContent).toBe('Whistle')
+    expect(rowTitled('Next exercise').querySelector('.lrow-v').textContent).toBe('Same as above')
+    act(() => { rowTitled('Next exercise').click() })
+    expect(mocks.openSheet).toHaveBeenCalledTimes(1)
+    mocks.openSheet = null
+  })
+
+  it('a kind\'s sheet plays and stores each pick, and Same as … takes only that kind out', () => {
+    mocks.S.restSound = 'bell'
+    mocks.S.restSoundByKind = { set: 'beep' }
+    const close = vi.fn()
+    const render = () => act(() => root.render(<RestKindSoundSheet kind="block" close={close} />))
+    render()
+    expect(host.querySelector('h3').textContent).toBe('Next exercise')
+    expect([...host.querySelectorAll('.lrow-t')].map(e => e.textContent)).toEqual(['Same as Bell', 'Chime (louder)', 'Classic beeps', 'Bell', 'Beep-beep', 'Whistle', 'Soft'])
+    expect(rowTitled('Same as Bell').querySelector('.lrow-k')).toBeTruthy()
+
+    act(() => { rowTitled('Whistle').click() })
+    expect(mocks.S.restSoundByKind).toEqual({ set: 'beep', block: 'whistle' })
+    expect(mocks.S.restSound).toBe('bell')
+    expect(chime).toHaveBeenLastCalledWith(true, 'whistle')
+    expect(unlock).toHaveBeenCalled()
+    render()
+    expect(rowTitled('Whistle').querySelector('.lrow-k')).toBeTruthy()
+    expect(rowTitled('Same as Bell').querySelector('.lrow-k')).toBeNull()
+
+    act(() => { rowTitled('Same as Bell').click() })
+    expect(mocks.S.restSoundByKind).toEqual({ set: 'beep' })
+    expect(chime).toHaveBeenLastCalledWith(true, 'bell')
+    expect(close).not.toHaveBeenCalled()
+    act(() => { [...host.querySelectorAll('button')].find(b => b.textContent === 'Done').click() })
+    expect(close).toHaveBeenCalled()
+  })
+
+  it('the last kind taken out leaves no empty map behind', () => {
+    mocks.S.restSoundByKind = { round: 'soft' }
+    act(() => root.render(<RestKindSoundSheet kind="round" close={vi.fn()} />))
+    act(() => { rowTitled('Same as Chime (louder)').click() })
+    expect('restSoundByKind' in mocks.S).toBe(false)
+  })
 })
+
