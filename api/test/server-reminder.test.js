@@ -52,7 +52,7 @@ async function startServer(t, subs = []) {
 
 test('PUT /api/data refuses a state whose workouts or routines is not an array', async t => {
   const h = await startServer(t);
-  const put = state => fetch(`${h.api}/api/data`, { method: 'PUT', headers: cookie, body: JSON.stringify({ state }) });
+  const put = state => fetch(`${h.api}/api/data`, { method: 'PUT', headers: { ...cookie, 'Content-Type': 'application/json' }, body: JSON.stringify({ state }) });
   const file = path.join(h.dataDir, 'state-u_test_1.json');
 
   for (const bad of [{ workouts: {} }, { workouts: 'abc' }, { workouts: 7 }, { workouts: true }, { routines: {} }, { routines: 'r1' }, { workouts: [], routines: {} }]) {
@@ -180,4 +180,44 @@ test('a null entry in workouts or routines does not cost that profile its remind
   while (Date.now() < deadline && !firings(h.log)) await wait(300);
   assert.equal(firings(h.log), 1, h.log);
   assert.doesNotMatch(h.log, /reminder tick u_test_1 TypeError/, h.log);
+});
+
+// The tick keeps a few bytes per user and reads a whole state only while a window is open and
+// something could still be sent. "Nothing owed today" is remembered for the file as it is, so a
+// change to the file (here: a rest day turned into a training day) has to be read again.
+test('a day that owed nothing is asked again once the state file changes', async t => {
+  const late = hhmmMinusMinutes(2);
+  if (!late.sameDay) return t.skip('just after midnight UTC — a same-day window cannot be set up');
+  const h = await startServer(t, [sub]);
+  const file = path.join(h.dataDir, 'state-u_test_1.json');
+  fs.writeFileSync(file, goodState(late.hhmm, { week: {} }));
+  await wait(1500);
+  assert.equal(firings(h.log), 0, `a rest day stays silent:\n${h.log}`);
+  fs.writeFileSync(file, goodState(late.hhmm));
+  const deadline = Date.now() + 10000;
+  while (Date.now() < deadline && !firings(h.log)) await wait(300);
+  assert.equal(firings(h.log), 1, h.log);
+});
+
+test('a disabled profile gets no reminder', async t => {
+  const late = hhmmMinusMinutes(2);
+  if (!late.sameDay) return t.skip('just after midnight UTC — a same-day window cannot be set up');
+  const h = await startServer(t, [sub]);
+  const db = JSON.parse(fs.readFileSync(path.join(h.dataDir, 'db.json'), 'utf8'));
+  assert.equal(db.users[0].id, 'u_test_1');
+  h.child.kill('SIGKILL');
+  db.users[0].disabled = true;
+  fs.writeFileSync(path.join(h.dataDir, 'db.json'), JSON.stringify(db));
+  fs.writeFileSync(path.join(h.dataDir, 'state-u_test_1.json'), goodState(late.hhmm));
+  const child = spawn(process.execPath, ['server.js'], {
+    cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
+    env: { ...process.env, PORT: '0', DATA_DIR: h.dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost', REMINDER_TICK_MS: '300' }
+  });
+  let log = '';
+  child.stdout.on('data', d => log += d);
+  child.stderr.on('data', d => log += d);
+  t.after(() => child.kill('SIGKILL'));
+  await boundPort(child, () => log);
+  await wait(1500);
+  assert.equal(firings(log), 0, log);
 });

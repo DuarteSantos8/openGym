@@ -215,7 +215,6 @@ function endTone(enabled, kind) {
 }
 
 export const useUI = create((set, get) => ({
-  intervalAction: null,
   sheets: [],          // { id, render:(close)=>JSX, kind:'sheet'|'center', locked }
   toastMsg: '',
   toastAction: null,   // { label, run, id } while the toast offers an action (Undo)
@@ -261,6 +260,12 @@ export const useUI = create((set, get) => ({
     clearTimeout(toastTm)
     set({ toastMsg: '', toastAction: null })
     act.run()
+  },
+  // The toast's ×: gone now, its action with it (what it would have undone stays done).
+  dismissToast() {
+    clearTimeout(toastTm)
+    toastPaused = false
+    set({ toastMsg: '', toastAction: null })
   },
   pauseToast() {
     if (!get().toastAction || toastPaused) return

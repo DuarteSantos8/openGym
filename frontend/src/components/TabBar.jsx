@@ -1,6 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { useUI } from '../store/useUI.js'
 import { effectiveRoutineIds, effectiveRoutines } from '../lib/history.js'
 import { todayISO } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
@@ -24,7 +23,6 @@ export default function TabBar({ onStart }) {
   const nav = useNavigate()
   const loc = useLocation()
   const S = useStore(s => s.S)
-  const intervalAction = useUI(s => s.intervalAction)
   const user = useStore(s => s.user)
   const isGuest = useStore(s => s.isGuest())
   // With the connection banner switched off, a sync problem shows as a dot on Home, the tab
@@ -35,8 +33,6 @@ export default function TabBar({ onStart }) {
   const on = k => cur === k || (cur === 'history' && k === 'stats') || (cur === 'settings' && k === 'home') || (cur === 'muscles' && k === 'library') || (cur === 'structural-balance' && k === 'stats')
 
   const running = !!S.active && cur !== 'workout' && !S.active.editingWorkoutId && !S.active.backfill && S.active.start > 0
-  const action = cur === 'workout' && S.active && !S.active.editingWorkoutId && !S.active.backfill
-    && intervalAction?.sessionId === S.active.id ? intervalAction : null
   const startWorkout = () => {
     if (!S.active) {
       // A weekday can hold several routines; start the combined session if any of them has
@@ -53,14 +49,14 @@ export default function TabBar({ onStart }) {
       {/* On the workout screen itself there is nothing to resume, so the button reads as the
           tab it is and stays lit (#29); anywhere else it brings you back to the exercise you
           were on — the marker is kept in S.active.cur and never moves on its own (#21). The
-          interval controller supplies the same start/stop action as the top button.
+          glyph is always play: start and resume are one concept, and an exercise is a dumbbell.
           A live session you stepped away from shows its running time instead of a word, the
           button still named Resume; a past workout being edited or logged after the fact has no
           clock to run. */}
-      <button className={'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')} onClick={action ? action.run : startWorkout}
-        aria-label={action ? action.label : running ? t('Resume') : undefined}>
-        <span className="cir"><Icon name={action ? action.icon : 'play'} /></span>
-        {action ? <span>{action.label}</span> : running ? <span className="tab-time"><Elapsed start={S.active.start} /></span>
+      <button className={'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')} onClick={startWorkout}
+        aria-label={running ? t('Resume') : undefined}>
+        <span className="cir"><Icon name="play" /></span>
+        {running ? <span className="tab-time"><Elapsed start={S.active.start} /></span>
           : <span>{S.active ? (cur === 'workout' ? t('Workout') : S.active.editingWorkoutId ? t('Edit workout') : t('Resume')) : t('Start')}</span>}
       </button>
       <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => nav('/stats')} />
