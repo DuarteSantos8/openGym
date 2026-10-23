@@ -10,6 +10,11 @@ const TIMEOUT_MS = 10000
 const MAX_ATTEMPTS = 5
 const META = new Set(['_rev', '_ts', '_wid', '_wids'])
 
+// Only errors built here are ever passed to a caller. Anything else (a stream or fetch failure,
+// whose text the upstream controls) is replaced by a fixed message. Not exported on purpose:
+// matching on message text would let an upstream error imitate one of ours.
+class StoreError extends Error {}
+
 export class ProfileConflictError extends Error {
   constructor(profile) {
     super('profile changed too often; no write performed after retry limit')
@@ -53,25 +58,28 @@ function preserves(current, next, target) {
   return true
 }
 
+// The bytes that go out are what get validated: JSON.stringify drops undefined, functions and
+// symbols and runs toJSON, so checking the in-memory object could pass a patch that, once sent,
+// has lost a key or an id. The size cap applies to those same bytes, before any request.
+function serialize(body, current, target) {
+  let text, sent
+  try { text = JSON.stringify(body) }
+  catch { throw new StoreError('invalid profile patch') }
+  if (typeof text !== 'string' || Buffer.byteLength(text) > MAX_BYTES) throw new StoreError('invalid profile patch')
+  try { sent = JSON.parse(text).state } catch { throw new StoreError('invalid profile patch') }
+  if (!preserves(current, sent, target)) throw new StoreError('invalid profile patch')
+  return text
+}
+
 function document(data) {
   if (!object(data) || !validState(data.state) || !Number.isSafeInteger(data.rev) || data.rev < 0) {
-    throw new Error('invalid profile from upstream')
+    throw new StoreError('invalid profile from upstream')
   }
   return { state: data.state, rev: data.rev }
 }
 
-function ours(error) {
-  return error instanceof Error && (error.message.startsWith('profile ') || error.message.startsWith('invalid profile'))
-}
-
-async function request(apiBase, bearer, path, method = 'GET', payload) {
+async function request(apiBase, bearer, path, method = 'GET', body) {
   if (typeof bearer !== 'string' || !bearer || /[\r\n]/.test(bearer)) throw new TypeError('invalid bearer')
-  let body
-  if (payload !== undefined) {
-    try { body = JSON.stringify(payload) }
-    catch { throw new Error('invalid profile patch') }
-    if (Buffer.byteLength(body) > MAX_BYTES) throw new Error('invalid profile patch')
-  }
   let response
   try {
     response = await fetch(`${apiBase}${path}`, {
@@ -84,12 +92,12 @@ async function request(apiBase, bearer, path, method = 'GET', payload) {
       redirect: 'manual', signal: AbortSignal.timeout(TIMEOUT_MS),
     })
   } catch {
-    throw new Error('profile upstream unavailable')
+    throw new StoreError('profile upstream unavailable')
   }
   try {
     if (response.status !== 200 && !(method === 'PUT' && response.status === 409)) {
       await response.body?.cancel().catch(() => {})
-      throw new Error(`profile upstream status ${response.status}`)
+      throw new StoreError(`profile upstream status ${response.status}`)
     }
     const chunks = []
     let size = 0
@@ -101,19 +109,19 @@ async function request(apiBase, bearer, path, method = 'GET', payload) {
         size += value.length
         if (size > MAX_BYTES) {
           await reader.cancel().catch(() => {})
-          throw new Error('profile upstream response too large')
+          throw new StoreError('profile upstream response too large')
         }
         chunks.push(value)
       }
     }
     let data
     try { data = JSON.parse(Buffer.concat(chunks).toString('utf8')) }
-    catch { throw new Error('invalid profile upstream response') }
-    if (!object(data)) throw new Error('invalid profile upstream response')
+    catch { throw new StoreError('invalid profile upstream response') }
+    if (!object(data)) throw new StoreError('invalid profile upstream response')
     return { status: response.status, data }
   } catch (error) {
-    if (ours(error)) throw error
-    throw new Error('profile upstream unavailable')
+    if (error instanceof StoreError) throw error
+    throw new StoreError('profile upstream unavailable')
   }
 }
 
@@ -131,22 +139,22 @@ export function createProfileStore({ apiBase } = {}) {
     if (typeof patchFn !== 'function') throw new TypeError('patchFn required')
     const ids = options && options.allowDelete === true && Array.isArray(options.ids) ? options.ids : null
     const target = ids && ids.length && ids.every(id => typeof id === 'string' && id) ? new Set(ids) : null
-    if (options && options.allowDelete === true && !target) throw new Error('invalid profile patch')
+    if (options && options.allowDelete === true && !target) throw new StoreError('invalid profile patch')
     let current = await fetchDocument(bearer)
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
       const state = patchFn(structuredClone(current.state))
-      if (!preserves(current.state, state, target)) throw new Error('invalid profile patch')
+      if (!preserves(current.state, state, target)) throw new StoreError('invalid profile patch')
       const body = { state, baseRev: current.rev }
       if (typeof current.state._wid === 'string') body.baseWid = current.state._wid
-      const reply = await call(bearer, '/api/data', 'PUT', body)
+      const reply = await call(bearer, '/api/data', 'PUT', serialize(body, current.state, target))
       if (reply.status === 409) {
-        if (reply.data.error !== 'conflict') throw new Error('invalid profile conflict response')
+        if (reply.data.error !== 'conflict') throw new StoreError('invalid profile conflict response')
         current = document(reply.data)
         continue
       }
       const check = (await call(bearer, '/api/data/rev')).data
       if (!Number.isSafeInteger(check.rev) || check.rev < 0 || (check.wid != null && typeof check.wid !== 'string')) {
-        throw new Error('invalid profile revision response')
+        throw new StoreError('invalid profile revision response')
       }
       // PUT rev can lag disk by 1 after stampPut. Never reuse it as baseRev; refetch.
       return (await fetchDocument(bearer)).state

@@ -284,6 +284,60 @@ test('lost PUT response is not retried in the same call; a later idempotent call
   assert.equal(again.routines.filter(entry => entry.id === 'new').length, 1)
 })
 
+test('values JSON serialization would drop are refused before any PUT, top-level or nested', async t => {
+  const current = { routines: [{ id: 'keep', name: 'R' }], workouts: [{ id: 'w1' }], name: 'Ana', unit: 'kg', _wid: 'wid-1' }
+  const cases = [
+    [state => ({ ...state, name: undefined }), undefined],
+    [state => ({ ...state, name: () => 'x' }), undefined],
+    [state => ({ ...state, name: Symbol('x') }), undefined],
+    [state => ({ ...state, routines: undefined }), undefined],
+    [state => ({ ...state, routines: [{ id: 'keep', toJSON() { return { name: 'R' } } }] }), undefined],
+    [state => ({ ...state, workouts: [{ id: 'w1', toJSON: () => ({}) }] }), undefined],
+    [state => ({ ...state, routines: [{ id: undefined, name: 'R' }] }), undefined],
+    [state => ({ ...state, workouts: [undefined] }), undefined],
+    [state => ({ ...state, name: undefined, routines: state.routines.filter(entry => entry.id !== 'gone') }), { allowDelete: true, ids: ['gone'] }],
+  ]
+  for (const [patch, options] of cases) {
+    const api = await fixture(route => route === 'GET /api/data' ? [200, { state: current, rev: 2 }] : [500, {}])
+    t.after(api.close)
+    await assert.rejects(() => api.store.updateProfile('secret', patch, options), /invalid profile/i)
+    assert.deepEqual(api.seen.map(x => x.route), ['GET /api/data'])
+  }
+})
+
+test('the document that is validated is the document that is sent', async t => {
+  const current = { routines: [{ id: 'keep' }], workouts: [], name: 'Ana', _wid: 'wid-1' }
+  const api = await fixture(route => {
+    if (route === 'GET /api/data') return [200, { state: current, rev: 6 }]
+    if (route === 'PUT /api/data') return [200, { ok: true, rev: 7, wid: 'wid-2' }]
+    if (route === 'GET /api/data/rev') return [200, { rev: 7, wid: 'wid-2' }]
+    return [404, {}]
+  })
+  t.after(api.close)
+  await api.store.updateProfile('secret', state => ({ ...state, note: 'kept', date: new Date(0) }))
+  const sent = api.seen.find(x => x.route === 'PUT /api/data').body
+  assert.equal(sent.baseRev, 6)
+  assert.equal(sent.baseWid, 'wid-1')
+  assert.deepEqual(sent.state, { ...current, note: 'kept', date: '1970-01-01T00:00:00.000Z' })
+})
+
+test('an upstream stream error that imitates a store message is never echoed', async t => {
+  const real = globalThis.fetch
+  t.after(() => { globalThis.fetch = real })
+  for (const message of ['profile bearer=SECRET', 'invalid profile bearer=SECRET', 'profile upstream status 200 bearer=SECRET']) {
+    globalThis.fetch = async () => new Response(
+      new ReadableStream({ pull(controller) { controller.error(new Error(message)) } }),
+      { status: 200, headers: { 'content-type': 'application/json' } },
+    )
+    const store = createProfileStore({ apiBase: 'http://unused.invalid' })
+    await assert.rejects(() => store.readProfile('secret'), e => {
+      assert.equal(e.message, 'profile upstream unavailable')
+      assert.equal(e.cause, undefined)
+      return true
+    })
+  }
+})
+
 test('profile store has no direct state file access', () => {
   const text = readFileSync(new URL('../src/profileStore.js', import.meta.url), 'utf8')
   assert.doesNotMatch(text, /(?:node:fs|stateFile|readStateStrict|atomicWrite|state-\$\{)/)
