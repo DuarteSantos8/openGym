@@ -64,6 +64,25 @@ describe('adoptProfile — sign-in takes the server profile', () => {
     expect(sync().rev).toBe(5)
   })
 
+  it('asks about and adds a Programme-only device copy without replacing the profile Programme', async () => {
+    const localProgramme = { id: 'local-programme', name: 'Local block', updatedAt: '2026-10-02T08:00:00.000Z', weeks: [] }
+    const serverProgramme = { id: 'server-programme', name: 'Server block', updatedAt: '2026-10-01T08:00:00.000Z', weeks: [] }
+    const local = { ...clone(DEF), _ts: 900, programmeMode: true, programmes: { version: 1, definitions: [localProgramme], cycles: [] } }
+    const profile = { ...clone(DEF), _ts: 100, programmes: { version: 1, definitions: [serverProgramme], cycles: [] }, _rev: 4 }
+    signedIn(local)
+    api.mockResolvedValueOnce({ state: clone(profile), rev: 4 })
+    api.mockResolvedValueOnce({ state: clone(profile), rev: 4 })
+    api.mockResolvedValueOnce({ ok: true, rev: 5 })
+    const ask = vi.fn(async () => true)
+
+    await useStore.getState().adoptProfile(ask)
+
+    expect(ask).toHaveBeenCalledWith(expect.objectContaining({ programmes: 1 }))
+    expect(useStore.getState().S.programmes.definitions.map(item => item.id).sort()).toEqual(['local-programme', 'server-programme'])
+    expect(puts()).toHaveLength(1)
+    expect(puts()[0].state.programmes.definitions.map(item => item.id).sort()).toEqual(['local-programme', 'server-programme'])
+  })
+
   it('does not ask when the device has nothing the profile lacks', async () => {
     signedIn({ ...clone(DEF), _ts: 900, unit: 'kg' })
     api.mockResolvedValueOnce({ state: clone(server), rev: 4 })

@@ -13,7 +13,7 @@ import { todayISO, isoOf, fmtDate } from '../lib/format.js'
 import Home from './Home.jsx'
 import { setLang } from '../lib/i18n.js'
 
-vi.mock('react-router-dom', () => ({ useNavigate: () => () => {} }))
+vi.mock('react-router-dom', () => ({ useNavigate: () => () => {}, useSearchParams: () => [new URLSearchParams(), vi.fn()] }))
 vi.mock('../sheets.jsx', () => ({
   starterPlanSheet: vi.fn(), bwSheet: vi.fn(), goalSheet: vi.fn(), dayOverrideSheet: vi.fn(),
   calendarSheet: vi.fn(), startFlow: vi.fn(), bwDeltaColor: () => '',
@@ -316,6 +316,15 @@ describe('Home — the today row follows today\'s plan, not just the last sessio
     setS({ queue: null, week: { [wd]: ['own'] }, workouts: [at('own', Date.now() - 3600000)] })
     mount()
     expect(todayTitle()).toBe('Core (done)')
+    expect(tag()).toBe('Done')
+  })
+
+  it('the final queue session completed today remains the Done row when nothing is left', () => {
+    const now = Date.now()
+    setS({ workouts: [at('d1', now - 3_000), at('d2', now - 2_000), at('d3', now - 1_000)] })
+    mount()
+    expect(status()).toBe('Week complete, ask the coach')
+    expect(todayTitle()).toBe('US W1 D3 (done)')
     expect(tag()).toBe('Done')
   })
 

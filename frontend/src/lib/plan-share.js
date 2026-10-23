@@ -345,7 +345,11 @@ export function mergePlan(s, bundle, { schedule } = {}) {
       if (ids.length) s.week[d] = ids
     })
   }
-  return { routines: source.routines.length }
+  return {
+    routines: source.routines.length,
+    routineIdMap: { ...ridMap },
+    customIdMap: { ...exIdMap },
+  }
 }
 
 /* ------------------------------- printable PDF ------------------------------- */

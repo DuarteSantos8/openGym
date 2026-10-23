@@ -12,7 +12,7 @@ import { startFlow } from '../sheets.jsx'
 import Home from './Home.jsx'
 
 const nav = vi.fn()
-vi.mock('react-router-dom', () => ({ useNavigate: () => nav }))
+vi.mock('react-router-dom', () => ({ useNavigate: () => nav, useSearchParams: () => [new URLSearchParams(), vi.fn()] }))
 vi.mock('../sheets.jsx', () => ({
   starterPlanSheet: vi.fn(), bwSheet: vi.fn(), goalSheet: vi.fn(), dayOverrideSheet: vi.fn(),
   calendarSheet: vi.fn(), startFlow: vi.fn(), bwDeltaColor: () => '', weighInsSheet: vi.fn(),

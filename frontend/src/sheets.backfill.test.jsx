@@ -106,6 +106,19 @@ describe('log a past workout', () => {
     expect(A.backfill).toEqual({ durationMin: 60, replaceId: null })
   })
 
+  it('keeps an ordinary missed workout outside Programme provenance when Programme mode is enabled', () => {
+    useStore.setState(s => ({ S: { ...s.S, programmeMode: true, programmes: { version: 1, definitions: [], cycles: [] } } }))
+    logPastWorkoutSheet()
+    const host = mountTopSheet()
+    act(() => { type(host.querySelector('input[type=date]'), '2020-01-02') })
+    act(() => { button(host, 'Continue').click() })
+    const A = useStore.getState().S.active
+    expect(A).toMatchObject({ d: '2020-01-02', backfill: { durationMin: 60, replaceId: null } })
+    expect(A).not.toHaveProperty('programmeId')
+    expect(A).not.toHaveProperty('cycleId')
+    expect(A).not.toHaveProperty('programmeInstance')
+  })
+
   // The same keystroke clamp as the saved workout's duration: a 60 emptied to type 45 read 145.
   it('lets the duration be emptied and retyped, and never starts a session of no length', () => {
     logPastWorkoutSheet()
