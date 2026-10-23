@@ -6,12 +6,12 @@ import {
   dbLoadOf, dbLoadFor, withDbLoad, isBellEx, isOneArm, bellsIn, entryDbLoad, volumeFactor,
   meaningFactor, entryAs, historyAs, currentDbLoad, withMeaning,
 } from './dumbbells.js'
-import { workoutVolume, setLabel, bestWeightFor, freestyleConfig } from './history.js'
-import { best1RM, is1RMRecord, e1rmSeries } from './onerm.js'
-import { exerciseHistory, bestSetFor } from './exercise-history.js'
-import { buildPlannedEntry } from './session-start.js'
+import { workoutVolume, setLabel, bestWeightFor as canonicalBestWeightFor, freestyleConfig } from './history.js'
+import { best1RM as canonicalBest1RM, is1RMRecord as canonicalIs1RMRecord, e1rmSeries as canonicalE1rmSeries } from './onerm.js'
+import { exerciseHistory as canonicalExerciseHistory, bestSetFor as canonicalBestSetFor } from './exercise-history.js'
+import { migratedFixture, startMigratedFixture } from './test-fixtures.js'
 import { mergeStates, stampChange } from './sync-merge.js'
-import { buildPlanBundle, parsePlan } from './plan-share.js'
+import { buildPlanBundle as canonicalBuildPlanBundle, parsePlan } from './plan-share.js'
 import { EXIDX } from './exercises.js'
 
 const BENCH = '0289'     // dumbbell bench press: two bells
@@ -233,3 +233,12 @@ describe('sync and sharing', () => {
     expect(back.routines[0].ex[0].dbLoad).toBe('each')
   })
 })
+
+function buildPlannedEntry(S, cfg, routine) { return startMigratedFixture(S, { ...(routine || {}), ex: [cfg] }).entries[0] }
+function buildPlanBundle(S, name) { return canonicalBuildPlanBundle(migratedFixture(S), name) }
+function bestWeightFor(S, ...args) { return canonicalBestWeightFor(migratedFixture(S), ...args) }
+function best1RM(S, ...args) { return canonicalBest1RM(migratedFixture(S), ...args) }
+function e1rmSeries(S, ...args) { return canonicalE1rmSeries(migratedFixture(S), ...args) }
+function exerciseHistory(S, ...args) { return canonicalExerciseHistory(migratedFixture(S), ...args) }
+function bestSetFor(S, ...args) { return canonicalBestSetFor(migratedFixture(S), ...args) }
+function is1RMRecord(S, id, en) { return canonicalIs1RMRecord(migratedFixture(S), id, migratedFixture({ ...S, workouts: [{ id: 'record', d: '2026-10-09', entries: [en] }] }).workouts[0].exposures[0]) }

@@ -15,16 +15,16 @@
 // The iPhone app only. Without a paired watch with the app on it, nothing is sent and nothing
 // arrives: the phone behaves exactly as before.
 import { MOBILE, nativePlatform } from './mobile.js'
-import { EXIDX, gifSrc, figureOf, isAssisted } from './exercises.js'
+import { EXIDX, gifSrc, figureOf, isAssisted, weightIncrement } from './exercises.js'
 import { packId, packDrawingId } from './anim-quality.js'
 import { getState as animPacks } from './anim-packs.js'
 import { exerciseNameFor, getLang, baseLang, onLangChange } from './i18n.js'
 import { modeOf, setLabel, lastEntryFor, effectiveRoutineIds, isBw, isPerSide } from './history.js'
 import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
 import { bestSetFor } from './exercise-history.js'
-import { weightIncrement } from './progression.js'
 import { sessionHistory } from './backfill.js'
-import { buildCombinedEntries, deriveSessionName } from './session-merge.js'
+import { buildCombinedExposures, deriveSessionName } from './session-merge.js'
+import { entriesForExposures, rowsOfPerformance, exposuresWithPerformance } from './session-ui-adapter.js'
 import { todayISO } from './format.js'
 import { sanitizeHr } from './heart-rate.js'
 import { readWatchPrefs, settingsForWatch, writeWatchStatus, onWatchPrefs } from './watch-settings.js'
@@ -56,7 +56,7 @@ function bestFor (S, id, mode) {
   if (!bestCache.map.has(key)) {
     let b = null
     try { b = bestSetFor(S, id, mode)?.set || null } catch { b = null }
-    bestCache.map.set(key, b ? (mode === 'time' ? { sec: num(b.sec), w: num(b.w) } : { w: num(b.w), r: num(b.r) }) : null)
+    bestCache.map.set(key, b ? (mode === 'time' ? { sec: num(b.sec), w: b.w > 0 ? num(b.w) : null } : { w: num(b.w), r: num(b.r) }) : null)
   }
   return bestCache.map.get(key)
 }
@@ -110,15 +110,17 @@ function watchEntry (e, H, S) {
 /**
  * What the watch can start by itself, the phone asleep: today's planned session and a few other
  * routines, each with its exercises built exactly as starting it on the phone builds them
- * (buildCombinedEntries, as sheets.jsx beginWorkout does).
+ * (buildCombinedExposures, as sheets.jsx startSession does) — on a copy of the prescriptions, so
+ * the profile itself is not written to.
  */
 export function buildReady (S, today = todayISO()) {
   let H = null
   try { H = sessionHistory(S) } catch { H = null }
   const session = ids => {
-    const { entries, routineIds, routines } = buildCombinedEntries(S, ids)
+    const draft = { ...S, prescriptions: { ...(S.prescriptions || {}) } }
+    const { exposures, routineIds, routines } = buildCombinedExposures(draft, ids, { now: Date.now(), newId: seed => seed, unit: S.unit })
     if (!routines.length) return null
-    return { routineIds, name: deriveSessionName(routines.map(r => r.name)) || '', entries: entries.map(e => watchEntry(e, H, S)) }
+    return { routineIds, name: deriveSessionName(routines.map(r => r.name)) || '', entries: entriesForExposures(exposures, draft.prescriptions).map(e => watchEntry(e, H, S)) }
   }
   let todayIds = []
   try { todayIds = effectiveRoutineIds({ ...S, routines: S.routines || [], week: S.week || {}, dayPlan: S.dayPlan || {} }, today, today) || [] } catch { todayIds = [] }
@@ -221,8 +223,9 @@ export function applyEvents (events, getState) {
   for (const ev of events) {
     if (!ev || typeof ev.id !== 'string') continue
     if (applied.includes(ev.id)) { done.push(ev.id); continue }
-    const S = getState()?.S
-    const A = S?.active
+    const st = getState()
+    const S = st?.S
+    const A = st?.A
     const ours = A && Array.isArray(A.entries) && (!ev.wid || ev.wid === A.id)
     // A workout finished on the phone while the watch was away: its later ticks still count.
     const saved = !ours && ev.wid && Array.isArray(S?.workouts) ? S.workouts.find(w => w && w.id === ev.wid) : null
@@ -463,7 +466,9 @@ export async function startWatchSync ({ useStore, useUI }) {
     // Not before the store has its copy: an empty one would tell the watch its workout is over.
     if (!linked || !storeReady()) return
     try {
-      const S = useStore.getState().S
+      const st = useStore.getState()
+      // The running workout is the store's own `A`; the snapshot reads it as `S.active`.
+      const S = { ...st.S, active: st.A }
       const prefs = readWatchPrefs()
       // Settings → Apple Watch: off, the watch is told there is nothing (no workout, nothing ready).
       const snap = prefs.enabled
@@ -494,10 +499,10 @@ export async function startWatchSync ({ useStore, useUI }) {
   const offStore = useStore.subscribe((s, prev) => {
     // Boot done: what the watch sent meanwhile is applied now, and the watch hears the real state.
     if (s.ready && !prev.ready) { drainWatchEvents(); schedule() }
-    if (s.S === prev.S) return
+    if (s.S === prev.S && s.A === prev.A) return
     schedule()
     // A workout started on the phone: the watch app opens with it (HealthKit's startWatchApp).
-    if (linked && shouldOpenOnWatch(prev.S?.active, s.S?.active)) Promise.resolve().then(() => p.WatchBridge.openOnWatch()).catch(() => {})
+    if (linked && shouldOpenOnWatch(prev.A, s.A)) Promise.resolve().then(() => p.WatchBridge.openOnWatch()).catch(() => {})
   })
   // The rest as the watch needs it changes when it starts, stops or is paused, not every second.
   const restOf = t => (t ? `${t.endsAt}|${!!t.paused}|${!!t.ready}` : '')
@@ -555,18 +560,23 @@ export function patchSetIn (s, { wid, exId, entryIdx, setIdx, side = null }, fie
     return !!set
   }
   const w = (s.workouts || []).find(x => x && x.id === wid)
-  const set = find(w)
+  // A saved workout keeps its sets as the exposure's performance rows: read them back as the rows
+  // the screen edits, write the watch's numbers there, and save them as performance again.
+  const xs = Array.isArray(w?.exposures) ? w.exposures : null
+  const xi = xs ? (xs[entryIdx]?.exerciseId === exId ? entryIdx : xs.findIndex(x => x?.exerciseId === exId)) : -1
+  if (xi < 0) return false
+  const x = xs[xi]
+  const rows = rowsOfPerformance(x.performance?.sets, x.mode)
+  const set = rows[setIdx]
   if (!set) return false
-  // Two changes of the same set: the later one wins (a tick from the watch older than an edit
-  // made on the phone since keeps the phone's numbers; its heart rate still lands).
-  let f = fields
-  if (ifNewer != null && set.done && Number(set.at) > ifNewer) {
-    f = {}
-    if (fields.hr) f.hr = fields.hr
-    if (fields.restHr) f.restHr = fields.restHr
-    if (!Object.keys(f).length) return false
-  }
+  // The saved row carries no time of its own, so a row already ticked keeps its numbers and only
+  // the heart rate lands (the phone's own edit may be the newer one).
+  const ticked = side && isSideSet(set) ? set.sides[side].done : set.done
+  const f = ifNewer != null && ticked ? Object.fromEntries(['hr', 'restHr'].filter(k => fields[k]).map(k => [k, fields[k]])) : fields
+  if (!Object.keys(f).length) return false
   write(set, f)
+  const note = x.performance?.note
+  xs[xi] = exposuresWithPerformance([x], [{ exposureId: x.exposureId, sets: rows, ...(note ? { note, notePin: x.performance.notePin } : {}) }], s.unit === 'lb' ? 'lb' : 'kg')[0]
   if (recount) recount(w)
   if (stamp) stamp(w)
   return true

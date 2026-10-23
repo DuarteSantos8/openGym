@@ -1,44 +1,58 @@
 import { describe, it, expect } from 'vitest'
-import { estimate1RM, bestSetOf, e1rmSeries, best1RM, is1RMRecord, REP_CAP, WEIGHTED_REP_CAP, FORMULAS, calculate1RMAccuracy, formulaOf } from './onerm.js'
+import { exposuresWithPerformance } from './session-ui-adapter.js'
+import { estimate1RM, bestSetOf as canonicalBestSetOf, e1rmSeries as canonicalE1rmSeries, best1RM as canonicalBest1RM, is1RMRecord as canonicalIs1RMRecord, REP_CAP, FORMULAS, WEIGHTED_REP_CAP, calculate1RMAccuracy, formulaOf, estimate1RMRange, repCapOf, oneRmForMeaning } from './onerm.js'
+
+const exposureFor = entry => ({
+  exerciseId: entry?.id,
+  performance: { sets: (entry?.sets || []).map(row => ({ role: row.phase === 'warmup' ? 'warmup' : 'work', status: row.done ? 'completed' : 'skipped', observations: row.r == null ? [] : [{ metric: 'repetitions', value: row.r }], resistance: row.w > 0 ? { kind: 'external-load', value: row.w } : { kind: 'bodyweight' }, segments: [] })) },
+})
+// These fixtures were written with Epley numbers; the weighted blend (the default) has its own tests below.
+const canonical = S => ({ oneRmFormula: 'epley', ...((S.workouts || []).some(w => w.entries)
+  ? { ...S, workouts: S.workouts.map(workout => ({ ...workout, exposures: (workout.entries || []).map(exposureFor) })) }
+  : S) })
+const bestSetOf = (entry, formula = 'epley', ...args) => canonicalBestSetOf(entry?.performance ? entry : exposureFor(entry), formula, ...args)
+const e1rmSeries = (S, ...args) => canonicalE1rmSeries(canonical(S), ...args)
+const best1RM = (S, ...args) => canonicalBest1RM(canonical(S), ...args)
+const is1RMRecord = (S, exId, entry, ...args) => canonicalIs1RMRecord(canonical(S), exId, entry?.performance ? entry : exposureFor(entry), ...args)
 
 describe('estimate1RM', () => {
   it('returns the load unchanged for a single rep', () => {
-    expect(estimate1RM(100, 1)).toBe(100)
-    expect(estimate1RM(62.5, 1)).toBe(62.5)
+    expect(estimate1RM(100, 1, 'epley')).toBe(100)
+    expect(estimate1RM(62.5, 1, 'epley')).toBe(62.5)
   })
 
   it('matches Epley by hand across the usual rep ranges', () => {
-    expect(estimate1RM(100, 5)).toBe(116.7)   // 100 · (1 + 5/30)
-    expect(estimate1RM(100, 10)).toBe(133.3)
-    expect(estimate1RM(80, 8)).toBe(101.3)
-    expect(estimate1RM(60, 3)).toBe(66)
+    expect(estimate1RM(100, 5, 'epley')).toBe(116.7)   // 100 · (1 + 5/30)
+    expect(estimate1RM(100, 10, 'epley')).toBe(133.3)
+    expect(estimate1RM(80, 8, 'epley')).toBe(101.3)
+    expect(estimate1RM(60, 3, 'epley')).toBe(66)
   })
 
   it('rounds to one decimal', () => {
-    expect(estimate1RM(101.25, 7)).toBe(124.9)
-    expect(Number.isInteger(estimate1RM(100, 3) * 10)).toBe(true)
+    expect(estimate1RM(101.25, 7, 'epley')).toBe(124.9)
+    expect(Number.isInteger(estimate1RM(100, 3, 'epley') * 10)).toBe(true)
   })
 
   it('refuses reps beyond the cap rather than guessing', () => {
-    expect(estimate1RM(100, REP_CAP)).not.toBeNull()
-    expect(estimate1RM(100, REP_CAP + 1)).toBeNull()
-    expect(estimate1RM(60, 30)).toBeNull()
+    expect(estimate1RM(100, REP_CAP, 'epley')).not.toBeNull()
+    expect(estimate1RM(100, REP_CAP + 1, 'epley')).toBeNull()
+    expect(estimate1RM(60, 30, 'epley')).toBeNull()
   })
 
   it('rejects invalid, zero and negative input', () => {
-    expect(estimate1RM(0, 5)).toBeNull()
-    expect(estimate1RM(-100, 5)).toBeNull()
-    expect(estimate1RM(100, 0)).toBeNull()
-    expect(estimate1RM(100, -3)).toBeNull()
-    expect(estimate1RM(undefined, 5)).toBeNull()
-    expect(estimate1RM(100, undefined)).toBeNull()
-    expect(estimate1RM(NaN, 5)).toBeNull()
-    expect(estimate1RM(Infinity, 5)).toBeNull()
+    expect(estimate1RM(0, 5, 'epley')).toBeNull()
+    expect(estimate1RM(-100, 5, 'epley')).toBeNull()
+    expect(estimate1RM(100, 0, 'epley')).toBeNull()
+    expect(estimate1RM(100, -3, 'epley')).toBeNull()
+    expect(estimate1RM(undefined, 5, 'epley')).toBeNull()
+    expect(estimate1RM(100, undefined, 'epley')).toBeNull()
+    expect(estimate1RM(NaN, 5, 'epley')).toBeNull()
+    expect(estimate1RM(Infinity, 5, 'epley')).toBeNull()
     expect(estimate1RM('', '')).toBeNull()
   })
 
   it('accepts numeric strings, the shape number inputs arrive in', () => {
-    expect(estimate1RM('100', '5')).toBe(116.7)
+    expect(estimate1RM('100', '5', 'epley')).toBe(116.7)
   })
 
   it('offers the other documented formulas and agrees with them at low reps', () => {
@@ -58,7 +72,8 @@ describe('estimate1RM', () => {
   })
 
   it('falls back to the default for an unknown formula name', () => {
-    expect(estimate1RM(100, 5, 'nope')).toBe(estimate1RM(100, 5))
+    expect(estimate1RM(100, 5, 'nope')).toBe(estimate1RM(100, 5, 'weighted'))
+    expect(estimate1RM(100, 5)).toBe(estimate1RM(100, 5, 'weighted'))
   })
 })
 
@@ -207,13 +222,23 @@ describe('calculate1RMAccuracy', () => {
 })
 
 describe('bestSetOf', () => {
+  it('reads completed observations from a canonical exposure', () => {
+    const exposure = {
+      exerciseId: 'x',
+      performance: { sets: [
+        { setId: 'work', status: 'completed', observations: [{ metric: 'repetitions', value: 3 }], resistance: { kind: 'external-load', value: 110 }, segments: [] },
+      ] },
+    }
+    expect(bestSetOf(exposure)).toMatchObject({ est: 121, w: 110, r: 3 })
+  })
+
   it('picks the highest estimate, not the heaviest set', () => {
     const entry = { id: 'x', sets: [
       { w: 100, r: 5, done: true },   // 116.7
       { w: 110, r: 3, done: true },   // 121.0
       { w: 120, r: 1, done: true }    // 120.0
     ] }
-    expect(bestSetOf(entry)).toEqual({ est: 121, w: 110, r: 3 })
+    expect(bestSetOf(entry)).toMatchObject({ est: 121, w: 110, r: 3 })
   })
 
   it('ignores sets that were never checked off', () => {
@@ -256,7 +281,7 @@ describe('e1rmSeries / best1RM', () => {
   })
 
   it('reports the all-time best with the set behind it', () => {
-    expect(best1RM(S, 'bench')).toEqual({ est: 105, w: 90, r: 5, d: '2026-01-15', t: 3 })
+    expect(best1RM(S, 'bench')).toMatchObject({ est: 105, w: 90, r: 5, d: '2026-01-15', t: 3 })
   })
 
   it('has nothing to say about cardio or an unknown exercise', () => {
@@ -272,27 +297,23 @@ describe('e1rmSeries / best1RM', () => {
       { id: 'bench', sets: [{ w: 60, r: 5, done: true }] },
       { id: 'bench', sets: [{ w: 100, r: 5, done: true }] },
     ] }]
-    expect(e1rmSeries({ workouts }, 'bench')).toEqual([{ t: 1, d: '2026-02-01', y: 116.7, w: 100, r: 5 }])
+    expect(e1rmSeries({ workouts }, 'bench')).toMatchObject([{ t: 1, d: '2026-02-01', y: 116.7, w: 100, r: 5 }])
     expect(best1RM({ workouts }, 'bench')).toMatchObject({ est: 116.7, w: 100, r: 5, d: '2026-02-01' })
   })
 
   it('estimates each completed per-side limb and leaves timed/cardio rows out', () => {
-    const sides = { id: 'bench', target: { mode: 'reps', side: true }, sets: [{ w: 100, r: 10, done: false,
-      sides: { L: { w: 100, r: 5, done: true }, R: { w: 90, r: 5, done: false } } }] }
-    expect(bestSetOf(sides)).toEqual({ est: 116.7, w: 100, r: 5 })
-    expect(e1rmSeries({ workouts: [{ start: 1, d: '2026-02-01', entries: [sides] }] }, 'bench'))
-      .toEqual([{ t: 1, d: '2026-02-01', y: 116.7, w: 100, r: 5 }])
-    expect(e1rmSeries({ workouts: [{ start: 1, d: '2026-02-01', entries: [
-      { id: 'hold', target: { mode: 'time' }, sets: [{ sec: 60, w: 200, r: 5, done: true }] },
-      { id: 'run', target: { mode: 'cardio' }, sets: [{ min: 20, speed: 9, r: 5, done: true }] },
-    ] }] }, 'hold')).toEqual([])
+    const [x] = exposuresWithPerformance([{ exposureId: 'x', exerciseId: 'bench' }], [{ exposureId: 'x', target: { mode: 'reps', side: true }, sets: [{ w: 100, r: 10, done: false,
+      sides: { L: { w: 100, r: 5, done: true }, R: { w: 90, r: 5, done: false } } }] }], 'kg')
+    expect(canonicalBestSetOf(x, 'epley')).toMatchObject({ est: 116.7, w: 100, r: 5 })
+    expect(canonicalE1rmSeries({ oneRmFormula: 'epley', workouts: [{ start: 1, d: '2026-02-01', exposures: [x] }] }, 'bench'))
+      .toMatchObject([{ t: 1, d: '2026-02-01', y: 116.7, w: 100, r: 5 }])
   })
 })
 
 describe('is1RMRecord', () => {
   it('flags a session that beats every previous estimate', () => {
     const rec = is1RMRecord(S, 'bench', { id: 'bench', sets: [{ w: 95, r: 5, done: true }] })
-    expect(rec).toEqual({ est: 110.8, w: 95, r: 5, prev: 105 })
+    expect(rec).toMatchObject({ est: 110.8, w: 95, r: 5, prev: 105 })
   })
 
   it('stays quiet when the session does not beat the record', () => {
@@ -354,8 +375,8 @@ describe('warm-up sets and 1RM', () => {
 describe('the formula a profile picked (Settings, Discord request)', () => {
   const S = { workouts: [{ d: '2026-10-01', entries: [{ id: 'x', sets: [{ w: 100, r: 8, done: true }] }] }] }
   it('reads the default when nothing or something unknown is stored', () => {
-    expect(formulaOf({})).toBe('epley')
-    expect(formulaOf({ oneRmFormula: 'toString' })).toBe('epley')
+    expect(formulaOf({})).toBe('weighted')
+    expect(formulaOf({ oneRmFormula: 'toString' })).toBe('weighted')
     expect(formulaOf({ oneRmFormula: 'brzycki' })).toBe('brzycki')
     expect(formulaOf({ oneRmFormula: 'weighted' })).toBe('weighted')
   })
@@ -363,5 +384,52 @@ describe('the formula a profile picked (Settings, Discord request)', () => {
     expect(best1RM(S, 'x').est).toBe(estimate1RM(100, 8, 'epley'))
     expect(best1RM({ ...S, oneRmFormula: 'brzycki' }, 'x').est).toBe(estimate1RM(100, 8, 'brzycki'))
     expect(best1RM({ ...S, oneRmFormula: 'brzycki' }, 'x').est).toBeLessThan(best1RM(S, 'x').est)
+    expect(canonicalBest1RM({ ...canonical(S), oneRmFormula: undefined }, 'x').est).toBe(estimate1RM(100, 8, 'weighted'))   // nothing picked: the blend
+  })
+})
+
+describe('estimate1RMRange', () => {
+  it('has the estimate in the middle and the spread of the models around it', () => {
+    const r = estimate1RMRange(100, 8, 'weighted')
+    expect(r.mid).toBe(estimate1RM(100, 8, 'weighted'))
+    expect(r.low).toBeLessThan(r.mid)
+    expect(r.high).toBeGreaterThan(r.mid)
+    const all = Object.keys(FORMULAS).map(f => estimate1RM(100, 8, f))
+    expect(r.low).toBeLessThanOrEqual(Math.min(...all))
+    expect(r.high).toBeGreaterThanOrEqual(Math.max(...all))
+  })
+  it('is the default, and a named formula keeps its own mid inside the range', () => {
+    expect(estimate1RMRange(100, 5)).toEqual(estimate1RMRange(100, 5, 'weighted'))
+    const r = estimate1RMRange(100, 5, 'epley')
+    expect(r.mid).toBe(116.7)
+    expect(r.low).toBeLessThanOrEqual(116.7)
+    expect(r.high).toBeGreaterThanOrEqual(116.7)
+  })
+  it('reads the RIR into the spread under the blend only', () => {
+    expect(estimate1RMRange(100, 5, 'weighted', 2).mid).toBe(estimate1RM(100, 5, 'weighted', 2))
+    expect(estimate1RMRange(100, 5, 'weighted', 2).high).toBeGreaterThan(estimate1RMRange(100, 5, 'weighted').high)
+    expect(estimate1RMRange(100, 5, 'epley', 2)).toEqual(estimate1RMRange(100, 5, 'epley'))
+  })
+  it('has no spread for a single to failure, and no answer where there is no estimate', () => {
+    expect(estimate1RMRange(100, 1)).toEqual({ low: 100, mid: 100, high: 100 })
+    expect(estimate1RMRange(100, 1, 'weighted', 0)).toEqual({ low: 100, mid: 100, high: 100 })
+    expect(estimate1RMRange(0, 5)).toBeNull()
+    expect(estimate1RMRange(100, WEIGHTED_REP_CAP + 1)).toBeNull()
+    expect(estimate1RMRange(100, REP_CAP + 1, 'epley')).toBeNull()
+  })
+  it('has a rep cap per formula', () => {
+    expect(repCapOf('weighted')).toBe(WEIGHTED_REP_CAP)
+    expect(repCapOf('epley')).toBe(REP_CAP)
+    expect(repCapOf(undefined)).toBe(WEIGHTED_REP_CAP)
+  })
+  it('flows into the best set, the series and the best 1RM', () => {
+    const s = { oneRmFormula: 'weighted', workouts: [{ d: '2026-10-01', entries: [{ id: 'x', sets: [{ w: 100, r: 5, done: true }] }] }] }
+    const r = estimate1RMRange(100, 5, 'weighted')
+    expect(best1RM(s, 'x')).toMatchObject({ est: r.mid, low: r.low, high: r.high })
+    expect(e1rmSeries(s, 'x')[0]).toMatchObject({ y: r.mid, low: r.low, high: r.high })
+  })
+  it('a frozen record is read in another dumbbell meaning with its range scaled too', () => {
+    const profile = { workouts: [], oneRepMaxes: { a: { id: 'a', exerciseId: 'x', value: 50, low: 40, high: 60, unit: 'kg', source: 'manual', capturedAt: '2026-10-01T00:00:00Z', dbLoad: 'total' } } }
+    expect(oneRmForMeaning(profile, 'x', 'total')).toMatchObject({ value: 50, low: 40, high: 60 })
   })
 })

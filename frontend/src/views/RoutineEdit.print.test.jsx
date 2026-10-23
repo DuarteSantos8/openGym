@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const env = vi.hoisted(() => ({ mobile: false, printHtml: null }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})) }))
-vi.mock('../sheets.jsx', () => ({ exConfigSheet: vi.fn(), exercisePicker: vi.fn(), glyphPicker: vi.fn(), confirmSheet: vi.fn() }))
+vi.mock('../sheets.jsx', () => ({ exConfigSheet: vi.fn(), exercisePicker: vi.fn(), glyphPicker: vi.fn(), confirmSheet: vi.fn(), quickOccurrence: vi.fn(), menuSheet: vi.fn() }))
 vi.mock('../components/Media.jsx', () => ({ Thumb: () => null }))
 vi.mock('../components/BodyMap.jsx', () => ({ default: () => null }))
 vi.mock('../lib/plan-share.js', async importOriginal => ({ ...await importOriginal(), printPlan: vi.fn() }))
@@ -21,6 +21,8 @@ vi.mock('../lib/mobile.js', async importOriginal => {
 import RoutineEdit from './RoutineEdit.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 import { printPlan } from '../lib/plan-share.js'
+import { menuSheet } from '../sheets.jsx'
+import { ruleOccurrence } from '../lib/test-fixtures.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 let root, host
@@ -34,7 +36,11 @@ function mount(ex, name = 'Push day') {
   root = createRoot(host)
   act(() => root.render(<MemoryRouter initialEntries={['/plan/r/r1']}><Routes><Route path="/plan/r/:id" element={<RoutineEdit />} /></Routes></MemoryRouter>))
 }
-const printButton = () => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === 'Print / Save as PDF')
+// Print sits in the header's ⋯ menu (menuSheet), next to Copy and Delete.
+const printItem = () => {
+  act(() => host.querySelector('button[aria-label="More"]').click())
+  return menuSheet.mock.calls.at(-1)[0].items.find(item => item.label === 'Print / Save as PDF')
+}
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -47,8 +53,8 @@ afterEach(() => {
 
 describe('RoutineEdit — print this routine (#282)', () => {
   it('opens the print dialog with this routine alone on the web', () => {
-    mount([{ id: '0025', sets: 3, mode: 'reps', reps: 5, weight: 80 }])
-    act(() => printButton().click())
+    mount([ruleOccurrence('0025')])
+    act(() => printItem().onClick())
     expect(printPlan).toHaveBeenCalledOnce()
     const [S, owner, opts] = printPlan.mock.calls[0]
     expect(S.routines[0].id).toBe('r1')
@@ -59,8 +65,8 @@ describe('RoutineEdit — print this routine (#282)', () => {
 
   it('hands the page to the native print flow in the app, named after the routine', () => {
     env.mobile = true
-    mount([{ id: '0025', sets: 3, mode: 'reps', reps: 5, weight: 80 }])
-    act(() => printButton().click())
+    mount([ruleOccurrence('0025')])
+    act(() => printItem().onClick())
     expect(printPlan).not.toHaveBeenCalled()
     expect(env.printHtml).toHaveBeenCalledOnce()
     const [html, name] = env.printHtml.mock.calls[0]
@@ -71,13 +77,13 @@ describe('RoutineEdit — print this routine (#282)', () => {
 
   it('names the print job even when the routine has no name, which Android refuses', () => {
     env.mobile = true
-    mount([{ id: '0025', sets: 3, mode: 'reps', reps: 5, weight: 80 }], '')
-    act(() => printButton().click())
+    mount([ruleOccurrence('0025')], '')
+    act(() => printItem().onClick())
     expect(env.printHtml.mock.calls[0][1]).toBe('Routine')
   })
 
   it('has nothing to print for an empty routine', () => {
     mount([])
-    expect(printButton().disabled).toBe(true)
+    expect(printItem().disabled).toBe(true)
   })
 })

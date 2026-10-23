@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { loggedExposure } from './test-fixtures.js'
 
 // The iPhone widgets' snapshot (lib/widgets.js): what the page hands the widget extension through
 // the App Group. The shape is what ios/App/OpenGymWidgets/WidgetSnapshot.swift decodes, so a field
@@ -46,8 +47,8 @@ describe('buildWidgetSnapshot', () => {
   })
 
   it('counts the week, the streak and names the last PR with its best weight', () => {
-    const older = { id: 'w0', d: '2026-10-01', end: 1, prs: ['0043'], entries: [{ id: '0043', target: { mode: 'reps' }, sets: [{ w: 90, r: 5, done: true }] }] }
-    const newer = { id: 'w1', d: '2026-10-13', end: 5, prs: ['0025'], entries: [{ id: '0025', target: { mode: 'reps' }, sets: [{ w: 62.5, r: 8, done: true }, { w: 65, r: 6, done: true }] }] }
+    const older = { id: 'w0', d: '2026-10-01', end: 1, prs: ['0043'], exposures: [loggedExposure('0043', [{ w: 90, r: 5 }])] }
+    const newer = { id: 'w1', d: '2026-10-13', end: 5, prs: ['0025'], exposures: [loggedExposure('0025', [{ w: 62.5, r: 8 }, { w: 65, r: 6 }])] }
     const snap = buildWidgetSnapshot(S({ workouts: [newer, older] }), { today: TODAY })
     expect(snap.week).toEqual({ done: 1, planned: 2 })
     expect(snap.weekFrom).toBe('2026-10-12')

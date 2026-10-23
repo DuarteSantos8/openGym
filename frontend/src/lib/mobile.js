@@ -14,6 +14,9 @@ import { isoOf, todayISO } from './format.js'
 import { effectiveRoutineIds } from './history.js'
 import { NUDGE_COPY, lineIndex, nudgeFor, nudgeMinute, toneOf } from './nudge.js'
 import { excusedOn } from './day-notes.js'
+import { buildProfileBackup } from './export-profile.js'
+import { isLegacyProfile } from '../../../api/migration/profile-version.js'
+import { parseState, stringifyState } from './state-codec.js'
 
 export const MOBILE = import.meta.env.VITE_MOBILE === '1'
 
@@ -46,6 +49,11 @@ export async function nativePlatform() {
   }
 }
 
+// One shared load of the plugin: the file writes of a change come in a burst, and each import in
+// flight at once is its own chance to load it twice.
+let filesystemModule
+const filesystemPlugin = () => (filesystemModule ||= import('@capacitor/filesystem'))
+
 const FILE = 'opengym-state.json'
 
 // Written whole to a second file first and then moved over the first, so a write cut short (the
@@ -54,32 +62,60 @@ const FILE = 'opengym-state.json'
 // is the later one (`_ts`) is the copy.
 const FILE_NEW = 'opengym-state.next.json'
 
-export async function nativeLoad() {
+// The mirror as stored: the engine migration backs up these exact bytes, not a re-serialization.
+export async function nativeLoadText(file = FILE) {
   try {
-    const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
-    const read = async path => {
-      try { return JSON.parse((await Filesystem.readFile({ path, directory: Directory.Data, encoding: Encoding.UTF8 })).data) } catch { return null }
-    }
-    const main = await read(FILE)
-    const next = typeof Filesystem.rename === 'function' ? await read(FILE_NEW) : null
-    if (next && typeof next === 'object' && (!main || (Number(next._ts) || 0) > (Number(main._ts) || 0))) return next
-    return main
-  } catch (e) { return null }   // first launch, or unreadable — localStorage copy takes over
+    const { Filesystem, Directory, Encoding } = await filesystemPlugin()
+    return (await Filesystem.readFile({ path: file, directory: Directory.Data, encoding: Encoding.UTF8 })).data
+  } catch (e) {
+    if (e?.code === 'ENOENT' || e?.code === 'OS-PLUG-FILE-0008' || /not exist|not found/i.test(e?.message || '')) return null
+    throw e
+  }
 }
 
-export async function nativeSave(state) {
+export async function nativeLoad() {
+  const read = file => nativeLoadText(file).then(t => (t == null ? null : parseState(t))).catch(() => null)
+  const main = await read(FILE)
+  const next = await read(FILE_NEW)
+  if (next && typeof next === 'object' && (!main || (Number(next._ts) || 0) > (Number(main._ts) || 0))) return next
+  return main
+}
+
+// One immutable copy of a v1 mirror, written before the migration changes anything and read back
+// to prove it landed. An existing copy is an earlier attempt's evidence: kept, never replaced, and
+// refused outright if it is not v1 at all.
+export const NATIVE_BACKUP_FILE = 'gym_state_v1.pre-engine-v1.json'
+export async function nativeBackupOnce(text, file = NATIVE_BACKUP_FILE) {
+  const { Filesystem, Directory, Encoding } = await filesystemPlugin()
+  const at = { path: file, directory: Directory.Data, encoding: Encoding.UTF8 }
+  const read = () => Filesystem.readFile(at).then(r => r.data, e => {
+    if (e?.code === 'ENOENT' || e?.code === 'OS-PLUG-FILE-0008' || /not exist|not found/i.test(e?.message || '')) return null
+    throw e
+  })
+  const existing = await read()
+  if (existing != null) {
+    if (!isLegacyProfile(JSON.parse(existing))) throw new Error('native-backup-not-v1')
+    if (existing !== text) throw new Error('native-backup-source-mismatch')
+    return
+  }
+  await Filesystem.writeFile({ ...at, data: text })
+  if ((await read()) !== text) throw new Error('native-backup-mismatch')
+}
+
+export async function nativeSave(state, strict = false) {
   try {
-    const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
-    const data = JSON.stringify(state)
+    const { Filesystem, Directory, Encoding } = await filesystemPlugin()
+    const data = stringifyState(state)
     if (typeof Filesystem.rename === 'function') {
       try {
         await Filesystem.writeFile({ path: FILE_NEW, directory: Directory.Data, data, encoding: Encoding.UTF8 })
         await Filesystem.rename({ from: FILE_NEW, to: FILE, directory: Directory.Data, toDirectory: Directory.Data })
-        return
+        return true
       } catch { /* the plain write below */ }
     }
     await Filesystem.writeFile({ path: FILE, directory: Directory.Data, data, encoding: Encoding.UTF8 })
-  } catch (e) { /* keep the localStorage copy */ }
+  } catch (e) { if (strict) throw e; return false }
+  return true
 }
 
 // "Connect to my server" mode (lib/remote.js): which of local-only / a paired remote account this
@@ -92,21 +128,35 @@ const REMOTE_FILE = 'opengym-remote.json'
 // in S (which syncs and exports): the pairing, and how the Coach runs on this phone.
 export async function readJsonFile(name) {
   try {
-    const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
+    const { Filesystem, Directory, Encoding } = await filesystemPlugin()
     const r = await Filesystem.readFile({ path: name, directory: Directory.Data, encoding: Encoding.UTF8 })
     return JSON.parse(r.data)
   } catch (e) { return null }
 }
-export async function writeJsonFile(name, data) {
+export async function writeJsonFile(name, data, strict = false) {
   try {
-    const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
+    const { Filesystem, Directory, Encoding } = await filesystemPlugin()
     await Filesystem.writeFile({ path: name, directory: Directory.Data, data: JSON.stringify(data), encoding: Encoding.UTF8 })
-  } catch (e) { /* not a Capacitor build, or the write failed — the caller's in-memory copy stands */ }
+    if (strict && JSON.stringify(await readJsonFile(name)) !== JSON.stringify(data)) throw new Error('native-write-mismatch')
+  } catch (e) { if (strict) throw e; return false }
+  return true
+}
+
+// The in-progress session's file mirror. Same reason as the profile's: WebView storage can be
+// evicted, and backgrounding is often the last thing before the OS kills the app.
+export const ACTIVE_FILE = 'gym_active_v1.json'
+
+export async function nativeActiveSave(A, strict = false) {
+  return await writeJsonFile(ACTIVE_FILE, A, strict)
+}
+
+export async function nativeActiveLoad() {
+  return await readJsonFile(ACTIVE_FILE)
 }
 
 export async function loadRemoteFile() {
   try {
-    const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
+    const { Filesystem, Directory, Encoding } = await filesystemPlugin()
     const r = await Filesystem.readFile({ path: REMOTE_FILE, directory: Directory.Data, encoding: Encoding.UTF8 })
     return JSON.parse(r.data)
   } catch (e) { return null }   // never decided yet
@@ -114,7 +164,7 @@ export async function loadRemoteFile() {
 
 export async function saveRemoteFile(data) {
   try {
-    const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
+    const { Filesystem, Directory, Encoding } = await filesystemPlugin()
     await Filesystem.writeFile({ path: REMOTE_FILE, directory: Directory.Data, data: JSON.stringify(data), encoding: Encoding.UTF8 })
   } catch (e) { /* worst case: onboarding asks again next launch */ }
 }
@@ -169,7 +219,7 @@ export function buildReminderNotifications(S, now = new Date()) {
 // resyncs (every persist does), which drops the day and resets the count.
 export const NUDGE_WINDOW_DAYS = 7
 const NUDGE_ID_BASE = 2000
-export function buildNudgeNotifications(S, now = new Date()) {
+export function buildNudgeNotifications(S, now = new Date(), running = !!S?.active) {
   const r = S?.reminder
   if (!r?.on || !r.nudge) return []
   const at = nudgeMinute(r.time || '08:00')
@@ -183,7 +233,7 @@ export function buildNudgeNotifications(S, now = new Date()) {
     day.setDate(date.getDate() + offset)
     const iso = isoOf(day)
     // a session on screen right now is today's workout in the making, not a miss
-    if (offset === 0 && S.active) continue
+    if (offset === 0 && running) continue
     const ids = nudgeFor(S, iso)
     if (!ids) continue
     const names = ids.map(id => routines.find(x => x.id === id)?.name).filter(Boolean)
@@ -205,7 +255,7 @@ export function buildNudgeNotifications(S, now = new Date()) {
 // the bounded window. Cheap enough to run after any state change — the plan or the reminder time
 // may just have been edited. `interactive` gates the OS permission prompt to the Settings toggle;
 // a background resync never pops a dialog.
-export async function syncReminder(S, interactive = false) {
+export async function syncReminder(S, interactive = false, running = !!S?.active) {
   try {
     const { LocalNotifications } = await import('@capacitor/local-notifications')
     await LocalNotifications.cancel({ notifications: [
@@ -220,7 +270,7 @@ export async function syncReminder(S, interactive = false) {
     let perm = await LocalNotifications.checkPermissions()
     if (perm.display !== 'granted' && interactive) perm = await LocalNotifications.requestPermissions()
     if (perm.display !== 'granted') { await check([]); return false }
-    const notifications = [...buildReminderNotifications(S), ...buildNudgeNotifications(S)]
+    const notifications = [...buildReminderNotifications(S), ...buildNudgeNotifications(S, new Date(), running)]
     if (notifications.length) await LocalNotifications.schedule({ notifications })
     await check(notifications)
     return true
@@ -230,12 +280,13 @@ export async function syncReminder(S, interactive = false) {
 // Capacitor emits appStateChange when the native shell returns to the foreground. The visibility
 // listener also covers WebView/browser transitions, and both are harmless on a non-mobile build.
 let reminderSyncStarted = false
-export function initReminderSync(getState) {
+// `isRunning`: whether a workout is on screen right now (the session is not part of the state).
+export function initReminderSync(getState, isRunning = () => false) {
   if (!MOBILE || reminderSyncStarted) return
   reminderSyncStarted = true
   const resync = () => {
     if (document.visibilityState === 'hidden') return
-    syncReminder(getState()).catch(() => {})
+    syncReminder(getState(), false, isRunning()).catch(() => {})
   }
   document.addEventListener('visibilitychange', resync)
   // addListener is a promise of its own — it rejects when the App plugin is not behind the bridge
@@ -260,7 +311,7 @@ export function onAppActive(cb) {
 // WKWebView can't do blob-URL downloads, so the backup goes out through the OS share sheet
 // (Files, AirDrop, mail, …) from a temp file instead.
 export async function shareExport(json, filename) {
-  const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
+  const { Filesystem, Directory, Encoding } = await filesystemPlugin()
   const { Share } = await import('@capacitor/share')
   const w = await Filesystem.writeFile({ path: filename, directory: Directory.Cache, data: json, encoding: Encoding.UTF8 })
   await Share.share({ title: filename, url: w.uri })
@@ -270,7 +321,7 @@ export async function shareExport(json, filename) {
 // file crosses the native bridge as base64 in 3 MB pieces, never as one string the size of the
 // whole zip, which could be a few hundred MB.
 export async function shareExportBlob(blob, filename) {
-  const { Filesystem, Directory } = await import('@capacitor/filesystem')
+  const { Filesystem, Directory } = await filesystemPlugin()
   const { Share } = await import('@capacitor/share')
   const { toBase64 } = await import('./media-store-fs.js')
   const CHUNK = 3 * 1024 * 1024
@@ -326,11 +377,12 @@ export async function writeAutoBackup(state) {
   // feature must not do.
   if (await writeToChosenFolder(state, day)) return
   let fs
-  try { fs = await import('@capacitor/filesystem') } catch (e) { return }
+  try { fs = await filesystemPlugin() } catch (e) { return }
+  const data = JSON.stringify(buildProfileBackup(state))
   const write = name => fs.Filesystem.writeFile({
     path: `${AUTO_BACKUP_DIR}/${name}`,
     directory: fs.Directory.Documents,
-    data: JSON.stringify(state),
+    data,
     encoding: fs.Encoding.UTF8,
     recursive: true,
   })
@@ -440,7 +492,7 @@ async function writeToChosenFolder(state, day) {
     await loadFolderPlugin()
     const { ok } = await folderPlugin.check({ uri: folder.uri })
     if (!ok) throw new Error('permission lost')
-    await folderPlugin.write({ uri: folder.uri, name, data: JSON.stringify(state) })
+    await folderPlugin.write({ uri: folder.uri, name, data: JSON.stringify(buildProfileBackup(state)) })
   } catch (e) {
     await setFolderState({ lost: true, lostLabel: folder.label || null })
     await releaseFolder(folder.uri)

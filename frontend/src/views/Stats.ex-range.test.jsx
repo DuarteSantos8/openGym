@@ -6,6 +6,7 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import Stats from './Stats.jsx'
+import { loggedExposure } from '../lib/test-fixtures.js'
 
 const mocks = vi.hoisted(() => ({ charts: [], S: null }))
 vi.mock('../store/useStore.js', () => ({ useStore: selector => selector({ S: mocks.S }) }))
@@ -26,7 +27,7 @@ const session = (ago, w) => {
   const start = Date.now() - ago * DAY
   return {
     id: 'w' + ago, d: new Date(start).toISOString().slice(0, 10), start, end: start + 3600000, name: 'Push',
-    entries: [{ id: BENCH, target: { id: BENCH, sets: 2, reps: 5 }, sets: [{ w, r: 5, done: true }, { w, r: 4, done: true }] }],
+    exposures: [loggedExposure(BENCH, [{ w, r: 5 }, { w, r: 4 }])],
   }
 }
 let root, host

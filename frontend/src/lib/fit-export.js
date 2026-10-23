@@ -18,6 +18,7 @@
 import { exOr } from './exercises.js'
 import { modeOf, workoutAt } from './history.js'
 import { isSideSet, dropsOf } from './workout-model.js'
+import { legacyEntriesOf } from './prescription/index.js'
 
 /* ------------------------------------------------------------- the container -- */
 
@@ -219,7 +220,7 @@ const SET_MAX_MS = 120000
 // drop of a drop set (right after its set, with no rest in between).
 function itemsOf(w, exOf) {
   const items = []
-  ;(w?.entries || []).forEach(entry => {
+  legacyEntriesOf(w).forEach(entry => {
     if (!entry?.id) return
     const ex = exOf(entry.id)
     const mode = modeOf({ ...(entry.target || {}), id: entry.id })

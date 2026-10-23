@@ -120,7 +120,7 @@ describe('starter plan chooser', () => {
 describe('starter plan chooser, fitted to equipment', () => {
   const home = { id: 'home', name: 'Home', equipment: ['dumbbell'] }
   const chip = (host, label) => [...host.querySelectorAll('.chip')].find(b => b.textContent === label)
-  const exIds = () => S().routines.slice(1).flatMap(r => r.ex.map(e => e.id))
+  const exIds = () => S().routines.slice(1).flatMap(r => r.ex.map(e => e.exerciseId))
 
   it('points to Settings when there is no profile, and offers no chips', () => {
     starterPlanSheet()
@@ -162,7 +162,7 @@ describe('starter plan chooser, fitted to equipment', () => {
     loadStarterPlan('ppl', { id: 'home', name: 'Home', equipment: ['dumbbell'] })
     const pushes = S().routines.filter(r => r.name === 'Push Day')
     expect(pushes).toHaveLength(2)
-    expect(pushes[0].ex.map(e => e.id)).not.toEqual(pushes[1].ex.map(e => e.id))
+    expect(pushes[0].ex.map(e => e.exerciseId)).not.toEqual(pushes[1].ex.map(e => e.exerciseId))
     expect(S().week[1]).toEqual([pushes[1].id])
   })
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { cleanBackups, withBackups, MAX_BACKUPS } from './routine-backups.js'
 import { replaceSlotExercise } from './routines.js'
 import { parsePlan, buildPlanBundle } from './plan-share.js'
+import { ruleOccurrence } from './test-fixtures.js'
 
 /* Planned substitutes for an exercise in a routine (Discord): an optional list on the entry. */
 describe('cleanBackups', () => {
@@ -30,7 +31,7 @@ describe('plan files', () => {
   const S = ex => ({ unit: 'kg', week: {}, customEx: [{ id: 'cu1', n: 'mine', bp: 'back', custom: true }], routines: [{ id: 'r', name: 'R', ex: [ex] }] })
   const roundTrip = ex => parsePlan(JSON.stringify(buildPlanBundle(S(ex), 'Plan'))).routines[0].ex[0]
   it('carry the catalogue backups, not someone\'s own exercises, and nothing when there are none', () => {
-    expect(roundTrip({ id: '0025', sets: 3, reps: 8, subs: ['0047', 'cu1', 'nope', '0025'] }).subs).toEqual(['0047'])
-    expect('subs' in roundTrip({ id: '0025', sets: 3, reps: 8 })).toBe(false)
+    expect(roundTrip({ ...ruleOccurrence('0025'), subs: ['0047', 'cu1', 'nope', '0025'] }).subs).toEqual(['0047'])
+    expect('subs' in roundTrip(ruleOccurrence('0025'))).toBe(false)
   })
 })

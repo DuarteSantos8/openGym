@@ -11,10 +11,11 @@ import { PAGES, PAGE_IDS, ROOT_GROUPS, SEARCH, pageVisible, searchSettings, page
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const mocks = vi.hoisted(() => {
-  const state = { S: null, user: null, sync: null, MOBILE: false, push: false, sheets: [], navs: [], toast: null }
+  const state = { A: null, S: null, user: null, sync: null, MOBILE: false, push: false, sheets: [], navs: [], toast: null }
   state.snapshot = () => ({
-    S: state.S, user: state.user, coachLocal: null, sync: state.sync, config: null,
+    S: state.S, A: state.A, user: state.user, coachLocal: null, sync: state.sync, config: null,
     update: mut => { const next = structuredClone(state.S); mut(next); state.S = next },
+    updateActive: mut => { if (state.A) { const next = structuredClone(state.A); mut(next); state.A = next } },
     replaceState: vi.fn(), setUser: vi.fn(), pullState: vi.fn(), pushState: vi.fn(), setUnit: vi.fn(),
     resetEverything: vi.fn(), resetDemo: vi.fn(), importBackup: vi.fn(), importConflict: vi.fn(),
   })
@@ -288,12 +289,12 @@ describe('the pages', () => {
 
   it('Collapse completed exercises is saved for every session and drops a running session\'s own choice', () => {
     mount('workout')
-    mocks.S.active = { collapseCompleted: false, entries: [] }
+    mocks.A = { collapseCompleted: false, entries: [] }
     const sw = rowTitled('Collapse completed exercises').querySelector('[role="switch"]')
     expect(sw.getAttribute('aria-checked')).toBe('false')
     act(() => sw.click())
     expect(mocks.S.collapseCompleted).toBe(true)
-    expect('collapseCompleted' in mocks.S.active).toBe(false)
+    expect('collapseCompleted' in mocks.A).toBe(false)
   })
 
   it('the Fine-tuning switches write S.wc as the old Workout controls sheet did', () => {

@@ -1,19 +1,19 @@
 import { useState } from 'react'
 import { useStore } from '../store/useStore.js'
-import { exOr } from '../lib/exercises.js'
+import { exOr, stepWeight } from '../lib/exercises.js'
 import { clampIncline, hasIncline, inclineFits, INCLINE_MAX, INCLINE_STEP } from '../lib/incline.js'
 import { exerciseNameFor, t } from '../lib/i18n.js'
 import { fmtDate, fmtNum, fmtPlate } from '../lib/format.js'
 import { EFFORT, effortOf, modeOf } from '../lib/history.js'
 import { lastEntryFor, pinnedNoteFor, setsRepsOf } from '../lib/history.js'
 import { effortColor, rirOf } from '../lib/effort.js'
-import { progressionGuidance } from '../lib/progression-copy.js'
+import { loadStepFor } from '../lib/session-ui-adapter.js'
+import { PRESET_LABEL } from '../components/RuleEditor.jsx'
 import {
   addCluster, addDrop, addSideCluster, addSideDrop, clustersOf, dropsOf,
   isFailureSet, isSideSet, isWarmupRow, nextBurstReps, toggleFailure, nextDropWeight, setClusterAt,
   setDropAt, setSideClusterAt, setSideDropAt, setSideField,
 } from '../lib/workout-model.js'
-import { weightIncrement, stepWeight } from '../lib/progression.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { effortPickerSheet, exerciseDetailSheet, exerciseHistorySheet, exerciseNoteSheet, menuSheet, barWeightSheet } from '../sheets.jsx'
 import { baseWeightFor, inventoryFor, loadKindFor, rowLoad } from '../lib/plates.js'
@@ -112,12 +112,15 @@ export default function FocusView({
   onNoProg, busy, onSelectEntry, onAdvanceUnit, onPairPrev, onPairNext, onUnpair, pointerEpoch,
 }) {
   const S = useStore(state => state.S)
+  const A = useStore(state => state.A)
   const speedUnit = speedUnitOf(S)
-  const entry = S.active.entries[entryIdx]
+  const entry = A.entries[entryIdx]
   const ex = exOr(entry.id)
   const last = lastEntryFor(S, entry.id)
   const pinnedNote = pinnedNoteFor(S, entry.id)
-  const guidance = progressionGuidance(entry.plan)
+  const exposure = A.exposures?.find(x => x.exposureId === entry.exposureId)
+  const prescription = S.prescriptions?.[exposure?.prescriptionId]
+  const guidance = prescription ? { policyLabel: PRESET_LABEL[prescription.preset] } : null
   // Exercise operations use indexes, so their local-only epoch discards stale pointers instead
   // of letting a moved, removed, or newly inserted entry inherit one.
   const [pointerState, setPointerState] = useState(() => ({ epoch: pointerEpoch, pointers: new Map() }))
@@ -133,7 +136,7 @@ export default function FocusView({
   const effortField = EFFORT[effort]?.f
   const effortValue = effortField ? set[effortField] ?? null : null
   const effortTint = effortValue == null ? null : effortColor(rirOf({ [effortField]: effortValue }))
-  const loadStep = weightIncrement({ ...(entry.target || {}), id: entry.id }, S.unit)
+  const loadStep = loadStepFor(prescription, S.unit)
   // Bell to bell over the dumbbells you own, when the profile lists them (issue #376).
   const owned = mode === 'reps' ? ownedWeightsFor(S, { ...(entry.target || {}), id: entry.id }) : null
   const stepLoad = owned ? (v, _step, dir) => stepOwned(owned, v, dir) : stepWeight
@@ -142,7 +145,7 @@ export default function FocusView({
     next.set(entryIdx, clampSet(entry, index))
     return { epoch: pointerEpoch, pointers: next }
   })
-  const sequence = unit.length > 1 ? supersetSequence(S.active.entries, unit) : []
+  const sequence = unit.length > 1 ? supersetSequence(A.entries, unit) : []
   const sequenceIdx = sequence.findIndex(item => item.entryIdx === entryIdx && item.setIdx === setIdx)
   const clearPointer = index => setPointerState(current => {
     if (current.epoch !== pointerEpoch) return { epoch: pointerEpoch, pointers: new Map() }
@@ -200,11 +203,11 @@ export default function FocusView({
   }
 
   const onProgress = ({ unitDone }) => {
-    const active = useStore.getState().S.active
+    const active = useStore.getState().A
     if (!active) return
     if (unitDone) {
       onAdvanceUnit()
-      const nextEntryIdx = useStore.getState().S.active?.cur
+      const nextEntryIdx = useStore.getState().A?.cur
       if (nextEntryIdx !== entryIdx) clearPointer(nextEntryIdx)
     }
     else if (unit.length === 1) selectSet(setIdx + 1)
@@ -250,7 +253,7 @@ export default function FocusView({
     <div className="focus-card">
       {unit.length > 1 && <div className="focus-superset-inline">
         <Icon name="reset" />
-        <strong>{t('Superset:')} {unit.map(index => exerciseNameFor(exOr(S.active.entries[index].id))).join(' + ')}</strong>
+        <strong>{t('Superset:')} {unit.map(index => exerciseNameFor(exOr(A.entries[index].id))).join(' + ')}</strong>
         <span>{t('Round {0}', setIdx + 1)} · {t('Exercise {0} of {1}', unit.indexOf(entryIdx) + 1, unit.length)}</span>
         <Button size="xs" variant="ghost" icon="link" aria-label={t('Unpair')} onClick={onUnpair}>{t('Unpair')}</Button>
         <div className="focus-superset-nav">

@@ -1,5 +1,45 @@
 # Changelog
 
+## Unreleased
+
+**1RM: the blend is the default, and every estimate has a range.** Until you pick a formula in
+Settings, the estimated 1RM is the weighted blend of seven formulas and the RIR scale (up to 15 reps,
+reading your RIR when you log it). Next to the number you now see how far the models disagree about the
+same set, like 142 (135–150) — on the exercise page, in the 1RM calculator (which takes a RIR), in the
+records saved with each finished session and in the MCP `estimate_1rm` tool, which now accepts every
+formula. Fixed on the way: a finished session and an edited history always recorded Epley estimates,
+whatever formula the profile had picked; the percent-of-1RM loads follow the chosen formula now.
+
+**Configurable progression programs.** A plan rule is now a program: phases of set groups, the
+steps that move them, when a phase ends and what happens at the end of a cycle. The progressions you
+know are templates of it and behave as before (manual, autoregulated and duration are now one
+**Autoregulated** rule you can switch to seconds; pyramid and reverse pyramid are one **Pyramid** with a
+direction), and three new ones join them:
+
+- **Top set and back-off** — one heavy set, then lighter back-off sets at a percentage, each with its
+  own rest; the top set (or every set, if you prefer) decides the next load.
+- **Accumulation then intensification** — reps climb at a lighter share of your training max, then a
+  heavier block of fewer reps; start over with a heavier training max, or finish.
+- **Density** — the same work with a little less rest after every clean session, down to a floor.
+
+Fixed on the way: triple progression and a ladder with named variations could never reach their next
+step; a bodyweight exercise that gained weight went back to the rep climb every other session (and
+after migrating, a bodyweight double climbed the wrong rep range); a ladder session that fell short was
+judged against the plan's minimum rather than the target it asked for, as v1 did. Steps are now
+earned when a session finishes, and a set's own rest drives the timer.
+
+**A redesigned routine editor.** The routine page has a bar with the ⋯ menu (Copy routine, Print and
+Delete moved there), the routine's icon and name as its title, a flat list that shows each exercise's
+targets and what is switched on, a "Link to previous" between neighbours for supersets, and the
+muscles the plan reaches as bars. An exercise's settings open on three tabs, **Target**,
+**Progression** and **Options**, with the plan as it reads now and Save pinned to the foot; Replace
+and Remove sit behind its ⋯.
+
+**Choose the sets taken to failure.** Beside "last set", an exercise can take **all** its sets to
+failure, or the ones you pick by number (1 and 3, say). The routine list reads `8+` when every set goes
+there and `8(+)` when some do; a set number the plan only reaches once the progression adds sets is
+marked `?`. A plan that said "last set" keeps saying exactly that.
+
 ## v1.4.2 (2026-10-23)
 
 openGym comes to the App Store, with an Apple Watch app in tow. Plus everything you asked for
