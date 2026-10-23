@@ -3,7 +3,7 @@ import { supersetMeta } from './superset-meta.js'
 // the stores makes the uneven-round and re-check rules explicit and directly testable.
 import { isWarmupRow } from './workout-model.js'
 
-const hasWork = (entries, idx) => !!entries[idx]?.sets?.some(set => !set.done)
+const hasWork = (entries, idx) => entries[idx]?.skipped !== true && !!entries[idx]?.sets?.some(set => !set.done)
 
 /**
  * The unit Prev (`dir` -1) or Next (+1) lands on from unit `from` in Cards and Focus, or -1 at

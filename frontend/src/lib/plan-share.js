@@ -1,3 +1,4 @@
+import { cleanSections, remapSections, sectionOf, sameSection, sectionLabel, validOccurrenceId } from './workout-sections.js'
 // Share a weekly plan.
 //
 // Two jobs:
@@ -121,6 +122,7 @@ function cleanEx(e) {
   // timer in charge. parsePlan and mergePlan carry it through by spread.
   if (e.restSec > 0) o.restSec = e.restSec
   if (e.warmupRestSec > 0) o.warmupRestSec = e.warmupRestSec   // the ramp's own rest travels with the work rest
+  if (e.sectionId) { o.sectionId = e.sectionId; o.occurrenceId = e.occurrenceId }
   // The warm-ups' "no timer" and the break between sides travel the same way, only when set.
   // Planned substitutes (lib/routine-backups.js): the catalogue's only, since the other end may
   // not have someone's own exercises.
@@ -218,6 +220,7 @@ export function buildPlanBundle(S, name) {
     id: r.id, name: r.name, emoji: r.emoji,
     ...(r.prog ? { prog: r.prog } : {}),
     ...(r.excludeFromProgression === true ? { excludeFromProgression: true } : {}),
+    ...(r.sections?.length ? { sections: cleanSections(r.sections) } : {}),
     ex: (r.ex || []).map(cleanEx)
   }))
   const usedIds = new Set(routines.flatMap(r => r.ex.map(e => e.id)))
@@ -229,7 +232,7 @@ export function buildPlanBundle(S, name) {
   // written after are read the same way at the other end.
   const week = {}
   WEEK_DAYS.forEach(d => { if (S.week?.[d]?.length) week[d] = [].concat(S.week[d]) })
-  return { opengym_plan: PLAN_FMT, exported: todayISO(), name: name || '', unit, week, routines, customEx }
+  return { opengym_plan: routines.some(r => r.sections?.length) ? 2 : PLAN_FMT, exported: todayISO(), name: name || '', unit, week, routines, customEx }
 }
 
 /**
@@ -246,7 +249,7 @@ export function parsePlan(raw, destinationUnit = 'kg') {
   let data = raw
   if (typeof raw === 'string') { try { data = JSON.parse(raw) } catch { throw notPlan() } }
   const destination = planUnit(destinationUnit)
-  if (!data || typeof data !== 'object' || Array.isArray(data) || !data.opengym_plan || !Array.isArray(data.routines) || !destination) {
+  if (!data || typeof data !== 'object' || Array.isArray(data) || ![PLAN_FMT, 2].includes(data.opengym_plan) || !Array.isArray(data.routines) || !destination) {
     throw notPlan()
   }
   const sourceUnit = declaredPlanUnit(data)
@@ -282,7 +285,25 @@ export function parsePlan(raw, destinationUnit = 'kg') {
       return convertedExercise({ ...passthrough, ...(pyramid.length ? { pyramid } : {}), ...(pyramidRest.length ? { pyramidRest } : {}), ...(pyramidWeight.length ? { pyramidWeight } : {}), ...(warm ? { warmupSets: warm } : {}), ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : {}), ...(warmOff ? { warmupRestOff: true } : warmRest ? { warmupRestSec: warmRest } : {}), ...(sideRest ? { sideRestSec: sideRest } : {}), ...(subs.length ? { subs } : {}), ...(sgName ? { sgName } : {}), ...(sgRest ? { sgRest } : {}) }, sourceUnit || destination, destination)
     })
   }))
+  routines.forEach(routine => {
+    const sections = routine.sections == null ? [] : cleanSections(routine.sections)
+    if (sections.length && data.opengym_plan !== 2) throw new Error(t('Workout phases require plan format 2.'))
+    const occurrences = new Set(), groups = new Map()
+    for (const entry of routine.ex) {
+      delete entry.section
+      if (sections.length) {
+        if (!sections.some(section => section.id === entry.sectionId)) throw new Error(t('Exercise has no valid workout phase.'))
+        if (!validOccurrenceId(entry.occurrenceId) || occurrences.has(entry.occurrenceId)) throw new Error(t('Invalid or duplicate exercise occurrence.'))
+        occurrences.add(entry.occurrenceId)
+        if (entry.sg && groups.has(entry.sg) && groups.get(entry.sg) !== entry.sectionId) throw new Error(t('Superset spans workout phases.'))
+        if (entry.sg) groups.set(entry.sg, entry.sectionId)
+      } else if (entry.sectionId != null) throw new Error(t('Exercise phase has no section definitions.'))
+    }
+    if (sections.length) routine.sections = sections
+    else delete routine.sections
+  })
   return {
+    opengym_plan: data.opengym_plan,
     name: (data.name || '').trim(),
     routines,
     week: data.week || {},
@@ -326,14 +347,15 @@ export function mergePlan(s, bundle, { schedule } = {}) {
   source.routines.forEach(r => {
     const nid = uid()
     ridMap[r.id] = nid
-    s.routines.push({
+    s.routines.push(remapSections({
       id: nid,
       name: r.name || t('Shared routine'),
       emoji: r.emoji,
       ...(r.prog ? { prog: r.prog } : {}),
       ...(r.excludeFromProgression === true ? { excludeFromProgression: true } : {}),
+      ...(r.sections?.length ? { sections: cleanSections(r.sections) } : {}),
       ex: (r.ex || []).map(e => ({ ...e, id: exIdMap[e.id] || canonicalExId(e.id) }))
-    })
+    }))
   })
   if (schedule) {
     WEEK_DAYS.forEach(d => { delete s.week[d] })
@@ -384,7 +406,7 @@ function units(ex) {
   const out = []
   ex.forEach((e, i) => {
     const prev = ex[i - 1]
-    if (i > 0 && e.sg && prev?.sg === e.sg) out[out.length - 1].push(e)
+    if (i > 0 && e.sg && prev?.sg === e.sg && sameSection(prev, e)) out[out.length - 1].push(e)
     else out.push([e])
   })
   return out
@@ -393,7 +415,11 @@ function units(ex) {
 // `bare` leaves out the routine's own heading, for a page that is this one routine and already
 // names it at the top.
 function routineHTML(r, unit, { bare = false, speedUnit } = {}) {
+  let previousSection
   const rows = units(r.ex).map(u => {
+    const section = sectionOf(u[0], r)
+    const heading = section && section.id !== previousSection ? `<h3 class="phase">${esc(sectionLabel(section, t))}</h3>` : ''
+    previousSection = section?.id
     const items = u.map(e => {
       const ex = EXIDX[e.id]
       const name = ex ? exerciseNameFor(ex) : t('Unknown exercise')
@@ -403,9 +429,9 @@ function routineHTML(r, unit, { bare = false, speedUnit } = {}) {
       const note = e.note ? `<div class="ex-note">${esc(e.note)}</div>` : ''
       return `<div class="ex"><div class="ex-row"><div class="ex-n ${ex ? exerciseNameClass(ex) : ''}">${esc(name)}${part}</div><div class="ex-s">${esc(scheme(e, unit, speedUnit))}</div></div>${note}</div>`
     }).join('')
-    return u.length > 1
+    return heading + (u.length > 1
       ? `<div class="ss"><div class="ss-tag">${esc(t('Superset'))}</div><div class="ss-items">${items}</div></div>`
-      : items
+      : items)
   }).join('')
   const count = exCount(r.ex.length)
   return `<section class="routine">
@@ -454,6 +480,7 @@ export function planPrintHTML(S, owner, { routineId } = {}) {
     font: 14px/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-variant-numeric: tabular-nums;
   }
+  .phase { margin: 16px 0 8px; break-after: avoid; font-size: 15px; }
   .doc { max-width: 720px; margin: 0 auto; }
   header { border-bottom: 2px solid #16181d; padding-bottom: 12px; margin-bottom: 20px; }
   header .kicker { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #6a7a3a; font-weight: 700; }

@@ -1,3 +1,4 @@
+import { countsAsWork, sectionFields, cleanSections } from '../../frontend/src/lib/workout-sections.js'
 /* The eight read-only tools. Each handler returns JSON; labels.js pre-substitutes any
    {0}/{1} template the lib returns so the LLM gets final text, not template strings.
    ISO dates are validated on the way in; the handlers never see 'yesterday'. */
@@ -60,6 +61,7 @@ function entryView(e, S) {
   const mode = modeOf(cfg)
   return {
     id: e.id,
+    ...sectionFields(e),
     name: ex.n,
     body_part: ex.bp || null,
     mode,
@@ -91,7 +93,7 @@ function prTable(S, formula) {
   const byId = new Map()
   for (const w of (S.workouts || [])) {
     for (const e of (w.entries || [])) {
-      const best = bestSetOf(e, formula)
+      const best = bestSetOf(e, formula, { workout: w })
       if (!best) continue
       const prev = byId.get(e.id)
       if (!prev || best.est > prev.est) {
@@ -144,6 +146,7 @@ export const getRoutine = {
       id: r.id,
       name: r.name,
       emoji: r.emoji || null,
+      ...(r.sections?.length ? { sections: cleanSections(r.sections) } : {}),
       policy: policyFor(null, r, 'reps'),
       policy_name: policyName(policyFor(null, r, 'reps')),
       exclude_from_progression: r.excludeFromProgression === true,
@@ -154,6 +157,7 @@ export const getRoutine = {
         return {
           position: i + 1,
           id: cfg.id,
+          ...sectionFields(cfg, r),
           name: ex.n,
           body_part: ex.bp || null,
           mode,
@@ -358,6 +362,7 @@ export const getWorkout = {
     return {
       id: w.id || null,
       date: w.d,
+      ...(w.sections?.length ? { sections: cleanSections(w.sections) } : {}),
       routine_id: w.routineId || null,
       routine_name: w.name || null,
       unit: S.unit || 'kg',

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildCombinedEntries, deriveSessionName } from './session-merge.js'
+import { buildCombinedEntries, deriveSessionName, appendSessionEntries } from './session-merge.js'
 import { buildSessionEntries } from './session-start.js'
 import { buildCompletedWorkout } from './finish-workout.js'
 import { isWarmupRow } from './workout-model.js'
@@ -76,5 +76,46 @@ describe('deriveSessionName', () => {
   it('collapses 4+ to "A + B + N more"', () => {
     expect(deriveSessionName(['A', 'B', 'C', 'D'])).toBe('A + B + 2 more')
     expect(deriveSessionName(['A', 'B', 'C', 'D', 'E'])).toBe('A + B + 3 more')
+  })
+})
+
+
+describe('combined phase snapshots', () => {
+  const phase = { id: 'shared', label: 'Preparation', type: 'warmup', countsAsWork: false }
+  const phased = id => ({ id, name: id, sections: [phase], ex: [{ id: '0025', sectionId: 'shared', sets: 1, reps: 5, weight: 40, prog: 'off' }] })
+  it('isolates phase ids and repeated exercises across routines through JSON reload', () => {
+    const routines = [phased('one'), phased('two')]
+    const result = JSON.parse(JSON.stringify(buildCombinedEntries({ ...st, routines }, ['one', 'two'])))
+    expect(new Set(result.sections.map(s => s.id)).size).toBe(2)
+    expect(new Set(result.entries.map(e => e.occurrenceId)).size).toBe(2)
+    expect(result.entries.map(e => e.rid)).toEqual(['one', 'two'])
+    result.entries.forEach((e, i) => {
+      expect(e.sectionId).toBe(result.sections[i].id)
+      expect(e.target.sectionId).toBe(e.sectionId)
+      expect(e.section.type).toBe('warmup')
+    })
+    expect(routines[1].sections[0].id).toBe('shared')
+  })
+  it('gives appended flat routines a work phase without Web Crypto or changing logged preparation', () => {
+    const active = buildCombinedEntries({ ...st, routines: [phased('one')] }, ['one'])
+    active.entries[0].sets[0].done = true
+    const before = structuredClone(active.entries[0])
+    const cryptoDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'crypto')
+    Object.defineProperty(globalThis, 'crypto', { configurable: true, value: {} })
+    try { appendSessionEntries(active, buildCombinedEntries(st, ['r1'])) }
+    finally {
+      if (cryptoDescriptor) Object.defineProperty(globalThis, 'crypto', cryptoDescriptor)
+      else delete globalThis.crypto
+    }
+    expect(active.entries[0]).toEqual(before)
+    expect(active.sections.map(s => s.type)).toEqual(['warmup', 'work'])
+    expect(active.entries.slice(1).every(e => e.section.type === 'work')).toBe(true)
+  })
+  it('rejects excessive phases without partially mutating the active session', () => {
+    const active = { entries: [{ id: '0025' }], routineId: 'legacy' }
+    const before = structuredClone(active)
+    const source = { entries: [], sections: Array.from({ length: 50 }, (_, i) => ({ ...phase, id: 'p' + i })) }
+    expect(() => appendSessionEntries(active, source)).toThrow('at most 50')
+    expect(active).toEqual(before)
   })
 })

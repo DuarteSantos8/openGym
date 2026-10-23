@@ -142,6 +142,20 @@ describe('saveSessionAsRoutine', () => {
     state.routines[0].ex[0].reps = 99
     expect(session).toEqual(before)
   })
+
+  it('copies phase membership with independent section and occurrence ids', () => {
+    const phase = { id: 'prep', type: 'warmup', label: 'Preparation', countsAsWork: false }
+    const session = { id: 'w', name: 'Phased', sections: [phase], entries: [entry('bench',
+      { reps: 5, sectionId: phase.id, section: phase, occurrenceId: 'source-entry' }, [row({ r: 5 })],
+      { sectionId: phase.id, section: phase, occurrenceId: 'source-entry' })] }
+    const before = structuredClone(session)
+    const routine = routineFromSession(session)
+    expect(routine.sections[0]).toMatchObject({ type: 'warmup', countsAsWork: false })
+    expect(routine.sections[0].id).not.toBe(phase.id)
+    expect(routine.ex[0].sectionId).toBe(routine.sections[0].id)
+    expect(routine.ex[0].occurrenceId).not.toBe('source-entry')
+    expect(session).toEqual(before)
+  })
 })
 
 // A copy made from a planned session is a routine like any other: the plan owns its sets and reps

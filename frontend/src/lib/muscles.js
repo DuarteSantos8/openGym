@@ -1,3 +1,4 @@
+import { countsAsWork } from './workout-sections.js'
 // Which muscles an exercise trains, and how hard — the data behind every muscle map.
 //
 // The exercise dataset names muscles in free text and is not consistent about it:
@@ -274,7 +275,7 @@ export function loadOf(items) {
  */
 export const loadOfWorkouts = (workouts, pick) =>
   loadOf((workouts || []).flatMap(w =>
-    (w.entries || []).map(e => ({ id: e.id, ex: e.exercise || e, sets: (e.sets || []).filter(s => s.done && !isWarmupRow(s) && (!pick || pick(s))).length }))))
+    (w.entries || []).filter(e => countsAsWork(e, w)).map(e => ({ id: e.id, ex: e.exercise || e, sets: (e.sets || []).filter(s => s.done && !isWarmupRow(s) && (!pick || pick(s))).length }))))
 
 /**
  * Workouts in one existing Muscle balance range, with time injected for deterministic tests.
@@ -292,7 +293,7 @@ export function muscleBalanceWindow(workouts, win, now = Date.now(), today = tod
 
 /** Load a routine *would* produce, from its planned set counts. */
 export const loadOfRoutine = (routine, exercises = {}) =>
-  loadOf((routine?.ex || []).map(c => ({ id: c.id, ex: exercises[c.id] || c, sets: c.sets || 1 })))
+  loadOf((routine?.ex || []).filter(c => countsAsWork(c, routine)).map(c => ({ id: c.id, ex: exercises[c.id] || c, sets: c.sets || 1 })))
 
 /**
  * Effective sets programmed by the live recurring week; overrides and history are not plans.
@@ -321,7 +322,7 @@ export function loadOfWeeklyPlan(S) {
 
 /** Load for a workout still in progress — the sets ticked so far. */
 export const loadOfActive = active =>
-  loadOf((active?.entries || []).map(e => ({ id: e.id, ex: e.exercise || e, sets: (e.sets || []).filter(s => s.done && !isWarmupRow(s)).length })))
+  loadOf((active?.entries || []).filter(e => countsAsWork(e, active)).map(e => ({ id: e.id, ex: e.exercise || e, sets: (e.sets || []).filter(s => s.done && !isWarmupRow(s)).length })))
 
 /**
  * Shade buckets 0–4 per muscle.

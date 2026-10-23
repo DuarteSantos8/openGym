@@ -1,3 +1,5 @@
+import { WorkoutSections, WorkoutPhase, SectionMove, removeSectionExerciseSheet, editWorkoutSections, usePhaseReorder } from '../components/WorkoutSections.jsx'
+import { sectionFields, sameSection, assignSection, sectionLabel, reorderSection } from '../lib/workout-sections.js'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
@@ -31,16 +33,19 @@ export const ROUTINE_DRAG_SLOP = 8
 const clamp = (value, low, high) => Math.max(low, Math.min(high, value))
 
 // Slots are defined after removing the source unit, so a grouped run can never be split.
-export function reorderRoutineUnit(exercises, sourceIndex, targetSlot) {
+export function reorderRoutineUnit(exercises, sourceIndex, targetSlot, destination) {
   if (!Array.isArray(exercises) || !exercises.length) return false
   const units = supersetUnits(exercises)
   const sourcePosition = units.findIndex(unit => unit.includes(sourceIndex))
   if (sourcePosition < 0) return false
   const remaining = units.filter((_, position) => position !== sourcePosition)
   const slot = clamp(Number.isFinite(targetSlot) ? Math.trunc(targetSlot) : sourcePosition, 0, remaining.length)
-  if (slot === sourcePosition) return false
+  if (slot === sourcePosition && (!destination || destination.id === exercises[sourceIndex].sectionId)) return false
   const source = units[sourcePosition]
+  const crossed = slot > sourcePosition ? units.slice(sourcePosition + 1, slot + 1) : units.slice(slot, sourcePosition)
+  if (!destination && crossed.some(unit => !sameSection(exercises[source[0]], exercises[unit[0]]))) return false
   const moved = exercises.splice(source[0], source.length)
+  if (destination) moved.forEach(entry => { entry.sectionId = destination.id; entry.section = { ...destination } })
   const insertAt = remaining.slice(0, slot).reduce((count, unit) => count + unit.length, 0)
   exercises.splice(insertAt, 0, ...moved)
   cleanupSg(exercises)
@@ -146,8 +151,9 @@ function useRoutineReorder(routineIdentity, exercises, onDrop) {
       const rect = list.getBoundingClientRect()
       const inside = x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
       const geometry = unitGeometry(list, exercisesRef.current)
-      if (commit && inside && geometry && matchesSnapshot(gesture) && gesture.targetSlot !== gesture.sourcePosition) {
-        onDropRef.current(gesture.sourceIndex, gesture.targetSlot)
+      if (commit && inside && geometry && matchesSnapshot(gesture)
+        && (gesture.targetSlot !== gesture.sourcePosition || gesture.targetSectionId !== gesture.sourceSectionId)) {
+        onDropRef.current(gesture.sourceIndex, gesture.targetSlot, gesture.targetSectionId)
       }
     }
     const indicatorTop = (geometry, gesture, slot, listRect) => {
@@ -170,11 +176,24 @@ function useRoutineReorder(routineIdentity, exercises, onDrop) {
       const remaining = geometry.filter(unit => unit.position !== gesture.sourcePosition)
       const probeY = clamp(y, listRect.top, listRect.bottom)
       const moved = Math.hypot(x - gesture.startX, y - gesture.startY) > ROUTINE_DRAG_SLOP
-      const slot = moved ? remaining.reduce((count, unit) => count + (probeY > unit.center ? 1 : 0), 0) : gesture.sourcePosition
+      let slot = moved ? remaining.reduce((count, unit) => count + (probeY > unit.center ? 1 : 0), 0) : gesture.sourcePosition
+      const zones = [...list.querySelectorAll('[data-section-zone]')].map(node => ({ node, rect: node.getBoundingClientRect() }))
+      const zone = zones.find(({ rect }) => probeY >= rect.top && probeY <= rect.bottom)
+        || zones.reduce((nearest, candidate) => !nearest || Math.min(Math.abs(probeY - candidate.rect.top), Math.abs(probeY - candidate.rect.bottom)) < Math.min(Math.abs(probeY - nearest.rect.top), Math.abs(probeY - nearest.rect.bottom)) ? candidate : nearest, null)
+      const sectionId = moved ? zone?.node.dataset.sectionId : gesture.sourceSectionId
+      if (sectionId) {
+        const zoneIds = zones.map(z => z.node.dataset.sectionId)
+        const rank = zoneIds.indexOf(sectionId)
+        const before = remaining.filter(u => zoneIds.indexOf(exercisesRef.current[u.unit[0]].sectionId) < rank).length
+        const within = remaining.filter(u => exercisesRef.current[u.unit[0]].sectionId === sectionId)
+        slot = before + within.filter(u => probeY > u.center).length
+      }
       const rawDelta = y - gesture.grabOffset - gesture.sourceTop
       const deltaY = clamp(rawDelta, listRect.top - gesture.sourceTop, listRect.bottom - gesture.sourceBottom)
-      gesture.lastX = x; gesture.lastY = y; gesture.targetSlot = slot
-      setDrag({ first: gesture.sourceUnit[0], last: gesture.sourceUnit.at(-1), deltaY, indicatorTop: indicatorTop(geometry, gesture, slot, listRect) })
+      gesture.lastX = x; gesture.lastY = y; gesture.targetSlot = slot; gesture.targetSectionId = sectionId
+      const line = indicatorTop(geometry, gesture, slot, listRect)
+      setDrag({ first: gesture.sourceUnit[0], last: gesture.sourceUnit.at(-1), deltaY, sectionId,
+        indicatorTop: zone ? clamp(line, zone.rect.top - listRect.top + 48, zone.rect.bottom - listRect.top - 56) : line })
       if (schedule && frame == null) frame = window.requestAnimationFrame(runAutoScroll)
     }
     function runAutoScroll() {
@@ -196,6 +215,7 @@ function useRoutineReorder(routineIdentity, exercises, onDrop) {
       if (!source) { finish(gesture, false); return }
       gesture.active = true; gesture.timer = null
       gesture.sourcePosition = source.position; gesture.sourceUnit = source.unit
+      gesture.sourceSectionId = exercisesRef.current[gesture.sourceIndex].sectionId
       gesture.sourceTop = source.top; gesture.sourceBottom = source.bottom
       gesture.grabOffset = gesture.lastY - source.top; gesture.targetSlot = source.position
       gesture.scrollHost = scrollHostFor(list)
@@ -216,7 +236,8 @@ function useRoutineReorder(routineIdentity, exercises, onDrop) {
       }
       if (event.isPrimary === false || (event.pointerType === 'mouse' && event.button !== 0)) return
       const target = event.target
-      if (!target?.closest || target.closest('button:not([data-row-open]),a,input,textarea,select,[data-nodrag]')) return
+      const handle = target?.closest?.('[data-drag-handle]')
+      if (!target?.closest || (!handle && target.closest('button:not([data-row-open]),a,input,textarea,select,summary,[data-nodrag]'))) return
       const row = target.closest('[data-routine-row]')
       if (!row || !list.contains(row)) return
       const sourceIndex = Number(row.dataset.exIndex)
@@ -375,8 +396,16 @@ export default function RoutineEdit() {
   // included: this still unmounts after the delete button navigates away.
   useEffect(() => () => useStore.getState().autoBackupNow(), [])
   const edit = fn => update(s => { fn(s.routines.find(x => x.id === id).ex) })
-  const reorder = useRoutineReorder(r, r?.ex || [], (sourceIndex, targetSlot) => {
-    edit(exercises => { reorderRoutineUnit(exercises, sourceIndex, targetSlot) })
+  const reorder = useRoutineReorder(r, r?.ex || [], (sourceIndex, targetSlot, sectionId) => {
+    update(s => {
+      const current = s.routines.find(x => x.id === id)
+      const destination = current.sections?.find(section => section.id === sectionId)
+      if (sectionId && !destination) return
+      reorderRoutineUnit(current.ex, sourceIndex, targetSlot, destination)
+    })
+  })
+  const phaseDrag = usePhaseReorder(reorder.listRef, r?.sections || [], false, (sourceId, targetId) => {
+    editWorkoutSections({ routineId: id }, current => reorderSection(current, sourceId, targetId))
   })
   if (!r) return null
   // The arrows move one exercise (#377): inside its superset, out of it at the edge, and past a
@@ -416,7 +445,7 @@ export default function RoutineEdit() {
       if (quick) { commit(ex, current => replaceSlotExercise(current, ex.id, live, id)); return }
       const next = replaceSlotExercise(slot, ex.id, live, id)
       exConfigSheet(ex, next, cfg => commit(ex, current => ({ id: ex.id, sg: current.sg, ...cfg })), null, r, null, null, t('Replace'), { backups: true })
-    }, { title: t('Replace exercise'), like: openedOn, backups: r.ex[i]?.subs })
+    }, { title: t('Replace exercise'), like: openedOn })
   }
   // This routine on paper (#282): the weekly printout's page for one session, through the same
   // two print paths — the browser's print dialog (→ Save as PDF) on the web, the native Print
@@ -431,21 +460,15 @@ export default function RoutineEdit() {
   const toggleLink = i => edit(ex => {
     if (i < 1) return
     const cur = ex[i], prev = ex[i - 1]
+    if (!sameSection(cur, prev)) return
     if (cur.sg && prev.sg && cur.sg === prev.sg) delete cur.sg
     else { const gid = prev.sg || ('sg' + uid()); prev.sg = gid; cur.sg = gid }
     cleanupSg(ex)
   })
 
-  const addExercise = () => exercisePicker((ex, quick) => {
-    if (quick) {
-      edit(x => x.push({ id: ex.id, ...defaultConfig(ex.id) }))
-      toast(t('“{0}” added to {1}', exerciseNameText(ex), r.name))
-    } else {
-      exConfigSheet(ex, null, cfg => edit(x => { x.push({ id: ex.id, ...cfg }) }), null, r, null, null, undefined, { backups: true })
-    }
-  })
-
   const units = supersetUnits(r.ex)
+  const unitIndex = new Map(units.flatMap((unit, index) => unit.map(i => [i, index])))
+  const movePhaseUnit = (i, direction) => edit(ex => reorderRoutineUnit(ex, i, unitIndex.get(i) + direction))
   const unitFirst = new Set(units.filter(u => u.length > 1).map(u => u[0]))
   // Each superset gets a letter and each member its place in the round (A1, A2, B1…), so the
   // order you do them in reads off the list (#293).
@@ -462,6 +485,95 @@ export default function RoutineEdit() {
   const missingCount = profile ? r.ex.filter(e => !exAvailable(S, exOr(e.id))).length : 0
   const swipe = workoutControls(S).swipeSets
 
+  const addExercise = sectionId => exercisePicker((ex, quick) => {
+    const commit = cfg => {
+      const current = useStore.getState().S.routines.find(x => x.id === id)
+      if (!current || (sectionId && !current.sections?.some(section => section.id === sectionId))) {
+        toast(t('This phase is no longer available. Choose another phase.')); return false
+      }
+      update(s => {
+        const routine = s.routines.find(x => x.id === id)
+        routine.ex.push({ id: ex.id, ...cfg, ...sectionFields({ sectionId }, routine) })
+      })
+      return true
+    }
+    if (quick) {
+      if (commit(defaultConfig(ex.id))) toast(t('“{0}” added to {1}', exerciseNameFor(ex), sectionId ? sectionLabel(r.sections.find(s => s.id === sectionId), t) : r.name))
+    } else exConfigSheet(ex, null, commit, null, r, null, null, undefined, { backups: true })
+  }, sectionId ? t('Add exercise to {0}', sectionLabel(r.sections.find(s => s.id === sectionId), t)) : undefined)
+  const removeExercise = entry => confirmSheet({
+    title: t('Remove {0}?', exerciseNameFor(exOr(entry.id))),
+    message: t('This removes the exercise from this routine. Completed workouts are kept.'),
+    confirmText: t('Remove'), danger: true, onConfirm: () => {
+      const current = useStore.getState().S.routines.find(x => x.id === id)
+      if (!current?.ex.includes(entry)) return
+      const index = current.ex.indexOf(entry)
+      edit(ex => { ex.splice(index, 1); cleanupSg(ex) })
+    }
+  })
+  const moveToPhase = (entry, sectionId) => {
+    update(s => {
+      const current = s.routines.find(x => x.id === id)
+      if (current) assignSection(current, entry.occurrenceId, sectionId)
+    })
+    requestAnimationFrame(() => [...document.querySelectorAll('[data-routine-row]')]
+      .find(row => row.dataset.occurrenceId === entry.occurrenceId)?.querySelector('.compact-actions summary')?.focus())
+  }
+
+  const renderExercise = (e, i) => {
+      // An unresolvable id is shown rather than skipped — hiding it left an entry you
+      // could neither see nor delete, but that still turned up in the workout.
+      const ex = exOr(e.id)
+      const noEquip = profile && !exAvailable(S, ex)
+      const linkedPrev = i > 0 && e.sg && r.ex[i - 1].sg === e.sg && sameSection(e, r.ex[i - 1])
+      const leavesUp = inSS.has(i) && !linkedPrev
+      const leavesDown = inSS.has(i) && r.ex[i + 1]?.sg !== e.sg
+      const isDragging = reorder.drag && i >= reorder.drag.first && i <= reorder.drag.last
+      const removeHere = () => r.sections?.length ? removeExercise(e) : removeRoutineExercise(id, i)
+      const item = <div className={'item' + (inSS.has(i) ? ' in-ss' : '')} onClick={() => {
+          exConfigSheet(ex, e, cfg => edit(x => { x[i] = { id: x[i].id, sg: x[i].sg, ...(x[i].sg ? { sgName: x[i].sgName, sgRest: x[i].sgRest } : {}), ...cfg, ...sectionFields(x[i], r) }; cleanupSg(x) }), removeHere, r, null, () => replace(i), undefined, { backups: true })
+        }}>
+          <span className="routine-grip" data-drag-handle aria-hidden="true" title={t('Reorder exercises')}><Icon name="grip" /></span>
+          {ssPos.has(i) && <span className="ss-pos" aria-label={t('Superset position {0}', ssPos.get(i))}>{ssPos.get(i)}</span>}
+          <Thumb ex={ex} />
+          <button type="button" className="grow item-open" data-row-open><span className={`tt ${exerciseNameClass(ex)}`}>{exerciseNameFor(ex)}</span><span className="ss">{exLine(e, S.unit, speedUnitOf(S))}</span>
+            {e.note && <span className="small dim" style={{ marginTop: 2 }}>{e.note}</span>}</button>
+          {noEquip && <span className="tag" style={{ color: 'var(--orange)', borderColor: 'var(--orange)' }} title={t('Needs {0}, which isn’t in your active profile', t(ex.eq))}><Icon name="warning" /></span>}
+          {!r.sections?.length && <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 'none', alignItems: 'center' }}>
+            {i > 0 && <button className={'iconbtn' + (linkedPrev ? ' on-ss' : '')} title={t('Superset with exercise above')} style={{ width: 32, height: 28, borderRadius: 8, fontSize: 15 }} onClick={ev => { ev.stopPropagation(); toggleLink(i) }}><Icon name="link" /></button>}
+            <div style={{ display: 'flex', gap: 2 }}>
+              <button className="iconbtn" aria-label={t('Move up')} title={leavesUp ? t('Move out of the superset') : t('Move up')} disabled={!moveRoutineEntry(r.ex, i, -1)} style={{ width: 28, height: 24, borderRadius: 7, fontSize: 12 }} onClick={ev => { ev.stopPropagation(); move(i, -1) }}><Icon name="chevronUp" /></button>
+              <button className="iconbtn" aria-label={t('Move down')} title={leavesDown ? t('Move out of the superset') : t('Move down')} disabled={!moveRoutineEntry(r.ex, i, 1)} style={{ width: 28, height: 24, borderRadius: 7, fontSize: 12 }} onClick={ev => { ev.stopPropagation(); move(i, 1) }}><Icon name="chevronDown" /></button>
+            </div>
+          </div>}
+        </div>
+      return <div key={e.occurrenceId || i} data-routine-row data-ex-index={i} data-ex-id={e.id} data-occurrence-id={e.occurrenceId}
+        className={'routine-drag-row' + (isDragging ? ' is-dragging' : '')}
+        style={isDragging ? { transform: `translate3d(0, ${reorder.drag.deltaY}px, 0)` } : undefined}>
+        {unitFirst.has(i) && (() => {
+          const meta = supersetMeta(r.ex, unitOf.get(i))
+          return <button type="button" className="ss-label ss-label-btn" onClick={() => editSuperset(i)} title={t('Name and rest of this superset')}>
+            <Icon name="link" /><span className="ss-label-name">{meta.name || t('Superset')}</span>
+            {meta.rest > 0 && <span className="dim">· {t('{0} rest after each round', fmtRest(meta.rest))}</span>}
+            <Icon name="pencil" />
+          </button>
+        })()}
+        <div className={r.sections?.length ? 'routine-phase-exercise' : undefined}>
+        {r.sections?.length ? item : (swipe
+          ? <SwipeRow className="swrow-item" deleteLabel={t('Remove')} deleteIcon="minus" closeKey={r.ex.length}
+            canSwipe={() => !reorder.lifted()} onDelete={removeHere}>{item}</SwipeRow>
+          : item)}
+        {!!r.sections?.length && <SectionMove sections={r.sections} entry={e} compact grouped={inSS.has(i)} onMove={sectionId => moveToPhase(e, sectionId)}
+          onUp={() => movePhaseUnit(i, -1)} onDown={() => movePhaseUnit(i, 1)} onRemove={() => removeExercise(e)}
+          canUp={unitIndex.get(i) > 0 && sameSection(e, r.ex[units[unitIndex.get(i) - 1]?.[0]])}
+          canDown={unitIndex.get(i) < units.length - 1 && sameSection(e, r.ex[units[unitIndex.get(i) + 1]?.[0]])}>
+          {i > 0 && sameSection(e, r.ex[i - 1]) && <Button size="sm" icon="link" onClick={() => toggleLink(i)}>{t(linkedPrev ? 'Unpair' : 'Superset with exercise above')}</Button>}
+        </SectionMove>}
+        </div>
+      </div>
+  }
+
+  const SettingsContainer = r.sections?.length ? 'details' : 'div'
   return <div className="narrow">
     <div className="hdr">
       <button className="iconbtn" data-back="/plan" onClick={() => nav('/plan')} aria-label={t('Plan')}><Icon name="chevronLeft" /></button>
@@ -472,6 +584,8 @@ export default function RoutineEdit() {
       <button className="iconbtn" aria-label={t('Pick an icon')} onClick={() => glyphPicker(r.emoji, g => update(s => { s.routines.find(x => x.id === id).emoji = g }))}><Icon name={glyphOf(r.emoji)} /></button>
     </div>
 
+    <SettingsContainer className={r.sections?.length ? 'routine-phase-settings' : undefined}>
+    {!!r.sections?.length && <summary>{t('Routine settings')}<Icon name="chevronDown" /></summary>}
     <div className="sect-b" style={{ marginBottom: 16 }}>
       <SelectRow icon="chartLine" title={t('Progression')} sheetTitle={t('Progression')}
         value={r.prog || 'linear'} onChange={v => update(s => { s.routines.find(x => x.id === id).prog = v })}
@@ -496,6 +610,7 @@ export default function RoutineEdit() {
         : t(POLICY_DESC[r.prog || 'linear'] || POLICY_DESC.linear) + ' ' + t('Applies to every exercise in this routine that does not set its own rule.')}
     </div>
 
+    </SettingsContainer>
     {missingCount > 0 && <div className="card" style={{ marginBottom: 16, borderColor: 'var(--orange)' }}>
       <div className="row" style={{ gap: 8, alignItems: 'center' }}>
         <Icon name="warning" style={{ color: 'var(--orange)' }} />
@@ -503,69 +618,25 @@ export default function RoutineEdit() {
       </div>
     </div>}
 
-    {/* "Add exercise" heads the list (v1.3.11): with it under the last exercise, a long routine
-        had to be scrolled to the bottom before anything could be added. */}
+    {/* "Add exercise" heads an unphased list; phased routines add inside each phase. */}
     <div className="row between plan-sec-h routine-ex-h">
       <h4 className="sec">{t('Exercises')}</h4>
-      <Button size="sm" variant="tinted" icon="plus" onClick={addExercise}>{t('Add exercise')}</Button>
+      {!r.sections?.length && <Button size="sm" variant="tinted" icon="plus" onClick={() => addExercise()}>{t('Add exercise')}</Button>}
     </div>
-    {r.ex.length ? <div ref={reorder.listRef} onClickCapture={reorder.onClickCapture}
-      className={'list routine-list' + (reorder.drag ? ' is-reordering' : '')}>{r.ex.map((e, i) => {
-      // An unresolvable id is shown rather than skipped — hiding it left an entry you
-      // could neither see nor delete, but that still turned up in the workout.
-      const ex = exOr(e.id)
-      const noEquip = profile && !exAvailable(S, ex)
-      const linkedPrev = i > 0 && e.sg && r.ex[i - 1].sg === e.sg
-      // At a superset's edge an arrow takes the exercise out of it rather than past a neighbour.
-      const leavesUp = inSS.has(i) && !linkedPrev
-      const leavesDown = inSS.has(i) && r.ex[i + 1]?.sg !== e.sg
-      const isDragging = reorder.drag && i >= reorder.drag.first && i <= reorder.drag.last
-      const removeHere = () => removeRoutineExercise(id, i)
-      // A tap anywhere on the row opens the exercise's sheet; its Remove is the keyboard's way
-      // to take it out. The row itself is no button (it holds the link and Move buttons, which a
-      // screen reader would lose inside one): the name is, a real <button> a click bubbles up
-      // from. The long press treats it as the row (data-row-open, useRoutineReorder).
-      const item = <div className={'item' + (inSS.has(i) ? ' in-ss' : '')} onClick={() => {
-          exConfigSheet(ex, e, cfg => edit(x => { x[i] = { id: x[i].id, sg: x[i].sg, ...(x[i].sg ? { sgName: x[i].sgName, sgRest: x[i].sgRest } : {}), ...cfg }; cleanupSg(x) }), removeHere, r, null, () => replace(i), undefined, { backups: true })
-        }}>
-          {/* Shown on pointer devices only (index.css .routine-grip); the Move buttons and the
-              long press stay the way in for a keyboard and a finger. */}
-          <span className="routine-grip" data-drag-handle aria-hidden="true" title={t('Reorder exercises')}><Icon name="grip" /></span>
-          {ssPos.has(i) && <span className="ss-pos" aria-label={t('Superset position {0}', ssPos.get(i))}>{ssPos.get(i)}</span>}
-          <Thumb ex={ex} />
-          <button type="button" className="grow item-open" data-row-open><span className={`tt ${exerciseNameClass(ex)}`}>{exerciseNameFor(ex)}</span><span className="ss">{exLine(e, S.unit, speedUnitOf(S))}</span>
-            {e.note && <span className="small dim" style={{ marginTop: 2 }}>{e.note}</span>}</button>
-          {noEquip && <span className="tag" style={{ color: 'var(--orange)', borderColor: 'var(--orange)' }} title={t('Needs {0}, which isn’t in your active profile', t(ex.eq))}><Icon name="warning" /></span>}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 'none', alignItems: 'center' }}>
-            {i > 0 && <button className={'iconbtn' + (linkedPrev ? ' on-ss' : '')} title={t('Superset with exercise above')} style={{ width: 32, height: 28, borderRadius: 8, fontSize: 15 }} onClick={ev => { ev.stopPropagation(); toggleLink(i) }}><Icon name="link" /></button>}
-            <div style={{ display: 'flex', gap: 2 }}>
-              <button className="iconbtn" aria-label={t('Move up')} title={leavesUp ? t('Move out of the superset') : t('Move up')} disabled={!moveRoutineEntry(r.ex, i, -1)} style={{ width: 28, height: 24, borderRadius: 7, fontSize: 12 }} onClick={ev => { ev.stopPropagation(); move(i, -1) }}><Icon name="chevronUp" /></button>
-              <button className="iconbtn" aria-label={t('Move down')} title={leavesDown ? t('Move out of the superset') : t('Move down')} disabled={!moveRoutineEntry(r.ex, i, 1)} style={{ width: 28, height: 24, borderRadius: 7, fontSize: 12 }} onClick={ev => { ev.stopPropagation(); move(i, 1) }}><Icon name="chevronDown" /></button>
-            </div>
-          </div>
-        </div>
-      return <div key={i} data-routine-row data-ex-index={i}
-        className={'routine-drag-row' + (isDragging ? ' is-dragging' : '')}
-        style={isDragging ? { transform: `translate3d(0, ${reorder.drag.deltaY}px, 0)` } : undefined}>
-        {unitFirst.has(i) && (() => {
-          const meta = supersetMeta(r.ex, unitOf.get(i))
-          return <button type="button" className="ss-label ss-label-btn" onClick={() => editSuperset(i)} title={t('Name and rest of this superset')}>
-            <Icon name="link" /><span className="ss-label-name">{meta.name || t('Superset')}</span>
-            {meta.rest > 0 && <span className="dim">· {t('{0} rest after each round', fmtRest(meta.rest))}</span>}
-            <Icon name="pencil" />
-          </button>
-        })()}
-        {/* Swipe (v1.3.11, Settings → Swipe actions): toward the start takes the exercise out,
-            with an Undo; nothing on the other side. The long press still picks the row up to
-            reorder it (a press that has lifted keeps the swipe out), and the row's sheet keeps
-            Remove for a keyboard. Rows are keyed by index, so the row shuts when the count changes. */}
-        {swipe
-          ? <SwipeRow className="swrow-item" deleteLabel={t('Remove')} deleteIcon="minus" closeKey={r.ex.length}
-            canSwipe={() => !reorder.lifted()} onDelete={removeHere}>{item}</SwipeRow>
-          : item}
-      </div>
-    })}{reorder.drag && <div className="routine-drop-indicator" data-testid="routine-drop-indicator"
-      aria-hidden="true" style={{ top: `${reorder.drag.indicatorTop}px` }} />}</div> : <div className="empty"><div className="ico"><Icon name="dumbbell" /></div>{t('No exercises yet. Add your first one!')}</div>}
+    <WorkoutSections routineId={id} />
+    {(r.sections?.length || r.ex.length) ? <div ref={reorder.listRef} onClickCapture={reorder.onClickCapture}
+      className={'list routine-list' + (r.sections?.length ? ' is-phased' : '') + (reorder.drag ? ' is-reordering' : '')}>
+      {r.sections?.length ? r.sections.map(section => {
+        const entries = r.ex.filter(entry => entry.sectionId === section.id)
+        return <WorkoutPhase key={section.id} section={section} count={entries.length} dropTarget={reorder.drag?.sectionId === section.id}
+          reorderable phaseDrag={phaseDrag}
+          onAdd={() => addExercise(section.id)} onRemove={() => removeSectionExerciseSheet(section, entries, removeExercise)}
+          editor={{ routineId: id }}>
+          {r.ex.map((entry, index) => entry.sectionId === section.id ? renderExercise(entry, index) : null)}
+        </WorkoutPhase>
+      }) : r.ex.map(renderExercise)}
+      {reorder.drag && <div className="routine-drop-indicator" data-testid="routine-drop-indicator" aria-hidden="true" style={{ top: `${reorder.drag.indicatorTop}px` }} />}
+    </div> : <div className="empty"><div className="ico"><Icon name="dumbbell" /></div>{t('No exercises yet. Add your first one!')}</div>}
 
     {/* Coverage of the routine as planned, so a gap shows up while you're building it
         rather than after a month of training around it. */}

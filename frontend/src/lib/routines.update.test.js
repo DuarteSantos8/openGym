@@ -26,6 +26,22 @@ describe('routineSlotIndex', () => {
     expect(routineSlotIndex(routine, entries, 2)).toBe(2)
   })
 
+  it('matches modern twins by occurrence even when phases reverse their active order', () => {
+    const phased = { id: 'A', ex: [{ id: BENCH, occurrenceId: 'work' }, { id: BENCH, occurrenceId: 'prep' }] }
+    const entries = [
+      { ...entry(BENCH, work(3), { note: 'prep changed' }), occurrenceId: 'prep' },
+      { ...entry(BENCH, work(3)), occurrenceId: 'work' },
+    ]
+    expect(routineSlotIndex(phased, entries, 0)).toBe(1)
+    updateRoutineFromEntry(phased, entries, 0)
+    expect(phased.ex.map(e => e.note)).toEqual([undefined, 'prep changed'])
+  })
+
+  it('does not fall back to the wrong twin when an explicit occurrence is missing', () => {
+    const phased = { id: 'A', ex: [{ id: BENCH, occurrenceId: 'work' }] }
+    expect(routineSlotIndex(phased, [{ ...entry(BENCH, work(3)), occurrenceId: 'removed' }], 0)).toBe(-1)
+  })
+
   it('does not count twins that came from another routine', () => {
     const entries = [entry(BENCH, work(3), {}, 'B'), entry(BENCH, work(3))]
     expect(routineSlotIndex(routine, entries, 1)).toBe(0)
