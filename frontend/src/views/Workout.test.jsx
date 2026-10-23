@@ -89,6 +89,7 @@ vi.mock('react-router-dom', () => ({ useNavigate: () => mocks.nav }))
 vi.mock('../lib/live-activity.js', () => ({ bindLiveActions: h => { mocks.live = h; return () => { if (mocks.live === h) mocks.live = null } } }))
 vi.mock('../sheets.jsx', () => ({
   startFlow: vi.fn(),
+  activeSupersetSheet: vi.fn(),
   exercisePicker: mocks.exercisePicker,
   exConfigSheet: mocks.exConfigSheet,
   exerciseDetailSheet: vi.fn(),
@@ -383,7 +384,7 @@ describe('Workout set completion flow', () => {
     await toggleSet(1)
 
     expect(mocks.S.active.cur).toBe(1)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenCalledWith(0, expect.any(Number), { forSet: expect.any(Number) })
 
     await pressNext()
 
@@ -502,7 +503,7 @@ describe('Workout set completion flow', () => {
     await toggleSet(5)
 
     expect(mocks.S.active.cur).toBe(1)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenCalledWith(0, expect.any(Number), { forSet: expect.any(Number) })
   })
 
   it('does not auto-select an unfinished superset after completing an ordinary exercise', async () => {
@@ -1447,7 +1448,7 @@ describe('superset flow survives an exercise being removed mid-session', () => {
 
     // Partner closes the round (each still has a second set), which is what starts the rest.
     await toggleSet(2)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenCalledWith(0, expect.any(Number), { forSet: expect.any(Number) })
   })
 })
 
@@ -1899,7 +1900,7 @@ describe('workout focus view', () => {
 
     await click(buttonNamed('Complete set'))
     expect(mocks.S.active.cur).toBe(0)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenCalledWith(0, expect.any(Number), { forSet: expect.any(Number) })
     await rerender()
     expect(container.textContent).toContain('Round 2')
 
@@ -2229,7 +2230,7 @@ it('slides a superset in exactly as it lands, Unpair and all', async () => {
   await mount([exercise('plain-bench', [false]), exercise('plain-row', [false, false], { sg: 'g' }), exercise('plain-press', [false, false], { sg: 'g' })])
   const { preview, slidIn, landed } = await swipeToNext()
   expect(preview.querySelector('.ss-card')).toBeTruthy()
-  expect(preview.querySelector('.ss-hd button')?.textContent).toBe('Unpair')
+  expect(preview.querySelector('.ss-hd button[title="Unpair"]')?.textContent).toBe('Unpair')
   expect(mocks.S.active.cur).toBe(1)
   expect(landed).toBe(slidIn)
 })

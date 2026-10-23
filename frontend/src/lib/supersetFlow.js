@@ -87,10 +87,8 @@ export function restOnRecheck({ timerRunning, unitDone, lastUnit }) {
  * of curls do not want the same break. One that carries none inherits `defaultRestSec`, the
  * global rest timer, which is what every routine did before the field existed.
  *
- * `unit` is the superset group the set belongs to, as entry indices — a plain exercise is a
- * group of one. A group rests once, after the round, so it takes the LONGEST rest any of its
- * members asked for: the shortest would send you back to the bar before the member that needs
- * the most recovery is ready.
+ * Supersets use their own round rest, defaulting to Off. Single exercises retain
+ * their set and exercise rest settings.
  *
  * `defaultRestSec` of 0 is the rest timer turned off (v1.2.11). That silences the members that
  * have no rest of their own, but an exercise that explicitly asks for one still gets it — the
@@ -103,7 +101,7 @@ export function restSecFor(entries, unit, defaultRestSec, setRest = null) {
   // A superset with a rest of its own (#292) rests exactly that after each round.
   if (idxs.length > 1) {
     const { rest } = supersetMeta(entries, idxs, { onTarget: true })
-    if (rest > 0) return rest
+    return rest
   }
   return idxs.reduce((longest, idx) => {
     // `setRest` is the ticked set's own rest ({ idx, sec }, a pyramid set): it stands in for

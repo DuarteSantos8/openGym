@@ -18,11 +18,13 @@ describe('upcomingSets', () => {
     const A = { id: 'a', cur: 1, entries: [entry('0025', [set(), set()]), entry('0043', [set({ done: true }), set()]), entry('0001', [set()])] }
     expect(L.upcomingSets(S(A)).map(x => [x.entryIdx, x.setIdx])).toEqual([[1, 1], [2, 0], [0, 0], [0, 1]])
   })
-  it('takes a superset round by round, resting after each round only', () => {
+  it('takes a superset round by round and honours its explicit round rest', () => {
     const A = { id: 'a', cur: 0, entries: [entry('0025', [set(), set()], { sg: 'g' }), entry('0043', [set(), set()], { sg: 'g' })] }
     const up = L.upcomingSets(S(A))
     expect(up.map(x => [x.entryIdx, x.setIdx])).toEqual([[0, 0], [1, 0], [0, 1], [1, 1]])
-    expect(up.map(x => x.restAfter > 0)).toEqual([false, true, false, true])
+    expect(up.map(x => x.restAfter)).toEqual([0, 0, 0, 0])
+    A.entries.forEach(e => { e.target.sgRest = 45 })
+    expect(L.upcomingSets(S(A)).map(x => x.restAfter)).toEqual([0, 45, 0, 45])
   })
   it('is empty without a workout', () => {
     expect(L.upcomingSets(S(null))).toEqual([])
