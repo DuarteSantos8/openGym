@@ -59,9 +59,18 @@ function swipe(target, x0, x1, { dy = 0, pointerType = 'touch', clickAfter = tru
   if (clickAfter) click(target)
 }
 
+// happy-dom 20.12+ runs Element.animate on its own clock, which fake timers do not move, so the
+// row's collapse never finished: end each animation on the faked clock instead.
+const fakeAnimate = () => vi.spyOn(Element.prototype, 'animate').mockImplementation(function (_, o) {
+  const a = { onfinish: null, cancel: () => clearTimeout(t) }
+  const t = setTimeout(() => a.onfinish?.(), o?.duration || 0)
+  return a
+})
+
 beforeEach(() => {
   _resetHintQuiet()
   vi.useFakeTimers()
+  fakeAnimate()
   localStorage.clear()
   document.documentElement.dir = 'ltr'
   useUI.getState().stopRest()
@@ -80,6 +89,7 @@ afterEach(() => {
   useUI.getState().stopWork()
   vi.clearAllTimers()
   vi.useRealTimers()
+  vi.mocked(Element.prototype.animate).mockRestore?.()
   document.documentElement.dir = 'ltr'
 })
 
