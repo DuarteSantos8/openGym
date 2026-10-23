@@ -444,7 +444,7 @@ export default function RoutineEdit() {
       if (quick && ex.id === openedOn) { picker.close(); return }
       if (quick) { commit(ex, current => replaceSlotExercise(current, ex.id, live, id)); return }
       const next = replaceSlotExercise(slot, ex.id, live, id)
-      exConfigSheet(ex, next, cfg => commit(ex, current => ({ id: ex.id, sg: current.sg, ...cfg })), null, r, null, null, t('Replace'))
+      exConfigSheet(ex, next, cfg => commit(ex, current => ({ id: ex.id, sg: current.sg, ...cfg })), null, r, null, null, t('Replace'), { backups: true })
     }, { title: t('Replace exercise'), like: openedOn })
   }
   // This routine on paper (#282): the weekly printout's page for one session, through the same
@@ -499,7 +499,7 @@ export default function RoutineEdit() {
     }
     if (quick) {
       if (commit(defaultConfig(ex.id))) toast(t('“{0}” added to {1}', exerciseNameFor(ex), sectionId ? sectionLabel(r.sections.find(s => s.id === sectionId), t) : r.name))
-    } else exConfigSheet(ex, null, commit, null, r)
+    } else exConfigSheet(ex, null, commit, null, r, null, null, undefined, { backups: true })
   }, sectionId ? t('Add exercise to {0}', sectionLabel(r.sections.find(s => s.id === sectionId), t)) : undefined)
   const removeExercise = entry => confirmSheet({
     title: t('Remove {0}?', exerciseNameFor(exOr(entry.id))),
@@ -531,7 +531,7 @@ export default function RoutineEdit() {
       const isDragging = reorder.drag && i >= reorder.drag.first && i <= reorder.drag.last
       const removeHere = () => r.sections?.length ? removeExercise(e) : removeRoutineExercise(id, i)
       const item = <div className={'item' + (inSS.has(i) ? ' in-ss' : '')} onClick={() => {
-          exConfigSheet(ex, e, cfg => edit(x => { x[i] = { id: x[i].id, sg: x[i].sg, ...(x[i].sg ? { sgName: x[i].sgName, sgRest: x[i].sgRest } : {}), ...cfg, ...sectionFields(x[i], r) }; cleanupSg(x) }), removeHere, r, null, () => replace(i))
+          exConfigSheet(ex, e, cfg => edit(x => { x[i] = { id: x[i].id, sg: x[i].sg, ...(x[i].sg ? { sgName: x[i].sgName, sgRest: x[i].sgRest } : {}), ...cfg, ...sectionFields(x[i], r) }; cleanupSg(x) }), removeHere, r, null, () => replace(i), undefined, { backups: true })
         }}>
           <span className="routine-grip" data-drag-handle aria-hidden="true" title={t('Reorder exercises')}><Icon name="grip" /></span>
           {ssPos.has(i) && <span className="ss-pos" aria-label={t('Superset position {0}', ssPos.get(i))}>{ssPos.get(i)}</span>}

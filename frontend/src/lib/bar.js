@@ -30,6 +30,46 @@ export const usesBar = exOrId => BAR_EQ.has(exOf(exOrId)?.eq)
 export const defaultBarWeight = (eq, unit) =>
   (unit === 'lb' ? DEFAULT_BAR_LB : DEFAULT_BAR_KG)[eq] ?? null
 
+/** The bar types Settings > Equipment > Your bars lists, most used first. */
+export const BAR_TYPES = ['barbell', 'olympic barbell', 'ez barbell', 'trap bar', 'smith machine']
+
+/** Quick picks for a bar's weight, per unit: the bars gyms actually rack (15 kg / 35 lb is the short one). */
+export const BAR_PICKS = { kg: [20, 15, 10, 7.5], lb: [45, 35, 25, 15] }
+export const barPicks = unit => BAR_PICKS[unit === 'lb' ? 'lb' : 'kg']
+
+/**
+ * Your own weight for a bar type, set once for the whole profile (Discord: the 15 kg short
+ * olympic bar). S.barDefaults = { kg: { 'olympic barbell': 15 }, lb: { … } }: kept per unit like
+ * the plate inventory, so a unit switch finds the other unit's bars instead of a 33.07 lb one.
+ * A plain setting, synced and stamped as a whole (lib/sync-merge.js stampEdits). null when you
+ * kept the built-in weight.
+ */
+export function ownBarDefault(S, eq) {
+  if (!BAR_EQ.has(eq)) return null
+  const v = S?.barDefaults?.[S?.unit === 'lb' ? 'lb' : 'kg']?.[eq]
+  return typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : null
+}
+
+/** The bar an exercise of this type starts from: yours for the type, else the built-in. */
+export const barTypeWeight = (S, eq) => ownBarDefault(S, eq) ?? defaultBarWeight(eq, S?.unit)
+
+/**
+ * A new S.barDefaults with the profile unit's `eq` set to `w`, or back on the built-in for
+ * anything not above 0 (or the built-in weight itself). Empty unit maps are dropped.
+ */
+export function withBarDefault(S, eq, w) {
+  const unit = S?.unit === 'lb' ? 'lb' : 'kg'
+  const all = { ...(S?.barDefaults && typeof S.barDefaults === 'object' ? S.barDefaults : {}) }
+  const mine = { ...(all[unit] || {}) }
+  const n = Math.round((Number(w) || 0) * 100) / 100
+  if (n > 0 && n !== defaultBarWeight(eq, unit)) mine[eq] = n; else delete mine[eq]
+  if (Object.keys(mine).length) all[unit] = mine; else delete all[unit]
+  return all
+}
+
+/** S.barDefaults with the profile unit back on the built-in bars; the other unit's are kept. */
+export const withStandardBars = S => BAR_TYPES.reduce((all, eq) => withBarDefault({ unit: S?.unit, barDefaults: all }, eq, 0), S?.barDefaults)
+
 /**
  * A stored 0 is "no bar", not "unset" (issue #138). Smith machines that counterbalance their
  * carriage put nothing in your hands, so the plate math and the drop-set steps have to start
@@ -48,8 +88,8 @@ export const hasBarOverride = (S, exId) => {
 /**
  * Effective bar weight for one exercise, in the profile unit: the explicit
  * S.barWeights[exId] if set — an explicit 0 is "no bar" (a Smith machine whose carriage is
- * counterbalanced, issue #138) and stays 0 — else the default for the bar type. null for
- * anything that is not a bar exercise.
+ * counterbalanced, issue #138) and stays 0 — else your bar for the type (ownBarDefault), else
+ * the built-in default. null for anything that is not a bar exercise.
  */
 export function barWeightFor(S, exOrId) {
   const ex = exOf(exOrId)
@@ -57,7 +97,7 @@ export function barWeightFor(S, exOrId) {
   const own = (S?.barWeights || {})[ex.id]
   if (own === 0) return 0
   if (own > 0) return own
-  return defaultBarWeight(ex.eq, S?.unit)
+  return barTypeWeight(S, ex.eq)
 }
 
 /**

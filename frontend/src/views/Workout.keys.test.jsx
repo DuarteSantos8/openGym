@@ -10,7 +10,7 @@ import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
-vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})), appBase: () => '/' }))
+vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})), appBase: () => '/', webauthnOK: () => false }))
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const clone = value => JSON.parse(JSON.stringify(value))
@@ -31,7 +31,7 @@ function renderWorkout(entries, cur = 0, extra = {}) {
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
-  act(() => root.render(<MemoryRouter><Workout /></MemoryRouter>))
+  act(() => root.render(<MemoryRouter initialEntries={['/workout']}><Workout /></MemoryRouter>))
 }
 
 const press = (key, target = document.body) => {
