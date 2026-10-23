@@ -1,0 +1,340 @@
+# Builds the iPhone app on a Mac and starts it in the simulator: nobody working on openGym has a
+# Mac to hand, so this is where a change to the iOS shell (ios/, a Capacitor plugin, the mobile
+# build) is first compiled. It uses the repo's own 180 px media like every other CI build; the
+# App Store build gets its animations on the release machine (docs/APP_STORES.md).
+name: iOS
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/ios/**'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
+      - 'frontend/capacitor.config.json'
+      - '.github/workflows/ios.yml'
+  push:
+    branches: [main, stores]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/ios.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  simulator:
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      # The phone build, copied into ios/App/App/public; cap sync runs pod install.
+      - run: npm run build:mobile
+        working-directory: frontend
+      # The asset pack downloader extension, until the project with it is committed (does nothing then).
+      - run: ruby ios/ci/add-asset-downloader.rb
+        working-directory: frontend
+      # The Apple Watch app (ios/App/Watch), added to the project for the run and embedded in App.app.
+      - run: ruby ios/ci/add-watch-app.rb
+        working-directory: frontend
+      # The watch's session logic and the animation codec, tested on the Mac (no simulator).
+      - name: WatchCore tests
+        working-directory: frontend/ios/App/WatchCore
+        run: |
+          set -o pipefail
+          swift test 2>&1 | tail -60
+      # The widgets and the Live Activity's extension, likewise until it is committed.
+      - run: ruby ios/ci/add-widgets.rb
+        working-directory: frontend
+      - name: Build for the simulator
+        working-directory: frontend/ios/App
+        run: |
+          set -o pipefail
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath build/dd \
+            CODE_SIGNING_ALLOWED=NO build | tee build/xcodebuild.log | grep -E "error:|warning: .*(App/|Swift)|BUILD" || true
+          test -d build/dd/Build/Products/Debug-iphonesimulator/App.app
+      # Starts the app and keeps what it prints: Capacitor logs every bridge call and every
+      # console message of the page in a debug build. A plugin the page calls but the app never
+      # registered shows up as "not implemented on ios".
+      - name: Start it in the simulator
+        working-directory: frontend/ios/App
+        run: |
+          UDID=$(xcrun simctl list devices available -j | node -e '
+            const d = JSON.parse(require("fs").readFileSync(0)).devices
+            const all = Object.entries(d).filter(([k]) => k.includes("iOS")).flatMap(([, v]) => v)
+            const phone = all.filter(x => /^iPhone/.test(x.name)).pop()
+            process.stdout.write(phone.udid)')
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" build/dd/Build/Products/Debug-iphonesimulator/App.app
+          # A busy runner can still be starting the simulator's own apps: give the page up to eight
+          # minutes to reach its plugins rather than a fixed wait.
+          xcrun simctl launch --console-pty "$UDID" ch.opengym.app > build/console.log 2>&1 &
+          for i in $(seq 96); do grep -q "RestAlert" build/console.log && break; sleep 5; done
+          sleep 5
+          xcrun simctl io "$UDID" screenshot build/first-screen.png || true
+          kill %1 || true
+          cat build/console.log | grep -v "^\s*$" | head -200
+          if grep -q "not implemented on ios" build/console.log; then echo "::error::a plugin the page uses is missing on iOS"; exit 1; fi
+          grep -q "RestAlert" build/console.log || { echo "::error::the page never reached the RestAlert plugin"; exit 1; }
+          echo "$UDID" > build/udid.txt
+      # The widgets and the Live Activity as pictures, light and dark (App/WidgetPreview.swift draws
+      # them with made-up data): nobody can put a widget on a simulator's Home Screen without a Mac.
+      - name: Draw the widgets
+        working-directory: frontend/ios/App
+        run: |
+          UDID=$(cat build/udid.txt)
+          xcrun simctl terminate "$UDID" ch.opengym.app 2>/dev/null || true
+          xcrun simctl launch "$UDID" ch.opengym.app -OpenGymWidgetPreview
+          DATA=$(xcrun simctl get_app_container "$UDID" ch.opengym.app data)
+          for i in $(seq 60); do test -f "$DATA/Documents/widget-preview/done.txt" && break; sleep 2; done
+          mkdir -p build/widgets
+          cp "$DATA"/Documents/widget-preview/*.png build/widgets/ 2>/dev/null || true
+          ls -la build/widgets
+          test -f "$DATA/Documents/widget-preview/done.txt" || { echo "::error::the widget pictures were never drawn"; exit 1; }
+          # The extension really is in the app, with its own Info.plist.
+          test -f build/dd/Build/Products/Debug-iphonesimulator/App.app/PlugIns/OpenGymWidgets.appex/Info.plist || { echo "::error::no widget extension in the app"; exit 1; }
+      # The watch app on its own in a watch simulator, with the demo session it carries
+      # (SessionStore.demoJSON: text only, no exercise media), for a look at it.
+      - name: Show the watch app
+        continue-on-error: true
+        working-directory: frontend/ios/App
+        run: |
+          APP=build/dd/Build/Products/Debug-watchsimulator/OpenGymWatch.app
+          test -d "$APP" || { echo "::warning::no watch app was built"; exit 1; }
+          if ! xcrun simctl list runtimes | grep -q watchOS; then xcodebuild -downloadPlatform watchOS || true; fi
+          mkdir -p build/watch
+          # Every screen on a small and a large watch: 41 or 42 mm, 45 or 46 mm.
+          for size in small large; do
+            UDID=$(xcrun simctl list devices available -j | SIZE=$size node -e '
+              const d = JSON.parse(require("fs").readFileSync(0)).devices
+              const all = Object.entries(d).filter(([k]) => k.includes("watchOS")).flatMap(([, v]) => v).filter(x => /Apple Watch/.test(x.name))
+              const re = process.env.SIZE === "small" ? /\((40|41|42)mm\)/ : /\((44|45|46)mm\)/
+              const pick = all.filter(x => re.test(x.name) && !/Ultra|SE/.test(x.name)).pop() || all.filter(x => re.test(x.name)).pop()
+              process.stdout.write(pick ? pick.udid + " " + pick.name.replace(/[^A-Za-z0-9]+/g, "-") : "")')
+            test -n "$UDID" || { echo "::warning::no $size watch simulator"; continue; }
+            NAME=${UDID#* }; UDID=${UDID%% *}
+            xcrun simctl boot "$UDID" || true
+            xcrun simctl bootstatus "$UDID" -b
+            xcrun simctl install "$UDID" "$APP"
+            # A synthetic clip (a square moving, made with ffmpeg for the tests; no exercise media)
+            # in the app's own container, to show the animation path renders: a GIF, as the phone
+            # sends it (the watch decodes what WatchBridgePlugin made, never WebP itself).
+            DATA=$(xcrun simctl get_app_container "$UDID" ch.opengym.app.watchkitapp data 2>/dev/null || true)
+            CLIP=""
+            if [ -n "$DATA" ]; then mkdir -p "$DATA/tmp" && cp WatchCore/Tests/WatchCoreTests/Fixtures/synthetic-square.gif "$DATA/tmp/clip.gif" && CLIP="$DATA/tmp/clip.gif"; fi
+            # shot <file> <screen> [-OpenGymWatchAX | -OpenGymWatchAOD]: one demo screen (SessionStore
+            # startDemo: every kind of set, text only), the clip on the first exercise. Prints the pid.
+            shot() {
+              local file=$1 screen=$2; shift 2
+              xcrun simctl terminate "$UDID" ch.opengym.app.watchkitapp 2>/dev/null || true
+              local args=(-OpenGymWatchDemo -OpenGymWatchScreen "$screen" "$@")
+              if [ -n "$CLIP" ]; then args+=(-OpenGymWatchDemoClip "$CLIP"); fi
+              PID=$(xcrun simctl launch "$UDID" ch.opengym.app.watchkitapp "${args[@]}" | awk '{print $NF}')
+              sleep 6
+              xcrun simctl io "$UDID" screenshot "build/watch/$size-$file.png" >/dev/null
+            }
+            for screen in idle empty set warmup edit-weight edit-reps weighin rest hold bodyweight side superset offline finish summary summary-end ended; do
+              shot "$screen" "$screen"
+            done
+            # The app's language, not the watch's (the phone in German here); every optional thing
+            # on (Settings → Apple Watch); the rest as the countdown alone.
+            shot "lang-de" set -OpenGymWatchLang de
+            shot "lang-de-rest" rest -OpenGymWatchLang de
+            shot "show-all" set -OpenGymWatchShow all
+            shot "rest-plain" rest -OpenGymWatchShow plain
+            # The largest text size (accessibility XXXL) on the screens with the most on them.
+            for screen in set side edit-weight weighin rest hold summary summary-end; do
+              shot "ax-$screen" "$screen" -OpenGymWatchAX
+            done
+            # What each screen costs: the app's CPU time over 20 s once it is up (the simulator's
+            # process, on the Mac). Always On (wrist down) should cost next to nothing.
+            cpu() { ps -o time= -p "$1" 2>/dev/null | awk -F'[:.]' '{ if (NF==3) print $1*60+$2+$3/100; else print 0 }'; }
+            # set-noclip: the same screen without the animation, to tell what the animation costs.
+            for spec in idle:idle set:set set-noclip:set:noclip rest:rest hold:hold set-aod:set:-OpenGymWatchAOD set-aod-noclip:set:-OpenGymWatchAOD:noclip rest-aod:rest:-OpenGymWatchAOD; do
+              IFS=: read -r file screen flag noclip <<< "$spec"
+              if [ "$flag" = noclip ]; then flag=""; noclip=noclip; fi
+              KEEP=$CLIP; if [ -n "$noclip" ]; then CLIP=""; fi
+              if [ -n "$flag" ]; then shot "perf-$file" "$screen" "$flag"; else shot "perf-$file" "$screen"; fi
+              CLIP=$KEEP
+              a=$(cpu "$PID"); sleep 20; b=$(cpu "$PID")
+              echo "$size $file: $(node -e "console.log(((+process.argv[1]-+process.argv[2])/20*100).toFixed(1))" "$b" "$a")% CPU over 20 s" | tee -a build/watch/perf.txt
+              rm -f "build/watch/$size-perf-$file.png"
+            done
+            echo "$size: $NAME" >> build/watch/devices.txt
+            xcrun simctl shutdown "$UDID" || true
+          done
+          ls -la build/watch
+      # Clean pictures for the App Store and promotion: Ultra and 46 mm, the clock at 10:09, demo data,
+      # the synthetic clip or none (never exercise media).
+      - name: Watch promo pictures
+        continue-on-error: true
+        working-directory: frontend/ios/App
+        run: |
+          APP=build/dd/Build/Products/Debug-watchsimulator/OpenGymWatch.app
+          test -d "$APP" || exit 1
+          mkdir -p build/watch-promo
+          for kind in ultra 46mm; do
+            UDID=$(xcrun simctl list devices available -j | KIND=$kind node -e '
+              const d = JSON.parse(require("fs").readFileSync(0)).devices
+              const all = Object.entries(d).filter(([k]) => k.includes("watchOS")).flatMap(([, v]) => v).filter(x => /Apple Watch/.test(x.name))
+              const pick = process.env.KIND === "ultra" ? all.filter(x => /Ultra/.test(x.name)).pop() : all.filter(x => /46mm/.test(x.name) && !/Ultra|SE/.test(x.name)).pop()
+              process.stdout.write(pick ? pick.udid + " " + pick.name.replace(/[^A-Za-z0-9]+/g, "-") : "")')
+            test -n "$UDID" || { echo "::warning::no $kind watch simulator"; continue; }
+            NAME=${UDID#* }; UDID=${UDID%% *}
+            xcrun simctl boot "$UDID" || true
+            xcrun simctl bootstatus "$UDID" -b
+            # The clock at 10:09, if this simulator lets the status bar be set.
+            if xcrun simctl status_bar "$UDID" override --time "10:09" 2>build/watch-promo/status-bar-$kind.txt; then echo "$kind: status bar set" >> build/watch-promo/notes.txt; else echo "$kind: status_bar override not supported: $(cat build/watch-promo/status-bar-$kind.txt)" >> build/watch-promo/notes.txt; fi
+            xcrun simctl install "$UDID" "$APP"
+            DATA=$(xcrun simctl get_app_container "$UDID" ch.opengym.app.watchkitapp data 2>/dev/null || true)
+            CLIP=""
+            if [ -n "$DATA" ]; then mkdir -p "$DATA/tmp" && cp WatchCore/Tests/WatchCoreTests/Fixtures/synthetic-square.gif "$DATA/tmp/clip.gif" && CLIP="$DATA/tmp/clip.gif"; fi
+            mkdir -p "build/watch-promo/$kind"
+            promo() {
+              local file=$1 screen=$2; shift 2
+              xcrun simctl terminate "$UDID" ch.opengym.app.watchkitapp 2>/dev/null || true
+              xcrun simctl launch "$UDID" ch.opengym.app.watchkitapp -OpenGymWatchDemo -OpenGymWatchScreen "$screen" "$@" >/dev/null
+              sleep 6
+              xcrun simctl io "$UDID" screenshot "build/watch-promo/$kind/$file.png" >/dev/null
+            }
+            promo 1-start idle
+            promo 2-set set -OpenGymWatchShow noclip
+            [ -n "$CLIP" ] && promo 2b-set-with-clip set -OpenGymWatchDemoClip "$CLIP"
+            promo 3-edit-weight edit-weight -OpenGymWatchShow noclip
+            promo 4-rest rest
+            promo 5-superset superset
+            promo 6-weigh-in weighin
+            promo 7-summary summary
+            promo 8-summary-end summary-end
+            echo "$kind: $NAME" >> build/watch-promo/notes.txt
+            xcrun simctl shutdown "$UDID" || true
+          done
+          find build/watch-promo -type f | sort
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: ios-simulator
+          path: |
+            frontend/ios/App/build/xcodebuild.log
+            frontend/ios/App/build/console.log
+            frontend/ios/App/build/first-screen.png
+            frontend/ios/App/build/watch
+            frontend/ios/App/build/watch-promo
+            frontend/ios/App/build/widgets
+          retention-days: 7
+
+  # A walk through the app in the simulator (ios/App/AppUITests): a rest that ends while the app
+  # is in the background must arrive as a notification, a sheet must stay above the keyboard, and
+  # the training reminder and missed-day nudge must be pending with iOS once switched on (read
+  # through the -OpenGymUITestPending probe in MainViewController.swift).
+  # The exercise media are left out of this build; the screenshots show placeholders.
+  ui-tests:
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run build:mobile && rm -rf ios/App/App/public/exercise-media
+        working-directory: frontend
+      - run: ruby ios/ci/add-asset-downloader.rb
+        working-directory: frontend
+      - run: ruby ios/ci/add-watch-app.rb
+        working-directory: frontend
+      # The widgets and the Live Activity's extension, likewise until it is committed.
+      - run: ruby ios/ci/add-widgets.rb
+        working-directory: frontend
+      - run: ruby ios/ci/add-ui-tests.rb
+        working-directory: frontend
+      - name: Run the UI tests
+        working-directory: frontend/ios/App
+        run: |
+          UDID=$(xcrun simctl list devices available -j | node -e '
+            const d = JSON.parse(require("fs").readFileSync(0)).devices
+            const all = Object.entries(d).filter(([k]) => k.includes("iOS")).flatMap(([, v]) => v)
+            process.stdout.write(all.filter(x => /^iPhone/.test(x.name)).pop().udid)')
+          xcrun simctl boot "$UDID" && xcrun simctl bootstatus "$UDID" -b
+          mkdir -p build
+          set -o pipefail
+          xcodebuild test -workspace App.xcworkspace -scheme AppUITests -destination "id=$UDID" \
+            -resultBundlePath build/ui.xcresult CODE_SIGNING_ALLOWED=NO \
+            | tee build/ui-tests.log | grep -E "error:|Test Case|passed|failed|TEST" || exit 1
+      - name: Keep the screenshots
+        if: always()
+        working-directory: frontend/ios/App
+        run: |
+          mkdir -p build/shots
+          xcrun xcresulttool export attachments --path build/ui.xcresult --output-path build/shots || true
+          ls build/shots
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: ios-ui-tests
+          path: |
+            frontend/ios/App/build/ui-tests.log
+            frontend/ios/App/build/shots
+          retention-days: 7
+
+  # The App Store build without its signature, for the release machine to put the full-quality
+  # animations in and sign (scripts/ios/finish-ipa.sh). Built for devices; its media are the
+  # repo's 180 px ones.
+  device-archive:
+    runs-on: macos-26
+    timeout-minutes: 60
+    if: github.event_name != 'pull_request'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run build:mobile
+        working-directory: frontend
+      - run: ruby ios/ci/add-asset-downloader.rb
+        working-directory: frontend
+      - run: ruby ios/ci/add-watch-app.rb
+        working-directory: frontend
+      # The widgets and the Live Activity's extension, likewise until it is committed.
+      - run: ruby ios/ci/add-widgets.rb
+        working-directory: frontend
+      - name: Archive, unsigned
+        working-directory: frontend/ios/App
+        run: |
+          set -o pipefail
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath build/App.xcarchive \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" archive \
+            | tee build/archive.log | grep -E "error:|BUILD|ARCHIVE" || true
+          test -d build/App.xcarchive/Products/Applications/App.app
+          cd build/App.xcarchive/Products/Applications
+          # The web assets are put back on the release machine; leave the repo's out of the zip.
+          rm -rf App.app/public/exercise-media
+          mkdir -p ../../../Payload && cp -R App.app ../../../Payload/
+          cd ../../.. && echo "$GITHUB_SHA" > ci-commit.txt && zip -qry App-unsigned.ipa Payload ci-commit.txt
+          ls -la App-unsigned.ipa
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ios-unsigned-ipa
+          path: frontend/ios/App/build/App-unsigned.ipa
+          retention-days: 14

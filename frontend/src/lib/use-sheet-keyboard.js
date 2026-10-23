@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react'
-import { nativeKeyboardHeight, NATIVE_KEYBOARD_EVENT } from './native-keyboard.js'
+import { nativeKeyboardHeight, NATIVE_KEYBOARD_EVENT, revealAboveKeyboard } from './native-keyboard.js'
 
 /* How far the keyboard reaches up the layout viewport, and the height left above it. */
 export function sheetKeyboardInsets(win) {
@@ -25,8 +25,12 @@ export function sheetKeyboardInsets(win) {
    (lib/native-keyboard.js) and the larger of the two wins.
 
    `inputRef` points at the text input (or textarea) whose closest `.sheet` gets the vars.
-   `enabled` lets a caller switch the sync off (e.g. a picker without a search box). */
-export function useSheetKeyboard(inputRef, enabled = true) {
+   `enabled` lets a caller switch the sync off (e.g. a picker without a search box).
+   `reveal`: also scroll the sheet itself so the focused field inside it sits above the keyboard,
+   for a sheet that stands on the keyboard (a `.kb-lift` inside it, see index.css) and holds more
+   than one field: the second field is under the keys until the sheet scrolls, and left to iOS,
+   it scrolls the pinned page instead. */
+export function useSheetKeyboard(inputRef, enabled = true, { reveal = false } = {}) {
   const sync = useCallback(() => {
     const input = inputRef.current
     const sheet = input?.closest?.('.sheet')
@@ -35,7 +39,14 @@ export function useSheetKeyboard(inputRef, enabled = true) {
     const { bottomInset, visualHeight } = sheetKeyboardInsets(window)
     sheet.style.setProperty('--picker-keyboard-bottom', `${bottomInset}px`)
     sheet.style.setProperty('--picker-visual-height', `${visualHeight}px`)
-  }, [inputRef])
+    if (!reveal) return
+    const active = typeof document !== 'undefined' ? document.activeElement : null
+    if (active && active !== sheet && sheet.contains(active)) {
+      // After the sheet has taken its new bottom and height.
+      const raf = window.requestAnimationFrame || (f => setTimeout(f, 16))
+      raf(() => { if (document.activeElement === active) revealAboveKeyboard(active, window) })
+    }
+  }, [inputRef, reveal])
 
   useEffect(() => {
     if (!enabled) return
