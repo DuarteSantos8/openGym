@@ -18,18 +18,21 @@ import { closeThenNav } from '../lib/nav.js'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t, tn } from '../lib/i18n.js'
-import { fmtDate, fmtNum, DAYS, weekOrder, weekStartOf } from '../lib/format.js'
+import { fmtDate, fmtNum, DAYS, weekOrder, weekStartOf, isoOf } from '../lib/format.js'
 import { exLine } from '../lib/history.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
+import ChatInput from '../components/ChatInput.jsx'
 import {
   coachAvailable, hasConsent, emptyCoach, appendChat, recordTiming, estimateMs, profileLines,
   markStale, applicable, applyChangeSet, applyCreatedPlan, recordDismissal, recordDebrief, logEntry,
   changeTitle, changeValues, exName, canRevert, revertLast
 } from '../lib/coach.js'
 import { insightsFor, sessionInsights } from '../lib/coach-insights.js'
-import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan, resolvePending, cohortStats, setCohortShare, jobErrorText, awaitedJob, settleAwaited, JOB_ERRORS } from '../lib/coach-api.js'
+import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan, resolvePending, cohortStats, setCohortShare, jobErrorText, awaitedJob, settleAwaited, JOB_ERRORS, ensureAiConsent, isDeclined } from '../lib/coach-api.js'
+import { AiConsentSection } from '../components/CoachConsentSheet.jsx'
+import { useCoachGate } from '../lib/use-coach-gate.js'
 import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
@@ -49,20 +52,24 @@ export default function CoachChat() {
   const openSheet = useUI(s => s.openSheet)
   const { job, pending, cap, loading, lastError, last, refresh, maxMessageLen } = useCoachStatus(true)
   const [text, setText] = useState('')
+  // The message box opened into a tall editor (components/ChatInput.jsx); closed again on send.
+  const [expanded, setExpanded] = useState(false)
   const [busy, setBusy] = useState(false)
   const endRef = useRef(null)
   const prevJob = useRef(null)
   const coachMode = coachLocal?.mode
 
-  const ok = coachAvailable(config, user, { demo: DEMO, mobile: MOBILE, coachMode })
+  const gate = useCoachGate()
+  const ok = gate.ok
   const ready = ok && hasConsent(S) && !!S.coach?.profile
   // Not before the store has loaded: a cold start straight on #/coach would otherwise read an
-  // empty state, decide there is no consent, and bounce a consenting user into the intake.
+  // empty state, decide there is no consent, and bounce a consenting user into the intake. Nor
+  // before the server said for this session whether it has a Coach (lib/use-coach-gate.js).
   useEffect(() => {
-    if (!storeReady) return
+    if (!storeReady || !gate.known) return
     if (!ok) nav('/home', { replace: true })
     else if (!ready) nav('/coach/intake', { replace: true })
-  }, [storeReady, ok, ready])
+  }, [storeReady, gate.known, ok, ready])
 
   // A job that ends is either a proposal, "nothing to change", or a failure. The server tells
   // the client none of that directly — the job simply stops appearing — so the transition is
@@ -112,11 +119,13 @@ export default function CoachChat() {
       else await requestReview(msg)
       update(s => appendChat(s, { role: 'user', kind: 'text', text: msg }))
       setText('')
+      setExpanded(false)
       refresh()
     } catch (e) {
       // A server that refuses the job says so in English, with its class beside it: the class
       // picks the translated line. One with no line here ('shared') keeps the server's words.
-      toast(JOB_ERRORS[e.data?.code] || e.message || t('Could not ask the Coach'))
+      // "Not now" on the data-sharing question is an answer, not a failure: the text stays put.
+      if (!isDeclined(e)) toast(JOB_ERRORS[e.data?.code] || e.message || t('Could not ask the Coach'))
     }
     setBusy(false)
   }
@@ -127,7 +136,7 @@ export default function CoachChat() {
       await fn()
       update(s => appendChat(s, { role: 'user', kind: 'text', text: line }))
       refresh()
-    } catch (e) { toast(JOB_ERRORS[e.data?.code] || e.message || t('Could not ask the Coach')) }
+    } catch (e) { if (!isDeclined(e)) toast(JOB_ERRORS[e.data?.code] || e.message || t('Could not ask the Coach')) }
     setBusy(false)
   }
   const askReview = () => ask(() => requestReview(''), t('Have a look at my training and tell me what you would change.'))
@@ -164,6 +173,7 @@ export default function CoachChat() {
       {idle && <Row icon="clipboard" iconTint="var(--indigo)" title={t('Start a new plan')} subtitle={t('A fresh plan from your answers; your workouts stay')} accessory="chevron" onClick={() => { close(); askNewPlan() }} />}
       <Row icon="pencil" iconTint="var(--indigo)" title={t('Edit my answers')} subtitle={t('Goal, days, equipment, limits')} accessory="chevron" onClick={() => closeThenNav(close, '/coach/intake?edit=1')} />
       <Row icon="clock" iconTint="var(--purple)" title={t('Automatic reviews')} subtitle={cadenceLabel(coach)} accessory="chevron" onClick={() => { close(); cadenceSheet(openSheet, update) }} />
+      {!DEMO && <Row icon="shield" iconTint="var(--green)" title={t('AI data sharing')} subtitle={t('Who may see your training')} accessory="chevron" onClick={() => { close(); openSheet(() => <div className="chat-menu"><AiConsentSection /></div>) }} />}
       {canRevert(S) && <Row icon="reset" iconTint="var(--blue)" title={t('Undo the last Coach changes')} accessory="chevron" onClick={() => { close(); doRevert() }} />}
     </div>
     <div style={{ height: 10 }} />
@@ -187,7 +197,7 @@ export default function CoachChat() {
 
   return <div className="narrow chat">
     <div className="chat-hdr">
-      <button className="iconbtn" onClick={() => nav('/plan')} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
+      <button className="iconbtn" data-back="/plan" onClick={() => nav('/plan')} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
       <div className="chat-av"><Icon name="sparkles" /></div>
       <div className="grow">
         <h1>{t('Coach')}</h1>
@@ -219,10 +229,9 @@ export default function CoachChat() {
         {!!(S.routines || []).length && <button className="qchip" onClick={pickRoutine}><Icon name="wrench" />{t('Improve a routine')}</button>}
         {community && <button className="qchip" onClick={showCohort}><Icon name="person" />{t('Compare')}</button>}
       </div>}
-      <div className="composer-in">
-        <textarea rows={1} value={text} maxLength={maxMessageLen || 1000} placeholder={placeholder} disabled={!!job}
-          onChange={e => setText(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }} />
+      <div className={'composer-in' + (expanded ? ' tall' : '')}>
+        <ChatInput value={text} onChange={setText} onSend={send} placeholder={placeholder} disabled={!!job}
+          maxLength={maxMessageLen || 1000} expanded={expanded} setExpanded={setExpanded} />
         <button className="send" onClick={send} disabled={!text.trim() || busy || !!job} aria-label={t('Send')}><Icon name="arrowUp" /></button>
       </div>
       {cap?.limit > 0 && <div className="composer-cap">{t('{0} of {1} Coach runs used today', cap.used, cap.limit)}</div>}
@@ -266,7 +275,7 @@ const stamp = at => {
   const d = new Date(at)
   const today = new Date()
   const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  return d.toDateString() === today.toDateString() ? time : fmtDate(d.toISOString().slice(0, 10)) + ' · ' + time
+  return d.toDateString() === today.toDateString() ? time : fmtDate(isoOf(d)) + ' · ' + time
 }
 
 function Typing({ S, kind, coachLocal, config }) {
@@ -621,7 +630,7 @@ function ProposalDetail({ entry, S }) {
   const weekDays = useMemo(() => new Set(Object.keys(b?.week || {}).map(Number)), [b])
   return <div className="pdetail">
     <div className="pcard-hd" style={{ paddingInline: 0 }}>
-      <div className="pcard-eyebrow">{kind === 'create' ? t('Plan') : kind === 'debrief' ? t('Workout debrief') : t('Suggestions')} · {fmtDate(new Date(entry.at).toISOString().slice(0, 10))}</div>
+      <div className="pcard-eyebrow">{kind === 'create' ? t('Plan') : kind === 'debrief' ? t('Workout debrief') : t('Suggestions')} · {fmtDate(isoOf(new Date(entry.at)))}</div>
       <h2 className="pcard-h">{kind === 'create' ? (b?.name || t('Coach plan')) : kind === 'debrief' ? (entry.workout?.name || t('Workout')) : tn('{0} suggestion', '{0} suggestions', entry.decisions?.length || 0)}</h2>
       {!!entry.summary && <p className="pcard-sum">{entry.summary}</p>}
       {entry.dismissed && <p className="pcard-sum" style={{ color: 'var(--red)' }}>{t('You declined this.')}</p>}
@@ -669,7 +678,7 @@ function HistorySheet({ S, close, openSheet }) {
           : e.kind === 'debrief' ? t('Debrief: {0}', e.workout?.name || t('Workout')) + (e.score != null ? ` · ${e.score}/10` : '')
             : e.kind === 'revert' ? t('Reverted the last Coach changes.')
               : tn('{0} suggestion', '{0} suggestions', n)
-        const sub = fmtDate(new Date(e.at).toISOString().slice(0, 10)) + ' · ' + (e.kind === 'debrief' ? String(e.summary || '').slice(0, 60)
+        const sub = fmtDate(isoOf(new Date(e.at))) + ' · ' + (e.kind === 'debrief' ? String(e.summary || '').slice(0, 60)
           : e.dismissed ? t('Declined') : e.kind === 'create' ? t('Imported') : e.kind === 'revert' ? '' : t('{0} accepted · {1} declined', acc, n - acc))
         return <Row key={e.id} icon={ic} iconTint={tint} title={title} subtitle={sub} accessory="chevron"
           onClick={() => { close(); openSheet(() => <ProposalDetail entry={e} S={S} />) }} />
@@ -749,10 +758,17 @@ function CadenceSheet({ update }) {
   const coach = useStore(s => s.S.coach) || emptyCoach()
   const cadence = coach.cadence && coach.cadence !== 'off' ? coach.cadence : null
   const mode = !cadence ? 'off' : cadence.weekly ? 'weekly' : 'every'
-  const setMode = m => update(s => {
-    const c = (s.coach = s.coach || emptyCoach())
-    c.cadence = m === 'off' ? 'off' : m === 'weekly' ? { weekly: { day: 0, time: '18:00' } } : { everyWorkouts: 4 }
-  })
+  // Automatic reviews send your training while nobody is looking, so switching them on is where
+  // the data-sharing question is asked for them. "Not now" leaves them off.
+  const setMode = async m => {
+    if (m !== 'off') {
+      try { await ensureAiConsent() } catch (e) { if (!isDeclined(e)) useUI.getState().toast(e.message || t('Could not ask the Coach')); return }
+    }
+    update(s => {
+      const c = (s.coach = s.coach || emptyCoach())
+      c.cadence = m === 'off' ? 'off' : m === 'weekly' ? { weekly: { day: 0, time: '18:00' } } : { everyWorkouts: 4 }
+    })
+  }
   const patch = fn => update(s => { const c = (s.coach = s.coach || emptyCoach()); fn(c) })
   return <>
     <h3>{t('Automatic reviews')}</h3>

@@ -79,6 +79,8 @@ you're poking at the API directly:
   header, so the app's own WebView origin can call the API cross-origin. It never sends
   `Access-Control-Allow-Credentials`, so this doesn't let a browser read your cookie session
   from another origin — only bearer-token requests benefit from it.
+- A request body has to be sent as `Content-Type: application/json`; any other type gets a
+  `415`. `curl -d` sends a form type, so a script needs `-H 'Content-Type: application/json'`.
 
 ## 3. Expose it over HTTPS on your own domain
 
@@ -466,6 +468,14 @@ were issued; lowering it never cuts an existing session short. A browser renews 
 signing in; a paired phone renews its token by itself whenever it starts past half of that
 time, so only a phone left unopened for longer than `SESSION_DAYS` has to be paired again.
 
+The web container sends a Content-Security-Policy that lets scripts run only from your instance
+(plus the app's one inline script, by its hash), so a script that found its way into a page does
+not run. Requests the app makes itself stay open: the Coach on a device talks to whatever provider
+you chose, a LAN Ollama included. If your reverse proxy injects a script of its own (analytics,
+say), it gets blocked; give the `web` service a policy that allows it in `environment:`, or
+`CONTENT_SECURITY_POLICY=frame-ancestors 'none'` for the old, minimal header. The default is in
+`web/Dockerfile`.
+
 The web image renders its nginx config from these when the container starts, so they take effect
 on a **prebuilt image** — no rebuild. `BACKEND` and `PORT` together are what `/api` is proxied to,
 so they have to name a service the web container can actually reach on your compose network.
@@ -548,8 +558,8 @@ timeout the app can only report as "The server refused the file as too large":
   `entryPoints.<name>.transport.respondingTimeouts.readTimeout` (`600s`, say). nginx's
   `client_body_timeout` counts the gap between two reads, so its default of 60 s is fine. The
   API itself gives a request 30 minutes and drops one that sends nothing for 60 s.
-- **Content-Security-Policy**: if the proxy adds one, it must allow `blob:` in `img-src` and
-  `media-src`. The app shows the files from its own verified local copy through `blob:` URLs.
+- **Content-Security-Policy**: the web container already sends one that allows this. If the
+  proxy adds its own, it must allow `blob:` in `img-src` and `media-src`. The app shows the files from its own verified local copy through `blob:` URLs.
 
 **What is removed, and when.** A file goes when its owner's stored state has not used it for
 `MEDIA_GC_GRACE_DAYS` (checked every hour), after one hour unused when the owner's quota is full,

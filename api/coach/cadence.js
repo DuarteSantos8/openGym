@@ -99,13 +99,15 @@ const hhmmToMin = v => {
 };
 
 /**
- * @param {object} deps  { users(): [{id}], userNow(tz): {date,hhmm,weekday} }
+ * @param {object} deps  { users(): [{id}], userNow(tz): {date,hhmm,weekday}, skip?(uid): bool }
  */
 export function startCadence(deps) {
   const timer = setInterval(() => {
     if (!cfgStore.isEnabled() || !cfgStore.isConnected()) return;
     for (const user of deps.users()) {
       try {
+        // A profile that never agreed to the Coach is skipped before its whole state is read.
+        if (deps.skip?.(user.id)) continue;
         const S = jobs.readState(user.id);
         const coach = S?.coach;
         if (!coach?.consent?.agreedAt) continue;         // consent revoked ⇒ cadence stops
