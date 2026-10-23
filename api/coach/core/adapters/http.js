@@ -58,6 +58,15 @@ const LEADING_VERSION = new RegExp('^' + VERSION_SEGMENT.source, 'i');
 // without the version is remembered so the next request goes there first. A bare host and every
 // base that works today still gets exactly the request it got before.
 const versionlessBases = new Set();
+// What an error answer is allowed to say back: the provider's own JSON error message, never the
+// raw body. The endpoint of a compatible provider is any URL an admin types, so echoing the body
+// would let one admin read the first lines of any page the server can reach (a router, a service
+// on the LAN). A provider that failed says why in JSON; anything else is reported by its status.
+function shownError(spec, data, max = 200) {
+  const m = spec.errorMessage(data);
+  return typeof m === 'string' && m ? trim(m, max) : '(the endpoint sent no error message)';
+}
+
 function candidateUrls(spec, base, path) {
   const url = endpointUrl(base, path);
   if (!spec.versionlessFallback) return [url];
@@ -144,7 +153,7 @@ export function httpAdapter(spec) {
         return { ok: false, error: e.name === 'AbortError' ? 'timed out' : `could not reach ${hostOf(base)}: ${trim(e.message, 120)}`, models: [] };
       }
       const { data, text } = await readJson(res);
-      if (!res.ok) return { ok: false, error: `${res.status} ${trim(spec.errorMessage(data) || text, 200)}`, models: [] };
+      if (!res.ok) return { ok: false, error: `${res.status} ${shownError(spec, data)}`, models: [] };
       let models;
       try { models = spec.readModels(data); } catch { models = null; }
       if (!Array.isArray(models)) return { ok: false, error: 'unexpected model list shape', models: [] };
@@ -194,7 +203,7 @@ export function httpAdapter(spec) {
             retriedWithoutJsonMode = true;
             continue;
           }
-          return { code: 1, text: '', stderr: `${res.status} ${trim(msg, 280)}` };
+          return { code: 1, text: '', stderr: `${res.status} ${shownError(spec, data, 280)}` };
         }
         let out;
         try { out = spec.readText(data); } catch (e) { out = { error: `unexpected response shape: ${trim(e.message, 100)}` }; }

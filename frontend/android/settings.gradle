@@ -3,3 +3,8 @@ include ':capacitor-cordova-android-plugins'
 project(':capacitor-cordova-android-plugins').projectDir = new File('./capacitor-cordova-android-plugins/')
 
 apply from: 'capacitor.settings.gradle'
+// The Play asset packs of the animations, only while the release machine builds the Play bundle
+// (scripts/android/make-asset-packs.mjs writes this file and the modules; never committed).
+if (file('asset-packs.settings.gradle').exists()) {
+    apply from: 'asset-packs.settings.gradle'
+}

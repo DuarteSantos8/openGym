@@ -778,3 +778,26 @@ test('passkey sign-up and sign-in refusals carry a code the app can translate', 
   assert.equal(off.status, 403);
   assert.equal(off.body.code, 'disabled');
 });
+
+// Settings → "Delete my account" asks the same proof (server-account-delete.test.js has the
+// password half): a passkey of this profile's own, made for this request, and only once.
+test('deleting the account: a passkey of its own proves it, someone else’s does not', async t => {
+  const a = softPasskey(), b = softPasskey();
+  const h = await startServer(t, { users: [user('u1', 'Ana'), user('u2', 'Bea')], creds: [a.row('u1'), b.row('u2')] });
+  const ip = '198.51.100.90';
+  const del = (proof, uid = 'u1') => h.req('POST', '/api/account/delete', { body: { name: uid === 'u1' ? 'Ana' : 'Bea', ...proof }, cookie: mintSession(uid), ip });
+
+  const theirs = await del(await h.stepUp(b, ip));
+  assert.equal(theirs.status, 403);
+  assert.equal(theirs.body.code, 'passkey');
+  assert.equal(h.db().users.length, 2, 'nothing was removed');
+
+  const proof = await h.stepUp(a, ip);
+  const ok = await del(proof);
+  assert.equal(ok.status, 200);
+  assert.deepEqual(h.db().users.map(u => u.id), ['u2']);
+  assert.deepEqual(h.db().creds.map(c => c.userId), ['u2'], 'its passkeys go with it');
+  assert.equal(h.audit().find(r => r.ev === 'auth.account.delete')?.msg, 'passkey');
+  // Bea's session, with Ana's spent assertion: no proof for anyone.
+  assert.equal((await del(proof, 'u2')).status, 403);
+});
