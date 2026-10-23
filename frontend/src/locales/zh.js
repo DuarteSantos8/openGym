@@ -1,5 +1,18 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Same muscle and exercise type. The movement may differ.": "相同肌群和动作类型。运动方式可能不同。",
+  "Related muscles and exercise type. The movement may differ.": "相关肌群和相同动作类型。运动方式可能不同。",
+  "Same muscle, different exercise type. Check suitability.": "相同肌群，不同动作类型。请确认是否合适。",
+  "No suitable suggestions with these filters. Browse below or change gym.": "当前筛选条件下无合适建议。请浏览下方列表或切换健身房。",
+  "Gym": "健身房",
+  "All equipment": "所有器材",
+  "Search results": "搜索结果",
+  "All exercises": "所有动作",
+  "Replacing {0}": "替换 {0}",
+  "Suggested substitutes": "建议替代动作",
+  "Same movement and muscle": "相同动作模式和肌群",
+  "All other exercises": "所有其他动作",
+  "No matches. Try another search or equipment profile.": "无匹配结果。请尝试其他搜索词或器材配置。",
   'Confirm': '确认',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回退出',
