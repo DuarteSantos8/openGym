@@ -143,8 +143,11 @@ export default function RestTimer() {
   // In a flow the gap has no ±15 s, so Skip has their room too.
   const skipFits = useSkipFits(actsRef, [!!timer && !work, inFlow, t('Skip'), t('Dismiss')])
   // The page keeps room at its bottom for the bar (index.css body.resting), so the last set and
-  // the Finish button can scroll clear of it.
-  useEffect(() => {
+  // the Finish button can scroll clear of it. The room comes in the same layout as the bar, before
+  // anything is drawn: a flow card loses its Start button as its first hold starts, and with the
+  // room a frame late the page was 50 px shorter for that frame. Scrolled near its end, WebKit then
+  // pulled the scroll position back, and the card jumped down the screen as the hold began.
+  useLayoutEffect(() => {
     document.body.classList.toggle('resting', !!on)
     // The bar leaving takes that room back — the page gets shorter at once, often in the same
     // commit that ticks a set or swaps the card. When that clamps the scroll position, iOS
