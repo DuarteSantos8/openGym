@@ -207,6 +207,13 @@ describe('calculate1RMAccuracy', () => {
 })
 
 describe('bestSetOf', () => {
+  it('never estimates assistance explicitly declared on the entry target', () => {
+    const entry = { id: '0025', target: { mode: 'reps', assisted: true }, sets: [{ w: 100, r: 5, done: true }] }
+    expect(bestSetOf(entry)).toBeNull()
+    expect(bestSetOf({ ...entry, assisted: false })).toBeNull()
+    expect(e1rmSeries({ workouts: [{ d: '2026-01-01', entries: [entry] }] }, entry.id)).toEqual([])
+  })
+
   it('picks the highest estimate, not the heaviest set', () => {
     const entry = { id: 'x', sets: [
       { w: 100, r: 5, done: true },   // 116.7
