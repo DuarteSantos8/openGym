@@ -9,6 +9,7 @@ import { nextPrescription, applyPrescription, defaultIncrement, weightIncrement,
 import { dropGrid } from './plates.js'
 import { backoffStepOf, applyBackoff } from './backoff.js'
 import { dbLoadFor, historyAs, ownedWeightsFor } from './dumbbells.js'
+import { isAssisted } from './exercises.js'
 
 /**
  * Where a planned session's reps come from (Settings → During a workout). 'plan', the default:
@@ -45,7 +46,7 @@ export function buildPlannedEntry(stored, cfg, routine, { noProg = false } = {})
   const ramp = (modeOf(cfg) === 'reps' && ownedWeightsFor(st, cfg)) || step
   // Back-off sets step down from the top set by the exercise's own step (lib/backoff.js).
   const backoffStep = modeOf(cfg) === 'reps' && backoffStepOf(cfg, st.unit) ? step : 0
-  const built = applyPrescription(buildSets(st, cfg, { step: ramp, rid: routine?.id, useTarget: plan.kind === 'off', planReps }), plan, ramp, barFloor(st, cfg.id))
+  const built = applyPrescription(buildSets(st, cfg, { step: ramp, rid: routine?.id, useTarget: plan.kind === 'off', planReps }), plan, ramp, barFloor(st, cfg.id), isAssisted(cfg))
   const rows = backoffStep ? applyBackoff(built, backoffStep) : built
   const sets = applyIntensifierPlan(rows, cfg, dropGrid(st, cfg))
   const target = { ...cfg }

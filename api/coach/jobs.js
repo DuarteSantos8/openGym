@@ -25,7 +25,7 @@ import { hashPlan } from './core/plan-hash.js';
 import { buildPrompt } from './core/prompt.js';
 import { handleFor } from './handle.js';
 import { fetchFor } from './node-fetch.js';
-import { canDropPrivileges, unprivilegedIds } from './adapters/spawn.js';
+import { privilegeRefusal, unprivilegedIds } from './adapters/spawn.js';
 import { cohortForPayload, invalidate as invalidateCohort } from './cohort.js';
 
 // The prompt assembly, the plan fingerprint and the invoke→parse→validate→repair loop all
@@ -212,22 +212,22 @@ export function enqueue(uid, opts) {
     if (cred.reason === 'shared-account') throw new CoachError('shared', cred.message);
     throw new CoachError('off', 'this profile has no provider account connected');
   }
-  // Spending is what binds: a personal credential (setup token, OAuth) belongs to the first
-  // profile that runs a job on it from here on; an API key binds to nobody and is shared.
-  cfgStore.bindInstanceCredential(uid);
-
   // The privilege drop is what keeps a provider runtime out of ./data. If it cannot be
   // performed, there is no job — see canDropPrivileges for why this is not a warning either.
   // A provider that spawns nothing has no process to drop, and is not refused for it.
-  if (adapterFor(cfgStore.load().provider)?.spawns !== false) {
-    const priv = canDropPrivileges();
-    if (!priv.ok) throw new CoachError('unprivileged', `Coach jobs are disabled: ${priv.why}`);
-  }
+  // Asked before the bind below: a job refused here spends nothing, so it must not bind.
+  const refusal = privilegeRefusal(adapterFor(cfgStore.load().provider));
+  if (refusal) throw new CoachError('unprivileged', refusal);
 
+  // The caps, before the bind for the same reason: a job refused for the day spends nothing.
   const caps = cfgStore.load().caps || {};
   const { used, limit } = capState(uid);
   if (limit > 0 && used >= limit) throw new CoachError('cap', 'daily limit reached');
   if (caps.instanceDaily > 0 && instanceUsedToday() >= caps.instanceDaily) throw new CoachError('cap', 'this instance has reached its daily limit');
+
+  // Spending is what binds: a personal credential (setup token, OAuth) belongs to the first
+  // profile that runs a job on it from here on; an API key binds to nobody and is shared.
+  cfgStore.bindInstanceCredential(uid);
 
   // Counted at enqueue, not at completion: the cap exists to bound what one profile can spend
   // of the owner's provider account, and queueing twenty jobs spends it whether or not the
@@ -325,6 +325,11 @@ async function execute(job) {
   const cfg = cfgStore.load();
   const adapter = adapterFor(cfg.provider);
   if (!adapter) return finish(job, { outcome: 'failed', errorClass: 'off' });
+  // The gate again, for the provider this job actually runs on: enqueue asked about the one
+  // configured then, and a job that waited behind two others would otherwise spawn without the
+  // drop if the admin had switched from an HTTPS provider to a runtime-backed one meanwhile.
+  const refusal = privilegeRefusal(adapter);
+  if (refusal) return finish(job, { outcome: 'failed', errorClass: 'unprivileged', detail: refusal });
 
   if (job.kind === 'debrief' && !payloadLib.findWorkout(S, job.workoutId)) {
     return finish(job, { outcome: 'failed', errorClass: 'noworkout' });
@@ -459,6 +464,10 @@ export async function testRun() {
   const cfg = cfgStore.load();
   const adapter = adapterFor(cfg.provider);
   if (!adapter) return { ok: false, error: 'no provider configured' };
+  // The same gate as enqueue: this spawns the runtime a job would, and without the drop the
+  // child runs as this process and can read ./data.
+  const refusal = privilegeRefusal(adapter);
+  if (refusal) return { ok: false, error: refusal };
   const jobDir = adapter.spawns === false ? null : fs.mkdtempSync(path.join(os.tmpdir(), 'coach-test-'));
   try {
     // No user asked for this, so there is no profile whose account is being spent. In instance
