@@ -2323,6 +2323,8 @@ export default {
   'Your sports watch, calling you back.': 'আপনার স্পোর্টস ঘড়ি আপনাকে ফিরে ডাকছে।',
   'Coach wants you back on the bar.': 'কোচ আপনাকে আবার বারে চান।',
   'Gentle, for headphones or a quiet room.': 'মৃদু, হেডফোন বা শান্ত ঘরের জন্য।',
+  'Extra': 'অতিরিক্ত',
+  'Plan {0}/{1} · Extra {2} · {3} sets in total': 'প্ল্যান {0}/{1} · অতিরিক্ত {2} · মোট {3}টি সেট',
   // --- Coach: AI data sharing ---
   'AI data sharing': 'AI-এর সাথে ডেটা শেয়ার',
   'Allow': 'অনুমতি দিন',

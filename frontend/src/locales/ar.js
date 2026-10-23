@@ -2299,6 +2299,8 @@ export default {
   'Your sports watch, calling you back.': 'ساعتك الرياضية تناديك للعودة.',
   'Coach wants you back on the bar.': 'المدرب يريدك أن تعود إلى البار.',
   'Gentle, for headphones or a quiet room.': 'هادئ، للسماعات أو لغرفة هادئة.',
+  'Extra': 'إضافي',
+  'Plan {0}/{1} · Extra {2} · {3} sets in total': 'الخطة {0}/{1} · إضافي {2} · {3} مجموعات إجمالًا',
   // --- Coach: AI data sharing ---
   'AI data sharing': 'مشاركة البيانات مع الذكاء الاصطناعي',
   'Allow': 'السماح',

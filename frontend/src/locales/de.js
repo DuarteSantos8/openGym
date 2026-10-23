@@ -2264,6 +2264,8 @@ export default {
   'Your sports watch, calling you back.': 'Deine Sportuhr ruft dich zurück.',
   'Coach wants you back on the bar.': 'Der Coach will dich zurück an der Stange.',
   'Gentle, for headphones or a quiet room.': 'Leise, für Kopfhörer oder einen ruhigen Raum.',
+  'Extra': 'Extra',
+  'Plan {0}/{1} · Extra {2} · {3} sets in total': 'Plan {0}/{1} · Extra {2} · {3} Sätze insgesamt',
   // --- Coach: AI data sharing ---
   'AI data sharing': 'KI-Datenfreigabe',
   'Allow': 'Erlauben',

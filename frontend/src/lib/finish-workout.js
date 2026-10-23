@@ -2,6 +2,7 @@
 // exercise the exact shape the UI writes without mounting React or mutating store state.
 import { bestWeightForEntry, cleanupSg } from './history.js'
 import { hasCompletedWork, isSideSet } from './workout-model.js'
+import { plannedExerciseCount } from './session-extras.js'
 
 // planSec is live-session bookkeeping: a hold displaced before it finished puts its plan aside so
 // the row still knows what it is asking for (Workout.startTimed). A finished session keeps only
@@ -84,6 +85,8 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
       // The superset the exercise was done in, so the history can show the pairing. Without it
       // the workout forgot at finish what it had been all session.
       ...(entry.sg ? { sg: entry.sg } : {}),
+      // Added to a planned session by hand, not part of its routine (lib/session-extras.js).
+      ...(entry.extra === true ? { extra: true } : {}),
     }
     const snapshot = typeof snapshotFor === 'function' ? snapshotFor(entry) : null
     if (snapshot && typeof snapshot === 'object' && !Array.isArray(snapshot) && Object.keys(snapshot).length) {
@@ -111,6 +114,9 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
   // entries, not read from `active` (which no longer carries the flag). A mixed session omits
   // it — that case is new territory only the per-entry `noProg` readers handle.
   const allNoProg = entries.length > 0 && entries.every(e => e.noProg === true)
+  // How many exercises the plan had, when the finished entries alone no longer say it: an extra
+  // was added, or a planned exercise was left without a set (lib/session-extras.js).
+  const planEx = plannedExerciseCount(active?.entries, entries)
 
   return {
     id: active.id,
@@ -124,6 +130,7 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
     entries,
     prs,
     ...(allNoProg ? { excludeFromProgression: true } : {}),
+    ...(planEx != null ? { planEx } : {}),
     ...(sessionNote ? { note: sessionNote } : {}),
   }
 }

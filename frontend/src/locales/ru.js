@@ -2248,6 +2248,8 @@ export default {
   'Your sports watch, calling you back.': 'Ваши спортивные часы зовут вас обратно.',
   'Coach wants you back on the bar.': 'Тренер ждёт вас обратно у штанги.',
   'Gentle, for headphones or a quiet room.': 'Тихий, для наушников или спокойного зала.',
+  'Extra': 'Доп.',
+  'Plan {0}/{1} · Extra {2} · {3} sets in total': 'План {0}/{1} · Доп. {2} · Всего подходов: {3}',
   // --- Coach: AI data sharing ---
   'AI data sharing': 'Передача данных ИИ',
   'Allow': 'Разрешить',

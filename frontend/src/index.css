@@ -1384,6 +1384,8 @@ body.chips-dragging *{cursor:inherit}
 .refline{width:100%;display:flex;align-items:flex-start;gap:6px;margin-bottom:4px;padding:0;text-align:start}
 .refline svg{flex:none;margin-top:2px;font-size:12px}
 /* an exercise kept out of progression for this session, with its undo */
+/* An exercise added to a planned session, not part of its routine (lib/session-extras.js). */
+.xtra{display:inline-block;margin-inline-start:7px;padding:1px 7px;border-radius:99px;font-size:11px;font-weight:600;letter-spacing:.02em;line-height:1.5;vertical-align:3px;color:var(--teal);background:color-mix(in srgb,var(--teal) 15%,transparent)}
 .noprog{display:flex;align-items:center;gap:7px;margin:0 0 6px;font-size:13px;line-height:1.38;color:var(--orange)}
 .noprog svg{flex:none}
 .noprog .chip{margin-inline-start:auto;padding:3px 11px;font-size:13px;color:var(--orange);background:color-mix(in srgb,var(--orange) 14%,transparent)}
