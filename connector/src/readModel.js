@@ -5,7 +5,7 @@ import {
   modeOf, workoutVolume, setsDone, effectiveRoutine, effectiveRoutineIds, lastEntryFor, workoutAt
 } from '../../frontend/src/lib/history.js'
 import { queueView, queueNext, pinState } from '../../frontend/src/lib/queue.js'
-import { exOr, registerCustom } from '../../frontend/src/lib/exercises.js'
+import { exOr, EXIDX } from '../../frontend/src/lib/exercises.js'
 import { isWarmupRow, isFailureSet } from '../../frontend/src/lib/workout-model.js'
 import { bestSetOf, best1RM, e1rmSeries, DEFAULT_FORMULA, REP_CAP } from '../../frontend/src/lib/onerm.js'
 import { loadOfWorkouts, rankOf, levelsOf } from '../../frontend/src/lib/muscles.js'
@@ -41,6 +41,18 @@ function optionalId(value) {
   return requireId(value)
 }
 
+// EXIDX is a plain object shared by the whole process. These ids would reach Object.prototype
+// (or shadow what inherits from it) when used as keys, so a profile carrying one is refused.
+const RESERVED_IDS = new Set(['__proto__', 'constructor', 'prototype'])
+
+function customList(raw) {
+  const list = (Array.isArray(raw) ? raw : []).filter(e => e && typeof e === 'object' && e.id != null)
+  for (const e of list) {
+    if (typeof e.id !== 'string' || !e.id || RESERVED_IDS.has(e.id)) throw new Error('invalid custom exercise id')
+  }
+  return list
+}
+
 function shape(raw) {
   const s = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {}
   return {
@@ -50,17 +62,37 @@ function shape(raw) {
     week: s.week && typeof s.week === 'object' && !Array.isArray(s.week) ? s.week : {},
     dayPlan: s.dayPlan && typeof s.dayPlan === 'object' && !Array.isArray(s.dayPlan) ? s.dayPlan : {},
     bodyweight: Array.isArray(s.bodyweight) ? s.bodyweight : [],
-    customEx: Array.isArray(s.customEx) ? s.customEx : [],
+    customEx: customList(s.customEx),
   }
 }
 
 const customOf = (id, S) => S.customEx.find(ex => ex.id === id)
-const exerciseOf = (id, S) => customOf(id, S) || exOr(id)
+// exOr reads EXIDX[id] on a plain object, so 'toString' or 'constructor' would come back as an
+// inherited function. Only an own entry counts as known; anything else is the unknown placeholder.
+const exerciseOf = (id, S) => customOf(id, S) ||
+  (typeof id === 'string' && Object.hasOwn(EXIDX, id) ? exOr(id) : { ...exOr(UNKNOWN_KEY), id })
+const UNKNOWN_KEY = '\u0000unknown'
 
+// The session builder reads each exercise's equipment from the shared EXIDX, so this profile's
+// customs are put there for the length of one synchronous build and the previous own values are
+// put back before returning: same values, same key order, nothing left behind, no await between.
+// No registerCustom call: it tracks ids in module state and rebuilds from the catalogue, which
+// cannot restore what a nested or failed call found there.
 function withCustomsIndexed(S, build) {
-  registerCustom(S.customEx)
-  try { return build() }
-  finally { registerCustom([]) }
+  const saved = []
+  for (const e of S.customEx) {
+    if (saved.some(s => s.id === e.id)) { EXIDX[e.id] = e; continue }
+    const had = Object.hasOwn(EXIDX, e.id)
+    saved.push({ id: e.id, had, desc: had ? Object.getOwnPropertyDescriptor(EXIDX, e.id) : null })
+    EXIDX[e.id] = e
+  }
+  try { return build() } finally {
+    for (let i = saved.length - 1; i >= 0; i--) {
+      const { id, had, desc } = saved[i]
+      if (had) Object.defineProperty(EXIDX, id, desc)
+      else delete EXIDX[id]
+    }
+  }
 }
 
 function plannedSets(w) {

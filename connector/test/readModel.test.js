@@ -2,6 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { createReadModel } from '../src/readModel.js'
 import { createMcpTools } from '../src/mcpTools.js'
+import { EXIDX } from '../../frontend/src/lib/exercises.js'
 
 const today = () => {
   const d = new Date()
@@ -84,4 +85,67 @@ test('nine MCP tools fetch each bearer profile independently; no image data trav
   assert.equal((await list.handler('one', {})).routines[0].id, 'one')
   assert.equal((await list.handler('two', {})).routines[0].id, 'two')
   assert.doesNotMatch(JSON.stringify(await list.handler('two', {})), /one|base64|media\//)
+})
+
+// EXIDX is a process-global plain object: nothing a profile carries may change it or its prototype.
+const snapshot = () => Object.getOwnPropertyNames(EXIDX).map(k => [k, Object.getOwnPropertyDescriptor(EXIDX, k)])
+const previewWith = (custom, ex) => {
+  const p = profile()
+  p.queue = null
+  p.week = {}
+  p.customEx = custom
+  p.routines = [{ id: 'r', name: 'R', ex }]
+  return createReadModel(p).previewSession({ routine_id: 'r' })
+}
+
+for (const id of ['__proto__', 'constructor', 'prototype']) {
+  test(`custom exercise id ${id} is refused and cannot touch EXIDX or its prototype`, () => {
+    const before = snapshot()
+    const p = JSON.parse(`{"routines":[],"workouts":[],"customEx":[{"id":"${id}","n":"Evil","bp":"chest","polluted":true}]}`)
+    assert.throws(() => createReadModel(p), /custom exercise id/i)
+    assert.equal(Object.getPrototypeOf(EXIDX), Object.prototype)
+    assert.equal(Object.prototype.polluted, undefined)
+    assert.deepEqual(snapshot(), before)
+  })
+}
+
+test('inherited Object.prototype names stay unknown exercises with a text name', () => {
+  const ids = ['constructor', '__proto__', 'toString']
+  const p = { ...profile(), routines: [{ id: 'r', name: 'R', ex: ids.map(id => ({ id, sets: 1, reps: 5 })) }] }
+  const r = createReadModel(p).getRoutine({ routine_id: 'r' })
+  assert.deepEqual(r.exercises.map(e => e.id), ids)
+  for (const e of r.exercises) {
+    assert.equal(e.unknown, true)
+    assert.equal(typeof e.name, 'string')
+  }
+})
+
+test('previewing routines that use Object.prototype names as exercise ids stays safe and visible', () => {
+  const before = snapshot()
+  const ids = ['constructor', '__proto__', 'toString']
+  const out = previewWith([], ids.map(id => ({ id, sets: 2, reps: 5, weight: 40 })))
+  assert.deepEqual(out.exercises.map(e => e.id), ids)
+  assert.ok(out.exercises.every(e => e.unknown === true))
+  assert.deepEqual(snapshot(), before)
+  assert.equal(Object.getPrototypeOf(EXIDX), Object.prototype)
+})
+
+test('profile A custom exercise is not visible when profile B is read afterwards', () => {
+  const custom = [{ id: 'cx-a', n: 'A Secret Lift', bp: 'upper legs', eq: 'barbell', tg: 'quads', sm: [], st: [] }]
+  const a = previewWith(custom, [{ id: 'cx-a', sets: 3, reps: 5, weight: 100 }])
+  assert.equal(a.exercises[0].name, 'A Secret Lift')
+  assert.equal(Object.hasOwn(EXIDX, 'cx-a'), false)
+  const b = previewWith([], [{ id: 'cx-a', sets: 3, reps: 5, weight: 100 }])
+  assert.equal(b.exercises[0].unknown, true)
+  assert.doesNotMatch(JSON.stringify(b), /A Secret Lift/)
+})
+
+test('a custom exercise shadowing a catalogue id is restored exactly, even when the build throws', () => {
+  const before = snapshot()
+  const custom = [{ id: '0025', n: 'Shadow', bp: 'chest' }]
+  const ok = previewWith(custom, [{ id: '0025', sets: 1, reps: 5 }])
+  assert.equal(ok.exercises[0].name, 'Shadow')
+  assert.deepEqual(snapshot(), before)
+  assert.throws(() => previewWith(custom, [{ id: '0025', sets: 1, reps: 5 }, null]))
+  assert.deepEqual(snapshot(), before)
 })
