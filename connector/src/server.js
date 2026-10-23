@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { AUTH_TTL_MS, MAX_STATE, discovery, redirectAllowed, sealAuth, openAuth } from './oauth.js'
 import { createGrants, GrantError } from './grants.js'
 import { connect, createPending, pickAssertion, sameOrigin } from './openGymSession.js'
+import { createMcpHttp } from './mcpHttp.js'
 
 const connectPage = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'web/connect.html'))
 const confirmPage = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'web/confirm.html'))
@@ -39,10 +40,13 @@ function bodyOf(req) {
   })
 }
 
-export function createServer({ origin, prefix, apiBase, key = crypto.randomBytes(32), confirmations } = {}) {
+export function createServer({ origin, prefix, apiBase, key = crypto.randomBytes(32), confirmations, toolTimeoutMs, bodyTimeoutMs } = {}) {
   const d = discovery({ origin, prefix })
   const pending = new Map(), connections = new Map(), spent = new Map()
   const grants = createGrants({ connections, key, apiBase })
+  // Without an openGym API there is nothing to serve: the MCP endpoint then only ever answers 401.
+  const mcp = apiBase ? createMcpHttp({ origin, prefix, apiBase, key, connections, grants, confirmations, toolTimeoutMs, bodyTimeoutMs }) : null
+  const confirm = confirmations || (mcp && mcp.confirmations)
   const send = (res, status, body, headers = {}) => {
     res.writeHead(status, { 'content-type': 'application/json', 'cache-control': 'no-store', ...headers })
     res.end(JSON.stringify(body))
@@ -73,7 +77,7 @@ export function createServer({ origin, prefix, apiBase, key = crypto.randomBytes
           res.writeHead(303, { location: `${prefix}/connect`, 'cache-control': 'no-store', 'set-cookie': `${COOKIE}=${sealed}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=300` })
           return res.end()
         }
-        if (pathname === `${prefix}/confirm` && confirmations) {
+        if (pathname === `${prefix}/confirm` && confirm) {
           res.writeHead(200, {
             'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff',
             'referrer-policy': 'no-referrer', 'x-frame-options': 'DENY',
@@ -90,14 +94,14 @@ export function createServer({ origin, prefix, apiBase, key = crypto.randomBytes
           return res.end(connectPage)
         }
       }
-      if (req.method === 'POST' && confirmations && [`${prefix}/confirm/details`, `${prefix}/confirm/challenge`, `${prefix}/confirm/execute`].includes(pathname)) {
+      if (req.method === 'POST' && confirm && [`${prefix}/confirm/details`, `${prefix}/confirm/challenge`, `${prefix}/confirm/execute`].includes(pathname)) {
         if (!sameOrigin(req.headers, origin)) return send(res, 403, { error: 'invalid_confirmation' })
         if ((req.headers['content-type'] || '').split(';')[0].trim().toLowerCase() !== 'application/json') return send(res, 400, { error: 'invalid_confirmation' })
         try {
           const body = await bodyOf(req)
-          const result = pathname.endsWith('/details') ? await confirmations.details(body.id)
-            : pathname.endsWith('/challenge') ? await confirmations.challenge(body.id)
-              : await confirmations.confirm(body.id, { cid: body.cid, credential: body.credential })
+          const result = pathname.endsWith('/details') ? await confirm.details(body.id)
+            : pathname.endsWith('/challenge') ? await confirm.challenge(body.id)
+              : await confirm.confirm(body.id, { cid: body.cid, credential: body.credential })
           return send(res, 200, result)
         } catch (e) {
           if (e && e.message === 'too_large') throw e
@@ -153,11 +157,13 @@ export function createServer({ origin, prefix, apiBase, key = crypto.randomBytes
         await grants.revoke({ token: b.token, clientId: b.client_id })
         return send(res, 200, {})
       }
-      // ponytail: stub MCP endpoint, no token validation yet -> always 401 (fails closed). Task 10 wires it.
       if (pathname === `${prefix}/mcp`) {
-        return send(res, 401, { error: 'unauthorized' }, {
-          'www-authenticate': `Bearer resource_metadata="${d.resourceMetadataUrl}"`,
-        })
+        const wwwAuthenticate = `Bearer resource_metadata="${d.resourceMetadataUrl}"`
+        if (req.method !== 'POST') return send(res, 405, { error: 'method_not_allowed' }, { allow: 'POST' })
+        const header = req.headers.authorization
+        const token = typeof header === 'string' && header.startsWith('Bearer ') ? header.slice(7) : ''
+        if (!mcp) return send(res, 401, { error: 'unauthorized' }, { 'www-authenticate': wwwAuthenticate })
+        return mcp.handle(req, res, { token, wwwAuthenticate })
       }
       send(res, 404, { error: 'not_found' })
     } catch (e) {

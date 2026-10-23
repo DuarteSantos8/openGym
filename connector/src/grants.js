@@ -200,7 +200,23 @@ export function createGrants({
     return null
   }
 
+  // After a successful bearerForAccessToken: the grant is still live, so these are the stored
+  // connection and a way to kill it without a client_id (MCP never sees one).
+  function connectionForAccessToken(token) {
+    if (typeof token !== 'string' || !TOKEN.test(token)) return null
+    const rec = access.get(sha(token))
+    const g = rec && grants.get(rec.grantId)
+    return g ? g.connectionId : null
+  }
+
+  function revokeAccessToken(token) {
+    if (typeof token !== 'string' || !TOKEN.test(token)) return
+    const rec = access.get(sha(token))
+    if (rec) kill(rec.grantId)
+  }
+
   return {
-    registerClient, checkAuthorizeRequest, issueAuthorizationCode, exchangeCode, refresh, revoke, bearerForAccessToken,
+    registerClient, checkAuthorizeRequest, issueAuthorizationCode, exchangeCode, refresh, revoke,
+    bearerForAccessToken, connectionForAccessToken, revokeAccessToken,
   }
 }
