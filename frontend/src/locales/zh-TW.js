@@ -2407,4 +2407,17 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': '此裝置上有 1 筆訓練紀錄不在此備份中。覆蓋將會刪除它。',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': '此裝置上有 {0} 筆訓練紀錄不在此備份中。覆蓋將會將其全數刪除。',
+  // --- a sound for each kind of rest (#165) ---
+  'A sound for each kind of rest': '每種休息各有提示音',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': '不用看就知道接下來做什麼。在你選擇之前，每種都播放上方的聲音，支撐和換邊的暫停也一向如此。',
+  'Next round': '下一輪',
+  'Next exercise': '下一個動作',
+  'Same as above': '同上',
+  'Same as {0}': '與{0}相同',
+  // --- what the timer bar says it times (#165) ---
+  'Set': '組',
+  'Round': '輪',
+  'Hold': '保持',
+  'Hold {0} of {1}': '保持 {0}/{1}',
+  'Warm-up hold {0} of {1}': '熱身保持 {0}/{1}',
 }

@@ -2964,6 +2964,7 @@ export function beginWorkout(routineIds, bw, { id = null, start = null } = {}) {
       workoutView: st.workoutView || 'cards',
     }
   })
+  useUI.getState().stopWork()   // a hold from the previous session must not log into this one
   useUI.getState().stopRest()
   navToWorkout()
 }
@@ -2985,6 +2986,7 @@ export function repeatWorkout(w, close) {
         workoutView: s.workoutView || 'cards',
       }
     })
+    useUI.getState().stopWork()   // a hold from the previous session must not log into this one
     useUI.getState().stopRest()
     if (close) closeThenNav(close, '/workout'); else navToWorkout()
     if (skipped) toast(tn('{0} exercise no longer exists and was left out.', '{0} exercises no longer exist and were left out.', skipped))
@@ -3095,6 +3097,7 @@ function beginBackfill({ iso, time, durationMin, routineIds, replaceId }) {
       workoutView: st.workoutView || 'cards',
     }
   })
+  useUI.getState().stopWork()   // a hold from the previous session must not log into this one
   useUI.getState().stopRest()
   navToWorkout()
 }

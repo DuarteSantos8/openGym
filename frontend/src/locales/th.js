@@ -2425,4 +2425,17 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'อุปกรณ์นี้มีการออกกำลังกาย 1 รายการที่ไม่อยู่ในข้อมูลสำรองนี้ การแทนที่จะลบรายการนั้น',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'อุปกรณ์นี้มีการออกกำลังกาย {0} รายการที่ไม่อยู่ในข้อมูลสำรองนี้ การแทนที่จะลบรายการเหล่านั้น',
+  // --- a sound for each kind of rest (#165) ---
+  'A sound for each kind of rest': 'เสียงแยกตามประเภทการพัก',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'รู้ว่าต่อไปคืออะไรโดยไม่ต้องมอง จนกว่าคุณจะเลือก แต่ละแบบจะเล่นเสียงด้านบน เหมือนที่การค้างท่าและช่วงพักสลับข้างเล่นเสมอ',
+  'Next round': 'รอบถัดไป',
+  'Next exercise': 'ท่าถัดไป',
+  'Same as above': 'เหมือนด้านบน',
+  'Same as {0}': 'เหมือน {0}',
+  // --- what the timer bar says it times (#165) ---
+  'Set': 'เซ็ต',
+  'Round': 'รอบ',
+  'Hold': 'ค้างไว้',
+  'Hold {0} of {1}': 'ค้างไว้ {0}/{1}',
+  'Warm-up hold {0} of {1}': 'ค้างไว้วอร์มอัพ {0}/{1}',
 }

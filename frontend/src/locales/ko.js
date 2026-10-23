@@ -2414,4 +2414,17 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': '이 기기에 이 백업에 없는 운동이 1개 있습니다. 바꾸면 삭제됩니다.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': '이 기기에 이 백업에 없는 운동이 {0}개 있습니다. 바꾸면 삭제됩니다.',
+  // --- a sound for each kind of rest (#165) ---
+  'A sound for each kind of rest': '휴식 종류마다 다른 소리',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': '화면을 보지 않아도 다음이 무엇인지 들을 수 있어요. 고르기 전까지는 각각 위의 소리가 나요. 버티기와 방향 바꾸기 휴식도 늘 그래요.',
+  'Next round': '다음 라운드',
+  'Next exercise': '다음 운동',
+  'Same as above': '위와 같음',
+  'Same as {0}': '같은 소리: {0}',
+  // --- what the timer bar says it times (#165) ---
+  'Set': '세트',
+  'Round': '라운드',
+  'Hold': '유지',
+  'Hold {0} of {1}': '유지 {0}/{1}',
+  'Warm-up hold {0} of {1}': '워밍업 유지 {0}/{1}',
 }

@@ -2414,4 +2414,17 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'Bu cihazda bu yedekte olmayan 1 antrenman var. Değiştirmek onu siler.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'Bu cihazda bu yedekte olmayan {0} antrenman var. Değiştirmek onları siler.',
+  // --- a sound for each kind of rest (#165) ---
+  'A sound for each kind of rest': 'Her dinlenme türüne ayrı ses',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'Bakmadan sırada ne olduğunu duy. Sen seçene kadar her biri yukarıdaki sesi çalar; tutuşlar ve taraf değiştirme molası da hep öyle yapar.',
+  'Next round': 'Sonraki tur',
+  'Next exercise': 'Sonraki egzersiz',
+  'Same as above': 'Yukarıdakiyle aynı',
+  'Same as {0}': '{0} ile aynı',
+  // --- what the timer bar says it times (#165) ---
+  'Set': 'Set',
+  'Round': 'Tur',
+  'Hold': 'Tutuş',
+  'Hold {0} of {1}': 'Tutuş {0}/{1}',
+  'Warm-up hold {0} of {1}': 'Isınma tutuşu {0}/{1}',
 }

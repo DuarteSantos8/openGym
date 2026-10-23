@@ -2493,4 +2493,17 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'এই ডিভাইসে ১টি ওয়ার্কআউট আছে যা এই ব্যাকআপে নেই। প্রতিস্থাপন করলে এটি মুছে যাবে।',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'এই ডিভাইসে {0}টি ওয়ার্কআউট আছে যা এই ব্যাকআপে নেই। প্রতিস্থাপন করলে এগুলো মুছে যাবে।',
+  // --- a sound for each kind of rest (#165) ---
+  'A sound for each kind of rest': 'প্রতিটি ধরনের বিশ্রামের জন্য আলাদা শব্দ',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'না তাকিয়েই শুনে বুঝুন এরপর কী। আপনি একটি না বাছা পর্যন্ত প্রতিটি উপরের শব্দটি বাজায়, যেমন হোল্ড আর পাশ বদলের বিরতি সবসময় বাজায়।',
+  'Next round': 'পরের রাউন্ড',
+  'Next exercise': 'পরের ব্যায়াম',
+  'Same as above': 'উপরের মতোই',
+  'Same as {0}': '{0}-এর মতোই',
+  // --- what the timer bar says it times (#165) ---
+  'Set': 'সেট',
+  'Round': 'রাউন্ড',
+  'Hold': 'হোল্ড',
+  'Hold {0} of {1}': 'হোল্ড {0}/{1}',
+  'Warm-up hold {0} of {1}': 'ওয়ার্ম-আপ হোল্ড {0}/{1}',
 }
