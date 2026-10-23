@@ -1137,6 +1137,33 @@ function ActiveWorkout() {
   // both would win over a scroll made right here. A frame asked for now runs after theirs.
   const listRef = useRef(null)
   const hdrRef = useRef(null)
+  const [visibleExercise, setVisibleExercise] = useState(cur)
+  useEffect(() => { setVisibleExercise(cur) }, [cur, listMode, A.id])
+  useEffect(() => {
+    if (!listMode) return
+    let frame
+    const measure = () => {
+      frame = undefined
+      const line = (hdrRef.current?.getBoundingClientRect().bottom || 0) + 24
+      const rows = [...(listRef.current?.querySelectorAll('.wl-unit') || [])]
+        .map(el => ({ index: Number(el.dataset.exidx), rect: el.getBoundingClientRect() }))
+        .filter(({ rect }) => rect.height > 0 && rect.bottom > line && rect.top < window.innerHeight)
+      if (rows.length) setVisibleExercise(rows[0].index)
+    }
+    const onScroll = event => {
+      // Revealing a chip scrolls the header horizontally, not the exercise list.
+      if (event.target instanceof Node && hdrRef.current?.contains(event.target)) return
+      if (frame === undefined) frame = window.requestAnimationFrame(measure)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true, capture: true })
+    window.addEventListener('resize', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll, true)
+      window.removeEventListener('resize', onScroll)
+      if (frame !== undefined) window.cancelAnimationFrame(frame)
+    }
+  }, [listMode, A.id])
+
   useEffect(() => {
     if (!listMode) return
     const schedule = callback => window.requestAnimationFrame
@@ -1866,11 +1893,10 @@ function ActiveWorkout() {
     const still = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
     el.scrollIntoView(glide && !still ? { block: 'start', behavior: 'smooth' } : { block: 'start' })
   }
-  // A tap on a chip at the top (#323). Cards and Focus show one unit, so the chip makes it the one
-  // on screen: the marker moves because you asked it to, never on its own. The list already shows
-  // every unit, so there the chip only scrolls to it and leaves "Current" where it was, the same
-  // as scrolling there by hand; the frame wait is the one opening the list uses (above).
+  // Explicit chip selection moves the marker in every view; list views also reveal the unit.
   const pickChip = chip => {
+    setVisibleExercise(chip.unit[0])
+    if (!chip.unit.includes(cur)) update(s => { if (s.active) s.active.cur = chip.unit[0] })
     if (listMode) {
       // A folded unit opens as you jump to it: you tapped it to see it.
       if (collapsed.has(chip.key)) setUnitOpen(chip.key, true)
@@ -1879,11 +1905,9 @@ function ActiveWorkout() {
       else window.setTimeout(go, 0)
       return
     }
-    if (chip.unit.includes(cur)) return
-    update(s => { if (s.active) s.active.cur = chip.unit[0] })
   }
   const chipRow = wc.exerciseChips && A.entries.length > 0
-    ? <WorkoutChips entries={A.entries} cur={cur} onPick={pickChip} />
+    ? <WorkoutChips entries={A.entries} cur={listMode ? visibleExercise : cur} onPick={pickChip} />
     : null
 
   // Hardware keys (issue #133, lib/workout-keys.js): Space or Enter ticks the next set, ← and →
