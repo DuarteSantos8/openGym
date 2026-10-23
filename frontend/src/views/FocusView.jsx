@@ -111,6 +111,7 @@ export default function FocusView({
   entryIdx, unit, onToggle, onToggleSide, onField, onMutateSet, onStartTimed,
   onAddWarmup, onRemoveSetAt, onProgressionSettings, onSwap, onRemoveExercise,
   onNoProg, busy, onSelectEntry, onAdvanceUnit, onPairPrev, onPairNext, onUnpair, pointerEpoch,
+  onBlockLayout, blockLayoutSub,
 }) {
   const S = useStore(state => state.S)
   const speedUnit = speedUnitOf(S)
@@ -237,6 +238,8 @@ export default function FocusView({
       mode === 'reps' && { icon: 'plate', label: t('Plate loading'), onClick: () => barWeightSheet(entry.id, { ...(entry.target || {}), id: entry.id }) },
       onPairPrev && { icon: 'link', label: t('Make superset with previous'), onClick: onPairPrev },
       onPairNext && { icon: 'link', label: t('Make superset with next'), onClick: onPairNext },
+      // A flow block put back into rows goes back to its card from here, as in the other layouts.
+      onBlockLayout && { icon: 'timer', label: t('Block layout'), sub: blockLayoutSub, onClick: onBlockLayout },
       { icon: 'shuffle', label: t('Swap exercise'), onClick: onSwap, disabled: busy },
       { icon: 'trash', label: t('Remove exercise'), onClick: onRemoveExercise, danger: true, disabled: busy },
     ],

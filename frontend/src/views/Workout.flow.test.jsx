@@ -869,35 +869,72 @@ describe('the flow block', () => {
   })
 })
 
-// v1.4.0's Focus view shows one exercise at a time and steps on as its sets are ticked (its own
-// onProgress). A warm-up there is its rows, as v1.4.0 shows it, and nothing runs by itself: a
-// chained hold would start a movement the view is not showing, and the view would step on top of
-// the chain.
+// v1.4.0's Focus view shows one exercise at a time and steps on as its sets are ticked. A flow
+// block is one movement at a time already, so Focus shows it as its flow card and the block runs
+// itself there as in every other layout; once its last hold is in, Focus steps on to what is next.
 describe('the Focus view', () => {
-  it('shows a warm-up as its rows, with no flow card and no block choice in the Layout menu', async () => {
+  it('shows a warm-up as its flow card, with the block choice in the Layout menu', async () => {
     await mount(warmup(), 0, { workoutView: 'focus' })
-    expect(container.querySelector('[data-testid="flow-block"]')).toBe(null)
-    expect(byText('Start warm-up')).toBeUndefined()
-    expect(container.querySelector('button[aria-label="Start set"]')).toBeTruthy()
+    expect(container.querySelector('[data-testid="flow-block"]')).toBeTruthy()
+    expect(container.querySelector('[data-testid="focus-view"]')).toBe(null)
+    expect(byText('Start warm-up')).toBeTruthy()
     await press(container.querySelector('button[aria-label="Workout options"]'))
     const layout = menuItemsOf(lastMenu()).find(i => i.label === 'Layout')
-    expect(layout.sub).toBe('Focus')
+    expect(layout.sub).toBe('Flow')
     await act(async () => { layout.onClick() })
-    expect(lastMenu().sections).toBeUndefined()
-    expect(menuItemsOf(lastMenu()).map(i => i.label)).toEqual(['Cards', 'List', 'Compact', 'Focus'])
+    expect(lastMenu().sections.map(g => g.title)).toEqual(['This block', 'Whole session'])
+    expect(menuItemsOf(lastMenu()).map(i => i.label)).toEqual(['Flow', 'Rows', 'Automatic', 'Cards', 'List', 'Compact', 'Focus'])
   })
 
-  it('a hold that ends starts no next movement, and a round\'s rest hands over nothing', async () => {
+  it('runs the block: each hold hands over to the next movement, and the round\'s rest to round two', async () => {
     await mount(warmup(), 0, { workoutView: 'focus' })
+    await press(byText('Start warm-up'))
+    await endHold()
+    await endHold()
+    expect(startedAt()).toEqual([0, 1, 2])
+    await endHold()
+    expect(mocks.startRest.mock.calls.at(-1)[2]).toMatchObject({ kind: 'round', flow: 'sg-warmup' })
+    await endRest()
+    expect(startedAt()).toEqual([0, 1, 2, 0])
+  })
+
+  it('steps on to the next exercise once the block\'s last hold is in, and starts nothing there', async () => {
+    const entries = [...warmup(), lifted('0042', null)]
+    for (const e of entries.slice(0, 3)) e.sets[0].done = true
+    entries[0].sets[1].done = true
+    entries[1].sets[1].done = true
+    await mount(entries, 2, { workoutView: 'focus' })
+    await press(byText('Resume warm-up'))
+    expect(startedAt()).toEqual([2])
+    await endHold()
+    expect(mocks.S.active.cur).toBe(3)
+    expect(startedAt()).toEqual([2])
+    await rerender()
+    expect(container.querySelector('[data-testid="focus-view"]')).toBeTruthy()
+    expect(container.querySelector('[data-testid="flow-block"]')).toBe(null)
+  })
+
+  it('a block put into rows shows the Focus view of its movements, and its menu brings the card back', async () => {
+    await mount(warmup(), 0, { workoutView: 'focus', unitView: { 'sg-warmup': 'rows' } })
+    expect(container.querySelector('[data-testid="flow-block"]')).toBe(null)
+    expect(container.querySelector('[data-testid="focus-view"]')).toBeTruthy()
+    await press(container.querySelector('[data-testid="focus-view"] button[aria-label="More"]'))
+    const row = menuItemsOf(lastMenu()).find(i => i.label === 'Block layout')
+    expect(row.sub).toBe('Focus')
+    await act(async () => { row.onClick() })
+    const flow = menuItemsOf(lastMenu()).find(i => i.label === 'Flow')
+    await act(async () => { flow.onClick() })
+    await rerender()
+    expect(container.querySelector('[data-testid="flow-block"]')).toBeTruthy()
+  })
+
+  it('a hold tapped in a block put into rows does not chain the next movement', async () => {
+    await mount(warmup(), 0, { workoutView: 'focus', unitView: { 'sg-warmup': 'rows' } })
     await press(container.querySelector('button[aria-label="Start set"]'))
     expect(startedAt()).toEqual([0])
     await endHold()
     expect(startedAt()).toEqual([0])
     expect(mocks.S.active.entries[0].sets[0].done).toBe(true)
-    // The round's rest a flow block would ride carries nothing here, and playing a flow rest's end
-    // anyway (a rest armed in Cards before the switch to Focus) starts nothing either.
-    await act(async () => { mocks.restHandOver({ forIdx: 2, kind: 'round', flow: 'sg-warmup' }) })
-    expect(startedAt()).toEqual([0])
   })
 })
 

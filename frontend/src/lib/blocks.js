@@ -121,10 +121,8 @@ export function unitKey(entries, unit) {
  * session's layout (s.active.workoutView, seeded from Settings).
  */
 export function unitViewOf(entries, units, unitIdx, { workoutView, overrides } = {}) {
-  // The Focus view (v1.4.0) shows one exercise at a time and steps on as its sets are ticked, so a
-  // block there is the Focus view's rows, whatever its shape or override says (lib/blocks.js
-  // flowUnitAt: and nothing runs by itself there).
-  if (workoutView === 'focus') return 'focus'
+  // The same in every layout, Focus included: a flow block is one card with one movement on it,
+  // which is what the Focus view shows of any exercise anyway, and the block runs itself there too.
   const unit = (Array.isArray(units) && units[unitIdx]) || []
   const key = unitKey(entries, unit)
   const own = key && overrides ? overrides[key] : null
@@ -160,14 +158,10 @@ export const runsFlows = active => !!active && !active.editingWorkoutId && !acti
  * it back into rows from a ⋯ menu. Asked by the timer bar, to decide whether a running hold
  * gets Pause, and by the chain that starts the next movement — one function so the two can never
  * disagree about whether a block is running itself. Never in a session that runs none (runsFlows).
- *
- * `view` is the layout the session is shown in (s.active.workoutView, else the saved one). The
- * Focus view shows a block as its own rows and steps on as their sets are ticked (FocusView's
- * onProgress), so no block runs itself there: a chained hold would start a movement the view is
- * not showing, and the view would step on top of the chain.
+ * The layout does not come into it: every layout shows a flow block as its card (unitViewOf).
  */
-export function flowUnitAt(active, idx, view) {
-  if (!runsFlows(active) || idx == null || view === 'focus') return null
+export function flowUnitAt(active, idx) {
+  if (!runsFlows(active) || idx == null) return null
   const entries = Array.isArray(active.entries) ? active.entries : []
   if (!entries[idx]) return null
   const unit = unitOf(supersetUnits(entries), idx)

@@ -182,15 +182,15 @@ describe('flow blocks', () => {
     expect(unitViewOf(e, units, 2)).toBe('cards')
   })
 
-  // v1.4.0's Focus view shows one exercise at a time and steps on as its sets are ticked: a block
-  // there is its rows, an override included, and nothing in it runs by itself.
-  it('runs no block in the Focus view, and shows every block there as the Focus view does', () => {
+  // v1.4.0's Focus view shows one exercise at a time: a flow block there is its flow card, as in
+  // every other layout, and runs itself; a block put into rows is the Focus view's own.
+  it('shows a flow block as its card in the Focus view too, and runs it there', () => {
     const e = session()
     const units = supersetUnits(e)
-    expect(unitViewOf(e, units, 0, { workoutView: 'focus' })).toBe('focus')
-    expect(unitViewOf(e, units, 0, { workoutView: 'focus', overrides: { 'sg-warmup': 'flow' } })).toBe('focus')
-    expect(flowUnitAt({ entries: e }, 0, 'focus')).toBe(null)
-    expect(flowUnitAt({ entries: e }, 0, 'cards')).toEqual([0, 1, 2])
-    expect(flowUnitAt({ entries: e }, 0, 'list')).toEqual([0, 1, 2])
+    expect(unitViewOf(e, units, 0, { workoutView: 'focus' })).toBe('flow')
+    expect(unitViewOf(e, units, 0, { workoutView: 'focus', overrides: { 'sg-warmup': 'rows' } })).toBe('focus')
+    expect(unitViewOf(e, units, 2, { workoutView: 'focus' })).toBe('focus')
+    expect(flowUnitAt({ entries: e }, 0)).toEqual([0, 1, 2])
+    expect(flowUnitAt({ entries: e, unitView: { 'sg-warmup': 'rows' } }, 0)).toBe(null)
   })
 })

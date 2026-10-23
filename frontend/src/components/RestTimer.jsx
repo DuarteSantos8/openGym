@@ -137,8 +137,7 @@ export default function RestTimer() {
   // the shape says flow and the user has not put it back into rows). A flow block is the one
   // thing on the workout screen that keeps going without being touched, so it is the one that
   // needs stopping — and this bar is the only control that is fixed on screen while it runs.
-  // Never in the Focus view, which runs no block by itself.
-  const inFlow = useStore(s => !!flowUnitAt(s.S.active, work ? work.owner?.idx : timer?.forIdx, s.S.active?.workoutView || s.S.workoutView))
+  const inFlow = useStore(s => !!flowUnitAt(s.S.active, work ? work.owner?.idx : timer?.forIdx))
   const on = work || timer
   const actsRef = useRef(null)
   // In a flow the gap has no ±15 s, so Skip has their room too.
