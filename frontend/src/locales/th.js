@@ -2255,6 +2255,7 @@ export default {
   'Your sports watch, calling you back.': 'นาฬิกาสปอร์ตเรียกคุณกลับมาแล้ว',
   'Coach wants you back on the bar.': 'โค้ชอยากให้คุณกลับมาที่บาร์',
   'Gentle, for headphones or a quiet room.': 'เบา ๆ สำหรับหูฟังหรือห้องที่เงียบ',
+  'Admin': 'ผู้ดูแล',
   // --- Coach: AI data sharing ---
   'AI data sharing': 'การแชร์ข้อมูลกับ AI',
   'Allow': 'อนุญาต',

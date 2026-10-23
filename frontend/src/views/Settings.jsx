@@ -999,6 +999,8 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
     : MOBILE ? { title: t('This phone'), sub: t('All data stays on this phone') }
     : { title: t('Guest'), sub: t('Your data lives on this device. Sign in to sync.') }
   const initial = user && !DEMO ? String(user.name || '?').trim().charAt(0).toUpperCase() : null
+  const nav = useNavigate()
+  const adminCoach = !MOBILE && !DEMO && !!user?.admin
   return <div className="narrow">
     <div className="sp-nav">
       <button className="sp-back" data-back="/home" onClick={home} aria-label={t('Home')}><Icon name="chevronLeft" /><span>{t('Home')}</span></button>
@@ -1024,6 +1026,11 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
         <Section key={g[0]}>
           {g.map(id => <Row key={id} icon={PAGES[id].icon} iconTint={PAGES[id].tint} title={t(PAGES[id].title)}
             value={preview[id]?.() || null} accessory="chevron" onClick={() => open(id)} className="sp-root-row" />)}
+          {/* The phone app sets up its own Coach on the Coach page beside Look; in a hosted app the
+              Coach is the server's, set up by an admin on the admin dashboard. Its admins get the
+              same row, in the same place, straight to that card; nobody else has anything to set. */}
+          {g[0] === 'look' && adminCoach && <Row icon={PAGES.coach.icon} iconTint={PAGES.coach.tint} title={t(PAGES.coach.title)}
+            value={t('Admin')} accessory="chevron" onClick={() => nav('/admin', { state: { section: 'coach' } })} className="sp-root-row" />}
         </Section>
       ))}
       <div className="dim small sp-version">openGym v{__APP_VERSION__}</div>

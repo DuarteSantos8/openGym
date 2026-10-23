@@ -2244,6 +2244,7 @@ export default {
   'Your sports watch, calling you back.': '스포츠 시계가 다시 부르고 있어요.',
   'Coach wants you back on the bar.': '코치가 바 앞으로 돌아오래요.',
   'Gentle, for headphones or a quiet room.': '이어폰이나 조용한 곳에 어울려요.',
+  'Admin': '관리자',
   // --- Coach: AI data sharing ---
   'AI data sharing': 'AI 데이터 공유',
   'Allow': '허용',

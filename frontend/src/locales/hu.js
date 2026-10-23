@@ -2247,6 +2247,7 @@ export default {
   'Your sports watch, calling you back.': 'A sportórád visszahív.',
   'Coach wants you back on the bar.': 'Az edző visszavár a rúdhoz.',
   'Gentle, for headphones or a quiet room.': 'Halk, fülhallgatóhoz vagy csendes helyre.',
+  'Admin': 'Admin',
   // --- Coach: AI data sharing ---
   'AI data sharing': 'Adatmegosztás MI-vel',
   'Allow': 'Engedélyezés',
