@@ -280,7 +280,6 @@ function capsOf(raw) {
   if (!object(raw) || !Object.keys(raw).length || Object.keys(raw).some(k => !Object.hasOwn(CAP_MAX, k) || !intIn(raw[k], 0, CAP_MAX[k]))) refuse()
   return { ...raw }
 }
-const limit = v => (v === 0 ? Infinity : v)
 
 // The live caps, read afresh. Anything malformed upstream is refused rather than guessed.
 async function currentCaps(apiBase, bearer) {
@@ -292,13 +291,6 @@ async function currentCaps(apiBase, bearer) {
 async function effectiveCaps(apiBase, bearer, caps) {
   const baseline = await currentCaps(apiBase, bearer)
   return { perProfileDaily: caps.perProfileDaily ?? baseline.perProfileDaily, instanceDaily: caps.instanceDaily ?? baseline.instanceDaily, baseline }
-}
-const raises = (from, to) => Object.keys(CAP_MAX).some(k => limit(to[k]) > limit(from[k]))
-
-// The proposed pair plus the baseline it raises, or null when it raises nothing.
-async function raisedCaps(apiBase, bearer, caps) {
-  const next = await effectiveCaps(apiBase, bearer, caps)
-  return raises(next.baseline, next) ? next : null
 }
 
 const CONFIG = {
@@ -312,9 +304,10 @@ async function adminNow(apiBase, bearer) {
   if ((await send(apiBase, bearer, 'GET', '/api/me')).user?.admin !== true) throw new AdminError('admin only', 403)
 }
 
-// Ordinary Coach settings apply at once. A cap raise has no immediate path: it mints a passkey link
-// and the tool answers only with that link. baseUrl, headers, token and account are never inputs.
-// configure_coach gets the bearer AND the trusted connection ID (both from the grant, never args).
+// Ordinary Coach settings apply at once. Any caps change (lower, raise, equal) has no immediate
+// path: it mints a passkey link and the tool answers only with that link. baseUrl, headers, token
+// and account are never inputs. configure_coach gets the bearer AND the trusted connection ID
+// (both from the grant, never args).
 function coachTools(apiBase, origin, confirmations, modelsTimeoutMs) {
   return [
     {
@@ -325,15 +318,10 @@ function coachTools(apiBase, origin, confirmations, modelsTimeoutMs) {
         const caps = a.caps === undefined ? undefined : capsOf(a.caps)
         await adminNow(apiBase, bearer)
         if (caps) {
-          const next = await effectiveCaps(apiBase, bearer, caps)
-          if (raises(next.baseline, next)) {
-            if (Object.keys(a).length !== 1) refuse() // a raise must not carry other edits past the link
-            return confirmations.requestConfirmation({ type: 'configure-coach', targetId: 'caps', params: { caps } }, connectionId)
-          }
-          a.caps = { perProfileDaily: next.perProfileDaily, instanceDaily: next.instanceDaily }
+          if (Object.keys(a).length !== 1) refuse() // caps never ride along with other edits
+          await effectiveCaps(apiBase, bearer, caps) // fail closed if the live pair is unreadable
+          return confirmations.requestConfirmation({ type: 'configure-coach', targetId: 'caps', params: { caps } }, connectionId)
         }
-        // ponytail: compare-then-POST is not atomic upstream (no revision on the config); a
-        // concurrent admin lowering in between could be undone without a passkey.
         await send(apiBase, bearer, 'POST', '/api/admin/coach/config', a)
         return { saved: true }
       },
@@ -343,6 +331,9 @@ function coachTools(apiBase, origin, confirmations, modelsTimeoutMs) {
       handler: async (bearer, raw) => {
         args(raw, [])
         const data = await send(apiBase, bearer, 'POST', '/api/admin/coach/models', {}, { timeoutMs: modelsTimeoutMs })
+        // ok !== true means the provider could not be asked: its error text and any names it
+        // sent along are dropped, and the caller gets our own fixed failure.
+        if (data.ok !== true) throw new AdminError('coach models unavailable')
         return { models: list(data.models, 50).map(m => str(m, 80)).filter(Boolean) }
       },
     },
@@ -497,28 +488,30 @@ export function createAdminExecutors({ apiBase, key } = {}) {
         return { connected: { provider: id } }
       },
     },
-    // Raising a spending cap (0 means unlimited, so it always raises) needs a fresh passkey. The
-    // digest binds the baseline the admin was shown; execute re-reads it and refuses if it moved,
-    // then sends both caps — upstream replaces the pair, so the untouched one must travel too.
+    // Every caps change needs a fresh passkey, not only a raise: upstream replaces both caps with
+    // no revision token, so a lower applied at once could land on a moved baseline and raise caps
+    // without one. The digest binds the live pair the admin was shown; execute re-reads it and
+    // refuses if it moved, then sends both caps so the untouched one never becomes 0.
+    // ponytail: the re-read still races the POST itself (no etag upstream); a concurrent write
+    // between them can be overwritten. Close it with a config revision when the API grows one.
     'configure-coach': {
       params: raw => {
         const a = raw === undefined ? {} : raw
         if (!object(a) || Object.keys(a).some(k => k !== 'caps')) refuse()
         return { caps: capsOf(a.caps) }
       },
-      authorize: async (trusted, id, { caps }) => id === 'caps' && (await isAdmin(apiBase, trusted)) && !!(await raisedCaps(apiBase, trusted.bearer, caps)),
+      authorize: async (trusted, id, { caps }) => id === 'caps' && (await isAdmin(apiBase, trusted)) && !!(await effectiveCaps(apiBase, trusted.bearer, caps)), // throws on an unreadable pair
       inspect: async ({ bearer }, id, { caps }) => {
         if (id !== 'caps') refuse()
-        const next = await raisedCaps(apiBase, bearer, caps)
-        if (!next) refuse()
+        const next = await effectiveCaps(apiBase, bearer, caps)
         return { summary: { type: 'configure-coach', id, name: 'Coach spending caps',
-          effect: `Raises the Coach spending caps to ${next.perProfileDaily} per profile and ${next.instanceDaily} for the instance per day (0 means no cap).` },
+          effect: `Changes the Coach spending caps to ${next.perProfileDaily} per profile and ${next.instanceDaily} for the instance per day (0 means no cap).` },
         digest: hash(['configure-coach', next.baseline, next]) }
       },
       execute: async ({ bearer }, id, digest, { caps }) => {
         if (id !== 'caps') refuse()
-        const next = await raisedCaps(apiBase, bearer, caps)
-        if (!next || hash(['configure-coach', next.baseline, next]) !== digest) refuse()
+        const next = await effectiveCaps(apiBase, bearer, caps)
+        if (hash(['configure-coach', next.baseline, next]) !== digest) refuse()
         await send(apiBase, bearer, 'POST', '/api/admin/coach/config', { caps: { perProfileDaily: next.perProfileDaily, instanceDaily: next.instanceDaily } })
         return { saved: true }
       },

@@ -85,7 +85,7 @@ const ADMIN_READS = {
 }
 const EDITS = {
   configure_coach: ['Admin only. Change Coach settings: enabled, provider, model, community, maxMessageLen (200-4000), maxOutputTokens (1024-65536), caps (both perProfileDaily 0-200 and instanceDaily 0-5000; 0 means no cap). ' +
-    'Lowering caps and other edits apply at once. Raising a cap or setting one to 0 is NOT applied: it returns a one-time openGym confirmation link the user must approve with a passkey; send caps alone then. Endpoint, headers and credentials are set only in openGym.',
+    'Edits other than caps apply at once. ANY caps change (lower, raise, equal, or one cap only) is NOT applied: it returns a one-time openGym confirmation link the user must approve with a passkey; send caps alone then. Endpoint, headers and credentials are set only in openGym.',
     obj({ enabled: { type: 'boolean' }, provider: str(40), model: str(80), community: { type: 'boolean' }, maxMessageLen: int, maxOutputTokens: int,
       caps: obj({ perProfileDaily: int, instanceDaily: int }) })],
   update_week_plan: ['Create or edit routines and assign them to weekdays (week keys 0-6, Sunday is 0). A NEW routine needs a creationId (a UUID you generate, reuse it to retry safely); an existing routine uses its id. Blocked while a live queue is active.',

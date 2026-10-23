@@ -467,7 +467,11 @@ test('coach settings over MCP: ordinary patch applies, a cap raise only links, s
   const raised = await f.tool('configure_coach', { caps: { perProfileDaily: 6, instanceDaily: 50 } })
   assert.deepEqual(Object.keys(raised.data), ['url'])
   assert.match(raised.data.url, /^https:\/\/gym\.example\.test\/connector\/confirm#/)
-  assert.deepEqual(f.s.coachCfg, { enabled: false, model: 'm2' }, 'the raise never POSTed')
+  assert.deepEqual(f.s.coachCfg, { enabled: false, model: 'm2' }, 'the cap patch never POSTed before a passkey')
+  // Even a lowering caps patch mints a link, never an immediate POST.
+  const lowered = await f.tool('configure_coach', { caps: { perProfileDaily: 1 } })
+  assert.deepEqual(Object.keys(lowered.data), ['url'])
+  assert.equal(f.hits('/api/admin/coach/config', 'POST'), 1, 'only the no-caps patch POSTed')
   const models = await f.tool('list_coach_models')
   assert.deepEqual(models.data, { models: ['m1'] })
   const probe = await f.tool('test_coach')

@@ -642,31 +642,44 @@ test('raising a cap, or setting either cap to 0, only returns a confirmation lin
   assert.equal(f.service.pending.size, 1, 'the last valid link stays pending; refusal mints no new link')
 })
 
-test('lowering both caps is an immediate POST carrying exactly those two values', async t => {
+test('any caps patch — lower, raise or equal — mints a link and never POSTs; absent caps stay immediate', async t => {
   const f = await fixture(); t.after(f.close)
-  const result = await f.tools.configure_coach.handler('bearer-1', { caps: { perProfileDaily: 4, instanceDaily: 49 } })
-  assert.deepEqual(result, { saved: true })
-  assert.deepEqual(f.coachCfgSeen, [{ caps: { perProfileDaily: 4, instanceDaily: 49 } }])
-  // Equal values are not a raise either.
-  assert.deepEqual(await f.tools.configure_coach.handler('bearer-1', { caps: { perProfileDaily: 5, instanceDaily: 50 } }), { saved: true })
-  assert.equal(f.coachCfgSeen.length, 2)
+  for (const caps of [{ perProfileDaily: 4, instanceDaily: 49 }, { perProfileDaily: 6, instanceDaily: 50 }, { perProfileDaily: 5, instanceDaily: 50 }]) {
+    const result = await f.tools.configure_coach.handler('bearer-1', { caps }, 'conn1')
+    assert.deepEqual(Object.keys(result), ['url'], JSON.stringify(caps))
+    assert.match(result.url, /^https:\/\/gym\.example\.test\/connector\/confirm#[A-Za-z0-9_-]{43}$/)
+    assert.doesNotMatch(JSON.stringify(result), /saved/)
+  }
+  assert.equal(f.coachCfgSeen.length, 0, 'no caps patch POSTs before a passkey')
+  // No-caps edits still apply at once.
+  assert.deepEqual(await f.tools.configure_coach.handler('bearer-1', { enabled: false }), { saved: true })
+  assert.deepEqual(f.coachCfgSeen, [{ enabled: false }])
 })
 
-test('partial cap patches preserve the untouched live cap; 0 is unlimited and requires a link when raised', async t => {
+test('confirmed cap patches bind the untouched live cap: 0 is unlimited and never slips in', async t => {
   const f = await fixture(); t.after(f.close)
   f.coach.caps.instanceDaily = 60
-  assert.deepEqual(await f.tools.configure_coach.handler('bearer-1', { caps: { perProfileDaily: 4 } }), { saved: true })
+  const lower = idOf((await f.tools.configure_coach.handler('bearer-1', { caps: { perProfileDaily: 4 } }, 'conn1')).url)
+  await f.service.details(lower); const lCh = await f.service.challenge(lower)
+  await f.service.confirm(lower, { cid: lCh.cid, credential: credential() })
   assert.deepEqual(f.coachCfgSeen, [{ caps: { perProfileDaily: 4, instanceDaily: 60 } }])
-  const { url } = await f.tools.configure_coach.handler('bearer-1', { caps: { instanceDaily: 0 } }, 'conn1')
-  assert.match(url, /\/confirm#/)
+  // Link made while instanceDaily is 60; someone raises it to 120 before the tap: stale, refused.
+  const stale = idOf((await f.tools.configure_coach.handler('bearer-1', { caps: { perProfileDaily: 4 } }, 'conn1')).url)
+  await f.service.details(stale); const sCh = await f.service.challenge(stale)
+  f.coach.caps.instanceDaily = 120
+  await assert.rejects(() => f.service.confirm(stale, { cid: sCh.cid, credential: credential() }), bad)
   assert.equal(f.coachCfgSeen.length, 1)
-  const id = idOf(url)
-  await f.service.details(id); const { cid } = await f.service.challenge(id)
-  await f.service.confirm(id, { cid, credential: credential() })
+  f.coach.caps.instanceDaily = 60
+  // Setting a cap to 0 (unlimited) raises against a finite live value: link, then POST binds both.
+  const toZero = idOf((await f.tools.configure_coach.handler('bearer-1', { caps: { instanceDaily: 0 } }, 'conn1')).url)
+  await f.service.details(toZero); const zCh = await f.service.challenge(toZero)
+  await f.service.confirm(toZero, { cid: zCh.cid, credential: credential() })
   assert.deepEqual(f.coachCfgSeen[1], { caps: { perProfileDaily: 5, instanceDaily: 0 } })
-  // Existing unlimited 0 is higher than every finite cap: changing it to 200 lowers, not raises.
+  // Existing unlimited 0 tops every finite cap: changing it to 200 is a lower; a link still guards it.
   f.coach.caps.perProfileDaily = 0
-  assert.deepEqual(await f.tools.configure_coach.handler('bearer-1', { caps: { perProfileDaily: 200 } }), { saved: true })
+  const fromZero = idOf((await f.tools.configure_coach.handler('bearer-1', { caps: { perProfileDaily: 200 } }, 'conn1')).url)
+  await f.service.details(fromZero); const fCh = await f.service.challenge(fromZero)
+  await f.service.confirm(fromZero, { cid: fCh.cid, credential: credential() })
   assert.deepEqual(f.coachCfgSeen[2], { caps: { perProfileDaily: 200, instanceDaily: 60 } })
 })
 
@@ -703,11 +716,15 @@ test('list_coach_models returns at most 50 names and drops the provider error te
   const out = await f.tools.list_coach_models.handler('bearer-1', {})
   assert.deepEqual(out, { models: ['m1', 'm2'] })
   noLeak(out)
-  f.modelsAnswer = { ok: false, models: ['m'.repeat(90), ...Array.from({ length: 60 }, (_, i) => `model-${i}`)], error: 'sk-LEAK exploded' }
+  // A listing beyond 50 names trims to 50 and shortens over-long names.
+  f.modelsAnswer = { ok: true, models: ['m'.repeat(90), ...Array.from({ length: 60 }, (_, i) => `model-${i}`)] }
   const bounded = await f.tools.list_coach_models.handler('bearer-1', {})
   assert.equal(bounded.models.length, 50)
   assert.ok(bounded.models.every(m => m.length <= 80))
   noLeak(bounded)
+  // ok !== true fails closed: no names at all, not even the ones the body carried.
+  f.modelsAnswer = { ok: false, models: ['m'.repeat(90), ...Array.from({ length: 60 }, (_, i) => `model-${i}`)], error: 'sk-LEAK exploded' }
+  await assert.rejects(() => f.tools.list_coach_models.handler('bearer-1', {}), e => e instanceof AdminError && !e.message.includes('sk-LEAK'))
   f.admin = false
   await assert.rejects(() => f.tools.list_coach_models.handler('bearer-1', {}), e => e instanceof AdminError && e.status === 403 && !e.message.includes('sk-LEAK'))
 })
