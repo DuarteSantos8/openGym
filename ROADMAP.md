@@ -11,9 +11,9 @@ the next release is the last published one plus one patch (1.3.7 → 1.3.8), and
 reserved for a step as big as the new exercise database (v1.4.0).
 
 - Milestones: https://github.com/DuarteSantos8/openGym/milestones (every open issue sits in exactly one)
-- Tracks, in order: the new exercise database with the community round (v1.4.0) → programmes → the
-  progression engine → cardio → sharing and gyms → accounts → the iOS app → Android and health →
-  looks and social, with database storage after that
+- Tracks, in order: the App Store (v1.4.2) → community features (v1.4.3) → programmes →
+  Google Play with the progression engine → cardio → search → accounts → trainer → wearables → looks
+  and social, with database storage after that
 
 ---
 
@@ -149,85 +149,84 @@ server.
 - Still open from the old v1.3.12 list: the timer rework (#165), a home-screen widget (#299) and
   distance for cardio (#177), now in their own milestones below
 
-## v1.4.1: Programmes & phases  (2026-11-29)
+## v1.4.1: Bug fixes for v1.4.0  (released 2026-10-10)
+
+The animations come back as WebP, and the Android update check reads GitHub.
+
+## v1.4.2: openGym in the App Store  (2026-10-18)
+
+- The iPhone app in the App Store, with an Apple Watch app, widgets, a Live Activity and Apple
+  Health (#90, #125 on iOS)
+- Animation quality to pick: built in 180 px, or 240 to 1080 px downloaded from the store
+- Three APK sizes on GitHub: Standard, Plus and HD
+- Your bars, rest between warm-ups and between sides, backups for an exercise, the boot screen,
+  five reported security holes closed
+
+## v1.4.3: Gym reminder, health data & community features  (2026-11-01)
+
+- Gym reminder: a nudge when you walk into your gym (#614)
+- Heart rate per set and weigh-ins read back from Health Connect and Apple Health, so Garmin,
+  Fitbit, Samsung, Polar and friends show up via the phone (#544)
+- Nicer PDFs with the logo, and a performance report for a week, a month or three
+- Less battery: the rest timer stops keeping the phone awake, long histories load in pieces
+- CSV export, and importing GymMane's CSV (#647)
+- Account recovery (#584), the rotation fix (#536), community PRs and bug fixes (#620, #631)
+
+## v1.4.4: Programmes & phases  (2026-11-15)
 
 - Programmes: routines grouped into a named block over weeks, with deload and rest weeks, several
-  per profile (#159, GitLab !98; Discord "Programme mode", "folders", "major good ideas" 1)
+  per profile (#159; Discord "Programme mode", "folders")
 - Session phases (mobility / work / accessory / cooldown) with completion-only exercises for
-  stretching that stay out of volume and PRs (#57, #140; Discord "non-typed exercises")
+  stretching that stay out of volume and PRs (#57, #140)
+- Alternatives per routine slot, for when the machine is taken or you're at another gym (#649)
+- Body composition in measurements: fat %, muscle mass, water and friends (#648)
 
-## v1.4.2: Progression engine I  (2026-12-13)
+## v1.4.5: Google Play & progression engine I  (2026-11-29)
 
-- Rep or set ranges per set and AMRAP targets beyond the "to failure" flag (#154; Discord "More
-  types of sets"); the flag itself and triple progression came early in v1.4.0 (#179)
-- Assisted exercises as negative added weight (#176); the multi-formula 1RM came in v1.4.0 (#155)
+- openGym on Google Play by then at the latest; Google wants a closed test with 12 testers for
+  14 days first, so it can land earlier
+- Android home-screen widget and an ongoing workout notification (#125)
+- Rep or set ranges per set and AMRAP targets beyond the "to failure" flag (#154)
+- Assisted exercises as negative added weight (#176)
 
-## v1.4.3: Progression engine II  (2026-12-27)
+## v1.4.6: Progression engine II  (2026-12-13)
 
 - Load as %1RM or auto with a stored training max, target RPE/RIR (#153)
 - Wave / percentage progression, 5/3/1 style (#70; PR #168)
 - A warm-up generator that picks the ramp from load and lift (#156)
-- Periodisation extras on top: mesocycle blocks, auto-regulation on RPE (#120)
+- Mesocycle blocks and auto-regulation on RPE (#120)
 
-## v1.4.4: Cardio, alternatives, groups  (2027-01-10)
+## v1.4.7: Cardio, alternatives, groups  (2026-12-27)
 
-- Cardio: intervals (rounds × work/rest), interval programmes such as C25k, rucking as distance +
-  pace + load, distance for cardio (#132, #169, #177; Discord "cardio programs", "rucking");
-  treadmill incline came early in v1.4.0
-- Exercise alternatives per routine slot (Discord); Replace in the routine editor came in v1.3.9
-  (#110)
+- Cardio: intervals, interval programmes such as C25k, rucking, distance for cardio (#132, #169, #177)
 - Complexes and interval groups beside supersets (Discord)
 
-## v1.4.5: Sharing, gyms, admin  (2027-01-24)
+## v1.4.8: Search & catalogue  (2027-01-10)
 
-- Search itself was rebuilt in v1.4.0 (#192); left here: searching your own history and import
-  aliases by name
+- Searching your own history, import aliases by name, more icons (#188)
+- Your own photos and videos on built-in exercises (#534)
 - Shared custom exercises between accounts on one instance (#151)
-- "Different gyms": a location on a logged set, separate histories and PRs per location, bodyweight
-  shared (Discord "How to deal with different gyms")
-- Admin: per-user export, invite management, audit log filters
+- "Different gyms": separate histories and PRs per location (Discord)
 
-## v1.4.6: Accounts: password & OIDC  (2027-02-07)
+## v1.4.9: Accounts: password & OIDC  (2027-01-24)
 
-- Optional username + password login next to passkeys (#118; Discord "Basic login", the
-  password-manager thread), shipped early in v1.3.9, behind `PASSWORD_LOGIN`
-- OIDC login for PocketID / Authelia-style setups (#130, #72; GitLab !132 is the candidate)
+- OIDC login for PocketID / Authelia-style setups (#130, #72); password login is already there
+  behind `PASSWORD_LOGIN` (#118)
 
-## v1.4.7: Trainer & MCP write  (2027-02-21)
+## v1.4.10: Trainer & MCP write  (2027-02-07)
 
-- Personal-trainer role: invite students by code, open a student read-only, write their plan (#119,
-  GitLab !79; Discord "Trainer & Student Management")
-- MCP write tools (routines, log corrections, equipment) in pieces (#116); remote MCP over OAuth
-  for hosted AI clients (GitLab !88)
-- Switching kg ↔ lb converts stored values instead of relabelling them (#22)
+- Personal-trainer role: invite students, open a student read-only, write their plan (#119)
+- MCP write tools (routines, log corrections, equipment) in pieces (#116)
 
-## v1.4.8: iOS app  (2027-03-07)
+## v1.4.11: Wearables: Wear OS, Garmin & more  (2027-02-21)
 
-- App Store / TestFlight build of the existing Capacitor target, HealthKit weight and workout
-  export, the Home Screen icon and timer-sound issues gone for good (#90; Discord "Google Health")
-- Apple Watch rest timer later, once the app is in the store
+- A Wear OS watch app, then a Garmin Connect IQ app on the watch itself
+- Real sets and calories written to Health Connect; Withings and other scales via the hubs (#127)
 
-## v1.4.9: Android & health  (2027-03-21)
+## v1.4.12: Looks, social, plugins  (2027-03-07)
 
-- Health Connect for weight and sessions (Discord "Use health connect", pulled forward into v1.3.11); Withings and other scales
-  (#127)
-- The rest timer as an ongoing notification on the lock screen (#122, PR #296) (shipped in v1.3.9); a
-  home-screen widget (#125, #299) and logging a set from the lock screen (Discord); the timer
-  rework (#165)
-- APK ABI filters (#136) (shipped in v1.3.9), about 12 MB smaller; the auto-backup directory picker (#161,
-  second half)
-- Media for the routine's exercises cached on the phone, so a session works with no signal (#123;
-  Discord "Download all videos")
-- Firefox-on-Windows QR and third-party passkey providers stay documented, not fixed: platform
-  behaviour (#103, #101)
-
-## v1.4.10: Looks, social, plugins  (2027-04-04)
-
-- Skins alongside the accent colour, backgrounds as part of a skin, a big-screen layout (#129,
-  #134, #135)
-- Social: friends, progress and plan sharing (PR #180); a plugin surface for integrations (Discord)
-- Native NixOS module (GitLab !83) and Azure deployment (!35) only if someone maintains them;
-  Arabic and right-to-left (GitLab !36) (shipped in v1.3.9)
+- Skins alongside the accent colour, a big-screen layout (#129, #134, #135)
+- Social: friends, progress and plan sharing (PR #509); a plugin surface for integrations
 
 ## Later: database storage
 
