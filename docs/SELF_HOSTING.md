@@ -574,6 +574,32 @@ carries such a track is refused rather than uploaded with it). WebM videos are u
 recorded. The server never decodes or changes a file. Like everything else in `./data`, the files
 are not encrypted at rest — whoever can read that folder can see them.
 
+### Spotify in the workout (optional)
+
+The workout's music bar (Settings → Features → Music player) can steer Spotify through your
+instance, so everyone on it connects their Spotify account once and controls it from any device
+they sign in on, the phone app included:
+
+1. Make an app on [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard)
+   (Web API).
+2. Add `https://<your domain>/api/music/spotify/callback` to its **Redirect URIs**. Spotify takes
+   https only, so this is the same `ORIGIN` your passkeys already need.
+3. Put its Client ID in `.env` and restart the api:
+
+   ```env
+   SPOTIFY_CLIENT_ID=0123456789abcdef0123456789abcdef
+   # optional: the classic flow with a secret instead of PKCE
+   # SPOTIFY_CLIENT_SECRET=
+   # only if the callback is not ORIGIN/api/music/spotify/callback
+   # SPOTIFY_REDIRECT_URI=
+   ```
+
+A Spotify app in development mode only lets in the Spotify accounts listed under its **User
+Management**: add the e-mail of each person who will connect. The tokens are kept on each user's
+row in `db.json`, encrypted with the instance's `secret`. Without `SPOTIFY_CLIENT_ID` nothing is
+ever sent to Spotify by the server, and the app offers each person a Spotify app of their own
+instead.
+
 ## 6. Backups
 
 Everything is in `./data`:

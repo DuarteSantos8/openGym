@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, forwardRef, useSyncExternalStore } from 'r
 import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
 import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange } from '../lib/health-sync.js'
+import HealthSources from '../components/HealthSources.jsx'
+import AppleHealthWeb from '../components/AppleHealthWeb.jsx'
 import { workoutControls } from '../lib/workout-controls.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { formulaOf, FORMULA_NAMES } from '../lib/onerm.js'
@@ -48,6 +50,8 @@ import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem } from '.
 import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
 import { PAGES, ROOT_GROUPS, pageVisible, searchSettings, pageTrail } from './settings-pages.js'
+import MusicSettings from '../components/MusicSettings.jsx'
+import { musicBarOn, musicSource } from '../lib/music/index.js'
 import { platformNow } from '../lib/platform-now.js'
 import { pathBefore } from '../lib/nav.js'
 import WatchSettingsPage from './WatchSettings.jsx'
@@ -417,7 +421,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     sound: !!S.sound, playOnSilent: playOnSilentSupported(), canVibrate, vibrate: S.vibrate !== false,
     profiles: (S.equipProfiles || []).length > 0, nameLang: EXERCISE_NAME_LANGS.includes(baseLang(lang)),
     pushOK: !MOBILE && pushSupported(), reminderOn: !!S.reminder?.on, nudge: !!S.reminder?.nudge,
-    autoBackup: !!S.autoBackup, synced: !!sync, installTip: !MOBILE && !standalone(), androidWeb: IS_ANDROID,
+    autoBackup: !!S.autoBackup, musicBar: musicBarOn(S), synced: !!sync, installTip: !MOBILE && !standalone(), androidWeb: IS_ANDROID,
   }
   const mode = scheduleModeOf(S)
   const layout = ['list', 'compact', 'focus'].includes(S.workoutView) ? S.workoutView : 'cards'
@@ -433,8 +437,10 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     units: () => (S.unit || 'kg') + ' · ' + (LANGS[lang] || lang),
     equipment: () => (S.equipFilterOn && activeProfile ? activeProfile.name : t('Everything')),
     look: () => themeLabel + ' · ' + accentLabel(S),
+    features: () => (musicBarOn(S) && musicSource(S) ? { spotify: 'Spotify', apple: 'Apple Music' }[musicSource(S)] : t('Off')),
     coach: () => (coachLocal?.mode === 'server' ? t('Your server') : coachLocal?.mode === 'byok' ? t('Your API key') : t('Off')),
     data: () => '',
+    health: () => '',
     about: () => 'v' + __APP_VERSION__,
     watch: () => '',
   }
@@ -568,6 +574,10 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         <Row icon="wrench" iconTint="var(--grey)" title={t('Fine-tuning')} subtitle={t('Buttons, timed sets')} accessory="chevron" onClick={() => open('advanced')} />
       </Section>
     </>,
+
+    // Things to turn on and off. The music bar is the first; its player and Spotify rows sit under
+    // its switch, and stay set while it is off.
+    features: () => <MusicSettings />,
 
     advanced: () => {
       // S.wc overlays DEF.wc, so a profile from before these switches existed reads as the lean default.
@@ -857,6 +867,16 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       {/* Reset after reading so picking the same file twice still fires onChange. */}
       <input ref={importRef} type="file" accept=".csv,.xml,text/csv,text/xml" style={{ display: 'none' }}
         onChange={ev => { const f = ev.target.files[0]; if (f) importFromApp(f); ev.target.value = '' }} />
+    </>,
+
+    // Health: the area itself, and on the iPhone app the sources it can read from (Apple Health).
+    health: () => <>
+      <Section>
+        <Row icon="heart" iconTint="var(--red)" title={t('Open Health')}
+          subtitle={t('Body composition, activity, heart and sleep')} accessory="chevron" onClick={() => nav('/health')} />
+      </Section>
+      {MOBILE && <HealthSources />}
+      {!MOBILE && <AppleHealthWeb />}
     </>,
 
     about: () => <>

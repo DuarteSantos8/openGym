@@ -33,9 +33,11 @@ import {
 import { createDeviceLink, findDeviceLink, burnDeviceLink, dropDeviceLinks } from './device-link.js';
 import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from './media.js';
 import { effectiveRoutineId } from './queue.js';
-import { stampPut } from './sync-stamps.js';
+import { stampPut, highestStamp } from './sync-stamps.js';
+import { readingsFromShortcut, readingsFromAutoExport, isAutoExport, mergeReadings } from './health/fold.js';
 import { atomicWrite as durableWrite } from './durable.js';
 import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
+import { spotifyConfig, createSpotify, ACTIONS as SPOTIFY_ACTIONS } from './music/spotify.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -1921,6 +1923,57 @@ try { MEDIA.cleanTmp(); } catch (e) { console.error('media: boot cleanup failed'
 // Per profile, not per address: every upload is signed in, and behind a proxy one address can be
 // a whole household. The hourly budget is generous (an import of a backup re-uploads everything
 // at once); the two-in-flight cap in media.js is what keeps one phone from holding many sockets.
+/* ---------- health readings from an iPhone Shortcut ----------
+ * A website, the PWA included, can never read Apple Health; an iPhone Shortcut can, and can send
+ * what it read here. It signs in with a key of its own, not the profile's session: a key made for
+ * this one route (POST /api/health/samples), shown once, kept only as its hash, replaced or
+ * revoked from Settings → Health, and good for nothing else on the server. */
+const HEALTH_KEY_PREFIX = 'ogh_';
+// A ready-made iPhone Shortcut for that route, shared as an iCloud link (HEALTH_SHORTCUT_URL):
+// Settings → Health offers it beside the steps to build one. Only an iCloud Shortcuts link is
+// taken, so the setting cannot point people anywhere else.
+const HEALTH_SHORTCUT_URL = (() => {
+  const v = String(process.env.HEALTH_SHORTCUT_URL || '').trim();
+  if (!v) return null;
+  if (/^https:\/\/(www\.)?icloud\.com\/shortcuts\/[A-Za-z0-9]{16,64}\/?$/.test(v)) return v;
+  console.error('HEALTH_SHORTCUT_URL ignored: it is not an https://www.icloud.com/shortcuts/… link');
+  return null;
+})();
+const HEALTH_BURST = createWindow({ max: 60, windowMs: 3600000 });
+const keyHash = k => crypto.createHash('sha256').update(String(k)).digest('hex');
+function healthKeyUser(req) {
+  const auth = req.headers.authorization || '';
+  const key = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
+  if (!key.startsWith(HEALTH_KEY_PREFIX) || key.length < 20) return null;
+  const want = Buffer.from(keyHash(key), 'hex');
+  const user = db.users.find(u => {
+    const h = u.healthKey?.hash;
+    if (typeof h !== 'string' || h.length !== 64) return false;
+    return crypto.timingSafeEqual(Buffer.from(h, 'hex'), want);
+  });
+  return user && !user.disabled ? user : null;
+}
+
+/* ---------- Spotify on the account (api/music/spotify.js) ----------
+ * Offered when the operator set SPOTIFY_CLIENT_ID. Each profile connects its own Spotify account
+ * once; every device signed in to it then shows and steers what plays in a workout's music bar. */
+const SPOTIFY_CFG = spotifyConfig(process.env, ORIGIN);
+const SPOTIFY = SPOTIFY_CFG && createSpotify(SPOTIFY_CFG, {
+  seal: obj => coachConfig.encrypt(obj), unseal: blob => coachConfig.decrypt(blob), save: () => saveDb()
+});
+// A tap is one request; a thumb on Next for an hour is not a person.
+const SPOTIFY_BURST = createWindow({ max: 600, windowMs: 3600000 });
+const SPOTIFY_STATUS = { auth: 409, premium: 403, device: 404, busy: 429 };
+function spotifyFailure(res, e) {
+  if (!e || !e.code) { console.error('spotify', e); return json(res, 502, { error: 'spotify did not answer', code: 'failed' }); }
+  json(res, SPOTIFY_STATUS[e.code] || 502, { error: e.message, code: e.code });
+}
+// Where a browser goes back to after the sign-in: the app's own page on this instance, nowhere else.
+function spotifyBack(v) {
+  const s = String(v || '');
+  try { const u = new URL(s); return u.origin === new URL(ORIGIN).origin ? u.origin + u.pathname : null; } catch { return null; }
+}
+
 const MEDIA_BURST = createWindow({ max: MEDIA_LIMITS.uploadsPerHour, windowMs: 3600000 });
 // Deleting everything unreferenced is what "Reset everything" does; ten an hour is plenty.
 const MEDIA_SWEEPS = createWindow({ max: 10, windowMs: 3600000 });
@@ -2520,6 +2573,117 @@ const routes = {
       try { MEDIA.noteState(user.id, body.state); } catch (e) { console.error('media noteState', e); }
     }
     json(res, 200, { ok: true, ts: body.state._ts || null, rev: curRev + 1, wid: body.state._wid });
+  },
+
+  // The Shortcut key's state (never the key): whether there is one, when it was made, last used.
+  'GET /api/health/key': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const k = user.healthKey;
+    json(res, 200, { exists: !!k?.hash, created: k?.created || null, used: k?.used || null, shortcut: HEALTH_SHORTCUT_URL });
+  },
+  // A new key, replacing any earlier one. The only time the key itself is ever sent.
+  'POST /api/health/key': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const key = HEALTH_KEY_PREFIX + crypto.randomBytes(24).toString('base64url');
+    user.healthKey = { hash: keyHash(key), created: Date.now(), used: null };
+    saveDb();
+    json(res, 200, { key });
+  },
+  'DELETE /api/health/key': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    delete user.healthKey;
+    saveDb();
+    json(res, 200, { ok: true });
+  },
+  // Readings an iPhone Shortcut or the Health Auto Export app read from Apple Health (api/health/
+  // fold.js readingsFromShortcut, readingsFromAutoExport — told apart by the body's shape),
+  // folded into the profile the way the app's own import does, and written as a new revision: the
+  // app's half-minute revision check picks them up, and a device with unsent changes merges them in
+  // (S.health merges by id). Values never reach a log; the answer carries counts only.
+  'POST /api/health/samples': async (req, res) => {
+    const user = healthKeyUser(req);
+    if (!user) return json(res, 401, { error: 'invalid key' });
+    const wait = HEALTH_BURST.take(user.id);
+    if (wait) return json(res, 429, { error: 'too many requests', retryAfter: wait }, { 'Retry-After': String(wait) });
+    const body = await readBody(req);
+    const r = isAutoExport(body) ? readingsFromAutoExport(body) : readingsFromShortcut(body);
+    if (r.error) return json(res, 400, { error: r.error });
+    const cur = readStateStrict(user.id);
+    if (cur === UNREADABLE) { console.error('state file unreadable for', user.id); return json(res, 503, { error: 'state unreadable' }); }
+    if (!cur) return json(res, 409, { error: 'no profile yet: open openGym once, signed in' });
+    // After every stamp the profile carries, as a change made on a device would be (stampChange).
+    const now = Math.max(Date.now(), highestStamp(cur) + 1);
+    const { added, updated } = mergeReadings(cur, r.readings, now);
+    user.healthKey.used = Date.now();
+    saveDb();
+    if (added || updated) {
+      cur._ts = now;
+      cur._rev = (cur._rev || 0) + 1;
+      cur._wids = [...(Array.isArray(cur._wids) ? cur._wids : []), ...(cur._wid ? [cur._wid] : [])]
+        .filter(x => typeof x === 'string').slice(-WID_KEEP);
+      cur._wid = crypto.randomBytes(8).toString('hex');
+      atomicWrite(stateFile(user.id), JSON.stringify(cur));
+      stateCache.delete(user.id);
+    }
+    json(res, 200, { ok: true, added, updated, skipped: r.skipped });
+  },
+
+  // Spotify on the account. `available` false: the instance offers no Spotify (no Client ID), and
+  // the app falls back to a Spotify app of the person's own on each device.
+  'GET /api/music/spotify': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    if (!SPOTIFY) return json(res, 200, { available: false, connected: false });
+    json(res, 200, SPOTIFY.status(user));
+  },
+  // The sign-in address. `app: true` from the phone app, which comes back by its opengym://spotify
+  // link; a browser sends `back`, its own address on this instance.
+  'POST /api/music/spotify/connect': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    if (!SPOTIFY) return json(res, 404, { error: 'spotify is not offered on this instance' });
+    const body = await readBody(req);
+    json(res, 200, { url: SPOTIFY.start(user, { app: body.app === true, back: spotifyBack(body.back) }) });
+  },
+  // Spotify sends the browser here after the sign-in, with no session of ours necessarily (the phone
+  // app signs in through the system browser): the state it carries says whose sign-in it was.
+  'GET /api/music/spotify/callback': async (req, res) => {
+    if (!SPOTIFY) return json(res, 404, { error: 'spotify is not offered on this instance' });
+    const q = new URL(req.url, 'http://x').searchParams;
+    const r = await SPOTIFY.finish(q, id => db.users.find(u => u.id === id && !u.disabled));
+    if (!r) return json(res, 400, { error: 'unknown or expired sign-in' });
+    const done = r.ok ? 'connected' : 'failed';
+    const to = r.app ? 'opengym://spotify?' + done + '=1' : (r.back || ORIGIN.replace(/\/$/, '') + '/') + '?spotify=' + done + '#/settings/features';
+    res.writeHead(302, { Location: to, 'Cache-Control': 'no-store' });
+    res.end();
+  },
+  'DELETE /api/music/spotify': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    if (SPOTIFY) SPOTIFY.disconnect(user);
+    else { delete user.spotify; saveDb(); }
+    json(res, 200, { ok: true });
+  },
+  // What plays on the account now: { track } with null when nothing does.
+  'GET /api/music/spotify/player': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    if (!SPOTIFY) return json(res, 404, { error: 'spotify is not offered on this instance' });
+    try { json(res, 200, { track: await SPOTIFY.nowPlaying(user) }); } catch (e) { spotifyFailure(res, e); }
+  },
+  // { action: play | pause | next | previous } on the device that plays the account.
+  'POST /api/music/spotify/player': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    if (!SPOTIFY) return json(res, 404, { error: 'spotify is not offered on this instance' });
+    const body = await readBody(req);
+    if (!Object.hasOwn(SPOTIFY_ACTIONS, body.action)) return json(res, 400, { error: 'unknown action' });
+    const wait = SPOTIFY_BURST.take(user.id);
+    if (wait) return json(res, 429, { error: 'too many requests', code: 'busy', retryAfter: wait }, { 'Retry-After': String(wait) });
+    try { await SPOTIFY.control(user, body.action); json(res, 200, { ok: true }); } catch (e) { spotifyFailure(res, e); }
   },
 
   'GET /api/push/public-key': async (req, res) => json(res, 200, { key: vapid.publicKey }),

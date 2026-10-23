@@ -30,6 +30,8 @@ import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWo
 import { afterScrollRestore, scrollRestorePending } from '../components/Modals.jsx'
 import { effortColor } from '../lib/effort.js'
 import Elapsed from '../components/Elapsed.jsx'
+import MusicBar from '../components/MusicBar.jsx'
+import { shownSource } from '../lib/music/index.js'
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
 import { defaultIncrement, weightIncrement, stepWeight } from '../lib/progression.js'
@@ -928,6 +930,8 @@ function ActiveWorkout() {
   // A past workout has no rest to time — the sets were done days ago. The work timer for
   // timed sets stays, since counting a hold is how its duration gets entered.
   const startRest = (A.backfill || editing) ? () => {} : liveRest
+  // The music bar is for a session being done now, not one being typed in afterwards.
+  const music = (A.backfill || editing) ? '' : shownSource(S)
   const units = supersetUnits(A.entries)
   const cur = Number.isInteger(A.cur)
     ? Math.min(Math.max(A.cur, 0), Math.max(0, A.entries.length - 1))
@@ -2020,6 +2024,9 @@ function ActiveWorkout() {
         onClick={() => (editing ? finishWorkout() : finishWorkoutSheet({ onDiscard: discardWorkout }))}>{editing ? t('Save') : t('Finish')}</button>
     </div>
     <div className="wprog"><i style={{ width: (total ? done / total * 100 : 0) + '%' }} /></div>
+    {/* What plays, and previous / pause / next, when a music player is chosen (Settings → Workout).
+        In the pinned header of the list too, so the next song is a tap away from any set. */}
+    {music && <MusicBar source={music} />}
     {/* In the list the chips ride in the pinned header, so any exercise is one tap away from
         anywhere in a long stack. */}
     {listMode && chipRow}
