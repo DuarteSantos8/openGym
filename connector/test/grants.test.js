@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import crypto from 'node:crypto'
 import http from 'node:http'
 import { createGrants } from '../src/grants.js'
+import { sealAuth } from '../src/oauth.js'
 import { createServer } from '../src/server.js'
 import { sealBearer } from '../src/openGymSession.js'
 
@@ -15,11 +16,11 @@ const verifier = 'a'.repeat(43)
 const challenge = crypto.createHash('sha256').update(verifier).digest('base64url')
 const assertion = { cid: 'cid-1', credential: { id: 'cred', response: {} } }
 
-function fixture({ apiBase = 'http://unused', maxClients } = {}) {
+function fixture({ apiBase = 'http://unused' } = {}) {
   const connections = new Map()
   const stores = { codes: new Map(), access: new Map(), refreshTokens: new Map() }
   let time = Date.now(), n = 0
-  const grants = createGrants({ connections, key, apiBase, now: () => time, maxClients, ...stores })
+  const grants = createGrants({ connections, key, apiBase, now: () => time, ...stores })
   const client = grants.registerClient({ redirect_uris: [callback, 'http://127.0.0.1:9876/callback'] })
   // each call is a fresh, already-connected openGym user session (what connect() would have stored)
   const connect = (userId = 'uid1') => { const id = `connection-${++n}`; connections.set(id, { userId, sealed: sealBearer(bearer, key, userId) }); return id }
@@ -57,7 +58,9 @@ test('PKCE S256 and exact registered redirect are mandatory', () => {
   const issued = code()
   assert.throws(() => grants.exchangeCode({ code: code(), clientId: client.client_id, redirectUri: callback, codeVerifier: 'b'.repeat(43) }), /invalid_grant/, 'wrong verifier')
   assert.throws(() => grants.exchangeCode({ code: code(), clientId: client.client_id, redirectUri: callback }), /invalid_grant/, 'no verifier')
-  assert.throws(() => grants.exchangeCode({ code: code(), clientId: 'other', redirectUri: callback, codeVerifier: verifier }), /invalid_grant/, 'wrong client')
+  const other = grants.registerClient({ redirect_uris: [callback] }).client_id
+  assert.throws(() => grants.exchangeCode({ code: code(), clientId: other, redirectUri: callback, codeVerifier: verifier }), /invalid_grant/, 'another real client')
+  assert.throws(() => grants.exchangeCode({ code: code(), clientId: 'other', redirectUri: callback, codeVerifier: verifier }), /invalid_client/, 'not a client id at all')
   assert.throws(() => grants.exchangeCode({ code: issued, clientId: client.client_id, redirectUri: 'http://127.0.0.1:9876/callback', codeVerifier: verifier }), /invalid_grant/)
   assert.throws(() => exchange(issued), /invalid_grant/, 'failed exchange burns code')
   assert.throws(() => grants.issueAuthorizationCode({ ...base, connectionId: 'not-connected' }), /invalid_grant/)
@@ -65,7 +68,7 @@ test('PKCE S256 and exact registered redirect are mandatory', () => {
 })
 
 test('a connection backs one code only, and the code expires after one minute', () => {
-  const { grants, client, connect, code, exchange, advance } = fixture()
+  const { client, connect, code, exchange, advance } = fixture()
   const id = connect()
   const first = code(id)
   assert.throws(() => code(id), /invalid_grant/)
@@ -74,7 +77,6 @@ test('a connection backs one code only, and the code expires after one minute', 
   const late = code()
   advance(60_000)
   assert.throws(() => exchange(late), /invalid_grant/)
-  assert.equal(grants.registerClient({ redirect_uris: [callback] }).client_id.length, 43)
   assert.ok(client)
 })
 
@@ -97,7 +99,9 @@ test('codes are single use; refresh rotates, replay revokes every token in the g
 test('a refresh token only works for its own client and is not spent by a wrong one', async () => {
   const { grants, code, exchange, client } = fixture()
   const t = exchange(code())
-  await assert.rejects(() => grants.refresh({ refreshToken: t.refresh_token, clientId: 'other' }), /invalid_grant/)
+  const other = grants.registerClient({ redirect_uris: [callback] }).client_id
+  await assert.rejects(() => grants.refresh({ refreshToken: t.refresh_token, clientId: other }), /invalid_grant/)
+  await assert.rejects(() => grants.refresh({ refreshToken: t.refresh_token, clientId: 'other' }), /invalid_client/)
   await assert.rejects(() => grants.refresh({ refreshToken: 'junk', clientId: client.client_id }), /invalid_grant/)
   await assert.rejects(() => grants.refresh({ refreshToken: undefined, clientId: client.client_id }), /invalid_grant/)
   assert.ok((await grants.refresh({ refreshToken: t.refresh_token, clientId: client.client_id })).access_token)
@@ -110,8 +114,11 @@ test('hashed secrets only; expiry and revocation fail closed and drop the sealed
   const dump = JSON.stringify([...f.stores.codes, ...f.stores.access, ...f.stores.refreshTokens])
   assert.ok(f.stores.access.size === 1 && f.stores.refreshTokens.size === 1)
   assert.ok(!dump.includes(t.access_token) && !dump.includes(t.refresh_token) && !dump.includes(bearer))
-  await f.grants.revoke({ token: t.refresh_token, clientId: 'wrong' })
+  const other = f.grants.registerClient({ redirect_uris: [callback] }).client_id
+  await f.grants.revoke({ token: t.refresh_token, clientId: other })
   assert.equal(f.stores.access.size, 1, 'another client cannot revoke this grant')
+  await assert.rejects(() => f.grants.revoke({ token: t.refresh_token, clientId: 'wrong' }), /invalid_client/)
+  assert.equal(f.stores.access.size, 1)
   await f.grants.revoke({ token: t.refresh_token, clientId: f.client.client_id })
   assert.equal(f.stores.access.size + f.stores.refreshTokens.size, 0)
   assert.equal(f.connections.has(connectionId), false, 'revoking discards the stored openGym bearer')
@@ -241,28 +248,67 @@ test('authorize never redirects on a bad request and sets no cookie; a failed co
   } finally { await new Promise(r => server.close(r)); await new Promise(r => upstream.api.close(r)) }
 })
 
-test('checkAuthorizeRequest pins an old client through the cookie lifetime; idle can be reclaimed after', () => {
-  const { grants, client, advance } = fixture({ maxClients: 1 })
-  advance(3_600_000 + 1)
-  grants.checkAuthorizeRequest({ clientId: client.client_id, redirectUri: callback, codeChallenge: challenge, codeChallengeMethod: 'S256' })
-  assert.throws(() => grants.registerClient({ redirect_uris: [callback] }), /temporarily_unavailable/)
-  grants.checkAuthorizeRequest({ clientId: client.client_id, redirectUri: callback, codeChallenge: challenge, codeChallengeMethod: 'S256' })
-  advance(5 * 60_000)
-  const next = grants.registerClient({ redirect_uris: [callback] })
-  assert.notEqual(next.client_id, client.client_id)
-  assert.throws(() => grants.checkAuthorizeRequest({ clientId: client.client_id, redirectUri: callback, codeChallenge: challenge, codeChallengeMethod: 'S256' }), /invalid_client/)
+const authorizeArgs = clientId => ({ clientId, redirectUri: callback, codeChallenge: challenge, codeChallengeMethod: 'S256' })
+
+test('client ids are stateless: 1500 registrations later, old ids and live grants are untouched', async () => {
+  const f = fixture()
+  const t = f.exchange(f.code())
+  const ids = []
+  for (let i = 0; i < 1500; i++) ids.push(f.grants.registerClient({ redirect_uris: [callback] }).client_id)
+  for (const id of [f.client.client_id, ids[0], ids[999], ids[1000], ids[1499]]) {
+    assert.doesNotThrow(() => f.grants.checkAuthorizeRequest(authorizeArgs(id)))
+  }
+  assert.ok((await f.grants.refresh({ refreshToken: t.refresh_token, clientId: f.client.client_id })).access_token)
+  assert.ok(f.code().length >= 43)
 })
 
-test('hostile registration cannot delete a live client or its grant', async () => {
-  const { grants, client, connect, code, exchange } = fixture({ maxClients: 1 })
-  assert.throws(() => grants.registerClient({ redirect_uris: [callback] }), /temporarily_unavailable/)
-  const t = exchange(code())
-  assert.ok(t.access_token)
-  assert.throws(() => grants.registerClient({ redirect_uris: [callback] }), /temporarily_unavailable/)
-  const rotated = await grants.refresh({ refreshToken: t.refresh_token, clientId: client.client_id })
-  assert.ok(rotated.access_token)
-  const extra = grants.issueAuthorizationCode({ connectionId: connect(), clientId: client.client_id, redirectUri: callback, codeChallenge: challenge })
-  assert.ok(extra.length >= 43)
+test('a client id still works after a restart (new grants instance, same key)', () => {
+  const old = fixture()
+  const connections = new Map([['c', { userId: 'uid1', sealed: sealBearer(bearer, key, 'uid1') }]])
+  const fresh = createGrants({ connections, key, apiBase: 'http://unused' })
+  fresh.checkAuthorizeRequest(authorizeArgs(old.client.client_id))
+  const code = fresh.issueAuthorizationCode({ connectionId: 'c', ...authorizeArgs(old.client.client_id), clientId: old.client.client_id })
+  assert.ok(fresh.exchangeCode({ code, clientId: old.client.client_id, redirectUri: callback, codeVerifier: verifier }).access_token)
+})
+
+test('a client id from another key or with any byte changed is invalid_client in every endpoint', async () => {
+  const f = fixture()
+  const t = f.exchange(f.code())
+  const id = f.client.client_id
+  const raw = Buffer.from(id, 'base64url')
+  const flip = i => { const b = Buffer.from(raw); b[i] ^= 1; return b.toString('base64url') }
+  const reversioned = Buffer.from(raw); reversioned[0] = 2
+  const loop = createGrants({ connections: new Map(), key })
+  const single = loop.registerClient({ redirect_uris: ['http://[::1]:5000/callback'] }).client_id
+  const lastChar = single.at(-1)
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+  const sameBytes = single.slice(0, -1) + alphabet[alphabet.indexOf(lastChar) ^ 1]
+  assert.ok(Buffer.from(sameBytes, 'base64url').equals(Buffer.from(single, 'base64url')), 'precondition: only trailing bits differ')
+  const bad = [
+    createGrants({ connections: new Map(), key: crypto.randomBytes(32) }).registerClient({ redirect_uris: [callback, 'http://127.0.0.1:9876/callback'] }).client_id,
+    flip(1), flip(12), flip(raw.length - 17), flip(raw.length - 1), reversioned.toString('base64url'),
+    raw.subarray(0, raw.length - 1).toString('base64url'), Buffer.concat([raw, Buffer.alloc(1)]).toString('base64url'),
+    sameBytes, `${id}=`, `${id}\n`, 'A'.repeat(100_000), '', 'x', undefined, null, 42, {}, [id],
+    sealAuth({ id: 'x'.repeat(43) }, key), sealBearer(JSON.stringify([callback]), key, 'uid1'),
+  ]
+  for (const clientId of bad) {
+    const label = String(clientId).slice(0, 24)
+    assert.throws(() => f.grants.checkAuthorizeRequest(authorizeArgs(clientId)), /invalid_client/, label)
+    assert.throws(() => f.grants.exchangeCode({ code: f.code(), clientId, redirectUri: callback, codeVerifier: verifier }), /invalid_client/, label)
+    await assert.rejects(() => f.grants.refresh({ refreshToken: t.refresh_token, clientId }), /invalid_client/, label)
+    await assert.rejects(() => f.grants.revoke({ token: t.refresh_token, clientId }), /invalid_client/, label)
+  }
+  assert.ok((await f.grants.refresh({ refreshToken: t.refresh_token, clientId: id })).access_token, 'bad ids neither spent nor revoked the grant')
+})
+
+test('registration keeps at most 4 distinct redirects and returns them normalized', () => {
+  const { grants } = fixture()
+  const four = [callback, 'http://127.0.0.1:1/callback', 'http://127.0.0.1:2/callback', 'http://localhost:3/callback']
+  assert.deepEqual(grants.registerClient({ redirect_uris: [...four, ...four, callback] }).redirect_uris, four)
+  assert.throws(() => grants.registerClient({ redirect_uris: [...four, 'http://[::1]:4/callback'] }), /invalid_client_metadata/)
+  const c = grants.registerClient({ redirect_uris: [callback] })
+  assert.equal(c.token_endpoint_auth_method, 'none')
+  assert.ok(c.client_id.length <= 512 && /^[A-Za-z0-9_-]+$/.test(c.client_id))
 })
 
 test('oversized or unreadable /api/me identity permanently revokes; 5xx does not', async () => {
@@ -347,5 +393,26 @@ test('authorization request lives in the cookie, not a server pending map; a fai
     assert.equal(f.connections.has(id), true)
     assert.throws(() => f.grants.issueAuthorizationCode({ connectionId: id, clientId: 'unregistered', redirectUri: callback, codeChallenge: challenge }), /invalid_request/)
     assert.equal(f.connections.has(id), false, 'failed issue deletes the stored connection')
+  } finally { await new Promise(r => server.close(r)); await new Promise(r => upstream.api.close(r)) }
+})
+
+test('a duplicate connect for the same cookie cannot destroy the first code', async () => {
+  const upstream = await apiServer()
+  const server = createServer({ origin, prefix, apiBase: upstream.url, key })
+  await new Promise(r => server.listen(0, '127.0.0.1', r))
+  const base = `http://127.0.0.1:${server.address().port}`
+  try {
+    const post = (path, data, headers = {}) => fetch(base + path, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(data), redirect: 'manual' })
+    const client = await (await post('/connector/register', { redirect_uris: [callback] })).json()
+    const params = new URLSearchParams({ client_id: client.client_id, redirect_uri: callback, response_type: 'code', code_challenge: challenge, code_challenge_method: 'S256', state: 's', resource: `${origin}${prefix}/mcp` })
+    const authorize = await fetch(base + '/connector/authorize?' + params, { redirect: 'manual' })
+    const headers = { cookie: authorize.headers.get('set-cookie').split(';')[0], origin, 'sec-fetch-site': 'same-origin' }
+    const first = await post('/connector/connect', assertion, headers)
+    assert.equal(first.status, 200)
+    const code = new URL((await first.json()).redirect).searchParams.get('code')
+    assert.equal((await post('/connector/connect', assertion, headers)).status, 403)
+    assert.equal((await post('/connector/connect', { cid: 'x' }, headers)).status, 403)
+    const tokens = await post('/connector/token', { grant_type: 'authorization_code', client_id: client.client_id, redirect_uri: callback, code, code_verifier: verifier })
+    assert.equal(tokens.status, 200, 'the first code still exchanges')
   } finally { await new Promise(r => server.close(r)); await new Promise(r => upstream.api.close(r)) }
 })

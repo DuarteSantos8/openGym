@@ -1,6 +1,9 @@
 import crypto from 'node:crypto'
 import { openBearer } from './openGymSession.js'
-import { ACCESS_TTL_MS, AUTH_TTL_MS, CODE_TTL_MS, GRANT_MAX_MS, REFRESH_TTL_MS, redirectAllowed, pkceChallengeOk } from './oauth.js'
+import {
+  ACCESS_TTL_MS, CODE_TTL_MS, GRANT_MAX_MS, MAX_CLIENT_REDIRECTS, REFRESH_TTL_MS,
+  clientKey, openClient, pkceChallengeOk, redirectAllowed, sealClient,
+} from './oauth.js'
 
 export class GrantError extends Error {
   constructor(code) {
@@ -13,8 +16,7 @@ export class GrantError extends Error {
 const fail = code => { throw new GrantError(code) }
 const TOKEN = /^[A-Za-z0-9_-]{43}$/
 const VERIFIER = /^[A-Za-z0-9\-._~]{43,128}$/
-const MAX_CLIENTS = 1000
-const CLIENT_IDLE_MS = 3_600_000 // an unused registration older than this may be reclaimed, only at the cap
+const MAX_REGISTER_URIS = 10
 const MAX_ME = 8192
 
 const sha = s => crypto.createHash('sha256').update(s).digest('base64url')
@@ -29,11 +31,11 @@ function mint(map) {
 // `connections` is the Task 2 store ({userId, sealed}); a grant is bound to one connection and
 // takes its openGym user from that stored record, never from anything the browser sent.
 export function createGrants({
-  connections, key, apiBase, now = Date.now, maxClients = MAX_CLIENTS,
+  connections, key, apiBase, now = Date.now,
   codes = new Map(), access = new Map(), refreshTokens = new Map(),
 } = {}) {
   if (!connections || typeof connections.get !== 'function') throw new TypeError('connections required')
-  const clients = new Map()
+  const subkey = clientKey(key) // also validates the key up front
   const grants = new Map()
   const usedRefresh = new Map() // hash of a rotated-out refresh token -> { grantId, exp }
   const bound = new Set() // connection ids that already back a code or a grant
@@ -63,39 +65,27 @@ export function createGrants({
     return { access_token: at, token_type: 'Bearer', expires_in: ACCESS_TTL_MS / 1000, refresh_token: rt }
   }
 
-  // At the cap, only a client that never got a grant and is older than any authorization flow can
-  // be reclaimed (a flow lasts minutes). A client with a grant is never deleted; if none can be
-  // reclaimed, registration fails closed instead.
-  function reclaimIdleClient() {
-    const live = new Set([...grants.values(), ...codes.values()].map(r => r.clientId))
-    const ts = t()
-    for (const [id, c] of clients) {
-      if (live.has(id) || (c.pin && ts < c.pin)) continue
-      if (ts - c.created >= CLIENT_IDLE_MS) { clients.delete(id); return }
-    }
-    fail('temporarily_unavailable')
-  }
+  // The registered redirects for a client_id, or invalid_client. Nothing is looked up or stored.
+  const clientRedirects = clientId => openClient(clientId, subkey) || fail('invalid_client')
 
   function registerClient(meta = {}) {
     const uris = meta && meta.redirect_uris
-    if (!Array.isArray(uris) || !uris.length || uris.length > 10 || uris.some(u => !redirectAllowed(u, false))) fail('invalid_client_metadata')
-    if ((meta.token_endpoint_auth_method ?? 'none') !== 'none') fail('invalid_client_metadata')
-    if (clients.size >= maxClients) reclaimIdleClient()
-    const client_id = crypto.randomBytes(32).toString('base64url')
+    if (!Array.isArray(uris) || !uris.length || uris.length > MAX_REGISTER_URIS || uris.some(u => !redirectAllowed(u, false))) fail('invalid_client_metadata')
     const redirect_uris = [...new Set(uris)]
-    clients.set(client_id, { redirect_uris, created: t() })
+    if (redirect_uris.length > MAX_CLIENT_REDIRECTS) fail('invalid_client_metadata')
+    if ((meta.token_endpoint_auth_method ?? 'none') !== 'none') fail('invalid_client_metadata')
     return {
-      client_id, redirect_uris, token_endpoint_auth_method: 'none',
+      client_id: sealClient(redirect_uris, subkey), redirect_uris, token_endpoint_auth_method: 'none',
       grant_types: ['authorization_code', 'refresh_token'], response_types: ['code'],
     }
   }
 
+  // Pure: validates, mutates nothing.
   function checkAuthorizeRequest({ clientId, redirectUri, codeChallenge, codeChallengeMethod } = {}) {
-    const c = typeof clientId === 'string' ? clients.get(clientId) : undefined
-    if (!c || typeof redirectUri !== 'string' || !c.redirect_uris.includes(redirectUri)) fail('invalid_client')
+    const redirects = clientRedirects(clientId)
+    if (typeof redirectUri !== 'string' || !redirects.includes(redirectUri)) fail('invalid_client')
     if (codeChallengeMethod !== undefined && codeChallengeMethod !== 'S256') fail('invalid_request')
     if (typeof codeChallenge !== 'string' || !TOKEN.test(codeChallenge)) fail('invalid_request')
-    c.pin = t() + AUTH_TTL_MS
   }
 
   function issueAuthorizationCode({ connectionId, clientId, redirectUri, codeChallenge, codeChallengeMethod } = {}) {
@@ -118,6 +108,7 @@ export function createGrants({
 
   function exchangeCode({ code, clientId, redirectUri, codeVerifier } = {}) {
     sweep()
+    clientRedirects(clientId)
     if (typeof code !== 'string' || !TOKEN.test(code)) fail('invalid_grant')
     const h = sha(code)
     const rec = codes.get(h)
@@ -138,6 +129,7 @@ export function createGrants({
 
   async function refresh({ refreshToken, clientId } = {}) {
     sweep()
+    clientRedirects(clientId)
     if (typeof refreshToken !== 'string' || !TOKEN.test(refreshToken)) fail('invalid_grant')
     const h = sha(refreshToken)
     const used = usedRefresh.get(h)
@@ -153,6 +145,7 @@ export function createGrants({
 
   // RFC 7009 shape: never says whether the token was known. Only the owning client can revoke.
   async function revoke({ token, clientId } = {}) {
+    clientRedirects(clientId)
     if (typeof token !== 'string' || !TOKEN.test(token)) return
     const h = sha(token)
     const rec = access.get(h) || refreshTokens.get(h)

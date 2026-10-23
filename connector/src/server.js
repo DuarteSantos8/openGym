@@ -97,12 +97,17 @@ export function createServer({ origin, prefix, apiBase, key = crypto.randomBytes
           let assertion
           try { assertion = pickAssertion(await bodyOf(req)) } catch (e) { spent.delete(hash); throw e }
           await connect(assertion, { pending, pendingId: id, store: connections, apiBase, key })
+          // Build and validate the final URL with a same-shape placeholder BEFORE minting, so nothing
+          // that can still fail runs after issueAuthorizationCode (no orphaned code or bound connection).
+          const build = code => {
+            const u = new URL(p.redirectUri)
+            u.searchParams.set('code', code)
+            if (p.state !== null) u.searchParams.set('state', p.state)
+            return u.href
+          }
+          if (!redirectAllowed(build('x'.repeat(43)), true)) throw new Error('invalid_request')
           const code = grants.issueAuthorizationCode({ connectionId: id, clientId: p.clientId, redirectUri: p.redirectUri, codeChallenge: p.codeChallenge, codeChallengeMethod: 'S256' })
-          const redirect = new URL(p.redirectUri)
-          redirect.searchParams.set('code', code)
-          if (p.state !== null) redirect.searchParams.set('state', p.state)
-          if (!redirectAllowed(redirect.href, true)) throw new Error('invalid_request')
-          return send(res, 200, { redirect: redirect.href }, { 'set-cookie': `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` })
+          return send(res, 200, { redirect: build(code) }, { 'set-cookie': `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` })
         } catch (e) { connections.delete(id); throw e }
         finally { pending.delete(id) }
       }

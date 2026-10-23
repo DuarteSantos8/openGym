@@ -45,6 +45,42 @@ export function pkceChallengeOk(verifier, challenge) {
   return a.length === b.length && crypto.timingSafeEqual(a, b)
 }
 
+// Stateless client registration: the client_id IS the sealed, normalized redirect list, so the
+// server keeps no per-client state to exhaust, and ids survive restarts and any number of later
+// registrations. AES-256-GCM under an HKDF subkey (never the master key itself), AAD names the
+// purpose, a version byte leads. Anything that is not exactly what registerClient produced is null.
+const CLIENT_VERSION = 1
+const CLIENT_AAD = Buffer.from('opengym-connector:client:v1', 'utf8')
+export const MAX_CLIENT_REDIRECTS = 4
+export const MAX_CLIENT_ID = 512
+
+export function clientKey(key) {
+  assertKey(key)
+  return Buffer.from(crypto.hkdfSync('sha256', key, Buffer.alloc(0), 'opengym-connector client v1', 32))
+}
+
+export function sealClient(redirects, subkey) {
+  const iv = crypto.randomBytes(12)
+  const c = crypto.createCipheriv('aes-256-gcm', subkey, iv)
+  c.setAAD(CLIENT_AAD)
+  const enc = Buffer.concat([c.update(redirects.join('\n'), 'utf8'), c.final()])
+  return Buffer.concat([Buffer.from([CLIENT_VERSION]), iv, enc, c.getAuthTag()]).toString('base64url')
+}
+
+export function openClient(id, subkey) {
+  try {
+    if (typeof id !== 'string' || !/^[A-Za-z0-9_-]{1,512}$/.test(id)) return null
+    const buf = Buffer.from(id, 'base64url')
+    if (buf.toString('base64url') !== id || buf.length < 1 + 12 + 1 + 16 || buf[0] !== CLIENT_VERSION) return null
+    const d = crypto.createDecipheriv('aes-256-gcm', subkey, buf.subarray(1, 13))
+    d.setAAD(CLIENT_AAD)
+    d.setAuthTag(buf.subarray(buf.length - 16))
+    const list = Buffer.concat([d.update(buf.subarray(13, buf.length - 16)), d.final()]).toString('utf8').split('\n')
+    if (list.length > MAX_CLIENT_REDIRECTS || list.some(u => !redirectAllowed(u, false)) || new Set(list).size !== list.length) return null
+    return list
+  } catch { return null }
+}
+
 export function sealAuth(obj, key) {
   assertKey(key)
   const iv = crypto.randomBytes(12)
