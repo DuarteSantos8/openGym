@@ -326,9 +326,14 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       // The stored key is never read back, and it should not leave by another door either: sent
       // to a new host it is handed to whoever runs that host on the next model list or job. A
       // different host for the same provider means the key is entered again.
-      if (patch.providerOptions && before && hostOf(saved) !== before && saved.auth?.[target]) {
-        cfgStore.saveAuth(target, null);
-        console.log('coach: stored key for', target, 'cleared, endpoint host changed');
+      if (patch.providerOptions && before && hostOf(saved) !== before) {
+        if (saved.auth?.[target]) {
+          cfgStore.saveAuth(target, null);
+          console.log('coach: stored key for', target, 'cleared, endpoint host changed');
+        }
+        // The profiles' own keys for this provider would follow the same move.
+        const n = cfgStore.clearProfileAuthFor(target);
+        if (n) console.log('coach:', n, 'profile key(s) for', target, 'cleared, endpoint host changed');
       }
       json(res, 200, { ok: true });
     },

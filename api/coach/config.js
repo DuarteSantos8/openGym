@@ -241,6 +241,21 @@ export function countProfileAuth(provider = load().provider) {
   return n;
 }
 
+/** Remove every profile's own credential for this provider, and say how many went. The admin's
+ *  endpoint change uses it: a profile key is no more welcome at a new host than the instance key. */
+export function clearProfileAuthFor(provider) {
+  let n = 0;
+  try {
+    for (const f of fs.readdirSync(DATA)) {
+      const m = /^coach-auth-([A-Za-z0-9_-]{1,64})\.json$/.exec(f);
+      if (!m) continue;
+      const rec = loadProfileAuth(m[1]);
+      if (rec && (!rec.provider || rec.provider === provider) && clearProfileAuth(m[1])) n++;
+    }
+  } catch { /* no data dir yet */ }
+  return n;
+}
+
 /** Which credential types the configured provider takes — the same rule POST /connect enforces,
  *  in one place so the admin route, the profile route and the UI cannot disagree. */
 export function envVarFor(provider, type) {
