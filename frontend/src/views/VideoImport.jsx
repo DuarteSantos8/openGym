@@ -172,7 +172,7 @@ export default function VideoImport() {
 
 function Header({ nav }) {
   return <div className="hdr">
-    <button className="iconbtn" onClick={() => nav('/plan')} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
+    <button className="iconbtn" data-back="/plan" onClick={() => nav('/plan')} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
     <div style={{ flex: 1, marginInlineStart: 10 }}>
       <h1>{t('Import from a video')}</h1>
       <div className="sub">{t('A follow-along workout becomes a routine')}</div>
