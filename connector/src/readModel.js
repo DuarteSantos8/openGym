@@ -80,19 +80,27 @@ const UNKNOWN_KEY = '\u0000unknown'
 // cannot restore what a nested or failed call found there.
 function withCustomsIndexed(S, build) {
   const saved = []
-  for (const e of S.customEx) {
-    if (saved.some(s => s.id === e.id)) { EXIDX[e.id] = e; continue }
-    const had = Object.hasOwn(EXIDX, e.id)
-    saved.push({ id: e.id, had, desc: had ? Object.getOwnPropertyDescriptor(EXIDX, e.id) : null })
-    EXIDX[e.id] = e
-  }
-  try { return build() } finally {
+  try {
+    for (const e of S.customEx) {
+      if (!saved.some(s => s.id === e.id)) {
+        const had = Object.hasOwn(EXIDX, e.id)
+        saved.push({ id: e.id, had, desc: had ? Object.getOwnPropertyDescriptor(EXIDX, e.id) : null })
+      }
+      Object.defineProperty(EXIDX, e.id, { value: e, writable: true, enumerable: true, configurable: true })
+    }
+    return build()
+  } finally {
     for (let i = saved.length - 1; i >= 0; i--) {
       const { id, had, desc } = saved[i]
       if (had) Object.defineProperty(EXIDX, id, desc)
       else delete EXIDX[id]
     }
   }
+}
+
+function scalarList(value, types) {
+  if (!Array.isArray(value) || !value.length) return undefined
+  return value.filter(item => types.includes(typeof item) && (typeof item !== 'number' || Number.isFinite(item)))
 }
 
 function plannedSets(w) {
@@ -111,7 +119,6 @@ function entryView(e, S) {
     body_part: ex.bp || null,
     ...(ex.missing ? { unknown: true } : {}),
     mode,
-    target: e.target || null,
     sets: (e.sets || []).map(s => ({
       done: !!s.done,
       label: setLabel(e.id, { ...s, done: undefined }, cfg),
@@ -203,9 +210,9 @@ function getRoutine(S, { routine_id } = {}) {
         reps: mode === 'reps' ? (cfg.reps || 0) : undefined,
         reps_min: mode === 'reps' && cfg.repsMin != null ? cfg.repsMin : undefined,
         reps_max: mode === 'reps' && cfg.repsMax != null ? cfg.repsMax : undefined,
-        pyramid: mode === 'reps' && Array.isArray(cfg.pyramid) && cfg.pyramid.length ? cfg.pyramid : undefined,
-        pyramid_rest_sec: mode === 'reps' && Array.isArray(cfg.pyramid) && cfg.pyramid.length && Array.isArray(cfg.pyramidRest) && cfg.pyramidRest.length ? cfg.pyramidRest : undefined,
-        pyramid_weight: mode === 'reps' && Array.isArray(cfg.pyramid) && cfg.pyramid.length && Array.isArray(cfg.pyramidWeight) && cfg.pyramidWeight.length ? cfg.pyramidWeight : undefined,
+        pyramid: mode === 'reps' ? scalarList(cfg.pyramid, ['string', 'number']) : undefined,
+        pyramid_rest_sec: mode === 'reps' ? scalarList(cfg.pyramidRest, ['number']) : undefined,
+        pyramid_weight: mode === 'reps' ? scalarList(cfg.pyramidWeight, ['number']) : undefined,
         sec: mode === 'time' ? (cfg.sec || 0) : undefined,
         min: mode === 'cardio' ? (cfg.min || 0) : undefined,
         speed: mode === 'cardio' ? (cfg.speed || 0) : undefined,

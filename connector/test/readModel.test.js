@@ -140,6 +140,28 @@ test('profile A custom exercise is not visible when profile B is read afterwards
   assert.doesNotMatch(JSON.stringify(b), /A Secret Lift/)
 })
 
+test('stored media objects inside targets and pyramid lists never reach Claude', () => {
+  const p = profile()
+  p.workouts[0].entries[0].target = { sets: 2, reps: 8, img: '/exercise-media/still/1.webp', token: 'secret-token' }
+  p.routines[0].ex[0].pyramid = [8, { gif: '/exercise-media/clip/1.mp4' }]
+  p.routines[0].ex[0].pyramidRest = [45, { bearer: 'abc' }]
+  p.routines[0].ex[0].pyramidWeight = [100, { bytes: 'AAAA' }]
+  const model = createReadModel(p)
+  const text = JSON.stringify([model.getWorkout({ workout_id: 'w1' }), model.getRoutine({ routine_id: 'fixed' })])
+  assert.doesNotMatch(text, /exercise-media|secret-token|bearer|AAAA|webp|mp4/)
+  assert.deepEqual(model.getRoutine({ routine_id: 'fixed' }).exercises[0].pyramid, [8])
+})
+
+test('a write that throws mid-indexing leaves no earlier custom exercise behind', () => {
+  // A key that cannot be redefined makes the second write throw. The first custom must still be removed.
+  Object.defineProperty(EXIDX, 'cx-locked', { value: { id: 'cx-locked', n: 'Locked' }, writable: false, enumerable: false, configurable: false })
+  const before = snapshot()
+  const custom = [{ id: 'cx-first', n: 'First Secret', bp: 'chest' }, { id: 'cx-locked', n: 'Other', bp: 'chest' }]
+  assert.throws(() => previewWith(custom, [{ id: 'cx-first', sets: 1, reps: 5 }]))
+  assert.equal(Object.hasOwn(EXIDX, 'cx-first'), false)
+  assert.deepEqual(snapshot(), before)
+})
+
 test('a custom exercise shadowing a catalogue id is restored exactly, even when the build throws', () => {
   const before = snapshot()
   const custom = [{ id: '0025', n: 'Shadow', bp: 'chest' }]
