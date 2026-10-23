@@ -109,6 +109,32 @@ server {
         proxy_set_header CF-Connecting-IP "${CF_CONNECTING_IP}";
     }
 
+    # The opt-in MCP endpoint (mcp/Dockerfile), on this same origin so whatever already publishes
+    # the app (a Cloudflare tunnel, a reverse proxy) publishes it too, with no route of its own.
+    # The server checks the OAuth token itself and answers 404 to anything but /mcp. Resolved per
+    # request like /api, so with no mcp container running this is a 502 and nginx still starts.
+    location ^~ ${BASE_PATH}/mcp {
+        client_max_body_size 1m;
+        resolver ${RESOLVER} valid=10s ipv6=off;
+        set $mcp_upstream http://${MCP_BACKEND}:${MCP_PORT};
+        # The same prefix-stripped target the /api blocks use.
+        proxy_pass $mcp_upstream$api_request_uri;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_buffering off;
+        proxy_read_timeout 120s;
+    }
+
+    # How an MCP client finds where to sign in (RFC 8414, RFC 9728): the api answers both from
+    # ORIGIN (api/oauth.js). Clients look for these at the root of the host, so no BASE_PATH here.
+    location ^~ /.well-known/oauth- {
+        resolver ${RESOLVER} valid=10s ipv6=off;
+        set $api_upstream http://${BACKEND}:${PORT};
+        proxy_pass $api_upstream$api_request_uri;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+    }
+
     # The app routes behind the hash (/#/plan, /#/history …), so a path is never a screen, and the
     # shell's asset URLs are relative (vite base './' — the Pages demo lives under /demo/). Serving
     # index.html AT a deep path (/plan/r/x: a typo, a stale link) gave a page whose scripts resolved

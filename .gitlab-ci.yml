@@ -302,6 +302,9 @@ build:images:
       - IMAGE: web
         CONTEXT: "."
         DOCKERFILE: "./web/Dockerfile"
+      - IMAGE: mcp
+        CONTEXT: "."
+        DOCKERFILE: "./mcp/Dockerfile"
   before_script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
     # buildx's docker-container driver refuses to read the daemon's TLS material straight
@@ -758,7 +761,7 @@ verify:scan:
     - |
       set -u
       rc=0
-      for i in api web; do
+      for i in api web mcp; do
         REF="$CI_REGISTRY_IMAGE/$i:$IMAGE_TAG"
         echo "=================== $REF"
         trivy image --format cyclonedx --output "opengym-$i-$IMAGE_TAG.cdx.json" "$REF"
@@ -871,8 +874,9 @@ release:
       |---|---|---|
       | \`$CI_REGISTRY_IMAGE/api\` | \`$SEMVER\` \`$MINOR\` \`latest\` | \`$IMAGE_DIGEST_API\` |
       | \`$CI_REGISTRY_IMAGE/web\` | \`$SEMVER\` \`$MINOR\` \`latest\` | \`$IMAGE_DIGEST_WEB\` |
+      | \`$CI_REGISTRY_IMAGE/mcp\` | \`$SEMVER\` \`$MINOR\` \`latest\` | \`$IMAGE_DIGEST_MCP\` |
 
-      Both images are linux/amd64 + linux/arm64. The Android APK and the store apps are on the GitHub release: https://github.com/DuarteSantos8/openGym/releases/tag/$CI_COMMIT_TAG. Built from $CI_COMMIT_SHA.
+      All images are linux/amd64 + linux/arm64. The Android APK and the store apps are on the GitHub release: https://github.com/DuarteSantos8/openGym/releases/tag/$CI_COMMIT_TAG. Built from $CI_COMMIT_SHA.
       EOF
       cat release-notes.md
   release:
@@ -892,6 +896,9 @@ release:
           link_type: other
         - name: "SBOM web image (CycloneDX)"
           url: "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/opengym-sbom/$IMAGE_TAG/opengym-web-$IMAGE_TAG.cdx.json"
+          link_type: other
+        - name: "SBOM mcp image (CycloneDX)"
+          url: "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/opengym-sbom/$IMAGE_TAG/opengym-mcp-$IMAGE_TAG.cdx.json"
           link_type: other
 
 # ---------------------------------------------------------------------- maintenance

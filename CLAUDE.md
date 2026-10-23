@@ -4,8 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-openGym is a self-hosted gym & body-weight tracker PWA. Two containers (`api` + `web`) plus a
-`./data` folder the user owns — no third-party account, no telemetry. Passkey (WebAuthn) login,
+openGym is a self-hosted gym & body-weight tracker PWA. Two containers (`api` + `web`, plus an
+opt-in `mcp` one) and a `./data` folder the user owns — no third-party account, no telemetry. Passkey (WebAuthn) login,
 installable as a home-screen app, optional Capacitor shells for standalone Android/iOS builds.
 License: AGPL-3.0-or-later.
 
@@ -17,9 +17,9 @@ frontend/  React 19 + Vite app (src/views, src/components, src/store, src/lib). 
 api/       backend — server.js (Node, no framework), deps: @simplewebauthn/server, web-push.
            coach/ is the optional AI coach; openapi.yaml documents every route.
 web/       multi-stage Dockerfile (builds frontend → nginx) + nginx.conf.template (serves app, proxies /api).
-mcp/       optional MCP server — read-only stdio bridge exposing a user's workouts/1RM/muscle
-           balance to LLM clients (Claude Desktop, Cursor…). Not part of the Docker build; only
-           runs when an LLM client spawns it.
+mcp/       optional MCP server — read-only bridge exposing a user's workouts/1RM/muscle balance to
+           LLM clients (Claude Desktop, Cursor…). Over stdio when a client spawns it locally, or
+           as the opt-in `mcp` container (mcp/Dockerfile) at /mcp, signed in with OAuth via the api.
 media/     exercise img/gif, gitignored, fetched at runtime by the `media` compose service.
 website/   static project site (plain HTML/CSS/JS), deployed separately.
 kubernetes/ example manifests (docs/SELF_HOSTING_KUBERNETES.md).
@@ -106,15 +106,20 @@ gated by env vars: `ADMIN_UIDS` (admin dashboard), `INVITE_ONLY` (signup needs a
 `ALLOW_GUEST` (client-only guest mode never hits the server at all), plus a rotating
 `data/audit.log` (JSONL) for sign-in/admin events. Web Push (`web-push`, VAPID keys
 auto-generated into `data/vapid.json`) drives rest-timer-over and day-reminder notifications.
+`api/oauth.js` makes the api the OAuth 2.1 authorization server for the MCP endpoint (dynamic
+client registration, PKCE S256, rotating refresh tokens, grants hashed into `db.json`
+`oauthGrants`); the consent screen is `frontend/src/views/Connect.jsx` (`#/connect`).
 
 ### MCP server (`mcp/src`)
 
-Read-only stdio MCP bridge (`@modelcontextprotocol/sdk`) that lets an LLM client read a single
-user's routines/workouts/body-weight/1RM/muscle-balance directly from the same `DATA_DIR` the API
-writes to — no network call, no extra container. `state.js` loads/derives the data, `tools.js`
-defines the exposed MCP tools (zod-validated schemas), `labels.js` maps internal keys to
-human-readable labels, `index.js` wires it together. See `mcp/README.md` for the client-config
-side (Claude Desktop / Cursor).
+Read-only MCP bridge (`@modelcontextprotocol/sdk`) that lets an LLM client read a user's
+routines/workouts/body-weight/1RM/muscle-balance directly from the same `DATA_DIR` the API writes
+to. `state.js` loads/derives the data (per request profile via `asUser`), `tools.js` defines the
+exposed MCP tools (zod-validated schemas), `labels.js` maps internal keys to human-readable
+labels, `server.js` registers them. Two entry points: `index.js` (stdio, one profile from
+`OPENGYM_UID` or auto-detected) and `http.js` (Streamable HTTP, stateless, for the container:
+looks the OAuth access token up in `db.json` and answers for that token's profile). See
+`mcp/README.md` for the client-config side.
 
 ### Passkeys and self-hosting constraints
 
@@ -127,11 +132,12 @@ notification code; it documents the exact env-var contract (`RP_ID`, `ORIGIN`, `
 
 ### Docker / deploy
 
-`docker-compose.yml` has three services: `media` (one-shot exercise-asset downloader, gitignored
-output), `api`, `web` (multi-stage build of `frontend/` served by nginx, which also proxies
-`/api` → `api` and serves the shared media volume — single origin, required for passkeys).
-`web/nginx.conf.template` is rendered from env vars at container start (`NGINX_PORT`, `BACKEND`,
-`PORT`), so host/port remapping works against prebuilt images without a rebuild.
+`docker-compose.yml` has `api`, `web` (multi-stage build of `frontend/` served by nginx, which
+also proxies `/api` → `api` — single origin, required for passkeys) and the opt-in `mcp` service
+(`profiles: [mcp]`, `./data` mounted read-only; nginx proxies `/mcp` to it and
+`/.well-known/oauth-*` to the api). `web/nginx.conf.template` is rendered from env vars at
+container start (`NGINX_PORT`, `BACKEND`, `PORT`, `MCP_BACKEND`, `MCP_PORT`), so host/port
+remapping works against prebuilt images without a rebuild.
 
 ## Guidelines from CONTRIBUTING.md worth knowing before changing code
 

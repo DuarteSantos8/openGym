@@ -101,6 +101,9 @@ ENV BASE_PATH=""
 # Above the API's own video cap (MEDIA_VIDEO_MAX_MB, 40 by default) so the API, which says why,
 # is the one that refuses a file — raise both together.
 ENV MEDIA_UPLOAD_MAX=48m
+# Where /mcp is proxied to: the opt-in mcp service (mcp/Dockerfile). Unused unless it runs.
+ENV MCP_BACKEND=mcp
+ENV MCP_PORT=3001
 # Sent on every page and file. Scripts run only from this origin, plus the one inline script in
 # frontend/index.html by its hash (src/lib/csp.test.js keeps the two in step). connect-src stays
 # open to any https: and http: address: the Coach on a device talks to the provider the person

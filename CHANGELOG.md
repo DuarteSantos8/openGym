@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+- **Your AI assistant, on your own server.** Turn on the new `mcp` container
+  (`COMPOSE_PROFILES=mcp` in `.env`) and Claude, Cursor or another MCP client reads your routines,
+  workouts, body weight and progress at `https://<your host>/mcp`. It goes through whatever
+  already serves the app (a Cloudflare tunnel, a reverse proxy) with no new route and no open
+  port. The client signs you in through openGym itself, passkey or password, and asks on a new
+  Connect screen before it reads anything. Each person connects their own and sees only their
+  own data; it can never change anything. "Sign out everywhere" disconnects it again. Setup is
+  in [mcp/README.md](mcp/README.md).
+- A new image, `opengym-mcp`, is published next to `opengym-api` and `opengym-web`.
+
 ## v1.4.2 (2026-10-23)
 
 openGym comes to the App Store, with an Apple Watch app in tow. Plus everything you asked for
