@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { exOr } from '../lib/exercises.js'
 import { clampIncline, hasIncline, inclineFits, INCLINE_MAX, INCLINE_STEP } from '../lib/incline.js'
@@ -109,7 +109,7 @@ function PlateBadge({ S, entry, set }) {
 export default function FocusView({
   entryIdx, unit, onToggle, onToggleSide, onField, onMutateSet, onStartTimed,
   onAddWarmup, onRemoveSetAt, onProgressionSettings, onSwap, onRemoveExercise,
-  onNoProg, busy, onSelectEntry, onAdvanceUnit, onPairPrev, onPairNext, onUnpair, pointerEpoch, onSetChange,
+  onNoProg, busy, onSelectEntry, onAdvanceUnit, onPairPrev, onPairNext, onUnpair, pointerEpoch,
 }) {
   const S = useStore(state => state.S)
   const speedUnit = speedUnitOf(S)
@@ -124,7 +124,6 @@ export default function FocusView({
   const pointers = pointerState.epoch === pointerEpoch ? pointerState.pointers : new Map()
   const stored = pointers.get(entryIdx)
   const setIdx = clampSet(entry, Number.isInteger(stored) ? stored : firstIncomplete(entry))
-  useEffect(() => { onSetChange?.({ idx: entryIdx, i: setIdx }) }, [onSetChange, entryIdx, setIdx])
   const set = entry.sets[setIdx]
   const firstOpenSet = firstIncomplete(entry)
   const locked = !set.done && setIdx > firstOpenSet

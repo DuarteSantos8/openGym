@@ -340,6 +340,20 @@ test('asking over and over whether an address is in use runs into a pause', asyn
   assert.equal((await signIn(h, { identifier: 'bea', password: GOOD }, ip)).status, 200);
 });
 
+// A name is matched against sign-in addresses too, so signing up with an address as the name
+// asked "is this address in use" with no limit at all, ahead of the hash.
+test('signing up with an address as the name counts against the address like the e-mail field', async t => {
+  const h = await startServer(t, { users: [withPassword('u1', 'Ana', { email: 'ana@example.com' })] });
+  const ip = '203.0.113.70';
+  for (let i = 0; i < 21; i++) {
+    const r = await h.req('POST', '/api/register/password', { body: { name: 'ana@example.com', password: GOOD }, ip });
+    assert.equal(r.status, 409, 'try ' + i); assert.equal(r.body.code, 'name-taken');
+  }
+  const r = await h.req('POST', '/api/register/password', { body: { name: 'ana@example.com', password: GOOD }, ip });
+  assert.equal(r.status, 429); assert.equal(r.body.code, 'locked');
+  assert.equal(leaks(h, 'example.com'), false);
+});
+
 test('a reset code is redeemed with the e-mail as well as with the name', async t => {
   const code = 'K7WQ-2MZP-4HXA';
   const reset = () => ({ h: hashResetCode(code), exp: Date.now() + 3600000, by: 'adm' });

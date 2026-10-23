@@ -19,7 +19,7 @@ function Tab({ active, icon, label, onClick, dot }) {
   )
 }
 
-export default function TabBar({ onStart, workoutAction, workoutOnly = false }) {
+export default function TabBar({ onStart }) {
   const nav = useNavigate()
   const loc = useLocation()
   const S = useStore(s => s.S)
@@ -33,8 +33,6 @@ export default function TabBar({ onStart, workoutAction, workoutOnly = false }) 
   const on = k => cur === k || (cur === 'history' && k === 'stats') || (cur === 'settings' && k === 'home') || (cur === 'muscles' && k === 'library') || (cur === 'structural-balance' && k === 'stats')
 
   const running = !!S.active && cur !== 'workout' && !S.active.editingWorkoutId && !S.active.backfill && S.active.start > 0
-  const action = cur === 'workout' && S.active && !S.active.editingWorkoutId && !S.active.backfill
-    && workoutAction?.sessionId === S.active.id ? workoutAction : null
   const startWorkout = () => {
     if (!S.active) {
       // A weekday can hold several routines; start the combined session if any of them has
@@ -45,18 +43,24 @@ export default function TabBar({ onStart, workoutAction, workoutOnly = false }) 
   }
 
   return (
-    <nav id="tabbar" className={workoutOnly ? 'workout-action' : undefined}>
-      {!workoutOnly && <Tab active={on('home')} icon="house" label={t('Home')} dot={trouble} onClick={() => nav('/home')} />}
-      {!workoutOnly && <Tab active={on('plan')} icon="calendar" label={t('Plan')} onClick={() => nav('/plan')} />}
-      {/* The workout owns completion; away from it this remains Start/Resume. */}
-      <button className={'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')} onClick={action ? action.run : startWorkout}
-        aria-label={action ? action.ariaLabel : running ? t('Resume') : undefined}>
-        <span className="cir"><Icon name={action ? action.icon : 'play'} /></span>
-        {action ? <span>{action.label}</span> : running ? <span className="tab-time"><Elapsed start={S.active.start} /></span>
+    <nav id="tabbar">
+      <Tab active={on('home')} icon="house" label={t('Home')} dot={trouble} onClick={() => nav('/home')} />
+      <Tab active={on('plan')} icon="calendar" label={t('Plan')} onClick={() => nav('/plan')} />
+      {/* On the workout screen itself there is nothing to resume, so the button reads as the
+          tab it is and stays lit (#29); anywhere else it brings you back to the exercise you
+          were on — the marker is kept in S.active.cur and never moves on its own (#21). The
+          glyph is always play: start and resume are one concept, and an exercise is a dumbbell.
+          A live session you stepped away from shows its running time instead of a word, the
+          button still named Resume; a past workout being edited or logged after the fact has no
+          clock to run. */}
+      <button className={'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')} onClick={startWorkout}
+        aria-label={running ? t('Resume') : undefined}>
+        <span className="cir"><Icon name="play" /></span>
+        {running ? <span className="tab-time"><Elapsed start={S.active.start} /></span>
           : <span>{S.active ? (cur === 'workout' ? t('Workout') : S.active.editingWorkoutId ? t('Edit workout') : t('Resume')) : t('Start')}</span>}
       </button>
-      {!workoutOnly && <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => nav('/stats')} />}
-      {!workoutOnly && <Tab active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => nav('/library')} />}
+      <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => nav('/stats')} />
+      <Tab active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => nav('/library')} />
     </nav>
   )
 }

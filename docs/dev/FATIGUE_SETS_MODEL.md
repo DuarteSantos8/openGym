@@ -92,7 +92,10 @@ Two orthogonal multipliers on top of the phase-1 sets, both causal and bounded:
   (via `effort.js`, `HARD_RIR = 3`) always wins; otherwise RIR is estimated by
   Epley inverse against the exercise's 90-day rolling best anchor
   (`30*(anchor/w-1)-r`, clamped 0..10, null above `REP_CAP = 12`, for
-  load-less rows, or assisted work). Weight is 1.0 at RIR <= 3, linear down to
+  load-less rows, or assisted work). The anchor itself is RIR-calibrated: each
+  session's best runs on effective reps (done plus logged RIR, a set taken to
+  failure adding nothing), so a rated set reads its own rating back and an
+  unrated twin of it reads the same. Weight is 1.0 at RIR <= 3, linear down to
   the 0.3 floor at RIR >= 6. Loads canonicalise to kg through the
   set -> target -> entry -> workout -> opts chain, so mixed-unit imports anchor
   correctly (176 lb anchors like 80 kg). A ramp-up row therefore costs a

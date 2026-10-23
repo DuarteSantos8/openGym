@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The in-app updater (InstallPlugin) hands the downloaded APK to the system installer.
+         Only in this build: Google Play updates the Play build itself. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+</manifest>
