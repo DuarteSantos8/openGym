@@ -110,6 +110,21 @@ describe('checkForUpdate', () => {
     expect(result.hashUrl).toBe(null)
   })
 
+  it('skips slim preview APKs and matches the full filename checksum', async () => {
+    mockFetch({ tag_name: 'v99.0.0', assets: [asset('openGym-slim.apk'), asset('openGym-slim.apk.sha256'),
+      asset('other.apk.sha256'), asset('openGym-99.0.0.apk.sha256'), asset('openGym-99.0.0.apk')] })
+    const result = await checkForUpdate()
+    expect(result.apkUrl).toMatch(/\/openGym-99\.0\.0\.apk$/)
+    expect(result.hashUrl).toMatch(/\/openGym-99\.0\.0\.apk\.sha256$/)
+  })
+
+  it('never substitutes an unrelated checksum when the selected APK has none', async () => {
+    mockFetch({ tag_name: 'v99.0.0', assets: [asset('full.apk'), asset('other.apk.sha256')] })
+    const result = await checkForUpdate()
+    expect(result.apkUrl).toMatch(/\/full\.apk$/)
+    expect(result.hashUrl).toBe(null)
+  })
+
   it('returns no update when the repository has no release yet (404)', async () => {
     mockFetch({ message: 'Not Found' }, 404)
     const result = await checkForUpdate()

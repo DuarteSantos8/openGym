@@ -22,6 +22,9 @@ startMediaSync(useStore)
 // this keeps the focused field above it. Idle everywhere else.
 startNativeKeyboard()
 
+// Built-in animation downloads have a separate device-local lifecycle from user media.
+if (MOBILE) import('./lib/catalogue-media.js').then(m => m.startCatalogueMedia(useStore)).catch(() => {})
+
 // Not in the mobile build: the native shell already serves everything from disk.
 if (!MOBILE && 'serviceWorker' in navigator && location.protocol === 'https:') {
   navigator.serviceWorker.register('sw.js').catch(() => {})

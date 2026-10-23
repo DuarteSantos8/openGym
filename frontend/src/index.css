@@ -895,6 +895,22 @@ body.chips-dragging *{cursor:inherit}
 .exmedia .gifhint{inset-inline-end:9px}
 .exmedia .giftoggle{inset-inline-start:9px}
 .exmedia .gifhint .icn,.exmedia .giftoggle .icn{font-size:13px}
+.catalogue-exmedia-download{position:absolute;inset-inline:8px;bottom:8px;display:flex;flex-direction:column;align-items:center;gap:4px;color:#111;text-align:center;font-size:12px}
+.catalogue-exmedia-download .btn,.catalogue-exmedia-download>span{background:rgba(255,255,255,.94);border-radius:12px;padding:8px 12px;box-shadow:0 1px 8px #0002}
+.catalogue-exmedia.mini .giftoggle{top:6px;bottom:auto}
+.catalogue-exmedia-download .btn{min-height:36px;font-size:12px}
+.catalogue-media-panel{padding:8px 16px 16px;font-size:14px;line-height:1.5}
+.catalogue-media-panel p{margin:8px 0;overflow-wrap:anywhere}
+.catalogue-media-muted{color:var(--label-2);font-size:12px}
+.catalogue-media-actions{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.catalogue-media-actions .btn{flex:1 1 140px;font-size:13px}
+.catalogue-media-confirm{padding:12px;margin:12px 0;background:var(--surface-2);border-radius:var(--r-lg)}
+.catalogue-media-batches{list-style:none;margin:12px 0;padding:0}
+.catalogue-media-batches>li{padding:12px 0;border-top:1px solid var(--separator)}
+.catalogue-media-batches progress{width:100%;accent-color:var(--teal);height:8px}
+.catalogue-media-saved{border:0;padding:0;margin:16px 0}
+.catalogue-media-saved>label{display:flex;align-items:center;gap:10px;min-height:44px;padding:6px 0}
+.catalogue-media-saved input{width:20px;height:20px;accent-color:var(--teal);flex-shrink:0}
 /* superset: both exercises are on screen together, so the animations have to give way —
    at 180px you had to scroll a full screen between two exercises done back-to-back */
 .exmedia.compact img{height:120px}

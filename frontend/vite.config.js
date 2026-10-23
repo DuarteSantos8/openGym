@@ -101,7 +101,7 @@ const pkgVersion = JSON.parse(readFileSync(new URL('./package.json', import.meta
 const appVersion = process.env.APP_BUILD ? `${pkgVersion}+${process.env.APP_BUILD}` : pkgVersion
 
 export default defineConfig({
-  define: { __APP_VERSION__: JSON.stringify(appVersion) },
+  define: { __APP_VERSION__: JSON.stringify(appVersion), 'import.meta.env.VITE_APP_MEDIA_MODE': JSON.stringify(process.env.VITE_MOBILE === '1' ? process.env.APP_MEDIA_MODE || 'full' : 'full') },
   plugins: [react(), umami, flavor, swStamp, catalogueMedia],
   base: './',
   server: {

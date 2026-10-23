@@ -11,6 +11,7 @@ on:
       - 'scripts/build-coach-assets.mjs'
       - 'scripts/build-coach-library.mjs'
       - 'scripts/build-api-docs.mjs'
+      - 'scripts/catalogue/**'
       - 'website/api.html'
       - 'api/coach/prompts/**'
       - '.github/workflows/test.yml'
@@ -23,6 +24,7 @@ on:
       - 'scripts/build-coach-assets.mjs'
       - 'scripts/build-coach-library.mjs'
       - 'scripts/build-api-docs.mjs'
+      - 'scripts/catalogue/**'
       - 'website/api.html'
       - 'api/coach/prompts/**'
       - '.github/workflows/test.yml'
@@ -55,6 +57,7 @@ jobs:
         working-directory: frontend
       - run: node scripts/check-locales.mjs
         working-directory: frontend
+      - run: node --test scripts/catalogue/build-media-manifest.test.mjs
       # check-locales compares the packs to each other, so a key missing from ALL of them is
       # invisible to it. This walks src/ instead. Report-only for now: there is a known
       # backlog of untranslated demo-view strings to clear before it can fail the build.

@@ -27,7 +27,7 @@ const copy = (prefix, html, { sw = 'const CACHE = "og-1a2b3c"' } = {}) => ({
 })
 const check = files => {
   const dir = tree(files)
-  try { return checkMobileBundle(dir).map(p => p.replace(dir + '/', '')) }
+  try { return checkMobileBundle(dir).map(p => p.replaceAll('\\', '/').replace(dir.replaceAll('\\', '/') + '/', '')) }
   finally { rmSync(dir, { recursive: true, force: true }) }
 }
 
@@ -53,5 +53,20 @@ describe('check-mobile-bundle', () => {
 
   it('fails when there is no build at all', () => {
     expect(check({})).toEqual(['dist: no index.html'])
+  })
+
+  it('checks only the selected source and Android, leaving an unrelated iOS build alone', () => {
+    const dir = tree({ ...copy('dist-android-slim', MOBILE_HTML), ...copy('android/app/src/main/assets/public', MOBILE_HTML), ...copy('ios/App/App/public', WEB_HTML) })
+    try { expect(checkMobileBundle(dir, { sourceDir: 'dist-android-slim', platform: 'android' })).toEqual([]) }
+    finally { rmSync(dir, { recursive: true, force: true }) }
+  })
+
+  it('requires the selected native target to exist and can require the media manifest', () => {
+    const dir = tree(copy('dist-android-slim', MOBILE_HTML))
+    try {
+      const problems = checkMobileBundle(dir, { sourceDir: 'dist-android-slim', platform: 'android', requireMedia: true })
+      expect(problems.some(p => p.includes('manifest.json is missing'))).toBe(true)
+      expect(problems.some(p => p.includes('android') && p.includes('no index.html'))).toBe(true)
+    } finally { rmSync(dir, { recursive: true, force: true }) }
   })
 })

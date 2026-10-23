@@ -11,6 +11,9 @@ data/
 
 # Build output / deps
 frontend/dist/
+frontend/dist-android-slim/
+frontend/.mobile-build.lock
+.tmp/
 node_modules/
 *.log
 .DS_Store

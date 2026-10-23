@@ -5,6 +5,9 @@ import { useStore } from '../store/useStore.js'
 import { t, exerciseNameFor } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
 import CustomMedia, { CustomThumb } from './CustomMedia.jsx'
+import { catalogueClipAsset } from '../lib/catalogue-media-selection.js'
+import { useCatalogueMedia } from './catalogue-media-hooks.js'
+import { catalogueDownloadError, mediaBytes } from './CatalogueMediaManager.jsx'
 
 // An exercise's picture, wherever one shows. A custom exercise goes to CustomMedia.jsx — its own
 // photo, GIF, video or link, from the local media store — and never through imgSrc/gifSrc, which
@@ -20,7 +23,89 @@ export default function Media(p) {
 // future workouts (issue #12). Settings can also turn workout media off entirely
 // (gifSize 'off') — then nothing renders here and the exercise card closes up, exactly like
 // an exercise without media. Any other/legacy value behaves as 'full'.
-function BuiltinMedia({ ex, id, compact, minimizable }) {
+function BuiltinMedia(props) {
+  const catalogue = useCatalogueMedia()
+  return catalogue.service || import.meta.env.VITE_APP_MEDIA_MODE === 'slim'
+    ? <DownloadedBuiltinMedia {...props} {...catalogue} />
+    : <LegacyBuiltinMedia {...props} />
+}
+
+function DownloadedBuiltinMedia({ ex, id, compact, minimizable, service, snapshot }) {
+  const body = useStore(s => figureOf(s.S))
+  const gifSize = useStore(s => s.S.gifSize)
+  const update = useStore(s => s.update)
+  const asset = catalogueClipAsset(ex, body, service?.manifest)
+  const assetId = asset?.assetId
+  const status = snapshot?.resources?.[assetId]?.status
+  const [resolved, setResolved] = useState(null)
+  const [playing, setPlaying] = useState(true)
+  const [broken, setBroken] = useState(false)
+  const [message, setMessage] = useState('')
+  const [failedSource, setFailedSource] = useState(null)
+  const [revision, setRevision] = useState(0)
+  const [online, setOnline] = useState(() => globalThis.navigator?.onLine !== false)
+  const visible = !(minimizable && gifSize === 'off')
+  useEffect(() => {
+    const changed = () => setOnline(globalThis.navigator?.onLine !== false)
+    globalThis.addEventListener?.('online', changed)
+    globalThis.addEventListener?.('offline', changed)
+    return () => { globalThis.removeEventListener?.('online', changed); globalThis.removeEventListener?.('offline', changed) }
+  }, [])
+  useEffect(() => {
+    let alive = true, held = null
+    setResolved(null); setBroken(false); setPlaying(true); setMessage('')
+    if (visible && service && assetId) service.resolve(assetId).then(result => {
+      if (!alive) { result.release?.(); return }
+      held = result; setResolved({ ...result, assetId })
+    }).catch(() => { if (alive) setMessage(t('Download failed. Try again.')) })
+    return () => { alive = false; held?.release?.() }
+  }, [service, assetId, status, revision, visible])
+  useEffect(() => { setFailedSource(null) }, [assetId])
+  const ready = resolved?.assetId === assetId && !!resolved?.url && failedSource !== resolved.url
+  const url = ready ? resolved.url : null
+  const clip = asset?.format === 'mp4' && playing ? url : null
+  const clipSrc = useClipInMemory(clip)
+  if (!ex.gif || (minimizable && gifSize === 'off')) return null
+  const mini = minimizable && gifSize === 'mini'
+  const resource = snapshot?.resources?.[assetId]
+  const downloading = ['queued', 'downloading', 'verifying'].includes(resource?.status)
+  const percent = Math.min(100, Math.floor(100 * (resource?.received || 0) / (asset?.bytes || 1)))
+  const showingAnimation = ready && playing && (asset?.format !== 'mp4' || !!clipSrc)
+  const download = async event => {
+    event.stopPropagation(); setMessage(''); setFailedSource(null); setRevision(n => n + 1)
+    try { await service.enqueue([assetId]) } catch (e) { setMessage(catalogueDownloadError(e)) }
+  }
+  const onError = () => {
+    if (showingAnimation) {
+      setFailedSource(resolved.url)
+      setMessage(t('Download failed. Try again.'))
+      service.revalidate(assetId).catch(() => {})
+    } else setBroken(true)
+  }
+  return <div className={'exmedia catalogue-exmedia' + (compact ? ' compact' : '') + (mini ? ' mini' : '') + (broken ? ' broken' : '')} id={id}
+    onClick={() => { if (ready) setPlaying(p => !p) }}>
+    {broken ? <div className="exmedia-x"><Icon name="dumbbell" /></div>
+      : ready && playing && asset.format === 'mp4' && clipSrc
+        ? <video ref={autoplayMuted} className="catvid" src={clipSrc} autoPlay muted loop playsInline disablePictureInPicture aria-label={exerciseNameFor(ex)} onError={onError} />
+        : <img decoding="async" draggable={false} src={ready && playing && asset.format !== 'mp4' ? url : imgSrc(ex, body)} alt={exerciseNameFor(ex)} onError={onError} />}
+    {!ready && <div className="catalogue-exmedia-download" onClick={e => e.stopPropagation()}>
+      {!online ? <span role="status">{t('Not downloaded. Connect to download.')}</span>
+        : !asset || !service ? <span role="status">{t('Animations are unavailable in this build.')}</span>
+          : <button className="btn" disabled={downloading} onClick={download}>
+            {downloading ? resource.status === 'verifying' ? t('Verifying') : t('Downloading {0}%', percent)
+              : resource?.status === 'failed' ? t('Download failed. Try again.') : t('Download animation · {0}', mediaBytes(asset.bytes))}
+          </button>}
+      {message && <span role="status">{message}</span>}
+      {!message && resource?.error && <span role="status">{catalogueDownloadError(resource.error)}</span>}
+    </div>}
+    {minimizable && <button className="giftoggle" onClick={e => { e.stopPropagation(); update(s => { s.gifSize = mini ? 'full' : 'mini' }) }}>
+      <Icon name={mini ? 'expand' : 'minimize'} />{mini ? t('Expand') : t('Minimize')}
+    </button>}
+    {!mini && ready && <span className="gifhint"><Icon name={playing ? 'pause' : 'play'} />{playing ? t('tap to pause') : t('tap to play')}</span>}
+  </div>
+}
+
+function LegacyBuiltinMedia({ ex, id, compact, minimizable }) {
   const [playing, setPlaying] = useState(true)
   // 'gif' → the animation failed, the still is showing; 'all' → the still failed too. Media is
   // fetched from wherever the build points (a mount, a CDN): a dropped connection, an expired

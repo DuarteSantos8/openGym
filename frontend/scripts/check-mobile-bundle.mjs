@@ -14,6 +14,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { checkStagedMedia } from '../../scripts/catalogue/stage-media.mjs'
 
 const COPIES = [
   'dist',
@@ -21,7 +22,7 @@ const COPIES = [
   'ios/App/App/public',
 ]
 
-export function checkCopy(dir) {
+export function checkCopy(dir, { requireMedia = false } = {}) {
   const problems = []
   const html = join(dir, 'index.html')
   if (!existsSync(html)) return [`${dir}: no index.html`]
@@ -33,17 +34,30 @@ export function checkCopy(dir) {
   const sw = join(dir, 'sw.js')
   if (existsSync(sw) && readFileSync(sw, 'utf8').includes('__BUILD__'))
     problems.push(`${dir}/sw.js is not stamped (__BUILD__ left in it)`)
+  problems.push(...checkStagedMedia(dir, { requireManifest: requireMedia }).map(p => `${dir}: ${p}`))
   return problems
 }
 
-export function checkMobileBundle(root) {
-  const copies = COPIES.map(rel => join(root, rel)).filter((dir, i) => i === 0 || existsSync(dir))
-  return copies.flatMap(checkCopy)
+export function checkMobileBundle(root, { sourceDir = 'dist', platform = null, requireMedia = false } = {}) {
+  if (platform && !['android', 'ios'].includes(platform)) throw new Error('platform must be android or ios')
+  const selected = [sourceDir, ...COPIES.slice(1).filter(rel => !platform || rel.startsWith(platform + '/'))]
+  const copies = selected.map(rel => join(root, rel)).filter((dir, i) => i === 0 || platform || existsSync(dir))
+  const problems = copies.flatMap(dir => checkCopy(dir, { requireMedia }))
+  const sourceManifest = join(copies[0], 'exercise-media/manifest.json')
+  if (existsSync(sourceManifest)) {
+    const expected = readFileSync(sourceManifest, 'utf8')
+    for (const dir of copies.slice(1)) {
+      const manifest = join(dir, 'exercise-media/manifest.json')
+      if (existsSync(manifest) && readFileSync(manifest, 'utf8') !== expected) problems.push(`${dir}: exercise media manifest differs from selected source build`)
+    }
+  }
+  return problems
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const root = resolve(process.argv[2] || join(dirname(fileURLToPath(import.meta.url)), '..'))
-  const problems = checkMobileBundle(root)
+  const value = flag => { const i = process.argv.indexOf(flag); return i < 0 ? undefined : process.argv[i + 1] }
+  const problems = checkMobileBundle(root, { sourceDir: value('--source'), platform: value('--platform'), requireMedia: process.argv.includes('--media') })
   if (problems.length) {
     for (const p of problems) console.error('✗ ' + p)
     process.exit(1)

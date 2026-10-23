@@ -39,6 +39,7 @@ import Icon from '../components/Icon.jsx'
 import { durationSheet } from '../components/DurationWheel.jsx'
 import { showsConnection, showsLocalLine } from '../components/SyncBanner.jsx'
 import BackupFolderRow, { useBackupFolder, autoBackupSubtitle } from '../components/BackupFolderRow.jsx'
+import CatalogueMediaManager from '../components/CatalogueMediaManager.jsx'
 import { ServerSyncSection, KeptChangesRows, leaveServer, connectServer, passkeySignIn } from '../components/ServerSync.jsx'
 import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } from '../components/PasswordAuth.jsx'
 import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem } from '../components/Passkeys.jsx'
@@ -795,6 +796,7 @@ export default function Settings({ page = null, find = null, via = null }) {
           accessory="chevron" onClick={importFromHevy} />
       </Section>
       {hasMedia && <Section><MediaRow /></Section>}
+      {MOBILE && android && <CatalogueMediaManager />}
       <Section>
         <Row icon="trash" iconTint="var(--red)" title={t('Reset everything')} danger onClick={resetEverything} />
       </Section>

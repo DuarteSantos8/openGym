@@ -17,13 +17,70 @@ openGym ships in two flavors from the same codebase:
 | Accounts | passkey sign-in, one profile per person | none — the phone *is* the account |
 | Data | synced to your server, readable on desktop | stays on the device (file in the app's private storage) |
 | Reminders | Web Push from your server | native local notifications, no server involved |
-| Exercise media | served by your server (`exercise-media/`) | packed into the app (`exercise-media/`) |
+| Exercise media | served by your server (`exercise-media/`) | packed into the default full app; optional Android slim previews download animations explicitly |
 
 The mobile flavor never talks to a backend by default: no sign-in screen, no sync, no
 telemetry. State is mirrored from `localStorage` into `opengym-state.json` in the app's
 private data directory on every change (iOS is allowed to evict WebView storage under
 pressure — the file mirror is the durable copy and is restored on launch). Backups go out
 through the OS share sheet instead of a browser download.
+
+### Offline exercise animations (Android)
+
+The default build remains **full**, with all exercise animations bundled. An optional **slim**
+Android preview bundles the complete exercise catalogue, translations, instructions and static
+images; tap **Download animation** to save an animation, or open **Settings → Data & backup →
+Offline exercise animations** to download the current plan, favourites or all animations for
+your current drawing preference. Each button previews missing files and storage requirements.
+Unknown or cellular connections display a mobile-data notice before a batch starts.
+
+Downloads stay on this device across restarts and application upgrades. They are independent of
+your account, training history, profile sync, JSON/ZIP exports and Android cloud backups.
+Android device-to-device transfers may preserve them; startup reconciles their files again.
+Changing your plan or drawing preference does not start or delete downloads. Cleanup controls
+remove downloaded animations only; bundled media is part of the APK. A file being displayed is
+deleted after its last playback reference is released. Shared content occupies space once.
+
+Keep the app in the foreground while downloading. Leaving it pauses further scheduling; return
+to this page and choose **Continue**. Interrupted files restart from the beginning; successfully
+verified files are skipped. Failed items can be retried separately. The app verifies size,
+format and SHA-256 before marking a file available offline. Insufficient space pauses the batch.
+
+Installing a slim APK over a full APK replaces its bundled animations. Old bundled animations
+are **not** automatically copied into the download store. Until you download them, static images,
+instructions and training remain available offline. Export your training backup as usual before
+manually testing another build. Slim previews must remain outside the stable `releases/latest`
+channel; the full updater excludes slim-named assets and selects the checksum by exact APK name.
+
+### Building an Android slim preview
+
+The cross-platform Node runner accepts these build settings:
+
+| Setting | Meaning |
+|---|---|
+| `APP_MEDIA_MODE` | `full` (default) or `slim`; use the Android slim command for slim mode |
+| `APP_MEDIA_BASE_URL` | Approved credential-free HTTPS root for immutable `objects/<sha256>.<format>` files; required for slim |
+| `APP_MEDIA_DIR` | Optional private animation input directory, as in existing full releases |
+| `VITE_CLIP_EXT` | `webp` for private animated WebP inputs; otherwise repository MP4 |
+
+```powershell
+# Only use a source and test media you are authorized to distribute.
+$env:APP_MEDIA_BASE_URL = 'https://your-approved-media-host.example/opengym/'
+npm --prefix frontend run build:android:slim
+```
+
+This writes `frontend/dist-android-slim`, generates and verifies its packaged manifest, retains
+all stills and NOTICE, and runs `cap sync android` only. It temporarily selects the matching slim
+Capacitor configuration and restores the original config even on failure. iOS assets are not
+synced by this command. `npm --prefix frontend run build:mobile` remains the full default.
+Staging rejects overlapping source/output trees and removes leftover clips in the target output.
+
+The build does not upload media or establish a download service. The media licence in
+[NOTICE.md](../NOTICE.md) does not itself grant permission for a new public CDN/download pack.
+Maintainers must approve distribution, source access and old-version retention before a real
+slim release. Public repository media and private higher-resolution app inputs retain their
+existing restrictions. See the [design and acceptance matrix](superpowers/specs/2026-10-22-on-demand-exercise-media-design.md)
+for outstanding physical-device, signing and comparable APK-size checks.
 
 ### Connecting the app to your own server
 

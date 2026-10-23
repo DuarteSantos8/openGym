@@ -31,6 +31,16 @@ That's deliberate. The APK is signed, published with a `.sha256` next to every r
 checks for updates itself. Get it from the
 [latest release](https://github.com/DuarteSantos8/openGym/releases/latest).
 
+### Can I download only the exercise animations I use?
+
+Optional Android slim previews keep the complete catalogue and static pictures, and let you
+explicitly download an animation, your plan, favourites or the current figure's full animation
+set. Manage them under **Settings → Data & backup → Offline exercise animations**. Verified
+downloads remain available offline until you delete them or uninstall the app. Download state
+is specific to this device and is not part of your training backup. The default full APK still
+bundles animations. Slim is not the default release; a licensed, maintained download source and
+physical-device acceptance are prerequisites. See [Android media and builds](MOBILE.md#offline-exercise-animations-android).
+
 ### Where is my data?
 
 On a self-hosted instance, in the `./data` folder next to `docker-compose.yml`: one JSON file per

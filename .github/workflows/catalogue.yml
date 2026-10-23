@@ -25,5 +25,7 @@ jobs:
         run: node scripts/catalogue/validate.mjs
       - name: Generated files are up to date
         run: node scripts/catalogue/build.mjs --check
+      - name: Media manifests and full/slim staging
+        run: node --test scripts/catalogue/build-media-manifest.test.mjs
       - name: Media stay within 180 px (licence)
         run: node scripts/catalogue/check-media.mjs

@@ -43,8 +43,8 @@ function compareSemver(a, b) {
  * Returns { hasUpdate, latestVersion, apkUrl, hashUrl } or throws on network failure.
  *   - hasUpdate: true if the latest release tag is newer than the running build
  *   - latestVersion: the semver string of the latest release (without "v" prefix)
- *   - apkUrl: direct download URL of the first .apk asset, or null
- *   - hashUrl: direct download URL of the .apk.sha256 hash file, or null
+ *   - apkUrl: direct download URL of a full .apk asset, or null
+ *   - hashUrl: direct download URL of that APK's exact .sha256 file, or null
  */
 // One request per app session: Settings is opened often, GitHub does not need to hear
 // about it every time. The promise is cached, a failure is not.
@@ -64,8 +64,10 @@ async function fetchLatest() {
   if (!latestVersion) return { hasUpdate: false, latestVersion: __APP_VERSION__, apkUrl: null, hashUrl: null }
   const hasUpdate = compareSemver(latestVersion, __APP_VERSION__) > 0
   const assets = latest.assets || []
-  const apk = assets.find(a => /\.apk$/i.test(a.name))
-  const hash = assets.find(a => /\.apk\.sha256$/i.test(a.name))
+  // Slim is a manual preview, never a stable update for an installed full build. Matching
+  // the whole filename also avoids downloading a checksum belonging to another artifact.
+  const apk = assets.find(a => /\.apk$/i.test(a.name) && !/(?:^|[-_.])slim(?:[-_.]|$)/i.test(a.name))
+  const hash = apk && assets.find(a => a.name === apk.name + '.sha256')
   return { hasUpdate, latestVersion, apkUrl: apk?.browser_download_url || null, hashUrl: hash?.browser_download_url || null }
 }
 
