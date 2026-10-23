@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useUI } from '../store/useUI.js'
 import { useStore } from '../store/useStore.js'
 import { holdPosition } from '../lib/workout-model.js'
+import { flowUnitAt } from '../lib/blocks.js'
 import { t } from '../lib/i18n.js'
 import { REST_MAX } from '../lib/duration.js'
 import { durationSheet } from './DurationWheel.jsx'
@@ -80,6 +81,23 @@ export function applyRestLeft(v, opened) {
 // bottom edge instead of floating as a card over the next set's row, and it is one row: the
 // clock (tap to set it), then −15 s, +15 s, pause and Skip. The progress runs along its top edge,
 // so it takes no width from the buttons. Elsewhere it sits on top of the tab bar.
+
+// In a flow the bar goes from a hold's get-ready count to the hold and on to the gap between
+// rounds, and the button beside the pause says Start, Done, Skip and, once a gap is over, Dismiss.
+// The row is right-aligned, so every word of another width moved the pause: 11 px in English
+// between a hold and the gap, up to 47 px on a 320 px phone (WebKit, 2026-10-07). There the button
+// carries all four, stacked in one cell with the one in use showing, the way Skip carries Dismiss
+// below, and the two buttons are sized alike (index.css #timer .acts .flow-words and .go.flow):
+// one width throughout, so the pause stays where the thumb left it. Not if the gap's Skip has to
+// drop to its icon (useSkipFits): the hold's Done has no such fallback. In no language on a 320 px
+// phone does it have to (WebKit, same day).
+const flowWords = on => (
+  <span className="flow-words">
+    {[['start', 'play', t('Start')], ['done', 'check', t('Done')], ['skip', null, t('Skip')], ['dismiss', null, t('Dismiss')]].map(([k, icon, word]) =>
+      <span key={k} className={k === on ? 'on' : 'off'} aria-hidden={k === on ? undefined : 'true'}>{icon && <Icon name={icon} />}{word}</span>)}
+  </span>
+)
+
 // Skip's label, when the longer of Skip and Dismiss would not fit beside the other buttons
 // (German or Russian on a 390 px phone): an icon then, named in full for a screen reader, rather
 // than "Überspr…". Measured from hidden copies of both labels, so the choice is the same for
@@ -113,11 +131,18 @@ function useSkipFits(actsRef, deps) {
 export default function RestTimer() {
   const timer = useUI(s => s.timer)
   const work = useUI(s => s.work)
-  const { addRest, skipRest, pauseRest, resumeRest, finishWorkEarly, stopWork } = useUI()
+  const { addRest, skipRest, pauseRest, resumeRest, finishWorkEarly, stopWork, pauseWork, resumeWork } = useUI()
   const holdLbl = useStore(s => (work ? holdLabel(s.S, work) : ''))
+  // Whether this countdown belongs to a block that is running itself (lib/blocks.js flowUnitAt:
+  // the shape says flow and the user has not put it back into rows). A flow block is the one
+  // thing on the workout screen that keeps going without being touched, so it is the one that
+  // needs stopping — and this bar is the only control that is fixed on screen while it runs.
+  // Never in the Focus view, which runs no block by itself.
+  const inFlow = useStore(s => !!flowUnitAt(s.S.active, work ? work.owner?.idx : timer?.forIdx, s.S.active?.workoutView || s.S.workoutView))
   const on = work || timer
   const actsRef = useRef(null)
-  const skipFits = useSkipFits(actsRef, [!!timer && !work, t('Skip'), t('Dismiss')])
+  // In a flow the gap has no ±15 s, so Skip has their room too.
+  const skipFits = useSkipFits(actsRef, [!!timer && !work, inFlow, t('Skip'), t('Dismiss')])
   // The page keeps room at its bottom for the bar (index.css body.resting), so the last set and
   // the Finish button can scroll clear of it.
   useEffect(() => {
@@ -131,18 +156,40 @@ export default function RestTimer() {
     return () => { if (frame) cancelAnimationFrame(frame); document.body.classList.remove('resting') }
   }, [!!on])
   if (!on) return null
-  const pct = Math.max(0, Math.min(100, (on.left / on.total) * 100))
+  // A hold still in its get-ready count (useUI.startWork's prep) shows the count, not the hold.
+  const prepping = !!work?.prep
+  const pct = prepping ? Math.max(0, Math.min(100, (work.prep / work.prepTotal) * 100))
+    : Math.max(0, Math.min(100, (on.left / on.total) * 100))
 
+  // A flow block can freeze its hold (useUI.pauseWork) and the bar is the fixed thing on screen,
+  // so it has to say so — otherwise a clock that has stopped moving reads as a hung timer. Done
+  // still works on a frozen hold, and logs the seconds it really held.
   if (work) return (
-    <div id="timer" className="working">
+    <div id="timer" className={'working' + (work.paused ? ' paused' : '')}>
       <div className="bar" aria-hidden="true"><i style={{ width: pct + '%' }} /></div>
       <div className="tclock">
-        <span className="t">{work.left <= 0 && work.overtime ? '+' + clock(-work.left) : clock(work.left)}</span>
-        <span className="lbl">{holdLbl}</span>
+        <span className="t">{prepping ? clock(work.prep) : work.left <= 0 && work.overtime ? '+' + clock(-work.left) : clock(work.left)}</span>
+        <span className="lbl">{work.paused ? t('Paused') : prepping ? t('Get ready') : holdLbl}</span>
       </div>
+      {/* In a flow block, Pause takes Cancel's place. The two both stop the countdown and the
+          difference between them is one word — Pause keeps the seconds and the movement, Cancel
+          throws both away — which is not a distinction to make at arm's length, out of breath,
+          on the control you reach for when the phone rings. Cancel is still there for an
+          ordinary hold, where nothing is going to carry on by itself if you get it wrong. The
+          pause is the rest's own icon button, so in a flow it sits in the same place during a
+          hold and during the gap between rounds. A hold that is frozen keeps it whatever the block
+          does meanwhile: put back into rows during the pause, it would otherwise be left with
+          Cancel and Done and no way to carry on. */}
       <div className="acts">
-        <Button size="sm" onClick={stopWork}>{t('Cancel')}</Button>
-        <Button size="sm" variant="primary" icon="check" onClick={finishWorkEarly}>{t('Done')}</Button>
+        {inFlow || work.paused
+          ? <Button size="sm" className="pause" icon={work.paused ? 'play' : 'pause'}
+            aria-label={t(work.paused ? 'Resume' : 'Pause')} aria-pressed={!!work.paused}
+            onClick={work.paused ? resumeWork : pauseWork} />
+          : <Button size="sm" onClick={stopWork}>{t('Cancel')}</Button>}
+        {/* In the get-ready count there is nothing held to log: the same button starts the hold now. */}
+        {inFlow
+          ? <button type="button" className="btn primary sm go flow" onClick={finishWorkEarly}>{flowWords(prepping ? 'start' : 'done')}</button>
+          : <Button size="sm" variant="primary" icon={prepping ? 'play' : 'check'} className="go" onClick={finishWorkEarly}>{prepping ? t('Start') : t('Done')}</Button>}
       </div>
     </div>
   )
@@ -153,6 +200,10 @@ export default function RestTimer() {
   // (both labels share one cell, one of them hidden), and the clock keeps room for the other of
   // its two faces (data-alt, a hidden line in index.css): the row never reflows when the rest
   // turns Ready, so a thumb on +15 never lands on −15.
+  // A flow block's gap between rounds is 10-15 s, so ±15 s is not an adjustment — it is a skip
+  // and a doubling, and the flow leaves them out. The pause (#193) is what a break you did not
+  // plan wants: it holds the gap, and Resume carries on into the next movement. Skip stays; it is
+  // the other half — "I'm ready now".
   const label = timer.kind === 'switch' ? t('Switch sides') : timer.paused ? t('Paused') : t(restLabel(timer))
   return (
     <div id="timer" className={'rest' + (timer.paused ? ' paused' : '') + (timer.kind === 'switch' ? ' switch' : '') + (timer.ready ? ' ready' : '')}>
@@ -164,20 +215,24 @@ export default function RestTimer() {
         <span className="lbl-alts" aria-hidden="true">{REST_WORDS.map(w => <span key={w}>{t(w)}<Icon name="chevronDown" /></span>)}</span>
       </button>
       <div className="acts" ref={actsRef}>
-        <Button size="sm" className="adj" icon="minus" onClick={() => addRest(-15)}>15s</Button>
-        <Button size="sm" className="adj" icon="plus" disabled={!timer.ready && timer.left >= REST_MAX} onClick={() => addRest(15)}>15s</Button>
+        {!inFlow && <>
+          <Button size="sm" className="adj" icon="minus" onClick={() => addRest(-15)}>15s</Button>
+          <Button size="sm" className="adj" icon="plus" disabled={!timer.ready && timer.left >= REST_MAX} onClick={() => addRest(15)}>15s</Button>
+        </>}
         {timer.ready
           ? <Button size="sm" className="pause-slot" icon="pause" disabled tabIndex={-1} aria-hidden="true" />
           : <Button size="sm" className="pause" icon={timer.paused ? 'play' : 'pause'}
             aria-label={t(timer.paused ? 'Resume' : 'Pause')} aria-pressed={!!timer.paused}
             onClick={timer.paused ? resumeRest : pauseRest} />}
-        <button type="button" className={'btn primary sm skip' + (skipFits ? '' : ' icon-only')} onClick={() => skipRest()}
+        {/* In a flow it carries the hold's words too (flowWords), and its probe measures all four. */}
+        <button type="button" className={'btn primary sm skip' + (inFlow ? ' flow' : '') + (skipFits ? '' : ' icon-only')} onClick={() => skipRest()}
           aria-label={skipFits ? undefined : t(timer.ready ? 'Dismiss' : 'Skip')}>
           {skipFits
-            ? <span><span className="on">{t(timer.ready ? 'Dismiss' : 'Skip')}</span>
-              <span className="off" aria-hidden="true">{t(timer.ready ? 'Skip' : 'Dismiss')}</span></span>
+            ? inFlow ? flowWords(timer.ready ? 'dismiss' : 'skip')
+              : <span><span className="on">{t(timer.ready ? 'Dismiss' : 'Skip')}</span>
+                <span className="off" aria-hidden="true">{t(timer.ready ? 'Skip' : 'Dismiss')}</span></span>
             : <Icon name={timer.ready ? 'xmark' : 'skipForward'} />}
-          <span className="skip-probe" aria-hidden="true"><span>{t('Skip')}</span><span>{t('Dismiss')}</span></span>
+          <span className="skip-probe" aria-hidden="true">{inFlow ? <span>{flowWords(null)}</span> : <><span>{t('Skip')}</span><span>{t('Dismiss')}</span></>}</span>
         </button>
       </div>
     </div>

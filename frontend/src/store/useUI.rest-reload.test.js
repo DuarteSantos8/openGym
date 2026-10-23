@@ -117,6 +117,17 @@ describe('the rest timer across a reload', () => {
     expect(chime).toHaveBeenCalledWith(true, 'whistle')
   })
 
+  // A flow block's round rest: the block it carries into its next round (timer.flow) comes back too.
+  it('keeps the flow block a round\'s rest leads into across a reload', () => {
+    useUI.getState().startRest(15, 2, { kind: 'round', flow: 'sg-warmup', flowCur: 0 })
+    expect(saved()).toMatchObject({ kind: 'round', flow: 'sg-warmup', flowCur: 0 })
+    const kept = saved()
+    useUI.setState({ timer: null })
+    localStorage.setItem(REST_KEY, JSON.stringify(kept))
+    expect(restoreRest()).toBe(true)
+    expect(useUI.getState().timer).toMatchObject({ kind: 'round', forIdx: 2, flow: 'sg-warmup', flowCur: 0 })
+  })
+
   it('a rest that ended meanwhile, or one with no session running, is dropped', () => {
     localStorage.setItem(REST_KEY, JSON.stringify({ endsAt: Date.now() - 1, total: 90, forIdx: 0, paused: false, left: 3 }))
     expect(restoreRest()).toBe(false)

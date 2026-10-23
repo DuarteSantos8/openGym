@@ -451,6 +451,14 @@ describe('Workout set completion flow', () => {
     expect(mocks.startWork).toHaveBeenCalledTimes(1)
     expect(mocks.startWork.mock.calls[0][0]).toBe(30)
     expect(mocks.startWork.mock.calls[0][3]).toEqual({ idx: 0, i: 0, id: 'plank' })
+    expect(mocks.startWork.mock.calls[0][4]).toEqual({ noOvertime: false, prep: 0 })   // Settings decides overtime here; no get-ready outside a flow
+  })
+
+  it('a hold outside a flow block gets no get-ready count, whatever Settings says', async () => {
+    await mount([hold('plank', [false, false, false])])
+    mocks.S = { ...mocks.S, flowGetReady: 5 }
+    await pressStart(0)
+    expect(mocks.startWork.mock.calls[0][4]).toEqual({ noOvertime: false, prep: 0 })
   })
 
   it('a finished hold hands its rest the next hold, which starts when the rest is over', async () => {
