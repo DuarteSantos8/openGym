@@ -2,6 +2,8 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import http from 'node:http'
 import { randomBytes } from 'node:crypto'
+import { readFileSync } from 'node:fs'
+import vm from 'node:vm'
 import { createConfirmations, createDestructiveTools, ConfirmationError } from '../src/confirmations.js'
 import { createServer } from '../src/server.js'
 import { createProfileStore } from '../src/profileStore.js'
@@ -294,4 +296,134 @@ test('HTTP page is static, hardened, fragment-only; POSTs demand same-origin JSO
   assert.equal(response.status, 200)
   assert.equal(f.puts, 1)
   assert.equal((await post('execute', { body: { cid: 'cid-1', credential: credential() } })).status, 400)
+})
+
+
+const rowsOf = n => Array.from({ length: n }, (_, i) => ({ id: `id${i}`, name: `Name ${i}`, date: '2026-10-19' }))
+
+test('closed params are normalized, copied, frozen, forwarded at every authorization and bound to a superseding key', async t => {
+  const calls = []
+  const executors = { 'set-coach-key': {
+    params: raw => ({ nested: { mode: raw.mode } }),
+    authorize: async (trusted, id, params) => { calls.push(['authorize', trusted.userId, id, params]); return params?.nested.mode === 'replace' },
+    inspect: async (trusted, id, params) => { calls.push(['inspect', params]); return { summary: { type: 'set-coach-key', id }, digest: 'd' } },
+    execute: async (trusted, id, digest, params) => { calls.push(['execute', params, digest]); return { ok: true } },
+  } }
+  const f = await fixture({ executors }); t.after(f.close)
+  const raw = { mode: 'replace' }
+  const first = idOf((await f.service.requestConfirmation({ type: 'set-coach-key', targetId: 'new', params: raw }, 'conn1')).url)
+  raw.mode = 'tampered'
+  const stored = [...f.service.pending.values()][0].params
+  assert.deepEqual(stored, { nested: { mode: 'replace' } })
+  assert.throws(() => { stored.nested.mode = 'tampered' })
+  await f.service.details(first); await f.service.challenge(first)
+  assert.deepEqual(await f.service.confirm(first, { cid: 'cid-1', credential: credential() }), { ok: true })
+  assert.deepEqual(calls.map(x => x[0]), ['authorize', 'authorize', 'inspect', 'authorize', 'inspect', 'authorize', 'execute'])
+  assert.ok(calls.every(x => x[0] === 'authorize' ? x[3]?.nested.mode === 'replace' : x[1]?.nested.mode === 'replace'))
+  const older = idOf((await f.service.requestConfirmation({ type: 'set-coach-key', targetId: 'new', params: { mode: 'replace' } }, 'conn1')).url)
+  await f.service.requestConfirmation({ type: 'set-coach-key', targetId: 'new', params: { mode: 'replace', extra: 1 } }, 'conn1')
+  await assert.rejects(() => f.service.details(older), bad)
+})
+
+test('params without a validator, throwing validators, invalid shapes, and oversized normalized objects refuse', async t => {
+  const f = await fixture({ executors: { 'op': { authorize: async () => true, inspect: async () => ({ digest: 'd', summary: { type: 'op', id: 'new' } }), execute: async () => ({ ok: true }) } } }); t.after(f.close)
+  await assert.rejects(() => f.service.requestConfirmation({ type: 'delete-workout', targetId: 'w1', params: {} }, 'conn1'), bad)
+  await assert.rejects(() => f.service.requestConfirmation({ type: 'op', targetId: 'new', params: {} }, 'conn1'), bad)
+  assert.equal(f.service.pending.size, 0)
+  for (const result of [() => { throw new Error('private') }, () => [], () => new Date(), () => null, () => ({ secret: 'x'.repeat(4100) })]) {
+    const g = await fixture({ executors: { 'op': { params: result, authorize: async () => true, inspect: async () => ({}), execute: async () => ({}) } } })
+    try {
+      await assert.rejects(() => g.service.requestConfirmation({ type: 'op', targetId: 'new', params: {} }, 'conn1'), bad)
+      assert.equal(g.service.pending.size, 0)
+    } finally { await g.close() }
+  }
+})
+
+test('reveal is returned only by browser execute once, never by link, details, GET, or pending records', async t => {
+  const executor = { 'reset-password': {
+    authorize: async () => true,
+    inspect: async (_trusted, id) => ({ summary: { type: 'reset-password', id, name: 'Password' }, digest: 'e' }),
+    execute: async () => ({ reset: true, reveal: { label: 'Temporary password', value: 'one-time-secret', expires: 1700000000000 } }),
+  } }
+  const f = await fixture({ executors: executor }); t.after(f.close)
+  const result = await f.service.requestConfirmation({ type: 'reset-password', targetId: 'uid2' }, 'conn1')
+  assert.deepEqual(Object.keys(result), ['url'])
+  assert.equal(result.url.includes('one-time-secret'), false)
+  const url = result.url
+  const id = idOf(url)
+  const web = createServer({ origin, prefix, apiBase: 'unused', confirmations: f.service })
+  await new Promise(resolve => web.listen(0, '127.0.0.1', resolve))
+  t.after(() => new Promise(resolve => web.close(resolve)))
+  const base = `http://127.0.0.1:${web.address().port}`
+  const pageA = await fetch(`${base}/connector/confirm?account=uid2`)
+  const pageB = await fetch(`${base}/connector/confirm?account=someone-else`)
+  const bytesA = Buffer.from(await pageA.arrayBuffer())
+  const bytesB = Buffer.from(await pageB.arrayBuffer())
+  assert.deepEqual(bytesA, bytesB)
+  assert.equal(bytesA.includes(Buffer.from('uid2')), false)
+  const post = (route, body = {}) => fetch(`${base}/connector/confirm/${route}`, { method: 'POST', headers: { origin, 'content-type': 'application/json' }, body: JSON.stringify({ id, ...body }) })
+  assert.equal((await (await post('details')).text()).includes('one-time-secret'), false)
+  await post('challenge')
+  const first = await post('execute', { cid: 'cid-1', credential: credential() })
+  assert.equal(first.status, 200)
+  assert.deepEqual(await first.json(), { reset: true, reveal: { label: 'Temporary password', value: 'one-time-secret', expires: 1700000000000 } })
+  assert.equal([...f.service.pending.values()].some(rec => JSON.stringify(rec).includes('one-time-secret')), false)
+  const second = await post('execute', { cid: 'cid-1', credential: credential() })
+  assert.equal(second.status, 400)
+  assert.equal((await second.text()).includes('one-time-secret'), false)
+})
+
+test('invalid reveal shapes refuse rather than leaking an upstream result', async t => {
+  for (const reveal of [{ label: '', value: 'x' }, { label: 'x', value: '' }, { label: 'x', value: 'v'.repeat(201) }, { label: 'x', value: 'v', expires: Infinity }, { label: 'x', value: 'v', expires: 'tomorrow' }]) {
+    const f = await fixture({ executors: { op: { authorize: async () => true, inspect: async () => ({ digest: 'd', summary: { type: 'op', id: 'new' } }), execute: async () => ({ reveal }) } } })
+    try {
+      const id = idOf((await f.service.requestConfirmation({ type: 'op', targetId: 'new' }, 'conn1')).url)
+      await f.service.details(id); await f.service.challenge(id)
+      await assert.rejects(() => f.service.confirm(id, { cid: 'cid-1', credential: credential() }), bad)
+      assert.equal(f.service.pending.size, 0)
+    } finally { await f.close() }
+  }
+})
+
+test('bulk summary accepts bounded explicit rows and total; rejects malformed or oversized rows', async t => {
+  const rows = rowsOf(2)
+  let summary = { type: 'bulk-delete', id: 'batch', effect: 'Removes listed workouts.', rows, total: 2 }
+  const f = await fixture({ executors: { 'bulk-delete': { authorize: async () => true, inspect: async () => ({ summary, digest: 'd' }), execute: async () => ({ deleted: 2 }) } } }); t.after(f.close)
+  const id = idOf((await f.service.requestConfirmation({ type: 'bulk-delete', targetId: 'batch' }, 'conn1')).url)
+  assert.deepEqual((await f.service.details(id)).summary, summary)
+  for (const broken of [[], rowsOf(26), [{ id: '', name: 'x' }], [{ id: 'a', name: 'b', date: 'c'.repeat(201) }],
+    [{ id: 'a', name: 'b', extra: 1 }], rowsOf(25).map(row => ({ ...row, name: 'n'.repeat(200), date: 'd'.repeat(200) }))]) {
+    summary = { type: 'bulk-delete', id: 'batch', rows: broken }
+    await assert.rejects(() => f.service.details(id), bad)
+  }
+  summary = { type: 'bulk-delete', id: 'batch', rows, total: 1 }
+  await assert.rejects(() => f.service.details(id), bad)
+})
+
+test('confirm page renders rows and one-time secret with textContent only', async () => {
+  const html = readFileSync(new URL('../src/web/confirm.html', import.meta.url), 'utf8')
+  const elements = new Map()
+  const element = () => ({ textContent: '', disabled: true, children: [], appendChild(node) { this.children.push(node) }, addEventListener(_name, fn) { this.click = fn } })
+  const document = { getElementById(id) { if (!elements.has(id)) elements.set(id, element()); return elements.get(id) }, createElement: element }
+  const posts = []
+  const fetch = async (_url, options) => {
+    const { id } = JSON.parse(options.body)
+    assert.equal(id, 'fragment-token')
+    const route = _url.split('/').at(-1)
+    posts.push(route)
+    return { ok: true, json: async () => route === 'details'
+      ? { summary: { type: 'bulk-delete', id: 'batch', name: 'Two workouts', rows: [{ id: '<id>', name: '<script>', date: 'today' }] }, digest: 'fingerprint' }
+      : route === 'challenge' ? { cid: 'cid-1', options: { challenge: 'YQ', allowCredentials: [] } }
+        : { reveal: { label: '<b>Code</b>', value: '<script>secret</script>', expires: 1700000000000 } } }
+  }
+  const context = { document, fetch, location: { hash: '#fragment-token', pathname: '/connector/confirm' }, history: { replaceState() {} }, navigator: { credentials: { get: async () => ({ id: 'cred', rawId: new Uint8Array([1]), type: 'public-key', response: { clientDataJSON: new Uint8Array([1]), authenticatorData: new Uint8Array([1]), signature: new Uint8Array([1]) } }) } }, btoa, atob, Uint8Array, console }
+  vm.runInNewContext(html.match(/<script>([\s\S]*?)<\/script>/)[1], context)
+  await new Promise(resolve => setImmediate(resolve))
+  const list = [...elements.values()].flatMap(e => e.children)
+  assert.ok(list.some(e => e.textContent.includes('<script>')))
+  await elements.get('confirm').click()
+  const all = [...elements.values()].flatMap(e => [e, ...e.children])
+  assert.ok(all.some(e => e.textContent.includes('<script>secret</script>')))
+  assert.ok(all.some(e => e.textContent.includes('shown once')))
+  assert.deepEqual(posts, ['details', 'challenge', 'execute'])
 })

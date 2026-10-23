@@ -14,16 +14,20 @@
 <body>
 <h1>Confirm action</h1>
 <p id="target"></p>
+<ul id="rows"></ul>
 <p id="digest"></p>
 <button id="confirm" type="button" disabled>Confirm with passkey</button>
 <p id="out" role="status" aria-live="polite"></p>
+<div id="reveal" role="status" aria-live="polite"></div>
 <script>
 const id = location.hash.slice(1)
 history.replaceState(null, '', location.pathname)
 const target = document.getElementById('target')
+const rows = document.getElementById('rows')
 const digest = document.getElementById('digest')
 const button = document.getElementById('confirm')
 const out = document.getElementById('out')
+const reveal = document.getElementById('reveal')
 const bufToB64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 const b64uToBuf = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)).buffer
 const say = text => { out.textContent = text }
@@ -46,7 +50,12 @@ function credentialJSON(cred) {
   }
 }
 post('details').then(({ summary, digest: value }) => {
-  target.textContent = summary.type + ': ' + summary.name + ' (' + summary.id + ')' + (summary.date ? ' — ' + summary.date : '') + (summary.effect ? '. ' + summary.effect : '')
+  target.textContent = summary.type + ': ' + (summary.name || summary.id) + (summary.name ? ' (' + summary.id + ')' : '') + (summary.date ? ' — ' + summary.date : '') + (summary.effect ? '. ' + summary.effect : '')
+  for (const row of summary.rows || []) {
+    const item = document.createElement('li')
+    item.textContent = row.name + ' (' + row.id + ')' + (row.date ? ' — ' + row.date : '')
+    rows.appendChild(item)
+  }
   digest.textContent = 'Target fingerprint: ' + value
   button.disabled = false
 }).catch(() => say('Confirmation unavailable. Request a new link.'))
@@ -58,8 +67,21 @@ button.addEventListener('click', async () => {
     options.challenge = b64uToBuf(options.challenge)
     for (const item of options.allowCredentials || []) item.id = b64uToBuf(item.id)
     const cred = await navigator.credentials.get({ publicKey: options })
-    await post('execute', { cid, credential: credentialJSON(cred) })
+    const result = await post('execute', { cid, credential: credentialJSON(cred) })
     say('Action completed.')
+    if (result.reveal) {
+      const secret = document.createElement('p')
+      secret.textContent = result.reveal.label + ': ' + result.reveal.value
+      reveal.appendChild(secret)
+      if (result.reveal.expires !== undefined) {
+        const expiry = document.createElement('p')
+        expiry.textContent = 'Expires: ' + new Date(result.reveal.expires).toLocaleString()
+        reveal.appendChild(expiry)
+      }
+      const notice = document.createElement('p')
+      notice.textContent = 'This secret is shown once. Save it now.'
+      reveal.appendChild(notice)
+    }
   } catch { say('Confirmation unavailable. Request a new link.') }
 })
 </script>

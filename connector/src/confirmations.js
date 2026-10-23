@@ -3,8 +3,16 @@ import { openBearer, mintLoginOptions, verifyFreshPasskey } from './openGymSessi
 
 const ID = /^[A-Za-z0-9_-]{43}$/
 const TTL = 5 * 60_000
+const MAX_PARAMS_BYTES = 4096
+const MAX_ROWS_BYTES = 8192
 const hash = value => crypto.createHash('sha256').update(value).digest('base64url')
 const invalid = () => { throw new ConfirmationError() }
+const str = (value, max) => (typeof value === 'string' && value.length >= 1 && value.length <= max ? value : null)
+const plain = value => !!value && typeof value === 'object' && (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)
+const deepFreeze = value => {
+  if (value && typeof value === 'object') for (const child of Object.values(value)) deepFreeze(child)
+  return Object.freeze(value)
+}
 
 export class ConfirmationError extends Error {
   constructor() { super('invalid_confirmation'); this.name = 'ConfirmationError' }
@@ -30,6 +38,20 @@ function targetOf(profile, type, id) {
   }
 }
 
+// Bulk actions list their targets as explicit rows (the page renders one element each), never
+// folded into `effect`. Only id/name/date cross: no other field of the upstream record.
+function pickRows(rows) {
+  if (!Array.isArray(rows) || rows.length < 1 || rows.length > 25) invalid()
+  const out = rows.map(row => {
+    if (!plain(row) || Object.keys(row).some(k => k !== 'id' && k !== 'name' && k !== 'date')) invalid()
+    const id = str(row.id, 200), name = str(row.name, 200), date = row.date === undefined ? undefined : str(row.date, 200)
+    if (!id || !name || date === null) invalid()
+    return date ? { id, name, date } : { id, name }
+  })
+  if (Buffer.byteLength(JSON.stringify(out)) > MAX_ROWS_BYTES) invalid()
+  return out
+}
+
 function pickSummary(summary) {
   if (!summary || typeof summary !== 'object' || Array.isArray(summary)) invalid()
   const out = {}
@@ -40,7 +62,21 @@ function pickSummary(summary) {
     out[key] = value
   }
   if (!out.type || !out.id) invalid()
+  if (summary.rows != null) out.rows = pickRows(summary.rows)
+  if (summary.total != null) {
+    if (!out.rows || !Number.isSafeInteger(summary.total) || summary.total < out.rows.length) invalid()
+    out.total = summary.total
+  }
   return out
+}
+
+// A one-time secret (e.g. a temporary password) goes to the browser in the execute response only.
+// It is never stored, so a lost response cannot be recovered: the action has to be requested again.
+function pickReveal(reveal) {
+  if (!plain(reveal)) invalid()
+  const label = str(reveal.label, 80), value = str(reveal.value, 200)
+  if (!label || !value || (reveal.expires !== undefined && !Number.isFinite(reveal.expires))) invalid()
+  return reveal.expires === undefined ? { label, value } : { label, value, expires: reveal.expires }
 }
 
 function deleteTarget(profile, type, id, digest) {
@@ -94,13 +130,27 @@ export function createConfirmations({ connections, key, apiBase, origin, prefix,
   // stored caller may act on this exact target. Only `true` passes; missing, false, throwing or
   // truthy-but-not-true all fail closed. The caller never supplies an admin flag: the executor gets
   // the stored user ID and bearer and must ask upstream itself.
-  async function gate(type, userId, bearer, targetId) {
+  async function gate(type, userId, bearer, targetId, params) {
     if (type === 'delete-routine' || type === 'delete-workout') return
     const executor = executors[type]
     if (!executor || typeof executor.authorize !== 'function' || typeof executor.inspect !== 'function' || typeof executor.execute !== 'function') invalid()
     let ok
-    try { ok = await executor.authorize({ userId, bearer }, targetId) } catch { invalid() }
+    try { ok = await executor.authorize({ userId, bearer }, targetId, params) } catch { invalid() }
     if (ok !== true) invalid()
+  }
+  // Closed params: only an executor that declares a `params(raw)` validator takes any, and it always
+  // runs (raw may be undefined) so it can demand them. Its answer must be a plain JSON object; we keep
+  // a frozen JSON copy, so nothing the caller or validator still holds can change it afterwards.
+  function closedParams(type, raw) {
+    const validator = type !== 'delete-routine' && type !== 'delete-workout' && executors[type] && executors[type].params
+    if (typeof validator !== 'function') { if (raw !== undefined) invalid(); return undefined }
+    try {
+      const value = validator(raw)
+      if (!plain(value)) invalid()
+      const text = JSON.stringify(value)
+      if (Buffer.byteLength(text) > MAX_PARAMS_BYTES) invalid()
+      return deepFreeze(JSON.parse(text))
+    } catch { invalid() }
   }
   async function requestConfirmation(action, connId) {
     sweep()
@@ -109,8 +159,10 @@ export function createConfirmations({ connections, key, apiBase, origin, prefix,
       typeof connId !== 'string') invalid()
     const conn = connections.get(connId)
     if (!conn || typeof conn.userId !== 'string' || !conn.userId) invalid()
+    // The superseding key stays (connection, type, target): newer params replace an older link.
     const type = action.type, targetId = action.targetId, key = opKey(connId, type, targetId)
-    await gate(type, conn.userId, trusted(connId, conn.userId), targetId)
+    const params = closedParams(type, action.params)
+    await gate(type, conn.userId, trusted(connId, conn.userId), targetId, params)
     // Nothing below awaits: the connection is re-checked and the record minted in one step, so a
     // revoked connection or a sweep during authorize cannot leave a pending record behind.
     sweep()
@@ -120,15 +172,15 @@ export function createConfirmations({ connections, key, apiBase, origin, prefix,
     let id, h
     do { id = crypto.randomBytes(32).toString('base64url'); h = hash(id) } while (pending.has(h))
     latest.set(key, h)
-    pending.set(h, { connId, userId: conn.userId, type, targetId, key, exp: time() + TTL })
+    pending.set(h, { connId, userId: conn.userId, type, targetId, params, key, exp: time() + TTL })
     return { url: `${origin}${prefix}/confirm#${id}` }
   }
   async function inspect(rec, bearer) {
     try {
       if (rec.type === 'delete-routine' || rec.type === 'delete-workout') return targetOf(await store.readProfile(bearer), rec.type, rec.targetId)
       // Authorize first: a withdrawn right must not even let the page read the target.
-      await gate(rec.type, rec.userId, bearer, rec.targetId)
-      return await executors[rec.type].inspect({ userId: rec.userId, bearer }, rec.targetId)
+      await gate(rec.type, rec.userId, bearer, rec.targetId, rec.params)
+      return await executors[rec.type].inspect({ userId: rec.userId, bearer }, rec.targetId, rec.params)
     } catch (e) { if (e instanceof ConfirmationError) throw e; invalid() }
   }
   async function details(id) {
@@ -182,9 +234,10 @@ export function createConfirmations({ connections, key, apiBase, origin, prefix,
       // Admin rights and target state can change after the page was shown and after the passkey
       // tap: ask again, with the stored user and a freshly opened bearer, right before executing.
       const live = trusted(rec.connId, rec.userId)
-      await gate(rec.type, rec.userId, live, rec.targetId)
+      await gate(rec.type, rec.userId, live, rec.targetId, rec.params)
       if (latest.get(rec.key) !== h || rec.exp <= time()) invalid()
-      return await executors[rec.type].execute({ userId: rec.userId, bearer: trusted(rec.connId, rec.userId) }, rec.targetId, rec.digest)
+      const result = await executors[rec.type].execute({ userId: rec.userId, bearer: trusted(rec.connId, rec.userId) }, rec.targetId, rec.digest, rec.params)
+      return result && typeof result === 'object' && result.reveal !== undefined ? { ...result, reveal: pickReveal(result.reveal) } : result
     } catch (e) { if (e instanceof ConfirmationError) throw e; invalid() }
   }
   return { requestConfirmation, details, challenge, confirm, pending }
