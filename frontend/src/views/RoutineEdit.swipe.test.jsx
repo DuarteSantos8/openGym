@@ -54,8 +54,17 @@ function swipe(target, x0, x1) {
 }
 const undo = () => act(() => useUI.getState().runToastAction())
 
+// happy-dom 20.12+ runs Element.animate on its own clock, which fake timers do not move, so the
+// row's collapse never finished: end each animation on the faked clock instead.
+const fakeAnimate = () => vi.spyOn(Element.prototype, 'animate').mockImplementation(function (_, o) {
+  const a = { onfinish: null, cancel: () => clearTimeout(t) }
+  const t = setTimeout(() => a.onfinish?.(), o?.duration || 0)
+  return a
+})
+
 beforeEach(() => {
   vi.useFakeTimers()
+  fakeAnimate()
   Object.values(sheets).forEach(mock => mock.mockReset())
   document.documentElement.dir = 'ltr'
   useUI.setState({ sheets: [], toastMsg: '', toastAction: null })
@@ -66,6 +75,7 @@ afterEach(() => {
   act(() => root.unmount()); host.remove()
   widthSpy.mockRestore()
   vi.clearAllTimers(); vi.useRealTimers()
+  vi.mocked(Element.prototype.animate).mockRestore?.()
 })
 
 describe('swiping an exercise out of a routine', () => {

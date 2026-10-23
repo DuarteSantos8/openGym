@@ -312,8 +312,11 @@ app background). Generate all platform assets from it on a machine with the tool
 
 ```sh
 cd frontend
-npx @capacitor/assets generate --iconBackgroundColor '#0c0e12' --splashBackgroundColor '#0c0e12'
+npx @capacitor/assets@3.0.5 generate --iconBackgroundColor '#0c0e12' --splashBackgroundColor '#0c0e12'
 ```
+
+The generator is not a dependency of the app (it pulls in an old Capacitor CLI and sharp),
+so `npx` fetches it for that one run.
 
 (If the generator won't take the SVG directly, export it to `resources/icon.png` at
 1024×1024 first — any image tool can do it.)
