@@ -123,3 +123,15 @@ test('a client connects through the consent screen and reads with a rotating tok
   assert.equal(after.status, 400);
   assert.equal((await after.json()).error, 'invalid_grant');
 });
+
+test('a code approved before "sign out everywhere" is refused after it', async t => {
+  const h = await startServer(t);
+  const post = (p, body, headers = {}) => fetch(h.api + p, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(body) });
+  const { client_id } = await (await post('/api/oauth/register', { redirect_uris: [REDIRECT] })).json();
+  const q = { client_id, redirect_uri: REDIRECT, response_type: 'code', code_challenge: challenge, code_challenge_method: 'S256' };
+  const code = new URL((await (await post('/api/oauth/approve', q, asApp('u1'))).json()).redirect).searchParams.get('code');
+  assert.equal((await post('/api/logout/all', {}, asApp('u1'))).status, 200);
+  const r = await post('/api/oauth/token', { grant_type: 'authorization_code', code, client_id, redirect_uri: REDIRECT, code_verifier: verifier });
+  assert.equal(r.status, 400);
+  assert.equal((await r.json()).error, 'invalid_grant');
+});

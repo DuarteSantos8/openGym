@@ -2089,7 +2089,7 @@ function dataWritable() {
 // consent screen (frontend views/Connect.jsx): that screen signs the person in the usual way,
 // passkey or password, then posts the consent here with the session cookie. The code goes back to
 // the client's redirect URI and is traded for tokens at POST /api/oauth/token.
-const oauthCodes = new Map(); // code -> { uid, clientId, clientName, redirectUri, challenge, exp }
+const oauthCodes = new Map(); // code -> { uid, sv, clientId, clientName, redirectUri, challenge, exp }
 setInterval(() => { for (const [k, v] of oauthCodes) if (v.exp < Date.now()) oauthCodes.delete(k); }, 60000).unref();
 const MCP_RESOURCE = ORIGIN.replace(/\/+$/, '') + '/mcp';
 const oauthMeta = {
@@ -2150,7 +2150,7 @@ const oauthRoutes = {
     if (text(q.response_type) !== 'code') return oauthError(res, 'unsupported_response_type');
     if (text(q.code_challenge_method) !== 'S256' || !/^[A-Za-z0-9_-]{43}$/.test(text(q.code_challenge))) return oauthError(res, 'invalid_request');
     const code = crypto.randomBytes(32).toString('base64url');
-    oauthCodes.set(code, { uid: user.id, clientId: text(q.client_id), clientName: client.name, redirectUri: text(q.redirect_uri), challenge: text(q.code_challenge), exp: Date.now() + CODE_TTL_MS });
+    oauthCodes.set(code, { uid: user.id, sv: sessionVersion(user), clientId: text(q.client_id), clientName: client.name, redirectUri: text(q.redirect_uri), challenge: text(q.code_challenge), exp: Date.now() + CODE_TTL_MS });
     audit(req, 'auth.oauth.grant', { user, msg: client.name });
     const back = new URL(text(q.redirect_uri));
     back.searchParams.set('code', code);
@@ -2176,8 +2176,10 @@ const oauthRoutes = {
     if (!c || c.exp < Date.now() || c.clientId !== clientId || c.redirectUri !== text(q.redirect_uri) || !pkceOk(q.code_verifier, c.challenge)) {
       return oauthError(res, 'invalid_grant');
     }
+    // A code approved before "sign out everywhere" (or a new password) is ended by it like any
+    // session: otherwise the grant made from it would carry the new session version and outlive it.
     const user = db.users.find(u => u.id === c.uid);
-    if (!user || user.disabled) return oauthError(res, 'invalid_grant');
+    if (!user || user.disabled || sessionVersion(user) !== c.sv) return oauthError(res, 'invalid_grant');
     const tokens = issueGrant(db, { user, clientId, clientName: c.clientName });
     saveDb();
     json(res, 200, tokens);
