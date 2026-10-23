@@ -267,3 +267,23 @@ describe('loads between quarter-unit boundaries', () => {
     expect(snap(48.74)).toBe(40)
   })
 })
+
+// #510 and Discord "1 kg / 2 kg discs": whole and half kilo change plates, and 1 / 0.5 lb.
+describe('change plates beyond the standard set', () => {
+  test('the editor lists them, heaviest first, and the standard set is what it always was', () => {
+    expect(PLATE_SIZES.kg).toEqual([25, 20, 15, 10, 5, 2.5, 2, 1.5, 1.25, 1, 0.5])
+    expect(PLATE_SIZES.lb).toEqual([45, 35, 25, 15, 10, 5, 2.5, 1.25, 1, 0.5])
+    for (const u of ['kg', 'lb']) expect([...PLATE_SIZES[u]].sort((a, b) => b - a)).toEqual(PLATE_SIZES[u])
+    expect(inventoryFor({ unit: 'kg' }).map(p => p.w)).toEqual([25, 20, 15, 10, 5, 2.5, 1.25])
+    expect(inventoryFor({ unit: 'lb' }).map(p => p.w)).toEqual([45, 35, 25, 10, 5, 2.5])
+    for (const w of [2, 1.5, 1]) expect(pairsOf({ unit: 'kg' }, w)).toBe(0)
+  })
+  test('counted ones load like any other size', () => {
+    const inv = inventoryFor({ unit: 'kg', plates: { kg: { 20: 2, 10: 1, 5: 1, 2.5: 1, 2: 1, 1.5: 1, 1: 1 } } })
+    expect(plateStack(4.5, inv)).toEqual({ plates: [2.5, 2], missing: 0 })
+    expect(plateStack(3, inv)).toEqual({ plates: [2, 1], missing: 0 })
+    expect(plateStack(1.5, inv)).toEqual({ plates: [1.5], missing: 0 })
+    const S = { unit: 'kg', plates: withPlatePairs({ unit: 'kg' }, 2, 1, 1000) }
+    expect(inventoryFor(S).map(p => p.w)).toEqual([25, 20, 15, 10, 5, 2.5, 2, 1.25])
+  })
+})
