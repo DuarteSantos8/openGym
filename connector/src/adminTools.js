@@ -30,6 +30,7 @@ const FIXED = new Set([
   'GET /api/me', 'GET /api/data/rev', 'GET /api/admin/users', 'GET /api/admin/invites', 'GET /api/admin/coach',
   'POST /api/admin/user/delete', 'POST /api/admin/user/disable', 'POST /api/admin/audit/clear',
   'POST /api/admin/coach/disconnect', 'POST /api/media/sweep',
+  'POST /api/admin/invites/new', 'POST /api/admin/invites/revoke',
 ])
 const USER_PATH = /^\/api\/admin\/user\?id=[A-Za-z0-9_-]{1,64}$/
 const AUDIT_PATH = /^\/api\/admin\/audit(\?limit=\d{1,3}(&before=\d{1,15})?(&cat=[a-z]{1,20})?|\?before=\d{1,15}(&cat=[a-z]{1,20})?|\?cat=[a-z]{1,20})?$/
@@ -112,11 +113,21 @@ function user(data) {
   }
 }
 
-// The invite CODE is the credential of an invite-only instance: it never leaves openGym.
-function invites(data) {
+// Domain-separated from the connector key; a code cannot be guessed from a listed reference.
+const inviteKey = key => crypto.createHmac('sha256', key).update('invite-ref').digest()
+const inviteRef = (secret, invite) => crypto.createHmac('sha256', secret).update(JSON.stringify(invite)).digest('base64url').slice(0, 22)
+
+function inviteRecords(data, secret) {
+  const found = list(data.invites, 500).filter(object).map(i => ({ record: i, ref: inviteRef(secret, i) }))
+  if (new Set(found.map(i => i.ref)).size !== found.length) refuse()
+  return found
+}
+
+// The invite CODE is a credential: only the browser execute response may carry a newly created one.
+function invites(data, secret) {
   return {
-    invites: list(data.invites, 500).filter(object).map(i => ({
-      note: str(i.note, 80), created: str(i.created, 40), used: !!i.usedBy, usedAt: str(i.usedAt, 40), usedByName: str(i.usedByName, 80),
+    invites: inviteRecords(data, secret).map(({ record: i, ref }) => ({
+      ref, note: str(i.note, 80), created: str(i.created, 40), used: !!i.usedBy, usedAt: str(i.usedAt, 40), usedByName: str(i.usedByName, 80),
     })),
     invite_only: data.invite_only === true,
   }
@@ -164,13 +175,13 @@ function args(value, keys) {
   return a
 }
 
-function readTools(apiBase) {
+function readTools(apiBase, secret) {
   const get = (path, project) => async (bearer, a) => project(await adminRequest(apiBase, bearer, 'GET', path(a)))
   const ask = (name, keys, path, project) => ({ name, handler: (bearer, a) => get(x => path(args(x, keys)), project)(bearer, a) })
   return [
     ask('list_users', [], () => '/api/admin/users', users),
     ask('get_user', ['id'], a => (typeof a.id === 'string' && ID.test(a.id) ? `/api/admin/user?id=${a.id}` : refuse()), user),
-    ask('list_invites', [], () => '/api/admin/invites', invites),
+    ask('list_invites', [], () => '/api/admin/invites', data => invites(data, secret)),
     ask('get_audit_log', ['limit', 'before', 'cat'], a => {
       const q = []
       if (a.limit !== undefined) { if (!Number.isInteger(a.limit) || a.limit < 1 || a.limit > 200) refuse(); q.push(`limit=${a.limit}`) }
@@ -223,8 +234,18 @@ async function provider(apiBase, bearer, id) {
   return { id, label: str(found.label, 80) || id }
 }
 
-export function createAdminExecutors({ apiBase } = {}) {
+export function createAdminExecutors({ apiBase, key } = {}) {
   if (typeof apiBase !== 'string' || !apiBase) throw new TypeError('apiBase required')
+  if (!key) throw new TypeError('key required')
+  const secret = inviteKey(key)
+  // The listed ref names one CURRENT invite record: absent, ambiguous or changed means stale. Only
+  // the caller's own unused invite is revocable; a used or another admin's one is listed, not touched.
+  const revocable = async ({ userId, bearer }, ref) => {
+    if (typeof ref !== 'string' || !/^[A-Za-z0-9_-]{22}$/.test(ref)) refuse()
+    const found = inviteRecords(await send(apiBase, bearer, 'GET', '/api/admin/invites'), secret).filter(i => i.ref === ref)
+    if (found.length !== 1 || found[0].record.usedBy || found[0].record.createdBy !== userId || typeof found[0].record.code !== 'string') refuse()
+    return found[0].record
+  }
   return {
     'delete-account': accountExecutor(apiBase, 'delete-account', '/api/admin/user/delete', id => ({ id }), id => ({ deleted: { type: 'delete-account', id } })),
     'disable-account': accountExecutor(apiBase, 'disable-account', '/api/admin/user/disable', id => ({ id, disabled: true }), id => ({ disabled: { type: 'disable-account', id } })),
@@ -243,6 +264,49 @@ export function createAdminExecutors({ apiBase } = {}) {
       },
       execute: async ({ bearer }, id) => { await send(apiBase, bearer, 'POST', '/api/admin/coach/disconnect', { provider: id }); return { disconnected: { type: 'disconnect-coach', id } } },
     },
+    // The invite list only grows, so the digest cannot bind to its content (like clear-audit): it
+    // binds the fixed action and the stored admin. The code comes back from upstream exactly once,
+    // in the execute response reveal; any other shape is refused rather than shown.
+    'create-invite': {
+      params: raw => {
+        const a = raw === undefined ? {} : raw
+        if (!object(a) || Object.keys(a).some(k => k !== 'note') || (a.note !== undefined && typeof a.note !== 'string')) refuse()
+        const note = (a.note ?? '').trim()
+        if (note.length > 60) refuse()
+        return { note }
+      },
+      authorize: async (trusted, id) => id === 'new' && (await isAdmin(apiBase, trusted)),
+      inspect: async ({ userId }, id, { note }) => (id === 'new' ? {
+        summary: { type: 'create-invite', id, name: 'New invite',
+          effect: `Creates one signup invite. Its code is shown once on this page after confirmation, never in chat.${note ? ` Note: ${note}` : ''}` },
+        digest: hash(['create-invite', userId, note]),
+      } : refuse()),
+      execute: async ({ bearer }, _id, _digest, { note }) => {
+        const data = await send(apiBase, bearer, 'POST', '/api/admin/invites/new', { note })
+        const code = object(data.invite) ? data.invite.code : null
+        if (typeof code !== 'string' || !/^[0-9A-F]{16}$/.test(code)) refuse()
+        // No expiry: invite codes stay valid until used or revoked. Omit the field rather than null,
+        // so the confirmed page shows no expiry line.
+        return { created: true, note, reveal: { label: 'Invite code', value: code } }
+      },
+    },
+    // The digest binds the FULL record including the code: hashing the credential is fine, showing
+    // it is not. execute re-resolves the same ref and re-checks the stored digest, so an invite
+    // changed or consumed between page and passkey tap is never revoked under a stale description.
+    'revoke-invite': {
+      authorize: async (trusted, ref) => (await isAdmin(apiBase, trusted)) && !!(await revocable(trusted, ref)),
+      inspect: async (trusted, ref) => {
+        const i = await revocable(trusted, ref)
+        return { summary: { type: 'revoke-invite', id: ref, name: `Invite ${ref.slice(0, 6)}`, ...(str(i.created, 40) ? { date: str(i.created, 40) } : {}),
+          effect: 'Withdraws this unused invite: its code stops working at once.' }, digest: hash(['revoke-invite', i]) }
+      },
+      execute: async (trusted, ref, digest) => {
+        const i = await revocable(trusted, ref)
+        if (hash(['revoke-invite', i]) !== digest) refuse()
+        await send(apiBase, trusted.bearer, 'POST', '/api/admin/invites/revoke', { code: i.code })
+        return { revoked: { ref } }
+      },
+    },
     // POST /api/media/sweep is a user route, not an admin one: it clears the caller's OWN unreferenced
     // photos and videos. Any signed-in person may confirm it, only for themselves ('self'). Binding
     // the digest to the profile revision means a sync after the link was made needs a new link.
@@ -260,15 +324,18 @@ export function createAdminExecutors({ apiBase } = {}) {
   }
 }
 
-export function createAdminTools({ apiBase, confirmations } = {}) {
-  if (typeof apiBase !== 'string' || !apiBase || !confirmations || typeof confirmations.requestConfirmation !== 'function') throw new TypeError('admin tool dependencies required')
+export function createAdminTools({ apiBase, key, confirmations } = {}) {
+  if (typeof apiBase !== 'string' || !apiBase || !key || !confirmations || typeof confirmations.requestConfirmation !== 'function') throw new TypeError('admin tool dependencies required')
+  const secret = inviteKey(key)
   // Handlers take a trusted connection ID, never a caller-supplied user. They only mint a link.
-  const link = (name, type, target) => ({ name, handler: (connectionId, a) => confirmations.requestConfirmation({ type, targetId: target(a) }, connectionId) })
+  const link = (name, type, target, params) => ({ name, handler: (connectionId, a) => confirmations.requestConfirmation({ type, targetId: target(a), ...(params ? { params: params(a) } : {}) }, connectionId) })
   return [
-    ...readTools(apiBase),
+    ...readTools(apiBase, secret),
     link('delete_account', 'delete-account', a => args(a, ['id']).id),
     link('clear_audit_log', 'clear-audit', a => { args(a, []); return 'audit' }),
     link('disconnect_coach', 'disconnect-coach', a => args(a, ['provider']).provider),
     link('sweep_media', 'sweep-media', a => { args(a, []); return 'self' }),
+    link('request_create_invite', 'create-invite', a => { args(a, ['note']); return 'new' }, a => ({ note: args(a, ['note']).note })),
+    link('request_revoke_invite', 'revoke-invite', a => args(a, ['ref']).ref),
   ]
 }

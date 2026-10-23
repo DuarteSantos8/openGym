@@ -18,7 +18,7 @@ const idOf = url => new URL(url).hash.slice(1)
 const bad = e => e instanceof ConfirmationError && e.message === 'invalid_confirmation'
 
 // Secrets that must never reach Claude, wherever they sit in an upstream answer.
-const LEAKS = ['secret@mail.test', 'INVITECODE1', 'ABCDEF0123456789', 'HEADERVALUE', 'sk-LEAK', 'owner@coach.test', 'RESETCODE', '203.0.113', 'bearer-1', 'bearer-2', '/media/private']
+const LEAKS = ['secret@mail.test', 'INVITECODE1', 'ABCDEF0123456789', 'FEDCBA9876543210', '1234ABCD5678EF01', 'HEADERVALUE', 'sk-LEAK', 'owner@coach.test', 'RESETCODE', '203.0.113', 'bearer-1', 'bearer-2', '/media/private']
 
 const initialUsers = () => [
   { id: 'uid1', name: 'Admin', created: '2026-01-01', disabled: false, admin: true, invitedBy: null, workouts: 5, lastWorkout: '2026-10-20', lastSync: 1, hasPush: true, live: null, email: 'secret@mail.test', password: true },
@@ -37,7 +37,9 @@ const coach = () => ({
 })
 
 async function fixture({ executors } = {}) {
-  const f = { admin: true, verifyUser: 'uid1', users: initialUsers(), coach: coach(), seen: [], big: false, rev: 7 }
+  const f = { admin: true, verifyUser: 'uid1', users: initialUsers(), coach: coach(), seen: [], big: false, rev: 7,
+    invites: [{ code: 'ABCDEF0123456789', note: 'for Sam', created: 'c', createdBy: 'uid1', usedBy: 'uid2', usedAt: 'u', usedByName: 'Friend' },
+      { code: 'FEDCBA9876543210', note: '', created: 'c', createdBy: 'uid1' }], inviteCode: '1234ABCD5678EF01' }
   const who = { 'Bearer bearer-1': 'uid1', 'Bearer bearer-2': 'uid2' }
   const api = http.createServer((req, res) => {
     let body = ''
@@ -66,7 +68,16 @@ async function fixture({ executors } = {}) {
           return json(200, { user: { ...u, resetUntil: 99 }, unit: 'kg', lastSync: 2, routines: [{ id: 'r1', name: 'Push', emoji: 'x', count: 3 }],
             bodyweight: [{ d: '2026-10-01', w: 80 }], workouts: [{ id: 'w1', d: '2026-10-19', name: 'Monday', vol: 10, media: ['/media/private'], note: 'secret@mail.test' }] })
         }
-        if (route === 'GET /api/admin/invites' || p === '/api/admin/invites') return json(200, { invites: [{ code: 'ABCDEF0123456789', note: 'for Sam', created: 'c', usedBy: 'uid2', usedAt: 'u', usedByName: 'Friend' }, { code: 'ZZZZ', note: '', created: 'c' }], invite_only: true })
+        if (route === 'GET /api/admin/invites') return json(200, { invites: f.invites, invite_only: true })
+        if (route === 'POST /api/admin/invites/new') {
+          const invite = { code: f.inviteCode, note: JSON.parse(body).note, createdBy: uid, created: 'now' }
+          f.invites.push(invite)
+          return json(200, { invite })
+        }
+        if (route === 'POST /api/admin/invites/revoke') {
+          f.invites = f.invites.filter(i => i.code !== JSON.parse(body).code)
+          return json(200, { ok: true })
+        }
         if (p === '/api/admin/audit' && req.method === 'GET') return json(200, { events: [{ id: 9, ts: 1, ev: 'admin.invite.create', ok: true, uid: 'uid1', name: 'Admin', msg: 'ABCDEF0123456789', ip: '203.0.113.0/24', tgt: 'uid2', tname: 'Friend' }], total: 4, nextBefore: null, enabled: true })
         if (route === 'GET /api/admin/coach') return json(200, f.coach)
         if (req.method === 'POST') {
@@ -85,8 +96,8 @@ async function fixture({ executors } = {}) {
     ['conn1', { userId: 'uid1', sealed: sealBearer('bearer-1', key, 'uid1') }],
     ['conn2', { userId: 'uid2', sealed: sealBearer('bearer-2', key, 'uid2') }],
   ])
-  const service = createConfirmations({ connections, key, apiBase, origin, prefix: '/connector', store: createProfileStore({ apiBase }), executors: executors || createAdminExecutors({ apiBase }) })
-  const tools = Object.fromEntries([...createAdminTools({ apiBase, confirmations: service }), ...createDestructiveTools(service)].map(t => [t.name, t]))
+  const service = createConfirmations({ connections, key, apiBase, origin, prefix: '/connector', store: createProfileStore({ apiBase }), executors: executors || createAdminExecutors({ apiBase, key }) })
+  const tools = Object.fromEntries([...createAdminTools({ apiBase, key, confirmations: service }), ...createDestructiveTools(service)].map(t => [t.name, t]))
   return Object.assign(f, {
     apiBase, service, tools, connections,
     mutations: () => f.seen.filter(x => x.method === 'POST' && !/\/api\/login\//.test(x.url)),
@@ -135,7 +146,7 @@ test('forwarding rejects every path and method outside the fixed allowlist, befo
     ['GET', '/api/admin/user?id=a&id=b'], ['GET', '/api/admin/user?id=../x'], ['GET', '/api/admin/user?other=1'], ['GET', '/api/admin/audit?limit=abc'],
     ['GET', '/api/admin/audit?cat=a/b'], ['GET', '/api/admin/users#x'], ['GET', '/api/admin/users\\..'], ['GET', 'api/admin/users'], ['GET', 42], ['GET', null],
     ['POST', '/api/admin/user/delete'], ['POST', '/api/admin/user/disable'], ['POST', '/api/admin/audit/clear'], ['POST', '/api/admin/coach/disconnect'],
-    ['POST', '/api/media/sweep'], ['POST', '/api/admin/user/password-reset'], ['POST', '/api/admin/invites/new'], ['POST', '/api/admin/invites/revoke'],
+    ['POST', '/api/media/sweep'], ['POST', '/api/admin/user/password-reset'],
     ['POST', '/api/admin/coach/config'], ['POST', '/api/admin/coach/connect'], ['POST', '/api/admin/coach/test'], ['POST', '/api/admin/users'],
     ['DELETE', '/api/admin/users'], ['GET', '/api/admin/coach/connect'], ['GET', '/api/register/options'], ['GET', '/api/admin/user/delete'],
   ]
@@ -161,6 +172,7 @@ test('read tools return only selected safe fields; no emails, invite codes, head
   assert.equal(out.list_invites.invites[0].used, true)
   assert.equal(out.list_invites.invites[0].usedByName, 'Friend')
   assert.equal(out.list_invites.invites[1].used, false)
+  for (const invite of out.list_invites.invites) assert.match(invite.ref, /^[A-Za-z0-9_-]{22}$/)
   assert.equal(out.get_audit_log.events[0].ev, 'admin.invite.create')
   assert.equal(out.get_audit_log.events[0].tname, 'Friend')
   assert.equal(out.get_coach_status.provider, 'compat')
@@ -191,8 +203,8 @@ test('an oversized upstream answer fails with our own message, not its contents'
 test('no tool exists for reset, backup replace, bulk delete, invite codes or password reset', async t => {
   const f = await fixture(); t.after(f.close)
   assert.deepEqual(Object.keys(f.tools).sort(), ['clear_audit_log', 'delete_account', 'delete_routine', 'delete_workout', 'disable_account', 'disconnect_coach',
-    'get_audit_log', 'get_coach_status', 'get_user', 'list_invites', 'list_users', 'sweep_media'])
-  assert.deepEqual(Object.keys(createAdminExecutors({ apiBase: 'http://unused' })).sort(), ['clear-audit', 'delete-account', 'disable-account', 'disconnect-coach', 'sweep-media'])
+    'get_audit_log', 'get_coach_status', 'get_user', 'list_invites', 'list_users', 'request_create_invite', 'request_revoke_invite', 'sweep_media'])
+  assert.deepEqual(Object.keys(createAdminExecutors({ apiBase: 'http://unused', key })).sort(), ['clear-audit', 'create-invite', 'delete-account', 'disable-account', 'disconnect-coach', 'revoke-invite', 'sweep-media'])
 })
 
 test('requesting any destructive tool only returns a link: nothing is mutated, no admin route is touched for sweep', async t => {
@@ -309,7 +321,7 @@ test('media sweep is the caller\'s own, available to any signed-in user, never a
 })
 
 test('every admin executor carries authorize, inspect and execute; one without authorize cannot mint', async t => {
-  const real = createAdminExecutors({ apiBase: 'http://unused' })
+  const real = createAdminExecutors({ apiBase: 'http://unused', key })
   for (const [type, executor] of Object.entries(real)) for (const fn of ['authorize', 'inspect', 'execute']) assert.equal(typeof executor[fn], 'function', `${type}.${fn}`)
   const { authorize: _dropped, ...unguarded } = real['delete-account']
   const f = await fixture({ executors: { ...real, 'delete-account': unguarded } }); t.after(f.close)
@@ -333,5 +345,162 @@ test('the executor itself asks /api/me: a non-admin answer or another user ID ca
     }
   }
   assert.equal(f.service.pending.size, 0)
+  assert.equal(f.mutations().length, 0)
+})
+
+/* ------------------------------ invitations ------------------------------ */
+
+const invitesOf = async f => (await f.tools.list_invites.handler('bearer-1', {})).invites
+
+test('list_invites adds a stable opaque ref per invite, derived so the code cannot be recovered', async t => {
+  const f = await fixture(); t.after(f.close)
+  const first = await invitesOf(f), second = await invitesOf(f)
+  assert.equal(first.length, 2)
+  for (let i = 0; i < 2; i++) {
+    assert.deepEqual(Object.keys(first[i]).sort(), ['created', 'note', 'ref', 'used', 'usedAt', 'usedByName'])
+    assert.match(first[i].ref, /^[A-Za-z0-9_-]{22}$/)
+    assert.equal(first[i].ref, second[i].ref, 'stable across listings')
+  }
+  assert.notEqual(first[0].ref, first[1].ref)
+})
+
+test('creating an invite reveals the code only from the confirmed page, POSTing the note once', async t => {
+  const f = await fixture(); t.after(f.close)
+  const { summary, result } = await approve(f, 'request_create_invite', { note: 'for Sam' })
+  assert.equal(summary.type, 'create-invite')
+  assert.equal(summary.id, 'new')
+  assert.equal(summary.name, 'New invite')
+  assert.match(summary.effect, /for Sam/)
+  assert.equal(result.created, true)
+  assert.equal(result.note, 'for Sam')
+  assert.deepEqual(result.reveal, { label: 'Invite code', value: '1234ABCD5678EF01' })
+  const calls = f.mutations().filter(x => x.route === 'POST /api/admin/invites/new')
+  assert.equal(calls.length, 1)
+  assert.deepEqual(JSON.parse(calls[0].body), { note: 'for Sam' })
+  assert.equal(calls[0].headers.authorization, 'Bearer bearer-1')
+  // The link and the tool answer never carry the code; the reveal is not stored either.
+  assert.equal(JSON.stringify(result).includes('ABCDEF0123456789'), false)
+})
+
+test('create invite note is optional and trimmed; wrong types, notes over 60 chars or extra keys refuse', async t => {
+  const f = await fixture(); t.after(f.close)
+  const { summary, result } = await approve(f, 'request_create_invite', { note: '  padded  ' })
+  assert.equal(result.note, 'padded')
+  assert.match(summary.effect, /padded/)
+  assert.equal(result.reveal.value, '1234ABCD5678EF01')
+  for (const note of [7, {}, 'x'.repeat(61)]) {
+    await assert.rejects(() => f.tools.request_create_invite.handler('conn1', { note }), bad)
+  }
+  await assert.rejects(async () => f.tools.request_create_invite.handler('conn1', { note: 'ok', extra: 1 }), AdminError)
+  await assert.rejects(async () => f.tools.request_create_invite.handler('conn1', 'note'), AdminError)
+  assert.equal(f.service.pending.size, 0)
+  assert.equal(f.mutations().length, 1)
+})
+
+test('create invite refuses an upstream code of any other shape instead of revealing it', async t => {
+  const f = await fixture(); t.after(f.close)
+  f.inviteCode = 'short'
+  const id = idOf((await f.tools.request_create_invite.handler('conn1', { note: 'x' })).url)
+  await f.service.details(id); const { cid } = await f.service.challenge(id)
+  await assert.rejects(() => f.service.confirm(id, { cid, credential: credential() }), bad)
+  assert.equal(f.mutations().filter(x => x.route === 'POST /api/admin/invites/new').length, 1)
+  // The one-time pending record is gone: no retry can mint another reveal from the same link.
+  await assert.rejects(() => f.service.confirm(id, { cid, credential: credential() }), bad)
+})
+
+test('revoking by ref resolves server-side and destroys exactly that invite', async t => {
+  const f = await fixture(); t.after(f.close)
+  const ref = (await invitesOf(f))[1].ref
+  const { summary, result } = await approve(f, 'request_revoke_invite', { ref })
+  assert.equal(summary.type, 'revoke-invite')
+  assert.equal(summary.id, ref)
+  assert.match(summary.name, /^Invite [A-Za-z0-9_-]{1,8}$/)
+  assert.deepEqual(result, { revoked: { ref } })
+  const calls = f.mutations().filter(x => x.route === 'POST /api/admin/invites/revoke')
+  assert.equal(calls.length, 1)
+  assert.deepEqual(JSON.parse(calls[0].body), { code: 'FEDCBA9876543210' })
+  // Upstream no longer lists it: the same ref is stale and mints nothing.
+  await assert.rejects(() => f.tools.request_revoke_invite.handler('conn1', { ref }), bad)
+  assert.equal(f.invites.length, 1)
+})
+
+test('revoke refuses a used, unknown, other-admin or stale ref before any link', async t => {
+  const f = await fixture(); t.after(f.close)
+  const mint = ref => f.tools.request_revoke_invite.handler('conn1', { ref })
+  const listed = await invitesOf(f)
+  await assert.rejects(() => mint(listed[0].ref), bad, 'already used') // fixture invites[0].usedBy
+  await assert.rejects(() => mint('A'.repeat(22)), bad, 'well-formed but unknown')
+  for (const ref of ['', '../x', 'A'.repeat(23), 7]) await assert.rejects(() => mint(ref), bad, String(ref))
+  // An invite another admin created is not ours to revoke.
+  f.invites.push({ code: '9999888877776666', note: '', created: 'c', createdBy: 'uid3' })
+  const foreign = (await invitesOf(f))[2].ref
+  await assert.rejects(() => mint(foreign), bad, 'other admin')
+  // A record that changed after the ref was listed no longer resolves.
+  const stale = (await invitesOf(f))[1].ref
+  f.invites[1].note = 'changed afterwards'
+  await assert.rejects(() => mint(stale), bad, 'stale')
+  assert.equal(f.service.pending.size, 0)
+  assert.equal(f.mutations().length, 0)
+})
+
+test('two invites that resolve to the same ref are ambiguous: no link, and execute refuses too', async t => {
+  const f = await fixture(); t.after(f.close)
+  const ref = (await invitesOf(f))[1].ref
+  const id = idOf((await f.tools.request_revoke_invite.handler('conn1', { ref })).url)
+  const { digest } = await f.service.details(id)
+  // A byte-identical second record resolves to the same ref.
+  f.invites.push(structuredClone(f.invites[1]))
+  await assert.rejects(() => f.tools.request_revoke_invite.handler('conn1', { ref }), bad)
+  const executors = createAdminExecutors({ apiBase: f.apiBase, key })
+  await assert.rejects(() => executors['revoke-invite'].execute({ userId: 'uid1', bearer: 'bearer-1' }, ref, digest), AdminError)
+  assert.equal(f.mutations().length, 0)
+})
+
+test('refs depend on the connector key: another key gives other refs for the same invites', async t => {
+  const f = await fixture(); t.after(f.close)
+  const ours = (await invitesOf(f)).map(i => i.ref)
+  const theirs = (await createAdminTools({ apiBase: f.apiBase, key: randomBytes(32), confirmations: f.service }).find(x => x.name === 'list_invites').handler('bearer-1', {})).invites.map(i => i.ref)
+  assert.equal(ours.length, 2)
+  for (let i = 0; i < 2; i++) assert.notEqual(ours[i], theirs[i])
+})
+
+test('revoke re-proves the invite inside execute: changed after challenge, or a wrong stored digest, never POSTs', async t => {
+  const f = await fixture(); t.after(f.close)
+  const ref = (await invitesOf(f))[1].ref
+  const id = idOf((await f.tools.request_revoke_invite.handler('conn1', { ref })).url)
+  await f.service.details(id); const { cid } = await f.service.challenge(id)
+  f.invites[1].note = 'changed after challenge'
+  await assert.rejects(() => f.service.confirm(id, { cid, credential: credential() }), bad)
+  assert.equal(f.mutations().length, 0)
+  // Directly: an execute handed a stored digest that is not the invite's record refuses before POST.
+  const executors = createAdminExecutors({ apiBase: f.apiBase, key })
+  const current = (await invitesOf(f))[1].ref
+  await assert.rejects(() => executors['revoke-invite'].execute({ userId: 'uid1', bearer: 'bearer-1' }, current, 'wrong-digest'), AdminError)
+  assert.equal(f.mutations().length, 0)
+})
+
+test('invite confirmations execute at most once: a replayed confirm never re-POSTs', async t => {
+  const f = await fixture(); t.after(f.close)
+  for (const [name, args] of [['request_create_invite', {}], ['request_revoke_invite', { ref: (await invitesOf(f))[1].ref }]]) {
+    const id = idOf((await f.tools[name].handler('conn1', args)).url)
+    await f.service.details(id); const { cid } = await f.service.challenge(id)
+    await f.service.confirm(id, { cid, credential: credential() })
+    await assert.rejects(() => f.service.confirm(id, { cid, credential: credential() }), bad)
+  }
+  const posts = f.mutations().filter(x => /\/api\/admin\/invites\/(new|revoke)/.test(x.url))
+  assert.deepEqual(posts.map(x => x.route), ['POST /api/admin/invites/new', 'POST /api/admin/invites/revoke'])
+})
+
+test('a non-admin cannot mint or confirm invite actions, and admin rights withdrawn deny execution', async t => {
+  const f = await fixture(); t.after(f.close)
+  f.admin = false
+  await assert.rejects(() => f.tools.request_create_invite.handler('conn1', {}), bad)
+  await assert.rejects(() => f.tools.request_revoke_invite.handler('conn1', { ref: 'A'.repeat(22) }), bad)
+  assert.equal(f.service.pending.size, 0)
+  f.admin = true
+  const id = idOf((await f.tools.request_create_invite.handler('conn1', {})).url)
+  await f.service.details(id); const { cid } = await f.service.challenge(id)
+  f.admin = false
+  await assert.rejects(() => f.service.confirm(id, { cid, credential: credential() }), bad)
   assert.equal(f.mutations().length, 0)
 })

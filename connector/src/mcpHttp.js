@@ -77,7 +77,7 @@ const READS = {
 const ADMIN_READS = {
   list_users: ['Admin only. List accounts (names, flags, activity). Never emails or credentials.', obj()],
   get_user: ['Admin only. Summary of one account by id: recent workouts and body weight, names and totals only.', obj({ id: ID }, ['id'])],
-  list_invites: ['Admin only. List invites without their codes.', obj()],
+  list_invites: ['Admin only. List invites by opaque ref, without their codes. Use the ref to request revocation.', obj()],
   get_audit_log: ['Admin only. Recent activity-log events. Optional limit, before (event id) and cat.', obj({ limit: int, before: int, cat: str(20) })],
   get_coach_status: ['Admin only. Whether the AI coach is connected and healthy. Never keys or headers.', obj()],
 }
@@ -98,6 +98,8 @@ const LINKS = {
   clear_audit_log: ['Admin only. Clear the activity log.', obj()],
   disconnect_coach: ['Admin only. Disconnect an AI coach provider.', obj({ provider: str(40) }, ['provider'])],
   sweep_media: ['Delete the user\'s own unused photos and videos.', obj()],
+  request_create_invite: ['Admin only. Create a signup invite (optional note, up to 60 characters). The code is shown only on the passkey-confirmed page, never in chat.', obj({ note: str(60) })],
+  request_revoke_invite: ['Admin only. Revoke an unused invite by its opaque ref from list_invites. No code is shown.', obj({ ref: str(22) }, ['ref'])],
 }
 
 /* ------------------------------------ replies ------------------------------------ */
@@ -164,10 +166,10 @@ export function createMcpHttp({ origin, prefix, apiBase, key, connections, grant
   const store = createProfileStore({ apiBase })
   // The same connection store backs the grants, so a confirmation link is bound to the very
   // connection (and passkey user) that asked for it.
-  const confirm = confirmations || createConfirmations({ connections, key, apiBase, origin, prefix, store, executors: createAdminExecutors({ apiBase }) })
+  const confirm = confirmations || createConfirmations({ connections, key, apiBase, origin, prefix, store, executors: createAdminExecutors({ apiBase, key }) })
   const handlers = list => Object.fromEntries(list.map(t => [t.name, t.handler]))
   const read = handlers(createMcpTools(store.readProfile, { origin }))
-  const admin = handlers(createAdminTools({ apiBase, confirmations: confirm }))
+  const admin = handlers(createAdminTools({ apiBase, key, confirmations: confirm }))
   const link = { ...handlers(createDestructiveTools(confirm)), ...admin }
   const edit = {
     update_week_plan: async (bearer, a) => {

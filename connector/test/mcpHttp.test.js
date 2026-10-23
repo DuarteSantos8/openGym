@@ -16,7 +16,9 @@ const state = () => ({ name: 'Private', unit: 'kg', routines: [{ id: 'r1', name:
 
 // A fake openGym API plus the real connector server, connected through the real OAuth flow.
 async function fixture(t, { toolTimeoutMs, bodyTimeoutMs } = {}) {
-  const s = { profile: state(), rev: 1, me: 200, data: 200, admin: 403, delay: 0, inflight: 0, maxInflight: 0 }
+  const s = { profile: state(), rev: 1, me: 200, data: 200, admin: 403, delay: 0, inflight: 0, maxInflight: 0, meAdmin: false,
+    invites: [{ code: 'ABCDEF0123456789', note: 'for Sam', created: 'c', createdBy: 'uid1', usedBy: 'x', usedAt: 'u', usedByName: 'Someone' },
+      { code: 'FEDCBA9876543210', note: '', created: 'c', createdBy: 'uid1' }] }
   const seen = []
   const api = http.createServer((req, res) => {
     let text = ''
@@ -25,10 +27,14 @@ async function fixture(t, { toolTimeoutMs, bodyTimeoutMs } = {}) {
       seen.push({ path: req.url, method: req.method, authorization: req.headers.authorization, cookie: req.headers.cookie, text })
       const send = (code, body, headers = {}) => { res.writeHead(code, { 'content-type': 'application/json', ...headers }); res.end(JSON.stringify(body)) }
       if (req.url === '/api/login/verify') return send(200, { user: { id: 'uid1' } }, { 'set-cookie': '__Host-gymsid=private; Secure' })
+      if (req.url === '/api/login/options') return send(200, { cid: 'cid-1', options: { challenge: 'challenge-1', allowCredentials: [] } })
       if (req.url === '/api/pair/create') return send(200, { code: 'ABCD2345' })
       if (req.url === '/api/pair/redeem') return send(200, { user: { id: 'uid1' }, token: 'private-bearer' })
-      if (req.url === '/api/me') return send(s.me, s.me === 200 ? { user: { id: 'uid1' } } : { code: 'disabled', secret: 'never-return' })
+      if (req.url === '/api/me') return send(s.me, s.me === 200 ? { user: { id: 'uid1', admin: s.meAdmin } } : { code: 'disabled', secret: 'never-return' })
       if (req.url === '/api/admin/users') return send(s.admin, s.admin === 200 ? { users: [] } : { error: 'forbidden', secret: 'never-return' })
+      if (req.url === '/api/admin/invites') return send(s.admin, s.admin === 200 ? { invites: s.invites, invite_only: true } : { error: 'forbidden', secret: 'never-return' })
+      if (req.url === '/api/admin/invites/new') { s.invites.push({ code: '1234ABCD5678EF01', note: JSON.parse(text).note, createdBy: 'uid1', created: 'now' }); return send(s.admin, { invite: s.invites.at(-1) }) }
+      if (req.url === '/api/admin/invites/revoke') { s.invites = s.invites.filter(i => i.code !== JSON.parse(text).code); return send(s.admin, { ok: true }) }
       if (req.url === '/api/data' && req.method === 'GET') {
         s.maxInflight = Math.max(s.maxInflight, ++s.inflight)
         return setTimeout(() => { s.inflight--; send(s.data, s.data === 200 ? { state: s.profile, rev: s.rev } : { code: 'disabled', secret: 'never-return' }) }, s.delay)
@@ -90,7 +96,7 @@ test('tools/list documents exact tool and input names; irreversible tools demand
     'change_setting', 'clear_audit_log', 'delete_account', 'delete_routine', 'delete_workout', 'disable_account', 'disconnect_coach',
     'estimate_1rm', 'get_audit_log', 'get_bodyweight', 'get_coach_status', 'get_routine', 'get_user', 'get_week_plan', 'get_workout',
     'list_invites', 'list_routines', 'list_users', 'list_workouts', 'log_body_weight', 'log_measurement', 'log_workout',
-    'muscle_balance', 'preview_session', 'search_exercises', 'sweep_media', 'update_week_plan',
+    'muscle_balance', 'preview_session', 'request_create_invite', 'request_revoke_invite', 'search_exercises', 'sweep_media', 'update_week_plan',
   ])
   const plan = tools.find(x => x.name === 'update_week_plan').inputSchema
   assert.deepEqual(props('update_week_plan'), ['routines', 'week'])
@@ -103,7 +109,9 @@ test('tools/list documents exact tool and input names; irreversible tools demand
   assert.deepEqual(props('delete_routine'), ['id'])
   assert.deepEqual(props('disconnect_coach'), ['provider'])
   assert.match(tools.find(x => x.name === 'update_week_plan').description, /creationId/)
-  for (const name of ['delete_routine', 'delete_workout', 'disable_account', 'delete_account', 'clear_audit_log', 'disconnect_coach', 'sweep_media']) {
+  assert.deepEqual(props('request_create_invite'), ['note'])
+  assert.deepEqual(props('request_revoke_invite'), ['ref'])
+  for (const name of ['delete_routine', 'delete_workout', 'disable_account', 'delete_account', 'clear_audit_log', 'disconnect_coach', 'sweep_media', 'request_create_invite', 'request_revoke_invite']) {
     const d = tools.find(x => x.name === name).description
     assert.match(d, /confirmation link/i, name)
     assert.match(d, /chat approval is insufficient/i, name)
@@ -148,6 +156,55 @@ test('admin actions mint nothing for a non-admin caller and execute nothing', as
     assert.equal(r.isError, true, name)
     assert.deepEqual(r.data, { error: 'tool failed' }, name)
   }
+  assert.equal(f.seen.slice(f.setup).some(x => x.method === 'POST' || x.method === 'PUT'), false)
+})
+
+test('invite tools: Claude sees refs and a link, never a code; the code appears once, in the confirmed browser execute', async t => {
+  const f = await fixture(t)
+  f.s.admin = 200
+  f.s.meAdmin = true
+  const listed = await f.tool('list_invites')
+  assert.equal(listed.isError, undefined)
+  assert.equal(listed.data.invites.length, 2)
+  assert.ok(listed.data.invites.every(i => /^[A-Za-z0-9_-]{22}$/.test(i.ref)))
+  const created = await f.tool('request_create_invite', { note: 'for Kim' })
+  const revoked = await f.tool('request_revoke_invite', { ref: listed.data.invites[1].ref })
+  for (const r of [created, revoked]) {
+    assert.equal(r.isError, undefined)
+    assert.deepEqual(Object.keys(r.data), ['url'])
+  }
+  const used = await f.tool('request_revoke_invite', { ref: listed.data.invites[0].ref })
+  assert.deepEqual(used.data, { error: 'tool failed' })
+  assert.equal(f.seen.slice(f.setup).some(x => x.method === 'POST' && x.path.startsWith('/api/admin/')), false, 'nothing executed from chat')
+  const page = (route, id, body = {}) => f.post(`/connector/confirm/${route}`, { id, ...body }, { origin })
+  const encode = x => Buffer.from(JSON.stringify(x)).toString('base64url')
+  const credential = { id: 'cred', rawId: 'Y3JlZA', type: 'public-key', response: { clientDataJSON: encode({ type: 'webauthn.get', challenge: 'challenge-1', origin }), authenticatorData: 'YQ', signature: 'Yg' } }
+  const id = new URL(created.data.url).hash.slice(1)
+  const details = await (await page('details', id)).text()
+  assert.doesNotMatch(details, /1234ABCD5678EF01/)
+  assert.equal((await page('challenge', id)).status, 200)
+  const done = await page('execute', id, { cid: 'cid-1', credential })
+  assert.equal(done.status, 200)
+  assert.deepEqual((await done.json()).reveal, { label: 'Invite code', value: '1234ABCD5678EF01' })
+  assert.equal((await page('execute', id, { cid: 'cid-1', credential })).status, 400, 'no second reveal')
+  assert.equal(f.hits('/api/admin/invites/new', 'POST'), 1)
+  // Back in chat the new invite is listed by ref; the code never crosses.
+  const after = await f.tool('list_invites')
+  assert.equal(after.data.invites.length, 3)
+  assert.doesNotMatch(JSON.stringify([listed, created, revoked, used, after]), /ABCDEF0123456789|FEDCBA9876543210|1234ABCD5678EF01/)
+})
+
+test('invite tools mint nothing for a non-admin caller', async t => {
+  const f = await fixture(t)
+  for (const [name, args] of [['request_create_invite', {}], ['request_revoke_invite', { ref: 'A'.repeat(22) }]]) {
+    const r = await f.tool(name, args)
+    assert.equal(r.isError, true, name)
+    assert.deepEqual(r.data, { error: 'tool failed' }, name)
+  }
+  for (const args of [{ note: 'x'.repeat(61) }, { note: 'ok', code: 'ABCDEF0123456789' }]) {
+    assert.deepEqual((await f.tool('request_create_invite', args)).data, { error: 'invalid arguments' })
+  }
+  assert.deepEqual((await f.tool('request_revoke_invite', { code: 'ABCDEF0123456789' })).data, { error: 'invalid arguments' })
   assert.equal(f.seen.slice(f.setup).some(x => x.method === 'POST' || x.method === 'PUT'), false)
 })
 
