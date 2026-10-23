@@ -72,6 +72,31 @@ test('existing routine merges by exercise id; concurrent extra exercise remains'
   assert.throws(() => proposeWeek(profile, { routines: [{ id: 'old', ex: [{ id: '1045' }, { id: '1045' }] }], week: {} }), /duplicate/i)
 })
 
+test('exercise-only edit keeps concurrent rename; explicit rename wins', () => {
+  const profile = base()
+  const edit = proposeWeek(profile, { routines: [{ id: 'old', ex: [{ id: '1045', weight: 120 }] }], week: {} })
+  assert.equal(Object.hasOwn(edit.routines[0], 'name'), false)
+  const phone = structuredClone(profile)
+  phone.routines[0].name = 'Phone'
+  const next = applyPlanEdit(phone, edit)
+  assert.equal(next.routines[0].name, 'Phone')
+  assert.equal(next.routines[0].ex[0].weight, 120)
+  const named = proposeWeek(profile, { routines: [{ id: 'old', name: 'New name', ex: [{ id: '1045', weight: 120 }] }], week: {} })
+  assert.equal(applyPlanEdit(phone, named).routines[0].name, 'New name')
+})
+
+test('duplicate existing exercise slots reject before mutation', () => {
+  const edit = proposeWeek(base(), { routines: [{ id: 'old', ex: [{ id: '1045', weight: 60 }] }], week: {} })
+  const dup = base()
+  dup.routines[0].ex = [
+    { id: '1045', sets: 3, reps: 5, weight: 40 },
+    { id: '1045', sets: 3, reps: 5, weight: 80 },
+  ]
+  const before = structuredClone(dup)
+  assert.throws(() => applyPlanEdit(dup, edit), /duplicate/i)
+  assert.deepEqual(dup, before)
+})
+
 test('empty exercise lists and empty weekdays are rejected without writing', async () => {
   let writes = 0
   const store = { updateProfile() { writes++; throw new Error('wrote') } }

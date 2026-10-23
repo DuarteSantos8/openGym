@@ -66,6 +66,8 @@ function patchesOf(profile, rawEx) {
 function mergeEx(current, patches) {
   const list = Array.isArray(current) ? current.map(e => ({ ...e })) : []
   for (const patch of patches) {
+    // Two slots with one exercise ID make "which one" a guess; refuse rather than edit the first.
+    if (list.filter(e => e.id === patch.id).length > 1) throw new Error('duplicate exercise in routine')
     const i = list.findIndex(e => e.id === patch.id)
     if (i < 0) list.push({ ...patch })
     else list[i] = { ...list[i], ...patch }
@@ -86,7 +88,9 @@ function routinesOf(profile, request) {
     let id = existing?.id
     if (!id) { do { id = randomUUID() } while (seen.has(id)) }
     seen.add(id)
-    return { id, name: raw.name ?? existing.name, ex, url: urlOf(id), isNew: !existing }
+    // An existing routine keeps whatever name it has when the edit is applied; only an explicit
+    // rename travels in the edit, so a 409 retry never writes back a stale name.
+    return { id, ...(raw.name != null ? { name: raw.name } : {}), ex, url: urlOf(id), isNew: !existing }
   })
 }
 
@@ -130,7 +134,7 @@ export function applyPlanEdit(profile, edit) {
   if (!Array.isArray(profile.routines)) throw new Error('invalid edit')
   const next = structuredClone(profile)
   for (const r of edit.routines) {
-    if (typeof r.name !== 'string' || !r.name.trim()) throw new Error('invalid edit')
+    if (r.name != null ? (typeof r.name !== 'string' || !r.name.trim()) : r.isNew) throw new Error('invalid edit')
     const patches = patchesOf(next, r.ex)
     const index = next.routines.findIndex(old => old.id === r.id)
     if (index < 0 && !r.isNew) throw new Error('routine disappeared')
@@ -140,7 +144,7 @@ export function applyPlanEdit(profile, edit) {
       continue
     }
     if (index < 0) next.routines.push({ id: r.id, name: r.name, ex: patches })
-    else next.routines[index] = { ...next.routines[index], name: r.name, ex: mergeEx(next.routines[index].ex, patches) }
+    else next.routines[index] = { ...next.routines[index], ...(r.name != null ? { name: r.name } : {}), ex: mergeEx(next.routines[index].ex, patches) }
   }
   const known = new Set(next.routines.map(r => r.id))
   const week = { ...(object(next.week) ? next.week : {}) }
