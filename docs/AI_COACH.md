@@ -161,6 +161,10 @@ API_TARGET=coach docker compose up -d --build api
 claude setup-token
 ```
 
+On Windows, if Claude Code was installed with npm, PowerShell may refuse to run it ("running
+scripts is disabled on this system"). Run `claude.cmd setup-token` instead, or use Command Prompt;
+there's no need to change the execution policy.
+
 Complete its normal browser sign-in and copy the token it prints. openGym never opens or handles
 that flow — it only ever receives the finished token. (Claude also accepts an Anthropic API key
 here, under the same chip; the setup token is the route for a Claude subscription.)
