@@ -1,5 +1,8 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Aliases": "Інші назви",
+  "Alternative names for search. Separate with commas.": "Інші назви для пошуку. Розділяйте комами.",
+  "Save aliases": "Зберегти назви",
   'Confirm': 'Підтвердити',
   'Cancel': 'Скасувати',
   'Press back again to exit': 'Натисни «Назад» ще раз, щоб вийти',

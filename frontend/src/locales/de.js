@@ -1,5 +1,8 @@
 // German UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Aliases": "Alternative Namen",
+  "Alternative names for search. Separate with commas.": "Alternative Namen für die Suche. Mit Kommas trennen.",
+  "Save aliases": "Alternative Namen speichern",
   // --- generic ---
   'Confirm': 'Bestätigen',
   'Cancel': 'Abbrechen',

@@ -1,3 +1,4 @@
+import { normalizeAliases } from './exercise-aliases.js'
 // Share a weekly plan.
 //
 // Two jobs:
@@ -192,6 +193,8 @@ const muscleList = v => inMuscleOrder([...new Set((Array.isArray(v) ? v : []).fi
  *  that are empty stay absent, so a file written before this change reads the same as one after. */
 function cleanCustom(c) {
   const o = { id: c.id, n: c.n, bp: c.bp }
+  const aliases = normalizeAliases(c.aliases)
+  if (aliases.length) o.aliases = aliases
   if (c.desc) o.desc = c.desc
   // The link to a video or guide travels with a shared plan (#246), cleaned both ways like any
   // other field of someone else's file; the exercise's own photo or video never does — it is a

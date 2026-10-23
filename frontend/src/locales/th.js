@@ -1,5 +1,8 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Aliases": "ชื่ออื่น",
+  "Alternative names for search. Separate with commas.": "ชื่ออื่นสำหรับการค้นหา คั่นด้วยเครื่องหมายจุลภาค",
+  "Save aliases": "บันทึกชื่ออื่น",
   // --- generic ---
   'Confirm': 'ยืนยัน',
   'Cancel': 'ยกเลิก',

@@ -1,5 +1,8 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Aliases": "别名",
+  "Alternative names for search. Separate with commas.": "用于搜索的其他名称，请用逗号分隔。",
+  "Save aliases": "保存别名",
   'Confirm': '确认',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回退出',

@@ -1,5 +1,8 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Aliases": "বিকল্প নাম",
+  "Alternative names for search. Separate with commas.": "অনুসন্ধানের জন্য বিকল্প নাম। কমা দিয়ে আলাদা করুন।",
+  "Save aliases": "বিকল্প নাম সংরক্ষণ করুন",
   'Confirm': 'নিশ্চিত করুন',
   'Cancel': 'বাতিল',
   'Press back again to exit': 'বের হতে আবার ব্যাক চাপুন',

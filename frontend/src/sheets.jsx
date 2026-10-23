@@ -1,3 +1,5 @@
+import ExerciseAliasesEditor, { ExerciseAliasesField } from './components/ExerciseAliases.jsx'
+import { normalizeAliases } from './lib/exercise-aliases.js'
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
@@ -1051,6 +1053,7 @@ function ExerciseDetail({ ex, close }) {
       </button>
     </div>
     <Media ex={ex} />
+    <ExerciseAliasesEditor key={ex.id} ex={ex} />
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '10px 0' }}>
       {detailTags(ex).map(tg => <span key={tg.key} className={'tag' + (tg.acc ? ' acc' : '')}>{tg.icon && <Icon name={tg.icon} />}{tg.label}</span>)}
     </div>
@@ -1179,6 +1182,7 @@ function CustomExForm({ existing, prefill, onDone, close }) {
   const nameRef = useRef(null)
   const onNameFocus = useSheetKeyboard(nameRef)
   const [n, setN] = useState(existing ? existing.n : (prefill || ''))
+  const [aliases, setAliases] = useState(() => normalizeAliases(existing?.aliases).join(', '))
   const [bp, setBp] = useState(existing ? existing.bp : '')
   const [eq, setEq] = useState(existing ? (existing.eq || '') : '')
   const storedEq = existing && typeof existing.eq === 'string' && existing.eq && !ALL_EQUIPMENT.includes(existing.eq) ? existing.eq : null
@@ -1245,6 +1249,7 @@ function CustomExForm({ existing, prefill, onDone, close }) {
     const tg = (existing && prim.includes(existing.tg)) ? existing.tg : (primaryTaps.find(m => prim.includes(m)) || prim[0] || '')
     let id = existing && existing.id
     const extra = c => {
+      c.aliases = normalizeAliases(aliases)
       if (!keepMedia) { if (ref) c.media = ref; else delete c.media }
       if (link) c.url = link; else delete c.url
     }
@@ -1267,6 +1272,7 @@ function CustomExForm({ existing, prefill, onDone, close }) {
     <h3>{existing ? t('Edit custom exercise') : t('Create your own exercise')}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Name it and pick a body part. It works just like any other exercise.')}</div>
     <input ref={nameRef} className="input" placeholder={t('Exercise name')} maxLength={80} value={n} onFocus={onNameFocus} onChange={e => setN(e.target.value)} />
+    <ExerciseAliasesField value={aliases} onChange={setAliases} />
     <div className="chips" style={{ margin: '12px 0' }}>
       {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} onClick={() => setBp(b)}>{t(b)}</button>)}
     </div>

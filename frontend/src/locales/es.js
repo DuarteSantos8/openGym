@@ -1,5 +1,8 @@
 // Spanish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Aliases": "Alias",
+  "Alternative names for search. Separate with commas.": "Nombres alternativos para buscar. Sepáralos con comas.",
+  "Save aliases": "Guardar alias",
   'Confirm': 'Confirmar',
   'Cancel': 'Cancelar',
   'Press back again to exit': 'Pulsa atrás otra vez para salir',
