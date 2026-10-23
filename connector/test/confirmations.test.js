@@ -427,3 +427,23 @@ test('confirm page renders rows and one-time secret with textContent only', asyn
   assert.ok(all.some(e => e.textContent.includes('shown once')))
   assert.deepEqual(posts, ['details', 'challenge', 'execute'])
 })
+
+test('custom executor cannot execute when its inspected digest changes or disappears after challenge', async t => {
+  let digest = 'original', executions = 0
+  const f = await fixture({ executors: { op: {
+    authorize: async () => true,
+    inspect: async () => ({ summary: { type: 'op', id: 'target' }, ...(digest === undefined ? {} : { digest }) }),
+    execute: async () => { executions++; return { ok: true } },
+  } } }); t.after(f.close)
+  for (const changed of ['changed', undefined]) {
+    digest = 'original'
+    const id = idOf((await f.service.requestConfirmation({ type: 'op', targetId: 'target' }, 'conn1')).url)
+    await f.service.details(id)
+    const { cid } = await f.service.challenge(id)
+    digest = changed
+    await assert.rejects(() => f.service.confirm(id, { cid, credential: credential() }), bad)
+    assert.equal(f.service.pending.size, 0)
+    assert.equal(executions, 0)
+    await assert.rejects(() => f.service.confirm(id, { cid, credential: credential() }), bad)
+  }
+})
