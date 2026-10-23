@@ -287,13 +287,24 @@ function sessionEffSets(workout, anchors, opts = {}) {
 // 90-day-old import can never reweight today's anchor - only sessions inside the
 // anchor window ending at the scored session contribute. Assistance work has no
 // 1RM (the load is help received) and stays out, matching onerm.js.
+//
+// A logged rating calibrates the anchor: done plus left is the set's true rep
+// capacity, so the estimate runs on effective reps (a set taken to failure adds
+// nothing; an unrated set keeps its raw reps, exactly as before). The inversion
+// stays consistent, so the set that set the anchor reads its logged RIR back -
+// and an unrated twin of a rated set reads the same RIR. Past the rep cap an
+// easy rated set anchors nothing, which is the honest answer (work capacity,
+// not strength), matching estimate1RM.
 function sessionBests(workout, opts = {}) {
   const best = new Map()
   const consider = (ex, set, entry, exId) => {
     if (set?.done !== true) return
     const sides = isSideSet(set) ? [set.sides.L, set.sides.R].filter(s => s?.done === true) : [set]
     for (const side of sides) {
-      const est = estimate1RM(loadKgFor(ex, entry, set, workout, opts, side), numeric(side?.r))
+      const reps = numeric(side?.r)
+      const logged = rirOf(side) ?? rirOf(set)
+      const effective = reps != null && logged != null ? reps + logged : reps
+      const est = estimate1RM(loadKgFor(ex, entry, set, workout, opts, side), effective)
       if (est !== null && (!best.has(exId) || est > best.get(exId))) best.set(exId, est)
     }
   }

@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
 import { useStore } from '../store/useStore.js'
-import { useUI } from '../store/useUI.js'
 import { bindIntervalCompletion, startIntervals, stopIntervals, useIntervalRun } from '../store/interval-run.js'
 import { intervalGroupReady, nextIntervalSet } from '../lib/interval-group.js'
 import { t } from '../lib/i18n.js'
@@ -17,15 +16,6 @@ export default function IntervalGroup({ unit, onComplete }) {
   const ready = intervalGroupReady(active.entries, unit)
   const canRun = !!nextIntervalSet(active.entries, unit)
   const start = () => { unlock(useStore.getState().S.sound); startIntervals(unit) }
-  const action = useRef(null)
-  action.current = running ? stopIntervals : start
-  useEffect(() => {
-    useUI.setState({ intervalAction: running || canRun ? {
-      sessionId: active.id, label: running ? t('Stop intervals') : t('Start intervals'),
-      icon: running ? 'pause' : 'play', run: () => action.current?.(),
-    } : null })
-    return () => { useUI.setState({ intervalAction: null }) }
-  }, [active.id, running, canRun])
   return <div className="card">
     <Button variant="primary" icon={running ? 'pause' : 'play'} disabled={!running && !canRun} onClick={running ? stopIntervals : start}>
       {running ? t('Stop intervals') : t('Start intervals')}
