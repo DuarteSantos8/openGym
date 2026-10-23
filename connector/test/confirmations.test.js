@@ -60,7 +60,7 @@ for (const [type, targetId] of [['delete-routine', 'r1'], ['delete-workout', 'w1
   test(`${type}: tool only returns fragment URL; details then passkey execution deletes exactly one`, async t => {
     const f = await fixture(); t.after(f.close)
     const tool = createDestructiveTools(f.service).find(x => x.name === type.replace('-', '_'))
-    const { url } = tool.handler('conn1', { id: targetId })
+    const { url } = await tool.handler('conn1', { id: targetId })
     assert.equal(f.puts, 0)
     assert.equal(new URL(url).search, '')
     const id = idOf(url)
@@ -92,18 +92,18 @@ test('superseding request, expired ID, revoked connection, and other user all fa
   let clock = 1000
   const f = await fixture({ now: () => clock }); t.after(f.close)
   const action = { type: 'delete-routine', targetId: 'r1' }
-  const first = idOf(f.service.requestConfirmation(action, 'conn1').url)
-  const second = idOf(f.service.requestConfirmation(action, 'conn1').url)
+  const first = idOf((await f.service.requestConfirmation(action, 'conn1')).url)
+  const second = idOf((await f.service.requestConfirmation(action, 'conn1')).url)
   await assert.rejects(() => f.service.details(first), bad)
   await assert.rejects(() => f.service.confirm(first, {}), bad)
   await f.service.details(second); await f.service.challenge(second)
   f.verifyUser = 'uid2'
   await assert.rejects(() => f.service.confirm(second, { cid: 'cid-1', credential: credential() }), bad)
   assert.equal(f.puts, 0)
-  const expired = idOf(f.service.requestConfirmation(action, 'conn1').url)
+  const expired = idOf((await f.service.requestConfirmation(action, 'conn1')).url)
   clock += 10 * 60_000
   await assert.rejects(() => f.service.details(expired), bad)
-  const revoked = idOf(f.service.requestConfirmation(action, 'conn1').url)
+  const revoked = idOf((await f.service.requestConfirmation(action, 'conn1')).url)
   f.connections.delete('conn1')
   await assert.rejects(() => f.service.details(revoked), bad)
   assert.equal(f.puts, 0)
@@ -113,15 +113,15 @@ test('wrong origin/challenge/type, no challenge, and changed target refuse execu
   const f = await fixture(); t.after(f.close)
   for (const proof of [credential('wrong'), credential('challenge-1', 'https://other.test'),
     { ...credential(), response: { ...credential().response, clientDataJSON: encode({ type: 'webauthn.create', challenge: 'challenge-1', origin }) } }]) {
-    const id = idOf(f.service.requestConfirmation({ type: 'delete-workout', targetId: 'w1' }, 'conn1').url)
+    const id = idOf((await f.service.requestConfirmation({ type: 'delete-workout', targetId: 'w1' }, 'conn1')).url)
     await f.service.details(id); await f.service.challenge(id)
     await assert.rejects(() => f.service.confirm(id, { cid: 'cid-1', credential: proof }), bad)
   }
   assert.equal(f.seen.some(x => x.route === 'POST /api/login/verify'), false)
-  const noChallenge = idOf(f.service.requestConfirmation({ type: 'delete-workout', targetId: 'w1' }, 'conn1').url)
+  const noChallenge = idOf((await f.service.requestConfirmation({ type: 'delete-workout', targetId: 'w1' }, 'conn1')).url)
   await f.service.details(noChallenge)
   await assert.rejects(() => f.service.confirm(noChallenge, { cid: 'cid-1', credential: credential() }), bad)
-  const changed = idOf(f.service.requestConfirmation({ type: 'delete-workout', targetId: 'w1' }, 'conn1').url)
+  const changed = idOf((await f.service.requestConfirmation({ type: 'delete-workout', targetId: 'w1' }, 'conn1')).url)
   await f.service.details(changed)
   const minted = await f.service.challenge(changed)
   f.profile = { ...f.profile, workouts: f.profile.workouts.map(w => w.id === 'w1' ? { ...w, name: 'Edited' } : w) }
@@ -131,14 +131,14 @@ test('wrong origin/challenge/type, no challenge, and changed target refuse execu
 
 test('a cancelled ceremony can remint; only the latest challenge executes', async t => {
   const f = await fixture(); t.after(f.close)
-  const id = idOf(f.service.requestConfirmation({ type: 'delete-workout', targetId: 'w1' }, 'conn1').url)
+  const id = idOf((await f.service.requestConfirmation({ type: 'delete-workout', targetId: 'w1' }, 'conn1')).url)
   await f.service.details(id)
   const first = await f.service.challenge(id)
   const second = await f.service.challenge(id)
   assert.notEqual(first.cid, second.cid)
   await assert.rejects(() => f.service.confirm(id, { cid: first.cid, credential: credential() }), bad)
   assert.equal(f.puts, 0)
-  const again = idOf(f.service.requestConfirmation({ type: 'delete-workout', targetId: 'w1' }, 'conn1').url)
+  const again = idOf((await f.service.requestConfirmation({ type: 'delete-workout', targetId: 'w1' }, 'conn1')).url)
   await f.service.details(again)
   const a = await f.service.challenge(again)
   const b = await f.service.challenge(again)
@@ -150,19 +150,107 @@ test('a cancelled ceremony can remint; only the latest challenge executes', asyn
 test('disable-account without an injected executor cannot mint a confirmation', async t => {
   const f = await fixture(); t.after(f.close)
   const tool = createDestructiveTools(f.service).find(x => x.name === 'disable_account')
-  assert.throws(() => tool.handler('conn1', { id: 'uid2' }), bad)
+  await assert.rejects(() => tool.handler('conn1', { id: 'uid2' }), bad)
   assert.equal(f.service.pending.size, 0)
 })
 
-test('disable-account requires injected executor; tool never executes on request or replay', async t => {
+test('injected disable executor without authorize cannot mint', async t => {
   let executions = 0
   const f = await fixture({ executors: { 'disable-account': {
     inspect: async (_trusted, id) => ({ summary: { type: 'disable-account', id }, digest: 'account-version-1' }),
     execute: async () => { executions++; return { disabled: true } },
   } } }); t.after(f.close)
+  await assert.rejects(() => f.service.requestConfirmation({ type: 'disable-account', targetId: 'uid2' }, 'conn1'), bad)
+  assert.equal(f.service.pending.size, 0)
+  assert.equal(executions, 0)
+})
+
+test('non-admin or unknown disable target cannot mint; approved admin target waits for passkey', async t => {
+  let executions = 0
+  const seenAuth = []
+  let admin = true
+  const allowed = new Set(['uid2'])
+  const f = await fixture({ executors: { 'disable-account': {
+    authorize: async (trusted, targetId) => {
+      seenAuth.push({ trusted, targetId })
+      if (!trusted || trusted.bearer !== 'bearer-1' || trusted.userId !== 'uid1') return false
+      return admin && allowed.has(targetId)
+    },
+    inspect: async (_trusted, id) => ({ summary: { type: 'disable-account', id }, digest: 'account-version-1' }),
+    execute: async () => { executions++; return { disabled: true } },
+  } } }); t.after(f.close)
   const tool = createDestructiveTools(f.service).find(x => x.name === 'disable_account')
-  const one = idOf(tool.handler('conn1', { id: 'uid2' }).url)
-  const two = idOf(tool.handler('conn1', { id: 'uid2' }).url)
+  await assert.rejects(() => tool.handler('conn1', { id: 'unknown-user' }), bad)
+  admin = false
+  await assert.rejects(() => tool.handler('conn1', { id: 'uid2' }), bad)
+  assert.equal(f.service.pending.size, 0)
+  assert.equal(executions, 0)
+  admin = true
+  const { url } = await tool.handler('conn1', { id: 'uid2' })
+  assert.equal(executions, 0)
+  const id = idOf(url)
+  await f.service.details(id); await f.service.challenge(id)
+  assert.equal(executions, 0)
+  assert.deepEqual(await f.service.confirm(id, { cid: 'cid-1', credential: credential() }), { disabled: true })
+  assert.equal(executions, 1)
+  assert.ok(seenAuth.every(call => call.trusted && call.trusted.userId === 'uid1' && call.trusted.bearer === 'bearer-1' && !('admin' in call.trusted)))
+})
+
+test('authorization withdrawn after details or challenge denies execute', async t => {
+  let allowed = true
+  let executions = 0
+  const f = await fixture({ executors: { 'disable-account': {
+    authorize: async ({ userId, bearer }, targetId) => allowed && bearer === 'bearer-1' && userId === 'uid1' && targetId === 'uid2',
+    inspect: async (_trusted, id) => ({ summary: { type: 'disable-account', id }, digest: 'account-version-1' }),
+    execute: async () => { executions++; return { disabled: true } },
+  } } }); t.after(f.close)
+  const id = idOf((await f.service.requestConfirmation({ type: 'disable-account', targetId: 'uid2' }, 'conn1')).url)
+  await f.service.details(id); await f.service.challenge(id)
+  allowed = false
+  await assert.rejects(() => f.service.confirm(id, { cid: 'cid-1', credential: credential() }), bad)
+  assert.equal(executions, 0)
+})
+
+test('authorize is asked again right before execute: withdrawn on the last call still denies', async t => {
+  let calls = 0, executions = 0
+  const f = await fixture({ executors: { 'disable-account': {
+    authorize: async () => { calls++; return calls < 4 }, // mint, details, confirm-inspect pass; pre-execute fails
+    inspect: async (_trusted, id) => ({ summary: { type: 'disable-account', id }, digest: 'account-version-1' }),
+    execute: async () => { executions++; return { disabled: true } },
+  } } }); t.after(f.close)
+  const id = idOf((await f.service.requestConfirmation({ type: 'disable-account', targetId: 'uid2' }, 'conn1')).url)
+  await f.service.details(id); await f.service.challenge(id)
+  await assert.rejects(() => f.service.confirm(id, { cid: 'cid-1', credential: credential() }), bad)
+  assert.equal(calls, 4)
+  assert.equal(executions, 0)
+})
+
+test('authorize must return exactly true: false, truthy values, and throws all fail closed', async t => {
+  for (const answer of [false, undefined, null, 1, 'yes', {}, () => { throw new Error('upstream detail uid2') }]) {
+    let executions = 0
+    const f = await fixture({ executors: { 'disable-account': {
+      authorize: async () => (typeof answer === 'function' ? answer() : answer),
+      inspect: async (_trusted, id) => ({ summary: { type: 'disable-account', id }, digest: 'd' }),
+      execute: async () => { executions++; return { disabled: true } },
+    } } })
+    try {
+      await assert.rejects(() => f.service.requestConfirmation({ type: 'disable-account', targetId: 'uid2' }, 'conn1'), e => bad(e) && !String(e.message).includes('uid2'))
+      assert.equal(f.service.pending.size, 0)
+      assert.equal(executions, 0)
+    } finally { await f.close() }
+  }
+})
+
+test('disable-account requires injected executor; tool never executes on request or replay', async t => {
+  let executions = 0
+  const f = await fixture({ executors: { 'disable-account': {
+    authorize: async ({ userId, bearer }, targetId) => bearer === 'bearer-1' && userId === 'uid1' && targetId === 'uid2',
+    inspect: async (_trusted, id) => ({ summary: { type: 'disable-account', id }, digest: 'account-version-1' }),
+    execute: async () => { executions++; return { disabled: true } },
+  } } }); t.after(f.close)
+  const tool = createDestructiveTools(f.service).find(x => x.name === 'disable_account')
+  const one = idOf((await tool.handler('conn1', { id: 'uid2' })).url)
+  const two = idOf((await tool.handler('conn1', { id: 'uid2' })).url)
   assert.equal(executions, 0)
   await assert.rejects(() => f.service.details(one), bad)
   await f.service.details(two); await f.service.challenge(two)
@@ -177,7 +265,7 @@ test('HTTP page is static, hardened, fragment-only; POSTs demand same-origin JSO
   await new Promise(resolve => web.listen(0, '127.0.0.1', resolve))
   t.after(() => new Promise(resolve => web.close(resolve)))
   const base = `http://127.0.0.1:${web.address().port}`
-  const id = idOf(f.service.requestConfirmation({ type: 'delete-routine', targetId: 'r1' }, 'conn1').url)
+  const id = idOf((await f.service.requestConfirmation({ type: 'delete-routine', targetId: 'r1' }, 'conn1')).url)
   const page = await fetch(`${base}/connector/confirm?ignored=secret#${id}`)
   const html = await page.text()
   assert.equal(page.headers.get('x-frame-options'), 'DENY')

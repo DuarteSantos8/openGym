@@ -88,15 +88,32 @@ export function createConfirmations({ connections, key, apiBase, origin, prefix,
     trusted(rec.connId, rec.userId)
     return { h, rec }
   }
-  function requestConfirmation(action, connId) {
+  // Built-in deletes act only on the caller's own profile, which the bearer already scopes. An
+  // injected executor can reach other people's data (Task 9 admin actions), so it must prove the
+  // stored caller may act on this exact target. Only `true` passes; missing, false, throwing or
+  // truthy-but-not-true all fail closed. The caller never supplies an admin flag: the executor gets
+  // the stored user ID and bearer and must ask upstream itself.
+  async function gate(type, userId, bearer, targetId) {
+    if (type === 'delete-routine' || type === 'delete-workout') return
+    const executor = executors[type]
+    if (!executor || typeof executor.authorize !== 'function' || typeof executor.inspect !== 'function' || typeof executor.execute !== 'function') invalid()
+    let ok
+    try { ok = await executor.authorize({ userId, bearer }, targetId) } catch { invalid() }
+    if (ok !== true) invalid()
+  }
+  async function requestConfirmation(action, connId) {
     sweep()
     if (!action || typeof action !== 'object' || Array.isArray(action) ||
       !types.has(action.type) || typeof action.targetId !== 'string' || !action.targetId || action.targetId.length > 200 ||
       typeof connId !== 'string') invalid()
     const conn = connections.get(connId)
     if (!conn || typeof conn.userId !== 'string' || !conn.userId) invalid()
-    trusted(connId, conn.userId)
     const type = action.type, targetId = action.targetId, key = opKey(connId, type, targetId)
+    await gate(type, conn.userId, trusted(connId, conn.userId), targetId)
+    // Nothing below awaits: the connection is re-checked and the record minted in one step, so a
+    // revoked connection or a sweep during authorize cannot leave a pending record behind.
+    sweep()
+    trusted(connId, conn.userId)
     const previous = latest.get(key)
     if (previous) pending.delete(previous)
     let id, h
@@ -108,9 +125,9 @@ export function createConfirmations({ connections, key, apiBase, origin, prefix,
   async function inspect(rec, bearer) {
     try {
       if (rec.type === 'delete-routine' || rec.type === 'delete-workout') return targetOf(await store.readProfile(bearer), rec.type, rec.targetId)
-      const executor = executors[rec.type]
-      if (!executor || typeof executor.inspect !== 'function' || typeof executor.execute !== 'function') invalid()
-      return await executor.inspect({ userId: rec.userId, bearer }, rec.targetId)
+      // Authorize first: a withdrawn right must not even let the page read the target.
+      await gate(rec.type, rec.userId, bearer, rec.targetId)
+      return await executors[rec.type].inspect({ userId: rec.userId, bearer }, rec.targetId)
     } catch (e) { if (e instanceof ConfirmationError) throw e; invalid() }
   }
   async function details(id) {
@@ -161,8 +178,12 @@ export function createConfirmations({ connections, key, apiBase, origin, prefix,
         }, { allowDelete: true, ids: [rec.targetId] })
         return { deleted: { type: rec.type, id: rec.targetId } }
       }
+      // Admin rights and target state can change after the page was shown and after the passkey
+      // tap: ask again, with the stored user and a freshly opened bearer, right before executing.
+      const live = trusted(rec.connId, rec.userId)
+      await gate(rec.type, rec.userId, live, rec.targetId)
       if (latest.get(rec.key) !== h || rec.exp <= time()) invalid()
-      return await executors[rec.type].execute({ userId: rec.userId, bearer }, rec.targetId, rec.digest)
+      return await executors[rec.type].execute({ userId: rec.userId, bearer: trusted(rec.connId, rec.userId) }, rec.targetId, rec.digest)
     } catch (e) { if (e instanceof ConfirmationError) throw e; invalid() }
   }
   return { requestConfirmation, details, challenge, confirm, pending }
