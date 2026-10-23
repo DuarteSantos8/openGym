@@ -452,6 +452,8 @@ PORT=3000                  # port the API listens on; web proxies to the same va
 RESOLVER=127.0.0.11        # DNS nginx resolves BACKEND with — Docker's, unless you are not on Docker
 BASE_PATH=                 # subpath openGym is served under, e.g. /gym — see below; empty = site root
 SESSION_DAYS=90            # how long a sign-in lasts
+MCP_BACKEND=mcp            # name of the opt-in MCP service that /mcp is proxied to
+MCP_PORT=3001              # port it listens on; web proxies to the same value
 ```
 
 `NGINX_PORT` stays 80 under Docker. The web container runs as an unprivileged user (uid 101),

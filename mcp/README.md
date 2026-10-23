@@ -107,8 +107,22 @@ How it works: the api is a small OAuth 2.1 authorization server (`api/oauth.js`,
 one-hour access tokens and rotating refresh tokens, stored in `db.json` as hashes. This server
 checks the access token against that file and answers for the profile it belongs to.
 
-Under a subpath (`BASE_PATH`) the discovery documents still have to be reachable at the root of
-the host (`/.well-known/oauth-*`), which a proxy that only forwards the prefix does not do.
+### If it does not connect
+
+- **The client says it found no sign-in settings.** The api must know the public address:
+  `ORIGIN` (and `RP_ID`) in the environment the *api* container gets, not only somewhere compose
+  reads it. Check with
+  `curl https://gym.example.com/.well-known/oauth-authorization-server`: every address in it
+  must start with your `ORIGIN`, never `http://localhost:8080`.
+- **`/mcp` answers 502.** The `mcp` container is not running: `COMPOSE_PROFILES=mcp` is missing,
+  or check `docker compose logs mcp`.
+- **An access gate in front of the site** (a login wall at the tunnel or proxy) has to let
+  `/mcp`, `/.well-known/oauth-*`, `/api/oauth/register` and `/api/oauth/token` through: AI clients
+  call them without a browser.
+- **Under a subpath** (`BASE_PATH`) the discovery documents still have to be reachable at the
+  root of the host (`/.well-known/oauth-*`), which a proxy that only forwards the prefix does not
+  do.
+- **Kubernetes:** the manifests in `kubernetes/` do not include the `mcp` container yet.
 
 ## Tools
 
