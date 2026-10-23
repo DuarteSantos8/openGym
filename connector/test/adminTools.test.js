@@ -424,23 +424,37 @@ test('revoking by ref resolves server-side and destroys exactly that invite', as
   assert.equal(f.invites.length, 1)
 })
 
-test('revoke refuses a used, unknown, other-admin or stale ref before any link', async t => {
+test('revoke refuses a used, unknown or stale ref before any link', async t => {
   const f = await fixture(); t.after(f.close)
   const mint = ref => f.tools.request_revoke_invite.handler('conn1', { ref })
   const listed = await invitesOf(f)
   await assert.rejects(() => mint(listed[0].ref), bad, 'already used') // fixture invites[0].usedBy
   await assert.rejects(() => mint('A'.repeat(22)), bad, 'well-formed but unknown')
   for (const ref of ['', '../x', 'A'.repeat(23), 7]) await assert.rejects(() => mint(ref), bad, String(ref))
-  // An invite another admin created is not ours to revoke.
-  f.invites.push({ code: '9999888877776666', note: '', created: 'c', createdBy: 'uid3' })
-  const foreign = (await invitesOf(f))[2].ref
-  await assert.rejects(() => mint(foreign), bad, 'other admin')
   // A record that changed after the ref was listed no longer resolves.
   const stale = (await invitesOf(f))[1].ref
   f.invites[1].note = 'changed afterwards'
   await assert.rejects(() => mint(stale), bad, 'stale')
   assert.equal(f.service.pending.size, 0)
   assert.equal(f.mutations().length, 0)
+})
+
+test('any current admin can revoke another admin’s unused invite without exposing its code', async t => {
+  const f = await fixture(); t.after(f.close)
+  f.invites.push({ code: '9999888877776666', note: '', created: 'c', createdBy: 'uid3' })
+  const ref = (await invitesOf(f))[2].ref
+  const link = await f.tools.request_revoke_invite.handler('conn1', { ref })
+  assert.deepEqual(Object.keys(link), ['url'])
+  assert.doesNotMatch(JSON.stringify(link), /9999888877776666/)
+  const id = idOf(link.url)
+  const { summary } = await f.service.details(id)
+  assert.equal(summary.id, ref)
+  assert.doesNotMatch(JSON.stringify(summary), /9999888877776666/)
+  const { cid } = await f.service.challenge(id)
+  assert.deepEqual(await f.service.confirm(id, { cid, credential: credential() }), { revoked: { ref } })
+  const posts = f.mutations().filter(x => x.route === 'POST /api/admin/invites/revoke')
+  assert.equal(posts.length, 1)
+  assert.deepEqual(JSON.parse(posts[0].body), { code: '9999888877776666' })
 })
 
 test('two invites that resolve to the same ref are ambiguous: no link, and execute refuses too', async t => {

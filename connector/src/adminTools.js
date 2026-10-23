@@ -238,12 +238,12 @@ export function createAdminExecutors({ apiBase, key } = {}) {
   if (typeof apiBase !== 'string' || !apiBase) throw new TypeError('apiBase required')
   if (!key) throw new TypeError('key required')
   const secret = inviteKey(key)
-  // The listed ref names one CURRENT invite record: absent, ambiguous or changed means stale. Only
-  // the caller's own unused invite is revocable; a used or another admin's one is listed, not touched.
-  const revocable = async ({ userId, bearer }, ref) => {
+  // The listed ref names one CURRENT invite record: absent, ambiguous or changed means stale. Any
+  // current admin may revoke any unused invite, as in the openGym admin UI.
+  const revocable = async ({ bearer }, ref) => {
     if (typeof ref !== 'string' || !/^[A-Za-z0-9_-]{22}$/.test(ref)) refuse()
     const found = inviteRecords(await send(apiBase, bearer, 'GET', '/api/admin/invites'), secret).filter(i => i.ref === ref)
-    if (found.length !== 1 || found[0].record.usedBy || found[0].record.createdBy !== userId || typeof found[0].record.code !== 'string') refuse()
+    if (found.length !== 1 || found[0].record.usedBy || typeof found[0].record.code !== 'string') refuse()
     return found[0].record
   }
   return {
