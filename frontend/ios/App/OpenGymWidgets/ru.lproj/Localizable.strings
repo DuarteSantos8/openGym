@@ -1,0 +1,6 @@
+/* Written by ios/ci/widget-strings.mjs: change it there. */
+"Today’s workout" = "Тренировка на сегодня";
+"Your plan for today, the week ahead and your streak." = "Ваш план на сегодня, неделю вперёд и ваша серия.";
+"Streak" = "Серия";
+"Weeks in a row with a workout." = "Недели подряд с тренировкой.";
+"Open openGym once to see your plan here." = "Откройте openGym один раз, и здесь появится ваш план.";
