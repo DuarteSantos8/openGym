@@ -2244,6 +2244,10 @@ export default {
   'Your sports watch, calling you back.': 'Zegarek sportowy wzywa z powrotem.',
   'Coach wants you back on the bar.': 'Trener czeka przy sztandze.',
   'Gentle, for headphones or a quiet room.': 'Cichy, do słuchawek albo spokojnego pomieszczenia.',
+  'About this workout, or anything else': 'O tym treningu albo o czymkolwiek innym',
+  'Ask the Coach': 'Zapytaj Trenera',
+  'Thinking about your question…': 'Myślę nad Twoim pytaniem…',
+  'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'To jest demo, więc nie stoi za mną żaden model AI. Na Twoim własnym serwerze odpowiadam na pytania w rodzaju „{0}”, korzystając z Twojego planu, ostatnich sesji i treningu, który właśnie robisz.',
   // --- Coach: AI data sharing ---
   'AI data sharing': 'Udostępnianie danych AI',
   'Allow': 'Zezwól',

@@ -1404,6 +1404,10 @@ export const PT_BR_OVERRIDES = {
   'Gentle, for headphones or a quiet room.': 'Suave, para fones de ouvido ou um lugar silencioso.',
   'Fewer than two workouts in this period. Pick a longer one.': 'Menos de dois treinos neste período. Escolha um mais longo.',
   'Releases are checked on GitHub. The download is verified against its checksum before the installer opens.': 'As versões são verificadas no GitHub. O download é conferido pela soma de verificação antes de abrir o instalador.',
+  'About this workout, or anything else': 'Sobre este treino, ou qualquer outra coisa',
+  'Ask the Coach': 'Perguntar ao Coach',
+  'Thinking about your question…': 'Pensando na sua pergunta…',
+  'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'Esta é a demo, então não há nenhum modelo de IA por trás de mim. No seu próprio servidor eu respondo perguntas como “{0}” com o seu plano, suas últimas sessões e o treino que você está fazendo agora.',
   // --- Coach: AI data sharing ---
   'AI data sharing': 'Compartilhamento de dados com IA',
   'Allow': 'Permitir',

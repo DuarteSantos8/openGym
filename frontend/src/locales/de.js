@@ -2264,6 +2264,10 @@ export default {
   'Your sports watch, calling you back.': 'Deine Sportuhr ruft dich zurück.',
   'Coach wants you back on the bar.': 'Der Coach will dich zurück an der Stange.',
   'Gentle, for headphones or a quiet room.': 'Leise, für Kopfhörer oder einen ruhigen Raum.',
+  'About this workout, or anything else': 'Zu diesem Training oder zu allem anderen',
+  'Ask the Coach': 'Coach fragen',
+  'Thinking about your question…': 'Ich denke über deine Frage nach…',
+  'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'Das ist die Demo, hinter mir steckt also kein KI-Modell. Auf deinem eigenen Server beantworte ich Fragen wie „{0}“ mit deinem Plan, deinen letzten Einheiten und dem Training, das du gerade machst.',
   // --- Coach: AI data sharing ---
   'AI data sharing': 'KI-Datenfreigabe',
   'Allow': 'Erlauben',

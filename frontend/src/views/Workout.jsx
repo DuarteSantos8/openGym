@@ -41,6 +41,7 @@ import { glyphOf } from '../lib/glyphs.js'
 import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
 import { bindWatchActions } from '../lib/watch-sync.js'
 import { bestSetFor } from '../lib/exercise-history.js'
+import { useCoachReachable } from '../components/AskCoach.jsx'
 import { bindLiveActions } from '../lib/live-activity.js'
 import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry } from '../lib/active-workout-order.js'
@@ -921,6 +922,7 @@ const coveredTop = () => {
 function ActiveWorkout() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
+  const coachReachable = useCoachReachable()
   const update = useStore(s => s.update)
   const { startRest: liveRest, stopRest, stopWork, work, timer } = useUI()
   const A = S.active
@@ -1459,6 +1461,8 @@ function ActiveWorkout() {
         { icon: 'gear', accent: true, chevron: true, label: t('Workout settings'),
           sub: [S.restSec > 0 ? t('{0} rest', fmtRest(S.restSec)) : t('No rest timer'), S.sound ? t('Sound') : t('Silent')].join(' · '),
           onClick: workoutSettingsSheet },
+        // A question mid-workout ("how long between these sets?"): the chat gets this session along.
+        coachReachable && !editing && { icon: 'chat', chevron: true, label: t('Ask the Coach'), sub: t('About this workout, or anything else'), onClick: () => nav('/coach') },
       ] },
       { title: t('Add'), items: [
         { icon: 'plusCircle', label: t('Add exercise'), onClick: addExercise },

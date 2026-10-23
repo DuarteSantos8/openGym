@@ -2255,6 +2255,10 @@ export default {
   'Your sports watch, calling you back.': 'นาฬิกาสปอร์ตเรียกคุณกลับมาแล้ว',
   'Coach wants you back on the bar.': 'โค้ชอยากให้คุณกลับมาที่บาร์',
   'Gentle, for headphones or a quiet room.': 'เบา ๆ สำหรับหูฟังหรือห้องที่เงียบ',
+  'About this workout, or anything else': 'เกี่ยวกับการออกกำลังกายนี้ หรือเรื่องอื่นใดก็ได้',
+  'Ask the Coach': 'ถามโค้ช',
+  'Thinking about your question…': 'กำลังคิดเรื่องคำถามของคุณ…',
+  'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'นี่คือเดโม จึงไม่มีโมเดล AI อยู่เบื้องหลัง บนเซิร์ฟเวอร์ของคุณเอง ฉันจะตอบคำถามอย่าง “{0}” โดยใช้แผน เซสชันล่าสุด และการออกกำลังกายที่คุณกำลังทำอยู่',
   // --- Coach: AI data sharing ---
   'AI data sharing': 'การแชร์ข้อมูลกับ AI',
   'Allow': 'อนุญาต',

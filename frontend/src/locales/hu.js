@@ -2247,6 +2247,10 @@ export default {
   'Your sports watch, calling you back.': 'A sportórád visszahív.',
   'Coach wants you back on the bar.': 'Az edző visszavár a rúdhoz.',
   'Gentle, for headphones or a quiet room.': 'Halk, fülhallgatóhoz vagy csendes helyre.',
+  'About this workout, or anything else': 'Erről az edzésről vagy bármi másról',
+  'Ask the Coach': 'Kérdezd az Edzőt',
+  'Thinking about your question…': 'Gondolkodom a kérdéseden…',
+  'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'Ez a demó, így nincs mögöttem MI-modell. A saját szervereden az olyan kérdésekre, mint „{0}”, a terved, a legutóbbi edzéseid és az épp folyó edzésed alapján válaszolok.',
   // --- Coach: AI data sharing ---
   'AI data sharing': 'Adatmegosztás MI-vel',
   'Allow': 'Engedélyezés',
