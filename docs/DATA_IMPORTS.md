@@ -78,7 +78,7 @@ paste the link under **Plan → share icon → Import from a video**, check the 
    names its own. The timer is read from its brightest (or darkest) marks only, so white digits
    over a light wall and the ring round a countdown do not get in the way, and it is read twice a
    second, since many timers animate as their number changes. A move no caption named, exactly one
-   round after a named move of its length, gets that name (marked as a guess). An exercise read two ways
+   round after a named move of its length, gets that name (marked as a guess). A move captioned "(one side)" followed by a "SWITCH SIDE" rest has its other side read the same way: the countdown after the rest is that move again. An exercise read two ways
    in two rounds, exactly one round apart, is one exercise. Without a usable timer:
    **Blocks and rounds.** Seconds with the same name are one block. When the timer restarts, a new
    block begins, even if the name stays the same or no name is on screen at all. The timer is only
