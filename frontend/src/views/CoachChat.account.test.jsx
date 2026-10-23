@@ -47,6 +47,8 @@ vi.mock('../lib/coach-api.js', () => ({
   cohortStats: vi.fn(() => Promise.resolve({ ok: false })),
   setCohortShare: vi.fn(() => Promise.resolve({ ok: true })),
   jobErrorText: () => 'err',
+  ensureAiConsent: vi.fn(() => Promise.resolve(true)),
+  isDeclined: e => e?.code === 'declined',
   JOB_ERRORS: { account: 'Connect your own account first: Coach menu → Your account.' },
 }))
 vi.mock('../lib/coach-account.js', () => ({
