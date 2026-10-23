@@ -14,6 +14,7 @@ import { deviceLinkUrl, deviceLabel } from '../lib/device-link.js'
 import { askAddDeviceData } from '../sheets.jsx'
 import { passwordError, notReached, useAgainOnceReached, ProveOwner } from './PasswordAuth.jsx'
 import QrCanvas from './QrCanvas.jsx'
+import { MOBILE } from '../lib/mobile.js'
 import { Row, Button } from './ui.jsx'
 
 const ui = () => useUI.getState()
@@ -216,7 +217,11 @@ export function DeviceLinkSheet({ close }) {
     const timer = setTimeout(() => setExpired(true), Math.max(0, link.expires - Date.now()))
     return () => clearTimeout(timer)
   }, [link])
-  const url = link ? deviceLinkUrl(link.code) : ''
+  // The phone app's own origin is not the server's (#551): the link points at the paired server.
+  const server = MOBILE ? useStore.getState().sync?.server : null
+  const url = link ? (server ? deviceLinkUrl(link.code, new URL(server.replace(/\/?$/, '/'))) : deviceLinkUrl(link.code)) : ''
+  // A paired phone holds no passkey for the server, so there only the password can confirm.
+  const passkey = !MOBILE && !!st && st.passkeys.length > 0
   const copy = async () => { if (await copyText(url)) toast(t('Copied')) }
   return <>
     <h3>{t('Add another device')}</h3>
@@ -224,8 +229,10 @@ export function DeviceLinkSheet({ close }) {
       <div className="muted small" style={{ marginBottom: 14 }}>
         {t('You get a code that lets your phone or another computer create a passkey for this profile. First confirm that it is you.')}
       </div>
-      <ProveOwner passkey={st.passkeys.length > 0} password={st.password} explain={passkeyError}
-        onProof={async proof => setLink(await post('/api/account/device-link', proof))} />
+      {MOBILE && !st.password
+        ? <div className="dim small">{t('This app can’t confirm with a passkey. Make the code in a browser signed in to this profile, or add a password there first.')}</div>
+        : <ProveOwner passkey={passkey} password={st.password} explain={passkeyError}
+          onProof={async proof => setLink(await post('/api/account/device-link', proof))} />}
     </> : expired ? <>
       <div className="muted small" style={{ marginBottom: 14 }}>{t('This code has expired.')}</div>
       <Button variant="primary" onClick={() => setLink(null)}>{t('Make a new code')}</Button>

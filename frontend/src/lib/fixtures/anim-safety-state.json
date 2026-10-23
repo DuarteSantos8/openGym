@@ -1,0 +1,30 @@
+{
+  "_comment": "Synthetic profile in the shape of real ones, for anim-data-safety.test.js: v1.3 ids, a drawing id stored as an exercise id (an alias), exercises drawn on both figures and once, a female exercise with a male twin, custom exercises with and without a photo, one deleted on another device, an id no catalogue knows.",
+  "_rev": 41, "_ts": 1760300000000, "unit": "kg", "body": "female", "exFigure": "female", "gifSize": "full",
+  "customEx": [
+    { "id": "cu_grip", "n": "grip trainer", "bp": "lower arms", "eq": "custom", "custom": true, "tg": "", "desc": "",
+      "media": { "kind": "image", "hash": "a3f1c2d4e5b60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9", "mime": "image/jpeg", "size": 48213, "width": 640, "height": 480, "at": 1759000000000 }, "_ts": 1759000000000 },
+    { "id": "cu_plain", "n": "farmer walk (park)", "bp": "full body", "eq": "custom", "tg": "", "_ts": 1758000000000 }
+  ],
+  "routines": [
+    { "id": "r_a", "name": "Upper A", "emoji": "💪", "ex": [ { "id": "0025", "sets": 3, "reps": 8 }, { "id": "0001", "sets": 3, "reps": 15 }, { "id": "cu_grip", "sets": 2, "reps": 20 } ] },
+    { "id": "r_b", "name": "Lower B", "ex": [ { "id": "0980", "sets": 3, "reps": 10 }, { "id": "5965", "sets": 2, "reps": 30 }, { "id": "2476", "sets": 3, "reps": 12 } ] }
+  ],
+  "week": { "1": ["r_a"], "3": ["r_b"], "5": ["r_a", "r_b"] },
+  "workouts": [
+    { "id": "w1", "d": "2025-07-21", "start": 1753100000000, "end": 1753103600000, "name": "Upper A", "routineId": "r_a",
+      "entries": [ { "id": "0025", "sets": [ { "w": 60, "r": 8, "done": true }, { "w": 62.5, "r": 8, "done": true } ] },
+                   { "id": "0001", "sets": [ { "w": 0, "r": 15, "done": true } ] },
+                   { "id": "cu_grip", "sets": [ { "w": 0, "r": 20, "done": true } ] } ] },
+    { "id": "w2", "d": "2025-09-03", "start": 1756900000000, "routineId": "r_b",
+      "entries": [ { "id": "2476", "sets": [ { "w": 0, "r": 12, "done": true } ] }, { "id": "cu_gone", "sets": [ { "w": 20, "r": 10, "done": true } ] },
+                   { "id": "zz_not_a_catalogue_id", "sets": [ { "w": 5, "r": 5 } ] }, { "id": "0980", "sets": [ { "w": 40, "r": 10, "done": true } ] } ],
+      "prs": ["0980"] },
+    { "id": "w3", "d": "2026-10-01", "start": 1759300000000, "entries": [ { "id": "5965", "sets": [ { "t": 30, "done": true } ] }, { "id": "cu_plain", "sets": [ { "w": 32, "r": 1, "done": true } ] } ] }
+  ],
+  "exWeights": { "0025": 62.5, "0980": 40, "2476": 0, "cu_grip": 0, "zz_not_a_catalogue_id": 5 },
+  "favEx": ["0025", "2476", "cu_grip"],
+  "exNotes": { "0025": { "text": "elbows in", "_ts": 1 } },
+  "bodyweight": [ { "d": "2026-10-01", "w": 63.4 } ],
+  "dayNotes": { "2026-10-02": { "tag": "sick", "_ts": 2 } }
+}

@@ -980,7 +980,21 @@ export function cascadeWeight(rows, from, value, side, backoffStep = 0) {
 // heaviest bell at or under it.
 const rungDown = (x, step) => (Array.isArray(step) ? ownedFloor(step, x) : Math.floor(x / step) * step)
 
-export function rerampWarmups(rows, step = 2.5, floor = 0) {
+// An assistance machine (exercises.js isAssisted) ramps from the other side: the stack carries
+// part of your body weight, so less load is harder, and halving it made the warm-up harder than
+// the work sets. Its warm-ups give MORE help instead: the first at 1.5× the work weight, each
+// next one halving what is left down to it, rounded UP to the step (a notch more help is still a
+// warm-up). `from` is the warm-up before it, 0 for the first. The step is never a dumbbell list
+// here (ownedWeightsFor), but should one arrive the rung is kept as is rather than snapped down.
+function assistedRung(from, to, step) {
+  const top = from > 0 ? from : 2 * to
+  if (!(top > to)) return to
+  const x = to + (top - to) / 2
+  if (Array.isArray(step)) return x
+  return Math.max(to, Math.ceil(x / step - 1e-9) * step)   // 1e-9: 37.5 / 2.5 must stay 15, not 16
+}
+
+export function rerampWarmups(rows, step = 2.5, floor = 0, assisted = false) {
   const firstWork = rows.findIndex(x => !isWarmupRow(x))
   if (firstWork <= 0) return rows
   const target = rows[firstWork].w || 0
@@ -989,9 +1003,11 @@ export function rerampWarmups(rows, step = 2.5, floor = 0) {
   let from = 0
   for (let i = 0; i < firstWork; i++) {
     if (out[i].done) { from = out[i].w || 0; continue }
-    const w = target > from
-      ? Math.min(target, Math.max(0, floor, rungDown(from + (target - from) / 2, step)))
-      : target
+    const w = assisted
+      ? assistedRung(from, target, step)
+      : target > from
+        ? Math.min(target, Math.max(0, floor, rungDown(from + (target - from) / 2, step)))
+        : target
     // A per-side warm-up ramps the same bar for both limbs: set each side's weight and resync
     // the aggregate, so the L/R rows and the row's own `w` agree. A straight row sets `w` alone.
     out[i] = isSideSet(out[i])
@@ -1011,6 +1027,7 @@ export function insertWarmupRow(rows, mode, target, step = 2.5, floor = 0) {
     const from = prev ? (prev.w || 0) : 0
     // Nothing to ramp toward: bodyweight, cardio, a timed hold with no load.
     if (!(to > 0)) return 0
+    if (isAssisted(target)) return assistedRung(from, to, step)
     // Already at or past the work weight — which happens when a warm-up was edited by hand
     // above it. Returning `from` here handed the next warm-up that same too-heavy number and
     // let it propagate down the block. A warm-up is never heavier than the set it warms up for.
@@ -1054,15 +1071,21 @@ export function insertWarmupRow(rows, mode, target, step = 2.5, floor = 0) {
 // warm-up (its weight, reps and tick kept; drops, bursts, sides and effort dropped, since a
 // warm-up has none) and moves to the end of the warm-ups, so it is numbered, rested and left out
 // of progression and records like any other warm-up. A row that is one already is left alone.
-// Only a plain straight set: a warm-up is one weight times one rep count, so a drop set would
-// lose its drops, a rest-pause row would add its bursts into one inflated rep count, and a
-// per-side row would merge both sides with no way back (a per-side warm-up is never made a work
-// set again).
-export const canBeWarmup = row => !!row && !isWarmupRow(row) && !isSideSet(row) && !isDropSet(row) && !isRestPauseSet(row)
+// Only a straight set: a warm-up is one weight times one rep count, so a drop set would lose its
+// drops and a rest-pause row would add its bursts into one inflated rep count. A per-side row
+// (#575) stays per side, the way insertWarmupRow adds a warm-up to a unilateral exercise: each
+// side keeps its own weight, reps and tick, so it can be made a work set again with nothing lost.
+export const canBeWarmup = row => !!row && !isWarmupRow(row) && !isDropSet(row) && !isRestPauseSet(row)
 
 export function makeWarmupAt(rows, i) {
   const src = rows[i]
   if (!canBeWarmup(src)) return rows
+  if (isSideSet(src)) {
+    const side = v => ({ w: v.w || 0, r: v.r, done: !!v.done })
+    const warm = syncSideAggregate({ phase: 'warmup', warmup: true, sides: { L: side(src.sides.L), R: side(src.sides.R) } })
+    if (src.at != null) warm.at = src.at
+    return placeRow(rows, i, warm)
+  }
   const warm = { w: src.w || 0, r: src.r, done: !!src.done, phase: 'warmup', warmup: true }
   if (src.at != null) warm.at = src.at
   return placeRow(rows, i, warm)
