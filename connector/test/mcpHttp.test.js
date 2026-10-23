@@ -103,7 +103,7 @@ test('tools/list documents exact tool and input names; irreversible tools demand
     'change_setting', 'clear_audit_log', 'configure_coach', 'delete_account', 'delete_routine', 'delete_routines_bulk', 'delete_workout', 'delete_workouts_bulk', 'disable_account', 'disconnect_coach',
     'estimate_1rm', 'forget_coach', 'get_audit_log', 'get_bodyweight', 'get_coach_status', 'get_routine', 'get_user', 'get_week_plan', 'get_workout',
     'list_coach_models', 'list_invites', 'list_routines', 'list_users', 'list_workouts', 'log_body_weight', 'log_measurement', 'log_workout',
-    'muscle_balance', 'preview_session', 'request_connect_coach', 'request_create_invite', 'request_password_reset', 'request_revoke_invite', 'search_exercises', 'sweep_media', 'test_coach', 'update_week_plan',
+    'muscle_balance', 'open_backup_restore', 'open_profile_reset', 'preview_session', 'request_connect_coach', 'request_create_invite', 'request_password_reset', 'request_revoke_invite', 'search_exercises', 'sweep_media', 'test_coach', 'update_week_plan',
   ])
   const plan = tools.find(x => x.name === 'update_week_plan').inputSchema
   assert.deepEqual(props('update_week_plan'), ['routines', 'week'])
@@ -125,6 +125,8 @@ test('tools/list documents exact tool and input names; irreversible tools demand
   assert.deepEqual(Object.keys(caps.properties).sort(), ['instanceDaily', 'perProfileDaily'])
   assert.equal(caps.additionalProperties, false)
   assert.deepEqual(props('forget_coach'), [])
+  assert.deepEqual(props('open_profile_reset'), [])
+  assert.deepEqual(props('open_backup_restore'), [])
   assert.deepEqual(props('delete_routines_bulk'), ['ids'])
   assert.deepEqual(props('delete_workouts_bulk'), ['before', 'ids'])
   for (const name of ['delete_routines_bulk', 'delete_workouts_bulk']) {
@@ -512,6 +514,26 @@ test('MCP never takes a reset code or Coach token; disabled password login canno
   const reset = await f.tool('request_password_reset', { id: 'uid2' })
   assert.deepEqual(reset.data, { error: 'tool failed' })
   assert.equal(f.hits('/api/admin/user/password-reset', 'POST'), 0)
+})
+
+test('profile reset and backup replacement only link to Settings and touch nothing', async t => {
+  const f = await fixture(t)
+  const before = f.seen.length
+  const profile = JSON.stringify(f.s.profile)
+  for (const name of ['open_profile_reset', 'open_backup_restore']) {
+    const r = await f.tool(name)
+    assert.equal(r.isError, undefined, name)
+    assert.deepEqual(Object.keys(r.data).sort(), ['note', 'ran', 'url'], name)
+    assert.equal(r.data.url, 'https://gym.example.test/#/settings/data', name)
+    assert.equal(r.data.ran, false, name)
+    assert.match(r.data.note, /not executed/i, name)
+    assert.doesNotMatch(JSON.stringify(r.data), /media\/|\.(?:png|jpe?g|gif|webp)|base64|code|profile/i, name)
+    // Extra arguments are refused, so nothing caller-supplied can steer the link.
+    assert.deepEqual((await f.tool(name, { url: 'https://evil.test' })).data, { error: 'invalid arguments' }, name)
+    assert.deepEqual((await f.tool(name, { path: '/#/admin' })).data, { error: 'invalid arguments' }, name)
+  }
+  assert.ok(f.seen.slice(before).every(x => x.path === '/api/me' && x.method === 'GET'), 'only mandatory per-call authentication reaches openGym')
+  assert.equal(JSON.stringify(f.s.profile), profile, 'the profile is untouched')
 })
 
 test('coach settings over MCP: ordinary patch applies, a cap raise only links, secrets and the test route never appear', async t => {

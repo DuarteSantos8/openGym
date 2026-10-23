@@ -84,6 +84,12 @@ These are for the owner to do deliberately, after approving a deployment. None a
 
 Revoking: disconnect in Claude, or disable the user in openGym; disabling permanently revokes the grant.
 
+## What Claude can do
+
+- **Immediate in chat:** read exercises, routines, plans, workouts, body weight and training metrics; edit plans, log workouts, weight and measurements, and change safe settings. Admins can read users, invites, audit events and Coach status/models, and edit ordinary Coach settings.
+- **Passkey link, not an in-chat execution:** deletes (including bulk deletes), account changes, invite and password-reset-code actions, media cleanup, Coach connection/disconnection and cap changes. Open the one-time link in the browser and approve there with a passkey; codes never enter Claude.
+- **Web only:** `open_profile_reset` and `open_backup_restore` return a link to openGym Settings → Data & backup. Neither resets a profile nor imports/replaces a backup. The Coach test runs in openGym Admin (up to 150 seconds), not MCP. Enter Coach credentials in the browser; arbitrary Coach `baseUrl` and headers also stay in the web Admin UI, never in chat. There is no connector backup API.
+
 ## License
 
 AGPL-3.0-or-later, same as openGym: see [`../LICENSE`](../LICENSE) and [`../NOTICE.md`](../NOTICE.md).

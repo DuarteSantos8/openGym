@@ -74,6 +74,8 @@ const READS = {
   get_bodyweight: ['Body-weight history. Optional from/to ISO dates.', obj({ from: DATE, to: DATE })],
   estimate_1rm: ['Estimated one-rep max for an exercise_id. formula is epley, brzycki or lombardi.', obj({ exercise_id: ID, formula: str(20) })],
   muscle_balance: ['Which muscles were trained or neglected. period is week, month or all.', obj({ period: str(20) })],
+  open_profile_reset: ['Does NOT reset the profile: returns the openGym Settings link (Data & backup) where the user does it.', obj()],
+  open_backup_restore: ['Does NOT replace the backup: returns the openGym Settings link (Data & backup) where the user does it.', obj()],
 }
 const ADMIN_READS = {
   list_users: ['Admin only. List accounts (names, flags, activity). Never emails or credentials.', obj()],
@@ -202,6 +204,9 @@ export function createMcpHttp({ origin, prefix, apiBase, key, connections, grant
       tools.set(name, { name, description: description + suffix, inputSchema, run: run[name] })
     }
   }
+  // Reset and backup replacement stay in the browser: link only, never an upstream call, and the
+  // URL is built from the validated configured origin, never from an argument.
+  read.open_profile_reset = read.open_backup_restore = () => ({ url: origin + '/#/settings/data', ran: false, note: 'Not executed here. Finish in openGym Settings → Data & backup.' })
   add(READS, read)
   add(ADMIN_READS, admin)
   add(EDITS, edit)
