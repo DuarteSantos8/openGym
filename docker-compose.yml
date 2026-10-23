@@ -65,3 +65,29 @@ services:
       # The largest photo or video upload nginx passes to the API. Keep it above
       # MEDIA_VIDEO_MAX_MB (40 by default), which the api service reads from .env.
       - MEDIA_UPLOAD_MAX=${MEDIA_UPLOAD_MAX:-48m}
+      # Where /mcp is proxied to (the opt-in mcp service below). Nothing listens there unless
+      # that service runs, and /mcp then answers 502 — the rest of the app is unaffected.
+      - MCP_BACKEND=${MCP_BACKEND:-mcp}
+      - MCP_PORT=${MCP_PORT:-3001}
+
+  # Opt-in: lets an LLM client (Claude, Cursor…) read your training data at https://<host>/mcp.
+  # Off unless COMPOSE_PROFILES=mcp is set in .env (mcp/README.md). The client signs in through the
+  # app — passkey or password — and reads only that profile. Reads the same ./data as the api,
+  # mounted read-only, so it can never change anything.
+  mcp:
+    image: ghcr.io/duartesantos8/opengym-mcp:latest
+    build:
+      context: .
+      dockerfile: mcp/Dockerfile
+    profiles: [mcp]
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+    environment:
+      - MCP_PORT=${MCP_PORT:-3001}
+      # The app's public address, the one passkeys already need: a client that is not signed in
+      # is pointed there to do it.
+      - ORIGIN=${ORIGIN:-http://localhost:8080}
+    volumes:
+      - ./data:/data:ro

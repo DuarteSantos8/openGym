@@ -94,6 +94,9 @@ the `web` container. Pick whichever you already run:
 1. Create a tunnel and route `gym.example.com` → `http://<docker-host>:8080`.
 2. Cloudflare gives you HTTPS automatically.
 
+Whichever option you pick, the optional MCP endpoint (`/mcp`, for AI clients) lives on that same
+origin, so it needs no route of its own: see [mcp/README.md](../mcp/README.md#self-hosted-over-https).
+
 ### Option B — Caddy (automatic Let's Encrypt)
 
 ```caddy

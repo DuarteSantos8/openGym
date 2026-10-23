@@ -29,7 +29,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=28">
+<link rel="stylesheet" href="styles.css?v=27">
 <script>document.documentElement.className += ' js'</script>
 <!-- Umami web analytics for opengym.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
@@ -215,6 +215,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <a class="side-link" href="#meta"><b>Meta</b><span>Health &amp; public config</span></a>
   <a class="side-link" href="#auth"><b>Auth</b><span>Passkeys &amp; sessions</span></a>
   <a class="side-link" href="#pairing"><b>Pairing</b><span>Connect the mobile app</span></a>
+  <a class="side-link" href="#oauth"><b>OAuth</b><span>Sign AI clients in to the MCP endpoint</span></a>
   <a class="side-link" href="#password"><b>Password</b><span>Optional name &amp; password (PASSWORD_LOGIN)</span></a>
   <a class="side-link" href="#passkeys"><b>Passkeys</b><span>More passkeys &amp; device links</span></a>
   <a class="side-link" href="#data"><b>Data</b><span>State sync</span></a>
@@ -245,7 +246,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.2</span>
-    <span>73 endpoints</span>
+    <span>78 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -701,6 +702,237 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">400</span>
     <span class="p-desc">Code unknown, already used, expired, or the account behind it is gone or disabled (deliberately the same message for all of these).<span class="r-sig"><code>{&quot;error&quot;:&quot;invalid or expired code&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+  </div>
+</section>
+
+<section class="api-sec" id="oauth">
+  <h2>OAuth</h2>
+  <p class="sub">OAuth 2.1 for the optional MCP endpoint (<code>/mcp</code>, mcp/README.md): an AI client registers itself, the person approves it on the app's consent screen after signing in as usual, and the client trades the code (PKCE S256) for a read-only access token. Discovery documents are at <code>/.well-known/oauth-authorization-server</code> and <code>/.well-known/oauth-protected-resource</code>.</p>
+  <div class="eps">
+
+<details class="ep" id="op-oauthRegister">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/oauth/register</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Register an OAuth client (RFC 7591)</span>
+  </summary>
+  <div class="ep-body">
+<p>Dynamic client registration for MCP clients. Nothing is stored: the client id is the client's name and redirect URIs, signed with the instance secret. Redirect URIs must be https, http on a loopback address, or an app's own scheme. CSRF-exempt.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public: no authentication required.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">redirect_uris<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">client_name</span>
+    <span class="p-type">string <span class="p-hint">(&le; 80 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+<pre><code>{
+  &quot;redirect_uris&quot;: [
+    &quot;http://localhost:33418/callback&quot;
+  ],
+  &quot;client_name&quot;: &quot;Claude Code&quot;
+}</code></pre>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">201</span>
+    <span class="p-desc">Registered. Public client, no secret.<span class="r-sig">{ client_id: string, client_name: string, redirect_uris: string[], token_endpoint_auth_method: &quot;none&quot; }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>invalid_redirect_uri</code>.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-oauthAuthorize">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/oauth/authorize</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Start an authorization (redirects to the consent screen)</span>
+  </summary>
+  <div class="ep-body">
+<p>Checks the client id and redirect URI, then redirects (302, relative) to the app's <code>#/connect</code> screen with the same query. The person signs in there and approves.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public: no authentication required.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">client_id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">redirect_uri<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">response_type<em class="p-req" title="required">required</em></span>
+    <span class="p-type">&quot;code&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">code_challenge<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">code_challenge_method<em class="p-req" title="required">required</em></span>
+    <span class="p-type">&quot;S256&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">state</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s3">302</span>
+    <span class="p-desc">To the consent screen.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>invalid_client</code>: unknown client, or a redirect URI it did not register. Never redirected.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-oauthClient">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/oauth/client</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">What the consent screen shows about a client</span>
+  </summary>
+  <div class="ep-body">
+
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public: no authentication required.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">client_id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">redirect_uri<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The registered name and where the person will be sent back.<span class="r-sig">{ name: string, redirect_host: string }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>invalid_client</code>.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-oauthApprove">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/oauth/approve</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Approve a client for the signed-in profile</span>
+  </summary>
+  <div class="ep-body">
+<p>Called by the consent screen with the session cookie and the authorization request's parameters. Returns the client's redirect URI with a one-time code (five minutes) and the <code>state</code> it sent.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">client_id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">redirect_uri<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">response_type<em class="p-req" title="required">required</em></span>
+    <span class="p-type">&quot;code&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">code_challenge<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">code_challenge_method<em class="p-req" title="required">required</em></span>
+    <span class="p-type">&quot;S256&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">state</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Where to send the browser.<span class="r-sig">{ redirect: string }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>invalid_client</code>, <code>invalid_request</code> or <code>unsupported_response_type</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">Not signed in.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-oauthToken">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/oauth/token</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Trade a code or a refresh token for tokens</span>
+  </summary>
+  <div class="ep-body">
+<p><code>authorization_code</code> with <code>code_verifier</code> (PKCE), or <code>refresh_token</code>, which rotates. Form-encoded or JSON. Access tokens last an hour, refresh tokens 90 days; &quot;sign out everywhere&quot;, a new password, or a disabled or deleted profile ends them. CSRF-exempt.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public: no authentication required.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Tokens.<span class="r-sig">{ access_token: string, token_type: &quot;Bearer&quot;, expires_in: integer, refresh_token: string, scope: &quot;read&quot; }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>invalid_grant</code> or <code>unsupported_grant_type</code>.</span>
   </div>
     </div>
   </div>
@@ -5331,7 +5563,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
 </div></footer>
 
-<script src="site.js?v=28" defer></script>
+<script src="site.js?v=27" defer></script>
 <script>
 /* Jumping to an anchor inside a collapsed card opens the card and re-aligns, since
    the browser scrolled to where the target was while it was still collapsed. */

@@ -28,6 +28,9 @@ const LABELS = {
   'auth.pair.create': 'Created a pairing code',
   'auth.pair.ok': 'Paired a phone',
   'auth.pair.fail': 'Pairing failed',
+  // An AI client connected to the MCP endpoint through the app's consent screen; `msg` is the
+  // name the client registered.
+  'auth.oauth.grant': 'Connected an AI app',
   // Password sign-in (#118), where the instance offers it.
   'auth.password.ok': 'Signed in with a password',
   'auth.password.fail': 'Password sign-in failed',

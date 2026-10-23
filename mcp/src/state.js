@@ -1,17 +1,26 @@
-/* opengym-mcp state — reads ./data/state-<uid>.json + db.json (read-only). Cached with an
-   fs.watch + mtime fallback so a session the api server just wrote is visible on the next
-   tool call without a restart. */
+/* opengym-mcp state — reads ./data/state-<uid>.json + db.json (read-only). Cached by mtime so
+   a session the api server just wrote is visible on the next tool call without a restart.
+
+   Whose state: over stdio, the one profile init() resolves. Over HTTP (http.js), the profile the
+   request's OAuth token belongs to, set for the duration of that request with asUser() — tools.js
+   reads getState()/getUser() the same way in both. */
 import fs from 'node:fs'
 import path from 'node:path'
+import { AsyncLocalStorage } from 'node:async_hooks'
 
 const DATA_DIR = process.env.OPENGYM_DATA || path.join(process.cwd(), 'data')
 
-// null = no state file (brand-new account); undefined = not yet loaded.
-let _state = undefined
 let _db = undefined
+let _dbMtime = 0
 let _uid = null
 let _watcher = null
-let _loadedMtime = 0    // mtimeMs we last read at — used to catch watcher omissions
+// uid -> { state, mtime }. state null = no state file (brand-new account).
+const cache = new Map()
+const scope = new AsyncLocalStorage()
+
+// Runs fn with getState()/getUser() answering for uid, across everything fn awaits.
+export const asUser = (uid, fn) => scope.run(uid, fn)
+const currentUid = () => scope.getStore() ?? (init(), _uid)
 
 // null means one thing only: the file is not there (an account that never synced from a device).
 // Every other failure — no permission on the mount, a truncated or corrupt file — is a real fault,
@@ -39,7 +48,19 @@ function readJsonOrNull(file) {
   }
 }
 
-function reloadDb() { _db = readJsonOrNull(path.join(DATA_DIR, 'db.json')) || { users: [], creds: [], subs: [], invites: [] } }
+function reloadDb() {
+  const file = path.join(DATA_DIR, 'db.json')
+  try { _dbMtime = fs.statSync(file).mtimeMs } catch { _dbMtime = 0 }
+  _db = readJsonOrNull(file) || { users: [], creds: [], subs: [], invites: [] }
+}
+
+// db.json as it is now: the api rewrites it on every sign-in, token and grant.
+export function getDb() {
+  let mtime
+  try { mtime = fs.statSync(path.join(DATA_DIR, 'db.json')).mtimeMs } catch { return _db || { users: [] } }
+  if (_db === undefined || mtime !== _dbMtime) reloadDb()
+  return _db
+}
 
 function stateFile(uid) {
   return path.join(DATA_DIR, 'state-' + uid.replace(/[^a-zA-Z0-9_-]/g, '') + '.json')
@@ -88,11 +109,6 @@ export function init() {
   _uid = resolveUid()
   reloadDb()
   const file = stateFile(_uid)
-  if (fs.existsSync(file)) {
-    _state = readJsonOrNull(file)
-    if (_state) _state = Object.assign({}, defaultsShape(), _state)
-    try { _loadedMtime = fs.statSync(file).mtimeMs } catch {}
-  }
   if (_watcher) _watcher.close()
   // fs.watch is best-effort: the api server's atomic write at PUT /api/data is the source of
   // truth, and a stale read just gets corrected on the next change or the next tool call.
@@ -100,8 +116,7 @@ export function init() {
     _watcher = fs.watch(file, () => {
       // On change, simply clear the cache — the next getState() will re-read. Avoids reading
       // twice if the watcher fires multiple events for one atomic-write (rename + create).
-      _state = undefined
-      _loadedMtime = 0
+      cache.delete(_uid)
     })
     // Unref'd, or the watcher alone holds the event loop open and the process outlives the
     // client that spawned it — "exits when the LLM client disconnects" stops being true the
@@ -114,32 +129,29 @@ export function init() {
 
 // Returns the state object, or null for a fresh account that never signed in on a device.
 export function getState() {
-  init()
-  const file = stateFile(_uid)
+  const uid = currentUid()
+  const file = stateFile(uid)
+  const hit = cache.get(uid)
   // Re-read if the file's mtime changed since our last load — covers watcher omissions and
   // platforms with no fs.watch.
   let mtime
   try { mtime = fs.statSync(file).mtimeMs } catch {
-    return _state === undefined ? null : _state
+    return hit ? hit.state : null
   }
-  if (_state === undefined || mtime !== _loadedMtime) {
+  if (!hit || mtime !== hit.mtime) {
     const fresh = readJsonOrNull(file)
-    if (fresh) {
-      // Same shape the frontend builds on pullState — defaults merged with stored state so any
-      // field the app added since the snapshot was last saved shows up undefined-safe.
-      _state = Object.assign({}, defaultsShape(), fresh)
-      _loadedMtime = mtime
-    } else if (_state === undefined) {
-      _state = null  // no state file at all — never signed in on a device
-    }
+    // Same shape the frontend builds on pullState — defaults merged with stored state so any
+    // field the app added since the snapshot was last saved shows up undefined-safe. null: no
+    // state file at all — never signed in on a device.
+    cache.set(uid, { state: fresh ? Object.assign({}, defaultsShape(), fresh) : (hit ? hit.state : null), mtime })
   }
-  return _state
+  return cache.get(uid).state
 }
 
 // Returns the user record (id + name). No passkey material, no VAPID keys, no push subs.
 export function getUser() {
-  init()
-  const u = _db.users.find(x => x.id === _uid) || { id: _uid, name: 'Profile', created: null }
+  const uid = currentUid()
+  const u = getDb().users.find(x => x.id === uid) || { id: uid, name: 'Profile', created: null }
   return { id: u.id, name: u.name, created: u.created || null }
 }
 
@@ -149,8 +161,7 @@ export const dataDir = () => DATA_DIR
 export function _seedStateForTests(state) {
   _uid = 'test-uid'
   _db = { users: [{ id: _uid, name: 'Test', created: '2026-07-26T00:00:00.000Z' }], creds: [], subs: [], invites: [] }
-  _state = state
-  _loadedMtime = Number.MAX_SAFE_INTEGER   // never re-read from disk in a test
+  cache.set(_uid, { state, mtime: Number.MAX_SAFE_INTEGER })   // never re-read from disk in a test
   if (_watcher) { _watcher.close(); _watcher = null }
 }
 

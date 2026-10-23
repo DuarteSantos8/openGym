@@ -122,7 +122,8 @@ if you want to try it before installing anything.
   what you logged. You approve every change. It runs on your server with your own provider key
   (Anthropic, OpenAI, Gemini or any OpenAI-compatible endpoint, Ollama included).
 - An [MCP server](mcp/README.md) so an assistant like Claude Desktop can answer questions about your
-  training history. Read-only and local; not part of the Docker build.
+  training history. Read-only; run it locally, or switch on the `mcp` container and reach it at
+  `https://<your host>/mcp` through whatever already serves the app.
 
 The full list of what changed release by release is in the [changelog](CHANGELOG.md).
 

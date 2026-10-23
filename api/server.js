@@ -31,6 +31,7 @@ import {
   transportsOf,
 } from './passkeys-store.js';
 import { createDeviceLink, findDeviceLink, burnDeviceLink, dropDeviceLinks } from './device-link.js';
+import { CODE_TTL_MS, registerClient, clientOf, pkceOk, issueGrant, refreshGrant, dropGrants } from './oauth.js';
 import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from './media.js';
 import { effectiveRoutineId } from './queue.js';
 import { stampPut } from './sync-stamps.js';
@@ -742,7 +743,12 @@ const clearCookie = COOKIE === LEGACY_COOKIE
 // The password routes are deliberately NOT exempt. A name and a password are a credential too,
 // but one a hostile page can know — its own — so an exempt POST /api/login/password would let
 // any site sign a visitor into the attacker's account and collect what they log (login CSRF).
-const CSRF_EXEMPT = new Set(['POST /api/pair/redeem']);
+//
+// The OAuth client registration and token routes (api/oauth.js) are exempt for the same reason as
+// pair/redeem: the code and its PKCE verifier, or the refresh token, are the credential, no cookie
+// is read or set, and the tokens come back in the body. Their callers are AI clients, which are
+// never ORIGIN. Consent itself (POST /api/oauth/approve) is a cookie route and is not exempt.
+const CSRF_EXEMPT = new Set(['POST /api/pair/redeem', 'POST /api/oauth/register', 'POST /api/oauth/token']);
 // The routes that answer to the credential in the body and never to a Bearer. No Bearer is the
 // credential that acts there, so none buys the shortcut below: any valid token would do, the
 // attacker's own included.
@@ -846,7 +852,9 @@ function json(res, code, obj, extraHeaders) {
 class HttpError extends Error {
   constructor(status, message) { super(message); this.status = status; }
 }
-function readBody(req) {
+// `form`: also accept application/x-www-form-urlencoded, which is how OAuth clients send the token
+// request. Only for the one route whose body holds its own credential (POST /api/oauth/token).
+function readBody(req, { form = false } = {}) {
   return new Promise((resolve, reject) => {
     let size = 0, over = false; const chunks = [];
     req.on('data', d => {
@@ -871,6 +879,9 @@ function readBody(req) {
     req.on('end', () => {
       if (over) return;
       if (!chunks.length) return resolve({});
+      if (form && /^application\/x-www-form-urlencoded\s*(;|$)/i.test(req.headers['content-type'] || '')) {
+        return resolve(Object.fromEntries(new URLSearchParams(Buffer.concat(chunks).toString('utf8'))));
+      }
       // A body has to say it is JSON. The three types a form can send, and the ones a no-cors
       // fetch can send, are exactly the ones that need no CORS preflight; parsing them anyway
       // let another site's form reach any route that reads a body, and on the passkey sign-in
@@ -1368,6 +1379,7 @@ function removeAccount(u) {
   db.creds = (db.creds || []).filter(c => c.userId !== u.id);
   db.subs = (db.subs || []).filter(x => x.userId !== u.id);
   dropDeviceLinks(db, u.id);
+  dropGrants(db, u.id);
   presence.delete(u.id);
   // The training history and any Coach credential of theirs, both outside db.json.
   try { fs.unlinkSync(stateFile(u.id)); } catch { /* already gone */ }
@@ -2072,6 +2084,106 @@ function dataWritable() {
   return ok;
 }
 
+/* ---------- OAuth for the MCP endpoint (api/oauth.js) ---------- */
+// The AI client is sent to GET /api/oauth/authorize, which hands the request to the app's own
+// consent screen (frontend views/Connect.jsx): that screen signs the person in the usual way,
+// passkey or password, then posts the consent here with the session cookie. The code goes back to
+// the client's redirect URI and is traded for tokens at POST /api/oauth/token.
+const oauthCodes = new Map(); // code -> { uid, clientId, clientName, redirectUri, challenge, exp }
+setInterval(() => { for (const [k, v] of oauthCodes) if (v.exp < Date.now()) oauthCodes.delete(k); }, 60000).unref();
+const MCP_RESOURCE = ORIGIN.replace(/\/+$/, '') + '/mcp';
+const oauthMeta = {
+  issuer: ORIGIN.replace(/\/+$/, ''),
+  authorization_endpoint: ORIGIN.replace(/\/+$/, '') + '/api/oauth/authorize',
+  token_endpoint: ORIGIN.replace(/\/+$/, '') + '/api/oauth/token',
+  registration_endpoint: ORIGIN.replace(/\/+$/, '') + '/api/oauth/register',
+  response_types_supported: ['code'],
+  grant_types_supported: ['authorization_code', 'refresh_token'],
+  code_challenge_methods_supported: ['S256'],
+  token_endpoint_auth_methods_supported: ['none'],
+  scopes_supported: ['read']
+};
+const resourceMeta = { resource: MCP_RESOURCE, authorization_servers: [oauthMeta.issuer], scopes_supported: ['read'], bearer_methods_supported: ['header'] };
+// What the consent screen and the token route both ask: is this a client we signed, and is the
+// redirect URI one it registered.
+function oauthClient(q) {
+  const client = clientOf(text(q.client_id), verifySig);
+  return client && client.redirectUris.includes(text(q.redirect_uri)) ? client : null;
+}
+const oauthError = (res, error, code = 400) => json(res, code, { error });
+
+const oauthRoutes = {
+  'GET /.well-known/oauth-authorization-server': async (req, res) => json(res, 200, oauthMeta),
+  'GET /.well-known/oauth-protected-resource': async (req, res) => json(res, 200, resourceMeta),
+  'GET /.well-known/oauth-protected-resource/mcp': async (req, res) => json(res, 200, resourceMeta),
+
+  'POST /api/oauth/register': async (req, res) => {
+    const r = registerClient(await readBody(req), sign);
+    if (r.error) return oauthError(res, r.error);
+    json(res, 201, { ...r, token_endpoint_auth_method: 'none', grant_types: ['authorization_code', 'refresh_token'], response_types: ['code'] });
+  },
+
+  // Checked here before anyone is sent to sign in, and again at approve: a bad client or redirect
+  // URI is answered on the spot and never redirected to (RFC 6749 §4.1.2.1). Relative Location, so
+  // a deployment under a subpath lands on its own app.
+  'GET /api/oauth/authorize': async (req, res) => {
+    const q = Object.fromEntries(new URL(req.url, 'http://x').searchParams);
+    if (!oauthClient(q)) return oauthError(res, 'invalid_client');
+    res.writeHead(302, { Location: '../../#/connect?' + new URLSearchParams(q), 'Cache-Control': 'no-store' });
+    res.end();
+  },
+
+  // What the consent screen shows: the name the client registered and where it will be sent back.
+  'GET /api/oauth/client': async (req, res) => {
+    const q = Object.fromEntries(new URL(req.url, 'http://x').searchParams);
+    const client = oauthClient(q);
+    if (!client) return oauthError(res, 'invalid_client');
+    json(res, 200, { name: client.name, redirect_host: new URL(q.redirect_uri).host || q.redirect_uri.split(':')[0] });
+  },
+
+  'POST /api/oauth/approve': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const q = await readBody(req);
+    const client = oauthClient(q);
+    if (!client) return oauthError(res, 'invalid_client');
+    if (text(q.response_type) !== 'code') return oauthError(res, 'unsupported_response_type');
+    if (text(q.code_challenge_method) !== 'S256' || !/^[A-Za-z0-9_-]{43}$/.test(text(q.code_challenge))) return oauthError(res, 'invalid_request');
+    const code = crypto.randomBytes(32).toString('base64url');
+    oauthCodes.set(code, { uid: user.id, clientId: text(q.client_id), clientName: client.name, redirectUri: text(q.redirect_uri), challenge: text(q.code_challenge), exp: Date.now() + CODE_TTL_MS });
+    audit(req, 'auth.oauth.grant', { user, msg: client.name });
+    const back = new URL(text(q.redirect_uri));
+    back.searchParams.set('code', code);
+    if (q.state != null) back.searchParams.set('state', text(q.state));
+    back.searchParams.set('iss', oauthMeta.issuer);
+    json(res, 200, { redirect: back.href });
+  },
+
+  // RFC 6749 §5: form or JSON in, JSON out, `error` codes from the spec.
+  'POST /api/oauth/token': async (req, res) => {
+    const q = await readBody(req, { form: true });
+    const clientId = text(q.client_id);
+    if (text(q.grant_type) === 'refresh_token') {
+      const tokens = refreshGrant(db, text(q.refresh_token), clientId);
+      // Not saved on a refusal: anyone can post a wrong token, and that must not cost a write.
+      if (!tokens) return oauthError(res, 'invalid_grant');
+      saveDb();
+      return json(res, 200, tokens);
+    }
+    if (text(q.grant_type) !== 'authorization_code') return oauthError(res, 'unsupported_grant_type');
+    const c = oauthCodes.get(text(q.code));
+    oauthCodes.delete(text(q.code));
+    if (!c || c.exp < Date.now() || c.clientId !== clientId || c.redirectUri !== text(q.redirect_uri) || !pkceOk(q.code_verifier, c.challenge)) {
+      return oauthError(res, 'invalid_grant');
+    }
+    const user = db.users.find(u => u.id === c.uid);
+    if (!user || user.disabled) return oauthError(res, 'invalid_grant');
+    const tokens = issueGrant(db, { user, clientId, clientName: c.clientName });
+    saveDb();
+    json(res, 200, tokens);
+  }
+};
+
 const routes = {
   // 503 rather than a flag in a 200: the container healthcheck is `wget --spider`, which reads
   // the status and nothing else, and an instance that cannot write its data directory is exactly
@@ -2373,6 +2485,9 @@ const routes = {
 
   // Always there: more passkeys and device links need nothing an instance has to switch on.
   ...passkeyRoutes,
+
+  // Inert without the opt-in mcp container: nothing reads a grant but it.
+  ...oauthRoutes,
 
   // `rev` is the server's own count of writes to this profile (also stored inside the document as
   // `_rev`, so every other reader of the file — reminder tick, admin, Coach, MCP — is unaffected).
