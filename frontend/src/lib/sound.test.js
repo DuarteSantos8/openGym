@@ -582,6 +582,19 @@ describe('the count-in to the end of a timer', () => {
     expect(ctx().tones).toEqual([0, 1, 2].map(at => ({ freq: 660, at })))
   })
 
+  // A get-ready count in front of a flow hold (useUI.startWork's prep): both ends queued at once.
+  // A tick at this very instant would land on the chime that ended the hold before and clip it,
+  // and the ticks of a hold shorter than the countdown would fall inside the get-ready.
+  it('a count and its hold: no tick at the start, and the hold\'s ticks only once it runs', () => {
+    sound.countdownTo(true, 5, 30)
+    expect(ctx().tones).toEqual([1, 2, 3, 4, 30, 31, 32, 33, 34].map(at => ({ freq: 660, at })))
+  })
+
+  it('a hold shorter than the countdown behind a count never ticks inside the count', () => {
+    sound.countdownTo(true, 5, 3)
+    expect(ctx().tones).toEqual([1, 2, 3, 4, 5, 6, 7].map(at => ({ freq: 660, at })))
+  })
+
   it('queues nothing with sounds off, and nothing for a timer with no time left', () => {
     sound.countdown(false, 90)
     sound.countdown(true, 0)

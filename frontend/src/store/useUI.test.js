@@ -485,6 +485,24 @@ describe('the count-in a timer queues', () => {
     expect(countdown).not.toHaveBeenCalled()
   })
 
+  it('but not on a PAUSED hold — there is no countdown running to re-queue', () => {
+    // pauseWork hushes and lets the audio session go. Re-arming from Settings would beep a
+    // frozen clock down to zero and hold the session open with nothing running.
+    useUI.getState().startWork(45, 'Plank', () => {})
+    vi.advanceTimersByTime(5000)
+    useUI.getState().pauseWork()
+    countdown.mockClear()
+    holdSession.mockClear()
+    useUI.getState().restartCountdown()
+    expect(countdown).not.toHaveBeenCalled()
+    expect(holdSession).not.toHaveBeenCalled()
+    // ... and it works again once resumed.
+    useUI.getState().resumeWork()
+    countdown.mockClear()
+    useUI.getState().restartCountdown()
+    expect(countdown).toHaveBeenLastCalledWith(true, 40)
+  })
+
   it('coming back on screen queues it again, against the time that is really left', () => {
     const hide = () => { Object.defineProperty(document, 'hidden', { value: true, configurable: true }); document.dispatchEvent(new Event('visibilitychange')) }
     const show = () => { Object.defineProperty(document, 'hidden', { value: false, configurable: true }); document.dispatchEvent(new Event('visibilitychange')) }
@@ -719,6 +737,61 @@ describe('a timer that runs while the page is hidden', () => {
     expect(shown).toHaveBeenCalledTimes(1)
     expect(shown).toHaveBeenCalledWith('Rest’s over. Next set!', expect.objectContaining({ tag: 'rest-timer' }))   // the push's tag: one tray entry
     expect(useUI.getState().timer).not.toBe(null)    // the rest itself still waits for the screen
+  })
+
+  it('freezes a hold where it stands and carries on from there', () => {
+    const done = vi.fn()
+    const owner = { idx: 3, i: 0, id: '0025' }
+    useUI.getState().startWork(45, 'Plank', done, owner)
+    vi.advanceTimersByTime(12_000)
+    expect(useUI.getState().work.left).toBe(33)
+
+    useUI.getState().pauseWork()
+    expect(useUI.getState().work).toMatchObject({ left: 33, total: 45, paused: true, owner })
+    // Frozen means frozen: the clock does not move and the hold does not finish itself.
+    vi.advanceTimersByTime(60_000)
+    expect(useUI.getState().work.left).toBe(33)
+    expect(done).not.toHaveBeenCalled()
+    // And it is still a hold — everything it carries is intact, which is the difference between
+    // pausing and stopWork: the label, the owner, and the callback that will log the set.
+    expect(useUI.getState().work.label).toBe('Plank')
+
+    useUI.getState().resumeWork()
+    expect(useUI.getState().work.paused).toBe(false)
+    vi.advanceTimersByTime(32_000)
+    expect(useUI.getState().work.left).toBe(1)
+    vi.advanceTimersByTime(1000)
+    // 45 seconds of hold, logged in full — a pause is not an early finish, and the sixty seconds
+    // it spent frozen are not part of the plank.
+    expect(done).toHaveBeenCalledWith(45, { chimed: true })
+  })
+
+  it('logs what a frozen hold really held if you finish it early, and pauses nothing twice', () => {
+    const done = vi.fn()
+    useUI.getState().startWork(45, 'Plank', done)
+    vi.advanceTimersByTime(20_000)
+    useUI.getState().pauseWork()
+    const frozen = useUI.getState().work
+    useUI.getState().pauseWork()                       // a second tap changes nothing
+    expect(useUI.getState().work).toBe(frozen)
+    useUI.getState().finishWorkEarly()
+    expect(done).toHaveBeenCalledWith(20)
+    expect(useUI.getState().work).toBe(null)
+    // Nothing to resume once it is gone.
+    useUI.getState().resumeWork()
+    expect(useUI.getState().work).toBe(null)
+  })
+
+  it('lets a paused hold be abandoned by a rest, keeping the seconds it held', () => {
+    const done = vi.fn()
+    useUI.getState().startWork(45, 'Plank', done)
+    vi.advanceTimersByTime(9000)
+    useUI.getState().pauseWork()
+    useUI.getState().startRest(60, 2, { kind: 'block' })
+    expect(done).toHaveBeenCalledWith(9, { abandoned: true })   // abandoned, not finished
+    expect(useUI.getState().work).toBe(null)
+    expect(useUI.getState().timer).not.toBe(null)
+    useUI.getState().stopRest()
   })
 
   // Nothing on screen changes, but the audio session is no screen: held past the end it keeps the
@@ -957,5 +1030,38 @@ describe('what a rest hands over to', () => {
     useUI.getState().startRest(10, 0, { kind: 'switch', chain })
     useUI.getState().skipRest()
     expect(done).toHaveBeenCalledTimes(2)
+  })
+
+  // A flow block's round rest carries the block into its next round (timer.flow, the block's
+  // superset id; Workout.jsx restHandOver), the same way: on screen or on Skip, never unseen, and
+  // kept across +15 s from Ready and the Android notification.
+  it('a flow block\'s round rest hands over the same way, and keeps the block through a restart', () => {
+    useUI.getState().startRest(1, 2, { kind: 'round', flow: 'sg-warmup' })
+    vi.advanceTimersByTime(1000)
+    expect(done).toHaveBeenCalledTimes(1)
+    expect(done.mock.calls[0][0]).toMatchObject({ forIdx: 2, kind: 'round', flow: 'sg-warmup' })
+    useUI.getState().addRest(15)                      // from Ready: a fresh rest, the same block
+    expect(useUI.getState().timer).toMatchObject({ left: 15, flow: 'sg-warmup' })
+    useUI.getState().followNativeRest({ endsAt: Date.now() + 20_000, left: 20, total: 20, paused: false })
+    expect(useUI.getState().timer).toMatchObject({ flow: 'sg-warmup' })
+    useUI.getState().skipRest()
+    expect(done).toHaveBeenCalledTimes(2)
+    useUI.getState().startRest(10, 2, { kind: 'round', flow: 'sg-warmup' })
+    goHidden()
+    vi.advanceTimersByTime(11_000)
+    goVisible()
+    expect(done).toHaveBeenCalledTimes(2)             // ran out in a pocket: nothing handed over
+  })
+
+  // Where the marker stood as the block's rest began (flowCur) stays on its exercise when the list
+  // changes shape, as the chain's own marker does: an exercise removed or added is nobody going away.
+  it('keeps where a flow rest remembers the marker on the same exercise', () => {
+    useUI.getState().startRest(15, 3, { kind: 'round', flow: 'sg-warmup', flowCur: 1 })
+    useUI.getState().shiftRestOwner(0, 1)             // an exercise inserted above
+    expect(useUI.getState().timer).toMatchObject({ forIdx: 4, flow: 'sg-warmup', flowCur: 2 })
+    useUI.getState().shiftRestOwner(2, -1)            // and the one at 1 removed
+    expect(useUI.getState().timer).toMatchObject({ forIdx: 3, flowCur: 1 })
+    useUI.getState().addRest(15)
+    expect(useUI.getState().timer).toMatchObject({ flowCur: 1 })
   })
 })

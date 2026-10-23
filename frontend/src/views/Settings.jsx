@@ -13,7 +13,8 @@ import { ACCENTS, ACCENT_NAMES, todayISO, localTZ, weekStartOf, MONDAY, SUNDAY, 
 import { inventoryFor, ownsPlates } from '../lib/plates.js'
 import { BAR_TYPES, ownBarDefault } from '../lib/bar.js'
 import { dumbbellsOf, ownsNoDumbbells } from '../lib/dumbbells.js'
-import { effortOf } from '../lib/history.js'
+import { effortOf, fmtSec } from '../lib/history.js'
+import { GET_READY_SEC, getReadyOf } from '../lib/blocks.js'
 import { figureOf } from '../lib/exercises.js'
 import { unlock, chime, playOnSilentSupported, vibrateSupported, appleTouchDevice } from '../lib/sound.js'
 import { REST_SOUND_IDS, REST_KINDS, restSoundOf } from '../lib/rest-sounds.js'
@@ -626,6 +627,16 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             subtitle={t('Timed sets continue up to 15 extra minutes. Tap Done to log the actual duration.')}>
             <Switch aria-label={t('Keep timing after target')} checked={!!S.timedSetOvertime}
               onChange={v => update(s => { s.timedSetOvertime = v })} />
+          </Row>
+          {/* The count gives a few seconds before each flow hold to get set up, most of all for
+              movements done on the floor. A choice per person, Off by default. Seconds read as
+              the clock does, so no word needs translating. */}
+          <Row icon="timer" iconTint="var(--orange)" title={t('Get ready before each hold')}
+            subtitle={t('Warm-ups and cool-downs that run themselves count down before each hold, so you can get into position.')}>
+            <Segmented className="seg-inline"
+              options={[{ value: 0, label: t('Off') }, ...GET_READY_SEC.map(n => ({ value: n, label: fmtSec(n) }))]}
+              value={getReadyOf(S)}
+              onChange={v => update(s => { s.flowGetReady = v })} />
           </Row>
         </Section>
         {/* The lean workout screen keeps the sets and one "more" button per exercise; each switch

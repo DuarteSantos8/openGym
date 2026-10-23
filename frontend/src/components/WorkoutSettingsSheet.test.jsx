@@ -65,7 +65,7 @@ describe('the in-workout settings sheet', () => {
 
   it('has the rows people change at the gym, then All settings', () => {
     expect([...host.querySelectorAll('.lrow-t')].map(e => e.textContent)).toEqual([
-      'Rest timer', 'Play a sound', 'Vibrate', 'Flash the screen', 'Keep screen awake',
+      'Rest timer', 'Get ready before each hold', 'Play a sound', 'Vibrate', 'Flash the screen', 'Keep screen awake',
       'Layout', 'Effort per set', 'Swipe actions', 'Exercise animations', 'All settings',
     ])
     expect(row('Rest timer').querySelector('.lrow-v').textContent).toBe('1:30')
@@ -81,6 +81,30 @@ describe('the in-workout settings sheet', () => {
     act(() => [...row('Effort per set').querySelectorAll('button')].find(b => b.textContent === 'RIR').click())
     act(() => [...row('Exercise animations').querySelectorAll('button')].find(b => b.textContent === 'Small').click())
     expect(S()).toMatchObject({ sound: true, vibrate: false, timerFlash: true, keepAwake: false, effort: 'rir', gifSize: 'mini' })
+  })
+
+  // The get-ready count before each flow hold, the same field as Settings → Fine-tuning: Off by
+  // default, a value Settings does not offer reads as Off here too.
+  it('sets the get-ready count Settings sets', () => {
+    const seg = () => row('Get ready before each hold').querySelectorAll('button')
+    expect([...seg()].map(b => b.textContent)).toEqual(['Off', '0:03', '0:05', '0:10'])
+    expect(row('Get ready before each hold').querySelector('button.on').textContent).toBe('Off')
+    act(() => [...seg()].find(b => b.textContent === '0:05').click())
+    expect(S().flowGetReady).toBe(5)
+    act(() => useStore.setState({ S: { ...S(), flowGetReady: 7 } }))
+    expect(row('Get ready before each hold').querySelector('button.on').textContent).toBe('Off')
+  })
+
+  // Editing a saved workout or logging a past one, no block runs itself (lib/blocks.js
+  // runsFlows), so no hold is ever counted in there and the row is not offered.
+  it('offers the get-ready count only in a live session', () => {
+    expect(row('Get ready before each hold')).toBeTruthy()
+    act(() => useStore.setState({ S: { ...S(), active: { ...S().active, editingWorkoutId: 'w-saved' } } }))
+    expect(row('Get ready before each hold')).toBeUndefined()
+    expect(row('Rest timer')).toBeTruthy()
+    act(() => useStore.setState({ S: { ...S(), active: { ...S().active, editingWorkoutId: undefined, backfill: { durationMin: 60, replaceId: null } } } }))
+    expect(row('Get ready before each hold')).toBeUndefined()
+    expect(row('Rest timer')).toBeTruthy()
   })
 
   it('shows this session’s layout, and a pick here is saved and replaces it', () => {

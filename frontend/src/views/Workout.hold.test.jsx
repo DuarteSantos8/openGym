@@ -311,6 +311,31 @@ describe('a timed exercise that runs itself, and a move', () => {
   })
 })
 
+// A flow block stops when you go to another exercise while it runs, judged by where the
+// marker stood as the hold or the gap began. An exercise removed above shifts that place without
+// anyone going anywhere, so it is kept in step (holdAt.cur, useUI.shiftRestOwner's flowCur).
+describe('a flow block, and an exercise removed above it while it runs', () => {
+  const lift = id => ({ id, target: { mode: 'reps', sets: 1, reps: 5, weight: 60 }, sets: [{ w: 60, r: 5, done: false }] })
+  const sided = () => ({ id: '1424', sg: 'sg-cd', target: { mode: 'time', sets: 1, sec: 10, restSec: 10, side: true },
+    sets: [{ sec: 10, w: 0, side: 'L', done: false }, { sec: 10, w: 0, side: 'R', done: false }] })
+  const held = () => ({ id: '1494', sg: 'sg-cd', target: { mode: 'time', sets: 1, sec: 10, restSec: 10 }, sets: [{ sec: 10, w: 0, done: false }] })
+  const start = () => {
+    renderWorkout([lift('0652'), lift('0025'), sided(), held()], () => { useStore.getState().update(s => { s.active.workoutView = 'list'; s.active.cur = 1 }) })
+    const go = [...container.querySelectorAll('button')].find(b => b.textContent.trim() === 'Start cool-down')
+    act(() => go.click())
+    expect(useUI.getState().work).toMatchObject({ owner: { idx: 2, i: 0 } })
+  }
+
+  it('during its switch-sides pause: the other side still starts', () => {
+    start()
+    act(() => { vi.advanceTimersByTime(11_000) })                // the left side
+    expect(useUI.getState().timer).toMatchObject({ kind: 'switch', flow: 'sg-cd' })
+    act(() => removeActiveExercise(0))
+    act(() => { vi.advanceTimersByTime(10_000) })
+    expect(useUI.getState().work).toMatchObject({ owner: { idx: 1, i: 1, id: '1424' } })
+  })
+})
+
 // A reload keeps the chain: a rest is kept with the hold it hands over to (gym_rest), a hold with
 // its row (gym_work), and the workout screen acts on both once it is back.
 describe('a timed exercise that runs itself, across a reload', () => {

@@ -79,6 +79,7 @@ export const SEARCH = [
   { page: 'advanced', title: 'Planned sessions start from', icon: 'clipboard', tint: 'var(--green)', kw: 'start from plan last session reps carry over', opts: ['Your plan', 'Your last session'] },
   { page: 'advanced', title: 'Last time means', icon: 'history', tint: 'var(--indigo)', kw: 'last time previous session history routine workout across every any', opts: ['This routine', 'Any workout'] },
   { page: 'advanced', title: 'Keep timing after target', icon: 'stopwatch', tint: 'var(--orange)', kw: 'timed set overtime hold duration' },
+  { page: 'advanced', title: 'Get ready before each hold', icon: 'timer', tint: 'var(--orange)', kw: 'get ready countdown count in prep pause flow warm-up cool-down hold position' },
   { page: 'advanced', title: 'Weight and reps buttons', icon: 'plusCircle', tint: 'var(--green)', kw: 'steppers plus minus buttons workout controls' },
   { page: 'advanced', title: 'Drop and burst shortcuts on every set', icon: 'bolt', tint: 'var(--orange)', kw: 'drop set burst shortcuts workout controls' },
   { page: 'advanced', title: 'Swipe actions', icon: 'swap', tint: 'var(--indigo)', kw: 'swipe gesture slide delete remove copy duplicate set routine loop plan workout controls', tkw: () => t('swipe gesture') },

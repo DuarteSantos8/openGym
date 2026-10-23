@@ -1560,8 +1560,18 @@ body.chips-dragging *{cursor:inherit}
 #timer .acts .skip > .skip-probe{position:absolute;inset-inline-start:0;top:0;visibility:hidden;pointer-events:none;display:block;overflow:visible;width:max-content}
 #timer .acts .skip > .skip-probe > span{display:block;width:max-content;white-space:nowrap}
 #timer .acts .skip.icon-only{min-width:0}
-/* A paused rest reads as held: the clock and the bar step back until it runs again. */
-#timer.rest.paused .t,#timer.rest.paused .bar{opacity:.5}
+/* In a flow, the button beside the pause carries all four of the flow bar's words, stacked in one
+   cell like Skip and Dismiss with the one in use showing (RestTimer.jsx flowWords), and Done is
+   sized like Skip: the same least width, and Skip keeps Done's padding, which it only gives up
+   below to make room for ±15 s, a flow has none. One width in every state, so the pause beside it
+   does not move. A word with its icon is laid out the way the button lays one out. */
+#timer .acts .flow-words{display:grid;min-width:0}
+#timer .acts .flow-words > span{grid-area:1/1;display:flex;align-items:center;justify-content:center;gap:5px;min-width:0;white-space:nowrap}
+#timer .acts .flow-words > .off{visibility:hidden}
+#timer .acts .go.flow{min-width:min(70px,100%)}
+/* A paused rest reads as held: the clock and the bar step back until it runs again. So does a
+   frozen hold (a paused flow block): the bar stays, the numbers stop meaning "counting". */
+#timer.rest.paused .t,#timer.rest.paused .bar,#timer.working.paused .t,#timer.working.paused .bar{opacity:.5}
 /* work timer (issue #16): the same bar doing the opposite job — outlined and tinted so a
    glance tells "you are holding this" apart from "you are recovering". */
 #timer.working{box-shadow:inset 0 0 0 var(--hair) var(--acc),0 12px 34px -8px rgba(0,0,0,.55)}
@@ -1584,12 +1594,12 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
   #timer .acts{gap:4px}
   #timer .acts .adj{padding-inline:6px;gap:1px}
   #timer .acts .pause,#timer .acts .pause-slot{padding-inline:10px}
-  #timer .acts .skip{padding-inline:10px}
+  #timer .acts .skip:not(.flow){padding-inline:10px}
 }
 @media (max-width:359px){
   body.no-tabbar #timer,#timer{padding-inline:10px}
   #timer .t{font-size:25px}
-  #timer .acts .skip{min-width:0}
+  #timer .acts .skip,#timer .acts .go.flow{min-width:0}
 }
 
 /* ---------------------------------------------------------------- modal -- */
@@ -2144,6 +2154,67 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* part of the give-back above — one edge for all three insets of a row in the list view */
 @media (max-width:404px){
   .wl-unit{padding:10px 8px 2px}
+}
+
+/* --- flow block: a warm-up or cool-down as one running screen (lib/blocks.js) --- */
+/* Sized for arm's length on a mat, not for a thumb: the movement's name and the countdown are
+   the two things read while moving, so they take the space the set rows would have had. */
+.flowblk{
+  border-radius:var(--r-lg);padding:14px;
+  background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--acc-line);
+}
+.flowblk-hd{
+  display:flex;align-items:center;gap:8px;margin-bottom:12px;
+  font-size:12px;font-weight:600;color:var(--acc);
+}
+.flowblk-hd .grow{flex:1;min-width:0}
+.flowblk-hd .icn{font-size:13px}
+.flowblk-now{text-align:center;margin:10px 0 14px}
+.flowblk-name{
+  font-size:22px;font-weight:600;letter-spacing:-.02em;line-height:1.15;
+  margin-bottom:2px;
+}
+.flowblk-clock{
+  font-size:56px;font-weight:600;letter-spacing:-.03em;line-height:1.05;
+  font-variant-numeric:tabular-nums;color:var(--acc);
+}
+/* The gap between rounds is not the hold: same size, so the layout never jumps, different
+   colour, so a glance from three feet away tells them apart without reading the word. */
+.flowblk-clock.resting{color:var(--label-2)}
+/* Frozen, not counting: dimmed the same way a disabled control is, so a glance at the number
+   alone says whether it is moving. */
+.flowblk-clock.paused{color:var(--label-3)}
+.flowblk-list{display:grid;grid-template-columns:minmax(0,1fr);gap:2px;margin-bottom:10px}
+.flowblk-mv{
+  display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:var(--r-sm);
+  min-width:0;
+}
+.flowblk-mv .tt{
+  flex:1;min-width:0;font-size:15px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.flowblk-mv .flowblk-dot{color:var(--label-3);display:flex;font-size:13px}
+.flowblk-mv.at{background:var(--surface-2)}
+.flowblk-mv.at .tt{font-weight:600}
+.flowblk-mv.at .flowblk-dot{color:var(--acc)}
+.flowblk-mv.done .tt{color:var(--label-2)}
+.flowblk-mv.done .flowblk-dot{color:var(--acc)}
+/* The library's names arrive lowercase, and this line sits right under a list that capitalises
+   them — the same movement spelled two ways, a hand's width apart. */
+.flowblk-next{display:flex;align-items:center;gap:4px;justify-content:center;margin-bottom:10px}
+/* A side ("Next · Right side", FlowBlock.jsx) is the pack's own words, cased as the pack has them:
+   capitalised, it read "Right Side" a few lines under the clock's "Left side". */
+.flowblk-next.side{text-transform:none}
+.flowblk-next .icn{font-size:12px}
+.flowblk-go{width:100%}
+.flowblk-done{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:26px 0;color:var(--acc);font-weight:600;
+}
+.flowblk-done .icn{font-size:30px}
+@media (max-width:404px){
+  .flowblk{padding:10px 8px}
+  .flowblk-clock{font-size:48px}
 }
 
 /* --- home: today's session row --- */

@@ -181,9 +181,31 @@ export function countdown(enabled, secLeft) {
     for (let n = Math.min(COUNTDOWN_SEC, Math.floor(left)); n >= 1; n--) ticks.push(tone(660, 0.1, left - n))
   } catch (e) { /* */ }
 }
+// A get-ready count and the hold behind it (useUI.startWork's `prep`), queued at once: a second
+// countdown() would hush the first. The count's ticks never include one at this instant — it
+// would land on the chime that just ended the step before and clip it — and the hold's own ticks
+// never start before the hold does, however short it is. Times in seconds really left, as for
+// countdown().
+export function countdownTo(enabled, prepLeft, holdLeft) {
+  hush()
+  if (!enabled) return
+  const prep = Math.max(0, Number(prepLeft) || 0)
+  const hold = Math.max(0, Number(holdLeft) || 0)
+  try {
+    for (let n = Math.min(COUNTDOWN_SEC, Math.floor(prep)); n >= 1; n--) if (prep - n > 0) ticks.push(tone(660, 0.1, prep - n))
+    for (let n = Math.min(COUNTDOWN_SEC, Math.floor(hold)); n >= 1; n--) ticks.push(tone(660, 0.1, prep + hold - n))
+  } catch (e) { /* */ }
+}
 export function hush() {
   for (const o of ticks) { try { o.stop(0) } catch (e) { /* */ } }
   ticks = []
+}
+// The end of a get-ready count in front of a flow hold (useUI runWork): two mid beeps. Always
+// this one, whatever Settings → Sound picks: with the chosen sound there, the end of the count
+// and the end of the hold after it would be one sound.
+const COUNT_OVER = [[880, 0.15, 0], [880, 0.15, 0.25]]
+export function countOver(enabled) {
+  for (const [freq, dur, when] of COUNT_OVER) beep(enabled, freq, dur, when)
 }
 
 // Call from inside a tap. Gets the context created and running while the browser still counts
