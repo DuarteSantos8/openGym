@@ -38,7 +38,8 @@ const coach = () => ({
 
 async function fixture({ executors } = {}) {
   const f = { admin: true, verifyUser: 'uid1', users: initialUsers(), coach: coach(), seen: [], big: false, rev: 7,
-    passwordLogin: true, invites: [{ code: 'ABCDEF0123456789', note: 'for Sam', created: 'c', createdBy: 'uid1', usedBy: 'uid2', usedAt: 'u', usedByName: 'Friend' },
+    passwordLogin: true, coachCfgSeen: [], forgetSeen: [], modelDelay: 0, modelsAnswer: null,
+    invites: [{ code: 'ABCDEF0123456789', note: 'for Sam', created: 'c', createdBy: 'uid1', usedBy: 'uid2', usedAt: 'u', usedByName: 'Friend' },
       { code: 'FEDCBA9876543210', note: '', created: 'c', createdBy: 'uid1' }], inviteCode: '1234ABCD5678EF01' }
   const who = { 'Bearer bearer-1': 'uid1', 'Bearer bearer-2': 'uid2' }
   const api = http.createServer((req, res) => {
@@ -56,6 +57,7 @@ async function fixture({ executors } = {}) {
       if (route === 'GET /api/me') return json(200, { user: { id: f.meId || uid, name: 'Me', admin: f.meAdmin ?? isAdmin } })
       if (route === 'GET /api/data/rev') return json(200, { rev: f.rev, wid: 'w' })
       if (route === 'POST /api/media/sweep') return json(200, { removed: 2, freedBytes: 10, usage: { bytes: 1, path: '/media/private' } })
+      if (route === 'POST /api/coach/forget') { f.forgetSeen.push(uid); return json(200, { ok: true, extra: 'sk-LEAK' }) }
       if (req.url.startsWith('/api/admin/')) {
         if (!isAdmin) return json(403, { error: 'forbidden' })
         const url = new URL(req.url, 'http://x')
@@ -87,6 +89,11 @@ async function fixture({ executors } = {}) {
           if (route === 'POST /api/admin/user/password-reset') return json(200, { ok: true, name: 'Friend', code: 'ABCD-EFGH-JKLM', expires: 1700000000000, extra: 'RESETCODE' })
           if (route === 'POST /api/admin/coach/connect') return json(200, { ok: true, extra: 'sk-SECRET' })
           if (route === 'POST /api/admin/coach/disconnect') return json(200, { ok: true })
+          if (route === 'POST /api/admin/coach/config') { f.coachCfgSeen.push(JSON.parse(body)); return json(200, { ok: true, extra: 'sk-LEAK' }) }
+          if (route === 'POST /api/admin/coach/models') {
+            if (f.modelDelay) return setTimeout(() => json(200, { ok: true, models: ['slow-model'], error: 'sk-LEAK exploded' }), f.modelDelay)
+            return json(200, f.modelsAnswer || { ok: true, models: ['m1', 'm2'], error: 'sk-LEAK exploded' })
+          }
         }
       }
       return json(404, {})
@@ -99,7 +106,7 @@ async function fixture({ executors } = {}) {
     ['conn2', { userId: 'uid2', sealed: sealBearer('bearer-2', key, 'uid2') }],
   ])
   const service = createConfirmations({ connections, key, apiBase, origin, prefix: '/connector', store: createProfileStore({ apiBase }), executors: executors || createAdminExecutors({ apiBase, key }) })
-  const tools = Object.fromEntries([...createAdminTools({ apiBase, key, confirmations: service }), ...createDestructiveTools(service)].map(t => [t.name, t]))
+  const tools = Object.fromEntries([...createAdminTools({ apiBase, key, confirmations: service, origin, modelsTimeoutMs: 300 }), ...createDestructiveTools(service)].map(t => [t.name, t]))
   return Object.assign(f, {
     apiBase, service, tools, connections,
     mutations: () => f.seen.filter(x => x.method === 'POST' && !/\/api\/login\//.test(x.url)),
@@ -204,9 +211,9 @@ test('an oversized upstream answer fails with our own message, not its contents'
 
 test('only explicitly supported admin tools exist; no backup replace or bulk delete', async t => {
   const f = await fixture(); t.after(f.close)
-  assert.deepEqual(Object.keys(f.tools).sort(), ['clear_audit_log', 'delete_account', 'delete_routine', 'delete_workout', 'disable_account', 'disconnect_coach',
-    'get_audit_log', 'get_coach_status', 'get_user', 'list_invites', 'list_users', 'request_connect_coach', 'request_create_invite', 'request_password_reset', 'request_revoke_invite', 'sweep_media'])
-  assert.deepEqual(Object.keys(createAdminExecutors({ apiBase: 'http://unused', key })).sort(), ['clear-audit', 'connect-coach', 'create-invite', 'delete-account', 'disable-account', 'disconnect-coach', 'password-reset', 'revoke-invite', 'sweep-media'])
+  assert.deepEqual(Object.keys(f.tools).sort(), ['clear_audit_log', 'configure_coach', 'delete_account', 'delete_routine', 'delete_workout', 'disable_account', 'disconnect_coach',
+    'forget_coach', 'get_audit_log', 'get_coach_status', 'get_user', 'list_coach_models', 'list_invites', 'list_users', 'request_connect_coach', 'request_create_invite', 'request_password_reset', 'request_revoke_invite', 'sweep_media', 'test_coach'])
+  assert.deepEqual(Object.keys(createAdminExecutors({ apiBase: 'http://unused', key })).sort(), ['clear-audit', 'configure-coach', 'connect-coach', 'create-invite', 'delete-account', 'disable-account', 'disconnect-coach', 'forget-coach', 'password-reset', 'revoke-invite', 'sweep-media'])
 })
 
 test('requesting any destructive tool only returns a link: nothing is mutated, no admin route is touched for sweep', async t => {
@@ -584,6 +591,187 @@ test('Coach link projects only safe provider capabilities; browser credentials v
   assert.equal(calls[0].headers.authorization, 'Bearer bearer-1')
   assert.equal(calls[0].headers.cookie, undefined)
   assert.doesNotMatch(JSON.stringify([...f.service.pending.values()]), /sk-SECRET/)
+})
+
+/* ------------------------------ coach settings and forget ------------------------------ */
+
+const noLeak = value => assert.doesNotMatch(JSON.stringify(value), /sk-LEAK|HEADERVALUE|owner@coach\.test/)
+
+test('configure_coach applies an ordinary patch at once: only sent fields, both caps unchanged, admin re-proved', async t => {
+  const f = await fixture(); t.after(f.close)
+  const result = await f.tools.configure_coach.handler('bearer-1', { enabled: false, provider: 'compat', model: 'm2', community: true, maxMessageLen: 400, maxOutputTokens: 2048 })
+  assert.deepEqual(result, { saved: true })
+  assert.deepEqual(f.coachCfgSeen, [{ enabled: false, provider: 'compat', model: 'm2', community: true, maxMessageLen: 400, maxOutputTokens: 2048 }])
+  assert.equal(f.seen.filter(x => x.route === 'POST /api/admin/coach/config')[0].headers.authorization, 'Bearer bearer-1')
+  // A non-admin gets the upstream 403, and a withdrawn admin (me says no) sends nothing at all.
+  f.admin = false
+  await assert.rejects(() => f.tools.configure_coach.handler('bearer-1', { enabled: true }), e => e instanceof AdminError && e.status === 403)
+  f.admin = true
+  f.meAdmin = false
+  await assert.rejects(() => f.tools.configure_coach.handler('bearer-1', { enabled: true }), AdminError)
+  assert.equal(f.coachCfgSeen.length, 1)
+})
+
+test('configure_coach refuses secret fields, bad shapes and out-of-range values before any request', async t => {
+  const f = await fixture(); t.after(f.close)
+  const bad = [
+    { baseUrl: 'https://evil.test' }, { headers: { a: 'b' } }, { token: 'sk-LEAK' }, { account: 'me' },
+    { enabled: 'yes' }, { provider: '../x' }, { provider: 'a'.repeat(41) }, { model: 'm'.repeat(81) }, { community: 1 },
+    { maxMessageLen: 199 }, { maxMessageLen: 4001 }, { maxMessageLen: 1.5 }, { maxOutputTokens: 1023 }, { maxOutputTokens: 65537 },
+    { caps: { perProfileDaily: 201, instanceDaily: 50 } }, { caps: { perProfileDaily: 5, instanceDaily: 5001 } },
+    { caps: { perProfileDaily: -1, instanceDaily: 50 } }, { caps: {} }, { caps: { perProfileDaily: 1.5, instanceDaily: 50 } },
+    { caps: { perProfileDaily: 5, instanceDaily: 50, extra: 1 } }, { enabled: true, extra: 1 },
+  ]
+  for (const args of bad) await assert.rejects(() => f.tools.configure_coach.handler('bearer-1', args), AdminError, JSON.stringify(args))
+  assert.equal(f.seen.length, 0)
+})
+
+test('raising a cap, or setting either cap to 0, only returns a confirmation link and never POSTs', async t => {
+  const f = await fixture(); t.after(f.close)
+  for (const caps of [{ perProfileDaily: 6, instanceDaily: 50 }, { perProfileDaily: 5, instanceDaily: 51 }, { perProfileDaily: 0, instanceDaily: 50 }, { perProfileDaily: 5, instanceDaily: 0 }]) {
+    const result = await f.tools.configure_coach.handler('bearer-1', { caps }, 'conn1')
+    assert.deepEqual(Object.keys(result), ['url'], JSON.stringify(caps))
+    assert.match(result.url, /^https:\/\/gym\.example\.test\/connector\/confirm#[A-Za-z0-9_-]{43}$/)
+    assert.doesNotMatch(JSON.stringify(result), /saved/)
+  }
+  assert.equal(f.coachCfgSeen.length, 0)
+  // Other edits cannot ride along with a raise, and a non-admin cannot mint the link either.
+  await assert.rejects(() => f.tools.configure_coach.handler('bearer-1', { caps: { perProfileDaily: 6, instanceDaily: 50 }, enabled: true }, 'conn1'), AdminError)
+  f.admin = false
+  await assert.rejects(() => f.tools.configure_coach.handler('bearer-1', { caps: { perProfileDaily: 6, instanceDaily: 50 } }, 'conn1'), e => e instanceof AdminError && e.status === 403)
+  assert.equal(f.service.pending.size, 1, 'the last valid link stays pending; refusal mints no new link')
+})
+
+test('lowering both caps is an immediate POST carrying exactly those two values', async t => {
+  const f = await fixture(); t.after(f.close)
+  const result = await f.tools.configure_coach.handler('bearer-1', { caps: { perProfileDaily: 4, instanceDaily: 49 } })
+  assert.deepEqual(result, { saved: true })
+  assert.deepEqual(f.coachCfgSeen, [{ caps: { perProfileDaily: 4, instanceDaily: 49 } }])
+  // Equal values are not a raise either.
+  assert.deepEqual(await f.tools.configure_coach.handler('bearer-1', { caps: { perProfileDaily: 5, instanceDaily: 50 } }), { saved: true })
+  assert.equal(f.coachCfgSeen.length, 2)
+})
+
+test('partial cap patches preserve the untouched live cap; 0 is unlimited and requires a link when raised', async t => {
+  const f = await fixture(); t.after(f.close)
+  f.coach.caps.instanceDaily = 60
+  assert.deepEqual(await f.tools.configure_coach.handler('bearer-1', { caps: { perProfileDaily: 4 } }), { saved: true })
+  assert.deepEqual(f.coachCfgSeen, [{ caps: { perProfileDaily: 4, instanceDaily: 60 } }])
+  const { url } = await f.tools.configure_coach.handler('bearer-1', { caps: { instanceDaily: 0 } }, 'conn1')
+  assert.match(url, /\/confirm#/)
+  assert.equal(f.coachCfgSeen.length, 1)
+  const id = idOf(url)
+  await f.service.details(id); const { cid } = await f.service.challenge(id)
+  await f.service.confirm(id, { cid, credential: credential() })
+  assert.deepEqual(f.coachCfgSeen[1], { caps: { perProfileDaily: 5, instanceDaily: 0 } })
+  // Existing unlimited 0 is higher than every finite cap: changing it to 200 lowers, not raises.
+  f.coach.caps.perProfileDaily = 0
+  assert.deepEqual(await f.tools.configure_coach.handler('bearer-1', { caps: { perProfileDaily: 200 } }), { saved: true })
+  assert.deepEqual(f.coachCfgSeen[2], { caps: { perProfileDaily: 200, instanceDaily: 60 } })
+})
+
+test('a confirmed cap raise re-checks admin and the unchanged baseline, then POSTs both caps; a changed baseline never POSTs', async t => {
+  const f = await fixture(); t.after(f.close)
+  const caps = { perProfileDaily: 6, instanceDaily: 50 }
+  const id = idOf((await f.tools.configure_coach.handler('bearer-1', { caps }, 'conn1')).url)
+  const { summary } = await f.service.details(id)
+  assert.equal(summary.type, 'configure-coach')
+  assert.match(summary.effect, /cap/i)
+  noLeak(summary)
+  const { cid } = await f.service.challenge(id)
+  f.coach.caps = { perProfileDaily: 7, instanceDaily: 50 }
+  await assert.rejects(() => f.service.confirm(id, { cid, credential: credential() }), bad)
+  assert.equal(f.coachCfgSeen.length, 0)
+  f.coach.caps = { perProfileDaily: 5, instanceDaily: 50 }
+  const fresh = idOf((await f.tools.configure_coach.handler('bearer-1', { caps }, 'conn1')).url)
+  await f.service.details(fresh); const challenge = await f.service.challenge(fresh)
+  f.admin = false
+  await assert.rejects(() => f.service.confirm(fresh, { cid: challenge.cid, credential: credential() }), bad)
+  assert.equal(f.coachCfgSeen.length, 0)
+  f.admin = true
+  const ok = idOf((await f.tools.configure_coach.handler('bearer-1', { caps: { perProfileDaily: 0, instanceDaily: 40 } }, 'conn1')).url)
+  await f.service.details(ok); const okChallenge = await f.service.challenge(ok)
+  const result = await f.service.confirm(ok, { cid: okChallenge.cid, credential: credential() })
+  assert.deepEqual(result, { saved: true })
+  assert.deepEqual(f.coachCfgSeen, [{ caps: { perProfileDaily: 0, instanceDaily: 40 } }])
+  await assert.rejects(() => f.service.confirm(ok, { cid: okChallenge.cid, credential: credential() }), bad)
+  assert.equal(f.coachCfgSeen.length, 1)
+})
+
+test('list_coach_models returns at most 50 names and drops the provider error text', async t => {
+  const f = await fixture(); t.after(f.close)
+  const out = await f.tools.list_coach_models.handler('bearer-1', {})
+  assert.deepEqual(out, { models: ['m1', 'm2'] })
+  noLeak(out)
+  f.modelsAnswer = { ok: false, models: ['m'.repeat(90), ...Array.from({ length: 60 }, (_, i) => `model-${i}`)], error: 'sk-LEAK exploded' }
+  const bounded = await f.tools.list_coach_models.handler('bearer-1', {})
+  assert.equal(bounded.models.length, 50)
+  assert.ok(bounded.models.every(m => m.length <= 80))
+  noLeak(bounded)
+  f.admin = false
+  await assert.rejects(() => f.tools.list_coach_models.handler('bearer-1', {}), e => e instanceof AdminError && e.status === 403 && !e.message.includes('sk-LEAK'))
+})
+
+test('list_coach_models fails closed when the provider is slow, without its details', async t => {
+  const f = await fixture(); t.after(f.close)
+  f.modelDelay = 2000
+  const started = Date.now()
+  await assert.rejects(() => f.tools.list_coach_models.handler('bearer-1', {}), e => e instanceof AdminError && !e.message.includes('sk-LEAK') && !e.message.includes('slow-model'))
+  assert.ok(Date.now() - started < 5000, 'bounded by the models timeout')
+})
+
+test('test_coach returns the Admin link and never calls the test route', async t => {
+  const f = await fixture(); t.after(f.close)
+  const out = await f.tools.test_coach.handler('bearer-1', {})
+  assert.equal(out.url, 'https://gym.example.test/#/admin')
+  assert.equal(out.ran, false)
+  assert.match(JSON.stringify(out), /not run|not executed/i)
+  assert.equal(f.seen.some(x => x.url === '/api/admin/coach/test'), false)
+  f.admin = false
+  await assert.rejects(() => f.tools.test_coach.handler('bearer-1', {}), e => e instanceof AdminError && e.status === 403)
+  f.admin = true
+  f.meAdmin = false
+  await assert.rejects(() => f.tools.test_coach.handler('bearer-1', {}), AdminError)
+  assert.equal(f.seen.some(x => x.url === '/api/admin/coach/test'), false)
+})
+
+test('forget_coach lets any signed-in user forget only their own profile, once, after a passkey', async t => {
+  const f = await fixture(); t.after(f.close)
+  f.verifyUser = 'uid2'
+  const { summary, result } = await approve(f, 'forget_coach', {}, 'conn2')
+  assert.equal(summary.type, 'forget-coach')
+  assert.equal(summary.id, 'uid2')
+  assert.match(summary.effect, /coach/i)
+  assert.deepEqual(result, { forgotten: true })
+  const calls = f.mutations().filter(x => x.route === 'POST /api/coach/forget')
+  assert.equal(calls.length, 1)
+  assert.deepEqual(JSON.parse(calls[0].body), {})
+  assert.equal(calls[0].headers.authorization, 'Bearer bearer-2')
+  assert.deepEqual(f.forgetSeen, ['uid2'])
+  assert.equal(f.seen.some(x => x.url.startsWith('/api/admin/')), false)
+  noLeak(result)
+  // No caller-chosen target: another user id is refused before any request.
+  await assert.rejects(async () => f.tools.forget_coach.handler('conn2', { id: 'uid1' }), AdminError)
+  // A session that no longer matches the stored user cannot mint.
+  f.meId = 'someone-else'
+  await assert.rejects(() => f.tools.forget_coach.handler('conn2', {}), bad)
+  assert.equal(f.forgetSeen.length, 1)
+})
+
+test('forget_coach executes at most once and re-checks the signed-in user right before the POST', async t => {
+  const f = await fixture(); t.after(f.close)
+  f.verifyUser = 'uid2'
+  const id = idOf((await f.tools.forget_coach.handler('conn2', {})).url)
+  await f.service.details(id); const { cid } = await f.service.challenge(id)
+  f.meId = 'someone-else'
+  await assert.rejects(() => f.service.confirm(id, { cid, credential: credential() }), bad)
+  assert.equal(f.forgetSeen.length, 0)
+  f.meId = null
+  const fresh = idOf((await f.tools.forget_coach.handler('conn2', {})).url)
+  await f.service.details(fresh); const challenge = await f.service.challenge(fresh)
+  await f.service.confirm(fresh, { cid: challenge.cid, credential: credential() })
+  await assert.rejects(() => f.service.confirm(fresh, { cid: challenge.cid, credential: credential() }), bad)
+  assert.deepEqual(f.forgetSeen, ['uid2'])
 })
 
 test('Coach refuses withdrawn admin, changed provider, invalid secret without reflecting input', async t => {

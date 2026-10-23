@@ -80,8 +80,14 @@ const ADMIN_READS = {
   list_invites: ['Admin only. List invites by opaque ref, without their codes. Use the ref to request revocation.', obj()],
   get_audit_log: ['Admin only. Recent activity-log events. Optional limit, before (event id) and cat.', obj({ limit: int, before: int, cat: str(20) })],
   get_coach_status: ['Admin only. Whether the AI coach is connected and healthy. Never keys or headers.', obj()],
+  list_coach_models: ['Admin only. Model names the configured Coach provider serves (up to 50). Never errors or credentials.', obj()],
+  test_coach: ['Admin only. Does NOT run the Coach test (it can take minutes): returns the openGym Admin page link where the admin runs it.', obj()],
 }
 const EDITS = {
+  configure_coach: ['Admin only. Change Coach settings: enabled, provider, model, community, maxMessageLen (200-4000), maxOutputTokens (1024-65536), caps (both perProfileDaily 0-200 and instanceDaily 0-5000; 0 means no cap). ' +
+    'Lowering caps and other edits apply at once. Raising a cap or setting one to 0 is NOT applied: it returns a one-time openGym confirmation link the user must approve with a passkey; send caps alone then. Endpoint, headers and credentials are set only in openGym.',
+    obj({ enabled: { type: 'boolean' }, provider: str(40), model: str(80), community: { type: 'boolean' }, maxMessageLen: int, maxOutputTokens: int,
+      caps: obj({ perProfileDaily: int, instanceDaily: int }) })],
   update_week_plan: ['Create or edit routines and assign them to weekdays (week keys 0-6, Sunday is 0). A NEW routine needs a creationId (a UUID you generate, reuse it to retry safely); an existing routine uses its id. Blocked while a live queue is active.',
     obj({ week: obj(DAYS), routines: { type: 'array', maxItems: 20, items: obj({ id: ID, name: str(200), creationId: str(64), ex: { type: 'array', maxItems: 50, items: obj({ id: ID, ...TARGETS }, ['id']) } }, ['ex']) } }, ['week', 'routines'])],
   log_workout: ['Log a completed workout. creationId is a UUID you generate and is the workout id (reuse it to retry safely). Weights are in the profile unit.',
@@ -102,6 +108,7 @@ const LINKS = {
   request_revoke_invite: ['Admin only. Revoke an unused invite by its opaque ref from list_invites. No code is shown.', obj({ ref: str(22) }, ['ref'])],
   request_password_reset: ['Admin only. Request a password reset for a non-admin account (requires password login on the instance). The one-time code is shown only on the passkey-confirmed page, never in chat.', obj({ id: ID }, ['id'])],
   request_connect_coach: ['Admin only. Request connecting a Coach provider credential (any listed provider id). The credential is entered on the passkey-confirmed page in the browser, never in chat.', obj({ provider: str(40) }, ['provider'])],
+  forget_coach: ['Delete the Coach state the server holds for the user\'s own profile (job record, waiting proposal, history). Any signed-in user; never another profile.', obj()],
 }
 
 /* ------------------------------------ replies ------------------------------------ */
@@ -171,7 +178,7 @@ export function createMcpHttp({ origin, prefix, apiBase, key, connections, grant
   const confirm = confirmations || createConfirmations({ connections, key, apiBase, origin, prefix, store, executors: createAdminExecutors({ apiBase, key }) })
   const handlers = list => Object.fromEntries(list.map(t => [t.name, t.handler]))
   const read = handlers(createMcpTools(store.readProfile, { origin }))
-  const admin = handlers(createAdminTools({ apiBase, key, confirmations: confirm }))
+  const admin = handlers(createAdminTools({ apiBase, key, confirmations: confirm, origin }))
   const link = { ...handlers(createDestructiveTools(confirm)), ...admin }
   const edit = {
     update_week_plan: async (bearer, a) => {
@@ -183,6 +190,7 @@ export function createMcpHttp({ origin, prefix, apiBase, key, connections, grant
     log_body_weight: (bearer, a) => logBodyWeight(store, bearer, a),
     log_measurement: (bearer, a) => logMeasurement(store, bearer, a),
     change_setting: (bearer, a) => changeSetting(store, bearer, a),
+    configure_coach: (bearer, a, connectionId) => admin.configure_coach(bearer, a, connectionId),
   }
   const tools = new Map()
   const add = (table, run, suffix = '') => {
@@ -220,7 +228,7 @@ export function createMcpHttp({ origin, prefix, apiBase, key, connections, grant
     try {
       const args = check(tool.inputSchema, params.arguments === undefined ? {} : params.arguments)
       const target = bearerTools.has(tool.name) ? session.bearer : session.connectionId
-      return textResult(await tool.run(target, args), [session.bearer, session.token])
+      return textResult(await tool.run(target, args, session.connectionId), [session.bearer, session.token])
     } catch (e) {
       if (e instanceof ArgError) return failure('invalid arguments')
       if (e instanceof ToolError) return failure(e.message)

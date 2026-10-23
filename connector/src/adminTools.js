@@ -30,14 +30,15 @@ const FIXED = new Set([
   'GET /api/me', 'GET /api/data/rev', 'GET /api/admin/users', 'GET /api/admin/invites', 'GET /api/admin/coach',
   'POST /api/admin/user/delete', 'POST /api/admin/user/disable', 'POST /api/admin/user/password-reset', 'POST /api/admin/audit/clear',
   'POST /api/admin/coach/disconnect', 'POST /api/admin/coach/connect',
+  'POST /api/admin/coach/config', 'POST /api/admin/coach/models',
   'POST /api/admin/invites/new', 'POST /api/admin/invites/revoke',
-  'POST /api/media/sweep',
+  'POST /api/media/sweep', 'POST /api/coach/forget',
 ])
 const USER_PATH = /^\/api\/admin\/user\?id=[A-Za-z0-9_-]{1,64}$/
 const AUDIT_PATH = /^\/api\/admin\/audit(\?limit=\d{1,3}(&before=\d{1,15})?(&cat=[a-z]{1,20})?|\?before=\d{1,15}(&cat=[a-z]{1,20})?|\?cat=[a-z]{1,20})?$/
 const readPath = path => typeof path === 'string' && (FIXED.has(`GET ${path}`) || USER_PATH.test(path) || AUDIT_PATH.test(path))
 
-async function send(apiBase, bearer, method, path, body) {
+async function send(apiBase, bearer, method, path, body, { timeoutMs = TIMEOUT_MS } = {}) {
   if (typeof bearer !== 'string' || !bearer || bearer.length > 4096 || /[\u0000-\u001f\u007f]/.test(bearer)) refuse()
   if (typeof path !== 'string' || !(FIXED.has(`${method} ${path}`) || (method === 'GET' && readPath(path)))) refuse()
   let response
@@ -46,7 +47,7 @@ async function send(apiBase, bearer, method, path, body) {
       method,
       headers: { authorization: `Bearer ${bearer}`, accept: 'application/json', ...(method === 'POST' ? { 'content-type': 'application/json' } : {}) },
       ...(method === 'POST' ? { body: JSON.stringify(body ?? {}) } : {}),
-      redirect: 'manual', signal: AbortSignal.timeout(TIMEOUT_MS),
+      redirect: 'manual', signal: AbortSignal.timeout(timeoutMs),
     })
   } catch { throw new AdminError('admin upstream unavailable') }
   try {
@@ -266,6 +267,97 @@ async function providerCapability(apiBase, bearer, id) {
   return capability
 }
 
+/* ------------------------------------ coach settings ------------------------------------ */
+
+// Upstream ranges (api/coach/routes.js, config.js). Refused here rather than clamped upstream, so
+// Claude learns its value was wrong instead of seeing it silently changed.
+const CAP_MAX = { perProfileDaily: 200, instanceDaily: 5000 }
+const intIn = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi
+
+// One cap may be omitted: it keeps its live value (0 = unlimited). The POST always carries both —
+// upstream replaces the pair and turns a missing one into 0.
+function capsOf(raw) {
+  if (!object(raw) || !Object.keys(raw).length || Object.keys(raw).some(k => !Object.hasOwn(CAP_MAX, k) || !intIn(raw[k], 0, CAP_MAX[k]))) refuse()
+  return { ...raw }
+}
+const limit = v => (v === 0 ? Infinity : v)
+
+// The live caps, read afresh. Anything malformed upstream is refused rather than guessed.
+async function currentCaps(apiBase, bearer) {
+  const caps = (await adminRequest(apiBase, bearer, 'GET', '/api/admin/coach')).caps
+  if (!object(caps) || !Object.keys(CAP_MAX).every(k => intIn(caps[k], 0, CAP_MAX[k]))) refuse()
+  return { perProfileDaily: caps.perProfileDaily, instanceDaily: caps.instanceDaily }
+}
+// The full pair the patch would leave behind: the live value fills a cap the caller did not send.
+async function effectiveCaps(apiBase, bearer, caps) {
+  const baseline = await currentCaps(apiBase, bearer)
+  return { perProfileDaily: caps.perProfileDaily ?? baseline.perProfileDaily, instanceDaily: caps.instanceDaily ?? baseline.instanceDaily, baseline }
+}
+const raises = (from, to) => Object.keys(CAP_MAX).some(k => limit(to[k]) > limit(from[k]))
+
+// The proposed pair plus the baseline it raises, or null when it raises nothing.
+async function raisedCaps(apiBase, bearer, caps) {
+  const next = await effectiveCaps(apiBase, bearer, caps)
+  return raises(next.baseline, next) ? next : null
+}
+
+const CONFIG = {
+  enabled: v => typeof v === 'boolean', community: v => typeof v === 'boolean',
+  provider: v => typeof v === 'string' && PROVIDER.test(v), model: v => typeof v === 'string' && v.length <= 80,
+  maxMessageLen: v => intIn(v, 200, 4000), maxOutputTokens: v => intIn(v, 1024, 65536),
+}
+
+// Tools that act at once ask /api/me first: a non-admin gets the same 403 upstream would give.
+async function adminNow(apiBase, bearer) {
+  if ((await send(apiBase, bearer, 'GET', '/api/me')).user?.admin !== true) throw new AdminError('admin only', 403)
+}
+
+// Ordinary Coach settings apply at once. A cap raise has no immediate path: it mints a passkey link
+// and the tool answers only with that link. baseUrl, headers, token and account are never inputs.
+// configure_coach gets the bearer AND the trusted connection ID (both from the grant, never args).
+function coachTools(apiBase, origin, confirmations, modelsTimeoutMs) {
+  return [
+    {
+      name: 'configure_coach',
+      handler: async (bearer, raw, connectionId) => {
+        const a = args(raw, [...Object.keys(CONFIG), 'caps'])
+        if (!Object.keys(a).length || Object.entries(CONFIG).some(([k, ok]) => a[k] !== undefined && !ok(a[k]))) refuse()
+        const caps = a.caps === undefined ? undefined : capsOf(a.caps)
+        await adminNow(apiBase, bearer)
+        if (caps) {
+          const next = await effectiveCaps(apiBase, bearer, caps)
+          if (raises(next.baseline, next)) {
+            if (Object.keys(a).length !== 1) refuse() // a raise must not carry other edits past the link
+            return confirmations.requestConfirmation({ type: 'configure-coach', targetId: 'caps', params: { caps } }, connectionId)
+          }
+          a.caps = { perProfileDaily: next.perProfileDaily, instanceDaily: next.instanceDaily }
+        }
+        // ponytail: compare-then-POST is not atomic upstream (no revision on the config); a
+        // concurrent admin lowering in between could be undone without a passkey.
+        await send(apiBase, bearer, 'POST', '/api/admin/coach/config', a)
+        return { saved: true }
+      },
+    },
+    {
+      name: 'list_coach_models',
+      handler: async (bearer, raw) => {
+        args(raw, [])
+        const data = await send(apiBase, bearer, 'POST', '/api/admin/coach/models', {}, { timeoutMs: modelsTimeoutMs })
+        return { models: list(data.models, 50).map(m => str(m, 80)).filter(Boolean) }
+      },
+    },
+    // The real round trip can take 150 s with retries; the MCP turn ends at 10. So it is not run.
+    {
+      name: 'test_coach',
+      handler: async (bearer, raw) => {
+        args(raw, [])
+        await adminNow(apiBase, bearer)
+        return { url: `${origin}/#/admin`, ran: false, note: 'Coach test not run here; run it from Admin in openGym.' }
+      },
+    },
+  ]
+}
+
 export function createAdminExecutors({ apiBase, key } = {}) {
   if (typeof apiBase !== 'string' || !apiBase) throw new TypeError('apiBase required')
   if (!key) throw new TypeError('key required')
@@ -405,20 +497,62 @@ export function createAdminExecutors({ apiBase, key } = {}) {
         return { connected: { provider: id } }
       },
     },
+    // Raising a spending cap (0 means unlimited, so it always raises) needs a fresh passkey. The
+    // digest binds the baseline the admin was shown; execute re-reads it and refuses if it moved,
+    // then sends both caps — upstream replaces the pair, so the untouched one must travel too.
+    'configure-coach': {
+      params: raw => {
+        const a = raw === undefined ? {} : raw
+        if (!object(a) || Object.keys(a).some(k => k !== 'caps')) refuse()
+        return { caps: capsOf(a.caps) }
+      },
+      authorize: async (trusted, id, { caps }) => id === 'caps' && (await isAdmin(apiBase, trusted)) && !!(await raisedCaps(apiBase, trusted.bearer, caps)),
+      inspect: async ({ bearer }, id, { caps }) => {
+        if (id !== 'caps') refuse()
+        const next = await raisedCaps(apiBase, bearer, caps)
+        if (!next) refuse()
+        return { summary: { type: 'configure-coach', id, name: 'Coach spending caps',
+          effect: `Raises the Coach spending caps to ${next.perProfileDaily} per profile and ${next.instanceDaily} for the instance per day (0 means no cap).` },
+        digest: hash(['configure-coach', next.baseline, next]) }
+      },
+      execute: async ({ bearer }, id, digest, { caps }) => {
+        if (id !== 'caps') refuse()
+        const next = await raisedCaps(apiBase, bearer, caps)
+        if (!next || hash(['configure-coach', next.baseline, next]) !== digest) refuse()
+        await send(apiBase, bearer, 'POST', '/api/admin/coach/config', { caps: { perProfileDaily: next.perProfileDaily, instanceDaily: next.instanceDaily } })
+        return { saved: true }
+      },
+    },
+    // Any signed-in user may drop the Coach state of their OWN profile. No target is accepted:
+    // the route acts on the bearer, and the stored user is re-proved right before the POST.
+    'forget-coach': {
+      authorize: async (trusted, id) => id === 'self' && !!(await me(apiBase, trusted)),
+      inspect: async ({ userId }) => ({ summary: { type: 'forget-coach', id: userId, name: 'Coach memory',
+        effect: 'Deletes the Coach state held for your own profile: its job record, waiting proposal and history. Other profiles are untouched.' },
+      digest: hash(['forget-coach', userId]) }),
+      execute: async (trusted, id, digest) => {
+        if (id !== 'self' || !(await me(apiBase, trusted)) || hash(['forget-coach', trusted.userId]) !== digest) refuse()
+        await send(apiBase, trusted.bearer, 'POST', '/api/coach/forget', {})
+        return { forgotten: true }
+      },
+    },
   }
 }
 
-export function createAdminTools({ apiBase, key, confirmations } = {}) {
+// Models are asked of the provider live: fail closed before the 10 s MCP turn ends.
+export function createAdminTools({ apiBase, key, confirmations, origin = '', modelsTimeoutMs = 8000 } = {}) {
   if (typeof apiBase !== 'string' || !apiBase || !key || !confirmations || typeof confirmations.requestConfirmation !== 'function') throw new TypeError('admin tool dependencies required')
   const secret = inviteKey(key)
   // Handlers take a trusted connection ID, never a caller-supplied user. They only mint a link.
   const link = (name, type, target, params) => ({ name, handler: (connectionId, a) => confirmations.requestConfirmation({ type, targetId: target(a), ...(params ? { params: params(a) } : {}) }, connectionId) })
   return [
     ...readTools(apiBase, secret),
+    ...coachTools(apiBase, origin, confirmations, modelsTimeoutMs),
     link('delete_account', 'delete-account', a => args(a, ['id']).id),
     link('clear_audit_log', 'clear-audit', a => { args(a, []); return 'audit' }),
     link('disconnect_coach', 'disconnect-coach', a => args(a, ['provider']).provider),
     link('sweep_media', 'sweep-media', a => { args(a, []); return 'self' }),
+    link('forget_coach', 'forget-coach', a => { args(a, []); return 'self' }),
     link('request_create_invite', 'create-invite', a => { args(a, ['note']); return 'new' }, a => ({ note: args(a, ['note']).note })),
     link('request_revoke_invite', 'revoke-invite', a => args(a, ['ref']).ref),
     link('request_password_reset', 'password-reset', a => args(a, ['id']).id),

@@ -41,6 +41,10 @@ async function fixture(t, { toolTimeoutMs, bodyTimeoutMs } = {}) {
       }
       if (req.url === '/api/data' && req.method === 'PUT') { s.profile = JSON.parse(text).state; s.rev++; return send(200, { rev: s.rev }) }
       if (req.url === '/api/data/rev') return send(200, { rev: s.rev, wid: 'w' })
+      if (req.url === '/api/admin/coach') return send(s.admin, s.admin === 200 ? { enabled: true, provider: 'compat', caps: { perProfileDaily: 5, instanceDaily: 50 }, baseUrl: 'https://llm.example.test/v1?token=sk-LEAK', headers: { a: 'HEADERVALUE' }, auth: { state: 'connected', account: 'owner@coach.test' }, runtime: { ok: false, error: 'sk-LEAK exploded' } } : { error: 'forbidden', secret: 'never-return' })
+      if (req.url === '/api/admin/coach/config' && req.method === 'POST') { s.coachCfg = JSON.parse(text); return send(s.admin, { ok: true, extra: 'sk-LEAK' }) }
+      if (req.url === '/api/admin/coach/models' && req.method === 'POST') return send(s.admin, { ok: true, models: ['m1'], error: 'sk-LEAK exploded' })
+      if (req.url === '/api/coach/forget' && req.method === 'POST') { s.forgotten = (s.forgotten || 0) + 1; return send(200, { ok: true, extra: 'sk-LEAK' }) }
       return send(404, {})
     })
   })
@@ -93,10 +97,10 @@ test('tools/list documents exact tool and input names; irreversible tools demand
   const tools = (await (await f.call('tools/list')).json()).result.tools
   const props = name => Object.keys(tools.find(x => x.name === name).inputSchema.properties).sort()
   assert.deepEqual(tools.map(x => x.name).sort(), [
-    'change_setting', 'clear_audit_log', 'delete_account', 'delete_routine', 'delete_workout', 'disable_account', 'disconnect_coach',
-    'estimate_1rm', 'get_audit_log', 'get_bodyweight', 'get_coach_status', 'get_routine', 'get_user', 'get_week_plan', 'get_workout',
-    'list_invites', 'list_routines', 'list_users', 'list_workouts', 'log_body_weight', 'log_measurement', 'log_workout',
-    'muscle_balance', 'preview_session', 'request_connect_coach', 'request_create_invite', 'request_password_reset', 'request_revoke_invite', 'search_exercises', 'sweep_media', 'update_week_plan',
+    'change_setting', 'clear_audit_log', 'configure_coach', 'delete_account', 'delete_routine', 'delete_workout', 'disable_account', 'disconnect_coach',
+    'estimate_1rm', 'forget_coach', 'get_audit_log', 'get_bodyweight', 'get_coach_status', 'get_routine', 'get_user', 'get_week_plan', 'get_workout',
+    'list_coach_models', 'list_invites', 'list_routines', 'list_users', 'list_workouts', 'log_body_weight', 'log_measurement', 'log_workout',
+    'muscle_balance', 'preview_session', 'request_connect_coach', 'request_create_invite', 'request_password_reset', 'request_revoke_invite', 'search_exercises', 'sweep_media', 'test_coach', 'update_week_plan',
   ])
   const plan = tools.find(x => x.name === 'update_week_plan').inputSchema
   assert.deepEqual(props('update_week_plan'), ['routines', 'week'])
@@ -113,7 +117,12 @@ test('tools/list documents exact tool and input names; irreversible tools demand
   assert.deepEqual(props('request_revoke_invite'), ['ref'])
   assert.deepEqual(props('request_password_reset'), ['id'])
   assert.deepEqual(props('request_connect_coach'), ['provider'])
-  for (const name of ['delete_routine', 'delete_workout', 'disable_account', 'delete_account', 'clear_audit_log', 'disconnect_coach', 'sweep_media', 'request_create_invite', 'request_revoke_invite', 'request_password_reset', 'request_connect_coach']) {
+  assert.deepEqual(props('configure_coach'), ['caps', 'community', 'enabled', 'maxMessageLen', 'maxOutputTokens', 'model', 'provider'])
+  const caps = tools.find(x => x.name === 'configure_coach').inputSchema.properties.caps
+  assert.deepEqual(Object.keys(caps.properties).sort(), ['instanceDaily', 'perProfileDaily'])
+  assert.equal(caps.additionalProperties, false)
+  assert.deepEqual(props('forget_coach'), [])
+  for (const name of ['delete_routine', 'delete_workout', 'disable_account', 'delete_account', 'clear_audit_log', 'disconnect_coach', 'sweep_media', 'request_create_invite', 'request_revoke_invite', 'request_password_reset', 'request_connect_coach', 'forget_coach']) {
     const d = tools.find(x => x.name === name).description
     assert.match(d, /confirmation link/i, name)
     assert.match(d, /chat approval is insufficient/i, name)
@@ -446,4 +455,40 @@ test('MCP never takes a reset code or Coach token; disabled password login canno
   const reset = await f.tool('request_password_reset', { id: 'uid2' })
   assert.deepEqual(reset.data, { error: 'tool failed' })
   assert.equal(f.hits('/api/admin/user/password-reset', 'POST'), 0)
+})
+
+test('coach settings over MCP: ordinary patch applies, a cap raise only links, secrets and the test route never appear', async t => {
+  const f = await fixture(t)
+  f.s.admin = 200
+  f.s.meAdmin = true
+  const saved = await f.tool('configure_coach', { enabled: false, model: 'm2' })
+  assert.deepEqual(saved.data, { saved: true })
+  assert.deepEqual(f.s.coachCfg, { enabled: false, model: 'm2' })
+  const raised = await f.tool('configure_coach', { caps: { perProfileDaily: 6, instanceDaily: 50 } })
+  assert.deepEqual(Object.keys(raised.data), ['url'])
+  assert.match(raised.data.url, /^https:\/\/gym\.example\.test\/connector\/confirm#/)
+  assert.deepEqual(f.s.coachCfg, { enabled: false, model: 'm2' }, 'the raise never POSTed')
+  const models = await f.tool('list_coach_models')
+  assert.deepEqual(models.data, { models: ['m1'] })
+  const probe = await f.tool('test_coach')
+  assert.equal(probe.data.url, 'https://gym.example.test/#/admin')
+  assert.equal(probe.data.ran, false)
+  assert.match(JSON.stringify(probe.data), /not run|not executed/i)
+  assert.equal(f.hits('/api/admin/coach/test', 'POST'), 0)
+  const status = await f.tool('get_coach_status')
+  assert.doesNotMatch(JSON.stringify({ saved, raised, models, probe, status }), /sk-LEAK|HEADERVALUE|owner@coach\.test|never-return/)
+  // Secret fields and a caller-chosen forget target are invalid arguments, never forwarded.
+  for (const [name, args] of [['configure_coach', { baseUrl: 'https://evil.test' }], ['configure_coach', { token: 'sk-SECRET' }], ['configure_coach', { headers: {} }], ['forget_coach', { id: 'uid2' }]]) {
+    assert.deepEqual((await f.tool(name, args)).data, { error: 'invalid arguments' })
+  }
+  assert.equal(f.seen.slice(f.setup).some(x => x.text.includes('sk-SECRET')), false)
+  // A non-admin is told so plainly, and the profile-scoped forget still only mints a link.
+  f.s.admin = 403
+  f.s.meAdmin = false
+  assert.deepEqual((await f.tool('configure_coach', { enabled: true })).data, { error: 'admin only' })
+  assert.deepEqual((await f.tool('list_coach_models')).data, { error: 'admin only' })
+  assert.deepEqual((await f.tool('test_coach')).data, { error: 'admin only' })
+  const forget = await f.tool('forget_coach')
+  assert.deepEqual(Object.keys(forget.data), ['url'])
+  assert.equal(f.s.forgotten || 0, 0, 'chat never executes the forget')
 })
