@@ -40,8 +40,9 @@ export function loadConfig(env, { test = false } = {}) {
     const decoded = url || std ? Buffer.from(k, url ? 'base64url' : 'base64') : null
     if (decoded && decoded.toString(url ? 'base64url' : 'base64') === k) out.key = decoded
   }
-  // Placeholders only: one repeated byte. Real randomness can't be proven from the bytes.
-  if (!out.key || out.key.length !== 32 || out.key.every(b => b === out.key[0])) {
+  // Exact placeholders only. A 2-byte pattern has ~2^-120 chance in a real 32-byte key.
+  const repeated = out.key && [1, 2, 4].some(n => out.key.every((b, i) => b === out.key[i % n]))
+  if (!out.key || out.key.length !== 32 || repeated) {
     out.key = null
     fail('CONNECTOR_ENCRYPTION_KEY', 'required; must be 32 random bytes, base64 encoded (generate with: openssl rand -base64 32)')
   }
