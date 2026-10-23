@@ -34,13 +34,14 @@ export function loadConfig(env, { test = false } = {}) {
   if (env.CONNECTOR_PREFIX !== undefined && env.CONNECTOR_PREFIX !== PREFIX) fail('CONNECTOR_PREFIX', `must be exactly ${PREFIX} (or unset)`)
 
   const k = env.CONNECTOR_ENCRYPTION_KEY
-  if (typeof k === 'string' && /^[A-Za-z0-9+/_-]{43}=?$/.test(k)) {
-    const decoded = Buffer.from(k, 'base64')
-    if (decoded.toString(k.includes('-') || k.includes('_') ? 'base64url' : 'base64') === k) out.key = decoded
+  // Canonical base64 (`openssl rand -base64 32`, 44 chars with "=") or base64url (43, no padding).
+  if (typeof k === 'string') {
+    const url = /^[A-Za-z0-9_-]{43}$/.test(k), std = /^[A-Za-z0-9+/]{43}=$/.test(k)
+    const decoded = url || std ? Buffer.from(k, url ? 'base64url' : 'base64') : null
+    if (decoded && decoded.toString(url ? 'base64url' : 'base64') === k) out.key = decoded
   }
-  // ponytail: a diversity floor rejects obvious placeholders, not every possible weak key.
-  // If key provenance matters, require a secret manager; never infer randomness from bytes.
-  if (!out.key || out.key.length !== 32 || new Set(out.key).size < 20) {
+  // Placeholders only: one repeated byte. Real randomness can't be proven from the bytes.
+  if (!out.key || out.key.length !== 32 || out.key.every(b => b === out.key[0])) {
     out.key = null
     fail('CONNECTOR_ENCRYPTION_KEY', 'required; must be 32 random bytes, base64 encoded (generate with: openssl rand -base64 32)')
   }

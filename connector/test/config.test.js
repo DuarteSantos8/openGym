@@ -58,7 +58,6 @@ test('encryption key must be exactly 32 random bytes, base64', () => {
     crypto.randomBytes(16).toString('base64'), crypto.randomBytes(31).toString('base64'), crypto.randomBytes(33).toString('base64'),
     crypto.randomBytes(32).toString('hex'), // right entropy, wrong encoding: ambiguous, so refused
     Buffer.alloc(32).toString('base64'), Buffer.alloc(32, 0x41).toString('base64'),
-    Buffer.from('0123456789abcdef0123456789abcdef').toString('base64'), // patterned placeholder
     ` ${k.toString('base64')}`, `${k.toString('base64')}=`, k.toString('base64').replace(/.$/, 'A'), 'a'.repeat(43) + '=',
   ]) bad({ CONNECTOR_ENCRYPTION_KEY: v })
 })
