@@ -103,6 +103,9 @@ const COLUMNS = [
   // shared alias list handed the session note's column to nobody. Hevy calls it the workout's
   // description.
   ['workoutNote', ['workout notes', 'workout note', 'description']],
+  // Strong's measurements export (body weight among other measurements).
+  ['measurementType', ['measurement type']],
+  ['value', ['value']],
   ['note', ['comment', 'comments', 'notes', 'note', 'exercise notes']],
 ]
 
@@ -704,7 +707,7 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
 export function parseBodyweight(text, { unit = 'kg' } = {}) {
   const s = String(text)
   const out = new Map()          // iso date -> { w, t }  (one weigh-in per day, the last)
-  let fileUnit = ''
+  let fileUnit = '', source = 'Apple Health'
 
   if (s.includes('HKQuantityTypeIdentifierBodyMass')) {
     const re = /<Record[^>]*type="HKQuantityTypeIdentifierBodyMass"[^>]*>/g
@@ -729,6 +732,22 @@ export function parseBodyweight(text, { unit = 'kg' } = {}) {
     const rows = parseCSV(s)
     if (rows.length < 2) return { error: 'empty' }
     const map = mapHeader(rows[0])
+    // Strong's measurements export: one row per measurement, "Measurement Type" saying which
+    // ("Weight", "Body Fat Percentage", a waist…), the number in "Value" and its own "Unit".
+    if (map.measurementType !== undefined && map.value !== undefined && map.date !== undefined) {
+      source = 'Strong'
+      for (let i = 1; i < rows.length; i++) {
+        const r = rows[i]
+        if (String(r[map.measurementType] ?? '').trim().toLowerCase() !== 'weight') continue
+        const when = parseWhen(String(r[map.date] ?? ''))
+        const w = num(r[map.value])
+        const u = String(r[map.weightUnit] ?? '').trim().toLowerCase()
+        const recUnit = u.startsWith('lb') ? 'lb' : u.startsWith('kg') ? 'kg' : ''
+        if (!when || !w || !bodyOk(w, recUnit || unit)) continue
+        out.set(when.d, { w, unit: recUnit, t: new Date(when.d).getTime() + (when.t ?? 0) })
+      }
+      return finishBodyweight(out, unit, source)
+    }
     // a weight-only CSV: whichever weight column it has
     const wCol = map.weightKg ?? map.weightLb ?? map.weight
     const dCol = map.date ?? map.startTime
@@ -743,6 +762,12 @@ export function parseBodyweight(text, { unit = 'kg' } = {}) {
     }
   }
 
+  return finishBodyweight(out, unit, source, fileUnit)
+}
+
+/** The weigh-ins collected per day, converted to `unit` — each in its own record's unit if it
+ *  had one, else the file's. */
+function finishBodyweight(out, unit, source, fileUnit = '') {
   if (!out.size) return { error: 'unrecognised' }
   const units = new Set([...out.values()].map(b => b.unit || fileUnit).filter(Boolean))
   fileUnit = [...units].sort().join(' / ')
@@ -756,7 +781,7 @@ export function parseBodyweight(text, { unit = 'kg' } = {}) {
   }
   const dates = [...out.keys()].sort()
   return {
-    kind: 'bodyweight', source: 'Apple Health',
+    kind: 'bodyweight', source,
     bodyweight: dates.map(d => ({ d, w: conv(out.get(d)), t: out.get(d).t || new Date(d).getTime() })),
     fileUnit, converted, from: dates[0], to: dates[dates.length - 1],
   }
