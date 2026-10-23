@@ -7,7 +7,7 @@ This guide takes you from "just cloned it" to "using it from my phone over the i
 
 1. [Run it locally](#1-run-it-locally-5-minutes) — five minutes, nothing else needed
 2. [The passkey requirement](#2-understand-the-passkey-requirement-important) — why your phone needs HTTPS
-3. [HTTPS on your own domain](#3-expose-it-over-https-on-your-own-domain) — Cloudflare Tunnel, Caddy, Traefik, nginx
+3. [HTTPS on your own domain](#3-expose-it-over-https-on-your-own-domain) — Cloudflare Tunnel, Caddy, Traefik, nginx, Tailscale Serve
 4. [Multiple users](#4-multiple-users) — admin dashboard, invites, language, activity log, password sign-in
 5. [Fitting into an existing stack](#5-fitting-it-into-an-existing-stack) — ports, subpaths, media uploads
 6. [Backups](#6-backups)
@@ -110,6 +110,31 @@ request bodies (nginx does, at 1 MiB by default), allow at least 5 MiB on `/api/
 its whole history in one PUT; the bundled web image already allows 5 MiB, matching the API. The
 photos and videos people attach to their own exercises need more room and more time on
 `/api/media/` — see [Photos and videos of custom exercises](#photos-and-videos-of-custom-exercises).
+
+### Option D — Tailscale Serve (no domain, nothing on the internet)
+
+For an instance only you (or your household) use, with [Tailscale](https://tailscale.com) on the
+phones: Tailscale Serve gives the Docker host an HTTPS address inside your tailnet, with a real
+certificate. No domain to buy, no open ports, and nothing reachable from the internet.
+
+1. In the Tailscale admin console, on the **DNS** page, turn on **MagicDNS** and **HTTPS
+   Certificates**.
+2. On the Docker host:
+
+   ```bash
+   tailscale serve --bg http://127.0.0.1:8080
+   ```
+
+   The first time, it prints a link to enable Serve for your tailnet; open it, approve, and the
+   command carries on. `tailscale serve status` then shows the address, something like
+   `https://myhost.tail1234.ts.net`.
+3. Use that hostname as your domain below (`RP_ID=myhost.tail1234.ts.net`,
+   `ORIGIN=https://myhost.tail1234.ts.net`). Since Tailscale is the only way in, you can also set
+   `WEB_PORT=127.0.0.1:8080` so the container isn't reachable from the rest of your LAN.
+
+Phones need the Tailscale app connected to open openGym. The address comes from the machine's
+name in your tailnet, so renaming the host or moving openGym to another machine changes it, and
+with it `RP_ID` (see the note on passkeys below).
 
 Then set your domain in `.env` and restart:
 
