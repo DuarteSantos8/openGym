@@ -2,8 +2,9 @@ import { createProfileStore } from './profileStore.js'
 import { createMcpTools } from './mcpTools.js'
 import { PlanChoiceRequiredError, updatePlanEdit } from './planEdits.js'
 import { changeSetting, logBodyWeight, logMeasurement, logWorkout } from './profileEdits.js'
-import { createConfirmations, createDestructiveTools } from './confirmations.js'
+import { createConfirmations, createDestructiveTools, createBulkTools, createBulkExecutors } from './confirmations.js'
 import { AdminError, createAdminExecutors, createAdminTools } from './adminTools.js'
+import { BulkLimitError } from './bulkDelete.js'
 
 // Minimal MCP Streamable HTTP subset: JSON-RPC 2.0 over POST, JSON replies only (no SSE, no
 // sessions, no batches). Every tool result is one text block. Claude is untrusted input: tool
@@ -109,6 +110,8 @@ const LINKS = {
   request_password_reset: ['Admin only. Request a password reset for a non-admin account (requires password login on the instance). The one-time code is shown only on the passkey-confirmed page, never in chat.', obj({ id: ID }, ['id'])],
   request_connect_coach: ['Admin only. Request connecting a Coach provider credential (any listed provider id). The credential is entered on the passkey-confirmed page in the browser, never in chat.', obj({ provider: str(40) }, ['provider'])],
   forget_coach: ['Delete the Coach state the server holds for the user\'s own profile (job record, waiting proposal, history). Any signed-in user; never another profile.', obj()],
+  delete_routines_bulk: ['Irreversible: deletes up to 25 routines by their explicit ids, also removing them from the week plan and dated plan.', obj({ ids: { type: 'array', items: ID, minItems: 1 } }, ['ids'])],
+  delete_workouts_bulk: ['Irreversible: deletes up to 25 logged workouts, either by their explicit ids or every workout dated before a YYYY-MM-DD date (before is exclusive).', obj({ ids: { type: 'array', items: ID, minItems: 1 }, before: DATE })],
 }
 
 /* ------------------------------------ replies ------------------------------------ */
@@ -175,11 +178,11 @@ export function createMcpHttp({ origin, prefix, apiBase, key, connections, grant
   const store = createProfileStore({ apiBase })
   // The same connection store backs the grants, so a confirmation link is bound to the very
   // connection (and passkey user) that asked for it.
-  const confirm = confirmations || createConfirmations({ connections, key, apiBase, origin, prefix, store, executors: createAdminExecutors({ apiBase, key }) })
+  const confirm = confirmations || createConfirmations({ connections, key, apiBase, origin, prefix, store, executors: { ...createAdminExecutors({ apiBase, key }), ...createBulkExecutors({ store }) } })
   const handlers = list => Object.fromEntries(list.map(t => [t.name, t.handler]))
   const read = handlers(createMcpTools(store.readProfile, { origin }))
   const admin = handlers(createAdminTools({ apiBase, key, confirmations: confirm, origin }))
-  const link = { ...handlers(createDestructiveTools(confirm)), ...admin }
+  const link = { ...handlers(createDestructiveTools(confirm)), ...admin, ...handlers(createBulkTools(confirm)) }
   const edit = {
     update_week_plan: async (bearer, a) => {
       const done = await updatePlanEdit(store, bearer, a, { origin })
@@ -231,6 +234,7 @@ export function createMcpHttp({ origin, prefix, apiBase, key, connections, grant
       return textResult(await tool.run(target, args, session.connectionId), [session.bearer, session.token])
     } catch (e) {
       if (e instanceof ArgError) return failure('invalid arguments')
+      if (e instanceof BulkLimitError) return failure(e.message)
       if (e instanceof ToolError) return failure(e.message)
       if (denied(e)) { grants.revokeAccessToken(session.token); return UNAUTHORIZED }
       if (e instanceof AdminError && e.status === 403) return failure('admin only')

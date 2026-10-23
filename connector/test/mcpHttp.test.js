@@ -39,7 +39,10 @@ async function fixture(t, { toolTimeoutMs, bodyTimeoutMs } = {}) {
         s.maxInflight = Math.max(s.maxInflight, ++s.inflight)
         return setTimeout(() => { s.inflight--; send(s.data, s.data === 200 ? { state: s.profile, rev: s.rev } : { code: 'disabled', secret: 'never-return' }) }, s.delay)
       }
-      if (req.url === '/api/data' && req.method === 'PUT') { s.profile = JSON.parse(text).state; s.rev++; return send(200, { rev: s.rev }) }
+      if (req.url === '/api/data' && req.method === 'PUT') {
+        if (s.conflict) { const state = s.conflict; s.conflict = null; s.profile = state; s.rev++; return send(409, { error: 'conflict', state, rev: s.rev }) }
+        s.profile = JSON.parse(text).state; s.rev++; return send(200, { rev: s.rev })
+      }
       if (req.url === '/api/data/rev') return send(200, { rev: s.rev, wid: 'w' })
       if (req.url === '/api/admin/coach') return send(s.admin, s.admin === 200 ? { enabled: true, provider: 'compat', caps: { perProfileDaily: 5, instanceDaily: 50 }, baseUrl: 'https://llm.example.test/v1?token=sk-LEAK', headers: { a: 'HEADERVALUE' }, auth: { state: 'connected', account: 'owner@coach.test' }, runtime: { ok: false, error: 'sk-LEAK exploded' } } : { error: 'forbidden', secret: 'never-return' })
       if (req.url === '/api/admin/coach/config' && req.method === 'POST') { s.coachCfg = JSON.parse(text); return send(s.admin, { ok: true, extra: 'sk-LEAK' }) }
@@ -97,7 +100,7 @@ test('tools/list documents exact tool and input names; irreversible tools demand
   const tools = (await (await f.call('tools/list')).json()).result.tools
   const props = name => Object.keys(tools.find(x => x.name === name).inputSchema.properties).sort()
   assert.deepEqual(tools.map(x => x.name).sort(), [
-    'change_setting', 'clear_audit_log', 'configure_coach', 'delete_account', 'delete_routine', 'delete_workout', 'disable_account', 'disconnect_coach',
+    'change_setting', 'clear_audit_log', 'configure_coach', 'delete_account', 'delete_routine', 'delete_routines_bulk', 'delete_workout', 'delete_workouts_bulk', 'disable_account', 'disconnect_coach',
     'estimate_1rm', 'forget_coach', 'get_audit_log', 'get_bodyweight', 'get_coach_status', 'get_routine', 'get_user', 'get_week_plan', 'get_workout',
     'list_coach_models', 'list_invites', 'list_routines', 'list_users', 'list_workouts', 'log_body_weight', 'log_measurement', 'log_workout',
     'muscle_balance', 'preview_session', 'request_connect_coach', 'request_create_invite', 'request_password_reset', 'request_revoke_invite', 'search_exercises', 'sweep_media', 'test_coach', 'update_week_plan',
@@ -122,7 +125,15 @@ test('tools/list documents exact tool and input names; irreversible tools demand
   assert.deepEqual(Object.keys(caps.properties).sort(), ['instanceDaily', 'perProfileDaily'])
   assert.equal(caps.additionalProperties, false)
   assert.deepEqual(props('forget_coach'), [])
-  for (const name of ['delete_routine', 'delete_workout', 'disable_account', 'delete_account', 'clear_audit_log', 'disconnect_coach', 'sweep_media', 'request_create_invite', 'request_revoke_invite', 'request_password_reset', 'request_connect_coach', 'forget_coach']) {
+  assert.deepEqual(props('delete_routines_bulk'), ['ids'])
+  assert.deepEqual(props('delete_workouts_bulk'), ['before', 'ids'])
+  for (const name of ['delete_routines_bulk', 'delete_workouts_bulk']) {
+    const tool = tools.find(x => x.name === name)
+    assert.equal(tool.inputSchema.properties.ids.minItems, 1)
+    assert.match(tool.description, /irreversible/i)
+    assert.match(tool.description, /confirmation link/i)
+  }
+  for (const name of ['delete_routine', 'delete_workout', 'delete_routines_bulk', 'delete_workouts_bulk', 'disable_account', 'delete_account', 'clear_audit_log', 'disconnect_coach', 'sweep_media', 'request_create_invite', 'request_revoke_invite', 'request_password_reset', 'request_connect_coach', 'forget_coach']) {
     const d = tools.find(x => x.name === name).description
     assert.match(d, /confirmation link/i, name)
     assert.match(d, /chat approval is insufficient/i, name)
@@ -158,6 +169,52 @@ test('delete tools and sweep_media only mint a confirmation URL and execute noth
   assert.equal(f.seen.slice(f.setup).some(x => x.method === 'PUT' || x.method === 'POST'), false)
   assert.equal(f.s.profile.routines.length, 1)
   assert.equal(f.s.profile.workouts.length, 1)
+})
+
+test('bulk deletes: only a {url} link; invalid, 26+, future or unknown selections mint nothing', async t => {
+  const f = await fixture(t)
+  f.s.profile.workouts.push({ id: 'w2', name: 'Tue', d: '2026-10-20', entries: [], media: [{ url: '/media/private.webp', bytes: 5 }] })
+  for (const [name, args] of [
+    ['delete_workouts_bulk', {}], ['delete_workouts_bulk', { ids: [] }], ['delete_workouts_bulk', { ids: ['w1', 'w1'] }],
+    ['delete_workouts_bulk', { ids: Array.from({ length: 26 }, (_, i) => `w${i}`) }], ['delete_workouts_bulk', { before: '2099-01-01' }],
+    ['delete_workouts_bulk', { ids: ['w1'], before: '2026-10-21' }], ['delete_workouts_bulk', { ids: ['w1', 'nope'] }], ['delete_routines_bulk', { ids: ['w1'] }],
+  ]) {
+    const r = await f.tool(name, args)
+    assert.equal(r.isError, true, JSON.stringify(args))
+    if (name === 'delete_workouts_bulk' && args.ids && args.ids.length === 26) assert.equal(r.data.error, 'too many targets; narrow the request')
+    else assert.ok(['invalid arguments', 'tool failed'].includes(r.data.error), JSON.stringify(r.data))
+  }
+  const large = Array.from({ length: 26 }, (_, i) => ({ id: `older-${i}`, name: `Older ${i}`, d: '2026-01-01' }))
+  f.s.profile.workouts.push(...large)
+  const tooMany = await f.tool('delete_workouts_bulk', { before: '2026-10-21' })
+  assert.equal(tooMany.isError, true)
+  assert.match(tooMany.data.error, /narrow the request/)
+  f.s.profile.workouts.splice(-26)
+  const r = await f.tool('delete_workouts_bulk', { before: '2026-10-21' })
+  assert.deepEqual(Object.keys(r.data), ['url'])
+  assert.equal(f.hits('/api/data', 'PUT'), 0)
+  const page = (route, id, body = {}) => f.post(`/connector/confirm/${route}`, { id, ...body }, { origin })
+  const encode = x => Buffer.from(JSON.stringify(x)).toString('base64url')
+  const credential = { id: 'cred', rawId: 'Y3JlZA', type: 'public-key', response: { clientDataJSON: encode({ type: 'webauthn.get', challenge: 'challenge-1', origin }), authenticatorData: 'YQ', signature: 'Yg' } }
+  const id = new URL(r.data.url).hash.slice(1)
+  const details = await (await page('details', id)).text()
+  assert.match(details, /1 linked photo or video/)
+  assert.doesNotMatch(details, /private\.webp|"bytes"|\/media\//)
+  assert.equal((await page('challenge', id)).status, 200)
+  // A 409 race: the fresh snapshot carries a new workout older than the date. Nothing is deleted.
+  f.s.conflict = { ...structuredClone(f.s.profile), workouts: [...structuredClone(f.s.profile.workouts), { id: 'w3', name: 'Raced', d: '2026-10-18', entries: [] }] }
+  assert.equal((await page('execute', id, { cid: 'cid-1', credential })).status, 400)
+  assert.deepEqual(f.s.profile.workouts.map(w => w.id), ['w1', 'w2', 'w3'])
+  // A fresh link sees three workouts and deletes exactly those in one write, keeping the routine.
+  const again = new URL((await f.tool('delete_workouts_bulk', { before: '2026-10-21' })).data.url).hash.slice(1)
+  await page('details', again); await page('challenge', again)
+  const puts = f.hits('/api/data', 'PUT')
+  assert.equal((await page('execute', again, { cid: 'cid-1', credential })).status, 200)
+  assert.equal(f.hits('/api/data', 'PUT'), puts + 1)
+  assert.deepEqual(f.s.profile.workouts, [])
+  assert.deepEqual(f.s.profile.routines.map(x => x.id), ['r1'])
+  assert.equal((await page('execute', again, { cid: 'cid-1', credential })).status, 400, 'replay refused')
+  assert.equal(f.hits('/api/data', 'PUT'), puts + 1)
 })
 
 test('admin actions mint nothing for a non-admin caller and execute nothing', async t => {

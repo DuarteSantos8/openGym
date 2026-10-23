@@ -1,5 +1,6 @@
 import crypto from 'node:crypto'
 import { openBearer, mintLoginOptions, verifyFreshPasskey } from './openGymSession.js'
+import { validateBulkSelection, resolveBulkTargets, deleteTargets, bulkDigest, BulkLimitError } from './bulkDelete.js'
 
 const ID = /^[A-Za-z0-9_-]{43}$/
 const TTL = 5 * 60_000
@@ -147,7 +148,7 @@ export function createConfirmations({ connections, key, apiBase, origin, prefix,
     const executor = executors[type]
     if (!executor || typeof executor.authorize !== 'function' || typeof executor.inspect !== 'function' || typeof executor.execute !== 'function') invalid()
     let ok
-    try { ok = await executor.authorize({ userId, bearer }, targetId, params) } catch { invalid() }
+    try { ok = await executor.authorize({ userId, bearer }, targetId, params) } catch (e) { if (e instanceof BulkLimitError) throw e; invalid() }
     if (ok !== true) invalid()
   }
   // Closed params: only an executor that declares a `params(raw)` validator takes any, and it always
@@ -162,7 +163,7 @@ export function createConfirmations({ connections, key, apiBase, origin, prefix,
       const text = JSON.stringify(value)
       if (Buffer.byteLength(text) > MAX_PARAMS_BYTES) invalid()
       return deepFreeze(JSON.parse(text))
-    } catch { invalid() }
+    } catch (e) { if (e instanceof BulkLimitError) throw e; invalid() }
   }
   // Browser-only input, same closed contract as params: only an executor that declares an
   // `input(raw)` validator takes any, and it always runs (raw may be undefined). Only the
@@ -190,6 +191,16 @@ export function createConfirmations({ connections, key, apiBase, origin, prefix,
     const type = action.type, targetId = action.targetId, key = opKey(connId, type, targetId)
     const params = closedParams(type, action.params)
     await gate(type, conn.userId, trusted(connId, conn.userId), targetId, params)
+    // Bulk links bind the entire target snapshot before being handed to chat. Legacy executors
+    // keep their existing details-time binding; the bulk executor alone opts in.
+    let digest
+    if (executors[type]?.freezeAtMint === true) {
+      let result
+      try { result = await executors[type].inspect({ userId: conn.userId, bearer: trusted(connId, conn.userId) }, targetId, params) } catch { invalid() }
+      if (!result || typeof result.digest !== 'string' || !result.digest) invalid()
+      pickSummary(result.summary)
+      digest = result.digest
+    }
     // Nothing below awaits: the connection is re-checked and the record minted in one step, so a
     // revoked connection or a sweep during authorize cannot leave a pending record behind.
     sweep()
@@ -199,7 +210,7 @@ export function createConfirmations({ connections, key, apiBase, origin, prefix,
     let id, h
     do { id = crypto.randomBytes(32).toString('base64url'); h = hash(id) } while (pending.has(h))
     latest.set(key, h)
-    pending.set(h, { connId, userId: conn.userId, type, targetId, params, key, exp: time() + TTL })
+    pending.set(h, { connId, userId: conn.userId, type, targetId, params, digest, key, exp: time() + TTL })
     return { url: `${origin}${prefix}/confirm#${id}` }
   }
   async function inspect(rec, bearer) {
@@ -273,10 +284,74 @@ export function createConfirmations({ connections, key, apiBase, origin, prefix,
   return { requestConfirmation, details, challenge, confirm, pending }
 }
 
+// The link stores only selection, never a profile. Inspect and execute re-read through the same
+// bearer-scoped store; updateProfile's 409 retry re-applies the snapshot check before every PUT.
+export function createBulkExecutors({ store, today } = {}) {
+  if (!store || typeof store.readProfile !== 'function' || typeof store.updateProfile !== 'function') throw new TypeError('bulk store required')
+  return Object.fromEntries(['routines', 'workouts'].map(kind => {
+    const type = `delete-${kind}-bulk`
+    const chosen = params => {
+      if (!params || !params.selection) throw new ConfirmationError()
+      const selection = validateBulkSelection(params.selection, { today })
+      if (selection.kind !== kind) throw new ConfirmationError()
+      return selection
+    }
+    const current = (profile, selection) => {
+      const { ids, digests, summary } = resolveBulkTargets(profile, selection, { today })
+      return { ids, digests, summary, digest: bulkDigest(kind, selection, digests) }
+    }
+    return [type, {
+      freezeAtMint: true,
+      params: raw => {
+        if (!plain(raw) || Object.keys(raw).length !== 1 || !Object.hasOwn(raw, 'selection')) throw new ConfirmationError()
+        return { selection: chosen(raw) }
+      },
+      authorize: async ({ bearer }, id, params) => {
+        if (id !== 'bulk') return false
+        // Resolve before minting: unknown IDs and zero or 26 date matches never get a link.
+        current(await store.readProfile(bearer), chosen(params))
+        return true
+      },
+      inspect: async ({ bearer }, id, params) => {
+        if (id !== 'bulk') throw new ConfirmationError()
+        const selection = chosen(params)
+        const { summary, digest } = current(await store.readProfile(bearer), selection)
+        const noun = kind === 'routines' ? 'routines' : 'workouts'
+        const scope = kind === 'routines' ? 'routines' : 'days'
+        const media = summary.mediaCount
+        return { digest, summary: { type, id, name: `${summary.total} ${noun}`, total: summary.total, rows: summary.rows,
+          effect: `Irreversibly deletes ${summary.total} ${noun} across ${summary.affected} ${scope} and ${media} linked photo${media === 1 ? '' : 's'} or video${media === 1 ? '' : 's'}.` } }
+      },
+      execute: async ({ bearer }, id, digest, params) => {
+        if (id !== 'bulk') throw new ConfirmationError()
+        const selection = chosen(params)
+        const frozen = current(await store.readProfile(bearer), selection)
+        if (frozen.digest !== digest) throw new ConfirmationError()
+        await store.updateProfile(bearer, profile => {
+          let live
+          try { live = current(profile, selection) } catch { throw new ConfirmationError() }
+          if (live.digest !== digest) throw new ConfirmationError()
+          return deleteTargets(profile, kind, frozen.ids, frozen.digests)
+        }, { allowDelete: true, ids: frozen.ids })
+        return { deleted: { type, count: frozen.ids.length } }
+      },
+    }]
+  }))
+}
+
 // Task 10 will expose these handlers over MCP. This factory deliberately takes a trusted
 // connection ID, never a caller-provided user ID or a browser assertion.
 export function createDestructiveTools(confirmations) {
   return [
     ['delete_routine', 'delete-routine'], ['delete_workout', 'delete-workout'], ['disable_account', 'disable-account'],
   ].map(([name, type]) => ({ name, handler: (connectionId, { id } = {}) => confirmations.requestConfirmation({ type, targetId: id }, connectionId) }))
+}
+
+// Link only: the selection travels as closed params and is resolved against the caller's profile
+// inside the confirmation gate, never executed here.
+export function createBulkTools(confirmations) {
+  const selection = (kind, { ids, before } = {}) => ({ kind, ...(ids !== undefined ? { ids } : {}), ...(before !== undefined ? { before } : {}) })
+  return [
+    ['delete_routines_bulk', 'routines'], ['delete_workouts_bulk', 'workouts'],
+  ].map(([name, kind]) => ({ name, handler: (connectionId, args) => confirmations.requestConfirmation({ type: `delete-${kind}-bulk`, targetId: 'bulk', params: { selection: selection(kind, args) } }, connectionId) }))
 }

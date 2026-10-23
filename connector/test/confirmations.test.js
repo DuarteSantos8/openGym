@@ -4,7 +4,7 @@ import http from 'node:http'
 import { randomBytes } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
-import { createConfirmations, createDestructiveTools, ConfirmationError } from '../src/confirmations.js'
+import { createConfirmations, createDestructiveTools, createBulkExecutors, ConfirmationError } from '../src/confirmations.js'
 import { createServer } from '../src/server.js'
 import { createProfileStore } from '../src/profileStore.js'
 import { sealBearer } from '../src/openGymSession.js'
@@ -22,8 +22,9 @@ const credential = (challenge = 'challenge-1', from = origin) => ({
   id: 'cred', rawId: 'Y3JlZA', type: 'public-key',
   response: { clientDataJSON: encode({ type: 'webauthn.get', challenge, origin: from }), authenticatorData: 'YQ', signature: 'Yg' },
 })
-async function fixture({ now = () => Date.now(), executors } = {}) {
+async function fixture({ now = () => Date.now(), executors, conflict } = {}) {
   let profile = initial(), rev = 1, cid = 0, verifyUser = 'uid1', puts = 0
+  let nextConflict = conflict || null
   const seen = []
   const api = http.createServer((req, res) => {
     let body = ''
@@ -36,6 +37,7 @@ async function fixture({ now = () => Date.now(), executors } = {}) {
       if (route === 'POST /api/login/verify') return json(200, { user: { id: verifyUser, name: 'Private', admin: true } }, { 'set-cookie': '__Host-gymsid=do-not-forward; Secure' })
       if (route === 'GET /api/data') return json(200, { state: profile, rev })
       if (route === 'PUT /api/data') {
+        if (nextConflict) { const c = nextConflict; nextConflict = null; profile = c.state; rev++; return json(409, { error: 'conflict', state: profile, rev }) }
         const proposed = JSON.parse(body)
         if (proposed.baseRev !== rev) return json(409, { error: 'conflict', state: profile, rev })
         profile = proposed.state; rev++; puts++
@@ -51,9 +53,10 @@ async function fixture({ now = () => Date.now(), executors } = {}) {
     ['conn1', { userId: 'uid1', sealed: sealBearer('bearer-1', key, 'uid1') }],
     ['conn2', { userId: 'uid2', sealed: sealBearer('bearer-2', key, 'uid2') }],
   ])
-  const service = createConfirmations({ connections, key, apiBase, origin, prefix, store: createProfileStore({ apiBase }), now, executors })
+  const store = createProfileStore({ apiBase })
+  const service = createConfirmations({ connections, key, apiBase, origin, prefix, store, now, executors: typeof executors === 'function' ? executors(store) : executors })
   return { service, connections, seen, get profile() { return profile }, set profile(value) { profile = value }, get puts() { return puts },
-    set verifyUser(id) { verifyUser = id }, close: () => new Promise(resolve => api.close(resolve)) }
+    set conflict(value) { nextConflict = value }, set verifyUser(id) { verifyUser = id }, close: () => new Promise(resolve => api.close(resolve)) }
 }
 const idOf = url => new URL(url).hash.slice(1)
 const bad = e => e instanceof ConfirmationError && e.message === 'invalid_confirmation'
@@ -509,4 +512,175 @@ test('Coach page collects browser-only credentials before passkey and clears fie
   assert.equal(elements.get('coach-token').value, '')
   assert.equal(elements.get('coach-account').value, '')
   assert.doesNotMatch(JSON.stringify(posts[0]), /sk-SECRET/)
+})
+
+test('bulk page renders concrete rows, count and linked-media warning as text', async () => {
+  const html = readFileSync(new URL('../src/web/confirm.html', import.meta.url), 'utf8')
+  const elements = new Map()
+  const element = () => ({ textContent: '', value: '', hidden: false, disabled: true, children: [], appendChild(node) { this.children.push(node) }, addEventListener(_name, fn) { this.click = fn } })
+  const document = { getElementById(id) { if (!elements.has(id)) elements.set(id, element()); return elements.get(id) }, createElement: element }
+  const fetch = async () => ({ ok: true, json: async () => ({ summary: { type: 'delete-workouts-bulk', id: 'bulk', name: '2 workouts', total: 2,
+    rows: [{ id: 'w1', name: 'Monday', date: '2026-10-19' }, { id: 'w2', name: 'Tuesday' }],
+    effect: 'Irreversibly deletes 2 workouts across 2 days and 1 linked photo or video.' }, digest: 'fingerprint' }) })
+  const context = { document, fetch, location: { hash: '#fragment-token', pathname: '/connector/confirm' }, history: { replaceState() {} }, navigator: {}, btoa, atob, Uint8Array, console }
+  vm.runInNewContext(html.match(/<script>([\s\S]*?)<\/script>/)[1], context)
+  await new Promise(resolve => setImmediate(resolve))
+  assert.match(elements.get('target').textContent, /2 workouts across 2 days and 1 linked photo or video/)
+  assert.deepEqual(elements.get('rows').children.map(x => x.textContent), ['Monday (w1) — 2026-10-19', 'Tuesday (w2)'])
+  assert.doesNotMatch(elements.get('target').textContent + elements.get('rows').children.map(x => x.textContent).join(''), /\/media\/|bytes|hash/)
+})
+
+/* ------------------------------- Task 5: bounded bulk deletion ------------------------------- */
+
+const TODAY = '2026-10-23'
+
+test('bulk: 0, 26, future date, duplicates and mixed kind mint nothing and write nothing', async t => {
+  const f = await fixture({ executors: store => createBulkExecutors({ store, today: () => TODAY }) }); t.after(f.close)
+  const ask = selection => f.service.requestConfirmation({ type: 'delete-workouts-bulk', targetId: 'bulk', params: { selection } }, 'conn1')
+  for (const selection of [
+    { kind: 'workouts', ids: [] },
+    { kind: 'workouts', before: '2026-10-24' },
+    { kind: 'workouts', before: '2026-13-01' },
+    { kind: 'workouts', ids: ['w1', 'w1'] },
+    { kind: 'workouts', ids: ['w1'], before: '2026-10-23' },
+    { kind: 'routines', before: '2026-10-23' },
+  ]) await assert.rejects(() => ask(selection), bad, JSON.stringify(selection))
+  await assert.rejects(() => ask({ kind: 'workouts', ids: Array.from({ length: 26 }, (_, i) => `w${i}`) }), e => e instanceof Error && e.message === 'too many targets; narrow the request')
+  assert.equal(f.service.pending.size, 0)
+  assert.equal(f.puts, 0)
+})
+
+test('bulk: unknown id mints nothing and writes nothing', async t => {
+  const f = await fixture({ executors: store => createBulkExecutors({ store, today: () => TODAY }) }); t.after(f.close)
+  await assert.rejects(() => f.service.requestConfirmation(
+    { type: 'delete-workouts-bulk', targetId: 'bulk', params: { selection: { kind: 'workouts', ids: ['w1', 'w9'] } } }, 'conn1'), bad)
+  assert.equal(f.service.pending.size, 0)
+  assert.equal(f.puts, 0)
+})
+
+test('bulk: rows and effect describe the selection without media paths or bytes', async t => {
+  const f = await fixture({ executors: store => createBulkExecutors({ store, today: () => TODAY }) }); t.after(f.close)
+  f.profile = { ...f.profile, workouts: f.profile.workouts.map(w => w.id === 'w1' ? { ...w, media: [{ url: '/media/private.webp', bytes: 999, hash: 'h' }] } : w) }
+  const id = idOf((await f.service.requestConfirmation(
+    { type: 'delete-workouts-bulk', targetId: 'bulk', params: { selection: { kind: 'workouts', ids: ['w1', 'w2'] } } }, 'conn1')).url)
+  const details = await f.service.details(id)
+  assert.deepEqual(details.summary.rows, [{ id: 'w1', name: 'Monday', date: '2026-10-19' }, { id: 'w2', name: 'Tuesday' }])
+  assert.equal(details.summary.total, 2)
+  assert.match(details.summary.effect, /2 workouts/)
+  assert.match(details.summary.effect, /1 linked photo or video/)
+  const text = JSON.stringify(details.summary)
+  assert.doesNotMatch(text, /private\.webp|999|bytes|\/media\//)
+})
+
+test('bulk: confirmation removes exactly the selected records and preserves the rest', async t => {
+  const f = await fixture({ executors: store => createBulkExecutors({ store, today: () => TODAY }) }); t.after(f.close)
+  const id = idOf((await f.service.requestConfirmation(
+    { type: 'delete-routines-bulk', targetId: 'bulk', params: { selection: { kind: 'routines', ids: ['r1'] } } }, 'conn1')).url)
+  await f.service.details(id); const minted = await f.service.challenge(id)
+  const result = await f.service.confirm(id, { cid: minted.cid, credential: credential() })
+  assert.deepEqual(result, { deleted: { type: 'delete-routines-bulk', count: 1 } })
+  assert.equal(f.puts, 1)
+  assert.deepEqual(f.profile.routines.map(r => r.id), ['r2'])
+  assert.deepEqual(f.profile.week, { mon: ['r2'], wed: ['r2'] })
+  assert.deepEqual(f.profile.dayPlan, { '2026-10-20': 'r2' })
+  assert.deepEqual(f.profile.workouts.map(w => w.id), ['w1', 'w2'])
+  await assert.rejects(() => f.service.confirm(id, { cid: minted.cid, credential: credential() }), bad)
+  assert.equal(f.puts, 1)
+})
+
+test('bulk: target changed after mint but before first details invalidates the link', async t => {
+  const f = await fixture({ executors: store => createBulkExecutors({ store, today: () => TODAY }) }); t.after(f.close)
+  const id = idOf((await f.service.requestConfirmation(
+    { type: 'delete-workouts-bulk', targetId: 'bulk', params: { selection: { kind: 'workouts', ids: ['w1'] } } }, 'conn1')).url)
+  f.profile = { ...f.profile, workouts: f.profile.workouts.map(w => w.id === 'w1' ? { ...w, name: 'Edited after mint' } : w) }
+  await assert.rejects(() => f.service.details(id), bad)
+  assert.equal(f.puts, 0)
+})
+
+test('bulk: a changed target between details and confirm cancels the whole action', async t => {
+  const f = await fixture({ executors: store => createBulkExecutors({ store, today: () => TODAY }) }); t.after(f.close)
+  const id = idOf((await f.service.requestConfirmation(
+    { type: 'delete-workouts-bulk', targetId: 'bulk', params: { selection: { kind: 'workouts', ids: ['w1', 'w2'] } } }, 'conn1')).url)
+  await f.service.details(id); const minted = await f.service.challenge(id)
+  f.profile = { ...f.profile, workouts: f.profile.workouts.map(w => w.id === 'w2' ? { ...w, name: 'Edited' } : w) }
+  await assert.rejects(() => f.service.confirm(id, { cid: minted.cid, credential: credential() }), bad)
+  assert.equal(f.puts, 0)
+  assert.deepEqual(f.profile.workouts.map(w => w.id), ['w1', 'w2'])
+})
+
+test('bulk: 409 with only unselected changes retries once and preserves them', async t => {
+  const f = await fixture({ executors: store => createBulkExecutors({ store, today: () => TODAY }) }); t.after(f.close)
+  const id = idOf((await f.service.requestConfirmation(
+    { type: 'delete-workouts-bulk', targetId: 'bulk', params: { selection: { kind: 'workouts', ids: ['w1'] } } }, 'conn1')).url)
+  await f.service.details(id); const minted = await f.service.challenge(id)
+  const raced = structuredClone(f.profile)
+  raced.workouts.find(w => w.id === 'w2').name = 'Renamed'
+  raced.notes = 'new note'
+  f.conflict = { state: raced }
+  await f.service.confirm(id, { cid: minted.cid, credential: credential() })
+  assert.equal(f.puts, 1)
+  assert.equal(f.seen.filter(x => x.route === 'PUT /api/data').length, 2)
+  assert.deepEqual(f.profile.workouts, [{ id: 'w2', name: 'Renamed' }])
+  assert.equal(f.profile.notes, 'new note')
+  assert.deepEqual(f.profile.routines.map(r => r.id), ['r1', 'r2'])
+})
+
+test('bulk: a 409 whose fresh snapshot adds a matching workout cancels everything, no write', async t => {
+  const f = await fixture({ executors: store => createBulkExecutors({ store, today: () => TODAY }) }); t.after(f.close)
+  const id = idOf((await f.service.requestConfirmation(
+    { type: 'delete-workouts-bulk', targetId: 'bulk', params: { selection: { kind: 'workouts', before: '2026-10-21' } } }, 'conn1')).url)
+  await f.service.details(id); const minted = await f.service.challenge(id)
+  const raced = structuredClone(f.profile)
+  raced.workouts.push({ id: 'w9', name: 'New', d: '2026-10-18', entries: [] })
+  f.conflict = { state: raced }
+  await assert.rejects(() => f.service.confirm(id, { cid: minted.cid, credential: credential() }), bad)
+  assert.equal(f.puts, 0)
+  assert.deepEqual(f.profile.workouts.map(w => w.id), ['w1', 'w2', 'w9'], 'the raced record survives; nothing was deleted')
+})
+
+test('bulk: a 409 that changes one selected record media cancels everything, no write', async t => {
+  const f = await fixture({ executors: store => createBulkExecutors({ store, today: () => TODAY }) }); t.after(f.close)
+  const id = idOf((await f.service.requestConfirmation(
+    { type: 'delete-workouts-bulk', targetId: 'bulk', params: { selection: { kind: 'workouts', ids: ['w1', 'w2'] } } }, 'conn1')).url)
+  await f.service.details(id); const minted = await f.service.challenge(id)
+  const raced = structuredClone(f.profile)
+  raced.workouts.find(w => w.id === 'w1').media = [{ url: '/media/new.webp' }]
+  f.conflict = { state: raced }
+  await assert.rejects(() => f.service.confirm(id, { cid: minted.cid, credential: credential() }), bad)
+  assert.equal(f.puts, 0)
+})
+
+test('bulk: another user\'s passkey cannot execute; a selection altered after minting changes nothing', async t => {
+  const f = await fixture({ executors: store => createBulkExecutors({ store, today: () => TODAY }) }); t.after(f.close)
+  const params = { selection: { kind: 'workouts', ids: ['w1'] } }
+  const id = idOf((await f.service.requestConfirmation({ type: 'delete-workouts-bulk', targetId: 'bulk', params }, 'conn1')).url)
+  params.selection.ids.push('w2')
+  const details = await f.service.details(id)
+  assert.deepEqual(details.summary.rows.map(r => r.id), ['w1'])
+  const minted = await f.service.challenge(id)
+  f.verifyUser = 'uid2'
+  await assert.rejects(() => f.service.confirm(id, { cid: minted.cid, credential: credential() }), bad)
+  assert.equal(f.puts, 0)
+  assert.deepEqual(f.profile.workouts.map(w => w.id), ['w1', 'w2'])
+})
+
+test('bulk: a date filter that matches nothing mints nothing', async t => {
+  const f = await fixture({ executors: store => createBulkExecutors({ store, today: () => TODAY }) }); t.after(f.close)
+  await assert.rejects(() => f.service.requestConfirmation(
+    { type: 'delete-workouts-bulk', targetId: 'bulk', params: { selection: { kind: 'workouts', before: '2020-01-01' } } }, 'conn1'), bad)
+  assert.equal(f.service.pending.size, 0)
+  assert.equal(f.puts, 0)
+})
+
+test('bulk: date filter confirmation deletes exactly the workouts before the date', async t => {
+  const f = await fixture({ executors: store => createBulkExecutors({ store, today: () => TODAY }) }); t.after(f.close)
+  const id = idOf((await f.service.requestConfirmation(
+    { type: 'delete-workouts-bulk', targetId: 'bulk', params: { selection: { kind: 'workouts', before: '2026-10-20' } } }, 'conn1')).url)
+  const details = await f.service.details(id)
+  assert.deepEqual(details.summary.rows, [{ id: 'w1', name: 'Monday', date: '2026-10-19' }])
+  const minted = await f.service.challenge(id)
+  await f.service.confirm(id, { cid: minted.cid, credential: credential() })
+  assert.equal(f.puts, 1)
+  assert.deepEqual(f.profile.workouts.map(w => w.id), ['w2'])
+  assert.deepEqual(f.profile.routines.map(r => r.id), ['r1', 'r2'])
 })
