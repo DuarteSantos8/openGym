@@ -5,6 +5,9 @@ import { ProfileConflictError } from '../src/profileStore.js'
 import { CATALOGUE, EXIDX, registerCustom } from '../../frontend/src/lib/exercises.js'
 
 const exId = '1045'
+const creationId = '123e4567-e89b-42d3-a456-426614174000'
+const anotherCreationId = '123e4567-e89b-42d3-a456-426614174001'
+const newRoutine = (id = creationId) => ({ creationId: id, name: 'Fresh', ex: [{ id: 'my-ex', sets: 2, weight: 20 }] })
 assert.ok(CATALOGUE.some(e => e.id === exId))
 assert.ok(CATALOGUE.some(e => e.id === '0025'))
 const base = () => ({
@@ -51,9 +54,9 @@ test('propose only describes; apply sets existing ID, preserves unrelated record
 
 test('fresh routine IDs stabilize in edit; retry preserves concurrent routines and workouts', () => {
   const profile = base()
-  const edit = proposeWeek(profile, { routines: [{ name: 'Fresh', ex: [{ id: 'my-ex', sets: 2, weight: 20 }] }], week: {} })
+  const edit = proposeWeek(profile, { routines: [newRoutine()], week: {} })
   const id = edit.routines[0].id
-  assert.ok(id && id !== 'old' && id !== 'untouched')
+  assert.equal(id, creationId)
   assert.equal(edit.routines[0].url, `https://gym.areum.cl/#/plan/r/${id}`)
   const concurrent = { ...profile, workouts: [...profile.workouts, { id: 'later' }], routines: [...profile.routines, { id: 'elsewhere', name: 'Concurrent', ex: [] }] }
   const next = applyPlanEdit(concurrent, edit)
@@ -116,7 +119,7 @@ test('empty exercise lists and empty weekdays are rejected without writing', asy
   const profile = base()
   const before = structuredClone(profile)
   assert.throws(() => proposeWeek(profile, { routines: [{ id: 'old', ex: [] }], week: {} }), /invalid/i)
-  assert.throws(() => proposeWeek(profile, { routines: [{ name: 'New', ex: [{ id: '1045', sets: 1 }] }], week: { 2: [] } }), /invalid/i)
+  assert.throws(() => proposeWeek(profile, { routines: [newRoutine()], week: { 2: [] } }), /invalid/i)
   assert.throws(() => applyPlanEdit(profile, { type: 'week', unit: 'lb', routines: [{ id: 'old', name: 'Old', ex: [], isNew: false }], week: {} }), /invalid/i)
   assert.throws(() => applyPlanEdit(profile, { type: 'week', unit: 'lb', routines: [], week: { 1: [] } }), /invalid/i)
   assert.deepEqual(profile, before)
@@ -235,4 +238,32 @@ test('a unit change between attempts rejects instead of saving the old numbers',
   await assert.rejects(() => updatePlanEdit(store, 'token', { routines: [{ id: 'old', ex: [{ id: exId, weight: 120 }] }], week: {} }), /unit/i)
   assert.equal(store.produced.length, 1)
   assert.equal(store.produced[0].unit, 'lb')
+})
+
+test('lost create response replayed with the same creationId leaves one routine', async () => {
+  const req = { routines: [newRoutine()], week: {} }
+  const first = fakeStore(base())
+  const lost = await updatePlanEdit(first, 'token', req)
+  assert.equal(lost.routines[0].id, creationId)
+  const replay = fakeStore(first.produced[0])
+  const again = await updatePlanEdit(replay, 'token', req)
+  assert.equal(replay.produced[0].routines.filter(r => r.id === creationId).length, 1)
+  assert.equal(replay.produced[0].routines.length, 3)
+  assert.equal(replay.produced[0].routines.find(r => r.id === 'untouched').name, 'Other')
+  assert.deepEqual(replay.produced[0].workouts, base().workouts)
+  assert.equal(again.routines[0].id, creationId)
+  assert.throws(() => proposeWeek(base(), { routines: [{ name: 'Fresh', ex: [{ id: 'my-ex', sets: 2, weight: 20 }] }], week: {} }), /creationId/i)
+  assert.throws(() => proposeWeek(base(), { routines: [{ creationId: 'not-a-uuid', name: 'Fresh', ex: [{ id: 'my-ex', sets: 2 }] }], week: {} }), /creationId/i)
+})
+
+test('a different creationId with the same name creates a second routine; a collision fails closed', async () => {
+  const first = fakeStore(base())
+  await updatePlanEdit(first, 'token', { routines: [newRoutine()], week: {} })
+  const twice = fakeStore(first.produced[0])
+  const other = await updatePlanEdit(twice, 'token', { routines: [newRoutine(anotherCreationId)], week: {} })
+  assert.equal(other.routines[0].id, anotherCreationId)
+  assert.equal(twice.produced[0].routines.filter(r => r.name === 'Fresh').length, 2)
+  const clash = { ...base(), routines: [...base().routines, { id: creationId, name: 'Someone else', ex: [{ id: '0025' }] }] }
+  await assert.rejects(() => updatePlanEdit(fakeStore(clash), 'token', { routines: [newRoutine()], week: {} }), /exist/i)
+  assert.equal(clash.routines.find(r => r.id === creationId).name, 'Someone else')
 })

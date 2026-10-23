@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto'
 import { CATALOGUE } from '../../frontend/src/lib/exercises.js'
 import { exAvailable } from '../../frontend/src/lib/equipment.js'
 import { queueOf } from '../../frontend/src/lib/queue.js'
@@ -11,6 +10,9 @@ const finite = x => typeof x === 'number' && Number.isFinite(x)
 const targets = ['sets', 'reps', 'repsMin', 'repsMax', 'weight', 'restSec', 'sec', 'min', 'speed', 'inc', 'deloadFactor']
 const reserved = new Set(['__proto__', 'constructor', 'prototype'])
 const CATALOGUE_BY_ID = new Map(CATALOGUE.map(e => [e.id, e]))
+// RFC 4122: 8-4-4-4-12, version 1–8, variant 10xx. The caller supplies this; we never mint one.
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+const uuid = value => typeof value === 'string' && UUID.test(value) && !reserved.has(value.toLowerCase())
 
 function weekOf(profile) {
   const ids = [...new Set(Object.values(object(profile.week) ? profile.week : {})
@@ -75,22 +77,38 @@ function mergeEx(current, patches) {
   return list
 }
 
+function createdBy(existing, name, patches) {
+  if (!existing || existing.name !== name) return false
+  const list = Array.isArray(existing.ex) ? existing.ex : []
+  if (list.length !== patches.length) return false
+  return patches.every((p, i) => list[i] && list[i].id === p.id && targets.every(k => !Object.hasOwn(p, k) || list[i][k] === p[k]))
+}
+
 function routinesOf(profile, request) {
   if (!Array.isArray(profile.routines) || !Array.isArray(request.routines)) throw new Error('invalid routines')
-  const seen = new Set(profile.routines.map(r => r.id))
+  const seen = new Set()
   return request.routines.map(raw => {
-    if (!object(raw) || Object.keys(raw).some(key => !['id', 'name', 'ex'].includes(key))) throw new Error('invalid routine')
-    const existing = raw.id == null ? null : profile.routines.find(r => r.id === raw.id)
-    if (raw.id != null && !existing) throw new Error('unknown routine')
+    if (!object(raw) || Object.keys(raw).some(key => !['id', 'name', 'ex', 'creationId'].includes(key))) throw new Error('invalid routine')
+    if (raw.id == null && raw.creationId == null) throw new Error('invalid creationId')
+    if (raw.id != null && raw.creationId != null) throw new Error('invalid routine')
     if (raw.name != null && (typeof raw.name !== 'string' || !raw.name.trim())) throw new Error('invalid routine name')
-    if (!existing && !raw.name) throw new Error('routine name required')
     const ex = patchesOf(profile, raw.ex)
-    let id = existing?.id
-    if (!id) { do { id = randomUUID() } while (seen.has(id)) }
-    seen.add(id)
+    if (raw.creationId != null) {
+      // creationId is the routine id. No UUID is minted here, so a lost-response replay with the
+      // same request cannot invent a second id. Collision with a different routine fails closed.
+      if (!uuid(raw.creationId)) throw new Error('invalid creationId')
+      if (!raw.name) throw new Error('routine name required')
+      if (seen.has(raw.creationId)) throw new Error('duplicate routine')
+      seen.add(raw.creationId)
+      return { id: raw.creationId, name: raw.name, ex, url: urlOf(raw.creationId), isNew: true }
+    }
+    const existing = profile.routines.find(r => r.id === raw.id)
+    if (!existing) throw new Error('unknown routine')
+    if (seen.has(existing.id)) throw new Error('duplicate routine')
+    seen.add(existing.id)
     // An existing routine keeps whatever name it has when the edit is applied; only an explicit
     // rename travels in the edit, so a 409 retry never writes back a stale name.
-    return { id, ...(raw.name != null ? { name: raw.name } : {}), ex, url: urlOf(id), isNew: !existing }
+    return { id: existing.id, ...(raw.name != null ? { name: raw.name } : {}), ex, url: urlOf(existing.id), isNew: false }
   })
 }
 
@@ -139,8 +157,7 @@ export function applyPlanEdit(profile, edit) {
     const index = next.routines.findIndex(old => old.id === r.id)
     if (index < 0 && !r.isNew) throw new Error('routine disappeared')
     if (index >= 0 && r.isNew) {
-      const same = next.routines[index].name === r.name && JSON.stringify(next.routines[index].ex) === JSON.stringify(patches)
-      if (!same) throw new Error('new routine ID already exists')
+      if (!createdBy(next.routines[index], r.name, patches)) throw new Error('new routine ID already exists')
       continue
     }
     if (index < 0) next.routines.push({ id: r.id, name: r.name, ex: patches })
