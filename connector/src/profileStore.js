@@ -1,7 +1,11 @@
 // Conditional openGym profile I/O. Never writes state files; never whole-document mergeStates.
 // patchFn must be pure and idempotent: reapplying the same requested change to a fresh
 // profile must not duplicate records. It receives a clone; never mutate captured inputs.
-const MAX_RESPONSE = 5 * 1024 * 1024
+// Default updateProfile refuses dropped top-level keys and dropped routines/workouts ids.
+// `{ allowDelete: true, ids: [...] }` is only for Task 8's confirmed destructive actions. The
+// caller must gate it with passkey confirmation. Only the listed ids may disappear from
+// routines/workouts; unrelated ids and every top-level non-bookkeeping key must still be there.
+const MAX_BYTES = 5 * 1024 * 1024
 const TIMEOUT_MS = 10000
 const MAX_ATTEMPTS = 5
 const META = new Set(['_rev', '_ts', '_wid', '_wids'])
@@ -25,6 +29,30 @@ function validState(state) {
     (state.workouts == null || Array.isArray(state.workouts))
 }
 
+function idsOf(list) {
+  const ids = new Set()
+  if (!Array.isArray(list)) return ids
+  for (const entry of list) {
+    if (entry && typeof entry === 'object' && typeof entry.id === 'string' && entry.id) ids.add(entry.id)
+  }
+  return ids
+}
+
+function preserves(current, next, target) {
+  if (!validState(next)) return false
+  for (const key of Object.keys(current)) {
+    if (META.has(key)) continue
+    if (!Object.hasOwn(next, key)) return false
+  }
+  for (const list of ['routines', 'workouts']) {
+    if (!Array.isArray(current[list])) continue
+    if (!Array.isArray(next[list])) return false
+    const have = idsOf(next[list])
+    for (const id of idsOf(current[list])) if (!have.has(id) && !(target && target.has(id))) return false
+  }
+  return true
+}
+
 function document(data) {
   if (!object(data) || !validState(data.state) || !Number.isSafeInteger(data.rev) || data.rev < 0) {
     throw new Error('invalid profile from upstream')
@@ -32,46 +60,61 @@ function document(data) {
   return { state: data.state, rev: data.rev }
 }
 
+function ours(error) {
+  return error instanceof Error && (error.message.startsWith('profile ') || error.message.startsWith('invalid profile'))
+}
+
 async function request(apiBase, bearer, path, method = 'GET', payload) {
   if (typeof bearer !== 'string' || !bearer || /[\r\n]/.test(bearer)) throw new TypeError('invalid bearer')
+  let body
+  if (payload !== undefined) {
+    try { body = JSON.stringify(payload) }
+    catch { throw new Error('invalid profile patch') }
+    if (Buffer.byteLength(body) > MAX_BYTES) throw new Error('invalid profile patch')
+  }
   let response
   try {
     response = await fetch(`${apiBase}${path}`, {
       method,
       headers: {
         authorization: `Bearer ${bearer}`, accept: 'application/json',
-        ...(payload ? { 'content-type': 'application/json' } : {}),
+        ...(body ? { 'content-type': 'application/json' } : {}),
       },
-      ...(payload ? { body: JSON.stringify(payload) } : {}),
+      ...(body ? { body } : {}),
       redirect: 'manual', signal: AbortSignal.timeout(TIMEOUT_MS),
     })
   } catch {
     throw new Error('profile upstream unavailable')
   }
-  if (response.status !== 200 && !(method === 'PUT' && response.status === 409)) {
-    await response.body?.cancel().catch(() => {})
-    throw new Error(`profile upstream status ${response.status}`)
-  }
-  const chunks = []
-  let size = 0
-  if (response.body) {
-    const reader = response.body.getReader()
-    for (;;) {
-      const { done, value } = await reader.read()
-      if (done) break
-      size += value.length
-      if (size > MAX_RESPONSE) {
-        await reader.cancel().catch(() => {})
-        throw new Error('profile upstream response too large')
-      }
-      chunks.push(value)
+  try {
+    if (response.status !== 200 && !(method === 'PUT' && response.status === 409)) {
+      await response.body?.cancel().catch(() => {})
+      throw new Error(`profile upstream status ${response.status}`)
     }
+    const chunks = []
+    let size = 0
+    if (response.body) {
+      const reader = response.body.getReader()
+      for (;;) {
+        const { done, value } = await reader.read()
+        if (done) break
+        size += value.length
+        if (size > MAX_BYTES) {
+          await reader.cancel().catch(() => {})
+          throw new Error('profile upstream response too large')
+        }
+        chunks.push(value)
+      }
+    }
+    let data
+    try { data = JSON.parse(Buffer.concat(chunks).toString('utf8')) }
+    catch { throw new Error('invalid profile upstream response') }
+    if (!object(data)) throw new Error('invalid profile upstream response')
+    return { status: response.status, data }
+  } catch (error) {
+    if (ours(error)) throw error
+    throw new Error('profile upstream unavailable')
   }
-  let data
-  try { data = JSON.parse(Buffer.concat(chunks).toString('utf8')) }
-  catch { throw new Error('invalid profile upstream response') }
-  if (!object(data)) throw new Error('invalid profile upstream response')
-  return { status: response.status, data }
 }
 
 export function createProfileStore({ apiBase } = {}) {
@@ -84,12 +127,15 @@ export function createProfileStore({ apiBase } = {}) {
     return (await fetchDocument(bearer)).state
   }
 
-  async function update(bearer, patchFn) {
+  async function update(bearer, patchFn, options) {
     if (typeof patchFn !== 'function') throw new TypeError('patchFn required')
+    const ids = options && options.allowDelete === true && Array.isArray(options.ids) ? options.ids : null
+    const target = ids && ids.length && ids.every(id => typeof id === 'string' && id) ? new Set(ids) : null
+    if (options && options.allowDelete === true && !target) throw new Error('invalid profile patch')
     let current = await fetchDocument(bearer)
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
       const state = patchFn(structuredClone(current.state))
-      if (!validState(state)) throw new Error('invalid profile patch')
+      if (!preserves(current.state, state, target)) throw new Error('invalid profile patch')
       const body = { state, baseRev: current.rev }
       if (typeof current.state._wid === 'string') body.baseWid = current.state._wid
       const reply = await call(bearer, '/api/data', 'PUT', body)
@@ -108,9 +154,9 @@ export function createProfileStore({ apiBase } = {}) {
     throw new ProfileConflictError(current.state)
   }
 
-  function updateProfile(bearer, patchFn) {
+  function updateProfile(bearer, patchFn, options) {
     const earlier = pending.get(bearer)
-    const work = (earlier || Promise.resolve()).then(() => update(bearer, patchFn))
+    const work = (earlier || Promise.resolve()).then(() => update(bearer, patchFn, options))
     const tail = work.catch(() => {})
     pending.set(bearer, tail)
     void tail.then(() => { if (pending.get(bearer) === tail) pending.delete(bearer) })
