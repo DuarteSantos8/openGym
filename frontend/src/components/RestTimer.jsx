@@ -15,13 +15,18 @@ const clock = sec => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '
 // What a rest leads into, under the clock where "Rest" was: the kind decided where the rest
 // started (timer.kind, supersetFlow.restKind), the same kind that picks the sound it ends with
 // when Settings → Sound gives that kind one of its own. One word, and no exercise name: the label
-// line is only as wide as the clock's widest face (index.css #timer .lbl). A rest with no kind
+// line is as wide as the clock's widest face or the widest of these words, whichever is wider
+// (index.css #timer .lbl, .lbl-alts). A rest with no kind
 // (one started from the wheel with nothing running) says "Rest". A rest before a warm-up (ramp)
 // set says "Warm-up" instead of "Set" (timer.phase, decided where the rest started from the set
 // it leads into, supersetFlow.restSetPhase). Rounds do not: a superset's members can be at
 // different phases.
 const KIND_LABEL = { set: 'Set', round: 'Round', block: 'Exercise' }
 const restLabel = timer => timer.kind === 'set' && timer.phase === 'warmup' ? 'Warm-up' : KIND_LABEL[timer.kind] || 'Rest'
+// Every word an ordinary rest's label can say. The clock's column takes the width of the widest
+// in the language on screen, so a long one fits ("Упражнение" was 85 px in a 76 px column on a
+// 320 px phone) and the buttons beside it stand in the same place in every rest.
+const REST_WORDS = ['Set', 'Round', 'Exercise', 'Warm-up', 'Rest', 'Paused']
 // The hold's label follows the same rule: what is timed, short. Which hold of the exercise it is,
 // warm-up holds counted apart and a per-side pair as one set, as the set rows number them. Read
 // off the hold's owner (work.owner, the row it writes to, kept current when rows move), so a hold
@@ -160,6 +165,7 @@ export default function RestTimer() {
         aria-label={(timer.ready ? t('Ready') : clock(timer.left)) + '. ' + t('Change the time left')}>
         <span className="t" role={timer.ready ? 'status' : undefined} data-alt={timer.ready ? '0:00' : t('Ready')}>{timer.ready ? t('Ready') : clock(timer.left)}</span>
         <span className="lbl">{label}<Icon name="chevronDown" /></span>
+        <span className="lbl-alts" aria-hidden="true">{REST_WORDS.map(w => <span key={w}>{t(w)}<Icon name="chevronDown" /></span>)}</span>
       </button>
       <div className="acts" ref={actsRef}>
         <Button size="sm" className="adj" icon="minus" onClick={() => addRest(-15)}>15s</Button>

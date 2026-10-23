@@ -60,6 +60,16 @@ describe('rest timer bar: what it is timing', () => {
     expect(label()).toBe('Round')
   })
 
+  // The column under the clock takes the width of the widest word a rest can say, laid out in a
+  // hidden line (index.css #timer .lbl-alts): every one of them is there, whatever the rest is.
+  it('keeps every word a rest can say in the hidden line that sizes the label', () => {
+    act(() => { useUI.getState().startRest(90, 0, { kind: 'set' }) })
+    mount()
+    const alts = host.querySelector('#timer .lbl-alts')
+    expect(alts.getAttribute('aria-hidden')).toBe('true')
+    expect([...alts.children].map(s => s.textContent)).toEqual(['Set', 'Round', 'Exercise', 'Warm-up', 'Rest', 'Paused'])
+  })
+
   it('a rest without a kind just says Rest', () => {
     act(() => { useUI.getState().startRest(60) })
     mount()

@@ -1537,6 +1537,11 @@ body.chips-dragging *{cursor:inherit}
   display:inline-flex;align-items:center;gap:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 #timer .lbl .icn{font-size:10px;flex:none;opacity:.8}
+/* A rest's label words laid out at their own width in a hidden zero-height line, so the column is
+   as wide as the widest (RestTimer.jsx REST_WORDS), the way the clock keeps room for Ready. */
+#timer .lbl-alts{display:flex;flex-direction:column;height:0;overflow:hidden;visibility:hidden}
+#timer .lbl-alts>span{display:inline-flex;align-items:center;gap:3px;font-size:12px;white-space:nowrap}
+#timer .lbl-alts .icn{font-size:10px;flex:none}
 #timer .acts{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex:1 1 auto;min-width:0}
 #timer .acts .btn{padding-top:11px;padding-bottom:11px}   /* sweaty hands, mid-set */
 #timer .acts .adj{padding-inline:9px;gap:2px}
