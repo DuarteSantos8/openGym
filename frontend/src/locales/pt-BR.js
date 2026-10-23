@@ -1535,6 +1535,10 @@ export const PT_BR_OVERRIDES = {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'Este dispositivo tem 1 treino que não está neste backup. Substituir exclui esse treino.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'Este dispositivo tem {0} treinos que não estão neste backup. Substituir exclui esses treinos.',
+  // --- a sound for each kind of rest (#165) ---
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'Ouça o que vem a seguir sem olhar. Até você escolher um, cada um toca o som acima, como sempre fazem as isometrias e a pausa para trocar de lado.',
+  'Next round': 'Próxima rodada',
+  'Next exercise': 'Próximo exercício',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
