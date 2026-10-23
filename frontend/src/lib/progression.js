@@ -752,9 +752,10 @@ export function nextPrescription(S, cfg, routine) {
 /**
  * Apply a prescription to freshly built sets. Only the fields the policy actually decided
  * are touched, and only on sets that have not been logged yet. `floor` is the lift's bar
- * (history.js barFloor), which the re-ramped warm-ups never go under.
+ * (history.js barFloor), which the re-ramped warm-ups never go under. `assisted` (exercises.js
+ * isAssisted): an assistance machine, whose warm-ups ramp down from more help instead.
  */
-export function applyPrescription(sets, p, step = 2.5, floor = 0) {
+export function applyPrescription(sets, p, step = 2.5, floor = 0, assisted = false) {
   // A first session has nothing to prescribe from, except triple progression's start of a cycle.
   if (!p || p.kind === 'off' || (p.kind === 'first' && !p.rowReps)) return sets
   const out = sets.map(s => {
@@ -791,7 +792,7 @@ export function applyPrescription(sets, p, step = 2.5, floor = 0) {
   if (p.sets > workRows.length) {
     // An all-warm-up entry has no work row to seed growth from - growing warm-up copies
     // would both invent work and never terminate the loop. Leave the entry untouched.
-    if (!workRows.length) return rerampWarmups(out, step, floor)
+    if (!workRows.length) return rerampWarmups(out, step, floor, assisted)
     const seed = workRows[workRows.length - 1]
     // A freshly appended row hasn't been performed, so it never inherits a seed's already-
     // logged drops/clusters — that would invent extra work the row never actually did. Its
@@ -820,5 +821,5 @@ export function applyPrescription(sets, p, step = 2.5, floor = 0) {
   }
   // Last, because the work rows now carry their final weight: the warm-up block ramps toward
   // what you are actually about to lift, not toward what you lifted last time.
-  return rerampWarmups(out, step, floor)
+  return rerampWarmups(out, step, floor, assisted)
 }

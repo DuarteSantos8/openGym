@@ -26,7 +26,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=26">
+<link rel="stylesheet" href="styles.css?v=27">
 <script>document.documentElement.className += ' js'</script>
 <!-- Umami web analytics for opengym.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
@@ -214,33 +214,34 @@
      <a href="#mobile-server">connect directly to your server</a>.</p>
 
   <h2 id="android">Install on Android</h2>
+  <p>There are three APKs, and they are the same app; only the exercise animations built in
+     differ. <b>Standard</b> has them at 180 px and stays small, <b>Plus</b> at 240 px,
+     <b>HD</b> at 360 px: sharper on big screens, heavier on your storage. Not sure? Take
+     Standard. Changed your mind later? Install another one on top: same signing key, your data
+     stays.</p>
   <ol>
-    <li>Open <a href="/#download">the download</a> on your phone and tap <b>Download for Android</b>.</li>
-    <li>Your browser will ask whether it may install apps — allow it. This is standard for
-        any app installed outside the Play Store (called <i>sideloading</i>), and you can
-        revoke the permission right after.</li>
-    <li>Open the downloaded <code>openGym.apk</code>, confirm, done. No account, no setup.</li>
+    <li>Open <a href="/#download">the download</a> on your phone and tap <b>Standard</b>
+        (or <b>Plus</b> or <b>HD</b>).</li>
+    <li>Your browser will ask whether it may install apps. Allow it: that is how any app
+        from outside the Play Store gets installed (<i>sideloading</i>), and you can take the
+        permission back right after.</li>
+    <li>Open the downloaded <code>openGym-&lt;version&gt;.apk</code>, confirm, done. No account, no setup.</li>
   </ol>
-  <div class="note">openGym is deliberately <b>not</b> on the Play Store — no store account
-    between you and an open-source app. The APK is signed; updates install over the old
-    version and keep your data.</div>
-  <p>The same signed APK exists in three places, all the same file:</p>
-  <ul>
-    <li>This site's <a href="/#download">download button</a>.</li>
-    <li><a href="https://gitlab.com/DuarteSantos8/opengym/-/packages" rel="noopener">GitLab's package registry</a> —
-        every version under <code>opengym-android/&lt;version&gt;/</code>, with a
-        <code>.sha256</code> checksum beside it.</li>
-    <li>The <a href="https://github.com/DuarteSantos8/openGym/releases" rel="noopener">GitHub release</a> for that version, with the APK and its <code>.sha256</code> attached.</li>
-  </ul>
-  <p>Got the file from anywhere else? Verify it against the registry's <code>.sha256</code>
-     before installing. <b>Updates come to you:</b> when a newer release exists, Settings &rarr; About &amp; updates
-     shows "openGym vX available" &mdash; one tap downloads the signed APK, checks its SHA-256
-     against the published checksum and opens the installer (no checksum, no install; the first
-     time Android asks for the "install unknown apps" permission). Installing over the old
-     version by hand works too &mdash; same signing key, data stays. Everything is stored on the phone itself. The app goes online for two things only:
-     exercise images and animations from a CDN, on demand, and &mdash; when you open
-     Settings &rarr; About &amp; updates &mdash; a look at the public release list on GitLab to see whether a newer
-     version exists.</p>
+  <div class="note">A Google Play version is on its way. Until then the APK is the way in: it is
+    signed, updates install over the old version and keep your data.</div>
+  <p>Every release puts all three APKs on the
+     <a href="https://github.com/DuarteSantos8/openGym/releases" rel="noopener">GitHub release</a>
+     for that version, each with a <code>.sha256</code> checksum beside it. Got the file from
+     anywhere else? Check it against that checksum before installing.</p>
+  <p><b>Updates come to you:</b> when a newer release exists, Settings &rarr; About &amp; updates
+     shows "openGym vX available". One tap downloads the signed APK, checks its SHA-256 against
+     the published checksum and opens the installer (no checksum, no install; the first time
+     Android asks for the "install unknown apps" permission). Each APK updates to its own kind
+     (Standard to Standard, Plus to Plus, HD to HD), so nobody gets surprised by a download twice
+     the size. Everything is stored on the
+     phone itself; the animations are inside the app. The app goes online for one thing only:
+     when you open Settings &rarr; About &amp; updates, it looks at the public release list on
+     GitHub to see whether a newer version exists.</p>
   <p>The app requests notification permission only when you switch the workout-day reminder
      on, and declares <code>SCHEDULE_EXACT_ALARM</code> so reminders fire to the minute.
      Reminders are scheduled per calendar date — a day you already trained, or rescheduled
@@ -951,9 +952,10 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
   <h2 id="privacy">Privacy — the complete list</h2>
   <ul>
     <li><b>The app collects nothing.</b> No telemetry, no analytics, no crash reporting, no
-        accounts on anyone else's server. The mobile app goes online only for exercise
-        media from a CDN and, when you open Settings → About &amp; updates, for GitLab's public release list (the update
-        check). In the browser, a self-hosted instance talks only to your own server.</li>
+        accounts on anyone else's server. The exercise media are inside the mobile app.
+        It goes online only for what you set up (your server, the coach, Health Connect) and, in the
+        APK from this site, for GitHub's public release list when you open Settings → About (the
+        update check). The full policy: <a href="privacy.html">Privacy</a>. In the browser, a self-hosted instance talks only to your own server.</li>
     <li><b>Passkey private keys never leave your device</b> — the server stores only public
         keys.</li>
     <li><b>The optional activity log</b> (self-hosted, admin feature) records sign-in events
@@ -1025,6 +1027,7 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
   <div class="links">
     <a href="docs.html">Docs</a>
     <a href="about.html">About</a>
+    <a href="privacy.html">Privacy</a>
     <a href="https://github.com/DuarteSantos8/openGym" rel="noopener">GitHub</a>
     <a href="https://gitlab.com/DuarteSantos8/opengym" rel="noopener">GitLab mirror</a>
     <a href="https://discord.gg/e62jY6fwVb" rel="noopener">Discord</a>
@@ -1032,6 +1035,6 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
   </div>
 </div></footer>
 
-<script src="site.js?v=26" defer></script>
+<script src="site.js?v=27" defer></script>
 </body>
 </html>

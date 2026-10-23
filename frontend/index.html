@@ -29,6 +29,45 @@
 <link rel="icon" type="image/png" href="icon-180.png">
 </head>
 <body>
+<!-- The boot screen: painted with the HTML, before any script runs, so the gap between the
+     native splash and the first real screen is the logo loading its plates instead of a black
+     page. Same dark and lime as the native splash. lib/boot.js takes it away the moment the
+     app can draw, so it never adds a wait. -->
+<style>
+  #boot{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:#0c0e12;transition:opacity .22s ease-out}
+  #boot.out{opacity:0;pointer-events:none}
+  #boot svg{width:112px;height:auto;overflow:visible}
+  #boot rect,#boot ellipse{transform-box:fill-box;transform-origin:center}
+  #boot .bar{animation:boot-bar .32s cubic-bezier(.3,.7,.4,1) both}
+  #boot .pl{animation:boot-plate .28s cubic-bezier(.3,.7,.4,1.3) both}
+  #boot .pr{animation:boot-plate-r .28s cubic-bezier(.3,.7,.4,1.3) both}
+  #boot .in{animation-delay:.22s}
+  #boot .outer{animation-delay:.36s}
+  #boot .db{animation:boot-rep 1.25s ease-in-out .75s infinite}
+  #boot ellipse{fill:#a3e635;opacity:.12;animation:boot-shadow 1.25s ease-in-out .75s infinite}
+  @keyframes boot-bar{from{transform:scaleX(0)}}
+  @keyframes boot-plate{from{transform:translateX(-40px);opacity:0}}
+  @keyframes boot-plate-r{from{transform:translateX(40px);opacity:0}}
+  @keyframes boot-rep{50%{transform:translateY(-26px)}}
+  @keyframes boot-shadow{50%{transform:scaleX(.72);opacity:.05}}
+  @media (prefers-reduced-motion:reduce){
+    #boot .bar,#boot .pl,#boot .pr,#boot ellipse{animation:none}
+    #boot .db{animation:boot-breathe 1.6s ease-in-out infinite}
+    @keyframes boot-breathe{50%{opacity:.55}}
+  }
+</style>
+<div id="boot" aria-hidden="true">
+  <svg viewBox="80 140 352 250">
+    <ellipse cx="256" cy="372" rx="150" ry="9"/>
+    <g class="db" fill="#a3e635">
+      <rect class="bar" x="80" y="242" width="352" height="28"/>
+      <rect class="pl in" x="131" y="169" width="47" height="174"/>
+      <rect class="pr in" x="334" y="169" width="47" height="174"/>
+      <rect class="pl outer" x="80" y="199" width="36" height="114"/>
+      <rect class="pr outer" x="396" y="199" width="36" height="114"/>
+    </g>
+  </svg>
+</div>
 <div id="root"></div>
 <script type="module" src="/src/main.jsx"></script>
 </body>
