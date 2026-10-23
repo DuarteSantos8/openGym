@@ -311,7 +311,7 @@ export default function Admin() {
   return <div className="narrow">
     <div className="hdr">
       <button className="iconbtn" data-back="/settings/account" onClick={() => nav('/settings/account')} aria-label="Back"><Icon name="chevronLeft" /></button>
-      <div style={{ flex: 1, marginInlineStart: 8 }}><h1 style={{ margin: 0 }}>Admin</h1>
+      <div style={{ flex: 1, marginInlineStart: 12 }}><h1 style={{ margin: 0 }}>Admin</h1>
         <div className="sub">{users ? users.length + ' users · ' + activeCount + ' active this week' : usersErr ? 'Could not load' : 'Loading…'}</div></div>
       <button className="iconbtn" onClick={() => { loadUsers(); loadInvites(); setTick(n => n + 1) }} aria-label="refresh">↻</button>
     </div>

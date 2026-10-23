@@ -138,7 +138,7 @@ export default function CoachSetup() {
   return <div className="narrow">
     <div className="hdr">
       <button className="iconbtn" data-back="/settings" onClick={() => nav('/settings')} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
-      <div style={{ flex: 1, marginInlineStart: 10 }}><h1>{t('AI Coach')}</h1></div>
+      <div style={{ flex: 1, marginInlineStart: 12 }}><h1>{t('AI Coach')}</h1></div>
     </div>
 
     <Section title={t('How should the Coach run?')} footer={current}>
