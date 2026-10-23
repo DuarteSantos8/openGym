@@ -114,11 +114,13 @@ function textResult(value, secrets) {
   return { content: [{ type: 'text', text }] }
 }
 
-// Only these mean "openGym no longer accepts this account": the profile store and admin reads keep
-// the upstream status in fixed text (anchored, so no argument or profile string can imitate it).
+// Only a 401 means "openGym no longer accepts this bearer" (disabled, expired, signed out: sessionOf
+// returns null). A 403 on an admin route is an ordinary non-admin asking, so it never revokes. Both
+// stores keep the upstream status in fixed text (anchored, so no argument or profile string can
+// imitate it).
 function denied(e) {
-  if (e instanceof AdminError) return e.status === 401 || e.status === 403
-  return typeof e?.message === 'string' && /^profile upstream status (401|403)$/.test(e.message)
+  if (e instanceof AdminError) return e.status === 401
+  return typeof e?.message === 'string' && e.message === 'profile upstream status 401'
 }
 
 function readBody(req, limit, timeoutMs) {
@@ -218,6 +220,7 @@ export function createMcpHttp({ origin, prefix, apiBase, key, connections, grant
       if (e instanceof ArgError) return failure('invalid arguments')
       if (e instanceof ToolError) return failure(e.message)
       if (denied(e)) { grants.revokeAccessToken(session.token); return UNAUTHORIZED }
+      if (e instanceof AdminError && e.status === 403) return failure('admin only')
       return failure('tool failed')
     }
   }

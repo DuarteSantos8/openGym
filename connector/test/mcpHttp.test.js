@@ -160,7 +160,7 @@ test('missing, malformed, revoked and disabled-user tokens execute no tool', asy
   const challenged = await f.call('tools/call', body.params, 1, 'invalid')
   assert.equal(challenged.headers.get('www-authenticate'), 'Bearer resource_metadata="https://gym.example.test/connector/.well-known/oauth-protected-resource"')
   assert.equal(f.hits('/api/data'), 0)
-  f.s.me = 403
+  f.s.me = 401
   const disabled = await f.call('tools/call', body.params)
   assert.equal(disabled.status, 401)
   assert.doesNotMatch(await disabled.text(), /never-return|private-bearer|disabled/)
@@ -265,25 +265,38 @@ test('a live queue blocks plan edits: reported as an error, nothing written', as
   assert.equal(f.hits('/api/data', 'PUT'), 0)
 })
 
-test('upstream 401/403 during a tool revokes the grant and answers 401 with no upstream text', async t => {
-  for (const status of [401, 403]) {
-    const f = await fixture(t)
-    f.s.data = status
-    const reply = await f.call('tools/call', { name: 'list_routines', arguments: {} })
-    assert.equal(reply.status, 401, String(status))
-    assert.doesNotMatch(await reply.text(), /private-bearer|never-return|disabled/)
-    f.s.data = 200
-    assert.equal((await f.call('ping')).status, 401)
-    assert.equal((await f.post('/connector/token', { grant_type: 'refresh_token', client_id: f.client.client_id, refresh_token: f.tokens.refresh_token })).status, 400)
-  }
+test('profile 401 during a tool revokes the grant; a queued call never executes', async t => {
+  const f = await fixture(t)
+  f.s.data = 401
+  f.s.delay = 40
+  const statuses = (await Promise.all([1, 2].map(() => f.call('tools/call', { name: 'list_routines', arguments: {} })))).map(r => r.status)
+  assert.deepEqual(statuses, [401, 401])
+  assert.doesNotMatch(await (await f.call('ping')).text(), /private-bearer|never-return|disabled/)
+  f.s.data = 200
+  assert.equal((await f.call('ping')).status, 401)
+  assert.equal((await f.post('/connector/token', { grant_type: 'refresh_token', client_id: f.client.client_id, refresh_token: f.tokens.refresh_token })).status, 400)
+  assert.equal(f.hits('/api/data'), 1)
 })
 
-test('an admin route answering 403 is an upstream refusal like any other: grant revoked, no upstream text', async t => {
+test('profile 403 during a tool is a generic error and does not revoke', async t => {
   const f = await fixture(t)
-  const reply = await f.call('tools/call', { name: 'list_users', arguments: {} })
-  assert.equal(reply.status, 401)
-  assert.doesNotMatch(await reply.text(), /never-return|forbidden/)
-  assert.equal((await f.call('ping')).status, 401)
+  f.s.data = 403
+  const r = await f.tool('list_routines')
+  assert.deepEqual(r.data, { error: 'tool failed' })
+  assert.doesNotMatch(JSON.stringify(r), /never-return|disabled|forbidden/)
+  f.s.data = 200
+  assert.equal((await f.call('ping')).status, 200)
+  assert.equal((await f.post('/connector/token', { grant_type: 'refresh_token', client_id: f.client.client_id, refresh_token: f.tokens.refresh_token })).status, 200)
+})
+
+test('non-admin list_users is admin-only: grant kept, ping and refresh still work', async t => {
+  const f = await fixture(t)
+  const r = await f.tool('list_users')
+  assert.equal(r.isError, true)
+  assert.deepEqual(r.data, { error: 'admin only' })
+  assert.doesNotMatch(JSON.stringify(r), /never-return|forbidden/)
+  assert.equal((await f.call('ping')).status, 200)
+  assert.equal((await f.post('/connector/token', { grant_type: 'refresh_token', client_id: f.client.client_id, refresh_token: f.tokens.refresh_token })).status, 200)
 })
 
 test('calls for one user run one at a time', async t => {
@@ -292,15 +305,6 @@ test('calls for one user run one at a time', async t => {
   const replies = await Promise.all([1, 2, 3].map(() => f.tool('list_routines')))
   assert.ok(replies.every(r => r.isError === undefined))
   assert.equal(f.s.maxInflight, 1)
-})
-
-test('a call queued behind a revoking call never runs', async t => {
-  const f = await fixture(t)
-  f.s.data = 403
-  f.s.delay = 40
-  const statuses = (await Promise.all([1, 2].map(() => f.call('tools/call', { name: 'list_routines', arguments: {} })))).map(r => r.status)
-  assert.deepEqual(statuses, [401, 401])
-  assert.equal(f.hits('/api/data'), 1)
 })
 
 test('a slow tool is cut off with a generic error but keeps its slot until it settles', async t => {
