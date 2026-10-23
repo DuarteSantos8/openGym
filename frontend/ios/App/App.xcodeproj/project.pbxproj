@@ -31,6 +31,7 @@
 		AA0500000000000000000010 /* WidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0500000000000000000009 /* WidgetViews.swift */; };
 		AA0500000000000000000012 /* WidgetPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0500000000000000000011 /* WidgetPreview.swift */; };
 		AA0700000000000000000002 /* WatchBridgePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0700000000000000000001 /* WatchBridgePlugin.swift */; };
+		AA0800000000000000000002 /* HealthKitPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0800000000000000000001 /* HealthKitPlugin.swift */; };
 		AA0600000000000000000002 /* ClipCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0600000000000000000001 /* ClipCodec.swift */; };
 /* End PBXBuildFile section */
 
@@ -64,6 +65,7 @@
 		AA0500000000000000000009 /* WidgetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetViews.swift; sourceTree = "<group>"; };
 		AA0500000000000000000011 /* WidgetPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetPreview.swift; sourceTree = "<group>"; };
 		AA0700000000000000000001 /* WatchBridgePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchBridgePlugin.swift; sourceTree = "<group>"; };
+		AA0800000000000000000001 /* HealthKitPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitPlugin.swift; sourceTree = "<group>"; };
 		AA0600000000000000000001 /* ClipCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipCodec.swift; path = ../WatchCore/Sources/WatchCore/ClipCodec.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -126,6 +128,7 @@
 				AA0500000000000000000009 /* WidgetViews.swift */,
 				AA0500000000000000000011 /* WidgetPreview.swift */,
 				AA0700000000000000000001 /* WatchBridgePlugin.swift */,
+				AA0800000000000000000001 /* HealthKitPlugin.swift */,
 				AA0600000000000000000001 /* ClipCodec.swift */,
 				AA0200000000000000000007 /* PrivacyInfo.xcprivacy */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
@@ -279,6 +282,7 @@
 				AA0500000000000000000010 /* WidgetViews.swift in Sources */,
 				AA0500000000000000000012 /* WidgetPreview.swift in Sources */,
 				AA0700000000000000000002 /* WatchBridgePlugin.swift in Sources */,
+				AA0800000000000000000002 /* HealthKitPlugin.swift in Sources */,
 				AA0600000000000000000002 /* ClipCodec.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
