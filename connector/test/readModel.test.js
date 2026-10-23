@@ -143,13 +143,14 @@ test('profile A custom exercise is not visible when profile B is read afterwards
 test('stored media objects inside targets and pyramid lists never reach Claude', () => {
   const p = profile()
   p.workouts[0].entries[0].target = { sets: 2, reps: 8, img: '/exercise-media/still/1.webp', token: 'secret-token' }
-  p.routines[0].ex[0].pyramid = [8, { gif: '/exercise-media/clip/1.mp4' }]
+  p.routines[0].ex[0].pyramid = [8, 'max', '/exercise-media/clip/1.mp4', { gif: '/exercise-media/clip/2.mp4' }]
+  p.dayPlan = { [p.workouts[0].d]: { token: 'secret-override', media: '/exercise-media/still/1.webp' } }
   p.routines[0].ex[0].pyramidRest = [45, { bearer: 'abc' }]
   p.routines[0].ex[0].pyramidWeight = [100, { bytes: 'AAAA' }]
   const model = createReadModel(p)
-  const text = JSON.stringify([model.getWorkout({ workout_id: 'w1' }), model.getRoutine({ routine_id: 'fixed' })])
-  assert.doesNotMatch(text, /exercise-media|secret-token|bearer|AAAA|webp|mp4/)
-  assert.deepEqual(model.getRoutine({ routine_id: 'fixed' }).exercises[0].pyramid, [8])
+  const text = JSON.stringify([model.getWorkout({ workout_id: 'w1' }), model.getRoutine({ routine_id: 'fixed' }), model.getWeek()])
+  assert.doesNotMatch(text, /exercise-media|secret-token|secret-override|bearer|AAAA|webp|mp4/)
+  assert.deepEqual(model.getRoutine({ routine_id: 'fixed' }).exercises[0].pyramid, [8, 'max'])
 })
 
 test('a write that throws mid-indexing leaves no earlier custom exercise behind', () => {

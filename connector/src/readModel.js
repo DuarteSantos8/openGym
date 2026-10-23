@@ -98,10 +98,13 @@ function withCustomsIndexed(S, build) {
   }
 }
 
-function scalarList(value, types) {
+function scalarList(value, accept) {
   if (!Array.isArray(value) || !value.length) return undefined
-  return value.filter(item => types.includes(typeof item) && (typeof item !== 'number' || Number.isFinite(item)))
+  return value.filter(accept)
 }
+
+const finite = item => typeof item === 'number' && Number.isFinite(item)
+const repTarget = item => finite(item) || item === 'max'
 
 function plannedSets(w) {
   let n = 0
@@ -210,9 +213,9 @@ function getRoutine(S, { routine_id } = {}) {
         reps: mode === 'reps' ? (cfg.reps || 0) : undefined,
         reps_min: mode === 'reps' && cfg.repsMin != null ? cfg.repsMin : undefined,
         reps_max: mode === 'reps' && cfg.repsMax != null ? cfg.repsMax : undefined,
-        pyramid: mode === 'reps' ? scalarList(cfg.pyramid, ['string', 'number']) : undefined,
-        pyramid_rest_sec: mode === 'reps' ? scalarList(cfg.pyramidRest, ['number']) : undefined,
-        pyramid_weight: mode === 'reps' ? scalarList(cfg.pyramidWeight, ['number']) : undefined,
+        pyramid: mode === 'reps' ? scalarList(cfg.pyramid, repTarget) : undefined,
+        pyramid_rest_sec: mode === 'reps' ? scalarList(cfg.pyramidRest, finite) : undefined,
+        pyramid_weight: mode === 'reps' ? scalarList(cfg.pyramidWeight, finite) : undefined,
         sec: mode === 'time' ? (cfg.sec || 0) : undefined,
         min: mode === 'cardio' ? (cfg.min || 0) : undefined,
         speed: mode === 'cardio' ? (cfg.speed || 0) : undefined,
@@ -223,7 +226,7 @@ function getRoutine(S, { routine_id } = {}) {
         policy: policyFor(cfg, r, mode),
         policy_override: cfg.prog || null,
         superset_group: cfg.sg || null,
-        summary: exLine(cfg, unit)
+        summary: exLine({ ...cfg, pyramid: scalarList(cfg.pyramid, repTarget) }, unit)
       }
     })
   }
@@ -276,7 +279,7 @@ function getWeek(S) {
         routine_id: ids[0] ?? null,
         routine_name: ids.length ? nameOf(ids[0]) : null,
         routine_emoji: ids.length ? (S.routines.find(x => x.id === ids[0])?.emoji || null) : null,
-        override_for_today_or_null: d === todayWd ? (S.dayPlan[isoToday] ?? null) : null
+        override_for_today_or_null: d === todayWd && typeof S.dayPlan[isoToday] === 'string' ? S.dayPlan[isoToday] : null
       }
     })
   }
@@ -478,14 +481,14 @@ function previewSession(S, { routine_id, date } = {}) {
         sec: mode === 'time' ? (cfg.sec || 0) : undefined,
         min: mode === 'cardio' ? (cfg.min || 0) : undefined,
         weight: cfg.weight != null ? cfg.weight : undefined,
-        summary: exLine(cfg, unit)
+        summary: exLine({ ...cfg, pyramid: scalarList(cfg.pyramid, repTarget) }, unit)
       },
       prescription: {
         kind: plan.kind,
         weight: plan.weight != null ? plan.weight : undefined,
         reps: plan.reps != null ? plan.reps : undefined,
         sets: plan.sets != null ? plan.sets : undefined,
-        row_reps: Array.isArray(plan.rowReps) ? plan.rowReps : undefined,
+        row_reps: scalarList(plan.rowReps, finite),
         sec: plan.sec != null ? plan.sec : undefined,
         why: plan.why ? fmt(plan.why[0], plan.why.slice(1)) : null
       },
