@@ -1,5 +1,6 @@
+import ExerciseGoals from '../components/ExerciseGoals.jsx'
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { dayPhotosOf } from '../lib/day-photos.js'
 import { EXIDX, matchExercise, betterWeight, isAssisted } from '../lib/exercises.js'
@@ -412,6 +413,9 @@ export function WeeklyPlanVolume({ S }) {
 
 export default function Stats() {
   const nav = useNavigate()
+  const [search, setSearch] = useSearchParams()
+  const view = search.get('view') === 'goals' ? 'goals' : 'overview'
+  const changeView = value => setSearch(previous => { const next = new URLSearchParams(previous); next.set('view', value); return next })
   const S = useStore(s => s.S)
   const [range, setRange] = useState(90)
   // Plan's "Weekly muscle volume" row lands here (/stats?focus=weekly-volume). The router is a
@@ -642,6 +646,8 @@ export default function Stats() {
     <div className="hdr"><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
       <button className="iconbtn" onClick={() => nav('/history')} aria-label={t('History')}><Icon name="history" /></button></div>
 
+    <Segmented value={view} onChange={changeView} options={[{ value: 'overview', label: t('Overview') }, { value: 'goals', label: t('Goals') }]} />
+    {view === 'goals' ? <ExerciseGoals /> : <>
     <div className="tiles">
       <div className="tile"><div className="l"><Icon name="dumbbell" />{t('Workouts')}</div><div className="v">{workouts.length}</div></div>
       <div className="tile"><div className="l"><Icon name="calendar" />{t('This month')}</div><div className="v">{monthW}</div></div>
@@ -757,6 +763,7 @@ export default function Stats() {
         <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={() => nav('/history')}>{t('All')} {workouts.length}</Button>
       </div>
       <div className="list">{[...workouts].reverse().slice(0, 6).map(w => <WorkoutRow key={w.id} w={w} onClick={() => workoutDetailSheet(w)} />)}</div>
+    </>}
     </>}
   </>
 }
