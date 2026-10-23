@@ -13,6 +13,7 @@ import { Button } from '../components/ui.jsx'
 import AdminCoach from './AdminCoach.jsx'
 import AdminCommunity from './AdminCommunity.jsx'
 import AdminOidc from '../components/AdminOidc.jsx'
+import { useDesktop } from '../lib/use-desktop.js'
 import '../admin.css'
 
 // Admin-only operator dashboard (owner passkey + admin flag; guarded again server-side).
@@ -32,6 +33,15 @@ const rel = ts => {
   return Math.floor(s / 86400) + ' d ago'
 }
 const fmtBytes = b => (b < 1024 ? b + ' B' : b < 1048576 ? Math.round(b / 1024) + ' KB' : (b / 1048576).toFixed(1) + ' MB')
+const initials = name => String(name || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase()
+const WEEK = 7 * 86400000
+// One word per account for the desktop table: what the mobile list says in its second line.
+function StatusPill({ u }) {
+  if (u.disabled) return <span className="adm-pill bad">disabled</span>
+  if (u.live) return <span className="adm-pill acc">training now</span>
+  if (u.lastSync && Date.now() - u.lastSync < WEEK) return <span className="adm-pill ok">active</span>
+  return <span className="adm-pill">idle</span>
+}
 const dur = ms => { const m = Math.max(0, Math.floor(ms / 60000)); return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + (m % 60) + ' min' }
 
 // The one time the reset code is visible. Locked, so a tap beside the sheet cannot lose it
@@ -322,7 +332,7 @@ function InvitesCard({ invites, reload, inviteOnly }) {
   const copy = code => { navigator.clipboard?.writeText(code).catch(() => {}); toast('Copied ' + code) }
   const open = (invites || []).filter(i => !i.usedBy)
   const used = (invites || []).filter(i => i.usedBy)
-  return <div className="card">
+  return <div className="card" id="adm-invites">
     <div className="row between"><h2 style={{ margin: 0 }}>Invite codes</h2>
       <Button variant="primary" size="sm" onClick={gen} icon="plus">New code</Button></div>
     <div className="adm-lead">
@@ -429,6 +439,7 @@ export default function Admin() {
   const [inviteOnly, setInviteOnly] = useState(false)
   const [dataView, setDataView] = useState(false)
   const [trainersOn, setTrainersOn] = useState(false)
+  const desktop = useDesktop()
   const [tick, setTick] = useState(0)          // the ↻ button; the activity log listens to it
 
   // A failed load, or an answer without a list, used to leave the page on "Loading…" for good —
@@ -454,8 +465,10 @@ export default function Admin() {
   const disabledCount = (users || []).filter(u => u.disabled).length
 
   const hasBack = (window.history.state?.idx || 0) > 0
-  return <div className="narrow">
-    <div className="hdr">
+  // A wide window (lib/use-desktop.js) spreads the same cards over two columns, users as a table
+  // first (admin.css .adm-desk); the sidebar jumps to each by its id (TabBar.jsx).
+  return <div className={desktop ? 'adm-desk' : 'narrow'}>
+    <div className="hdr" id="adm-overview">
       {/* Back the way it came, like a Settings page: pushing Settings › Account made that page's own back land here again. */}
       <button className="iconbtn" data-back={(hasBack ? pathBefore() : null) || '/settings/account'}
         onClick={() => hasBack ? nav(-1) : nav('/settings/account', { replace: true })} aria-label="Back"><Icon name="chevronLeft" /></button>
@@ -496,22 +509,37 @@ export default function Admin() {
 
     {/* The Coach setup. Renders nothing at all unless the instance offers the Coach, so an admin
         page on a box that never enabled it is byte-for-byte the page it was before. */}
-    <div ref={coachRef} className="adm-coach-anchor"><AdminCoach /></div>
+    <div ref={coachRef} id="adm-coach" className="adm-coach-anchor adm-coach"><AdminCoach /></div>
 
     <InvitesCard invites={invites} reload={loadInvites} inviteOnly={inviteOnly} />
 
-    {/* Sign-in with an identity provider; nothing without OIDC_ISSUER. */}
-    <AdminOidc />
+    <div className="adm-more">
+      {/* Sign-in with an identity provider; nothing without OIDC_ISSUER. */}
+      <AdminOidc />
 
-    {/* The community library's moderation (AdminCommunity.jsx); nothing without LIBRARY=on. */}
-    <AdminCommunity tick={tick} />
+      {/* The community library's moderation (AdminCommunity.jsx); nothing without LIBRARY=on. */}
+      <AdminCommunity tick={tick} />
 
-    {trainersOn && <GymsCard users={users || []} tick={tick} />}
+      {trainersOn && <GymsCard users={users || []} tick={tick} />}
+    </div>
 
-    <div className="card">
+    <div className="card" id="adm-users">
       <h2 style={{ margin: 0 }}>Users</h2>
       <div className="adm-lead">Everyone with a profile on this instance. Tap one to see their activity, to disable the account (nothing is deleted) or to delete it with all their data for good.</div>
-      <div className="list">
+      {desktop ? <div className="adm-table">
+        <div className="adm-tr adm-th" aria-hidden="true"><span>User</span><span>Role</span><span>Status</span><span className="num">Workouts</span><span>Last workout</span><span>Last sync</span><span /></div>
+        {(users || []).map(u => <button key={u.id} className="adm-tr" onClick={() => openUser(u.id)} style={u.disabled ? { opacity: .55 } : null}>
+          <span className="adm-who"><span className={'adm-av' + (u.live ? ' live' : '')} aria-hidden="true">{initials(u.name)}</span>
+            <span className="adm-who-t"><b>{u.name}</b><span>{u.live ? 'training now' + (u.live.name ? ' · ' + u.live.name : '') : u.email || (u.hasPush ? 'push notifications on' : '')}</span></span></span>
+          <span>{u.admin ? <span className="adm-pill acc">{u.owner ? 'owner' : 'admin'}</span> : <span className="dim">member</span>}</span>
+          <span><StatusPill u={u} /></span>
+          <span className="num">{u.workouts}</span>
+          <span className="dim">{u.lastWorkout ? fmtDate(u.lastWorkout) : '–'}</span>
+          <span className="dim">{rel(u.lastSync)}</span>
+          <Icon name="chevronRight" className="chev" />
+        </button>)}
+        {users && !users.length && <div className="adm-empty">No users yet.</div>}
+      </div> : <div className="list">
         {(users || []).map(u => <div key={u.id} className="item" onClick={() => openUser(u.id)} style={u.disabled ? { opacity: .55 } : null}>
           <div className="grow"><div className="tt">{u.live && <Icon name="dot" style={{ fontSize: 9, color: 'var(--green)', display: 'inline-block', marginInlineEnd: 5 }} />}{u.name} {u.admin && <span className="adm-pill acc" style={{ marginInlineStart: 4 }}>{u.owner ? 'owner' : 'admin'}</span>}{u.disabled && <span className="adm-pill bad" style={{ marginInlineStart: 4 }}>disabled</span>}</div>
             <div className="ss">{u.live ? 'training now' + (u.live.name ? ' · ' + u.live.name : '') : u.workouts + ' workouts' + (u.lastWorkout ? ' · last ' + fmtDate(u.lastWorkout) : '') + ' · last sync ' + rel(u.lastSync)}</div>
@@ -519,9 +547,9 @@ export default function Admin() {
           {u.hasPush && <Icon name="bell" title="push notifications on" style={{ fontSize: 'var(--fs-subhead)', color: 'var(--label-3)' }} />}<Icon name="chevronRight" className="chev" />
         </div>)}
         {users && !users.length && <div className="adm-empty">No users yet.</div>}
-      </div>
+      </div>}
     </div>
 
-    <div style={{ marginTop: 14 }}><AuditCard tick={tick} owner={viewerOwner} /></div>
+    <div style={{ marginTop: 14 }} id="adm-activity" className="adm-activity"><AuditCard tick={tick} owner={viewerOwner} /></div>
   </div>
 }

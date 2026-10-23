@@ -3348,6 +3348,96 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   .hm-wrap{display:flex;flex-direction:column;align-items:center}
 }
 
+/* ------------------------------------------- desktop sidebar (≥1100px) --- */
+/* A wide window turns the tab bar into a sidebar on the left (TabBar.jsx `desktop`, the width
+   is lib/use-desktop.js). App.jsx sets body.has-side while it is on screen, so the sign-in and
+   first-launch screens, which have none, keep the centred layout. The page moves right by the
+   sidebar's width, and everything pinned to the window — sheets, the rest bar, the toast, the
+   chat's composer, the connection bar — centres on what is left instead of on the window. */
+@media (min-width:1100px){
+  body.has-side{--side:240px}
+  body.has-side #app{max-width:none;margin:0;padding:calc(var(--conn) + 32px) 40px calc(48px + var(--sab)) calc(var(--side) + 40px)}
+  body.has-side.resting #app{padding-bottom:calc(140px + var(--sab))}
+  body.has-side #app>.page{max-width:1200px;margin:0 auto}
+  body.has-side .conn-bar{inset-inline-start:var(--side)}
+  body.has-side .sheet{margin-left:calc(var(--side) / 2 - 320px)}
+  body.has-side #toast{left:calc(50% + var(--side) / 2);bottom:calc(32px + var(--sab))}
+  body.has-side .composer{left:var(--side)}
+  body.has-side #timer{
+    margin-left:calc(var(--side) / 2 - 260px);bottom:16px;border-radius:var(--r-xl);padding-bottom:10px;
+    box-shadow:0 12px 40px -10px rgba(0,0,0,.5)
+  }
+
+  body.has-side #tabbar{
+    inset:0 auto 0 0;transform:none;width:var(--side);
+    flex-direction:column;justify-content:flex-start;align-items:stretch;gap:2px;
+    padding:calc(var(--sat) + 16px) 12px calc(16px + var(--sab));overflow-y:auto;
+    background:var(--bg);-webkit-backdrop-filter:none;backdrop-filter:none;
+    border:0;border-inline-end:var(--hair) solid var(--sep);border-radius:0;box-shadow:none;
+  }
+  body.has-side #tabbar button{
+    flex:none;flex-direction:row;align-items:center;gap:11px;min-height:40px;padding:0 10px;margin:0;
+    border-radius:10px;font-size:15px;font-weight:500;letter-spacing:-.01em;color:var(--label-2);text-align:start;
+  }
+  body.has-side #tabbar button .icn{font-size:20px;--icon-stroke:1.8;color:inherit;opacity:1}
+  body.has-side #tabbar button:hover{background:var(--surface);color:var(--label)}
+  body.has-side #tabbar button.on{background:var(--surface);color:var(--label);font-weight:600}
+  body.has-side #tabbar button.on .icn{color:var(--acc)}
+  body.has-side #tabbar .tab-dot{box-shadow:0 0 0 2px var(--bg)}
+
+  /* Start / Resume: the round button over the bar becomes the first, filled row */
+  body.has-side #tabbar button.start{order:-1;min-height:46px;margin:6px 0 12px;background:var(--acc);color:var(--on-acc)}
+  body.has-side #tabbar button.start:hover{background:var(--acc);filter:brightness(1.08)}
+  body.has-side #tabbar button.start .cir{width:auto;height:auto;background:none;box-shadow:none;color:inherit}
+  body.has-side #tabbar button.start .cir .icn{font-size:18px}
+  body.has-side #tabbar button.start span{color:inherit}
+  body.has-side #tabbar button.start.rec,
+  body.has-side #tabbar button.start.rec:hover{background:var(--orange);color:#000}
+  body.has-side #tabbar button.start.rec .cir{background:none;box-shadow:none;color:inherit}
+  body.has-side #tabbar button.start.rec .cir::after{display:none}
+  body.has-side #tabbar button.start.on{box-shadow:inset 0 0 0 2px rgba(0,0,0,.22);box-shadow:inset 0 0 0 2px color-mix(in srgb,#000 22%,transparent)}
+
+  .side-brand{order:-2;display:flex;align-items:center;gap:10px;padding:2px 8px 8px;font-size:17px;font-weight:700;letter-spacing:-.02em}
+  .side-logo{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:var(--acc);color:var(--on-acc);font-size:19px;--icon-stroke:2}
+  .side-gap{flex:1 0 24px}
+  body.has-side #tabbar button.side-sub{min-height:32px;padding-inline-start:41px;font-size:13.5px}
+
+  /* Home as a dashboard (views/Home.jsx `desktop`): two columns, the year's heatmap below */
+  .home-cols{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px;align-items:start}
+
+  /* The running workout in three columns (views/Workout.jsx `desktop`): the exercises on the
+     left, the current one with its header in the middle, the rest bar and a running tally on the
+     right. Both side columns stay in view while the middle scrolls (List view). */
+  .wo-desk{display:grid;grid-template-columns:250px minmax(0,1fr) 290px;gap:24px;align-items:start}
+  .wo-left,.wo-right{position:sticky;top:calc(var(--conn) + 24px);display:flex;flex-direction:column;gap:12px;min-width:0}
+  .wo-main{min-width:0}
+  .wlist{display:flex;flex-direction:column;gap:2px}
+  .wlist-row{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border-radius:var(--r);text-align:start}
+  .wlist-row:hover{background:var(--surface)}
+  .wlist-row.cur{background:var(--surface)}
+  .wlist-row .wchip{flex:none}
+  .wlist-row>.icn{flex:none;font-size:13px;color:var(--label-3)}
+  .wlist-t{display:flex;flex-direction:column;min-width:0;flex:1}
+  .wlist-t b{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:capitalize}
+  .wlist-t span{font-size:12.5px;color:var(--label-2)}
+  .wo-sum{margin:0;padding:6px 16px}
+  .wo-sum>div{display:flex;justify-content:space-between;gap:12px;padding:10px 0;font-size:14px;border-bottom:var(--hair) solid var(--sep)}
+  .wo-sum>div:last-child{border-bottom:0}
+  .wo-sum span{color:var(--label-2);flex:none}
+  .wo-sum b{font-weight:600;text-align:end;min-width:0;overflow-wrap:anywhere;text-transform:capitalize}
+  .wo-timer:empty{display:none}
+  /* The rest bar in its column: a card in the flow instead of a bar over the page. Two ids, so it
+     outranks every floating #timer rule above whatever their body classes. */
+  #app .wo-timer #timer{
+    position:relative;inset:auto;margin:0;width:auto;transform:none;
+    flex-direction:column;align-items:stretch;gap:12px;padding:16px;
+    border-radius:var(--r-card);box-shadow:none;
+  }
+  #app .wo-timer #timer .tclock{align-items:center}
+  #app .wo-timer #timer .t{font-size:40px}
+  #app .wo-timer #timer .acts{justify-content:space-between;flex-wrap:wrap}
+}
+
 /* ------------------------------------------------------- gym check-in -- */
 /* Mobile-only feature (views/CheckIn.jsx): saved membership codes shown as QR, swiped
    through horizontally. The rail is a scroll-snap track — one card per viewport, no JS

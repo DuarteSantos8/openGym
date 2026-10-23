@@ -317,6 +317,10 @@ export const useUI = create((set, get) => ({
   autoSay: '',         // what the count-in last said, for a screen reader (RestTimer.jsx, a polite live region)
   timerFlashId: 0,     // changing the id retriggers the theme-blink visual alert
   bindAuto(h) { return bindAuto(h) },   // the workout screen's hooks for holds that run themselves
+  // Where the rest bar draws itself instead of over the page: the workout's right-hand column on
+  // a wide window (Workout.jsx), null everywhere else. Set through a ref, so it follows the mount.
+  timerSlot: null,
+  setTimerSlot: el => set(s => (s.timerSlot === el ? s : { timerSlot: el })),
 
   flashTimer() {
     if (!useStore.getState().S.timerFlash) return

@@ -159,3 +159,34 @@
 .adm-tip{display:flex;gap:8px;align-items:flex-start}
 .adm-tip svg{flex:none;color:var(--yellow);margin-top:2px}
 .adm-tip a{color:var(--acc)}
+
+/* ---------- wide window (views/Admin.jsx `desktop`) ---------- */
+/* Users as a table across the top, the activity log and the invite codes side by side under it,
+   the Coach setup last. `order` moves the cards; the page keeps its phone order in the DOM. */
+.adm-desk{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);column-gap:16px;align-items:start}
+.adm-desk>*{grid-column:1/-1;min-width:0}
+.adm-desk>.tiles{margin-bottom:12px}
+.adm-desk>#adm-users{order:1}
+.adm-desk>.adm-activity{order:2;grid-column:1;margin-top:0 !important}
+.adm-desk>#adm-invites{order:3;grid-column:2}
+.adm-desk>.adm-coach{order:4}
+.adm-desk>.adm-more{order:5}
+.adm-desk [id^="adm-"]{scroll-margin-top:24px}
+
+.adm-table{margin:0 -16px -16px;border-top:var(--hair) solid var(--sep)}
+.adm-tr{
+  display:grid;grid-template-columns:minmax(220px,2.4fr) 92px 120px 84px 120px 100px 20px;
+  align-items:center;column-gap:14px;width:100%;min-height:60px;padding:8px 16px;
+  border-bottom:var(--hair) solid var(--sep);text-align:start;font-size:14px;cursor:pointer
+}
+.adm-tr:last-child{border-bottom:0}
+.adm-tr:not(.adm-th):hover{background:var(--surface-2)}
+.adm-th{min-height:38px;font-size:12.5px;font-weight:500;color:var(--label-2);cursor:default}
+.adm-tr .num{text-align:end;font-weight:600}
+.adm-tr .chev{color:var(--label-3);font-size:14px}
+.adm-who{display:flex;align-items:center;gap:10px;min-width:0}
+.adm-who-t{display:flex;flex-direction:column;min-width:0}
+.adm-who-t b{font-weight:600}
+.adm-who-t span{font-size:12.5px;color:var(--label-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adm-av{width:32px;height:32px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:12px;font-weight:600;background:var(--surface-3)}
+.adm-av.live{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--acc)}

@@ -18,7 +18,9 @@ import { t } from '../lib/i18n.js'
 // Functions, so each word is a literal t() call the string checks can see.
 const STATE_WORD = { done: () => t('Finished'), partial: () => t('Started'), todo: () => t('Not started yet') }
 
-export default function WorkoutChips({ entries, cur, onPick }) {
+// `list`: the same chips as a column of rows with the exercise names and how many sets are done,
+// for the workout's left-hand column on a wide window (Workout.jsx). Same states, same onPick.
+export default function WorkoutChips({ entries, cur, onPick, list = false }) {
   const strip = useRef(null)
   const chips = exerciseChips(entries, cur)
   const curKey = chips.find(c => c.current)?.key
@@ -30,6 +32,18 @@ export default function WorkoutChips({ entries, cur, onPick }) {
     if (chip) revealChip(el, chip)
   }, [curKey, chips.length])
   if (!chips.length) return null
+  if (list) return <nav className="wlist" aria-label={t('Exercises in this workout')}>
+    {chips.map(c => {
+      const names = c.unit.map(idx => exerciseNameText(exOr(entries[idx].id))).join(' + ')
+      const sets = c.unit.flatMap(idx => entries[idx].sets)
+      return <button key={c.key} type="button" className={'wlist-row' + (c.current ? ' cur' : '')}
+        aria-current={c.current ? 'step' : undefined} onClick={() => onPick(c)}>
+        <span className={'wchip ' + c.state + (c.current ? ' cur' : '')} aria-hidden="true"><span>{c.n}</span></span>
+        <span className="wlist-t"><b>{names}</b><span>{STATE_WORD[c.state]()} · {sets.filter(s => s.done).length}/{sets.length}</span></span>
+        {c.unit.length > 1 && <Icon name="link" />}
+      </button>
+    })}
+  </nav>
   return <nav ref={strip} className="chips wchips" aria-label={t('Exercises in this workout')}>
     {chips.map(c => {
       const names = c.unit.map(idx => exerciseNameText(exOr(entries[idx].id))).join(' + ')

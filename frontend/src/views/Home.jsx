@@ -13,6 +13,7 @@ import { startOrPreview, startPickerSheet } from '../components/StartSheets.jsx'
 import { daySessionsStatus } from '../lib/day-sessions.js'
 import { deriveSessionName } from '../lib/session-merge.js'
 import LineChart from '../components/LineChart.jsx'
+import Heatmap from '../components/Heatmap.jsx'
 import Icon from '../components/Icon.jsx'
 import CardHead from '../components/CardHead.jsx'
 import QueueRow from '../components/QueueRow.jsx'
@@ -37,6 +38,7 @@ import RecoveryHint from '../components/RecoveryHint.jsx'
 import { FastingLine } from '../components/SisterApps.jsx'
 import { ChallengesCard } from '../components/Challenges.jsx'
 import { isOn } from '../lib/modules.js'
+import { useDesktop } from '../lib/use-desktop.js'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -46,6 +48,7 @@ export default function Home() {
   // The banner switched off and the sync stuck: a dot on the gear (Settings → Show connection status).
   const trouble = useConnectionTrouble()
   const [weekOffset, setWeekOffset] = useState(0)
+  const desktop = useDesktop()
 
   const today = new Date()
   // A weekday can hold several routines. `todayRoutines` is the whole day; `routine` is the
@@ -134,14 +137,15 @@ export default function Home() {
   const apartSessions = S.active ? [] : daySessionsStatus(S, todayISO()).filter(x => x.routines.length)
   const splitDay = apartSessions.length > 1
 
-  return <div className="narrow">
+  const header = <>
     <div className="hdr">
       <SeasonDeco spot="header-bats" />
       <div><h1>{user ? t('Hi {0}', user.name) : 'openGym'}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
       <button className="iconbtn" data-tour="settings-gear" onClick={() => nav('/settings')} aria-label={trouble ? t('Settings') + ', ' + t('Connection problem') : t('Settings')}><Icon name="gear" />{trouble && <span className="tab-dot" aria-hidden="true" />}</button>
     </div>
     <TrainerNotice />
-
+  </>
+  const weekCard = <>
     <div className="card">
       {/* A running programme (lib/programmes.js) wrote this week's plan: where it stands, one tap from its screen. */}
       {progChip && <button type="button" className="chip ichip prog-chip" onClick={() => nav('/plan/programmes')}><Icon name="calendar" /><span>{progChip}</span></button>}
@@ -220,6 +224,8 @@ export default function Home() {
       <SeasonDeco spot="home-hero" />
     </div>
 
+  </>
+  const noticeCards = <>
     {/* Monday: Your week; the 1st: Your month (lib/recap.js). Off in Settings → Look & Home. */}
     <RecapHomeCard S={S} />
 
@@ -238,6 +244,8 @@ export default function Home() {
     {/* This month's three challenges and how far you are (lib/challenges.js). */}
     <ChallengesCard S={S} />
 
+  </>
+  const checkInCard = <>
     {/* Jump to the gym check-in cards (QR membership codes). Shown here as a quick tap on
         arrival at the gym; folds away per user via the "Gym check-in" switch in Settings. */}
     {on('checkin') && (
@@ -247,6 +255,8 @@ export default function Home() {
       </div>
     )}
 
+  </>
+  const welcomeCard = <>
     {!S.routines.length && !S.active && (
       <div className="card">
         <CardHead icon="calendar" title={t('Welcome!')} sub={t('Set up your weekly routine to get going, or grab a ready-made starter plan.')} />
@@ -255,6 +265,8 @@ export default function Home() {
       </div>
     )}
 
+  </>
+  const weightCard = <>
     {/* A new profile picks how forgiving its streak is, once, right under the plan it starts with
         (components/StreakRule.jsx). */}
     {on('motivation') && S.streakRuleAsk === true && !S.streakRule && <StreakRuleWelcome />}
@@ -297,6 +309,8 @@ export default function Home() {
       </>}
     </div>}
 
+  </>
+  const streakCard = <>
     {/* The streak opens its calendar from its text (CardHead open); the weekly-sets line and the
         party banner are buttons of their own beside it, not inside a card that is a button. */}
     {on('motivation') ? <div className="card tap-host streak-card">
@@ -315,5 +329,34 @@ export default function Home() {
     </div>
       // Motivation off: no streak card, but the weekly sets line it carried keeps a card of its own.
       : S.homeMuscleSets === true && <div className="card wsets-solo"><WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?section=lifts')} /></div>}
+  </>
+
+  // A wide window (lib/use-desktop.js) lays the same cards out as a dashboard: what to do and the
+  // body weight on the left, the streak and check-in beside them, and the year of training, the
+  // one chart Stats leads with, across the bottom. A phone keeps the single column, in its order.
+  if (desktop) return <div className="home-desk">
+    {header}
+    {welcomeCard}
+    <div className="home-cols">
+      <div className="home-col">{weekCard}{noticeCards}{weightCard}</div>
+      <div className="home-col">{streakCard}{checkInCard}</div>
+    </div>
+    {S.workouts.length > 0 && <div className="card">
+      <h2>{t('Activity (last 12 months)')}</h2>
+      <Heatmap S={S}
+        metric={S.heatmapMetric === 'vol' ? 'vol' : 'time'}
+        onMetricChange={metric => useStore.getState().update(s => { s.heatmapMetric = metric })}
+        onDay={iso => calendarSheet(iso)} />
+    </div>}
+  </div>
+
+  return <div className="narrow">
+    {header}
+    {weekCard}
+    {noticeCards}
+    {checkInCard}
+    {welcomeCard}
+    {weightCard}
+    {streakCard}
   </div>
 }

@@ -6,9 +6,17 @@ import { todayISO } from '../lib/format.js'
 import { dayApart, nextSessionIds } from '../lib/day-sessions.js'
 import { t } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
+import BrandLogo from './BrandLogo.jsx'
 import Elapsed from './Elapsed.jsx'
 import { useConnectionTrouble } from './SyncBanner.jsx'
 import { retapTab } from '../lib/scroll-top.js'
+import { coachAvailable } from '../lib/coach.js'
+import { DEMO } from '../lib/demo.js'
+import { MOBILE } from '../lib/mobile.js'
+
+// The Admin page's cards, reachable from the sidebar while it is open (views/Admin.jsx ids).
+// The dashboard is English-only, so are these.
+const ADMIN_SECTIONS = [['adm-overview', 'Overview'], ['adm-users', 'Users'], ['adm-invites', 'Invite codes'], ['adm-coach', 'Coach'], ['adm-activity', 'Activity log']]
 
 // Module scope, not TabBar's render body. Declared inside it, `Tab` was a new function on every
 // render, so React saw a different component type each time and threw the button away and built a
@@ -25,7 +33,7 @@ function Tab({ active, icon, label, onClick, dot, tour }) {
 // How long a press on Start is held before it opens the picker instead (#930).
 export const START_HOLD_MS = 450
 
-export default function TabBar({ onStart, onPick }) {
+export default function TabBar({ onStart, onPick, desktop = false }) {
   const nav = useNavigate()
   const hold = useRef(null)
   const loc = useLocation()
@@ -35,12 +43,15 @@ export default function TabBar({ onStart, onPick }) {
   // With the connection banner switched off, a sync problem shows as a dot on Home, the tab
   // Settings lives under (#369, #330).
   const trouble = useConnectionTrouble()
+  const config = useStore(s => s.config)
+  const coachMode = useStore(s => s.coachLocal?.mode)
   if (!user && !isGuest) return null
   const cur = loc.pathname.split('/')[1] || 'home'
   // A screen without a tab of its own lights the tab it is opened from (Muscles from both).
   const PARENT = { history: 'stats', 'structural-balance': 'stats', tools: 'stats', 'progress-photos': 'stats', measurements: 'stats', settings: 'home', checkin: 'home', muscles: 'library', trainer: 'home' }
   const parent = cur === 'muscles' && loc.state?.from === '/stats' ? 'stats' : PARENT[cur]
-  const on = k => cur === k || parent === k
+  // The sidebar has rows of its own for Settings and Check in, so they do not light Home there.
+  const on = k => cur === k || (parent === k && !(desktop && (cur === 'settings' || cur === 'checkin')))
 
   // Root tabs are peers, not another level to unwind with Android Back. The tab you are already
   // on takes you to the top of its page instead (lib/scroll-top.js).
@@ -81,7 +92,7 @@ export default function TabBar({ onStart, onPick }) {
 
   return (
     <nav id="tabbar">
-      <Tab active={on('home')} icon="house" label={t('Home')} dot={trouble} onClick={() => switchTab('/home')} tour="tab-home" />
+      <Tab active={on('home')} icon="house" label={t('Home')} dot={trouble && !desktop} onClick={() => switchTab('/home')} tour="tab-home" />
       <Tab active={on('plan')} icon="calendar" label={t('Plan')} onClick={() => switchTab('/plan')} tour="tab-plan" />
       {/* On the workout screen itself there is nothing to resume, so the button reads as the
           tab it is and stays lit (#29); anywhere else it brings you back to the exercise you
@@ -100,6 +111,19 @@ export default function TabBar({ onStart, onPick }) {
       </button>
       <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => switchTab('/stats')} tour="tab-stats" />
       <Tab active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => switchTab('/library')} tour="tab-library" />
+      {/* Wide windows only: the tab bar is a sidebar there (index.css, "desktop sidebar"), with
+          room for what a phone reaches through Home's gear, Plan's header and the cards. */}
+      {desktop && <>
+        <div className="side-brand"><BrandLogo size={20} /></div>
+        {coachAvailable(config, user, { demo: DEMO, mobile: MOBILE, coachMode }) &&
+          <Tab active={cur === 'coach'} icon="sparkles" label={t('Coach')} onClick={() => nav('/coach')} />}
+        <div className="side-gap" />
+        {S.checkIn !== false && <Tab active={cur === 'checkin'} icon="qr" label={t('Check in')} onClick={() => nav('/checkin')} />}
+        {user?.admin && <Tab active={cur === 'admin'} icon="shield" label="Admin" onClick={() => nav('/admin')} />}
+        {cur === 'admin' && ADMIN_SECTIONS.map(([id, label]) =>
+          <button key={id} className="side-sub" onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>{label}</button>)}
+        <Tab active={cur === 'settings'} icon="gear" label={t('Settings')} dot={trouble} onClick={() => nav('/settings')} />
+      </>}
     </nav>
   )
 }
