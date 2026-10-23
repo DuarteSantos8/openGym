@@ -36,6 +36,23 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
+// The room the page keeps for the bar (body.resting) is there in the layout the bar first shows
+// in. A layout effect that runs after the bar's reads it: one that came a frame later would not.
+describe('rest timer bar: the room at the bottom of the page', () => {
+  it('is there before the first frame with the bar is drawn, and goes with the bar', () => {
+    const seen = []
+    function Probe() {
+      const on = useUI(s => !!s.work)
+      React.useLayoutEffect(() => { seen.push([on, document.body.classList.contains('resting')]) }, [on])
+      return null
+    }
+    act(() => root.render(<><RestTimer /><Probe /></>))
+    act(() => { useUI.getState().startWork(30, 'Plank', vi.fn()) })
+    act(() => { useUI.getState().stopWork() })
+    expect(seen).toEqual([[false, false], [true, true], [false, false]])
+  })
+})
+
 // The label under the clock says what the rest leads into, and names no exercise: it is only as
 // wide as the clock.
 describe('rest timer bar: what it is timing', () => {
