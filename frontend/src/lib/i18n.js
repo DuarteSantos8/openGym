@@ -80,6 +80,9 @@ export async function setLang(l, showEn, enOnly) {
   notify()
 }
 
+/** Called after every language change (the Apple Watch link sends the watch its new words). */
+export function onLangChange(fn) { subs.add(fn); return () => subs.delete(fn) }
+
 // Re-renders the subscribing component (and its children) whenever the language changes.
 export function useLang() {
   return useSyncExternalStore(fn => { subs.add(fn); return () => subs.delete(fn) }, getVersion)

@@ -266,11 +266,17 @@ test('an abort that lands during a retry pause sends nothing more and ends as a 
   assert.equal(r.timedOut, true);
 });
 
-test('a body that is not JSON on an error still yields a readable stderr', async () => {
+test('a body that is not JSON on an error yields its status, never the body itself', async () => {
   const f = fakeFetch([{ status: 502, body: '<html>bad gateway</html>' }]);
   const r = await gemini.invoke({ cfg: {}, prompt: 'P', env, fetch: f });
   assert.equal(r.code, 1);
-  assert.match(r.stderr, /^502 .*bad gateway/);
+  assert.match(r.stderr, /^502 \(the endpoint sent no error message\)$/);
+  // The model list too: an admin pointing a compatible endpoint at a page inside the network
+  // learns the status, not the page.
+  const g = fakeFetch([{ status: 403, body: 'router admin: secret-ssid' }, { status: 403, body: 'router admin: secret-ssid' }]);
+  const m = await compatible.models(cfgCompat, {}, { fetch: g });
+  assert.equal(m.ok, false);
+  assert.doesNotMatch(m.error, /secret/);
 });
 
 test('an answer cut off at the output limit fails as "provider", not as a half-parsed proposal', async () => {

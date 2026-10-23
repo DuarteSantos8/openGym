@@ -33,6 +33,10 @@ export function setAccessHeaders(h, origin) { accessHeaders = Object.assign({}, 
 const originOf = base => { try { return new URL(base).origin } catch { return '' } }
 const accessFor = base => (base && accessOrigin && originOf(base) === accessOrigin ? accessHeaders : {})
 const remoteHeaders = () => Object.assign({}, accessFor(remoteBase), remoteToken ? { Authorization: 'Bearer ' + remoteToken } : {})
+// The paired server and what a request to it carries (the token, an Access service token for that
+// origin), for the phone's background check (lib/nudge-check.js), which runs with no WebView and
+// so has to be handed them. null when this is not a paired phone.
+export const remoteAuth = () => (remoteBase && remoteToken ? { base: remoteBase, headers: remoteHeaders() } : null)
 
 export { appBase }
 
