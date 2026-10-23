@@ -8,8 +8,9 @@ import { isWarmupRow } from './workout-model.js'
 import { nextPrescription, applyPrescription, defaultIncrement, weightIncrement, plannedOf } from './progression.js'
 import { dropGrid } from './plates.js'
 import { backoffStepOf, applyBackoff } from './backoff.js'
-import { dbLoadFor, historyAs, ownedWeightsFor } from './dumbbells.js'
+import { dbLoadFor, historyAs, ownedWeightsFor, withMeaning } from './dumbbells.js'
 import { isAssisted } from './exercises.js'
+import { sessionHistory } from './backfill.js'
 
 /**
  * Where a planned session's reps come from (Settings → During a workout). 'plan', the default:
@@ -110,6 +111,22 @@ export function plannedConfigOf(entry) {
  * an entry whose routine is itself kept out is built that way.
  */
 export const builtOutOfProgression = (entry, routine) => entry?.noProg === true && routine?.excludeFromProgression === true
+
+/**
+ * An exercise added to or swapped into a running session, beside `slot`. A planned slot builds
+ * it the way its routine would; freestyle reproduces what you did last time, so swapping barbell
+ * for dumbbell bench does not start you at an empty bar. Read from before the session's day when
+ * it is logged into the past (sessionHistory).
+ */
+export function buildSessionEntry(st, id, cfg, routine, slot) {
+  const full = { ...cfg, id }
+  const past = sessionHistory(st)
+  if (routine) return buildPlannedEntry(past, full, routine, { noProg: builtOutOfProgression(slot, routine) })
+  // Freestyle stamps the meaning of a dumbbell weight and reads last time in it, the way
+  // buildPlannedEntry does for a planned exercise (lib/dumbbells.js).
+  const step = modeOf(full) === 'reps' ? (ownedWeightsFor(st, full) || weightIncrement(full, st.unit)) : defaultIncrement(id, st.unit)
+  return { target: withMeaning(st, cfg, id), plan: null, sets: applyIntensifierPlan(buildSets(historyAs(past, id, dbLoadFor(st, full)), full, { step, preferLast: true }), full, dropGrid(st, full)) }
+}
 
 // Returns a bare array of session entries. "Excluded from progression" is per-entry now
 // (`entry.noProg`, written only when true) rather than a wrapper flag — a rehab routine merged
