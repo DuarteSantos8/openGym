@@ -1550,6 +1550,10 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
   animation:pop .28s var(--ease);
 }
 :root[data-theme="light"] .center{background:#fff}
+/* a dialog with real content in it (the workout summary) takes the width of the phone */
+.center.wide{width:min(94vw,440px);padding:18px}
+.fin-x{position:sticky;top:0;z-index:2;height:0;display:flex;justify-content:flex-end}
+.fin-x .iconbtn{margin:-6px -6px 0 0}
 /* a dialog with a field centres in what the Android 15 keyboard leaves */
 :root[data-native-kb] .center{
   top:calc((100% - var(--native-kb)) / 2);
@@ -1717,6 +1721,12 @@ button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
 .tile .l .icn{font-size:14px;color:var(--label)}
 .tile .v{font-size:26px;font-weight:600;letter-spacing:-.026em;margin-top:5px;line-height:1.1}
 .tile.tappable:active{background:var(--surface-2)}
+/* the workout summary: time and volume share the first row, sets get the wider cell of the second
+   because "15 sets · 15 work" does not fit a half */
+.center .tiles.fin{grid-template-columns:repeat(6,1fr)}
+.tiles.fin .tile{grid-column:span 3;min-width:0}
+.tiles.fin .tile.wide{grid-column:span 4}
+.tiles.fin .tile.narrow{grid-column:span 2}
 
 /* --- PR badge --- */
 .pr{
@@ -1953,6 +1963,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   #tabbar button.start{margin-top:-26px}
   .sheet{left:50%;right:auto;margin-left:-320px;width:640px;border-radius:var(--r-xl) var(--r-xl) 0 0}
   .center{width:340px}
+  .center.wide{width:440px}
   #timer{left:50%;right:auto;margin-left:-260px;width:520px;bottom:112px}
   body.no-tabbar #timer{left:50%;right:auto;bottom:16px;border-radius:var(--r-xl);padding-bottom:10px;box-shadow:0 12px 40px -10px rgba(0,0,0,.5)}
   .exmedia img,.exmedia video{height:380px}
