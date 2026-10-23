@@ -214,8 +214,15 @@ export const exerciseNameFor = ex => {
   return translated.toLocaleLowerCase(lang) === ex.n.toLocaleLowerCase('en')
       || !enParens
     ? translated
-    : `${translated} (${ex.n})`
+    : `${translated} ${englishInParens(ex.n)}`
 }
+
+// In a right-to-left language the English title in brackets is a left-to-right run inside
+// right-to-left text. Left loose, its closing bracket took the paragraph's direction wherever the
+// name broke across two lines, and the second line began with it turned round: "(Lunge". A
+// first-strong isolate (U+2068 … U+2069) lays the brackets out with the words they hold. The marks
+// are invisible and travel with the name to the watch, the widgets and Apple Health.
+const englishInParens = n => (RTL_LANGS.has(baseLang(lang)) ? `\u2068(${n})\u2069` : `(${n})`)
 
 // Exercise-name packs written in the language's own casing. German capitalises its nouns and
 // lower-cases the adjectives in front of them ("Assistiertes hängendes Knieheben"), which
