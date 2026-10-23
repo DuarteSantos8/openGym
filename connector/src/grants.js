@@ -1,6 +1,6 @@
 import crypto from 'node:crypto'
 import { openBearer } from './openGymSession.js'
-import { ACCESS_TTL_MS, CODE_TTL_MS, GRANT_MAX_MS, REFRESH_TTL_MS, redirectAllowed, pkceChallengeOk } from './oauth.js'
+import { ACCESS_TTL_MS, AUTH_TTL_MS, CODE_TTL_MS, GRANT_MAX_MS, REFRESH_TTL_MS, redirectAllowed, pkceChallengeOk } from './oauth.js'
 
 export class GrantError extends Error {
   constructor(code) {
@@ -70,7 +70,8 @@ export function createGrants({
     const live = new Set([...grants.values(), ...codes.values()].map(r => r.clientId))
     const ts = t()
     for (const [id, c] of clients) {
-      if (!live.has(id) && ts - c.created >= CLIENT_IDLE_MS) { clients.delete(id); return }
+      if (live.has(id) || (c.pin && ts < c.pin)) continue
+      if (ts - c.created >= CLIENT_IDLE_MS) { clients.delete(id); return }
     }
     fail('temporarily_unavailable')
   }
@@ -94,6 +95,7 @@ export function createGrants({
     if (!c || typeof redirectUri !== 'string' || !c.redirect_uris.includes(redirectUri)) fail('invalid_client')
     if (codeChallengeMethod !== undefined && codeChallengeMethod !== 'S256') fail('invalid_request')
     if (typeof codeChallenge !== 'string' || !TOKEN.test(codeChallenge)) fail('invalid_request')
+    c.pin = t() + AUTH_TTL_MS
   }
 
   function issueAuthorizationCode({ connectionId, clientId, redirectUri, codeChallenge, codeChallengeMethod } = {}) {
@@ -102,8 +104,9 @@ export function createGrants({
       if (typeof connectionId === 'string' && !bound.has(connectionId)) connections.delete(connectionId)
       fail(e.code === 'invalid_client' ? 'invalid_request' : e.code)
     }
-    const conn = typeof connectionId === 'string' && connections.has(connectionId) ? connections.get(connectionId) : null
-    if (!conn || typeof conn.userId !== 'string' || !conn.userId || bound.has(connectionId)) {
+    if (typeof connectionId === 'string' && bound.has(connectionId)) fail('invalid_grant')
+    const conn = typeof connectionId === 'string' ? connections.get(connectionId) : null
+    if (!conn || typeof conn.userId !== 'string' || !conn.userId) {
       if (typeof connectionId === 'string') connections.delete(connectionId)
       fail('invalid_grant')
     }

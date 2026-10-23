@@ -67,8 +67,10 @@ test('PKCE S256 and exact registered redirect are mandatory', () => {
 test('a connection backs one code only, and the code expires after one minute', () => {
   const { grants, client, connect, code, exchange, advance } = fixture()
   const id = connect()
-  code(id)
+  const first = code(id)
   assert.throws(() => code(id), /invalid_grant/)
+  const tokens = exchange(first)
+  assert.ok(tokens.access_token, 'duplicate issue must not delete the connection the first code needs')
   const late = code()
   advance(60_000)
   assert.throws(() => exchange(late), /invalid_grant/)
@@ -237,6 +239,18 @@ test('authorize never redirects on a bad request and sets no cookie; a failed co
     assert.equal((await post('/connector/token', { grant_type: 'password', client_id: client.client_id })).status, 400)
     assert.equal((await fetch(`${base}/connector/token`, { method: 'POST', body: 'grant_type=refresh_token' })).status, 400, 'content-type is required')
   } finally { await new Promise(r => server.close(r)); await new Promise(r => upstream.api.close(r)) }
+})
+
+test('checkAuthorizeRequest pins an old client through the cookie lifetime; idle can be reclaimed after', () => {
+  const { grants, client, advance } = fixture({ maxClients: 1 })
+  advance(3_600_000 + 1)
+  grants.checkAuthorizeRequest({ clientId: client.client_id, redirectUri: callback, codeChallenge: challenge, codeChallengeMethod: 'S256' })
+  assert.throws(() => grants.registerClient({ redirect_uris: [callback] }), /temporarily_unavailable/)
+  grants.checkAuthorizeRequest({ clientId: client.client_id, redirectUri: callback, codeChallenge: challenge, codeChallengeMethod: 'S256' })
+  advance(5 * 60_000)
+  const next = grants.registerClient({ redirect_uris: [callback] })
+  assert.notEqual(next.client_id, client.client_id)
+  assert.throws(() => grants.checkAuthorizeRequest({ clientId: client.client_id, redirectUri: callback, codeChallenge: challenge, codeChallengeMethod: 'S256' }), /invalid_client/)
 })
 
 test('hostile registration cannot delete a live client or its grant', async () => {
