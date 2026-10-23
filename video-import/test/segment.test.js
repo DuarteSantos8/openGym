@@ -233,3 +233,31 @@ test('a side in brackets or a set counter ends a caption; short small-letter deb
   // Mixed case is left alone: its small words are words.
   assert.equal(cleanCaption('Push up to Down Dog'), 'Push up to Down Dog')
 })
+
+test('a styled NEXT label OCR reads as NXT, NXTI, NXTH or NXTT still announces the move after it (Y2eOW7XYWxc)', async () => {
+  const { restOf } = await import('../src/text.js')
+  for (const label of ['NXT', 'NXTI', 'NXTH', 'NXTT', 'NXTL', 'NXT I']) {
+    const r = restOf(`${label} PLANK HAND WALK`)
+    assert.equal(r.rest, true, label)
+    assert.match(r.next, /plank hand walk$/, label)
+  }
+  // Ordinary words that merely start with the same letters are not a label.
+  assert.equal(restOf('NXTREME SQUATS').rest, false)
+  assert.equal(restOf('NEXT LEVEL BURPEES').next, 'level burpees')
+})
+
+test('one move read two ways in two rounds is one move; moves that only share their kit are not (zBTz636KeMA)', async () => {
+  const { sameName } = await import('../src/text.js')
+  assert.ok(sameName('lunge combo dnve right', 'lunge combo drnive right'))
+  assert.ok(sameName('bent knee gruneh', 'bent knee crunch'))
+  assert.ok(!sameName('dumbbell floor press', 'dumbbell push press'))
+  assert.ok(!sameName('bent over row', 'bent over underhand row'))
+  assert.ok(!sameName('lunge combo drive left', 'lunge combo drive right'))
+})
+
+test('"Warm up complete" is a section label, not a three-second move (zBTz636KeMA)', async () => {
+  const { sectionTitle } = await import('../src/text.js')
+  assert.equal(sectionTitle('Warm Up GComplete'), 'warmup')
+  assert.equal(sectionTitle('Cool down complete'), 'stretch')
+  assert.equal(sectionTitle('Dynamic chest stretch'), null)
+})

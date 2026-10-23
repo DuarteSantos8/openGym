@@ -51,7 +51,8 @@ const REST_WORDS = [
 ]
 const REST_RE = new RegExp('(^|\\s)(' + REST_WORDS.join('|') + ')(\\s|$)')
 // "next: burpees", "up next burpees", "next up - burpees", "nastepne: …", "als nachstes …"
-const NEXT_RE = /(?:^|\s)(?:up next|next up|next|coming up|nastepne|nastepnie|dalej|als nachstes|naechste|siguiente|suivant|prossimo|a seguir)\s+(.+)$/
+// A styled NEXT often loses its E to the OCR: "NXT", "NXTI", "NXTH", "NXTT".
+const NEXT_RE = /(?:^|\s)(?:up next|next up|next|i?nxt[a-z|1]?|coming up|nastepne|nastepnie|dalej|als nachstes|naechste|siguiente|suivant|prossimo|a seguir)\s+(.+)$/
 
 /** { rest: boolean, next: string|null } for one normalised caption. */
 export function restOf(key) {
@@ -74,7 +75,7 @@ const STRETCH_RE = /\b(stretch|stretches|stretching|cool ?down|cooldown|rozciaga
 export function sectionTitle(text) {
   const kind = sectionWord(text)
   if (!kind) return null
-  const rest = normName(text).replace(/\b(warm ?up|warming up|cool ?down|cooldown|stretch|stretches|stretching|mobility|and|the|time|session|intro|introduction|final|wrap up|rozgrzewka|rozciaganie)\b/g, ' ').trim()
+  const rest = normName(text).replace(/\b(warm ?up|warming up|cool ?down|cooldown|stretch|stretches|stretching|mobility|and|the|time|session|intro|introduction|final|wrap up|g?complete|completed|done|finished|over|rozgrzewka|rozciaganie)\b/g, ' ').trim()
   return rest ? null : kind
 }
 
@@ -200,7 +201,7 @@ export function sameName(a, b) {
     const used = new Set()
     let hit = 0
     for (const x of m1) {
-      const k = m2.findIndex((y, i) => !used.has(i) && (x === y || x.replace(/s$/, '') === y.replace(/s$/, '') || (Math.min(x.length, y.length) >= 5 && editDistance(x, y) <= (Math.max(x.length, y.length) >= 7 ? 2 : 1))))
+      const k = m2.findIndex((y, i) => !used.has(i) && (x === y || x.replace(/s$/, '') === y.replace(/s$/, '') || (Math.min(x.length, y.length) >= 4 && Math.max(x.length, y.length) >= 6 && editDistance(x, y) <= 2) || (Math.min(x.length, y.length) >= 5 && editDistance(x, y) <= 1)))
       if (k >= 0) { hit++; used.add(k) }
     }
     if (hit / Math.max(m1.length, m2.length) < 0.8) return false
