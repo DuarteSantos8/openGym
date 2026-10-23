@@ -7,7 +7,7 @@ import {
   fmt, setLabel, exLine, muscleName, policyName, friendlyDuration, ratio, muscleOrder
 } from './labels.js'
 import {
-  modeOf, workoutVolume, setsDone, effectiveRoutine, effectiveRoutineIds, lastEntryFor, workoutAt
+  modeOf, workoutVolume, setsDone, setUnitsTotal, effectiveRoutine, effectiveRoutineIds, lastEntryFor, workoutAt
 } from '../../frontend/src/lib/history.js'
 import { queueView, queueNext, pinState } from '../../frontend/src/lib/queue.js'
 import { exOr, registerCustom } from '../../frontend/src/lib/exercises.js'
@@ -298,8 +298,8 @@ export const listWorkouts = {
         routine_name: w.name || null,
         exercise_count: (w.entries || []).length,
         sets_done: setsDone(w),
-        sets_planned: plannedSets(w),
-        sets_ratio: ratio(setsDone(w), plannedSets(w)),
+        sets_planned: setUnitsTotal(w.entries),
+        sets_ratio: ratio(setsDone(w), setUnitsTotal(w.entries)),
         volume: workoutVolume(w),
         duration_ms: w.end && w.start ? (w.end - w.start) : null,
         duration: w.end && w.start ? friendlyDuration(w.end - w.start) : null,
@@ -308,12 +308,6 @@ export const listWorkouts = {
       }))
     }
   }
-}
-
-function plannedSets(w) {
-  let n = 0
-  ;(w.entries || []).forEach(e => { n += (e.sets || []).length })
-  return n
 }
 
 /** get_workout — full entry/set breakdown for one date. */
@@ -364,7 +358,7 @@ export const getWorkout = {
       bodyweight_at_workout: w.bw || null,
       volume: workoutVolume(w),
       sets_done: setsDone(w),
-      sets_planned: plannedSets(w),
+      sets_planned: setUnitsTotal(w.entries),
       duration: w.end && w.start ? friendlyDuration(w.end - w.start) : null,
       prs: (w.prs || []).map(id => {
         const ex = exerciseOf(id, S)
