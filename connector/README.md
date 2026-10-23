@@ -33,10 +33,13 @@ The process exits with an error naming the variable (never its value) when any o
 
 Without Docker, against a reachable openGym web origin:
 
+Generate the key first and paste it. Compose stores a shell substitution in `.env` literally, then rejects it:
+
 ```bash
+openssl rand -base64 32
 cd connector
 export CONNECTOR_PUBLIC_ORIGIN=https://gym.example.com
-export CONNECTOR_ENCRYPTION_KEY="$(openssl rand -base64 32)"
+export CONNECTOR_ENCRYPTION_KEY='paste-that-output'
 export CONNECTOR_UPSTREAM_URL=http://127.0.0.1:8090   # your openGym web port
 node src/main.js                                      # listens on 127.0.0.1:8787
 ```
@@ -45,9 +48,10 @@ With Docker, joined to openGym's existing network (openGym's compose project is 
 network is `opengym_default`; `docker network ls` to confirm on your host):
 
 ```bash
+openssl rand -base64 32
 cd connector
 export CONNECTOR_PUBLIC_ORIGIN=https://gym.example.com
-export CONNECTOR_ENCRYPTION_KEY="$(openssl rand -base64 32)"
+export CONNECTOR_ENCRYPTION_KEY='paste-that-output'
 docker compose up -d --build
 curl -s http://127.0.0.1:8787/connector/.well-known/oauth-protected-resource
 ```

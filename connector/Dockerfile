@@ -9,8 +9,12 @@ WORKDIR /app
 
 # connector/package.json declares no dependencies, so there is no install step and no node_modules.
 # If one is ever added: COPY its lockfile here and install with the lockfile before copying src.
-COPY package.json ./
-COPY src ./src
+# The connector imports shared pure helpers from the repository; tests and media stay out.
+COPY connector/package.json connector/package.json
+COPY connector/src connector/src
+COPY frontend/src/lib frontend/src/lib
+COPY mcp/src/labels.js mcp/src/labels.js
+WORKDIR /app/connector
 
 ENV NODE_ENV=production \
     CONNECTOR_HOST=0.0.0.0 \

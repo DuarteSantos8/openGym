@@ -141,6 +141,31 @@ test('compose: loopback-only publish, external openGym network, no mounts, no ba
   assert.match(c, /opengym_default/)
   assert.match(c, /CONNECTOR_ENCRYPTION_KEY:\s*\$\{CONNECTOR_ENCRYPTION_KEY:\?/)
   assert.match(c, /http:\/\/opengym-web-1/)
+  assert.doesNotMatch(c, /\$\(openssl/)
+})
+
+test('the image layout can resolve every runtime import', () => {
+  const root = join(dirname(fileURLToPath(import.meta.url)), '../..')
+  const seen = new Set()
+  const missing = []
+  const walk = file => {
+    if (seen.has(file)) return
+    seen.add(file)
+    let text
+    try { text = readFileSync(file, 'utf8') } catch { missing.push(file); return }
+    const dir = dirname(file)
+    for (const spec of [...text.matchAll(/from '(\.[^']+)'/g)].map(m => m[1])) {
+      const base = join(dir, spec)
+      const next = [base, `${base}.js`, `${base}.json`].find(candidate => {
+        try { return readFileSync(candidate), true } catch { return false }
+      })
+      if (!next) missing.push(base)
+      else if (next.endsWith('.js')) walk(next)
+    }
+  }
+  walk(join(root, 'connector/src/main.js'))
+  assert.deepEqual(missing, [])
+  assert.ok(seen.size > 5)
 })
 
 test('docs and compose carry no usable key; documented placeholders are rejected by the validator', () => {
@@ -158,6 +183,7 @@ test('README documents the contract and is explicit that nothing is deployed', (
   assert.match(r, /Cloudflare/)
   assert.match(r, /Settings.*Connectors/s)
   assert.match(r, /public deployment is \*\*not\*\* performed/i)
+  assert.match(r, /Generate the key first/)
   assert.match(r, /AGPL-3\.0-or-later/)
 })
 
