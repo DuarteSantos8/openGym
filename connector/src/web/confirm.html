@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; connect-src 'self'; style-src 'unsafe-inline'">
+<title>Confirm openGym action</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; max-width: 36rem; margin: 2rem auto; padding: 0 1rem; }
+  button { font: inherit; padding: .5rem 1rem; }
+</style>
+</head>
+<body>
+<h1>Confirm action</h1>
+<p id="target"></p>
+<p id="digest"></p>
+<button id="confirm" type="button" disabled>Confirm with passkey</button>
+<p id="out" role="status" aria-live="polite"></p>
+<script>
+const id = location.hash.slice(1)
+history.replaceState(null, '', location.pathname)
+const target = document.getElementById('target')
+const digest = document.getElementById('digest')
+const button = document.getElementById('confirm')
+const out = document.getElementById('out')
+const bufToB64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+const b64uToBuf = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)).buffer
+const say = text => { out.textContent = text }
+async function post(route, body) {
+  const response = await fetch('/connector/confirm/' + route, {
+    method: 'POST', credentials: 'omit', redirect: 'error',
+    headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, ...body }),
+  })
+  if (!response.ok) throw new Error('confirmation failed')
+  return response.json()
+}
+function credentialJSON(cred) {
+  const r = cred.response
+  return {
+    id: cred.id, rawId: bufToB64u(cred.rawId), type: cred.type,
+    response: {
+      clientDataJSON: bufToB64u(r.clientDataJSON), authenticatorData: bufToB64u(r.authenticatorData),
+      signature: bufToB64u(r.signature), userHandle: r.userHandle ? bufToB64u(r.userHandle) : null,
+    },
+  }
+}
+post('details').then(({ summary, digest: value }) => {
+  target.textContent = summary.type + ': ' + summary.name + ' (' + summary.id + ')' + (summary.date ? ' — ' + summary.date : '')
+  digest.textContent = 'Target fingerprint: ' + value
+  button.disabled = false
+}).catch(() => say('Confirmation unavailable. Request a new link.'))
+button.addEventListener('click', async () => {
+  button.disabled = true
+  try {
+    // This click mints a fresh challenge on the connector, not in the browser or in chat.
+    const { cid, options } = await post('challenge')
+    options.challenge = b64uToBuf(options.challenge)
+    for (const item of options.allowCredentials || []) item.id = b64uToBuf(item.id)
+    const cred = await navigator.credentials.get({ publicKey: options })
+    await post('execute', { cid, credential: credentialJSON(cred) })
+    say('Action completed.')
+  } catch { say('Confirmation unavailable. Request a new link.') }
+})
+</script>
+</body>
+</html>

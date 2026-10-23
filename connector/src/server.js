@@ -8,6 +8,7 @@ import { createGrants, GrantError } from './grants.js'
 import { connect, createPending, pickAssertion, sameOrigin } from './openGymSession.js'
 
 const connectPage = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'web/connect.html'))
+const confirmPage = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'web/confirm.html'))
 const COOKIE = '__Host-gym-oauth'
 const MAX_BODY = 8192
 const MAX_SPENT = 10000
@@ -38,7 +39,7 @@ function bodyOf(req) {
   })
 }
 
-export function createServer({ origin, prefix, apiBase, key = crypto.randomBytes(32) } = {}) {
+export function createServer({ origin, prefix, apiBase, key = crypto.randomBytes(32), confirmations } = {}) {
   const d = discovery({ origin, prefix })
   const pending = new Map(), connections = new Map(), spent = new Map()
   const grants = createGrants({ connections, key, apiBase })
@@ -72,6 +73,14 @@ export function createServer({ origin, prefix, apiBase, key = crypto.randomBytes
           res.writeHead(303, { location: `${prefix}/connect`, 'cache-control': 'no-store', 'set-cookie': `${COOKIE}=${sealed}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=300` })
           return res.end()
         }
+        if (pathname === `${prefix}/confirm` && confirmations) {
+          res.writeHead(200, {
+            'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff',
+            'referrer-policy': 'no-referrer', 'x-frame-options': 'DENY',
+            'content-security-policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
+          })
+          return res.end(confirmPage)
+        }
         if (pathname === `${prefix}/connect`) {
           res.writeHead(200, {
             'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff',
@@ -79,6 +88,20 @@ export function createServer({ origin, prefix, apiBase, key = crypto.randomBytes
             'content-security-policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
           })
           return res.end(connectPage)
+        }
+      }
+      if (req.method === 'POST' && confirmations && [`${prefix}/confirm/details`, `${prefix}/confirm/challenge`, `${prefix}/confirm/execute`].includes(pathname)) {
+        if (!sameOrigin(req.headers, origin)) return send(res, 403, { error: 'invalid_confirmation' })
+        if ((req.headers['content-type'] || '').split(';')[0].trim().toLowerCase() !== 'application/json') return send(res, 400, { error: 'invalid_confirmation' })
+        try {
+          const body = await bodyOf(req)
+          const result = pathname.endsWith('/details') ? await confirmations.details(body.id)
+            : pathname.endsWith('/challenge') ? await confirmations.challenge(body.id)
+              : await confirmations.confirm(body.id, { cid: body.cid, credential: body.credential })
+          return send(res, 200, result)
+        } catch (e) {
+          if (e && e.message === 'too_large') throw e
+          return send(res, 400, { error: 'invalid_confirmation' })
         }
       }
       if (req.method === 'POST' && pathname === `${prefix}/connect`) {

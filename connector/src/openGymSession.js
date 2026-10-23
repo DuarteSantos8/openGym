@@ -84,6 +84,36 @@ function closed(status, data, which) {
   throw new HandoffError('upstream')
 }
 
+// A confirmation owns its login challenge. No browser-supplied cid/challenge is trusted until
+// it matches the challenge we minted and the WebAuthn clientDataJSON from this origin.
+export async function mintLoginOptions({ apiBase, timeoutMs } = {}) {
+  const result = await post(apiBase, '/api/login/options', { timeoutMs })
+  const { cid, options } = result.data || {}
+  if (result.status !== 200 || typeof cid !== 'string' || !cid || cid.length > MAX_CID ||
+    !options || typeof options !== 'object' || typeof options.challenge !== 'string' ||
+    !/^[A-Za-z0-9_-]{1,256}$/.test(options.challenge)) throw new HandoffError('upstream')
+  return { cid, options }
+}
+
+export async function verifyFreshPasskey(assertion, { apiBase, origin, challenge, cid, timeoutMs } = {}) {
+  const body = pickAssertion(assertion)
+  let client
+  try {
+    const data = body.credential.response?.clientDataJSON
+    if (typeof data !== 'string' || !/^[A-Za-z0-9_-]{1,8192}$/.test(data)) throw new Error('invalid')
+    const buf = Buffer.from(data, 'base64url')
+    if (buf.toString('base64url') !== data || buf.length > 4096) throw new Error('invalid')
+    client = JSON.parse(buf.toString('utf8'))
+  } catch { throw new HandoffError('bad-assertion') }
+  if (body.cid !== cid || !client || client.type !== 'webauthn.get' ||
+    client.challenge !== challenge || client.origin !== origin) throw new HandoffError('bad-assertion')
+  const verified = await post(apiBase, '/api/login/verify', { json: body, timeoutMs })
+  const user = pickUser(verified.data && verified.data.user)
+  if (verified.status !== 200 || !user) closed(verified.status, verified.data, 'login')
+  // Set-Cookie from login/verify is intentionally ignored, including malformed cookie headers.
+  return { user }
+}
+
 export async function establishSession(assertion, { apiBase, timeoutMs } = {}) {
   const body = pickAssertion(assertion)
   const verified = await post(apiBase, '/api/login/verify', { json: body, timeoutMs })

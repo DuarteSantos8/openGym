@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url'
 import { createServer } from '../src/server.js'
 import {
   establishSession, connect, createPending, sealBearer, openBearer, sameOrigin, HandoffError,
+  mintLoginOptions, verifyFreshPasskey,
 } from '../src/openGymSession.js'
 
 const BEARER = 'uid1:9999999999999:0.signature-of-the-openGym-session'
@@ -401,6 +402,34 @@ test('sameOrigin accepts only a same-origin browser request', () => {
   assert.equal(sameOrigin({ origin: 'https://gym.areum.cl' }, o), true)
   assert.equal(sameOrigin({ origin: 'https://evil.example' }, o), false)
   assert.equal(sameOrigin({}, o), false, 'no browser evidence at all fails closed')
+})
+
+test('mintLoginOptions is an anonymous POST; verifyFreshPasskey checks clientData then discards Set-Cookie', async () => {
+  const origin = 'https://gym.areum.cl'
+  const challenge = 'challenge-1'
+  const assertion = {
+    cid: 'cid-1',
+    credential: {
+      id: 'cred-1', rawId: 'cmF3', type: 'public-key',
+      response: {
+        clientDataJSON: Buffer.from(JSON.stringify({ type: 'webauthn.get', challenge, origin })).toString('base64url'),
+        authenticatorData: 'YWQ', signature: 'c2ln', userHandle: null,
+      },
+    },
+  }
+  script['POST /api/login/options'] = (_req, res) => reply(res, 200, { cid: 'cid-1', options: { challenge, allowCredentials: [] } })
+  const minted = await mintLoginOptions({ apiBase: api.url })
+  assert.deepEqual(minted, { cid: 'cid-1', options: { challenge, allowCredentials: [] } })
+  assert.equal(api.seen[0].headers.cookie, undefined)
+  const out = await verifyFreshPasskey(assertion, { apiBase: api.url, origin, challenge, cid: 'cid-1' })
+  assert.deepEqual(out, { user: { id: 'uid1', name: 'Ana', admin: false } })
+  const verify = api.seen.find(s => s.route === 'POST /api/login/verify')
+  assert.equal(verify.headers.cookie, undefined)
+  assert.equal(verify.headers.authorization, undefined)
+  assert.deepEqual(routes(), ['POST /api/login/options', 'POST /api/login/verify'])
+  await assert.rejects(() => verifyFreshPasskey(assertion, { apiBase: api.url, origin, challenge: 'other', cid: 'cid-1' }), fail('bad-assertion'))
+  await assert.rejects(() => verifyFreshPasskey({ ...assertion, cid: 'cid-other' }, { apiBase: api.url, origin, challenge, cid: 'cid-1' }), fail('bad-assertion'))
+  assert.equal(api.seen.filter(s => s.route === 'POST /api/login/verify').length, 1)
 })
 
 // ---- the page ------------------------------------------------------------------------------
