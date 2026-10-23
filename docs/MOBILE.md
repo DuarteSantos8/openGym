@@ -1,7 +1,8 @@
 # The phone app (Android and iOS)
 
 **Just want the app?** Download the APK from the
-[latest release](https://github.com/DuarteSantos8/openGym/releases/latest) and read
+[latest release](https://github.com/DuarteSantos8/openGym/releases/latest) (`openGym-X.Y.Z.apk`,
+or `openGym-Plus-X.Y.Z.apk` / `openGym-HD-X.Y.Z.apk` for sharper animations at a bigger size) and read
 [how the phone app works](#how-the-phone-app-works) and
 [connecting it to your server](#connecting-the-app-to-your-own-server). On an iPhone, see
 [what's possible](#iphone--whats-actually-possible). Everything from [Prerequisites](#prerequisites)
@@ -207,8 +208,8 @@ that.
   data, or to remove exactly those records.
 - **Where it shows:** Android 14 and later have Health Connect built in. On Android 9–13 it is an
   app of its own, and the card offers its store page until it is installed. Below Android 9 (the
-  app supports Android 6) Health Connect does not exist and the card is not shown.
-- **The library:** `androidx.health.connect:connect-client` 1.1.0-alpha12, called from Java
+  app supports Android 7) Health Connect does not exist and the card is not shown.
+- **The library:** `androidx.health.connect:connect-client` 1.1.0, called from Java
   (`HealthConnectPlugin.java`) through `runBlocking` on a worker thread, so the Android project stays
   Java-only. 1.1.0 stable needs compileSdk 36 and AGP 8.9.1, a toolchain bump left for its own
   change. The library asks for minSdk 26; `tools:overrideLibrary` keeps the app at 23 and the plugin
@@ -218,13 +219,74 @@ Worth checking on a real device after changes here: turning it on shows Health C
 permission screen; a finished workout appears in Health Connect within a few seconds; deleting it
 in openGym removes it there; turning it off with "remove" leaves no openGym record behind.
 
+### Animation quality and the animation packs (store apps)
+
+Settings → Workout → **Animation quality**, in the store apps only (the web and a self-hosted
+server show nothing new): **Auto** (360 px on a phone, 720 px on a tablet), **Still only** (no
+animation, just the still), **Built in** (the files inside the app), or 240, 360, 480, 720 or
+1080 px. Plus **Download over Wi-Fi only** (on by default) and, per pack on the device, its size
+and **Delete**.
+
+- **Licence first.** The animations are licensed from Gym visual. The repository, the web build
+  and every self-hosted server only ever have the 180 px files. Anything larger reaches people
+  only inside the official store apps: built into the package, or as an **Apple-hosted asset pack**
+  (Background Assets, iOS 26) or a **Play asset pack** (Play Asset Delivery) that the store
+  delivers. Never from a server of
+  ours, never at a URL anyone can fetch. No tool here opens a media file; packs are planned from
+  file names alone.
+- **The packs.** One per quality and figure: `anim-<px>-male`, `anim-<px>-female` for 240, 360,
+  480, 720 and 1080, all on demand. A figure's pack holds every drawing that figure shows: per
+  catalogue exercise its drawing for that figure, or its own when it is drawn once (those are in
+  both packs). Inside a pack a drawing sits at `<packId>/<drawing id>.webp`, so the male and the
+  female pack of a quality (which share every drawing made once), or two qualities, never claim
+  the same path in the one tree Background Assets reads all packs as.
+  `node scripts/media/make-pack-manifests.mjs <out>` writes, per pack, the ids and the manifest
+  `xcrun ba-package` takes (`fileSource` `<px>/<id>.webp`, relative to a source root with one
+  folder per quality), plus a summary. `--layout clip` writes `clip/<id>.webp` instead.
+- **What shows** (`src/lib/anim-quality.js`, `clipSources`): the chosen quality's pack for the
+  figure shown if it is installed, else the next smaller installed pack of that figure, else the
+  built-in file, then the still. Never a blank, and never the other figure's drawing. Custom
+  exercises keep their own media (`components/CustomMedia.jsx`) and never go through any of this.
+- **Downloads.** Choosing a quality whose pack is not there starts its download for the figure
+  shown, and the built-in animations show meanwhile; switching the figure (Look & Home → Exercise
+  drawings) fetches the other figure's pack of that quality. Auto does the same, over Wi-Fi.
+- **This device only.** The choice is kept in the WebView's localStorage (`gym_anim_v1`), never in
+  the synced profile: packs are downloaded per device, and a phone and an iPad want different
+  sizes. Switching quality or figure never writes the profile; `src/lib/anim-data-safety.test.js`
+  holds that, and that every exercise a profile refers to keeps a picture at every quality.
+- **iOS:** `AnimationPacksPlugin.swift` (`AssetPackManager`: status, download with progress,
+  remove, the folder of a pack's files). Before iOS 26 it answers "unavailable" and the setting
+  offers only Still only and Built in. Apple-hosted packs need the downloader extension
+  `ios/App/AnimationPacksDownloader` (a `StoreDownloaderExtension`), added and embedded by
+  `ios/ci/add-asset-downloader.rb` (run once and commit the project; CI runs it until then), the
+  Info.plist keys `BAAppGroupID`, `BAHasManagedAssetPacks`, `BAUsesAppleHosting`, and the App
+  Group `group.ch.opengym.app` on the app and the extension. `scripts/ios/finish-ipa.sh` signs the
+  extension with its own profile (`EXT_PROFILE`).
+- **Android:** in the `play` flavour the same interface goes through Play Asset Delivery (status,
+  download with progress, Wi-Fi only with Play's own prompt for mobile data, remove) for the packs
+  its `assets/anim-packs.json` lists, and serves their files to the page at
+  `https://localhost/_opengym_pack/<packId>/<drawing>.webp`, never a file path. The pack modules
+  are generated on the release machine by `scripts/android/make-asset-packs.mjs` and never
+  committed. The `sideload` flavour (the APKs) answers "unavailable" and only ever has its
+  built-in animations: 180 px in the Standard APK, 240 px in Plus, 360 px in HD. Each APK's updater
+  stays with its own kind (`pickApk` in `lib/update.js`, told by `VITE_APK_VARIANT`).
+
+App Store Connect, once: the App Group `group.ch.opengym.app`; the bundle id
+`ch.opengym.app.AnimationPacksDownloader` (an app extension); the App Groups capability on
+`ch.opengym.app` and on the extension, both with that group; an App Store provisioning profile
+for each; then the ten packs uploaded as Apple-hosted background assets for the app.
+
+Worth checking on a device: picking 720 px starts a download that shows its progress; the
+animation sharpens once it is done; Delete frees the space and the animation falls back; on
+cellular with Wi-Fi only on, it waits; Still only shows stills everywhere a workout shows media.
+
 ## Prerequisites
 
 - Node 20+
 - **Android:** Android Studio (bundles the SDK). Java 21 for Gradle.
 - **iOS:** a Mac with Xcode 15+ and CocoaPods (`brew install cocoapods`). A free Apple ID
   is enough to run the app on your own iPhone (see below); paid membership is only needed
-  for App Store distribution, which openGym doesn't do.
+  for App Store and TestFlight distribution ([APP_STORES.md](APP_STORES.md)).
 
 ## Build & run
 
@@ -256,37 +318,31 @@ npx @capacitor/assets generate --iconBackgroundColor '#0c0e12' --splashBackgroun
 (If the generator won't take the SVG directly, export it to `resources/icon.png` at
 1024×1024 first — any image tool can do it.)
 
-## Distribution — deliberately no app stores
+## Distribution
 
-openGym's mobile app is not on the Play Store or App Store, and that's a choice: no store
-accounts, no store rules, no yearly fees between you and an open-source app.
+The signed APK stays the way to get openGym on Android without a store, and it updates itself.
+The App Store app (public TestFlight beta: https://testflight.apple.com/join/RKATb61k) and the
+Google Play build come from the same code; how they are built and uploaded is in
+[APP_STORES.md](APP_STORES.md).
 
-### Android — sideload the APK
+### Android: sideload the APK
 
-The official signed APK is in four places, all the same file:
+Every release has three signed APKs on [the GitHub release](https://github.com/DuarteSantos8/openGym/releases),
+each with its `.sha256` beside it, and [opengym.ch](https://opengym.ch) links to all three:
 
-- **[opengym.ch](https://opengym.ch)** — the download page.
-- **[GitLab's package registry](https://gitlab.com/DuarteSantos8/opengym/-/packages)** — every
-  build under `opengym-android/<version>/`, with a `.sha256` beside it. Direct link, no login:
-  `https://gitlab.com/api/v4/projects/85678327/packages/generic/opengym-android/<version>/openGym-<version>.apk`
-- **[The GitHub release](https://github.com/DuarteSantos8/openGym/releases)** for that version,
-  with the APK and its `.sha256` attached as release assets.
-- **[The GitLab release](https://gitlab.com/DuarteSantos8/opengym/-/releases)** on the mirror,
-  where the file is built; it links to the package registry above.
+- **`openGym-X.Y.Z.apk` (Standard):** the exercise animations built in at 180 px, about 315 MB.
+- **`openGym-Plus-X.Y.Z.apk` (Plus):** the same app with 240 px animations, about 424 MB.
+- **`openGym-HD-X.Y.Z.apk` (HD):** the same app with 360 px animations, about 760 MB.
 
-Android asks you to allow installs from the browser the first time — that's standard for any
-app outside the Play Store. Check the `.sha256` if you got the file from anywhere else.
+Same app id, same key: install one over another and the data stays. The in-app updater keeps
+each on its own kind. Android asks you to allow installs from the browser the first time; that is
+standard for any app outside the Play Store. Check the `.sha256` if you got the file from anywhere
+else.
 
-Both come out of CI: the `build:apk` job in [`.gitlab-ci.yml`](../.gitlab-ci.yml) runs
-`npm run build:mobile` and `./gradlew assembleRelease`, then `zipalign`s and signs the result
-with the release key. The job runs on every push to `main` too, so the newest unreleased
-build is always one click away (signed with the same key, installs over a release):
-`https://gitlab.com/DuarteSantos8/opengym/-/jobs/artifacts/main/browse?job=build:apk`
-— a 30-day job artifact, not a package, and not what the in-app updater offers. The key lives in *protected* CI variables (`ANDROID_KEYSTORE_B64`,
-`ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`), so it only exists on `main` and on `v*`
-tags — a merge request from a fork can build an APK, but gets an unsigned one and never sees
-the key. On a `v*` tag the signed APK is also pushed to the generic package registry, which is
-what the release links to.
+Both are built and signed on the release machine with `scripts/android/build-release.sh`
+([APP_STORES.md](APP_STORES.md)), not in CI: anything above 180 px may only exist inside an app
+package (Gym visual licence), never in a CI artifact. The GitLab mirror's `build:apk` job only runs
+by hand and builds a plain 180 px APK; its releases link to GitHub's.
 
 The release APK carries native code for ARM only (`arm64-v8a`, `armeabi-v7a`), which is every
 phone; the x86 builds of the barcode scanner's library would add about 12 MB for emulators
@@ -297,21 +353,25 @@ To build and sign your own:
 
 ```sh
 cd frontend && npm run build:mobile
-cd android && ./gradlew assembleRelease            # → app/build/outputs/apk/release/app-release-unsigned.apk
+cd android && ./gradlew assembleSideloadRelease    # → app/build/outputs/apk/sideload/release/app-sideload-release-unsigned.apk
 
 # one-time: create a keystore. KEEP IT — updates must be signed with the same key,
 # or Android refuses to install the new version over the old one.
 keytool -genkeypair -keystore my.keystore -alias opengym -keyalg RSA -validity 10950
 
 # align + sign (zipalign/apksigner ship with the Android SDK build-tools)
-zipalign -f -p 4 app-release-unsigned.apk aligned.apk
+zipalign -f -p 4 app-sideload-release-unsigned.apk aligned.apk
 apksigner sign --ks my.keystore --ks-key-alias opengym --out openGym.apk aligned.apk
 ```
 
 ### iPhone — what's actually possible
 
-Apple does not allow installing apps outside the App Store, so there is no `.ipa` download
-that would simply install. Your free options:
+> The App Store and Google Play builds, and how a release gets there: [APP_STORES.md](APP_STORES.md).
+
+The App Store app, or before it is out the public TestFlight beta
+(https://testflight.apple.com/join/RKATb61k), is the easy way. Apple does not allow installing
+apps outside the App Store, so there is no `.ipa` download that would simply install. Without the
+store, your free options:
 
 - **Self-host + PWA** (recommended): open your instance in Safari → Share → *Add to Home
   Screen*. Full-screen app, no expiry, plus sync and passkeys.
@@ -328,9 +388,9 @@ free tier. To switch it on, register a Mac as a project runner (shell executor; 
 and Node installed; give it a tag such as `macos`) and set the CI/CD variable `IOS_RUNNER_TAG`
 to that tag — the job then appears in every `main` and tag pipeline. Until that variable exists
 the job is not part of any pipeline, and it has not run yet, so expect a first round of fixes.
-A signed build (TestFlight, App Store) would additionally need an Apple Developer Program
-membership, the distribution certificate and profile as protected file variables, and an
-`-exportArchive` step — none of that is set up.
+The signed App Store and TestFlight builds don't come from this job: GitHub's `iOS` workflow
+archives them unsigned and the release machine finishes, signs and uploads them
+([APP_STORES.md](APP_STORES.md)).
 
 ### Release notes for maintainers
 
@@ -349,7 +409,19 @@ membership, the distribution certificate and profile as protected file variables
   alarms (Android 14 no longer grants it at install). The opt-in missed-workout nudge is
   scheduled the same way, beside the reminder: one notification on the evening (20:00–21:30) of
   each upcoming planned day, at most 3 past the last workout, rescheduled whenever a workout is
-  logged. The rest countdown does not depend on
+  logged. A workout logged on another device (the web, a second phone) reaches these only when
+  the app syncs, so a paired phone also runs a **background check** before them
+  (`lib/nudge-check.js`, the native `NudgeCheck` plugin): it asks the server
+  `GET /api/nudge-check?date=…` (a few bytes: was the day trained or excused, would the server
+  still nudge it) and takes back that day's reminder and nudge when the answer says so. Offline,
+  an error or no answer leaves everything as it was, and the app resyncs in full whenever it is
+  opened. On Android a `JobScheduler` job runs in the half hour before the notification, with a
+  network if there is one. On iOS it is a `BGAppRefreshTask` asked for an hour before, and
+  **iOS decides when it actually runs**: it learns from how often the app is opened, holds back
+  in Low Power Mode, and never runs it after the app was swiped away from the app switcher or
+  with Background App Refresh off, so there the check is a good chance, not a promise. The
+  pairing token it needs is kept in the Keychain (iOS) or encrypted with a Keystore key (Android).
+  The rest countdown does not depend on
   it: a foreground service (`specialUse`) keeps the countdown in the notification and holds a
   wake lock until the end, so the end of a rest sounds on time with the screen locked; the
   rest-over alarm is only its fallback.

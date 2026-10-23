@@ -9,7 +9,7 @@ import HealthKit
  * HealthKit never says whether reading a type was allowed: a type the user declined just has no
  * samples. So every query answers what it finds, and an empty answer is not an error.
  *
- * Registered by AppViewController (a local plugin is not in Capacitor's generated plugin list).
+ * Registered by MainViewController (a local plugin is not in Capacitor's generated plugin list).
  *
  *   isAvailable()                                  -> { available }
  *   requestAuthorization({ read: [identifier] })   -> { asked, skipped: [identifier] }

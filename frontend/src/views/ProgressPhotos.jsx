@@ -1,13 +1,12 @@
-// Every progress photo across every logged workout, in one place, newest first — a quick way to
-// add one to today, and a before/after comparison between any two.
+// Every progress photo in one place, newest first: adding them, for today or an earlier day,
+// several at once; removing one; and a before/after comparison between any two.
 //
-// WorkoutMedia.jsx already lets a photo or video be attached to a finished workout — that is
-// still the only place one is stored (addWorkoutMedia, a saved workout's own `media` list) and
-// where one is removed. What this view adds is a shortcut for the common case (today's workout
-// is already logged) straight onto the record WorkoutMedia.jsx would have written to anyway, plus
-// lining every still up chronologically and a slider to compare two dates directly. Nothing new
-// to store, sync or back up — one more way to reach and to look at data the media system already
-// keeps, private to the account the same way everything else there is (DATA_DIR/uploads/<uid>/,
+// A photo for a day with a logged workout goes onto that workout (addWorkoutMedia, the saved
+// workout's own `media` list, the same place WorkoutMedia.jsx writes). One for a day without a
+// workout, or past a workout's cap, is filed under the day instead (#557, lib/day-photos.js
+// `dayPhotos`), where the server keeps those (media.days) or there is no server. The date is
+// suggested by the photo's own EXIF date where it has one, else the day picked in the sheet.
+// Both kinds are private to the account like every other photo (DATA_DIR/uploads/<uid>/,
 // api/media.js).
 import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -15,8 +14,11 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t, tn } from '../lib/i18n.js'
 import { fmtDate, todayISO } from '../lib/format.js'
-import { workoutMediaOf, WORKOUT_MEDIA_MAX } from '../lib/media-refs.js'
-import { addWorkoutMedia } from '../lib/workout-media.js'
+import { workoutMediaOf } from '../lib/media-refs.js'
+import { removeWorkoutMedia, restoreWorkoutMedia } from '../lib/workout-media.js'
+import { dayPhotosOf, removeDayPhoto, restoreDayPhoto, serverTakesDayPhotos, fileProgressPhoto } from '../lib/day-photos.js'
+import { exifDateOfFile } from '../lib/exif-date.js'
+import { sameWorkout } from '../lib/workout-date.js'
 import { syncMedia } from '../lib/media-sync.js'
 import { useMediaPicker } from '../components/CustomMediaField.jsx'
 import { CustomThumb, MediaView, useMediaUrl } from '../components/CustomMedia.jsx'
@@ -47,6 +49,8 @@ export function progressPhotosOf(S) {
       out.push({ key: (w.id || w.start || w.d) + ':' + m.hash, d: w.d, start: w.start || 0, w, m })
     }
   }
+  // And the ones filed under a day (#557), after a day's workout photos.
+  for (const p of dayPhotosOf(S)) out.push({ key: 'day:' + p.hash, d: p.d, start: 0, w: null, day: true, m: p.m })
   out.sort((a, b) => (a.d < b.d ? 1 : a.d > b.d ? -1 : b.start - a.start))
   return out
 }
@@ -68,17 +72,55 @@ export function daysBetween(a, b) {
   return Math.abs(Math.round(ms / 86400000))
 }
 
-function openPhotoView(p) {
-  useUI.getState().openSheet(close => (
-    <div className="mviewer" role="dialog" aria-modal="true" aria-label={t('Photo')}>
-      <div className="mviewer-bar">
-        <button type="button" className="iconbtn" aria-label={t('Close')} onClick={close}><Icon name="xmark" /></button>
-        <span className="mviewer-count">{fmtDate(p.d, true, true)}</span>
-        <span style={{ width: 36 }} />
-      </div>
-      <div className="mviewer-stage"><MediaView m={p.m} cls="exmedia viewer" /></div>
+// A photo full size, with a way to remove it (#558): it comes off the workout it belongs to,
+// exactly as the workout's own photo viewer takes it off (lib/workout-media.js), and the file is
+// left to the media clean-up like there. An Undo puts it back where it was.
+export function PhotoView({ p, close }) {
+  const [asking, setAsking] = useState(false)
+  const remove = () => {
+    const st = useStore.getState()
+    if (p.day) {
+      const entry = st.S.dayPhotos?.[p.m.hash]
+      let removed = false
+      st.update(s => { removed = removeDayPhoto(s, p.m.hash) })
+      close()
+      if (removed) useUI.getState().toast(t('Photo removed'), {
+        action: t('Undo'),
+        onAction: () => useStore.getState().update(s => { restoreDayPhoto(s, p.m.hash, entry) }),
+      })
+      return
+    }
+    const rec = (st.S.workouts || []).find(w => w && sameWorkout(w, p.w)) || p.w
+    const at = Array.isArray(rec?.media) ? rec.media.findIndex(x => x && x.hash === p.m.hash) : -1
+    const ref = at >= 0 ? rec.media[at] : p.m
+    let removed = false
+    st.update(s => { removed = removeWorkoutMedia(s, p.w, p.m.hash) })
+    close()
+    if (!removed) return
+    useUI.getState().toast(t('Photo removed'), {
+      action: t('Undo'),
+      onAction: () => useStore.getState().update(s => { restoreWorkoutMedia(s, p.w, ref, at) }),
+    })
+  }
+  return <div className="mviewer" role="dialog" aria-modal="true" aria-label={t('Photo')}>
+    <div className="mviewer-bar">
+      <button type="button" className="iconbtn" aria-label={t('Close')} onClick={close}><Icon name="xmark" /></button>
+      <span className="mviewer-count">{fmtDate(p.d, true, true)}</span>
+      <button type="button" className="iconbtn" aria-label={t('Remove')} onClick={() => setAsking(a => !a)}><Icon name="trash" /></button>
     </div>
-  ), { kind: 'viewer' })
+    <div className="mviewer-stage"><MediaView m={p.m} cls="exmedia viewer" /></div>
+    {asking && <div className="mviewer-ask">
+      <div className="mviewer-ask-t">{t('Remove this photo or video?')}</div>
+      <div className="mviewer-ask-b">
+        <Button variant="ghost" size="sm" onClick={() => setAsking(false)}>{t('Cancel')}</Button>
+        <Button variant="danger" size="sm" onClick={remove}>{t('Remove')}</Button>
+      </div>
+    </div>}
+  </div>
+}
+
+function openPhotoView(p) {
+  useUI.getState().openSheet(close => <PhotoView p={p} close={close} />, { kind: 'viewer' })
 }
 
 /** The before/after slider between two progress photos `a` (earlier) and `b` (later). */
@@ -128,15 +170,50 @@ export function openProgressCompare(x, y) {
   useUI.getState().openSheet(close => <ProgressCompare a={a} b={b} close={close} />, { kind: 'viewer' })
 }
 
+// How many photos one pick takes: each is read and re-encoded on the device, one after another.
+const MAX_AT_ONCE = 20
+
+/* The day the picked photos go under. One photo: its own EXIF date, or today, either changeable.
+   Several: each with an EXIF date goes on that day, the rest on the day picked here. */
+export function AddPhotosSheet({ items, close, save }) {
+  const today = todayISO()
+  const one = items.length === 1
+  const own = items.filter(i => i.exif).length
+  const [date, setDate] = useState((one && items[0].exif) || today)
+  const [busy, setBusy] = useState(false)
+  const ok = /^\d{4}-\d{2}-\d{2}$/.test(date) && date <= today
+  const go = async () => {
+    if (!ok || busy) return
+    setBusy(true)
+    try { await save(items, date) } finally { setBusy(false); close() }
+  }
+  return <>
+    <h3>{tn('Add {0} photo', 'Add {0} photos', items.length)}</h3>
+    <div className="muted small" style={{ marginBottom: 12 }}>
+      {one
+        ? (items[0].exif ? t('The photo says it was taken on {0}. Change the day if it was another one.', fmtDate(items[0].exif, true, true)) : t('Which day is this photo from?'))
+        : own === items.length ? t('Each photo goes on the day it was taken.')
+          : own ? tn('{0} photo knows its day and goes there. The others go on the day below.', '{0} photos know their day and go there. The others go on the day below.', own)
+            : t('They all go on the day below.')}
+    </div>
+    {(one || own < items.length) && <label className="measure-date" style={{ display: 'block', marginBottom: 14 }}>
+      <span className="small">{t('Date')}</span>
+      <input className="field" type="date" value={date} max={today} onChange={e => setDate(e.target.value)} />
+    </label>}
+    <Button variant="primary" disabled={!ok || busy} onClick={go}>{busy ? t('Loading…') : t('Add')}</Button>
+    <div style={{ height: 8 }} />
+    <Button variant="ghost" className="dim" disabled={busy} onClick={close}>{t('Cancel')}</Button>
+  </>
+}
+
 export default function ProgressPhotos() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
-  const photos = useMemo(() => progressPhotosOf(S), [S.workouts])
+  const photos = useMemo(() => progressPhotosOf(S), [S.workouts, S.dayPhotos])
   const groups = useMemo(() => groupByDate(photos), [photos])
   const [comparing, setComparing] = useState(false)
   const [picked, setPicked] = useState([])   // up to 2 photo keys, in tap order
-  const today = todaysWorkout(S)
   const { pick, busy, canAdd, showAdd } = useMediaPicker()
   const fileRef = useRef(null)
 
@@ -153,24 +230,39 @@ export default function ProgressPhotos() {
     cancelCompare()
     if (a && b) openProgressCompare(a, b)
   }
-  // Attaches straight onto today's already-logged workout — the file picker offers the camera
-  // on a phone the same way WorkoutMedia.jsx's does, since it is the very same input.
-  const onFile = async ev => {
-    const file = ev.target.files && ev.target.files[0]
+  // Several photos at once (#557), each filed under the day it was taken where its EXIF says so,
+  // else under the day picked in the sheet (today unless changed); see fileProgressPhoto.
+  const user = useStore(s => s.user)
+  const config = useStore(s => s.config)
+  const canDay = serverTakesDayPhotos(user, config)
+  const onFiles = async ev => {
+    const files = [...(ev.target.files || [])].slice(0, MAX_AT_ONCE)
     ev.target.value = ''
-    if (!file || !today) return
-    if (workoutMediaOf(today).length >= WORKOUT_MEDIA_MAX) { toast(t('Up to {0} photos or videos per workout.', WORKOUT_MEDIA_MAX)); return }
-    const got = await pick(file)
-    if (!got) return
-    let res
-    update(s => { res = addWorkoutMedia(s, today, got) })
-    if (res === 'added') { toast(t('Photo added')); syncMedia({ force: true }) }
-    else if (res === 'full') toast(t('Up to {0} photos or videos per workout.', WORKOUT_MEDIA_MAX))
-    else if (res === 'gone') toast(t('Workout deleted'))
+    if (!files.length) return
+    const today = todayISO()
+    const items = await Promise.all(files.map(async file => {
+      const d = await exifDateOfFile(file)
+      return { file, exif: d && d <= today ? d : null }
+    }))
+    useUI.getState().openSheet(close => <AddPhotosSheet items={items} close={close} save={save} />)
+  }
+  const save = async (items, picked) => {
+    const n = { added: 0, noRoom: 0 }
+    for (const it of items) {
+      const got = await pick(it.file)
+      if (!got) continue
+      const d = items.length > 1 ? (it.exif || picked) : picked
+      let res
+      update(s => { res = fileProgressPhoto(s, d, got, { canDay }) })
+      if (res === 'workout' || res === 'day') n.added++
+      else if (res === 'no-room') n.noRoom++
+    }
+    if (n.added) { toast(tn('{0} photo added', '{0} photos added', n.added)); syncMedia({ force: true }) }
+    if (n.noRoom) toast(t('Your server keeps photos only on days with a workout. An update lets it keep them for any day.'))
   }
 
   return <>
-    <div className="hdr"><button className="iconbtn" onClick={() => nav('/stats')} aria-label={t('Stats')}><Icon name="chevronLeft" /></button>
+    <div className="hdr"><button className="iconbtn" data-back="/stats" onClick={() => nav('/stats')} aria-label={t('Stats')}><Icon name="chevronLeft" /></button>
       <div style={{ flex: 1, marginInlineStart: 12 }}><h1>{t('Progress photos')}</h1>
         <div className="sub">{tn('{0} photo', '{0} photos', photos.length)}</div></div>
       {photos.length >= 2 && (comparing
@@ -179,12 +271,10 @@ export default function ProgressPhotos() {
     </div>
 
     {!comparing && showAdd && <div className="row" style={{ marginBottom: 16 }}>
-      {today
-        ? <Button icon={busy ? 'image' : 'camera'} disabled={!canAdd} onClick={() => fileRef.current?.click()}>
-            {busy ? t('Loading…') : t('Add a photo to today')}
-          </Button>
-        : <Button icon="dumbbell" onClick={() => nav('/workout')}>{t('Log today’s workout to add a photo')}</Button>}
-      <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
+      <Button icon={busy ? 'image' : 'camera'} disabled={!canAdd || busy} onClick={() => fileRef.current?.click()}>
+        {busy ? t('Loading…') : t('Add photos')}
+      </Button>
+      <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={onFiles} />
     </div>}
 
     {comparing && <div className="small dim" style={{ margin: '0 0 12px' }}>
@@ -193,7 +283,7 @@ export default function ProgressPhotos() {
 
     {!photos.length
       ? <div className="empty"><div className="ico"><Icon name="image" /></div>
-          {t('No progress photos yet. The button above adds one to today, once today has a logged workout.')}
+          {t('No progress photos yet. Add one for today or any day before.')}
         </div>
       : groups.map(g => (
         <div key={g.d} style={{ marginBottom: 18 }}>

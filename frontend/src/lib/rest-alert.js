@@ -7,11 +7,15 @@
 // a shrinking bar. The lock screen shows it only when notifications are allowed and the
 // system is set to show them there.
 //
+// iOS stops the page the moment the app leaves the screen. RestAlertPlugin.swift answers the same
+// calls with a local notification for the end of the rest, in the tone Settings → Sound picked;
+// there is no countdown card and no buttons there, so hold() just calls the notification off.
+//
 // The web build keeps Web Push (useUI). This file no-ops there; MOBILE is a build-time flag.
 import { t } from './i18n-core.js'
 import { argb } from './format.js'
 import { accentPair } from './accent.js'
-import { MOBILE, isAndroid } from './mobile.js'
+import { MOBILE, nativePlatform } from './mobile.js'
 import { REST_SOUNDS } from './rest-sounds.js'
 
 export const REST_ALERT_ID = 42
@@ -81,17 +85,16 @@ const enqueue = fn => {
 // The native plugin, registered once: registerPlugin() warns on every call after the first. It
 // travels inside an object because a Capacitor plugin proxy answers `then` with a native call that
 // never settles, so a promise resolved with the bare proxy hangs for good (the Coach hang, #42).
-// Anything but the Android app gets null and registers nothing: iOS has no RestAlert, and every
-// call to it there, addListener included, rejects.
+// Anything but the phone app gets null and registers nothing.
 let pluginP = null
 const restPlugin = () => pluginP || (pluginP = (async () => {
-  if (!(await isAndroid())) return null
+  if (!(await nativePlatform())) return null
   const { registerPlugin } = await import('@capacitor/core')
   return { RestAlert: registerPlugin('RestAlert') }
 })().catch(() => null))
 
-// Resolves true only when an Android alarm was scheduled. Callers use false as
-// "fall back to the server push" — web, iOS, and a failed schedule.
+// Resolves true only when the phone scheduled the end itself. Callers use false as
+// "fall back to the server push": the web, and a failed schedule.
 export function armRestAlert(at, opts = {}) {
   if (!MOBILE) return Promise.resolve(false)
   const mine = ++token
@@ -105,7 +108,7 @@ export function armRestAlert(at, opts = {}) {
     let kind = 'failed'
     try { kind = await deliver(alert) } catch { kind = 'failed' }
     if (mine !== token) return false
-    return kind === 'android'
+    return kind === 'native'
   })
 }
 
@@ -133,8 +136,8 @@ export function holdRestAlert(leftSec, totalSec) {
 let onNativeRest = null
 export function bindNativeRest(cb) { onNativeRest = cb }
 
-// Caught, and only on Android: in the iOS app this listener used to reject at startup with
-// nobody to catch it.
+// Caught: in the iOS app before it had the plugin this listener rejected at startup with nobody
+// to catch it. The iPhone's notification has no buttons, so it never fires there.
 if (MOBILE) {
   restPlugin()
     .then(p => p && p.RestAlert.addListener('rest', ev => { if (onNativeRest) onNativeRest(ev) }))
@@ -142,8 +145,9 @@ if (MOBILE) {
 }
 
 // A buzz that silent mode lets through (#375): the native side vibrates as an alarm. Resolves true
-// once it did, false anywhere it cannot (the web, iOS, a failed call) for the caller to buzz the
-// ordinary way instead. Never resolves with the plugin itself — see restPlugin.
+// once it did, false anywhere it cannot (the web, a failed call) for the caller to buzz the
+// ordinary way instead. iOS has no patterns: the phone buzzes once. Never resolves with the plugin
+// itself — see restPlugin.
 export function buzzAsAlarm(pattern) {
   if (!MOBILE) return Promise.resolve(false)
   const p = Array.isArray(pattern) ? pattern.filter(n => Number.isFinite(n) && n >= 0).map(Math.round) : (Number.isFinite(pattern) && pattern > 0 ? [Math.round(pattern)] : [])
@@ -154,7 +158,7 @@ export function buzzAsAlarm(pattern) {
 }
 
 // The end tone through the native side, which ducks music for it (a page cannot). Resolves true
-// once it was handed over, false anywhere it cannot (the web, iOS, a failed call) for the caller
+// once it was handed over, false anywhere it cannot (the web, a failed call) for the caller
 // to play the page's own chime instead. Never resolves with the plugin itself — see restPlugin.
 export function toneNative(kind) {
   if (!MOBILE) return Promise.resolve(false)
@@ -185,7 +189,7 @@ export function askNotifPermissionOnce() {
   if (askP) return askP
   askP = (async () => {
     try {
-      if (!(await isAndroid())) return false
+      if (!(await nativePlatform())) return false
       const { LocalNotifications } = await import('@capacitor/local-notifications')
       const perm = await LocalNotifications.checkPermissions()
       if (perm.display === 'granted') return true
@@ -242,7 +246,7 @@ async function deliver(alert) {
     accent: alert.accent,
     ink: alert.ink,
   })
-  return 'android'
+  return 'native'
 }
 
 async function cancelDelivered() {
