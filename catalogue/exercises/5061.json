@@ -10,6 +10,7 @@
     "sternocleidomastoid"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "Hold your head lifted while lying face down. It builds endurance in the neck extensors.",
   "instructions": [
     "Lie face down with your arms by your sides.",

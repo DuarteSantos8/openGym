@@ -334,6 +334,13 @@ describe('defaultConfig', () => {
     expect(defaultConfig(BW, 'time')).toEqual({ sets: 3, sec: 45, weight: 0, mode: 'time', bodyweight: true })
     expect('bodyweight' in defaultConfig(LIFT)).toBe(false)
   })
+  it('starts a catalogue hold as a timed hold, and leaves how a saved entry reads alone', () => {
+    const PLANK = '0463'
+    expect(defaultConfig(PLANK)).toEqual({ sets: 3, sec: 45, weight: 0, mode: 'time', bodyweight: true })
+    expect(defaultConfig(PLANK, 'reps')).toMatchObject({ reps: 10, mode: 'reps' })
+    expect(modeOf({ id: PLANK })).toBe('reps')
+    expect(defaultConfig('0464').mode).toBe('reps') // a plank with a twist moves
+  })
 })
 
 /* ---------- bodyweight and per side (issues #31/#32/#33) ---------- */

@@ -9,6 +9,7 @@
     "chest"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A ring hold with the arms out and the legs straddled. It builds the chest and shoulders and is a stepping stone toward the full maltese.",
   "instructions": [
     "Start by hanging from a pair of rings with your arms fully extended and your body in a straight line.",
