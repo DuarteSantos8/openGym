@@ -90,7 +90,7 @@ describe('main functionality through the canonical engine', () => {
     const routine = routineFor('manual', { sets: fixed(1), reps: fixed(5), load: { mode: 'percent_1rm', percent: 50 } }, { dbLoad: 'each' })
     const prior = { ...loggedExposure('0289', [{ w: 40, r: 5 }]), exposureId: 'previous', dbLoad: 'total' }
     const record = { id: 'orm', exerciseId: '0289', value: 50, unit: 'kg', source: 'estimated', sourceRecordId: 'previous', capturedAt: '2026-10-01T12:00:00Z' }
-    const profile = { ...profileFor(routine), workouts: [{ start: Date.parse(record.capturedAt), exposures: [prior] }], oneRepMaxes: { orm: record } }
+    const profile = { ...profileFor(routine), oneRmFormula: 'epley', workouts: [{ start: Date.parse(record.capturedAt), exposures: [prior] }], oneRepMaxes: { orm: record } }
     const active = start(profile, routine)
     expect(profile.prescriptions[active.exposures[0].prescriptionId].snapshot1RM.value).toBe(25)
     expect(active.entries[0].sets[0].w).toBe(12.5)

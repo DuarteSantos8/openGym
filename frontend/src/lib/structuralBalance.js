@@ -1,4 +1,4 @@
-import { estimate1RM, FORMULAS, DEFAULT_FORMULA } from './onerm.js'
+import { estimate1RM, FORMULAS } from './onerm.js'
 import { LB_TO_KG } from './recovery.js'
 import { isBw } from './history.js'
 import { EXIDX, isAssisted } from './exercises.js'
@@ -108,10 +108,10 @@ export function loadAtReps(loadKg, setReps, reps) {
 // a 100 kg squat and a 125 kg deadlift, both for 5, read 124.94% of Poliquin's 125% — Borderline,
 // next to "125% / 125%". Its guards, the rep cap among them, still decide what is an estimate.
 function unrounded1RM(loadKg, reps) {
-  if (estimate1RM(loadKg, reps) === null) return null
+  if (estimate1RM(loadKg, reps, 'epley') === null) return null
   const w = Number(loadKg)
   const r = Number(reps)
-  return r === 1 ? w : FORMULAS[DEFAULT_FORMULA](w, Math.round(r))
+  return r === 1 ? w : FORMULAS.epley(w, Math.round(r))
 }
 
 // Best reading across a whitelist of exercise ids, in kg: the estimated 1RM (`estKg`), or with

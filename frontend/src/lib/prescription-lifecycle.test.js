@@ -9,7 +9,7 @@ import { EXIDX, isAssisted } from './exercises.js'
 const DAY = 24 * 3600 * 1000
 const T0 = Date.UTC(2026, 8, 1)
 const linear = (target = 25, revision = 1) => ruleOccurrence('0025', { revision, options: { target: { mode: 'absolute', value: target, unit: 'kg' } } })
-const profile = () => ({ unit: 'kg', workouts: [], prescriptions: {}, oneRepMaxes: {}, progression: {} })
+const profile = () => ({ unit: 'kg', oneRmFormula: 'epley', workouts: [], prescriptions: {}, oneRepMaxes: {}, progression: {} })
 const start = (S, occ, day) => {
   const exposures = buildSessionExposures(S, { id: 'r1', ex: [occ] }, { now: T0 + day * DAY, newId: s => s, unit: 'kg' })
   return { id: 'w' + day, d: 'd' + day, start: 1, routineIds: ['r1'], name: 'Push', exposures, entries: entriesForExposures(exposures, S.prescriptions) }

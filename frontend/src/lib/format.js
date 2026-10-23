@@ -59,6 +59,8 @@ export const fmtNum = n => {
   const p = decimals === 2 ? 100 : 10
   return (Math.round(n * p) / p).toLocaleString(dateLocale(), { maximumFractionDigits: decimals })
 }
+// " (135–150)" after an estimate; nothing when the models agree (a single to failure has no spread).
+export const fmtSpread = (low, high) => (high > low ? ` (${fmtNum(low)}–${fmtNum(high)})` : '')
 // Plate sizes keep their quarter: 1.25 and 21.25 are real numbers on a plate and a bar.
 export const fmtPlate = n => (Math.round(n * 100) / 100).toLocaleString(dateLocale())
 // Volume stays in the profile's unit throughout: the old shorthand turned anything over

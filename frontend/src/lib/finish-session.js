@@ -4,7 +4,7 @@ import { advanceProgression, auditExecution, currentOneRm, summarizeActual } fro
 import { actualOfRow, exposuresWithPerformance } from './session-ui-adapter.js'
 import { isWarmupRow } from './workout-model.js'
 import { betterWeight, beatsWeight } from './exercises.js'
-import { bestSetOf, is1RMRecord, oneRmForMeaning } from './onerm.js'
+import { bestSetOf, formulaOf, is1RMRecord, oneRmForMeaning } from './onerm.js'
 import { workoutVolume, bestWeightFor } from './history.js'
 
 export function buildCompletedSession(active, profile, { end, newId, unit }) {
@@ -28,9 +28,9 @@ export function buildCompletedSession(active, profile, { end, newId, unit }) {
       progression[exposure.trackId] = advanceProgression({ state, prescription: p, log: { id: exposure.exposureId, actual, performance: exposure.performance }, now: completedAt })
     }
     // An assistance machine has no 1RM: the load is the help you were given (issue #232).
-    const best = bestSetOf({ ...exposure, assisted: p.assisted ?? exposure.assisted })?.est ?? 0
-    if (best > (oneRmForMeaning(profile, exposure.exerciseId, exposure.dbLoad || 'as')?.value || 0)) {
-      oneRepMaxes.push({ id: newId(`one-rep-max:${exposure.exposureId}`), exerciseId: exposure.exerciseId, value: best, unit, ...(exposure.dbLoad ? { dbLoad: exposure.dbLoad } : {}), source: 'estimated', capturedAt: completedAt, sourceRecordId: exposure.exposureId })
+    const best = bestSetOf({ ...exposure, assisted: p.assisted ?? exposure.assisted }, formulaOf(profile))
+    if ((best?.est ?? 0) > (oneRmForMeaning(profile, exposure.exerciseId, exposure.dbLoad || 'as')?.value || 0)) {
+      oneRepMaxes.push({ id: newId(`one-rep-max:${exposure.exposureId}`), exerciseId: exposure.exerciseId, value: best.est, low: best.low, high: best.high, unit, ...(exposure.dbLoad ? { dbLoad: exposure.dbLoad } : {}), source: 'estimated', capturedAt: completedAt, sourceRecordId: exposure.exposureId })
     }
     return { ...exposure, completedAt, actual, audit, sourceAudit: { ...p.provenance }, ...(done ? {} : { excludedFromProgression: true }) }
   })

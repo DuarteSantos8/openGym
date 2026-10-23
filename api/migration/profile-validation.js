@@ -85,7 +85,8 @@ function validateStructure(state) {
 /** The shape of one `oneRepMaxes` record (its source link, if any, is checked against the workouts). */
 export function validOneRepMax(key, r) {
   return isObj(r) && r.id === key && typeof r.exerciseId === 'string' && r.exerciseId !== '' && Number.isFinite(r.value) && r.value > 0 && ['kg', 'lb'].includes(r.unit)
-    && typeof r.capturedAt === 'string' && Number.isFinite(Date.parse(r.capturedAt)) && ['estimated', 'tested', 'manual', 'entered'].includes(r.source);
+    && typeof r.capturedAt === 'string' && Number.isFinite(Date.parse(r.capturedAt)) && ['estimated', 'tested', 'manual', 'entered'].includes(r.source)
+    && (r.low == null && r.high == null || Number.isFinite(r.low) && Number.isFinite(r.high) && r.low <= r.value && r.value <= r.high);
 }
 
 /** Validate structures consumers dereference; logged finite values need not match the plan. */

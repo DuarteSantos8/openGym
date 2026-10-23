@@ -7,6 +7,7 @@ import Icon from './Icon.jsx'
 import Stepper from './Stepper.jsx'
 import { Button, Row, Segmented, SelectButton, SelectRow, Switch } from './ui.jsx'
 import { t } from '../lib/i18n.js'
+import { fmtNum, fmtSpread } from '../lib/format.js'
 import { durationSheet } from './DurationWheel.jsx'
 import { REST_MAX, fmtRest } from '../lib/duration.js'
 import { pyramidLabel, PYRAMID_PRESETS, PYRAMID_MAX, MAX_PYRAMID_SETS } from '../lib/pyramid.js'
@@ -67,7 +68,7 @@ function RangeField({ label, value, step = 1, policy = 'range', onChange }) {
 }
 
 // `value` is the low end; `upTo` the optional high end (loadTo), offered when `rangeable`.
-function LoadField({ label, value, upTo, rangeable = false, unit, step, noneMode, onChange }) {
+function LoadField({ label, value, upTo, rangeable = false, unit, step, noneMode, oneRm = null, onChange }) {
   const [open, setOpen] = useState(false)
   const modes = [
     ...(noneMode ? [{ value: noneMode, label: t('None') }] : []),
@@ -94,6 +95,10 @@ function LoadField({ label, value, upTo, rangeable = false, unit, step, noneMode
       <SelectButton className="unit-btn" title={label} value={value.mode} options={modes} onChange={setMode} />
       {rangeable && loaded && <RangeToggle ranged={ranged} onToggle={toggle} />}
     </div>
+    {/* What a % of the 1RM comes to: the weight, and the weights the spread of the 1RM gives. */}
+    {value.mode === 'percent_1rm' && oneRm && [value, ranged && upTo].filter(Boolean).map((v, i) => <div key={i} className="small dim" style={{ marginTop: 4 }}>
+      {t('{0}% of {1} → {2}', v.percent, fmtNum(oneRm.value) + fmtSpread(oneRm.low, oneRm.high), fmtNum(oneRm.value * v.percent / 100) + fmtSpread(oneRm.low * v.percent / 100, oneRm.high * v.percent / 100) + ' ' + unit)}
+    </div>)}
   </div>
 }
 
@@ -102,7 +107,7 @@ function LoadField({ label, value, upTo, rangeable = false, unit, step, noneMode
 // stay mounted and the other one is hidden, so a field keeps what was typed while you switch.
 // Without it the editor is one flat form, Progression then Target. `extra` closes the Target form
 // with what the caller owns beside the rule (the sheet's sets to failure).
-export default function RuleEditor({ rule, unit, effort, assisted = false, bodyweight = false, restDefault = false, defaultRest = 90, onRestDefault, onChange, tab, extra = null }) {
+export default function RuleEditor({ rule, unit, effort, assisted = false, bodyweight = false, oneRm = null, restDefault = false, defaultRest = 90, onRestDefault, onChange, tab, extra = null }) {
   const def = PRESETS[rule.preset]
   // The template's numbers (planOptions): the plan's sets, reps, load… and its extras (offsets, rungs…).
   const p = planOptions(rule)
@@ -249,7 +254,7 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
       ? <RangeField key={'sec' + rule.preset} label={t('Seconds')} value={p.durationSeconds} step={5} policy={def.ranges.durationSeconds} onChange={durationSeconds => set({ durationSeconds })} />
       : <RangeField key={'reps' + rule.preset} label={rule.preset === 'top_set_backoff' ? t('Top set reps') : t('Reps')} value={p.reps} policy={def.ranges.reps} onChange={reps => set({ reps })} />)}
     {!cyclic && <LoadField key={rule.preset} label={p.offsets || rule.preset === 'top_set_backoff' ? t('Anchor load') : t('Starting load')} value={p.load} upTo={p.loadTo ?? undefined} rangeable={def.ranges.load === 'range'}
-      unit={unit} step={step} noneMode={loaded || rule.preset === 'density' ? null : 'empty'} onChange={setLoad} />}
+      unit={unit} step={step} noneMode={loaded || rule.preset === 'density' ? null : 'empty'} oneRm={oneRm} onChange={setLoad} />}
     {rule.preset === 'top_set_backoff' && <div style={{ marginBottom: 14 }}>
       <div className="sect-b" style={{ marginBottom: 8 }}>
         <SelectRow title={t('Decides the next load')} sheetTitle={t('Decides the next load')} value={p.scope} onChange={scope => set({ scope })}
@@ -358,7 +363,7 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
       onChange={e => set({ rungs: e.target.value.split('\n') })}
       onBlur={e => set({ rungs: e.target.value.split('\n').map(x => x.trim()).filter(Boolean) })} />}
 
-    {def.metrics.includes('target_load') && <LoadField label={t('Target load')} value={p.target} unit={unit} step={step} noneMode="none" onChange={target => set({ target })} />}
+    {def.metrics.includes('target_load') && <LoadField label={t('Target load')} value={p.target} unit={unit} step={step} noneMode="none" oneRm={oneRm} onChange={target => set({ target })} />}
     <div className="sect-b" style={{ marginBottom: 14 }}>
       <Row icon="timer" iconTint="var(--orange)" title={rule.preset === 'density' ? t('Starting rest') : t('Rest for this exercise')} accessory="chevron"
         value={restDefault ? t('Default ({0})', fmtRest(defaultRest)) : fmtRest(p.restSeconds)}

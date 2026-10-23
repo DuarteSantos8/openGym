@@ -479,3 +479,22 @@ describe('pyramid per-set loading', () => {
     expect(o(onRemove.mock.calls.at(-1)[0]).setWeights).toEqual([40, 60])
   })
 })
+
+describe('% 1RM load hint', () => {
+  const pct = (p, extra) => withParams(linear(), { load: { mode: 'percent_1rm', percent: p }, ...extra })
+  const hint = () => [...host.querySelectorAll('.small.dim')].map(n => n.textContent).find(x => x.includes('% of'))
+
+  it('says what the percentage comes to, with the spread of the 1RM carried through', () => {
+    render({ rule: pct(70), oneRm: { value: 142, low: 135, high: 150 } })
+    expect(hint()).toBe('70% of 142 (135–150) → 99.4 (94.5–105) kg')
+  })
+
+  it('leaves the range out when the models agree, and says nothing without a 1RM or for an absolute load', () => {
+    render({ rule: pct(70), oneRm: { value: 100, low: 100, high: 100 } })
+    expect(hint()).toBe('70% of 100 → 70 kg')
+    render({ rule: pct(70), oneRm: null })
+    expect(hint()).toBeUndefined()
+    render({ rule: linear(), oneRm: { value: 142, low: 135, high: 150 } })
+    expect(hint()).toBeUndefined()
+  })
+})

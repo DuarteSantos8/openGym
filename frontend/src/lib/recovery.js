@@ -305,7 +305,7 @@ function sessionBests(workout, opts = {}) {
       const reps = numeric(side?.r)
       const logged = rirOf(side) ?? rirOf(set)
       const effective = reps != null && logged != null ? reps + logged : reps
-      const est = estimate1RM(loadKgFor(ex, entry, set, workout, opts, side), effective)
+      const est = estimate1RM(loadKgFor(ex, entry, set, workout, opts, side), effective, 'epley')
       if (est !== null && (!best.has(exId) || est > best.get(exId))) best.set(exId, est)
     }
   }

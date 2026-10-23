@@ -7,7 +7,7 @@
 // later, against the data as it was then.
 import { EXIDX } from './exercises.js'
 import { workoutAt, workoutVolume } from './history.js'
-import { bestSetOf } from './onerm.js'
+import { bestSetOf, formulaOf } from './onerm.js'
 import { weighInAt } from './bodyweight.js'
 
 const median = arr => {
@@ -62,7 +62,7 @@ export function insightsFor(S, win = {}, { topN = 3 } = {}) {
 
   const series = new Map()
   ws.forEach(w => exposuresOf(w).forEach(exposure => {
-    const best = bestSetOf(exposure)
+    const best = bestSetOf(exposure, formulaOf(S))
     if (!best) return
     if (!series.has(exposure.exerciseId)) series.set(exposure.exerciseId, [])
     series.get(exposure.exerciseId).push({ t: workoutAt(w), d: w.d, y: Math.round(best.est * 10) / 10 })
@@ -101,9 +101,9 @@ export function sessionInsights(S, workout) {
   const now = stat(workout)
   const then = prev ? stat(prev) : null
   const lifts = exposuresOf(workout).map(exposure => {
-    const best = bestSetOf(exposure)
+    const best = bestSetOf(exposure, formulaOf(S))
     const previous = exposuresOf(prev).find(x => x.exerciseId === exposure.exerciseId)
-    const pb = previous ? bestSetOf(previous) : null
+    const pb = previous ? bestSetOf(previous, formulaOf(S)) : null
     return best ? { id: exposure.exerciseId, name: nameOf(S, exposure.exerciseId), est: Math.round(best.est * 10) / 10, w: best.w, r: best.r, prev: pb ? Math.round(pb.est * 10) / 10 : null } : null
   }).filter(Boolean)
   return { now, then, prevDate: prev?.d || null, lifts }

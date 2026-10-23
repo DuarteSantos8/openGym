@@ -3,7 +3,7 @@ import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V } from './lib/equipment.js'
-import { fmtDate, fmtNum, capWords, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS, weightDecimals, fmtDateRange, fmtPlate, exerciseNameText, setsWorkCount } from './lib/format.js'
+import { fmtDate, fmtNum, capWords, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS, weightDecimals, fmtDateRange, fmtPlate, fmtSpread, exerciseNameText, setsWorkCount } from './lib/format.js'
 import { lastEntryFor, bestWeightFor, bestWeightForEntry, effectiveRoutineIds, workoutVolume, setsDone, setsDoneActive, setUnitsTotal, lastBW, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, NOTE_MAX, volumeOf, workoutDay, sessionSections, MAX_PLANNED_WARMUPS } from './lib/history.js'
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
 import { PLATE_SIZES, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
@@ -34,7 +34,7 @@ import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWei
 import { parseImport, mergeImport } from './lib/import-csv.js'
 import { importHevyData, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines } from './lib/import-hevy.js'
 import { buildPlanBundle, parsePlan, mergePlan, printPlan, planPrintHTML } from './lib/plan-share.js'
-import { estimate1RM, best1RM, is1RMRecord, REP_CAP, formulaOf, FORMULA_NAMES } from './lib/onerm.js'
+import { estimate1RMRange, best1RM, is1RMRecord, oneRmForMeaning, repCapOf, formulaOf, FORMULA_NAMES } from './lib/onerm.js'
 import { exerciseHistory } from './lib/exercise-history.js'
 import { isBellEx, dbLoadOf, dbLoadFor, withDbLoad, withMeaning, historyAs, entryDbLoad, currentDbLoad, isOneArm, ownedWeightsFor, dumbbellsOf, ownsDumbbells, withDumbbells, presetWeights, cleanWeights } from './lib/dumbbells.js'
 import { normalizeRepRange } from './lib/rep-range.js'
@@ -991,23 +991,27 @@ function OneRM({ ex }) {
   const best = best1RM(st, ex.id)
   const [w, setW] = useState(best ? best.w : (st.exWeights[ex.id] || {}).w || 20)
   const [r, setR] = useState(best ? best.r : 5)
-  const est = estimate1RM(w, r, formulaOf(st))
+  const [rir, setRir] = useState(0)
+  const range = estimate1RMRange(w, r, formulaOf(st), rir)
+  const est = range?.mid ?? null
   return <>
     <h4 className="sec">{t('Estimated 1RM')}</h4>
     {best && <div className="small" style={{ marginBottom: 8 }}>
       {t('From your log:')} <b className="accent">{fmtNum(best.est)} {st.unit}</b>
+      <span className="dim">{fmtSpread(best.low, best.high)}</span>
       <span className="dim"> · {t('{0} × {1} on {2}', fmtNum(best.w) + ' ' + st.unit, best.r, fmtDate(best.d, true))}</span>
     </div>}
     <div className="row cfgrow" style={{ marginBottom: 10 }}>
       <Stepper label={t('Weight ({0})', st.unit)} value={w} step={2.5} onChange={setW} />
       <Stepper label={t('Reps')} value={r} step={1} decimal={false} onChange={setR} />
+      {formulaOf(st) === 'weighted' && <Stepper label={t('RIR')} value={rir} step={1} decimal={false} max={5} onChange={setRir} />}
     </div>
     <div className="row between" style={{ marginBottom: 4 }}>
       <span className="muted small">{t('Estimate')}</span>
-      <b className="accent" style={{ fontSize: 20 }}>{est === null ? '–' : fmtNum(est) + ' ' + st.unit}</b>
+      <b className="accent" style={{ fontSize: 20 }}>{est === null ? '–' : fmtNum(est) + fmtSpread(range.low, range.high) + ' ' + st.unit}</b>
     </div>
     <div className="small dim">{est === null
-      ? t('Enter a weight and 1–{0} reps. Beyond that it’s basically guesswork.', REP_CAP)
+      ? t('Enter a weight and 1–{0} reps. Beyond that it’s basically guesswork.', repCapOf(formulaOf(st)))
       : formulaOf(st) === 'weighted'
         ? t('A blend of seven formulas: calculated from one set, not a tested max.')
         : t('{0} formula: calculated from one set, not a tested max.', FORMULA_NAMES[formulaOf(st)])}</div>
@@ -1111,7 +1115,7 @@ function ExerciseHistory({ exId }) {
   const [curve, setCurve] = useState('top')
   const onE1 = curve === 'e1rm' && h.e1rmPoints.length > 0
   const unit = h.metric === 'weight' ? st.unit : h.metric === 'reps' ? t('reps') : h.metric === 'sec' ? 's' : t('min')
-  const e1Best = useMemo(() => Math.max(0, ...h.e1rmPoints.map(p => p.y)), [h])
+  const e1Top = useMemo(() => h.e1rmPoints.reduce((a, p) => (!a || p.y > a.y ? p : a), null), [h])
   if (!h.total) return <>
     <h3 className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h3>
     <div className="empty"><div className="ico"><Icon name="history" /></div>{t('No sessions logged yet')}</div>
@@ -1131,7 +1135,7 @@ function ExerciseHistory({ exId }) {
     </div>
     <div className="small row" style={{ margin: '6px 0 4px', gap: 5 }}>
       <Icon name="trophy" style={{ fontSize: 14, color: 'var(--yellow)' }} />
-      {t('Best:')} <b className="accent">{fmtNum(onE1 ? e1Best : h.best)} {onE1 ? st.unit : unit}</b>
+      {t('Best:')} <b className="accent">{fmtNum(onE1 ? e1Top.y : h.best)}{onE1 && fmtSpread(e1Top.low, e1Top.high)} {onE1 ? st.unit : unit}</b>
     </div>
     <h4 className="sec">{h.sessions.length < h.total ? t('Last {0} sessions', h.sessions.length) : t('Sessions')}</h4>
     <div className="list">
@@ -1839,7 +1843,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, s
           onChange={v => setCardioCfg(x => ({ ...x, speed: fromSpeed(v, speedUnit) }))} />
       </div>)}
       {panel('progression', <div className="small dim">{t('Cardio uses intervals, duration and speed. Strength progression templates do not apply.')}</div>)}
-    </> : <RuleEditor tab={tab} rule={rule} unit={st.unit} effort={effortOf(st) !== 'none'} assisted={assisted} bodyweight={bw} onChange={next => {
+    </> : <RuleEditor tab={tab} rule={rule} unit={st.unit} oneRm={oneRmForMeaning(st, rule.exerciseId, currentDbLoad(st, rule.exerciseId))} effort={effortOf(st) !== 'none'} assisted={assisted} bodyweight={bw} onChange={next => {
       setRule(next)
       if (next.preset === 'greyskull' && !failureDecided.current) setFailure('last')
     }}
@@ -2826,10 +2830,19 @@ function OneRmPrompt({ exerciseIds, onDone, close }) {
   return <>
     <h3>{t('One-rep max needed')}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>{t('These exercises are planned as a % of your 1RM. Enter it for exact weights, or skip and fill the weights in yourself.')}</div>
-    {exerciseIds.map(id => <div key={id} className="row between" style={{ marginBottom: 8 }}>
-      <span className="capitalize">{exerciseNameFor(exOr(id))} ({unit})</span>
-      <NumberField value={values[id] ?? ''} aria-label={t('1RM for {0}', exerciseNameFor(exOr(id)))} onChange={v => setValues(x => ({ ...x, [id]: v }))} />
-    </div>)}
+    {exerciseIds.map(id => { const logged = best1RM(S(), id); return <div key={id} style={{ marginBottom: 8 }}>
+      <div className="row between">
+        <span className="capitalize">{exerciseNameFor(exOr(id))} ({unit})</span>
+        <NumberField value={values[id] ?? ''} aria-label={t('1RM for {0}', exerciseNameFor(exOr(id)))} onChange={v => setValues(x => ({ ...x, [id]: v }))} />
+      </div>
+      {logged && <div className="row small" style={{ gap: 6, flexWrap: 'wrap', marginTop: 4, alignItems: 'center' }}>
+        <span className="dim">{t('From your log:')}</span>
+        {(logged.high > logged.low
+          ? [[t('Low'), logged.low], [t('Central'), logged.est], [t('High'), logged.high]]
+          : [[t('Use'), logged.est]]
+        ).map(([label, v]) => <Button key={label} size="sm" variant={Number(values[id]) === v ? 'tinted' : 'ghost'} onClick={() => setValues(x => ({ ...x, [id]: v }))}>{label} {fmtNum(v)}</Button>)}
+      </div>}
+    </div> })}
     <Button variant="primary" onClick={() => finish(true)}>{t('Save and start')}</Button>
     <div style={{ height: 8 }} />
     <Button variant="ghost" onClick={() => finish(false)}>{t('Skip')}</Button>
@@ -3274,7 +3287,7 @@ function FinishSummary({ w, prs, e1prs = [], close }) {
     </div>
     {(prs.length > 0 || e1prs.length > 0) && <div style={{ textAlign: 'start', marginBottom: 12 }}>
       {prs.map(id => <div key={id} className="small accent row" style={{ gap: 5 }}><Icon name="trophy" style={{ fontSize: 13 }} />{t('New PR:')} <span className={exerciseNameClass(EXIDX[id])}>{EXIDX[id] ? exerciseNameFor(EXIDX[id]) : id}</span></div>)}
-      {e1prs.map(p => <div key={p.id} className="small accent row" style={{ gap: 5 }}><Icon name="chartLine" style={{ fontSize: 13 }} />{t('Best estimated 1RM:')} <span className={exerciseNameClass(EXIDX[p.id])}>{EXIDX[p.id] ? exerciseNameFor(EXIDX[p.id]) : p.id}</span> · {fmtNum(p.est)} {st.unit}</div>)}
+      {e1prs.map(p => <div key={p.id} className="small accent row" style={{ gap: 5 }}><Icon name="chartLine" style={{ fontSize: 13 }} />{t('Best estimated 1RM:')} <span className={exerciseNameClass(EXIDX[p.id])}>{EXIDX[p.id] ? exerciseNameFor(EXIDX[p.id]) : p.id}</span> · {fmtNum(p.est)}{fmtSpread(p.low, p.high)} {st.unit}</div>)}
     </div>}
     <h4 className="sec" style={{ textAlign: 'start' }}>{t('What you just trained')}</h4>
     <BodyMap load={loadOfWorkouts([w])} body={st.body} />

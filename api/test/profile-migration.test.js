@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { defaultPlanRule, generatePrescription, planFingerprint, planPhase, planOptions } from '../engine/index.js';
 import { isLegacyProfile, migrateProfileV1ToV2, migrationStatus, validateCanonicalActive, validateCanonicalProfile } from '../migration/profile-migration.js';
 import { LIB_BY_ID } from '../coach/core/library.js';
+import { validOneRepMax } from '../migration/profile-validation.js';
 
 // Whether the last finish on a track earned a load step: the next session's load is not the one it was prescribed.
 const earned = (profile, trackId) => {
@@ -14,7 +15,7 @@ const migrate = state => migrateProfileV1ToV2(state, LIB_BY_ID);
 const BENCH = '0025', SITUP = '0001', CARDIO = '3220', DIP = '0009';   // barbell, body weight, cardio, assisted machine
 const row = (r, w, extra = {}) => ({ r, w, done: true, ...extra });
 const v1 = (over = {}) => ({
-  unit: 'kg', restSec: 90, _rev: 7, _ts: 5, week: { 1: 'r1' }, exWeights: {}, bodyweight: [], customEx: [],
+  oneRmFormula: 'epley', unit: 'kg', restSec: 90, _rev: 7, _ts: 5, week: { 1: 'r1' }, exWeights: {}, bodyweight: [], customEx: [],
   routines: [{ id: 'r1', name: 'Push', emoji: 'figureStrength', ex: [
     { id: BENCH, sets: 3, reps: 5, weight: 60, prog: 'linear', warmupSets: 3 },
     { id: SITUP, sets: 3, reps: 12, prog: 'linear' }
@@ -766,6 +767,14 @@ test('A43: a migrated rest-pause block freezes one deciding row aiming at its fu
   assert.equal(p.rows.length, 1); assert.equal(p.prefill.reps, 12); assert.equal(p.rows[0].reps.min, 5);
   assert.equal(earned(profile, 'r1:o0'), true);
   assert.deepEqual(x.performance.sets[0].clusters, [{ r: 6 }, { r: 4 }, { r: 2 }]);
+});
+
+test('1RM: migrated estimates follow the profile\'s formula, the blend when none is picked, and carry a range', () => {
+  const epley = Object.values(migrate(v1()).profile.oneRepMaxes)[0];
+  const blend = Object.values(migrate(v1({ oneRmFormula: undefined })).profile.oneRepMaxes)[0];
+  assert.notEqual(blend.value, epley.value);
+  assert.ok(blend.low < blend.value && blend.value < blend.high);
+  assert.ok(validOneRepMax(blend.id, blend));
 });
 
 test('A48: explicit false assistance overrides the catalogue for estimates', () => {

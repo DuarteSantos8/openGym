@@ -1,4 +1,4 @@
-import { bestSetOf } from './onerm.js'
+import { bestSetOf, formulaOf } from './onerm.js'
 import { volumeOf, workoutAt } from './history.js'
 import { beatsWeight } from './exercises.js'
 import { currentDbLoad, historyAs, volumeFactor, workoutAs } from './dumbbells.js'
@@ -66,13 +66,14 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
     const exposure = exposures.at(-1)
     const same = m === mode
     const value = same ? valueOf({ rows }) : null
-    const e1rm = m === 'reps' ? Math.max(0, ...exposures.map(x => bestSetOf(x)?.est ?? 0)) || null : null
+    const top = m === 'reps' ? exposures.map(x => bestSetOf(x, formulaOf(S))).reduce((a, b) => (b && (!a || b.est > a.est) ? b : a), null) : null
+    const e1rm = top?.est ?? null
     const t = workoutAt(w)
     // "PR" goes on the session that first reached the all-time best, not on every session
     // that later matched it — one marker says where the record was set.
     if (value != null && value > best) { best = value; prId = w.id }
     if (value != null && value > 0) points.push({ t, d: w.d, y: value, e1rm })
-    if (e1rm != null) e1rmPoints.push({ t, d: w.d, y: e1rm })
+    if (e1rm != null) e1rmPoints.push({ t, d: w.d, y: e1rm, low: top.low, high: top.high })
     sessions.push({
       id: w.id, d: w.d, t, mode: m, target: plannedTarget(S.prescriptions?.[exposure.prescriptionId]), sets: rows.map(rowView), value, e1rm,
       volume: m === 'reps' ? exposures.reduce((v, x) => v + volumeOf({ sets: rowsFor(x) }) * volumeFactor(x), 0) : null,
