@@ -274,12 +274,13 @@ export function applyEvents (events, getState) {
         if (!appHandlers) break
         appHandlers.patchSet({ wid: ev.wid, exId: ev.exId, entryIdx: ev.entryIdx, setIdx: ev.setIdx }, fields)
       }
-    } else if (ev.type === 'finish' && ours) {
+    } else if ((ev.type === 'finish' || ev.type === 'discard') && ours) {
       if (!handlers) {
         if (appHandlers?.openWorkout) appHandlers.openWorkout()
         break
       }
-      handlers.finish()
+      if (ev.type === 'finish') handlers.finish()
+      else handlers.discard?.()
     }
     // Applied, or meaningless now (another workout, a set that is gone): either way it is done.
     applied.push(ev.id)
@@ -413,6 +414,15 @@ export function healthGoneFor (S, max = HEALTH_GONE_MAX) {
 }
 
 /**
+ * The ids of the newest workouts in the log, for the watch to tell a workout finished on the phone
+ * (it is in the log, with the id it had while running) from one discarded there (it is not), and
+ * save its Apple Health copy only for the first.
+ */
+export function savedIdsFor (S, max = 5) {
+  return (Array.isArray(S?.workouts) ? S.workouts.slice(-max) : []).map(w => w?.id).filter(id => id != null).map(String)
+}
+
+/**
  * What the watch takes from the app beyond its own settings: the app's language (the watch shows
  * its words in it, whatever the watch itself is set to), and whether a workout starts with the
  * weigh-in (Settings → During a workout) with the last body weight to start the crown from.
@@ -472,6 +482,9 @@ export async function startWatchSync ({ useStore, useUI }) {
       snap.settings = { ...settingsForWatch(prefs, healthOn), ...watchExtras(S) }
       // With Apple Health on: the deleted workouts, so the watch removes the copies it saved.
       if (healthOn) { const gone = healthGoneFor(S); if (gone.length) snap.healthGone = gone }
+      // No workout running: which ones were saved, so a discard on the phone stays out of Health.
+      // Not with the watch switched off mid-workout: that sends no workout, but nothing was discarded.
+      if (!S.active) snap.saved = savedIdsFor(S)
       const json = JSON.stringify(fitSnapshot(snap))
       if (json !== lastSent) {
         const r = await p.WatchBridge.sendSnapshot({ json })

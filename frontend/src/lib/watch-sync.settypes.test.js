@@ -176,6 +176,14 @@ describe('workouts deleted in openGym, for the watch\'s own copies in Apple Heal
     expect(healthGoneFor({})).toEqual([])
   })
 
+  it('names the newest logged workouts, so a discard on the phone is not saved by the watch', async () => {
+    const { savedIdsFor } = await import('./watch-sync.js')
+    const S = { workouts: [{ id: 'a' }, { id: 1 }, {}, { id: 'c' }] }
+    expect(savedIdsFor(S)).toEqual(['a', '1', 'c'])
+    expect(savedIdsFor(S, 2)).toEqual(['c'])
+    expect(savedIdsFor({})).toEqual([])
+  })
+
   it('the watch saying it removed them makes the phone sync Health again, once', () => {
     const healthDeleted = vi.fn()
     bindWatchAppActions({ start: vi.fn(), patchSet: vi.fn(), healthDeleted })

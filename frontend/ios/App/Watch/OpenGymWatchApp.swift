@@ -771,6 +771,7 @@ struct FinishPage: View {
         .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         .confirmationDialog("Finish workout?", isPresented: $confirming) {
             Button("Finish and save") { store.finish() }
+            Button("Discard workout", role: .destructive) { store.discard() }
             Button("Cancel", role: .cancel) {}
         }
     }

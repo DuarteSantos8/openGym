@@ -68,6 +68,14 @@ describe('a set ticked on the watch', () => {
     expect(S.workouts.at(-1)).toMatchObject({ id: 'w-watch' })
     expect(S.workouts.at(-1).entries[0].sets[0]).toMatchObject({ w: 60, r: 8, done: true, at })
   })
+
+  it('the watch\'s Discard drops the workout without saving it', () => {
+    const before = useStore.getState().S.workouts.length
+    act(() => { applyEvents([{ id: 'x1', type: 'discard', wid: 'w-watch', at: Date.now() }], () => useStore.getState()) })
+    const S = useStore.getState().S
+    expect(S.active).toBeNull()
+    expect(S.workouts.length).toBe(before)
+  })
 })
 
 describe('the same set on both sides', () => {

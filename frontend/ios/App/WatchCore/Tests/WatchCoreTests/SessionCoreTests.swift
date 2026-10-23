@@ -68,6 +68,16 @@ final class SessionCoreTests: XCTestCase {
         XCTAssertEqual(s.workout?.id, "p2", "the next workout does show")
     }
 
+    func testDiscardedOnTheWatchTellsThePhoneAndStaysGone() {
+        var s = SessionCore.applySnapshot(SessionState(), snap(workout("p1", sets: [row(60, 8)])))
+        let (d, event) = SessionCore.finish(s, at: 5000, id: "d1", discard: true)
+        s = d
+        XCTAssertEqual(event?["type"] as? String, "discard")
+        XCTAssertEqual(event?["wid"] as? String, "p1")
+        s = SessionCore.applySnapshot(s, snap(workout("p1", sets: [row(60, 8)])))
+        XCTAssertNil(s.workout, "a snapshot from before the phone dropped it does not bring it back")
+    }
+
     func testFinishedOnThePhoneEndsItHere() {
         var s = SessionCore.applySnapshot(SessionState(), snap(workout("p1", sets: [row(60, 8)])))
         s = SessionCore.applySnapshot(s, snap(nil))

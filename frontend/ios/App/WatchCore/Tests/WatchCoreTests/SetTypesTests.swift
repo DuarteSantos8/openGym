@@ -238,4 +238,12 @@ final class HealthDeleteTests: XCTestCase {
         let snap = try JSONDecoder().decode(Snapshot.self, from: Data(#"{"v":1,"healthGone":["opengym-w-x"]}"#.utf8))
         XCTAssertEqual(snap.healthGone, ["opengym-w-x"])
     }
+
+    func testAWorkoutDiscardedOnThePhoneIsNotSavedToHealth() throws {
+        let ended = try JSONDecoder().decode(ActiveWorkout.self, from: Data(#"{"id":"w1","name":"Push","unit":"kg","cur":0,"restSec":90,"entries":[]}"#.utf8))
+        let read = { (json: String) in try JSONDecoder().decode(Snapshot.self, from: Data(json.utf8)) }
+        XCTAssertTrue(SessionCore.savesEnded(ended, try read(#"{"v":1,"saved":["w0","w1"]}"#)))
+        XCTAssertFalse(SessionCore.savesEnded(ended, try read(#"{"v":1,"saved":["w0"]}"#)))
+        XCTAssertTrue(SessionCore.savesEnded(ended, try read(#"{"v":1}"#)))
+    }
 }
