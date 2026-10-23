@@ -692,6 +692,71 @@ function sessionUser(tok) {
 function readSession(req) {
   return sessionOf(req)?.user || null;
 }
+
+/* ---------- planner tokens ---------- */
+// A planner is a program that writes a profile's training for its owner: the floating week in
+// S.queue ("written by an API client", openapi.yaml), its routines and their weights. It runs on
+// the server's side with nobody signed in, so it cannot hold a session; PLANNER_TOKENS gives it a
+// fixed bearer token instead, `<token>=<uid>` pairs, comma-separated. Each token acts as its own
+// mapped user, on GET and PUT /api/data only, so one person's planner can never read or write
+// another's profile. With the variable unset nothing below does anything.
+//
+// Misconfiguration refuses to boot rather than half-working: a token with no uid could only ever
+// 401, a short one is worth guessing, the same token twice keeps only the last uid (a Map dedupes
+// by key, in silence), and two tokens for one uid is the copy-paste that has a second person's
+// planner rewrite the first person's training.
+const plannerPairs = (process.env.PLANNER_TOKENS || '').split(',').map(s => s.trim()).filter(Boolean)
+  .map(pair => {
+    // Split at the last '=': a uid never holds one, and a base64 token can end in its padding.
+    const i = pair.lastIndexOf('=');
+    return i > 0 ? [pair.slice(0, i).trim(), pair.slice(i + 1).trim()] : [pair, ''];
+  });
+{
+  const refuse = why => { console.error(`planner tokens: ${why}, refusing to start`); process.exit(1); };
+  const toks = plannerPairs.map(([tok]) => tok), uids = plannerPairs.map(([, uid]) => uid);
+  if (new Set(toks).size !== toks.length) refuse('PLANNER_TOKENS lists the same token twice');
+  if (plannerPairs.some(([tok, uid]) => tok.length < 32 || !uid)) refuse('every token must be at least 32 characters and name a uid');
+  if (new Set(uids).size !== uids.length) refuse('two tokens map to the same uid');
+  if (plannerPairs.length) console.log(`planner tokens: on, uids=${uids.join(',')} routes=GET,PUT /api/data`);
+}
+// Both sides are hashed before the compare: timingSafeEqual needs equal lengths, and every entry is
+// checked even after a hit, so the time a request takes says neither which user's token it was nor
+// how many are configured.
+const sha256 = s => crypto.createHash('sha256').update(s).digest();
+const PLANNER_DIGESTS = plannerPairs.map(([tok, uid]) => [sha256(tok), uid]);
+// The uid a request's bearer acts as, or null: no header, a paired phone's session bearer, or a
+// token that matches nothing.
+function plannerUidFor(req) {
+  const auth = req.headers.authorization || '';
+  if (!PLANNER_DIGESTS.length || !auth.startsWith('Bearer ')) return null;
+  const cand = sha256(auth.slice(7).trim());
+  let hit = null;
+  for (const [digest, uid] of PLANNER_DIGESTS) if (crypto.timingSafeEqual(cand, digest)) hit = uid;
+  return hit;
+}
+// The caller of the two data routes: a planner token acts as its user exactly as that user's
+// session would, anything else goes on to readSession (the cookie, or the paired app's bearer). A
+// bearer that matches nothing is a planner failure only when it is not a valid session either, or
+// every paired phone's sync would be one. Failures go through auditFail: anyone can send a junk
+// bearer, and unthrottled they would push the rest of the log out (it keeps the newest AUDIT_MAX
+// rows). A write is audited by PUT /api/data once it has landed; a read is not, since a planner
+// reads before every write.
+function plannerOrSession(req) {
+  const uid = plannerUidFor(req);
+  if (uid) {
+    const u = db.users.find(x => x.id === uid);
+    if (!u || u.disabled) {
+      auditFail(req, 'auth.planner.fail', u ? { ok: false, uid, msg: 'account-disabled' } : { ok: false, uid, msg: 'token-user-missing' });
+      return null;
+    }
+    return u;
+  }
+  const user = readSession(req);
+  if (!user && PLANNER_DIGESTS.length && (req.headers.authorization || '').startsWith('Bearer ')) {
+    auditFail(req, 'auth.planner.fail', { ok: false, msg: 'bad-token' });
+  }
+  return user;
+}
 // Guard for /api/admin/* — resolves the caller and 401/403s if they aren't an admin.
 function requireAdmin(req, res) {
   const user = readSession(req);
@@ -2381,11 +2446,13 @@ const routes = {
   // (sync-stamps.js ownRecord), `_prior` what each field held before (notePrior): read back only
   // by the next PUT, never sent to a client.
   'GET /api/data': async (req, res) => {
-    const user = readSession(req);
+    const user = plannerOrSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
     const state = readStateStrict(user.id);
     if (state === UNREADABLE) { console.error('state file unreadable for', user.id); return json(res, 503, { error: 'state unreadable' }); }
-    notePull(user);
+    // "Last sync" in the admin dashboard is when the user's own devices last pulled; a planner reads
+    // the document on every run, and counting that would show the planner's time instead.
+    if (!plannerUidFor(req)) notePull(user);
     json(res, 200, { state: forClient(state), rev: state?._rev || 0 });
   },
   // Just the revision: the client asks this every half minute while it is open and on every
@@ -2425,7 +2492,7 @@ const routes = {
   },
 
   'PUT /api/data': async (req, res) => {
-    const user = readSession(req);
+    const user = plannerOrSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
     const body = await readBody(req);
     if (!body.state || typeof body.state !== 'object') return json(res, 400, { error: 'state required' });
@@ -2519,6 +2586,8 @@ const routes = {
     if (MEDIA_ON) {
       try { MEDIA.noteState(user.id, body.state); } catch (e) { console.error('media noteState', e); }
     }
+    // A planner's write, recorded once it has landed (a 409 or a refused document is not one).
+    if (plannerUidFor(req)) audit(req, 'auth.planner.ok', { user });
     json(res, 200, { ok: true, ts: body.state._ts || null, rev: curRev + 1, wid: body.state._wid });
   },
 
