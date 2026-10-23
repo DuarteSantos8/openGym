@@ -27,12 +27,27 @@ export function warmupSteps(warmup, eq) {
 }
 
 /** The first positive resolved work load is the only reference — never a range end or a later row. */
-export function planWarmupRows({ rows, warmup, eq, rounding, floor = 0 }) {
+export function planWarmupRows({ rows, warmup, eq, rounding, floor = 0, assisted = false }) {
   const work = rows.find(r => r.load?.value > 0)?.load
   if (!work) return []
   // The set editor's step (see loadStepFor); an allowed-values rule has none, so the unit default.
   const down = { mode: 'down', step: rounding?.step || (work.unit === 'lb' ? 5 : 2.5) }
   const out = []
+  if (assisted) {
+    // An assistance machine's load is the help given, so less is harder: its warm-ups give MORE
+    // help instead. The first at 1.5x the work load, each next one halving what is left down to
+    // it, rounded UP to the step (a notch more help is still a warm-up).
+    let from = 0
+    for (const { reps } of warmupSteps(warmup, eq)) {
+      const top = from > 0 ? from : 2 * work.value
+      const x = work.value + (top - work.value) / 2
+      const value = Math.max(work.value, Math.ceil(x / down.step - 1e-9) * down.step)   // 1e-9: 37.5 / 2.5 must stay 15, not 16
+      if (value <= work.value || value === out.at(-1)?.load.value) continue
+      out.push({ load: { value, unit: work.unit }, reps, phase: 'warmup' })
+      from = value
+    }
+    return out
+  }
   for (const { percent, reps } of warmupSteps(warmup, eq)) {
     const ideal = work.value * percent / 100
     const allowed = eq === 'dumbbell' && rounding?.mode === 'allowed_values' ? rounding.allowedValues.filter(v => v <= ideal) : null

@@ -166,7 +166,7 @@ export function generatePrescription({ id, now, trackId, rule, state = null, las
   // A timed hold logs seconds, not reps: a rep ramp in front of it has nothing to count.
   // The ramp lands on the load increment's grid, as v1's rerampWarmups did.
   const stepOp = operatorFor(phase, 'load')?.step
-  const warmupRows = duration ? [] : planWarmupRows({ rows, warmup, eq: equipment, floor: warmupFloor, rounding: stepOp?.type === 'absolute' && rule.rounding.mode !== 'allowed_values' ? { mode: 'nearest', step: stepOp.value } : rule.rounding })
+  const warmupRows = duration ? [] : planWarmupRows({ rows, warmup, eq: equipment, floor: warmupFloor, assisted: assisted === true, rounding: stepOp?.type === 'absolute' && rule.rounding.mode !== 'allowed_values' ? { mode: 'nearest', step: stepOp.value } : rule.rounding })
 
   const body = {
     id, generatedAt: now, planRuleId: rule.id, planRuleRevision: rule.revision,

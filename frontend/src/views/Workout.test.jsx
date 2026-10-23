@@ -2894,13 +2894,13 @@ describe('workout controls: the more menu and the set menu', () => {
     await mount([plank, exercise('plain-row', [false])], 0)
     mocks.timer = { ready: true, left: 0, forIdx: 0, endsAt: 123 }
     await rerender()
-    expect(mocks.S.active.cur).toBe(1)
+    expect(mocks.A.cur).toBe(1)
     await unmount()
     mocks.timer = null
     await mount([exercise('plain-bench', [true, true]), exercise('plain-row', [false])], 0)
     mocks.timer = { ready: true, left: 0, forIdx: 0, endsAt: 124 }
     await rerender()
-    expect(mocks.S.active.cur).toBe(0)
+    expect(mocks.A.cur).toBe(0)
     mocks.timer = null
   })
 
@@ -2909,11 +2909,11 @@ describe('workout controls: the more menu and the set menu', () => {
     const three = () => [exercise('plain-bench', [false]), exercise('plain-row', [true, true]), exercise('plain-curl', [false])]
     await mount(three(), 0, { skipCompleted: true })
     await pressNext()
-    expect(mocks.S.active.cur).toBe(2)
+    expect(mocks.A.cur).toBe(2)
     await unmount()
     await mount(three(), 0)
     await pressNext()
-    expect(mocks.S.active.cur).toBe(1)
+    expect(mocks.A.cur).toBe(1)
   })
 
   it('opens a per-set menu from the set number with drop, burst and remove', async () => {
@@ -2976,7 +2976,7 @@ describe('workout controls: the more menu and the set menu', () => {
     const openSet = async k => { await act(async () => { container.querySelectorAll('button.n')[k].dispatchEvent(new dom.Event('click', { bubbles: true })) }) }
     await openSet(1)
     await act(async () => { item('Make it a warm-up set').onClick() })
-    const sets = () => mocks.S.active.entries[0].sets
+    const sets = () => mocks.A.entries[0].sets
     expect(isWarmupRow(sets()[0])).toBe(true)
     expect(sets()[0].sides).toEqual({ L: { w: 20, r: 4, done: false }, R: { w: 20, r: 6, done: false } })
     await rerender()
@@ -3437,7 +3437,7 @@ describe('the Lock Screen\'s Done (Live Activity)', () => {
     expect(mocks.live).toBeTruthy()
     const at = Date.now() - 30000
     await act(async () => { mocks.live.setDone(0, 0, { at }) })
-    const set = mocks.S.active.entries[0].sets[0]
+    const set = mocks.A.entries[0].sets[0]
     expect(set.done).toBe(true)
     expect(set.at).toBe(at)
     expect(mocks.startRest).toHaveBeenCalledTimes(1)
@@ -3450,11 +3450,11 @@ describe('the Lock Screen\'s Done (Live Activity)', () => {
   it('leaves a set already ticked alone, and a saved workout being edited', async () => {
     await mount([exercise('live-bench', [true, false])])
     await act(async () => { mocks.live.setDone(0, 0, { at: Date.now() }) })
-    expect(mocks.S.active.entries[0].sets[0].done).toBe(true)
+    expect(mocks.A.entries[0].sets[0].done).toBe(true)
     expect(mocks.startRest).not.toHaveBeenCalled()
     await unmount()
     await mount([exercise('live-bench', [false])], 0, { active: { editingWorkoutId: 'w1' } })
     await act(async () => { mocks.live.setDone(0, 0, { at: Date.now() }) })
-    expect(mocks.S.active.entries[0].sets[0].done).toBe(false)
+    expect(mocks.A.entries[0].sets[0].done).toBe(false)
   })
 })

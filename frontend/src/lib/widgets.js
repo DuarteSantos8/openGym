@@ -14,6 +14,7 @@ import { EXIDX } from './exercises.js'
 import { exerciseNameFor, t, dateLocale } from './i18n.js'
 import { effectiveRoutines, streakWeeks, exLine, bestWeightForEntry } from './history.js'
 import { deriveSessionName } from './session-merge.js'
+import { rowsOfPerformance } from './session-ui-adapter.js'
 import { queueOf, weekTally } from './queue.js'
 import { todayISO, isoOf, fmtNum, weekStartOf, startOfWeek } from './format.js'
 import { accentPair, accentValue } from './accent.js'
@@ -66,8 +67,10 @@ function lastPrOf (S) {
   if (!ws.length) return null
   const w = ws.reduce((a, b) => ((b.d || '') > (a.d || '') || ((b.d || '') === (a.d || '') && (b.end || 0) > (a.end || 0)) ? b : a))
   const id = w.prs[0]
-  const entry = (w.entries || []).find(e => e && e.id === id)
-  const name = EXIDX[id] ? exerciseNameFor(EXIDX[id]) : String(entry?.target?.name || entry?.name || id)
+  // A saved workout keeps its sets as the exposure's performance rows; the best weight reads them as the rows the screen edits.
+  const x = (w.exposures || []).find(e => e && e.exerciseId === id)
+  const entry = x ? { id, target: { mode: x.mode }, sets: rowsOfPerformance(x.performance?.sets, x.mode) } : null
+  const name = EXIDX[id] ? exerciseNameFor(EXIDX[id]) : String(x?.exerciseNameSnapshot || id)
   let best = 0
   try { best = entry ? bestWeightForEntry(entry) : 0 } catch { best = 0 }
   const unit = S.unit === 'lb' ? 'lb' : 'kg'
@@ -143,14 +146,16 @@ export async function startWidgetSync ({ useStore }) {
   const write = async () => {
     tm = null
     try {
-      const json = JSON.stringify(buildWidgetSnapshot(useStore.getState().S))
+      const st = useStore.getState()
+      // The running workout is the store's own `A`; the snapshot reads it as `S.active`.
+      const json = JSON.stringify(buildWidgetSnapshot({ ...st.S, active: st.A }))
       if (json === last) return
       await p.WidgetBridge.write({ json })
       last = json
     } catch { /* not now: the next change writes it */ }
   }
   const schedule = () => { clearTimeout(tm); tm = setTimeout(write, WRITE_DEBOUNCE_MS) }
-  const off = useStore.subscribe((s, prev) => { if (s.S !== prev.S) schedule() })
+  const off = useStore.subscribe((s, prev) => { if (s.S !== prev.S || s.A !== prev.A) schedule() })
   const onVisible = () => { if (document.visibilityState === 'visible') schedule() }
   document.addEventListener('visibilitychange', onVisible)
   write()

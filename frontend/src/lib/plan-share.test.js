@@ -157,6 +157,18 @@ describe('what survives a shared plan', () => {
     expect(ex[1].sg).toBeTruthy()
   })
 
+  // The ramp's own rest and the break between sides are part of how the exercise is prescribed.
+  it('carries a per-exercise warm-up rest, "no timer" and the break between sides, and leaves them out when unset', () => {
+    expect(roundTrip({ warmupRestSec: 45 }).warmupRestSec).toBe(45)
+    expect(roundTrip({ warmupRestOff: true, warmupRestSec: 45 })).toMatchObject({ warmupRestOff: true })
+    expect('warmupRestSec' in roundTrip({ warmupRestOff: true, warmupRestSec: 45 })).toBe(false)
+    expect(roundTrip({ side: true, sideRestSec: 20 }).sideRestSec).toBe(20)
+    for (const e of [{}, { warmupRestOff: false }, { warmupRestOff: 'yes' }, { warmupRestSec: 0 }, { side: true, sideRestSec: 0 }, { sideRestSec: 20 }]) {
+      const out = roundTrip(e)
+      expect('warmupRestOff' in out || 'warmupRestSec' in out || 'sideRestSec' in out, JSON.stringify(e)).toBe(false)
+    }
+  })
+
   it('carries the rest onto the routine mergePlan adds', () => {
     const bundle = parsePlan(JSON.stringify(buildPlanBundle(stateWith({ restSec: 180 }), 'Plan')))
     const s = { routines: [], customEx: [], week: {} }
@@ -182,20 +194,21 @@ describe('what survives a shared plan', () => {
 // export used to copy `sg` alone, so a shared superset arrived nameless and resting the default.
 describe('superset meta in a shared plan', () => {
   const superset = {
+    unit: 'kg',
     routines: [{ id: 'r1', name: 'Arms', ex: [
-      { id: '0025', sets: 3, reps: 10, sg: 'a', sgName: 'Arms finisher', sgRest: 90 },
-      { id: '0007', sets: 3, reps: 12, sg: 'a', sgName: 'Arms finisher', sgRest: 90 },
-      { id: '0025', sets: 2, reps: 8 },
+      occ({ occurrenceId: 'o1', exerciseId: '0025', sg: 'a', sgName: 'Arms finisher', sgRest: 90 }),
+      occ({ occurrenceId: 'o2', exerciseId: '0007', sg: 'a', sgName: 'Arms finisher', sgRest: 90 }),
+      occ({ occurrenceId: 'o3', exerciseId: '0025' }),
     ] }],
     week: {}, customEx: [],
   }
-  const withEx = ex => ({ opengym_plan: 1, name: 'x', routines: [{ id: 'r', name: 'R', ex }], week: {}, customEx: [] })
+  const withEx = ex => ({ opengym_plan: 3, name: 'x', routines: [{ id: 'r', name: 'R', ex }], week: {}, customEx: [] })
 
   it('carries the name and rest through export, parsePlan and mergePlan', () => {
     const bundle = buildPlanBundle(superset, 'Plan')
     expect(bundle.routines[0].ex[0]).toMatchObject({ sg: 'a', sgName: 'Arms finisher', sgRest: 90 })
     const parsed = parsePlan(JSON.stringify(bundle))
-    const s = { routines: [], customEx: [], week: {} }
+    const s = { unit: 'kg', routines: [], customEx: [], week: {} }
     mergePlan(s, parsed, { schedule: false })
     const [a, b, lone] = s.routines[0].ex
     expect(a).toMatchObject({ sg: 'a', sgName: 'Arms finisher', sgRest: 90 })
@@ -204,7 +217,7 @@ describe('superset meta in a shared plan', () => {
   })
 
   it('leaves the fields out when the superset has neither', () => {
-    const plain = { ...superset, routines: [{ id: 'r1', name: 'A', ex: [{ id: '0025', sets: 3, reps: 10, sg: 'a' }] }] }
+    const plain = { ...superset, routines: [{ id: 'r1', name: 'A', ex: [occ({ occurrenceId: 'o1', sg: 'a' })] }] }
     const e = parsePlan(JSON.stringify(buildPlanBundle(plain, 'Plan'))).routines[0].ex[0]
     expect(e.sg).toBe('a')
     expect('sgName' in e || 'sgRest' in e).toBe(false)
@@ -214,17 +227,17 @@ describe('superset meta in a shared plan', () => {
   // writes it, the rest becomes a positive whole number of seconds or nothing.
   it('normalises a hand-edited name and rest, or drops them', () => {
     const long = '  ' + 'x'.repeat(100) + '  '
-    const [e] = parsePlan(withEx([{ id: '0025', sets: 3, reps: 5, sg: 'a', sgName: long, sgRest: '75.4' }])).routines[0].ex
+    const [e] = parsePlan(withEx([occ({ sg: 'a', sgName: long, sgRest: '75.4' })])).routines[0].ex
     expect(e.sgName).toBe('x'.repeat(40))
     expect(e.sgRest).toBe(75)
-    const [bad] = parsePlan(withEx([{ id: '0025', sets: 3, reps: 5, sg: 'a', sgName: { evil: 1 }, sgRest: -30 }])).routines[0].ex
+    const [bad] = parsePlan(withEx([occ({ sg: 'a', sgName: { evil: 1 }, sgRest: -30 })])).routines[0].ex
     expect('sgName' in bad || 'sgRest' in bad).toBe(false)
-    const [blank] = parsePlan(withEx([{ id: '0025', sets: 3, reps: 5, sg: 'a', sgName: '   ', sgRest: 'abc' }])).routines[0].ex
+    const [blank] = parsePlan(withEx([occ({ sg: 'a', sgName: '   ', sgRest: 'abc' })])).routines[0].ex
     expect('sgName' in blank || 'sgRest' in blank).toBe(false)
   })
 
   it('drops the meta from an exercise that is not in a superset', () => {
-    const [e] = parsePlan(withEx([{ id: '0025', sets: 3, reps: 5, sgName: 'Orphan', sgRest: 60 }])).routines[0].ex
+    const [e] = parsePlan(withEx([occ({ sgName: 'Orphan', sgRest: 60 })])).routines[0].ex
     expect('sgName' in e || 'sgRest' in e).toBe(false)
     // and the export never writes it there either
     const out = buildPlanBundle(stateWith({ sgName: 'Orphan', sgRest: 60 }), 'Plan').routines[0].ex[0]

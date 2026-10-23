@@ -142,6 +142,9 @@ const performanceRow = (row, unit) => {
     status: row.done ? 'completed' : 'skipped',
     ...(row.max ? { max: true } : {}),
     ...(isFailureSet(row) ? { failure: true } : {}),
+    // Heart rate from the Apple Watch (lib/heart-rate.js): optional, kept only when there is a reading.
+    ...(row.hr ? { hr: row.hr } : {}),
+    ...(row.restHr ? { restHr: row.restHr } : {}),
     // A timed per-side hold is a row per limb (reps are a row per limb too, but made in performanceRows below).
     ...(row.side ? { side: row.side } : {}),
     observations,
@@ -197,6 +200,8 @@ function rowOfPerformance(row, mode) {
     ...(row.role === 'warmup' ? { phase: 'warmup' } : {}),
     ...(row.max ? { max: true } : {}),
     ...(isFailureSet(row) ? { failure: true } : {}),
+    ...(row.hr ? { hr: row.hr } : {}),
+    ...(row.restHr ? { restHr: row.restHr } : {}),
     ...(row.side ? { side: row.side } : {}),
     ...(row.segments?.length ? { type: 'dropset', drops: row.segments.map(seg => ({ w: seg.resistance?.value || 0, r: observed(seg, 'repetitions') || 0 })) } : {}),
     ...(row.clusters?.length ? { type: 'restpause', clusters: row.clusters.map(c => ({ ...c })) } : {})

@@ -123,9 +123,13 @@ describe('warm-up inputs', () => {
     const id = Object.keys(EXIDX).find(k => EXIDX[k].eq === 'barbell')
     expect(run(occ(id, { mode: 'smart', count: 5 })).warmupRows).toHaveLength(5)
   })
-  it('an assisted machine gets no automatic warm-ups', () => {
+  it('an assisted machine warms up with more help than its work sets, not less (#581)', () => {
     const id = Object.keys(EXIDX).find(k => isAssisted(k))
-    expect(run(occ(id, { mode: 'smart', count: 3 })).warmupRows).toBeUndefined()
+    const p = run(occ(id, { mode: 'smart', count: 2 }))
+    const work = p.rows[0].load.value
+    expect(p.warmupRows).toHaveLength(2)
+    expect(p.warmupRows.every(r => r.load.value > work)).toBe(true)
+    expect(p.warmupRows[0].load.value).toBeGreaterThan(p.warmupRows[1].load.value)
   })
   it('an exposure says how it is logged: the occurrence\'s mode, else the catalogue\'s, and a bare duration is a hold', () => {
     const exposure = ex => buildSessionExposures({ workouts: [], prescriptions: {}, progression: {}, oneRepMaxes: {} }, { id: 'rt', ex: [ex] }, { now: 0, newId: s => s })[0]

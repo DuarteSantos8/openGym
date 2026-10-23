@@ -12,6 +12,8 @@ const L = await import('./live-activity.js')
 const set = (over = {}) => ({ w: 60, r: 8, done: false, ...over })
 const entry = (id, sets, over = {}) => ({ id, target: { mode: 'reps', restSec: 120 }, sets, ...over })
 const S = (active, over = {}) => ({ unit: 'kg', restSec: 90, accent: 'lime', active, ...over })
+// The store holds the running workout as `A`; the activity builds from `S.active`, a view of both.
+const view = (S, over = {}) => ({ S, A: S.active ?? null, ...over })
 
 describe('upcomingSets', () => {
   it('goes through the current exercise first, then the ones after it, then the ones before', () => {
@@ -61,7 +63,7 @@ describe('buildLiveActivity', () => {
 describe('the Done taps', () => {
   let state, calls
   const A = () => ({ id: 'w1', cur: 0, entries: [entry('0025', [set(), set()]), entry('0043', [set()])] })
-  const getState = () => ({ S: state })
+  const getState = () => view(state)
   const ev = (id, over = {}) => ({ id, type: 'setDone', wid: 'w1', exId: '0025', entryIdx: 0, setIdx: 0, at: 1234, ...over })
   let unbind = null
   const bind = () => {
@@ -101,7 +103,7 @@ describe('the Done taps', () => {
     const order = []
     let ready = false
     const saveNow = async () => { order.push('saved') }
-    L._setLivePluginForTest({ drain: async () => ({ events: [ev('e1')] }), ack: async ({ ids }) => { order.push('ack:' + ids) } }, () => ({ S: ready ? state : { active: null }, ready, saveNow }))
+    L._setLivePluginForTest({ drain: async () => ({ events: [ev('e1')] }), ack: async ({ ids }) => { order.push('ack:' + ids) } }, () => view(ready ? state : { active: null }, { ready, saveNow }))
     unbind = L.bindLiveActions({ setDone: (idx, i) => { order.push('applied'); state.active.entries[idx].sets[i].done = true } })
     expect(await L.drainLiveEvents()).toEqual([])
     expect(order).toEqual([])
@@ -122,7 +124,7 @@ describe('the Done taps', () => {
 
 describe('startLiveActivitySync', () => {
   let state, timer, storeSubs, uiSubs, calls
-  const useStore = { getState: () => ({ S: state }), subscribe: fn => { storeSubs.push(fn); return () => {} } }
+  const useStore = { getState: () => view(state), subscribe: fn => { storeSubs.push(fn); return () => {} } }
   const useUI = { getState: () => ({ timer }), subscribe: fn => { uiSubs.push(fn); return () => {} } }
   const plugin = (supported = true) => ({
     status: async () => ({ supported }),
@@ -139,13 +141,13 @@ describe('startLiveActivitySync', () => {
   it('at launch, an empty copy not restored yet does not end the running workout\'s activity', async () => {
     let ready = false
     const blank = { ...state, active: null }
-    const store = { getState: () => ({ S: ready ? state : blank, ready }), subscribe: useStore.subscribe }
+    const store = { getState: () => view(ready ? state : blank, { ready }), subscribe: useStore.subscribe }
     L._setLivePluginForTest(plugin())
     const stop = await L.startLiveActivitySync({ useStore: store, useUI })
     await vi.runAllTimersAsync()
     expect(calls).toEqual([])
     ready = true
-    storeSubs.forEach(fn => fn({ S: state, ready: true }, { S: blank, ready: false }))
+    storeSubs.forEach(fn => fn(view(state, { ready: true }), view(blank, { ready: false })))
     await vi.runAllTimersAsync()
     expect(calls).toEqual([['update', 'w1', expect.objectContaining({ name: 'Push' })]])
     stop()
@@ -166,7 +168,7 @@ describe('startLiveActivitySync', () => {
     expect(calls[1][2].restEndsAt).toBe(99000)
     // the workout is finished
     const prev = state; state = { ...state, active: null }
-    storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    storeSubs.forEach(fn => fn(view(state), view(prev)))
     await vi.runAllTimersAsync()
     expect(calls.at(-1)).toEqual(['end'])
     stop()

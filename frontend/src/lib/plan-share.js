@@ -67,8 +67,16 @@ function cleanOccurrence(o) {
   const failureSets = failureSetsOf({ failureSets: o.failureSets })
   if (failureSets === 'last') out.lastToFailure = true
   else if (hasFailurePlan({ failureSets })) out.failureSets = failureSets
+  // The warm-ups' "no timer" and their own rest, and the break between sides, travel only when set.
   const warmupRest = cleanRestSec(o.warmupRestSec)
-  if (warmupRest) out.warmupRestSec = warmupRest
+  if (o.warmupRestOff === true) out.warmupRestOff = true
+  else if (warmupRest) out.warmupRestSec = warmupRest
+  const sideRest = cleanRestSec(o.sideRestSec)
+  if (o.side === true && sideRest) out.sideRestSec = sideRest
+  // Planned substitutes (lib/routine-backups.js): the catalogue's only, since the other end may not
+  // have someone's own exercises.
+  const subs = cleanBackups(o.subs, o.exerciseId, id => !!EXIDX[id] && !isCustomEx(EXIDX[id]))
+  if (subs.length) out.subs = subs
   if (['each', 'total', 'as'].includes(o.dbLoad)) out.dbLoad = o.dbLoad
   if (o.laterality) out.laterality = o.laterality
   if (o.sg) {

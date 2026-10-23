@@ -1722,6 +1722,12 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, s
   const [failure, setFailure] = useState(() => (existing?.failureSets != null ? failureSetsOf(existing) : (existing?.lastToFailure ?? rule.preset === 'greyskull') ? 'last' : []))
   const failureDecided = useRef(existing?.lastToFailure != null || existing?.failureSets != null)
   const [backoff, setBackoff] = useState(() => existing?.backoff === true)
+  // The warm-ups' own rest (no timer, or a time; neither = like the profile's / the work sets), the
+  // break between the two sides of a per-side set, and the slot's planned substitutes
+  // (lib/routine-backups.js). All optional, written only when chosen.
+  const [warmRest, setWarmRest] = useState(() => ({ off: existing?.warmupRestOff === true, sec: existing?.warmupRestSec > 0 ? existing.warmupRestSec : 0 }))
+  const [sideRest, setSideRest] = useState(() => (existing?.sideRestSec > 0 ? existing.sideRestSec : 0))
+  const [subs, setSubs] = useState(() => existing?.subs || [])
   // Bodyweight follows the catalogue unless the occurrence says otherwise (issues #31/#32/#33).
   const [bw, setBw] = useState(() => !cardio && isBw({ ...(existing || {}), id: ex.id }))
   // The sheet's three tabs. Each panel stays mounted (the others hidden), so nothing typed is lost on a switch.
@@ -1758,7 +1764,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, s
     const trimmedNote = (note || '').trim().slice(0, 500)
     // A saved config replaces the occurrence, so what this sheet does not edit rides along: a
     // machine marked (not) assisted, a ramp's own rest, an exercise kept out of progression.
-    const kept = Object.fromEntries(['assisted', 'warmupRestSec', 'excludeFromProgression'].filter(key => existing?.[key] != null).map(key => [key, existing[key]]))
+    const kept = Object.fromEntries(['assisted', 'excludeFromProgression'].filter(key => existing?.[key] != null).map(key => [key, existing[key]]))
     onSave({
       ...kept,
       occurrenceId, exerciseId: ex.id, rule: { ...planned, revision },
@@ -1767,6 +1773,9 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, s
       ...(!cardio && warmup.mode !== 'off' ? { warmup } : {}),
       ...(!cardio && intensifier?.type ? { intensifier: intensifierToSave(intensifier) } : {}),
       ...(side ? { side: true } : {}),
+      ...(!cardio ? (warmRest.off ? { warmupRestOff: true } : warmRest.sec > 0 ? { warmupRestSec: Math.round(warmRest.sec) } : {}) : {}),
+      ...(side && sideRest > 0 ? { sideRestSec: Math.round(sideRest) } : {}),
+      ...withBackups(subs, ex.id, id => !!EXIDX[id]),
       ...(isBellEx(ex) && !bw && dbLoad ? { dbLoad } : {}),
       ...(canFailure ? failureFieldsOf(failure, failureSetRange(rule).max) : {}),
       ...(canBackoff && backoff ? { backoff: true } : {}),
@@ -1918,6 +1927,55 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, s
             {warmupPreview(warmup, ex.eq, rule)}
           </div>}
         </Disclosure>}
+        {/* The warm-ups' own rest: the profile's or like the work sets (no field, as always), no timer,
+            or a time of their own. The last warm-up still rests the full work rest before the first work set. */}
+        <div className="sect-b cfg-rest" style={{ marginBottom: 6 }}>
+          <Row icon="timer" iconTint="var(--yellow)" title={t('Rest between warm-ups')} accessory="chevron"
+            value={warmRest.off ? t('No timer') : warmRest.sec > 0 ? fmtRest(warmRest.sec) : warmLikeAll}
+            onClick={() => menuSheet({
+              title: t('Rest between warm-ups'),
+              items: [
+                { icon: 'timer', label: warmLikeAll, on: !warmRest.off && !(warmRest.sec > 0), onClick: () => setWarmRest({ off: false, sec: 0 }) },
+                { icon: 'pause', label: t('No timer'), on: warmRest.off, onClick: () => setWarmRest({ off: true, sec: 0 }) },
+                { icon: 'clock', label: t('Pick a time'), on: !warmRest.off && warmRest.sec > 0, onClick: () => durationSheet({
+                  title: t('Rest between warm-ups'), value: warmRest.sec > 0 ? warmRest.sec : 30, max: REST_MAX, off: t('No timer'),
+                  onDone: v => setWarmRest(v > 0 ? { off: false, sec: v } : { off: true, sec: 0 }),
+                }) },
+              ],
+            })} />
+        </div>
+        <div className="small dim" style={{ marginBottom: 14 }}>
+          {t('Warm-ups are light, so they can rest less, or not at all. The last one still gets the full rest before your first work set.')}
+        </div>
+        {/* The break between the two sides of a per-side set. Without one: none for reps, the short
+            switch pause for a hold, as before. */}
+        {side && <>
+          <div className="sect-b cfg-rest" style={{ marginBottom: 6 }}>
+            <Row icon="sides" iconTint="var(--blue)" title={t('Rest between sides')} accessory="chevron"
+              value={sideRest > 0 ? fmtRest(sideRest) : plan.durationSeconds ? t('Default ({0})', fmtRest(10)) : t('No timer')}
+              onClick={() => durationSheet({
+                title: t('Rest between sides'), value: sideRest > 0 ? sideRest : 0, max: REST_MAX,
+                off: plan.durationSeconds ? t('Default ({0})', fmtRest(10)) : t('No timer'),
+                onDone: v => setSideRest(v > 0 ? v : 0),
+              })} />
+          </div>
+          <div className="small dim" style={{ marginBottom: 14 }}>
+            {t('A breather after one side, before the other. The full rest comes once both sides are done.')}
+          </div>
+        </>}
+        {/* Planned substitutes for this slot, in the routine editor: what the swap sheet offers first
+            when the machine is taken. */}
+        {backupsEditable && <>
+          <div className="sect-b" style={{ marginBottom: 6 }}>
+            <Row icon="swap" iconTint="var(--teal)" title={t('Backups')} accessory="chevron"
+              value={subs.length ? String(subs.filter(id => EXIDX[id]).length) : t('None')}
+              subtitle={subs.map(id => EXIDX[id]).filter(Boolean).map(exerciseNameFor).join(', ') || undefined}
+              onClick={() => ui().openSheet(done => <BackupsSheet ex={ex} subs={subs} onChange={setSubs} close={done} />)} />
+          </div>
+          <div className="small dim" style={{ marginBottom: 14 }}>
+            {t('Machine taken? Pick what you’d do instead, and a swap mid-workout offers these first.')}
+          </div>
+        </>}
         {(can.dropset || can.restpause) && <Disclosure title={t('Intensifier')} value={intensifier?.type === 'dropset' ? t('Drop-set') : intensifier?.type === 'restpause' ? t('Rest-pause') : t('None')}>
           <Segmented value={intensifier?.type || ''}
             onChange={v => setIntensifier(!v ? null : v === 'dropset'
@@ -2431,7 +2489,7 @@ function WorkoutDetail({ w, close }) {
     return <div key={i} className="row wd-ex" style={{ alignItems: 'flex-start' }} {...tappable(() => exerciseHistorySheet(e.id))}>
       {ex && <Thumb ex={ex} />}
       <div className="grow"><div className={`tt ${exerciseNameClass(ex)}`} style={{ fontWeight: 600 }}>{nameOf(e)} {w.prs && w.prs.includes(e.id) && <span className="pr"><Icon name="trophy" />PR</span>} {badge && <span className="tag">{historyBadgeLabel(badge)}</span>}</div>
-        <div className="ss">{e.sets.filter(hasCompletedWork).map(s => setLabel(e.id, s, e.target, speedUnitOf(st))).join('  ·  ') || t('no sets')}</div>
+        <div className="ss">{e.sets.filter(hasCompletedWork).map(s => setLabel(e.id, s, e.target, speedUnitOf(st)) + hrLabel(s)).join('  ·  ') || t('no sets')}</div>
         {e.prescription && <div className="small" style={{ marginTop: 7 }}>
           <div className="dim">{t('Planned')} {planSummary(e.prescription, fmtNum)} · {t('Rest {0} s', e.prescription.parameters.restSeconds)}</div>
           {badge === 'out-of-plan' && <div style={{ marginTop: 4, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -2739,11 +2797,14 @@ export function startFlow(routineIds) {
   if (S().weighIn === false) { beginWorkout(routineIds, null); return }
   bwSheet({ required: true, onDone: bw => beginWorkout(routineIds, bw) })
 }
-export function beginWorkout(routineIds, bw) {
+// `opts` from the Apple Watch (lib/watch-sync.js): a session started there keeps the watch's id, so
+// the sets ticked on it find it, and its start time, however late the phone hears of it. The lifter
+// is at the wrist, so there is no question to answer here first.
+export function beginWorkout(routineIds, bw, opts = {}) {
   const routines = [].concat(routineIds ?? []).map(id => S().routines.find(r => r.id === id)).filter(Boolean)
-  const missing = missingOneRms(S(), routines)
-  if (!missing.length) { startSession(routineIds, bw); return }
-  ui().openSheet(close => <OneRmPrompt exerciseIds={missing} close={close} onDone={() => startSession(routineIds, bw)} />, { kind: 'center', locked: true })
+  const missing = opts.id ? [] : missingOneRms(S(), routines)
+  if (!missing.length) { startSession(routineIds, bw, opts); return }
+  ui().openSheet(close => <OneRmPrompt exerciseIds={missing} close={close} onDone={() => startSession(routineIds, bw, opts)} />, { kind: 'center', locked: true })
 }
 
 // Prompted once per generation, only for exercises planned as a % of a 1RM the profile lacks.
@@ -2775,9 +2836,10 @@ function OneRmPrompt({ exerciseIds, onDone, close }) {
   </>
 }
 
-function startSession(routineIds, bw) {
+function startSession(routineIds, bw, { id = null, start = null } = {}) {
+  const startAt = Number.isFinite(start) && start > 0 ? start : Date.now()
   const session = {
-    id: uid(), d: todayISO(), start: Date.now(),
+    id: id || uid(), d: id && start ? isoOf(new Date(startAt)) : todayISO(), start: startAt,
     routineIds: [],
     name: t('Freestyle'),
     bw: bw || null, cur: 0, status: 'in-progress', exposures: [], entries: [],

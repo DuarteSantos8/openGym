@@ -593,14 +593,12 @@ export const useStore = create((set, get) => {
     return null
   }
 
-  // Mobile mirror for the active session — filled in with the rest of the native persistence.
-  // Same 800 ms debounce as the profile mirror — deliberately NOT the push debounce, and
-  // deliberately not changed by this release.
-  let activeSaveTm = null
-  const nativeActivePersist = () => {
-    clearTimeout(activeSaveTm)
-    activeSaveTm = setTimeout(() => { activeSaveTm = null; if (!gated()) nativeActiveSave(get().A) }, 800)
-  }
+  // Mobile mirror for the active session: at once, not after the profile mirror's 800 ms. The
+  // WebView writes localStorage to disk on its own schedule, and an app killed within that moment
+  // (or iOS ending it in the background) lost the last set (owner 2026-10-14). One write at a
+  // time, each of the session as it stands when its turn comes.
+  let activeQ = Promise.resolve()
+  const nativeActivePersist = () => { activeQ = activeQ.then(() => (gated() ? null : nativeActiveSave(get().A))).catch(() => {}) }
 
   // Synchronous and immediate — a ~5 KB object, not a profile. No debounce, no flush hook, and
   // therefore no window in which a logged set is not yet durable.
@@ -713,16 +711,11 @@ export const useStore = create((set, get) => {
     }
     meta.set(S, { base, owed: owed || !saved || (!!joined && storedOwed()) })
     if (!saved) saveOwed(true)
-    // The running workout changed (a set ticked, a workout started or finished): on a phone it goes
-    // to the file at once rather than after the usual wait. localStorage alone is not enough there:
-    // the WebView writes it to disk on its own schedule, and an app killed within that moment (or
-    // iOS ending it in the background before the page's timers run again) lost the last set.
-    const workoutMoved = MOBILE && JSON.stringify(get()?.S?.active ?? null) !== JSON.stringify(S.active ?? null)
     set({ S })
     // A copy that replaces the last one wholesale and keeps an older stamp — adopted from the
     // server — goes to the file at once. Until it does, the file holds the copy it replaced,
     // which looks newer, and a start in between would take that one back (restoreFromMirror).
-    if (MOBILE) nativePersist(!stamp || workoutMoved)
+    if (MOBILE) nativePersist(!stamp)
     if (push && get().user) {
       // Before boot has pulled, the copy in hand may be older than the server's: a push now
       // would carry it with a stale (or no) baseRev. It waits for finishBoot.
@@ -897,11 +890,6 @@ export const useStore = create((set, get) => {
   // kills the app.
   const flush = () => {
     if (MOBILE && saveTm) nativePersist(true)
-    if (MOBILE && activeSaveTm) {
-      clearTimeout(activeSaveTm)
-      activeSaveTm = null
-      nativeActiveSave(get().A)
-    }
     if (pushTm) {
       clearTimeout(pushTm)
       pushTm = null
@@ -1834,6 +1822,8 @@ export const useStore = create((set, get) => {
     clearActive() {
       set({ A: null })
       persistActive(null)
+      // A finished workout is in the profile by now: on a phone that copy goes to the file at once too.
+      if (MOBILE) nativePersist(true)
     },
 
     // Fires after the moments where losing local data would actually hurt — a workout just

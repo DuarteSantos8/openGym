@@ -49,6 +49,11 @@ export async function nativePlatform() {
   }
 }
 
+// One shared load of the plugin: the file writes of a change come in a burst, and each import in
+// flight at once is its own chance to load it twice.
+let filesystemModule
+const filesystemPlugin = () => (filesystemModule ||= import('@capacitor/filesystem'))
+
 const FILE = 'opengym-state.json'
 
 // Written whole to a second file first and then moved over the first, so a write cut short (the
@@ -60,7 +65,7 @@ const FILE_NEW = 'opengym-state.next.json'
 // The mirror as stored: the engine migration backs up these exact bytes, not a re-serialization.
 export async function nativeLoadText(file = FILE) {
   try {
-    const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
+    const { Filesystem, Directory, Encoding } = await filesystemPlugin()
     return (await Filesystem.readFile({ path: file, directory: Directory.Data, encoding: Encoding.UTF8 })).data
   } catch (e) {
     if (e?.code === 'ENOENT' || e?.code === 'OS-PLUG-FILE-0008' || /not exist|not found/i.test(e?.message || '')) return null
@@ -70,7 +75,8 @@ export async function nativeLoadText(file = FILE) {
 
 export async function nativeLoad() {
   const read = file => nativeLoadText(file).then(t => (t == null ? null : parseState(t))).catch(() => null)
-  const [main, next] = await Promise.all([read(FILE), read(FILE_NEW)])
+  const main = await read(FILE)
+  const next = await read(FILE_NEW)
   if (next && typeof next === 'object' && (!main || (Number(next._ts) || 0) > (Number(main._ts) || 0))) return next
   return main
 }
@@ -80,7 +86,7 @@ export async function nativeLoad() {
 // refused outright if it is not v1 at all.
 export const NATIVE_BACKUP_FILE = 'gym_state_v1.pre-engine-v1.json'
 export async function nativeBackupOnce(text, file = NATIVE_BACKUP_FILE) {
-  const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
+  const { Filesystem, Directory, Encoding } = await filesystemPlugin()
   const at = { path: file, directory: Directory.Data, encoding: Encoding.UTF8 }
   const read = () => Filesystem.readFile(at).then(r => r.data, e => {
     if (e?.code === 'ENOENT' || e?.code === 'OS-PLUG-FILE-0008' || /not exist|not found/i.test(e?.message || '')) return null
@@ -98,7 +104,7 @@ export async function nativeBackupOnce(text, file = NATIVE_BACKUP_FILE) {
 
 export async function nativeSave(state, strict = false) {
   try {
-    const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
+    const { Filesystem, Directory, Encoding } = await filesystemPlugin()
     const data = stringifyState(state)
     if (typeof Filesystem.rename === 'function') {
       try {
@@ -122,14 +128,14 @@ const REMOTE_FILE = 'opengym-remote.json'
 // in S (which syncs and exports): the pairing, and how the Coach runs on this phone.
 export async function readJsonFile(name) {
   try {
-    const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
+    const { Filesystem, Directory, Encoding } = await filesystemPlugin()
     const r = await Filesystem.readFile({ path: name, directory: Directory.Data, encoding: Encoding.UTF8 })
     return JSON.parse(r.data)
   } catch (e) { return null }
 }
 export async function writeJsonFile(name, data, strict = false) {
   try {
-    const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
+    const { Filesystem, Directory, Encoding } = await filesystemPlugin()
     await Filesystem.writeFile({ path: name, directory: Directory.Data, data: JSON.stringify(data), encoding: Encoding.UTF8 })
     if (strict && JSON.stringify(await readJsonFile(name)) !== JSON.stringify(data)) throw new Error('native-write-mismatch')
   } catch (e) { if (strict) throw e; return false }
@@ -150,7 +156,7 @@ export async function nativeActiveLoad() {
 
 export async function loadRemoteFile() {
   try {
-    const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
+    const { Filesystem, Directory, Encoding } = await filesystemPlugin()
     const r = await Filesystem.readFile({ path: REMOTE_FILE, directory: Directory.Data, encoding: Encoding.UTF8 })
     return JSON.parse(r.data)
   } catch (e) { return null }   // never decided yet
@@ -158,7 +164,7 @@ export async function loadRemoteFile() {
 
 export async function saveRemoteFile(data) {
   try {
-    const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
+    const { Filesystem, Directory, Encoding } = await filesystemPlugin()
     await Filesystem.writeFile({ path: REMOTE_FILE, directory: Directory.Data, data: JSON.stringify(data), encoding: Encoding.UTF8 })
   } catch (e) { /* worst case: onboarding asks again next launch */ }
 }
@@ -305,7 +311,7 @@ export function onAppActive(cb) {
 // WKWebView can't do blob-URL downloads, so the backup goes out through the OS share sheet
 // (Files, AirDrop, mail, …) from a temp file instead.
 export async function shareExport(json, filename) {
-  const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
+  const { Filesystem, Directory, Encoding } = await filesystemPlugin()
   const { Share } = await import('@capacitor/share')
   const w = await Filesystem.writeFile({ path: filename, directory: Directory.Cache, data: json, encoding: Encoding.UTF8 })
   await Share.share({ title: filename, url: w.uri })
@@ -315,7 +321,7 @@ export async function shareExport(json, filename) {
 // file crosses the native bridge as base64 in 3 MB pieces, never as one string the size of the
 // whole zip, which could be a few hundred MB.
 export async function shareExportBlob(blob, filename) {
-  const { Filesystem, Directory } = await import('@capacitor/filesystem')
+  const { Filesystem, Directory } = await filesystemPlugin()
   const { Share } = await import('@capacitor/share')
   const { toBase64 } = await import('./media-store-fs.js')
   const CHUNK = 3 * 1024 * 1024
@@ -371,7 +377,7 @@ export async function writeAutoBackup(state) {
   // feature must not do.
   if (await writeToChosenFolder(state, day)) return
   let fs
-  try { fs = await import('@capacitor/filesystem') } catch (e) { return }
+  try { fs = await filesystemPlugin() } catch (e) { return }
   const data = JSON.stringify(buildProfileBackup(state))
   const write = name => fs.Filesystem.writeFile({
     path: `${AUTO_BACKUP_DIR}/${name}`,

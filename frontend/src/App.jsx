@@ -352,9 +352,12 @@ export default function App() {
       // The watch removed its copies of deleted workouts from Apple Health: the phone's removal
       // runs again, finds them gone and stops retrying them.
       healthDeleted: () => { import('./lib/health-sync.js').then(m => m.syncHealth(useStore.getState().S)).catch(() => {}) },
-      patchSet: (where, fields, opts = {}) => useStore.getState().update(s => {
-        patchSetIn(s, where, fields, stampWorkout, { ...opts, recount: w => { w.vol = workoutVolume(w) } })
-      }),
+      patchSet: (where, fields, opts = {}) => {
+        const st = useStore.getState()
+        // The running workout is the store's own `A`, not part of the profile.
+        if (st.A && st.A.id === where.wid) { st.updateActive(A => { patchSetIn({ active: A }, where, fields, null, opts) }); return }
+        st.update(s => { patchSetIn(s, where, fields, stampWorkout, { ...opts, recount: w => { w.vol = workoutVolume(w) } }) })
+      },
       // Ticks from the watch are the workout screen's to apply: it opens, and drains the queue.
       openWorkout: () => { if (!String(window.location.hash || '').startsWith('#/workout')) navToWorkout() },
     })

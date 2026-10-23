@@ -109,3 +109,14 @@ describe('migration', () => {
     expect(active.exposures[0].warmupSets).toBe(2)
   })
 })
+
+describe('planWarmupRows on an assistance machine', () => {
+  const rows = [{ load: kg(25), reps: 10 }]
+  const assisted = (warmup, step = 5) => planWarmupRows({ rows, warmup, eq: 'machine', rounding: { mode: 'nearest', step }, assisted: true })
+  it('gives more help than the work sets: 1.5x first, then halfway down, rounded up to the step', () => {
+    expect(loads(assisted({ mode: 'template', steps: [{ percent: 50, reps: 5 }, { percent: 75, reps: 3 }] }))).toEqual([40, 35])
+  })
+  it('keeps a half-step rung on the grid (37.5 / 2.5 stays 15, not 16)', () => {
+    expect(loads(planWarmupRows({ rows: [{ load: kg(25), reps: 10 }], warmup: { mode: 'template', steps: [{ percent: 50, reps: 5 }] }, eq: 'machine', rounding: { mode: 'nearest', step: 2.5 }, assisted: true }))).toEqual([37.5])
+  })
+})

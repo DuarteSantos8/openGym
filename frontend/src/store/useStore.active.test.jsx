@@ -132,13 +132,13 @@ describe('the profile no longer carries a session (A33)', () => {
     useStore.getState().update(s => { s.unit = 'lb' })
     expect(JSON.parse(localStorage.getItem(KEY)).active).toBeUndefined()
   })
-  it('the debounces are unchanged: 1500 ms push, 800 ms native mirror (A35)', async () => {
+  it('the debounces are unchanged: 1500 ms push, 800 ms profile mirror; the running workout\'s file is written at once (A35)', async () => {
     // Not `new URL('./useStore.js', import.meta.url)`: under the happy-dom environment,
     // import.meta.url resolves against the fake page origin (http:), not the real file path.
     const [fs, path] = await Promise.all([import('node:fs'), import('node:path')])
     const src = fs.readFileSync(path.join(process.cwd(), 'src/store/useStore.js'), 'utf8')
     expect(src).toMatch(/get\(\)\.pushState\(\), 1500\)/)
-    expect(src).toMatch(/\}, 800\)/)
+    expect(src).toMatch(/setTimeout\(write, 800\)/)
     expect(src).not.toMatch(/, 500\)/)
   })
 })

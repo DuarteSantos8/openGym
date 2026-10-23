@@ -853,6 +853,19 @@ export function rerampAutoWarmups(rows, from, to, step = 2.5) {
   })
 }
 
+// An assistance machine (exercises.js isAssisted) ramps from the other side: the stack carries
+// part of your body weight, so less load is harder. Its warm-ups give MORE help instead: the first
+// at 1.5x the work weight, each next one halving what is left down to it, rounded UP to the step (a
+// notch more help is still a warm-up). `from` is the warm-up before it, 0 for the first. The step is
+// never a dumbbell list here (ownedWeightsFor), but should one arrive the rung is kept as is.
+function assistedRung(from, to, step) {
+  const top = from > 0 ? from : 2 * to
+  if (!(top > to)) return to
+  const x = to + (top - to) / 2
+  if (Array.isArray(step)) return x
+  return Math.max(to, Math.ceil(x / step - 1e-9) * step)   // 1e-9: 37.5 / 2.5 must stay 15, not 16
+}
+
 /**
  * Insert a warm-up row at the end of the warm-up block, ramping toward the working weight.
  *

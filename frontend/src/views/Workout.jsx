@@ -969,7 +969,7 @@ function ActiveWorkout() {
     if (!live) return
     const timed = idx => modeOf({ ...(live.entries[idx]?.target || {}), id: live.entries[idx]?.id }) === 'time'
     const to = advanceAfterTimedRest(live.entries, supersetUnits(live.entries), readyRest.forIdx, live.cur, timed)
-    if (to != null) update(s => { if (s.active && s.active.cur === live.cur) s.active.cur = to })
+    if (to != null) useStore.getState().updateActive(a => { if (a.cur === live.cur) a.cur = to })
   }, [readyRest?.endsAt])
   // A finished unit you tapped open again to look at or fix (Discord: "minimize completed exercises
   // so I view only what I have yet to do"). This screen's own memory: a reload folds it back.

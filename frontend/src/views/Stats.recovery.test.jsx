@@ -155,7 +155,9 @@ function resetFixture(workouts = lifecycleWorkouts()) {
         // The real engine shape (see lib/session-ui-adapter.js) carries effort as a row-level
         // `rir` field, not an observation — legacyEntriesOf (used by the effort/muscle-balance
         // readers this suite exercises) reads it from there.
-        ...(row.rir != null ? { rir: row.rir } : {}),
+        // A set taken to failure is RIR 0, as the real converter writes it (migration performanceRow).
+        ...(row.rir != null || row.failure ? { rir: row.rir ?? 0 } : {}),
+        ...(row.failure ? { failure: true } : {}),
       })) },
     }
     })

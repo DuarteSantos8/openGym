@@ -71,8 +71,8 @@ export function buildSessionExposures(profile, routine, ctx) {
       lastLog: context.baseline && { ...context.baseline, id: context.baseline.exposureId },
       reset: context.reset, heldLoad: context.heldLoad, startFrom: profile.startFrom,
       oneRm: oneRmForMeaning(profile, occ.exerciseId, meaning),
-      // Lighter is harder on an assisted machine: a percentage ramp would run backwards.
-      warmup: assisted ? null : occ.warmup ?? null,
+      // Lighter is harder on an assisted machine: the engine ramps its warm-ups up in help instead (#581).
+      warmup: occ.warmup ?? null,
       warmupFloor: barFloor(profile, occ.exerciseId),
       backoff: occ.backoff === true,
       failureSets: modeOf({ mode: occ.mode, id: occ.exerciseId }) === 'cardio' ? undefined : occ.failureSets,
