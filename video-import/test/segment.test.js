@@ -261,3 +261,12 @@ test('"Warm up complete" is a section label, not a three-second move (zBTz636KeM
   assert.equal(sectionTitle('Cool down complete'), 'stretch')
   assert.equal(sectionTitle('Dynamic chest stretch'), null)
 })
+
+test('a NOW: label in front of the move is not part of its name (UIPvIYsjfpo)', async () => {
+  const { cleanCaption } = await import('../src/text.js')
+  assert.equal(cleanCaption('NOW: NECK PULSES'), 'NECK PULSES')
+  assert.equal(cleanCaption('NOW CHEST EXPANSIONS (Lateral)'), 'CHEST EXPANSIONS (Lateral)')
+  assert.equal(cleanCaption('NOW: 3 x PUSH UP 3 x MTN CLIMBERS'), 'PUSH UP 3 x MTN CLIMBERS')
+  // A move that really starts with the word, and a lone label, stay as they are.
+  assert.equal(cleanCaption('NOW'), 'NOW')
+})

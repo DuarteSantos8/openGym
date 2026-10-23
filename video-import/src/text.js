@@ -219,6 +219,8 @@ const SIDE_TOKEN = /^[([{]\s*(r|l|right|left)\s*[)\]}]/i
 
 export function cleanCaption(raw) {
   // A set count in front ("5 x PUSH UPS") is not part of the name.
+  // A "NOW:" in front is the label of the move on screen, the counterpart of NEXT.
+  raw = String(raw || '').replace(/^\s*n[o0]w\s*[:.\-–]?\s+(?=\S)/i, '')
   raw = String(raw || '').replace(/^\s*\S?\s*\d+\s*[xX×]\s+/, '')
   // A euro sign or a cent sign in a word is a C; a token of nothing but marks is a bar or a dot of the
   // picture; a first word a letter or two off "NEXT" (NEXTI|, Neat)) is the NEXT label.
