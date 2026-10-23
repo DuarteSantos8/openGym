@@ -17,9 +17,9 @@ frontend/  React 19 + Vite app (src/views, src/components, src/store, src/lib). 
 api/       backend — server.js (Node, no framework), deps: @simplewebauthn/server, web-push.
            coach/ is the optional AI coach; openapi.yaml documents every route.
 web/       multi-stage Dockerfile (builds frontend → nginx) + nginx.conf.template (serves app, proxies /api).
-mcp/       optional MCP server — read-only stdio bridge exposing a user's workouts/1RM/muscle
-           balance to LLM clients (Claude Desktop, Cursor…). Not part of the Docker build; only
-           runs when an LLM client spawns it.
+mcp/       optional MCP server — stdio bridge exposing a user's workouts/1RM/muscle balance to
+           LLM clients (Claude Desktop, Cursor…), plus `log_workout` (writes through the api).
+           Not part of the Docker build; only runs when an LLM client spawns it.
 media/     exercise img/gif, gitignored, fetched at runtime by the `media` compose service.
 website/   static project site (plain HTML/CSS/JS), deployed separately.
 kubernetes/ example manifests (docs/SELF_HOSTING_KUBERNETES.md).
@@ -109,11 +109,14 @@ auto-generated into `data/vapid.json`) drives rest-timer-over and day-reminder n
 
 ### MCP server (`mcp/src`)
 
-Read-only stdio MCP bridge (`@modelcontextprotocol/sdk`) that lets an LLM client read a single
-user's routines/workouts/body-weight/1RM/muscle-balance directly from the same `DATA_DIR` the API
+Stdio MCP bridge (`@modelcontextprotocol/sdk`) that lets an LLM client read a single user's
+routines/workouts/body-weight/1RM/muscle-balance directly from the same `DATA_DIR` the API
 writes to — no network call, no extra container. `state.js` loads/derives the data, `tools.js`
-defines the exposed MCP tools (zod-validated schemas), `labels.js` maps internal keys to
-human-readable labels, `index.js` wires it together. See `mcp/README.md` for the client-config
+defines the read tools (zod-validated schemas), `labels.js` maps internal keys to
+human-readable labels, `index.js` wires it together. The one write tool, `log_workout`
+(`write-tools.js`), never writes the file: it builds the workout with
+`frontend/src/lib/log-workout.js` and saves it with `PUT /api/data` over a paired-session token
+(`api-client.js`, `scripts/pair.mjs`), the way a device syncs. See `mcp/README.md` for the client-config
 side (Claude Desktop / Cursor).
 
 ### Passkeys and self-hosting constraints

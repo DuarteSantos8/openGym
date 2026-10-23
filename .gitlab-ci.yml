@@ -202,9 +202,13 @@ test:mcp:
     key:
       files:
         - mcp/package-lock.json
+        - api/package-lock.json
     paths:
       - mcp/.npm
   script:
+    # log_workout's end-to-end test drives the real api/server.js: the api's dependencies too
+    # (as test:api installs them), or that test fails here rather than skipping.
+    - (cd api && npm ci --cache ../mcp/.npm --prefer-offline --omit=optional)
     - cd mcp
     - npm ci --cache .npm --prefer-offline --ignore-scripts
     - npx vitest run
