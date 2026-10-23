@@ -575,6 +575,8 @@ export default {
   'Fatigue': '疲勞度',
   'Ready': '蓄勢待發',
   'Recovering': '恢復中',
+  'Recovering {0}': '恢復中 {0}',
+  'Ready {0}': '蓄勢待發 {0}',
   'Fatigued': '疲勞',
   'Fatigue shows how recently each muscle was trained. High means rest.': '疲勞度反映各肌群距離上次訓練的間隔時間。指數越高代表越需要休息。',
   'Strength shows retained muscle strength. Train again to reset it.': '肌力狀態表示保留的運動表現水準。再次訓練即可重置。',

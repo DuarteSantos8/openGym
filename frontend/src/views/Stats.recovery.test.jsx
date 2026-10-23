@@ -279,6 +279,30 @@ describe('Stats muscle recovery view runtime', () => {
     expect(lastMap().load.chest).toBe(6)
   })
 
+  it('shows the selected muscle fatigue as a labelled zone bar with a value marker', async () => {
+    await mountStats()
+    await click(viewButton('Fatigue'))
+    await click(muscleCard().querySelector('[data-muscle="chest"]'))
+    const value = lastMap().load.chest
+    expect(value).toBeGreaterThan(0.5)
+    const pct = Math.round(value * 100)
+    const card = muscleCard()
+    const bar = card.querySelector('.fbar')
+    expect(bar).toBeTruthy()
+    // The bar carries the band, reads the same state the map does, and marks the value.
+    expect(bar.getAttribute('aria-label')).toBe(`Fatigue: ${pct}% · Fatigued`)
+    expect(bar.querySelector('.zone.fatigued')).toBeTruthy()
+    expect(card.querySelector('.knob').getAttribute('style')).toContain(`${pct}%`)
+    // The value rides above the marker; the scale runs 0–100 with each zone named.
+    expect(card.querySelector('.fval').textContent).toBe(`${pct}%`)
+    const ends = [...card.querySelectorAll('.fends span')].map(el => el.textContent)
+    expect(ends).toEqual(['0%', '100%'])
+    const zones = [...card.querySelectorAll('.fzones .z')].map(el => el.textContent)
+    expect(zones).toEqual(['Ready', 'Recovering', 'Fatigued'])
+    expect(card.textContent).toContain('Recovering in')
+    expect(card.textContent).toContain('Ready in')
+  })
+
   it('derives a pound-profile bodyweight in kg and passes it into the rendered Fatigue map', async () => {
     const bodyweightWorkout = workout('bodyweight', BASE_NOW, [
       entry('0001', [{ done: true, w: 0, r: 10 }]),

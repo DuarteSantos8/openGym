@@ -586,6 +586,8 @@ export default {
   'Fatigue': '피로',
   'Ready': '준비됨',
   'Recovering': '회복 중',
+  'Recovering {0}': '회복 중 {0}',
+  'Ready {0}': '준비됨 {0}',
   'Fatigued': '피로함',
   'Fatigue shows how recently each muscle was trained. High means rest.': '피로도는 각 근육을 얼마나 최근에 운동했는지 보여줍니다. 높을수록 휴식이 필요합니다.',
   'Strength shows retained muscle strength. Train again to reset it.': '근력은 근육에 남아 있는 힘을 보여줍니다. 다시 운동하면 값이 초기화됩니다.',

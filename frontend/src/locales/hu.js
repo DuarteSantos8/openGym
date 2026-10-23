@@ -587,6 +587,8 @@ export default {
   'Fatigue': 'Fáradtság',
   'Ready': 'Kész',
   'Recovering': 'Regenerálódik',
+  'Recovering {0}': 'Regenerálódik {0}',
+  'Ready {0}': 'Kész {0}',
   'Fatigued': 'Fáradt',
   'Fatigue shows how recently each muscle was trained. High means rest.': 'A fáradtság azt mutatja, mennyire nemrég edzetted az adott izmot. Magas érték: pihenj.',
   'Strength shows retained muscle strength. Train again to reset it.': 'Az erő azt mutatja, mennyi izomerő maradt meg. Edz újra, hogy visszaálljon.',
