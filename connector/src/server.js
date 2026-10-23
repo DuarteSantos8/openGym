@@ -101,7 +101,7 @@ export function createServer({ origin, prefix, apiBase, key = crypto.randomBytes
           const body = await bodyOf(req)
           const result = pathname.endsWith('/details') ? await confirm.details(body.id)
             : pathname.endsWith('/challenge') ? await confirm.challenge(body.id)
-              : await confirm.confirm(body.id, { cid: body.cid, credential: body.credential })
+              : await confirm.confirm(body.id, { cid: body.cid, credential: body.credential, ...(Object.hasOwn(body, 'coach') ? { coach: body.coach } : {}) })
           return send(res, 200, result)
         } catch (e) {
           if (e && e.message === 'too_large') throw e

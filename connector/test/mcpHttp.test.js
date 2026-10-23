@@ -96,7 +96,7 @@ test('tools/list documents exact tool and input names; irreversible tools demand
     'change_setting', 'clear_audit_log', 'delete_account', 'delete_routine', 'delete_workout', 'disable_account', 'disconnect_coach',
     'estimate_1rm', 'get_audit_log', 'get_bodyweight', 'get_coach_status', 'get_routine', 'get_user', 'get_week_plan', 'get_workout',
     'list_invites', 'list_routines', 'list_users', 'list_workouts', 'log_body_weight', 'log_measurement', 'log_workout',
-    'muscle_balance', 'preview_session', 'request_create_invite', 'request_revoke_invite', 'search_exercises', 'sweep_media', 'update_week_plan',
+    'muscle_balance', 'preview_session', 'request_connect_coach', 'request_create_invite', 'request_password_reset', 'request_revoke_invite', 'search_exercises', 'sweep_media', 'update_week_plan',
   ])
   const plan = tools.find(x => x.name === 'update_week_plan').inputSchema
   assert.deepEqual(props('update_week_plan'), ['routines', 'week'])
@@ -111,7 +111,9 @@ test('tools/list documents exact tool and input names; irreversible tools demand
   assert.match(tools.find(x => x.name === 'update_week_plan').description, /creationId/)
   assert.deepEqual(props('request_create_invite'), ['note'])
   assert.deepEqual(props('request_revoke_invite'), ['ref'])
-  for (const name of ['delete_routine', 'delete_workout', 'disable_account', 'delete_account', 'clear_audit_log', 'disconnect_coach', 'sweep_media', 'request_create_invite', 'request_revoke_invite']) {
+  assert.deepEqual(props('request_password_reset'), ['id'])
+  assert.deepEqual(props('request_connect_coach'), ['provider'])
+  for (const name of ['delete_routine', 'delete_workout', 'disable_account', 'delete_account', 'clear_audit_log', 'disconnect_coach', 'sweep_media', 'request_create_invite', 'request_revoke_invite', 'request_password_reset', 'request_connect_coach']) {
     const d = tools.find(x => x.name === name).description
     assert.match(d, /confirmation link/i, name)
     assert.match(d, /chat approval is insufficient/i, name)
@@ -431,4 +433,17 @@ test('a stalled request body times out without calling openGym', async t => {
   })
   assert.equal(answer.status, 408)
   assert.equal(f.seen.length, f.setup)
+})
+
+test('MCP never takes a reset code or Coach token; disabled password login cannot mint a reset', async t => {
+  const f = await fixture(t)
+  f.s.admin = 200
+  f.s.meAdmin = true
+  for (const [name, input] of [['request_password_reset', { id: 'uid2', code: 'ABCD-EFGH-JKLM' }], ['request_connect_coach', { provider: 'compat', token: 'sk-SECRET' }], ['request_connect_coach', { provider: 'compat', type: 'apikey' }]]) {
+    assert.deepEqual((await f.tool(name, input)).data, { error: 'invalid arguments' })
+  }
+  assert.equal(f.seen.slice(f.setup).some(x => x.text.includes('sk-SECRET') || x.text.includes('ABCD-EFGH-JKLM')), false)
+  const reset = await f.tool('request_password_reset', { id: 'uid2' })
+  assert.deepEqual(reset.data, { error: 'tool failed' })
+  assert.equal(f.hits('/api/admin/user/password-reset', 'POST'), 0)
 })

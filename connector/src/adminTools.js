@@ -28,9 +28,10 @@ const hash = v => crypto.createHash('sha256').update(JSON.stringify(v)).digest('
 // Fixed routes. Reads with a query are validated by shape in readPath; everything else is exact.
 const FIXED = new Set([
   'GET /api/me', 'GET /api/data/rev', 'GET /api/admin/users', 'GET /api/admin/invites', 'GET /api/admin/coach',
-  'POST /api/admin/user/delete', 'POST /api/admin/user/disable', 'POST /api/admin/audit/clear',
-  'POST /api/admin/coach/disconnect', 'POST /api/media/sweep',
+  'POST /api/admin/user/delete', 'POST /api/admin/user/disable', 'POST /api/admin/user/password-reset', 'POST /api/admin/audit/clear',
+  'POST /api/admin/coach/disconnect', 'POST /api/admin/coach/connect',
   'POST /api/admin/invites/new', 'POST /api/admin/invites/revoke',
+  'POST /api/media/sweep',
 ])
 const USER_PATH = /^\/api\/admin\/user\?id=[A-Za-z0-9_-]{1,64}$/
 const AUDIT_PATH = /^\/api\/admin\/audit(\?limit=\d{1,3}(&before=\d{1,15})?(&cat=[a-z]{1,20})?|\?before=\d{1,15}(&cat=[a-z]{1,20})?|\?cat=[a-z]{1,20})?$/
@@ -156,7 +157,7 @@ function coach(data) {
   return {
     enabled: data.enabled === true, disabledByEnv: data.disabledByEnv === true, provider: str(data.provider, 40), model: str(data.model, 80),
     baseUrlHost: typeof data.baseUrl === 'string' ? hostOf(data.baseUrl) : null,
-    providers: list(data.providers, 50).filter(object).map(p => ({ id: str(p.id, 40), label: str(p.label, 80), connected: p.connected === true })),
+    providers: list(data.providers, 50).filter(object).map(coachCapability),
     knownModels: Array.isArray(data.knownModels) ? data.knownModels.slice(0, 50).map(m => str(m, 80)).filter(Boolean) : null,
     caps: object(data.caps) ? { perProfileDaily: num(data.caps.perProfileDaily), instanceDaily: num(data.caps.instanceDaily) } : null,
     maxMessageLen: num(data.maxMessageLen), maxOutputTokens: num(data.maxOutputTokens), community: data.community === true, authMode: str(data.authMode, 40),
@@ -167,6 +168,12 @@ function coach(data) {
     lastError: object(data.lastError) ? { ...event(data.lastError), errorClass: str(data.lastError.errorClass, 40) } : null,
     recent: list(data.recent, 20).filter(object).map(e => ({ at: str(e.at, 40), kind: str(e.kind, 40), trigger: str(e.trigger, 40), outcome: str(e.outcome, 40), errorClass: str(e.errorClass, 40), ms: num(e.ms) })),
   }
+}
+
+// Only the credential capabilities and the connected flag: everything a Coach credential review
+// needs, none of what it must not show (base URL path/query, headers, account, diagnostics).
+function coachCapability(p) {
+  return { id: str(p.id, 40), label: str(p.label, 80), connected: p.connected === true, apiKey: p.apiKey === true, setupToken: p.setupToken === true, deviceLogin: p.deviceLogin === true }
 }
 
 function args(value, keys) {
@@ -204,10 +211,19 @@ const isAdmin = async (apiBase, trusted) => (await me(apiBase, trusted))?.admin 
 
 async function account(apiBase, bearer, id) {
   if (typeof id !== 'string' || !ID.test(id)) refuse()
-  const u = (await adminRequest(apiBase, bearer, 'GET', `/api/admin/user?id=${id}`)).user
+  const data = await adminRequest(apiBase, bearer, 'GET', `/api/admin/user?id=${id}`)
+  const u = data.user
   if (!object(u) || u.id !== id) refuse()
   return { id, name: str(u.name, 200) || id, created: str(u.created, 40), disabled: u.disabled === true, admin: u.admin === true }
 }
+
+async function passwordLoginEnabled(apiBase, bearer) {
+  return (await adminRequest(apiBase, bearer, 'GET', '/api/admin/users')).password_login === true
+}
+
+// The same shape the API issues (api/password.js makeResetCode): 12 chars from the pairing-code
+// alphabet, grouped. Anything else upstream sends is refused rather than shown.
+const RESET_CODE = /^[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}$/
 
 // Real admin routes act on any user, so the executor itself must prove: caller is admin right now,
 // the target exists, is not an admin and is not the caller. Upstream still has the last word.
@@ -226,12 +242,28 @@ function accountExecutor(apiBase, type, route, bodyOf, result) {
 }
 
 const PROVIDER = /^[A-Za-z0-9_-]{1,40}$/
+// Credential type -> the capability flag GET /api/admin/coach reports for it. Upstream files
+// `oauth` and `cli-token` alike under the provider's oauthEnv, which only setupToken providers
+// declare; device logins are not pasted tokens and are not offered here.
+const TYPE_FLAG = { apikey: 'apiKey', 'cli-token': 'setupToken', oauth: 'setupToken' }
+const MAX_TOKEN = 2048
 
 async function provider(apiBase, bearer, id) {
   if (typeof id !== 'string' || !PROVIDER.test(id)) refuse()
   const found = list((await adminRequest(apiBase, bearer, 'GET', '/api/admin/coach')).providers, 50).find(p => object(p) && p.id === id)
   if (!found || found.connected !== true) refuse()
   return { id, label: str(found.label, 80) || id }
+}
+
+// The full capability row for a provider the instance really lists. Not limited to connected ones:
+// a first connection is the point of the link.
+async function providerCapability(apiBase, bearer, id) {
+  if (typeof id !== 'string' || !PROVIDER.test(id)) refuse()
+  const found = list((await adminRequest(apiBase, bearer, 'GET', '/api/admin/coach')).providers, 50).find(p => object(p) && p.id === id)
+  if (!found) refuse()
+  const capability = coachCapability(found)
+  if (!capability.id || !capability.label || !Object.values(TYPE_FLAG).some(flag => capability[flag])) refuse()
+  return capability
 }
 
 export function createAdminExecutors({ apiBase, key } = {}) {
@@ -321,6 +353,58 @@ export function createAdminExecutors({ apiBase, key } = {}) {
         return { swept: true, removed: num(r.removed), freedBytes: num(r.freedBytes) }
       },
     },
+    // Password sign-in is per instance: the tool stays registered (tools/list is static) but
+    // mints nothing unless GET /api/admin/users says password_login:true, re-checked here at
+    // execute. Target must exist, not be an admin and not be the caller — the same bar as
+    // disable. The digest binds the account row, so a rename between link and tap is refused.
+    'password-reset': {
+      authorize: async (trusted, id) => {
+        if (!(await isAdmin(apiBase, trusted)) || id === trusted.userId || !(await passwordLoginEnabled(apiBase, trusted.bearer))) return false
+        return (await account(apiBase, trusted.bearer, id)).admin === false
+      },
+      inspect: async ({ bearer }, id) => {
+        if (!(await passwordLoginEnabled(apiBase, bearer))) refuse()
+        const a = await account(apiBase, bearer, id)
+        return { summary: { type: 'password-reset', id, name: a.name,
+          effect: 'Invalidates the former password and ends all sessions of this account. Passkeys stay. The reset code is shown once on this page, never in chat.' },
+        digest: hash(['password-reset', a]) }
+      },
+      execute: async ({ bearer }, id, digest) => {
+        if (!(await passwordLoginEnabled(apiBase, bearer))) refuse()
+        const a = await account(apiBase, bearer, id)
+        if (a.admin || hash(['password-reset', a]) !== digest) refuse()
+        const data = await send(apiBase, bearer, 'POST', '/api/admin/user/password-reset', { id })
+        if (typeof data.code !== 'string' || !RESET_CODE.test(data.code) || !Number.isFinite(data.expires)) refuse()
+        return { reset: true, id, reveal: { label: 'Password reset code', value: data.code, expires: data.expires } }
+      },
+    },
+    // The link is for one provider; the credential itself is typed in the browser and arrives
+    // only with the passkey tap (input), never in chat params. input() checks shape only: the
+    // provider and the type are re-checked against the live capability row inside execute.
+    'connect-coach': {
+      input: raw => {
+        if (!object(raw) || Object.keys(raw).some(k => !['provider', 'type', 'token', 'account'].includes(k))) refuse()
+        if (typeof raw.provider !== 'string' || !PROVIDER.test(raw.provider)) refuse()
+        if (typeof raw.type !== 'string' || !Object.hasOwn(TYPE_FLAG, raw.type)) refuse()
+        if (typeof raw.token !== 'string' || !raw.token.trim() || raw.token.length > MAX_TOKEN) refuse()
+        if (raw.account !== undefined && (typeof raw.account !== 'string' || raw.account.length > 120)) refuse()
+        return { provider: raw.provider, type: raw.type, token: raw.token.trim(), ...(raw.account !== undefined ? { account: raw.account } : {}) }
+      },
+      authorize: async (trusted, id) => (await isAdmin(apiBase, trusted)) && !!(await providerCapability(apiBase, trusted.bearer, id)),
+      inspect: async ({ bearer }, id) => {
+        const p = await providerCapability(apiBase, bearer, id)
+        return { summary: { type: 'connect-coach', id, name: p.label, provider: p,
+          effect: p.connected ? `Replaces the credential already connected for ${p.label}.` : `Connects a credential for ${p.label}.` },
+        digest: hash(['connect-coach', p]) }
+      },
+      execute: async ({ bearer }, id, digest, _params, input) => {
+        if (!input || input.provider !== id) refuse()
+        const p = await providerCapability(apiBase, bearer, id)
+        if (hash(['connect-coach', p]) !== digest || p[TYPE_FLAG[input.type]] !== true) refuse()
+        await send(apiBase, bearer, 'POST', '/api/admin/coach/connect', input)
+        return { connected: { provider: id } }
+      },
+    },
   }
 }
 
@@ -337,5 +421,7 @@ export function createAdminTools({ apiBase, key, confirmations } = {}) {
     link('sweep_media', 'sweep-media', a => { args(a, []); return 'self' }),
     link('request_create_invite', 'create-invite', a => { args(a, ['note']); return 'new' }, a => ({ note: args(a, ['note']).note })),
     link('request_revoke_invite', 'revoke-invite', a => args(a, ['ref']).ref),
+    link('request_password_reset', 'password-reset', a => args(a, ['id']).id),
+    link('request_connect_coach', 'connect-coach', a => args(a, ['provider']).provider),
   ]
 }

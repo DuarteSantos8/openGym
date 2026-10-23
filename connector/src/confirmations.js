@@ -4,6 +4,7 @@ import { openBearer, mintLoginOptions, verifyFreshPasskey } from './openGymSessi
 const ID = /^[A-Za-z0-9_-]{43}$/
 const TTL = 5 * 60_000
 const MAX_PARAMS_BYTES = 4096
+const MAX_INPUT_BYTES = 4096
 const MAX_ROWS_BYTES = 8192
 const hash = value => crypto.createHash('sha256').update(value).digest('base64url')
 const invalid = () => { throw new ConfirmationError() }
@@ -52,6 +53,16 @@ function pickRows(rows) {
   return out
 }
 
+// A Coach credential review carries the provider's capability flags as upstream reports them, so
+// the page can offer only the credential types the provider takes. Booleans only, no other field.
+const pickCoach = coach => {
+  if (!plain(coach) || typeof coach.id !== 'string' || !coach.id || coach.id.length > 40 ||
+    typeof coach.label !== 'string' || !coach.label || coach.label.length > 80 ||
+    ['connected', 'apiKey', 'setupToken', 'deviceLogin'].some(k => typeof coach[k] !== 'boolean') ||
+    !(coach.apiKey || coach.setupToken)) invalid()
+  return { id: coach.id, label: coach.label, connected: coach.connected, apiKey: coach.apiKey, setupToken: coach.setupToken, deviceLogin: coach.deviceLogin }
+}
+
 function pickSummary(summary) {
   if (!summary || typeof summary !== 'object' || Array.isArray(summary)) invalid()
   const out = {}
@@ -62,6 +73,7 @@ function pickSummary(summary) {
     out[key] = value
   }
   if (!out.type || !out.id) invalid()
+  if (summary.provider != null) out.provider = pickCoach(summary.provider)
   if (summary.rows != null) out.rows = pickRows(summary.rows)
   if (summary.total != null) {
     if (!out.rows || !Number.isSafeInteger(summary.total) || summary.total < out.rows.length) invalid()
@@ -152,6 +164,21 @@ export function createConfirmations({ connections, key, apiBase, origin, prefix,
       return deepFreeze(JSON.parse(text))
     } catch { invalid() }
   }
+  // Browser-only input, same closed contract as params: only an executor that declares an
+  // `input(raw)` validator takes any, and it always runs (raw may be undefined). Only the
+  // connect-coach executor declares one: it validates the credential the admin typed in the
+  // browser, never the chat arguments. Nothing is retained on the pending record.
+  function closedInput(type, raw) {
+    const validator = executors[type] && executors[type].input
+    if (typeof validator !== 'function') { if (raw !== undefined) invalid(); return undefined }
+    try {
+      const value = validator(raw)
+      if (!plain(value)) invalid()
+      const text = JSON.stringify(value)
+      if (Buffer.byteLength(text) > MAX_INPUT_BYTES) invalid()
+      return deepFreeze(JSON.parse(text))
+    } catch { invalid() }
+  }
   async function requestConfirmation(action, connId) {
     sweep()
     if (!action || typeof action !== 'object' || Array.isArray(action) ||
@@ -212,6 +239,9 @@ export function createConfirmations({ connections, key, apiBase, origin, prefix,
   }
   async function confirm(id, proof) {
     const { h, rec } = lookup(id)
+    // Browser-only input is validated before the pending record is spent: a malformed credential
+    // costs nothing and cannot consume the one execution.
+    const coachInput = closedInput(rec.type, proof && typeof proof === 'object' ? proof.coach : undefined)
     pending.delete(h) // synchronous, before verification, fetching, or any other await
     if (!rec.digest || !rec.challenge || rec.issuing) invalid()
     const { user } = await verifyFreshPasskey(proof, { apiBase, origin, challenge: rec.challenge.value, cid: rec.challenge.cid })
@@ -236,7 +266,7 @@ export function createConfirmations({ connections, key, apiBase, origin, prefix,
       const live = trusted(rec.connId, rec.userId)
       await gate(rec.type, rec.userId, live, rec.targetId, rec.params)
       if (latest.get(rec.key) !== h || rec.exp <= time()) invalid()
-      const result = await executors[rec.type].execute({ userId: rec.userId, bearer: trusted(rec.connId, rec.userId) }, rec.targetId, rec.digest, rec.params)
+      const result = await executors[rec.type].execute({ userId: rec.userId, bearer: trusted(rec.connId, rec.userId) }, rec.targetId, rec.digest, rec.params, coachInput)
       return result && typeof result === 'object' && result.reveal !== undefined ? { ...result, reveal: pickReveal(result.reveal) } : result
     } catch (e) { if (e instanceof ConfirmationError) throw e; invalid() }
   }

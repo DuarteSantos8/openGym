@@ -100,6 +100,8 @@ const LINKS = {
   sweep_media: ['Delete the user\'s own unused photos and videos.', obj()],
   request_create_invite: ['Admin only. Create a signup invite (optional note, up to 60 characters). The code is shown only on the passkey-confirmed page, never in chat.', obj({ note: str(60) })],
   request_revoke_invite: ['Admin only. Revoke an unused invite by its opaque ref from list_invites. No code is shown.', obj({ ref: str(22) }, ['ref'])],
+  request_password_reset: ['Admin only. Request a password reset for a non-admin account (requires password login on the instance). The one-time code is shown only on the passkey-confirmed page, never in chat.', obj({ id: ID }, ['id'])],
+  request_connect_coach: ['Admin only. Request connecting a Coach provider credential (any listed provider id). The credential is entered on the passkey-confirmed page in the browser, never in chat.', obj({ provider: str(40) }, ['provider'])],
 }
 
 /* ------------------------------------ replies ------------------------------------ */

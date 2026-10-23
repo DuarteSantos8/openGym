@@ -447,3 +447,66 @@ test('custom executor cannot execute when its inspected digest changes or disapp
     await assert.rejects(() => f.service.confirm(id, { cid, credential: credential() }), bad)
   }
 })
+
+test('browser-only Coach credential crosses execute POST, not GET, link, details or pending record', async t => {
+  const executor = { 'connect-coach': {
+    input: raw => raw,
+    authorize: async () => true,
+    inspect: async (_trusted, id) => ({ summary: { type: 'connect-coach', id, provider: { id, label: 'Provider', connected: false, apiKey: true, setupToken: false, deviceLogin: false } }, digest: 'd' }),
+    execute: async (_trusted, _id, _digest, _params, input) => ({ connected: input.provider }),
+  } }
+  const f = await fixture({ executors: executor }); t.after(f.close)
+  const link = await f.service.requestConfirmation({ type: 'connect-coach', targetId: 'compat' }, 'conn1')
+  const id = idOf(link.url)
+  const web = createServer({ origin, prefix, apiBase: 'unused', confirmations: f.service })
+  await new Promise(resolve => web.listen(0, '127.0.0.1', resolve))
+  t.after(() => new Promise(resolve => web.close(resolve)))
+  const base = `http://127.0.0.1:${web.address().port}`
+  const get = await fetch(base + '/connector/confirm?token=sk-SECRET')
+  assert.equal(get.status, 200)
+  assert.doesNotMatch(await get.text(), /sk-SECRET/)
+  const post = (route, body = {}) => fetch(`${base}/connector/confirm/${route}`, { method: 'POST', headers: { origin, 'content-type': 'application/json' }, body: JSON.stringify({ id, ...body }) })
+  assert.doesNotMatch(JSON.stringify(await (await post('details')).json()), /sk-SECRET/)
+  await post('challenge')
+  const oversized = await post('execute', { cid: 'cid-1', credential: credential(), coach: { provider: 'compat', type: 'apikey', token: 'sk-SECRET' + 'x'.repeat(9000) } })
+  assert.equal(oversized.status, 413)
+  assert.doesNotMatch(await oversized.text(), /sk-SECRET/)
+  const done = await post('execute', { cid: 'cid-1', credential: credential(), coach: { provider: 'compat', type: 'apikey', token: 'sk-SECRET' } })
+  assert.equal(done.status, 200)
+  assert.deepEqual(await done.json(), { connected: 'compat' })
+  assert.doesNotMatch(JSON.stringify([link, [...f.service.pending.values()]]), /sk-SECRET/)
+  assert.equal((await post('execute', { cid: 'cid-1', credential: credential(), coach: { provider: 'compat', type: 'apikey', token: 'sk-SECRET' } })).status, 400)
+})
+
+test('Coach page collects browser-only credentials before passkey and clears fields after execution', async () => {
+  const html = readFileSync(new URL('../src/web/confirm.html', import.meta.url), 'utf8')
+  const elements = new Map()
+  const element = () => ({ textContent: '', value: '', hidden: false, disabled: true, children: [], appendChild(node) { this.children.push(node) }, addEventListener(_name, fn) { this.click = fn } })
+  const document = { getElementById(id) { if (!elements.has(id)) elements.set(id, element()); return elements.get(id) }, createElement: element }
+  const posts = []
+  const fetch = async (url, options) => {
+    const route = url.split('/').at(-1), body = JSON.parse(options.body)
+    posts.push({ route, body })
+    return { ok: true, json: async () => route === 'details'
+      ? { summary: { type: 'connect-coach', id: 'compat', name: 'Compatible', effect: 'Replaces the credential already connected.', provider: { id: 'compat', label: 'Compatible', connected: true, apiKey: true, setupToken: false, deviceLogin: false } }, digest: 'fingerprint' }
+      : route === 'challenge' ? { cid: 'cid-1', options: { challenge: 'YQ', allowCredentials: [] } }
+        : { connected: { provider: 'compat' } } }
+  }
+  const context = { document, fetch, location: { hash: '#fragment-token', pathname: '/connector/confirm' }, history: { replaceState() {} }, navigator: { credentials: { get: async () => ({ id: 'cred', rawId: new Uint8Array([1]), type: 'public-key', response: { clientDataJSON: new Uint8Array([1]), authenticatorData: new Uint8Array([1]), signature: new Uint8Array([1]) } }) } }, btoa, atob, Uint8Array, console }
+  vm.runInNewContext(html.match(/<script>([\s\S]*?)<\/script>/)[1], context)
+  await new Promise(resolve => setImmediate(resolve))
+  assert.equal(elements.get('coach-fields').hidden, false)
+  assert.equal(elements.get('target').textContent, '')
+  elements.get('coach-type').value = 'apikey'
+  elements.get('coach-token').value = 'sk-SECRET'
+  elements.get('coach-account').value = 'ops@example.test'
+  await elements.get('confirm').click()
+  assert.deepEqual(posts.map(x => x.route), ['details'], 'no challenge before a review')
+  assert.match(elements.get('target').textContent, /Replaces/)
+  await elements.get('confirm').click()
+  assert.deepEqual(posts.map(x => x.route), ['details', 'challenge', 'execute'])
+  assert.equal(posts.at(-1).body.coach.token, 'sk-SECRET')
+  assert.equal(elements.get('coach-token').value, '')
+  assert.equal(elements.get('coach-account').value, '')
+  assert.doesNotMatch(JSON.stringify(posts[0]), /sk-SECRET/)
+})

@@ -38,7 +38,7 @@ const coach = () => ({
 
 async function fixture({ executors } = {}) {
   const f = { admin: true, verifyUser: 'uid1', users: initialUsers(), coach: coach(), seen: [], big: false, rev: 7,
-    invites: [{ code: 'ABCDEF0123456789', note: 'for Sam', created: 'c', createdBy: 'uid1', usedBy: 'uid2', usedAt: 'u', usedByName: 'Friend' },
+    passwordLogin: true, invites: [{ code: 'ABCDEF0123456789', note: 'for Sam', created: 'c', createdBy: 'uid1', usedBy: 'uid2', usedAt: 'u', usedByName: 'Friend' },
       { code: 'FEDCBA9876543210', note: '', created: 'c', createdBy: 'uid1' }], inviteCode: '1234ABCD5678EF01' }
   const who = { 'Bearer bearer-1': 'uid1', 'Bearer bearer-2': 'uid2' }
   const api = http.createServer((req, res) => {
@@ -61,7 +61,7 @@ async function fixture({ executors } = {}) {
         const url = new URL(req.url, 'http://x')
         const p = url.pathname
         if (f.big && req.method === 'GET') { res.writeHead(200, { 'content-type': 'application/json' }); return res.end('{"pad":"' + 'x'.repeat(6 * 1024 * 1024) + '"}') }
-        if (route === 'GET /api/admin/users') return json(200, { users: f.users, invite_only: true, password_login: true, now: 1 })
+        if (route === 'GET /api/admin/users') return json(200, { users: f.users, invite_only: true, ...(f.passwordLogin ? { password_login: true } : {}), now: 1 })
         if (p === '/api/admin/user' && req.method === 'GET') {
           const u = f.users.find(x => x.id === url.searchParams.get('id'))
           if (!u) return json(404, { error: 'no such user' })
@@ -84,6 +84,8 @@ async function fixture({ executors } = {}) {
           if (route === 'POST /api/admin/user/delete') return json(200, { ok: true, id: JSON.parse(body).id, extra: 'RESETCODE' })
           if (route === 'POST /api/admin/user/disable') return json(200, { ok: true, id: JSON.parse(body).id, disabled: JSON.parse(body).disabled })
           if (route === 'POST /api/admin/audit/clear') return json(200, { ok: true })
+          if (route === 'POST /api/admin/user/password-reset') return json(200, { ok: true, name: 'Friend', code: 'ABCD-EFGH-JKLM', expires: 1700000000000, extra: 'RESETCODE' })
+          if (route === 'POST /api/admin/coach/connect') return json(200, { ok: true, extra: 'sk-SECRET' })
           if (route === 'POST /api/admin/coach/disconnect') return json(200, { ok: true })
         }
       }
@@ -200,11 +202,11 @@ test('an oversized upstream answer fails with our own message, not its contents'
   await assert.rejects(() => f.tools.list_users.handler('bearer-1', {}), e => e instanceof AdminError && !e.message.includes('xxx'))
 })
 
-test('no tool exists for reset, backup replace, bulk delete, invite codes or password reset', async t => {
+test('only explicitly supported admin tools exist; no backup replace or bulk delete', async t => {
   const f = await fixture(); t.after(f.close)
   assert.deepEqual(Object.keys(f.tools).sort(), ['clear_audit_log', 'delete_account', 'delete_routine', 'delete_workout', 'disable_account', 'disconnect_coach',
-    'get_audit_log', 'get_coach_status', 'get_user', 'list_invites', 'list_users', 'request_create_invite', 'request_revoke_invite', 'sweep_media'])
-  assert.deepEqual(Object.keys(createAdminExecutors({ apiBase: 'http://unused', key })).sort(), ['clear-audit', 'create-invite', 'delete-account', 'disable-account', 'disconnect-coach', 'revoke-invite', 'sweep-media'])
+    'get_audit_log', 'get_coach_status', 'get_user', 'list_invites', 'list_users', 'request_connect_coach', 'request_create_invite', 'request_password_reset', 'request_revoke_invite', 'sweep_media'])
+  assert.deepEqual(Object.keys(createAdminExecutors({ apiBase: 'http://unused', key })).sort(), ['clear-audit', 'connect-coach', 'create-invite', 'delete-account', 'disable-account', 'disconnect-coach', 'password-reset', 'revoke-invite', 'sweep-media'])
 })
 
 test('requesting any destructive tool only returns a link: nothing is mutated, no admin route is touched for sweep', async t => {
@@ -516,5 +518,86 @@ test('a non-admin cannot mint or confirm invite actions, and admin rights withdr
   await f.service.details(id); const { cid } = await f.service.challenge(id)
   f.admin = false
   await assert.rejects(() => f.service.confirm(id, { cid, credential: credential() }), bad)
+  assert.equal(f.mutations().length, 0)
+})
+
+test('password reset requires enabled login, admin, existing non-admin other account', async t => {
+  const f = await fixture(); t.after(f.close)
+  const mint = id => f.tools.request_password_reset.handler('conn1', { id })
+  f.passwordLogin = false
+  await assert.rejects(() => mint('uid2'), bad)
+  f.passwordLogin = true
+  for (const id of ['uid1', 'uid3', 'missing', '../x']) await assert.rejects(() => mint(id), bad)
+  f.admin = false
+  await assert.rejects(() => mint('uid2'), bad)
+  assert.equal(f.mutations().length, 0)
+})
+
+test('password reset reveals only browser result once and refuses changed target or disabled login', async t => {
+  const f = await fixture(); t.after(f.close)
+  const mint = async () => idOf((await f.tools.request_password_reset.handler('conn1', { id: 'uid2' })).url)
+  let id = await mint()
+  const details = await f.service.details(id)
+  assert.match(details.summary.effect, /password.*sessions.*passkeys/i)
+  assert.doesNotMatch(JSON.stringify(details), /ABCD-EFGH-JKLM/)
+  let { cid } = await f.service.challenge(id)
+  f.users[1].name = 'Changed'
+  await assert.rejects(() => f.service.confirm(id, { cid, credential: credential() }), bad)
+  id = await mint(); await f.service.details(id); ({ cid } = await f.service.challenge(id))
+  f.passwordLogin = false
+  await assert.rejects(() => f.service.confirm(id, { cid, credential: credential() }), bad)
+  f.passwordLogin = true
+  id = await mint(); await f.service.details(id); ({ cid } = await f.service.challenge(id))
+  const result = await f.service.confirm(id, { cid, credential: credential() })
+  assert.deepEqual(result, { reset: true, id: 'uid2', reveal: { label: 'Password reset code', value: 'ABCD-EFGH-JKLM', expires: 1700000000000 } })
+  await assert.rejects(() => f.service.confirm(id, { cid, credential: credential() }), bad)
+  const calls = f.mutations()
+  assert.deepEqual(calls.map(x => x.route), ['POST /api/admin/user/password-reset'])
+  assert.deepEqual(JSON.parse(calls[0].body), { id: 'uid2' })
+  assert.equal(calls[0].headers.authorization, 'Bearer bearer-1')
+  assert.equal(calls[0].headers.cookie, undefined)
+  assert.doesNotMatch(JSON.stringify([...f.service.pending.values()]), /ABCD-EFGH-JKLM/)
+})
+
+test('Coach link projects only safe provider capabilities; browser credentials validate before a single POST', async t => {
+  const f = await fixture(); t.after(f.close)
+  const mint = async provider => idOf((await f.tools.request_connect_coach.handler('conn1', { provider })).url)
+  const id = await mint('compat')
+  const details = await f.service.details(id)
+  assert.match(details.summary.effect, /replac/i)
+  assert.deepEqual(details.summary.provider, { id: 'compat', label: 'Compatible', connected: true, apiKey: true, setupToken: false, deviceLogin: false })
+  assert.doesNotMatch(JSON.stringify(details), /HEADERVALUE|sk-LEAK|owner@coach.test|\/v1/)
+  // Wrong provider, a type the provider does not take, empty token: no upstream POST.
+  for (const data of [{ provider: 'other', type: 'apikey', token: 'sk-SECRET' }, { provider: 'compat', type: 'oauth', token: 'sk-SECRET' }, { provider: 'compat', type: 'apikey', token: '' }]) {
+    const fresh = await mint('compat'); await f.service.details(fresh); const challenge = await f.service.challenge(fresh)
+    await assert.rejects(() => f.service.confirm(fresh, { cid: challenge.cid, credential: credential(), coach: data }), e => bad(e) && !e.message.includes('sk-SECRET'))
+  }
+  assert.equal(f.mutations().length, 0)
+  const ok = await mint('compat'); await f.service.details(ok); const { cid } = await f.service.challenge(ok)
+  const result = await f.service.confirm(ok, { cid, credential: credential(), coach: { provider: 'compat', type: 'apikey', token: 'sk-SECRET', account: 'owner@coach.test' } })
+  assert.deepEqual(result, { connected: { provider: 'compat' } })
+  await assert.rejects(() => f.service.confirm(ok, { cid, credential: credential(), coach: { provider: 'compat', type: 'apikey', token: 'sk-SECRET' } }), bad)
+  const calls = f.mutations()
+  assert.equal(calls.length, 1)
+  assert.equal(calls[0].route, 'POST /api/admin/coach/connect')
+  assert.deepEqual(JSON.parse(calls[0].body), { provider: 'compat', type: 'apikey', token: 'sk-SECRET', account: 'owner@coach.test' })
+  assert.equal(calls[0].headers.authorization, 'Bearer bearer-1')
+  assert.equal(calls[0].headers.cookie, undefined)
+  assert.doesNotMatch(JSON.stringify([...f.service.pending.values()]), /sk-SECRET/)
+})
+
+test('Coach refuses withdrawn admin, changed provider, invalid secret without reflecting input', async t => {
+  const f = await fixture(); t.after(f.close)
+  const mint = async () => idOf((await f.tools.request_connect_coach.handler('conn1', { provider: 'compat' })).url)
+  let id = await mint(); await f.service.details(id); let { cid } = await f.service.challenge(id)
+  f.coach.providers[0].apiKey = false
+  await assert.rejects(() => f.service.confirm(id, { cid, credential: credential(), coach: { provider: 'compat', type: 'apikey', token: 'sk-SECRET' } }), bad)
+  f.coach.providers[0].apiKey = true
+  id = await mint(); await f.service.details(id); ({ cid } = await f.service.challenge(id))
+  f.admin = false
+  await assert.rejects(() => f.service.confirm(id, { cid, credential: credential(), coach: { provider: 'compat', type: 'apikey', token: 'sk-SECRET' } }), bad)
+  f.admin = true
+  id = await mint(); await f.service.details(id); ({ cid } = await f.service.challenge(id))
+  await assert.rejects(() => f.service.confirm(id, { cid, credential: credential(), coach: { provider: 'compat', type: 'apikey', token: 'sk-SECRET', extra: 'sk-SECRET' } }), e => bad(e) && !e.message.includes('sk-SECRET'))
   assert.equal(f.mutations().length, 0)
 })
