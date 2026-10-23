@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- GENERATED FILE - do not edit by hand.
-     Built by scripts/build-api-docs.mjs from api/openapi.yaml (openGym API v1.4.1).
+     Built by scripts/build-api-docs.mjs from api/openapi.yaml (openGym API v1.4.2).
      Regenerate with: node scripts/build-api-docs.mjs -->
 <html lang="en">
 <head>
@@ -29,7 +29,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=26">
+<link rel="stylesheet" href="styles.css?v=27">
 <script>document.documentElement.className += ' js'</script>
 <!-- Umami web analytics for opengym.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
@@ -244,8 +244,8 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
-    <span>openGym v1.4.1</span>
-    <span>69 endpoints</span>
+    <span>openGym v1.4.2</span>
+    <span>73 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -273,15 +273,15 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="ov">
     <h3>CSRF</h3>
-<p>State-changing browser requests must come from the app's own origin. The server checks <code>Sec-Fetch-Site</code> (falling back to <code>Origin</code> vs the configured <code>ORIGIN</code>); a mismatch is refused with <code>403 {&quot;error&quot;:&quot;cross-origin request refused&quot;}</code> on any non-GET route. Exempt: passkey sign-up and sign-in (<code>register/options</code>, <code>register/verify</code>, <code>login/options</code>, <code>login/verify</code>) and <code>pair/redeem</code>, each of which carries its own one-shot credential in the body, and any request authenticated with a Bearer token. The password routes are <b>not</b> exempt: a hostile page knows a valid name and password of its own, and could otherwise sign a visitor into it (login CSRF). Neither are the device-link routes: a link is redeemed on the app's own origin, the only one a passkey can be created for.</p>
+<p>State-changing browser requests must come from the app's own origin. The server checks <code>Sec-Fetch-Site</code> (falling back to <code>Origin</code> vs the configured <code>ORIGIN</code>); a mismatch is refused with <code>403 {&quot;error&quot;:&quot;cross-origin request refused&quot;}</code> on any non-GET route, the passkey routes included. Exempt: <code>pair/redeem</code>, which the mobile app calls from its own origin (the code in the body is the credential, and the token comes back in the body, never as a cookie), and any request a Bearer token authenticates by itself: a valid session token, with no session cookie beside it, on any route but the sign-in ones — the four passkey routes, the password and reset-code routes and the two device-link routes, which act on the credential in the body, never on a Bearer. A cross-origin request whose Bearer does not buy the exemption is refused before any handler runs: <code>401 {&quot;error&quot;:&quot;not signed in&quot;}</code> when that Bearer does not verify and is the only credential (a paired app whose token was revoked or expired), the 403 otherwise. The passkey routes were exempt before, on the grounds that the challenge id is a credential; but it is bound to nothing else, so a hostile page could complete the attacker's own passkey sign-in in the victim's browser (login CSRF) and the answer set the victim's session to the attacker's account. The password routes are <b>not</b> exempt for the same reason: a hostile page knows a valid name and password of its own.</p>
   </div>
   <div class="ov">
     <h3>Environment-dependent behavior</h3>
-<ul><li><code>INVITE_ONLY=1</code>: registration requires a valid invite code (minted by an admin).</li><li><code>ALLOW_GUEST=0</code>: hides the client-side &quot;continue without account&quot; mode; the server merely reports the flag via <code>GET /api/config</code> (guest mode never talks to this API at all).</li><li><code>ADMIN_UIDS=&lt;uid&gt;,&lt;uid&gt;</code>: user ids treated as admins (a <code>&quot;admin&quot;: true</code> flag on the user record in <code>db.json</code> works too). Admins get the <code>/api/admin/*</code> routes.</li><li><code>FIRST_USER_ADMIN</code> (default off; <code>1</code> turns it on): the first profile registered on an instance with no profiles gets that <code>&quot;admin&quot;: true</code> flag. Decided at registration only, never applied to an instance that already has profiles.</li><li><code>AUDIT_LOG</code> (default on), <code>AUDIT_MAX</code> (default 5000 events), <code>AUDIT_DAYS</code> (default 90), <code>AUDIT_IP</code> (<code>off</code> | <code>net</code> | <code>full</code>, default off) shape the audit log served by <code>GET /api/admin/audit</code>.</li><li><code>PASSWORD_LOGIN=1</code>: adds the <code>password</code> routes and <code>password_login: true</code> in <code>GET /api/config</code>. Off by default.</li><li><code>DEFAULT_LANG</code> (e.g. <code>pt-BR</code>; unset by default): <code>default_lang</code> in <code>GET /api/config</code>, the language of the sign-in screen and of every profile that never picked one.</li><li><code>TRUST_PROXY=1</code>: the throttle reads the client address from proxy headers (set by the bundled <code>docker-compose.yml</code>, where only the web container can reach the API).</li><li><code>MEDIA_UPLOADS</code> (default on; <code>0</code> removes the <code>media</code> routes and the <code>media</code> block of <code>GET /api/config</code>), <code>MEDIA_QUOTA_MB</code> (200 per profile, <code>0</code> = no cap), <code>MEDIA_IMAGE_MAX_MB</code> (2), <code>MEDIA_GIF_MAX_MB</code> (8), <code>MEDIA_VIDEO_MAX_MB</code> (40), <code>MEDIA_VIDEO_MAX_SEC</code> (60), <code>MEDIA_GC_GRACE_DAYS</code> (14), <code>MEDIA_UPLOADS_PER_HOUR</code> (600 per profile), <code>MEDIA_MIN_FREE_MB</code> (512, <code>0</code> = no floor): photos and videos of custom exercises (tag <code>media</code>). Every MB here is 2^20 bytes.</li></ul>
+<ul><li><code>INVITE_ONLY=1</code>: registration requires a valid invite code (minted by an admin).</li><li><code>ALLOW_GUEST=0</code>: hides the client-side &quot;continue without account&quot; mode; the server merely reports the flag via <code>GET /api/config</code> (guest mode never talks to this API at all).</li><li><code>ADMIN_UIDS=&lt;uid&gt;,&lt;uid&gt;</code>: user ids treated as admins (a <code>&quot;admin&quot;: true</code> flag on the user record in <code>db.json</code> works too). Admins get the <code>/api/admin/*</code> routes. One admin is the owner: the record with <code>&quot;owner&quot;: true</code>, else the first <code>ADMIN_UIDS</code> entry with a profile, else the oldest admin. Only the owner appoints and removes admins, deletes an admin, hands the role on and clears the audit log.</li><li><code>FIRST_USER_ADMIN</code> (default off; <code>1</code> turns it on): the first profile registered on an instance with no profiles gets that <code>&quot;admin&quot;: true</code> flag and is the owner. Decided at registration only, never applied to an instance that already has profiles.</li><li><code>AUDIT_LOG</code> (default on), <code>AUDIT_MAX</code> (default 5000 events), <code>AUDIT_DAYS</code> (default 90), <code>AUDIT_IP</code> (<code>off</code> | <code>net</code> | <code>full</code>, default off) shape the audit log served by <code>GET /api/admin/audit</code>.</li><li><code>PASSWORD_LOGIN=1</code>: adds the <code>password</code> routes and <code>password_login: true</code> in <code>GET /api/config</code>. Off by default.</li><li><code>DEFAULT_LANG</code> (e.g. <code>pt-BR</code>; unset by default): <code>default_lang</code> in <code>GET /api/config</code>, the language of the sign-in screen and of every profile that never picked one.</li><li><code>TRUST_PROXY=1</code>: the throttle reads the client address from proxy headers (set by the bundled <code>docker-compose.yml</code>, where only the web container can reach the API).</li><li><code>MEDIA_UPLOADS</code> (default on; <code>0</code> removes the <code>media</code> routes and the <code>media</code> block of <code>GET /api/config</code>), <code>MEDIA_QUOTA_MB</code> (200 per profile, <code>0</code> = no cap), <code>MEDIA_IMAGE_MAX_MB</code> (2), <code>MEDIA_GIF_MAX_MB</code> (8), <code>MEDIA_VIDEO_MAX_MB</code> (40), <code>MEDIA_VIDEO_MAX_SEC</code> (60), <code>MEDIA_GC_GRACE_DAYS</code> (14), <code>MEDIA_UPLOADS_PER_HOUR</code> (600 per profile), <code>MEDIA_MIN_FREE_MB</code> (512, <code>0</code> = no floor): photos and videos of custom exercises (tag <code>media</code>). Every MB here is 2^20 bytes.</li></ul>
   </div>
   <div class="ov">
     <h3>Conventions</h3>
-<ul><li>Every response body is JSON with <code>Cache-Control: no-store</code>. The one exception is <code>GET /api/media/{hash}</code>, which answers with the stored file itself (<code>Cache-Control: private, no-store</code>).</li><li>Errors are always <code>{&quot;error&quot;: &quot;&lt;human-readable message&gt;&quot;}</code>. The <code>password</code>, throttle and <code>media</code> routes add a stable <code>code</code> for the client to word in its own language.</li><li>Unknown method+path pairs return <code>404 {&quot;error&quot;:&quot;not found&quot;}</code>; an unhandled exception returns <code>500 {&quot;error&quot;:&quot;server error&quot;}</code>.</li><li>Request bodies are parsed as JSON regardless of Content-Type. A body that does not parse, or parses to anything but an object (<code>null</code>, a string, an array), is <code>400 {&quot;error&quot;:&quot;invalid json&quot;}</code> on every route that reads one; an empty body counts as <code>{}</code>. A body over 5 MiB is <code>413 {&quot;error&quot;:&quot;body too large&quot;}</code>; the rest of the upload is discarded so the answer reaches the client.</li><li>CORS: the request's <code>Origin</code> is reflected in <code>Access-Control-Allow-Origin</code> <b>without</b> <code>Allow-Credentials</code>, so cross-origin callers can only ever authenticate with a Bearer token, never with the cookie.</li></ul>
+<ul><li>Every response body is JSON with <code>Cache-Control: no-store</code>. The one exception is <code>GET /api/media/{hash}</code>, which answers with the stored file itself (<code>Cache-Control: private, no-store</code>).</li><li>Errors are always <code>{&quot;error&quot;: &quot;&lt;human-readable message&gt;&quot;}</code>. The <code>password</code>, throttle and <code>media</code> routes add a stable <code>code</code> for the client to word in its own language.</li><li>Unknown method+path pairs return <code>404 {&quot;error&quot;:&quot;not found&quot;}</code>; an unhandled exception returns <code>500 {&quot;error&quot;:&quot;server error&quot;}</code>.</li><li>Every route that reads a request body requires <code>Content-Type: application/json</code> (a <code>charset</code> parameter is fine) and answers any other type with <code>415 {&quot;error&quot;:&quot;content-type must be application/json&quot;}</code> — the types a form can send are the ones that skip the CORS preflight, which is how a cross-site form reached these routes. A request with no body needs no Content-Type. A body that does not parse, or parses to anything but an object (<code>null</code>, a string, an array), is <code>400 {&quot;error&quot;:&quot;invalid json&quot;}</code> on every route that reads one; an empty body counts as <code>{}</code>. A body over 5 MiB is <code>413 {&quot;error&quot;:&quot;body too large&quot;}</code>; the rest of the upload is discarded so the answer reaches the client.</li><li>CORS: the request's <code>Origin</code> is reflected in <code>Access-Control-Allow-Origin</code> <b>without</b> <code>Allow-Credentials</code>, so cross-origin callers can only ever authenticate with a Bearer token, never with the cookie.</li></ul>
   </div>
     </div>
   </section>
@@ -391,7 +391,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </summary>
   <div class="ep-body">
 <p>Returns <code>PublicKeyCredentialCreationOptions</code> (from <code>@simplewebauthn/server</code>'s <code>generateRegistrationOptions</code>) plus a challenge id <code>cid</code>. The client passes <code>options</code> to <code>navigator.credentials.create()</code> (or <code>@simplewebauthn/browser</code>'s <code>startRegistration</code>) and sends the result to <code>/api/register/verify</code> together with the <code>cid</code>. Challenges are one-shot and expire after 5 minutes.</p>
-<p>CSRF-exempt (the challenge is the credential). No session required.</p>
+<p>No session required.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public: no authentication required.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
@@ -436,7 +436,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Finish passkey registration (WebAuthn ceremony, step 2)</span>
   </summary>
   <div class="ep-body">
-<p>Verifies the authenticator's attestation response against the stored challenge (<code>verifyRegistrationResponse</code>), creates the user + credential, and signs the caller in (sets the session cookie). On an invite-only instance the invite is re-checked and burned here. CSRF-exempt.</p>
+<p>Verifies the authenticator's attestation response against the stored challenge (<code>verifyRegistrationResponse</code>), creates the user + credential, and signs the caller in (sets the session cookie). On an invite-only instance the invite is re-checked and burned here.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public: no authentication required.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
@@ -481,7 +481,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Start passkey login (WebAuthn ceremony, step 1)</span>
   </summary>
   <div class="ep-body">
-<p>Returns <code>PublicKeyCredentialRequestOptions</code> (<code>generateAuthenticationOptions</code> with an empty <code>allowCredentials</code>; discoverable credentials / resident keys are required at registration, so the browser offers the user their passkeys itself) plus a one-shot challenge id <code>cid</code>. CSRF-exempt. Takes no request body.</p>
+<p>Returns <code>PublicKeyCredentialRequestOptions</code> (<code>generateAuthenticationOptions</code> with an empty <code>allowCredentials</code>; discoverable credentials / resident keys are required at registration, so the browser offers the user their passkeys itself) plus a one-shot challenge id <code>cid</code>. Takes no request body.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public: no authentication required.</span></p>
 
 
@@ -503,7 +503,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Finish passkey login (WebAuthn ceremony, step 2)</span>
   </summary>
   <div class="ep-body">
-<p>Verifies the assertion (<code>verifyAuthenticationResponse</code>), updates the signature counter, and signs the caller in (sets the session cookie). CSRF-exempt.</p>
+<p>Verifies the assertion (<code>verifyAuthenticationResponse</code>), updates the signature counter, and signs the caller in (sets the session cookie).</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public: no authentication required.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
@@ -587,6 +587,52 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">401</span>
     <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-accountDelete">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/account/delete</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Delete your own account and everything of yours</span>
+  </summary>
+  <div class="ep-body">
+<p>The signed-in account removes itself for good, with the same clean-up as <code>/api/admin/user/delete</code>: the user record, their passkeys, their push subscriptions, their live presence, their training history file, their uploaded photos and videos (<code>DATA_DIR/uploads/&lt;uid&gt;/</code>) and any Coach credential stored for them. Not reversible. The body carries the account's name, typed back by its owner, and the same proof as setting a password (see OwnerProof): a passkey assertion made for this request, or the current password while <code>PASSWORD_LOGIN</code> is on. A paired phone (Bearer token) cannot hold a passkey for the server, so for a profile with no password that counts the pairing itself is the proof (audited as <code>device</code>; the app asks the phone's own screen lock first); a profile with one sends the current password from the phone too. Cookie sessions always need the proof. The name and the last-admin rule are checked before the proof is asked. The last admin is refused while any other profile remains (the instance would be left with nobody to run it); the only profile on an instance may delete itself. Clears the caller's cookie; every other session and Bearer token of the account stops working with it. Audited as <code>auth.account.delete</code>, with the name and the proof it was made with (<code>passkey</code>, <code>password</code>, <code>device</code>); a refused proof as <code>auth.proof.fail</code> with <code>act: account-delete</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p>
+<pre><code>{
+  &quot;name&quot;: &quot;Ada&quot;,
+  &quot;current&quot;: &quot;correct horse battery staple&quot;
+}</code></pre>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The account and everything of theirs is gone.<span class="r-sig"><a href="#schema-Ok">Ok</a> &middot; sets <code>Set-Cookie</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>confirm-name</code>: the name is missing or is not this account's.<span class="r-sig"><code>{&quot;error&quot;:&quot;type the account name to confirm&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">No acceptable proof that the owner is here: <code>passkey-required</code> (no password that counts, because none is set or <code>PASSWORD_LOGIN</code> is off, so a passkey has to confirm), <code>passkey</code> (the assertion did not verify, belongs to another profile, or was made for another challenge, one handed out for another ceremony or one already used), <code>current-required</code> or <code>current-wrong</code>.<span class="r-sig"><code>{&quot;error&quot;:&quot;confirm with your passkey first&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc"><code>last-admin</code>: the only admin, with other profiles still on the instance.<span class="r-sig"><code>{&quot;error&quot;:&quot;the last admin cannot leave while other profiles remain&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts, try again later&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -1567,6 +1613,42 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     </div>
   </div>
 </details>
+
+<details class="ep" id="op-nudgeCheck">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/nudge-check</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Whether a day was trained or excused (the phone's background check)</span>
+  </summary>
+  <div class="ep-body">
+<p>Asked by the phone app in the background before a missed-day nudge or a workout-day reminder it scheduled on itself fires, so a day trained on another device is not nudged. A few bytes instead of the whole document: <code>done</code> is true when a workout is dated that day or the day carries a note; <code>nudge</code> is whether the server's copy of the nudge rule would still nudge that day (false once it is done, or when the plan has no session for it); <code>rev</code> is the profile's revision. Nothing of the workouts themselves.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">date<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string <span class="p-hint">(date)</span></span>
+    <span class="p-desc">The day, YYYY-MM-DD, in the phone's own calendar.</span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">How that day stands.<span class="r-sig">{ date: string <span class="p-hint">(date)</span>, done: boolean, nudge: boolean, rev: integer }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>date-invalid</code>: not a YYYY-MM-DD date.<span class="r-sig"><code>{&quot;error&quot;:&quot;date must be YYYY-MM-DD&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
   </div>
 </section>
 
@@ -1605,7 +1687,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Register a Web-Push subscription</span>
   </summary>
   <div class="ep-body">
-<p>Stores the browser's <code>PushSubscription</code> for this account. Only <code>endpoint</code> and the two protocol keys are kept. The endpoint must be a public <code>https://</code> URL; private/loopback/link-local addresses are refused (here and again at send time, against DNS rebinding). At most 20 subscriptions per user; the oldest are dropped first. Re-subscribing an existing endpoint replaces it and keeps its original <code>created</code>. The client re-sends its subscription on every signed-in boot, so a row the instance lost comes back on its own.</p>
+<p>Stores the browser's <code>PushSubscription</code> for this account. Only <code>endpoint</code> and the two protocol keys are kept. The endpoint must be a public <code>https://</code> URL; private/loopback/link-local addresses are refused (here and again at send time, against DNS rebinding). At most 20 subscriptions per user; the oldest are dropped first. Re-subscribing an existing endpoint replaces it and keeps its original <code>created</code>. The client re-sends its subscription on every signed-in boot, so a row the instance lost comes back on its own. An endpoint stored for another account moves to the caller only when the request carries that subscription's own keys (the same browser, signed into another account); otherwise it is a 409 and the row stays where it was.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
@@ -1633,6 +1715,10 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">401</span>
     <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">The endpoint is stored for another account and the request does not carry that subscription's keys.<span class="r-sig"><code>{&quot;error&quot;:&quot;this subscription belongs to another account&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -2087,7 +2173,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">The disclosure.<span class="r-sig">{ provider: string, providerLabel: string, categories: (&quot;plan&quot; | &quot;training&quot; | &quot;bodyweight&quot; | &quot;profile&quot; | &quot;prefs&quot;)[], version: integer }</span></span>
+    <span class="p-desc">The disclosure.<span class="r-sig">{ provider: string, providerLabel: string, host: string, categories: (&quot;plan&quot; | &quot;training&quot; | &quot;bodyweight&quot; | &quot;profile&quot; | &quot;prefs&quot;)[], version: integer }</span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -2653,7 +2739,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Delete a user and everything of theirs</span>
   </summary>
   <div class="ep-body">
-<p>Removes the account for good: the user record, their passkeys, their push subscriptions, their live presence, their training history file, their uploaded photos and videos (<code>DATA_DIR/uploads/&lt;uid&gt;/</code>) and any Coach credential stored for them. Not reversible; <code>/api/admin/user/disable</code> is the reversible one. An admin cannot delete their own account, and the last admin cannot be deleted. Audited by name, since the id stops meaning anything.</p>
+<p>Removes the account for good: the user record, their passkeys, their push subscriptions, their live presence, their training history file, their uploaded photos and videos (<code>DATA_DIR/uploads/&lt;uid&gt;/</code>) and any Coach credential stored for them. Not reversible; <code>/api/admin/user/disable</code> is the reversible one. An admin cannot delete their own account, the last admin and the owner cannot be deleted, and only the owner deletes another admin. Audited by name, since the id stops meaning anything.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
@@ -2671,7 +2757,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">400</span>
-    <span class="p-desc">Your own account, or the last admin.<span class="r-sig"><code>{&quot;error&quot;:&quot;you cannot delete your own account&quot;}</code></span></span>
+    <span class="p-desc">Your own account, the last admin, or the owner.<span class="r-sig"><code>{&quot;error&quot;:&quot;you cannot delete your own account&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -2684,6 +2770,99 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">404</span>
     <span class="p-desc">No user with that id.<span class="r-sig"><code>{&quot;error&quot;:&quot;no such user&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-adminUserRole">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/user/role</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Owner: make someone an admin, or remove the role</span>
+  </summary>
+  <div class="ep-body">
+<p>Owner only (403 for any other admin). Not on the owner themselves, not on an admin named in <code>ADMIN_UIDS</code> (the server would restore them on restart), and a disabled account is enabled before it can be promoted. Removing the role keeps the account and its data.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The user id.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">admin<em class="p-req" title="required">required</em></span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Changed.<span class="r-sig">{ ok: always true, id: string, admin: boolean }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">The owner, an <code>ADMIN_UIDS</code> admin, a disabled account, or no boolean.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No user with that id.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-adminOwnerTransfer">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/owner</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Owner: hand the owner role to another admin</span>
+  </summary>
+  <div class="ep-body">
+<p>Owner only. The target must already be an enabled admin; the previous owner stays an admin.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The user id.</span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Handed over.<span class="r-sig">{ ok: always true, id: string }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Yourself, or not an enabled admin.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No user with that id.</span>
   </div>
     </div>
   </div>
@@ -2850,10 +3029,10 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="m post">POST</span>
     <span class="ep-path"><code>/api/admin/audit/clear</code><span class="ep-chip admin">admin</span></span>
     <span class="ep-chev" aria-hidden="true"></span>
-    <span class="ep-sum">Clear the activity log</span>
+    <span class="ep-sum">Owner: clear the activity log</span>
   </summary>
   <div class="ep-body">
-<p>Deletes the log file. The clear is itself the first event of the fresh log, and event ids are never reset, so a wipe always leaves a visible id gap.</p>
+<p>Owner only, so no other admin can erase a trace of what they did. Deletes the log file. The clear is itself the first event of the fresh log, and event ids are never reset, so a wipe always leaves a visible id gap.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
 
 
@@ -2883,7 +3062,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">The Coach card</span>
   </summary>
   <div class="ep-body">
-<p>Everything the admin screen renders in one round trip, including a live check of the configured provider: for a runtime provider &quot;is the runtime there&quot;, for an HTTPS one the model list its stored key can see.</p>
+<p>Everything the admin screen renders in one round trip, including a live check of the configured provider: for a runtime provider &quot;is the runtime there&quot;, for an HTTPS one the model list its stored key can see. A runtime-backed provider is not run when the privilege drop cannot be performed, exactly as a job would not be: <code>runtime</code> then reads unavailable, with the same reason a job is refused with.</p>
 <p>Counts and outcomes only: no intake answers, no payloads, no proposals, and never a credential, only whether one is filed and what it is labelled.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
 
@@ -3003,7 +3182,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Run one round trip against the provider</span>
   </summary>
   <div class="ep-body">
-<p>Checks the runtime, then asks the model for one fixed JSON object and validates the shape that comes back. That is the whole path a job takes, on nobody's profile.</p>
+<p>Checks the runtime, then asks the model for one fixed JSON object and validates the shape that comes back. That is the whole path a job takes, on nobody's profile. A runtime-backed provider is refused, without spawning anything, when the privilege drop cannot be performed, exactly as a job would be.</p>
 <p>Always 200: the outcome is in the body, because &quot;the provider refused&quot; is an answer to the question the button asks, not a failure of the request. An HTTPS provider gets the same retries as a job: a 429, 500, 502, 503, 504 or 529 is tried twice more, after pauses of 2 and 5 seconds, and only then reported. A runtime provider is asked once.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
 
@@ -3261,6 +3440,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-type">boolean</span>
     <span class="p-desc">Removing any one passkey would be refused (409 <code>last-way-in</code>).</span>
   </div>
+  <div class="prow">
+    <span class="p-name">deleteBlocked</span>
+    <span class="p-type">&quot;last-admin&quot;</span>
+    <span class="p-desc">Present when deleting this profile (<code>POST /api/account/delete</code>) would be refused before any proof is checked: <code>last-admin</code>, the only admin while other profiles remain. The delete sheet says so before asking for a passkey or the password; the delete itself still checks.</span>
+  </div>
 </div>
   </div>
 </details>
@@ -3311,6 +3495,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">name</span>
     <span class="p-type">string</span>
     <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">owner</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">Present (true) only for the instance owner.</span>
   </div>
   <div class="prow">
     <span class="p-name">admin</span>
@@ -3851,6 +4040,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-type">always true</span>
     <span class="p-desc">This instance keeps the files a logged workout's <code>media</code> list names too, not only a custom exercise's. Absent on an instance from before; the app then offers photos and videos on custom exercises only.</span>
   </div>
+  <div class="prow">
+    <span class="p-name">days</span>
+    <span class="p-type">always true</span>
+    <span class="p-desc">This instance also keeps the files of progress photos filed under a day (<code>dayPhotos</code>, a photo for a day without a workout). Absent on an instance from before; the app then only adds photos to logged workouts there.</span>
+  </div>
 </div>
   </div>
 </details>
@@ -4158,6 +4352,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-desc"></span>
   </div>
   <div class="prow">
+    <span class="p-name">owner</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">The one admin who manages the others.</span>
+  </div>
+  <div class="prow">
     <span class="p-name">admin</span>
     <span class="p-type">boolean</span>
     <span class="p-desc"></span>
@@ -4287,6 +4486,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">user.disabled</span>
     <span class="p-type">boolean</span>
     <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">user.owner</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">The one admin who manages the others.</span>
   </div>
   <div class="prow">
     <span class="p-name">user.admin</span>
@@ -4432,7 +4636,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow">
     <span class="p-name">ev<em class="p-req" title="required">required</em></span>
     <span class="p-type">string</span>
-    <span class="p-desc">Event name. Currently one of: <code>auth.register.ok|fail|denied</code>, <code>auth.login.ok|fail</code>, <code>auth.logout</code>, <code>auth.logout.all</code>, <code>auth.pair.create|ok|fail</code>, <code>admin.denied</code>, <code>admin.user.disable|enable</code>, <code>admin.invite.create|revoke</code>, <code>admin.audit.clear</code>.</span>
+    <span class="p-desc">Event name. Currently one of: <code>auth.register.ok|fail|denied</code>, <code>auth.login.ok|fail</code>, <code>auth.logout</code>, <code>auth.logout.all</code>, <code>auth.account.delete</code>, <code>auth.pair.create|ok|fail</code>, <code>admin.denied</code>, <code>admin.user.disable|enable</code>, <code>admin.invite.create|revoke</code>, <code>admin.audit.clear</code>.</span>
   </div>
   <div class="prow">
     <span class="p-name">ok<em class="p-req" title="required">required</em></span>
@@ -5119,6 +5323,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="links">
     <a href="docs.html">Docs</a>
     <a href="about.html">About</a>
+    <a href="privacy.html">Privacy</a>
     <a href="https://github.com/DuarteSantos8/openGym" rel="noopener">GitHub</a>
     <a href="https://gitlab.com/DuarteSantos8/opengym" rel="noopener">GitLab mirror</a>
     <a href="https://discord.gg/e62jY6fwVb" rel="noopener">Discord</a>
@@ -5126,7 +5331,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
 </div></footer>
 
-<script src="site.js?v=26" defer></script>
+<script src="site.js?v=27" defer></script>
 <script>
 /* Jumping to an anchor inside a collapsed card opens the card and re-aligns, since
    the browser scrolled to where the target was while it was still collapsed. */

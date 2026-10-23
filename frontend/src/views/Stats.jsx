@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
+import { dayPhotosOf } from '../lib/day-photos.js'
 import { EXIDX, matchExercise, betterWeight, isAssisted } from '../lib/exercises.js'
 import { lastBW, streakWeeks, setLabel, modeOf, effortOf, entriesForExercise, metricEntriesForExercise, metricModeForEntry, bestWeightForEntry, completedRepsOf, workoutDay, workoutAt } from '../lib/history.js'
 import { fmtNum, fmtDate, fmtVol, todayISO, isoOf, weekKey, weekStartOf, exerciseNameText } from '../lib/format.js'
@@ -18,10 +19,11 @@ import { fatigueStateOf } from '../lib/recovery-view.js'
 import { e1rmSeries, best1RM, formulaOf } from '../lib/onerm.js'
 import { currentDbLoad, workoutAs } from '../lib/dumbbells.js'
 import { maxRepsSeries } from '../lib/pyramid.js'
+import { weighInAt } from '../lib/bodyweight.js'
 import { perSetSessions, perSetLines, dropOffSet } from '../lib/per-set.js'
 import {
   hasEffort, hasEstimableEffort, displayScale, scaleName, toScale, avgRir, effortSummary, effortWeeks,
-  effortHistogram, isHardSet, HARD_RIR, MIN_RATED
+  effortHistogram, isHardSet, HARD_RIR
 } from '../lib/effort.js'
 import { anchorsByWorkout, resolveSetRir } from '../lib/recovery.js'
 import { Button, Segmented, SelectRow } from '../components/ui.jsx'
@@ -123,6 +125,7 @@ function profileBodyweightKg(S) {
 }
 
 function MuscleBalance({ S }) {
+  const nav = useNavigate()
   const [view, setView] = useState('balance')
   const [win, setWin] = useState(7)
   const [weekOffset, setWeekOffset] = useState(0)
@@ -183,7 +186,7 @@ function MuscleBalance({ S }) {
     return <div className="mrow" data-muscle-volume={muscle} key={muscle}>
       <span className="nm">{sel === muscle ? <b>{t(MUSCLE_NAME[muscle])}</b> : t(MUSCLE_NAME[muscle])}</span>
       <span className="bar"><i style={{ width: fill + '%' }} /></span>
-      <span className="v" style={{ textAlign: 'end' }}
+      <span className="v cmp"
         aria-label={`${t('Completed')} ${completedSets} · ${t('Planned')} ${plannedSets}`}>
         {fmtNum(completed)}/{fmtNum(target)}{percentage == null ? '' : ` · ${percentage}%`}
       </span>
@@ -192,7 +195,9 @@ function MuscleBalance({ S }) {
   const completionSummary = <>
     {missed.length > 0 && <>
       <h4 className="sec" style={{ marginTop: 12 }}>{on ? t('No hard sets in this period') : t('Not trained in this period')}</h4>
-      <div className="mchips">{missed.map(m => <span key={m} className="mchip miss">{t(MUSCLE_NAME[m])}</span>)}</div>
+      {/* A tap opens the exercises for that muscle (#553). */}
+      <div className="mchips">{missed.map(m => <button type="button" key={m} className="mchip miss" data-muscle={m}
+        aria-label={t('Exercises for {0}', t(MUSCLE_NAME[m]))} onClick={() => nav('/muscles?m=' + encodeURIComponent(m), { state: { from: '/stats' } })}>{t(MUSCLE_NAME[m])}</button>)}</div>
     </>}
     {!missed.length && worked.length > 0 &&
       <div className="muted small" style={{ marginTop: 10 }}>{on
@@ -315,23 +320,24 @@ function EffortCard({ S }) {
   const [win, setWin] = useState(90)
   const kind = displayScale(S)
   const hd = scaleName(kind)
-  const logged = effortSummary(S, win)
-  // Thin or missing ratings fall back to estimates (same precedence fatigue scoring
-  // uses), so imported histories get an effort card too. Well-rated windows keep
-  // their logged numbers untouched - estimates never dilute a real average.
-  const blend = logged.rated < MIN_RATED
+  // Every set without a logged rating is estimated (the same precedence fatigue scoring
+  // uses: logged effort first, Epley-inverse estimate against the 90-day anchor second),
+  // so the average always speaks for the whole training, not just the rated subset.
+  // Averaging rated sets only reads as RIR 0 for a history whose only ratings are
+  // imported sets taken to failure. Estimates never override a real rating, so a fully
+  // rated window still reads exactly its logged numbers.
   // Same options as the fatigue map (unit + profile bodyweight), so a bodyweight set is
   // estimated against the same body-mass-inclusive anchor in both places.
   const opts = useMemo(() => ({ unit: S.unit, bodyweightKg: profileBodyweightKg(S) }), [S.unit, S.bodyweight])
   const anchors = useMemo(
-    () => (blend ? anchorsByWorkout(S.workouts, opts) : new Map()),
-    [blend, S.workouts, opts],
+    () => anchorsByWorkout(S.workouts, opts),
+    [S.workouts, opts],
   )
   const resolve = (s, w, e) => resolveSetRir(s, s, e, w, anchors.get(w), opts)
-  const sum = blend ? effortSummary(S, win, resolve) : logged
-  const weeks = blend ? effortWeeks(S, win, resolve) : effortWeeks(S, win)
-  const hist = blend ? effortHistogram(S, win, resolve) : effortHistogram(S, win)
-  const estimated = blend && sum.est > 0
+  const sum = effortSummary(S, win, resolve)
+  const weeks = effortWeeks(S, win, resolve)
+  const hist = effortHistogram(S, win, resolve)
+  const estimated = sum.est > 0
   const maxBin = Math.max(1, ...hist.map(b => b.n))
   // The week's set count rides along in the tooltip, because the pair is the reading:
   // volume up with effort up is fatigue piling up, volume up with effort flat is adaptation.
@@ -427,9 +433,9 @@ export default function Stats() {
   const kind = displayScale(S)
   const hd = scaleName(kind)
 
-  const bwPts = S.bodyweight.filter(b => range === 0 || (b.t || new Date(b.d).getTime()) > now - range * 86400000)
-    .map(b => ({ t: b.t || new Date(b.d).getTime(), y: b.w, d: b.d }))
-  const bw30 = S.bodyweight.filter(b => (b.t || new Date(b.d).getTime()) > now - 30 * 86400000)
+  const bwPts = S.bodyweight.filter(b => range === 0 || weighInAt(b) > now - range * 86400000)
+    .map(b => ({ t: weighInAt(b), y: b.w, d: b.d }))
+  const bw30 = S.bodyweight.filter(b => weighInAt(b) > now - 30 * 86400000)
   const bwDelta30 = bw30.length > 1 ? bw30[bw30.length - 1].w - bw30[0].w : null
   const workouts = S.workouts
   const monthW = workouts.filter(w => workoutDay(w)?.slice(0, 7) === todayISO().slice(0, 7)).length
@@ -661,9 +667,9 @@ export default function Stats() {
         <div className="muted small" style={{ marginTop: 4 }}>{t('See which lift is holding back the rest.')}</div></div>
       <Button size="sm" variant="tinted" trailingIcon="chevronRight" style={{ flexShrink: 0 }} onClick={() => nav('/structural-balance')}>{t('Open')}</Button>
     </div>}
-    {workouts.length > 0 && <div className="card row between" style={{ alignItems: 'center', gap: 12 }}>
+    {(workouts.length > 0 || dayPhotosOf(S).length > 0) && <div className="card row between" style={{ alignItems: 'center', gap: 12 }}>
       <div style={{ minWidth: 0 }}><h2 style={{ margin: 0 }}>{t('Progress photos')}</h2>
-        <div className="muted small" style={{ marginTop: 4 }}>{t('Every photo you kept with a workout, lined up by date. Plus a before/after slider.')}</div></div>
+        <div className="muted small" style={{ marginTop: 4 }}>{t('Every progress photo, lined up by date, for any day. Plus a before/after slider.')}</div></div>
       <Button size="sm" variant="tinted" trailingIcon="chevronRight" style={{ flexShrink: 0 }} onClick={() => nav('/progress-photos')}>{t('Open')}</Button>
     </div>}
     <div className="card row between" style={{ alignItems: 'center', gap: 12 }}>
