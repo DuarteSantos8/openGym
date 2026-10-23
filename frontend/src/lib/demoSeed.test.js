@@ -122,7 +122,7 @@ describe('demo seed — the training stream is a fixture', () => {
   let D = null
 
   beforeAll(() => {
-    vi.useFakeTimers({ now: new Date(TODAY + 'T12:00:00Z'), toFake: ['Date'] })
+    vi.useFakeTimers({ now: new Date(TODAY + 'T12:00:00'), toFake: ['Date'] })
     D = buildDemoState()
   })
   afterAll(() => vi.useRealTimers())
