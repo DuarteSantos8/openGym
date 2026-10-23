@@ -45,8 +45,8 @@ stages:
   - maintenance
 
 variables:
-  # node:22-alpine in web/Dockerfile and api/Dockerfile — CI must match production.
-  NODE_IMAGE: "node:22-alpine"
+  # node:22.23.4-alpine in web/Dockerfile and api/Dockerfile — CI must match production.
+  NODE_IMAGE: "node:22.23.4-alpine"
   DOCKER_IMAGE: "docker:28-cli"
   DOCKER_DIND_IMAGE: "docker:28-dind"
   TRIVY_IMAGE: "aquasec/trivy:0.74.0"
