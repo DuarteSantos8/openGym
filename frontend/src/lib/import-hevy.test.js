@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import {
   matchHevyTemplate, buildHevyExerciseMap, parseHevyWorkouts, parseHevyBodyweight,
-  parseHevyRoutines, mergeHevyRoutines, localWhen, importHevyData, HevyApiError, HEVY_ID_MAP,
+  parseHevyRoutines, mergeHevyRoutines, localWhen, importHevyData, HevyApiError, HEVY_ID_MAP, hevySummaryCounts,
 } from './import-hevy.js'
 import { EXIDX } from './exercises.js'
 import { mergeImport } from './import-csv.js'
@@ -74,11 +74,14 @@ describe('HEVY_ID_MAP', () => {
     B5D3A742: '0410', // Bulgarian Split Squat (Dumbbell)
     '914F3A96': '0327', // Chest Supported Incline Row (Dumbbell)
     '98237BA2': '0826', // Knee Raise Parallel Bars
-    '4E5257DE': '2616', // Lat Pulldown - Close Grip (Cable)
-    C315DC2A: '0602', // Rear Delt Reverse Fly (Cable)
+    '4E5257DE': '6392', // Lat Pulldown - Close Grip (Cable)
+    C315DC2A: '0225', // Rear Delt Reverse Fly (Cable): its artwork is 0225, 0602's a lever machine
+    '3D1CDC75': '2950', // Belt Squat (Machine): its artwork, an exercise added to the catalogue after the map
+    E3EDA509: '0715', // Side Plank: its artwork, not the hip adduction its title matched
+    CC35A01F: '1875', // Squat (Machine): a plate-loaded lever squat, as its artwork, not the barbell squat
     FFDA283B: '0381', // Reverse Lunge (Dumbbell)
     '8BAB2735': '0318', // Seated Incline Curl (Dumbbell)
-    '9237BAD1': '0603', // Seated Shoulder Press (Machine)
+    '9237BAD1': '1454', // Seated Shoulder Press (Machine): its artwork is 1454, 0603's a landmine press
     B05C2C29: '0605', // Single Leg Standing Calf Raise (Machine)
     '3303376C': '2141', // Elliptical Trainer
     '99D5F10E': '0857', // Ab Wheel
@@ -91,7 +94,7 @@ describe('HEVY_ID_MAP', () => {
   }
 
   it('leaves catalogue gaps unmapped (import as custom)', () => {
-    for (const id of ['68CE0B9B', '0222DB42', 'D1CD146F']) {
+    for (const id of ['E23F1F2B', '6D54A050', '911A58D3']) {
       expect(HEVY_ID_MAP[id]).toBeUndefined()
       expect(matchHevyTemplate({ id, title: 'whatever' })).toBeNull()
     }
@@ -117,7 +120,7 @@ describe('parseHevyWorkouts', () => {
     expect(elliptical).toBeTruthy()
     expect(elliptical.sets[0]).toMatchObject({ min: 3, done: true })
 
-    const pulldown = entries.find(e => e.id === '2616')
+    const pulldown = entries.find(e => e.id === '6392')
     expect(pulldown).toBeTruthy()
     expect(pulldown.sets[0]).toMatchObject({ w: 25, r: 15, phase: 'warmup' })
     expect(pulldown.sets[1]).toMatchObject({ w: 52, r: 15, rpe: 8 })
@@ -137,7 +140,7 @@ describe('parseHevyWorkouts', () => {
 
   it('converts kg weights into a lb profile', () => {
     const parsed = parseHevyWorkouts([WORKOUT], TEMPLATES, { unit: 'lb' })
-    const pulldown = parsed.workouts[0].entries.find(e => e.id === '2616')
+    const pulldown = parsed.workouts[0].entries.find(e => e.id === '6392')
     expect(pulldown.sets.find(s => s.r === 15 && !s.phase).w).toBeCloseTo(114.6, 0)
     expect(parsed.converted).toBe(true)
   })
@@ -272,7 +275,7 @@ describe('parseHevyRoutines', () => {
     const [cardio, pull, row] = parsed.routines[0].ex
     expect(cardio.id).toBe('2141')
     expect(cardio).toMatchObject({ sets: 1, min: 3 })
-    expect(pull.id).toBe('2616')
+    expect(pull.id).toBe('6392')
     expect(pull).toMatchObject({ sets: 3, reps: 15, weight: 52, warmupSets: 1 })
     expect(row.id).toBe('0327')
     expect(pull.sg).toBeTruthy()
@@ -305,7 +308,7 @@ describe('buildHevyExerciseMap', () => {
   it('indexes every template id from the static map', () => {
     const map = buildHevyExerciseMap(TEMPLATES)
     expect(map.get('3303376C')).toBe('2141')
-    expect(map.get('4E5257DE')).toBe('2616')
+    expect(map.get('4E5257DE')).toBe('6392')
     expect(map.get('DEADBEEF')).toBeNull()
     expect(map.size).toBe(TEMPLATES.length)
   })
@@ -318,5 +321,24 @@ describe('parseHevyWorkouts past midnight', () => {
     const [w] = parseHevyWorkouts([late], TEMPLATES, { unit: 'kg' }).workouts
     expect(w.d).toBe('2026-09-06')
     expect((w.end - w.start) / 60000).toBe(50)
+  })
+})
+
+describe('hevySummaryCounts', () => {
+  // One library exercise and one custom one, in both a workout and a routine.
+  const exercises = [
+    { title: 'Lat Pulldown - Close Grip (Cable)', exercise_template_id: '4E5257DE', superset_id: null, sets: [{ type: 'normal', weight_kg: 50, reps: 10 }] },
+    { title: 'Lying Neck Rotation', exercise_template_id: 'my-own-template', superset_id: null, sets: [{ type: 'normal', weight_kg: 2, reps: 15 }] },
+  ]
+  const workout = { id: 'w1', title: 'Neck', start_time: '2026-01-12T10:00:00Z', end_time: '2026-01-12T11:00:00Z', exercises }
+  const routine = { id: 'r1', title: 'Neck', exercises }
+
+  it('counts an exercise in both the workouts and the routines once, from the parts switched on', () => {
+    const w = parseHevyWorkouts([workout], TEMPLATES, { unit: 'kg' })
+    const r = parseHevyRoutines([routine], TEMPLATES, { unit: 'kg' })
+    expect([w.matched + r.matched, w.created + r.created]).toEqual([2, 2])   // the sums count each twice
+    expect(hevySummaryCounts(w, r)).toEqual({ matched: 1, created: 1 })
+    expect(hevySummaryCounts(w, r, { workouts: false })).toEqual({ matched: 1, created: 1 })
+    expect(hevySummaryCounts(w, r, { workouts: false, routines: false })).toEqual({ matched: 0, created: 0 })
   })
 })

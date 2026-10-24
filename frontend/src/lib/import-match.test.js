@@ -125,7 +125,7 @@ describe('Hevy CSV uses the generated title map', () => {
 
   it('resolves English Hevy titles through HEVY_TITLE_MAP before the word-bag', () => {
     expect(matchHevyTitle('Bulgarian Split Squat (Dumbbell)')).toBe('0410')
-    expect(matchHevyTitle('Lat Pulldown - Close Grip (Cable)')).toBe('2616')
+    expect(matchHevyTitle('Lat Pulldown - Close Grip (Cable)')).toBe('6392')
     expect(matchHevyTitle('Reverse Lunge (Dumbbell)')).toBe('0381')
     // Since v1.4 the word-bag finds the new "dumbbell bulgarian split squat" on its own; the
     // map still wins, so a Hevy history keeps landing on the id earlier imports used.
@@ -137,9 +137,46 @@ describe('Hevy CSV uses the generated title map', () => {
     expect(parsed.source).toBe('Hevy')
     expect(parsed.created).toBe(0)
     const ids = parsed.workouts[0].entries.map(e => e.id).sort()
-    expect(ids).toEqual(['0410', '0381', '2616'].sort())
-    const pull = parsed.workouts[0].entries.find(e => e.id === '2616')
+    expect(ids).toEqual(['0410', '0381', '6392'].sort())
+    const pull = parsed.workouts[0].entries.find(e => e.id === '6392')
     expect(pull.sets[0]).toMatchObject({ w: 25, r: 15, phase: 'warmup' })
     expect(pull.sets[1]).toMatchObject({ w: 52, r: 12, rpe: 8 })
+  })
+})
+
+describe('Hevy titles land on the exercise Hevy shows', () => {
+  // Each Hevy template's thumbnail names its animation ("Lever-Seated-Leg-Curl"); these titles
+  // went to a different exercise, or to none.
+  it('corrects titles the map sent to a different exercise', () => {
+    expect(matchHevyTitle('Seated Leg Curl (Machine)')).toBe('0599')       // not the lying curl
+    expect(matchHevyTitle('Plank')).toBe('0463')                           // not the weighted plank
+    expect(matchHevyTitle('Air Bike')).toBe('3893')                        // the fan bike, not the crunch
+    expect(matchHevyTitle('Walking')).toBe('2258')                         // not the walking lunge
+    expect(matchHevyTitle('Triceps Dip')).toBe('0814')                     // body weight, not the machine
+    expect(matchHevyTitle('Overhead Press (Barbell)')).toBe('1165')        // standing, not seated
+    expect(matchHevyTitle('Crunch')).toBe('0274')                          // not the weighted crunch
+  })
+
+  it('matches titles the map left out', () => {
+    expect(matchHevyTitle('Nordic Hamstrings Curls')).toBe('7746')
+    expect(matchHevyTitle('Triceps Rope Pushdown')).toBe('0200')
+    expect(matchHevyTitle('Iso-Lateral Low Row')).toBe('4214')
+    expect(matchHevyTitle('Seated Cable Row - Bar Wide Grip')).toBe('0218')
+  })
+
+  it('follows Hevy\'s artwork for common lifts too', () => {
+    expect(matchHevyTitle('Lat Pulldown (Cable)')).toBe('0150')
+    expect(matchHevyTitle('Face Pull')).toBe('7744')
+    expect(matchHevyTitle('Butterfly (Pec Deck)')).toBe('1030')
+    expect(matchHevyTitle('Triceps Pushdown')).toBe('0201')
+    expect(matchHevyTitle('Chest Dip (Weighted)')).toBe('1755')
+    expect(matchHevyTitle('Single Arm Curl (Cable)')).toBe('0190')    // was left unmatched
+  })
+
+  it('gives a title and its weighted twin their own match in one file', () => {
+    const head = 'title,start_time,end_time,description,exercise_title,superset_id,exercise_notes,set_index,set_type,weight_kg,reps,distance_km,duration_seconds,rpe'
+    const row = title => `Push,2026-08-01 10:00:00,2026-08-01 11:00:00,,${title},,,0,normal,10,8,0,,`
+    const parsed = parseWorkoutCSV([head, row('Triceps Dip'), row('Triceps Dip (Weighted)')].join('\n'), { unit: 'kg' })
+    expect(parsed.workouts[0].entries.map(e => e.id)).toEqual(['0814', '1755'])
   })
 })

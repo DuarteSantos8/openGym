@@ -204,8 +204,22 @@ function makeResolver(templates, customEx) {
     byId,
     customEx: used => kept(used),
     unmatchedNames: used => [...new Set(kept(used).map(c => titleOf.get(c.id)))].sort(),
+    matchedIds: used => [...matchedIds].filter(id => used.has(id)),
     matchedCount: used => [...matchedIds].filter(id => used.has(id)).length,
     createdCount: used => kept(used).length,
+  }
+}
+
+/**
+ * The import sheet's two counts over the parts switched on: each exercise once, by id. An
+ * exercise in both the workouts and the routines is one exercise (the same catalogue id, or the
+ * same custom one), so adding the two parts' counts would show it twice.
+ */
+export function hevySummaryCounts(w, r, { workouts = true, routines = true } = {}) {
+  const parts = [workouts && w, routines && r].filter(Boolean)
+  return {
+    matched: new Set(parts.flatMap(p => p.matchedIds || [])).size,
+    created: new Set(parts.flatMap(p => (p.customEx || []).map(c => c.id))).size,
   }
 }
 
@@ -312,6 +326,7 @@ export function parseHevyWorkouts(workouts, templates, { unit = 'kg', customEx =
     workouts: outWorkouts,
     customEx: R.customEx(used),
     matched: R.matchedCount(used),
+    matchedIds: R.matchedIds(used),
     matchedSets: matched,
     created: R.createdCount(used),
     unmatchedNames: R.unmatchedNames(used),
@@ -399,6 +414,7 @@ export function parseHevyRoutines(routines, templates, { unit = 'kg', customEx =
     routines: out,
     customEx: R.customEx(used),
     matched: R.matchedCount(used),
+    matchedIds: R.matchedIds(used),
     created: R.createdCount(used),
     unmatchedNames: R.unmatchedNames(used),
     exerciseCount: out.reduce((n, r) => n + r.ex.length, 0),

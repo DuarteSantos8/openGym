@@ -493,7 +493,7 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
     delete map.durationSec
   }
 
-  const resolved = new Map()          // exercise name -> dataset id | null, resolved once
+  const resolved = new Map()          // exact title -> dataset id | null, resolved once
   const prior = new Map()             // exercise name -> the user's own custom exercise for it
   const byDate = new Map()           // session key -> the workout being built (see `sessionKey` below)
   const created = new Map()
@@ -539,14 +539,17 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
     if (warmup) warmups++
 
     const key = keyOf(name)
-    let id = resolved.get(key)
+    // The match is cached per exact title, not per word bag: the bag drops "weighted", so
+    // "Triceps Dip" and "Triceps Dip (Weighted)" would share one match, the first title's.
+    const exact = name.trim().toLowerCase()
+    let id = resolved.get(exact)
     if (id === undefined) {
       const own = priorCustom(customEx, importId('im', source + '|' + name.toLowerCase()), name)
       if (own) prior.set(key, own)
       // Hevy CSV: prefer the generated English-title map (same table as the API import).
       // Localized titles still fall through to the word-bag matcher.
       id = own ? own.id : canonicalExId((source === 'Hevy' ? matchHevyTitle(name) : null) || matchExercise(name))
-      resolved.set(key, id)
+      resolved.set(exact, id)
     }
     if (id) matched++
     else {
