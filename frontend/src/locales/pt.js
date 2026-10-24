@@ -1702,6 +1702,8 @@ export default {
   // --- AI Coach: why a job failed or was refused (lib/coach-api.js JOB_ERRORS, BYOK_ERRORS) ---
   'The Coach isn’t set up on this instance.': 'O Treinador não está configurado nesta instância.',
   'The Coach is taking a rest day. Try again tomorrow.': 'O Treinador está a tirar um dia de descanso. Tenta outra vez amanhã.',
+  'Connect your own account first: Coach menu → Your account.': 'Liga primeiro a tua própria conta: menu do Treinador → A tua conta.',
+  'Your account': 'A tua conta',
   'The Coach took too long and gave up.': 'O Treinador demorou demasiado e desistiu.',
   'The Coach couldn’t sign in to its provider. The instance owner needs to check its setup.': 'O Treinador não conseguiu iniciar sessão no seu fornecedor. O proprietário da instância tem de verificar a configuração.',
   'The Coach isn’t installed properly on this instance.': 'O Treinador não está instalado corretamente nesta instância.',

@@ -170,6 +170,8 @@ export const JOB_ERRORS = {
   get busy() { return t('The Coach is already thinking about your training.') },
   get cap() { return t('The Coach is taking a rest day. Try again tomorrow.') },
   get consent() { return t('The Coach needs your go-ahead first.') },
+  // Per-profile mode, and this profile has not connected its own account yet. Points at the row.
+  get account() { return t('Connect your own account first: Coach menu → Your account.') },
   get timeout() { return t('The Coach took too long and gave up.') },
   get auth() { return t('The Coach couldn’t sign in to its provider. The instance owner needs to check its setup.') },
   get missing() { return t('The Coach isn’t installed properly on this instance.') },

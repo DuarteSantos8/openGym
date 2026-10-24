@@ -137,7 +137,7 @@ test('a job the daily caps refuse does not bind the instance credential', () => 
     // no account of its own hears that, rather than "try again tomorrow".
     assert.throws(() => jobs.enqueue(inst, { kind: 'review' }), e => e.code === 'shared');
     cfg.save({ authMode: 'profile' });
-    assert.throws(() => jobs.enqueue(inst, { kind: 'review' }), e => e.code === 'off' && e.message === 'this profile has no provider account connected');
+    assert.throws(() => jobs.enqueue(inst, { kind: 'review' }), e => e.code === 'account' && e.message === cfg.NO_PROFILE_ACCOUNT_REFUSAL);
   } finally {
     cfg.save({ provider: prev.provider, authMode: prev.authMode, boundUid: prev.boundUid, auth: prev.auth, daily: prev.daily, caps: { perProfileDaily: 10, instanceDaily: 0 } });
   }

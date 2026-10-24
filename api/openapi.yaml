@@ -2933,7 +2933,123 @@ paths:
                   message:
                     oneOf: [{ type: string }, { type: 'null' }]
                     description: The refusal in the app's own voice, ready to show.
+                  accepts:
+                    type: array
+                    items: { type: string, enum: [cli-token, apikey] }
+                    description: Profile mode only. The credential types the configured provider takes.
+                  keyPlaceholder:
+                    oneOf: [{ type: string }, { type: 'null' }]
+                    description: Profile mode only. What an API key for this provider looks like.
+                  type:
+                    oneOf: [{ type: string }, { type: 'null' }]
+                    description: Profile mode only. The kind of credential this profile has connected.
+                  connectedAt:
+                    oneOf: [{ type: string }, { type: 'null' }]
+                    description: Profile mode only. When this profile connected it.
         '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/coach/credential:
+    post:
+      tags: [coach]
+      operationId: postCoachCredential
+      summary: Connect this profile's own provider account
+      description: |
+        Per-profile mode only (`authMode: profile`); `409` with `code: instance-mode`
+        otherwise. The credential is encrypted into this profile's own
+        `coach-auth-<uid>.json` (mode 0600, outside the synced state and every export) and is
+        read only by this profile's jobs. There is no fallback to the instance credential and
+        no way for one profile's credential to be used by another.
+
+        The provider is the admin's choice. `type` has to be one the configured provider
+        takes (`cli-token` or `oauth` for a provider with an OAuth variable, `apikey` for one
+        with an API-key variable). All whitespace is stripped from the token, so a setup token
+        pasted with its terminal line wrap still works. The token is accepted once and never
+        returned by any route.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, token]
+              properties:
+                type: { type: string, enum: [cli-token, oauth, apikey] }
+                token: { type: string, description: "Never returned by any route, ever." }
+                account:
+                  type: string
+                  maxLength: 120
+                  description: A label for whose account this is.
+            example: { type: apikey, token: "sk-…", account: "me@example.com" }
+      responses:
+        '200':
+          description: Filed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+        '400':
+          description: A credential type the configured provider does not take, or no token.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "no token supplied" }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: "The instance uses one shared account (`code: instance-mode`)."
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '503': { $ref: '#/components/responses/CoachOff' }
+    delete:
+      tags: [coach]
+      operationId: deleteCoachCredential
+      summary: Disconnect this profile's own provider account
+      description: |
+        Removes this profile's credential file. Needs a session only, like `forget`: a
+        profile must be able to remove its own credential even after the Coach has been
+        switched off. `409` with `code: instance-mode` when the instance uses one shared account.
+      responses:
+        '200':
+          description: Removed (or there was nothing to remove).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: "The instance uses one shared account (`code: instance-mode`)."
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/coach/credential/test:
+    post:
+      tags: [coach]
+      operationId: postCoachCredentialTest
+      summary: Test this profile's own connection
+      description: |
+        The admin's round trip (one fixed question, no user data), run on the caller's own
+        credential and nobody else's. Always 200 when it ran: the outcome is in the body.
+        `409` with `code: instance-mode` when the instance uses one shared account.
+      responses:
+        '200':
+          description: The result of the round trip.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  version: { type: string }
+                  error: { type: string, description: Present when `ok` is false. }
+              examples:
+                ok: { value: { ok: true, version: "HTTPS · api.anthropic.com · 8 models" } }
+                notConnected: { value: { ok: false, error: "This instance has every profile use its own account. Connect yours in the Coach settings (Your account) first." } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: "The instance uses one shared account (`code: instance-mode`)."
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '503': { $ref: '#/components/responses/CoachOff' }
 
   /api/coach/forget:
     post:
@@ -3174,6 +3290,46 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
               example: { error: "unknown provider" }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/admin/coach/auth-mode:
+    post:
+      tags: [admin, coach]
+      operationId: postAdminCoachAuthMode
+      summary: 'Admin: whose account pays, the instance or each profile'
+      description: |
+        `instance` is one account filed by the admin (an API key shared under the daily
+        caps; a personal credential binds to the first profile that spends it). `profile` has
+        each profile connect its own through `POST /api/coach/credential`; a profile with none
+        is refused, and there is no fallback to the instance credential.
+
+        Switching deletes nothing: the instance credential and its binding stay filed for
+        switching back, and profile credentials stay where they are.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mode]
+              properties:
+                mode: { type: string, enum: [instance, profile] }
+      responses:
+        '200':
+          description: Switched.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  authMode: { type: string, enum: [instance, profile] }
+        '400':
+          description: Not one of the two modes.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
@@ -4116,6 +4272,9 @@ components:
             error: { oneOf: [{ type: string }, { type: 'null' }] }
             needsKey: { type: boolean }
         authMode: { type: string, enum: [instance, profile] }
+        profilesConnected:
+          oneOf: [{ type: integer }, { type: 'null' }]
+          description: Profile mode only. How many profiles have connected their own account for this provider.
         boundUid:
           oneOf: [{ type: string }, { type: 'null' }]
           description: The profile an instance credential bound itself to, once one has spent it.

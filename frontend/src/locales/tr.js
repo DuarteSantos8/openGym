@@ -1702,6 +1702,8 @@ export default {
   // --- AI Coach: why a job failed or was refused (lib/coach-api.js JOB_ERRORS, BYOK_ERRORS) ---
   'The Coach isn’t set up on this instance.': 'Koç bu sunucuda kurulu değil.',
   'The Coach is taking a rest day. Try again tomorrow.': 'Koç bugün dinlenme gününde. Yarın tekrar dene.',
+  'Connect your own account first: Coach menu → Your account.': 'Önce kendi hesabını bağla: Koç menüsü → Hesabın.',
+  'Your account': 'Hesabın',
   'The Coach took too long and gave up.': 'Koç fazla uzun düşündü ve vazgeçti.',
   'The Coach couldn’t sign in to its provider. The instance owner needs to check its setup.': 'Koç sağlayıcısında oturum açamadı. Sunucu sahibinin kurulumu kontrol etmesi gerekiyor.',
   'The Coach isn’t installed properly on this instance.': 'Koç bu sunucuya düzgün yüklenmemiş.',

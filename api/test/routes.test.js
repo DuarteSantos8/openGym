@@ -364,3 +364,37 @@ test('a stored key is dropped when the endpoint moves to another host, kept when
   assert.equal(r.status, 200);
   assert.equal(cfg.load().auth.compatible, undefined, 'another host: the key is gone');
 });
+
+test('profile keys are dropped with the instance key when the endpoint moves to another host', async () => {
+  fresh({ provider: 'compatible', authMode: 'profile', providerOptions: { compatible: { baseUrl: 'https://llm.home.test/v1' } } });
+  cfg.saveProfileAuth('u-host-a', { provider: 'compatible', type: 'apikey', data: cfg.encrypt({ token: 'sk-a' }) });
+  cfg.saveProfileAuth('u-host-b', { provider: 'openai', type: 'apikey', data: cfg.encrypt({ token: 'sk-b' }) });
+  try {
+    const { call } = harness();
+    let r = await call('POST /api/admin/coach/config', { baseUrl: 'https://llm.home.test/openai/v1' });
+    assert.equal(r.status, 200);
+    assert.ok(cfg.loadProfileAuth('u-host-a'), 'same host: the profile key stays');
+    r = await call('POST /api/admin/coach/config', { baseUrl: 'https://collector.example/v1' });
+    assert.equal(r.status, 200);
+    assert.equal(cfg.loadProfileAuth('u-host-a'), null, 'another host: the profile key is gone');
+    assert.ok(cfg.loadProfileAuth('u-host-b'), 'a key for another provider is left alone');
+  } finally {
+    cfg.clearProfileAuth('u-host-a');
+    cfg.clearProfileAuth('u-host-b');
+    cfg.save({ authMode: 'instance' });
+  }
+});
+
+test('a token pasted with a line break from a wrapped terminal is stored without it', async () => {
+  // `claude setup-token` prints a ~108-character token that wraps across two terminal lines, and
+  // copying it brings the break along. Claude Code then treats the job as signed out ("Not logged
+  // in"). No setup token or API key contains whitespace, so connect removes all of it.
+  fresh({ provider: 'claude' });
+  const { call } = harness();
+  const r = await call('POST /api/admin/coach/connect', { type: 'cli-token', token: '  sk-ant-oat01-abc\ndef\r\n ghi  ' });
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  const cred = cfg.credentialFor(undefined);
+  assert.equal(cred.ok, true);
+  assert.equal(cred.auth.token, 'sk-ant-oat01-abcdefghi');
+  assert.equal(cfg.jobEnv('/tmp', cred).CLAUDE_CODE_OAUTH_TOKEN, 'sk-ant-oat01-abcdefghi');
+});
