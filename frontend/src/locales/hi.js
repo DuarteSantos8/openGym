@@ -626,7 +626,7 @@ export default {
   'Shins': 'पिंडली की हड्डी',
   // --- import from another app ---
   'Import from another app': 'दूसरे ऐप से आयात करें',
-  'FitNotes, Strong, Hevy, or body weight from Apple Health': 'FitNotes, Strong, Hevy, या Apple Health से शरीर का वज़न',
+  'FitNotes, Strong, Hevy, Jefit, or body weight from Apple Health': 'FitNotes, Strong, Hevy, Jefit, या Apple Health से शरीर का वज़न',
   'Import from {0}': '{0} से आयात करें',
   'Import history': 'इतिहास आयात करें',
   'Weigh-ins': 'वज़न मापन',

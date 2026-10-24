@@ -627,7 +627,7 @@ export default {
   'Shins': 'หน้าแข้ง',
   // --- import from another app ---
   'Import from another app': 'นำเข้าจากแอปอื่น',
-  'FitNotes, Strong, Hevy, or body weight from Apple Health': 'FitNotes, Strong, Hevy หรือน้ำหนักตัวจาก Apple Health',
+  'FitNotes, Strong, Hevy, Jefit, or body weight from Apple Health': 'FitNotes, Strong, Hevy, Jefit หรือน้ำหนักตัวจาก Apple Health',
   'Import from {0}': 'นำเข้าจาก {0}',
   'Import history': 'นำเข้าประวัติ',
   'Weigh-ins': 'บันทึกน้ำหนัก',

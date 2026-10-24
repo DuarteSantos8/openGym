@@ -626,7 +626,7 @@ export default {
   'Shins': 'Tibiales',
   // --- import from another app ---
   'Import from another app': 'Importar de otra app',
-  'FitNotes, Strong, Hevy, or body weight from Apple Health': 'FitNotes, Strong, Hevy o peso corporal de Apple Health',
+  'FitNotes, Strong, Hevy, Jefit, or body weight from Apple Health': 'FitNotes, Strong, Hevy, Jefit o peso corporal de Apple Health',
   'Import from {0}': 'Importar de {0}',
   'Import history': 'Importar historial',
   'Weigh-ins': 'Pesajes',

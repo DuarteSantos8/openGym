@@ -7,6 +7,7 @@ Everything here lives in the app under **Settings → Data & backup**, except pl
 |---|---|
 | Bring your workout history from another app | **Import from another app** (CSV) |
 | Pull workouts, routines and weigh-ins from Hevy Pro | **Import from Hevy** (API key) |
+| Bring workouts, routines and weigh-ins over from Jefit | **Import from another app** with the Jefit export |
 | Bring body weight over from an iPhone | **Import from another app** with the Apple Health export |
 | Give someone your routines | **Plan → Share your plan → Export plan file** |
 | Back up or move everything | **Export backup** / **Import backup** |
@@ -45,6 +46,23 @@ With **Hevy Pro** you can skip the CSV:
 3. Choose workouts, routines, weigh-ins or any mix, then confirm.
 
 Routines always arrive as new plans; nothing you already have is overwritten.
+
+## Jefit
+
+Export your data from Jefit (its "Export data" option gives one `.csv` file), then pick that file under **Settings → Data & backup → Import from another app**. openGym recognises a
+Jefit export on its own and shows what it found, with a switch for each part:
+
+- **Workouts**: one per Jefit session, with every set. Bodyweight sets (weight 0) come along; cardio
+  logs are left out. An exercise Jefit renamed over the years stays one exercise, under its newest
+  name. Exercise notes are attached to the exercise on the day they were written.
+- **Routines**: each day of a Jefit routine becomes a routine here (for example *Upper, Lower · Upper*),
+  with its sets, rest time and the weight you last used. Rep targets that differ from set to set
+  (12, 10, 8) become pyramid sets.
+- **Weigh-ins** from your Jefit profile.
+
+Weights are converted when Jefit and openGym use different units. Importing the same export again
+adds no workouts or weigh-ins twice, and updates the routines it brought last time instead of adding
+copies.
 
 ## Body weight from Apple Health
 
@@ -127,4 +145,5 @@ The CSV parser is `frontend/src/lib/import-csv.js`. The Hevy API import and a de
 resolve exercises through the same generated lookup, `frontend/src/lib/hevy-id-map.js` (template id
 for the API, English title for the CSV). To regenerate it, set `HEVY_API_KEY` in the environment or
 `.env` and run `node scripts/build-hevy-id-map.mjs`. Localised (non-English) Hevy titles fall back
-to name matching.
+to name matching. The Jefit reader is `frontend/src/lib/import-jefit.js`; its header comment
+describes the export's sections.
