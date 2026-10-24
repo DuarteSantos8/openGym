@@ -41,6 +41,8 @@ describe('foreign exercise names resolve to the catalogue', () => {
   it('keeps the qualified variants distinct', () => {
     expect(matchExercise('Kettlebell Goblet Squat')).toBe('0534')
     expect(matchExercise('Dumbbell Goblet Squat')).toBe('1760')
+    expect(matchExercise('Lying Leg Curl')).toBe('0586')
+    expect(matchExercise('Seated Leg Curl')).toBe('0599')
   })
 
   // The word-bag is order-insensitive, which is what lets one alias cover the two ways

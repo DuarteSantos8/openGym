@@ -40,8 +40,9 @@ function hevyApiKey() {
  * are intentionally omitted so they import as custom exercises.
  */
 // Titles whose closest catalogue entry is a different movement — better a custom exercise than
-// a wrong one. Keep in sync with the note at the top of the generated map.
-const NEVER_BY_TITLE = new Set(['crunch', 'side plank', 'squat (machine)', 'triceps extension (cable)', 'rear delt reverse fly (cable)'])
+// a wrong one. Left out of both tables, so the API import (by template id) skips them too.
+// Keep in sync with the note at the top of the generated map.
+const NEVER_BY_TITLE = new Set(['crunch', 'side plank', 'squat (machine)', 'triceps extension (cable)'])
 
 const BY_TITLE = {
   // Reported from a real import as customs — same lifts, Hevy vocabulary.
@@ -52,6 +53,7 @@ const BY_TITLE = {
   'lat pulldown - close grip (cable)': '2616',
   'rear delt reverse fly (dumbbell)': '0383',
   'rear delt reverse fly (machine)': '0602',
+  'rear delt reverse fly (cable)': '8878',
   'reverse lunge (dumbbell)': '0381',
   'reverse lunge (barbell)': '0078',
   'seated incline curl (dumbbell)': '0318',
@@ -115,7 +117,7 @@ const BY_TITLE = {
   'lat pulldown - wide grip (cable)': '2330',
   'leg press (machine)': '0739',
   'leg extension (machine)': '0585',
-  'seated leg curl (machine)': '0586',
+  'seated leg curl (machine)': '0599',
   'lying leg curl (machine)': '0586',
   'goblet squat (dumbbell)': '1760',
   'goblet squat (kettlebell)': '0534',
@@ -143,6 +145,7 @@ const BY_TITLE = {
   'preacher curl (barbell)': '0070',
   'skullcrusher (barbell)': '0060',
   'skull crusher (barbell)': '0060',
+  'skullcrusher (dumbbell)': '0351',
   'tricep kickback (dumbbell)': '0333',
   'kickback (dumbbell)': '0333',
   'lateral raise (dumbbell)': '0334',
@@ -216,11 +219,11 @@ async function main() {
   const unmatched = []
   for (const t of templates) {
     if (!t?.id || t.is_custom) { if (t?.id && t.is_custom) unmatched.push(t); continue }
-    const id = resolve(t)
+    const titleKey = String(t.title || '').trim().toLowerCase()
+    const id = NEVER_BY_TITLE.has(titleKey) ? null : resolve(t)
     if (id) {
       map[t.id] = id
-      const titleKey = String(t.title || '').trim().toLowerCase()
-      if (titleKey && !NEVER_BY_TITLE.has(titleKey) && !titleMap[titleKey]) titleMap[titleKey] = id
+      if (titleKey && !titleMap[titleKey]) titleMap[titleKey] = id
     } else unmatched.push(t)
   }
 

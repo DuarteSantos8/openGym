@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import {
   matchHevyTemplate, buildHevyExerciseMap, parseHevyWorkouts, parseHevyBodyweight,
-  parseHevyRoutines, mergeHevyRoutines, localWhen, importHevyData, HevyApiError, HEVY_ID_MAP,
+  parseHevyRoutines, mergeHevyRoutines, localWhen, importHevyData, HevyApiError, HEVY_ID_MAP, HEVY_TITLE_MAP,
 } from './import-hevy.js'
 import { EXIDX } from './exercises.js'
 import { mergeImport } from './import-csv.js'
@@ -75,7 +75,7 @@ describe('HEVY_ID_MAP', () => {
     '914F3A96': '0327', // Chest Supported Incline Row (Dumbbell)
     '98237BA2': '0826', // Knee Raise Parallel Bars
     '4E5257DE': '2616', // Lat Pulldown - Close Grip (Cable)
-    C315DC2A: '0602', // Rear Delt Reverse Fly (Cable)
+    C315DC2A: '8878', // Rear Delt Reverse Fly (Cable)
     FFDA283B: '0381', // Reverse Lunge (Dumbbell)
     '8BAB2735': '0318', // Seated Incline Curl (Dumbbell)
     '9237BAD1': '0603', // Seated Shoulder Press (Machine)
@@ -89,6 +89,31 @@ describe('HEVY_ID_MAP', () => {
       expect(matchHevyTemplate({ id: hid, title: 'ignored localized name' })).toBe(want)
     })
   }
+
+  // Two different Hevy lifts on one catalogue id merge their histories on import.
+  const SPLIT = [
+    ['B8127AD1', '0586', '11A123F3', '0599'], // Lying vs Seated Leg Curl (Machine)
+    ['D8281C62', '0602', 'C315DC2A', '8878'], // Rear Delt Reverse Fly (Machine) vs (Cable)
+    ['875F585F', '0060', '68F8A292', '0351'], // Skullcrusher (Barbell) vs (Dumbbell)
+  ]
+  for (const [a, wantA, b, wantB] of SPLIT) {
+    it(`keeps ${a} and ${b} apart`, () => {
+      expect(HEVY_ID_MAP[a]).toBe(wantA)
+      expect(HEVY_ID_MAP[b]).toBe(wantB)
+    })
+  }
+
+  it('keeps the titles split in the CSV title map too', () => {
+    expect(HEVY_TITLE_MAP['lying leg curl (machine)']).toBe('0586')
+    expect(HEVY_TITLE_MAP['seated leg curl (machine)']).toBe('0599')
+    expect(HEVY_TITLE_MAP['rear delt reverse fly (cable)']).toBe('8878')
+    expect(HEVY_TITLE_MAP['skullcrusher (dumbbell)']).toBe('0351')
+  })
+
+  it('leaves the never-by-title lifts out of the id map as well', () => {
+    // Crunch, Side Plank, Squat (Machine), Triceps Extension (Cable)
+    for (const id of ['DCF3B31B', 'E3EDA509', 'CC35A01F', '21310F5F']) expect(HEVY_ID_MAP[id]).toBeUndefined()
+  })
 
   it('leaves catalogue gaps unmapped (import as custom)', () => {
     for (const id of ['68CE0B9B', '0222DB42', 'D1CD146F']) {
