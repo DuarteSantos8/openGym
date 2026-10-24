@@ -441,6 +441,8 @@ function Shell() {
       {/* Until boot has asked /api/me, the cached user may be from before an admin grant (or there is
           none yet): a reload on /admin waits for the answer instead of bouncing to Home. */}
       <Route path="/admin" element={user?.admin ? <Admin /> : ready ? <Navigate to="/home" replace /> : null} />
+      {/* A wide window's admin console, one page per section (lib/admin-sections.js). */}
+      <Route path="/admin/:section" element={user?.admin ? <Admin /> : ready ? <Navigate to="/home" replace /> : null} />
       {/* The dashboard decides for itself once the config is in, so a deep link survives the boot. */}
       {user && <Route path="/trainer" element={<Trainer />} />}
       {user && <Route path="/trainer/m/:id" element={<Trainer />} />}

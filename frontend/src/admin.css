@@ -161,17 +161,11 @@
 .adm-tip a{color:var(--acc)}
 
 /* ---------- wide window (views/Admin.jsx `desktop`) ---------- */
-/* Users as a table across the top, the activity log and the invite codes side by side under it,
-   the Coach setup last. `order` moves the cards; the page keeps its phone order in the DOM. */
-.adm-desk{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);column-gap:16px;align-items:start}
-.adm-desk>*{grid-column:1/-1;min-width:0}
-.adm-desk>.tiles{margin-bottom:12px}
-.adm-desk>#adm-users{order:1}
-.adm-desk>.adm-activity{order:2;grid-column:1;margin-top:0 !important}
-.adm-desk>#adm-invites{order:3;grid-column:2}
-.adm-desk>.adm-coach{order:4}
-.adm-desk>.adm-more{order:5}
-.adm-desk [id^="adm-"]{scroll-margin-top:24px}
+/* One section per page (/admin/<section>, picked in the sidebar). The overview puts the last
+   people to sync beside the invite codes. */
+.adm-desk{min-width:0}
+.adm-cols{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:12px;align-items:start}
+.adm-cols>.card{margin-bottom:0}
 
 .adm-table{margin:0 -16px -16px;border-top:var(--hair) solid var(--sep)}
 .adm-tr{
