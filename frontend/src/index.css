@@ -36,10 +36,10 @@
   --sep-op:    rgba(84,84,88,.34);   /* for edges sitting over blur */
   --hair:      .5px;
 
-  /* system palette (iOS dark values) */
-  --blue:#0a84ff; --green:#30d158; --red:#ff453a; --orange:#ff9f0a;
-  --yellow:#ffd60a; --teal:#40c8e0; --indigo:#5e5ce6; --pink:#ff375f;
-  --purple:#bf5af2; --mint:#63e6e2; --brown:#ac8e68; --grey:#8e8e93;
+  /* system palette (iOS dark values, as in Apple's HIG colour table) */
+  --blue:#0091ff; --green:#30d158; --red:#ff4245; --orange:#ff9230;
+  --yellow:#ffd600; --teal:#00d2e0; --indigo:#6d7cff; --pink:#ff375f;
+  --purple:#db34f2; --mint:#00dac3; --brown:#b78a66; --grey:#8e8e93;
 
   /* accent (per-account, synced) */
   --acc:  var(--green);
@@ -84,9 +84,9 @@
   --sep:       rgba(60,60,67,.29);
   --sep-op:    rgba(60,60,67,.20);
 
-  --blue:#007aff; --green:#34c759; --red:#ff3b30; --orange:#ff9500;
-  --yellow:#ffcc00; --teal:#30b0c7; --indigo:#5856d6; --pink:#ff2d55;
-  --purple:#af52de; --mint:#00c7be; --brown:#a2845e; --grey:#8e8e93;
+  --blue:#0088ff; --green:#34c759; --red:#ff383c; --orange:#ff8d28;
+  --yellow:#ffcc00; --teal:#00c3d0; --indigo:#6155f5; --pink:#ff2d55;
+  --purple:#cb30e0; --mint:#00c8b3; --brown:#ac7f5e; --grey:#8e8e93;
   --acc-2:#248a3d;
   --on-acc:#ffffff;
 }
@@ -1793,7 +1793,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 .swatch-own{display:inline-flex;align-items:center;justify-content:center;font-size:15px;--icon-stroke:2.4}
 .swatch-own.unset{
   background:radial-gradient(circle,var(--surface) 0 52%,transparent 54%),
-    conic-gradient(#ff453a,#ff9f0a,#ffd60a,#30d158,#40c8e0,#0a84ff,#bf5af2,#ff375f,#ff453a);
+    conic-gradient(#ff4245,#ff9230,#ffd600,#30d158,#00d2e0,#0091ff,#db34f2,#ff375f,#ff4245);
   color:var(--label-2);
 }
 .swatch-input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0;margin:0;border-radius:50%;cursor:pointer;-webkit-appearance:none;appearance:none}
