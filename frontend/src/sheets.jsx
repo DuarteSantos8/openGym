@@ -33,6 +33,7 @@ import { sameMuscleFirst, swapMuscleOf } from './lib/similar-exercises.js'
 import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWeightsOf, normalizeMuscleGroups, hasExplicitMuscleMetadata, inMuscleOrder } from './lib/muscles.js'
 import { parseImport, mergeImport } from './lib/import-csv.js'
 import { importHevyData, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines } from './lib/import-hevy.js'
+import { isJefitExport, parseJefitExport, mergeJefitRoutines } from './lib/import-jefit.js'
 import { buildPlanBundle, parsePlan, mergePlan, printPlan, planPrintHTML } from './lib/plan-share.js'
 import { estimate1RM, best1RM, is1RMRecord, REP_CAP, formulaOf, FORMULA_NAMES } from './lib/onerm.js'
 import { exerciseHistory } from './lib/exercise-history.js'
@@ -503,6 +504,9 @@ function ImportSummary({ parsed, close }) {
 export function importFromApp(file, onDone) {
   const rd = new FileReader()
   rd.onload = () => {
+    // A Jefit export is not a plain CSV and brings routines and weigh-ins with its workouts,
+    // so it gets the per-part review the Hevy import uses.
+    if (isJefitExport(rd.result)) { importJefit(String(rd.result), onDone); return }
     let parsed
     try { parsed = parseImport(String(rd.result), { unit: S().unit, customEx: S().customEx }) }
     catch (e) { toast(t('Could not read that file')); return }
@@ -516,6 +520,22 @@ export function importFromApp(file, onDone) {
   }
   rd.onerror = () => toast(t('Could not read that file'))
   rd.readAsText(file)
+}
+
+function importJefit(text, onDone) {
+  let payload
+  try { payload = parseJefitExport(text, { unit: S().unit, customEx: S().customEx }) }
+  catch (e) { toast(t('Could not read that file')); return }
+  if (payload.error) { toast(t("We don't recognise that file's columns. Check the docs for supported apps.")); return }
+  if (!payload.workouts.workouts.length && !payload.routines.routines.length && !payload.bodyweight.bodyweight.length) {
+    toast(t('Nothing to import from that file')); return
+  }
+  const { fileUnit } = payload.workouts
+  ui().openSheet(close => <ImportReview payload={payload} title={t('Import from {0}', 'Jefit')} mergeRoutines={mergeJefitRoutines}
+    unitNote={t('The file is in {0} and your profile is in {1}, so weights get converted.', fileUnit, S().unit)}
+    back={<Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>}
+    close={close} />)
+  onDone && onDone()
 }
 
 /* ============================ import from Hevy API ============================ */
@@ -543,9 +563,6 @@ function HevyImportSheet({ close }) {
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState(null)
   const [payload, setPayload] = useState(null) // { workouts, routines, bodyweight }
-  const [wantWorkouts, setWantWorkouts] = useState(true)
-  const [wantRoutines, setWantRoutines] = useState(true)
-  const [wantBody, setWantBody] = useState(true)
   const keyRef = useRef(null)
 
   // Drop the key from memory when the sheet goes away (unmount or successful import).
@@ -567,9 +584,6 @@ function HevyImportSheet({ close }) {
         toast(t('Nothing to import from Hevy'))
         return
       }
-      setWantWorkouts(!!data.workouts.workouts.length)
-      setWantRoutines(!!data.routines.routines.length)
-      setWantBody(!!data.bodyweight.bodyweight.length)
       setPayload(data)
     } catch (e) {
       if (e instanceof HevyApiError && e.message === 'auth') toast(t('That Hevy API key was refused'))
@@ -580,32 +594,6 @@ function HevyImportSheet({ close }) {
       setBusy(false)
       setProgress(null)
     }
-  }
-
-  const doImport = () => {
-    if (!payload) return
-    const parts = []
-    let addedW = 0, addedR = 0, addedB = 0
-    update(s => {
-      if (wantWorkouts && payload.workouts.workouts.length) {
-        const res = mergeImport(s, payload.workouts)
-        addedW = res.added
-        parts.push(tn('{0} workout imported', '{0} workouts imported', res.added))
-      }
-      if (wantRoutines && payload.routines.routines.length) {
-        const res = mergeHevyRoutines(s, payload.routines)
-        addedR = res.added
-        parts.push(tn('{0} routine imported', '{0} routines imported', res.added))
-      }
-      if (wantBody && payload.bodyweight.bodyweight.length) {
-        const res = mergeImport(s, payload.bodyweight)
-        addedB = res.added
-        parts.push(tn('{0} weigh-in imported', '{0} weigh-ins imported', res.added))
-      }
-    })
-    close()
-    if (!addedW && !addedR && !addedB) toast(t('Nothing new to import'))
-    else toast(parts.join(' · '))
   }
 
   if (!payload) {
@@ -639,6 +627,46 @@ function HevyImportSheet({ close }) {
     </>
   }
 
+  return <ImportReview payload={payload} title={t('Import from Hevy')} mergeRoutines={mergeHevyRoutines}
+    unitNote={t('Hevy stores weights in kg, so they’ll be converted to {0}.', st.unit)}
+    back={<Button variant="ghost" className="dim" onClick={() => { setPayload(null); wipeKey() }}>{t('Back')}</Button>}
+    close={close} />
+}
+
+// What a multi-part import (Hevy's API, a Jefit export) would bring, with a switch per part, before
+// anything is written. Routines go through the source's own merge, which knows its routine ids.
+function ImportReview({ payload, title, mergeRoutines, unitNote, back, close }) {
+  const st = useStore(s => s.S)
+  const [wantWorkouts, setWantWorkouts] = useState(!!payload.workouts.workouts.length)
+  const [wantRoutines, setWantRoutines] = useState(!!payload.routines.routines.length)
+  const [wantBody, setWantBody] = useState(!!payload.bodyweight.bodyweight.length)
+
+  const doImport = () => {
+    if (!payload) return
+    const parts = []
+    let addedW = 0, addedR = 0, addedB = 0
+    update(s => {
+      if (wantWorkouts && payload.workouts.workouts.length) {
+        const res = mergeImport(s, payload.workouts)
+        addedW = res.added
+        parts.push(tn('{0} workout imported', '{0} workouts imported', res.added))
+      }
+      if (wantRoutines && payload.routines.routines.length) {
+        const res = mergeRoutines(s, payload.routines)
+        addedR = res.added
+        parts.push(tn('{0} routine imported', '{0} routines imported', res.added))
+      }
+      if (wantBody && payload.bodyweight.bodyweight.length) {
+        const res = mergeImport(s, payload.bodyweight)
+        addedB = res.added
+        parts.push(tn('{0} weigh-in imported', '{0} weigh-ins imported', res.added))
+      }
+    })
+    close()
+    if (!addedW && !addedR && !addedB) toast(t('Nothing new to import'))
+    else toast(parts.join(' · '))
+  }
+
   const w = payload.workouts
   const r = payload.routines
   const b = payload.bodyweight
@@ -655,7 +683,7 @@ function HevyImportSheet({ close }) {
   ])].sort()
 
   return <>
-    <h3>{t('Import from Hevy')}</h3>
+    <h3>{title}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>
       {w.from && (w.from === w.to ? fmtDate(w.from, true) : fmtDate(w.from, true) + ' – ' + fmtDate(w.to, true))}
       {!w.from && b.from && (b.from === b.to ? fmtDate(b.from, true) : fmtDate(b.from, true) + ' – ' + fmtDate(b.to, true))}
@@ -692,7 +720,7 @@ function HevyImportSheet({ close }) {
     {!b.bodyweight.length && <div style={{ borderBottom: '1px solid var(--sep)', marginBottom: 8 }} />}
 
     {(w.converted || r.converted) && <div className="small" style={{ color: 'var(--yellow)', marginBottom: 10 }}>
-      {t('Hevy stores weights in kg, so they’ll be converted to {0}.', st.unit)}
+      {unitNote}
     </div>}
     {wantWorkouts && (w.rirSets + w.rpeSets) > 0 && <div className="small dim" style={{ marginBottom: 10 }}>
       {effortLine(effortOf(st), w.rirSets || w.rpeSets, w.rirSets ? 'RIR' : 'RPE')}
@@ -709,9 +737,10 @@ function HevyImportSheet({ close }) {
       {canImport ? t('Import') : t('Nothing new to import')}
     </Button>
     <div style={{ height: 8 }} />
-    <Button variant="ghost" className="dim" onClick={() => { setPayload(null); wipeKey() }}>{t('Back')}</Button>
+    {back}
   </>
 }
+
 
 /* ============================ target weight ============================ */
 export function bwDeltaColor(delta, currentW) {

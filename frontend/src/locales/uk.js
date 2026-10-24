@@ -452,7 +452,7 @@ export default {
   'Shins': 'Гомілки',
   // --- import from another app ---
   'Import from another app': 'Імпорт з іншого застосунку',
-  'FitNotes, Strong, Hevy, or body weight from Apple Health': 'FitNotes, Strong, Hevy або вага з Apple Health',
+  'FitNotes, Strong, Hevy, Jefit, or body weight from Apple Health': 'FitNotes, Strong, Hevy, Jefit або вага з Apple Health',
   'Import from {0}': 'Імпорт з {0}',
   'Import history': 'Імпорт історії',
   'Weigh-ins': 'Зважування',

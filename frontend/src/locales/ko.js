@@ -626,7 +626,7 @@ export default {
   'Shins': '정강이',
   // --- import from another app ---
   'Import from another app': '다른 앱에서 가져오기',
-  'FitNotes, Strong, Hevy, or body weight from Apple Health': 'FitNotes, Strong, Hevy 또는 Apple 건강의 체중',
+  'FitNotes, Strong, Hevy, Jefit, or body weight from Apple Health': 'FitNotes, Strong, Hevy, Jefit 또는 Apple 건강의 체중',
   'Import from {0}': '{0}에서 가져오기',
   'Import history': '기록 가져오기',
   'Weigh-ins': '체중 기록',

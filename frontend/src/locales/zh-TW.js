@@ -615,7 +615,7 @@ export default {
   'Shins': '脛前肌',
   // --- import from another app ---
   'Import from another app': '從其他 App 匯入',
-  'FitNotes, Strong, Hevy, or body weight from Apple Health': 'FitNotes、Strong、Hevy，或 Apple 健康中的體重紀錄',
+  'FitNotes, Strong, Hevy, Jefit, or body weight from Apple Health': 'FitNotes、Strong、Hevy、Jefit，或 Apple 健康中的體重紀錄',
   'Import from {0}': '從 {0} 匯入',
   'Import history': '匯入歷史紀錄',
   'Weigh-ins': '體重紀錄',
