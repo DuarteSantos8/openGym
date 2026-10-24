@@ -87,6 +87,21 @@ export default function TabBar({ onStart, onPick, desktop = false }) {
   }
   const holdEnd = () => { if (hold.current !== 'fired') { clearTimeout(hold.current); hold.current = null } }
 
+  // Admin on a wide window is a console of its own: the sidebar holds its sections and a way back
+  // to the app, none of the app's tabs.
+  if (desktop && cur === 'admin') {
+    const section = adminSectionOf(loc.pathname)
+    return (
+      <nav id="tabbar" aria-label="Admin">
+        <div className="side-brand"><span className="side-logo"><Icon name="shield" /></span>Admin</div>
+        {adminSections(config).map(([id, label, icon]) =>
+          <Tab key={id} active={section === id} icon={icon} label={label} onClick={() => nav(id === 'overview' ? '/admin' : '/admin/' + id)} />)}
+        <div className="side-gap" />
+        <Tab icon="chevronLeft" label="Back to the app" onClick={() => nav('/home')} />
+      </nav>
+    )
+  }
+
   return (
     <nav id="tabbar">
       <Tab active={on('home')} icon="house" label={t('Home')} dot={trouble && !desktop} onClick={() => switchTab('/home')} tour="tab-home" />
@@ -117,11 +132,6 @@ export default function TabBar({ onStart, onPick, desktop = false }) {
         <div className="side-gap" />
         {S.checkIn !== false && <Tab active={cur === 'checkin'} icon="qr" label={t('Check in')} onClick={() => nav('/checkin')} />}
         {user?.admin && <Tab active={cur === 'admin'} icon="shield" label="Admin" onClick={() => nav('/admin')} />}
-        {/* Admin's sections, each its own page, listed while Admin is open */}
-        {cur === 'admin' && adminSections(config).map(([id, label]) =>
-          <button key={id} className={'side-sub' + (adminSectionOf(loc.pathname) === id ? ' on' : '')}
-            aria-current={adminSectionOf(loc.pathname) === id ? 'page' : undefined}
-            onClick={() => nav(id === 'overview' ? '/admin' : '/admin/' + id)}>{label}</button>)}
         <Tab active={cur === 'settings'} icon="gear" label={t('Settings')} dot={trouble} onClick={() => nav('/settings')} />
       </>}
     </nav>

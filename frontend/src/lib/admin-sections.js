@@ -7,18 +7,18 @@ import { oidcOn } from './oidc.js'
 import { libraryOf } from './shared-api.js'
 
 export const ADMIN_SECTIONS = [
-  ['overview', 'Overview'],
-  ['users', 'Users'],
-  ['invites', 'Invite codes'],
-  ['coach', 'Coach'],
-  ['signin', 'Sign-in', config => oidcOn(config)],
-  ['community', 'Community library', config => !!libraryOf(config)],
-  ['gyms', 'Gyms', config => !!config?.trainers?.on],
-  ['activity', 'Activity log'],
+  ['overview', 'Overview', 'grid'],
+  ['users', 'Users', 'person'],
+  ['invites', 'Invite codes', 'envelope'],
+  ['coach', 'Coach', 'sparkles'],
+  ['signin', 'Sign-in', 'key', config => oidcOn(config)],
+  ['community', 'Community library', 'globe', config => !!libraryOf(config)],
+  ['gyms', 'Gyms', 'house', config => !!config?.trainers?.on],
+  ['activity', 'Activity log', 'history'],
 ]
 
 /** The sections this instance has: all of them, minus the ones its config leaves out. */
-export const adminSections = config => ADMIN_SECTIONS.filter(([, , on]) => !on || on(config))
+export const adminSections = config => ADMIN_SECTIONS.filter(([, , , on]) => !on || on(config))
 
 /** The section a path names, `overview` for /admin itself or anything unknown. */
 export const adminSectionOf = path => {

@@ -8,9 +8,10 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import TabBar from './TabBar.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 
+const loc = vi.hoisted(() => ({ pathname: '/home' }))
 vi.mock('react-router-dom', () => ({
   useNavigate: () => () => {},
-  useLocation: () => ({ pathname: '/home' }),
+  useLocation: () => loc,
 }))
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -18,6 +19,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 let host, root, original
 
 beforeEach(() => {
+  loc.pathname = '/home'
   original = useStore.getState()
   useStore.setState({ S: structuredClone(DEF), user: { id: 1, name: 'test', admin: true } })
   host = document.createElement('div')
@@ -45,4 +47,11 @@ it('leaves Admin out for everyone else', () => {
   useStore.setState({ user: { id: 2, name: 'member' } })
   act(() => { root.render(<TabBar onStart={() => {}} desktop />) })
   expect(labels()).not.toContain('Admin')
+})
+
+it('is the admin console\'s own navigation while Admin is open', () => {
+  loc.pathname = '/admin/users'
+  act(() => { root.render(<TabBar onStart={() => {}} desktop />) })
+  expect(labels()).toEqual(['Overview', 'Users', 'Invite codes', 'Coach', 'Activity log', 'Back to the app'])
+  expect(host.querySelector('#tabbar button.on').textContent).toBe('Users')
 })

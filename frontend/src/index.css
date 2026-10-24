@@ -3400,7 +3400,6 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   .side-brand{order:-2;display:flex;align-items:center;gap:10px;padding:2px 8px 8px;font-size:17px;font-weight:700;letter-spacing:-.02em}
   .side-logo{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:var(--acc);color:var(--on-acc);font-size:19px;--icon-stroke:2}
   .side-gap{flex:1 0 24px}
-  body.has-side #tabbar button.side-sub{min-height:32px;padding-inline-start:41px;font-size:13.5px}
 
   /* Home as a dashboard (views/Home.jsx `desktop`): two columns, the year's heatmap below */
   .home-cols{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px;align-items:start}
