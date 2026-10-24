@@ -17,6 +17,7 @@ const compatible = (await import('../coach/core/adapters/compatible.js')).defaul
 const { attemptOnce } = await import('../coach/core/pipeline.js');
 const { HTTP_PROVIDERS, validateBaseUrl, validateHeaders } = await import('../coach/core/providers.js');
 const { SYSTEM_PROMPT } = await import('../coach/core/system-prompt.js');
+const { REVIEW_SCHEMA } = await import('../coach/core/schemas.js');
 
 /** A fetch that records what it was asked and answers from a script. Like the real one, it
  *  refuses an already-aborted signal without putting anything on the wire. */
@@ -209,6 +210,59 @@ test('compatible: a server that rejects JSON mode gets the same request once mor
   assert.equal(f.calls.length, 2);
   assert.ok('response_format' in f.calls[0].body);
   assert.ok(!('response_format' in f.calls[1].body));
+});
+
+test('a validator that rejects the flat schema on additionalProperties gets one strict copy of the same request (#701)', async () => {
+  const f = fakeFetch(n => n === 1
+    ? { status: 400, body: { error: { type: 'invalid_request_error', message: "output_config.format.schema: For 'object' type, 'additionalProperties' must be explicitly set to false" } } }
+    : ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] }));
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env: {}, model: 'anthropic/claude-haiku', schema: REVIEW_SCHEMA, fetch: f });
+  assert.equal(r.code, 0);
+  assert.equal(f.calls.length, 2);
+  const first = f.calls[0].body.response_format.json_schema.schema;
+  const second = f.calls[1].body.response_format.json_schema.schema;
+  // the strict copy says what the validator asked for, at every level it walks
+  assert.equal(first.additionalProperties, undefined);
+  assert.equal(second.additionalProperties, false);
+  assert.equal(second.properties.evidence.additionalProperties, false);
+  assert.equal(second.properties.changes.items.additionalProperties, false);
+  assert.equal(second.properties.changes.items.properties.target.additionalProperties, false);
+  // union types that can be an object say it too, so the walker has no gap to trip on
+  assert.equal(second.properties.changes.items.properties.before.additionalProperties, false);
+  // nothing else about the request moved — the added marker is the only difference at
+  // the top level — and the flat schema the grammar converters need is still the one
+  // stored in schemas.js
+  assert.deepEqual(Object.keys(second), [...Object.keys(first), 'additionalProperties']);
+  assert.equal(second.type, first.type);
+  assert.deepEqual(second.required, first.required);
+  assert.deepEqual(Object.keys(second.properties), Object.keys(first.properties));
+  assert.equal(f.calls[1].body.model, f.calls[0].body.model);
+  assert.deepEqual(f.calls[1].body.messages, f.calls[0].body.messages);
+  assert.equal(REVIEW_SCHEMA.additionalProperties, undefined);
+  assert.equal(REVIEW_SCHEMA.properties.evidence.additionalProperties, undefined);
+});
+
+test('a validator that rejects the strict copy as well still falls back to plain JSON mode', async () => {
+  const f = fakeFetch(n => n === 1
+    ? { status: 400, body: { error: { message: "output_config.format.schema: For 'object' type, 'additionalProperties' must be explicitly set to false" } } }
+    : n === 2
+      ? { status: 400, body: { error: { message: 'response_format is not supported' } } }
+      : ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] }));
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env: {}, model: 'anthropic/claude-haiku', schema: REVIEW_SCHEMA, fetch: f });
+  assert.equal(r.code, 0);
+  assert.equal(f.calls.length, 3);
+  assert.equal(f.calls[0].body.response_format.type, 'json_schema');
+  assert.equal(f.calls[1].body.response_format.type, 'json_schema');
+  assert.equal(f.calls[1].body.response_format.json_schema.schema.additionalProperties, false);
+  assert.deepEqual(f.calls[2].body.response_format, { type: 'json_object' });
+});
+
+test('an additionalProperties complaint about a request with no schema is a plain failure, not a retry', async () => {
+  const f = fakeFetch([{ status: 400, body: { error: { message: "output_config.format.schema: For 'object' type, 'additionalProperties' must be explicitly set to false" } } }]);
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env: {}, model: 'anthropic/claude-haiku', fetch: f });
+  assert.equal(r.code, 1);
+  assert.match(r.stderr, /^400 /);
+  assert.equal(f.calls.length, 1);
 });
 
 test('a missing key is "missing", like an absent CLI — no request is made', async () => {
