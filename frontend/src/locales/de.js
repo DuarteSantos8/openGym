@@ -5917,4 +5917,7 @@ export default {
   "Preview on": "Vorschau auf",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "etwas kürzer",
+  // --- desktop Home: the streak card ---
+  "Next session": "Nächste Einheit",
+  "Calendar": "Kalender",
 }

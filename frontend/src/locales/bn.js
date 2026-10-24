@@ -5976,4 +5976,7 @@ export default {
   "Preview on": "প্রিভিউ দেখুন",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "একটু কম সময়",
+  // --- desktop Home: the streak card ---
+  "Next session": "পরের সেশন",
+  "Calendar": "ক্যালেন্ডার",
 }

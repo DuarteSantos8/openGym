@@ -5897,4 +5897,7 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  // --- desktop Home: the streak card ---
+  "Next session": "Sonraki antrenman",
+  "Calendar": "Takvim",
 }

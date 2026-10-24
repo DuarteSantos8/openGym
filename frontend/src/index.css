@@ -3402,7 +3402,59 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   .side-gap{flex:1 0 24px}
 
   /* Home as a dashboard (views/Home.jsx `desktop`): two columns, the year's heatmap below */
-  .home-cols{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px;align-items:start}
+  .home-cols{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:12px;margin-bottom:12px}
+  .home-cols>.card{margin:0}
+  .home-desk .card h2{font-size:16px;font-weight:600;letter-spacing:-.012em;color:var(--label);text-transform:none}
+  .home-desk .hdr-actions .btn{width:auto}
+  /* the week as seven tiles (the design's "This week"): weekday, date, a filled dot for done and
+     a ring for planned, the session's name; today framed in the accent */
+  .home-desk .wk-head{margin:-2px 0 12px}
+  .home-desk .wk-head h2{margin:0}
+  .home-desk .week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-bottom:12px}
+  .home-desk .wday{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 8px;border:1px solid var(--sep-op);border-radius:12px;cursor:pointer}
+  .home-desk .wday:hover{background:var(--surface-2)}
+  .home-desk .wday.today{border-color:var(--acc);background:var(--acc-soft)}
+  .home-desk .wday .lbl{font-size:12px;text-transform:none;letter-spacing:0;color:var(--label-2)}
+  .home-desk .wday .num,.home-desk .wday.today .num{width:auto;height:auto;margin:0;background:none;color:var(--label);font-size:18px;font-weight:600;display:block}
+  .home-desk .wday .dot{width:7px;height:7px}
+  .home-desk .wday .dot.done{background:var(--green)}
+  .home-desk .wday .dot.plan{background:transparent;box-shadow:inset 0 0 0 1.5px var(--label-2)}
+  .home-desk .today-row .tag{padding:6px 12px;border-radius:9px;box-shadow:inset 0 0 0 1px currentColor;font-size:13px}
+  .home-desk .today-row .ss{font-size:12.5px;color:var(--label-2)}
+  .home-desk .today-row .lbl2{text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--label-2)}
+  .home-desk .today-row .ttl{font-size:16px;font-weight:600}
+  .home-desk .wday .nm{font-size:11.5px;color:var(--label-2);max-width:100%;padding:0 4px;min-height:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .home-desk .week{margin-bottom:12px}
+  .dk-bar{height:6px;border-radius:99px;background:var(--surface-3);overflow:hidden;margin:12px 0 4px}
+  .dk-bar i{display:block;height:100%;border-radius:99px;background:var(--orange)}
+  .dk-kv>div{padding:10px 0;border-bottom:var(--hair) solid var(--sep);font-size:14px;gap:12px}
+  .dk-streak{display:flex;flex-direction:column;align-items:flex-start}
+  .dk-streak>*{align-self:stretch}
+  .dk-streak>.btn{align-self:flex-start;width:auto;margin-top:12px;padding-inline:12px;color:var(--label);background:transparent;box-shadow:inset 0 0 0 1px var(--sep)}
+  .dk-streak-t{display:flex;align-items:center;gap:8px;font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:4px}
+  .dk-streak-t .icn{color:var(--orange)}
+  .dk-kv{margin-top:8px}
+  .dk-kv b{font-weight:600}
+  .dk-kv>div:last-child{border-bottom:0}
+  .dk-rec{display:grid;grid-template-columns:96px minmax(0,1fr) 104px;align-items:center;gap:12px;padding:6px 0;font-size:14px}
+  .dk-rec .dk-bar{margin:0}
+  .dk-rec .tag{justify-self:end}
+  .dk-rec.ready .dk-bar i,.dk-rec.ready .tag{background:var(--green)}
+  .dk-rec.recovering .dk-bar i{background:var(--orange)}
+  .dk-rec.fatigued .dk-bar i{background:var(--red)}
+  .dk-rec.ready .tag{color:var(--green);background:var(--surface-2);background:color-mix(in srgb,var(--green) 16%,transparent)}
+  .dk-rec.recovering .tag{color:var(--orange);background:var(--surface-2);background:color-mix(in srgb,var(--orange) 16%,transparent)}
+  .dk-rec.fatigued .tag{color:var(--red);background:var(--surface-2);background:color-mix(in srgb,var(--red) 16%,transparent)}
+  .dk-kpis{display:flex;flex-wrap:wrap;gap:32px;margin:4px 0 14px}
+  .dk-kpis>div{display:flex;flex-direction:column}
+  .dk-kpis b{font-size:24px;font-weight:700;letter-spacing:-.02em}
+  .dk-kpis span{font-size:13px;color:var(--label-2)}
+  .dk-recent{padding-bottom:4px}
+  .dk-tr{display:grid;grid-template-columns:minmax(160px,1.6fr) 130px 100px 60px 120px 60px;align-items:center;gap:12px;width:100%;min-height:50px;padding:6px 4px;border-bottom:var(--hair) solid var(--sep);font-size:14px;text-align:start}
+  .dk-tr:last-child{border-bottom:0}
+  .dk-tr .num{text-align:end}
+  button.dk-tr:hover{background:var(--surface-2);border-radius:var(--r-sm)}
+  .dk-th{min-height:36px;margin-top:8px;font-size:12.5px;color:var(--label-2)}
 
   /* The running workout in three columns (views/Workout.jsx `desktop`): the exercises on the
      left, the current one with its header in the middle, the rest bar and a running tally on the
