@@ -172,6 +172,20 @@ describe('service worker offline cold-launch (issue #274)', () => {
     expect(await (await e.response).text()).toBe('cached-shell')
   })
 
+  it('does not intercept a connector page or its GET', async () => {
+    let fetches = 0
+    const { listeners, cache, clock } = loadServiceWorker({ fetchImpl: () => { fetches++; return new Promise(() => {}) } })
+    await cache.put('index.html', new Response('cached-shell'))
+
+    for (const url of ['https://gym.example/connector/connect', 'https://gym.example/connector/confirm/abc', 'https://gym.example/connector/.well-known/oauth-protected-resource']) {
+      const e = makeFetchEvent(url)
+      listeners.fetch(e)
+      expect(e.response).toBeUndefined()
+    }
+    await clock.advance(10000)
+    expect(fetches).toBe(0)
+  })
+
   it('works where AbortSignal.timeout does not exist (iOS before 16)', async () => {
     const { listeners, cache, clock } = loadServiceWorker({ fetchImpl: deadRadio, abortSignal: false })
     await cache.put('index.html', new Response('cached-shell'))

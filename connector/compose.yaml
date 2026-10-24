@@ -1,0 +1,38 @@
+# Local-only packaging for the openGym Claude connector. Nothing here is deployed by committing it.
+#
+# Generate the key first; Compose does not run a shell substitution inside .env:
+#   openssl rand -base64 32
+#   export CONNECTOR_PUBLIC_ORIGIN=https://your.domain
+#   export CONNECTOR_ENCRYPTION_KEY='paste-that-output'
+#   docker compose up -d --build
+#
+# (or put the same two lines, as KEY=value, in connector/.env, which git ignores)
+name: opengym-connector
+
+services:
+  connector:
+    build:
+      context: ..
+      dockerfile: connector/Dockerfile
+    image: opengym-connector:local
+    restart: unless-stopped
+    # Loopback only. The tunnel (cloudflared on this host) reaches it at 127.0.0.1:<port>.
+    ports:
+      - "127.0.0.1:${CONNECTOR_BIND_PORT:-8787}:8787"
+    environment:
+      CONNECTOR_PUBLIC_ORIGIN: ${CONNECTOR_PUBLIC_ORIGIN:?set CONNECTOR_PUBLIC_ORIGIN to the public https origin}
+      CONNECTOR_ENCRYPTION_KEY: ${CONNECTOR_ENCRYPTION_KEY:?set CONNECTOR_ENCRYPTION_KEY, see README}
+      # openGym's web container, on its compose network. It proxies /api to the API.
+      CONNECTOR_UPSTREAM_URL: ${CONNECTOR_UPSTREAM_URL:-http://opengym-web-1}
+    # State is in memory and the image needs no writable disk; no volume is mounted.
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    networks: [opengym]
+
+networks:
+  opengym:
+    # openGym's own compose project is named `opengym` (docker-compose.yml), so its default
+    # network is opengym_default. Created by openGym; this file only joins it.
+    name: ${OPENGYM_NETWORK:-opengym_default}
+    external: true

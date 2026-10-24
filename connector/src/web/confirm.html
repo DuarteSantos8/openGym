@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; connect-src 'self'; style-src 'unsafe-inline'">
+<title>Confirm openGym action</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; max-width: 36rem; margin: 2rem auto; padding: 0 1rem; }
+  button { font: inherit; padding: .5rem 1rem; }
+</style>
+</head>
+<body>
+<h1>Confirm action</h1>
+<p id="target"></p>
+<ul id="rows"></ul>
+<p id="digest"></p>
+<div id="coach-fields" hidden>
+  <p>Enter the credential below. It stays in this browser until you review and approve with a fresh passkey.</p>
+  <label for="coach-type">Credential type</label>
+  <select id="coach-type"></select>
+  <label for="coach-token">Credential</label>
+  <input id="coach-token" type="password" autocomplete="off" spellcheck="false" maxlength="2048">
+  <label for="coach-account">Account label (optional)</label>
+  <input id="coach-account" type="text" autocomplete="off" maxlength="120">
+</div>
+<button id="confirm" type="button" disabled>Confirm with passkey</button>
+<p id="out" role="status" aria-live="polite"></p>
+<div id="reveal" role="status" aria-live="polite"></div>
+<script>
+const id = location.hash.slice(1)
+history.replaceState(null, '', location.pathname)
+const target = document.getElementById('target')
+const rows = document.getElementById('rows')
+const digest = document.getElementById('digest')
+const button = document.getElementById('confirm')
+const out = document.getElementById('out')
+const reveal = document.getElementById('reveal')
+const coachFields = document.getElementById('coach-fields')
+const coachType = document.getElementById('coach-type')
+const coachToken = document.getElementById('coach-token')
+const coachAccount = document.getElementById('coach-account')
+let coachProvider = null
+let reviewed = false
+let reviewTarget = null
+const bufToB64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+const b64uToBuf = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)).buffer
+const say = text => { out.textContent = text }
+async function post(route, body) {
+  const response = await fetch('/connector/confirm/' + route, {
+    method: 'POST', credentials: 'omit', redirect: 'error',
+    headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, ...body }),
+  })
+  if (!response.ok) throw new Error('confirmation failed')
+  return response.json()
+}
+function credentialJSON(cred) {
+  const r = cred.response
+  return {
+    id: cred.id, rawId: bufToB64u(cred.rawId), type: cred.type,
+    response: {
+      clientDataJSON: bufToB64u(r.clientDataJSON), authenticatorData: bufToB64u(r.authenticatorData),
+      signature: bufToB64u(r.signature), userHandle: r.userHandle ? bufToB64u(r.userHandle) : null,
+    },
+  }
+}
+post('details').then(({ summary, digest: value }) => {
+  const showTarget = () => {
+    target.textContent = summary.type + ': ' + (summary.name || summary.id) + (summary.name ? ' (' + summary.id + ')' : '') + (summary.date ? ' — ' + summary.date : '') + (summary.effect ? '. ' + summary.effect : '')
+    for (const row of summary.rows || []) {
+      const item = document.createElement('li')
+      item.textContent = row.name + ' (' + row.id + ')' + (row.date ? ' — ' + row.date : '')
+      rows.appendChild(item)
+    }
+    digest.textContent = 'Target fingerprint: ' + value
+  }
+  if (summary.type === 'connect-coach') {
+    const p = summary.provider
+    if (!p || p.id !== summary.id) throw new Error('invalid provider')
+    coachProvider = p.id
+    coachFields.hidden = false
+    // Only the provider's reported capabilities are offered; no free-form type, no device login.
+    for (const [type, allowed] of [['apikey', p.apiKey], ['cli-token', p.setupToken]]) {
+      if (!allowed) continue
+      const option = document.createElement('option')
+      option.value = type
+      option.textContent = type === 'apikey' ? 'API key' : 'Setup token'
+      coachType.appendChild(option)
+    }
+    if (!coachType.children.length) throw new Error('unsupported provider')
+    coachType.value = coachType.children[0].value
+    button.textContent = 'Review credential and effect'
+    // Delay showing the provider and effect until after the browser fields have been filled.
+    reviewTarget = showTarget
+  } else showTarget()
+  button.disabled = false
+}).catch(() => say('Confirmation unavailable. Request a new link.'))
+button.addEventListener('click', async () => {
+  if (coachProvider && !reviewed) {
+    if (!coachToken.value.trim() || coachToken.value.length > 2048 || coachAccount.value.length > 120 || !coachType.value) {
+      say('Enter a valid credential first.'); return
+    }
+    reviewed = true
+    reviewTarget()
+    button.textContent = 'Confirm with passkey'
+    say('Review the provider and effect above before confirming with your passkey.')
+    return
+  }
+  button.disabled = true
+  let input
+  try {
+    // The browser holds the credential until the passkey is produced. Nothing goes to the server
+    // on details or challenge. The token crosses exactly once, in the execute POST body.
+    const { cid, options } = await post('challenge')
+    options.challenge = b64uToBuf(options.challenge)
+    for (const item of options.allowCredentials || []) item.id = b64uToBuf(item.id)
+    const cred = await navigator.credentials.get({ publicKey: options })
+    if (coachProvider) input = { provider: coachProvider, type: coachType.value, token: coachToken.value, account: coachAccount.value }
+    const result = await post('execute', { cid, credential: credentialJSON(cred), ...(input ? { coach: input } : {}) })
+    say('Action completed.')
+    if (result.reveal) {
+      const secret = document.createElement('p')
+      secret.textContent = result.reveal.label + ': ' + result.reveal.value
+      reveal.appendChild(secret)
+      if (result.reveal.expires !== undefined) {
+        const expiry = document.createElement('p')
+        expiry.textContent = 'Expires: ' + new Date(result.reveal.expires).toLocaleString()
+        reveal.appendChild(expiry)
+      }
+      const notice = document.createElement('p')
+      notice.textContent = 'This secret is shown once. Save it now.'
+      reveal.appendChild(notice)
+    }
+  } catch { say('Confirmation unavailable. Request a new link.') }
+  finally {
+    if (coachProvider) { coachToken.value = ''; coachAccount.value = ''; input = null }
+  }
+})
+</script>
+</body>
+</html>

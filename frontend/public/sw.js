@@ -256,6 +256,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url)
   if (e.request.method !== 'GET' || url.origin !== location.origin) return
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith(API)) return    // never cache auth/data
+  if (url.pathname === '/connector' || url.pathname.startsWith('/connector/')) return // passkey pages must not be cached
 
   if (isMediaPath(url.pathname)) {
     e.respondWith(media(e))

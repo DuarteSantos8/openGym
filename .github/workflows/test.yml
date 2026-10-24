@@ -8,6 +8,7 @@ on:
       - 'frontend/**'
       - 'api/**'
       - 'mcp/**'
+      - 'connector/**'
       - 'scripts/build-coach-assets.mjs'
       - 'scripts/build-coach-library.mjs'
       - 'scripts/build-api-docs.mjs'
@@ -20,6 +21,7 @@ on:
       - 'frontend/**'
       - 'api/**'
       - 'mcp/**'
+      - 'connector/**'
       - 'scripts/build-coach-assets.mjs'
       - 'scripts/build-coach-library.mjs'
       - 'scripts/build-api-docs.mjs'
@@ -117,6 +119,32 @@ jobs:
   # to answer for itself: the default one starts and serves, and the coach one additionally
   # resolves the Agent SDK's per-platform runtime (musl on this base), which is the one thing
   # that cannot be checked from the source tree.
+  # The connector imports pure helpers from frontend/src/lib and mcp/src, so the image has to be
+  # built from the repository root and booted: a copy of connector/ alone builds, then dies on import.
+  connector:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: npm test
+        working-directory: connector
+      - run: docker build -f connector/Dockerfile -t opengym-connector:ci .
+      - name: the connector image boots and serves discovery
+        run: |
+          docker run -d --name connector-ci \
+            -e CONNECTOR_PUBLIC_ORIGIN=https://gym.example.test \
+            -e CONNECTOR_ENCRYPTION_KEY="$(openssl rand -base64 32)" \
+            -e CONNECTOR_UPSTREAM_URL=http://opengym-web-1 \
+            opengym-connector:ci
+          for i in $(seq 1 20); do
+            docker exec connector-ci wget -q -O - http://127.0.0.1:8787/connector/.well-known/oauth-protected-resource >/tmp/prm.json 2>/dev/null && break
+            sleep 1
+          done
+          grep -q '"resource":"https://gym.example.test/connector/mcp"' /tmp/prm.json
+          docker rm -f connector-ci
+
   api-image:
     runs-on: ubuntu-latest
     steps:
