@@ -348,3 +348,15 @@ struct WorkoutSummary: Codable, Equatable {
     /// The phone ended it (finished or discarded there) while the watch had it running.
     var endedOnPhone: Bool
 }
+
+/// After the watch turns the page by itself (a superset's partner, the next exercise, the end of a
+/// rest), taps are ignored for a second: a second Done meant for the page that just left would
+/// otherwise land on the new one and log a set nobody did. A swipe by hand unlocks it at once.
+struct TouchLock: Equatable {
+    static let seconds: TimeInterval = 1
+    private(set) var until = Date.distantPast
+
+    mutating func lock(at t: Date) { until = t.addingTimeInterval(TouchLock.seconds) }
+    mutating func unlock() { until = .distantPast }
+    func allows(at t: Date) -> Bool { t >= until }
+}

@@ -25,7 +25,11 @@ struct ClipFrames {
 final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserNotificationCenterDelegate {
     /// Everything the watch knows about the session, saved after every change.
     @Published private(set) var state = SessionState() {
-        didSet { if !isDemo, state != oldValue { save() } }
+        didSet {
+            if !isDemo, state != oldValue { save() }
+            // The page changed without a swipe (Done moved on, a snapshot): a moment without taps.
+            if state.entryIndex != oldValue.entryIndex { touchLock.lock(at: Date()) }
+        }
     }
 
     var workout: ActiveWorkout? { state.workout }
@@ -93,6 +97,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private var setStartedAt = Date()
     /// The last Done, against a double tap.
     private var lastTick: Date?
+    /// Taps ignored for a second after the watch turns the page by itself (WatchCore's TouchLock).
+    private var touchLock = TouchLock()
+    private var touchAllowed: Bool { touchLock.allows(at: Date()) }
     /// When this watch first had the running workout (its start, for a phone that sends none).
     private var workoutSeenAt: Date?
     /// The rest running after a set, for that rest's heart rate once it is over.
@@ -193,6 +200,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         guard ei != state.entryIndex else { return }
         ackRestOver()
         state.entryIndex = ei
+        touchLock.unlock()          // swiped by hand: the page is the lifter's own choice
         loadTargets()
     }
 
@@ -306,6 +314,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         guard let w = workout, let e = entry, let si = setIndex else { return }
         // A double tap on Done (a sweaty finger) is one set, not this one and the next.
         if heldFor == nil, let last = lastTick, Date().timeIntervalSince(last) < 0.7 { return }
+        // In a superset the page flips to the partner: a slower second tap would log its set.
+        if heldFor == nil, !touchAllowed { return }
         lastTick = Date()
         ackRestOver()
         let ei = entryIndex
@@ -347,7 +357,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     /// A set passed over (a long press on Done): not done, the next one comes up.
     func skipSet() {
-        guard let si = setIndex else { return }
+        guard touchAllowed, let si = setIndex else { return }
         ackRestOver()
         let ei = entryIndex
         state = SessionCore.skip(state, entry: ei, set: si)
@@ -364,7 +374,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     /// The hold starts: a countdown from the seconds on the screen; at zero it is done by itself.
     func startHold() {
-        guard entry?.isTimed == true, setIndex != nil, seconds > 0 else { return }
+        guard touchAllowed, entry?.isTimed == true, setIndex != nil, seconds > 0 else { return }
         ackRestOver()
         skipRest()
         let now = Date()
@@ -535,6 +545,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         restTimer = Timer.scheduledTimer(withTimeInterval: end.timeIntervalSinceNow, repeats: false) { [weak self] _ in
             DispatchQueue.main.async { self?.restOver() }
             DispatchQueue.main.async {
+                // The set page comes back under the finger: a tap meant for the rest is not a Done.
+                self?.touchLock.lock(at: Date())
                 self?.closeRest(at: Date())
                 self?.restEndsAt = nil
                 self?.restStartedAt = nil
