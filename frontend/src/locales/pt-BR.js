@@ -862,7 +862,7 @@ export const PT_BR_OVERRIDES = {
   'Planned sessions start from': 'Ponto de partida das sessões planejadas',
   'The routine’s sets and reps. Your history decides the weight.': 'As séries e repetições da rotina. Seu histórico decide o peso.',
   'Your last session': 'Sua última sessão',
-  'The reps you logged last time in that routine, carried over.': 'São mantidas as repetições que você registrou da última vez nessa rotina.',
+  'The reps and warm-ups you logged last time in that routine, carried over.': 'São mantidas as repetições e as séries de aquecimento que você registrou da última vez nessa rotina.',
   'Plan changed, so starting from your new target.': 'O plano mudou, então você começa pela sua nova meta.',
   'First time in this routine, so starting from its own target.': 'Primeira vez nesta rotina, então você começa pela meta dela.',
   'No weight logged last time. Enter what you lift and progression takes it from there.': 'Nenhum peso registrado da última vez. Informe quanto você levanta e a progressão segue daí.',
