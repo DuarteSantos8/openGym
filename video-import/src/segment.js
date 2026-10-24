@@ -259,7 +259,13 @@ export function countdownRuns(frames) {
           if (both[t + k].some(y => y >= 10 && Math.abs(a - k - y) <= 1)) full.push(k)
           else if (both[t + k].some(y => y < 10 && y === (a - k) % 10)) bare.push(k)
         }
-        if (full.length >= 2 && bare.length >= 3 && bare.some(k => k > full[0])) { x = a; break }
+        // Or the tens digit was there all along: the next seconds read a - 1, a - 2, a - 3… exactly,
+        // and a countdown that were really x seconds long would not carry on as 17, 16, 15 after "8".
+        // Only for a rest of 10 to 19 seconds that starts after the last countdown ran out: a stray
+        // read in front of a long countdown is the ring's first digit, and one in the middle of a
+        // running count is a misread of it, not a new start.
+        const exact = full.filter((k, i) => k === i + 1).length
+        if ((full.length >= 2 && bare.length >= 3 && bare.some(k => k > full[0])) || (a === x + 10 && exact >= 5 && (!cur || cur.top - (t - cur.start) < 3))) { x = a; break }
       }
     }
     if (x == null) continue

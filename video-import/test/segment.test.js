@@ -305,3 +305,19 @@ test('a clean ten-second rest countdown in front of a long one is a rest, not th
   assert.ok(lens.filter(l => l === 50).length >= 5, 'the 50 s works stay 50 s: ' + lens.join(','))
   assert.ok(lens.filter(l => l === 10).length >= 5, 'the 10 s rests stay rests: ' + lens.join(','))
 })
+
+test('a stray single digit that the next seconds read exactly as 17, 16, 15… is the tens-digit-lost start of a 19 s countdown, not an 8 s one (ScInpT_5dIQ)', async () => {
+  const { countdownRuns } = await import('../src/segment.js')
+  const f = []
+  for (let t = 0; t < 4 * 90; t++) f[t] = { t, name: '', timer: '', timers: [''] }
+  const at = (t, text) => { f[t] = { t, name: '', timer: text, timers: [text] } }
+  for (let k = 0; k < 4; k++) {
+    const b = k * 90
+    for (let i = 0; i <= 59; i++) at(b + i, String(59 - i).padStart(2, '0'))        // 60 s work
+    at(b + 61, '8')                                                                  // a stray read of the rest's first seconds
+    for (let i = 2; i <= 19; i++) at(b + 60 + i, String(19 - i).padStart(2, '0'))     // 17, 16 … 00 over the 20 s rest
+  }
+  const runs = countdownRuns(f)
+  // The rest is one countdown of 19 s from its first readable second, not 8 s and a second one of 9.
+  assert.deepEqual(runs.filter(r => r.top + 1 >= 8 && r.top + 1 <= 25).map(r => [r.start, r.top + 1]), [[61, 19], [151, 19], [241, 19], [331, 19]])
+})
