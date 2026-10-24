@@ -1,8 +1,8 @@
 {
   "8jZvQT6LqTM": {
-    "frames": 0.943,
-    "sequence": 0.898,
-    "boundaries": 0.983,
+    "frames": 0.953,
+    "sequence": 0.917,
+    "boundaries": 0.992,
     "startError": 0
   },
   "B7-F2UcHmqk": {
@@ -99,11 +99,11 @@
     "startError": 0.294
   },
   "pnd-jkJh-ls": {
-    "frames": 0.913,
+    "frames": 0.962,
     "sequence": 0.944,
-    "boundaries": 0.648,
-    "startError": 0.435,
-    "sections": 0.133
+    "boundaries": 0.958,
+    "startError": 0.441,
+    "sections": 0.333
   },
   "synthetic-30-30-bare-rest": {
     "frames": 1,
@@ -166,7 +166,7 @@
     "sections": 1
   },
   "t-3H2KnjH6E": {
-    "frames": 0.946,
+    "frames": 0.949,
     "sequence": 0.944,
     "boundaries": 1,
     "startError": 0.333,

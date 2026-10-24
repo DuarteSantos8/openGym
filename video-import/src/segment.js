@@ -313,6 +313,10 @@ export function countdownRuns(frames) {
   const agrees = (t, p) => both[t].some(y => y === p || (y < 10 && y === p % 10) || (y >= 10 && Math.abs(y - p) <= 1))
   runs.forEach((r, i) => {
     const len = r.top + 1
+    // A countdown that is already one of the lengths this video uses (the 50 s works of a 50/10
+    // workout) is whole: the ten seconds in front of it are the rest's own countdown, whose last
+    // digits happen to be the ones the longer count would show.
+    if (lengths[len] >= 3) return
     let p = i - 1
     while (p >= 0 && runs[p].top < 12 && r.start - (runs[p].start + runs[p].top + 1) < 40) p--
     const floor = p >= 0 ? runs[p].start + runs[p].top + 1 : 0

@@ -290,3 +290,18 @@ test('a countdown first read at 56 under a fading ring began at 59: the round le
   const runs2 = countdownRuns(g).filter(r => r.top + 1 >= 50)
   assert.ok(runs2.every(r => r.start >= 0))
 })
+
+test('a clean ten-second rest countdown in front of a long one is a rest, not the first ten seconds of it (pnd-jkJh-ls)', async () => {
+  const { countdownRuns } = await import('../src/segment.js')
+  const f = []
+  const at = (t, n) => { f[t] = { t, name: '', timer: String(n).padStart(2, '0'), timers: [String(n).padStart(2, '0')] } }
+  for (let t = 0; t < 8 * 60 + 5; t++) f[t] = { t, name: '', timer: '', timers: [''] }
+  // 60 s works between 50 s ones, so 60 is a usual length; 50 s work then 10 s rest, many times.
+  let t = 5
+  for (let k = 0; k < 4; k++) { for (let v = 59; v >= 0; v--) at(t++, v) }                      // four 60 s works
+  for (let k = 0; k < 6; k++) { for (let v = 49; v >= 0; v--) at(t++, v); for (let v = 9; v >= 0; v--) at(t++, v) }   // 50 s work, 10 s rest
+  const runs = countdownRuns(f).filter(r => r.start >= 245)
+  const lens = runs.map(r => r.top + 1)
+  assert.ok(lens.filter(l => l === 50).length >= 5, 'the 50 s works stay 50 s: ' + lens.join(','))
+  assert.ok(lens.filter(l => l === 10).length >= 5, 'the 10 s rests stay rests: ' + lens.join(','))
+})
