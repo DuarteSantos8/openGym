@@ -102,6 +102,14 @@ struct RootView: View {
         // The app's language, as the phone sends it, not the watch's own (SwiftUI looks every
         // Text's words up by this locale).
         .environment(\.locale, store.locale)
+        // No set for 20 minutes. Never a finish in one tap: "Finish workout" goes to the Finish page.
+        .alert(Text("All done?"), isPresented: $store.askDone) {
+            Button("Continue workout", role: .cancel) { store.keepGoing() }
+            Button("Finish workout") {
+                store.keepGoing()
+                store.show(entry: store.workout?.entries.count ?? 0)
+            }
+        }
         // Any touch: the rest-over alarm was noticed (it would tap once more otherwise).
         .simultaneousGesture(TapGesture().onEnded { store.ackRestOver() })
         // The complication's Start: today's workout, when none runs yet.

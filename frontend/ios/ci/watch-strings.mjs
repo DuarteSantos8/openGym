@@ -31,6 +31,7 @@ const FROM_APP = {
   'Finish workout': 'Finish workout',
   'Finish workout?': 'Finish workout?',
   'Finish and save': 'Finish and save',
+  'Continue workout': 'Continue workout',
   'Cancel': 'Cancel',
   'Rest’s over. Next set!': 'Rest’s over. Next set!',
   'Left': 'Left',
@@ -125,6 +126,9 @@ const OWN = {
   },
   'Saved on the watch, syncs later': {
     de: 'Auf der Watch gespeichert, synct später', fr: 'Gardé sur la montre, synchro plus tard', es: 'Guardado en el reloj, se sincroniza luego', it: 'Salvato sull’orologio, si sincronizza dopo', 'pt-PT': 'Guardado no relógio, sincroniza depois', 'pt-BR': 'Salvo no relógio, sincroniza depois', pl: 'Zapisano na zegarku, zsynchronizuje się później', hu: 'Az órán mentve, később szinkronizál', tr: 'Saatte kaydedildi, sonra eşitlenir', ru: 'Сохранено на часах, синхронизируется позже', uk: 'Збережено на годиннику, синхронізується пізніше', ar: 'حُفظ على الساعة، تتم المزامنة لاحقًا', hi: 'वॉच पर सहेजा, बाद में सिंक होगा', bn: 'ঘড়িতে সেভ হয়েছে, পরে সিঙ্ক হবে', th: 'บันทึกบนนาฬิกาแล้ว จะซิงค์ทีหลัง', ko: '워치에 저장됨, 나중에 동기화돼요', 'zh-Hans': '已存在手表上，稍后同步', 'zh-Hant': '已存在手錶上，稍後同步',
+  },
+  'All done?': {
+    de: 'Alles erledigt?', fr: 'Terminé ?', es: '¿Has terminado?', it: 'Hai finito?', 'pt-PT': 'Terminaste?', 'pt-BR': 'Terminou?', pl: 'Koniec treningu?', hu: 'Végeztél?', tr: 'Bitirdin mi?', ru: 'Тренировка окончена?', uk: 'Тренування завершено?', ar: 'هل انتهيت؟', hi: 'हो गया?', bn: 'শেষ হয়েছে?', th: 'เสร็จแล้วหรือยัง', ko: '다 끝났나요?', 'zh-Hans': '练完了吗？', 'zh-Hant': '練完了嗎？',
   },
   'Skip this set?': {
     de: 'Diesen Satz überspringen?', fr: 'Sauter cette série ?', es: '¿Saltar esta serie?', it: 'Saltare questa serie?', 'pt-PT': 'Saltar esta série?', 'pt-BR': 'Pular esta série?', pl: 'Pominąć tę serię?', hu: 'Kihagyod ezt a sorozatot?', tr: 'Bu set atlansın mı?', ru: 'Пропустить этот подход?', uk: 'Пропустити цей підхід?', ar: 'تخطي هذه المجموعة؟', hi: 'यह सेट छोड़ें?', bn: 'এই সেটটি বাদ দেবেন?', th: 'ข้ามเซ็ตนี้ไหม', ko: '이 세트를 건너뛸까요?', 'zh-Hans': '跳过这一组？', 'zh-Hant': '跳過這一組？',

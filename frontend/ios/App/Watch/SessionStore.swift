@@ -25,7 +25,10 @@ struct ClipFrames {
 final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserNotificationCenterDelegate {
     /// Everything the watch knows about the session, saved after every change.
     @Published private(set) var state = SessionState() {
-        didSet { if !isDemo, state != oldValue { save() } }
+        didSet {
+            if !isDemo, state != oldValue { save() }
+            if state.workout?.id != oldValue.workout?.id { watchIdle() }
+        }
     }
 
     var workout: ActiveWorkout? { state.workout }
@@ -86,6 +89,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published private(set) var queued = 0
     @Published private(set) var restEndsAt: Date?
     @Published private(set) var restStartedAt: Date?
+    /// "All done?": the workout has had no set logged for 20 minutes (WatchCore's Idle).
+    @Published var askDone = false
     /// A set picked by hand in an exercise (entry index → set index); otherwise the first not done.
     @Published private var picked: [Int: Int] = [:]
 
@@ -487,16 +492,61 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         Haptics.start()
     }
 
-    /// Finishes the session: the phone saves it with its own Finish and save.
-    func finish() {
-        closeRest(at: Date())
+    /* ---------- a workout left running ---------- */
+
+    private var idleTimer: Timer?
+    /// "Keep going" answered: idle time counts from then.
+    private var idleSnooze: Date?
+
+    /// A workout runs: checked every 30 s (the Apple Health session keeps the app running with the
+    /// wrist down; without one, a suspended app checks when it wakes). No workout, no timer.
+    private func watchIdle() {
+        idleTimer?.invalidate()
+        idleTimer = nil
+        idleSnooze = nil
+        askDone = false
+        guard workout != nil, !isDemo else { return }
+        let t = Timer(timeInterval: 30, repeats: true) { [weak self] _ in self?.checkIdle() }
+        t.tolerance = 10
+        RunLoop.main.add(t, forMode: .common)
+        idleTimer = t
+        DispatchQueue.main.async { self.checkIdle() }     // relaunched hours later: ended at once
+    }
+
+    private func checkIdle() {
+        guard let w = workout, holdEndsAt == nil else { return }
         let now = Date().timeIntervalSince1970 * 1000
+        let seen = workoutSeenAt.map { $0.timeIntervalSince1970 * 1000 }
+        let last = Idle.lastSet(w) ?? seen ?? now
+        // Picked up from the phone or answered "keep going" since: counted from then, never ended earlier.
+        let since = [last, seen ?? 0, idleSnooze.map { $0.timeIntervalSince1970 * 1000 } ?? 0].max() ?? last
+        switch Idle.state(since: since, now: now) {
+        case .active: break
+        case .ask:
+            if !askDone { askDone = true; Haptics.ask() }
+        case .end:
+            askDone = false
+            finish(at: Date(timeIntervalSince1970: last / 1000))
+        }
+    }
+
+    /// "Continue workout" on "All done?".
+    func keepGoing() {
+        idleSnooze = Date()
+        askDone = false
+    }
+
+    /// Finishes the session: the phone saves it with its own Finish and save. `end`: when it really
+    /// ended (a workout left running ends at its last set), else now.
+    func finish(at end: Date = Date()) {
+        closeRest(at: end)
+        let now = end.timeIntervalSince1970 * 1000
         let ended = workout
         let (next, event) = SessionCore.finish(state, at: now, id: UUID().uuidString)
         guard let ev = event else { return }
         if let w = ended { summary = SessionCore.summary(w, end: now, startedAt: workoutSeenAt.map { $0.timeIntervalSince1970 * 1000 }) }
         ran(ended?.id)
-        health.end(save: true) { [weak self] totals in self?.addTotals(totals) }
+        health.end(save: true, at: end) { [weak self] totals in self?.addTotals(totals) }
         stopHold()
         skipRest()
         dropClips()
@@ -790,6 +840,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
  *   start      the system's start
  *   finished   stop, then two successes: the workout is saved
  *   skip       a soft one going down
+ *   ask        two taps: "All done?", nothing logged for 20 minutes
  */
 enum Haptics {
     private static var device: WKInterfaceDevice { WKInterfaceDevice.current() }
@@ -804,4 +855,5 @@ enum Haptics {
     static func start() { play([(0, .start)]) }
     static func finished() { play([(0, .stop), (0.5, .success), (0.9, .success)]) }
     static func skip() { play([(0, .directionDown)]) }
+    static func ask() { play([(0, .notification), (0.6, .notification)]) }
 }

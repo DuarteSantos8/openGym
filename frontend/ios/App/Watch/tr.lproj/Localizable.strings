@@ -10,6 +10,7 @@
 "Finish workout" = "Antrenmanı bitir";
 "Finish workout?" = "Antrenman bitirilsin mi?";
 "Finish and save" = "Bitir ve kaydet";
+"Continue workout" = "Antrenmana devam et";
 "Cancel" = "İptal";
 "Rest’s over. Next set!" = "Dinlenme bitti. Sıradaki set!";
 "Left" = "Sol";
@@ -45,6 +46,7 @@
 "Tap a dot to do a skipped set." = "Atlanan bir set için bir noktaya dokun.";
 "Log this one on your iPhone." = "Bunu iPhone’da kaydet.";
 "Saved on the watch, syncs later" = "Saatte kaydedildi, sonra eşitlenir";
+"All done?" = "Bitirdin mi?";
 "Skip this set?" = "Bu set atlansın mı?";
 "Turn the Digital Crown to change it." = "Değiştirmek için Digital Crown’u çevir.";
 "%lld done" = "%lld tamam";

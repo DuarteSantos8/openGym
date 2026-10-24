@@ -10,6 +10,7 @@
 "Finish workout" = "จบการออกกำลังกาย";
 "Finish workout?" = "จบการออกกำลังกายไหม?";
 "Finish and save" = "จบและบันทึก";
+"Continue workout" = "ออกกำลังกายต่อ";
 "Cancel" = "ยกเลิก";
 "Rest’s over. Next set!" = "หมดเวลาพักแล้ว เซ็ตถัดไป!";
 "Left" = "ซ้าย";
@@ -45,6 +46,7 @@
 "Tap a dot to do a skipped set." = "แตะจุดเพื่อทำเซ็ตที่ข้ามไป";
 "Log this one on your iPhone." = "อันนี้บันทึกบน iPhone";
 "Saved on the watch, syncs later" = "บันทึกบนนาฬิกาแล้ว จะซิงค์ทีหลัง";
+"All done?" = "เสร็จแล้วหรือยัง";
 "Skip this set?" = "ข้ามเซ็ตนี้ไหม";
 "Turn the Digital Crown to change it." = "หมุน Digital Crown เพื่อเปลี่ยน";
 "%lld done" = "เสร็จ %lld";

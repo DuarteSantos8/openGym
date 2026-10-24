@@ -10,6 +10,7 @@
 "Finish workout" = "Завершити тренування";
 "Finish workout?" = "Завершити тренування?";
 "Finish and save" = "Завершити й зберегти";
+"Continue workout" = "Продовжити тренування";
 "Cancel" = "Скасувати";
 "Rest’s over. Next set!" = "Відпочинок скінчився. Наступний підхід!";
 "Left" = "Ліва";
@@ -45,6 +46,7 @@
 "Tap a dot to do a skipped set." = "Торкнись точки, щоб зробити пропущений підхід.";
 "Log this one on your iPhone." = "Це записуй на iPhone.";
 "Saved on the watch, syncs later" = "Збережено на годиннику, синхронізується пізніше";
+"All done?" = "Тренування завершено?";
 "Skip this set?" = "Пропустити цей підхід?";
 "Turn the Digital Crown to change it." = "Поверни Digital Crown, щоб змінити.";
 "%lld done" = "%lld зроблено";

@@ -10,6 +10,7 @@
 "Finish workout" = "Zakończ trening";
 "Finish workout?" = "Zakończyć trening?";
 "Finish and save" = "Zakończ i zapisz";
+"Continue workout" = "Kontynuuj trening";
 "Cancel" = "Anuluj";
 "Rest’s over. Next set!" = "Koniec przerwy. Następna seria!";
 "Left" = "Lewa";
@@ -45,6 +46,7 @@
 "Tap a dot to do a skipped set." = "Stuknij kropkę, by zrobić pominiętą serię.";
 "Log this one on your iPhone." = "To zapisz na iPhonie.";
 "Saved on the watch, syncs later" = "Zapisano na zegarku, zsynchronizuje się później";
+"All done?" = "Koniec treningu?";
 "Skip this set?" = "Pominąć tę serię?";
 "Turn the Digital Crown to change it." = "Obróć Digital Crown, by zmienić.";
 "%lld done" = "%lld zrobione";

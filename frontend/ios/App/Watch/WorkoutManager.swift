@@ -232,19 +232,22 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     }
 
     /// The workout ended: saved to Apple Health, or dropped when `save` is false. `totals` gets the
-    /// session's heart rate and calories (nothing when no session ran).
-    func end(save: Bool, totals: ((Totals) -> Void)? = nil) {
+    /// session's heart rate and calories (nothing when no session ran). `at`: when it really ended
+    /// (a workout left running ends at its last set, not when the watch noticed), else now.
+    func end(save: Bool, at: Date? = nil, totals: ((Totals) -> Void)? = nil) {
         wanted = false
         workoutId = nil
         if let q = query { store.stop(q); query = nil }
-        let all = samples.map { $0.1 }
+        let endAt = at ?? Date()
+        let all = samples.filter { $0.0 <= endAt }.map { $0.1 }
         let hr = Totals(hrAvg: all.isEmpty ? nil : (all.reduce(0, +) / Double(all.count)).rounded(), hrMax: all.max()?.rounded(), calories: nil)
         guard let s = session, let b = builder else {
             if let totals = totals { DispatchQueue.main.async { totals(Totals()) } }
             return
         }
         s.end()
-        b.endCollection(withEnd: Date()) { _, _ in
+        // Never before the session's own start (a workout picked up from the phone after its last set).
+        b.endCollection(withEnd: max(endAt, b.startDate ?? endAt)) { _, _ in
             var out = hr
             if let kcalType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned),
                let kcal = b.statistics(for: kcalType)?.sumQuantity()?.doubleValue(for: .kilocalorie()), kcal > 0 {
