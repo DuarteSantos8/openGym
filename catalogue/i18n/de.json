@@ -1,39 +1,145 @@
 {
-  "1000": {
-    "name": "Wadenheben einbeinig rückwärts mit Band"
+"1000": {
+  "name": "Wadenheben einbeinig rückwärts mit Band",
+  "description": "Eine einbeinige Übung mit einem Widerstandsband zur Kräftigung der Wadenmuskulatur.",
+  "instructions": [
+      "Stelle dich hüftbreit hin und lege das Band um deinen Fußballen.",
+      "Halte dich an einem stabilen Gegenstand fest, um dein Gleichgewicht zu halten.",
+      "Hebe die Ferse langsam vom Boden ab und verlagere dein Gewicht auf den Fußballen.",
+      "Halte die Position kurz und senke die Ferse anschließend kontrolliert ab.",
+      "Wiederhole die Bewegung so oft wie vorgesehen und wechsle anschließend das Bein."
+    ]
   },
   "1002": {
-    "name": "Liegendes gerades Beinheben mit Band"
+    "name": "Liegendes gerades Beinheben mit Band",
+    "description": "Bei dieser Übung liegt man auf dem Rücken und hebt das gestreckte Bein an, während man ein Band in den Händen hält. Dabei werden die Bauchmuskeln und die Hüftbeuger trainiert.",
+    "instructions": [
+      "Leg dich flach auf den Rücken, die Beine gestreckt und die Füße zusammen.",
+      "Lege das Band um das Fußgelenk und halte die beiden Enden mit den Händen fest.",
+      "Spanne deine Bauchmuskeln an und hebe beide Beine vom Boden ab, bis sie senkrecht dazu stehen.",
+      "Halte oben kurz inne und senke deine Beine dann langsam wieder in die Ausgangsposition.",
+      "Du kannst das so oft wiederholen, wie du möchtest."
+    ]
   },
   "1003": {
-    "name": "Rudern in der Kniebeuge mit Band"
+    "name": "Rudern in der Kniebeuge mit Band",
+    "description": "Diese Übung kombiniert eine Kniebeuge mit Rudern am Widerstandsband. So trainierst du Beine, Po und Rücken.",
+    "instructions": [
+        "Befestige das Band ungefähr auf Hüfthöhe an einem stabilen Punkt.",
+        "Stell dich schulterbreit mit dem Gesicht zur Befestigung hin.",
+        "Halte die Bandgriffe mit ausgestreckten Armen vor dir. Deine Handflächen zeigen zueinander.",
+        "Beuge die Knie und geh in die Kniebeuge. Halte dabei den Rücken gerade und die Brust aufrecht.",
+        "Zieh die Griffe aus der Kniebeuge zu deinem Körper und führ die Schulterblätter zusammen.",
+        "Halte kurz inne, gib dann langsam nach und kehr in die Ausgangsposition zurück.",
+        "Wiederhole die Bewegung so oft wie geplant."
+    ]
   },
   "1004": {
-    "name": "Kniebeuge mit Band"
+    "name": "Kniebeuge mit Band",
+    "description": "Eine Kniebeuge mit Widerstandsband knapp über den Knien. Damit trainierst du vor allem Po und Oberschenkel.",
+    "instructions": [
+        "Stell dich schulterbreit hin und leg das Band knapp über deine Knie.",
+        "Spann den Bauch an, halte die Brust aufrecht und schieb deinen Po nach hinten, während du in die Kniebeuge gehst.",
+        "Achte darauf, dass deine Knie in Richtung deiner Zehen zeigen und du das Gewicht auf den Fersen hältst.",
+        "Halte unten kurz inne und drück dich dann über die Fersen wieder nach oben.",
+        "Wiederhole die Kniebeuge so oft wie geplant."
+    ]
   },
   "1005": {
-    "name": "Stehender Crunch mit Band"
+    "name": "Stehender Crunch mit Band",
+    "description": "Bei diesem Crunch im Stehen beugst du deinen Oberkörper gegen den Widerstand eines Bands nach vorn. Das trainiert deine Bauchmuskeln.",
+    "instructions": [
+        "Befestige das Band auf Hüfthöhe an einem stabilen Punkt.",
+        "Stell dich schulterbreit mit dem Rücken zur Befestigung hin.",
+        "Halte das Band mit beiden Händen vor deiner Brust. Lass die Ellbogen angewinkelt und nah am Körper.",
+        "Spann den Bauch an und roll deinen Oberkörper langsam nach vorn in Richtung Knie ein.",
+        "Halte die Beugung kurz und richte dich dann kontrolliert wieder auf.",
+        "Wiederhole die Bewegung so oft wie geplant."
+    ]
   },
   "1006": {
-    "name": "Rudern für hintere Schulter mit Band"
+    "name": "Rudern für hintere Schulter mit Band",
+    "description": "Bei dieser Ruderübung ziehst du das Band mit weit ausgestellten Ellbogen zu dir. Das stärkt deine hinteren Schultern und den oberen Rücken.",
+    "instructions": [
+        "Befestige das Band auf Brusthöhe und halte die Enden mit ausgestreckten Armen fest.",
+        "Geh ein paar Schritte zurück, bis das Band unter Spannung steht.",
+        "Zieh deine Hände zur Brust und halte die Ellbogen dabei hoch und weit außen.",
+        "Zieh die Schulterblätter bewusst zusammen.",
+        "Führ die Arme langsam wieder nach vorn, ohne die Schultern einrollen zu lassen."
+    ]
   },
   "1007": {
-    "name": "Stehender gedrehter Crunch mit Band"
+    "name": "Stehender gedrehter Crunch mit Band",
+    "description": "Ein stehender Crunch mit Drehung und Widerstandsband: Du führst einen Ellbogen zum gegenüberliegenden Knie und trainierst so deine geraden und seitlichen Bauchmuskeln.",
+    "instructions": [
+        "Stell dich schulterbreit hin, leg das Band um deinen oberen Rücken und kreuz es vor deiner Brust.",
+        "Halte die Bandenden fest. Deine Ellbogen bleiben angewinkelt und nah an den Seiten.",
+        "Spann den Bauch an, dreh deinen Oberkörper zur Seite und führ einen Ellbogen zum gegenüberliegenden Knie.",
+        "Halte die Position kurz und geh zurück in die Ausgangsposition.",
+        "Wiederhole die Bewegung auf der anderen Seite.",
+        "Wechsle die Seiten ab, bis du deine Wiederholungen geschafft hast."
+    ]
   },
   "1009": {
-    "name": "Steifbeiniges Kreuzheben mit Band"
+    "name": "Steifbeiniges Kreuzheben mit Band",
+    "description": "Beim steifbeinigen Kreuzheben mit Band beugst du dich aus der Hüfte nach vorn. So trainierst du Po und hintere Oberschenkel.",
+    "instructions": [
+        "Stell dich schulterbreit hin und leg das Band um deine Knöchel.",
+        "Halte das Band mit beiden Händen vor deinen Oberschenkeln. Die Handflächen zeigen zu dir.",
+        "Spann den Bauch an, halt den Rücken gerade und beug deinen Oberkörper langsam aus der Hüfte nach vorn.",
+        "Schieb dabei den Po nach hinten und lass die Knie leicht gebeugt.",
+        "Führ das Band Richtung Boden, bis du eine Dehnung in den hinteren Oberschenkeln spürst.",
+        "Halte unten kurz inne, spann Po und Oberschenkel an und richte dich wieder auf.",
+        "Wiederhole die Bewegung so oft wie geplant."
+    ]
   },
   "1010": {
-    "name": "Kreuzheben mit Band und gestreckten Beinen"
+    "name": "Kreuzheben mit Band und gestreckten Beinen",
+    "description": "Bei diesem Kreuzheben mit Band beugst du dich mit fast gestreckten Beinen aus der Hüfte nach vorn. Das stärkt deinen unteren Rücken und die hinteren Oberschenkel.",
+    "instructions": [
+        "Stell dich schulterbreit auf das Band.",
+        "Halte die Enden mit beiden Händen fest. Die Handflächen zeigen zum Körper und die Arme bleiben gestreckt.",
+        "Spann deinen Bauch an und lass die Knie leicht gebeugt.",
+        "Beug dich langsam aus der Hüfte nach vorn. Halte dabei den Rücken gerade und die Brust aufrecht.",
+        "Führ die Hände mit dem Band Richtung Boden, während deine Beine fast gestreckt bleiben.",
+        "Halte unten kurz inne und spann Po und hintere Oberschenkel an, um dich wieder aufzurichten.",
+        "Wiederhole die Übung so oft wie geplant."
+    ]
   },
   "1011": {
-    "name": "Sitzender Twist mit Band"
+    "name": "Sitzender Twist mit Band",
+    "description": "Bei diesem Twist im Sitzen drehst du deinen Oberkörper gegen den Widerstand eines Bands. Dabei arbeiten vor allem deine Bauchmuskeln und die seitliche Rumpfmuskulatur.",
+    "instructions": [
+        "Setz dich mit ausgestreckten Beinen und geradem Rücken auf den Boden.",
+        "Leg das Band um deine Taille und halte die Enden mit beiden Händen fest.",
+        "Spann den Bauch an und dreh deinen Oberkörper langsam zur Seite. Der Rücken bleibt gerade und die Füße bleiben am Boden.",
+        "Halte die Drehung kurz und komm langsam zur Mitte zurück.",
+        "Dreh dich anschließend zur anderen Seite.",
+        "Wechsle die Seiten ab, bis du deine Wiederholungen geschafft hast."
+    ]
   },
   "1012": {
-    "name": "Gedrehtes Überkopfdrücken mit Band"
+    "name": "Gedrehtes Überkopfdrücken mit Band",
+    "description": "Beim Überkopfdrücken mit Band drehst du deinen Oberkörper während des Drückens zur Seite. Das trainiert deine Schultern und deinen Rumpf.",
+    "instructions": [
+        "Stell dich schulterbreit auf das Widerstandsband.",
+        "Halte die Bandgriffe auf Schulterhöhe. Deine Handflächen zeigen nach vorn.",
+        "Spann den Bauch an und drück die Griffe nach oben, bis deine Arme gestreckt sind.",
+        "Dreh dabei deinen Oberkörper zu einer Seite, ohne die Hüfte mitzudrehen.",
+        "Halte oben kurz inne und kehr kontrolliert in die Ausgangsposition zurück.",
+        "Wiederhole die Bewegung mit einer Drehung zur anderen Seite.",
+        "Wechsle die Seiten ab, bis du deine Wiederholungen geschafft hast."
+    ]
   },
   "1014": {
-    "name": "V-Up mit Band"
+    "name": "V-Up mit Band",
+    "description": "Bei diesem V-Up hebst du Beine und Oberkörper gleichzeitig an und hältst dabei ein Widerstandsband. So trainierst du Bauch und Hüftbeuger.",
+    "instructions": [
+        "Leg dich flach auf den Rücken, streck die Beine aus und halte das Band mit ausgestreckten Armen über dem Kopf.",
+        "Spann den Bauch an und heb Beine und Oberkörper gleichzeitig vom Boden. Führ dabei deine Hände in Richtung Zehen.",
+        "Halte die V-Position kurz und senk Beine und Oberkörper langsam wieder ab.",
+        "Wiederhole die Bewegung so oft wie geplant."
+    ]
   },
   "1018": {
     "name": "Shrugs mit Band"

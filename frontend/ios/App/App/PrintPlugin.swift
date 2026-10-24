@@ -14,7 +14,12 @@ import UIKit
  *   await Print.printHtml({ html: '<!doctype html>…', name: 'Weekly Training Plan' });
  */
 @objc(PrintPlugin)
-public class PrintPlugin: CAPPlugin {
+public class PrintPlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "PrintPlugin"
+    public let jsName = "Print"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "printHtml", returnType: CAPPluginReturnPromise),
+    ]
 
     @objc func printHtml(_ call: CAPPluginCall) {
         guard let html = call.getString("html"), !html.isEmpty else {

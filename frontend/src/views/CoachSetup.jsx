@@ -20,6 +20,7 @@ import { getApiKey, setApiKey, clearApiKey } from '../lib/coach-secrets.js'
 import { HTTP_PROVIDERS, HTTP_PROVIDER_IDS, baseUrlFor, validateBaseUrl } from '../../../api/coach/core/providers.js'
 import { DATA_CATEGORIES } from '../../../api/coach/core/categories.js'
 import { ConnectSheet } from './MobileOnboarding.jsx'
+import { AiConsentSection } from '../components/CoachConsentSheet.jsx'
 import Icon from '../components/Icon.jsx'
 import { Section, Row, Button, TextField } from '../components/ui.jsx'
 
@@ -136,7 +137,7 @@ export default function CoachSetup() {
 
   return <div className="narrow">
     <div className="hdr">
-      <button className="iconbtn" onClick={() => nav('/settings')} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
+      <button className="iconbtn" data-back="/settings" onClick={() => nav('/settings')} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
       <div style={{ flex: 1, marginInlineStart: 10 }}><h1>{t('AI Coach')}</h1></div>
     </div>
 
@@ -209,6 +210,8 @@ export default function CoachSetup() {
         {models && <Button disabled={busy} onClick={prepare}>{t('List models')}</Button>}
       </div>
     </>}
+
+    {coachLocal?.mode && coachLocal.mode !== 'off' && <AiConsentSection />}
 
     {coachLocal?.mode && coachLocal.mode !== 'off' && <Section title={t('Controls')}>
       <Row icon="signOut" iconTint="var(--red)" title={t('Turn the Coach off on this phone')} danger onClick={turnOff} />

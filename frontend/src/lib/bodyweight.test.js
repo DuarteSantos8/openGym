@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { weeklyWeights } from './bodyweight.js'
+import { weeklyWeights, weighInAt } from './bodyweight.js'
 
 // Discord 'Weight': every weigh-in, week by week, with the week's mean.
 describe('weeklyWeights', () => {
@@ -37,5 +37,22 @@ describe('weeklyWeights', () => {
     expect(weeks[0]).toMatchObject({ n: 2, avg: 80 })
     expect(weeks[0].entries.map(b => b.d)).toEqual(['2026-09-09', '2026-09-07'])
     expect(weeklyWeights(undefined, 1)).toEqual([])
+  })
+})
+
+// A weigh-in logged for an earlier day is typed today, so its `t` is not on its day.
+describe('weighInAt', () => {
+  const at = iso => new Date(iso).getTime()
+
+  it('keeps the time a weigh-in was typed on its own day', () => {
+    expect(weighInAt({ d: '2026-09-09', w: 80, t: at('2026-09-09T07:30:00') })).toBe(at('2026-09-09T07:30:00'))
+  })
+
+  it('puts a weigh-in typed on a later day at noon of the day it is for', () => {
+    expect(weighInAt({ d: '2026-03-02', w: 84, t: at('2026-09-09T07:30:00') })).toBe(at('2026-03-02T12:00:00'))
+  })
+
+  it('puts one with no time at noon of its day', () => {
+    expect(weighInAt({ d: '2026-03-02', w: 84 })).toBe(at('2026-03-02T12:00:00'))
   })
 })

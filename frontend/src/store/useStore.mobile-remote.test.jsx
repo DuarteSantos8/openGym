@@ -329,6 +329,8 @@ describe('Disconnect anyway keeps the owed changes for the next pairing', () => 
     expect(readFile('opengym-stash.json')).toEqual({})
     expect(localStorage.getItem('gym_stash')).toBeNull()
     expect(localStorage.getItem('gym_dirty')).toBeNull()
+    // Paired from Settings, not from the first-launch screen: no permission steps.
+    expect(useStore.getState().permSteps).toBe(false)
   })
 
   it('killed straight after, the next start is local and empty: the account\'s copy is in the stash, not back on the screen', async () => {
@@ -599,5 +601,33 @@ describe('a request that never answers', () => {
       expect(ids(srv.doc.workouts)).toEqual(['w1', 'w2'])
       expect(useStore.getState().sync.status).toBe('ok')
     } finally { vi.useRealTimers() }
+  })
+})
+
+describe('the first-start permission steps (views/PermissionSteps.jsx)', () => {
+  const firstLaunch = async () => {
+    h.files.clear(); localStorage.clear()
+    const useStore = await freshStore()
+    await useStore.getState().boot()
+    expect(useStore.getState().needsMobileOnboarding).toBe(true)
+    expect(useStore.getState().permSteps).toBe(false)
+    return useStore
+  }
+
+  it('are due once "Use on this device" is picked', async () => {
+    const useStore = await firstLaunch()
+    await useStore.getState().chooseLocalMode()
+    expect(useStore.getState().needsMobileOnboarding).toBe(false)
+    expect(useStore.getState().permSteps).toBe(true)
+    useStore.getState().finishPermSteps()
+    expect(useStore.getState().permSteps).toBe(false)
+  })
+
+  it('are due once pairing from the first-launch screen has finished', async () => {
+    const useStore = await firstLaunch()
+    serverWith(SERVER_STATE)
+    await useStore.getState().connectToServer('gym.example.com', 'ABCD2345', vi.fn(async () => false))
+    expect(useStore.getState().needsMobileOnboarding).toBe(false)
+    expect(useStore.getState().permSteps).toBe(true)
   })
 })

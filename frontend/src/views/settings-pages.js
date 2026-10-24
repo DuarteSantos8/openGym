@@ -17,6 +17,7 @@ export const PAGES = {
   equipment: { title: 'Equipment', icon: 'kettlebell', tint: 'var(--indigo)' },
   look: { title: 'Look & Home', icon: 'palette', tint: 'var(--purple)' },
   coach: { title: 'AI Coach', icon: 'sparkles', tint: 'var(--green)' },
+  watch: { title: 'Apple Watch', icon: 'watch', tint: 'var(--grey)' },
   data: { title: 'Data & backup', icon: 'folder', tint: 'var(--blue)' },
   about: { title: 'About & updates', icon: 'info', tint: 'var(--grey)' },
   account: { title: 'Account', icon: 'personCircle', tint: 'var(--grey)' },
@@ -25,7 +26,7 @@ export const PAGES = {
 export const PAGE_IDS = Object.keys(PAGES)
 
 // The root, top to bottom. Whether a row shows is pageVisible's call.
-export const ROOT_GROUPS = [['workout', 'alerts', 'reminders'], ['plan', 'units', 'equipment'], ['look', 'coach'], ['data', 'about']]
+export const ROOT_GROUPS = [['workout', 'alerts', 'reminders'], ['plan', 'units', 'equipment'], ['look', 'coach', 'watch'], ['data', 'about']]
 
 /**
  * Whether a page exists for this device and profile. Reminders need a push server (signed in) or
@@ -35,6 +36,8 @@ export const ROOT_GROUPS = [['workout', 'alerts', 'reminders'], ['plan', 'units'
 export function pageVisible(page, ctx) {
   if (page === 'reminders') return !!(ctx.user || ctx.mobile)
   if (page === 'coach') return !!ctx.mobile
+  // The iPhone app only: the watch app ships inside it.
+  if (page === 'watch') return !!ctx.ios
   return page in PAGES
 }
 
@@ -53,13 +56,16 @@ export const SEARCH = [
   // Workout
   { page: 'workout', title: 'Rest timer', icon: 'timer', tint: 'var(--orange)', kw: 'rest pause break seconds minutes timer countdown' },
   { page: 'workout', title: 'Rest-pause rest', icon: 'bolt', tint: 'var(--orange)', kw: 'burst cluster rest pause' },
+  { page: 'workout', title: 'Rest between warm-ups', icon: 'timer', tint: 'var(--yellow)', kw: 'warm-up warmup ramp rest break timer shorter no rest' },
   { page: 'workout', title: 'Effort per set', icon: 'gauge', tint: 'var(--purple)', kw: 'rir rpe effort reps in reserve difficulty', opts: ['RIR', 'RPE'] },
   { page: 'workout', title: 'Shown under each exercise', icon: 'history', tint: 'var(--blue)', kw: 'last time best set reference previous', opts: ['Last time', 'Best set'] },
   { page: 'workout', title: 'Layout', icon: 'layout', tint: 'var(--blue)', kw: 'workout view cards list compact', opts: ['Cards', 'List', 'Compact'] },
   { page: 'workout', title: 'Collapse completed exercises', icon: 'minimize', tint: 'var(--teal)', kw: 'collapse fold minimize hide done finished completed exercises list compact remaining left to do' },
+  { page: 'workout', title: 'Skip completed exercises', icon: 'skipForward', tint: 'var(--teal)', kw: 'skip jump done finished completed exercises cards focus next previous' },
   { page: 'workout', title: 'Weigh in before workouts', icon: 'scale', tint: 'var(--green)', kw: 'body weight weigh scale start' },
   { page: 'workout', title: 'Keep screen awake', icon: 'phoneScreen', tint: 'var(--yellow)', kw: 'wake lock screen sleep display on', when: c => c.wakeOK || !c.mobile },
   { page: 'workout', title: 'Exercise animations', icon: 'image', tint: 'var(--teal)', kw: 'gif animation video media pictures images', opts: ['Full', 'Small', 'Hidden'] },
+  { page: 'workout', title: 'Animation quality', icon: 'image', tint: 'var(--indigo)', kw: 'animation quality resolution sharp hd download pack still px', when: c => c.mobile },
   { page: 'workout', title: 'Fine-tuning', icon: 'wrench', tint: 'var(--grey)', kw: 'advanced more options' },
   // Fine-tuning
   { page: 'advanced', title: 'Planned sessions start from', icon: 'clipboard', tint: 'var(--green)', kw: 'start from plan last session reps carry over', opts: ['Your plan', 'Your last session'] },
@@ -99,6 +105,7 @@ export const SEARCH = [
   // Equipment
   { page: 'equipment', title: 'Plates', icon: 'plate', tint: 'var(--orange)', kw: 'plates bar plate math barbell' },
   { page: 'equipment', title: 'Dumbbells', icon: 'dumbbell', tint: 'var(--teal)', kw: 'dumbbells dumbbell rack inventory adjustable weights own home gym' },
+  { page: 'equipment', title: 'Your bars', icon: 'barbell', tint: 'var(--blue)', kw: 'bar barbell weight olympic short women 15 kg 35 lb ez trap smith plate math' },
   { page: 'equipment', title: 'Filter by equipment', icon: 'kettlebell', tint: 'var(--green)', kw: 'equipment filter home gym', when: c => c.profiles },
   { page: 'equipment', title: 'Active profile', icon: 'house', tint: 'var(--blue)', kw: 'equipment profile home gym', when: c => c.profiles },
   { page: 'equipment', title: 'Add equipment profile', icon: 'plusCircle', tint: 'var(--green)', kw: 'equipment profile home gym hotel' },
@@ -129,11 +136,12 @@ export const SEARCH = [
   // Account
   { page: 'account', title: 'Sync now', icon: 'reset', tint: 'var(--acc)', kw: 'server sync upload refresh status connection', when: c => !!c.user && !c.demo && c.synced },
   { page: 'account', title: 'Passkeys', icon: 'fingerprint', tint: 'var(--acc)', kw: 'passkey security login', when: signedInWeb },
-  { page: 'account', title: 'Add another device', icon: 'qr', tint: 'var(--blue)', kw: 'device link code phone computer', when: signedInWeb },
+  { page: 'account', title: 'Add another device', icon: 'qr', tint: 'var(--blue)', kw: 'device link code phone computer', when: c => !!c.user && !c.demo },
   { page: 'account', title: 'Pair the mobile app', icon: 'qr', tint: 'var(--blue)', kw: 'pair phone app android iphone', when: signedInWeb },
   { page: 'account', title: 'Password', icon: 'key', tint: 'var(--orange)', kw: 'password login', when: c => signedInWeb(c) && c.pwOn },
   { page: 'account', title: 'Sign out', icon: 'signOut', tint: 'var(--red)', kw: 'log out logout sign out', when: signedInWeb },
   { page: 'account', title: 'Sign out everywhere', icon: 'shield', tint: 'var(--red)', kw: 'log out all devices sessions', when: signedInWeb },
+  { page: 'account', title: 'Delete my account', icon: 'trash', tint: 'var(--red)', kw: 'delete remove close erase account profile gdpr', when: c => !!c.user && !c.demo },
   { page: 'account', title: 'Account ID', icon: 'personCircle', tint: 'var(--grey)', kw: 'id uid admin account', when: c => !!c.user && !c.demo },
   { page: 'account', title: 'Admin dashboard', icon: 'crown', tint: 'var(--indigo)', kw: 'admin users dashboard', when: c => !!c.user?.admin && !c.demo },
   { page: 'account', title: 'Disconnect', icon: 'signOut', tint: 'var(--red)', kw: 'disconnect server local', when: c => c.mobile && !!c.user },
