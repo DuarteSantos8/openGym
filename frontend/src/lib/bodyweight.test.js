@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { weeklyWeights, weighInMs } from './bodyweight.js'
+import { weeklyWeights, weighInAt } from './bodyweight.js'
 
 // Discord 'Weight': every weigh-in, week by week, with the week's mean.
 describe('weeklyWeights', () => {
@@ -40,18 +40,19 @@ describe('weeklyWeights', () => {
   })
 })
 
-// The ms a weigh-in belongs at on the timeline: noon of its own date. `t` is the entry's change
-// stamp (sync-merge re-stamps it on every write, an import stamps a whole history at once —
-// issue #632), so a reader that places a weigh-in by `t` piles imported entries on today.
-describe('weighInMs', () => {
-  it("is noon of the weigh-in's own date, whatever the change stamp says", () => {
-    expect(weighInMs({ d: '2021-01-05', w: 90, t: Date.now() })).toBe(new Date('2021-01-05T12:00:00').getTime())
-    expect(weighInMs({ d: '2022-12-01', w: 76.3 })).toBe(new Date('2022-12-01T12:00:00').getTime())
+// A weigh-in logged for an earlier day is typed today, so its `t` is not on its day.
+describe('weighInAt', () => {
+  const at = iso => new Date(iso).getTime()
+
+  it('keeps the time a weigh-in was typed on its own day', () => {
+    expect(weighInAt({ d: '2026-09-09', w: 80, t: at('2026-09-09T07:30:00') })).toBe(at('2026-09-09T07:30:00'))
   })
 
-  it('falls back to the record time only when there is no usable date', () => {
-    expect(weighInMs({ w: 90, t: 123456 })).toBe(123456)
-    expect(weighInMs({ d: 'not a date', w: 90, t: 123456 })).toBe(123456)
-    expect(weighInMs(null)).toBeUndefined()
+  it('puts a weigh-in typed on a later day at noon of the day it is for', () => {
+    expect(weighInAt({ d: '2026-03-02', w: 84, t: at('2026-09-09T07:30:00') })).toBe(at('2026-03-02T12:00:00'))
+  })
+
+  it('puts one with no time at noon of its day', () => {
+    expect(weighInAt({ d: '2026-03-02', w: 84 })).toBe(at('2026-03-02T12:00:00'))
   })
 })

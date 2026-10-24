@@ -151,6 +151,39 @@ test('the compatible endpoint: base URL is validated, a keyless endpoint counts 
   } finally { mock.close(); }
 });
 
+test('the card does not run a runtime to ask its version when the privilege drop cannot be performed', async () => {
+  // `codex --version` is a child process like a job's, and without the drop it would run as this
+  // process and see ./data. The job path and the test run refused it; the card's check did not.
+  const { forcePrivilegeVerdict } = await import('../coach/adapters/spawn.js');
+  const { adapterFor } = await import('../coach/adapters/index.js');
+  const ids = ['codex', 'claude', 'fixture'];
+  const real = Object.fromEntries(ids.map(id => [id, adapterFor(id).check]));
+  let calls = 0;
+  for (const id of ids) adapterFor(id).check = async () => { calls++; return { ok: true, version: 'stubbed' }; };
+  forcePrivilegeVerdict({ ok: false, dropped: false, why: 'no `coach` user exists in this image' });
+  try {
+    const { call } = harness();
+    for (const provider of ids) {
+      fresh({ provider });
+      const r = await call('GET /api/admin/coach');
+      assert.equal(r.status, 200);
+      assert.deepEqual(r.body.runtime, { ok: false, version: null, error: 'Coach jobs are disabled: no `coach` user exists in this image', needsKey: false }, provider);
+      assert.equal(r.body.unprivileged.ok, false);
+    }
+    assert.equal(calls, 0, 'no runtime check was entered, so nothing was spawned');
+
+    // With the drop available the same card asks the runtime, as before.
+    forcePrivilegeVerdict({ ok: true, dropped: false, why: 'pinned by the test suite' });
+    fresh({ provider: 'codex' });
+    const r = await call('GET /api/admin/coach');
+    assert.deepEqual(r.body.runtime, { ok: true, version: 'stubbed', error: null, needsKey: false });
+    assert.equal(calls, 1);
+  } finally {
+    forcePrivilegeVerdict(null);
+    for (const id of ids) adapterFor(id).check = real[id];
+  }
+});
+
 test('the disclosure names the provider and the same five categories the payload builds from', async () => {
   fresh({ provider: 'gemini' });
   const { call } = harness();
@@ -158,13 +191,30 @@ test('the disclosure names the provider and the same five categories the payload
   assert.equal(r.status, 200);
   assert.equal(r.body.providerLabel, 'Google Gemini');
   assert.deepEqual(r.body.categories, ['plan', 'training', 'bodyweight', 'profile', 'prefs']);
+  assert.equal(r.body.host, 'generativelanguage.googleapis.com');
+});
+
+test('the disclosure says which host a job would go to, and nothing more of the URL', async () => {
+  fresh({ provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://llm.example.org:8443/v1' } } });
+  const { call } = harness();
+  let r = await call('GET /api/coach/disclosure');
+  assert.equal(r.status, 200);
+  assert.equal(r.body.provider, 'compatible');
+  assert.equal(r.body.host, 'llm.example.org:8443');
+  assert.ok(!JSON.stringify(r.body).includes('/v1'), 'no path, only the host');
+
+  // A runtime provider has no base URL to name; the app says the provider instead.
+  fresh({ provider: 'claude' });
+  r = await call('GET /api/coach/disclosure');
+  assert.equal(r.body.host, null);
+  assert.equal(r.body.providerLabel, 'Claude (Anthropic)');
 });
 
 /* ---------- debrief + cohort routes ---------- */
 test('a debrief is enqueued as its own kind, and the cohort routes gate on the admin switch and the opt-in', async () => {
   fresh({ community: false });
   const jobs = await import('../coach/jobs.js');
-  const { writeState, sampleState } = await import('./helpers.mjs');
+  const { writeState, sampleState, D } = await import('./helpers.mjs');
   const { forcePrivilegeVerdict } = await import('../coach/adapters/spawn.js');
   forcePrivilegeVerdict({ ok: true, dropped: false, why: 'pinned by the test suite' });
   writeState(process.env.DATA_DIR, 'admin-1', sampleState());
@@ -196,7 +246,7 @@ test('a debrief is enqueued as its own kind, and the cohort routes gate on the a
   while (jobs.status('admin-1').job && Date.now() < until) await new Promise(res => setTimeout(res, 25));
   const s = jobs.status('admin-1');
   assert.equal(s.pending.kind, 'debrief');
-  assert.deepEqual(s.pending.workout, { id: 'w1', d: '2026-07-20', name: 'Full body A', minutes: 45, vol: 600, sets: 3, prs: 0 });
+  assert.deepEqual(s.pending.workout, { id: 'w1', d: D('2026-07-20'), name: 'Full body A', minutes: 45, vol: 600, sets: 3, prs: 0 });
   assert.equal(s.pending.score, 8);
   assert.ok(s.pending.summary.includes('3 sets'));
   assert.ok(Array.isArray(s.pending.nextTime) && s.pending.nextTime.length);
@@ -299,4 +349,18 @@ test('an admin can store extra headers for the compatible endpoint; framing name
   assert.equal(r.status, 200);
   assert.equal((await call('GET /api/admin/coach')).body.headers, null);
   assert.equal('headers' in cfg.load().providerOptions.compatible, false);
+});
+
+// The stored key is never read back. Pointing the provider at another host would have sent it
+// there on the next model list or job, so a new host means entering the key again.
+test('a stored key is dropped when the endpoint moves to another host, kept when only the path does', async () => {
+  fresh({ provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://llm.home.test/v1' } } });
+  cfg.saveAuth('compatible', { type: 'apikey', data: cfg.encrypt({ token: 'sk-owner' }) });
+  const { call } = harness();
+  let r = await call('POST /api/admin/coach/config', { baseUrl: 'https://llm.home.test/openai/v1' });
+  assert.equal(r.status, 200);
+  assert.ok(cfg.load().auth.compatible, 'same host: the key stays');
+  r = await call('POST /api/admin/coach/config', { baseUrl: 'https://collector.example/v1' });
+  assert.equal(r.status, 200);
+  assert.equal(cfg.load().auth.compatible, undefined, 'another host: the key is gone');
 });

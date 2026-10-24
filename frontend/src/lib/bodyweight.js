@@ -1,22 +1,7 @@
 // Weigh-ins read back week by week (Discord 'Weight'). From one morning to the next, body weight
 // moves with water, salt and the last meal by more than it moves in a month, so the number worth
 // following is the week's mean — the one a single weigh-in on the card cannot give you.
-import { weekKey } from './format.js'
-
-/**
- * The ms a weigh-in belongs at on the timeline: noon of its own date. `t` is the entry's change
- * stamp — sync-merge's stampChange re-stamps it on every write, and an import writes a whole
- * history in one change, so every imported weigh-in carries the import moment (issue #632). A
- * reader that places a weigh-in by `t` piles them all on today and a 30-day window counts them
- * as one month's change. `d` is the day the entry is about, the key mergeImport dedupes on and
- * weeklyWeights groups by, so it is the time to draw and window by. An entry with no usable `d`
- * (nothing writes one today, but a hand-edited export can lose it) falls back to `t`: the record
- * time is the best day it ever had.
- */
-export const weighInMs = b => {
-  const ms = b?.d ? new Date(b.d + 'T12:00:00').getTime() : NaN
-  return Number.isFinite(ms) ? ms : b?.t
-}
+import { isoOf, weekKey } from './format.js'
 
 /**
  * The weigh-ins grouped into weeks, newest week first. Each week carries its mean, how many
@@ -40,4 +25,30 @@ export function weeklyWeights(bodyweight, ws) {
   })
   weeks.forEach((week, i) => { week.delta = i ? week.avg - weeks[i - 1].avg : null })
   return weeks.reverse()
+}
+
+/**
+ * Where a weigh-in sits on a time axis. `t` is when it was typed, which is what a sync merge goes
+ * by; for a weigh-in logged for an earlier day that is not on its day, so it is put
+ * at noon of the day it is for instead.
+ */
+export function weighInAt(b) {
+  const t = Number(b?.t)
+  return t > 0 && isoOf(new Date(t)) === b.d ? t : new Date(b.d + 'T12:00:00').getTime()
+}
+
+/**
+ * A weigh-in logged into the profile's list, the way the check-in before a workout does it: on the
+ * day it was made, replacing that day's (a second weigh-in the same day is a correction), sorted.
+ * Used for the Apple Watch's weigh-in (lib/watch-sync.js). `at` is when it was made (ms).
+ */
+export function logWeighIn(s, w, at = Date.now()) {
+  const n = Math.round(Number(w) * 10) / 10
+  if (!(n > 0)) return false
+  if (!Array.isArray(s.bodyweight)) s.bodyweight = []
+  const d = isoOf(new Date(at))
+  const ex = s.bodyweight.find(b => b.d === d)
+  if (ex) { ex.w = n; ex.t = at } else s.bodyweight.push({ d, w: n, t: at })
+  s.bodyweight.sort((a, b) => (a.d < b.d ? -1 : 1))
+  return true
 }
