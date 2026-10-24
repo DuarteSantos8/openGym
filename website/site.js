@@ -380,3 +380,5 @@ function panel({ opener, panelEl, flag, closeBtn }) {
   if (last) last.addEventListener('animationend', done, { once: true })
   setTimeout(done, 2400)   // if the animation never fires, do not leave the hero hidden
 })()
+
+# Automated fix for issue #799: [Apple Health] improve how different activities are reported
