@@ -18,6 +18,8 @@ const mocks = vi.hoisted(() => {
   })
   state.enableHealth = vi.fn(async () => { state.health = { ...state.health, on: true }; return { ok: true, health: state.health } })
   state.disableHealth = vi.fn(async ({ removeWritten }) => { state.health = { ...state.health, on: false, written: removeWritten ? {} : state.health.written }; return state.health })
+  state.enableHealthRead = vi.fn(async () => { state.health = { ...state.health, read: { on: true, error: null } }; return { ok: true, health: state.health } })
+  state.disableHealthRead = vi.fn(async () => { state.health = { ...state.health, read: { on: false, error: null } }; return state.health })
   state.openHealthConnect = vi.fn(async () => {})
   state.menuSheet = vi.fn()
   state.toast = vi.fn()
@@ -49,6 +51,8 @@ vi.mock('../lib/health-sync.js', () => ({
   loadHealth: () => Promise.resolve(mocks.health),
   enableHealth: (...a) => mocks.enableHealth(...a),
   disableHealth: (...a) => mocks.disableHealth(...a),
+  enableHealthRead: (...a) => mocks.enableHealthRead(...a),
+  disableHealthRead: (...a) => mocks.disableHealthRead(...a),
   openHealthConnect: (...a) => mocks.openHealthConnect(...a),
   onHealthChange: () => () => {},
 }))
@@ -67,7 +71,7 @@ beforeEach(() => {
   mocks.android = true
   mocks.status = { status: 'available', granted: false }
   mocks.health = { on: false, written: {}, error: null }
-  for (const k of ['enableHealth', 'disableHealth', 'openHealthConnect', 'menuSheet', 'toast']) mocks[k].mockClear()
+  for (const k of ['enableHealth', 'disableHealth', 'enableHealthRead', 'disableHealthRead', 'openHealthConnect', 'menuSheet', 'toast']) mocks[k].mockClear()
   host = document.createElement('div')
   document.body.appendChild(host)
   root = createRoot(host)
@@ -83,6 +87,7 @@ const mount = async () => {
 }
 const row = text => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes(text))
 const writeSwitch = () => row('Write to Health Connect')?.querySelector('[role="switch"]')
+const readSwitch = () => row('Read weigh-ins from Health Connect')?.querySelector('[role="switch"]')
 
 describe('Settings — Health Connect', () => {
   it('is not there on the web build, on iOS, or on a phone without Health Connect', async () => {
@@ -129,6 +134,28 @@ describe('Settings — Health Connect', () => {
     expect(mocks.enableHealth).toHaveBeenCalledTimes(1)
   })
 
+  it('reading weigh-ins is a switch of its own, off by default (#544)', async () => {
+    await mount()
+    expect(readSwitch().getAttribute('aria-checked')).toBe('false')
+    await act(async () => { readSwitch().click() })
+    expect(mocks.enableHealthRead).toHaveBeenCalledTimes(1)
+    expect(mocks.enableHealth).not.toHaveBeenCalled()
+    expect(readSwitch().getAttribute('aria-checked')).toBe('true')
+    expect(writeSwitch().getAttribute('aria-checked')).toBe('false')
+    expect(mocks.toast).toHaveBeenCalledWith('Reading weigh-ins from Health Connect')
+    expect(row('Open Health Connect')).toBeTruthy()
+    await act(async () => { readSwitch().click() })
+    expect(mocks.disableHealthRead).toHaveBeenCalledTimes(1)
+    expect(readSwitch().getAttribute('aria-checked')).toBe('false')
+  })
+
+  it('offers to grant reading again when Health Connect took it back', async () => {
+    mocks.health = { on: false, written: {}, error: null, read: { on: true, error: 'permission' } }
+    await mount()
+    await act(async () => { row('Permission withdrawn').click() })
+    expect(mocks.enableHealthRead).toHaveBeenCalledTimes(1)
+  })
+
   it('points to installing Health Connect where it is an app of its own', async () => {
     mocks.status = { status: 'missing', granted: false }
     await mount()
@@ -147,6 +174,7 @@ describe('Settings — Apple Health', () => {
     await mount()
     expect(appleSwitch().getAttribute('aria-checked')).toBe('false')
     expect(row('Health Connect')).toBeUndefined()
+    expect(row('Read weigh-ins')).toBeUndefined()
     await act(async () => { appleSwitch().click() })
     expect(mocks.enableHealth).toHaveBeenCalledTimes(1)
     expect(mocks.toast).toHaveBeenCalledWith('Writing to Apple Health')

@@ -9,7 +9,7 @@ import { workoutText } from './workout-text.js'
 import { modeForEntry, hasCompletedWork } from './workout-model.js'
 import { isoOf } from './format.js'
 
-const LB_PER_KG = 2.2046226218
+export const LB_PER_KG = 2.2046226218
 // Health Connect refuses a title or notes over 1000 characters (ExerciseSessionRecord).
 export const TEXT_MAX = 1000
 
@@ -80,12 +80,15 @@ function localMorning(iso) {
   return new Date(y, m - 1, d, 8, 0, 0, 0).getTime()
 }
 
-/** Everything the state has to give Health Connect: { sessions, weights }. */
+/**
+ * Everything the state has to give Health Connect: { sessions, weights }. A weigh-in read from
+ * Health Connect (`src`, lib/health-read.js) is left out: the scale's own record is there already.
+ */
 export function healthRecords(S, { nameOf, speedUnit }) {
   const unit = S?.unit === 'lb' ? 'lb' : 'kg'
   return {
     sessions: (S?.workouts || []).map(w => sessionRecord(w, { unit, nameOf, speedUnit })).filter(Boolean),
-    weights: (S?.bodyweight || []).map(b => weightRecord(b, unit)).filter(Boolean),
+    weights: (S?.bodyweight || []).filter(b => !b?.src).map(b => weightRecord(b, unit)).filter(Boolean),
   }
 }
 
@@ -112,6 +115,8 @@ export function recordKey(rec) {
  * a negative stamp is an add-back), and everything a "Reset everything" wiped (S.resetIds).
  * Only these are taken out of Health: a copy that merely lacks a workout (signed out, a guest
  * copy, a state not loaded yet) never empties Apple Health or Health Connect.
+ * A day whose weigh-in now came from Health Connect (`src`) counts too: what openGym wrote for it
+ * before goes, so the day is not there twice.
  */
 export function goneIds(S) {
   const out = new Set()
@@ -122,6 +127,7 @@ export function goneIds(S) {
   for (const k of Array.isArray(reset.workouts) ? reset.workouts : []) out.add('opengym-w-' + k)
   // A weigh-in is named by its day and time there ("2026-09-17|1758…"); Health knows it by day.
   for (const k of Array.isArray(reset.bodyweight) ? reset.bodyweight : []) out.add('opengym-bw-' + String(k).split('|')[0])
+  for (const b of Array.isArray(S?.bodyweight) ? S.bodyweight : []) if (b?.src && b.d) out.add('opengym-bw-' + b.d)
   return out
 }
 

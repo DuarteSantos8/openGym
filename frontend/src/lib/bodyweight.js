@@ -48,7 +48,8 @@ export function logWeighIn(s, w, at = Date.now()) {
   if (!Array.isArray(s.bodyweight)) s.bodyweight = []
   const d = isoOf(new Date(at))
   const ex = s.bodyweight.find(b => b.d === d)
-  if (ex) { ex.w = n; ex.t = at } else s.bodyweight.push({ d, w: n, t: at })
+  // A correction of one read from Health Connect is openGym's own from then on (lib/health-read.js).
+  if (ex) { ex.w = n; ex.t = at; delete ex.src; delete ex.at } else s.bodyweight.push({ d, w: n, t: at })
   s.bodyweight.sort((a, b) => (a.d < b.d ? -1 : 1))
   return true
 }

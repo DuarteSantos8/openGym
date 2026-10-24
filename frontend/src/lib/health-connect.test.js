@@ -86,6 +86,10 @@ describe('healthRecords', () => {
   it('copes with a state that has neither', () => {
     expect(healthRecords({}, { nameOf })).toEqual({ sessions: [], weights: [] })
   })
+  it('leaves out a weigh-in read from Health Connect (#544): the scale wrote it there already', () => {
+    const S = { unit: 'kg', bodyweight: [{ d: '2026-09-16', w: 80, t: at(7) }, { d: '2026-09-17', w: 79.8, t: at(9), src: 'hc', at: at(7) }] }
+    expect(healthRecords(S, { nameOf }).weights.map(w => w.id)).toEqual(['opengym-bw-2026-09-16'])
+  })
 })
 
 describe('planSync', () => {
@@ -132,6 +136,15 @@ describe('planSync', () => {
     })
     expect([...ids].sort()).toEqual(['opengym-bw-2026-09-01', 'opengym-bw-2026-09-02', 'opengym-bw-2026-09-03', 'opengym-w-a', 'opengym-w-c'])
     expect(goneIds(null).size).toBe(0)
+  })
+  it('a day the scale took over takes out what openGym wrote for it before (#544)', () => {
+    const S = { unit: 'kg', bodyweight: [{ d: '2026-09-17', w: 80, t: at(7) }] }
+    const { written } = planSync(healthRecords(S, { nameOf }), {})
+    const after = { ...S, bodyweight: [{ d: '2026-09-17', w: 79.8, t: at(9), src: 'hc', at: at(8) }] }
+    const plan = planSync(healthRecords(after, { nameOf }), written, goneIds(after))
+    expect(plan.weights).toEqual([])
+    expect(plan.remove.weights).toEqual(['opengym-bw-2026-09-17'])
+    expect(plan.written).toEqual({})
   })
   it('writes one record for two workouts that share an id', () => {
     const twice = { sessions: [...records().sessions, { ...records().sessions[0], title: 'Copy' }], weights: [] }

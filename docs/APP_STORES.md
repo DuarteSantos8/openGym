@@ -142,8 +142,10 @@ The full-quality files only ever travel from the release machine to Apple, like 
 4. Store listing, content rating questionnaire (no violence, no user content shared with
    others: "Everyone"), target audience 13+ or 16+, Data safety (below).
 5. Declarations Play asks for:
-   - **Health Connect** (write exercise, write weight): the in-app reason screen exists; the
-     form asks what the data is used for: "writes finished workouts and weigh-ins, reads nothing".
+   - **Health Connect** (write exercise, write weight, read weight, read health data history): the
+     in-app reason screen exists; the form asks what the data is used for: "writes finished
+     workouts and weigh-ins; reads weigh-ins (e.g. from a smart scale) into the body-weight log,
+     on the device only". Each is behind its own switch in Settings, off by default.
    - **Foreground service, special use:** the rest countdown in the notification shade
      (`RestTimerService`). Play may ask for a short screen recording of a rest running.
    - **Exact alarms:** only the user-granted `SCHEDULE_EXACT_ALARM` (reminder to the minute),

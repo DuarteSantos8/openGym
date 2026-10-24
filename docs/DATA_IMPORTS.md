@@ -55,6 +55,13 @@ in, and keeps one weigh-in per day. Days that already have a weigh-in are left a
 
 A CSV with a date column and a weight column works the same way.
 
+## Body weight from Health Connect (Android)
+
+On the Android app, Settings → Data & backup → Health Connect → **Read weigh-ins from Health
+Connect** brings in the weight that a smart scale (Withings, Xiaomi, Renpho, Garmin, Fitbit,
+Samsung…) or any other app saves to Health Connect, each time openGym opens. No file to export: see
+[MOBILE.md](MOBILE.md#health-connect-android) for how it works.
+
 ## Sharing a plan
 
 On the **Plan** screen, tap the share icon:

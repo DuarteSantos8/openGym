@@ -6,6 +6,11 @@
 // data directory, never in S, so it does not sync to a server, ride in a backup, or switch on a
 // second phone. Off until the user turns it on; nothing is asked of Health Connect before that.
 //
+// Reading weigh-ins back (#544, Android): a switch of its own, beside writing. Each read takes
+// what Health Connect has since a little before the last one (lib/health-read.js decides what
+// lands in the log) and hands it to the store; it runs at launch and whenever the app comes back
+// to the foreground, never in the background.
+//
 // The iPhone app does the same with Apple Health (AppleHealthPlugin.swift): the same calls, the
 // same records, the same file. There it also asks to read the heart rate and the body weight, for
 // the Apple Watch app (its workout session shows the heart rate per set), and tells the watch
@@ -14,12 +19,14 @@
 // The web build never gets here (MOBILE is a build-time flag).
 import { MOBILE, nativePlatform, readJsonFile, writeJsonFile } from './mobile.js'
 import { healthRecords, planSync, writtenIds, goneIds } from './health-connect.js'
+import { planWeightImport, readSince } from './health-read.js'
 import { exerciseNameFor } from './i18n-core.js'
 import { EXIDX } from './exercises.js'
 import { speedUnitOf } from './speed.js'
 
 export const HEALTH_FILE = 'opengym-health.json'
-const OFF = { on: false, written: {}, at: 0, error: null }
+const READ_OFF = { on: false, at: 0, seen: {}, error: null }
+const OFF = { on: false, written: {}, at: 0, error: null, read: READ_OFF }
 
 // Wrapped in an object, as in rest-alert.js: a Capacitor plugin proxy answers `then`, so a
 // promise resolved with the bare proxy never settles.
@@ -43,12 +50,28 @@ let cached = null
 export async function loadHealth() {
   if (cached) return cached
   const f = await readJsonFile(HEALTH_FILE)
-  cached = f && typeof f === 'object' ? { ...OFF, ...f, written: f.written && typeof f.written === 'object' ? f.written : {} } : { ...OFF }
+  const obj = v => v && typeof v === 'object'
+  cached = obj(f)
+    ? { ...OFF, ...f, written: obj(f.written) ? f.written : {}, read: obj(f.read) ? { ...READ_OFF, ...f.read, seen: obj(f.read.seen) ? f.read.seen : {} } : READ_OFF }
+    : { ...OFF }
   return cached
 }
 const saveHealth = h => { cached = h; return writeJsonFile(HEALTH_FILE, h) }
+// Writing and reading each change the file from a pass of their own: each saves its part over
+// the newest copy, so neither puts back what the other had before it.
+async function saveWrite(h) {
+  const out = { ...h, read: (cached || h).read }
+  await saveHealth(out)
+  return out
+}
+async function saveRead(read) {
+  const out = { ...(cached || OFF), read }
+  await saveHealth(out)
+  return out
+}
+const failure = e => (e?.code === 'permission' ? 'permission' : e?.code === 'unavailable' ? 'unavailable' : 'failed')
 
-/** { status: 'available' | 'update' | 'missing' | 'unsupported', granted, platform } */
+/** { status: 'available' | 'update' | 'missing' | 'unsupported', granted, readGranted, platform } */
 export async function healthStatus() {
   if (!MOBILE) return { status: 'unsupported', granted: false, platform: null }
   try {
@@ -112,8 +135,7 @@ async function syncOnce(S, h) {
     // Nothing to write, but the last attempt failed: clear it once Health Connect says yes again.
     const st = await p.HC.status().catch(() => null)
     if (!(st?.status === 'available' && st.granted)) return h
-    const out = { ...h, error: null }
-    await saveHealth(out)
+    const out = await saveWrite({ ...h, error: null })
     told(out)
     return out
   }
@@ -135,9 +157,9 @@ async function syncOnce(S, h) {
     }
     out = { ...out, written, at: Date.now(), error: null }
   } catch (e) {
-    out.error = e?.code === 'permission' ? 'permission' : e?.code === 'unavailable' ? 'unavailable' : 'failed'
+    out.error = failure(e)
   }
-  await saveHealth(out)
+  out = await saveWrite(out)
   told(out)
   return out
 }
@@ -155,7 +177,7 @@ export async function enableHealth(S) {
   const granted = st.granted || (await p.HC.requestPermissions().catch(() => ({ granted: false }))).granted
   if (!granted) return { ok: false, reason: 'denied' }
   const h = await loadHealth()
-  await saveHealth({ ...h, on: true, error: null })
+  await saveWrite({ ...h, on: true, error: null })
   await mirrorOn(true)
   const after = await syncHealth(S)
   return { ok: !after?.error, reason: after?.error || null, health: after }
@@ -177,23 +199,99 @@ export async function disableHealth({ removeWritten = false } = {}) {
       await p.HC.remove(ids)
     }
   }
-  const out = { ...h, on: false, error: null, written: removeWritten ? {} : h.written }
-  await saveHealth(out)
+  const out = await saveWrite({ ...h, on: false, error: null, written: removeWritten ? {} : h.written })
   await mirrorOn(false)
   told(out)
   return out
 }
 
+// The store, for reading weigh-ins in: its state, and how a read's weigh-ins go into it.
+let store = null
+
+/**
+ * Reads the weigh-ins Health Connect has from a little before the last read on, and hands the
+ * ones that belong in the log to the store. A no-op while reading is off. Resolves with the
+ * file's content afterwards; `read.error` as `error` in syncHealth.
+ */
+let reading = null
+export function readHealthWeights() {
+  if (!MOBILE || !store || !cached?.read?.on) return Promise.resolve(cached)
+  if (reading) return reading
+  reading = (async () => {
+    const p = await plugin()
+    if (p?.platform !== 'android') return cached
+    const r = cached.read
+    let read
+    try {
+      const res = await p.HC.readWeights({ since: readSince(r.at) })
+      const now = Date.now()
+      // The state as it is now, after the read: a weigh-in typed meanwhile is the one to beat.
+      const plan = planWeightImport(store.getState(), res?.weights, r.seen, now)
+      if (plan.add.length) store.apply(plan.add)
+      read = { ...r, at: now, seen: plan.seen, error: null }
+    } catch (e) {
+      read = { ...r, error: failure(e) }
+    }
+    // Turned off while it ran: off it stays.
+    if (!cached.read.on) return cached
+    const out = await saveRead(read)
+    told(out)
+    return out
+  })().finally(() => { reading = null })
+  return reading
+}
+
+/**
+ * Turning reading on: asks to read the weight (and its history, where Health Connect has that),
+ * then reads once. Resolves with { ok, reason, health } as enableHealth.
+ */
+export async function enableHealthRead() {
+  const p = await plugin()
+  if (p?.platform !== 'android') return { ok: false, reason: 'unsupported' }
+  const st = await p.HC.status().catch(() => ({ status: 'unsupported' }))
+  if (st.status !== 'available') return { ok: false, reason: st.status }
+  const granted = st.readGranted || (await p.HC.requestPermissions({ read: true }).catch(() => ({ granted: false }))).granted
+  if (!granted) return { ok: false, reason: 'denied' }
+  await loadHealth()
+  await saveRead({ ...cached.read, on: true, error: null })
+  const after = await readHealthWeights()
+  return { ok: !after?.read?.error, reason: after?.read?.error || null, health: after }
+}
+
+/**
+ * Turning reading off. The weigh-ins it brought stay in the log: they are the user's now. What
+ * it had read is forgotten, so turned on again it reads from the beginning (and the log keeps
+ * each day only once).
+ */
+export async function disableHealthRead() {
+  if (reading) await reading.catch(() => {})
+  await loadHealth()
+  const out = await saveRead({ ...READ_OFF })
+  told(out)
+  return out
+}
+
 // Back in the foreground: a change synced from another device while the phone was away, or a
-// permission the user granted again in Health Connect's own settings, is picked up then.
+// permission the user granted again in Health Connect's own settings, is picked up then, and
+// the weigh-ins a scale handed over meanwhile are read.
 let started = false
-export function initHealthSync(getState) {
-  if (!MOBILE || started) return
+export function initHealthSync(getState, applyWeights) {
+  if (!MOBILE) return
+  if (applyWeights) store = { getState, apply: applyWeights }
+  if (started) return
   started = true
   import('@capacitor/app').then(({ App }) => {
-    App.addListener('appStateChange', ({ isActive }) => { if (isActive) syncHealth(getState()).catch(() => {}) })
+    App.addListener('appStateChange', ({ isActive }) => {
+      if (!isActive) return
+      syncHealth(getState()).catch(() => {})
+      readHealthWeights().catch(() => {})
+    })
   }).catch(() => {})
   // Once at launch, for a workout finished just before the app was closed. Reading the file here
   // also settles whether it is on, which the saves wait for (syncHealth).
-  setTimeout(() => loadHealth().then(h => { mirrorOn(h.on); return syncHealth(getState()) }).catch(() => {}), 3000)
+  setTimeout(() => loadHealth().then(h => {
+    mirrorOn(h.on)
+    readHealthWeights().catch(() => {})
+    return syncHealth(getState())
+  }).catch(() => {}), 3000)
 }

@@ -6,11 +6,15 @@ import android.os.Build;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.contract.ActivityResultContract;
 import androidx.health.connect.client.HealthConnectClient;
+import androidx.health.connect.client.HealthConnectFeatures;
 import androidx.health.connect.client.PermissionController;
 import androidx.health.connect.client.records.ExerciseSessionRecord;
 import androidx.health.connect.client.records.Record;
 import androidx.health.connect.client.records.WeightRecord;
 import androidx.health.connect.client.records.metadata.Metadata;
+import androidx.health.connect.client.request.ReadRecordsRequest;
+import androidx.health.connect.client.response.ReadRecordsResponse;
+import androidx.health.connect.client.time.TimeRangeFilter;
 import androidx.health.connect.client.units.Mass;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -37,9 +41,11 @@ import org.json.JSONObject;
 
 /**
  * Writes finished workouts and weigh-ins to Health Connect (#200), the phone's own store for
- * health data, so other apps can read them. Write-only and off until the user turns it on in
- * Settings: no permission is asked for before that. What to write is worked out in JS
- * (lib/health-connect.js); this side only turns those plain objects into records.
+ * health data, so other apps can read them, and reads weigh-ins back from it (#544): a smart
+ * scale's, or any other app's. Each is off until the user turns it on in Settings, and asks for
+ * its own permissions then: nothing is asked before. What to write, and what a read brings into
+ * the log, is worked out in JS (lib/health-connect.js, lib/health-read.js); this side only turns
+ * plain objects into records and back.
  *
  * Every record carries openGym's own id as its clientRecordId, so writing it again replaces it,
  * and "remove" finds exactly the records openGym wrote. The version is the time of the write:
@@ -54,10 +60,12 @@ import org.json.JSONObject;
  *
  * Usage from JS (lib/health-sync.js):
  *   const HC = registerPlugin('HealthConnect');
- *   await HC.status();              // { status: 'available' | 'update' | 'missing' | 'unsupported', granted }
- *   await HC.requestPermissions();  // { granted }
+ *   await HC.status();              // { status: 'available' | 'update' | 'missing' | 'unsupported', granted, readGranted }
+ *   await HC.requestPermissions();  // { granted }: the write permissions
+ *   await HC.requestPermissions({ read: true });  // { granted }: reading the weight (and its history)
  *   await HC.write({ sessions: [...], weights: [...] });
  *   await HC.remove({ sessions: [ids], weights: [ids] });
+ *   await HC.readWeights({ since });  // { weights: [{ id, time, kg }] }, without what openGym wrote
  *   await HC.openSettings();        // Health Connect's data screen, or its store page
  */
 @CapacitorPlugin(name = "HealthConnect")
@@ -67,6 +75,12 @@ public class HealthConnectPlugin extends Plugin {
     // The literal permission names, as declared in AndroidManifest.xml.
     private static final String WRITE_EXERCISE = "android.permission.health.WRITE_EXERCISE";
     private static final String WRITE_WEIGHT = "android.permission.health.WRITE_WEIGHT";
+    private static final String READ_WEIGHT = "android.permission.health.READ_WEIGHT";
+    // Without it Health Connect hands over only the 30 days before the read permission was first
+    // granted. Asked for along with READ_WEIGHT where Health Connect knows it, never required.
+    private static final String READ_HISTORY = "android.permission.health.READ_HEALTH_DATA_HISTORY";
+    // What openGym wrote itself carries these client ids (lib/health-connect.js); never read back.
+    private static final String OWN_ID_PREFIX = "opengym-";
     // Health Connect takes at most this many records in one insert.
     private static final int CHUNK = 500;
 
@@ -81,6 +95,14 @@ public class HealthConnectPlugin extends Plugin {
         Set<String> p = new HashSet<>();
         p.add(WRITE_EXERCISE);
         p.add(WRITE_WEIGHT);
+        return p;
+    }
+
+    private Set<String> readPermissions() {
+        Set<String> p = new HashSet<>();
+        p.add(READ_WEIGHT);
+        if (client().getFeatures().getFeatureStatus(HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_HISTORY)
+                == HealthConnectFeatures.FEATURE_STATUS_AVAILABLE) p.add(READ_HISTORY);
         return p;
     }
 
@@ -111,14 +133,17 @@ public class HealthConnectPlugin extends Plugin {
             JSObject r = new JSObject();
             r.put("status", status);
             r.put("granted", false);
+            r.put("readGranted", false);
             call.resolve(r);
             return;
         }
         worker.execute(() -> {
             try {
+                Set<String> has = granted();
                 JSObject r = new JSObject();
                 r.put("status", status);
-                r.put("granted", granted().containsAll(permissions()));
+                r.put("granted", has.containsAll(permissions()));
+                r.put("readGranted", has.contains(READ_WEIGHT));
                 call.resolve(r);
             } catch (Exception e) {
                 call.reject(e.getMessage(), "failed");
@@ -132,8 +157,11 @@ public class HealthConnectPlugin extends Plugin {
             call.reject("Health Connect is not available", "unavailable");
             return;
         }
+        // { read: true } asks to read the weight; without it, the two write permissions. The
+        // callback gets the same call back, and tells the two apart by the same option.
+        boolean read = Boolean.TRUE.equals(call.getBoolean("read", false));
         ActivityResultContract<Set<String>, Set<String>> contract = PermissionController.createRequestPermissionResultContract(PROVIDER);
-        Intent intent = contract.createIntent(getContext(), permissions());
+        Intent intent = contract.createIntent(getContext(), read ? readPermissions() : permissions());
         startActivityForResult(call, intent, "permissionsResult");
     }
 
@@ -142,12 +170,15 @@ public class HealthConnectPlugin extends Plugin {
         if (call == null) return;
         ActivityResultContract<Set<String>, Set<String>> contract = PermissionController.createRequestPermissionResultContract(PROVIDER);
         Set<String> got = contract.parseResult(result.getResultCode(), result.getData());
+        // Reading needs only the weight; the history is a bonus the user may leave out.
+        Set<String> needed = Boolean.TRUE.equals(call.getBoolean("read", false))
+                ? Collections.singleton(READ_WEIGHT) : permissions();
         // The dialog answers only for this time; ask Health Connect what stands now, since the
         // user may also have granted one of the two and not the other.
         worker.execute(() -> {
             try {
                 JSObject r = new JSObject();
-                r.put("granted", (got != null && got.containsAll(permissions())) || granted().containsAll(permissions()));
+                r.put("granted", (got != null && got.containsAll(needed)) || granted().containsAll(needed));
                 call.resolve(r);
             } catch (Exception e) {
                 call.reject(e.getMessage(), "failed");
@@ -195,6 +226,54 @@ public class HealthConnectPlugin extends Plugin {
                 delete(ExerciseSessionRecord.class, ids(sessions));
                 delete(WeightRecord.class, ids(weights));
                 call.resolve();
+            } catch (SecurityException e) {
+                call.reject(e.getMessage(), "permission");
+            } catch (Exception e) {
+                call.reject(e.getMessage(), "failed");
+            }
+        });
+    }
+
+    // The weigh-ins measured from `since` (ms) on, oldest first, page after page. What openGym
+    // wrote itself is left out, by the app that wrote it and by its client id, so a weigh-in
+    // never comes back as one read from a scale.
+    @PluginMethod
+    @SuppressWarnings("unchecked")
+    public void readWeights(PluginCall call) {
+        if (!"available".equals(sdkStatus())) {
+            call.reject("Health Connect is not available", "unavailable");
+            return;
+        }
+        // optLong takes any number JS sends; getLong only a value that came in as a long.
+        long since = Math.max(0L, call.getData().optLong("since", 0L));
+        String own = getContext().getPackageName();
+        worker.execute(() -> {
+            try {
+                JSArray out = new JSArray();
+                String token = null;
+                do {
+                    ReadRecordsRequest<WeightRecord> request = new ReadRecordsRequest<>(
+                            JvmClassMappingKt.getKotlinClass(WeightRecord.class),
+                            TimeRangeFilter.after(Instant.ofEpochMilli(since)),
+                            Collections.emptySet(), true, 1000, token);
+                    ReadRecordsResponse<WeightRecord> page = (ReadRecordsResponse<WeightRecord>) BuildersKt.runBlocking(
+                            EmptyCoroutineContext.INSTANCE, (scope, cont) -> client().readRecords(request, cont));
+                    for (WeightRecord w : page.getRecords()) {
+                        Metadata m = w.getMetadata();
+                        String clientId = m.getClientRecordId();
+                        if (own.equals(m.getDataOrigin().getPackageName())) continue;
+                        if (clientId != null && clientId.startsWith(OWN_ID_PREFIX)) continue;
+                        JSObject o = new JSObject();
+                        o.put("id", m.getId());
+                        o.put("time", w.getTime().toEpochMilli());
+                        o.put("kg", w.getWeight().getKilograms());
+                        out.put(o);
+                    }
+                    token = page.getPageToken();
+                } while (token != null && !token.isEmpty());
+                JSObject r = new JSObject();
+                r.put("weights", out);
+                call.resolve(r);
             } catch (SecurityException e) {
                 call.reject(e.getMessage(), "permission");
             } catch (Exception e) {

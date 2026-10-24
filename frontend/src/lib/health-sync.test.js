@@ -23,7 +23,15 @@ vi.mock('@capacitor/core', () => ({
   Capacitor: { getPlatform: () => h.platform },
   registerPlugin: name => (h.plugins.push(name), {
     status: async () => ({ ...h.status }),
-    requestPermissions: async () => { h.calls.push(['request']); h.status.granted = h.grant; return { granted: h.grant } },
+    requestPermissions: async (arg) => {
+      if (arg?.read) { h.calls.push(['request', 'read']); h.status.readGranted = h.grant; return { granted: h.grant } }
+      h.calls.push(['request']); h.status.granted = h.grant; return { granted: h.grant }
+    },
+    readWeights: async arg => {
+      h.calls.push(['read', arg])
+      if (h.readFail) throw Object.assign(new Error('refused'), { code: h.readFail })
+      return { weights: h.weights }
+    },
     write: async arg => {
       h.calls.push(['write', arg])
       if (h.fail) throw Object.assign(new Error('refused'), { code: h.fail })
@@ -49,7 +57,7 @@ const file = () => JSON.parse(h.files.get('opengym-health.json') || 'null')
 let hs
 beforeEach(async () => {
   vi.resetModules()
-  h.files.clear(); h.calls = []; h.status = { status: 'available', granted: false }; h.grant = true; h.fail = null; h.removeFail = null; h.left = null; h.platform = 'android'; h.plugins = []
+  h.files.clear(); h.calls = []; h.status = { status: 'available', granted: false }; h.grant = true; h.fail = null; h.removeFail = null; h.left = null; h.platform = 'android'; h.plugins = []; h.weights = []; h.readFail = null
   hs = await import('./health-sync.js')
 })
 
@@ -227,6 +235,80 @@ describe('turning it off', () => {
     await hs.disableHealth({ removeWritten: true })
     expect(removes()).toEqual([{ sessions: ['opengym-w-w1'], weights: ['opengym-bw-2026-09-17'] }])
     expect(file()).toMatchObject({ on: false, written: {} })
+  })
+})
+
+// #544: weigh-ins read back from Health Connect (a smart scale), a switch of its own.
+describe('reading weigh-ins', () => {
+  let S, applied
+  const start = () => {
+    applied = []
+    S = state([], [{ d: '2026-09-17', w: 80, t: at(17, 9) }])
+    hs.initHealthSync(() => S, add => { applied.push(add); S = { ...S, bodyweight: [...S.bodyweight, ...add] } })
+  }
+  const reads = () => h.calls.filter(c => c[0] === 'read').map(c => c[1])
+
+  it('is off by default: reads nothing and asks for nothing', async () => {
+    start()
+    await hs.loadHealth()
+    await hs.readHealthWeights()
+    expect(h.calls).toEqual([])
+  })
+  it('asks to read the weight, then brings the scale\'s weigh-ins into the log', async () => {
+    start()
+    h.weights = [{ id: 'hc1', time: at(18, 7), kg: 79.6 }, { id: 'hc0', time: at(17, 7), kg: 81 }]
+    const r = await hs.enableHealthRead()
+    expect(r.ok).toBe(true)
+    expect(h.calls[0]).toEqual(['request', 'read'])
+    expect(reads()).toEqual([{ since: 0 }])
+    // The 17th has a weigh-in typed after the scale's: only the 18th comes in.
+    expect(applied).toEqual([[{ d: '2026-09-18', w: 79.6, t: at(18, 7), src: 'hc', at: at(18, 7) }]])
+    expect(file().read).toMatchObject({ on: true, error: null })
+    expect(file().read.at).toBeGreaterThan(0)
+  })
+  it('stays off when reading is not granted', async () => {
+    start()
+    h.grant = false
+    expect(await hs.enableHealthRead()).toEqual({ ok: false, reason: 'denied' })
+    expect(reads()).toEqual([])
+  })
+  it('reads again from a window before the last read, and takes nothing twice', async () => {
+    start()
+    h.weights = [{ id: 'hc1', time: Date.now() - 3600000, kg: 79.6 }]
+    await hs.enableHealthRead()
+    expect(applied).toHaveLength(1)
+    const last = file().read.at
+    await hs.readHealthWeights()
+    expect(reads()[1].since).toBeLessThan(last)
+    expect(applied).toHaveLength(1)
+  })
+  it('keeps the permission error for the Settings card, and leaves writing alone', async () => {
+    start()
+    await hs.enableHealth(S)
+    await hs.enableHealthRead()
+    h.readFail = 'permission'
+    await hs.readHealthWeights()
+    expect(file().read.error).toBe('permission')
+    expect(file().on).toBe(true)
+    await hs.syncHealth({ ...S, workouts: [workout('w1', 17)] })
+    expect(file().read).toMatchObject({ on: true, error: 'permission' })
+  })
+  it('turned off, it keeps the weigh-ins and forgets what it read', async () => {
+    start()
+    h.weights = [{ id: 'hc1', time: at(18, 7), kg: 79.6 }]
+    await hs.enableHealthRead()
+    await hs.disableHealthRead()
+    expect(file().read).toEqual({ on: false, at: 0, seen: {}, error: null })
+    h.calls = []
+    await hs.readHealthWeights()
+    expect(reads()).toEqual([])
+  })
+  it('the write switch turned off leaves reading on', async () => {
+    start()
+    await hs.enableHealth(S)
+    await hs.enableHealthRead()
+    await hs.disableHealth({ removeWritten: false })
+    expect(file()).toMatchObject({ on: false, read: { on: true } })
   })
 })
 

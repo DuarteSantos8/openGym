@@ -182,8 +182,8 @@ plays; the zip export opens the share sheet.
 
 Settings → **Health Connect** writes finished workouts and weigh-ins to Health Connect, Android's
 on-device store for health data, where other apps (Google Fit, Samsung Health, a smartwatch app…)
-can read them. It is off until the user turns it on, and nothing is asked of Health Connect before
-that.
+can read them. A second switch reads weigh-ins back from it (#544): a smart scale's, or any other
+app's. Each is off until the user turns it on, and nothing is asked of Health Connect before that.
 
 - **What is written:** each finished workout as an exercise session — its start and end, its name
   as the title, the exercises and sets as "Copy as text" writes them as the notes, and a type
@@ -192,12 +192,26 @@ that.
   Each weigh-in as a weight record, in kilograms. A workout without a real start and end is left
   out rather than given made-up times. `src/lib/health-connect.js` works this out; its tests
   pin it.
-- **Write-only.** The manifest declares `WRITE_EXERCISE` and `WRITE_WEIGHT` and nothing else, and
-  openGym reads nothing back.
+- **Permissions.** Writing asks for `WRITE_EXERCISE` and `WRITE_WEIGHT`; reading, a switch of its
+  own, for `READ_WEIGHT`, plus `READ_HEALTH_DATA_HISTORY` where Health Connect has it. The history
+  permission is optional: without it Health Connect hands over only the 30 days before reading was
+  first granted.
+- **Reading weigh-ins back.** At launch, when the app comes back to the foreground, and right after
+  the switch is turned on (never in the background), `readWeights` fetches the weight records
+  measured since 14 days before the last read (all of them the first time). Records openGym wrote
+  itself are left out, by app and by `clientRecordId`. Per day the latest measurement counts, and
+  it takes the day over only when it is newer than the weigh-in already logged (a typed one is as
+  new as when it was typed); a day deleted after it was measured stays deleted. Health Connect ids
+  already taken into account are kept in `opengym-health.json`, so nothing comes in twice.
+  `src/lib/health-read.js` works this out; its tests pin it. A weigh-in that came in this way
+  carries `src: 'hc'` and its measurement time `at`; it is not written back to Health Connect (the
+  scale's record is there already), and what openGym had written for that day is removed. Typing
+  over it makes it openGym's own again. Turning reading off keeps the weigh-ins in the log.
 - **No duplicates.** Every record carries openGym's own id as its `clientRecordId`
   (`opengym-w-<workout id>`, `opengym-bw-<day>`), so writing it again replaces it. An edited workout
   or weigh-in is written again; a deleted one is removed from Health Connect.
-- **This phone only.** Whether it is on, and a fingerprint of each record already written, live in
+- **This phone only.** Whether each switch is on, a fingerprint of each record already written and
+  the ids already read, live in
   `opengym-health.json` in the app's data directory, never in the synced state: it does not travel
   to a server, into a backup export, or to a second phone. It works the same in local mode and
   paired with a server, because the writing happens on the phone.
@@ -211,13 +225,15 @@ that.
   app supports Android 7) Health Connect does not exist and the card is not shown.
 - **The library:** `androidx.health.connect:connect-client` 1.1.0, called from Java
   (`HealthConnectPlugin.java`) through `runBlocking` on a worker thread, so the Android project stays
-  Java-only. 1.1.0 stable needs compileSdk 36 and AGP 8.9.1, a toolchain bump left for its own
-  change. The library asks for minSdk 26; `tools:overrideLibrary` keeps the app at 23 and the plugin
-  checks the version before touching it.
+  Java-only. The library asks for minSdk 26; `tools:overrideLibrary` keeps the app at 24 and the
+  plugin checks the version before touching it.
 
 Worth checking on a real device after changes here: turning it on shows Health Connect's own
 permission screen; a finished workout appears in Health Connect within a few seconds; deleting it
-in openGym removes it there; turning it off with "remove" leaves no openGym record behind.
+in openGym removes it there; turning it off with "remove" leaves no openGym record behind. For
+reading: a weight added in Health Connect (or by a scale's app) shows up in the log on the next
+launch or return to the app; a newer one the same day replaces it; one deleted in openGym does not
+come back; Health Connect shows no second openGym record for that day.
 
 ### Animation quality and the animation packs (store apps)
 
