@@ -282,6 +282,10 @@ cellular with Wi-Fi only on, it waits; Still only shows stills everywhere a work
 
 ## Prerequisites
 
+New to this? [BUILD_ANDROID.md](BUILD_ANDROID.md) walks through an Android build step by step,
+including Windows PowerShell.
+
+
 - Node 20+
 - **Android:** Android Studio (bundles the SDK). Java 21 for Gradle.
 - **iOS:** a Mac with Xcode 15+ and CocoaPods (`brew install cocoapods`). A free Apple ID

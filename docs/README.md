@@ -34,6 +34,7 @@ All settings live in `.env`; [`.env.example`](../.env.example) explains each one
 
 | Guide | Read it when |
 |---|---|
+| [Build the Android app](BUILD_ANDROID.md) | You want to build the APK from source and put it on your phone, step by step (Windows too) |
 | [Contributing](../CONTRIBUTING.md) | Before your first pull request: setup, guidelines, what CI checks |
 | [CLAUDE.md](../CLAUDE.md) | You want the architecture in one page (written for Claude Code, useful for people too) |
 | [HTTP API](API.md) | You're touching routes; the OpenAPI spec is the source of truth |
