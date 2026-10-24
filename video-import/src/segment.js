@@ -354,6 +354,30 @@ export function countdownRuns(frames) {
     const back = Math.min(up, room)
     if (back > 0) { r.start -= back; r.top += back }
   })
+  // Countdowns that keep starting the same few quiet seconds after the one before them ended,
+  // where those seconds would make each exactly a length the video's other countdowns have (35 s
+  // after a 5 s gap, again and again, in a video of 40 s works): their first seconds were not
+  // read, the time did not pass. One odd gap proves nothing (a first warm-up move after a "get
+  // ready"); three alike do. The lengths are the ones at least three countdowns share.
+  {
+    const near5 = L => { const f = Math.round(L / 5) * 5; return Math.abs(L - f) <= 1 ? f : L }
+    const counts = {}
+    for (const r of runs) { const L = near5(r.top + 1); if (L >= 20) counts[L] = (counts[L] || 0) + 1 }
+    const common = Object.keys(counts).map(Number).filter(L => counts[L] >= 3)
+    const cand = []
+    runs.forEach((r, i) => {
+      const prev = runs[i - 1], len = r.top + 1
+      if (!prev || len < 20) return
+      const gap = r.start - (prev.start + prev.top + 1)
+      if (gap < 4) return
+      const fits = common.filter(L => L > len && Math.abs(L - len - gap) <= 1)
+      if (fits.length) cand.push({ r, len, gap, L: Math.max(...fits) })
+    })
+    for (const c of cand) {
+      if (cand.filter(x => x.len === c.len && Math.abs(x.gap - c.gap) <= 1).length < 3) continue
+      c.r.start -= c.L - (c.r.top + 1); c.r.top = c.L - 1
+    }
+  }
   // Workouts keep a beat: each move starts a whole period after the one before (40 s on and 20 s
   // off, every 60 s). Where most of a part's work countdowns sit on one beat, the others — caught
   // late, or with a misread number — are on it too: they end where the beat puts them (within a few

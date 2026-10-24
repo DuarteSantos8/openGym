@@ -321,3 +321,16 @@ test('a stray single digit that the next seconds read exactly as 17, 16, 15… i
   // The rest is one countdown of 19 s from its first readable second, not 8 s and a second one of 9.
   assert.deepEqual(runs.filter(r => r.top + 1 >= 8 && r.top + 1 <= 25).map(r => [r.start, r.top + 1]), [[61, 19], [151, 19], [241, 19], [331, 19]])
 })
+
+test('nOOZ4gJuPcs: the 40 s works that its ring hid the first five seconds of start where the rest before them ended', async () => {
+  const fs = await import('node:fs')
+  const { countdownRuns } = await import('../src/segment.js')
+  const f = JSON.parse(fs.readFileSync(new URL('./fixtures/nOOZ4gJuPcs.json', import.meta.url), 'utf8'))
+  const runs = countdownRuns(f.frames)
+  // Each of these was read as 35 s from five seconds after the rest ended; every one is a 40 s work.
+  for (const [start, end] of [[509, 549], [759, 799], [907, 947], [1006, 1046], [1156, 1196], [1216, 1256], [1276, 1316]]) {
+    const r = runs.find(x => Math.abs(x.start - start) <= 2)
+    assert.ok(r, 'a countdown near ' + start)
+    assert.ok(Math.abs(r.start + r.top + 1 - end) <= 2 && r.top + 1 >= 39, `${start}: ${r.start}+${r.top + 1}`)
+  }
+})
