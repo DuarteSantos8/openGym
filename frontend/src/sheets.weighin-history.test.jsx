@@ -33,7 +33,7 @@ function install(extra = {}) {
 
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
-  useUI.setState({ sheets: [] })
+  useUI.setState({ sheets: [], toastMsg: '', toastAction: null })
   document.body.innerHTML = ''
   install()
 })
@@ -94,6 +94,25 @@ describe('weigh-ins sheet', () => {
     act(() => { log.querySelector('button[aria-label="Delete weigh-in"]').click() })
     expect(useUI.getState().sheets).toHaveLength(1)
     expect(useStore.getState().S.bodyweight).toHaveLength(4)
+  })
+
+  // The toast gives a mistaken deletion a way back and clears the sync removal stamp.
+  it('deletes a recent weigh-in in one tap and restores it with Undo', () => {
+    bwSheet()
+    const log = mountTopSheet()
+    act(() => { log.querySelector('button[aria-label="Delete weigh-in"]').click() })
+    expect(useUI.getState().sheets).toHaveLength(1)
+    expect(useStore.getState().S.bodyweight).toHaveLength(4)
+    expect(useStore.getState().S.bodyweight.some(b => b.d === '2026-09-13')).toBe(false)
+    expect(useUI.getState().toastMsg).toContain('79 kg')
+    expect(useUI.getState().toastAction.label).toBe('Undo')
+
+    act(() => { useUI.getState().runToastAction() })
+    const restored = useStore.getState().S.bodyweight
+    expect(restored.map(b => b.d)).toEqual(LOG.map(b => b.d))
+    expect(restored.find(b => b.d === '2026-09-13')).toMatchObject({ d: '2026-09-13', w: 79 })
+    expect(restored.find(b => b.d === '2026-09-13').t).toBeGreaterThan(5)
+    expect(useStore.getState().S.deleted.bodyweight['2026-09-13']).toBeLessThan(0)
   })
 
   it('has an empty state', () => {

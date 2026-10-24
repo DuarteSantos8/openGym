@@ -363,7 +363,25 @@ export function bwSheet(opts = {}) {
 // stray tap on one of its trash buttons took a past weigh-in with nothing to bring it back. The log
 // sheet's three are the ones just typed, where taking back a typo in one tap is the point.
 function WeighInRow({ b, unit, confirm = false }) {
-  const delEntry = () => update(s => { s.bodyweight = s.bodyweight.filter(x => x.d !== b.d) })
+  const restore = () => {
+    let restored = false
+    update(s => {
+      if (s.bodyweight.some(x => x.d === b.d)) return
+      s.bodyweight.push({ ...b })
+      s.bodyweight.sort((a, z) => a.d.localeCompare(z.d))
+      restored = true
+    })
+    if (!restored) toast(t('It’s already back.'))
+  }
+  const delEntry = () => {
+    let removed = false
+    update(s => {
+      const next = s.bodyweight.filter(x => x.d !== b.d)
+      removed = next.length !== s.bodyweight.length
+      s.bodyweight = next
+    })
+    if (removed) ui().toast(t('“{0}” gone.', `${fmtDate(b.d, true)} · ${fmtNum(b.w)} ${unit}`), { action: t('Undo'), onAction: restore })
+  }
   const ask = () => confirmSheet({
     title: t('Delete weigh-in?'), message: `${fmtDate(b.d, true)} · ${fmtNum(b.w)} ${unit}`,
     confirmText: t('Delete'), danger: true, onConfirm: delEntry,
