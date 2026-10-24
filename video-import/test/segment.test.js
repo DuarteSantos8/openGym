@@ -334,3 +334,15 @@ test('nOOZ4gJuPcs: the 40 s works that its ring hid the first five seconds of st
     assert.ok(Math.abs(r.start + r.top + 1 - end) <= 2 && r.top + 1 >= 39, `${start}: ${r.start}+${r.top + 1}`)
   }
 })
+
+test('nOOZ4gJuPcs: the quiet seconds after a title that names a move, before a bare countdown that they complete to a usual length, are that move, not a rest', async () => {
+  const fs = await import('node:fs')
+  const { timerPhases } = await import('../src/segment.js')
+  const f = JSON.parse(fs.readFileSync(new URL('./fixtures/nOOZ4gJuPcs.json', import.meta.url), 'utf8'))
+  const blocks = timerPhases(f.frames)
+  // The title DOUBLE DEAD BUG runs to 424 s, and the 40 s work after it was read from 439 s on.
+  const work = blocks.find(b => b.kind === 'work' && Math.abs(b.start - 424) <= 2)
+  assert.ok(work, 'a work block at 424 s: ' + blocks.filter(b => b.start >= 400 && b.start <= 470).map(b => `${b.start}+${b.dur} ${b.kind}`).join(', '))
+  assert.match(work.key, /dead bug/)
+  assert.ok(Math.abs(work.dur - 40) <= 2, 'forty seconds, got ' + work.dur)
+})

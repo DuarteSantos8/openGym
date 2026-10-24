@@ -598,8 +598,22 @@ export function timerPhases(frames) {
   const named = j => caps[j] && caps[j].cover >= 0.6 && (caps[j].first - runs[j].start) / len(runs[j]) < 0.3
   const L = runs.length - 1
   const endsNamed = L > 0 && named(L) && bare(L - 1) && Math.abs(len(runs[L]) - len(runs[L - 1])) <= len(runs[L]) * 0.1
+  // The lengths at least three countdowns share, to the nearest five: what a quiet gap can complete.
+  const common = (() => {
+    const near5 = L => { const q = Math.round(L / 5) * 5; return Math.abs(L - q) <= 1 ? q : L }
+    const counts = {}
+    for (const r of runs) { const L = near5(len(r)); if (L >= 20) counts[L] = (counts[L] || 0) + 1 }
+    return Object.keys(counts).map(Number).filter(L => counts[L] >= 3)
+  })()
   let at = 0
   runs.forEach((r, i) => {
+    // A countdown that comes a few quiet seconds after one that announced its move, and that those
+    // seconds would make a usual length, began when the announcement ended: its first seconds were
+    // not read. The gap is not a rest of its own.
+    if (pending && i > 0 && blocks.length && blocks[blocks.length - 1].kind === 'rest') {
+      const gap = r.start - at
+      if (gap >= 4 && gap <= 20 && common.some(L => L > len(r) && Math.abs(L - len(r) - gap) <= 1)) r.start = at
+    }
     // Seconds with no countdown between two runs: read the old way, caption by caption. What was
     // announced before them is not carried across.
     if (r.start - at >= MIN_RUN) {
