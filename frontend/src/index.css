@@ -1703,7 +1703,13 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
    its marker, the 0–100% endpoints under it and each zone named beneath itself. Ready is
    the map's unshaded base, so the left zone stays neutral; margins leave room for the
    value bubble above the bar. */
-.fname{font-size:14px;padding:5px 0 0}
+.fname{font-size:14px;padding:5px 0 0;display:flex;align-items:baseline;gap:6px;min-width:0}
+.fname b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* The verdict keeps the old line's state readout after the name, in the band's own colour:
+   grey ready, yellow recovering, red fatigued, the same ramp the map and the bar use. */
+.fname .fv{font-size:13px;font-weight:500;color:var(--label-3);white-space:nowrap}
+.fname .fv.recovering{color:var(--yellow)}
+.fname .fv.fatigued{color:var(--red)}
 .fbarwrap{position:relative;height:8px;margin-top:20px}
 .fbar{position:relative;display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--surface-2)}
 .fbar .zone{height:100%}

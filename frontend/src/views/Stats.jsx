@@ -291,7 +291,9 @@ function MuscleBalance({ S }) {
       <FatigueLegend />
       <div className="muted small" style={{ marginTop: 10 }}>{t('Fatigue shows how recently each muscle was trained. High means rest.')}</div>
       {sel && <div className="fdetail" style={{ borderTop: 'var(--hair) solid var(--sep)', marginTop: 4, paddingTop: 10 }}>
-        <div className="fname"><b>{t(MUSCLE_NAME[sel])}</b></div>
+        <div className="fname"><b>{t(MUSCLE_NAME[sel])}</b>
+          <span className={`fv ${fatigueStateOf(selFatigue)}`}>{' - '}{fatigueLabel(selFatigue)}</span>
+        </div>
         <FatigueBar value={selFatigue} />
         {selRecovery.toRecoveringMs != null && <div className="small dim" style={{ marginTop: 6 }}>{t('Recovering {0}', fmtRecoveryIn(selRecovery.toRecoveringMs))}</div>}
         {selRecovery.toReadyMs != null && <div className="small dim">{t('Ready {0}', fmtRecoveryIn(selRecovery.toReadyMs))}</div>}

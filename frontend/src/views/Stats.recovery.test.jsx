@@ -289,6 +289,10 @@ describe('Stats muscle recovery view runtime', () => {
     const card = muscleCard()
     const bar = card.querySelector('.fbar')
     expect(bar).toBeTruthy()
+    // The name line keeps the state verdict beside the muscle, in the band's colour.
+    const name = card.querySelector('.fname')
+    expect(name.textContent.replace(/\s+/g, ' ').trim()).toBe('Chest - Fatigued')
+    expect(name.querySelector('.fv').className).toBe('fv fatigued')
     // The bar carries the band, reads the same state the map does, and marks the value.
     expect(bar.getAttribute('aria-label')).toBe(`Fatigue: ${pct}% · Fatigued`)
     expect(bar.querySelector('.zone.fatigued')).toBeTruthy()
