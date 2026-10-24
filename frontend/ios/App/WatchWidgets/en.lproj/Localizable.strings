@@ -10,6 +10,7 @@
 "Finish workout" = "Finish workout";
 "Finish workout?" = "Finish workout?";
 "Finish and save" = "Finish and save";
+"Continue workout" = "Continue workout";
 "Cancel" = "Cancel";
 "Rest’s over. Next set!" = "Rest’s over. Next set!";
 "Left" = "Left";
@@ -45,6 +46,7 @@
 "Tap a dot to do a skipped set." = "Tap a dot to do a skipped set.";
 "Log this one on your iPhone." = "Log this one on your iPhone.";
 "Saved on the watch, syncs later" = "Saved on the watch, syncs later";
+"All done?" = "All done?";
 "Skip this set?" = "Skip this set?";
 "Turn the Digital Crown to change it." = "Turn the Digital Crown to change it.";
 "%lld done" = "%lld done";

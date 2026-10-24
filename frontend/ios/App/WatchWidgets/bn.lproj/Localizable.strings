@@ -10,6 +10,7 @@
 "Finish workout" = "ওয়ার্কআউট শেষ করুন";
 "Finish workout?" = "ওয়ার্কআউট শেষ করবেন?";
 "Finish and save" = "শেষ করে সেভ করুন";
+"Continue workout" = "ওয়ার্কআউট চালিয়ে যান";
 "Cancel" = "বাতিল";
 "Rest’s over. Next set!" = "বিশ্রাম শেষ। পরের সেট!";
 "Left" = "বাঁ";
@@ -45,6 +46,7 @@
 "Tap a dot to do a skipped set." = "বাদ দেওয়া সেট করতে একটি বিন্দুতে ট্যাপ করুন।";
 "Log this one on your iPhone." = "এটা iPhone-এ লিখুন।";
 "Saved on the watch, syncs later" = "ঘড়িতে সেভ হয়েছে, পরে সিঙ্ক হবে";
+"All done?" = "শেষ হয়েছে?";
 "Skip this set?" = "এই সেটটি বাদ দেবেন?";
 "Turn the Digital Crown to change it." = "বদলাতে Digital Crown ঘোরান।";
 "%lld done" = "%lldটি শেষ";

@@ -348,3 +348,26 @@ struct WorkoutSummary: Codable, Equatable {
     /// The phone ended it (finished or discarded there) while the watch had it running.
     var endedOnPhone: Bool
 }
+
+/// A workout left running (the lifter walked out without Finish): "All done?" after 20 minutes
+/// without a logged set, ended and saved on its own after 45, at the time of its last set. Without
+/// it the Apple Health session goes on counting minutes and calories for hours. Times in ms.
+enum Idle: Equatable {
+    case active, ask, end
+
+    static let askAfter: Double = 20 * 60 * 1000
+    static let endAfter: Double = 45 * 60 * 1000
+
+    /// When the last set was logged, here or on the phone (one side of a per-side set counts),
+    /// else when the workout started; nil when it says neither.
+    static func lastSet(_ w: ActiveWorkout) -> Double? {
+        let ticks = w.entries.flatMap { $0.sets }.compactMap { $0.at }.filter { $0 > 0 }
+        return ticks.max() ?? w.start.flatMap { $0 > 0 ? $0 : nil }
+    }
+
+    /// `since`: the last thing that counts (the last set, or a "keep going" answered since).
+    static func state(since: Double, now: Double) -> Idle {
+        let idle = now - since
+        return idle >= endAfter ? .end : idle >= askAfter ? .ask : .active
+    }
+}

@@ -10,6 +10,7 @@
 "Finish workout" = "Edzés befejezése";
 "Finish workout?" = "Befejezed az edzést?";
 "Finish and save" = "Befejezés és mentés";
+"Continue workout" = "Edzés folytatása";
 "Cancel" = "Mégse";
 "Rest’s over. Next set!" = "Vége a pihenőnek. Jöhet a következő sorozat!";
 "Left" = "Bal";
@@ -45,6 +46,7 @@
 "Tap a dot to do a skipped set." = "Koppints egy pöttyre egy kihagyott sorozathoz.";
 "Log this one on your iPhone." = "Ezt az iPhone-on rögzítsd.";
 "Saved on the watch, syncs later" = "Az órán mentve, később szinkronizál";
+"All done?" = "Végeztél?";
 "Skip this set?" = "Kihagyod ezt a sorozatot?";
 "Turn the Digital Crown to change it." = "Forgasd a Digital Crownt a módosításhoz.";
 "%lld done" = "%lld kész";
