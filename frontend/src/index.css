@@ -409,9 +409,10 @@ h4.sec{
   border-top:var(--hair) solid var(--sep-op);
 }
 :root[data-theme="light"] #tabbar{background:rgba(249,249,251,.94)}
+/* 11px: the minimum text size Apple's HIG gives for iOS (11 pt) */
 #tabbar button{
   flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
-  color:var(--label-3);font-size:10px;font-weight:500;letter-spacing:.005em;padding-top:3px;
+  color:var(--label-3);font-size:11px;font-weight:500;letter-spacing:.005em;padding-top:3px;
   transition:color var(--fast);
 }
 /* The inactive tint is semi-transparent, so wherever two strokes cross inside an
