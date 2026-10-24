@@ -825,7 +825,7 @@ export default {
   '{0}/side': '{0}/單側',
   '{0} reps in every set! Add a set and go back to {1}.': '每組都做到 {0} 下！增加一組，次數回到 {1} 下。',
   '{0} sets of {1}. Time to add weight or try a harder variation.': '{0} 組 × {1} 下。該加重或換個更難的變化式了。',
-  '{0} per side': '單側 {0} 次',
+  '{0} per side': '單邊 {0}',
   'Per side': '單側',
   'You still log the total: {0} is {1} per side.': '你輸入的依舊是總次數：{0} 代表每邊各 {1} 下。',
 
