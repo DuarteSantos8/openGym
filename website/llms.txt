@@ -12,7 +12,7 @@
 
 ## Try & get it
 - [Live demo](https://opengym.ch/demo/): the real app with example data, in the browser
-- [Android APK](https://opengym.ch/openGym.apk): signed, sideloadable; SHA-256 next to it at openGym.apk.sha256 and on the GitHub release
+- [Android APK](https://github.com/DuarteSantos8/openGym/releases/latest): signed, sideloadable, in three sizes (Standard with 180 px animations, Plus with 240 px, HD with 360 px); each has its SHA-256 beside it on the GitHub release
 - [About](https://opengym.ch/about.html): the story and every release
 
 ## How it is built

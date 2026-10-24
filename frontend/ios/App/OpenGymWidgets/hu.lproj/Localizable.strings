@@ -1,0 +1,6 @@
+/* Written by ios/ci/widget-strings.mjs: change it there. */
+"Today’s workout" = "Mai edzés";
+"Your plan for today, the week ahead and your streak." = "A mai terved, a hét és a sorozatod.";
+"Streak" = "Sorozat";
+"Weeks in a row with a workout." = "Egymást követő hetek edzéssel.";
+"Open openGym once to see your plan here." = "Nyisd meg egyszer az openGymet, és itt látod a terved.";
