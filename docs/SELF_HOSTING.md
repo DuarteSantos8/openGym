@@ -17,8 +17,8 @@ This guide takes you from "just cloned it" to "using it from my phone over the i
 - [Which passkey providers work](#which-passkey-providers-work)
 - [Troubleshooting](#troubleshooting)
 
-HTTPS on a LAN without a public domain has [its own guide](SELF_HOSTING_HTTPS.md), and so does
-[Kubernetes](SELF_HOSTING_KUBERNETES.md). Short answers to common questions are in the [FAQ](FAQ.md).
+HTTPS on a LAN without a public domain has [its own guide](SELF_HOSTING_HTTPS.md), and so do
+[a Mac at home with Tailscale](SELF_HOSTING_MAC.md) and [Kubernetes](SELF_HOSTING_KUBERNETES.md). Short answers to common questions are in the [FAQ](FAQ.md).
 
 ## 1. Run it locally (5 minutes)
 

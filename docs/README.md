@@ -21,6 +21,7 @@ to install.
 |---|---|
 | [Self-hosting](SELF_HOSTING.md) | You're setting up an instance. Start here: running it, passkeys and HTTPS, users, backups, updates, troubleshooting |
 | [HTTPS at home](SELF_HOSTING_HTTPS.md) | You want valid certificates on your LAN without exposing the server to the internet |
+| [On a Mac](SELF_HOSTING_MAC.md) | You want to run it on a Mac at home, with Colima instead of Docker Desktop and Tailscale for HTTPS |
 | [Kubernetes](SELF_HOSTING_KUBERNETES.md) | You run a cluster instead of Docker Compose |
 | [AI coach](AI_COACH.md) | You're deciding whether to turn the coach on, and with which provider |
 | [MCP server](../mcp/README.md) | You want Claude Desktop, Cursor or another AI client to read your training history |
