@@ -270,3 +270,23 @@ test('a NOW: label in front of the move is not part of its name (UIPvIYsjfpo)', 
   // A move that really starts with the word, and a lone label, stay as they are.
   assert.equal(cleanCaption('NOW'), 'NOW')
 })
+
+test('a countdown first read at 56 under a fading ring began at 59: the round length the author set (ScInpT_5dIQ)', async () => {
+  const { countdownRuns } = await import('../src/segment.js')
+  const f = []
+  const at = (t, text) => { f[t] = { t, name: '', timer: text, timers: [text] } }
+  for (let t = 0; t < 4 * 80; t++) f[t] = { t, name: '', timer: '', timers: [''] }
+  for (let k = 0; k < 4; k++) {
+    const base = k * 80
+    for (let i = 0; i <= 56; i++) at(base + 3 + i, String(56 - i).padStart(2, '0'))   // 60 s work, its first 3 s unreadable
+    for (let i = 0; i <= 19; i++) at(base + 60 + i, String(19 - i).padStart(2, '0'))  // 20 s rest
+  }
+  const runs = countdownRuns(f).filter(r => r.top + 1 >= 50)
+  assert.deepEqual(runs.map(r => [r.start, r.top + 1]), [[0, 60], [80, 60], [160, 60], [240, 60]])
+  // A countdown that really is 57 s has no round number to go to when the seconds before it belong to the last one.
+  const g = f.map(x => ({ ...x }))
+  for (let t = 60; t < 80; t++) g[t] = { t, name: '', timer: '', timers: [''] }
+  for (let i = 0; i <= 22; i++) g[0 + 58 + i] = { t: 58 + i, name: '', timer: String(22 - i), timers: [String(22 - i)] }
+  const runs2 = countdownRuns(g).filter(r => r.top + 1 >= 50)
+  assert.ok(runs2.every(r => r.start >= 0))
+})

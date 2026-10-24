@@ -330,6 +330,20 @@ export function countdownRuns(frames) {
     }
     if (best) { r.start -= best.d; r.top += best.d }
   })
+  // A long countdown shows a round number the author set (60, 45, 40): one first read at 56 began at
+  // 59, when the ring still hid its digits (they fade in over the first seconds). It starts as far
+  // back as the quiet seconds before it allow, no further than the next round number. Only the
+  // long ones, and a shortfall of two or three seconds: shorter countdowns and a second's shortfall
+  // are rounding the other rules already settle, and moving them costs the starts they got right.
+  runs.forEach((r, i) => {
+    const len = r.top + 1
+    if (len < 40) return
+    const up = Math.ceil(len / 5) * 5 - len
+    if (up < 2 || up > 3) return
+    const room = r.start - (i ? runs[i - 1].start + runs[i - 1].top + 1 : 0)
+    const back = Math.min(up, room)
+    if (back > 0) { r.start -= back; r.top += back }
+  })
   // Workouts keep a beat: each move starts a whole period after the one before (40 s on and 20 s
   // off, every 60 s). Where most of a part's work countdowns sit on one beat, the others — caught
   // late, or with a misread number — are on it too: they end where the beat puts them (within a few
