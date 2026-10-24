@@ -26,6 +26,24 @@ const MAPS = {
   'Hack Squat (Machine)': '0743',
   'Seated Cable Row - Bar Grip': '0218',
   'Single Arm Lateral Raise (Cable)': '0192',
+  // A second real Hevy export: custom exercises before the alias, or a neighbouring lift.
+  'Lu Raises': '10858',
+  'Band Pullaparts': '1503',
+  'Dumbbell Squeeze Press': '3681',
+  'Seated Cable Row - Bar Wide Grip': '0218',
+  'Triceps Kickback (Dumbbell)': '0333',
+  'Straight Arm Lat Pulldown (Cable)': '0238',
+  'Single Arm Lat Pulldown': '1204',
+  'Triceps Rope Pushdown': '0200',
+  'Lateral Band Walks': '6607',
+  'Frog Pumps (Dumbbell)': '3182',
+  'Single Arm Tricep Extension (Dumbbell)': '4343',
+  'Rear Delt Reverse Fly (Cable)': '0225',
+  'Single Arm Cross Cable Extension': '8614',
+  'Bayesian Curl': '2656',
+  'Floor Press (Dumbbell)': '3668',
+  Clamshell: '2461',
+  'Single Leg Romanian Deadlift (Dumbbell)': '1757',
 }
 
 describe('foreign exercise names resolve to the catalogue', () => {

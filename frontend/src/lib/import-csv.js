@@ -229,6 +229,17 @@ const ALIAS_EX = {
   'behind the back bicep wrist curl (barbell)': '0104',
   // A face pull is a rope rear-delt row; the dataset has no entry under that name.
   'face pull': '0203',
+  // More Hevy titles from a real export (906 workouts). The first group arrived as custom
+  // exercises; the second the word-bag did resolve, but to a neighbour: an alternating floor
+  // press, a side-plank clamshell, a single-leg deadlift on a bench.
+  'lu raises': '10858', 'band pullaparts': '1503', 'dumbbell squeeze press': '3681',
+  'seated cable row - bar wide grip': '0218', 'triceps kickback (dumbbell)': '0333',
+  'straight arm lat pulldown (cable)': '0238', 'single arm lat pulldown': '1204',
+  'triceps rope pushdown': '0200', 'lateral band walks': '6607', 'frog pumps (dumbbell)': '3182',
+  'single arm tricep extension (dumbbell)': '4343', 'rear delt reverse fly (cable)': '0225',
+  'single arm cross cable extension': '8614', 'bayesian curl': '2656',
+  'floor press (dumbbell)': '3668', 'clamshell': '2461',
+  'single leg romanian deadlift (dumbbell)': '1757',
   // Cardio again: the only candidates in a 29-entry cardio vocabulary.
   'jumping jack': '3220', 'jumping jacks': '3220', 'battle ropes': '0128',
   'stair machine (steps)': '2311', 'stair machine': '2311',
