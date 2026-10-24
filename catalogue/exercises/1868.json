@@ -3,9 +3,9 @@
   "name": "barbell low bar squat (with rack)",
   "bodyPart": "upper legs",
   "equipment": "barbell",
-  "target": "glutes",
+  "target": "quads",
   "secondaryMuscles": [
-    "quadriceps",
+    "glutes",
     "hamstrings",
     "lower back"
   ],

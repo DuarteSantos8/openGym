@@ -3,9 +3,9 @@
   "name": "weighted russian twist (legs up)",
   "bodyPart": "waist",
   "equipment": "weighted",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "hip flexors"
   ],
   "category": "strength",

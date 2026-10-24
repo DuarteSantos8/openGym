@@ -3,9 +3,9 @@
   "name": "bodyweight forward lunge (smaller stance upright torso)",
   "bodyPart": "upper legs",
   "equipment": "body weight",
-  "target": "quads",
+  "target": "glutes",
   "secondaryMuscles": [
-    "glutes",
+    "quadriceps",
     "hamstrings",
     "core"
   ],

@@ -3,8 +3,9 @@
   "name": "cable one arm straight back high row (kneeling)",
   "bodyPart": "back",
   "equipment": "cable",
-  "target": "upper back",
+  "target": "lats",
   "secondaryMuscles": [
+    "upper back",
     "biceps",
     "shoulders"
   ],

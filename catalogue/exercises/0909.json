@@ -3,9 +3,9 @@
   "name": "band lunges",
   "bodyPart": "upper legs",
   "equipment": "band",
-  "target": "quads",
+  "target": "glutes",
   "secondaryMuscles": [
-    "glutes",
+    "quadriceps",
     "hamstrings",
     "calves"
   ],

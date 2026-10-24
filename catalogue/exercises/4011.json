@@ -3,11 +3,11 @@
   "name": "cable bent over row with bar",
   "bodyPart": "back",
   "equipment": "cable",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
+    "lats",
     "biceps",
-    "rhomboids",
-    "upper back"
+    "rhomboids"
   ],
   "category": "strength",
   "description": "A bent over row with a cable and straight bar. It builds the lats and mid-back.",

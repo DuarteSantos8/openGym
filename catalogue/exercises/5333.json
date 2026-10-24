@@ -3,9 +3,8 @@
   "name": "lever trunk rotation",
   "bodyPart": "waist",
   "equipment": "leverage machine",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "lower back",
     "core"
   ],

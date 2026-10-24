@@ -3,9 +3,8 @@
   "name": "oblique v up on floor",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "hip flexors",
     "core"
   ],

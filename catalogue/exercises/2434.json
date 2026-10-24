@@ -3,9 +3,8 @@
   "name": "cable seated twist on floor",
   "bodyPart": "waist",
   "equipment": "cable",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "core",
     "lower back"
   ],

@@ -3,9 +3,9 @@
   "name": "barbell standing twist",
   "bodyPart": "waist",
   "equipment": "barbell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "lower back"
   ],
   "category": "strength",

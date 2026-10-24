@@ -3,9 +3,9 @@
   "name": "resistance band sitting floor ankle dorsi flexion",
   "bodyPart": "lower legs",
   "equipment": "resistance band",
-  "target": "calves",
+  "target": "shins",
   "secondaryMuscles": [
-    "shins",
+    "calves",
     "ankles",
     "feet"
   ],

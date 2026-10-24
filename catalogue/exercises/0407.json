@@ -3,9 +3,9 @@
   "name": "dumbbell side bend",
   "bodyPart": "waist",
   "equipment": "dumbbell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques"
+    "abdominals"
   ],
   "category": "strength",
   "description": "Standing with a dumbbell in one hand, you bend sideways and return. It works the side abs, the obliques.",

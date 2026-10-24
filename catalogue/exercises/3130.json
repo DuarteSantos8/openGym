@@ -3,9 +3,8 @@
   "name": "scapula elevation depression",
   "bodyPart": "back",
   "equipment": "body weight",
-  "target": "traps",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
     "rhomboids",
     "trapezius",
     "shoulders"
