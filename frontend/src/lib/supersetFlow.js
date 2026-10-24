@@ -5,6 +5,20 @@ import { isWarmupRow } from './workout-model.js'
 
 const hasWork = (entries, idx) => !!entries[idx]?.sets?.some(set => !set.done)
 
+/**
+ * The unit Prev (`dir` -1) or Next (+1) lands on from unit `from` in Cards and Focus, or -1 at
+ * either end. With "Skip completed exercises" (#523, `skipDone`) it jumps over units whose every
+ * set is done; when everything that way is done it takes the next one after all, so the buttons
+ * and the swipe still step through a finished session.
+ */
+export function stepUnitIndex(entries, units, from, dir, skipDone = false) {
+  const n = from + dir
+  if (!Array.isArray(units) || n < 0 || n >= units.length) return -1
+  if (!skipDone) return n
+  for (let i = n; i >= 0 && i < units.length; i += dir) if ((units[i] || []).some(idx => hasWork(entries, idx))) return i
+  return n
+}
+
 // Return the first unfinished navigation unit after the current one, wrapping once so a user
 // who completed units out of order is never offered workout completion while earlier work remains.
 export function nextUnfinishedUnit(entries, units, fromIdx) {
@@ -105,17 +119,38 @@ export function restSecFor(entries, unit, defaultRestSec, setRest = null) {
  * Ramp sets are light and short, so an exercise may carry its own `warmupRestSec` in its target
  * next to `restSec`. It applies between ramp sets only: the break after the LAST ramp set, into
  * the first work set, is `workRestSec` (the value restSecFor resolved), because that is the rest
- * the first heavy set actually needs. An exercise without the field, or a work set, rests
- * `workRestSec` — exactly what every routine did before the field existed.
+ * the first heavy set actually needs. An exercise without the field falls back to `profileSec`,
+ * the profile's warm-up rest (0 = no timer), and without that, like a work set, rests
+ * `workRestSec` — exactly what every routine did before either existed.
  */
-export function warmupRestSecFor(entry, setIdx, workRestSec) {
+export function warmupRestSecFor(entry, setIdx, workRestSec, profileSec) {
   const sets = Array.isArray(entry?.sets) ? entry.sets : []
   const set = sets[setIdx]
   if (!set || !isWarmupRow(set)) return workRestSec
   const next = sets.slice(setIdx + 1).find(s => !s.done)
   if (!next || !isWarmupRow(next)) return workRestSec
+  // "No timer" between ramp sets: an optional `warmupRestOff` (set in the exercise's settings).
+  if (entry?.target?.warmupRestOff === true) return 0
   const own = Number(entry?.target?.warmupRestSec)
-  return own > 0 ? own : workRestSec
+  if (own > 0) return own
+  // Then the profile's (Settings > Workout, S.warmupRestSec): 0 is "no timer", absent is like
+  // the work sets.
+  const all = typeof profileSec === 'number' && Number.isFinite(profileSec) ? Math.round(profileSec) : null
+  if (all === 0) return 0
+  return all > 0 ? all : workRestSec
+}
+
+/**
+ * The break between the two sides of one per-side set, or null for none. An exercise may set its
+ * own `sideRestSec` (optional, Discord "set-specific rest timers"). Without it nothing changes:
+ * a timed hold pauses `switchSec` (capped at the set's rest, and none with the rest switched off),
+ * and a reps set has no break between its sides, as before the field existed.
+ */
+export function sideRestFor(target, { timed, restAfter, switchSec }) {
+  const own = Math.round(Number(target?.sideRestSec)) || 0
+  if (own > 0) return own
+  if (timed && restAfter > 0) return Math.min(switchSec, restAfter)
+  return null
 }
 
 // Decide where a newly completed superset set goes next. Spent members are skipped, including
@@ -134,3 +169,21 @@ export function supersetFlowStep(entries, unit, fromIdx) {
   const roundDone = !unit.slice(pos + 1).some(idx => hasWork(entries, idx))
   return { unitDone: false, roundDone, nextIdx }
 }
+
+/**
+ * Where Cards and Focus move on their own once the rest after a timed exercise's last set has run
+ * out (#532): a plank or an L-sit has nothing to adjust before the next exercise, so the screen
+ * goes there without a tap. Only when every exercise of the unit the rest was for is timed
+ * (`isTimed(idx)`) and finished, and that unit is still the one on screen; then the next unit with
+ * work left (nextUnfinishedUnit), its first exercise. null for anything else: weighted work still
+ * waits for Next, as before.
+ */
+export function advanceAfterTimedRest(entries, units, forIdx, cur, isTimed) {
+  if (!Array.isArray(entries) || !Array.isArray(units) || !Number.isInteger(forIdx)) return null
+  const unit = units.find(u => u.includes(forIdx))
+  if (!unit || !unit.includes(cur)) return null
+  if (!unit.every(idx => isTimed(idx) && (entries[idx]?.sets || []).length > 0 && !hasWork(entries, idx))) return null
+  const next = nextUnfinishedUnit(entries, units, forIdx)
+  return next ? next[0] : null
+}
+

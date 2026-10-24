@@ -494,6 +494,14 @@ describe('freestyleConfig', () => {
     expect(insertWarmupRow(rows, 'reps', bench, 5)[0].w).toBe(25)
   })
 
+  it('an added warm-up on an assistance machine gives more help, ramping down to the work weight', () => {
+    // 0017 assisted pull-up: 40 (1.5 × 25 rounded up to the step), then halfway down to 35
+    const rows = [{ w: 25, r: 10, done: false }]
+    const one = insertWarmupRow(rows, 'reps', { id: '0017' }, 5)
+    expect(one[0].w).toBe(40)
+    expect(insertWarmupRow(one, 'reps', { id: '0017' }, 5)[1].w).toBe(35)
+  })
+
   it('caps the planned warm-ups and ignores nonsense values', () => {
     const S = { exWeights: {}, workouts: [] }
     const base = { id: '0025', mode: 'reps', sets: 1, reps: 5, weight: 100 }
@@ -1617,14 +1625,27 @@ describe('switching a row between warm-up and work', () => {
     expect(makeWarmupAt(rows, 0)).toBe(rows)
   })
 
-  it('makeWarmupAt leaves drop, rest-pause and per-side rows as they are', () => {
+  it('makeWarmupAt leaves drop and rest-pause rows as they are', () => {
     const drop = [{ w: 60, r: 8, done: true }, { w: 100, r: 5, done: true, type: 'dropset', drops: [{ w: 80, r: 4 }] }]
     expect(makeWarmupAt(drop, 1)).toBe(drop)
     const rp = [{ w: 60, r: 8, done: true }, { w: 100, r: 12, done: true, type: 'restpause', clusters: [{ r: 4, rest: 15 }] }]
     expect(makeWarmupAt(rp, 1)).toBe(rp)
-    const side = [{ w: 30, r: 6, done: true }, { w: 30, r: 11, done: false, sides: { L: { w: 30, r: 5, done: true }, R: { w: 0, r: 6, done: false } } }]
-    expect(makeWarmupAt(side, 1)).toBe(side)
-    expect([canBeWarmup(drop[1]), canBeWarmup(rp[1]), canBeWarmup(side[1]), canBeWarmup(drop[0])]).toEqual([false, false, false, true])
+    const sideDrop = [{ w: 30, r: 6 }, { w: 30, r: 10, type: 'dropset', sides: { L: { w: 30, r: 5, type: 'dropset', drops: [{ w: 20, r: 4 }] }, R: { w: 30, r: 5 } } }]
+    expect(makeWarmupAt(sideDrop, 1)).toBe(sideDrop)
+    expect([canBeWarmup(drop[1]), canBeWarmup(rp[1]), canBeWarmup(sideDrop[1]), canBeWarmup(drop[0])]).toEqual([false, false, false, true])
+  })
+
+  // #575: the set menu of a per-side exercise had no "Make it a warm-up set".
+  it('a per-side set becomes a per-side warm-up, each side kept, and goes back with nothing lost', () => {
+    const side = { w: 30, r: 11, done: false, rir: 1, sides: { L: { w: 30, r: 5, done: true, rir: 2 }, R: { w: 32.5, r: 6, done: false, rir: 1 } } }
+    const rows = [{ w: 30, r: 10, done: true, sides: { L: { w: 30, r: 5, done: true }, R: { w: 30, r: 5, done: true } } }, side]
+    expect(canBeWarmup(side)).toBe(true)
+    const warm = makeWarmupAt(rows, 1)
+    expect(warm[0]).toEqual({ phase: 'warmup', warmup: true, sides: { L: { w: 30, r: 5, done: true }, R: { w: 32.5, r: 6, done: false } }, r: 11, w: 32.5, done: false })
+    expect(warm[1]).toBe(rows[0])
+    const back = makeWorkAt(warm, 0)
+    expect(back[0]).toEqual({ sides: { L: { w: 30, r: 5, done: true }, R: { w: 32.5, r: 6, done: false } }, r: 11, w: 32.5, done: false })
+    expect(rows[1]).toEqual(side)   // the input is never written to
   })
 
   it('a warm-up made one is left out of the best weight and the work-set count', () => {
