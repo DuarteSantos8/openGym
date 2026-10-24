@@ -17,7 +17,7 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:theme="@style/AppTheme">
         <activity
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBarLaunch"
@@ -78,6 +78,14 @@
                 android:value="Shows how long is left in the rest between sets." />
         </service>
 
+        <!-- The background check before a nudge or a reminder (NudgeCheckJob): asks the paired
+             server whether the day was trained elsewhere. Run by JobScheduler only; persisted
+             jobs survive a reboot through RECEIVE_BOOT_COMPLETED (declared below). -->
+        <service
+            android:name=".NudgeCheckJob"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:exported="false" />
+
         <!-- Gym check-in scanner (@capacitor-mlkit/barcode-scanning): pre-fetch the ML Kit
              barcode model at install time so the first scan doesn't wait on a download. -->
         <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui" />
@@ -86,7 +94,6 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <!-- Workout-day reminder: lets the local-notifications plugin fire at the exact minute
          on Android 12+. Where it isn't granted, scheduling silently falls back to inexact
          alarms — the reminder still arrives, just not to the minute. -->
@@ -105,6 +112,12 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!-- Delete my account on a paired phone: the phone's own face, fingerprint or screen lock
+         confirms it is the owner first (DeviceAuthPlugin). A normal permission, no prompt. -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <!-- The background check before a nudge (NudgeCheckJob) is a persisted job: it is still
+         there after a restart. Local notifications declare the same for their own alarms. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- Gym check-in: scanning a membership QR/barcode with the camera. -->
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- Health Connect (#200): write-only, asked for only when the user turns it on in Settings.

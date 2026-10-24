@@ -110,3 +110,12 @@ describe('MuscleExplorer search: the × and live count the Library has (#338)', 
     expect(clear()).toBeNull()
   })
 })
+
+// #553: Stats' untrained muscles open the explorer on that muscle.
+describe('MuscleExplorer opened on a muscle', () => {
+  it('starts with it chosen and its exercises listed', () => {
+    const host = render({ initial: 'biceps', onDetail: vi.fn() })
+    expect(isOn(muscleChip(host, 'Biceps'))).toBe(true)
+    expect(host.textContent).toContain('Exercises for Biceps')
+  })
+})
