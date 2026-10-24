@@ -9,6 +9,7 @@ import WidgetKit
  * the obvious value control, black background, the accent colour only on the primary action.
  *
  *   start   today's workout as one big Start, the other routines in a short list below
+ *   3-2-1   with Apple Health on, a countdown before it starts (the heart-rate sensor warms up)
  *   set     weight × reps in big rounded numerals, the round Done, the set dots; the crown turns
  *           the reps (or the weight, after a tap on it), marked by the crown symbol under it
  *   rest    a full-screen ring around a huge countdown, +15 s and Skip as small round buttons
@@ -89,6 +90,8 @@ struct RootView: View {
                 WeighInView()
             } else if let summary = store.summary {
                 SummaryView(summary: summary)
+            } else if store.workout == nil, let from = store.countdownFrom {
+                CountdownView(from: from)
             } else if store.workout == nil {
                 IdleView()
             } else if let end = store.holdEndsAt {
@@ -192,6 +195,40 @@ struct EdgeButton: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(label)
+    }
+}
+
+/// The 3-2-1 before a workout started here: big numbers in a ring that empties once. A tap
+/// starts at once; the small button cancels (nothing starts, nothing is logged).
+struct CountdownView: View {
+    @EnvironmentObject var store: SessionStore
+    let from: Date
+
+    var body: some View {
+        VStack(spacing: 2) {
+            TimelineView(.periodic(from: from, by: 1)) { ctx in
+                let n = max(1, Countdown.number(at: ctx.date.timeIntervalSince(from)))
+                Button { store.startNow() } label: {
+                    ZStack {
+                        CountdownRing(start: from, end: from.addingTimeInterval(Double(Countdown.seconds)))
+                        Text(verbatim: "\(n)")
+                            .font(.system(size: 64, weight: .bold, design: .rounded).monospacedDigit())
+                            .foregroundStyle(Theme.accent)
+                    }
+                    .aspectRatio(1, contentMode: .fit)
+                    .contentShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text("Start workout"))
+                .accessibilityValue(Text(verbatim: "\(n)"))
+            }
+            .padding(.horizontal, 6)
+            HStack {
+                EdgeButton(systemImage: "xmark", label: Text("Cancel")) { store.cancelCountdown() }
+                Spacer()
+            }
+        }
+        .ignoresSafeArea(edges: .bottom)
     }
 }
 

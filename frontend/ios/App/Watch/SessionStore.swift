@@ -453,7 +453,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             weighInFor = session
             return
         }
-        begin(session, bw: nil)
+        countIn(session, bw: nil)
     }
 
     /// The weigh-in answered: saved (a weigh-in for the phone, and the session's body weight) or
@@ -466,10 +466,53 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             send(event: ev)
             bw = bodyWeight
         }
-        begin(session, bw: bw)
+        countIn(session, bw: bw)
     }
 
     func cancelWeighIn() { weighInFor = nil }
+
+    /// The 3-2-1 before the workout, while it runs: when it began (CountdownView).
+    @Published private(set) var countdownFrom: Date?
+    private var countdownFor: (session: ReadySession, bw: Double?)?
+    private var countdownTimer: Timer?
+
+    /// With Apple Health on, a 3-2-1 first: the workout session is prepared meanwhile, so the heart
+    /// rate sensor is warm by set 1. Without it there is nothing to wait for.
+    private func countIn(_ session: ReadySession, bw: Double?) {
+        guard health.enabled, !isDemo else { begin(session, bw: bw); return }
+        countdownFor = (session, bw)
+        let from = Date()
+        countdownFrom = from
+        health.prepare()
+        Haptics.count()
+        countdownTimer?.invalidate()
+        countdownTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            if Countdown.number(at: Date().timeIntervalSince(from) + 0.05) == 0 { self?.startNow() } else { Haptics.count() }
+        }
+    }
+
+    /// The countdown ran out, or a tap on it: the workout starts.
+    func startNow() {
+        guard let c = countdownFor else { return }
+        stopCountdown()
+        // A workout came from the phone meanwhile: that one runs (its session took the prepared one).
+        guard workout == nil else { return }
+        begin(c.session, bw: c.bw)
+    }
+
+    /// Cancel on the countdown: nothing starts, the prepared session is dropped.
+    func cancelCountdown() {
+        guard countdownFor != nil else { return }
+        stopCountdown()
+        if workout == nil { health.end(save: false) }
+    }
+
+    private func stopCountdown() {
+        countdownTimer?.invalidate()
+        countdownTimer = nil
+        countdownFor = nil
+        countdownFrom = nil
+    }
 
     private func begin(_ session: ReadySession, bw: Double?) {
         let now = Date()
@@ -790,6 +833,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
  *   start      the system's start
  *   finished   stop, then two successes: the workout is saved
  *   skip       a soft one going down
+ *   count      a click each second of the 3-2-1 before a workout
  */
 enum Haptics {
     private static var device: WKInterfaceDevice { WKInterfaceDevice.current() }
@@ -804,4 +848,5 @@ enum Haptics {
     static func start() { play([(0, .start)]) }
     static func finished() { play([(0, .stop), (0.5, .success), (0.9, .success)]) }
     static func skip() { play([(0, .directionDown)]) }
+    static func count() { play([(0, .click)]) }
 }
