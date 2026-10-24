@@ -3,9 +3,9 @@
   "name": "dumbbell wood chop squat",
   "bodyPart": "waist",
   "equipment": "dumbbell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "glutes",
     "quadriceps",
     "shoulders"

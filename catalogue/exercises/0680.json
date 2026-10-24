@@ -3,8 +3,9 @@
   "name": "rope climb",
   "bodyPart": "back",
   "equipment": "rope",
-  "target": "upper back",
+  "target": "lats",
   "secondaryMuscles": [
+    "upper back",
     "forearms",
     "biceps",
     "shoulders"

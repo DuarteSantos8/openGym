@@ -3,9 +3,8 @@
   "name": "seated upright twists on a chair",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "core"
   ],
   "category": "mobility",

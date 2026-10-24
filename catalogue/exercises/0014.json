@@ -3,9 +3,9 @@
   "name": "assisted motion russian twist",
   "bodyPart": "waist",
   "equipment": "medicine ball",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "lower back"
   ],
   "category": "strength",

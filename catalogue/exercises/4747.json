@@ -3,9 +3,9 @@
   "name": "dumbbell lying woodchop",
   "bodyPart": "waist",
   "equipment": "dumbbell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "shoulders",
     "hip flexors"
   ],

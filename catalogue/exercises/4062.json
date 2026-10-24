@@ -3,9 +3,9 @@
   "name": "lever lying banded t bar row",
   "bodyPart": "back",
   "equipment": "leverage machine",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
+    "lats",
     "rhomboids",
     "biceps",
     "rear deltoids"

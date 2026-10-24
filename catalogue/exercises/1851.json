@@ -3,10 +3,9 @@
   "name": "incline push press",
   "bodyPart": "chest",
   "equipment": "barbell",
-  "target": "pectorals",
+  "target": "delts",
   "secondaryMuscles": [
     "triceps",
-    "shoulders",
     "upper chest",
     "quadriceps"
   ],

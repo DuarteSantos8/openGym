@@ -3,9 +3,9 @@
   "name": "bodyweight half split squat hold",
   "bodyPart": "upper legs",
   "equipment": "body weight",
-  "target": "hamstrings",
+  "target": "quads",
   "secondaryMuscles": [
-    "quadriceps",
+    "hamstrings",
     "glutes",
     "calves"
   ],

@@ -3,9 +3,8 @@
   "name": "dumbbell russian twist (on stability ball)",
   "bodyPart": "waist",
   "equipment": "dumbbell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "core",
     "hip flexors",
     "glutes"
