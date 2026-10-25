@@ -2,7 +2,8 @@
 // only gathers its inputs (rule, track state, newest log, current 1RM) and stores its output.
 import { currentOneRm, bestLoad, operatorFor, phaseOf, defaultPlanRule, generatePrescription, needsOneRm, resolveProgressionContext, supports, withRest } from './prescription/index.js'
 import { EXIDX, isAssisted, isBodyweightEq } from './exercises.js'
-import { modeOf, barFloor } from './history.js'
+import { modeOf, barFloor, lastAcrossRoutines } from './history.js'
+import { failureSetsOf, hasFailurePlan } from './failure-selection.js'
 import { oneRmForMeaning } from './onerm.js'
 import { dbLoadFor, bellsIn, ownedWeightsFor, historyAs, meaningFactor, entryDbLoad } from './dumbbells.js'
 
@@ -25,7 +26,7 @@ export function missingOneRms(profile, routines) {
 }
 
 /** An occurrence whose rule starts from `preset`'s defaults with these plain numbers. */
-export function occurrenceFor(exerciseId, { sets, reps, sec, weight } = {}, { id, unit = 'kg', routineId = null, preset = 'autoregulated' } = {}) {
+export function occurrenceFor(exerciseId, { sets, reps, sec, weight } = {}, { id, unit = 'kg', routineId = null, preset = 'manual' } = {}) {
   const o = {}
   if (sets > 0) o.sets = { min: Math.round(sets), max: Math.round(sets) }
   if (sec > 0) Object.assign(o, { durationSeconds: { min: sec, max: sec }, reps: { min: 1, max: 1 } })
@@ -48,7 +49,8 @@ export function buildSessionExposures(profile, routine, ctx) {
     // The engine picks the history and decides a restart; this boundary only passes the profile.
     const context = resolveProgressionContext({
       trackId, exerciseId: occ.exerciseId, rule: occ.rule, assisted,
-      workouts: history.workouts, prescriptions: profile.prescriptions, progression: profile.progression
+      workouts: history.workouts, prescriptions: profile.prescriptions, progression: profile.progression,
+      acrossRoutines: lastAcrossRoutines(profile)
     })
     const previous = (profile.workouts || []).flatMap(w => w.exposures || []).find(x => x.exposureId === context.baseline?.exposureId)
     const previousMeaning = entryDbLoad(previous)
@@ -74,6 +76,8 @@ export function buildSessionExposures(profile, routine, ctx) {
       warmup: occ.warmup ?? null,
       warmupFloor: barFloor(profile, occ.exerciseId),
       backoff: occ.backoff === true,
+      failureSets: modeOf({ mode: occ.mode, id: occ.exerciseId }) === 'cardio' ? undefined : occ.failureSets,
+      lastToFailure: modeOf({ mode: occ.mode, id: occ.exerciseId }) !== 'cardio' && occ.lastToFailure === true,
       equipment: EXIDX[occ.exerciseId]?.eq ?? null, assisted,
       // What a deload needs to know about the movement (deload.js).
       perSide: occ.side === true, restPause: occ.intensifier?.type === 'restpause', restPauseReps: occ.intensifier?.totalReps,
@@ -91,7 +95,9 @@ export function buildSessionExposures(profile, routine, ctx) {
       ...(typeof occ.note === 'string' && occ.note ? { setupNote: occ.note } : {}),
       ...(occ.side ? { side: true } : {}),
       ...(meaning !== 'as' ? { dbLoad: meaning, bells: bellsIn({ id: occ.exerciseId, side: occ.side }) } : {}),
+      ...(prescription.failureSets != null ? { failureSets: prescription.failureSets } : {}),
       ...(occ.lastToFailure ? { lastToFailure: true } : {}),
+      ...(hasFailurePlan({ failureSets: occ.failureSets }) ? { failureSets: failureSetsOf({ failureSets: occ.failureSets }) } : {}),
       ...(occ.backoff ? { backoff: true } : {}),
       ...(occ.cardio?.incline != null ? { incline: occ.cardio.incline } : {}),
       assisted,

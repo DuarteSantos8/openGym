@@ -1,5 +1,5 @@
 import { ENGINE_SCHEMA } from './profile-version.js';
-import { validatePlanRule, validateWarmup, ruleOfPrescription, contentHash, phaseById } from '../engine/index.js';
+import { failureSetsOf, validatePlanRule, validateWarmup, ruleOfPrescription, contentHash, phaseById } from '../engine/index.js';
 const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v);
 const list = v => Array.isArray(v) ? v : [];
 
@@ -35,6 +35,7 @@ function validateStructure(state) {
         if (o.rule.exerciseId !== o.exerciseId) errors.push(`${oat}.rule.exerciseId does not match`);
         if (o.rule.routineId != null && o.rule.routineId !== r.id) errors.push(`${oat}.rule.routineId does not match`);
       }
+      try { failureSetsOf(o); } catch { errors.push(`${oat}.failureSets is invalid`); }
       if (!validateWarmup(o.warmup)) errors.push(`${oat}.warmup is invalid`);
     });
   });
@@ -45,6 +46,7 @@ function validateStructure(state) {
       continue;
     }
     try {
+      failureSetsOf(p);
       const check = validatePlanRule(ruleOfPrescription(p));
       if (!check.ok) errors.push(`prescriptions[${id}]: ${check.errors[0]}`);
     } catch { errors.push(`prescriptions[${id}] is not a prescription`); }
@@ -67,6 +69,7 @@ function validateStructure(state) {
       }
       if (x.prescriptionId != null && !isObj(prescriptions[x.prescriptionId])) errors.push(`${xat}.prescriptionId does not resolve`);
       else if (x.prescriptionId != null && prescriptions[x.prescriptionId].exerciseId !== x.exerciseId) errors.push(`${xat}.prescriptionId belongs to another exercise`);
+      try { failureSetsOf(x); } catch { errors.push(`${xat}.failureSets is invalid`); }
       const rows = x.performance?.sets;
       if (!Array.isArray(rows)) return errors.push(`${xat}.performance.sets must be a list`);
       rows.forEach((row, k) => {
@@ -82,7 +85,8 @@ function validateStructure(state) {
 /** The shape of one `oneRepMaxes` record (its source link, if any, is checked against the workouts). */
 export function validOneRepMax(key, r) {
   return isObj(r) && r.id === key && typeof r.exerciseId === 'string' && r.exerciseId !== '' && Number.isFinite(r.value) && r.value > 0 && ['kg', 'lb'].includes(r.unit)
-    && typeof r.capturedAt === 'string' && Number.isFinite(Date.parse(r.capturedAt)) && ['estimated', 'tested', 'manual', 'entered'].includes(r.source);
+    && typeof r.capturedAt === 'string' && Number.isFinite(Date.parse(r.capturedAt)) && ['estimated', 'tested', 'manual', 'entered'].includes(r.source)
+    && (r.low == null && r.high == null || Number.isFinite(r.low) && Number.isFinite(r.high) && r.low <= r.value && r.value <= r.high);
 }
 
 /** Validate structures consumers dereference; logged finite values need not match the plan. */
@@ -97,7 +101,7 @@ export function validateCanonicalProfile(state) {
   const range = v => isObj(v) && Number.isFinite(v.min) && Number.isFinite(v.max) && v.min <= v.max;
   const actual = (a, at) => {
     if (!isObj(a) || !Number.isInteger(a.sets) || a.sets < 0) return bad(at, 'invalid actual');
-    for (const k of ['reps', 'durationSeconds', 'speed', 'rir', 'rpeEntered', 'amrapReps']) if (a[k] != null && !Number.isFinite(a[k])) bad(`${at}.${k}`, 'must be finite');
+    for (const k of ['reps', 'durationSeconds', 'speed', 'rir', 'rpeEntered', 'amrapReps', 'progressionRir']) if (a[k] != null && !Number.isFinite(a[k])) bad(`${at}.${k}`, 'must be finite');
     if (a.load != null && !amount(a.load)) bad(`${at}.load`, 'invalid load');
   };
   const row = (r, at) => {

@@ -33,14 +33,14 @@ import Elapsed from '../components/Elapsed.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
 import { buildSessionExposures, occurrenceFor } from '../lib/session-start.js'
-import { missingReference, roundLoad, ruleOfPrescription } from '../lib/prescription/index.js'
+import { missingReference, operatorFor, phaseOf, roundLoad, ruleOfPrescription } from '../lib/prescription/index.js'
 import { entriesForExposures, loadStepFor, planSummary, rowFindings } from '../lib/session-ui-adapter.js'
 import { findingText } from '../lib/progression-copy.js'
 import { sessionNoProg, setSessionNoProg, setEntryNoProg, syncExposureExclusion } from '../lib/session-noprog.js'
 import { routineChangesFromEntry, updateRoutineFromEntry } from '../lib/routine-update.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
-import { bindWatchActions } from '../lib/watch-sync.js'
+import { bindWatchActions, markDiscarded } from '../lib/watch-sync.js'
 import { bestSetFor } from '../lib/exercise-history.js'
 import { bindLiveActions } from '../lib/live-activity.js'
 import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL } from '../lib/workout-model.js'
@@ -50,6 +50,7 @@ import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import FocusView from './FocusView.jsx'
 import { SeasonDeco } from '../components/Seasonal.jsx'
+import { SessionMapButton } from '../components/SessionMuscles.jsx'
 import { entryDbLoad, bellsIn, ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
@@ -717,10 +718,13 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     {prescription && <div className="small" style={{ margin: '6px 0', display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
       <span className="dim">{t('Plan')}: {planSummary(prescription, fmtNum)} · {t('Rest {0} s', prescription.parameters.restSeconds)}{effortText}</span>
       {prescription.statusAtGeneration === 'completed' && <span className="tag acc">{t('Progression completed')}</span>}
+      {prescription.ruleSnapshot.program.trainingMax && <span className="tag">{t('Phase {0} of {1}', prescription.ruleSnapshot.program.phases.findIndex(ph => ph.id === prescription.phaseId) + 1, prescription.ruleSnapshot.program.phases.length)}</span>}
+      {operatorFor(phaseOf(prescription), 'difficulty') && <span className="tag">{t('Variation: {0}', operatorFor(phaseOf(prescription), 'difficulty').rungs[prescription.values.difficulty])}</span>}
       {findings.size > 0 && <span className="tag" style={{ color: 'var(--yellow)' }}>{t('Out of plan')}</span>}
     </div>}
     {prescription && missingReference(prescription) && <div className="small dim" style={{ marginBottom: 6 }}>{t('No 1RM on file — enter the weight you lift.')}</div>}
     {prescription?.provenance.derivedFromOutOfPlan && <div className="small dim" style={{ marginBottom: 6 }}>{t('Suggested from a session logged out of plan.')}</div>}
+    {prescription?.provenance.reviewTrainingMax && <div className="small" role="status" style={{ color: 'var(--yellow)', marginBottom: 6 }}>{t('progression.reviewTrainingMax')}</div>}
     {prescription?.provenance.deload && <div className="small dim" style={{ marginBottom: 6 }}>{t('Backed off after {0} sessions short of the plan: {1} → {2} {3}.',
       prescription.provenance.deload.stalls, fmtNum(prescription.provenance.deload.from), fmtNum(prescription.provenance.deload.to),
       prescription.provenance.deload.method === 'seconds' ? 's' : prescription.parameters.load.expression.mode === 'percent_1rm' ? '%' : S.unit)}</div>}
@@ -1550,6 +1554,8 @@ function ActiveWorkout() {
       // A session kept out as a whole (the header ⋮) takes the new exercise with it.
       if (sessionNoProg(useStore.getState().A)) exposure.excludedFromProgression = true
       const entry = entriesForExposures([exposure], useStore.getState().S.prescriptions)[0]
+      // `addedInSession`: the finish summary offers to keep it in the routine (#592).
+      if (routine) { exposure.addedInSession = true; entry.addedInSession = true }
       if (focusMode) focusPointerEpoch.current++
       updateActive(A => {
         const insertAt = insertionIndexAfterCurrentUnit(supersetUnits(A.entries), A.cur, A.entries.length)
@@ -1573,9 +1579,11 @@ function ActiveWorkout() {
   })
   // Ending the session without saving it. The ⋯ menu's last item since the header's ✕ became the
   // ⌄ that only leaves the screen (v1.3.11).
+  // The watch hears it was discarded, not finished (#776).
+  const discardNow = () => { markDiscarded(useStore.getState().A?.id); useStore.getState().clearActive(); stopRest(); stopWork(); nav('/home') }
   const discardWorkout = () => confirmSheet({
     title: t('Discard workout?'), message: t('The sets you logged in this session will be lost.'), confirmText: t('Discard'), danger: true,
-    onConfirm: () => { useStore.getState().clearActive(); stopRest(); stopWork(); nav('/home') },
+    onConfirm: discardNow,
   })
   // The header ⋯, in groups: the settings you change at the gym first (their own sheet, the same
   // values as Settings), then what to add, what to change about this workout, and Discard last.
@@ -1598,9 +1606,6 @@ function ActiveWorkout() {
         { icon: 'layout', label: t('Layout'), sub: LAYOUT_LABEL[workoutView] || LAYOUT_LABEL.cards, onClick: openLayoutMenu },
         { icon: 'note', label: A.note ? t('Edit session note') : t('Add session note'), onClick: sessionNoteSheet },
         noProgSwitchable && { icon: 'chartLineSlash', label: t('Don’t count for progression'), sub: t('Every exercise in this workout'), on: sessionNoProg(A), onClick: toggleSessionNoProg },
-      ] },
-      { items: [
-        !editing && { icon: 'trash', label: t('Discard workout'), danger: true, onClick: discardWorkout },
       ] },
     ],
   })
@@ -1932,15 +1937,19 @@ function ActiveWorkout() {
   // The time is the watch's: the phone may hear of the set much later (lib/finish-workout.js
   // sessionEnd reads the sets' times). The watch's Finish runs the phone's Finish and save.
   useEffect(() => bindWatchActions({
-    setDone: (idx, i, { w, r, sec, side, at, hr }) => {
+    setDone: (idx, i, { w, r, sec, side, at, hr, rpe, rir }) => {
       if (useStore.getState().A?.editingWorkoutId) return   // a saved workout being edited is not the session
       const now = useStore.getState().A?.entries?.[idx]?.sets?.[i]
       // One side of a per-side set (a unilateral exercise): that side's numbers and its own tick.
       const oneSide = side && isSideSet(now) ? side : null
       const wasDone = oneSide ? now.sides[oneSide].done : now?.done
       // The same set ticked here after the watch did: the later tick wins, the heart rate still lands.
+      // The effort the watch logged (lib/watch-sync.js effortFrom): RPE or RIR, never both.
+      const eff = rpe != null ? ['rpe', rpe] : rir != null ? ['rir', rir] : null
       if (wasDone && at && Number(now.at) > at) {
         if (hr) mutEntry(idx, en => { if (en.sets[i]) en.sets[i].hr = hr })
+        // the phone's rating wins, the watch's only fills a set that has none
+        if (eff && !oneSide && now.rpe == null && now.rir == null) mutEntry(idx, en => { if (en.sets[i]) en.sets[i][eff[0]] = eff[1] })
         return
       }
       mutEntry(idx, en => {
@@ -1949,16 +1958,19 @@ function ActiveWorkout() {
         if (oneSide) {
           if (w != null) en.sets[i] = setSideField(en.sets[i], oneSide, 'w', w)
           if (r != null) en.sets[i] = setSideField(en.sets[i], oneSide, 'r', r)
+          if (eff) en.sets[i] = setSideField(en.sets[i], oneSide, eff[0], eff[1])
           return
         }
         if (w != null) set.w = w
         if (r != null) set.r = r
         if (sec != null) set.sec = sec   // a hold: the seconds it lasted on the watch
+        if (eff) { delete set.rpe; delete set.rir; set[eff[0]] = eff[1] }
       })
       if (!wasDone) toggleRef.current(idx, i, oneSide || undefined)
       if (at || hr) mutEntry(idx, en => { const set = en.sets[i]; if (!(oneSide ? set?.sides?.[oneSide]?.done : set?.done)) return; if (at) set.at = at; if (hr) set.hr = hr })
     },
     finish: () => { if (!useStore.getState().A?.editingWorkoutId) finishWorkoutNow() },
+    discard: () => { if (!useStore.getState().A?.editingWorkoutId) discardNow() },
   }), [])
 
   // The Lock Screen's Done (lib/live-activity.js) ticks its set through this same toggle, as if

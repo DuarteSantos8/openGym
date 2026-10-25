@@ -34,6 +34,7 @@ function canonicalLoads(value, from, to, convert = true) {
   if (['kg', 'lb'].includes(value.unit) && Number.isFinite(value.value)) {
     const converted = convertWeight(value.value, value.unit, to)
     out.value = convert ? (converted === 0 && value.value > 0 ? value.value * (to === 'lb' ? LB_PER_KG : 1 / LB_PER_KG) : converted) : value.value
+    for (const k of ['low', 'high']) if (Number.isFinite(value[k])) out[k] = convert ? convertWeight(value[k], value.unit, to) : value[k]   // a 1RM record's range
     out.unit = to
   } else if (value.kind === 'external-load' && Number.isFinite(value.value)) {
     out.value = convert ? convertWeight(value.value, from, to) : value.value

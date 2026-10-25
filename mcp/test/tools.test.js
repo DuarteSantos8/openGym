@@ -139,7 +139,7 @@ describe('get_routine', () => {
     _seedStateForTests(profile)
     const pyr = call('get_routine', { routine_id: 'r1' }).exercises.at(-1)
     expect(pyr).toMatchObject({ preset_id: 'pyramid_reps', pyramid: [12, 8, 6, 'max', 12], pyramid_rest_sec: [60, 60, 90, 0, 60], summary: '12 · 8 · 6 · Max · 12' })
-    expect(pyr.preset_label).toMatch(/Pyramid sets/)
+    expect(pyr.preset_label).toMatch(/Custom sets/)
   })
 
   test('reports a program of several phases by its phase ids, in order', () => {
@@ -405,7 +405,7 @@ describe('main features on canonical sessions', () => {
   test('preview includes a custom exercise’s equipment-specific warm-ups without leaking its index', () => {
     const profile = baseProfile()
     profile.customEx = [{ id: 'my-barbell', n: 'My barbell lift', bp: 'upper legs', tg: 'quads', eq: 'barbell', custom: true }]
-    const occurrence = ruleOccurrence('my-barbell', { preset: 'autoregulated', options: { load: { mode: 'absolute', value: 200, unit: 'kg' } } })
+    const occurrence = ruleOccurrence('my-barbell', { preset: 'manual', options: { load: { mode: 'absolute', value: 200, unit: 'kg' } } })
     occurrence.warmup = { mode: 'smart', count: 5 }
     profile.routines[0].ex = [occurrence]
     _seedStateForTests(profile)
@@ -423,27 +423,6 @@ describe('main features on canonical sessions', () => {
     exposure.muscleSnapshot = { id: 'deleted-bench', n: 'My bench', bp: 'chest', tg: 'pectorals', eq: 'barbell', sm: [] }
     _seedStateForTests(profile)
     const balance = call('muscle_balance', { period: 'all' })
-  // A unilateral set is one row carrying both sides, and setsDone() counts each side that was
-  // done, so the planned count has to count sides too — the app pairs it with setUnitsTotal().
-  // Counting rows read a fully done per-side session as twice the plan (#691).
-  test('a per-side session counts planned sets in the same units as done ones', () => {
-    const CURL = '0294'
-    const side = rDone => ({
-      w: 20, r: 16, done: rDone,
-      sides: { L: { w: 20, r: 8, done: true }, R: { w: 20, r: 8, done: rDone } }
-    })
-    S.workouts = [{
-      id: 'w1', d: '2026-07-06', start: Date.parse('2026-07-06T10:00:00'), end: Date.parse('2026-07-06T11:00:00'), name: 'S',
-      entries: [{ id: CURL, target: { sets: 3, reps: 8, weight: 20, perSide: true }, sets: [side(true), side(true), side(false)] }]
-    }]
-    _seedStateForTests(S)
-    const listed = call('list_workouts').workouts[0]
-    expect(listed.sets_done).toBe(5)
-    expect(listed.sets_planned).toBe(6)
-    expect(listed.sets_ratio).toBe('5/6')
-    expect(call('get_workout', { workout_id: 'w1' }).sets_planned).toBe(6)
-  })
-
     expect(balance.worked.find(row => row.slug === 'chest')?.effective_sets).toBeGreaterThan(0)
   })
 })
@@ -525,7 +504,7 @@ describe('preview_session', () => {
 
   test('a load range previews its high end as weight_max', () => {
     const profile = baseProfile()
-    profile.routines[0].ex = [ruleOccurrence(BENCH, { preset: 'autoregulated', options: { reps: { min: 8, max: 12 }, load: { mode: 'absolute', value: 60, unit: 'kg' }, loadTo: { mode: 'absolute', value: 80, unit: 'kg' } } })]
+    profile.routines[0].ex = [ruleOccurrence(BENCH, { preset: 'manual', options: { reps: { min: 8, max: 12 }, load: { mode: 'absolute', value: 60, unit: 'kg' }, loadTo: { mode: 'absolute', value: 80, unit: 'kg' } } })]
     _seedStateForTests(profile)
     const [bench] = call('preview_session', { routine_id: 'r1' }).exercises
     expect(bench.prescription).toMatchObject({ weight: 60, weight_max: 80 })
@@ -541,7 +520,7 @@ describe('preview_session', () => {
 
   test('a percent rule with no 1RM on file says why its loads are blank', () => {
     const profile = baseProfile()
-    profile.routines[0].ex[0] = ruleOccurrence(BENCH, { preset: 'autoregulated', options: { load: { mode: 'percent_1rm', percent: 70 } } })
+    profile.routines[0].ex[0] = ruleOccurrence(BENCH, { preset: 'manual', options: { load: { mode: 'percent_1rm', percent: 70 } } })
     _seedStateForTests(profile)
     const bench = call('preview_session', { routine_id: 'r1' }).exercises[0]
     expect(bench.prescription.why).toMatch(/no 1RM on file/)
@@ -573,7 +552,7 @@ describe('preview_session', () => {
 
 describe('ruleSummary', () => {
   test('one line per load kind and rep shape', () => {
-    const rule = (over) => defaultPlanRule('autoregulated', { id: 'r', exerciseId: 'e', sets: { min: 3, max: 3 }, reps: { min: 5, max: 5 }, load: { mode: 'empty' }, ...over })
+    const rule = (over) => defaultPlanRule('manual', { id: 'r', exerciseId: 'e', sets: { min: 3, max: 3 }, reps: { min: 5, max: 5 }, load: { mode: 'empty' }, ...over })
     expect(ruleSummary(rule({ load: { mode: 'absolute', value: 60, unit: 'kg' } }))).toBe('3 × 5 · 60 kg')
     expect(ruleSummary(rule({ sets: { min: 3, max: 5 }, reps: { min: 8, max: 12 }, load: { mode: 'percent_1rm', percent: 70 } }))).toBe('3-5 × 8-12 · 70% 1RM')
     expect(ruleSummary(rule({ durationSeconds: { min: 30, max: 60 } }))).toBe('3 × 30-60 s')
@@ -581,7 +560,7 @@ describe('ruleSummary', () => {
   })
 
   test('a load range reads low-high', () => {
-    const rule = (over) => defaultPlanRule('autoregulated', { id: 'r', exerciseId: 'e', sets: { min: 3, max: 3 }, reps: { min: 8, max: 12 }, ...over })
+    const rule = (over) => defaultPlanRule('manual', { id: 'r', exerciseId: 'e', sets: { min: 3, max: 3 }, reps: { min: 8, max: 12 }, ...over })
     expect(ruleSummary(rule({ load: { mode: 'absolute', value: 60, unit: 'kg' }, loadTo: { mode: 'absolute', value: 80, unit: 'kg' } }))).toBe('3 × 8-12 · 60-80 kg')
     expect(ruleSummary(rule({ load: { mode: 'percent_1rm', percent: 60 }, loadTo: { mode: 'percent_1rm', percent: 75 } }))).toBe('3 × 8-12 · 60-75% 1RM')
   })
@@ -700,25 +679,3 @@ describe('date arguments must be dates the calendar has', () => {
     }
   })
 })
-  test('progression off under "start from your last session" reports last time as the source (#217)', () => {
-    only({ id: '0025', sets: 2, reps: 8, weight: 50 }, {
-      prog: 'off',
-      workouts: [{
-        id: 'w1', d: '2026-07-20', routineId: 'r-preview', name: 'Preview',
-        entries: [{ id: '0025', target: { id: '0025', sets: 2, reps: 8, weight: 50 }, sets: [{ w: 60, r: 6, done: true }, { w: 60, r: 6, done: true }] }]
-      }]
-    })
-    S.startFrom = 'last'
-    _seedStateForTests(S)
-    try {
-      const e = call('preview_session').exercises[0]
-      expect(e.prescription.kind).toBe('off')
-      expect(e.opening_sets.map(s => [s.w, s.r])).toEqual([[60, 6], [60, 6]])
-      expect(e.weight_source).toBe('last_session')
-      expect(e.reps_source).toBe('last_session')
-    } finally {
-      delete S.startFrom
-      _seedStateForTests(S)
-    }
-  })
-

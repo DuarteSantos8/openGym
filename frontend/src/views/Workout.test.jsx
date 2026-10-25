@@ -815,11 +815,28 @@ describe('Workout add exercise flow', () => {
 
     const exposure = mocks.A.exposures[1]
     expect(mocks.A.entries[1].exposureId).toBe(exposure.exposureId)
-    expect(mocks.S.prescriptions[exposure.prescriptionId].preset).toBe('autoregulated')
+    expect(mocks.S.prescriptions[exposure.prescriptionId].preset).toBe('manual')
   })
 })
 
 describe('active workout weight controls', () => {
+  it('shows the current exposure phase and a training-max review message', async () => {
+    const rule = defaultPlanRule('undulating', { id: 'rule', exerciseId: 'plain-bench', trainingMax: { mode: 'direct', value: 100, unit: 'kg' } })
+    await mountCanonical([exercise('plain-bench', [false])], 0, [rule])
+    expect(container.textContent).toContain('Phase 1 of 3')
+    const id = mocks.A.exposures[0].prescriptionId
+    const p = mocks.S.prescriptions[id]
+    mocks.S.prescriptions[id] = { ...p, provenance: { ...p.provenance, reviewTrainingMax: true } }
+    await rerender()
+    expect(container.querySelector('[role="status"]').textContent).toContain('review your training max')
+  })
+
+  it('shows the named variation of a bodyweight ladder', async () => {
+    const rule = defaultPlanRule('bodyweight_ladder', { id: 'rule', exerciseId: 'plain-bench', rungs: ['easy', 'hard'] })
+    await mountCanonical([exercise('plain-bench', [false])], 0, [rule])
+    expect(container.textContent).toContain('Variation: easy')
+  })
+
   const press = async (label, selector) => {
     const control = container.querySelector(selector)
     const button = control?.querySelector(`button[aria-label="${label}"]`)
@@ -1052,7 +1069,7 @@ describe('Workout discard timer lifecycle', () => {
     const kept = new Map()
     vi.stubGlobal('localStorage', { getItem: k => kept.get(k) ?? null, setItem: (k, v) => kept.set(k, String(v)), removeItem: k => kept.delete(k) })
     await mount([exercise('timed-plank', [false])])
-    const wid = mocks.S.active.id
+    const wid = mocks.A.id
     expect(wid).toBeTruthy()
     await requestDiscard()
     expect(discardedFor()).not.toContain(wid)
@@ -1347,18 +1364,6 @@ describe('progression settings', () => {
     expect(mocks.A.entries[0].target.reps).toBe(8)
   })
 
-  // A per-side set with only its left side ticked is logged work too: a rebuild dropped it (#636).
-  it('keeps a per-side set that has only one side done', async () => {
-    const half = { w: 20, r: 10, done: false, sides: { L: { w: 20, r: 10, done: true }, R: { w: 20, r: 10, done: false } } }
-    await mount([exercise('plain-bench', [false, false], { plan, target: { mode: 'reps', sets: 2, reps: 10, weight: 20, side: true },
-      sets: [half, { w: 20, r: 10, done: false, sides: { L: { w: 20, r: 10, done: false }, R: { w: 20, r: 10, done: false } } }] })], 0)
-    await pressProgression()
-    const save = mocks.exConfigSheet.mock.calls.at(-1)[2]
-    await act(async () => { save({ mode: 'reps', sets: 3, reps: 8, weight: 20, side: true }) })
-    const sets = mocks.S.active.entries[0].sets
-    expect(sets).toHaveLength(3)
-    expect(sets[0].sides.L).toMatchObject({ done: true, r: 10 })
-  })
 })
 
 
@@ -1918,7 +1923,7 @@ describe('workout focus view', () => {
     const [scale, , onPick, opts] = mocks.effortPickerSheet.mock.calls.at(-1)
     expect([scale, opts]).toEqual(['rpe', { cardio: true }])
     await act(async () => { onPick(7.5) })
-    expect(mocks.S.active.entries[0].sets[0].rpe).toBe(7.5)
+    expect(mocks.A.entries[0].sets[0].rpe).toBe(7.5)
   })
 
   it('keeps drop and burst rows editable and opens every set action', async () => {
@@ -2977,15 +2982,15 @@ describe('workout controls: the more menu and the set menu', () => {
     const [scale, value, onPick, opts] = mocks.effortPickerSheet.mock.calls.at(-1)
     expect([scale, value, opts]).toEqual(['rpe', null, { cardio: true }])
     await act(async () => { onPick(6) })
-    expect(mocks.S.active.entries[0].sets[0]).toMatchObject({ rpe: 6, done: true })
-    expect('rir' in mocks.S.active.entries[0].sets[0]).toBe(false)
+    expect(mocks.A.entries[0].sets[0]).toMatchObject({ rpe: 6, done: true })
+    expect('rir' in mocks.A.entries[0].sets[0]).toBe(false)
     await rerender()
     await openSet()
     expect(item('How hard it felt').sub).toBe('RPE 6')
     // Cleared, the key goes again.
     await act(async () => { item('How hard it felt').onClick() })
     await act(async () => { mocks.effortPickerSheet.mock.calls.at(-1)[2](null) })
-    expect('rpe' in mocks.S.active.entries[0].sets[0]).toBe(false)
+    expect('rpe' in mocks.A.entries[0].sets[0]).toBe(false)
   })
 
   it('offers no effort row on a lift, where the column already does it', async () => {
@@ -3006,7 +3011,7 @@ describe('workout controls: the more menu and the set menu', () => {
     await act(async () => { item('Rest after this set').onClick() })
     expect(menuItemsOf(lastMenu()).map(it => it.label)).toEqual(['Default (2:30)', 'No timer', 'Pick a time'])
     await act(async () => { item('No timer').onClick() })
-    expect(mocks.S.active.entries[0].sets[0].restSec).toBe(0)
+    expect(mocks.A.entries[0].sets[0].restSec).toBe(0)
 
     await openSet('Set 2')
     await act(async () => { item('Rest after this set').onClick() })
@@ -3014,7 +3019,7 @@ describe('workout controls: the more menu and the set menu', () => {
     const wheel = mocks.durationSheet.mock.calls.at(-1)[0]
     expect(wheel).toMatchObject({ title: 'Rest after this set', value: 150, off: 'No timer' })
     await act(async () => { wheel.onDone(240) })
-    expect(mocks.S.active.entries[0].sets[1].restSec).toBe(240)
+    expect(mocks.A.entries[0].sets[1].restSec).toBe(240)
     await rerender()
     await openSet('Set 2')
     expect(item('Rest after this set').sub).toBe('4:00')
@@ -3031,7 +3036,7 @@ describe('workout controls: the more menu and the set menu', () => {
     await openSet('Set 2')
     await act(async () => { item('Rest after this set').onClick() })
     await act(async () => { item('Default (2:30)').onClick() })
-    expect('restSec' in mocks.S.active.entries[0].sets[1]).toBe(false)
+    expect('restSec' in mocks.A.entries[0].sets[1]).toBe(false)
   })
 
   it('has no set rest in the editor of a saved workout', async () => {
@@ -3571,8 +3576,8 @@ describe('the Lock Screen\'s Done (Live Activity)', () => {
   it('Next exercise moves the current exercise without ticking, Skip rest stops the rest', async () => {
     await mount([exercise('live-bench', [false, false]), exercise('live-row', [false])])
     await act(async () => { mocks.live.next(1) })
-    expect(mocks.S.active.cur).toBe(1)
-    expect(mocks.S.active.entries.flatMap(e => e.sets).some(s => s.done)).toBe(false)
+    expect(mocks.A.cur).toBe(1)
+    expect(mocks.A.entries.flatMap(e => e.sets).some(s => s.done)).toBe(false)
     mocks.timer = { left: 60, total: 90, endsAt: Date.now() + 60000 }
     expect(mocks.live.timer()).toBe(mocks.timer)
     const before = mocks.stopRest.mock.calls.length

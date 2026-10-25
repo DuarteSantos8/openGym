@@ -681,7 +681,7 @@ describe('loads are relative, units are irrelevant', () => {
     }
     // 100 kg x 8 anchors the session; the 90 kg back-off is RIR ~4.2, not RIR 10 against a
     // "20 kg max" that would only see the plates.
-    const anchor = estimate1RM(100, 8)
+    const anchor = estimate1RM(100, 8, 'epley')
     const backOffRir = 30 * (anchor / 90 - 1) - 8
     expect(backOffRir).toBeGreaterThan(4)
     expect(backOffRir).toBeLessThan(5)
@@ -698,14 +698,14 @@ describe('loads are relative, units are irrelevant', () => {
     const stamped = at(90)
     const unstamped = at(undefined)
     expect(anchorsByWorkout([stamped], { bodyweightKg: 70 }).get(stamped).get(bodyweight.id))
-      .toBeCloseTo(estimate1RM(90, 10), 6)
+      .toBeCloseTo(estimate1RM(90, 10, 'epley'), 6)
     expect(anchorsByWorkout([unstamped], { bodyweightKg: 70 }).get(unstamped).get(bodyweight.id))
-      .toBeCloseTo(estimate1RM(70, 10), 6)
+      .toBeCloseTo(estimate1RM(70, 10, 'epley'), 6)
     expect(anchorsByWorkout([unstamped]).get(unstamped).get(bodyweight.id))
-      .toBeCloseTo(estimate1RM(BODYWEIGHT_REF_LOAD, 10), 6)
+      .toBeCloseTo(estimate1RM(BODYWEIGHT_REF_LOAD, 10, 'epley'), 6)
     // A pound-stamped bodyweight is canonicalised like any other load.
     const lb = { ...at(176.3696), unit: 'lb' }
-    expect(anchorsByWorkout([lb]).get(lb).get(bodyweight.id)).toBeCloseTo(estimate1RM(80, 10), 1)
+    expect(anchorsByWorkout([lb]).get(lb).get(bodyweight.id)).toBeCloseTo(estimate1RM(80, 10, 'epley'), 1)
   })
 
   it('lets explicitly configured custom bodyweight work reset strength', () => {

@@ -20,7 +20,7 @@ import { queueView, queueNext, pinState } from '../../frontend/src/lib/queue.js'
 import { exOr, registerCustom } from '../../frontend/src/lib/exercises.js'
 import { isFailureSet } from '../../frontend/src/lib/workout-model.js'
 import {
-  bestSetOf, best1RM, e1rmSeries, DEFAULT_FORMULA, REP_CAP
+  bestSetOf, best1RM, e1rmSeries, FORMULAS, formulaOf, repCapOf
 } from '../../frontend/src/lib/onerm.js'
 import { loadOfWorkouts, rankOf, levelsOf } from '../../frontend/src/lib/muscles.js'
 import { missingReference, planOptions, planPhase } from '../../frontend/src/lib/prescription/index.js'
@@ -136,7 +136,7 @@ function plannedSets(S, w) {
 // Full breakdown of one exposure for get_workout: what the plan asked for (prescribed_target,
 // and per-set `prescribed`) versus what was actually logged (per-set `observed`) — get_workout's
 // whole job is not to blur these into one number the way a routine's own display would.
-function exposureView(S, exposure) {
+export function exposureView(S, exposure) {
   const ex = exerciseOf(exposure.exerciseId, S)
   const p = prescriptionOf(S, exposure)
   const mode = modeOfExposure(exposure.exerciseId, exposure)
@@ -192,7 +192,7 @@ function prTable(S, formula) {
       const prev = byId.get(exposure.exerciseId)
       if (!prev || best.est > prev.est) {
         const ex = exerciseOf(exposure.exerciseId, S)
-        byId.set(exposure.exerciseId, { exId: exposure.exerciseId, exName: ex.n, bp: ex.bp || null, est: best.est, w: best.w, r: best.r, date: w.d })
+        byId.set(exposure.exerciseId, { exId: exposure.exerciseId, exName: ex.n, bp: ex.bp || null, est: best.est, low: best.low, high: best.high, w: best.w, r: best.r, date: w.d })
       }
     }
   }
@@ -495,17 +495,17 @@ export const getBodyweight = {
 /** estimate_1rm — best-ever 1RM for one exercise or a PR table across all reps-mode exercises. */
 export const estimate1rm = {
   name: 'estimate_1rm',
-  description: `Estimate one-rep max using Epley, Brzycki or Lombardi formulas. If an exercise_id is given, returns the all-time best estimate for that exercise with the source set (weight × reps + date) and the trend across history. If no exercise_id is given, returns a PR table across all reps-mode exercises (sorted highest first). Refuses to guess above ${REP_CAP} reps — above that, formulas diverge past 10% and "work capacity" is read instead of "maximal strength".`,
+  description: `Estimate one-rep max with the profile's chosen formula (default: a weighted blend of seven formulas and the RIR scale), or any named formula. Every estimate carries a low–high range: how far the formulas disagree about the same set. If an exercise_id is given, returns the all-time best estimate for that exercise with the source set (weight × reps + date) and the trend across history. If no exercise_id is given, returns a PR table across all reps-mode exercises (sorted highest first). Refuses to guess above 12 reps for a single formula, 15 for the blend — above that, formulas diverge past 10% and "work capacity" is read instead of "maximal strength".`,
   schema: {
     // .min(1): an empty string is falsy, so it used to fall through to "no exercise_id given" and
     // answer a question about one exercise with the whole PR table.
     exercise_id: z.string().min(1).optional().describe('An exercise id from list_routines or get_workout entries. If omitted, returns a full PR table.'),
-    formula: z.enum(['epley', 'brzycki', 'lombardi']).optional().describe(`Formula to use. Defaults to ${DEFAULT_FORMULA}.`)
+    formula: z.enum([...Object.keys(FORMULAS), 'weighted']).optional().describe("Formula to use. Defaults to the profile's setting, which is 'weighted' (a blend of all) until the user picks one.")
   },
   handler: ({ exercise_id, formula }) => {
     const { S, error } = stateOrError()
     if (error) return error
-    const f = formula || DEFAULT_FORMULA
+    const f = formula || formulaOf(S)
     if (exercise_id) {
       const ex = exerciseOf(exercise_id, S)
       const best = best1RM(S, exercise_id, f)
@@ -523,20 +523,20 @@ export const estimate1rm = {
       return {
         exercise: { id: exercise_id, name: ex.n, body_part: ex.bp || null, ...(unknown ? { unknown: true } : {}) },
         formula: f,
-        formula_note: `Estimates use the ${f} formula. Cap at ${REP_CAP} reps applies; r=1 is treated as the measurement, not an estimate.`,
-        best: best ? { est: best.est, w: best.w, r: best.r, date: best.d } : null,
+        formula_note: `Estimates use the ${f} formula. Cap at ${repCapOf(f)} reps applies; r=1 is treated as the measurement, not an estimate.`,
+        best: best ? { est: best.est, low: best.low, high: best.high, w: best.w, r: best.r, date: best.d } : null,
         no_estimate_reason: best ? null
           : trainedAtAll
-            ? `This exercise has logged sets, but none of them qualify: every set was above the ${REP_CAP}-rep cap, or carried no weight. That is not the same as never having trained it.`
+            ? `This exercise has logged sets, but none of them qualify: every set was above the ${repCapOf(f)}-rep cap, or carried no weight. That is not the same as never having trained it.`
             : unknown
               ? `No exercise with id ${JSON.stringify(exercise_id)} exists — not in the catalogue, not among this profile's custom exercises, and nothing is logged against it. Check the id against list_routines or a get_workout entry.`
               : 'No completed sets logged for this exercise.',
-        trend: series.map(p => ({ date: p.d, est: p.y, w: p.w, r: p.r }))
+        trend: series.map(p => ({ date: p.d, est: p.y, low: p.low, high: p.high, w: p.w, r: p.r }))
       }
     }
     return {
       formula: f,
-      formula_note: `Estimates use the ${f} formula. Cap at ${REP_CAP} reps applies; r=1 is treated as the measurement, not an estimate.`,
+      formula_note: `Estimates use the ${f} formula. Cap at ${repCapOf(f)} reps applies; r=1 is treated as the measurement, not an estimate.`,
       pr_table: prTable(S, f)
     }
   }

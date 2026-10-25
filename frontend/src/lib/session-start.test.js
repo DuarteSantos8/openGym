@@ -61,7 +61,7 @@ describe('buildSessionExposures', () => {
 describe('occurrenceFor', () => {
   it('builds an occurrence from plain numbers', () => {
     const { rule } = occurrenceFor('0025', { sets: 4, reps: 6, weight: 50 }, { id: 'o1', unit: 'kg' })
-    expect(rule.preset).toBe('autoregulated')
+    expect(rule.preset).toBe('manual')
     expect(planPhase(rule).parameters).toMatchObject({ sets: { min: 4, max: 4 }, reps: { min: 6, max: 6 }, load: { mode: 'absolute', value: 50, unit: 'kg' } })
     expect(planPhase(occurrenceFor('0025', { sets: 3, sec: 45 }, { id: 'o2' }).rule).parameters).toMatchObject({ durationSeconds: { min: 45, max: 45 }, reps: { min: 1, max: 1 } })
   })
@@ -135,7 +135,7 @@ describe('warm-up inputs', () => {
     const exposure = ex => buildSessionExposures({ workouts: [], prescriptions: {}, progression: {}, oneRepMaxes: {} }, { id: 'rt', ex: [ex] }, { now: 0, newId: s => s })[0]
     const cardio = { ...occ('3220'), mode: 'cardio' }
     expect(exposure(cardio).mode).toBe('cardio')
-    expect(exposure({ ...occ('3220') }).mode).toBe('cardio')   // the catalogue knows it is cardio
+    expect(exposure({ ...occ('2331') }).mode).toBe('cardio')   // the catalogue knows it is cardio
     expect(exposure(occ('0025')).mode).toBe('reps')
     const hold = occ('0001')
     hold.rule = editPlan(hold.rule, { durationSeconds: { min: 30, max: 30 } })

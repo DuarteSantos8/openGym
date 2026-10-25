@@ -18,7 +18,7 @@
 import { ENGINE_SCHEMA, migrationStatus } from './profile-version.js';
 import { validOneRepMax, validateCanonicalProfile } from './profile-validation.js';
 import {
-  PRESETS, REPS_MAX, SET_REPS_MAX, currentOneRm, defaultPlanRule, estimate1RM,
+  PRESETS, REPS_MAX, SET_REPS_MAX, currentOneRm, defaultPlanRule, estimate1RMRange, formulaOf,
   generatePrescription, isValidDeloadFactor, migrateOccurrence, normalizeEffort, planFingerprint, planOptions, planPhase, presetForPolicy, replayProgression, summarizeActual, validateIntensifier, validatePlanRule
 } from '../engine/index.js';
 
@@ -60,7 +60,9 @@ const BODYWEIGHT_EQ = new Set(['body weight', 'band', 'resistance band']);
 // (an ab wheel, a stability ball…) is worked in reps when nothing is loaded on it.
 const LOADED_EQ = new Set(['barbell', 'ez barbell', 'olympic barbell', 'trap bar', 'dumbbell', 'kettlebell', 'cable', 'leverage machine', 'smith machine', 'sled machine', 'weighted']);
 const exerciseOf = (ctx, id) => records(ctx.state.customEx).find(c => String(c.id) === id) || ctx.catalogue.get(id) || null;
-const modeOf = (cfg, ex) => (MODES.includes(cfg?.mode) ? cfg.mode : ex?.bp === 'cardio' ? 'cardio' : 'reps');
+// A plan saved as minutes and speed stays cardio even where the catalogue has since moved its
+// exercise out of cardio (jumping jacks, #678): reclassifying must not rewrite a plan.
+const modeOf = (cfg, ex) => (MODES.includes(cfg?.mode) ? cfg.mode : cfg && (cfg.min != null || cfg.speed != null) && cfg.reps == null && cfg.sec == null ? 'cardio' : ex?.bp === 'cardio' ? 'cardio' : 'reps');
 const isBodyweight = (cfg, ex) => (cfg?.bodyweight != null ? !!cfg.bodyweight : BODYWEIGHT_EQ.has(ex?.eq));
 const isAssisted = ex => (typeof ex?.assisted === 'boolean' ? ex.assisted
   : ex?.eq === 'leverage machine' && /\bassist(ed)?\b/i.test(String(ex?.n || '')));
@@ -187,7 +189,7 @@ const samePlanV1 = (a, b) => PLAN_KEYS.every(k => (a[k] ?? null) === (b[k] ?? nu
 // one thing left over here — `deloadFactor` and cardio `speed` now have rule fields of their own.
 function noteUnsupported(d, out) {
   const at = { routineId: d.routineId, occurrenceId: d.occurrenceId, exerciseId: d.exerciseId };
-  if (d.preset === 'autoregulated' && typeof d.policy === 'string' && d.policy && d.policy !== 'off'
+  if (d.preset === 'manual' && typeof d.policy === 'string' && d.policy && d.policy !== 'off'
     && (d.cfg.prog || !['linear', 'greyskull', 'double', 'time'].includes(d.policy))) out.push({ ...at, field: 'prog', value: d.policy });
 }
 
@@ -254,7 +256,7 @@ const occurrenceOf = d => ({
   ...Object.fromEntries(['dbLoad', 'lastToFailure', 'backoff'].filter(k => d.cfg[k] != null).map(k => [k, clone(d.cfg[k])])),
   ...(d.intensifier ? { intensifier: d.intensifier } : {}),
   // What the cardio sheet edits (sheets.jsx): the rule holds the same numbers for the engine.
-  ...(d.mode === 'cardio' ? { cardio: { sets: planPhase(d.rule).parameters.sets.min, min: planPhase(d.rule).parameters.durationSeconds.min / 60, speed: planPhase(d.rule).parameters.speed } } : {})
+  ...(d.mode === 'cardio' ? { cardio: { sets: planPhase(d.rule).parameters.sets.min, min: planPhase(d.rule).parameters.durationSeconds.min / 60, speed: planPhase(d.rule).parameters.speed, ...(num(d.cfg.incline) > 0 ? { incline: num(d.cfg.incline) } : {}) } } : {})
 });
 
 /* ---------- history ---------- */
@@ -539,19 +541,20 @@ function oneRepMaxesOf(ctx, workouts, unit) {
     else ctx.stray.push({ path: `oneRepMaxes[${key}]`, value: clone(r) });
   }
   const best = new Map();
+  const formula = formulaOf(state);
   for (const w of workouts) for (const x of w.exposures) {
     // An assistance machine has no 1RM: the load is the help you were given (issue #232).
     if (x.mode !== 'reps' || (typeof x.assisted === 'boolean' ? x.assisted : ctx.prescriptions[x.prescriptionId]?.assisted ?? isAssisted(exerciseOf(ctx, x.exerciseId)))) continue;
     for (const row of x.performance.sets) {
       if (row.status !== 'completed' || row.role === 'warmup' || row.resistance.kind !== 'external-load') continue;
-      const value = estimate1RM(row.resistance.value, repsOf(row));
-      if (Number.isFinite(value) && value > (best.get(x.exerciseId)?.value ?? 0)) best.set(x.exerciseId, { value, capturedAt: x.completedAt, sourceRecordId: x.exposureId });
+      const range = estimate1RMRange(row.resistance.value, repsOf(row), formula, row.rir ?? null);
+      if (range && range.mid > (best.get(x.exerciseId)?.value ?? 0)) best.set(x.exerciseId, { value: range.mid, low: range.low, high: range.high, capturedAt: x.completedAt, sourceRecordId: x.exposureId });
     }
   }
   for (const [exerciseId, b] of best) {
     const id = `one-rep-max:migrated:${exerciseId}`;
     if (out[id] || b.value <= (currentOneRm(out, exerciseId)?.value ?? 0)) continue;
-    out[id] = { id, exerciseId, value: b.value, unit, source: 'estimated', capturedAt: b.capturedAt, sourceRecordId: b.sourceRecordId };
+    out[id] = { id, exerciseId, value: b.value, low: b.low, high: b.high, unit, source: 'estimated', capturedAt: b.capturedAt, sourceRecordId: b.sourceRecordId };
   }
   return out;
 }
@@ -583,7 +586,7 @@ function migrateActive(active, ctx) {
     const planned = isObj(entry.planned) ? entry.planned : null;
     const frozen = d ? d.freeze(planned, values, fit(d.step)) : null;
     const rule = d ? frozen.rule : ruleFrom(values, {
-      id: `rule:${id}:${j}`, routineId: null, exerciseId, preset: 'autoregulated', unit: ctx.unit,
+      id: `rule:${id}:${j}`, routineId: null, exerciseId, preset: 'manual', unit: ctx.unit,
       mode: modeOf(target, info), step: fit(STEPS[ctx.unit][0]), rest: ctx.rest
     });
     const trackId = d ? d.occurrenceId : `${id}:t${j}`;

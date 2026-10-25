@@ -130,8 +130,9 @@ on every read, v2 **stores what the engine decided**:
 
 - a routine slot is an *occurrence* `{ occurrenceId, exerciseId, rule, … }` whose `PlanRule` carries a
   `program` — phases of set groups, operators that step load/reps/sets/seconds/rest/rung, a back-off,
-  exits — built by one of 13 templates (`preset`: the 10 v1-era ones plus `top_set_backoff`,
-  `accumulation_intensification`, `density`); the engine reads the program, never the name;
+  exits — built by one of 15 templates (`preset`: the 10 v1-era ones plus `top_set_backoff`,
+  `accumulation_intensification`, `density`, `double_controlled`, `undulating`); the engine reads
+  the program, never the name;
 - starting a session generates one **frozen, content-hashed `Prescription`** per occurrence
   (`prescriptions{}`); a logged exercise is an *exposure* `{ exposureId, prescriptionId,
   performance.sets[], actual, audit }` in `workout.exposures[]`, so history never changes when a

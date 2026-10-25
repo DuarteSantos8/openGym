@@ -41,7 +41,7 @@ export function auditExecution(prescription, actual, state = null) {
   // A Max set is as many reps as you can: there is nothing to be outside of.
   if (planned.max) { /* no finding */ }
   // An AMRAP set's ceiling is not a ceiling.
-  else if (planned.amrap) { if (actual.reps != null && actual.reps < planned.reps.min) out.push(finding('below_range', 'reps', planned.reps, actual.reps, at)) }
+  else if (planned.amrap || planned.failure) { if (actual.reps != null && actual.reps < planned.reps.min) out.push(finding('below_range', 'reps', planned.reps, actual.reps, at)) }
   else outside(out, 'reps', planned.reps, actual.reps, at)
   const load = actual.load?.value
   if (load != null) {
@@ -51,8 +51,10 @@ export function auditExecution(prescription, actual, state = null) {
     const cap = prescription.target.resolved?.value
     if (cap != null && (prescription.assisted ? load < cap : load > cap)) out.push(finding('above_cap', 'load', cap, load, at))
   }
-  outside(out, 'durationSeconds', p.durationSeconds, actual.durationSeconds, at)
-  outside(out, 'rir', p.rir, normalizeEffort(actual).rir, at)
+  if (planned.failure && p.durationSeconds) {
+    if (actual.durationSeconds != null && actual.durationSeconds < p.durationSeconds.min) out.push(finding('below_range', 'durationSeconds', p.durationSeconds, actual.durationSeconds, at))
+  } else outside(out, 'durationSeconds', p.durationSeconds, actual.durationSeconds, at)
+  outside(out, 'rir', planned.failure ? { min: 0, max: 0 } : p.rir, normalizeEffort(actual).rir, at)
   return out
 }
 
@@ -91,6 +93,7 @@ export function summarizeActual(prescription, performed) {
   const durationSeconds = least(deciding.map(s => s.durationSeconds))
   const speed = least(deciding.map(s => s.speed))
   const rir = least(deciding.map(s => normalizeEffort(s).rir))
+  const progressionRir = least(deciding.filter(s => !rows[s.row]?.failure).map(s => normalizeEffort(s).rir))
   const rpes = deciding.map(s => s.rpeEntered).filter(Number.isFinite)
   return {
     sets: done,
@@ -103,6 +106,7 @@ export function summarizeActual(prescription, performed) {
     ...(durationSeconds != null ? { durationSeconds } : {}),
     ...(speed != null ? { speed } : {}),
     ...(rir != null ? { rir } : {}),
+    ...(rows.some(r => r.failure) ? { progressionRir } : {}),
     ...(rpes.length ? { rpeEntered: Math.max(...rpes) } : {})
   }
 }

@@ -15,8 +15,8 @@ import { workoutAt } from './history.js'
 
 // The formulas and the single-set estimate live with the engine
 // (api/engine/one-rm.js), so the API's profile migration uses the same numbers.
-import { currentOneRm, DEFAULT_FORMULA, FORMULAS, REP_CAP, WEIGHTED_REP_CAP, FORMULA_NAMES, formulaOf, ensembleCV, weightedEstimate, estimate1RM } from './prescription/index.js'
-export { DEFAULT_FORMULA, FORMULAS, REP_CAP, WEIGHTED_REP_CAP, FORMULA_NAMES, formulaOf, ensembleCV, weightedEstimate, estimate1RM }
+import { currentOneRm, DEFAULT_FORMULA, FORMULAS, REP_CAP, WEIGHTED_REP_CAP, FORMULA_NAMES, formulaOf, ensembleCV, weightedEstimate, estimate1RM, estimate1RMRange, repCapOf } from './prescription/index.js'
+export { DEFAULT_FORMULA, FORMULAS, REP_CAP, WEIGHTED_REP_CAP, FORMULA_NAMES, formulaOf, ensembleCV, weightedEstimate, estimate1RM, estimate1RMRange, repCapOf }
 
 // Best estimate out of one workout entry's completed sets.
 // `topW` is ignored on purpose: it records the working weight a user confirmed after the
@@ -31,8 +31,8 @@ export function bestSetOf(exposure, formula = DEFAULT_FORMULA) {
     if (row.status !== 'completed' || row.role === 'warmup') return
     const reps = row.observations?.find(x => x.metric === 'repetitions')?.value
     const weight = row.resistance?.kind === 'external-load' ? row.resistance.value : null
-    const est = estimate1RM(weight, reps, formula, row.rir ?? null)
-    if (est !== null && (!best || est > best.est)) best = { est, w: Number(weight), r: Math.round(Number(reps)) }
+    const range = estimate1RMRange(weight, reps, formula, row.rir ?? null)
+    if (range && (!best || range.mid > best.est)) best = { est: range.mid, low: range.low, high: range.high, w: Number(weight), r: Math.round(Number(reps)) }
   })
   return best
 }
@@ -54,7 +54,7 @@ export function e1rmSeries(S, exId, formula = formulaOf(S), as = currentDbLoad(S
     const w = workoutAs(stored, exId, as)
     // A combined session can hold the exercise twice: one point, from its strongest occurrence.
     const best = bestSetOfEntries((w.exposures || []).filter(x => x.exerciseId === exId), formula)
-    if (best) pts.push({ t: workoutAt(w), d: w.d, y: best.est, w: best.w, r: best.r })
+    if (best) pts.push({ t: workoutAt(w), d: w.d, y: best.est, low: best.low, high: best.high, w: best.w, r: best.r })
   })
   return pts
 }
@@ -63,7 +63,7 @@ export function e1rmSeries(S, exId, formula = formulaOf(S), as = currentDbLoad(S
 // matters, because "142.5 kg est. from 100×10" is a very different claim from "from 140×1".
 export function best1RM(S, exId, formula = formulaOf(S), as) {
   let best = null
-  e1rmSeries(S, exId, formula, as ?? currentDbLoad(S, exId)).forEach(p => { if (!best || p.y > best.est) best = { est: p.y, w: p.w, r: p.r, d: p.d, t: p.t } })
+  e1rmSeries(S, exId, formula, as ?? currentDbLoad(S, exId)).forEach(p => { if (!best || p.y > best.est) best = { est: p.y, low: p.low, high: p.high, w: p.w, r: p.r, d: p.d, t: p.t } })
   return best
 }
 
@@ -110,5 +110,5 @@ export function oneRmForMeaning(profile, exerciseId, meaning) {
   const source = (profile.workouts || []).flatMap(w => w.exposures || []).find(x => x.exposureId === record.sourceRecordId)
   const from = dbLoadOf(record.dbLoad) || (source ? entryDbLoad(source) : 'as')
   const factor = meaningFactor(from, meaning, { id: exerciseId, side: source?.side, bells: source?.bells })
-  return factor === 1 ? record : { ...record, value: record.value * factor }
+  return factor === 1 ? record : { ...record, value: record.value * factor, ...(record.low != null ? { low: record.low * factor, high: record.high * factor } : {}) }
 }

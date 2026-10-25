@@ -11,6 +11,7 @@
 import { EXIDX, canonicalExId, isBodyweightEq, isCustomEx } from './exercises.js'
 import { cleanBackups } from './routine-backups.js'
 import { cleanUrl } from './media-refs.js'
+import { failureSetsOf, hasFailurePlan } from './failure-selection.js'
 import { modeOf, fmtSec, isBw, isPerSide, sideReps, exLine, MAX_PLANNED_WARMUPS } from './history.js'
 import { deriveSessionName } from './session-merge.js'
 import { uid, todayISO, DAYN, weekOrder, weekStartOf, fmtNum, exCount, routineCount, weightDecimals } from './format.js'
@@ -19,6 +20,7 @@ import { convertStateUnit } from './units.js'
 import { migrateProfileV1ToV2 } from '../../../api/migration/profile-migration.js'
 import { LIB_BY_ID } from '../../../api/coach/core/library.js'
 import { fmtSpeed, speedUnitOf } from './speed.js'
+import { clampIncline } from './incline.js'
 import { MUSCLES, inMuscleOrder } from './muscles.js'
 import { SG_NAME_MAX } from './superset-meta.js'
 import { esc, printShell, printDocument, probeMarks } from './print-doc.js'
@@ -64,6 +66,10 @@ function cleanOccurrence(o) {
   const out = { occurrenceId: o.occurrenceId, exerciseId: o.exerciseId, order: o.order, mode: o.mode }
   if (o.rule) out.rule = o.rule
   for (const key of ['side', 'bodyweight', 'assisted', 'excludeFromProgression', 'lastToFailure', 'backoff']) if (typeof o[key] === 'boolean') out[key] = o[key]
+  // Sets to failure: the flag above for the last set; a list of set numbers or 'all' for more.
+  const failureSets = failureSetsOf({ failureSets: o.failureSets })
+  if (failureSets === 'last') out.lastToFailure = true
+  else if (hasFailurePlan({ failureSets })) out.failureSets = failureSets
   // The warm-ups' "no timer" and their own rest, and the break between sides, travel only when set.
   const warmupRest = cleanRestSec(o.warmupRestSec)
   if (o.warmupRestOff === true) out.warmupRestOff = true
@@ -77,6 +83,11 @@ function cleanOccurrence(o) {
   if (subs.length) out.subs = subs
   if (['each', 'total', 'as'].includes(o.dbLoad)) out.dbLoad = o.dbLoad
   if (o.laterality) out.laterality = o.laterality
+  // What the cardio sheet edits (sets, minutes, speed, the treadmill's grade), cleaned like any field of someone else's file.
+  if (o.cardio && typeof o.cardio === 'object') {
+    const c = o.cardio, incline = clampIncline(c.incline)
+    out.cardio = { sets: Math.max(1, Math.round(Number(c.sets)) || 1), min: Math.max(1, Math.round(Number(c.min)) || 20), speed: Math.max(0, Number(c.speed) || 8), ...(incline > 0 ? { incline } : {}) }
+  }
   if (o.sg) {
     out.sg = o.sg
     // A superset's name and its rest between rounds (#292) ride on every member, so they travel with the group.
@@ -318,7 +329,7 @@ function schemeParts(e, unit, speedUnit) {
     return [sets > 1 ? `${sets} × ${body}` : body]
   }
   const line = exLine({ ...e, reps: e.reps ?? 10 }, unit, speedUnit)
-  const extras = [intensifierLine(e.intensifier), e.lastToFailure === true ? t('Last set to failure') : ''].filter(Boolean)
+  const extras = [intensifierLine(e.intensifier), failureLine(e)].filter(Boolean)
   return [line, ...extras]
 }
 // The extra lines keep their " · " in the text (hidden on paper), so copied text reads as one line.
@@ -341,6 +352,13 @@ function cleanIntensifier(x) {
 
 // A drop-set or rest-pause is how the exercise is prescribed, so the printout names it — the
 // sheet at the rack otherwise reads as plain straight sets.
+// What the plan takes to failure, as a printout line ("Last set to failure", "Sets to failure: 1, 3").
+function failureLine(e) {
+  const selection = failureSetsOf(e)
+  if (selection === 'last') return t('Last set to failure')
+  if (selection === 'all') return t('All sets to failure')
+  return selection.length ? t('Sets to failure: {0}', selection.join(', ')) : ''
+}
 function intensifierLine(x) {
   const intens = cleanIntensifier(x)
   if (!intens) return ''
@@ -470,7 +488,7 @@ export function planPrintHTML(S, owner, { routineId, probe = false } = {}) {
   const routines = routineId ? [single].filter(Boolean) : (S.routines || []).filter(r => r.ex && r.ex.length)
   const lead = routineId ? '' : `<h3 class="sec-h">${esc(t('Routines'))}</h3>`
   const body = routines.length
-    ? routines.map((r, i) => routineHTML(r, unit, { bare: !!single, speedUnit, ticks: !!single, lead: i === 0 ? lead : '', m, key: 'r' + i })).join('')
+    ? routines.map((r, i) => routineHTML({ ...r, ex: r.ex.map(e => ({ ...e, ...coachExOf(e, EXIDX[e.exerciseId ?? e.id]), ...(e.note ? { note: e.note } : {}) })) }, unit, { bare: !!single, speedUnit, ticks: !!single, lead: i === 0 ? lead : '', m, key: 'r' + i })).join('')
     : `<p class="none">${esc(t('No routines yet.'))}</p>`
   const title = single ? single.name : t('Weekly Training Plan')
   const facts = single ? [exCount(single.ex.length)] : [routineCount(routines.length)]

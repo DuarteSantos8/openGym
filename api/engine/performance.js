@@ -28,14 +28,14 @@ function legacySet(row, mode) {
 
 function targetOf(exposure, p) {
   // A migrated v1 entry no prescription could hold keeps what v1 prescribed for it (migration).
-  if (!p) return exposure.legacyTarget || exposure.mode || ['side', 'bodyweight', 'assisted', 'dbLoad'].some(k => exposure[k] != null) ? { ...(exposure.mode ? { mode: exposure.mode } : {}), ...(exposure.legacyTarget || {}), ...Object.fromEntries(['side', 'bodyweight', 'assisted', 'dbLoad', 'bells', 'lastToFailure', 'backoff'].filter(k => exposure[k] != null).map(k => [k, exposure[k]])) } : null
+  if (!p) return exposure.legacyTarget || exposure.mode || ['side', 'bodyweight', 'assisted', 'dbLoad'].some(k => exposure[k] != null) ? { ...(exposure.mode ? { mode: exposure.mode } : {}), ...(exposure.legacyTarget || {}), ...Object.fromEntries(['side', 'bodyweight', 'assisted', 'dbLoad', 'bells', 'lastToFailure', 'failureSets', 'backoff'].filter(k => exposure[k] != null).map(k => [k, exposure[k]])) } : null
   // v1's cardio target is minutes and speed; a hold's is seconds.
   const duration = p.prefill.durationSeconds == null ? {}
     : exposure.mode === 'cardio' ? { min: p.prefill.durationSeconds / 60, ...(p.prefill.speed != null ? { speed: p.prefill.speed } : {}) }
       : { sec: p.prefill.durationSeconds }
   return {
     mode: exposure.mode || 'reps',
-    ...Object.fromEntries(['side', 'bodyweight', 'assisted', 'intensifier', 'warmupRestSec', 'dbLoad', 'bells', 'lastToFailure', 'backoff'].filter(k => exposure[k] != null).map(k => [k, exposure[k]])), sets: p.rows.length, reps: p.prefill.reps, ...duration,
+    ...Object.fromEntries(['side', 'bodyweight', 'assisted', 'intensifier', 'warmupRestSec', 'dbLoad', 'bells', 'lastToFailure', 'failureSets', 'backoff'].filter(k => exposure[k] != null).map(k => [k, exposure[k]])), sets: p.rows.length, reps: p.prefill.reps, ...duration,
     ...(p.parameters.load.resolved ? { weight: p.parameters.load.resolved.value } : {})
   }
 }
@@ -50,6 +50,7 @@ export function legacyEntriesOf(workout, prescriptions = {}) {
   if (!Array.isArray(workout?.exposures)) return workout?.entries || []
   return workout.exposures.map(x => ({
     id: x.exerciseId, rid: x.routineId ?? null,
+    ...(x.sg ? { sg: x.sg } : {}),
     target: targetOf(x, prescriptions?.[x.prescriptionId]),
     ...(prescriptions?.[x.prescriptionId] ? { planned: plannedOf(prescriptions[x.prescriptionId]) } : x.legacyPlanned ? { planned: x.legacyPlanned } : {}),
     ...(x.muscleSnapshot ? { muscleSnapshot: x.muscleSnapshot } : {}),
