@@ -3,9 +3,9 @@
   "name": "dumbbell side bend v. 2",
   "bodyPart": "waist",
   "equipment": "dumbbell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "lower back"
   ],
   "category": "strength",

@@ -3,8 +3,9 @@
   "name": "hands bike",
   "bodyPart": "chest",
   "equipment": "upper body ergometer",
-  "target": "pectorals",
+  "target": "cardiovascular system",
   "secondaryMuscles": [
+    "chest",
     "triceps",
     "shoulders"
   ],

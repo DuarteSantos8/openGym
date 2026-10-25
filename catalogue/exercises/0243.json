@@ -3,9 +3,9 @@
   "name": "cable twist",
   "bodyPart": "waist",
   "equipment": "cable",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques"
+    "abdominals"
   ],
   "category": "strength",
   "description": "A standing cable twist with the handle held at the chest. You rotate the torso side to side to work the abs and obliques.",

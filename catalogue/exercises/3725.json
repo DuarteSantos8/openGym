@@ -3,9 +3,9 @@
   "name": "barbell overhead lunge",
   "bodyPart": "upper legs",
   "equipment": "barbell",
-  "target": "quads",
+  "target": "glutes",
   "secondaryMuscles": [
-    "glutes",
+    "quadriceps",
     "shoulders",
     "core",
     "hamstrings"

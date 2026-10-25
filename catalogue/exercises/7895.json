@@ -3,12 +3,11 @@
   "name": "kneeling rotation torso rear fly to thread through",
   "bodyPart": "back",
   "equipment": "body weight",
-  "target": "upper back",
+  "target": "delts",
   "secondaryMuscles": [
     "rhomboids",
     "rear deltoids",
-    "obliques",
-    "shoulders"
+    "obliques"
   ],
   "category": "mobility",
   "description": "A kneeling thoracic mobility move combining a rear fly and a thread-the-needle reach.",

@@ -3,8 +3,9 @@
   "name": "kettlebell double windmill",
   "bodyPart": "waist",
   "equipment": "kettlebell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
+    "abdominals",
     "shoulders",
     "hamstrings"
   ],

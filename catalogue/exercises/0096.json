@@ -3,9 +3,9 @@
   "name": "barbell side bent v. 2",
   "bodyPart": "waist",
   "equipment": "barbell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "lower back"
   ],
   "category": "strength",

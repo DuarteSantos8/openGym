@@ -3,9 +3,9 @@
   "name": "roll anterior calf foam rolling",
   "bodyPart": "lower legs",
   "equipment": "roller",
-  "target": "calves",
+  "target": "shins",
   "secondaryMuscles": [
-    "shins",
+    "calves",
     "ankles"
   ],
   "category": "mobility",

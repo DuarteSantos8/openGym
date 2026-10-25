@@ -3,9 +3,8 @@
   "name": "seated twist (on stability ball)",
   "bodyPart": "waist",
   "equipment": "stability ball",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "core",
     "lower back"
   ],

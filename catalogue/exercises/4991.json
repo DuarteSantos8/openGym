@@ -3,9 +3,8 @@
   "name": "side plank rotation",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "shoulders",
     "core",
     "glutes"

@@ -3,9 +3,9 @@
   "name": "side floor tap plank",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "shoulders",
     "glutes"
   ],

@@ -3,9 +3,9 @@
   "name": "squat mobility complex",
   "bodyPart": "upper legs",
   "equipment": "body weight",
-  "target": "glutes",
+  "target": "quads",
   "secondaryMuscles": [
-    "quadriceps",
+    "glutes",
     "hamstrings",
     "adductors",
     "ankles"

@@ -3,9 +3,9 @@
   "name": "barbell bent over wide row plus",
   "bodyPart": "back",
   "equipment": "barbell",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
+    "lats",
     "rhomboids",
     "biceps",
     "rear deltoids"

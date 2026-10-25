@@ -3,8 +3,9 @@
   "name": "resistance band plank march",
   "bodyPart": "upper legs",
   "equipment": "band",
-  "target": "quads",
+  "target": "abs",
   "secondaryMuscles": [
+    "quadriceps",
     "core",
     "hip flexors",
     "glutes"

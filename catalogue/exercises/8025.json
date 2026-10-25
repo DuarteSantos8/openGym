@@ -3,9 +3,8 @@
   "name": "kettlebell wood chop",
   "bodyPart": "waist",
   "equipment": "kettlebell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "shoulders",
     "glutes",
     "core"

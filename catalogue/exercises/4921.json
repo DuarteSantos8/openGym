@@ -3,9 +3,9 @@
   "name": "ring high row",
   "bodyPart": "back",
   "equipment": "suspension trainer",
-  "target": "upper back",
+  "target": "lats",
   "secondaryMuscles": [
-    "lats",
+    "upper back",
     "biceps",
     "rear deltoids"
   ],
