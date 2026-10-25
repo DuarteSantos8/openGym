@@ -110,7 +110,10 @@ public class HealthConnectPluginTest {
         for (String type : new String[] { "walking", "running", "biking_stationary", "elliptical",
                 "stair_climbing_machine", "other_workout" }) {
             payload.put("type", type).put("segments", new JSONArray().put(segment(0, 60000, "bench_press", 8)));
-            assertTrue(HealthConnectPlugin.session(payload, 1).getSegments().isEmpty());
+            assertEquals(1, HealthConnectPlugin.session(payload, 1).getSegments().size());
+            int actual = HealthConnectPlugin.session(payload, 1).getSegments().get(0).getSegmentType();
+            assertEquals("other_workout".equals(type) ? ExerciseSegment.EXERCISE_SEGMENT_TYPE_BENCH_PRESS
+                    : ExerciseSegment.EXERCISE_SEGMENT_TYPE_OTHER_WORKOUT, actual);
         }
     }
 
@@ -123,4 +126,46 @@ public class HealthConnectPluginTest {
         assertEquals("opengym-bw-2026-09-17", record.getMetadata().getClientRecordId());
         assertEquals(42, record.getMetadata().getClientRecordVersion());
     }
+    @Test
+    public void extendedFieldsAreGatedAndInvalidOptionalFieldsNeverLoseTheSet() throws Exception {
+        JSONObject row = segment(59999, 60000, "bench_press", 8)
+                .put("weightKg", 60).put("setIndex", 2).put("rpe", 8.5);
+        JSONObject payload = session(new JSONArray().put(row));
+        ExerciseSegment old = HealthConnectPlugin.session(payload, 1, false).getSegments().get(0);
+        assertNull(old.getWeight());
+        assertNull(old.getSetIndex());
+        assertNull(old.getRateOfPerceivedExertion());
+        ExerciseSegment rich = HealthConnectPlugin.session(payload, 1, true).getSegments().get(0);
+        assertEquals(60, rich.getWeight().getKilograms(), 0);
+        assertEquals(Integer.valueOf(2), rich.getSetIndex());
+        assertEquals(8.5f, rich.getRateOfPerceivedExertion(), 0);
+        row.put("weightKg", -1).put("setIndex", 1.5).put("rpe", 11);
+        ExerciseSegment invalid = HealthConnectPlugin.session(payload, 1, true).getSegments().get(0);
+        assertEquals(8, invalid.getRepetitions());
+        assertNull(invalid.getWeight());
+        assertNull(invalid.getSetIndex());
+        assertNull(invalid.getRateOfPerceivedExertion());
+    }
+
+    @Test
+    public void mixedSessionRetainsCardioAndAllMovementTypes() throws Exception {
+        String[] types = { "bench_press", "lat_pull_down", "squat", "arm_curl",
+                "double_arm_triceps_extension", "lateral_raise", "leg_curl", "running",
+                "weightlifting", "other_workout", "yoga", "pilates", "stretching",
+                "back_extension", "hip_thrust", "front_raise", "leg_raise", "upper_twist",
+                "biking", "biking_stationary", "rowing_machine", "elliptical", "walking",
+                "stair_climbing", "stair_climbing_machine", "swimming_freestyle",
+                "swimming_backstroke", "swimming_breaststroke", "swimming_butterfly",
+                "swimming_other", "jump_rope", "jumping_jack", "punch", "ball_slam",
+                "mountain_climber", "hula_hoop", "single_arm_triceps_extension" };
+        JSONArray rows = new JSONArray();
+        for (int i = 0; i < types.length; i++) rows.put(segment(i * 1000, i * 1000 + 1, types[i], 8));
+        ExerciseSessionRecord record = HealthConnectPlugin.session(session(rows).put("type", "other_workout"), 1);
+        assertEquals(types.length, record.getSegments().size());
+        for (ExerciseSegment seg : record.getSegments()) {
+            assertNotEquals(ExerciseSegment.EXERCISE_SEGMENT_TYPE_UNKNOWN, seg.getSegmentType());
+            assertTrue(ExerciseSegment.isSegmentTypeCompatibleWithSessionType(seg.getSegmentType(), record.getExerciseType()));
+        }
+    }
+
 }

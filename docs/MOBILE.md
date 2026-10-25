@@ -187,9 +187,8 @@ that.
 
 - **What is written:** each finished workout as an exercise session — its start and end, its name
   as the title, the exercises and sets as "Copy as text" writes them as the notes, and a type
-  (strength training as soon as one exercise is not cardio; walking, running, stationary bike,
-  elliptical or stair machine for a cardio-only workout on a catalogue machine; "other" otherwise).
-  Strength sessions also carry individual completed set rows as exercise segments where their
+  (strength for resistance work, appropriate cardio/movement classes, or "other" for mixed
+  incompatible classes). Sessions also carry individual completed set rows as segments where their
   timing is usable (details below). Each weigh-in as a weight record, in kilograms. A workout
   without a real start and end is left out rather than given made-up times. `src/lib/health-connect.js` works this out; its tests
   pin it.
@@ -210,61 +209,86 @@ that.
 - **Where it shows:** Android 14 and later have Health Connect built in. On Android 9–13 it is an
   app of its own, and the card offers its store page until it is installed. Below Android 9 (the
   app supports Android 7) Health Connect does not exist and the card is not shown.
-- **The library:** `androidx.health.connect:connect-client` 1.1.0, called from Java
-  (`HealthConnectPlugin.java`) through `runBlocking` on a worker thread, so the Android project stays
-  Java-only. 1.1.0 stable needs compileSdk 36 and AGP 8.9.1, a toolchain bump left for its own
-  change. The library asks for minSdk 26; `tools:overrideLibrary` keeps the app at 23 and the plugin
-  checks the version before touching it.
+- **The library:** `androidx.health.connect:connect-client:1.2.0-alpha03`, called from Java
+  through `runBlocking` on a worker thread. This is the first release with structured segment
+  weight, set index and RPE. Its AAR requires compile SDK 36 extension 19; AGP stays 8.13.0,
+  target SDK stays 36 and app minSdk stays 24. The library's minSdk 26 override remains, with
+  every plugin entry point checking Android 9 before using Health Connect classes.
 
-#### Strength exercise segments
+#### Individual sets and catalogue mapping
 
-The existing export builder adds segments to the same session, with the same client id. On the
-next sync, sessions that gain detail are replaced once; they are not separate workouts. Body
-weight, cardio-only session types, and the Apple Health payload stay as before.
+The existing export writes individual usable completed sets as segments inside the same session.
+There is no parallel export or additional permission. Existing client ids, replacement, deletion,
+weigh-ins and the Apple Health payload are retained.
 
-- **Mapping:** a reviewed allowlist of permanent catalogue ids in
-  [health-connect-segments.js](../frontend/src/lib/health-connect-segments.js), resolved through
-  the existing drawing-id aliases. The native plugin maps its tokens to AndroidX constants.
-  Supported movements include bench presses, deadlifts, squats, shoulder presses, arm curls,
-  dumbbell rows/raises, lat pulldowns, leg curls/extensions/press, lunges, crunches, sit-ups,
-  pull-ups/chin-ups, static front planks, kettlebell swings and burpees. Only the listed variants
-  are mapped; neither translated names, muscle groups nor custom exercise names decide a type.
-  Equipment, grip and assistance differences that Health Connect cannot distinguish are lost.
-- **Unsupported movements:** `UNKNOWN`, preserving repetitions without claiming a different
-  movement. Health Connect 1.1.0 has no push-up, dip, calf-raise or generic barbell-row segment.
-  Unlisted variants and custom exercises also use `UNKNOWN`. Walking/biking/etc. segments are
-  incompatible with a strength session, so cardio rows in mixed sessions use `UNKNOWN` with no
-  repetitions. The overall session remains strength training.
-- **Sets and reps:** one segment per completed row, including warm-ups, with the logged
-  repetitions (AndroidX `repetitions`, exposed as `repetitionsCount` by the platform API).
-  A drop-set adds its drops' reps to the main reps; a rest-pause row already holds the total,
-  so its clusters are not added again. Per-side rows sum only completed limbs and their drops.
-  They share one row timestamp, so there is no invented left/right timeline. Zero external
-  load does not prevent a bodyweight exercise from exporting. Invalid/non-integer/overflowing
-  rep counts use 0 (not recorded); timed/cardio rows also use 0.
-- **Timing:** openGym stores completion ticks (`at`), not lifting-set start times. Rep segments
-  use the window from the preceding completed row's tick (or session start) to their own tick.
-  **These windows include rest and are not measured active lifting durations.** Rows are sorted
-  by tick, so supersets interleave correctly. Timed holds/cardio use their logged seconds/minutes
-  ending at the tick, only when the whole duration fits after the preceding tick. No segment
-  extends the session, overlaps another, or has zero duration. Missing, duplicate or
-  out-of-session ticks, and durations that cannot fit, leave that row in the existing session
-  notes only (which retain their existing work-set-only formatting). Imported, backfilled or
-  moved sessions with no usable ticks still export their overall session. No rep tempo or
-  historical set times are fabricated.
-- **Version limits:** this uses the pinned `connect-client:1.1.0`, including on Android 9–13's
-  Health Connect provider. No new permissions, feature flag, Android API requirement or SDK
-  upgrade is needed. That version cannot encode per-segment weight, catalogue id/name, set
-  index, warm-up/drop/rest-pause labels, RIR or RPE. Existing session notes remain available.
-  Consumers decide whether/how to display segments; a successful write does not guarantee a
-  particular app will show individual sets.
+- **Mapping:** [health-connect-mapping.js](../frontend/src/lib/health-connect-mapping.js) resolves
+  permanent ids and drawing aliases, then uses canonical English catalogue names with category,
+  target muscle and equipment metadata. A small id override table handles catalogue exceptions.
+  Equipment, grip and angle variants intentionally collapse into standardized movement classes:
+  cable/machine/barbell curls are arm curls; incline/decline/machine chest presses are bench
+  presses; horizontal pulling variants use HC's row class. This is independent of display language.
+  Yoga, pilates, mobility, cardio machines and other movement categories are also represented.
+- **Fallbacks:** HC has no specific calf raise, push-up, dip, rear-delt fly or hip-abduction type.
+  Use generic weightlifting for known resistance work and other-workout for general movement,
+  rather than claiming an unrelated lift. UNKNOWN is reserved for missing/unclassifiable metadata.
+  Custom names are never parsed: structured category/equipment/mode can establish only a
+  confident general type. Historical muscle metadata alone cannot identify a movement.
+- **Coverage:** run `node scripts/health-connect-coverage.mjs` from `frontend/` for current counts,
+  separating specific movements, generic resistance, cardio/general movement and UNKNOWN.
+  Coverage includes honest generic fallbacks; it does not mean every exercise has a specific type.
+- **Session types:** pure resistance remains strength training. Pure cardio/yoga/pilates gets its
+  appropriate session class. Mixed incompatible classes use HC's universal OTHER_WORKOUT session,
+  preserving real cardio and strength segment types. The native boundary rechecks compatibility.
+- **Repetitions:** one segment per completed row, including warm-ups. Drop reps are added;
+  rest-pause `r` already includes bursts and is never added twice. Per-side rows include only
+  completed limbs and their drops. Invalid/fractional/overflowing reps use 0 (not recorded).
+  Timed/cardio segments use 0 repetitions.
+- **Weight:** valid conventional external loads are converted from kg/lb to HC mass in kg.
+  Machine stack/plate loads are exported as logged external mass, not biomechanical force.
+  Explicit two-bell "each" loads become the combined mass; "total" stays total. A one-arm/per-side
+  row uses one limb's load. Ambiguous legacy two-bell "as entered" loads, differing left/right
+  loads, varying drop loads, bands and assistance are omitted. Bodyweight-only work has no mass;
+  weighted bodyweight exports added external mass, never athlete mass. Unknown units/load
+  meanings and values outside HC's 0–2500 kg range are omitted rather than guessed.
+- **Set order and effort:** `setIndex` is the original zero-based row position within each exercise
+  occurrence, including gaps for skipped rows. It resets for the next occurrence and is not an
+  immutable set id. Explicit valid RPE is exported; asymmetric side ratings are omitted rather
+  than averaged. openGym has RIR/RPE conversions for charts, but HC describes Borg CR10: this
+  export does not manufacture RPE from RIR or failure flags. Original ratings remain in notes.
+- **Timing:** openGym stores set completion ticks, not measured lifting starts. An ordinary rep
+  set uses a deterministic **1 ms technical interval** ending at its tick, solely because HC
+  requires start before end. This is not active lifting duration. Equal ticks use adjacent 1 ms
+  slots ending at that tick in source order. Timed/cardio rows use recorded seconds/minutes,
+  including completed side durations where recorded, only when they fit without overlap.
+  Missing/out-of-session ticks and durations that cannot fit leave the row in existing notes.
+  Nothing spreads old sets evenly over the workout, includes preceding rests as lifting, or
+  extends the session. A session without usable segments still exports normally.
+- **Older Health Connect:** segment type, repetitions and interval remain available. Weight,
+  set index and RPE are sent only when `FEATURE_EXERCISE_SESSION_IMPROVEMENTS` is available.
+  AndroidX gates this on Android 14+ with U SDK extension 21; Android 9–13's APK provider gets
+  base segments. Capability changes affect fingerprints, so upgrading HC enriches existing
+  records once using their existing ids.
+- **Limits:** HC does not retain openGym exercise ids/names per segment, equipment, grip, angle,
+  warm-up/failure/drop/rest-pause labels, RIR, side identity, or different loads within one set.
+  Existing clipped session notes remain available, but are not a lossless backup. Consumers decide
+  whether/how to show segments and optional fields; a stored field need not appear in HC's own UI.
 
-[ExerciseSegment reference](https://developer.android.com/reference/androidx/health/connect/client/records/ExerciseSegment)
-(the current reference also shows newer APIs that this export does not use).
+The [AndroidX segment reference](https://developer.android.com/reference/androidx/health/connect/client/records/ExerciseSegment)
+uses a constructor (`repetitions`), whereas the
+[platform Builder](https://developer.android.com/reference/android/health/connect/datatypes/ExerciseSegment.Builder)
+uses `setRepetitionsCount`. Platform weight/index/RPE setters are documented at Android 36.1 /
+U extension 19; the pinned AndroidX feature gate is stricter (extension 21), and must be respected.
 
-Worth checking on a real device after changes here: turning it on shows Health Connect's own
-permission screen; a finished workout appears in Health Connect within a few seconds; deleting it
-in openGym removes it there; turning it off with "remove" leaves no openGym record behind.
+Validation: focused JS tests cover mapping/units/intensifiers/timing/sync, and
+`HealthConnectPluginTest` checks native record construction with old/new capabilities.
+`HealthConnectStoreTest` is opt-in (`-e healthConnectStore true`) and writes only its own fixture:
+bench press, pulldown, squat, curl, triceps extension, lateral raise, leg curl and running.
+It checks datastore read-back, replacement without duplicates, and deletion, then removes its
+fixture even on failure. Grant the debug app's existing WRITE_EXERCISE permission before running;
+no read permission is added to the production app.
+
+On physical devices still check the Settings permission flow, visible exercise labels/fields in
+HC and consuming apps, foreground resync after a provider update, and disabling with "remove".
 
 ### Animation quality and the animation packs (store apps)
 

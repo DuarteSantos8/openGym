@@ -1,77 +1,104 @@
-// ExerciseSegment data for Health Connect 1.1.0. Catalogue ids, never display names: translations,
-// custom names and compound movements must not silently turn into a different exercise.
-// These tokens are mapped to AndroidX constants by HealthConnectPlugin.segmentType.
-import { canonicalExId } from './exercises.js'
+// One Health Connect segment per usable completed set. These are log events, not rep-tempo data.
+import { EXIDX, canonicalExId, isAssisted } from './exercises.js'
 import { dropsOf, hasCompletedWork, isSideSet, modeForSet } from './workout-model.js'
+import { entryDbLoad, isOneArm } from './dumbbells.js'
+import { segmentTypeFor } from './health-connect-mapping.js'
+export { SEGMENT_EXERCISES } from './health-connect-mapping.js'
 
-export const SEGMENT_EXERCISES = {
-  bench_press: ['0025', '0033', '0047', '0289'],                 // barbell flat/decline/incline, dumbbell
-  deadlift: ['0032', '0085', '0966', '0967'],                   // conventional / Romanian, alternate views
-  squat: ['0042', '0043', '0413', '0878', '1461', '1462'],      // front/back, dumbbell, alternate views
-  barbell_shoulder_press: ['1162', '1165'],                    // standing military press
-  shoulder_press: ['0404', '0405'],                           // seated dumbbell press
-  arm_curl: ['0031', '0294'],                                 // barbell / dumbbell curl, no side assumed
-  dumbbell_row: ['0293', '5661', '6146'],                      // bent over, chest supported, against wall
-  dumbbell_front_raise: ['0309', '0310', '3428'],
-  dumbbell_lateral_raise: ['0334'],
-  lat_pull_down: ['0197', '0198', '2330'],
-  leg_extension: ['0585', '1873'],
-  leg_curl: ['0586', '0599', '8604'],
-  leg_press: ['2951'],
-  lunge: ['0336', '3341'],
-  crunch: ['0274', '0275', '0831', '0832'],
-  sit_up: ['0735', '0736', '3679'],
-  pull_up: ['0017', '0253', '0651', '0652', '0841', '1326'],    // assisted, neutral, chin-up, weighted
-  plank: ['0463', '5159'],                                    // static front plank only
-  kettlebell_swing: ['0549'],
-  burpee: ['1160'],
-}
-const BY_ID = new Map(Object.entries(SEGMENT_EXERCISES).flatMap(([type, ids]) => ids.map(id => [id, type])))
+const completedSides = set => isSideSet(set)
+  ? [set.sides.L, set.sides.R].filter(s => s.done === true) : [set]
+const number = value => value == null || value === '' ? NaN : Number(value)
 
-// Health Connect uses a signed Int for repetitions. Invalid counts mean "not recorded" (0),
-// never rounded or wrapped into a claim about how many reps were done.
-function repetitionsOf(set) {
-  const rows = isSideSet(set) ? [set.sides.L, set.sides.R].filter(s => s.done === true) : [set]
-  const counts = rows.flatMap(s => [s.r, ...dropsOf(s).map(d => d?.r)]).map(Number)
+// Rest-pause r already includes the activation and bursts. Drops are additional reps.
+export function repetitionsOf(set) {
+  const counts = completedSides(set).flatMap(s => [s.r, ...dropsOf(s).map(d => d?.r)]).map(number)
   if (counts.some(n => !Number.isInteger(n) || n < 0)) return 0
   const total = counts.reduce((a, b) => a + b, 0)
   return total <= 2147483647 ? total : 0
 }
 
+const LOAD_EQUIPMENT = new Set(['barbell', 'olympic barbell', 'ez barbell', 'trap bar', 'dumbbell',
+  'kettlebell', 'cable', 'leverage machine', 'smith machine', 'sled machine', 'weighted',
+  'weight plate', 'sandbag', 'landmine', 'macebell', 'medicine ball'])
+
+// HC has one mass, not assistance, left/right loads or a load sequence. Never average them.
+// Bodyweight w is added external mass; it never includes the athlete's body mass.
+export function segmentWeightKg(entry, set, workout, unit = 'kg') {
+  const ex = EXIDX[canonicalExId(entry.id)] || entry.exercise || {}
+  if (isAssisted(ex) || entry.target?.assisted === true || ex.eq === 'assisted') return null
+  if (ex.eq === 'band' || ex.eq === 'resistance band') return null
+  const bodyweight = entry.target?.bodyweight === true || ex.eq === 'body weight'
+  if (!bodyweight && !LOAD_EQUIPMENT.has(ex.eq)) return null
+  const values = []
+  for (const side of completedSides(set)) {
+    for (const row of [side, ...dropsOf(side)]) {
+      const w = number(row.w)
+      const u = row.unit ?? side.unit ?? set.unit ?? entry.target?.unit ?? entry.unit ?? workout.unit ?? unit
+      if (!(w > 0) || !['kg', 'lb'].includes(u)) return null
+      values.push(u === 'lb' ? w * 0.45359237 : w)
+    }
+  }
+  if (!values.length || values.some(w => Math.abs(w - values[0]) > 0.000001)) return null
+  let kg = values[0]
+  if (ex.eq === 'dumbbell' || ex.eq === 'kettlebell') {
+    const meaning = entryDbLoad(entry)
+    const single = isSideSet(set) || isOneArm({ ...entry.target, id: entry.id })
+    if (meaning === 'as' && !single) return null // legacy entry never said per bell or total
+    if (meaning === 'each' && !single) kg *= 2
+  }
+  return Number.isFinite(kg) && kg <= 2500 ? Math.round(kg * 1000000) / 1000000 : null
+}
+
+// RIR↔RPE exists for openGym charts, but HC specifies Borg CR10. Export explicit RPE only.
+// A scalar "harder side" aggregate is not an RPE for both asymmetric sides.
+export function segmentRpe(set) {
+  const values = completedSides(set).map(s => number(s.rpe))
+  return values.length && values.every(v => Number.isFinite(v) && v >= 0 && v <= 10 && v === values[0])
+    ? values[0] : null
+}
+
 /**
- * One segment per completed row, including warm-ups. A drop-set's reps include its drops;
- * rest-pause r already includes every burst. Per-side rows share one tick, so only their
- * completed limbs are summed into that row, without inventing separate side times.
- *
- * Ordinary sets have a completion tick, not a start: their interval is the logging window
- * since the previous completed row (or session start), including any rest. Timed/cardio rows use
- * their logged seconds/minutes. We do not infer rep tempo or distribute untimed history over a session.
- * Missing/out-of-range/duplicate ticks and durations that do not fit keep only the session/notes.
+ * Untimed sets get a 1 ms technical interval ending at their completion tick: HC requires
+ * start < end, but openGym did not measure a lifting start. Never include the preceding rest.
+ * Equal ticks use adjacent 1 ms slots ending at that tick, preserving source order.
+ * Timed/cardio rows use their recorded duration only when it fits without overlap.
+ * Missing ticks are omitted, never spread evenly over a session or assigned invented times.
  */
-export function exerciseSegments(w, type) {
-  if (type !== 'strength_training') return []
-  const start = Number(w.start), end = Number(w.end)
+export function exerciseSegments(w, type, { unit = 'kg', extended = true } = {}) {
+  const start = number(w?.start), end = number(w?.end)
+  if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || end <= start) return []
   const rows = (w.entries || []).flatMap(entry => (entry.sets || [])
-    .filter(set => hasCompletedWork(set) && Number.isSafeInteger(set.at) && set.at > start && set.at <= end)
-    .map(set => ({ entry, set })))
+    .map((set, setIndex) => ({ entry, set, setIndex }))
+    .filter(({ set }) => hasCompletedWork(set) && Number.isSafeInteger(set.at) && set.at > start && set.at <= end))
     .sort((a, b) => a.set.at - b.set.at)
   const out = []
   let previous = start
-  for (let i = 0; i < rows.length; i++) {
-    const { entry, set } = rows[i]
-    const from = previous
-    previous = set.at
-    // A shared tick cannot tell two sets apart in time. Omit both rather than arbitrarily
-    // crediting one exercise with the other's interval or producing overlapping segments.
-    if (rows[i - 1]?.set.at === set.at || rows[i + 1]?.set.at === set.at) continue
-    const mode = modeForSet(set, entry.target)
-    const duration = mode === 'time' ? Number(set.sec) * 1000 : Number(set.min) * 60000
-    const segmentStart = mode === 'reps' ? from : set.at - duration
-    if (!Number.isSafeInteger(segmentStart) || segmentStart < from || segmentStart >= set.at) continue
-    // Cardio types (walking, biking, ...) are incompatible with a strength session in 1.1.0.
-    // UNKNOWN is valid there and keeps the row without mislabelling it as weightlifting.
-    const segmentType = mode === 'cardio' ? 'unknown' : BY_ID.get(canonicalExId(entry.id)) || 'unknown'
-    out.push({ start: segmentStart, end: set.at, type: segmentType, repetitions: mode === 'reps' ? repetitionsOf(set) : 0 })
+  for (let i = 0; i < rows.length;) {
+    let groupEnd = i + 1
+    while (groupEnd < rows.length && rows[groupEnd].set.at === rows[i].set.at) groupEnd++
+    for (let j = i; j < groupEnd; j++) {
+      const { entry, set, setIndex } = rows[j]
+      const mode = modeForSet(set, entry.target)
+      const segmentEnd = set.at - (groupEnd - j - 1)
+      // A unilateral timed row can carry the recorded duration on each completed limb.
+      const duration = mode === 'time'
+        ? (isSideSet(set) ? completedSides(set).reduce((n, s) => n + number(s.sec), 0) : number(set.sec)) * 1000
+        : number(set.min) * 60000
+      const segmentStart = mode === 'reps' ? segmentEnd - 1 : segmentEnd - duration
+      if (!Number.isSafeInteger(segmentStart) || segmentStart < previous || segmentStart >= segmentEnd) continue
+      const segment = { start: segmentStart, end: segmentEnd, type: segmentTypeFor(entry, mode),
+        repetitions: mode === 'reps' ? repetitionsOf(set) : 0 }
+      if (extended) {
+        segment.setIndex = setIndex
+        const kg = mode === 'cardio' ? null : segmentWeightKg(entry, set, w, unit)
+        const rpe = segmentRpe(set)
+        if (kg != null) segment.weightKg = kg
+        if (rpe != null) segment.rpe = rpe
+      }
+      out.push(segment)
+      previous = segmentEnd
+    }
+    i = groupEnd
   }
   return out
 }
