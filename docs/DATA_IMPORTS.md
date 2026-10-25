@@ -128,7 +128,7 @@ when you ask for it:
 ```bash
 # in .env
 VIDEO_IMPORT_URL=http://video-import:3100
-VIDEO_IMPORT_TOKEN=some-long-random-string
+VIDEO_IMPORT_TOKEN=some-long-random-string   # at least 16 characters; openssl rand -hex 24
 
 docker compose --profile video-import up -d --build
 ```
@@ -140,9 +140,14 @@ worker has no access to `./data` and no host port; only the api container talks 
 | Variable | Default | What it does |
 |---|---|---|
 | `VIDEO_IMPORT_URL` | *(unset: feature off)* | Where the API finds the worker |
-| `VIDEO_IMPORT_TOKEN` | *(none)* | Shared secret between API and worker |
+| `VIDEO_IMPORT_TOKEN` | *(none: the worker will not start)* | Shared secret between API and worker, at least 16 characters |
+| `VIDEO_IMPORT_ALLOW_NO_TOKEN` | *(unset)* | `1` lets the worker start without a token, for a port you have put behind something else |
 | `VIDEO_IMPORT_MAX_MINUTES` | `90` | Longest video accepted |
 | `VIDEO_IMPORT_CONCURRENCY` | `1` | Videos processed at once (each keeps a core busy) |
+| `VIDEO_IMPORT_PER_DAY` | `12` | Imports one profile may start per day (`0` = no cap); read by the API |
+| `VIDEO_IMPORT_OCR_PROCS` | up to 4 | Tesseract processes reading at once (one thread each); more is faster until the cores run out |
+| `VIDEO_IMPORT_MEM` | `3g` | Memory ceiling of the worker container |
+| `VIDEO_IMPORT_TMP` | `2g` | Size of the worker's scratch space (`/tmp`, in memory); it holds the video while it is read |
 | `VIDEO_IMPORT_TARGET` | `default` | `paddle` builds the PaddleOCR image (~2 GB) instead of Tesseract (~500 MB) |
 | `PADDLE_THREADS` | all cores | CPU threads PaddleOCR may use (paddle image only) |
 

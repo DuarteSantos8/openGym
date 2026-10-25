@@ -47,3 +47,13 @@ test('a job is created, read and cancelled over HTTP', async () => {
   assert.equal((await call('POST', '/jobs/' + made.body.id + '/roi', { name: { x: 0, y: 0, w: 0.5, h: 0.5 } })).status, 409)
   assert.equal((await fetch(base + '/jobs', { method: 'POST', headers: { Authorization: 'Bearer sekret-token' }, body: '[1]' })).status, 400)
 })
+
+test('a production worker without a token refuses to start unless that was asked for', async () => {
+  const { startupProblem } = await import('../src/server.js')
+  const prod = { NODE_ENV: 'production' }
+  assert.match(startupProblem(prod), /VIDEO_IMPORT_TOKEN/)
+  assert.equal(startupProblem({ ...prod, VIDEO_IMPORT_TOKEN: 'x'.repeat(16) }), null)
+  assert.equal(startupProblem({ ...prod, VIDEO_IMPORT_ALLOW_NO_TOKEN: '1' }), null, 'a deliberate opt-out')
+  assert.equal(startupProblem({}), null, 'development and the tests run open')
+  assert.match(startupProblem({ ...prod, VIDEO_IMPORT_TOKEN: 'short' }), /at least 16/, 'a guessable token is no token')
+})

@@ -44,6 +44,20 @@ function readBody(req) {
   })
 }
 
+/**
+ * Why this process should not start, or null. Any container on the compose network can reach the
+ * port, and a job keeps a core busy for minutes: without the shared secret anyone who can reach
+ * it can use it. So a production worker (the images set NODE_ENV) needs a token of some length;
+ * VIDEO_IMPORT_ALLOW_NO_TOKEN=1 is for the one who has put the port behind something else.
+ */
+export function startupProblem(env = process.env) {
+  if (env.NODE_ENV !== 'production' || env.VIDEO_IMPORT_ALLOW_NO_TOKEN === '1') return null
+  const token = env.VIDEO_IMPORT_TOKEN || ''
+  if (!token) return 'VIDEO_IMPORT_TOKEN is not set. Set the same long random string for the API and this worker in .env (or VIDEO_IMPORT_ALLOW_NO_TOKEN=1 to run without one).'
+  if (token.length < 16) return 'VIDEO_IMPORT_TOKEN has to be at least 16 characters.'
+  return null
+}
+
 function authorised(req) {
   if (!TOKEN) return true
   const got = Buffer.from(String(req.headers.authorization || '').replace(/^Bearer\s+/i, ''))
@@ -93,6 +107,8 @@ export async function handle(req, res) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const problem = startupProblem()
+  if (problem) { console.error('video-import: ' + problem); process.exit(1) }
   const server = http.createServer((req, res) => { handle(req, res).catch(() => { if (!res.headersSent) json(res, 500, { error: 'server error' }) }) })
   server.listen(PORT, () => console.log(`video-import on :${server.address().port} (ocr=${ENGINE}${TOKEN ? ', token required' : ''})`))
 }

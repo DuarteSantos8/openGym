@@ -130,7 +130,7 @@ jobs:
       - run: docker build -t opengym-video-import:default ./video-import
       - name: the default image boots and reports its tools
         run: |
-          docker run -d --name vi -p 3100:3100 opengym-video-import:default
+          docker run -d --name vi -p 3100:3100 -e VIDEO_IMPORT_TOKEN=ci-token-0123456789 opengym-video-import:default
           for i in $(seq 1 30); do curl -sf http://127.0.0.1:3100/health && break; sleep 1; done
           curl -sf http://127.0.0.1:3100/health | grep -q '"ok":true'
           docker rm -f vi

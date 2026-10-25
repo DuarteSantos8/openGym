@@ -47,14 +47,18 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends ffmpeg tesseract-ocr tesseract-ocr-eng python3 python3-venv ca-certificates wget libgomp1 libgl1 libglib2.0-0 \
  && rm -rf /var/lib/apt/lists/*
 RUN python3 -m venv /opt/venv \
- && /opt/venv/bin/pip install --no-cache-dir yt-dlp paddlepaddle==2.6.2 paddleocr==2.8.1 \
- && /opt/venv/bin/python -c "from paddleocr import PaddleOCR; PaddleOCR(use_angle_cls=False, lang='en', show_log=False)"
+ && /opt/venv/bin/pip install --no-cache-dir yt-dlp paddlepaddle==2.6.2 paddleocr==2.8.1
 ENV PATH="/opt/venv/bin:$PATH"
 WORKDIR /app
 COPY package.json ./
 COPY src ./src
-ENV NODE_ENV=production PORT=3100 OCR_ENGINE=paddle PADDLEOCR_HOME=/root/.paddleocr
+ENV NODE_ENV=production PORT=3100 OCR_ENGINE=paddle
 EXPOSE 3100
+# Not root, like the Tesseract image. The models are fetched once, at build, as the user that
+# will read them (PaddleOCR keeps them under that user's home), so nothing is downloaded when a
+# job runs.
+USER node
+RUN /opt/venv/bin/python -c "from paddleocr import PaddleOCR; PaddleOCR(use_angle_cls=False, lang='en', show_log=False)"
 CMD ["node", "src/server.js"]
 
 # ---------------------------------------------------------------------------------------------

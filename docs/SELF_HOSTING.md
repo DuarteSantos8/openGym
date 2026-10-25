@@ -578,8 +578,8 @@ are not encrypted at rest — whoever can read that folder can see them.
 
 An extra container can turn a YouTube follow-along workout into a draft routine by reading the
 exercise names and the timer off the screen. It is off and unbuilt unless you start the
-`video-import` compose profile and set `VIDEO_IMPORT_URL` (plus, ideally, `VIDEO_IMPORT_TOKEN`) in
-`.env`. The worker has no access to `./data` and no host port. Setup, every variable and the known
+`video-import` compose profile and set `VIDEO_IMPORT_URL` and `VIDEO_IMPORT_TOKEN` (the worker
+refuses to start without one) in `.env`. The worker has no access to `./data` and no host port. Setup, every variable and the known
 limits are in [Importing data → A routine from a YouTube video](DATA_IMPORTS.md#a-routine-from-a-youtube-video).
 
 ## 6. Backups

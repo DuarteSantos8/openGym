@@ -4,6 +4,7 @@
 // Tesseract once per second of video would cost more than the reading itself.
 
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { run } from './proc.js'
@@ -44,7 +45,10 @@ async function tesseract(files, { kind, workDir, signal }) {
   if (kind === 'timer') args.push('-c', 'tessedit_char_whitelist=0123456789:')
   args.push('tsv')
   try {
-    const { stdout } = await run('tesseract', args, { signal, timeoutMs: 10 * 60000 })
+    // One thread per process: Tesseract's own OpenMP threads spin against each other whenever the
+    // machine has anything else to do, and a batch of 200 small crops then takes a minute instead
+    // of three seconds. The parallelism is across batches (VIDEO_IMPORT_OCR_PROCS), not inside one.
+    const { stdout } = await run('tesseract', args, { signal, timeoutMs: 10 * 60000, env: { ...process.env, OMP_THREAD_LIMIT: '1' } })
     return tsvPages(stdout, files.length)
   } finally { fs.rmSync(list, { force: true }) }
 }
@@ -61,16 +65,40 @@ async function paddle(files, { kind, signal, workDir }) {
 
 let paddleBroken = false
 
+/** How many Tesseract processes read at once (VIDEO_IMPORT_OCR_PROCS; 4 at most unless asked for more). */
+export const OCR_PROCS = Math.max(1, Math.floor(+process.env.VIDEO_IMPORT_OCR_PROCS) || Math.min(4, os.availableParallelism?.() || 2))
+
+/**
+ * Run `read(batch)` over every batch with at most `lanes` going at once and return the answers
+ * flattened in the order of the batches, whichever finishes first. `onBatch(doneCount)` counts
+ * the items finished. The first failure ends the run: nothing starts after it.
+ */
+export async function mapBatches(batches, read, lanes = 1, onBatch) {
+  const results = new Array(batches.length)
+  let next = 0, done = 0, failed = false
+  const lane = async () => {
+    for (;;) {
+      if (failed || next >= batches.length) return
+      const k = next++
+      try { results[k] = await read(batches[k]) } catch (e) { failed = true; throw e }
+      done += batches[k].length
+      onBatch?.(done)
+    }
+  }
+  await Promise.all(Array.from({ length: Math.max(1, Math.min(lanes, batches.length)) }, lane))
+  return results.flat()
+}
+
 /**
  * Read `files` (image paths) as `kind` ('name' | 'timer'). [{ text, conf }] in the same order.
  * `onBatch(doneCount)` after each batch, for the job's progress.
  */
 export async function readCrops(files, { kind, workDir, signal, onBatch } = {}) {
-  const out = []
   const usePaddle = ENGINE === 'paddle' && kind !== 'timer'
   const step = usePaddle ? PADDLE_BATCH : BATCH
-  for (let i = 0; i < files.length; i += step) {
-    const batch = files.slice(i, i + step)
+  const batches = []
+  for (let i = 0; i < files.length; i += step) batches.push(files.slice(i, i + step))
+  const readBatch = async batch => {
     let res
     // The timer is digits and a colon, which Tesseract with a whitelist reads as well as anything
     // and many times faster: Paddle is spent on the names, where it is better.
@@ -83,9 +111,9 @@ export async function readCrops(files, { kind, workDir, signal, onBatch } = {}) 
         paddleBroken = true
       }
     }
-    if (!res) res = await tesseract(batch, { kind, workDir, signal })
-    out.push(...res)
-    onBatch?.(Math.min(files.length, i + step))
+    return res || tesseract(batch, { kind, workDir, signal })
   }
-  return out
+  // Paddle loads its model for every batch and is heavy: one at a time. Tesseract is cheap to run
+  // several of, one thread each.
+  return mapBatches(batches, readBatch, usePaddle ? 1 : OCR_PROCS, onBatch)
 }
