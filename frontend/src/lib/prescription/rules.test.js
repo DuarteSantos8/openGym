@@ -11,9 +11,9 @@ const withParams = (r, params) => withPhase(r, ph => ({ parameters: { ...ph.para
 const abs = value => ({ mode: 'absolute', value, unit: 'kg' })
 
 describe('template catalogue', () => {
-  it('has the ten v1-era presets and the three configurable templates', () => {
-    expect(PRESET_IDS).toEqual(['autoregulated', 'linear', 'greyskull', 'double', 'triple', 'hold_seconds', 'bodyweight_ladder', 'pyramid_reps', 'pyramid', 'five_three_one',
-      'top_set_backoff', 'accumulation_intensification', 'density'])
+  it('keeps the v1 presets and adds controlled and undulating progression', () => {
+    expect(PRESET_IDS).toEqual(['manual', 'linear', 'greyskull', 'double', 'double_controlled', 'triple', 'hold_seconds', 'bodyweight_ladder', 'pyramid_reps', 'pyramid', 'five_three_one',
+      'top_set_backoff', 'accumulation_intensification', 'density', 'undulating'])
   })
 
   it.each(PRESET_IDS)('%s builds a valid program in kg and lb, and reads back as the same numbers', preset => {
@@ -32,7 +32,7 @@ describe('template catalogue', () => {
       rule('linear', { unloadedLadder: true, repCeiling: 15, load: abs(0) }),
       rule('pyramid_reps', { setReps: [12, 'max', 8], setRest: [60, 0, 90], sets: { min: 3, max: 3 }, reps: { min: 12, max: 12 } }),
       rule('pyramid', { offsets: rptOffsets(3), reps: { min: 6, max: 6 } }),
-      rule('autoregulated', { durationSeconds: { min: 30, max: 60 }, reps: { min: 1, max: 1 } }),
+      rule('manual', { durationSeconds: { min: 30, max: 60 }, reps: { min: 1, max: 1 } }),
       rule('top_set_backoff', { scope: 'all', backoff: { sets: 2, reps: 10, percent: 80, restSeconds: 90 } }),
       rule('accumulation_intensification', { end: 'complete', trainingMax: { mode: 'direct', value: 120, unit: 'kg' } })
     ]) {
@@ -131,12 +131,12 @@ describe('validatePlanRule', () => {
 
   it('a load range cannot be stepped automatically, and a load step needs a starting load', () => {
     expect(errorsOf(withParams(rule('linear'), { load: abs(60), loadTo: abs(80) }))).toContain('program.phases[0].parameters.loadTo: a load range cannot be stepped automatically')
-    expect(errorsOf(withParams(rule('autoregulated'), { load: abs(60), loadTo: abs(80) }))).toEqual([])
+    expect(errorsOf(withParams(rule('manual'), { load: abs(60), loadTo: abs(80) }))).toEqual([])
     expect(errorsOf(withParams(rule('linear'), { load: { mode: 'empty' } }))).toContain('program.phases[0]: a load step needs a starting load')
   })
 
   it('checks a load range\'s high end against its low end', () => {
-    const auto = (load, loadTo) => errorsOf(withParams(rule('autoregulated'), { load, loadTo }))
+    const auto = (load, loadTo) => errorsOf(withParams(rule('manual'), { load, loadTo }))
     expect(auto(abs(60), abs(80))).toEqual([])
     expect(auto({ mode: 'empty' }, abs(80))).toContain('program.phases[0].parameters.loadTo needs a load of the same mode')
     expect(auto(abs(60), { mode: 'absolute', value: 80, unit: 'lb' })).toContain('program.phases[0].parameters.loadTo.unit must match parameters.load.unit')
@@ -159,7 +159,7 @@ describe('validatePlanRule', () => {
     expect(errorsOf(editPlan(rule('bodyweight_ladder'), { completion: [{ metric: 'difficulty_rung', target: null }] }))).toContain('difficulty_rung needs named rungs')
     expect(errorsOf(editPlan(rule('linear'), { completion: [{ metric: 'rest_floor', target: 45 }] }))).toContain('rest_floor needs a rest step and a target ≥ 0')
     expect(errorsOf(editPlan(rule('hold_seconds'), { completion: [{ metric: 'max_duration', target: null }] }))).toContain('max_duration target must be a number > 0')
-    expect(errorsOf(editPlan(rule('autoregulated', { durationSeconds: { min: 30, max: 60 } }), { completion: [{ metric: 'max_duration', target: null }] }))).toEqual([])
+    expect(errorsOf(editPlan(rule('manual', { durationSeconds: { min: 30, max: 60 } }), { completion: [{ metric: 'max_duration', target: null }] }))).toEqual([])
   })
 
   it('checks the training max and the cycle increment', () => {
@@ -169,7 +169,7 @@ describe('validatePlanRule', () => {
   })
 
   it('only a phase that steps load or seconds can back off', () => {
-    expect(errorsOf(withPhase(rule('autoregulated'), () => ({ stall: { after: 3, count: 'misses', recovery: { method: 'factor', factor: 0.9 } } })))).toContain('program.phases[0]: only a phase that steps load or seconds can back off')
+    expect(errorsOf(withPhase(rule('manual'), () => ({ stall: { after: 3, count: 'misses', recovery: { method: 'factor', factor: 0.9 } } })))).toContain('program.phases[0]: only a phase that steps load or seconds can back off')
     expect(errorsOf(editPlan(rule('linear'), { deload: { after: 11, factor: 0.9 } }))).toContain('program.phases[0].stall.after must be a whole number of sessions from 1 to 10')
     expect(errorsOf(editPlan(rule('linear'), { deload: { after: 3, factor: 0.3 } }))).toContain('program.phases[0].stall.recovery.factor must be between 0.5 and 0.95')
   })
@@ -192,14 +192,15 @@ describe('editor metadata', () => {
   it('declares, per template, which fields the editor offers as ranges', () => {
     const all = v => ({ sets: v, reps: v, durationSeconds: v, load: v })
     expect(Object.fromEntries(PRESET_IDS.map(id => [id, PRESETS[id].ranges]))).toEqual({
-      autoregulated: all('either'), linear: all('fixed'), greyskull: all('fixed'),
+      manual: all('either'), linear: all('fixed'), greyskull: all('fixed'),
       double: { sets: 'fixed', reps: 'range', durationSeconds: 'range', load: 'fixed' },
+      double_controlled: { sets: 'fixed', reps: 'range', durationSeconds: 'fixed', load: 'fixed' },
       triple: { sets: 'range', reps: 'range', durationSeconds: 'range', load: 'fixed' },
       hold_seconds: { sets: 'either', reps: 'fixed', durationSeconds: 'either', load: 'fixed' },
       bodyweight_ladder: { sets: 'range', reps: 'range', durationSeconds: 'fixed', load: 'fixed' },
       pyramid_reps: all('fixed'),
       pyramid: { sets: 'either', reps: 'fixed', durationSeconds: 'fixed', load: 'fixed' },
-      five_three_one: all('fixed'), top_set_backoff: all('fixed'), accumulation_intensification: all('fixed'), density: all('fixed')
+      five_three_one: all('fixed'), top_set_backoff: all('fixed'), accumulation_intensification: all('fixed'), density: all('fixed'), undulating: all('fixed')
     })
   })
 })
@@ -212,27 +213,27 @@ describe('needsOneRm', () => {
     expect(needsOneRm(editPlan(rule('linear'), { step: { type: 'snapshot_1rm_percent', value: 2.5 } }))).toBe(true)
     expect(needsOneRm(rule('five_three_one'))).toBe(true)
     expect(needsOneRm(rule('accumulation_intensification'))).toBe(true)
-    expect(needsOneRm(rule('autoregulated', { load: abs(60), loadTo: abs(80) }))).toBe(false)
+    expect(needsOneRm(rule('manual', { load: abs(60), loadTo: abs(80) }))).toBe(false)
   })
 })
 
 describe('supports', () => {
   it('hides extras a rule cannot use', () => {
-    expect(supports(rule('linear'))).toEqual({ warmup: true, dropset: true, restpause: true })
-    expect(supports(rule('linear', { durationSeconds: { min: 30, max: 30 } }))).toEqual({ warmup: false, dropset: false, restpause: false })
-    expect(supports(rule('autoregulated', { durationSeconds: { min: 30, max: 60 } }))).toMatchObject({ warmup: false, dropset: false })
-    expect(supports(rule('bodyweight_ladder'))).toEqual({ warmup: false, dropset: false, restpause: false })
-    expect(supports(rule('pyramid'))).toEqual({ warmup: true, dropset: true, restpause: false })
-    expect(supports(rule('five_three_one'))).toEqual({ warmup: true, dropset: true, restpause: false })
-    expect(supports(rule('top_set_backoff'))).toEqual({ warmup: true, dropset: true, restpause: false })
-    expect(supports(rule('hold_seconds'))).toEqual({ warmup: false, dropset: false, restpause: false })
-    expect(supports(rule('pyramid_reps', { load: abs(20) }))).toEqual({ warmup: true, dropset: false, restpause: false })
+    expect(supports(rule('linear'))).toEqual({ warmup: true, dropset: true, restpause: true, failure: true })
+    expect(supports(rule('linear', { durationSeconds: { min: 30, max: 30 } }))).toEqual({ warmup: false, dropset: false, restpause: false, failure: true })
+    expect(supports(rule('manual', { durationSeconds: { min: 30, max: 60 } }))).toMatchObject({ warmup: false, dropset: false })
+    expect(supports(rule('bodyweight_ladder'))).toEqual({ warmup: false, dropset: false, restpause: false, failure: true })
+    expect(supports(rule('pyramid'))).toEqual({ warmup: true, dropset: true, restpause: false, failure: true })
+    expect(supports(rule('five_three_one'))).toEqual({ warmup: true, dropset: true, restpause: false, failure: false })
+    expect(supports(rule('top_set_backoff'))).toEqual({ warmup: true, dropset: true, restpause: false, failure: true })
+    expect(supports(rule('hold_seconds'))).toEqual({ warmup: false, dropset: false, restpause: false, failure: true })
+    expect(supports(rule('pyramid_reps', { load: abs(20) }))).toEqual({ warmup: true, dropset: false, restpause: false, failure: false })
   })
   it('validates an intensifier against its rule', () => {
     const drop = { type: 'dropset', count: 2, pct: 20 }
     expect(validateIntensifier(undefined)).toBe(true)
     expect(validateIntensifier(drop)).toBe(true)
-    expect(validateIntensifier(drop, rule('autoregulated', { durationSeconds: { min: 30, max: 60 } }))).toBe(false)
+    expect(validateIntensifier(drop, rule('manual', { durationSeconds: { min: 30, max: 60 } }))).toBe(false)
     expect(validateIntensifier({ type: 'restpause', totalReps: 8, restSec: 15 }, rule('pyramid'))).toBe(false)
     expect(validateIntensifier({ type: 'dropset', count: 0, pct: 20 })).toBe(false)
     expect(validateIntensifier({ ...drop, extra: 1 })).toBe(false)
@@ -240,21 +241,21 @@ describe('supports', () => {
 })
 
 describe('v1 policy ↔ preset', () => {
-  it('maps each v1 policy to its exact preset, anything else to autoregulated', () => {
+  it('maps each v1 policy to its exact preset, anything else to manual', () => {
     expect(presetForPolicy('linear', 'reps', false)).toBe('linear')
     expect(presetForPolicy('linear', 'reps', true)).toBe('bodyweight_ladder')
     expect(presetForPolicy('greyskull', 'reps', false)).toBe('greyskull')
     expect(presetForPolicy('double', 'reps', false)).toBe('double')
     expect(presetForPolicy('time', 'time', false)).toBe('hold_seconds')
-    expect(presetForPolicy('time', 'reps', false)).toBe('autoregulated')
-    expect(presetForPolicy('off', 'reps', false)).toBe('autoregulated')
-    expect(presetForPolicy(undefined, 'cardio', false)).toBe('autoregulated')
+    expect(presetForPolicy('time', 'reps', false)).toBe('manual')
+    expect(presetForPolicy('off', 'reps', false)).toBe('manual')
+    expect(presetForPolicy(undefined, 'cardio', false)).toBe('manual')
   })
   it('reads a preset back as the policy the Coach knows, null when there is none', () => {
     expect(['linear', 'greyskull', 'double'].map(policyOfPreset)).toEqual(['linear', 'greyskull', 'double'])
     expect(policyOfPreset('bodyweight_ladder')).toBe('linear')
     expect(policyOfPreset('hold_seconds')).toBe('time')
-    expect(policyOfPreset('autoregulated')).toBe('off')
+    expect(policyOfPreset('manual')).toBe('off')
     expect(policyOfPreset('triple')).toBe('triple')
     for (const p of ['pyramid', 'five_three_one', 'top_set_backoff', 'accumulation_intensification', 'density']) expect(policyOfPreset(p)).toBe(null)
   })

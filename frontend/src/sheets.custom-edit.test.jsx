@@ -98,7 +98,9 @@ describe('a custom exercise stored without the flag', () => {
     const ex = legacy()
     seed(ex)
     exConfigSheet(ex, ruleOccurrence('cx1'), () => {})
-    expect(buttons(renderTop())).toContain('Edit or delete this exercise')
+    const sheet = renderTop()
+    act(() => sheet.querySelector('button[aria-label="More"]').click())   // the ⋯ menu over the sheet
+    expect([...renderTop().querySelectorAll('.menu-item')].map(item => item.textContent.trim())).toContain('Edit or delete this exercise')
   })
 
   it('its thumbnail is the custom one, never a dataset image', () => {

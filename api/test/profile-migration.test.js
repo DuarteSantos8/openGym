@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { defaultPlanRule, generatePrescription, planFingerprint, planPhase, planOptions } from '../engine/index.js';
 import { isLegacyProfile, migrateProfileV1ToV2, migrationStatus, validateCanonicalActive, validateCanonicalProfile } from '../migration/profile-migration.js';
 import { LIB_BY_ID } from '../coach/core/library.js';
+import { validOneRepMax } from '../migration/profile-validation.js';
 
 // Whether the last finish on a track earned a load step: the next session's load is not the one it was prescribed.
 const earned = (profile, trackId) => {
@@ -11,10 +12,10 @@ const earned = (profile, trackId) => {
 };
 const migrate = state => migrateProfileV1ToV2(state, LIB_BY_ID);
 
-const BENCH = '0025', SITUP = '0001', CARDIO = '3220', DIP = '0009';   // barbell, body weight, cardio, assisted machine
+const BENCH = '0025', SITUP = '0001', CARDIO = '2331', DIP = '0009';   // barbell, body weight, cardio, assisted machine
 const row = (r, w, extra = {}) => ({ r, w, done: true, ...extra });
 const v1 = (over = {}) => ({
-  unit: 'kg', restSec: 90, _rev: 7, _ts: 5, week: { 1: 'r1' }, exWeights: {}, bodyweight: [], customEx: [],
+  oneRmFormula: 'epley', unit: 'kg', restSec: 90, _rev: 7, _ts: 5, week: { 1: 'r1' }, exWeights: {}, bodyweight: [], customEx: [],
   routines: [{ id: 'r1', name: 'Push', emoji: 'figureStrength', ex: [
     { id: BENCH, sets: 3, reps: 5, weight: 60, prog: 'linear', warmupSets: 3 },
     { id: SITUP, sets: 3, reps: 12, prog: 'linear' }
@@ -113,7 +114,7 @@ test('A17: canonical validation rejects malformed members and mismatched prescri
 
 test('A19: unknown inherited policies are audited as well as exercise overrides', () => {
   const { profile } = migrate(v1({ routines: [{ id: 'r', prog: 'wave', ex: [{ id: BENCH, sets: 1, reps: 5 }] }], workouts: [] }));
-  assert.equal(profile.routines[0].ex[0].rule.preset, 'autoregulated');
+  assert.equal(profile.routines[0].ex[0].rule.preset, 'manual');
   assert.equal(profile.migrationAudit.unsupported[0].value, 'wave');
 });
 
@@ -161,7 +162,7 @@ test('routine entries become occurrences with the mapped preset and warm-up reci
   ];
   const { profile } = migrate(v1({ routines: [{ id: 'r1', name: 'All', ex }], workouts: [] }));
   const occ = profile.routines[0].ex;
-  assert.deepEqual(occ.map(o => o.rule.preset), ['linear', 'bodyweight_ladder', 'greyskull', 'double', 'hold_seconds', 'autoregulated', 'autoregulated', 'autoregulated']);
+  assert.deepEqual(occ.map(o => o.rule.preset), ['linear', 'bodyweight_ladder', 'greyskull', 'double', 'hold_seconds', 'manual', 'manual', 'manual']);
   assert.deepEqual(occ.map(o => o.occurrenceId), ex.map((_, i) => `r1:o${i}`));
   assert.deepEqual(planPhase(occ[0].rule).parameters.load, { mode: 'absolute', value: 60, unit: 'kg' });
   assert.deepEqual([planPhase(occ[0].rule).parameters.sets, planPhase(occ[0].rule).parameters.reps, planPhase(occ[0].rule).parameters.restSeconds], [{ min: 3, max: 3 }, { min: 5, max: 5 }, 90]);
@@ -453,9 +454,9 @@ test('an exercise with no rule of its own keeps the rule v1 applied: its routine
   ];
   const state = v1({ routines: [{ id: 'r1', name: 'Inherit', ex }, { id: 'r2', name: 'Double', prog: 'double', ex: ex.slice(0, 4) }], workouts: [] });
   const { profile } = migrate(state);
-  assert.deepEqual(profile.routines[0].ex.map(o => o.rule.preset), ['linear', 'autoregulated', 'greyskull', 'autoregulated', 'autoregulated']);
+  assert.deepEqual(profile.routines[0].ex.map(o => o.rule.preset), ['linear', 'manual', 'greyskull', 'manual', 'manual']);
   // The routine's default reaches every rep exercise that set none; a hold or cardio row cannot take it.
-  assert.deepEqual(profile.routines[1].ex.map(o => o.rule.preset), ['double', 'autoregulated', 'greyskull', 'autoregulated']);
+  assert.deepEqual(profile.routines[1].ex.map(o => o.rule.preset), ['double', 'manual', 'greyskull', 'manual']);
   assert.deepEqual(validateCanonicalProfile(profile), { ok: true, errors: [] });
   // Nothing the routine's default could not reach is reported as needing review.
   assert.deepEqual(profile.migrationAudit.unsupported, []);
@@ -543,7 +544,7 @@ test('v1\'s "Add time" is a hold that grows by its own seconds step', () => {
   const ex = [{ id: SITUP, sets: 3, sec: 45, mode: 'time', prog: 'time' }, { id: SITUP, sets: 3, sec: 45, mode: 'time', prog: 'time', inc: 10 }, { id: SITUP, sets: 3, sec: 45, mode: 'time' }];
   const { profile } = migrate(v1({ routines: [{ id: 'r1', name: 'Holds', ex }], workouts: [] }));
   const [auto, own, off] = profile.routines[0].ex.map(o => o.rule);
-  assert.deepEqual([auto.preset, planOptions(auto).step, planOptions(own).step, off.preset], ['hold_seconds', { type: 'seconds', value: 5 }, { type: 'seconds', value: 10 }, 'autoregulated']);
+  assert.deepEqual([auto.preset, planOptions(auto).step, planOptions(own).step, off.preset], ['hold_seconds', { type: 'seconds', value: 5 }, { type: 'seconds', value: 10 }, 'manual']);
   assert.deepEqual(planPhase(auto).parameters.durationSeconds, { min: 45, max: 45 });
   assert.deepEqual(validateCanonicalProfile(profile), { ok: true, errors: [] });
 });
@@ -775,6 +776,14 @@ test('A43: a migrated rest-pause block freezes one deciding row aiming at its fu
   assert.deepEqual(x.performance.sets[0].clusters, [{ r: 6 }, { r: 4 }, { r: 2 }]);
 });
 
+test('1RM: migrated estimates follow the profile\'s formula, the blend when none is picked, and carry a range', () => {
+  const epley = Object.values(migrate(v1()).profile.oneRepMaxes)[0];
+  const blend = Object.values(migrate(v1({ oneRmFormula: undefined })).profile.oneRepMaxes)[0];
+  assert.notEqual(blend.value, epley.value);
+  assert.ok(blend.low < blend.value && blend.value < blend.high);
+  assert.ok(validOneRepMax(blend.id, blend));
+});
+
 test('A48: explicit false assistance overrides the catalogue for estimates', () => {
   const { profile } = migrate(v1({ workouts: [{ id: 'w', start: 1, entries: [{ id: DIP, target: { assisted: false }, sets: [row(5, 60)] }] }] }));
   assert.equal(Object.values(profile.oneRepMaxes)[0].value, 70);
@@ -831,4 +840,14 @@ test('a per-side hold is a left and a right row per prescribed set, saved or sti
   }));
   assert.deepEqual(profile.workouts[0].exposures[0].performance.sets.map(r => r.setId), ['r0', 'r0', 'r1', 'r1']);
   assert.deepEqual(activeSession.entries[0].sets.map(r => r.setId), ['r0', 'r0', 'r1', 'r1']);
+});
+
+test('a minutes-and-speed plan stays cardio on an exercise the catalogue no longer files as cardio (#678)', () => {
+  const JACK = '3094';   // jumping jack: reps by default now
+  const state = v1({ routines: [{ id: 'r1', name: 'Warm', ex: [{ id: JACK, sets: 1, min: 5, speed: 8 }, { id: JACK, sets: 2, reps: 20 }] }] });
+  const { profile } = migrate(state);
+  const [old, fresh] = profile.routines[0].ex;
+  assert.equal(old.cardio.min, 5);
+  assert.equal(old.mode, 'cardio');
+  assert.notEqual(fresh.mode, 'cardio');
 });

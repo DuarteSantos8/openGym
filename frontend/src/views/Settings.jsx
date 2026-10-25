@@ -791,6 +791,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         <SelectRow icon="chart" iconTint="var(--teal)" title={t('1RM formula')}
           value={formulaOf(S)} onChange={v => update(s => { s.oneRmFormula = v })}
           options={[
+            { value: 'weighted', label: t('Blend of all'), subtitle: t('Averages seven formulas and reads your RIR when you log it.') },
             { value: 'epley', label: 'Epley', subtitle: t('The common one. A bit generous at higher reps.') },
             { value: 'brzycki', label: 'Brzycki', subtitle: t('More conservative above five reps.') },
             { value: 'lombardi', label: 'Lombardi', subtitle: t('Generous, especially at high reps.') },
@@ -798,7 +799,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             { value: 'mayhew', label: 'Mayhew' },
             { value: 'wathan', label: 'Wathan' },
             { value: 'lander', label: 'Lander' },
-            { value: 'weighted', label: t('Blend of all'), subtitle: t('Averages seven formulas and reads your RIR when you log it.') },
           ]} />
         {/* Gross volume for people comparing with other apps (#719). Off is the app's own rule,
             work sets only; on, every screen that shows a volume counts done warm-ups too
@@ -1278,7 +1278,7 @@ function MobileReminderCard({ S, update, toast }) {
   const toggle = async () => {
     const on = !S.reminder?.on
     if (on) {
-      const ok = await syncReminder({ ...S, reminder: { ...(S.reminder || DEF.reminder), on: true } }, true, !!useStore.getState().A)
+      const ok = await syncReminder({ ...S, reminder: { ...(S.reminder || DEF.reminder), on: true } }, true, useStore.getState().A)
       if (!ok) { toast(t('Could not change notification settings')); return }
     }
     setReminder({ on })

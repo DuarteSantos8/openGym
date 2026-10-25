@@ -11,6 +11,7 @@
 import { EXIDX, canonicalExId, isBodyweightEq, isCustomEx } from './exercises.js'
 import { cleanBackups } from './routine-backups.js'
 import { cleanUrl } from './media-refs.js'
+import { failureSetsOf, hasFailurePlan } from './failure-selection.js'
 import { modeOf, fmtSec, isBw, isPerSide, sideReps, exLine, MAX_PLANNED_WARMUPS } from './history.js'
 import { deriveSessionName } from './session-merge.js'
 import { uid, todayISO, DAYN, weekOrder, weekStartOf, fmtNum, exCount, routineCount, weightDecimals } from './format.js'
@@ -65,6 +66,10 @@ function cleanOccurrence(o) {
   const out = { occurrenceId: o.occurrenceId, exerciseId: o.exerciseId, order: o.order, mode: o.mode }
   if (o.rule) out.rule = o.rule
   for (const key of ['side', 'bodyweight', 'assisted', 'excludeFromProgression', 'lastToFailure', 'backoff']) if (typeof o[key] === 'boolean') out[key] = o[key]
+  // Sets to failure: the flag above for the last set; a list of set numbers or 'all' for more.
+  const failureSets = failureSetsOf({ failureSets: o.failureSets })
+  if (failureSets === 'last') out.lastToFailure = true
+  else if (hasFailurePlan({ failureSets })) out.failureSets = failureSets
   // The warm-ups' "no timer" and their own rest, and the break between sides, travel only when set.
   const warmupRest = cleanRestSec(o.warmupRestSec)
   if (o.warmupRestOff === true) out.warmupRestOff = true
@@ -324,7 +329,7 @@ function schemeParts(e, unit, speedUnit) {
     return [sets > 1 ? `${sets} × ${body}` : body]
   }
   const line = exLine({ ...e, reps: e.reps ?? 10 }, unit, speedUnit)
-  const extras = [intensifierLine(e.intensifier), e.lastToFailure === true ? t('Last set to failure') : ''].filter(Boolean)
+  const extras = [intensifierLine(e.intensifier), failureLine(e)].filter(Boolean)
   return [line, ...extras]
 }
 // The extra lines keep their " · " in the text (hidden on paper), so copied text reads as one line.
@@ -347,6 +352,13 @@ function cleanIntensifier(x) {
 
 // A drop-set or rest-pause is how the exercise is prescribed, so the printout names it — the
 // sheet at the rack otherwise reads as plain straight sets.
+// What the plan takes to failure, as a printout line ("Last set to failure", "Sets to failure: 1, 3").
+function failureLine(e) {
+  const selection = failureSetsOf(e)
+  if (selection === 'last') return t('Last set to failure')
+  if (selection === 'all') return t('All sets to failure')
+  return selection.length ? t('Sets to failure: {0}', selection.join(', ')) : ''
+}
 function intensifierLine(x) {
   const intens = cleanIntensifier(x)
   if (!intens) return ''

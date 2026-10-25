@@ -38,7 +38,7 @@ minutes; speeds in km/h; `?` marks an optional field; `→` reads "is converted 
 | What was asked of the lifter | `target` (the progressed numbers) and `planned` (what the routine said) stamped on the entry | A **frozen, content-hashed Prescription** in `prescriptions{}` |
 | 1RM | Computed on the fly from logged sets | Append-only dictionary `oneRepMaxes{}` |
 | Workout in progress | `S.active` inside the synced document | Its own key (`gym_active_v1`, phone file `gym_active_v1.json`); never synced |
-| Progression policies | `linear`, `greyskull`, `double`, `time`, `off` (+ routine-level default) | 13 presets (`autoregulated`, `linear`, `greyskull`, `double`, `triple`, `hold_seconds`, `bodyweight_ladder`, `pyramid_reps`, `pyramid`, `five_three_one`, `top_set_backoff`, `accumulation_intensification`, `density`) |
+| Progression policies | `linear`, `greyskull`, `double`, `time`, `off` (+ routine-level default) | 15 presets (`manual`, `linear`, `greyskull`, `double`, `double_controlled`, `triple`, `hold_seconds`, `bodyweight_ladder`, `pyramid_reps`, `pyramid`, `five_three_one`, `top_set_backoff`, `accumulation_intensification`, `density`, `undulating`) |
 
 The migration is **one-way and additive**: it never edits the v1 bytes. Before anything is
 converted, the untouched v1 copy is written to an immutable backup (section 4.3). The conversion
@@ -304,6 +304,10 @@ Occurrence (`routine.ex[j]`):
 | `bodyweight?` | Override of the catalogue's bodyweight flag (stored only where it differs) |
 | `intensifier?` | `{ type:'dropset', count 1–5, pct }` \| `{ type:'restpause', totalReps 1–100, restSec 5–120 }`; only where `supports(rule)` allows |
 | `cardio?` | `{ sets, min, speed }` — what the cardio sheet edits; the rule holds the same numbers |
+| `failureSets?` | Planned failure: `'all'`, `'last'`, or one-based set numbers such as `[1, 3]`; applies to work sets in reps or timed-hold mode |
+| `lastToFailure?` | Legacy last-only flag; used when `failureSets` is absent |
+
+Failure selection is frozen with new prescriptions as `failureSets` and `rows[].failure`. It never marks warm-ups; a timed L/R pair is one selected set. Selected rows retain the minimum reps or duration but may exceed the range maximum. RIR 0 on those planned rows is recorded normally; `actual.progressionRir` is the least RIR of the other deciding rows, so planned failure does not defeat a positive RIR floor. No migration or history rewrite is needed.
 
 ### 3.4 `PlanRule` and its program
 
@@ -323,8 +327,8 @@ numbers do not rebuild exactly (`isTemplateRule` false) is shown, not edited.
 | `routineId`, `exerciseId` | Owner |
 | `rounding` | `{ mode:'nearest'\|'up'\|'down', step > 0 }` or `{ mode:'allowed_values', allowedValues[] }` |
 | `program.phases[]` | 1–32 phases, ids unique; a phase before the last must have an `exit` |
-| `program.end` | After the last phase exits: `'complete'` (the track completes) or `'repeat'` (a new cycle at the first phase) |
-| `program.completion[]` | AND-list of `{ metric, target }`: `target_load`, `max_sets`, `max_reps`, `max_duration`, `cycle_count`, `training_max`, `difficulty_rung`, `rest_floor`. `cycle_count` / `training_max` read the values as they stand once a closing cycle is counted |
+| `program.end` | After the last phase exits: `'complete'` (a successful final session completes the track; a miss repeats that phase) or `'repeat'` (a new cycle at the first phase). A repeating program with no completion conditions continues indefinitely |
+| `program.completion[]` | A successful session AND every selected `{ metric, target }`: `target_load`, `max_sets`, `max_reps`, `max_duration`, `cycle_count`, `training_max`, `difficulty_rung`, `rest_floor`. Merely lifting the target load never completes a failed session. `cycle_count` reads the earned cycle count; `training_max` includes the increment earned at a repeating cycle boundary, even when completion prevents starting that next cycle |
 | `program.trainingMax?` | `{ mode:'direct', value, unit }` \| `{ mode:'ninety_percent_1rm' }` — what `training_max` groups are a percentage of |
 | `program.cycleIncrement?` | `{ value ≥ 0, unit }` added to the training max at every cycle boundary |
 
@@ -339,6 +343,7 @@ A **phase**:
 | `success` | `{ scope:'all'\|'groups', groupIds?, load:'ignore'\|'prescribed', effort:'ignore'\|'rir_floor' }` — which rows decide, whether the load lifted must reach the prescription (new templates; v1-shaped ones ignore it, as v1 did), whether a RIR floor applies |
 | `progression[]` | Up to 8 operators (below) |
 | `stall?` | `{ after 1–10, count:'misses'\|'misses_without_improvement', recovery: { method:'factor'\|'epley'\|'epley_reps', factor 0.5–0.95 } }` — only on a phase that steps load or seconds |
+| `reviewAfter?` | 1–10 consecutive unsuccessful sessions before a training-max review message; needs `program.trainingMax`. A message only: no automatic reduction. Success and a phase change reset the run |
 | `exit` | `null` (last phase only) \| `{ type:'exposures'\|'successes', count }` \| `{ type:'goal', metric:'reps'\|'sets'\|'durationSeconds', target }` \| `{ type:'load_present'\|'load_absent' }`, each with an optional `to` (a phase id; default: the next) |
 | `entry?` | `{ load:'declared'\|'previous', reps:'declared'\|'last_actual' }` — how a phase entered by a load exit starts |
 | `prefill?` | `'plan'` (default) \| `'last'` — where sets and reps open when nothing moved |
@@ -363,22 +368,33 @@ minimum.
 
 | Template | Program | v1 counterpart |
 |---|---|---|
-| `autoregulated` | one phase, no operators; reps, load or seconds (timed) are entered by hand | `off`, an unknown policy; timed "no progression" migrates as `autoregulated` |
+| `manual` | one phase, no operators; reps, load or seconds (timed) are entered by hand | `off`, an unknown policy; timed "no progression" migrates as `manual` |
 | `linear` | load +step on success (from what was lifted); stall 3 → Epley | `linear` |
 | `greyskull` | sets−1 plain + 1 AMRAP group; load +step (×2 at 2× the minimum); effort ignored; stall 1 → factor | `greyskull` |
 | `double` | reps +1 (2 per side) after any worked session from the last result, then load at the top; stall 3 counted without improvement → Epley with reps | `double` |
+| `double_controlled` | starts at minimum reps; reps +1 (2 per side) after success at the prescribed load; at maximum reps load +step from the prescription and reset reps | —; v1 `double` keeps its original behavior |
 | `triple` | reps +1, then a set, then load, after clean sessions | — |
 | `hold_seconds` | the seconds window +step at its top; stall 3 → window back | `time` ("Add time") |
-| `bodyweight_ladder` | reps (from the last result), then sets, after clean sessions; named rungs then move to the next variation and start over, and `regress` moves back one. With `loadedPreset`, a second phase runs that policy while weight is logged (`load_present` / `load_absent`) | `linear` on an unloaded bodyweight exercise |
+| `bodyweight_ladder` | reps (from the prescribed aim), then sets, after clean sessions; named rungs then move to the next variation and start over, and `regress` moves back one. A finite ladder with named rungs also requires the final rung for completion. A rung may name an exercise (`{ name, exerciseId }`): the session logs that exercise while the track is on it (single-phase ladders only). With `loadedPreset`, a second phase runs that policy while weight is logged (`load_present` / `load_absent`) | `linear` on an unloaded bodyweight exercise |
 | `linear`/`greyskull`/`double` + `unloadedLadder` | the policy, and a rep ladder while nothing is loaded | a loaded policy on unloaded equipment |
 | `pyramid_reps` | a group per set (`max` sets open at what that set managed), own rests | v1.3.10 pyramid sets |
 | `pyramid` | a group per set at a % of the anchor, lightest first (ascending) or heaviest first (descending, e.g. RPT); the 100 % sets decide | — |
-| `five_three_one` | a phase per week of `training_max` groups, each exits after 1 session; repeats; TM + increment per cycle | — |
+| `five_three_one` | four exposure phases of `training_max` groups, each exits after 1 logged session even on a miss; these are not calendar weeks. Repeats (default stop after 4 cycles) or completes after a successful final phase | — |
 | `top_set_backoff` | top 1 × reps at 100 % + back-off sets at a %, each with its own rest; the top set (or every set) decides; load +step from what was prescribed | — |
-| `accumulation_intensification` | phase A: reps +1 at a % of the TM until the top; phase B: fewer reps at a higher %, exits after N clean sessions; repeats (TM + increment) or completes | — |
-| `density` | rest −step after each clean session down to a floor; optional `rest_floor` completion | — |
+| `accumulation_intensification` | phase A: reps +1 at a % of the TM until the top; phase B: fewer reps at a higher %, exits after N cumulative successful sessions; repeats (TM + increment) or completes. Default review warning after 3 consecutive unsuccessful sessions in one phase | — |
+| `density` | rest −step after each successful session down to a floor; defaults to completing after success at the floor. Remove `rest_floor` to keep logging there. Actual rest is not measured | — |
+| `undulating` | three configurable exposure phases: volume 3×10 at 65 % TM, intermediate 4×6 at 75 %, strength 5×3 at 85 %; advances each logged exposure even on a miss, TM +increment per repeated cycle. No calendar or cross-routine synchronization | — |
 
 Deload defaults (`DELOAD_AFTER`): `linear` 3, `greyskull` 1, `double` 3, `hold_seconds` 3 — v1's — with `factor: 0.9`.
+
+RIR is a minimum when `success.effort` is `rir_floor`: an absent rating never blocks progression.
+Meeting the reps/time with a low RIR holds success-based progression but is not a miss for automatic
+deload. Greyskull ignores the RIR floor. Exposure-based cycles still move phases regardless of RIR;
+the floor does apply when deciding whether a session can complete the program.
+
+`manual` is the canonical id for manual targets. Engine v2 is not released: no aliases or migration
+from earlier experimental v2 preset ids are provided. All v1 policies retain their migration path,
+and migrated rules still have no terminal target or completion conditions.
 
 ### 3.6 `Prescription` (frozen)
 
@@ -400,6 +416,7 @@ Deload defaults (`DELOAD_AFTER`): `linear` 3, `greyskull` 1, `double` 3, `hold_s
 | `rows[]` | `{ groupId?, reps{min,max}, load, loadTo?, restSeconds?, amrap?, max? }` — `groupId` only when the phase has several groups, `restSeconds` only when it differs from the exercise's |
 | `provenance.deload` | `{ stalls, from, to, method: 'epley'\|'factor'\|'assist'\|'seconds', reps? }` when the values carried a back-off |
 | `provenance.rung` | `{ from, to, reason: 'promote'\|'regress' }` when the last finish moved the ladder's rung |
+| `provenance.reviewTrainingMax` | `true` after repeated unsuccessful sessions in a phase with `reviewAfter`; the workout shows a settings-review message, never an automatic reduction |
 
 The pack form (`profile-pack.js`) keeps `ruleSnapshot` in the shared template block.
 
@@ -410,15 +427,17 @@ The pack form (`profile-pack.js`) keeps `ruleSnapshot` in the shared template bl
 | `status`, `cyclesCompleted`, `terminalTarget`, `completedAt` | As before |
 | `lastPrescriptionId`, `lastCompletedLogId`, `lastActual`, `planRuleRevision`, `planFingerprint` | The newest counted session; a session of another fingerprint restarts the track inside `advanceProgression`, so a live finish and a replay restart at the same log. The same log twice is a no-op |
 | `phaseId`, `phaseExposures`, `phaseSuccesses` | Where the track is and the counters its exit reads |
+| `phaseMisses?` | Consecutive unsuccessful sessions in a phase with `reviewAfter`; reset on success and removed on phase change |
 | `values` | What the next session targets: `{ load, sets, reps, durationSeconds, restSeconds, difficulty, trainingMax }`; `null` sets/reps = the bottom of the range the next plan gives |
 | `stalls`, `stallAt`, `stallBest` | The run of sessions short of the minimum at one load (or window); `stallBest` for a double counted without improvement |
 | `rungMisses` | Only on a ladder with `regress`: sessions in a row short of the minimum at the current rung; a hit, a rung change or a phase change resets it |
 | `deload` | The back-off the values carry, shown on the next prescription |
 
 Advancing is a fixed order: judge the session (`verdictOf`), its phase exit and the program's cycle,
-completion, then a stall back-off or the operators, then the next phase. A completing session moves
-everything but the load. Generating only reads the state: twice from the same state is the same
-prescription.
+completion, then a stall back-off or the operators, then the next phase. A completing session freezes
+the prescription's values and phase: no extra rep, load step, TM increment or phase transition is
+applied. A non-repeating program counts its final cycle only once while it waits for its selected
+goals. Generating only reads the state: twice from the same state is the same prescription.
 
 ### 3.8 Workout and exposure
 
@@ -483,7 +502,7 @@ discarded?: [{ path, value }] }`. A repaired date is an `unsupported` entry of a
 
 | `field` | When | What to do |
 |---|---|---|
-| `prog` | An incompatible own policy or an unknown own/inherited policy | Rule migrated as `autoregulated`; choose a preset in the exercise sheet |
+| `prog` | An incompatible own policy or an unknown own/inherited policy | Rule migrated as `manual`; choose a preset in the exercise sheet |
 | `deloadFactor` | The factor was set on an exercise whose rule cannot deload (no progression, a ladder) | Nothing to act on; kept for reference |
 | `intensifier` | The intensifier is one the rule cannot run (a preset that shapes its own rows, a timed or unloaded rule) | Dropped from the live plan; re-add if you switch preset |
 
@@ -737,7 +756,7 @@ that passes `migrationStatus`; whatever it cannot use is repaired the same way, 
 | reps | `linear` | `linear` |
 | reps | `greyskull` / `double` | `greyskull` / `double` |
 | time | `time` ("Add time") | **`hold_seconds`** (**A18**) |
-| any | `off`, cardio, a policy the mode does not accept, an unknown string | `autoregulated` — an incompatible own policy or unknown own/inherited policy is also written to `migrationAudit` as field `prog` |
+| any | `off`, cardio, a policy the mode does not accept, an unknown string | `manual` — an incompatible own policy or unknown own/inherited policy is also written to `migrationAudit` as field `prog` |
 
 **Rule numbers** (`ruleFrom`): the v1 fields become the template's numbers (`planOptions` keys),
 and the template builds the program from them. Per field:
@@ -899,7 +918,7 @@ workout uses the same per-limb selection.
   none, from its rows: work-row count, first row's reps/weight/sec/min) — **never re-derived from
   history**. A linked entry (same `linkOf` rule, using the active session's `routineId(s)`) uses
   its occurrence's rule (same `ruleFor`), so finishing it advances the same track; an unlinked one
-  gets an `autoregulated` rule (`rule:${id}:${j}`, `routineId: null`), a track `${id}:t${j}`, and
+  gets a `manual` rule (`rule:${id}:${j}`, `routineId: null`), a track `${id}:t${j}`, and
   `noProg: true` (`excludedFromProgression`).
 * A linked prescription is stamped like a logged one (the live `planFingerprint` when its
   `planned` matches the routine, else the stamp's), and its rule keeps the occurrence's start
@@ -929,7 +948,7 @@ workout uses the same per-limb selection.
 | v1 data | v2 |
 |---|---|
 | `routine.prog` | kept, unread (baked into rules) |
-| Own or inherited policy unknown | `autoregulated` + `migrationAudit.unsupported` entry with field `prog` |
+| Own or inherited policy unknown | `manual` + `migrationAudit.unsupported` entry with field `prog` |
 | `deloadFactor` with no deloading rule | `migrationAudit.deloadFactor` |
 | `intensifier` the rule cannot run | dropped from the plan + `migrationAudit.intensifier` |
 | `exWeights` | kept, unread (**A15**) |

@@ -26,6 +26,9 @@ export function coachExOf(occ, ex = null) {
   o.prog = policy ?? 'off';
   if (policy == null) o.preset = r.preset;
   if (occ.sg) o.sg = occ.sg;
+  if (occ.failureSets != null) o.failureSets = occ.failureSets;
+  if (occ.lastToFailure) o.lastToFailure = true;
+  if (mode === 'time' && p.durationSeconds.max > p.durationSeconds.min) o.secMax = p.durationSeconds.max;
   return o;
 }
 

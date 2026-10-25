@@ -139,7 +139,7 @@ describe('get_routine', () => {
     _seedStateForTests(profile)
     const pyr = call('get_routine', { routine_id: 'r1' }).exercises.at(-1)
     expect(pyr).toMatchObject({ preset_id: 'pyramid_reps', pyramid: [12, 8, 6, 'max', 12], pyramid_rest_sec: [60, 60, 90, 0, 60], summary: '12 · 8 · 6 · Max · 12' })
-    expect(pyr.preset_label).toMatch(/Pyramid sets/)
+    expect(pyr.preset_label).toMatch(/Custom sets/)
   })
 
   test('reports a program of several phases by its phase ids, in order', () => {
@@ -405,7 +405,7 @@ describe('main features on canonical sessions', () => {
   test('preview includes a custom exercise’s equipment-specific warm-ups without leaking its index', () => {
     const profile = baseProfile()
     profile.customEx = [{ id: 'my-barbell', n: 'My barbell lift', bp: 'upper legs', tg: 'quads', eq: 'barbell', custom: true }]
-    const occurrence = ruleOccurrence('my-barbell', { preset: 'autoregulated', options: { load: { mode: 'absolute', value: 200, unit: 'kg' } } })
+    const occurrence = ruleOccurrence('my-barbell', { preset: 'manual', options: { load: { mode: 'absolute', value: 200, unit: 'kg' } } })
     occurrence.warmup = { mode: 'smart', count: 5 }
     profile.routines[0].ex = [occurrence]
     _seedStateForTests(profile)
@@ -504,7 +504,7 @@ describe('preview_session', () => {
 
   test('a load range previews its high end as weight_max', () => {
     const profile = baseProfile()
-    profile.routines[0].ex = [ruleOccurrence(BENCH, { preset: 'autoregulated', options: { reps: { min: 8, max: 12 }, load: { mode: 'absolute', value: 60, unit: 'kg' }, loadTo: { mode: 'absolute', value: 80, unit: 'kg' } } })]
+    profile.routines[0].ex = [ruleOccurrence(BENCH, { preset: 'manual', options: { reps: { min: 8, max: 12 }, load: { mode: 'absolute', value: 60, unit: 'kg' }, loadTo: { mode: 'absolute', value: 80, unit: 'kg' } } })]
     _seedStateForTests(profile)
     const [bench] = call('preview_session', { routine_id: 'r1' }).exercises
     expect(bench.prescription).toMatchObject({ weight: 60, weight_max: 80 })
@@ -520,7 +520,7 @@ describe('preview_session', () => {
 
   test('a percent rule with no 1RM on file says why its loads are blank', () => {
     const profile = baseProfile()
-    profile.routines[0].ex[0] = ruleOccurrence(BENCH, { preset: 'autoregulated', options: { load: { mode: 'percent_1rm', percent: 70 } } })
+    profile.routines[0].ex[0] = ruleOccurrence(BENCH, { preset: 'manual', options: { load: { mode: 'percent_1rm', percent: 70 } } })
     _seedStateForTests(profile)
     const bench = call('preview_session', { routine_id: 'r1' }).exercises[0]
     expect(bench.prescription.why).toMatch(/no 1RM on file/)
@@ -552,7 +552,7 @@ describe('preview_session', () => {
 
 describe('ruleSummary', () => {
   test('one line per load kind and rep shape', () => {
-    const rule = (over) => defaultPlanRule('autoregulated', { id: 'r', exerciseId: 'e', sets: { min: 3, max: 3 }, reps: { min: 5, max: 5 }, load: { mode: 'empty' }, ...over })
+    const rule = (over) => defaultPlanRule('manual', { id: 'r', exerciseId: 'e', sets: { min: 3, max: 3 }, reps: { min: 5, max: 5 }, load: { mode: 'empty' }, ...over })
     expect(ruleSummary(rule({ load: { mode: 'absolute', value: 60, unit: 'kg' } }))).toBe('3 × 5 · 60 kg')
     expect(ruleSummary(rule({ sets: { min: 3, max: 5 }, reps: { min: 8, max: 12 }, load: { mode: 'percent_1rm', percent: 70 } }))).toBe('3-5 × 8-12 · 70% 1RM')
     expect(ruleSummary(rule({ durationSeconds: { min: 30, max: 60 } }))).toBe('3 × 30-60 s')
@@ -560,7 +560,7 @@ describe('ruleSummary', () => {
   })
 
   test('a load range reads low-high', () => {
-    const rule = (over) => defaultPlanRule('autoregulated', { id: 'r', exerciseId: 'e', sets: { min: 3, max: 3 }, reps: { min: 8, max: 12 }, ...over })
+    const rule = (over) => defaultPlanRule('manual', { id: 'r', exerciseId: 'e', sets: { min: 3, max: 3 }, reps: { min: 8, max: 12 }, ...over })
     expect(ruleSummary(rule({ load: { mode: 'absolute', value: 60, unit: 'kg' }, loadTo: { mode: 'absolute', value: 80, unit: 'kg' } }))).toBe('3 × 8-12 · 60-80 kg')
     expect(ruleSummary(rule({ load: { mode: 'percent_1rm', percent: 60 }, loadTo: { mode: 'percent_1rm', percent: 75 } }))).toBe('3 × 8-12 · 60-75% 1RM')
   })

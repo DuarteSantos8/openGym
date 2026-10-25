@@ -7,32 +7,20 @@ import Icon from './Icon.jsx'
 import Stepper from './Stepper.jsx'
 import { Button, Row, Segmented, SelectButton, SelectRow, Switch } from './ui.jsx'
 import { t } from '../lib/i18n.js'
+import { fmtNum, fmtSpread } from '../lib/format.js'
 import { durationSheet } from './DurationWheel.jsx'
 import { REST_MAX, fmtRest } from '../lib/duration.js'
 import { pyramidLabel, PYRAMID_PRESETS, PYRAMID_MAX, MAX_PYRAMID_SETS } from '../lib/pyramid.js'
 import { INCREMENT_TYPES, PRESETS, PRESET_IDS, defaultDeload, defaultPlanRule, editPlan, isTemplateRule, planOptions, pyramidDirection, rptOffsets, validatePlanRule } from '../lib/prescription/index.js'
 
 export const PRESET_LABEL = {
-  autoregulated: 'Autoregulated', linear: 'Linear', greyskull: 'Greyskull LP',
+  manual: 'Manual', linear: 'Linear', greyskull: 'Greyskull LP',
   double: 'Double progression', triple: 'Triple progression', hold_seconds: 'Timed hold progression',
-  bodyweight_ladder: 'Bodyweight ladder', pyramid_reps: 'Pyramid sets', pyramid: 'Pyramid', five_three_one: '5/3/1',
-  top_set_backoff: 'Top set and back-off', accumulation_intensification: 'Accumulation then intensification', density: 'Density'
+  bodyweight_ladder: 'Bodyweight ladder', pyramid_reps: 'preset.pyramid_reps.name', pyramid: 'Pyramid', five_three_one: '5/3/1',
+  top_set_backoff: 'Top set and back-off', accumulation_intensification: 'Accumulation then intensification', density: 'Density',
+  double_controlled: 'preset.double_controlled.name', undulating: 'preset.undulating.name'
 }
-export const PRESET_HINT = {
-  autoregulated: 'You set every value by feel (reps, load or seconds); nothing is advanced for you.',
-  linear: 'Add a fixed amount of weight after every successful session.',
-  greyskull: 'Add weight when you hit the target; the last set is an AMRAP.',
-  double: 'Reach the top of the rep or time range, then add weight and start again.',
-  triple: 'Fill sets and reps up to the top of the range, then add weight.',
-  hold_seconds: 'Hold for time; the target seconds go up each time you reach the longest time.',
-  bodyweight_ladder: 'Build reps and sets, then move to a harder variation.',
-  pyramid_reps: 'A different rep target for each set, e.g. 12 · 8 · 6 · Max · 12.',
-  pyramid: 'Sets at different shares of one anchor load, lightest first or heaviest first.',
-  five_three_one: 'Wendler cycle: four weeks of percentages of your training max.',
-  top_set_backoff: 'One heavy top set, then lighter back-off sets; the top set decides the next load.',
-  accumulation_intensification: 'Build reps at a lighter percentage of your training max, then a heavier block of fewer reps.',
-  density: 'Same work, a little less rest after every clean session.',
-}
+export const PRESET_HINT = Object.fromEntries(PRESET_IDS.map(id => [id, `preset.${id}.desc`]))
 const INCREMENT_LABEL = {
   absolute: 'Fixed amount', current_load_percent: '% of current load', snapshot_1rm_percent: '% of 1RM',
   target_load_percent: '% of target', percentage_points: 'Percentage points'
@@ -80,7 +68,7 @@ function RangeField({ label, value, step = 1, policy = 'range', onChange }) {
 }
 
 // `value` is the low end; `upTo` the optional high end (loadTo), offered when `rangeable`.
-function LoadField({ label, value, upTo, rangeable = false, unit, step, noneMode, onChange }) {
+function LoadField({ label, value, upTo, rangeable = false, unit, step, noneMode, oneRm = null, onChange }) {
   const [open, setOpen] = useState(false)
   const modes = [
     ...(noneMode ? [{ value: noneMode, label: t('None') }] : []),
@@ -107,18 +95,28 @@ function LoadField({ label, value, upTo, rangeable = false, unit, step, noneMode
       <SelectButton className="unit-btn" title={label} value={value.mode} options={modes} onChange={setMode} />
       {rangeable && loaded && <RangeToggle ranged={ranged} onToggle={toggle} />}
     </div>
+    {/* What a % of the 1RM comes to: the weight, and the weights the spread of the 1RM gives. */}
+    {value.mode === 'percent_1rm' && oneRm && [value, ranged && upTo].filter(Boolean).map((v, i) => <div key={i} className="small dim" style={{ marginTop: 4 }}>
+      {t('{0}% of {1} → {2}', v.percent, fmtNum(oneRm.value) + fmtSpread(oneRm.low, oneRm.high), fmtNum(oneRm.value * v.percent / 100) + fmtSpread(oneRm.low * v.percent / 100, oneRm.high * v.percent / 100) + ' ' + unit)}
+    </div>)}
   </div>
 }
 
 // `restDefault`: the exercise takes the profile's rest (`defaultRest`) instead of its own; the wheel's 0:00 says so.
-export default function RuleEditor({ rule, unit, effort, assisted = false, bodyweight = false, restDefault = false, defaultRest = 90, onRestDefault, onChange }) {
+// `tab` ('target' | 'progression') lays the form out as the exercise sheet's two tabs: both panels
+// stay mounted and the other one is hidden, so a field keeps what was typed while you switch.
+// Without it the editor is one flat form, Progression then Target. `extra` closes the Target form
+// with what the caller owns beside the rule (the sheet's sets to failure).
+export default function RuleEditor({ rule, unit, effort, assisted = false, bodyweight = false, oneRm = null, restDefault = false, defaultRest = 90, onRestDefault, onChange, tab, extra = null }) {
   const def = PRESETS[rule.preset]
   // The template's numbers (planOptions): the plan's sets, reps, load… and its extras (offsets, rungs…).
   const p = planOptions(rule)
   const loaded = def.steps === 'load'
   const step = rule.rounding.step ?? (unit === 'lb' ? 5 : 2.5)
   const timed = !!p.durationSeconds
-  const supportsTime = !['hold_seconds', 'bodyweight_ladder', 'five_three_one', 'pyramid_reps', 'top_set_backoff', 'accumulation_intensification', 'density'].includes(rule.preset)
+  const cyclic = !!p.trainingMax
+  const phase = rule.program.phases[0]
+  const supportsTime = !['hold_seconds', 'bodyweight_ladder', 'five_three_one', 'pyramid_reps', 'top_set_backoff', 'accumulation_intensification', 'density', 'double_controlled', 'undulating'].includes(rule.preset)
   const { errors } = validatePlanRule(rule)
   // Every edit is a set of new numbers; the template rebuilds the program from them. null removes an optional one.
   const set = patch => onChange(editPlan(rule, patch))
@@ -129,14 +127,22 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
       options={PRESET_IDS.filter(id => id !== 'triple' || !bodyweight || (p.load.mode === 'absolute' && p.load.value > 0) || rule.preset === 'triple').map(id => ({ value: id, label: t(PRESET_LABEL[id]), subtitle: t(PRESET_HINT[id]) }))} />
   </div>
   const errorLine = errors.length > 0 && <div className="small" role="alert" style={{ color: 'var(--red)', margin: '10px 0 14px' }}>{errors[0]}</div>
+  const panel = (name, children) => <div key={name} role="tabpanel" id={`xc-panel-${name}`} aria-labelledby={`xc-tab-${name}`} hidden={tab !== name}>{children}</div>
   // A program edited past its template (an import, a future builder) is shown, not edited: rebuilding
   // it from these numbers would drop what the template does not know. Choosing a template replaces it.
-  if (!isTemplateRule(rule)) return <>
-    <h4 className="sec">{t('Progression')}</h4>
-    {presetRow}
-    <div className="small dim" style={{ marginBottom: 14 }}>{t('This plan was set up outside the editor. Pick a progression to replace it.')}</div>
-    {errorLine}
-  </>
+  if (!isTemplateRule(rule)) {
+    const notice = <>
+      {presetRow}
+      <div className="small dim" style={{ marginBottom: 14 }}>{t('This plan was set up outside the editor. Pick a progression to replace it.')}</div>
+    </>
+    if (tab) return <>{panel('target', <>{notice}{extra}</>)}{panel('progression', notice)}{errorLine}</>
+    return <>
+      <h4 className="sec">{t('Progression')}</h4>
+      {notice}
+      {extra}
+      {errorLine}
+    </>
+  }
 
   // Defaults: absolute increments for absolute loads, percentage points for percent loads.
   // loadTo: the load range's high end, or undefined for a fixed load.
@@ -146,10 +152,12 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
     ...(load.mode !== 'percent_1rm' && p.step?.type === 'percentage_points' ? { step: { type: 'absolute', value: step, unit } } : {})
   })
   const has = metric => p.completion.some(c => c.metric === metric)
+  const namedLadder = rule.preset === 'bodyweight_ladder' && p.rungs.length > 0
   const toggleMetric = (metric, on) => set({
     completion: on
       ? [...p.completion, { metric, target: metric === 'cycle_count' ? 4 : metric === 'training_max' ? (p.trainingMax?.value ?? 100) : metric === 'max_duration' && rule.preset === 'hold_seconds' ? 120 : metric === 'rest_floor' ? p.restFloor : null }]
-      : p.completion.filter(c => c.metric !== metric)
+      : p.completion.filter(c => c.metric !== metric),
+    ...(on && cyclic ? { end: 'repeat' } : {})
   })
   const setMetricTarget = (metric, target) => set({ completion: p.completion.map(c => (c.metric === metric ? { ...c, target } : c)) })
   const setOffsets = offsets => set({ offsets, sets: p.sets.min === p.sets.max ? { min: offsets.length, max: offsets.length } : p.sets })
@@ -173,21 +181,22 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
 
   const stopSummary = p.completion.length ? String(p.completion.length) : t('None')
 
-  return <>
-    <h4 className="sec">{t('Progression')}</h4>
+  const presetBlock = <>
     {presetRow}
     <div className="small dim" style={{ marginBottom: 14 }}>{t(PRESET_HINT[rule.preset])}</div>
+  </>
+  const progressionBody = <>
+    {presetBlock}
 
-    {loaded && <div style={{ marginTop: 22, marginBottom: 14 }}>
-      <div className="sect-b" style={{ marginBottom: 8 }}>
-        <SelectRow title={assisted ? t('Reduce assistance by') : t('Increase load by')} sheetTitle={assisted ? t('Reduce assistance by') : t('Increase load by')} value={p.step.type}
+    {loaded && <div className="row cfgrow rule-step" style={{ marginTop: 22, marginBottom: 14 }}>
+      <div className="stp-w">
+        <span className="stp-l">{assisted ? t('Reduce assistance by') : t('Increase load by')}</span>
+        <SelectButton className="unit-btn" title={assisted ? t('Reduce assistance by') : t('Increase load by')} value={p.step.type}
           onChange={type => set({ step: type === 'absolute' ? { type, value: step, unit } : { type, value: 2.5 } })}
           options={incrementTypes.map(type => ({ value: type, label: t(INCREMENT_LABEL[type]) }))} />
       </div>
-      <div className="row cfgrow">
-        <Stepper value={p.step.value} step={p.step.type === 'absolute' ? step : 0.5} unit={p.step.type === 'absolute' ? unit : '%'}
-          onChange={value => set({ step: { ...p.step, value } })} />
-      </div>
+      <Stepper label={p.step.type === 'absolute' ? unit : t(INCREMENT_LABEL[p.step.type])} value={p.step.value} step={p.step.type === 'absolute' ? step : 0.5}
+        onChange={value => set({ step: { ...p.step, value } })} />
     </div>}
 
     {def.steps === 'seconds' && <div className="row cfgrow" style={{ marginTop: 22, marginBottom: 14 }}>
@@ -201,14 +210,20 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
     </div>}
 
     {def.metrics.length > 0 && <Disclosure title={t('Stop progressing when all of these are met')} value={stopSummary}>
-      {def.metrics.map(metric => <div key={metric}>
-        <Row title={t(timed && metric === 'max_reps' ? METRIC_LABEL.max_duration : METRIC_LABEL[metric])}><Switch checked={has(metric)} onChange={on => toggleMetric(metric, on)} /></Row>
+      <div className="small dim" style={{ marginBottom: 10 }}>{t('progression.completion.help')}</div>
+      {def.metrics.filter(metric => rule.preset !== 'bodyweight_ladder' || (namedLadder ? metric === 'difficulty_rung' : metric !== 'difficulty_rung')).map(metric => <div key={metric}>
+        <Row title={t(timed && metric === 'max_reps' ? METRIC_LABEL.max_duration : METRIC_LABEL[metric])}><Switch checked={has(metric)} onChange={on => namedLadder ? set({ completion: on ? ['max_sets', 'max_reps', 'difficulty_rung'].map(metric => ({ metric, target: null })) : [] }) : toggleMetric(metric, on)} /></Row>
         {has(metric) && (metric === 'cycle_count' || metric === 'training_max' || metric === 'rest_floor' || (metric === 'max_duration' && rule.preset === 'hold_seconds')) && <div className="row cfgrow">
           <Stepper value={p.completion.find(c => c.metric === metric).target} step={metric === 'cycle_count' ? 1 : metric === 'max_duration' || metric === 'rest_floor' ? 5 : step}
             unit={metric === 'max_duration' || metric === 'rest_floor' ? 's' : undefined} decimal={metric === 'training_max'} onChange={v => setMetricTarget(metric, v)} />
         </div>}
       </div>)}
     </Disclosure>}
+
+    {cyclic && <div className="sect-b" style={{ marginBottom: 14 }}>
+      <Row title={t('progression.cycle.repeat')}><Switch checked={p.end === 'repeat'} onChange={on => set({ end: on ? 'repeat' : 'complete', ...(!on ? { completion: [] } : {}) })} /></Row>
+      <div className="small dim">{t('progression.cycle.help')}</div>
+    </div>}
 
     {def.stalls && <Disclosure title={t('Back off when stuck')}
       value={p.deload ? t('after {0} · to {1}%', p.deload.after, Math.round(p.deload.factor * 100)) : t('None')}>
@@ -228,17 +243,18 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
       </>}
     </Disclosure>}
 
-    <h4 className="sec">{t('Target')}</h4>
-    {!['five_three_one', 'pyramid_reps', 'top_set_backoff'].includes(rule.preset) && <RangeField key={'sets' + rule.preset} label={t('Sets')} value={p.sets} policy={def.ranges.sets} onChange={sets => set({ sets })} />}
+  </>
+  const targetBody = <>
     {supportsTime && <div className="sect-b" style={{ marginBottom: 14 }}>
       <Segmented value={timed ? 'time' : 'reps'} onChange={setTargetMode}
         options={[{ value: 'reps', label: t('Reps') }, { value: 'time', label: t('Time') }]} />
     </div>}
-    {!['five_three_one', 'pyramid_reps'].includes(rule.preset) && (timed
+    {!['five_three_one', 'pyramid_reps', 'top_set_backoff', 'undulating'].includes(rule.preset) && <RangeField key={'sets' + rule.preset} label={t('Sets')} value={p.sets} policy={def.ranges.sets} onChange={sets => set({ sets })} />}
+    {!['five_three_one', 'pyramid_reps', 'undulating'].includes(rule.preset) && (timed
       ? <RangeField key={'sec' + rule.preset} label={t('Seconds')} value={p.durationSeconds} step={5} policy={def.ranges.durationSeconds} onChange={durationSeconds => set({ durationSeconds })} />
       : <RangeField key={'reps' + rule.preset} label={rule.preset === 'top_set_backoff' ? t('Top set reps') : t('Reps')} value={p.reps} policy={def.ranges.reps} onChange={reps => set({ reps })} />)}
-    {!['five_three_one', 'accumulation_intensification'].includes(rule.preset) && <LoadField key={rule.preset} label={p.offsets || rule.preset === 'top_set_backoff' ? t('Anchor load') : t('Starting load')} value={p.load} upTo={p.loadTo ?? undefined} rangeable={def.ranges.load === 'range'}
-      unit={unit} step={step} noneMode={loaded || rule.preset === 'density' ? null : 'empty'} onChange={setLoad} />}
+    {!cyclic && <LoadField key={rule.preset} label={p.offsets || rule.preset === 'top_set_backoff' ? t('Anchor load') : t('Starting load')} value={p.load} upTo={p.loadTo ?? undefined} rangeable={def.ranges.load === 'range'}
+      unit={unit} step={step} noneMode={loaded || rule.preset === 'density' ? null : 'empty'} oneRm={oneRm} onChange={setLoad} />}
     {rule.preset === 'top_set_backoff' && <div style={{ marginBottom: 14 }}>
       <div className="sect-b" style={{ marginBottom: 8 }}>
         <SelectRow title={t('Decides the next load')} sheetTitle={t('Decides the next load')} value={p.scope} onChange={scope => set({ scope })}
@@ -263,9 +279,24 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
       </div>
       <div className="row cfgrow">
         <Stepper label={t('Intensification: % of training max')} value={p.intensification.percent} step={2.5} unit="%" onChange={percent => intensification({ percent })} />
-        <Stepper label={t('Clean sessions to finish')} value={p.intensification.successes} step={1} decimal={false} onChange={successes => intensification({ successes: Math.max(1, successes) })} />
+        <Stepper label={t('progression.successes.label')} value={p.intensification.successes} step={1} decimal={false} onChange={successes => intensification({ successes: Math.max(1, successes) })} />
       </div>
-      <Row title={t('Start over when done')}><Switch checked={p.end === 'repeat'} onChange={on => set({ end: on ? 'repeat' : 'complete' })} /></Row>
+      <div className="row cfgrow">
+        <Stepper label={t('progression.reviewAfter.label')} value={p.reviewAfter} step={1} decimal={false} onChange={reviewAfter => set({ reviewAfter: Math.min(10, Math.max(1, reviewAfter)) })} />
+      </div>
+      <div className="small dim">{t('progression.reviewAfter.help')}</div>
+    </div>}
+    {p.wave && <div style={{ marginBottom: 14 }}>
+      {p.wave.map((w, i) => <div key={i} data-wave={i} className="sect-b" style={{ marginBottom: 10 }}>
+        <div className="small dim">{i < 3 ? t(['progression.wave.volume', 'progression.wave.intermediate', 'progression.wave.strength'][i]) : t('Phase {0} of {1}', i + 1, p.wave.length)}</div>
+        <div className="row cfgrow">
+          <Stepper label={t('Sets')} value={w.sets} step={1} decimal={false} onChange={sets => set({ wave: p.wave.map((x, j) => j === i ? { ...x, sets: Math.max(1, sets) } : x) })} />
+          <Stepper label={t('Reps')} value={w.reps} step={1} decimal={false} onChange={reps => set({ wave: p.wave.map((x, j) => j === i ? { ...x, reps: Math.max(1, reps) } : x) })} />
+        </div>
+        <div className="row cfgrow">
+          <Stepper label={t('progression.wave.percent')} value={w.percent} step={2.5} unit="%" onChange={percent => set({ wave: p.wave.map((x, j) => j === i ? { ...x, percent: Math.max(2.5, percent) } : x) })} />
+        </div>
+      </div>)}
     </div>}
     {targets && <div style={{ marginBottom: 14 }}>
       {/* Presets replace the list (and its rests) in one tap; nothing is saved until Save. */}
@@ -332,7 +363,7 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
       onChange={e => set({ rungs: e.target.value.split('\n') })}
       onBlur={e => set({ rungs: e.target.value.split('\n').map(x => x.trim()).filter(Boolean) })} />}
 
-    {def.metrics.includes('target_load') && <LoadField label={t('Target load')} value={p.target} unit={unit} step={step} noneMode="none" onChange={target => set({ target })} />}
+    {def.metrics.includes('target_load') && <LoadField label={t('Target load')} value={p.target} unit={unit} step={step} noneMode="none" oneRm={oneRm} onChange={target => set({ target })} />}
     <div className="sect-b" style={{ marginBottom: 14 }}>
       <Row icon="timer" iconTint="var(--orange)" title={rule.preset === 'density' ? t('Starting rest') : t('Rest for this exercise')} accessory="chevron"
         value={restDefault ? t('Default ({0})', fmtRest(defaultRest)) : fmtRest(p.restSeconds)}
@@ -357,9 +388,16 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
           onChange={v => set({ rir: v ? { min: 1, max: 3 } : null })}
           options={[{ value: '', label: t('None') }, { value: 'rir', label: 'RIR' }]} />
       </div>
-      {p.rir && <div className="small dim" style={{ marginTop: 6 }}>{t('Load only goes up if your hardest set left at least this many reps in reserve.')}</div>}
+      {p.rir && <div className="small dim" style={{ marginTop: 6 }}>{t(phase.success.effort === 'ignore' ? 'progression.rir.ignoredHelp' : phase.exit?.type === 'exposures' ? 'progression.rir.scheduleHelp' : phase.progression.some(op => op.when === 'worked') ? 'progression.rir.doubleHelp' : !phase.progression.length && !phase.exit ? 'progression.rir.manualHelp' : 'progression.rir.floorHelp')}</div>}
     </div>}
-
+    {extra}
+  </>
+  if (tab) return <>{panel('progression', progressionBody)}{panel('target', <>{presetBlock}{targetBody}</>)}{errorLine}</>
+  return <>
+    <h4 className="sec">{t('Progression')}</h4>
+    {progressionBody}
+    <h4 className="sec">{t('Target')}</h4>
+    {targetBody}
     {errorLine}
   </>
 }
