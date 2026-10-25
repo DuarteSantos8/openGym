@@ -33,6 +33,8 @@ import { insightsFor, sessionInsights } from '../lib/coach-insights.js'
 import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan, resolvePending, cohortStats, setCohortShare, jobErrorText, awaitedJob, settleAwaited, JOB_ERRORS, ensureAiConsent, isDeclined } from '../lib/coach-api.js'
 import { AiConsentSection } from '../components/CoachConsentSheet.jsx'
 import { useCoachGate } from '../lib/use-coach-gate.js'
+import { useCoachAccount, needsOwnAccount } from '../lib/coach-account.js'
+import { openAccountSheet, accountSubtitle } from './CoachAccount.jsx'
 import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
@@ -51,6 +53,7 @@ export default function CoachChat() {
   const toast = useUI(s => s.toast)
   const openSheet = useUI(s => s.openSheet)
   const { job, pending, cap, loading, lastError, last, refresh, maxMessageLen } = useCoachStatus(true)
+  const { account, refresh: refreshAccount } = useCoachAccount()
   const [text, setText] = useState('')
   // The message box opened into a tall editor (components/ChatInput.jsx); closed again on send.
   const [expanded, setExpanded] = useState(false)
@@ -107,6 +110,17 @@ export default function CoachChat() {
   const coach = S.coach || emptyCoach()
   const community = !!config?.coach?.community && !DEMO && !(MOBILE && coachMode === 'byok')
 
+  // On an instance where each profile brings its own account, a profile that has not yet is told
+  // so with the app's own line, and shown the place that fixes it.
+  const ownAccount = needsOwnAccount(account)
+  const openAccount = () => openAccountSheet(openSheet, refreshAccount)
+  const refused = e => {
+    // "Not now" on the data-sharing question is an answer, not a failure: the text stays put.
+    if (isDeclined(e)) return
+    toast(JOB_ERRORS[e.data?.code] || e.message || t('Could not ask the Coach'))
+    if (e.data?.code === 'account') { refreshAccount(); openAccount() }
+  }
+
   const send = async () => {
     const msg = text.trim()
     if (!msg || busy) return
@@ -124,8 +138,7 @@ export default function CoachChat() {
     } catch (e) {
       // A server that refuses the job says so in English, with its class beside it: the class
       // picks the translated line. One with no line here ('shared') keeps the server's words.
-      // "Not now" on the data-sharing question is an answer, not a failure: the text stays put.
-      if (!isDeclined(e)) toast(JOB_ERRORS[e.data?.code] || e.message || t('Could not ask the Coach'))
+      refused(e)
     }
     setBusy(false)
   }
@@ -136,7 +149,7 @@ export default function CoachChat() {
       await fn()
       update(s => appendChat(s, { role: 'user', kind: 'text', text: line }))
       refresh()
-    } catch (e) { if (!isDeclined(e)) toast(JOB_ERRORS[e.data?.code] || e.message || t('Could not ask the Coach')) }
+    } catch (e) { refused(e) }
     setBusy(false)
   }
   const askReview = () => ask(() => requestReview(''), t('Have a look at my training and tell me what you would change.'))
@@ -168,6 +181,7 @@ export default function CoachChat() {
       {idle && <Row icon="sparkles" iconTint="var(--acc)" title={t('Ask for a review')} subtitle={t('What would the Coach change after your last sessions?')} accessory="chevron" onClick={() => { close(); askReview() }} />}
       {idle && !!lastWorkout && <Row icon="checkCircle" iconTint="var(--green)" title={t('Review my last workout')} subtitle={t('What went well, what to watch, what to do next time')} accessory="chevron" onClick={() => { close(); askDebrief() }} />}
       {idle && !!(S.routines || []).length && <Row icon="wrench" iconTint="var(--orange)" title={t('Improve a routine')} subtitle={t('Pick one; the Coach works on just that')} accessory="chevron" onClick={() => { close(); pickRoutine() }} />}
+      {ownAccount && <Row icon="key" iconTint="var(--orange)" title={t('Your account')} subtitle={accountSubtitle(account)} accessory="chevron" onClick={() => { close(); openAccount() }} />}
       {community && <Row icon="person" iconTint="var(--teal)" title={t('Compare with others here')} subtitle={t('Anonymous medians from this instance')} accessory="chevron" onClick={() => { close(); showCohort() }} />}
       <Row icon="history" iconTint="var(--blue)" title={t('Everything the Coach proposed')} subtitle={t('Plans, suggestions and debriefs, kept')} accessory="chevron" onClick={() => { close(); showHistory() }} />
       {idle && <Row icon="clipboard" iconTint="var(--indigo)" title={t('Start a new plan')} subtitle={t('A fresh plan from your answers; your workouts stay')} accessory="chevron" onClick={() => { close(); askNewPlan() }} />}
@@ -223,6 +237,9 @@ export default function CoachChat() {
     </div>
 
     <div className="composer">
+      {ownAccount && !account.connected && <div className="chips-row">
+        <button className="qchip" onClick={openAccount}><Icon name="key" />{t('Connect your account to use the Coach')}</button>
+      </div>}
       {idle && !busy && <div className="chips-row">
         <button className="qchip" onClick={askReview}><Icon name="sparkles" />{t('Review my training')}</button>
         {!!lastWorkout && <button className="qchip" onClick={askDebrief}><Icon name="checkCircle" />{t('Last workout')}</button>}

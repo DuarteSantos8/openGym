@@ -239,6 +239,17 @@ subscription. It is the same posture the payload allowlist takes.
 them on a self-hoster's behalf; it makes the shape that doesn't need the interpretation
 available, and refuses the shape that does.
 
+**Switching to profile mode.** In the admin card (**Advanced → Whose account pays**) pick **Each
+profile connects its own**, or call `POST /api/admin/coach/auth-mode` with `{ "mode": "profile" }`.
+The provider is still the admin's choice; each person then connects their own account of a kind
+that provider takes (a Claude Code setup token or an API key for Claude, an API key for the HTTPS
+providers) under **Your account** in the Coach settings, or with `POST /api/coach/credential`
+(`DELETE` to disconnect, `POST /api/coach/credential/test` for a round trip on their own
+credential). A profile with no credential of its own is refused with a message pointing there.
+There is no fallback to the instance credential, and no setting that lets one profile use
+another's. Switching modes deletes nothing: the instance credential and its binding stay filed for
+switching back, and the daily limits apply per profile in both modes.
+
 A profile credential lives in its own file, `0600`, never in `state-<uid>.json` — profile state
 syncs across devices and travels in the user's JSON export, and a credential that rides along in
 a backup is the same class of mistake as a token inside the directory the README tells you to

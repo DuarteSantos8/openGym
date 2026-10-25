@@ -3,7 +3,7 @@ import { useUI } from '../store/useUI.js'
 import { useStore } from '../store/useStore.js'
 import { api } from '../lib/api.js'
 import Icon from '../components/Icon.jsx'
-import { Button, Switch, TextArea, TextField } from '../components/ui.jsx'
+import { Button, Segmented, Switch, TextArea, TextField } from '../components/ui.jsx'
 import { confirmSheet } from '../sheets.jsx'
 
 /* The operator's side of the Coach, laid out as a guided setup: one master switch, numbered
@@ -106,6 +106,15 @@ export default function AdminCoach() {
     if (e.target.value.trim() === '') { e.target.value = d.caps[key]; return }
     if (+e.target.value !== d.caps[key]) patch({ caps: { ...d.caps, [key]: +e.target.value } })
   }
+  // Whose account pays. Only the switch moves: nothing is deleted either way, so the instance
+  // credential is still filed when the admin comes back to it.
+  const setMode = async mode => {
+    if (mode === d.authMode) return
+    setBusy(true)
+    try { await api('/api/admin/coach/auth-mode', { method: 'POST', body: JSON.stringify({ mode }) }); setTestResult(null); await load() }
+    catch (e) { toast(e.message) }
+    setBusy(false)
+  }
   const disconnect = async () => {
     setBusy(true)
     try { await api('/api/admin/coach/disconnect', { method: 'POST', body: JSON.stringify({ provider: d.provider }) }); toast('Credential removed'); await load() }
@@ -122,7 +131,10 @@ export default function AdminCoach() {
 
   const meta = d.providers.find(p => p.id === d.provider) || {}
   const authState = d.auth?.state
-  const authed = authState === 'connected' || authState === 'not-required' || authState === 'optional'
+  // Each profile brings its own account, so there is nothing for the instance to hold: the
+  // Credential step is satisfied by the choice itself.
+  const profileMode = d.authMode === 'profile'
+  const authed = profileMode || authState === 'connected' || authState === 'not-required' || authState === 'optional'
   const needsEndpoint = !!meta.baseUrl
   const hasEndpoint = !needsEndpoint || !!d.baseUrl
   const live = d.enabled && d.runtime.ok && authed && hasEndpoint
@@ -231,7 +243,8 @@ export default function AdminCoach() {
       </Step>}
 
       {/* ---------- credential ---------- */}
-      {hasCredentialStep && <Step n={num()} title="Credential" hint={credentialHint(d.auth, meta)} done={step3Done} {...stepAt()}>
+      {hasCredentialStep && <Step n={num()} title="Credential" hint={profileMode ? 'Each profile connects its own' : credentialHint(d.auth, meta)} done={step3Done} {...stepAt()}>
+        {profileMode && <div className="adm-hint">Each profile connects its own account in the Coach menu, so nothing is needed here. The shared credential below stays filed, unused, for switching back under Advanced → Whose account pays.</div>}
         <div className="row" style={{ gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
           <CredentialPill auth={d.auth} />
         </div>
@@ -293,11 +306,12 @@ export default function AdminCoach() {
       <Step n={num()} title="Test" hint={step5Done ? 'passed' : 'one real round trip, no user data'} done={step5Done} {...stepAt()} forceOpen={!!testResult}>
         <div className="adm-hint">Sends one tiny question to the provider and checks the answer. No training data is involved. Do this after every change above.</div>
         <div className="adm-actions">
-          <Button size="sm" variant="primary" icon="check" disabled={busy || !authed || !hasEndpoint} onClick={test}>Test the Coach</Button>
+          <Button size="sm" variant="primary" icon="check" disabled={busy || !authed || !hasEndpoint || (profileMode && d.provider !== 'fixture')} onClick={test}>Test the Coach</Button>
         </div>
         {(!authed || !hasEndpoint) && <div className="adm-hint" style={{ margin: '6px 0 0' }}>
           {!hasEndpoint ? 'Finish the Endpoint step first.' : 'Finish the Credential step first.'}
         </div>}
+        {profileMode && d.provider !== 'fixture' && <div className="adm-hint" style={{ margin: '6px 0 0' }}>There is no shared account to test. Each person tests their own under Coach → Your account.</div>}
         {testResult && <div className={'adm-result ' + (testResult.pending ? '' : testResult.ok ? 'ok' : 'bad')}>
           {testResult.pending ? 'Asking the provider…'
             : testResult.ok ? <><b>Passed</b>{testResult.version ? 'Provider: ' + testResult.version : 'The provider answered as expected.'}</>
@@ -339,8 +353,10 @@ export default function AdminCoach() {
           </div>
 
           <div className="adm-group-t" style={{ marginTop: 14 }}>Whose account pays</div>
-          <div className="adm-hint">{d.authMode === 'profile'
-            ? 'Each profile signs in with their own account.'
+          <Segmented value={d.authMode} onChange={setMode}
+            options={[{ value: 'instance', label: 'Shared instance account' }, { value: 'profile', label: 'Each profile connects its own' }]} />
+          <div className="adm-hint" style={{ marginTop: 8 }}>{profileMode
+            ? <>Each person connects their own account under Coach → Your account and the Coach spends that one. A profile that has not is refused: nothing falls back to the shared account, and one profile's account is never used by another. The daily limits above still apply per person. Switching back deletes nothing.{typeof d.profilesConnected === 'number' ? ` ${d.profilesConnected} ${d.profilesConnected === 1 ? 'profile has' : 'profiles have'} connected one for ${meta.label || d.provider}.` : ''}</>
             : d.auth?.type === 'apikey' || meta.http
               ? 'One API key for the whole instance: every profile may use the Coach with it, and the daily limits above are what bound the spend.'
               : d.boundUid
