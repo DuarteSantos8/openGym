@@ -53,6 +53,27 @@ export function writeState(dir, uid, S) {
   fs.writeFileSync(path.join(dir, 'state-' + uid + '.json'), JSON.stringify(S));
 }
 
+/* Fixture dates that follow the calendar.
+ *
+ * The Coach reads a window that ends today (MAX_WEEKS back from now), so a literal fixture date
+ * walks out of it one day and every review test reads an empty log: ten tests failed on
+ * 2026-10-12 for no other reason than the date. D() moves a fixture date by whole weeks, the
+ * same number for every date in a run, so the newest fixture day (FIXTURE_ANCHOR) lands in the
+ * last seven days before today (UTC, as the payload's own dates are). Weekdays and the gaps
+ * between fixture dates stay exactly as written, and nothing lands in the future.
+ * Write fixtures as D('2026-07-20'), and assertions about them the same way. */
+export const FIXTURE_ANCHOR = '2026-07-20';
+const DAY_MS = 86400000;
+const shiftWeeks = (() => {
+  const today = Date.parse(new Date().toISOString().slice(0, 10) + 'T00:00:00Z');
+  const anchor = Date.parse(FIXTURE_ANCHOR + 'T00:00:00Z');
+  return Math.floor((today - DAY_MS - anchor) / (7 * DAY_MS));
+})();
+export function D(iso) {
+  const t = Date.parse(String(iso).slice(0, 10) + 'T00:00:00Z');
+  return new Date(t + shiftWeeks * 7 * DAY_MS).toISOString().slice(0, 10) + String(iso).slice(10);
+}
+
 /** A profile that has consented and has some history — the usual starting point. */
 export function sampleState(over = {}) {
   return {
@@ -68,10 +89,10 @@ export function sampleState(over = {}) {
     week: { 1: 'r1', 3: 'r1', 5: 'r1' },
     dayPlan: {},
     exWeights: { '0001': { w: 20 } },
-    bodyweight: [{ d: '2026-07-01', w: 78 }, { d: '2026-07-20', w: 78.5 }],
+    bodyweight: [{ d: D('2026-07-01'), w: 78 }, { d: D('2026-07-20'), w: 78.5 }],
     customEx: [],
     workouts: [{
-      id: 'w1', d: '2026-07-20', name: 'Full body A', start: 1000, end: 1000 + 45 * 60000, vol: 600, prs: [],
+      id: 'w1', d: D('2026-07-20'), name: 'Full body A', start: 1000, end: 1000 + 45 * 60000, vol: 600, prs: [],
       entries: [{
         id: '0001', target: { sets: 3, reps: 10, weight: 20 },
         sets: [{ w: 20, r: 10, done: true, rpe: 9.5 }, { w: 20, r: 9, done: true, rpe: 10 }, { w: 20, r: 8, done: true, rpe: 10 }]
