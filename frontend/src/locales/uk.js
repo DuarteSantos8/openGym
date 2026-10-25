@@ -2411,4 +2411,12 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'На цьому пристрої є 1 тренування, якого немає в цій копії. Заміна його видалить.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'На цьому пристрої є тренування, яких немає в цій копії ({0}). Заміна їх видалить.',
+  // --- workout: a likely typo asked about at the tick ---
+  'Is that right?': 'Усе правильно?',
+  'Weight: {0} is more than twice your heaviest, {1}.': 'Вага: {0} — більш ніж удвічі більше за ваш рекорд, {1}.',
+  'Reps: {0} is more than twice your most, {1}.': 'Повт.: {0} — більш ніж удвічі більше за ваш рекорд, {1}.',
+  'Weight: {0} is under a third of last time’s {1}.': 'Вага: {0} — менше третини від минулого разу, {1}.',
+  'Reps: {0} is under a third of last time’s {1}.': 'Повт.: {0} — менше третини від минулого разу, {1}.',
+  'Fix it': 'Виправити',
+  'Log as typed': 'Записати як є',
 }

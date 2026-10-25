@@ -2414,4 +2414,12 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'Su questo dispositivo c’è 1 allenamento che non è in questo backup. Sostituire lo elimina.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'Su questo dispositivo ci sono {0} allenamenti che non sono in questo backup. Sostituire li elimina.',
+  // --- workout: a likely typo asked about at the tick ---
+  'Is that right?': 'È giusto?',
+  'Weight: {0} is more than twice your heaviest, {1}.': 'Peso: {0} è più del doppio del tuo massimo, {1}.',
+  'Reps: {0} is more than twice your most, {1}.': 'Rip.: {0} è più del doppio del tuo massimo, {1}.',
+  'Weight: {0} is under a third of last time’s {1}.': 'Peso: {0} è meno di un terzo dell’ultima volta, {1}.',
+  'Reps: {0} is under a third of last time’s {1}.': 'Rip.: {0} è meno di un terzo dell’ultima volta, {1}.',
+  'Fix it': 'Correggi',
+  'Log as typed': 'Registra così',
 }

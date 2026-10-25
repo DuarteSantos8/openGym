@@ -2414,4 +2414,12 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'Bu cihazda bu yedekte olmayan 1 antrenman var. Değiştirmek onu siler.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'Bu cihazda bu yedekte olmayan {0} antrenman var. Değiştirmek onları siler.',
+  // --- workout: a likely typo asked about at the tick ---
+  'Is that right?': 'Doğru mu?',
+  'Weight: {0} is more than twice your heaviest, {1}.': 'Ağırlık: {0}, en ağırının ({1}) iki katından fazla.',
+  'Reps: {0} is more than twice your most, {1}.': 'Tekrar: {0}, en yükseğinin ({1}) iki katından fazla.',
+  'Weight: {0} is under a third of last time’s {1}.': 'Ağırlık: {0}, geçen seferkinin ({1}) üçte birinden az.',
+  'Reps: {0} is under a third of last time’s {1}.': 'Tekrar: {0}, geçen seferkinin ({1}) üçte birinden az.',
+  'Fix it': 'Düzelt',
+  'Log as typed': 'Yazıldığı gibi kaydet',
 }

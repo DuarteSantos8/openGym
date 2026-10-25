@@ -2493,4 +2493,12 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'এই ডিভাইসে ১টি ওয়ার্কআউট আছে যা এই ব্যাকআপে নেই। প্রতিস্থাপন করলে এটি মুছে যাবে।',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'এই ডিভাইসে {0}টি ওয়ার্কআউট আছে যা এই ব্যাকআপে নেই। প্রতিস্থাপন করলে এগুলো মুছে যাবে।',
+  // --- workout: a likely typo asked about at the tick ---
+  'Is that right?': 'এটা কি ঠিক?',
+  'Weight: {0} is more than twice your heaviest, {1}.': 'ওজন: {0} আপনার সবচেয়ে ভারী ওজন {1}-এর দ্বিগুণেরও বেশি।',
+  'Reps: {0} is more than twice your most, {1}.': 'রেপ: {0} আপনার সর্বোচ্চ {1}-এর দ্বিগুণেরও বেশি।',
+  'Weight: {0} is under a third of last time’s {1}.': 'ওজন: {0} গতবারের {1}-এর এক-তৃতীয়াংশেরও কম।',
+  'Reps: {0} is under a third of last time’s {1}.': 'রেপ: {0} গতবারের {1}-এর এক-তৃতীয়াংশেরও কম।',
+  'Fix it': 'ঠিক করুন',
+  'Log as typed': 'যেমন লেখা তেমন লগ করুন',
 }

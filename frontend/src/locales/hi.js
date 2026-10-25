@@ -2414,4 +2414,12 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'इस डिवाइस पर 1 वर्कआउट है जो इस बैकअप में नहीं है। बदलने से यह मिट जाएगा।',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'इस डिवाइस पर {0} वर्कआउट हैं जो इस बैकअप में नहीं हैं। बदलने से ये मिट जाएँगे।',
+  // --- workout: a likely typo asked about at the tick ---
+  'Is that right?': 'क्या यह सही है?',
+  'Weight: {0} is more than twice your heaviest, {1}.': 'वज़न: {0} आपके सबसे भारी {1} से दोगुने से भी ज़्यादा है।',
+  'Reps: {0} is more than twice your most, {1}.': 'रेप्स: {0} आपके सबसे ज़्यादा {1} से दोगुने से भी ज़्यादा है।',
+  'Weight: {0} is under a third of last time’s {1}.': 'वज़न: {0} पिछली बार के {1} के एक-तिहाई से भी कम है।',
+  'Reps: {0} is under a third of last time’s {1}.': 'रेप्स: {0} पिछली बार के {1} के एक-तिहाई से भी कम है।',
+  'Fix it': 'ठीक करें',
+  'Log as typed': 'जैसा लिखा, वैसा दर्ज करें',
 }

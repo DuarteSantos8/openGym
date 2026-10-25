@@ -2407,4 +2407,12 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': '此裝置上有 1 筆訓練紀錄不在此備份中。覆蓋將會刪除它。',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': '此裝置上有 {0} 筆訓練紀錄不在此備份中。覆蓋將會將其全數刪除。',
+  // --- workout: a likely typo asked about at the tick ---
+  'Is that right?': '這樣對嗎？',
+  'Weight: {0} is more than twice your heaviest, {1}.': '重量：{0} 超過你最大重量 {1} 的兩倍。',
+  'Reps: {0} is more than twice your most, {1}.': '次數：{0} 超過你最多次數 {1} 的兩倍。',
+  'Weight: {0} is under a third of last time’s {1}.': '重量：{0} 不到上次 {1} 的三分之一。',
+  'Reps: {0} is under a third of last time’s {1}.': '次數：{0} 不到上次 {1} 的三分之一。',
+  'Fix it': '修改',
+  'Log as typed': '按輸入記錄',
 }
