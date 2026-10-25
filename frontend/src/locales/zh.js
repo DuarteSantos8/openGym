@@ -2414,4 +2414,8 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': '此设备上有 1 次训练不在此备份中。替换会删除它。',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': '此设备上有 {0} 次训练不在此备份中。替换会删除它们。',
+  // --- stats: time per exercise ---
+  'Time per exercise': '每个动作的用时',
+  'Average time a session, counted from when its sets were ticked.': '每次训练的平均用时，按勾选各组的时间计算。',
+  'No timed sets in this period.': '这段时间内没有带时间的组。',
 }

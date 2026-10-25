@@ -2417,4 +2417,8 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'Ezen az eszközön 1 edzés van, amely nincs ebben a mentésben. A csere törli.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'Ezen az eszközön {0} edzés van, amely nincs ebben a mentésben. A csere törli őket.',
+  // --- stats: time per exercise ---
+  'Time per exercise': 'Idő gyakorlatonként',
+  'Average time a session, counted from when its sets were ticked.': 'Átlagos idő edzésenként, a sorozatok kipipálásától számolva.',
+  'No timed sets in this period.': 'Ebben az időszakban nincs időzített sorozat.',
 }

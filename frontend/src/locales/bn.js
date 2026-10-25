@@ -2493,4 +2493,8 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'এই ডিভাইসে ১টি ওয়ার্কআউট আছে যা এই ব্যাকআপে নেই। প্রতিস্থাপন করলে এটি মুছে যাবে।',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'এই ডিভাইসে {0}টি ওয়ার্কআউট আছে যা এই ব্যাকআপে নেই। প্রতিস্থাপন করলে এগুলো মুছে যাবে।',
+  // --- stats: time per exercise ---
+  'Time per exercise': 'প্রতি ব্যায়ামের সময়',
+  'Average time a session, counted from when its sets were ticked.': 'প্রতি সেশনে গড় সময়, সেটগুলো যখন টিক দেওয়া হয়েছিল তা থেকে গণনা করা।',
+  'No timed sets in this period.': 'এই সময়ে কোনো সময়-চিহ্নিত সেট নেই।',
 }

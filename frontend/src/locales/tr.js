@@ -2414,4 +2414,8 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'Bu cihazda bu yedekte olmayan 1 antrenman var. Değiştirmek onu siler.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'Bu cihazda bu yedekte olmayan {0} antrenman var. Değiştirmek onları siler.',
+  // --- stats: time per exercise ---
+  'Time per exercise': 'Egzersiz başına süre',
+  'Average time a session, counted from when its sets were ticked.': 'Setlerin işaretlendiği zamanlardan hesaplanan, antrenman başına ortalama süre.',
+  'No timed sets in this period.': 'Bu dönemde süresi olan set yok.',
 }
