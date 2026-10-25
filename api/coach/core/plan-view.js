@@ -25,7 +25,10 @@ export function coachExOf(occ, ex = null) {
   if ((step?.type === 'absolute' || step?.type === 'seconds') && step.value > 0 && PRESETS[r.preset].steps) o.inc = step.value;
   o.prog = policy ?? 'off';
   if (policy == null) o.preset = r.preset;
-  for (const k of ['sg', 'warmup', 'warmupRows', 'warmupSets', 'side', 'bodyweight', 'assisted', 'dbLoad', 'warmupRestSec']) if (occ[k] != null) o[k] = occ[k];
+  for (const k of ['sg', 'sgName', 'sgRest', 'warmup', 'warmupRows', 'warmupSets', 'side', 'bodyweight', 'assisted', 'dbLoad', 'warmupRestSec']) if (occ[k] != null) o[k] = occ[k];
+  if (occ.failureSets != null) o.failureSets = occ.failureSets;
+  if (occ.lastToFailure) o.lastToFailure = true;
+  if (mode === 'time' && p.durationSeconds.max > p.durationSeconds.min) o.secMax = p.durationSeconds.max;
   return o;
 }
 

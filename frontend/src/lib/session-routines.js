@@ -41,7 +41,7 @@ function copiedOccurrence(exposure, source, unit) {
   if (planned) {
     return { ...structuredClone(planned), occurrenceId, rule: { ...structuredClone(planned.rule), id: occurrenceId, routineId: null, revision: 1 }, ...(sg ? { sg } : {}) }
   }
-  const preset = isCardio(exerciseId) ? 'autoregulated' : exposure.mode === 'time' ? 'hold_seconds' : isBodyweightEq(exerciseId) ? 'bodyweight_ladder' : 'linear'
+  const preset = isCardio(exerciseId) ? 'manual' : exposure.mode === 'time' ? 'hold_seconds' : isBodyweightEq(exerciseId) ? 'bodyweight_ladder' : 'linear'
   const ruleOf = options => defaultPlanRule(preset, { id: occurrenceId, exerciseId, routineId: null, unit, ...options })
   const first = rows[0]
   if (isCardio(exerciseId)) {

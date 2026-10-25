@@ -87,10 +87,10 @@ describe('main functionality through the canonical engine', () => {
   })
 
   it('reads a source-linked 1RM in the current meaning and records a stronger per-bell estimate', () => {
-    const routine = routineFor('autoregulated', { sets: fixed(1), reps: fixed(5), load: { mode: 'percent_1rm', percent: 50 } }, { dbLoad: 'each' })
+    const routine = routineFor('manual', { sets: fixed(1), reps: fixed(5), load: { mode: 'percent_1rm', percent: 50 } }, { dbLoad: 'each' })
     const prior = { ...loggedExposure('0289', [{ w: 40, r: 5 }]), exposureId: 'previous', dbLoad: 'total' }
     const record = { id: 'orm', exerciseId: '0289', value: 50, unit: 'kg', source: 'estimated', sourceRecordId: 'previous', capturedAt: '2026-10-01T12:00:00Z' }
-    const profile = { ...profileFor(routine), workouts: [{ start: Date.parse(record.capturedAt), exposures: [prior] }], oneRepMaxes: { orm: record } }
+    const profile = { ...profileFor(routine), oneRmFormula: 'epley', workouts: [{ start: Date.parse(record.capturedAt), exposures: [prior] }], oneRepMaxes: { orm: record } }
     const active = start(profile, routine)
     expect(profile.prescriptions[active.exposures[0].prescriptionId].snapshot1RM.value).toBe(25)
     expect(active.entries[0].sets[0].w).toBe(12.5)
@@ -114,7 +114,7 @@ describe('main functionality through the canonical engine', () => {
   })
 
   it('failure is logged as RIR zero, survives read-back, and applies to both halves of the last timed set', () => {
-    const routine = routineFor('autoregulated', { sets: fixed(2), durationSeconds: fixed(30), load: absolute(10) }, { mode: 'time', side: true, lastToFailure: true })
+    const routine = routineFor('manual', { sets: fixed(2), durationSeconds: fixed(30), load: absolute(10) }, { mode: 'time', side: true, lastToFailure: true })
     const profile = profileFor(routine)
     const active = start(profile, routine)
     expect(active.entries[0].sets.map(row => !!row.failure)).toEqual([false, false, true, true])
@@ -125,7 +125,7 @@ describe('main functionality through the canonical engine', () => {
   })
 
   it('migration and a new cardio session retain each interval’s incline, minutes and speed', () => {
-    const old = { unit: 'kg', routines: [{ id: 'routine', ex: [{ id: '3220', mode: 'cardio', sets: 2, min: 20, speed: 8 }] }], workouts: [{ id: 'old', d: '2026-10-01', routineIds: ['routine'], entries: [{ id: '3220', rid: 'routine', target: { mode: 'cardio', sets: 2, min: 20, speed: 8 }, sets: [{ min: 25, speed: 5, incline: 10, done: true }, { min: 10, speed: 6, done: true }] }] }] }
+    const old = { unit: 'kg', routines: [{ id: 'routine', ex: [{ id: '2331', mode: 'cardio', sets: 2, min: 20, speed: 8 }] }], workouts: [{ id: 'old', d: '2026-10-01', routineIds: ['routine'], entries: [{ id: '2331', rid: 'routine', target: { mode: 'cardio', sets: 2, min: 20, speed: 8 }, sets: [{ min: 25, speed: 5, incline: 10, done: true }, { min: 10, speed: 6, done: true }] }] }] }
     const profile = migratedFixture(old)
     const active = start(profile, profile.routines[0])
     expect(active.entries[0].sets.map(({ min, speed, incline }) => ({ min, speed, ...(incline != null ? { incline } : {}) }))).toEqual([{ min: 25, speed: 5, incline: 10 }, { min: 10, speed: 6 }])

@@ -6,6 +6,8 @@ import { beginWorkout } from './sheets.jsx'
 import { ruleOccurrence } from './lib/test-fixtures.js'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
+import { estimate1RMRange } from './lib/onerm.js'
+import { fmtNum } from './lib/format.js'
 
 const percentRoutine = { id: 'r1', name: 'Push', ex: [ruleOccurrence('0025', { options: { load: { mode: 'percent_1rm', percent: 70 }, step: { type: 'percentage_points', value: 2.5 } } })] }
 let root
@@ -54,5 +56,28 @@ describe('1RM prompt at session start', () => {
     mountTopSheet()
     act(() => button('Skip').click())
     expect(useStore.getState().A.entries[0].sets[0].w).toBeUndefined()
+  })
+
+  it('offers the low, central and high estimate from the log to fill the field with', () => {
+    const exposure = { exposureId: 'e1', exerciseId: '0025', mode: 'reps', performance: { sets: [{ status: 'completed', role: 'work', resistance: { kind: 'external-load', value: 100, unit: 'kg' }, observations: [{ metric: 'repetitions', value: 8 }] }] } }
+    useStore.setState(s => ({ S: { ...s.S, workouts: [{ id: 'w1', d: '2026-10-01', start: 1, end: 2, exposures: [exposure] }] } }))
+    const { low, mid, high } = estimate1RMRange(100, 8)
+    expect(low).toBeLessThan(high)
+    beginWorkout(['r1'], null)
+    mountTopSheet()
+    expect([low, mid, high].every(v => button(`${v === low ? 'Low' : v === mid ? 'Central' : 'High'} ${fmtNum(v)}`))).toBe(true)
+    act(() => button(`Low ${fmtNum(low)}`).click())
+    expect(host.querySelector('input').value).toBe(String(low))
+    act(() => button('Save and start').click())
+    expect(Object.values(useStore.getState().S.oneRepMaxes)).toEqual([expect.objectContaining({ exerciseId: '0025', value: low, source: 'manual' })])
+  })
+
+  it('offers a single value, without a range, when the models agree', () => {
+    const exposure = { exposureId: 'e1', exerciseId: '0025', mode: 'reps', performance: { sets: [{ status: 'completed', role: 'work', resistance: { kind: 'external-load', value: 100, unit: 'kg' }, observations: [{ metric: 'repetitions', value: 1 }] }] } }
+    useStore.setState(s => ({ S: { ...s.S, workouts: [{ id: 'w1', d: '2026-10-01', start: 1, end: 2, exposures: [exposure] }] } }))
+    beginWorkout(['r1'], null)
+    mountTopSheet()
+    expect(button('Use 100')).toBeTruthy()
+    expect(button('Low 100')).toBeUndefined()
   })
 })

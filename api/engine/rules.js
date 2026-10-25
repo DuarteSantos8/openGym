@@ -21,10 +21,11 @@ const STRENGTH = ['target_load', 'max_sets', 'max_reps']
 // 'seconds'). `stalls`: whether it can back off. Editor metadata only: the engine reads the program.
 const ranges = (sets, reps = sets, durationSeconds = sets, load = sets) => ({ sets, reps, durationSeconds, load })
 export const PRESETS = {
-  autoregulated: { metrics: [...STRENGTH, 'max_duration'], ranges: ranges('either'), steps: null, stalls: false },
+  manual: { metrics: [...STRENGTH, 'max_duration'], ranges: ranges('either'), steps: null, stalls: false },
   linear: { metrics: ['target_load'], ranges: ranges('fixed'), steps: 'load', stalls: true },
   greyskull: { metrics: ['target_load'], ranges: ranges('fixed'), steps: 'load', stalls: true },
   double: { metrics: ['target_load', 'max_reps'], ranges: ranges('fixed', 'range', 'range', 'fixed'), steps: 'load', stalls: true },
+  double_controlled: { metrics: ['target_load', 'max_reps'], ranges: ranges('fixed', 'range', 'fixed', 'fixed'), steps: 'load', stalls: true },
   triple: { metrics: STRENGTH, ranges: ranges('range', 'range', 'range', 'fixed'), steps: 'load', stalls: true },
   hold_seconds: { metrics: ['max_sets', 'max_duration'], ranges: ranges('either', 'fixed', 'either', 'fixed'), steps: 'seconds', stalls: true },
   bodyweight_ladder: { metrics: ['max_sets', 'max_reps', 'difficulty_rung'], ranges: ranges('range', 'range', 'fixed', 'fixed'), steps: null, stalls: false },
@@ -33,7 +34,8 @@ export const PRESETS = {
   five_three_one: { metrics: ['cycle_count', 'training_max'], ranges: ranges('fixed'), steps: null, stalls: false },
   top_set_backoff: { metrics: ['target_load'], ranges: ranges('fixed'), steps: 'load', stalls: true },
   accumulation_intensification: { metrics: ['cycle_count', 'training_max'], ranges: ranges('fixed'), steps: null, stalls: false },
-  density: { metrics: ['rest_floor'], ranges: ranges('fixed'), steps: null, stalls: false }
+  density: { metrics: ['rest_floor'], ranges: ranges('fixed'), steps: null, stalls: false },
+  undulating: { metrics: ['cycle_count', 'training_max'], ranges: ranges('fixed'), steps: null, stalls: false }
 }
 export const PRESET_IDS = Object.keys(PRESETS)
 
@@ -43,11 +45,11 @@ export const PRESET_IDS = Object.keys(PRESETS)
 // is the v2 preset where you set the seconds yourself, i.e. v1's timed "no progression".
 const POLICY_BY_MODE = { reps: ['linear', 'greyskull', 'double', 'triple'], time: ['time'], cardio: [] }
 export function presetForPolicy(prog, mode, bodyweight) {
-  if (!POLICY_BY_MODE[mode]?.includes(prog)) return 'autoregulated'
+  if (!POLICY_BY_MODE[mode]?.includes(prog)) return 'manual'
   if (prog === 'time') return 'hold_seconds'
   return prog === 'linear' && bodyweight ? 'bodyweight_ladder' : prog
 }
-const POLICY_OF = { linear: 'linear', greyskull: 'greyskull', double: 'double', triple: 'triple', bodyweight_ladder: 'linear', hold_seconds: 'time', autoregulated: 'off', pyramid_reps: 'off' }
+const POLICY_OF = { linear: 'linear', greyskull: 'greyskull', double: 'double', triple: 'triple', bodyweight_ladder: 'linear', hold_seconds: 'time', manual: 'off', pyramid_reps: 'off' }
 /** The v1 policy a preset reads as, or null when it has no v1 equivalent. */
 export const policyOfPreset = preset => POLICY_OF[preset] ?? null
 
@@ -87,9 +89,9 @@ function templateDefaults(preset, unit, direction) {
   const steps = PRESETS[preset].steps
   const o = {
     sets: range(3), reps: range(8), load: steps === 'load' ? { mode: 'absolute', value: u.start, unit } : { mode: 'empty' }, restSeconds: 90,
-    target: ['linear', 'greyskull', 'double', 'triple', 'pyramid'].includes(preset) ? { mode: 'absolute', value: u.target, unit } : NONE,
+    target: ['linear', 'greyskull', 'double', 'double_controlled', 'triple', 'pyramid'].includes(preset) ? { mode: 'absolute', value: u.target, unit } : NONE,
     step: steps === 'seconds' ? { type: 'seconds', value: 5 } : { type: 'absolute', value: u.step, unit },
-    completion: { linear: ['target_load'], greyskull: ['target_load'], double: ['max_reps', 'target_load'], triple: ['max_sets', 'max_reps', 'target_load'], bodyweight_ladder: ['max_sets', 'max_reps'], pyramid: ['target_load'], reverse_pyramid: ['target_load'] }[preset]?.map(metric => ({ metric, target: null })) ?? [],
+    completion: { linear: ['target_load'], greyskull: ['target_load'], double: ['max_reps', 'target_load'], double_controlled: ['max_reps', 'target_load'], triple: ['max_sets', 'max_reps', 'target_load'], bodyweight_ladder: ['max_sets', 'max_reps'], pyramid: ['target_load'] }[preset]?.map(metric => ({ metric, target: null })) ?? [],
     rounding: { mode: 'nearest', step: u.step },
     deload: defaultDeload(preset)
   }
@@ -97,6 +99,7 @@ function templateDefaults(preset, unit, direction) {
     linear: { reps: range(5), restSeconds: 180 },
     greyskull: { reps: range(5), restSeconds: 180 },
     double: { reps: range(8, 12), restSeconds: 120 },
+    double_controlled: { reps: range(8, 12), restSeconds: 120 },
     triple: { sets: range(3, 5), reps: range(8, 12), restSeconds: 120 },
     hold_seconds: { reps: range(1), durationSeconds: range(20, 30), completion: [{ metric: 'max_duration', target: 120 }] },
     bodyweight_ladder: { sets: range(3, 5), reps: range(5, 10), rungs: [] },
@@ -104,14 +107,18 @@ function templateDefaults(preset, unit, direction) {
     pyramid: { reps: range(8), restSeconds: 150, offsets: (PYRAMID_OFFSETS[direction] ?? PYRAMID_OFFSETS.ascending).map(percentOfAnchor => ({ percentOfAnchor })) },
     five_three_one: {
       reps: range(5), restSeconds: 180, trainingMax: { mode: 'ninety_percent_1rm' }, cycleSets: copy(WENDLER_CYCLE),
-      cycleIncrement: { value: u.step, unit }, completion: [{ metric: 'cycle_count', target: 4 }]
+      cycleIncrement: { value: u.step, unit }, end: 'repeat', completion: [{ metric: 'cycle_count', target: 4 }]
     },
     top_set_backoff: { sets: range(4), reps: range(6), restSeconds: 180, scope: 'top', backoff: { sets: 3, reps: 8, percent: 90, restSeconds: 120 } },
     accumulation_intensification: {
       sets: range(3), reps: range(8, 12), restSeconds: 120, trainingMax: { mode: 'ninety_percent_1rm' }, cycleIncrement: { value: u.step, unit }, end: 'repeat',
-      accumulation: { percent: 65 }, intensification: { sets: 3, reps: 4, percent: 80, successes: 4 }
+      accumulation: { percent: 65 }, intensification: { sets: 3, reps: 4, percent: 80, successes: 4 }, reviewAfter: 3
     },
-    density: { reps: range(10), restSeconds: 90, restStep: 5, restFloor: 45 }
+    density: { reps: range(10), restSeconds: 90, restStep: 5, restFloor: 45 },
+    undulating: {
+      trainingMax: { mode: 'ninety_percent_1rm' }, cycleIncrement: { value: u.step, unit }, end: 'repeat',
+      wave: [{ sets: 3, reps: 10, percent: 65 }, { sets: 4, reps: 6, percent: 75 }, { sets: 5, reps: 3, percent: 85 }]
+    }
   }[preset]
   return { ...o, ...more }
 }
@@ -190,10 +197,15 @@ function regimes(o, policy, ladderFirst) {
 }
 
 const BUILD = {
-  autoregulated: o => program(o, [phase('plan', o)]),
+  manual: o => program(o, [phase('plan', o)]),
   linear: o => program(o, o.unloadedLadder ? regimes(o, 'linear', false) : [policyPhase('linear', o)]),
   greyskull: o => program(o, o.unloadedLadder ? regimes(o, 'greyskull', false) : [policyPhase('greyskull', o)]),
   double: o => program(o, o.unloadedLadder ? regimes(o, 'double', false) : [policyPhase('double', o)]),
+  double_controlled: o => program(o, [phase('plan', o, {
+    success: NEW_SUCCESS,
+    progression: [{ id: 'reps', metric: 'reps', when: 'success', basis: 'current', step: 1, resetOnCarry: true }, loadOp(o, { when: 'maximum', basis: 'current' })],
+    ...stallOf(o, 'factor')
+  })]),
   triple: o => program(o, [policyPhase('triple', o)]),
   hold_seconds: o => program(o, [phase('plan', o, {
     progression: [{ id: 'seconds', metric: 'durationSeconds', when: 'maximum', step: o.step.value }], ...stallOf(o, 'factor')
@@ -210,7 +222,7 @@ const BUILD = {
     ...phase(`w${w + 1}`, { ...o, sets: range(week.length), target: NONE }),
     groups: week.map((s, i) => ({ id: `s${i + 1}`, count: range(1), reps: range(s.reps), load: { basis: 'training_max', percent: s.percentOfTM }, ...(s.amrap ? { amrap: true } : {}) })),
     exit: { type: 'exposures', count: 1 }
-  })), { end: 'repeat', trainingMax: copy(o.trainingMax), cycleIncrement: copy(o.cycleIncrement) }),
+  })), { end: o.end, trainingMax: copy(o.trainingMax), cycleIncrement: copy(o.cycleIncrement) }),
   top_set_backoff: o => program(o, [phase('plan', { ...o, sets: range(1 + o.backoff.sets) }, {
     groups: [
       { id: 'top', count: range(1), reps: 'parameters', load: anchor(), restSeconds: o.restSeconds },
@@ -225,7 +237,7 @@ const BUILD = {
   })]),
   accumulation_intensification: o => {
     const tmPhase = (id, sets, reps, percent, more) => ({
-      ...phase(id, { ...o, sets: range(sets), reps, load: { mode: 'empty' }, target: NONE }, { success: NEW_SUCCESS }),
+      ...phase(id, { ...o, sets: range(sets), reps, load: { mode: 'empty' }, target: NONE }, { success: NEW_SUCCESS, reviewAfter: o.reviewAfter }),
       groups: [{ id: 'sets', count: 'parameters', reps: 'parameters', load: { basis: 'training_max', percent } }], ...more
     })
     const i = o.intensification
@@ -233,7 +245,11 @@ const BUILD = {
       tmPhase('accumulation', o.sets.min, o.reps, o.accumulation.percent, { progression: [{ id: 'reps', metric: 'reps', when: 'success', step: 1 }], exit: { type: 'goal', metric: 'reps', target: o.reps.max } }),
       tmPhase('intensification', i.sets, range(i.reps), i.percent, { exit: { type: 'successes', count: i.successes } })
     ], { end: o.end, trainingMax: copy(o.trainingMax), cycleIncrement: copy(o.cycleIncrement) })
-  }
+  },
+  undulating: o => program(o, o.wave.map((w, i) => phase(`wave${i + 1}`, { ...o, sets: range(w.sets), reps: range(w.reps), load: { mode: 'empty' }, target: NONE }, {
+    groups: [{ id: 'sets', count: 'parameters', reps: 'parameters', load: { basis: 'training_max', percent: w.percent } }],
+    success: NEW_SUCCESS, exit: { type: 'exposures', count: 1 }
+  })), { end: o.end, trainingMax: copy(o.trainingMax), cycleIncrement: copy(o.cycleIncrement) })
 }
 
 function offsetsProgram(o) {
@@ -251,6 +267,8 @@ const defined = o => Object.fromEntries(Object.entries(o).filter(([, v]) => v !=
 /** A valid rule for `preset`, from its defaults overridden by any template numbers given. */
 export function defaultPlanRule(preset, { id, exerciseId, routineId = null, unit = 'kg', ...options } = {}) {
   const o = { ...templateDefaults(preset, unit, options.direction), ...defined(options) }
+  if (preset === 'bodyweight_ladder' && o.rungs.length && o.completion.length && !o.completion.some(c => c.metric === 'difficulty_rung')) o.completion = [...o.completion, { metric: 'difficulty_rung', target: null }]
+  if (preset === 'density' && options.completion === undefined) o.completion = [{ metric: 'rest_floor', target: o.restFloor }]
   return { id, revision: 1, routineId, exerciseId, preset, rounding: copy(o.rounding), program: BUILD[preset](o) }
 }
 
@@ -291,7 +309,8 @@ export function planOptions(rule) {
   if (preset === 'five_three_one') {
     o.cycleSets = pr.phases.map(ph => ph.groups.map(g => ({ percentOfTM: g.load.percent, reps: g.reps.min, ...(g.amrap ? { amrap: true } : {}) })))
   }
-  if (pr.trainingMax) { o.trainingMax = copy(pr.trainingMax); o.cycleIncrement = copy(pr.cycleIncrement) }
+  if (pr.trainingMax) { o.trainingMax = copy(pr.trainingMax); o.cycleIncrement = copy(pr.cycleIncrement); o.end = pr.end }
+  if (preset === 'undulating') o.wave = pr.phases.map(ph => ({ sets: ph.parameters.sets.min, reps: ph.parameters.reps.min, percent: ph.groups[0].load.percent }))
   if (preset === 'top_set_backoff') {
     const [top, back] = main.groups
     o.scope = main.success.scope === 'groups' ? 'top' : 'all'
@@ -301,7 +320,7 @@ export function planOptions(rule) {
   if (preset === 'density') { const r = op(main, 'restSeconds'); o.restStep = r.step; o.restFloor = r.min; o.restSeconds = r.max }
   if (preset === 'accumulation_intensification') {
     const [a, i] = pr.phases
-    Object.assign(o, { sets: copy(a.parameters.sets), reps: copy(a.parameters.reps), end: pr.end, accumulation: { percent: a.groups[0].load.percent } })
+    Object.assign(o, { sets: copy(a.parameters.sets), reps: copy(a.parameters.reps), end: pr.end, accumulation: { percent: a.groups[0].load.percent }, reviewAfter: a.reviewAfter })
     o.intensification = { sets: i.parameters.sets.min, reps: i.parameters.reps.min, percent: i.groups[0].load.percent, successes: i.exit.count }
   }
   return defined(o)
@@ -314,7 +333,12 @@ export const isTemplateRule = rule => {
 }
 
 /** The rule with some template numbers changed, rebuilt by its template; its revision is the caller's to bump. */
-export const editPlan = (rule, patch) => ({ ...defaultPlanRule(rule.preset, { id: rule.id, exerciseId: rule.exerciseId, routineId: rule.routineId, ...planOptions(rule), ...patch }), revision: rule.revision })
+export const editPlan = (rule, patch) => {
+  const options = { ...planOptions(rule), ...patch }
+  if (rule.preset === 'bodyweight_ladder' && patch.rungs?.length === 0) options.completion = options.completion.filter(c => c.metric !== 'difficulty_rung')
+  if (rule.preset === 'density' && patch.restFloor != null) options.completion = options.completion.map(c => c.metric === 'rest_floor' ? { ...c, target: patch.restFloor } : c)
+  return { ...defaultPlanRule(rule.preset, { id: rule.id, exerciseId: rule.exerciseId, routineId: rule.routineId, ...options }), revision: rule.revision }
+}
 
 /** The rest every phase asks for, its groups' own rests and a progressed rest untouched (restFromProfile, Update routine). */
 export const withRest = (rule, restSeconds) => ({ ...rule, program: { ...rule.program, phases: rule.program.phases.map(ph => ({ ...ph, parameters: { ...ph.parameters, restSeconds } })) } })
@@ -479,6 +503,7 @@ function checkPhase(errors, at, ph, hasTM) {
   if (ph.parameters?.load?.mode === 'absolute' && ph.target?.mode === 'absolute' && ph.parameters.load.unit !== ph.target.unit) errors.push(`${at}.target.unit must match parameters.load.unit`)
   checkGroups(errors, at, ph, hasTM)
   checkOperators(errors, at, ph)
+  if (ph.reviewAfter !== undefined && !(hasTM && Number.isInteger(ph.reviewAfter) && ph.reviewAfter >= 1 && ph.reviewAfter <= 10)) errors.push(`${at}.reviewAfter needs a training max and a whole number from 1 to 10`)
   if (ph.prefill !== undefined && !['plan', 'last'].includes(ph.prefill)) errors.push(`${at}.prefill must be plan or last`)
   if (ph.entry !== undefined && !(isObj(ph.entry) && ['declared', 'previous'].includes(ph.entry.load) && ['declared', 'last_actual', 'previous'].includes(ph.entry.reps))) errors.push(`${at}.entry needs load declared|previous and reps declared|last_actual|previous`)
   const s = ph.stall
@@ -557,7 +582,9 @@ export function supports(rule) {
   // Pyramid sets already give every set its own target: a drop or a rest-pause would reshape them again.
   const perSet = ph.groups.length > 1 && ph.groups.every(g => (g.load.basis === 'anchor' && g.load.percent === 100) || g.load.basis === 'absolute') && ph.groups.some(g => g.reps !== 'parameters' || g.max)
   const single = ph.groups.length === 1 && pr.phases.length === 1 && ph.groups[0].count === 'parameters' && !ph.groups[0].amrap && ph.groups[0].load.basis === 'anchor' && ph.groups[0].load.percent === 100
-  return { warmup: usable, dropset: usable && !perSet && !ladder, restpause: usable && single && !ladder }
+  // AMRAP/Max rows and cyclic or density protocols already own the effort prescription.
+  const failure = !perSet && pr.phases.every(x => !x.parameters.speed && !x.groups.some(g => g.amrap || g.max) && !x.progression.some(o => o.metric === 'restSeconds') && (!x.exit || ['load_present', 'load_absent'].includes(x.exit.type)))
+  return { warmup: usable, dropset: usable && !perSet && !ladder, restpause: usable && single && !ladder, failure }
 }
 
 /** Trust-boundary check for an occurrence's intensifier; missing = none. */

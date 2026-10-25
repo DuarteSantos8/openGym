@@ -111,7 +111,7 @@ describe('exercise settings: bodyweight and plate loading', () => {
   const bwSwitch = host => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Bodyweight')).querySelector('[role=switch]')
 
   it('saves the override, drops the load where the preset runs without one, and keeps it where it steps it', () => {
-    const manual = ruleOccurrence(ex.id, { preset: 'autoregulated', options: { load: { mode: 'absolute', value: 40, unit: 'kg' } } })
+    const manual = ruleOccurrence(ex.id, { preset: 'manual', options: { load: { mode: 'absolute', value: 40, unit: 'kg' } } })
     const one = renderConfig(manual)
     expect(bwSwitch(one.host).getAttribute('aria-checked')).toBe('false')
     act(() => bwSwitch(one.host).click())

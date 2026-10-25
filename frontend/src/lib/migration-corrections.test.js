@@ -50,7 +50,7 @@ it('A25: a retained edited workout resolves its own prescription', () => {
   expect(out.prescriptions[x.prescriptionId].rows[0].load.value).toBe(20); expect(validateCanonicalProfile(out).ok).toBe(true)
 })
 it('A25: independent histories retain their strongest derived 1RM', () => {
-  const out = mergeStates(migrated({ workouts: [log('light', 60)] }), migrated({ workouts: [log('heavy', 100, 2)] }))
+  const out = mergeStates(migrated({ oneRmFormula: 'epley', workouts: [log('light', 60)] }), migrated({ oneRmFormula: 'epley', workouts: [log('heavy', 100, 2)] }))
   expect(currentOneRm(out.oneRepMaxes, '0025').value).toBe(116.7); expect(validateCanonicalProfile(out).ok).toBe(true)
 })
 it('A46: interleaved merged misses replay all retained logs', () => {

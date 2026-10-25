@@ -101,7 +101,7 @@ describe('stalls', () => {
     let s = null
     for (let i = 0; i < 5; i++) s = session(noStall, s, miss())
     expect(s.state).toMatchObject({ stalls: 5, deload: null })
-    expect(session(rule('autoregulated'), null, miss()).state).toMatchObject({ stalls: 0, deload: null })
+    expect(session(rule('manual'), null, miss()).state).toMatchObject({ stalls: 0, deload: null })
   })
 })
 
@@ -197,7 +197,7 @@ describe('defaults and validation', () => {
       const stall = planPhase(defaultPlanRule(preset, { id: 'r', exerciseId: 'e', unit: 'kg' })).stall
       expect({ after: stall.after, factor: stall.recovery.factor }).toEqual(defaultDeload(preset))
     }
-    for (const preset of ['autoregulated', 'bodyweight_ladder', 'pyramid']) expect(planPhase(defaultPlanRule(preset, { id: 'r', exerciseId: 'e', unit: 'kg' }))).not.toHaveProperty('stall')
+    for (const preset of ['manual', 'bodyweight_ladder', 'pyramid']) expect(planPhase(defaultPlanRule(preset, { id: 'r', exerciseId: 'e', unit: 'kg' }))).not.toHaveProperty('stall')
   })
   it('refuses a back-off that is malformed', () => {
     const base = defaultPlanRule('linear', { id: 'r', exerciseId: 'e', unit: 'kg' })
@@ -210,7 +210,7 @@ describe('defaults and validation', () => {
 })
 
 describe('cardio speed', () => {
-  const cardio = () => defaultPlanRule('autoregulated', { id: 'r', exerciseId: 'c', unit: 'kg', ...cardioParameters({ sets: 2, min: 25, speed: 9.5 }) })
+  const cardio = () => defaultPlanRule('manual', { id: 'r', exerciseId: 'c', unit: 'kg', ...cardioParameters({ sets: 2, min: 25, speed: 9.5 }) })
   it('is a validated parameter that needs a duration', () => {
     expect(validatePlanRule(cardio()).ok).toBe(true)
     expect(validatePlanRule(editPlan(cardio(), { durationSeconds: undefined })).errors.join()).toMatch(/speed needs/)

@@ -9,7 +9,7 @@ import { EXIDX, isAssisted } from './exercises.js'
 const DAY = 24 * 3600 * 1000
 const T0 = Date.UTC(2026, 8, 1)
 const linear = (target = 25, revision = 1) => ruleOccurrence('0025', { revision, options: { target: { mode: 'absolute', value: target, unit: 'kg' } } })
-const profile = () => ({ unit: 'kg', workouts: [], prescriptions: {}, oneRepMaxes: {}, progression: {} })
+const profile = () => ({ unit: 'kg', oneRmFormula: 'epley', workouts: [], prescriptions: {}, oneRepMaxes: {}, progression: {} })
 const start = (S, occ, day) => {
   const exposures = buildSessionExposures(S, { id: 'r1', ex: [occ] }, { now: T0 + day * DAY, newId: s => s, unit: 'kg' })
   return { id: 'w' + day, d: 'd' + day, start: 1, routineIds: ['r1'], name: 'Push', exposures, entries: entriesForExposures(exposures, S.prescriptions) }
@@ -101,8 +101,8 @@ describe('deload lifecycle (linear 60 kg, three short sessions in a row)', () =>
 })
 
 describe('a cardio interval, start to finish', () => {
-  const cardio = ruleOccurrence('3220', {
-    preset: 'autoregulated', options: { sets: { min: 1, max: 1 }, reps: { min: 1, max: 1 }, durationSeconds: { min: 1500, max: 1500 }, speed: 9.5 }
+  const cardio = ruleOccurrence('2331', {
+    preset: 'manual', options: { sets: { min: 1, max: 1 }, reps: { min: 1, max: 1 }, durationSeconds: { min: 1500, max: 1500 }, speed: 9.5 }
   })
   it('opens as minutes and speed, and is logged and saved as cardio', () => {
     const S = profile()

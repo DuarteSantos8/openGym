@@ -62,7 +62,7 @@ function entryOf(x, prescriptions) {
     ...(x.routineId ? { rid: x.routineId } : {}),
     ...(x.excludedFromProgression ? { noProg: true } : {}),
     ...(x.sg ? { sg: x.sg } : {}),
-    target: { ...Object.fromEntries(['dbLoad', 'lastToFailure', 'backoff'].filter(k => x[k] != null).map(k => [k, x[k]])), ...(p?.backoffStep ? { backoffStep: p.backoffStep } : {}), ...(x.mode ? { mode: x.mode } : {}), ...(typeof x.assisted === 'boolean' ? { assisted: x.assisted } : {}), ...(x.warmupRestSec != null ? { warmupRestSec: x.warmupRestSec } : {}), ...(p ? targetFor(p, x.mode) : {}), ...(x.side ? { side: true } : {}), ...(x.bodyweight != null ? { bodyweight: x.bodyweight } : {}), ...(x.intensifier ? { intensifier: x.intensifier } : {}) },
+    target: { ...Object.fromEntries(['dbLoad', 'lastToFailure', 'failureSets', 'backoff'].filter(k => x[k] != null).map(k => [k, x[k]])), ...(p?.backoffStep ? { backoffStep: p.backoffStep } : {}), ...(x.mode ? { mode: x.mode } : {}), ...(typeof x.assisted === 'boolean' ? { assisted: x.assisted } : {}), ...(x.warmupRestSec != null ? { warmupRestSec: x.warmupRestSec } : {}), ...(p ? targetFor(p, x.mode) : {}), ...(x.side ? { side: true } : {}), ...(x.bodyweight != null ? { bodyweight: x.bodyweight } : {}), ...(x.intensifier ? { intensifier: x.intensifier } : {}) },
     ...(p ? { planned: plannedOf(p) } : {}),
     ...(x.performance?.note ? { note: x.performance.note } : {}),
     ...(x.performance?.notePin ? { notePin: true } : {}),

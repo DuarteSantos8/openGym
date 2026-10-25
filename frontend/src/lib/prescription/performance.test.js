@@ -30,9 +30,9 @@ describe('legacyEntriesOf', () => {
     expect(legacyEntriesOf({ exposures: [{ ...x, legacyTarget: undefined }] })[0].target).toEqual({ mode: 'reps' })
   })
   it('a cardio target reads as minutes and speed, the v1 shape', () => {
-    const rule = { ...ruleOccurrence('3220', { preset: 'autoregulated' }).rule }
+    const rule = { ...ruleOccurrence('2331', { preset: 'manual' }).rule }
     const p = generatePrescription({ id: 'p', now: '2026-09-24T10:00:00.000Z', trackId: 't', rule: editPlan(rule, { sets: { min: 2, max: 2 }, reps: { min: 1, max: 1 }, durationSeconds: { min: 1500, max: 1500 }, speed: 9.5 }) })
-    const x = { ...loggedExposure('3220', [{ sec: 1500 }], { mode: 'cardio' }), prescriptionId: 'p' }
+    const x = { ...loggedExposure('2331', [{ sec: 1500 }], { mode: 'cardio' }), prescriptionId: 'p' }
     expect(legacyEntriesOf({ exposures: [x] }, { p })[0].target).toMatchObject({ mode: 'cardio', sets: 2, min: 25, speed: 9.5 })
   })
   it('carries the exercise\'s note and its pin', () => {

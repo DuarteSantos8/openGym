@@ -62,7 +62,7 @@ describe('buildSessionExposures', () => {
 describe('occurrenceFor', () => {
   it('builds an occurrence from plain numbers', () => {
     const { rule } = occurrenceFor('0025', { sets: 4, reps: 6, weight: 50 }, { id: 'o1', unit: 'kg' })
-    expect(rule.preset).toBe('autoregulated')
+    expect(rule.preset).toBe('manual')
     expect(planPhase(rule).parameters).toMatchObject({ sets: { min: 4, max: 4 }, reps: { min: 6, max: 6 }, load: { mode: 'absolute', value: 50, unit: 'kg' } })
     expect(planPhase(occurrenceFor('0025', { sets: 3, sec: 45 }, { id: 'o2' }).rule).parameters).toMatchObject({ durationSeconds: { min: 45, max: 45 }, reps: { min: 1, max: 1 } })
   })
@@ -237,5 +237,24 @@ describe('rung exercises', () => {
     const [x] = buildSessionExposures(S, { id: 'r1', ex: [occ] }, ctx)
     expect(x.exerciseId).toBe('1326')
     expect(S.prescriptions[x.prescriptionId].values.difficulty).toBe(1)
+  })
+})
+
+describe('the frozen prescription remains the session boundary', () => {
+  it('repeats each prior work row for the manual freestyle preset', () => {
+    const S = profile({ workouts: [{ d: '2026-09-01', exposures: [loggedExposure('0025', [{ w: 40, r: 8 }, { w: 45, r: 6 }])] }] })
+    const occ = { ...occurrenceFor('0025', { sets: 2, reps: 8 }, { id: 'manual' }), repeatLast: true }
+    const [x] = buildSessionExposures(S, { id: 'freestyle', ex: [occ] }, ctx)
+    expect(entriesForExposures([x], S.prescriptions)[0].sets.map(row => [row.w, row.r])).toEqual([[40, 8], [45, 6]])
+  })
+
+  it('does not restore a failure selection the engine excluded', () => {
+    for (const [preset, fields] of [['greyskull', { failureSets: 'all' }], ['manual', { failureSets: [], lastToFailure: true }]]) {
+      const S = profile()
+      const occ = { ...ruleOccurrence('0025', { preset }), ...fields }
+      const [x] = buildSessionExposures(S, { id: 'r1', ex: [occ] }, ctx)
+      expect(S.prescriptions[x.prescriptionId].rows.some(row => row.failure)).toBe(false)
+      expect(entriesForExposures([x], S.prescriptions)[0].sets.some(row => row.failure)).toBe(false)
+    }
   })
 })

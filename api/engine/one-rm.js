@@ -37,7 +37,12 @@ export const FORMULAS = {
   wathan:   (w, r) => (w * 100) / (48.8 + 53.8 * Math.exp(-0.075 * r)),
   lander:   (w, r) => (w * 100) / (101.3 - 2.67123 * r),
 }
-export const DEFAULT_FORMULA = 'epley'
+// No single formula is the default: the weighted blend of all seven (plus the RIR map) is, because
+// any one of them drifts at some rep range. A profile that picked a formula in Settings keeps it.
+export const DEFAULT_FORMULA = 'weighted'
+
+/** The most reps a set may have to still be an estimate under `formula`. */
+export const repCapOf = formula => (formula === 'weighted' || !Object.hasOwn(FORMULAS, formula) ? WEIGHTED_REP_CAP : REP_CAP)
 
 // The formula a profile picked in Settings (Discord "toggle which 1RM formula to use"). Anything
 // this build does not know reads as the default, so an older or newer device can't break it.
@@ -121,7 +126,7 @@ export function estimate1RM(w, r, formula = DEFAULT_FORMULA, rir = null) {
     return Math.round(weight * 10) / 10
   }
 
-  if (formula === 'weighted') {
+  if (!Object.hasOwn(FORMULAS, formula)) {   // 'weighted', or a name this build does not know
     const effectiveReps = validRir ? reps + Number(rir) : reps
     if (effectiveReps > WEIGHTED_REP_CAP) return null
     const est = weightedEstimate(weight, effectiveReps)
@@ -130,10 +135,22 @@ export function estimate1RM(w, r, formula = DEFAULT_FORMULA, rir = null) {
   }
 
   if (reps > REP_CAP) return null
-  const fn = FORMULAS[formula] || FORMULAS[DEFAULT_FORMULA]
-  const est = reps === 1 ? weight : fn(weight, Math.round(reps))
+  const est = reps === 1 ? weight : FORMULAS[formula](weight, Math.round(reps))
   if (!isFinite(est) || est <= 0) return null
   return Math.round(est * 10) / 10
+}
+
+// The same estimate with the spread of the eight readings behind it (seven formulas and the RIR map)
+// at the same effective reps: `mid` is what estimate1RM() says, `low`/`high` are how far the models
+// disagree. A single rep to failure is a measurement, so it has no spread.
+export function estimate1RMRange(w, r, formula = DEFAULT_FORMULA, rir = null) {
+  const mid = estimate1RM(w, r, formula, rir)
+  if (mid == null) return null
+  const reps = Object.hasOwn(FORMULAS, formula) ? Math.round(Number(r)) : Number(r) + (rir != null && Number(rir) > 0 ? Number(rir) : 0)
+  if (reps <= 1) return { low: mid, mid, high: mid }
+  const readings = [...Object.values(FORMULAS).map(f => f(Number(w), reps)), rirEstimate(Number(w), reps)]
+  const round = x => Math.round(x * 10) / 10
+  return { low: Math.min(round(Math.min(...readings)), mid), mid, high: Math.max(round(Math.max(...readings)), mid) }
 }
 
 /** Rebuild source-linked estimates after history edits/merges; typed records and frozen snapshots stay intact. */
@@ -143,6 +160,7 @@ export function reconcileDerivedOneRms(profile) {
   const meanings = new Map()
   for (const w of ordered) for (const x of w.exposures || []) if (x.dbLoad) meanings.set(x.exerciseId, x.dbLoad)
   const best = new Map()
+  const formula = formulaOf(profile)
   for (const w of ordered) for (const x of w.exposures || []) {
     const p = profile.prescriptions?.[x.prescriptionId]
     if (p?.assisted ?? x.assisted) continue
@@ -150,14 +168,15 @@ export function reconcileDerivedOneRms(profile) {
       if (row.status !== 'completed' || row.role === 'warmup') continue
       const reps = row.observations?.find(o => o.metric === 'repetitions')?.value
       const load = row.resistance
-      const estimate = load?.kind === 'external-load' ? estimate1RM(load.value, reps) : null
+      const range = load?.kind === 'external-load' ? estimate1RMRange(load.value, reps, formula, row.rir ?? null) : null
+      const estimate = range?.mid ?? null
       const own = profile.dbLoad?.[x.exerciseId]
       const meaning = (typeof own === 'string' ? own : own?.mode) || meanings.get(x.exerciseId) || 'as'
       const bells = x.bells ?? (x.side ? 1 : 2)
       const factor = x.dbLoad && x.dbLoad !== 'as' && meaning !== 'as' && x.dbLoad !== meaning ? x.dbLoad === 'each' ? bells : 1 / bells : 1
       const comparable = estimate == null ? null : estimate * factor
       if (comparable == null || comparable <= (best.get(x.exerciseId)?.comparable ?? 0)) continue
-      best.set(x.exerciseId, { comparable, id: `one-rep-max:derived:${x.exposureId}`, exerciseId: x.exerciseId, value: estimate, unit: load.unit, ...(x.dbLoad ? { dbLoad: x.dbLoad } : {}), source: 'estimated', capturedAt: x.completedAt ?? new Date(w.end ?? w.start).toISOString(), sourceRecordId: x.exposureId })
+      best.set(x.exerciseId, { comparable, id: `one-rep-max:derived:${x.exposureId}`, exerciseId: x.exerciseId, value: estimate, low: range.low, high: range.high, unit: load.unit, ...(x.dbLoad ? { dbLoad: x.dbLoad } : {}), source: 'estimated', capturedAt: x.completedAt ?? new Date(w.end ?? w.start).toISOString(), sourceRecordId: x.exposureId })
     }
   }
   for (const { comparable, ...r } of best.values()) kept[r.id] = r

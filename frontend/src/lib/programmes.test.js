@@ -337,7 +337,7 @@ describe('references', () => {
   })
 
   it('%1RM resolves from the adopted reference, else the best estimate, snapped to the step or to what you own', () => {
-    const s = state({}, [logged('2026-10-01', BENCH, 100, 5)])   // Epley: 116.7
+    const s = state({ oneRmFormula: 'epley' }, [logged('2026-10-01', BENCH, 100, 5)])   // Epley: 116.7
     expect(pctWeight(s, BENCH, 75)).toBe(87.5)
     expect(pctWeight(s, BENCH, 75, { step: 5 })).toBe(90)
     expect(pctWeight(s, BENCH, 75, { owned: [80, 86, 90] })).toBe(86)
