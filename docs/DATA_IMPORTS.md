@@ -151,7 +151,7 @@ worker has no access to `./data` and no host port; only the api container talks 
 | `VIDEO_IMPORT_TARGET` | `default` | `paddle` builds the PaddleOCR image (~2 GB) instead of Tesseract (~500 MB) |
 | `PADDLE_THREADS` | all cores | CPU threads PaddleOCR may use (paddle image only) |
 
-A 30-minute video takes a few minutes of CPU on one core.
+A 33-minute video took about 5 minutes on a four-core laptop the first time (download, boxes, reading) and about 3 minutes once the boxes were remembered; the reading is Tesseract, one thread per process, up to four processes (`VIDEO_IMPORT_OCR_PROCS`). A busy or smaller server takes longer, and the progress bar says where it is.
 
 **Keep yt-dlp current.** YouTube changes often, and yt-dlp is what follows it. When imports start
 failing with "could not read the video", rebuild the worker:
