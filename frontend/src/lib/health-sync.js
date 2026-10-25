@@ -105,7 +105,18 @@ export function syncHealth(S) {
 async function syncOnce(S, h) {
   const p = await plugin()
   if (!p) return h
-  const plan = planSync(healthRecords(S, { nameOf, speedUnit: speedUnitOf(S) }), h.written, goneIds(S))
+  // Capability is part of the exported payload/fingerprint: a Health Connect update must
+  // enrich existing records even if the workout itself has not changed.
+  const status = p.platform === 'android' ? await p.HC.status().catch(() => null) : null
+  if (p.platform === 'android' && !status) {
+    // A failed capability check is not an older provider. Do not strip enriched fields.
+    const out = { ...h, error: 'failed' }
+    await saveHealth(out)
+    told(out)
+    return out
+  }
+  const plan = planSync(healthRecords(S, { nameOf, speedUnit: speedUnitOf(S),
+    includeSegments: p.platform === 'android', extendedSegments: status?.extendedSegments === true }), h.written, goneIds(S))
   const nothing = !plan.sessions.length && !plan.weights.length && !plan.remove.sessions.length && !plan.remove.weights.length
   if (nothing) {
     if (!h.error) return h

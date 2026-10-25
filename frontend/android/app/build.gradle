@@ -3,6 +3,8 @@ apply plugin: 'com.android.application'
 android {
     namespace = "ch.duartesantos.opengym"
     compileSdk = rootProject.ext.compileSdkVersion
+    // Health Connect 1.2.0-alpha03 AAR requires SDK 36 extension 19.
+    compileSdkExtension = 19
     buildFeatures {
         buildConfig = true
     }

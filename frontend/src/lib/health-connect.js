@@ -8,6 +8,8 @@
 import { workoutText } from './workout-text.js'
 import { modeForEntry, hasCompletedWork } from './workout-model.js'
 import { isoOf } from './format.js'
+import { exerciseSegments } from './health-connect-segments.js'
+import { segmentTypeFor, GENERAL_SEGMENTS } from './health-connect-mapping.js'
 
 const LB_PER_KG = 2.2046226218
 // Health Connect refuses a title or notes over 1000 characters (ExerciseSessionRecord).
@@ -25,7 +27,8 @@ const CARDIO_TYPES = {
   '2141': 'elliptical', '2331': 'elliptical',
   '2311': 'stair_climbing_machine',
 }
-export const SESSION_TYPES = ['strength_training', 'walking', 'running', 'biking_stationary', 'elliptical', 'stair_climbing_machine', 'other_workout']
+export const SESSION_TYPES = ['strength_training', 'walking', 'running', 'running_treadmill', 'biking', 'biking_stationary',
+  'elliptical', 'rowing_machine', 'stair_climbing', 'stair_climbing_machine', 'yoga', 'pilates', 'swimming_pool', 'other_workout']
 
 export function sessionType(w) {
   const done = (w?.entries || []).filter(e => (e.sets || []).some(hasCompletedWork))
@@ -48,15 +51,35 @@ function sessionNotes(w, opts) {
  * One exercise session per finished workout. A workout with no start or end (or an end not after
  * its start) is left out rather than given made-up times: Health Connect needs both.
  */
-export function sessionRecord(w, { unit, nameOf, speedUnit }) {
+export function sessionRecord(w, { unit, nameOf, speedUnit, includeSegments = true, extendedSegments = true }) {
   const start = Number(w?.start), end = Number(w?.end)
-  if (!w?.id || !(start > 0) || !(end > start)) return null
+  if (!w?.id || !Number.isSafeInteger(start) || !Number.isSafeInteger(end) || !(start > 0) || !(end > start) || end > 8640000000000000) return null
+  let type = sessionType(w)
+  if (includeSegments) {
+    const types = new Set((w.entries || []).filter(e => (e.sets || []).some(hasCompletedWork))
+      .map(e => segmentTypeFor(e, modeForEntry(e))))
+    // OTHER_WORKOUT is a universal session in HC. It preserves real cardio/yoga segments
+    // alongside resistance work instead of converting incompatible segments to UNKNOWN.
+    const universal = new Set(['other_workout', 'unknown', 'stretching'])
+    const specific = [...types].filter(t => !universal.has(t))
+    const cardioSessions = { walking: 'walking', running: 'running', running_treadmill: 'running_treadmill',
+      biking: 'biking', biking_stationary: 'biking_stationary', elliptical: 'elliptical',
+      rowing_machine: 'rowing_machine', stair_climbing: 'stair_climbing',
+      stair_climbing_machine: 'stair_climbing_machine', yoga: 'yoga', pilates: 'pilates',
+      swimming_freestyle: 'swimming_pool', swimming_backstroke: 'swimming_pool',
+      swimming_breaststroke: 'swimming_pool', swimming_butterfly: 'swimming_pool', swimming_other: 'swimming_pool' }
+    if (specific.length && specific.every(t => !GENERAL_SEGMENTS.has(t))) type = 'strength_training'
+    else if (specific.length && new Set(specific.map(t => cardioSessions[t])).size === 1 && cardioSessions[specific[0]]) type = cardioSessions[specific[0]]
+    else if (specific.length) type = 'other_workout'
+  }
+  const segments = includeSegments ? exerciseSegments(w, type, { unit, extended: extendedSegments }) : []
   return {
     id: 'opengym-w-' + w.id,
     start, end,
-    type: sessionType(w),
+    type,
     title: clip(String(w.name || '').trim()),
     notes: sessionNotes(w, { unit, nameOf, speedUnit }),
+    ...(segments.length ? { segments } : {}),
   }
 }
 
@@ -81,10 +104,10 @@ function localMorning(iso) {
 }
 
 /** Everything the state has to give Health Connect: { sessions, weights }. */
-export function healthRecords(S, { nameOf, speedUnit }) {
+export function healthRecords(S, { nameOf, speedUnit, includeSegments = true, extendedSegments = true }) {
   const unit = S?.unit === 'lb' ? 'lb' : 'kg'
   return {
-    sessions: (S?.workouts || []).map(w => sessionRecord(w, { unit, nameOf, speedUnit })).filter(Boolean),
+    sessions: (S?.workouts || []).map(w => sessionRecord(w, { unit, nameOf, speedUnit, includeSegments, extendedSegments })).filter(Boolean),
     weights: (S?.bodyweight || []).map(b => weightRecord(b, unit)).filter(Boolean),
   }
 }

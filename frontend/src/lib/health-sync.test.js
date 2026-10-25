@@ -22,7 +22,7 @@ vi.mock('@capacitor/app', () => ({ App: { addListener: () => ({ remove() {} }) }
 vi.mock('@capacitor/core', () => ({
   Capacitor: { getPlatform: () => h.platform },
   registerPlugin: name => (h.plugins.push(name), {
-    status: async () => ({ ...h.status }),
+    status: async () => { if (h.statusFail) throw new Error('provider unavailable'); return { ...h.status } },
     requestPermissions: async () => { h.calls.push(['request']); h.status.granted = h.grant; return { granted: h.grant } },
     write: async arg => {
       h.calls.push(['write', arg])
@@ -49,6 +49,7 @@ const file = () => JSON.parse(h.files.get('opengym-health.json') || 'null')
 let hs
 beforeEach(async () => {
   vi.resetModules()
+  h.statusFail = false
   h.files.clear(); h.calls = []; h.status = { status: 'available', granted: false }; h.grant = true; h.fail = null; h.removeFail = null; h.left = null; h.platform = 'android'; h.plugins = []
   hs = await import('./health-sync.js')
 })
@@ -92,6 +93,25 @@ describe('turning it on', () => {
 })
 
 describe('keeping in step', () => {
+  it('passes Android segments through and rewrites an edited set without rewriting body weight', async () => {
+    const w = workout('w1', 17)
+    w.entries[0].sets[0].at = at(17, 18) + 60000
+    const S = state([w], [{ d: '2026-09-17', w: 80, t: at(17, 7) }])
+    await hs.enableHealth(S)
+    expect(writes()[0].sessions[0].segments).toEqual([
+      { start: w.entries[0].sets[0].at - 1, end: w.entries[0].sets[0].at, type: 'bench_press', repetitions: 8 },
+    ])
+    expect(writes()[0].weights[0].kg).toBe(80)
+    h.calls = []
+    const edited = structuredClone(S)
+    edited.workouts[0].entries[0].sets[0].r = 9
+    await hs.syncHealth(edited)
+    expect(writes()[0].sessions[0].segments[0].repetitions).toBe(9)
+    expect(writes()[0].weights).toEqual([])
+    await hs.syncHealth(edited)
+    expect(writes()).toHaveLength(1)
+  })
+
   it('writes only what is new, and removes what was deleted', async () => {
     await hs.enableHealth(state([workout('w1', 17)]))
     h.calls = []
@@ -249,6 +269,12 @@ describe('on the iPhone', () => {
     await hs.disableHealth({ removeWritten: false })
     expect(h.calls.filter(c => c[0] === 'setEnabled')).toEqual([['setEnabled', true], ['setEnabled', false]])
   })
+  it('keeps the Apple Health payload unchanged even for timestamped sets', async () => {
+    const w = workout('w1', 17)
+    w.entries[0].sets[0].at = at(17, 18) + 60000
+    await hs.enableHealth(state([w]))
+    expect(writes()[0].sessions[0]).not.toHaveProperty('segments')
+  })
   it('tells the watch nothing when asking was refused', async () => {
     h.grant = false
     expect(await hs.enableHealth(state([]))).toMatchObject({ ok: false, reason: 'denied' })
@@ -262,4 +288,41 @@ describe('on the iPhone', () => {
     expect(h.calls.filter(c => c[0] === 'setEnabled')).toEqual([])
     expect((await hs.healthStatus()).platform).toBe('android')
   })
+})
+
+describe('Health Connect capability upgrades', () => {
+  it('enriches an existing record once after a provider update without duplicating or rewriting bodyweight', async () => {
+    const w = workout('upgrade', 17)
+    w.entries[0].sets[0] = { w: 60, r: 8, rpe: 8.5, done: true, at: w.start + 60000 }
+    const S = state([w], [{ d: '2026-09-17', w: 80, t: at(17, 7) }])
+    await hs.enableHealth(S)
+    expect(writes()[0].sessions[0].segments[0]).not.toHaveProperty('weightKg')
+    h.calls = []
+    h.status.extendedSegments = true
+    await hs.syncHealth(S)
+    expect(writes()).toHaveLength(1)
+    expect(writes()[0].sessions[0].id).toBe('opengym-w-upgrade')
+    expect(writes()[0].sessions[0].segments[0]).toMatchObject({ weightKg: 60, rpe: 8.5, setIndex: 0 })
+    expect(writes()[0].weights).toEqual([])
+    h.calls = []
+    await hs.syncHealth(S)
+    expect(writes()).toEqual([])
+    await hs.syncHealth({ ...S, workouts: [], deleted: { workouts: { upgrade: Date.now() } } })
+    expect(removes()[0].sessions).toEqual(['opengym-w-upgrade'])
+  })
+})
+
+it('does not downgrade enriched records after a failed capability check', async () => {
+  h.status.extendedSegments = true
+  const w = workout('capability-failure', 17)
+  w.entries[0].sets[0].at = w.start + 60000
+  const S = state([w])
+  await hs.enableHealth(S)
+  const before = file().written
+  h.calls = []
+  h.statusFail = true
+  await hs.syncHealth(S)
+  expect(writes()).toEqual([])
+  expect(file().written).toEqual(before)
+  expect(file().error).toBe('failed')
 })

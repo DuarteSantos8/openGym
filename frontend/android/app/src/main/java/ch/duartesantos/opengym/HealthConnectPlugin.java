@@ -6,7 +6,9 @@ import android.os.Build;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.contract.ActivityResultContract;
 import androidx.health.connect.client.HealthConnectClient;
+import androidx.health.connect.client.HealthConnectFeatures;
 import androidx.health.connect.client.PermissionController;
+import androidx.health.connect.client.records.ExerciseSegment;
 import androidx.health.connect.client.records.ExerciseSessionRecord;
 import androidx.health.connect.client.records.Record;
 import androidx.health.connect.client.records.WeightRecord;
@@ -24,6 +26,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +35,7 @@ import java.util.concurrent.Executors;
 import kotlin.coroutines.EmptyCoroutineContext;
 import kotlin.jvm.JvmClassMappingKt;
 import kotlinx.coroutines.BuildersKt;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -49,7 +53,7 @@ import org.json.JSONObject;
  * runBlocking, which keeps the Android project Java-only.
  *
  * The client library needs Android 8 (API 26) and Health Connect itself Android 9 (API 28); the
- * app supports Android 6, so every entry point checks the version before a Health Connect class
+ * app supports Android 7, so every entry point checks the version before a Health Connect class
  * is touched, and answers "unsupported" below 9.
  *
  * Usage from JS (lib/health-sync.js):
@@ -98,6 +102,11 @@ public class HealthConnectPlugin extends Plugin {
         return HealthConnectClient.Companion.getOrCreate(getContext(), PROVIDER);
     }
 
+    private boolean extendedSegments() {
+        return client().getFeatures().getFeatureStatus(HealthConnectFeatures.FEATURE_EXERCISE_SESSION_IMPROVEMENTS)
+                == HealthConnectFeatures.FEATURE_STATUS_AVAILABLE;
+    }
+
     @SuppressWarnings("unchecked")
     private Set<String> granted() throws InterruptedException {
         PermissionController pc = client().getPermissionController();
@@ -119,6 +128,7 @@ public class HealthConnectPlugin extends Plugin {
                 JSObject r = new JSObject();
                 r.put("status", status);
                 r.put("granted", granted().containsAll(permissions()));
+                r.put("extendedSegments", extendedSegments());
                 call.resolve(r);
             } catch (Exception e) {
                 call.reject(e.getMessage(), "failed");
@@ -166,8 +176,9 @@ public class HealthConnectPlugin extends Plugin {
         worker.execute(() -> {
             try {
                 long version = System.currentTimeMillis();
+                boolean extended = extendedSegments();
                 List<Record> records = new ArrayList<>();
-                for (int i = 0; i < sessions.length(); i++) records.add(session(sessions.getJSONObject(i), version));
+                for (int i = 0; i < sessions.length(); i++) records.add(session(sessions.getJSONObject(i), version, extended));
                 for (int i = 0; i < weights.length(); i++) records.add(weight(weights.getJSONObject(i), version));
                 for (int from = 0; from < records.size(); from += CHUNK) {
                     List<Record> part = records.subList(from, Math.min(records.size(), from + CHUNK));
@@ -244,7 +255,11 @@ public class HealthConnectPlugin extends Plugin {
         return ZoneId.systemDefault().getRules().getOffset(at);
     }
 
-    private static ExerciseSessionRecord session(JSONObject s, long version) throws JSONException {
+    static ExerciseSessionRecord session(JSONObject s, long version) throws JSONException {
+        return session(s, version, false);
+    }
+
+    static ExerciseSessionRecord session(JSONObject s, long version, boolean extended) throws JSONException {
         Instant start = Instant.ofEpochMilli(s.getLong("start"));
         Instant end = Instant.ofEpochMilli(s.getLong("end"));
         String title = s.optString("title", "");
@@ -254,13 +269,129 @@ public class HealthConnectPlugin extends Plugin {
                 Metadata.manualEntry(s.getString("id"), version),
                 exerciseType(s.optString("type")),
                 title.isEmpty() ? null : title,
-                notes.isEmpty() ? null : notes);
+                notes.isEmpty() ? null : notes,
+                segments(s, start, end, extended));
     }
 
-    private static WeightRecord weight(JSONObject w, long version) throws JSONException {
+    static WeightRecord weight(JSONObject w, long version) throws JSONException {
         Instant time = Instant.ofEpochMilli(w.getLong("time"));
         return new WeightRecord(time, offsetAt(time), Mass.kilograms(w.getDouble("kg")),
                 Metadata.manualEntry(w.getString("id"), version));
+    }
+
+    // Optional detail must never prevent the session (or a weigh-in in the same batch) exporting.
+    // Session/segment compatibility is checked again at this native boundary.
+    private static List<ExerciseSegment> segments(JSONObject session, Instant start, Instant end, boolean extended) {
+        List<ExerciseSegment> candidates = new ArrayList<>();
+        JSONArray rows = session.optJSONArray("segments");
+        if (rows == null) return candidates;
+        int sessionType = exerciseType(session.optString("type"));
+        for (int i = 0; i < rows.length(); i++) {
+            JSONObject row = rows.optJSONObject(i);
+            if (row == null) continue;
+            double from = row.optDouble("start", Double.NaN);
+            double to = row.optDouble("end", Double.NaN);
+            if (!Double.isFinite(from) || !Double.isFinite(to) || from != Math.rint(from) || to != Math.rint(to)
+                    || from < start.toEpochMilli() || to > end.toEpochMilli() || from >= to) continue;
+            double reps = row.optDouble("repetitions", 0);
+            int count = Double.isFinite(reps) && reps >= 0 && reps <= Integer.MAX_VALUE && reps == Math.rint(reps) ? (int) reps : 0;
+            int type = segmentType(row.optString("type"));
+            if (!ExerciseSegment.isSegmentTypeCompatibleWithSessionType(type, sessionType)) {
+                type = ExerciseSegment.EXERCISE_SEGMENT_TYPE_OTHER_WORKOUT;
+            }
+            double kg = row.optDouble("weightKg", Double.NaN);
+            double index = row.optDouble("setIndex", Double.NaN);
+            double rpe = row.optDouble("rpe", Double.NaN);
+            Mass mass = extended && Double.isFinite(kg) && kg >= 0 && kg <= 2500 ? Mass.kilograms(kg) : null;
+            Integer setIndex = extended && Double.isFinite(index) && index >= 0 && index <= Integer.MAX_VALUE
+                    && index == Math.rint(index) ? (int) index : null;
+            Float exertion = extended && Double.isFinite(rpe) && rpe >= 0 && rpe <= 10 ? (float) rpe : null;
+            candidates.add(new ExerciseSegment(Instant.ofEpochMilli((long) from), Instant.ofEpochMilli((long) to),
+                    type, count, mass, setIndex, exertion));
+        }
+        candidates.sort(Comparator.comparing(ExerciseSegment::getStartTime));
+        List<ExerciseSegment> out = new ArrayList<>();
+        Instant previous = start;
+        for (ExerciseSegment segment : candidates) {
+            if (segment.getStartTime().isBefore(previous)) continue;
+            out.add(segment);
+            previous = segment.getEndTime();
+        }
+        return out;
+    }
+
+    // All standardized movement classes. Equipment/angle variants are collapsed in JS.
+    private static int segmentType(String name) {
+        switch (name) {
+            case "arm_curl": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_ARM_CURL;
+            case "back_extension": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BACK_EXTENSION;
+            case "ball_slam": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BALL_SLAM;
+            case "barbell_shoulder_press": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BARBELL_SHOULDER_PRESS;
+            case "bench_press": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BENCH_PRESS;
+            case "bench_sit_up": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BENCH_SIT_UP;
+            case "biking": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BIKING;
+            case "biking_stationary": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BIKING_STATIONARY;
+            case "burpee": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BURPEE;
+            case "crunch": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_CRUNCH;
+            case "deadlift": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DEADLIFT;
+            case "double_arm_triceps_extension": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DOUBLE_ARM_TRICEPS_EXTENSION;
+            case "dumbbell_curl_left_arm": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_CURL_LEFT_ARM;
+            case "dumbbell_curl_right_arm": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_CURL_RIGHT_ARM;
+            case "dumbbell_front_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_FRONT_RAISE;
+            case "dumbbell_lateral_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_LATERAL_RAISE;
+            case "dumbbell_row": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_ROW;
+            case "dumbbell_triceps_extension_left_arm": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_TRICEPS_EXTENSION_LEFT_ARM;
+            case "dumbbell_triceps_extension_right_arm": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_TRICEPS_EXTENSION_RIGHT_ARM;
+            case "dumbbell_triceps_extension_two_arm": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_TRICEPS_EXTENSION_TWO_ARM;
+            case "elliptical": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_ELLIPTICAL;
+            case "forward_twist": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_FORWARD_TWIST;
+            case "front_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_FRONT_RAISE;
+            case "high_intensity_interval_training": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_HIGH_INTENSITY_INTERVAL_TRAINING;
+            case "hip_thrust": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_HIP_THRUST;
+            case "hula_hoop": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_HULA_HOOP;
+            case "jumping_jack": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_JUMPING_JACK;
+            case "jump_rope": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_JUMP_ROPE;
+            case "kettlebell_swing": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_KETTLEBELL_SWING;
+            case "lateral_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LATERAL_RAISE;
+            case "lat_pull_down": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LAT_PULL_DOWN;
+            case "leg_curl": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LEG_CURL;
+            case "leg_extension": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LEG_EXTENSION;
+            case "leg_press": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LEG_PRESS;
+            case "leg_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LEG_RAISE;
+            case "lunge": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LUNGE;
+            case "mountain_climber": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_MOUNTAIN_CLIMBER;
+            case "other_workout": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_OTHER_WORKOUT;
+            case "pause": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_PAUSE;
+            case "pilates": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_PILATES;
+            case "plank": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_PLANK;
+            case "pull_up": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_PULL_UP;
+            case "punch": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_PUNCH;
+            case "rest": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_REST;
+            case "rowing_machine": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_ROWING_MACHINE;
+            case "running": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_RUNNING;
+            case "running_treadmill": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_RUNNING_TREADMILL;
+            case "shoulder_press": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SHOULDER_PRESS;
+            case "single_arm_triceps_extension": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SINGLE_ARM_TRICEPS_EXTENSION;
+            case "sit_up": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SIT_UP;
+            case "squat": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SQUAT;
+            case "stair_climbing": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_STAIR_CLIMBING;
+            case "stair_climbing_machine": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_STAIR_CLIMBING_MACHINE;
+            case "stretching": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_STRETCHING;
+            case "swimming_backstroke": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SWIMMING_BACKSTROKE;
+            case "swimming_breaststroke": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SWIMMING_BREASTSTROKE;
+            case "swimming_butterfly": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SWIMMING_BUTTERFLY;
+            case "swimming_freestyle": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SWIMMING_FREESTYLE;
+            case "swimming_mixed": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SWIMMING_MIXED;
+            case "swimming_open_water": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SWIMMING_OPEN_WATER;
+            case "swimming_other": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SWIMMING_OTHER;
+            case "swimming_pool": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SWIMMING_POOL;
+            case "upper_twist": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_UPPER_TWIST;
+            case "walking": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_WALKING;
+            case "weightlifting": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_WEIGHTLIFTING;
+            case "wheelchair": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_WHEELCHAIR;
+            case "yoga": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_YOGA;
+            default: return ExerciseSegment.EXERCISE_SEGMENT_TYPE_UNKNOWN;
+        }
     }
 
     // The names lib/health-connect.js uses (SESSION_TYPES); anything else is "other".
@@ -272,6 +403,13 @@ public class HealthConnectPlugin extends Plugin {
             case "biking_stationary": return ExerciseSessionRecord.EXERCISE_TYPE_BIKING_STATIONARY;
             case "elliptical": return ExerciseSessionRecord.EXERCISE_TYPE_ELLIPTICAL;
             case "stair_climbing_machine": return ExerciseSessionRecord.EXERCISE_TYPE_STAIR_CLIMBING_MACHINE;
+            case "biking": return ExerciseSessionRecord.EXERCISE_TYPE_BIKING;
+            case "running_treadmill": return ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL;
+            case "rowing_machine": return ExerciseSessionRecord.EXERCISE_TYPE_ROWING_MACHINE;
+            case "stair_climbing": return ExerciseSessionRecord.EXERCISE_TYPE_STAIR_CLIMBING;
+            case "yoga": return ExerciseSessionRecord.EXERCISE_TYPE_YOGA;
+            case "pilates": return ExerciseSessionRecord.EXERCISE_TYPE_PILATES;
+            case "swimming_pool": return ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_POOL;
             default: return ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT;
         }
     }
