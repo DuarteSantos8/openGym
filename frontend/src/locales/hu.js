@@ -2417,4 +2417,12 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'Ezen az eszközön 1 edzés van, amely nincs ebben a mentésben. A csere törli.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'Ezen az eszközön {0} edzés van, amely nincs ebben a mentésben. A csere törli őket.',
+  // --- workout: a likely typo asked about at the tick ---
+  'Is that right?': 'Biztosan jó?',
+  'Weight: {0} is more than twice your heaviest, {1}.': 'Súly: {0} több mint kétszerese a csúcsodnak, {1}.',
+  'Reps: {0} is more than twice your most, {1}.': 'Ism.: {0} több mint kétszerese a csúcsodnak, {1}.',
+  'Weight: {0} is under a third of last time’s {1}.': 'Súly: {0} kevesebb, mint a legutóbbi {1} harmada.',
+  'Reps: {0} is under a third of last time’s {1}.': 'Ism.: {0} kevesebb, mint a legutóbbi {1} harmada.',
+  'Fix it': 'Javítás',
+  'Log as typed': 'Naplózás így',
 }

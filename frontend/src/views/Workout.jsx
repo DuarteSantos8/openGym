@@ -5,7 +5,8 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { useUI } from '../store/useUI.js'
-import { exOr, betterWeight } from '../lib/exercises.js'
+import { exOr, betterWeight, isAssisted } from '../lib/exercises.js'
+import { bestsFor, lastRowFor, oddValues } from '../lib/typo-check.js'
 import { usesBar } from '../lib/bar.js'
 import { loadKindFor, baseWeightFor, inventoryFor, rowLoad, sameLoad, plateDelta, dropGrid } from '../lib/plates.js'
 import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, freestyleConfig, defaultConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf } from '../lib/history.js'
@@ -1311,8 +1312,8 @@ function ActiveWorkout() {
     canMoveDown: canMoveActiveWorkoutEntry(A, idx, 1),
     onRemoveExercise: () => confirmRemoveExercise(idx),
     busy: !!work,
-    onToggle: (i, onFocusProgress) => toggle(idx, i, undefined, { onFocusProgress }),
-    onToggleSide: (i, side, onFocusProgress) => toggle(idx, i, side, { onFocusProgress }),
+    onToggle: (i, onFocusProgress) => checkedToggle(idx, i, undefined, { onFocusProgress }),
+    onToggleSide: (i, side, onFocusProgress) => checkedToggle(idx, i, side, { onFocusProgress }),
     onField: (i, f, v) => setField(idx, i, f, v),
     onMutateSet: (i, fn) => mutEntry(idx, entry => { entry.sets[i] = fn(entry.sets[i]) }),
     onAddSet: () => addSet(idx),
@@ -1778,6 +1779,32 @@ function ActiveWorkout() {
       onFocusProgress?.({ unitDone: freshUnitDone })
     }
   }
+  // A tap that ticks a set whose weight or reps look mistyped (300 for 30, 8 for 80; see
+  // lib/typo-check.js) asks first: what you tick becomes last time, the next target and maybe a
+  // PR. Fix it leaves the set unticked to correct; Log as typed ticks it. Only a tick by hand in
+  // a live session: never an untick, a hold's timer, the watch, or a saved workout being edited.
+  const checkedToggle = (idx, i, side, opts) => {
+    const st = useStore.getState().S
+    const e = st.active?.entries?.[idx]
+    const row = side ? e?.sets?.[i]?.sides?.[side] : e?.sets?.[i]
+    if (editing || !row || row.done || modeAt(idx) !== 'reps') return toggle(idx, i, side, opts)
+    const last = lastEntryFor(st, e.id, e.rid)
+    const odd = oddValues(row, bestsFor(st.workouts, e.id), {
+      unit: st.unit, assisted: isAssisted(e.id), last: lastRowFor(last?.sets, e.sets, i, side),
+    })
+    if (!odd.length) return toggle(idx, i, side, opts)
+    const kg = v => fmtNum(v) + ' ' + st.unit
+    const say = ({ f, typed, ref, low }) => f === 'w'
+      ? (low ? t('Weight: {0} is under a third of last time’s {1}.', kg(typed), kg(ref)) : t('Weight: {0} is more than twice your heaviest, {1}.', kg(typed), kg(ref)))
+      : (low ? t('Reps: {0} is under a third of last time’s {1}.', typed, ref) : t('Reps: {0} is more than twice your most, {1}.', typed, ref))
+    confirmSheet({
+      title: t('Is that right?'),
+      message: odd.map(say).join(' '),
+      confirmText: t('Fix it'),
+      cancelText: t('Log as typed'),
+      onCancel: () => toggle(idx, i, side, opts),
+    })
+  }
   // The Apple Watch ticks sets through this same toggle (lib/watch-sync.js): the weight and reps it
   // logged go into the row first, then the tick runs as if tapped here (rest, high-water mark, the
   // end-of-workout sheet). A row already ticked only takes the numbers.
@@ -1916,7 +1943,7 @@ function ActiveWorkout() {
     if (!next.current) { focusUnit(next.idx); showCurrent(); return true }
     // A timed set is started rather than ticked, as its play button does; the timer ticks it.
     if (!next.side && modeAt(next.idx) === 'time') startTimed(next.idx, next.i)
-    else toggle(next.idx, next.i, next.side)
+    else checkedToggle(next.idx, next.i, next.side)
     return true
   }
   onKey.current = event => {

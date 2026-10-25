@@ -2414,4 +2414,12 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': '이 기기에 이 백업에 없는 운동이 1개 있습니다. 바꾸면 삭제됩니다.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': '이 기기에 이 백업에 없는 운동이 {0}개 있습니다. 바꾸면 삭제됩니다.',
+  // --- workout: a likely typo asked about at the tick ---
+  'Is that right?': '맞나요?',
+  'Weight: {0} is more than twice your heaviest, {1}.': '무게: {0}은(는) 최고 기록 {1}의 두 배가 넘어요.',
+  'Reps: {0} is more than twice your most, {1}.': '횟수: {0}은(는) 최고 기록 {1}의 두 배가 넘어요.',
+  'Weight: {0} is under a third of last time’s {1}.': '무게: {0}은(는) 지난번 {1}의 3분의 1도 안 돼요.',
+  'Reps: {0} is under a third of last time’s {1}.': '횟수: {0}은(는) 지난번 {1}의 3분의 1도 안 돼요.',
+  'Fix it': '고치기',
+  'Log as typed': '입력한 대로 기록',
 }
