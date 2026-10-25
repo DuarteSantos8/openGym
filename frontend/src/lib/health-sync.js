@@ -105,7 +105,7 @@ export function syncHealth(S) {
 async function syncOnce(S, h) {
   const p = await plugin()
   if (!p) return h
-  const plan = planSync(healthRecords(S, { nameOf, speedUnit: speedUnitOf(S) }), h.written, goneIds(S))
+  const plan = planSync(healthRecords(S, { nameOf, speedUnit: speedUnitOf(S), includeSegments: p.platform === 'android' }), h.written, goneIds(S))
   const nothing = !plan.sessions.length && !plan.weights.length && !plan.remove.sessions.length && !plan.remove.weights.length
   if (nothing) {
     if (!h.error) return h

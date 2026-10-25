@@ -189,8 +189,9 @@ that.
   as the title, the exercises and sets as "Copy as text" writes them as the notes, and a type
   (strength training as soon as one exercise is not cardio; walking, running, stationary bike,
   elliptical or stair machine for a cardio-only workout on a catalogue machine; "other" otherwise).
-  Each weigh-in as a weight record, in kilograms. A workout without a real start and end is left
-  out rather than given made-up times. `src/lib/health-connect.js` works this out; its tests
+  Strength sessions also carry individual completed set rows as exercise segments where their
+  timing is usable (details below). Each weigh-in as a weight record, in kilograms. A workout
+  without a real start and end is left out rather than given made-up times. `src/lib/health-connect.js` works this out; its tests
   pin it.
 - **Write-only.** The manifest declares `WRITE_EXERCISE` and `WRITE_WEIGHT` and nothing else, and
   openGym reads nothing back.
@@ -214,6 +215,52 @@ that.
   Java-only. 1.1.0 stable needs compileSdk 36 and AGP 8.9.1, a toolchain bump left for its own
   change. The library asks for minSdk 26; `tools:overrideLibrary` keeps the app at 23 and the plugin
   checks the version before touching it.
+
+#### Strength exercise segments
+
+The existing export builder adds segments to the same session, with the same client id. On the
+next sync, sessions that gain detail are replaced once; they are not separate workouts. Body
+weight, cardio-only session types, and the Apple Health payload stay as before.
+
+- **Mapping:** a reviewed allowlist of permanent catalogue ids in
+  [health-connect-segments.js](../frontend/src/lib/health-connect-segments.js), resolved through
+  the existing drawing-id aliases. The native plugin maps its tokens to AndroidX constants.
+  Supported movements include bench presses, deadlifts, squats, shoulder presses, arm curls,
+  dumbbell rows/raises, lat pulldowns, leg curls/extensions/press, lunges, crunches, sit-ups,
+  pull-ups/chin-ups, static front planks, kettlebell swings and burpees. Only the listed variants
+  are mapped; neither translated names, muscle groups nor custom exercise names decide a type.
+  Equipment, grip and assistance differences that Health Connect cannot distinguish are lost.
+- **Unsupported movements:** `UNKNOWN`, preserving repetitions without claiming a different
+  movement. Health Connect 1.1.0 has no push-up, dip, calf-raise or generic barbell-row segment.
+  Unlisted variants and custom exercises also use `UNKNOWN`. Walking/biking/etc. segments are
+  incompatible with a strength session, so cardio rows in mixed sessions use `UNKNOWN` with no
+  repetitions. The overall session remains strength training.
+- **Sets and reps:** one segment per completed row, including warm-ups, with the logged
+  repetitions (AndroidX `repetitions`, exposed as `repetitionsCount` by the platform API).
+  A drop-set adds its drops' reps to the main reps; a rest-pause row already holds the total,
+  so its clusters are not added again. Per-side rows sum only completed limbs and their drops.
+  They share one row timestamp, so there is no invented left/right timeline. Zero external
+  load does not prevent a bodyweight exercise from exporting. Invalid/non-integer/overflowing
+  rep counts use 0 (not recorded); timed/cardio rows also use 0.
+- **Timing:** openGym stores completion ticks (`at`), not lifting-set start times. Rep segments
+  use the window from the preceding completed row's tick (or session start) to their own tick.
+  **These windows include rest and are not measured active lifting durations.** Rows are sorted
+  by tick, so supersets interleave correctly. Timed holds/cardio use their logged seconds/minutes
+  ending at the tick, only when the whole duration fits after the preceding tick. No segment
+  extends the session, overlaps another, or has zero duration. Missing, duplicate or
+  out-of-session ticks, and durations that cannot fit, leave that row in the existing session
+  notes only (which retain their existing work-set-only formatting). Imported, backfilled or
+  moved sessions with no usable ticks still export their overall session. No rep tempo or
+  historical set times are fabricated.
+- **Version limits:** this uses the pinned `connect-client:1.1.0`, including on Android 9–13's
+  Health Connect provider. No new permissions, feature flag, Android API requirement or SDK
+  upgrade is needed. That version cannot encode per-segment weight, catalogue id/name, set
+  index, warm-up/drop/rest-pause labels, RIR or RPE. Existing session notes remain available.
+  Consumers decide whether/how to display segments; a successful write does not guarantee a
+  particular app will show individual sets.
+
+[ExerciseSegment reference](https://developer.android.com/reference/androidx/health/connect/client/records/ExerciseSegment)
+(the current reference also shows newer APIs that this export does not use).
 
 Worth checking on a real device after changes here: turning it on shows Health Connect's own
 permission screen; a finished workout appears in Health Connect within a few seconds; deleting it

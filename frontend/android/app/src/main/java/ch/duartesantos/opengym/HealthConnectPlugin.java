@@ -7,6 +7,7 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.contract.ActivityResultContract;
 import androidx.health.connect.client.HealthConnectClient;
 import androidx.health.connect.client.PermissionController;
+import androidx.health.connect.client.records.ExerciseSegment;
 import androidx.health.connect.client.records.ExerciseSessionRecord;
 import androidx.health.connect.client.records.Record;
 import androidx.health.connect.client.records.WeightRecord;
@@ -24,6 +25,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +34,7 @@ import java.util.concurrent.Executors;
 import kotlin.coroutines.EmptyCoroutineContext;
 import kotlin.jvm.JvmClassMappingKt;
 import kotlinx.coroutines.BuildersKt;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -244,7 +247,7 @@ public class HealthConnectPlugin extends Plugin {
         return ZoneId.systemDefault().getRules().getOffset(at);
     }
 
-    private static ExerciseSessionRecord session(JSONObject s, long version) throws JSONException {
+    static ExerciseSessionRecord session(JSONObject s, long version) throws JSONException {
         Instant start = Instant.ofEpochMilli(s.getLong("start"));
         Instant end = Instant.ofEpochMilli(s.getLong("end"));
         String title = s.optString("title", "");
@@ -254,13 +257,71 @@ public class HealthConnectPlugin extends Plugin {
                 Metadata.manualEntry(s.getString("id"), version),
                 exerciseType(s.optString("type")),
                 title.isEmpty() ? null : title,
-                notes.isEmpty() ? null : notes);
+                notes.isEmpty() ? null : notes,
+                segments(s, start, end));
     }
 
-    private static WeightRecord weight(JSONObject w, long version) throws JSONException {
+    static WeightRecord weight(JSONObject w, long version) throws JSONException {
         Instant time = Instant.ofEpochMilli(w.getLong("time"));
         return new WeightRecord(time, offsetAt(time), Mass.kilograms(w.getDouble("kg")),
                 Metadata.manualEntry(w.getString("id"), version));
+    }
+
+    // Optional detail must never prevent the session (or a weigh-in in the same batch) exporting.
+    // Only strength sessions receive segments; all tokens below are compatible with that type.
+    private static List<ExerciseSegment> segments(JSONObject session, Instant start, Instant end) {
+        List<ExerciseSegment> candidates = new ArrayList<>();
+        JSONArray rows = session.optJSONArray("segments");
+        if (!"strength_training".equals(session.optString("type")) || rows == null) return candidates;
+        for (int i = 0; i < rows.length(); i++) {
+            JSONObject row = rows.optJSONObject(i);
+            if (row == null) continue;
+            double from = row.optDouble("start", Double.NaN);
+            double to = row.optDouble("end", Double.NaN);
+            if (!Double.isFinite(from) || !Double.isFinite(to) || from != Math.rint(from) || to != Math.rint(to)
+                    || from < start.toEpochMilli() || to > end.toEpochMilli() || from >= to) continue;
+            double reps = row.optDouble("repetitions", 0);
+            int count = Double.isFinite(reps) && reps >= 0 && reps <= Integer.MAX_VALUE && reps == Math.rint(reps) ? (int) reps : 0;
+            candidates.add(new ExerciseSegment(Instant.ofEpochMilli((long) from), Instant.ofEpochMilli((long) to),
+                    segmentType(row.optString("type")), count));
+        }
+        candidates.sort(Comparator.comparing(ExerciseSegment::getStartTime));
+        List<ExerciseSegment> out = new ArrayList<>();
+        Instant previous = start;
+        for (ExerciseSegment segment : candidates) {
+            if (segment.getStartTime().isBefore(previous)) continue;
+            out.add(segment);
+            previous = segment.getEndTime();
+        }
+        return out;
+    }
+
+    // Health Connect 1.1.0 constants only. UNKNOWN also covers push-ups, dips, calf raises,
+    // custom exercises and cardio inside a strength session; none has a reliable specific type.
+    private static int segmentType(String name) {
+        switch (name) {
+            case "bench_press": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BENCH_PRESS;
+            case "deadlift": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DEADLIFT;
+            case "squat": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SQUAT;
+            case "barbell_shoulder_press": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BARBELL_SHOULDER_PRESS;
+            case "shoulder_press": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SHOULDER_PRESS;
+            case "arm_curl": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_ARM_CURL;
+            case "dumbbell_row": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_ROW;
+            case "dumbbell_front_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_FRONT_RAISE;
+            case "dumbbell_lateral_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_LATERAL_RAISE;
+            case "lat_pull_down": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LAT_PULL_DOWN;
+            case "leg_extension": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LEG_EXTENSION;
+            case "leg_curl": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LEG_CURL;
+            case "leg_press": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LEG_PRESS;
+            case "lunge": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LUNGE;
+            case "crunch": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_CRUNCH;
+            case "sit_up": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SIT_UP;
+            case "pull_up": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_PULL_UP;
+            case "plank": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_PLANK;
+            case "kettlebell_swing": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_KETTLEBELL_SWING;
+            case "burpee": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BURPEE;
+            default: return ExerciseSegment.EXERCISE_SEGMENT_TYPE_UNKNOWN;
+        }
     }
 
     // The names lib/health-connect.js uses (SESSION_TYPES); anything else is "other".

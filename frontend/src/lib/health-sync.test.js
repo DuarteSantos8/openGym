@@ -92,6 +92,25 @@ describe('turning it on', () => {
 })
 
 describe('keeping in step', () => {
+  it('passes Android segments through and rewrites an edited set without rewriting body weight', async () => {
+    const w = workout('w1', 17)
+    w.entries[0].sets[0].at = at(17, 18) + 60000
+    const S = state([w], [{ d: '2026-09-17', w: 80, t: at(17, 7) }])
+    await hs.enableHealth(S)
+    expect(writes()[0].sessions[0].segments).toEqual([
+      { start: w.start, end: w.entries[0].sets[0].at, type: 'bench_press', repetitions: 8 },
+    ])
+    expect(writes()[0].weights[0].kg).toBe(80)
+    h.calls = []
+    const edited = structuredClone(S)
+    edited.workouts[0].entries[0].sets[0].r = 9
+    await hs.syncHealth(edited)
+    expect(writes()[0].sessions[0].segments[0].repetitions).toBe(9)
+    expect(writes()[0].weights).toEqual([])
+    await hs.syncHealth(edited)
+    expect(writes()).toHaveLength(1)
+  })
+
   it('writes only what is new, and removes what was deleted', async () => {
     await hs.enableHealth(state([workout('w1', 17)]))
     h.calls = []
@@ -248,6 +267,12 @@ describe('on the iPhone', () => {
     expect(h.calls.filter(c => c[0] === 'setEnabled')).toEqual([['setEnabled', true]])
     await hs.disableHealth({ removeWritten: false })
     expect(h.calls.filter(c => c[0] === 'setEnabled')).toEqual([['setEnabled', true], ['setEnabled', false]])
+  })
+  it('keeps the Apple Health payload unchanged even for timestamped sets', async () => {
+    const w = workout('w1', 17)
+    w.entries[0].sets[0].at = at(17, 18) + 60000
+    await hs.enableHealth(state([w]))
+    expect(writes()[0].sessions[0]).not.toHaveProperty('segments')
   })
   it('tells the watch nothing when asking was refused', async () => {
     h.grant = false

@@ -53,6 +53,46 @@ describe('sessionRecord', () => {
   })
 })
 
+describe('segmented session export', () => {
+  const detailed = () => workout([{ ...strength, sets: [
+    { w: 60, r: 8, done: true, at: at(18, 3) },
+    { w: 60, r: 7, done: true, at: at(18, 6) },
+  ] }])
+  it('adds segments while retaining the session identity, title, times and notes', () => {
+    const rec = sessionRecord(detailed(), { unit: 'kg', nameOf })
+    const plain = sessionRecord(detailed(), { unit: 'kg', nameOf, includeSegments: false })
+    const { segments, ...session } = rec
+    expect(session).toEqual(plain)
+    expect(segments).toHaveLength(2)
+    expect(segments.map(s => s.repetitions)).toEqual([8, 7])
+  })
+  it('keeps sessions with no detail, including legacy/imported workouts, unchanged', () => {
+    for (const w of [workout([strength]), workout([])]) {
+      expect(sessionRecord(w, { unit: 'kg', nameOf })).not.toHaveProperty('segments')
+    }
+  })
+  it('rewrites a formerly session-only record once, then detects rep/timing changes', () => {
+    const w = detailed(), S = { workouts: [w] }
+    const old = healthRecords(S, { nameOf, includeSegments: false })
+    const { written } = planSync(old)
+    const richer = healthRecords(S, { nameOf })
+    const upgraded = planSync(richer, written)
+    expect(upgraded.sessions).toEqual(richer.sessions)
+    expect(planSync(richer, upgraded.written).sessions).toEqual([])
+    const edited = structuredClone(S)
+    edited.workouts[0].entries[0].sets[0].at += 1000
+    const plan = planSync(healthRecords(edited, { nameOf }), upgraded.written)
+    expect(plan.sessions).toHaveLength(1)
+    expect(plan.sessions[0].id).toBe(old.sessions[0].id)
+    expect(plan.remove).toEqual({ sessions: [], weights: [] })
+  })
+  it('rejects invalid session timestamps before building segment intervals', () => {
+    for (const end of [Infinity, NaN, 8640000000000001, at(19) + 0.5]) {
+      expect(sessionRecord(workout([strength], { end }), { unit: 'kg', nameOf })).toBeNull()
+    }
+  })
+})
+
 describe('weightRecord', () => {
   it('is in kilograms whatever the profile unit', () => {
     expect(weightRecord({ d: '2026-09-17', w: 80, t: at(7) }, 'kg').kg).toBe(80)

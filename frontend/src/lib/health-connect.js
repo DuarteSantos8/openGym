@@ -8,6 +8,7 @@
 import { workoutText } from './workout-text.js'
 import { modeForEntry, hasCompletedWork } from './workout-model.js'
 import { isoOf } from './format.js'
+import { exerciseSegments } from './health-connect-segments.js'
 
 const LB_PER_KG = 2.2046226218
 // Health Connect refuses a title or notes over 1000 characters (ExerciseSessionRecord).
@@ -48,15 +49,18 @@ function sessionNotes(w, opts) {
  * One exercise session per finished workout. A workout with no start or end (or an end not after
  * its start) is left out rather than given made-up times: Health Connect needs both.
  */
-export function sessionRecord(w, { unit, nameOf, speedUnit }) {
+export function sessionRecord(w, { unit, nameOf, speedUnit, includeSegments = true }) {
   const start = Number(w?.start), end = Number(w?.end)
-  if (!w?.id || !(start > 0) || !(end > start)) return null
+  if (!w?.id || !Number.isSafeInteger(start) || !Number.isSafeInteger(end) || !(start > 0) || !(end > start) || end > 8640000000000000) return null
+  const type = sessionType(w)
+  const segments = includeSegments ? exerciseSegments(w, type) : []
   return {
     id: 'opengym-w-' + w.id,
     start, end,
-    type: sessionType(w),
+    type,
     title: clip(String(w.name || '').trim()),
     notes: sessionNotes(w, { unit, nameOf, speedUnit }),
+    ...(segments.length ? { segments } : {}),
   }
 }
 
@@ -81,10 +85,10 @@ function localMorning(iso) {
 }
 
 /** Everything the state has to give Health Connect: { sessions, weights }. */
-export function healthRecords(S, { nameOf, speedUnit }) {
+export function healthRecords(S, { nameOf, speedUnit, includeSegments = true }) {
   const unit = S?.unit === 'lb' ? 'lb' : 'kg'
   return {
-    sessions: (S?.workouts || []).map(w => sessionRecord(w, { unit, nameOf, speedUnit })).filter(Boolean),
+    sessions: (S?.workouts || []).map(w => sessionRecord(w, { unit, nameOf, speedUnit, includeSegments })).filter(Boolean),
     weights: (S?.bodyweight || []).map(b => weightRecord(b, unit)).filter(Boolean),
   }
 }
