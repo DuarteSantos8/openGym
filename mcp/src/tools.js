@@ -16,7 +16,7 @@ import {
   bestSetOf, best1RM, e1rmSeries, DEFAULT_FORMULA, REP_CAP
 } from '../../frontend/src/lib/onerm.js'
 import { loadOfWorkouts, rankOf, levelsOf } from '../../frontend/src/lib/muscles.js'
-import { policyFor } from '../../frontend/src/lib/progression.js'
+import { policyFor, profileRule } from '../../frontend/src/lib/progression.js'
 import { buildSessionEntries, startsFromLast } from '../../frontend/src/lib/session-start.js'
 
 /* ---------- helpers ---------- */
@@ -123,7 +123,7 @@ export const listRoutines = {
         emoji: r.emoji || null,
         exercise_count: (r.ex || []).length,
         superset_groups: [...new Set((r.ex || []).map(e => e.sg).filter(Boolean))].length || 0,
-        policy: policyFor(null, r, 'reps'),
+        policy: policyFor(null, r, 'reps', profileRule(S)),
         exclude_from_progression: r.excludeFromProgression === true
       }))
     }
@@ -144,8 +144,8 @@ export const getRoutine = {
       id: r.id,
       name: r.name,
       emoji: r.emoji || null,
-      policy: policyFor(null, r, 'reps'),
-      policy_name: policyName(policyFor(null, r, 'reps')),
+      policy: policyFor(null, r, 'reps', profileRule(S)),
+      policy_name: policyName(policyFor(null, r, 'reps', profileRule(S))),
       exclude_from_progression: r.excludeFromProgression === true,
       unit: S.unit || 'kg',
       exercises: (r.ex || []).map((cfg, i) => {
@@ -176,7 +176,7 @@ export const getRoutine = {
           // The exercise's own rest (issue #10). Absent means it inherits the global rest
           // timer; a superset rests once, taking the longest its members ask for.
           rest_sec: cfg.restSec > 0 ? cfg.restSec : undefined,
-          policy: policyFor(cfg, r, mode),
+          policy: policyFor(cfg, r, mode, profileRule(S)),
           policy_override: cfg.prog || null,
           superset_group: cfg.sg || null,
           summary: exLine(cfg, S.unit || 'kg')
@@ -647,8 +647,8 @@ export const previewSession = {
       // The profile's "Planned sessions start from" setting: 'plan' opens at the routine's own
       // reps, 'last_session' carries them over from the last time.
       starts_from: startsFromLast(S) ? 'last_session' : 'plan',
-      policy: policyFor(null, r, 'reps'),
-      policy_name: policyName(policyFor(null, r, 'reps')),
+      policy: policyFor(null, r, 'reps', profileRule(S)),
+      policy_name: policyName(policyFor(null, r, 'reps', profileRule(S))),
       exercises,
       // Surfaced separately so a coach reading this cannot miss it: these are the exercises
       // where what the routine stores and what the athlete will see are two different numbers.

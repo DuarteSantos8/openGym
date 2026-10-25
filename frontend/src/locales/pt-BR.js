@@ -840,6 +840,7 @@ export const PT_BR_OVERRIDES = {
   'Signs this profile out on every device, including this one. Phones paired with it are disconnected and have to be paired again. Your passkeys keep working, so you can sign in with them again anytime.': 'Encerra a sessão deste perfil em todos os dispositivos, incluindo este. Os celulares pareados com ele são desconectados e precisam ser pareados de novo. Suas chaves de acesso continuam funcionando, então você pode entrar com elas de novo quando quiser.',
   // plan vs session (#275, #216) — pt-PT's "planeadas", "registado" and tu-forms read as
   // Portugal here; "Plano: {0}" and "hoje {0}" are shared and inherit
+  'Default progression': 'Progressão padrão',
   'Planned sessions start from': 'Ponto de partida das sessões planejadas',
   'The routine’s sets and reps. Your history decides the weight.': 'As séries e repetições da rotina. Seu histórico decide o peso.',
   'Your last session': 'Sua última sessão',

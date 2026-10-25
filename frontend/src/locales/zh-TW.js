@@ -1401,6 +1401,7 @@ export default {
   '{0} change': '{0} 項變更',
   '{0} changes': '{0} 項變更',
   // --- plan vs session: the routine's own reps, per-routine progress (#275, #216) ---
+  'Default progression': '預設漸進超負荷規則',
   'Planned sessions start from': '預排訓練的起始數值依據',
   'The routine’s sets and reps. Your history decides the weight.': '組數與次數依據課表設定；重量則由歷史紀錄決定。',
   'Your last session': '你上次的訓練表現',

@@ -1386,6 +1386,7 @@ export default {
   'Your data is removed from this browser; your profile on the server keeps it. First it checks that the server has every change. If not, you choose what happens to them.': 'Ваши данные будут удалены из этого браузера; ваш профиль на сервере их сохранит. Сначала проверяется, что на сервере есть все изменения. Если нет, вы сами решаете, что с ними делать.',
   'Signs this profile out on every device, including this one. Phones paired with it are disconnected and have to be paired again. Your passkeys keep working, so you can sign in with them again anytime.': 'Выполняет выход из этого профиля на всех устройствах, включая это. Сопряжённые с ним телефоны отключаются, и их нужно будет сопрячь заново. Ваши ключи доступа продолжают работать, так что войти с ними снова можно в любое время.',
   // --- plan vs session: the routine's own reps, per-routine progress (#275, #216) ---
+  'Default progression': 'Прогрессия по умолчанию',
   'Planned sessions start from': 'Основа запланированных тренировок',
   'The routine’s sets and reps. Your history decides the weight.': 'Подходы и повторения из программы. Вес определяет ваша история.',
   'Your last session': 'Ваша последняя тренировка',

@@ -237,6 +237,9 @@ export const DEF = {
   // #770): 'routine' is the routine's own last session of the exercise, as it has been since #216;
   // 'any' is its newest session in any workout. Absent reads as 'routine'.
   lastFrom: 'routine',
+  // The rule of a reps exercise whose routine sets none (Settings → Fine-tuning, lib/progression.js
+  // profileRule). Absent reads as 'linear' too, the way the app always behaved.
+  progDefault: 'linear',
   // Per-language choice for translated exercise names: whether the original English name is
   // shown in parentheses next to the translation. Map { '<lang>': boolean }; a missing key
   // (any profile written before this setting existed) reads as shown.

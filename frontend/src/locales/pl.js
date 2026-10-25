@@ -1417,6 +1417,7 @@ export default {
   '{0} change': '{0} zmiana',
   '{0} changes': { one: '{0} zmiana', few: '{0} zmiany', many: '{0} zmian' },
   // --- plan vs session: the routine's own reps, per-routine progress (#275, #216) ---
+  'Default progression': 'Domyślna progresja',
   'Planned sessions start from': 'Punkt wyjścia zaplanowanych treningów',
   'The routine’s sets and reps. Your history decides the weight.': 'Serie i powtórzenia z planu treningowego. Ciężar wynika z twojej historii.',
   'Your last session': 'Twoja ostatnia sesja',

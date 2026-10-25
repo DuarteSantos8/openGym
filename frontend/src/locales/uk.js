@@ -1284,6 +1284,7 @@ export default {
   'Signs this profile out on every device, including this one. Phones paired with it are disconnected and have to be paired again. Your passkeys keep working, so you can sign in with them again anytime.': 'Виходить із цього профілю на всіх пристроях, зокрема на цьому. Спарені з ним телефони буде відключено, і їх доведеться спарувати знову. Твої ключі доступу й далі працюють, тож увійти з ними можна будь-коли.',
   '{0} change': '{0} зміна',
   '{0} changes': { one: '{0} зміна', few: '{0} зміни', many: '{0} змін' },
+  'Default progression': 'Прогресія за замовчуванням',
   'Planned sessions start from': 'Основа запланованих тренувань',
   'The routine’s sets and reps. Your history decides the weight.': 'Підходи й повторення з програми. Вагу визначає твоя історія.',
   'Your last session': 'Твоє останнє тренування',

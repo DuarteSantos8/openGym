@@ -1438,6 +1438,7 @@ export default {
   '{0} change': '{0} ändring',
   '{0} changes': '{0} ändringar',
   // --- plan vs session: the routine's own reps, per-routine progress (#275, #216) ---
+  'Default progression': 'Standardprogression',
   'Planned sessions start from': 'Planerade pass utgår från',
   'The routine’s sets and reps. Your history decides the weight.': 'Rutinens set och reps. Din historik avgör vikten.',
   'Your last session': 'Ditt senaste pass',

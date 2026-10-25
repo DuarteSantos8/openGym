@@ -1417,6 +1417,7 @@ export default {
   '{0} change': '{0} alteração',
   '{0} changes': '{0} alterações',
   // --- plan vs session: the routine's own reps, per-routine progress (#275, #216) ---
+  'Default progression': 'Progressão predefinida',
   'Planned sessions start from': 'Ponto de partida das sessões planeadas',
   'The routine’s sets and reps. Your history decides the weight.': 'As séries e repetições da rotina. O teu histórico decide o peso.',
   'Your last session': 'A tua última sessão',

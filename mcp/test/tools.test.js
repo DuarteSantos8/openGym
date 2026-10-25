@@ -186,6 +186,16 @@ describe('get_routine', () => {
     expect(r.exercises[0].policy_override).toBeNull()
   })
 
+  test('a routine with no prog reports the profile’s default rule when there is one', () => {
+    delete S.routines[0].prog
+    delete S.routines[0].ex[0].prog
+    S.progDefault = 'off'
+    const r = call('get_routine', { routine_id: S.routines[0].id })
+    expect(r.policy).toBe('off')
+    expect(r.exercises[0].policy).toBe('off')
+    expect(call('list_routines').routines[0].policy).toBe('off')
+  })
+
   test('a policy the mode cannot run is clamped, not echoed back raw', () => {
     S.routines[0].prog = 'greyskull'                       // reps-only policy
     S.customEx = [{ id: 'cx-plank', n: 'Plank', bp: 'waist' }]

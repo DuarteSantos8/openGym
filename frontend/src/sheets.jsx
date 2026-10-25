@@ -42,7 +42,7 @@ import { estimate1RM, best1RM, is1RMRecord, REP_CAP, formulaOf, FORMULA_NAMES } 
 import { exerciseHistory } from './lib/exercise-history.js'
 import { relativeSeries } from './lib/relative-strength.js'
 import { isBellEx, dbLoadOf, dbLoadFor, withDbLoad, entryDbLoad, currentDbLoad, isOneArm, dumbbellsOf, ownsDumbbells, withDumbbells, ownsNoDumbbells, withNoDumbbells, presetWeights, cleanWeights, canHaveStack, stackOf, withStack, stackFromStep } from './lib/dumbbells.js'
-import { policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS, MAX_TRIPLE_SETS } from './lib/progression.js'
+import { policyFor, profileRule, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS, MAX_TRIPLE_SETS } from './lib/progression.js'
 import { normalizeRepRange } from './lib/rep-range.js'
 import { isBackoff, backoffWeights } from './lib/backoff.js'
 import { isPyramid, normalizePyramid, normalizePyramidRest, normalizePyramidWeight, pyramidFromFlat, flatFromPyramid, pyramidLabel, PYRAMID_MAX, MAX_PYRAMID_SETS, PYRAMID_PRESETS } from './lib/pyramid.js'
@@ -1766,14 +1766,14 @@ const climbsRange = policy => policy === 'double' || policy === 'triple'
 // Triple progression's set ceiling while it is being edited: never below the starting sets.
 const setsMaxOf = c => Math.max(Math.max(1, Math.round(c.sets) || 1), Math.min(MAX_TRIPLE_SETS, Math.round(c.setsMax) || 0))
 
-function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide, bw }) {
+function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide, bw, fallback }) {
   // Triple progression adds sets and then load. Bodyweight work with nothing added already climbs
   // reps and then sets on its own (the rep ceiling below), and has no load to finish the cycle
   // with, so it is not offered there.
   const options = (POLICIES_FOR[mode] || ['off']).filter(p => p !== 'triple' || !bw || c.weight > 0 || c.prog === 'triple')
   if (options.length < 2) return null
-  const inherited = policyFor({ id: ex.id }, routine, mode)
-  const active = policyFor({ ...c, id: ex.id }, routine, mode)
+  const inherited = policyFor({ id: ex.id }, routine, mode, fallback)
+  const active = policyFor({ ...c, id: ex.id }, routine, mode, fallback)
   const inc = progressionStepOf(c, mode, ex, unit)
   const canBackoff = backoffOffered(c, mode, ex, bw)
   const backoff = canBackoff && c.backoff === true
@@ -1795,7 +1795,7 @@ function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide, bw }) {
     // to failure" on too, unless it was already decided. Only the sheet's draft: nothing is
     // written until Save, and a plan saved before stays what it was.
     if (v === 'greyskull' && next.lastToFailure == null) next.lastToFailure = true
-    const picked = policyFor({ ...next, id: ex.id }, routine, mode)
+    const picked = policyFor({ ...next, id: ex.id }, routine, mode, fallback)
     // Triple progression opens with room for two more sets, the usual 3 to 5.
     if (picked === 'triple' && !(next.setsMax > 0)) next.setsMax = Math.min(MAX_TRIPLE_SETS, Math.max(1, Math.round(next.sets) || 1) + 2)
     return climbsRange(picked)
@@ -1908,7 +1908,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     // A session's target carries the meaning of its dumbbell weight as a stamp (lib/dumbbells.js);
     // one that only repeats the exercise's own default is not the slot's choice, so it is not kept.
     if (cfg.dbLoad != null && dbLoadOf(cfg.dbLoad) === dbLoadFor(st, ex.id)) delete cfg.dbLoad
-    return climbsRange(policyFor({ ...cfg, id: ex.id }, routine, modeOf({ ...cfg, id: ex.id })))
+    return climbsRange(policyFor({ ...cfg, id: ex.id }, routine, modeOf({ ...cfg, id: ex.id }), profileRule(st)))
       ? { ...cfg, ...normalizeRepRange(cfg.reps, cfg.repsMin, isPerSide(cfg) ? 2 : 1) }
       : cfg
   })
@@ -1927,9 +1927,9 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   // Pyramid sets: one rep target per set, in place of the flat Sets × Reps (CONTEXT.md).
   const pyramid = mode === 'reps' && isPyramid({ ...c, mode })
   const setPyramidAt = (i, v) => setC(x => ({ ...x, pyramid: x.pyramid.map((p, j) => (j === i ? v : p)) }))
-  const progressionPolicy =policyFor({ ...c, id: ex.id }, routine, mode)
+  const progressionPolicy =policyFor({ ...c, id: ex.id }, routine, mode, profileRule(st))
   const progressionStepInvalid = !progressionStepIsValid(progressionStepOf(c, mode, ex, st.unit), progressionPolicy, c.backoff === true && backoffOffered(c, mode, ex, bw), weightlessOf(c, mode, bw))
-  const activePolicy = policyFor({ ...c, id: ex.id }, routine, mode)
+  const activePolicy = policyFor({ ...c, id: ex.id }, routine, mode, profileRule(st))
   // Both climb a range: the flat Reps stepper gives way to "Reps from" / "Reps up to".
   const ranged = mode === 'reps' && climbsRange(activePolicy)
   const triple = mode === 'reps' && activePolicy === 'triple'
@@ -1940,7 +1940,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     const { sets: _sets, ...rest } = x
     const crossing = (m === 'cardio') !== (modeOf({ ...x, id: ex.id }) === 'cardio')
     const next = { ...defaultConfig(ex.id, m), ...(crossing ? rest : x), mode: m }
-    return m === 'reps' && climbsRange(policyFor({ ...next, id: ex.id }, routine, 'reps'))
+    return m === 'reps' && climbsRange(policyFor({ ...next, id: ex.id }, routine, 'reps', profileRule(st)))
       ? { ...next, ...normalizeRepRange(next.reps, next.repsMin, isPerSide(next) ? 2 : 1) }
       : next
   })
@@ -2261,7 +2261,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         <Switch checked={perSide} onChange={v => setC(x => {
           if (mode === 'time') return { ...x, side: v || undefined }
           const next = { ...x, side: v || undefined, reps: v ? Math.ceil((x.reps || 0) / 2) * 2 : x.reps }
-          return climbsRange(policyFor({ ...next, id: ex.id }, routine, 'reps'))
+          return climbsRange(policyFor({ ...next, id: ex.id }, routine, 'reps', profileRule(st)))
             ? { ...next, ...normalizeRepRange(next.reps, next.repsMin, v ? 2 : 1) }
             : next
         })} />
@@ -2358,7 +2358,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     </>}
     {pyramid
       ? <div className="small dim" style={{ marginBottom: 18 }}>{t('Weight is up to you: pyramid sets are not progressed automatically.')}</div>
-      : <ProgressionFields ex={ex} mode={mode} c={c} setC={setC} routine={routine} unit={st.unit} perSide={perSide} bw={bw} />}
+      : <ProgressionFields ex={ex} mode={mode} c={c} setC={setC} routine={routine} unit={st.unit} perSide={perSide} bw={bw} fallback={profileRule(st)} />}
     <textarea className="input" rows={3} maxLength={500} style={{ marginBottom: 18 }}
       placeholder={t('Note (optional): loading cues, "bar only, then +1 plate/side each set", anything worth remembering')}
       value={c.note || ''} onChange={e => setC(x => ({ ...x, note: e.target.value }))} />

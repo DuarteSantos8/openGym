@@ -73,6 +73,7 @@ export const SEARCH = [
   { page: 'workout', title: 'Animation quality', icon: 'image', tint: 'var(--indigo)', kw: 'animation quality resolution sharp hd download pack still px', when: c => c.mobile },
   { page: 'workout', title: 'Fine-tuning', icon: 'wrench', tint: 'var(--grey)', kw: 'advanced more options' },
   // Fine-tuning
+  { page: 'advanced', title: 'Default progression', icon: 'chartLine', tint: 'var(--blue)', kw: 'progression rule default linear off automatic weight increase', opts: ['No automatic progression', 'Linear progression', 'Greyskull LP', 'Double progression', 'Triple progression'] },
   { page: 'advanced', title: 'Planned sessions start from', icon: 'clipboard', tint: 'var(--green)', kw: 'start from plan last session reps carry over', opts: ['Your plan', 'Your last session'] },
   { page: 'advanced', title: 'Last time means', icon: 'history', tint: 'var(--indigo)', kw: 'last time previous session history routine workout across every any', opts: ['This routine', 'Any workout'] },
   { page: 'advanced', title: 'Keep timing after target', icon: 'stopwatch', tint: 'var(--orange)', kw: 'timed set overtime hold duration' },

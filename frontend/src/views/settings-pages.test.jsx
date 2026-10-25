@@ -43,6 +43,8 @@ vi.mock('../sheets.jsx', () => ({
 }))
 
 import Settings from './Settings.jsx'
+import { bindUI } from '../components/ui.jsx'
+import { useUI } from '../store/useUI.js'
 
 globalThis.__APP_VERSION__ ??= 'test'
 
@@ -321,8 +323,22 @@ describe('the pages', () => {
     expect(rowTitled('Exercise animations').querySelector('.lrow-s')).toBeNull()
     expect([...host.querySelectorAll('.sect-f')].some(f => /screen stays on/.test(f.textContent))).toBe(false)
     mount('advanced')
-    expect(titles()).toEqual(['Planned sessions start from', 'Last time means', 'Keep timing after target', 'Weight and reps buttons',
+    expect(titles()).toEqual(['Default progression', 'Planned sessions start from', 'Last time means', 'Keep timing after target', 'Weight and reps buttons',
       'Drop and burst shortcuts on every set', 'Swipe actions', 'Exercise chips at the top', 'Muscle map at the top', 'Superset buttons in the exercise header', 'Move, swap and remove buttons below the exercise'])
+  })
+
+  it('Default progression shows linear on an older profile and writes S.progDefault', () => {
+    bindUI(useUI) // SelectRow opens its sheet through the bound store (the mock above)
+    mount('advanced')
+    expect(rowTitled('Default progression').querySelector('.lrow-v').textContent).toBe('Linear progression')
+    act(() => rowTitled('Default progression').click())
+    const h = document.createElement('div'); document.body.appendChild(h)
+    const r = createRoot(h)
+    act(() => r.render(mocks.sheets.at(-1)(vi.fn())))
+    const off = [...h.querySelectorAll('button, [role="button"], .lrow')].find(e => e.textContent.startsWith('No automatic progression'))
+    act(() => off.click())
+    expect(mocks.S.progDefault).toBe('off')
+    act(() => r.unmount()); h.remove()
   })
 
   it('Collapse completed exercises is saved for every session and drops a running session\'s own choice', () => {

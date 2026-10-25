@@ -50,6 +50,7 @@ import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } fro
 import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem, PairSheet } from '../components/Passkeys.jsx'
 import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
+import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
 import { PAGES, ROOT_GROUPS, pageVisible, searchSettings, pageTrail } from './settings-pages.js'
 import { platformNow } from '../lib/platform-now.js'
 import { pathBefore } from '../lib/nav.js'
@@ -591,6 +592,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       const setWc = (k, v) => update(s => { s.wc = { ...workoutControls(s), [k]: v } })
       return <>
         <Section title={t('Sessions and timed sets')}>
+          {/* The rule of every reps exercise whose routine sets none (lib/progression.js
+              profileRule). Absent reads as linear, the way the app always behaved. A routine's or
+              an exercise's own rule still wins. */}
+          <SelectRow icon="chartLine" iconTint="var(--blue)" title={t('Default progression')}
+            value={profileRule(S)} onChange={v => update(s => { s.progDefault = v })}
+            options={POLICIES_FOR.reps.map(p => ({ value: p, label: t(POLICY_NAME[p]), subtitle: t(POLICY_DESC[p]) }))} />
           {/* Whose reps a planned session opens with (lib/session-start.js). The plan's by default:
               the routine is what you said you would do, and history and progression decide the
               weight. The other choice is the old behaviour, reps carried over from last time, and

@@ -1342,6 +1342,7 @@ export default {
   'Signs this profile out on every device, including this one. Phones paired with it are disconnected and have to be paired again. Your passkeys keep working, so you can sign in with them again anytime.': 'يسجّل خروج هذا الملف الشخصي من كل الأجهزة، بما فيها هذا الجهاز. تُفصل الهواتف المقترنة به ويجب إقرانها مجددًا. تظل مفاتيح المرور تعمل، لذا يمكنك تسجيل الدخول بها مجددًا في أي وقت.',
   '{0} change': '{0} تغيير',
   '{0} changes': '{0} تغييرات',
+  'Default progression': 'التدرّج الافتراضي',
   'Planned sessions start from': 'نقطة بدء الجلسات المخطط لها',
   'The routine’s sets and reps. Your history decides the weight.': 'مجموعات الروتين وتكراراته. سجلّك يحدد الوزن.',
   'Your last session': 'جلستك الأخيرة',

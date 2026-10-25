@@ -1428,6 +1428,7 @@ export default {
   '{0} change': '{0} รายการ',
   '{0} changes': '{0} รายการ',
   // --- plan vs session: the routine's own reps, per-routine progress (#275, #216) ---
+  'Default progression': 'การเพิ่มระดับเริ่มต้น',
   'Planned sessions start from': 'จุดเริ่มต้นของเซสชันตามแผน',
   'The routine’s sets and reps. Your history decides the weight.': 'จำนวนเซ็ตและครั้งตามรูทีน ส่วนน้ำหนักขึ้นอยู่กับประวัติของคุณ',
   'Your last session': 'เซสชันล่าสุดของคุณ',

@@ -1417,6 +1417,7 @@ export default {
   '{0} change': '{0} 项更改',
   '{0} changes': '{0} 项更改',
   // --- plan vs session: the routine's own reps, per-routine progress (#275, #216) ---
+  'Default progression': '默认进阶方式',
   'Planned sessions start from': '计划训练的起点',
   'The routine’s sets and reps. Your history decides the weight.': '按训练日的组数和次数，重量由你的历史记录决定。',
   'Your last session': '你的上次训练',

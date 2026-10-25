@@ -1420,6 +1420,7 @@ export default {
   '{0} change': '{0} módosítás',
   '{0} changes': '{0} módosítás',
   // --- plan vs session: the routine's own reps, per-routine progress (#275, #216) ---
+  'Default progression': 'Alapértelmezett progresszió',
   'Planned sessions start from': 'A tervezett edzések kiindulópontja',
   'The routine’s sets and reps. Your history decides the weight.': 'A rutin sorozatai és ismétlései. A súlyt az előzményeid döntik el.',
   'Your last session': 'Az utolsó edzésed',

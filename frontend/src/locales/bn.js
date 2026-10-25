@@ -1476,6 +1476,7 @@ export default {
   '{0} change': '{0}টি পরিবর্তন',
   '{0} changes': '{0}টি পরিবর্তন',
   // --- plan vs session: the routine's own reps, per-routine progress (#275, #216) ---
+  'Default progression': 'ডিফল্ট প্রগ্রেশন',
   'Planned sessions start from': 'পরিকল্পিত সেশন শুরু হয়',
   'The routine’s sets and reps. Your history decides the weight.': 'রুটিনের সেট ও রেপ। ওজন ঠিক করে আপনার ইতিহাস।',
   'Your last session': 'আপনার শেষ সেশন',

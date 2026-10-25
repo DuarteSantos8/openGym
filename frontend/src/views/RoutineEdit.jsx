@@ -22,7 +22,7 @@ import { printOptions } from '../lib/print-doc.js'
 import { markEntryUndone } from '../lib/sync-merge.js'
 import { MOBILE, printHtml } from '../lib/mobile.js'
 import { speedUnitOf } from '../lib/speed.js'
-import { POLICIES_FOR, POLICY_NAME, POLICY_DESC } from '../lib/progression.js'
+import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
 import BodyMap from '../components/BodyMap.jsx'
 import { loadOfRoutine, rankOf, MUSCLE_NAME } from '../lib/muscles.js'
 
@@ -475,7 +475,7 @@ export default function RoutineEdit() {
 
     <div className="sect-b" style={{ marginBottom: 16 }}>
       <SelectRow icon="chartLine" title={t('Progression')} sheetTitle={t('Progression')}
-        value={r.prog || 'linear'} onChange={v => update(s => { s.routines.find(x => x.id === id).prog = v })}
+        value={r.prog || profileRule(S)} onChange={v => update(s => { s.routines.find(x => x.id === id).prog = v })}
         options={POLICIES_FOR.reps.map(p => ({ value: p, label: t(POLICY_NAME[p]), subtitle: t(POLICY_DESC[p]) }))} />
       {/* Two controls that read alike and are not (issue #294). Progression picks how this
           routine's own targets move, and "No automatic progression" keeps them where they are.
@@ -494,7 +494,7 @@ export default function RoutineEdit() {
     <div className="small dim" style={{ margin: '-10px 2px 16px' }}>
       {r.excludeFromProgression
         ? t('A deload routine opens at the numbers set here, so the progression above does not apply to it.') + ' ' + t('The next regular target continues from the last included workout.')
-        : t(POLICY_DESC[r.prog || 'linear'] || POLICY_DESC.linear) + ' ' + t('Applies to every exercise in this routine that does not set its own rule.')}
+        : t(POLICY_DESC[r.prog || profileRule(S)] || POLICY_DESC.linear) + ' ' + t('Applies to every exercise in this routine that does not set its own rule.')}
     </div>
 
     {missingCount > 0 && <div className="card" style={{ marginBottom: 16, borderColor: 'var(--orange)' }}>

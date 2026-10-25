@@ -1417,6 +1417,7 @@ export default {
   '{0} change': '변경 {0}개',
   '{0} changes': '변경 {0}개',
   // --- plan vs session: the routine's own reps, per-routine progress (#275, #216) ---
+  'Default progression': '기본 점진적 증가',
   'Planned sessions start from': '계획된 세션의 시작 기준',
   'The routine’s sets and reps. Your history decides the weight.': '루틴의 세트와 횟수. 무게는 기록에 따라 정해집니다.',
   'Your last session': '지난 세션',
