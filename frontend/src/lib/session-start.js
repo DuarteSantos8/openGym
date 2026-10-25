@@ -3,9 +3,9 @@
 // to identical entries, or the two paths drift apart the first time a prescription rule changes.
 // Imports both history.js and progression.js (which itself imports history.js); nothing in
 // either imports this file, so there is no cycle.
-import { buildSets, applyIntensifierPlan, modeOf, barFloor } from './history.js'
-import { isWarmupRow } from './workout-model.js'
-import { nextPrescription, applyPrescription, defaultIncrement, weightIncrement, plannedOf } from './progression.js'
+import { buildSets, applyIntensifierPlan, modeOf, barFloor, lastEntryFor } from './history.js'
+import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
+import { nextPrescription, applyPrescription, defaultIncrement, weightIncrement, plannedOf, policyFor } from './progression.js'
 import { dropGrid } from './plates.js'
 import { backoffStepOf, applyBackoff } from './backoff.js'
 import { dbLoadFor, historyAs, ownedWeightsFor } from './dumbbells.js'
@@ -19,6 +19,38 @@ import { isAssisted } from './exercises.js'
  * this setting existed. A profile saved before it, or one that never chose, reads as 'plan'.
  */
 export const startsFromLast = st => st?.startFrom === 'last'
+
+/**
+ * One carried warm-up row: the load and reps (or duration) the last session logged, reset for
+ * the new one. Nothing else survives — not done, not effort, not the tick time, not drops or
+ * bursts. A per-side row keeps each side's own numbers and resyncs its aggregate.
+ */
+const carriedWarmupRow = (row, mode) => {
+  if (isSideSet(row)) {
+    const side = s => ({ w: Number(s?.w) || 0, r: Number(s?.r) || 0, done: false })
+    return syncSideAggregate({ phase: 'warmup', warmup: true, sides: { L: side(row.sides.L), R: side(row.sides.R) } })
+  }
+  if (mode === 'time') return { sec: row.sec, w: Number(row.w) || 0, done: false, phase: 'warmup', warmup: true }
+  return { w: Number(row.w) || 0, r: Number(row.r) || 0, done: false, phase: 'warmup', warmup: true }
+}
+
+/**
+ * The warm-up block "Your last session" carries into a planned build (#525), or null when
+ * there is nothing to carry — no last entry, no warm-up rows in it, or rows that no longer fit
+ * the exercise's mode (a rep count for an exercise that is timed now, or none for one that is
+ * reps now). Null means the ramp is built from the routine's `warmupSets` exactly as before.
+ */
+function carriedWarmups(st, cfg, routine, noProg) {
+  if (!startsFromLast(st) || noProg || cfg.intensifier?.type === 'restpause') return null
+  const mode = modeOf(cfg)
+  // Progression switched off (its own choice, or a pyramid's) builds warm-ups from the
+  // routine as before. A timed exercise's only policy is 'off', so the gate is reps-only.
+  if (mode !== 'time' && (mode === 'cardio' || policyFor(cfg, routine, mode) === 'off')) return null
+  const rows = lastEntryFor(st, cfg.id, routine?.id)?.warmups || []
+  if (!rows.length) return null
+  const fits = row => (mode === 'time' ? row.sec > 0 : isSideSet(row) || row.r > 0)
+  return rows.every(fits) ? rows.map(row => carriedWarmupRow(row, mode)) : null
+}
 
 /**
  * One planned exercise, built the way a session builds it: the prescription, the rows it opens
@@ -46,9 +78,13 @@ export function buildPlannedEntry(stored, cfg, routine, { noProg = false } = {})
   const ramp = (modeOf(cfg) === 'reps' && ownedWeightsFor(st, cfg)) || step
   // Back-off sets step down from the top set by the exercise's own step (lib/backoff.js).
   const backoffStep = modeOf(cfg) === 'reps' && backoffStepOf(cfg, st.unit) ? step : 0
-  const built = applyPrescription(buildSets(st, cfg, { step: ramp, rid: routine?.id, useTarget: plan.kind === 'off', planReps }), plan, ramp, barFloor(st, cfg.id), isAssisted(cfg))
+  // Warm-ups carried from the last session ("Your last session") are final: they go in front
+  // AFTER the prescription, back-off and intensifier steps, none of which may rewrite them.
+  const warmCarry = carriedWarmups(st, cfg, routine, noProg)
+  const built = applyPrescription(buildSets(st, warmCarry ? { ...cfg, warmupSets: 0 } : cfg, { step: ramp, rid: routine?.id, useTarget: plan.kind === 'off', planReps }), plan, ramp, barFloor(st, cfg.id), isAssisted(cfg))
   const rows = backoffStep ? applyBackoff(built, backoffStep) : built
-  const sets = applyIntensifierPlan(rows, cfg, dropGrid(st, cfg))
+  const shaped = applyIntensifierPlan(rows, cfg, dropGrid(st, cfg))
+  const sets = warmCarry ? [...warmCarry, ...shaped] : shaped
   const target = { ...cfg }
   // Stamped on the session, so the meaning it was logged with stays with it (dumbbells.js).
   if (meaning !== 'as') target.dbLoad = meaning

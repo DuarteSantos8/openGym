@@ -1398,7 +1398,7 @@ export default {
   'Planned sessions start from': 'نقطة بدء الجلسات المخطط لها',
   'The routine’s sets and reps. Your history decides the weight.': 'مجموعات الروتين وتكراراته. سجلّك يحدد الوزن.',
   'Your last session': 'جلستك الأخيرة',
-  'The reps you logged last time in that routine, carried over.': 'تُنقل التكرارات التي سجّلتها آخر مرة في ذلك الروتين.',
+  'The reps and warm-ups you logged last time in that routine, carried over.': 'تُنقل التكرارات ومجموعات الإحماء التي سجّلتها آخر مرة في ذلك الروتين.',
   'Plan changed, so starting from your new target.': 'تغيّرت الخطة، لذا نبدأ من هدفك الجديد.',
   'First time in this routine, so starting from its own target.': 'أول مرة في هذا الروتين، لذا نبدأ من هدفه الخاص.',
   'No weight logged last time. Enter what you lift and progression takes it from there.': 'لم يُسجَّل وزن في المرة الماضية. أدخل الوزن الذي ترفعه وسيتابع التدرّج من هناك.',
