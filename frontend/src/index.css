@@ -152,6 +152,16 @@ body{
   touch-action:manipulation;
   font-variant-numeric:tabular-nums;
 }
+/* Opened from the Home Screen on iOS 26 the page is laid out one status bar short of the screen it
+   is drawn on (WebKit bug 301108: viewport-fit=cover with the black-translucent status bar puts the
+   content under the bar but sizes the viewport as if it stopped there), so anything fixed to the
+   bottom — the tab bar — floats the top inset above the edge, 62px on an iPhone 17 Pro Max, with
+   bare background under it. iOS grows the viewport once the page is dragged or a taller page is
+   shown, and shrinks it again when a keyboard closes. A body at least as tall as the large
+   viewport, which in an installed app is the whole screen, keeps the viewport full from the first
+   frame. Installed apps only: in a Safari tab 100lvh is the toolbars' height taller than the page
+   you can see, and a short page would scroll under them. */
+@media (display-mode: standalone){body{min-height:100lvh}}
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;letter-spacing:inherit}
 input,select,textarea{font:inherit;color:var(--label);letter-spacing:inherit}
 img{max-width:100%}
