@@ -43,6 +43,7 @@ const noLoad = exposure('stretch', [{ setId: 'work', status: 'completed', observ
 
 const unitState = workouts => ({
   unit: 'kg',
+  oneRmFormula: 'epley',
   workouts: workouts.map(workout => ({ ...workout, exposures: workout.exposures.map(item => ({ ...item, performance: { sets: item.performance.sets.map(row => ({ ...row, role: row.setId === 'warmup' ? 'warmup' : 'work' })) } })) })),
 })
 
@@ -67,6 +68,8 @@ describe('strengthExerciseRows', () => {
     const rows = strengthExerciseRows(S, NOW)
     expect(rows).toHaveLength(1)
     expect(rows[0].est).toBe(102) // 85x6, not 80x8, not the 40x8 warm-up
+    expect(rows[0].low).toBeLessThanOrEqual(102)   // the models' range rides with the estimate
+    expect(rows[0].high).toBeGreaterThanOrEqual(102)
     expect(rows[0].estDate).toBe('2026-08-05')
     expect(rows[0].primary).toBe('chest')
   })

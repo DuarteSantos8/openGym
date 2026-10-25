@@ -21,7 +21,7 @@ test('migration keeps profile defaults, custom warmups, set notes and form video
   const { profile } = migrateProfileV1ToV2(legacy(), LIB_BY_ID);
   assert.deepEqual(validateCanonicalProfile(profile), { ok: true, errors: [] });
   const occ = profile.routines[0].ex[0];
-  assert.equal(occ.rule.preset, 'autoregulated');
+  assert.equal(occ.rule.preset, 'manual');
   assert.equal(occ.warmup, 'own');
   assert.deepEqual(occ.warmupRows, legacy().routines[0].ex[0].warmupRows);
   const stored = unpackProfile(packProfile(profile));

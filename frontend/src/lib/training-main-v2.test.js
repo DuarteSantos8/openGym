@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { contentHash, defaultPlanRule, planPhase } from './prescription/index.js'
+import { contentHash, defaultPlanRule, estimate1RMRange, planPhase } from './prescription/index.js'
 import { buildSessionExposures } from './session-start.js'
 import { entriesForExposures, exposuresWithPerformance, rowsOfPerformance } from './session-ui-adapter.js'
 import { buildCompletedSession } from './finish-session.js'
@@ -85,5 +85,26 @@ describe('new main features on the v2 session path', () => {
     expect(next.workouts[0].exposures[0].performance.sets[0].resistance.value).toBe(135)
     expect(Object.values(next.prescriptions)[0].rows[0].load.value).toBe(135)
     expect(next.workouts[0].vol).toBe(2025)
+  })
+})
+
+
+describe('selective failure with the main session features', () => {
+  it('keeps failure, own warmups and the blended estimate together for a pinned lift', () => {
+    const S = profile({ oneRmFormula: 'weighted', exUnit: withExUnit({}, BENCH, 'lb', 1) })
+    const r = routine(storedWeight(S, BENCH, 135), { failureSets: [1, 3], warmup: 'own', warmupRows: [{ wp: 50, r: 8 }] })
+    S.routines = [r]
+    const a = start(S, r), entry = a.entries[0]
+    expect(entry.sets.map(row => !!row.failure)).toEqual([false, true, false, true])
+    entry.sets[1].note = 'controlled descent'
+    const expected = estimate1RMRange(entry.sets[1].w, entry.sets[1].r, 'weighted', 0)
+    const result = finish(S, a), x = result.session.exposures[0]
+    expect(x.failureSets).toEqual([1, 3])
+    const rows = rowsOfPerformance(x.performance.sets, x.mode)
+    expect(rows.map(row => !!row.failure)).toEqual([false, true, false, true])
+    expect(rows[0]).toMatchObject({ phase: 'warmup', wp: 50, r: 8 })
+    expect(rows[1]).toMatchObject({ note: 'controlled descent', rir: 0 })
+    expect(result.oneRepMaxes[0]).toMatchObject({ value: expected.mid, low: expected.low, high: expected.high, unit: 'kg' })
+    expect(shownWeight(S, BENCH, start(S, r, 1).entries[0].sets[1].w)).toBe(140)
   })
 })

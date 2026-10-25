@@ -74,7 +74,7 @@ it.each([true, false])('A48 live estimation follows the explicit assistance over
 })
 it('A54 deletion drops source-linked estimates and restores remaining history, preserving manual values', () => {
   const exposure = (id, value) => ({ exposureId: id, exerciseId: '0025', mode: 'reps', performance: { sets: [{ status: 'completed', role: 'work', resistance: { kind: 'external-load', value, unit: 'kg' }, observations: [{ metric: 'repetitions', value: 5 }] }] } })
-  const profile = { unit: 'kg', workouts: [{ id: 'light', start: 1, end: 2, exposures: [exposure('light-x', 60)] }, { id: 'heavy', start: 3, end: 4, exposures: [exposure('heavy-x', 100)] }], oneRepMaxes: { manual: { id: 'manual', exerciseId: '0025', value: 65, unit: 'kg', source: 'manual', capturedAt: new Date(0).toISOString() } } }
+  const profile = { unit: 'kg', oneRmFormula: 'epley', workouts: [{ id: 'light', start: 1, end: 2, exposures: [exposure('light-x', 60)] }, { id: 'heavy', start: 3, end: 4, exposures: [exposure('heavy-x', 100)] }], oneRepMaxes: { manual: { id: 'manual', exerciseId: '0025', value: 65, unit: 'kg', source: 'manual', capturedAt: new Date(0).toISOString() } } }
   reconcileDerivedOneRms(profile)
   expect(currentOneRm(profile.oneRepMaxes, '0025').value).toBe(116.7)
   editCompletedSession(profile, 'heavy'); deleteEditedWorkout(profile)
@@ -141,4 +141,13 @@ it('A43 unilateral rest-pause counts one full block, judged by its total as v1 d
   expect(buildCompletedSession(active, profile, ctx).progression.t.values.load.value).toBe(22.5)
   work.sides.L.r = 2; work.sides.R.r = 2; work.r = 4
   expect(buildCompletedSession(active, profile, ctx).progression.t.values.load.value).toBe(20)
+})
+it('reconcileDerivedOneRms follows the profile formula and stores the range; the blend when none is picked', () => {
+  const exposure = { exposureId: 'x', exerciseId: '0025', mode: 'reps', performance: { sets: [{ status: 'completed', role: 'work', rir: 2, resistance: { kind: 'external-load', value: 100, unit: 'kg' }, observations: [{ metric: 'repetitions', value: 5 }] }] } }
+  const run = oneRmFormula => { const profile = { unit: 'kg', oneRmFormula, workouts: [{ id: 'w', start: 1, end: 2, exposures: [exposure] }], oneRepMaxes: {} }; reconcileDerivedOneRms(profile); return currentOneRm(profile.oneRepMaxes, '0025') }
+  const epley = run('epley'), blend = run(undefined)
+  expect(epley.value).toBe(116.7)
+  expect(blend.value).toBeGreaterThan(epley.value)   // the RIR lifts the blend
+  expect(blend.low).toBeLessThan(blend.value)
+  expect(blend.high).toBeGreaterThan(blend.value)
 })

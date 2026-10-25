@@ -4,7 +4,7 @@ import { useStore } from '../store/useStore.js'
 import { dayPhotosOf } from '../lib/day-photos.js'
 import { EXIDX, matchExercise, betterWeight, isAssisted } from '../lib/exercises.js'
 import { lastBW, setLabel, modeOf, effortOf, entriesForExercise, metricEntriesForExercise, metricModeForEntry, bestWeightForEntry, completedRepsOf, workoutDay, workoutAt, lifetimeVolume } from '../lib/history.js'
-import { fmtNum, fmtDate, fmtVol, fmtDur, todayISO, isoOf, weekKey, weekStartOf, exerciseNameText } from '../lib/format.js'
+import { fmtNum, fmtSpread, fmtDate, fmtVol, fmtDur, todayISO, isoOf, weekKey, weekStartOf, exerciseNameText } from '../lib/format.js'
 import { entryTimes, exerciseTimeRows } from '../lib/exercise-time.js'
 import { speedUnitOf, speedLabel, toSpeed } from '../lib/speed.js'
 import { t, exerciseNameFor, exerciseNameClass, getLang } from '../lib/i18n.js'
@@ -355,7 +355,7 @@ function MusclesCard({ S, planFocus = false }) {
             label={<>
               <span className="sbar-l1"><span className={EXIDX[row.id] ? exerciseNameClass(EXIDX[row.id]) : undefined}>{row.name}</span>
                 <span className="sbar-tag">{row.primary === sel ? t('primary') : t('secondary')}</span></span>
-              <span className="sbar-l2">{t('Est. 1RM')}: {fmtNum(row.est)} {S.unit} · {fmtDate(row.estDate, true)}</span>
+              <span className="sbar-l2">{t('Est. 1RM')}: {fmtNum(row.est)}{fmtSpread(row.low, row.high)} {S.unit} · {fmtDate(row.estDate, true)}</span>
             </>}
             value={<><b>{fmtNum(row.current)} {S.unit}</b><span className="sbar-of"> · {Math.round(row.decay * 100)}%</span></>}
             onClick={() => exerciseHistorySheet(row.id)} />
@@ -724,7 +724,7 @@ export default function Stats() {
     () => (curEx && curMode === 'reps' ? e1rmSeries(XS, curEx) : []),
     [XS, curEx, curMode],
   )
-  const e1ChartPts = useMemo(() => e1Pts.filter(p => p.t >= exFrom).map(p => ({ t: p.t, y: p.y, d: p.d })), [e1Pts, exFrom])
+  const e1ChartPts = useMemo(() => e1Pts.filter(p => p.t >= exFrom).map(p => ({ t: p.t, y: p.y, d: p.d, low: p.low, high: p.high })), [e1Pts, exFrom])
   const e1Best = curEx && curMode === 'reps' ? best1RM(XS, curEx) : null
   const showE1 = e1Pts.length > 0
   // Effort on this exercise, per session. It rides on the top-set curve as well as having a
@@ -982,7 +982,7 @@ export default function Stats() {
           <span className="dim">{onSets ? (perSet.metric === 'reps' ? t('Reps in each working set, one line per set number') : t('Estimated 1RM of each working set, one line per set number')) : onRel ? (relUsed === 'top' ? t('Heaviest set as a share of body weight, per workout') : t('Estimated 1RM as a share of body weight, per workout')) : onMax ? t('Most reps in a Max set per workout') : onEff ? t('Average effort per workout') : onE1 ? t('Estimated 1RM per workout') : curCardio ? t('Top speed per workout') : curTimed ? t('Longest hold per workout') : repsOnly ? t('Most reps in a set per workout') : t('Best set weight per workout')}</span>
           {onRel ? <> · {t('Best:')}{' '}<b>{fmtNum(Math.max(0, ...relPts.map(p => p.y * 100)))} % BW</b></>
             : onMax ? <> · {t('Best:')}{' '}<b>{maxBest} {t('reps')}</b></>
-            : onEff || onSets ? '' : <> · {t('Best:')}{' '}<b>{fmtNum(onE1 ? e1Best.est : exBest)} {onE1 ? XS.unit : exUnit}</b></>}
+            : onEff || onSets ? '' : <> · {t('Best:')}{' '}<b>{fmtNum(onE1 ? e1Best.est : exBest)}{onE1 && fmtSpread(e1Best.low, e1Best.high)} {onE1 ? XS.unit : exUnit}</b></>}
         </div>
         {onRel && !rangeTooShort && (() => {
           const inRange = relPts.filter(p => p.t >= exFrom)

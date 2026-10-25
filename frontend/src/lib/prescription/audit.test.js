@@ -64,7 +64,7 @@ describe('auditExecution', () => {
 })
 
 describe('load ranges', () => {
-  const ranged = prescribe('autoregulated', { load: { mode: 'absolute', value: 60, unit: 'kg' }, loadTo: { mode: 'absolute', value: 80, unit: 'kg' } })
+  const ranged = prescribe('manual', { load: { mode: 'absolute', value: 60, unit: 'kg' }, loadTo: { mode: 'absolute', value: 80, unit: 'kg' } })
 
   it('accepts any load inside the prescribed range and flags one outside it', () => {
     expect(auditExecution(ranged, { row: 0, load: kg(60) })).toEqual([])
@@ -79,7 +79,7 @@ describe('effort', () => {
   it('normalizes RPE to RIR and compares RIR', () => {
     expect(normalizeEffort({ rpeEntered: 8 })).toEqual({ rir: 2, rpeEntered: 8 })
     expect(normalizeEffort({ rir: 3 })).toEqual({ rir: 3, rpeEntered: null })
-    const auto = prescribe('autoregulated', { reps: { min: 8, max: 12 }, rir: { min: 1, max: 3 } })   // RIR 1-3
+    const auto = prescribe('manual', { reps: { min: 8, max: 12 }, rir: { min: 1, max: 3 } })   // RIR 1-3
     expect(auditExecution(auto, { row: 0, rpeEntered: 9.5 })).toEqual([{ code: 'below_range', field: 'rir', expected: { min: 1, max: 3 }, actual: 0.5, severity: 'warning', row: 0 }])
   })
 })
@@ -100,7 +100,7 @@ describe('summarizeActual', () => {
   })
 
   it('summarizes effort in RIR and keeps the hardest RPE entered', () => {
-    const auto = prescribe('autoregulated', { reps: { min: 8, max: 12 }, rir: { min: 1, max: 3 } })
+    const auto = prescribe('manual', { reps: { min: 8, max: 12 }, rir: { min: 1, max: 3 } })
     expect(summarizeActual(auto, [{ row: 0, reps: 8, rpeEntered: 8 }, { row: 1, reps: 9, rir: 1 }])).toEqual({ sets: 2, reps: 8, load: null, rir: 1, rpeEntered: 8 })
   })
 })

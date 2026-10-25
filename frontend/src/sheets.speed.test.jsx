@@ -11,7 +11,7 @@ import { exConfigSheet } from './sheets.jsx'
 import { ruleOccurrence } from './lib/test-fixtures.js'
 
 // A cardio slot: the manual rule plus its intervals, minutes and km/h speed.
-const cardioSlot = cardio => ({ ...ruleOccurrence('2138', { preset: 'autoregulated' }), cardio })
+const cardioSlot = cardio => ({ ...ruleOccurrence('2138', { preset: 'manual' }), cardio })
 
 const mounted = []
 function open(settings, existing) {

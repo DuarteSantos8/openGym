@@ -221,8 +221,14 @@ failure. It is not a `type`, because a drop-set or a rest-pause set can be taken
   work set it is.
 - Shown as an "F": on the set number in the workout (cards, list, compact), on the focus card, in
   `setLabel` (history, text export, the set menu, MCP labels) and on the finish summary.
-- Planned with `cfg.lastToFailure: true` ("Last set to failure" in `ExConfig`): `applyFailurePlan`
-  in `history.js`, run inside `applyIntensifierPlan`, marks the last work row (both halves of a
-  timed per-side pair) of a freshly built exercise. Choosing Greyskull in the sheet turns it on.
+- Planned in the exercise sheet's Target tab ("Sets to failure", `components/FailureSets.jsx`): None,
+  Last, All, or the set numbers picked one by one. An occurrence stores the choice two ways, read by
+  `lib/failure-selection.js`: `lastToFailure: true` for "Last" (what v1.4.0 wrote) and `failureSets`
+  (`'all'` or the 1-based set numbers) for the rest. `applyFailurePlan` in `history.js`, run inside
+  `applyIntensifierPlan`, marks the chosen work rows of a freshly built exercise (both halves of a
+  timed per-side pair count as one set; a logged row and a warm-up never). A set number past the
+  rows the plan builds marks nothing. Both fields travel exposure → entry target → exposure, in a
+  shared plan (cleaned on import) and on the printout. The routine list reads `+` after the reps when
+  every set goes to failure and `(+)` when some do. Choosing Greyskull in the sheet turns "Last" on.
 - Imports: a Hevy or CSV "failure" set type becomes `failure: true`.
 

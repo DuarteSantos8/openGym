@@ -19,7 +19,7 @@ const cardioTarget = p => ({ mode: 'cardio', min: p.prefill.durationSeconds / 60
 const pyramidOf = p => (p.preset === 'pyramid_reps' ? planOptions(p.ruleSnapshot) : {})
 export const targetFor = (p, mode) => ({
   sets: p.rows.length,
-  reps: p.prefill.reps,
+  ...(p.failureSets != null ? { failureSets: p.failureSets } : {}),  reps: p.prefill.reps,
   ...(pyramidOf(p).setReps ? { pyramid: [...pyramidOf(p).setReps], ...(pyramidOf(p).setWeights?.some(v => v > 0) ? { pyramidWeight: [...pyramidOf(p).setWeights] } : {}), ...(pyramidOf(p).setRest?.some(v => v > 0) ? { pyramidRest: [...pyramidOf(p).setRest] } : {}) } : {}),
   // The rest after each work set, where a set has its own (lib/pyramid.js pyramidRestFor).
   ...(p.rows.some(r => r.restSeconds != null) ? { setRest: p.rows.map(r => restOf(p, r)) } : {}),
@@ -59,7 +59,8 @@ const rowFor = (p, i, mode) => {
     setId: 'r' + i, done: false,
     ...(p.parameters.durationSeconds ? { sec: p.prefill.durationSeconds } : { r: reps }),
     ...(w != null ? { w } : {}),
-    ...(p.rows[i]?.max ? { max: true } : {})
+    ...(p.rows[i]?.max ? { max: true } : {}),
+    ...(p.rows[i]?.failure ? { failure: true } : {})
   }
 }
 
@@ -82,7 +83,7 @@ function intensified(p, exposure) {
   planned = applyFailurePlan(planned, exposure)
   if (exposure.mode === 'cardio') planned = planned.map(row => ({ ...row, ...inclineFrom(exposure) }))
   if (!exposure.intensifier) return planned
-  const out = applyIntensifierPlan(planned, { intensifier: exposure.intensifier, lastToFailure: exposure.lastToFailure, mode: exposure.mode, reps: p.prefill.reps, side: exposure.side })
+  const out = applyIntensifierPlan(planned, { intensifier: exposure.intensifier, lastToFailure: exposure.lastToFailure, failureSets: exposure.failureSets, mode: exposure.mode, reps: p.prefill.reps, side: exposure.side })
   if (exposure.intensifier.type !== 'restpause') return out
   const [warmup, row] = out
   return [...(p.warmupRows?.length ? [] : [warmup]), { ...row, setId: 'r0' }]
@@ -97,7 +98,7 @@ export function entriesForExposures(exposures, prescriptions) {
       ...(exposure.routineId ? { rid: exposure.routineId } : {}),
       ...(exposure.excludedFromProgression ? { noProg: true } : {}),
       ...(exposure.sg ? { sg: exposure.sg } : {}),
-      target: { ...targetFor(p, exposure.mode), ...kept(exposure, EXPOSURE_META), ...(exposure.restOff ? { restSec: 0 } : {}), ...Object.fromEntries(['dbLoad', 'lastToFailure', 'backoff'].filter(k => exposure[k] != null).map(k => [k, exposure[k]])), ...(p.backoffStep ? { backoffStep: p.backoffStep } : {}), ...(exposure.setupNote ? { note: exposure.setupNote } : {}), ...(typeof exposure.assisted === 'boolean' ? { assisted: exposure.assisted } : {}), ...(exposure.side ? { side: true } : {}), ...(exposure.warmupRestSec > 0 ? { warmupRestSec: exposure.warmupRestSec } : {}), ...(exposure.bodyweight != null ? { bodyweight: exposure.bodyweight } : {}), ...(exposure.intensifier ? { intensifier: exposure.intensifier } : {}) },
+      target: { ...targetFor(p, exposure.mode), ...kept(exposure, EXPOSURE_META), ...(exposure.restOff ? { restSec: 0 } : {}), ...Object.fromEntries(['dbLoad', 'lastToFailure', 'failureSets', 'backoff'].filter(k => exposure[k] != null).map(k => [k, exposure[k]])), ...(p.backoffStep ? { backoffStep: p.backoffStep } : {}), ...(exposure.setupNote ? { note: exposure.setupNote } : {}), ...(typeof exposure.assisted === 'boolean' ? { assisted: exposure.assisted } : {}), ...(exposure.side ? { side: true } : {}), ...(exposure.warmupRestSec > 0 ? { warmupRestSec: exposure.warmupRestSec } : {}), ...(exposure.bodyweight != null ? { bodyweight: exposure.bodyweight } : {}), ...(exposure.intensifier ? { intensifier: exposure.intensifier } : {}) },
       planned: plannedOf(p),
       ...(exposure.programme ? { plan: { kind: 'programme', why: exposure.programme.why, prog: exposure.programme } } : {}),
       // How many warm-up rows the routine's plan gave this exercise: what "Update routine" compares the session with.
@@ -178,7 +179,7 @@ export function exposuresWithPerformance(exposures, entries, unit) {
     return {
       ...exposure,
       ...kept(entry?.target, EXPOSURE_META),
-      ...Object.fromEntries(['dbLoad', 'lastToFailure', 'backoff'].filter(k => entry?.target?.[k] != null).map(k => [k, entry.target[k]])),
+      ...Object.fromEntries(['dbLoad', 'lastToFailure', 'failureSets', 'backoff'].filter(k => entry?.target?.[k] != null).map(k => [k, entry.target[k]])),
       mode: modeOf({ mode: exposure.mode, ...(entry?.target || {}), id: exposure.exerciseId }),
       performance: {
         sets: (entry?.sets || []).flatMap(row => performanceRows(row, unit)),

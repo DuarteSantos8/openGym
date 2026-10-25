@@ -179,12 +179,12 @@ describe('generatePrescription', () => {
   it('recovers the rule a prescription was generated from', () => {
     const r = rule('pyramid')
     expect(ruleOfPrescription(gen(r), 'rt1')).toEqual(r)
-    const ranged = rule('autoregulated', { load: abs(60), loadTo: abs(80) })
+    const ranged = rule('manual', { load: abs(60), loadTo: abs(80) })
     expect(ruleOfPrescription(gen(ranged), 'rt1')).toEqual(ranged)
   })
 
   it('resolves a load range and puts it on every row', () => {
-    const r = rule('autoregulated', { load: abs(60), loadTo: abs(81) })
+    const r = rule('manual', { load: abs(60), loadTo: abs(81) })
     const p = gen(r)
     expect(p.parameters.load).toEqual({ expression: abs(60), resolved: kg(60) })
     expect(p.parameters.loadTo).toEqual({ expression: abs(81), resolved: kg(80) })
@@ -193,7 +193,7 @@ describe('generatePrescription', () => {
   })
 
   it('resolves a % 1RM load range from the frozen 1RM, or leaves both ends null without one', () => {
-    const r = rule('autoregulated', { load: { mode: 'percent_1rm', percent: 60 }, loadTo: { mode: 'percent_1rm', percent: 75 } })
+    const r = rule('manual', { load: { mode: 'percent_1rm', percent: 60 }, loadTo: { mode: 'percent_1rm', percent: 75 } })
     expect(gen(r, { oneRm: oneRm(100) }).rows[0]).toMatchObject({ load: kg(60), loadTo: kg(75) })
     expect(gen(r).rows[0]).toMatchObject({ load: null, loadTo: null })
   })
@@ -224,11 +224,11 @@ describe('warm-up rows', () => {
     expect(Object.isFrozen(warm.warmupRows[0])).toBe(true)
   })
   it('omits the field when nothing can be generated', () => {
-    expect(gen(rule('autoregulated'), { warmup: smart, equipment: 'barbell' }).warmupRows).toBeUndefined()      // empty load
+    expect(gen(rule('manual'), { warmup: smart, equipment: 'barbell' }).warmupRows).toBeUndefined()      // empty load
     expect(gen(percentLinear(), { warmup: smart, equipment: 'barbell' }).warmupRows).toBeUndefined()     // no 1RM
   })
   it('never warms up a timed hold, even a loaded one', () => {
-    expect(gen(rule('autoregulated', { load: abs(20), durationSeconds: { min: 30, max: 60 }, reps: { min: 1, max: 1 } }), { warmup: smart, equipment: 'body weight' }).warmupRows).toBeUndefined()
+    expect(gen(rule('manual', { load: abs(20), durationSeconds: { min: 30, max: 60 }, reps: { min: 1, max: 1 } }), { warmup: smart, equipment: 'body weight' }).warmupRows).toBeUndefined()
   })
 })
 
