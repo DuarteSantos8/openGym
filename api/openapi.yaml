@@ -2833,6 +2833,8 @@ paths:
                   fields: { type: array, items: { type: string } }
                   unknown: { type: array, items: { type: string } }
                   segmental: { type: boolean }
+                  mode: { type: string, enum: [account, friend], description: 'friend: a second account reads the main one through RENPHO friends.' }
+                  friend: { oneOf: [{ type: string }, { type: 'null' }], description: 'In friend mode, the e-mail (or name) of the friend whose readings come in.' }
         '401': { $ref: '#/components/responses/Unauthorized' }
     delete:
       tags: [health]
@@ -2852,7 +2854,10 @@ paths:
         Signs in to RENPHO with the account's e-mail and password (sealed on the server with the
         instance's encryption, used again only when RENPHO's session has expired). The first sync,
         of the whole history, starts at once; the answer does not wait for it. RENPHO publishes no
-        API: this uses the one the RENPHO Health app uses.
+        API: this uses the one the RENPHO Health app uses. RENPHO keeps one session per account, so
+        signing in with the account the app uses signs the app out; with `mode: friend` the e-mail
+        and password are those of a second account, a RENPHO friend of the main one, and the
+        friend's daily values come in instead (one per day, no segmental values).
       requestBody:
         required: true
         content:
@@ -2864,10 +2869,14 @@ paths:
                 email: { type: string }
                 password: { type: string }
                 areaCode: { type: string, description: 'Two letters, US by default.' }
+                mode: { type: string, enum: [account, friend], description: 'account by default.' }
+                friendEmail: { type: string, description: 'In friend mode, whose readings: needed when the account has more than one friend.' }
+                zone: { type: string, description: 'The profile time zone (an IANA name), which RENPHO groups readings into days by.' }
       responses:
         '200': { description: 'Connected; the same body as `GET /api/renpho`.' }
         '400': { description: 'E-mail or password missing, or an area code that is not two letters (`code: missing`).' }
         '401': { description: 'RENPHO did not accept the sign-in (`code: auth`).' }
+        '409': { description: 'Friend mode: the account has no friends (`code: no-friend`), or several and none matches `friendEmail` (`code: friend-choice`).' }
         '429': { description: 'Too many sign-ins (`code: busy`).' }
         '502': { description: 'RENPHO could not be reached or answered unexpectedly (`code: network`, `format`).' }
 

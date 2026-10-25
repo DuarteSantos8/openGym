@@ -2018,7 +2018,7 @@ if (RENPHO_EVERY_MS) {
     if (next) RENPHO.sync(next).catch(() => { /* kept on the row as its error */ });
   }, 600000).unref();
 }
-const RENPHO_STATUS = { auth: 401, rejected: 401, network: 502, format: 502, failed: 502 };
+const RENPHO_STATUS = { auth: 401, rejected: 401, 'no-friend': 409, 'friend-choice': 409, network: 502, format: 502, failed: 502 };
 
 const MEDIA_BURST = createWindow({ max: MEDIA_LIMITS.uploadsPerHour, windowMs: 3600000 });
 // Deleting everything unreferenced is what "Reset everything" does; ten an hour is plenty.
@@ -2684,7 +2684,9 @@ const routes = {
     json(res, 200, RENPHO.status(user));
   },
   // Signs in to RENPHO with the account's e-mail and password; the first sync starts at once and
-  // the answer does not wait for it (GET /api/renpho says when it is done).
+  // the answer does not wait for it (GET /api/renpho says when it is done). `mode: 'friend'` signs
+  // in with a second account and imports the readings of its friend (`friendEmail`, or its only
+  // one), so the RENPHO app stays signed in to the main account.
   'POST /api/renpho/connect': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
@@ -2693,8 +2695,11 @@ const routes = {
     const body = await readBody(req);
     if (typeof body.email !== 'string' || typeof body.password !== 'string' || !body.email.trim() || !body.password) return json(res, 400, { error: 'e-mail and password are needed', code: 'missing' });
     if (body.areaCode != null && !/^[A-Za-z]{2}$/.test(String(body.areaCode))) return json(res, 400, { error: 'the area code is two letters', code: 'missing' });
+    if (body.mode != null && body.mode !== 'friend' && body.mode !== 'account') return json(res, 400, { error: 'mode is friend or account', code: 'missing' });
+    const friendEmail = typeof body.friendEmail === 'string' ? body.friendEmail.slice(0, 200) : '';
+    const zone = typeof body.zone === 'string' ? body.zone.slice(0, 64) : '';
     try {
-      await RENPHO.connect(user, { email: body.email, password: body.password, areaCode: body.areaCode });
+      await RENPHO.connect(user, { email: body.email, password: body.password, areaCode: body.areaCode, mode: body.mode, friendEmail, zone });
     } catch (e) {
       const code = e.code === 'auth' ? 'auth' : e.code || 'failed';
       const reason = reasonOf(e);

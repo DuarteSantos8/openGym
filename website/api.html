@@ -2581,7 +2581,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">The connection.<span class="r-sig">{ connected: boolean, email: string, connectedAt: integer | null, lastSync: integer | null, lastResult: null | object, error: null | object, syncing: boolean, fields: string[], unknown: string[], segmental: boolean }</span></span>
+    <span class="p-desc">The connection.<span class="r-sig">{ connected: boolean, email: string, connectedAt: integer | null, lastSync: integer | null, lastResult: null | object, error: null | object, syncing: boolean, fields: string[], unknown: string[], segmental: boolean, mode: &quot;account&quot; | &quot;friend&quot;, friend: string | null }</span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -2625,7 +2625,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Connect a RENPHO Health account</span>
   </summary>
   <div class="ep-body">
-<p>Signs in to RENPHO with the account's e-mail and password (sealed on the server with the instance's encryption, used again only when RENPHO's session has expired). The first sync, of the whole history, starts at once; the answer does not wait for it. RENPHO publishes no API: this uses the one the RENPHO Health app uses.</p>
+<p>Signs in to RENPHO with the account's e-mail and password (sealed on the server with the instance's encryption, used again only when RENPHO's session has expired). The first sync, of the whole history, starts at once; the answer does not wait for it. RENPHO publishes no API: this uses the one the RENPHO Health app uses. RENPHO keeps one session per account, so signing in with the account the app uses signs the app out; with <code>mode: friend</code> the e-mail and password are those of a second account, a RENPHO friend of the main one, and the friend's daily values come in instead (one per day, no segmental values).</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
@@ -2644,6 +2644,21 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-type">string</span>
     <span class="p-desc">Two letters, US by default.</span>
   </div>
+  <div class="prow">
+    <span class="p-name">mode</span>
+    <span class="p-type">&quot;account&quot; | &quot;friend&quot;</span>
+    <span class="p-desc">account by default.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">friendEmail</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">In friend mode, whose readings: needed when the account has more than one friend.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">zone</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The profile time zone (an IANA name), which RENPHO groups readings into days by.</span>
+  </div>
 </div>
     <p class="ep-h">Responses</p>
     <div class="ptab">
@@ -2658,6 +2673,10 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">401</span>
     <span class="p-desc">RENPHO did not accept the sign-in (<code>code: auth</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">Friend mode: the account has no friends (<code>code: no-friend</code>), or several and none matches <code>friendEmail</code> (<code>code: friend-choice</code>).</span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">429</span>

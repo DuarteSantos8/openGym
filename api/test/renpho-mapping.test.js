@@ -2,8 +2,8 @@
    client that need no network (client.js): the AES envelope and long ids read without loss. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mapMeasurement, externalIdOf, belongsTo } from '../providers/renpho/mapping.js';
-import { encrypt, decrypt, losslessParse } from '../providers/renpho/client.js';
+import { mapMeasurement, mapFriendDay, externalIdOf, belongsTo } from '../providers/renpho/mapping.js';
+import { encrypt, decrypt, losslessParse, createRenphoClient, offsetHours } from '../providers/renpho/client.js';
 
 const BASE = {
   id: '1834567890123456789', timeStamp: 1760000000, localCreatedAt: '2025-10-09 10:53:20', bUserId: '777',
@@ -108,4 +108,40 @@ test('the protocol: AES round trip, and ids past 2^53 read as strings, also nega
   const text = '{"a":1834567890123456789,"b":"1834567890123456789","c":[12345678901234567,-12345678901234567],"d":1.5e3,"e":"x\\"9999999999999999"}';
   assert.equal(decrypt(encrypt(text)), text);
   assert.deepEqual(losslessParse(text), { a: '1834567890123456789', b: '1834567890123456789', c: ['12345678901234567', '-12345678901234567'], d: 1500, e: 'x"9999999999999999' });
+});
+
+test('the sign-in carries the app\'s headers, and a refusal in `message` says why', async () => {
+  let seen;
+  const fetchFn = async (url, init) => {
+    seen = init.headers;
+    return new Response(JSON.stringify({ code: -114, message: 'Decryption failed' }), { status: 200 });
+  };
+  const client = createRenphoClient({ fetchFn, baseUrl: 'http://renpho.test' });
+  await assert.rejects(client.login({ email: 'a@example.com', password: 'x' }, { devId: 'ABC', zone: 'Europe/Rome' }),
+    e => e.code === 'auth' && /code -114: Decryption failed/.test(e.message));
+  assert.equal(seen.appVersion, '7.10.1');
+  assert.equal(seen.platform, 'android');
+  assert.equal(seen.devId, 'ABC');
+  assert.equal(seen.zoneId, 'Europe/Rome');
+  assert.match(seen.timeZone, /^[+-]\d{1,2}$/);
+  assert.equal(seen.token, undefined, 'no session yet');
+});
+
+test('a time zone as RENPHO wants it: whole hours, summer time included', () => {
+  assert.equal(offsetHours('Europe/Rome', Date.UTC(2026, 6, 1)), 2);
+  assert.equal(offsetHours('Europe/Rome', Date.UTC(2026, 11, 1)), 1);
+  assert.equal(offsetHours('America/New_York', Date.UTC(2026, 11, 1)), -5);
+  assert.equal(offsetHours('Not/AZone'), 0);
+});
+
+test('a friend\'s day: its values in openGym\'s types, muscle and bone in kg, fat mass from the weight', () => {
+  const m = mapFriendDay('77', { day: '2026-10-20', ts: 1792500000, weightUnit: 1, values: { weight: 80, bodyfat: 20, muscle: 60, bone: 3, water: 0, odd: 5 } });
+  assert.equal(m.externalId, 'day:77:2026-10-20');
+  assert.equal(m.d, '2026-10-20');
+  assert.equal(m.t, 1792500000000);
+  const v = Object.fromEntries(m.readings.map(r => [r.type, r.v]));
+  assert.deepEqual(v, { weight: 80, bodyFat: 20, muscleMass: 60, boneMass: 3, fatMass: 16 });
+  assert.ok(m.readings.every(r => r.src === 'renpho' && r.sid === `day:77:2026-10-20:${r.type}`));
+  assert.equal(mapFriendDay('77', { day: '2026-10-20', ts: 1792500000, weightUnit: 2, values: { weight: 176 } }).readings[0].v, 79.832);
+  assert.equal(mapFriendDay('77', { day: 'x', ts: 1 }), null);
 });

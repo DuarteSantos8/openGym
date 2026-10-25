@@ -2,7 +2,8 @@
    speaks the same encrypted protocol (api/providers/renpho/client.js). Connect, the first sync, a
    second one that adds nothing, a changed reading that is updated in place, a session RENPHO no
    longer takes, a refused password, two profiles that never see each other's readings, the raw
-   copy, and disconnecting. */
+   copy, and disconnecting. And the second-account way in: a RENPHO friend of the main account
+   reads its daily values, and the main account is never signed in to. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
@@ -33,7 +34,7 @@ function fakeRenpho() {
     'b@example.com': { password: 'b-password', id: '9200000000000000002', rows: [] },
   };
   const tokens = new Map();   // token → email
-  const f = { accounts, logins: 0, server: null, url: '' };
+  const f = { accounts, logins: 0, logins_by: {}, trendCalls: 0, server: null, url: '' };
   const reply = (res, obj, code = 101) => {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ code, msg: code === 101 ? 'success' : 'fail', data: obj === undefined ? null : encrypt(JSON.stringify(obj)) }));
@@ -44,11 +45,18 @@ function fakeRenpho() {
     req.on('data', d => body += d);
     req.on('end', () => {
       const plain = decrypt(JSON.parse(body).encryptData);
+      // RENPHO since October 2026: without the app's headers the sign-in "cannot be decrypted",
+      // and it says so under `message`, not `msg`.
+      if (!req.headers.appversion || !req.headers.platform || !req.headers.devid || !req.headers.timezone) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ code: -114, message: 'Decryption failed' }));
+      }
       if (req.url === '/renpho-aggregation/user/login') {
         const { login } = JSON.parse(plain);
         const acc = accounts[login.email];
         if (!acc || acc.password !== login.password) return reply(res, undefined, 30001);
         f.logins++;
+        f.logins_by[login.email] = (f.logins_by[login.email] || 0) + 1;
         const token = crypto.randomBytes(8).toString('hex');
         tokens.set(token, login.email);
         // A long id written as a bare number, as RENPHO does.
@@ -69,6 +77,25 @@ function fakeRenpho() {
         const text = JSON.stringify(page).replace(/"(id|bUserId)":"(\d+)"/g, '"$1":$2');
         res.writeHead(200, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ code: 101, msg: 'success', data: encrypt(text) }));
+      }
+      if (req.url === '/RenphoHealth/app/friend/friendsList') {
+        const list = (acc.friends || []).map(e => ({ userId: accounts[e].id, accountName: e.split('@')[0], email: e }));
+        return reply(res, { list });
+      }
+      if (req.url === '/RenphoHealth/app/friend/measure/trendV2') {
+        f.trendCalls++;
+        const q = JSON.parse(plain);
+        const friend = Object.values(accounts).find(a => a.id === q.rhFriendId);
+        if (!friend || !(acc.friends || []).some(e => accounts[e] === friend)) return reply(res, undefined, 40001);
+        // A month's window ending at endTime (now for 0): each day's last weigh-in, one value.
+        const end = q.endTime || Math.floor(Date.now() / 1000);
+        const byDay = new Map();
+        for (const r of friend.rows.filter(r => r.timeStamp <= end && r.timeStamp > end - 30 * 86400).sort((a, b) => a.timeStamp - b.timeStamp)) {
+          byDay.set(r.localCreatedAt.slice(0, 10), r);
+        }
+        const value = r => q.param === 'muscle' ? Math.round(r.weight * r.muscle) / 100 : r[q.param] ?? 0;
+        const list = [...byDay].map(([groupDay, r]) => ({ groupDay, timeStamp: r.timeStamp, value: value(r) }));
+        return reply(res, { list });
       }
       reply(res, []);
     });
@@ -219,4 +246,65 @@ test('RENPHO Health end to end', async t => {
   assert.equal(fs.existsSync(h.rawFile(A)), false);
   assert.equal(renphoRecords(h.state(A), A).length, first);
   assert.ok(!h.dbText().includes('a@example.com'));
+});
+
+test('RENPHO through a second account: the friend\'s daily values, and the app stays signed in', async t => {
+  const f = fakeRenpho();
+  await new Promise(r => f.server.listen(0, '127.0.0.1', r));
+  t.after(() => f.server.close());
+  const url = `http://127.0.0.1:${f.server.address().port}`;
+  const day = 86400, now = Math.floor(Date.now() / 1000);
+  const main = f.accounts['a@example.com'];
+  f.accounts['tech@example.com'] = { password: 'tech-pass', id: '9300000000000000003', rows: [], friends: [] };
+  // Two weigh-ins on one day (the friend pages keep the last), one 3 days back, one 40 days back
+  // (the window before), one 200 days back after a long break.
+  main.rows = [
+    row('9100000000000000301', main.id, now - 3 * day, 81, { bodyfat: 22, muscle: 74, water: 55, bone: 3.2 }),
+    row('9100000000000000302', main.id, now - day - 3600, 80.6),
+    row('9100000000000000303', main.id, now - day, 80.4, { bodyfat: 21 }),
+    row('9100000000000000304', main.id, now - 40 * day, 82),
+    row('9100000000000000305', main.id, now - 200 * day, 84),
+  ];
+  const h = await startServer(t, url);
+  const tech = { email: 'tech@example.com', password: 'tech-pass', mode: 'friend', zone: 'Europe/Rome' };
+
+  // No friend yet: said so, nothing kept.
+  let r = await call(h, A, 'POST', '/api/renpho/connect', tech);
+  assert.equal(r.status, 409);
+  assert.equal(r.body.code, 'no-friend');
+  assert.deepEqual((await call(h, A, 'GET', '/api/renpho')).body, { connected: false });
+
+  // Two friends: which one has to be said.
+  f.accounts['tech@example.com'].friends = ['b@example.com', 'a@example.com'];
+  r = await call(h, A, 'POST', '/api/renpho/connect', tech);
+  assert.equal(r.status, 409);
+  assert.equal(r.body.code, 'friend-choice');
+  r = await call(h, A, 'POST', '/api/renpho/connect', { ...tech, friendEmail: 'A@example.com ' });
+  assert.equal(r.status, 200);
+  assert.equal(r.body.mode, 'friend');
+  assert.equal(r.body.friend, 'a@example.com');
+  let st = await synced(h, A);
+  assert.equal(st.error, null);
+  assert.equal(st.lastResult.measurements, 4, 'one per day with a weigh-in, the whole history');
+  assert.equal(st.segmental, false);
+  const mine = renphoRecords(h.state(A), A);
+  const at = (type, d) => mine.find(x => x.type === type && x.d === d)?.v;
+  const dayOf = ts => new Date(ts * 1000).toISOString().slice(0, 10);
+  assert.equal(at('weight', dayOf(now - day)), 80.4, 'the day\'s last weigh-in');
+  assert.equal(mine.filter(x => x.type === 'weight' && x.d === dayOf(now - day)).length, 1);
+  assert.equal(at('muscleMass', dayOf(now - 3 * day)), 59.94, 'muscle comes in kg');
+  assert.equal(at('boneMass', dayOf(now - 3 * day)), 3.2);
+  assert.equal(at('fatMass', dayOf(now - 3 * day)), 17.82);
+  assert.equal(at('weight', dayOf(now - 200 * day)), 84, 'a long break is not the start of the history');
+  assert.equal(f.logins_by['a@example.com'] || 0, 0, 'the main account was signed in to: its app would be signed out');
+  assert.ok(!h.dbText().includes('tech-pass'));
+
+  // Again: nothing new or doubled, and only the last days are asked for.
+  const calls = f.trendCalls;
+  await call(h, A, 'POST', '/api/renpho/sync');
+  st = await synced(h, A, st.lastSync);
+  assert.equal(st.lastResult.added, 0);
+  assert.equal(st.lastResult.updated, 0);
+  assert.ok(f.trendCalls - calls <= 8, `asked ${f.trendCalls - calls} windows for a few days`);
+  assert.equal(renphoRecords(h.state(A), A).length, mine.length);
 });

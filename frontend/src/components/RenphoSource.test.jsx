@@ -43,9 +43,41 @@ describe('RENPHO Health card', () => {
     type(input('Password'), 'secret-pass')
     await act(async () => { button('Connect').click() })
     const call = m.api.mock.calls.find(c => c[0] === '/api/renpho/connect')
-    expect(JSON.parse(call[1].body)).toEqual({ email: 'me@example.com', password: 'secret-pass', areaCode: 'US' })
+    expect(JSON.parse(call[1].body)).toEqual({ email: 'me@example.com', password: 'secret-pass', areaCode: 'US', zone: expect.any(String) })
     expect(host.textContent).toContain('me@example.com')
     expect(host.querySelector('input[aria-label="Password"]')).toBe(null)
+  })
+
+  it('a second account: the friend mode, whose readings, and the app is said to stay signed in', async () => {
+    m.api.mockImplementation(async (p, o) => {
+      if (p === '/api/renpho' && !o) return { connected: false }
+      if (p === '/api/renpho/connect') return { connected: true, email: 'tech@example.com', mode: 'friend', friend: 'me@example.com', syncing: true }
+    })
+    await mount()
+    expect(host.textContent).toContain('signs the RENPHO app out')
+    await act(async () => { host.querySelector('[role="switch"][aria-label="Second account"]').click() })
+    expect(host.textContent).toContain('stays signed in on your phone')
+    type(input('E-mail'), 'tech@example.com')
+    type(input('Password'), 'tech-pass')
+    type(input('Main account'), ' me@example.com ')
+    await act(async () => { button('Connect').click() })
+    const call = m.api.mock.calls.find(c => c[0] === '/api/renpho/connect')
+    expect(JSON.parse(call[1].body)).toMatchObject({ email: 'tech@example.com', password: 'tech-pass', mode: 'friend', friendEmail: 'me@example.com' })
+    expect(host.textContent).toContain('Through a second account')
+    expect(host.textContent).toContain('Readings of me@example.com')
+  })
+
+  it('a second account with no friend yet says what to do in the RENPHO app', async () => {
+    m.api.mockImplementation(async (p, o) => {
+      if (p === '/api/renpho' && !o) return { connected: false }
+      if (p === '/api/renpho/connect') throw Object.assign(new Error('x'), { status: 409, data: { code: 'no-friend' } })
+    })
+    await mount()
+    await act(async () => { host.querySelector('[role="switch"]').click() })
+    type(input('E-mail'), 'tech@example.com')
+    type(input('Password'), 'tech-pass')
+    await act(async () => { button('Connect').click() })
+    expect(m.toast).toHaveBeenCalledWith(expect.stringContaining('add it as a friend of your main account'))
   })
 
   it('a connected account: last sync, what came, sync now and disconnect', async () => {

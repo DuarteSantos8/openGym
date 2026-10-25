@@ -187,3 +187,33 @@ export function belongsTo(raw, accountId) {
   const b = raw.bUserId ?? raw.b_user_id;
   return b == null || String(b) === String(accountId);
 }
+
+// A friend's trend (client.js trend): its params → openGym types. `muscle` and `bone` are kg there
+// (weight − fat − bone is the muscle, as the RENPHO app shows it), the rest as in a reading.
+const FRIEND = {
+  weight: ['weight', KG], bodyfat: ['bodyFat', AS_IS], water: ['bodyWater', AS_IS], muscle: ['muscleMass', KG],
+  bone: ['boneMass', KG], visfat: ['visceralFat', AS_IS], bmr: ['bmr', AS_IS], bmi: ['bmi', AS_IS],
+};
+
+/**
+ * One day of a friend's trend, `{ day, ts, weightUnit, values: {param: value} }`, as openGym
+ * readings: the same shape as mapMeasurement's, one reading per value, id `day:<friend>:<day>`.
+ */
+export function mapFriendDay(friendId, day) {
+  if (!day || !/^\d{4}-\d{2}-\d{2}$/.test(day.day) || !Number.isFinite(day.ts) || day.ts <= 0) return null;
+  const t = day.ts > 1e12 ? day.ts : day.ts * 1000;
+  const externalId = `day:${friendId}:${day.day}`;
+  const values = {};
+  for (const [param, v] of Object.entries(day.values || {})) {
+    const known = FRIEND[param];
+    const x = num(v);
+    if (!known || !Number.isFinite(x) || x <= 0) continue;
+    values[known[0]] = known[1] === KG ? toKg(x, day.weightUnit) : x;
+  }
+  const w = values.weight;
+  if (Number.isFinite(w) && Number.isFinite(values.bodyFat)) values.fatMass = w * values.bodyFat / 100;
+  const readings = Object.entries(values).map(([type, v]) => ({
+    type, v: round(v), t, d: day.day, src: PROVIDER, sid: `${externalId}:${type}`, g: `${PROVIDER}:${externalId}`,
+  }));
+  return { externalId, t, d: day.day, readings, fields: Object.keys(values).sort(), unknown: [], invalid: false };
+}
