@@ -1,6 +1,14 @@
 // What the import screen says when the server refuses or fails an import, by the code the API sent.
 import { describe, expect, it } from 'vitest'
-import { videoImportError } from './video-import-api.js'
+import { videoImportError, stageText } from './video-import-api.js'
+
+describe('stageText', () => {
+  it('says something for every stage the worker reports, the one where it looks for the boxes included', () => {
+    for (const stage of ['queued', 'metadata', 'download', 'detect', 'needs_roi', 'frames', 'ocr', 'thumbs', 'done']) expect(stageText(stage), stage).toBeTruthy()
+    expect(stageText('detect')).not.toBe(stageText('needs_roi'))
+    expect(stageText('nonsense')).toBe('')
+  })
+})
 
 describe('videoImportError', () => {
   it('has its own sentence for each refusal the API can send, and none of them is the generic one', () => {

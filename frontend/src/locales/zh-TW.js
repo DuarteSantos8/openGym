@@ -2434,6 +2434,7 @@ export default {
   'An import is already running. Wait for it to finish or cancel it.': '已有匯入正在進行。請等它完成，或取消它。',
   'Analyse video': '分析影片',
   'Downloading a small copy of the video…': '正在下載影片的小型副本…',
+  'Finding the names and the timer…': '正在尋找名稱和計時器…',
   'Drag a box around where the exercise name appears, then switch to Timer and do the same for the countdown. Saved for this channel, so its next video skips this step.': '在動作名稱出現的位置拖出一個框，然後切換到計時器，對倒數做同樣的操作。會為此頻道儲存，它的下一支影片會略過這一步。',
   'How sure the reading and the match are': '辨識與比對的把握有多大',
   'Import cancelled.': '匯入已取消。',

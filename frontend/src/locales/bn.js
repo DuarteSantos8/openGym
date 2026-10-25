@@ -2520,6 +2520,7 @@ export default {
   'An import is already running. Wait for it to finish or cancel it.': 'একটি ইমপোর্ট আগে থেকেই চলছে। শেষ হওয়া পর্যন্ত অপেক্ষা করুন বা বাতিল করুন।',
   'Analyse video': 'ভিডিও বিশ্লেষণ করুন',
   'Downloading a small copy of the video…': 'ভিডিওর একটি ছোট কপি ডাউনলোড হচ্ছে…',
+  'Finding the names and the timer…': 'নাম ও টাইমার খোঁজা হচ্ছে…',
   'Drag a box around where the exercise name appears, then switch to Timer and do the same for the countdown. Saved for this channel, so its next video skips this step.': 'ব্যায়ামের নাম যেখানে দেখা যায় সেখানে একটি বক্স টেনে আঁকুন, তারপর টাইমারে গিয়ে কাউন্টডাউনের জন্যও একই করুন। এই চ্যানেলের জন্য সংরক্ষিত থাকবে, তাই এর পরের ভিডিওতে এই ধাপ বাদ যাবে।',
   'How sure the reading and the match are': 'পড়া ও মেলানো কতটা নিশ্চিত',
   'Import cancelled.': 'ইমপোর্ট বাতিল হয়েছে।',

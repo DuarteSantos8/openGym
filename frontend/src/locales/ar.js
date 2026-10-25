@@ -2496,6 +2496,7 @@ export default {
   'An import is already running. Wait for it to finish or cancel it.': 'هناك استيراد قيد التشغيل بالفعل. انتظر حتى ينتهي أو ألغِه.',
   'Analyse video': 'تحليل الفيديو',
   'Downloading a small copy of the video…': 'جارٍ تنزيل نسخة صغيرة من الفيديو…',
+  'Finding the names and the timer…': 'جارٍ البحث عن الأسماء والمؤقت…',
   'Drag a box around where the exercise name appears, then switch to Timer and do the same for the countdown. Saved for this channel, so its next video skips this step.': 'اسحب مربعًا حول المكان الذي يظهر فيه اسم التمرين، ثم انتقل إلى المؤقّت وافعل الشيء نفسه للعدّ التنازلي. يُحفظ لهذه القناة، فيتخطى فيديوها التالي هذه الخطوة.',
   'How sure the reading and the match are': 'مدى ثقة القراءة والمطابقة',
   'Import cancelled.': 'أُلغي الاستيراد.',

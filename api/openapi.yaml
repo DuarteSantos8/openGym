@@ -3213,7 +3213,11 @@ paths:
                 url: { type: string, example: 'https://youtu.be/dQw4w9WgXcQ', description: 'A YouTube video link (watch, youtu.be, shorts, live).' }
                 redraw:
                   type: boolean
-                  description: Ignore the boxes saved for this video's channel and ask for new ones.
+                  description: |
+                    Mark the boxes myself: ignore the boxes saved for this video's channel and do not
+                    use the ones the worker finds by itself, but ask for them (the worker's own
+                    finding is where the drawing starts). Without it the worker looks for the
+                    name and the timer itself and asks only when it cannot tell.
       responses:
         '202':
           description: Queued.

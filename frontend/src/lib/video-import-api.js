@@ -20,6 +20,7 @@ export function stageText(stage) {
     case 'queued': return t('Waiting for a free slot…')
     case 'metadata': return t('Reading the video’s details…')
     case 'download': return t('Downloading a small copy of the video…')
+    case 'detect': return t('Finding the names and the timer…')
     case 'needs_roi': return t('Waiting for you to mark the name and the timer')
     case 'frames': return t('Taking one frame per second…')
     case 'ocr': return t('Reading the names and the timer…')

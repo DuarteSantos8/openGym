@@ -2441,6 +2441,7 @@ export default {
   'An import is already running. Wait for it to finish or cancel it.': '이미 가져오기가 진행 중이에요. 끝날 때까지 기다리거나 취소하세요.',
   'Analyse video': '영상 분석',
   'Downloading a small copy of the video…': '영상의 작은 사본을 내려받는 중…',
+  'Finding the names and the timer…': '이름과 타이머를 찾는 중…',
   'Drag a box around where the exercise name appears, then switch to Timer and do the same for the countdown. Saved for this channel, so its next video skips this step.': '운동 이름이 나타나는 곳을 상자로 드래그하세요. 그다음 타이머로 전환해 카운트다운도 똑같이 하세요. 이 채널에 저장되어 다음 영상에서는 이 단계를 건너뛰어요.',
   'How sure the reading and the match are': '읽기와 매칭이 얼마나 확실한지',
   'Import cancelled.': '가져오기가 취소됐어요.',

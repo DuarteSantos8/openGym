@@ -2438,6 +2438,7 @@ export default {
   'An import is already running. Wait for it to finish or cancel it.': 'Імпорт уже триває. Дочекайся його завершення або скасуй його.',
   'Analyse video': 'Проаналізувати відео',
   'Downloading a small copy of the video…': 'Завантажується невелика копія відео…',
+  'Finding the names and the timer…': 'Шукаємо назви та таймер…',
   'Drag a box around where the exercise name appears, then switch to Timer and do the same for the countdown. Saved for this channel, so its next video skips this step.': 'Виділи рамкою місце, де з’являється назва вправи, потім перемкнись на Таймер і зроби те саме для зворотного відліку. Запам’ятовується для цього каналу, тож наступне його відео цей крок пропустить.',
   'How sure the reading and the match are': 'Наскільки надійні розпізнавання та зіставлення',
   'Import cancelled.': 'Імпорт скасовано.',

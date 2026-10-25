@@ -9,7 +9,7 @@
  *     DATA_DIR/video-import/<uid>.json, so the next video from the same creator needs no setup.
  *     The worker keeps nothing; it can be rebuilt or thrown away without anyone losing a box.
  *
- * Off unless VIDEO_IMPORT_URL is set: no routes answer anything but 404 and /api/config says
+ * Off unless VIDEO_IMPORT_URL is set (or with VIDEO_IMPORT=0): no routes answer anything but 404 and /api/config says
  * nothing, so an instance without the worker is the app it was before this file existed.
  *
  * Matching the names the worker read to exercises happens in the app, not here: the catalogue
@@ -18,7 +18,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-export const VIDEO_IMPORT_URL = (process.env.VIDEO_IMPORT_URL || '').replace(/\/+$/, '');
+// On whenever the worker is configured, unless VIDEO_IMPORT says otherwise (0, false, no, off): an
+// instance that has the worker running but does not want the feature switches it off here, with
+// no routes and nothing in /api/config, exactly as if the worker were not there.
+const ENABLED = !/^(0|false|no|off)$/i.test(process.env.VIDEO_IMPORT || '');
+export const VIDEO_IMPORT_URL = ENABLED ? (process.env.VIDEO_IMPORT_URL || '').replace(/\/+$/, '') : '';
 const TOKEN = process.env.VIDEO_IMPORT_TOKEN || '';
 const WORKER_TIMEOUT_MS = 15000;
 const MAX_CHANNELS = 200;
@@ -151,7 +155,7 @@ export function videoImportRoutes({ json, readBody, readSession, dataDir, atomic
 
   if (!workerUrl) return {};
   return {
-    // { url, redraw?: true } → 202 job. The video is always read (an old `mode` is ignored). `redraw` ignores the boxes saved
+    // { url, redraw?: true } → 202 job. The video is always read (an old `mode` is ignored). `redraw` (mark the boxes myself) ignores the boxes saved
     // for this channel, for when they turned out wrong.
     'POST /api/video-import': async (req, res) => {
       const user = guard(req, res); if (!user) return;
@@ -163,7 +167,9 @@ export function videoImportRoutes({ json, readBody, readSession, dataDir, atomic
       }
       const w = await worker('POST', '/jobs', {
         url: yt.url, owner: user.id,
-        rois: b.redraw === true ? {} : readRois(user.id)
+        rois: b.redraw === true ? {} : readRois(user.id),
+        // "Mark them myself": the worker asks for the boxes even if it can find them.
+        manual: b.redraw === true
       });
       if (w.status < 300) started.set(user.id, [...startedToday(user.id), Date.now()]);
       json(res, w.status, w.status < 300 ? publicJob(w.body) : w.body);

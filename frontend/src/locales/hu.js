@@ -2444,6 +2444,7 @@ export default {
   'An import is already running. Wait for it to finish or cancel it.': 'Már fut egy importálás. Várd meg, amíg befejeződik, vagy szakítsd meg.',
   'Analyse video': 'Videó elemzése',
   'Downloading a small copy of the video…': 'A videó kis másolatának letöltése…',
+  'Finding the names and the timer…': 'A nevek és az időzítő keresése…',
   'Drag a box around where the exercise name appears, then switch to Timer and do the same for the countdown. Saved for this channel, so its next video skips this step.': 'Húzz egy keretet oda, ahol a gyakorlat neve megjelenik, majd válts az Időzítőre, és csináld meg ugyanezt a visszaszámlálásnál. Elmentjük ehhez a csatornához, így a következő videója kihagyja ezt a lépést.',
   'How sure the reading and the match are': 'Mennyire biztos az olvasás és az egyezés',
   'Import cancelled.': 'Importálás megszakítva.',

@@ -144,6 +144,7 @@ worker has no access to `./data` and no host port; only the api container talks 
 | Variable | Default | What it does |
 |---|---|---|
 | `VIDEO_IMPORT_URL` | *(unset: feature off)* | Where the API finds the worker |
+| `VIDEO_IMPORT` | *(on once the URL is set)* | `0` (or `false`, `no`, `off`) switches the feature off while the worker keeps running: no routes, no entry in the app |
 | `VIDEO_IMPORT_TOKEN` | *(none: the worker will not start)* | Shared secret between API and worker, at least 16 characters |
 | `VIDEO_IMPORT_ALLOW_NO_TOKEN` | *(unset)* | `1` lets the worker start without a token, for a port you have put behind something else |
 | `VIDEO_IMPORT_MAX_MINUTES` | `90` | Longest video accepted |

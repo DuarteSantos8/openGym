@@ -2441,6 +2441,7 @@ export default {
   'An import is already running. Wait for it to finish or cancel it.': 'C’è già un’importazione in corso. Aspetta che finisca oppure annullala.',
   'Analyse video': 'Analizza il video',
   'Downloading a small copy of the video…': 'Scaricamento di una piccola copia del video…',
+  'Finding the names and the timer…': 'Ricerca dei nomi e del timer…',
   'Drag a box around where the exercise name appears, then switch to Timer and do the same for the countdown. Saved for this channel, so its next video skips this step.': 'Trascina un riquadro dove compare il nome dell’esercizio, poi passa a Timer e fai lo stesso per il conto alla rovescia. Viene salvato per questo canale, così il suo prossimo video salta questo passaggio.',
   'How sure the reading and the match are': 'Quanto sono affidabili la lettura e l’abbinamento',
   'Import cancelled.': 'Importazione annullata.',

@@ -64,7 +64,7 @@ test('starting an import sends only the canonical URL, the owner and the saved b
   const ok = await h.call('POST /api/video-import', { body: { url: 'https://youtu.be/dQw4w9WgXcQ?t=30&list=x', mode: 'video', owner: 'someone-else' } });
   assert.equal(ok.code, 202);
   assert.equal(ok.body.owner, undefined, 'the owner field stays between API and worker');
-  assert.deepEqual(h.calls[0].body, { url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', owner: 'u1', rois: {} }, 'the old mode is not passed on: a video is always read');
+  assert.deepEqual(h.calls[0].body, { url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', owner: 'u1', rois: {}, manual: false }, 'the old mode is not passed on: a video is always read');
 });
 
 test('signed out is refused', async () => {
@@ -99,6 +99,9 @@ test('boxes are cleaned, forwarded and remembered for the channel', async () => 
   assert.deepEqual(Object.keys(h.calls.at(-1).body.rois), ['UCfit_1']);
   await h.call('POST /api/video-import', { body: { url: 'https://youtu.be/dQw4w9WgXcQ', redraw: true } });
   assert.deepEqual(h.calls.at(-1).body.rois, {});
+  assert.equal(h.calls.at(-1).body.manual, true, 'the worker is told to ask, not to look by itself');
+  await h.call('POST /api/video-import', { body: { url: 'https://youtu.be/dQw4w9WgXcQ' } });
+  assert.equal(h.calls.at(-1).body.manual, false);
 });
 
 test('remember: false forwards the boxes without saving them', async () => {
@@ -166,4 +169,23 @@ test('a bad link or a start the worker refused does not spend the daily budget',
   const ok = {};
   await routes['POST /api/video-import']({ body: { url: 'https://youtu.be/dQw4w9WgXcQ' } }, ok);
   assert.equal(ok.code, 202);
+});
+
+// The module reads its switches once, when it loads: each case loads a copy of its own.
+async function loadWith(env) {
+  const keep = { VIDEO_IMPORT: process.env.VIDEO_IMPORT, VIDEO_IMPORT_URL: process.env.VIDEO_IMPORT_URL };
+  for (const [k, v] of Object.entries(env)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
+  try { return await import('../video-import.js?switch=' + Math.random()); }
+  finally { for (const [k, v] of Object.entries(keep)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; } }
+}
+
+test('VIDEO_IMPORT=0 turns the feature off even where the worker is configured', async () => {
+  const url = 'http://worker:3100';
+  assert.equal((await loadWith({ VIDEO_IMPORT_URL: url, VIDEO_IMPORT: undefined })).VIDEO_IMPORT_URL, url, 'on by default once the worker is set');
+  assert.equal((await loadWith({ VIDEO_IMPORT_URL: url, VIDEO_IMPORT: '1' })).VIDEO_IMPORT_URL, url);
+  for (const off of ['0', 'false', 'No', 'OFF']) assert.equal((await loadWith({ VIDEO_IMPORT_URL: url, VIDEO_IMPORT: off })).VIDEO_IMPORT_URL, '', off);
+  // Off means no routes at all: nothing answers, /api/config says nothing (it hangs off the same URL).
+  const off = await loadWith({ VIDEO_IMPORT_URL: url, VIDEO_IMPORT: '0' });
+  assert.deepEqual(Object.keys(off.videoImportRoutes({ json() {}, readBody() {}, readSession() {}, dataDir: os.tmpdir(), atomicWrite() {} })), []);
+  assert.equal((await loadWith({ VIDEO_IMPORT_URL: '', VIDEO_IMPORT: '1' })).VIDEO_IMPORT_URL, '', '1 does not make a worker appear');
 });

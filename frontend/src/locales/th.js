@@ -2452,6 +2452,7 @@ export default {
   'An import is already running. Wait for it to finish or cancel it.': 'มีการนำเข้ากำลังทำงานอยู่ รอให้เสร็จหรือยกเลิกก่อน',
   'Analyse video': 'วิเคราะห์วิดีโอ',
   'Downloading a small copy of the video…': 'กำลังดาวน์โหลดสำเนาขนาดเล็กของวิดีโอ…',
+  'Finding the names and the timer…': 'กำลังหาชื่อและตัวจับเวลา…',
   'Drag a box around where the exercise name appears, then switch to Timer and do the same for the countdown. Saved for this channel, so its next video skips this step.': 'ลากกรอบครอบตรงที่ชื่อท่าปรากฏ แล้วสลับไปที่ตัวจับเวลาและทำแบบเดียวกันกับการนับถอยหลัง ระบบจะจำไว้สำหรับช่องนี้ วิดีโอถัดไปของช่องจึงข้ามขั้นตอนนี้',
   'How sure the reading and the match are': 'การอ่านและการจับคู่มั่นใจแค่ไหน',
   'Import cancelled.': 'ยกเลิกการนำเข้าแล้ว',
