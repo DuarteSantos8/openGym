@@ -260,6 +260,12 @@ export const useUI = create((set, get) => ({
     set({ toastMsg: '', toastAction: null })
     act.run()
   },
+  // The toast's ×: gone now, its action with it (what it would have undone stays done).
+  dismissToast() {
+    clearTimeout(toastTm)
+    toastPaused = false
+    set({ toastMsg: '', toastAction: null })
+  },
   pauseToast() {
     if (!get().toastAction || toastPaused) return
     toastPaused = true

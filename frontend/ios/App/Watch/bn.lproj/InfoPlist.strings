@@ -1,0 +1,4 @@
+/* openGym on the Apple Watch, bn: Info.plist. Written by ios/ci/watch-strings.mjs. */
+
+"NSHealthShareUsageDescription" = "openGym ওয়ার্কআউটের সময় আর প্রতিটি সেটের পাশে আপনার হার্ট রেট দেখায়।";
+"NSHealthUpdateUsageDescription" = "চালু করলে openGym আপনার ওয়ার্কআউট Apple Health-এ সেভ করে।";
