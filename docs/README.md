@@ -23,7 +23,7 @@ to install.
 | [HTTPS at home](SELF_HOSTING_HTTPS.md) | You want valid certificates on your LAN without exposing the server to the internet |
 | [Kubernetes](SELF_HOSTING_KUBERNETES.md) | You run a cluster instead of Docker Compose |
 | [AI coach](AI_COACH.md) | You're deciding whether to turn the coach on, and with which provider |
-| [MCP server](../mcp/README.md) | You want Claude Desktop, Cursor or another AI client to read your training history |
+| [MCP server](../mcp/README.md) | You want Claude, Cursor or another AI client to read your training history, locally or at `https://<your host>/mcp` |
 | [NixOS](NIX.md) | You run NixOS and want openGym native — flake packages and a NixOS module, no Docker |
 | [Security](../SECURITY.md) | You host it for other people, or want to report a vulnerability |
 

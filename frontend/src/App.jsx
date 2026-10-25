@@ -56,6 +56,7 @@ import CoachChat from './views/CoachChat.jsx'
 import Measurements from './views/Measurements.jsx'
 import CoachIntake from './views/CoachIntake.jsx'
 import CoachSetup from './views/CoachSetup.jsx'
+import Connect from './views/Connect.jsx'
 
 // last known scrollY per route, so back-navigation can put the page where it was
 const scrollPositions = new Map()
@@ -260,6 +261,8 @@ function Shell() {
       <Route path="/measurements" element={<Measurements />} />
       <Route path="/settings" element={<SettingsRoute />} />
       <Route path="/settings/:page" element={<SettingsRoute />} />
+      {/* The MCP endpoint's OAuth consent screen (api/oauth.js), reached from GET /api/oauth/authorize. */}
+      <Route path="/connect" element={<Connect />} />
       {/* The Coach screens gate themselves on the instance config; the routes exist
           unconditionally so a deep link from a notification lands somewhere sane
           rather than on the catch-all. */}

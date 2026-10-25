@@ -53,12 +53,16 @@ in the thread; there's no objection, and no request to sit on it indefinitely.
   pause by switching between name and e-mail. Adding a passkey to a profile that
   is not yours, removing a profile's last way in, or redeeming a device code twice, after it
   expired, or for a profile it was not made for (`api/passkeys-store.js`, `api/device-link.js`).
+- **The MCP endpoint and its OAuth** (`api/oauth.js`, `mcp/src/http.js`) — getting an access
+  token without the profile's consent on the app's own screen, using a code twice, without its
+  PKCE verifier or after "sign out everywhere", a token that reads another profile's data or
+  outlives the end of its grant, or `/mcp` answering without a valid token.
 - **Frontend** — XSS in the React app, or anything that lets a page on another origin read or
   change a signed-in user's data.
-- **Shipped deployment config** — `docker-compose.yml`, `web/nginx.conf.template`, the two Dockerfiles:
+- **Shipped deployment config** — `docker-compose.yml`, `web/nginx.conf.template`, the Dockerfiles:
   a default that exposes something a self-hoster wouldn't expect to be exposed.
-- **The published images** `registry.gitlab.com/duartesantos8/opengym/{api,web}` and
-  `ghcr.io/duartesantos8/opengym-{api,web}`.
+- **The published images** `registry.gitlab.com/duartesantos8/opengym/{api,web,mcp}` and
+  `ghcr.io/duartesantos8/opengym-{api,web,mcp}`.
 
 ## Out of scope
 
@@ -154,6 +158,18 @@ Read this before hosting openGym for anyone other than yourself.
   The full address is never logged or audited (masked to `a…@e…`) and is returned only to its
   owner (`GET /api/account/password`) and to admins (`GET /api/admin/users`, `/api/admin/user`);
   it is not in `/api/me`, Coach payloads, the MCP bridge or plan sharing.
+- **AI clients sign in through the app, and only read.** The opt-in `mcp` container serves
+  `/mcp` and mounts `./data` read-only. A client registers itself (the client id is its name and
+  redirect URIs signed with `SECRET`; nothing is stored) and is sent to the app's consent screen,
+  where the person signs in as usual and approves it. Public clients with PKCE (S256) only; a code
+  lives five minutes, is good for one attempt and is refused after "sign out everywhere" or a new
+  password. Access tokens last an hour, refresh tokens 90 days and rotate; both are stored in
+  `db.json` only as SHA-256s, and each grant carries the profile's session version, so signing
+  out everywhere, a new password, an admin reset, disabling or deleting the profile ends it. The
+  MCP server checks the access token against `db.json` on every request and reads only that
+  profile. Registration and the token route are CSRF-exempt (the code and verifier, or the
+  refresh token, are the credential and no cookie is read or set); consent is a cookie route and
+  keeps the origin check (`api/oauth.js`, the OAuth block in `api/server.js`, `mcp/src/http.js`).
 - **Sessions are a signed cookie.** It carries `<uid>:<expiry>:<version>` plus an
   HMAC-SHA256 tag over it, compared in constant time (`sign` and `verifySig` in `api/server.js`).
   The key is 32 random bytes generated on first run and written to `./data/secret` with mode

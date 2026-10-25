@@ -94,6 +94,9 @@ the `web` container. Pick whichever you already run:
 1. Create a tunnel and route `gym.example.com` → `http://<docker-host>:8080`.
 2. Cloudflare gives you HTTPS automatically.
 
+Whichever option you pick, the optional MCP endpoint (`/mcp`, for AI clients) lives on that same
+origin, so it needs no route of its own: see [mcp/README.md](../mcp/README.md#self-hosted-over-https).
+
 ### Option B — Caddy (automatic Let's Encrypt)
 
 ```caddy
@@ -449,6 +452,8 @@ PORT=3000                  # port the API listens on; web proxies to the same va
 RESOLVER=127.0.0.11        # DNS nginx resolves BACKEND with — Docker's, unless you are not on Docker
 BASE_PATH=                 # subpath openGym is served under, e.g. /gym — see below; empty = site root
 SESSION_DAYS=90            # how long a sign-in lasts
+MCP_BACKEND=mcp            # name of the opt-in MCP service that /mcp is proxied to
+MCP_PORT=3001              # port it listens on; web proxies to the same value
 ```
 
 `NGINX_PORT` stays 80 under Docker. The web container runs as an unprivileged user (uid 101),

@@ -145,6 +145,12 @@ tags:
     description: Passkey (WebAuthn) registration and login, sessions
   - name: pairing
     description: Mobile-app pairing (code from a signed-in browser tab)
+  - name: oauth
+    description: >-
+      OAuth 2.1 for the optional MCP endpoint (`/mcp`, mcp/README.md): an AI client registers
+      itself, the person approves it on the app's consent screen after signing in as usual, and
+      the client trades the code (PKCE S256) for a read-only access token. Discovery documents
+      are at `/.well-known/oauth-authorization-server` and `/.well-known/oauth-protected-resource`.
   - name: password
     description: >-
       Optional name-and-password sign-in (`PASSWORD_LOGIN=1`). Every route here is a 404
@@ -641,6 +647,158 @@ paths:
               example: { error: "the last admin cannot leave while other profiles remain", code: "last-admin" }
         '429': { $ref: '#/components/responses/TooManyRequests' }
 
+  /api/oauth/register:
+    post:
+      tags: [oauth]
+      operationId: oauthRegister
+      summary: Register an OAuth client (RFC 7591)
+      description: |
+        Dynamic client registration for MCP clients. Nothing is stored: the client id is the
+        client's name and redirect URIs, signed with the instance secret. Redirect URIs must be
+        https, http on a loopback address, or an app's own scheme. CSRF-exempt.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [redirect_uris]
+              properties:
+                redirect_uris: { type: array, items: { type: string }, maxItems: 10 }
+                client_name: { type: string, maxLength: 80 }
+            example: { redirect_uris: ["http://localhost:33418/callback"], client_name: "Claude Code" }
+      responses:
+        '201':
+          description: Registered. Public client, no secret.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  client_id: { type: string }
+                  client_name: { type: string }
+                  redirect_uris: { type: array, items: { type: string } }
+                  token_endpoint_auth_method: { type: string, enum: [none] }
+        '400':
+          description: '`invalid_redirect_uri`.'
+  /api/oauth/authorize:
+    get:
+      tags: [oauth]
+      operationId: oauthAuthorize
+      summary: Start an authorization (redirects to the consent screen)
+      description: |
+        Checks the client id and redirect URI, then redirects (302, relative) to the app's
+        `#/connect` screen with the same query. The person signs in there and approves.
+      security: []
+      parameters:
+        - { name: client_id, in: query, required: true, schema: { type: string } }
+        - { name: redirect_uri, in: query, required: true, schema: { type: string } }
+        - { name: response_type, in: query, required: true, schema: { type: string, enum: [code] } }
+        - { name: code_challenge, in: query, required: true, schema: { type: string } }
+        - { name: code_challenge_method, in: query, required: true, schema: { type: string, enum: [S256] } }
+        - { name: state, in: query, schema: { type: string } }
+      responses:
+        '302':
+          description: To the consent screen.
+        '400':
+          description: '`invalid_client`: unknown client, or a redirect URI it did not register. Never redirected.'
+  /api/oauth/client:
+    get:
+      tags: [oauth]
+      operationId: oauthClient
+      summary: What the consent screen shows about a client
+      security: []
+      parameters:
+        - { name: client_id, in: query, required: true, schema: { type: string } }
+        - { name: redirect_uri, in: query, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: The registered name and where the person will be sent back.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name: { type: string }
+                  redirect_host: { type: string }
+        '400':
+          description: '`invalid_client`.'
+  /api/oauth/approve:
+    post:
+      tags: [oauth]
+      operationId: oauthApprove
+      summary: Approve a client for the signed-in profile
+      description: |
+        Called by the consent screen with the session cookie and the authorization request's
+        parameters. Returns the client's redirect URI with a one-time code (five minutes) and the
+        `state` it sent.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [client_id, redirect_uri, response_type, code_challenge, code_challenge_method]
+              properties:
+                client_id: { type: string }
+                redirect_uri: { type: string }
+                response_type: { type: string, enum: [code] }
+                code_challenge: { type: string }
+                code_challenge_method: { type: string, enum: [S256] }
+                state: { type: string }
+      responses:
+        '200':
+          description: Where to send the browser.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  redirect: { type: string }
+        '400':
+          description: '`invalid_client`, `invalid_request` or `unsupported_response_type`.'
+        '401':
+          description: Not signed in.
+  /api/oauth/token:
+    post:
+      tags: [oauth]
+      operationId: oauthToken
+      summary: Trade a code or a refresh token for tokens
+      description: |
+        `authorization_code` with `code_verifier` (PKCE), or `refresh_token`, which rotates.
+        Form-encoded or JSON. Access tokens last an hour, refresh tokens 90 days; "sign out
+        everywhere", a new password, or a disabled or deleted profile ends them. CSRF-exempt.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [grant_type, client_id]
+              properties:
+                grant_type: { type: string, enum: [authorization_code, refresh_token] }
+                client_id: { type: string }
+                code: { type: string }
+                code_verifier: { type: string }
+                redirect_uri: { type: string }
+                refresh_token: { type: string }
+      responses:
+        '200':
+          description: Tokens.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token: { type: string }
+                  token_type: { type: string, enum: [Bearer] }
+                  expires_in: { type: integer }
+                  refresh_token: { type: string }
+                  scope: { type: string, enum: [read] }
+        '400':
+          description: '`invalid_grant` or `unsupported_grant_type`.'
   /api/pair/create:
     post:
       tags: [pairing]

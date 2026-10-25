@@ -5,8 +5,10 @@ application (Claude Desktop, Cursor, Cline, Continue, etc.) read your openGym pr
 routines, workouts, body-weight log, estimated 1RMs, and muscle balance — directly from your
 self-hosted `./data` directory.
 
-It is read-only, runs locally as a stdio process spawned by the LLM client, adds no new
-container, and requires no extra authentication. The LLM never sees passkeys, VAPID keys, or
+It is read-only and runs one of two ways: locally, as a stdio process the LLM client spawns
+(no container, no extra authentication), or as the opt-in `mcp` container of a self-hosted
+instance, reachable at `https://<your host>/mcp`, where the client signs in through the app (see
+[Self-hosted, over HTTPS](#self-hosted-over-https)). The LLM never sees passkeys, VAPID keys, or
 session secrets — it can only read the same `state-<uid>.json` files the openGym api already
 writes.
 
@@ -14,8 +16,7 @@ The numbers it answers with are computed by the **same pure functions the React 
 (`frontend/src/lib/*.js`) — `estimate1RM`, `loadOfWorkouts`, `effectiveRoutine`, etc. — so a
 "what's my bench 1RM?" answer matches the Stats screen exactly.
 
-> Phase 1 of a multi-phase plan. Read-only today; long-lived token auth + write tools are
-> planned but not shipped yet. See **Roadmap** below.
+> Read-only today; write tools are planned but not shipped yet. See **Roadmap** below.
 
 ## Quick start
 
@@ -65,6 +66,64 @@ For Cursor and other MCP-compatible clients, see the client's MCP docs — the s
 Restart the client; you should see the openGym tools appear with "serving profile \<name\>" on
 the server's stderr.
 
+## Self-hosted, over HTTPS
+
+For an instance run with `docker compose`, the `mcp` service serves the same tools over
+Streamable HTTP. It mounts `./data` read-only, and the web container proxies `/mcp` to it, so the
+endpoint is on the address the app already has: a Cloudflare tunnel or reverse proxy pointed at
+the web container carries it with no change, and nothing new is opened on the host.
+
+### 1. Turn it on
+
+Add one line to `.env`, then `docker compose up -d`:
+
+```bash
+COMPOSE_PROFILES=mcp
+```
+
+There is no secret to generate. `ORIGIN` (already set for passkeys) is where clients are sent to
+sign in.
+
+### 2. Connect a client
+
+Give the client `https://gym.example.com/mcp`. For example:
+
+```bash
+claude mcp add --transport http opengym https://gym.example.com/mcp
+```
+
+In apps that take a custom connector, paste the same URL. The client opens the app in a browser;
+you sign in as usual (passkey, or password where the instance offers it) and approve the client
+on the **Connect** screen. From then on it reads that profile only, for as long as it keeps
+refreshing its token (90 days at most between uses).
+
+Every person on a shared instance connects their own client and sees only their own data. To
+disconnect every client of a profile, use **Sign out everywhere** in Settings; a new password, an
+admin disabling the profile, or deleting it does the same. Each connection is recorded in the
+admin activity log as "Connected an AI app".
+
+How it works: the api is a small OAuth 2.1 authorization server (`api/oauth.js`, discovery at
+`/.well-known/oauth-authorization-server`): dynamic client registration, PKCE (S256) only,
+one-hour access tokens and rotating refresh tokens, stored in `db.json` as hashes. This server
+checks the access token against that file and answers for the profile it belongs to.
+
+### If it does not connect
+
+- **The client says it found no sign-in settings.** The api must know the public address:
+  `ORIGIN` (and `RP_ID`) in the environment the *api* container gets, not only somewhere compose
+  reads it. Check with
+  `curl https://gym.example.com/.well-known/oauth-authorization-server`: every address in it
+  must start with your `ORIGIN`, never `http://localhost:8080`.
+- **`/mcp` answers 502.** The `mcp` container is not running: `COMPOSE_PROFILES=mcp` is missing,
+  or check `docker compose logs mcp`.
+- **An access gate in front of the site** (a login wall at the tunnel or proxy) has to let
+  `/mcp`, `/.well-known/oauth-*`, `/api/oauth/register` and `/api/oauth/token` through: AI clients
+  call them without a browser.
+- **Under a subpath** (`BASE_PATH`) the discovery documents still have to be reachable at the
+  root of the host (`/.well-known/oauth-*`), which a proxy that only forwards the prefix does not
+  do.
+- **Kubernetes:** the manifests in `kubernetes/` do not include the `mcp` container yet.
+
 ## Tools
 
 Nine read-only tools in v1:
@@ -108,12 +167,12 @@ dependencies landed in `frontend/`, no public exports changed.
 ## Design constraints honoured
 
 - **One runtime dependency beyond the MCP SDK:** none. No database driver, no HTTP framework.
-- **No new container.** stdio transport is spawned by the LLM client; nothing to add to
-  `docker-compose.yml`.
-- **No new auth.** The filesystem is the boundary — same as `docker compose` running on the
-  user's box. No passkey material, VAPID keys, or session secrets ever cross it.
-- **No telemetry, no network.** Reads `./data/*.json` and exits when the LLM client
-  disconnects.
+- **No container unless you ask for one.** stdio is spawned by the LLM client; the `mcp`
+  compose service only starts with `COMPOSE_PROFILES=mcp`.
+- **No new auth over stdio.** The filesystem is the boundary — same as `docker compose`
+  running on the user's box. Over HTTP, OAuth through the app's own sign-in; no new kind of
+  account. No passkey material, VAPID keys, or session secrets ever cross either.
+- **No telemetry, no outbound network.** Reads `./data/*.json`, read-only.
 
 ## Tests
 
@@ -121,24 +180,25 @@ dependencies landed in `frontend/`, no public exports changed.
 cd mcp && npm test
 ```
 
-58 cases seeding state from `frontend/src/lib/demoSeed.js` (the same deterministic fixture
+The tool cases seed state from `frontend/src/lib/demoSeed.js` (the same deterministic fixture
 the public demo runs on). Pins JSON shape and the user-facing edge cases: rest-day override,
 missing routine, zero-workout history, no synced state, superset links, three 1RM formulas.
 "Today" is pinned via `vi.useFakeTimers({ now: ..., toFake: ['Date'] })` so date-dependent
 tools see consistent values regardless of when the suite runs. The pure lib functions have
-their own 92 tests in `frontend/src/lib/*.test.js`.
+their own 92 tests in `frontend/src/lib/*.test.js`. `test/http.test.js` covers the HTTP transport
+with tokens issued by `api/oauth.js`: two profiles kept apart, and every way a grant ends.
 
 ## Roadmap
 
 - **Done (Phase 1):** read-only stdio, 8 tools, direct `./data` access.
 - **Done (Phase 1.5):** `preview_session` — the policy's next prescription, the opening set
   rows it produces, and which of plan / confirmed weight / history each number came from.
+- **Done (Phase 3, ahead of 2):** Streamable HTTP transport (`src/http.js`, stateless), opt-in
+  `mcp` container proxied at `/mcp`, OAuth through the app's sign-in (`api/oauth.js`).
 - **Phase 2:** read+write over stdio. Requires a long-lived token auth path minted from the
   admin dashboard (new `./data/tokens.json`) and a write-lock against the web UI's read-modify-
   write of `state-<uid>.json`. Tools: `log_workout`, `add_bodyweight`, `edit_routine`,
   `assign_weekday`, `override_day`.
-- **Phase 3:** Streamable HTTP transport, opt-in 4th container in `docker-compose.yml`. Same
-  tool implementations, second transport — the MCP SDK supports both behind one tool registration.
 
 ## License
 
