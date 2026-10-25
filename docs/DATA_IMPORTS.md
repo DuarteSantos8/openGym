@@ -55,11 +55,15 @@ paste the link under **Plan → share icon → Import from a video**, check the 
 
 ### What happens
 
-1. **Chapters first.** If the video's chapters, or a list of timestamps in its description, already
-   name the exercises, the draft is built from those and nothing is downloaded. Tick *Read the video
-   even if it has chapters* to skip this.
-2. **Otherwise the video is read.** The server downloads a small copy (480p at most, no sound) and
-   looks at one frame per second.
+1. **The video is read.** The server downloads a small copy (480p at most, no sound) and looks at
+   one frame per second. Chapters are not the answer: they are a list of songs as often as of
+   exercises, and even a good one gives the names, not the work, the rest and the rounds. They
+   help: they name the video's parts (the sections of the draft), and a move the screen leaves
+   without a name (a clustered set the demo card explains) takes the name of the chapter it runs
+   in, when that chapter reads like an exercise. Only when the frames hold no names at all do the
+   chapters (or a timestamped list in the description) become the draft, and the review screen
+   says so.
+2. **Every second is read** twice for the timer, once for the name; see below for how.
 3. **The first time for a channel, you mark the boxes**: one around the exercise name and one
    around the timer. You get three stills from the video, with a suggestion already drawn (labels
    that never change, such as "NEXT", are not suggested; the timer is found by its counting: a

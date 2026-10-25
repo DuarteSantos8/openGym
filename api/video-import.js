@@ -151,7 +151,7 @@ export function videoImportRoutes({ json, readBody, readSession, dataDir, atomic
 
   if (!workerUrl) return {};
   return {
-    // { url, mode?: 'auto'|'video', redraw?: true } → 202 job. `redraw` ignores the boxes saved
+    // { url, redraw?: true } → 202 job. The video is always read (an old `mode` is ignored). `redraw` ignores the boxes saved
     // for this channel, for when they turned out wrong.
     'POST /api/video-import': async (req, res) => {
       const user = guard(req, res); if (!user) return;
@@ -162,7 +162,7 @@ export function videoImportRoutes({ json, readBody, readSession, dataDir, atomic
         return json(res, 429, { error: 'the daily limit of video imports for this profile is used up', code: 'daily-limit' });
       }
       const w = await worker('POST', '/jobs', {
-        url: yt.url, owner: user.id, mode: b.mode === 'video' ? 'video' : 'auto',
+        url: yt.url, owner: user.id,
         rois: b.redraw === true ? {} : readRois(user.id)
       });
       if (w.status < 300) started.set(user.id, [...startedToday(user.id), Date.now()]);

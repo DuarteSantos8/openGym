@@ -7,8 +7,8 @@ import { t } from './i18n-core.js'
 /** Whether this server offers the import at all: the flag GET /api/config carries for a session. */
 export const videoImportAvailable = (config, user, { demo } = {}) => !demo && !!(user && config?.video_import)
 
-export const startVideoImport = (url, { mode = 'auto', redraw = false } = {}) =>
-  api('/api/video-import', { method: 'POST', body: JSON.stringify({ url, mode, ...(redraw ? { redraw: true } : {}) }) })
+export const startVideoImport = (url, { redraw = false } = {}) =>
+  api('/api/video-import', { method: 'POST', body: JSON.stringify({ url, ...(redraw ? { redraw: true } : {}) }) })
 export const videoImportJob = id => api('/api/video-import/job?id=' + encodeURIComponent(id))
 export const submitVideoRoi = (id, { name, timer, remember = true }) =>
   api('/api/video-import/roi', { method: 'POST', body: JSON.stringify({ id, name, timer: timer || null, remember }) })

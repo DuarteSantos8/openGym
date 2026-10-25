@@ -41,7 +41,6 @@ export default function VideoImport() {
   const toast = useUI(s => s.toast)
 
   const [url, setUrl] = useState('')
-  const [forceVideo, setForceVideo] = useState(false)
   const [job, setJob] = useState(null)
   const [jobId, setJobId] = useState(remembered)
   const [busy, setBusy] = useState(false)
@@ -85,13 +84,13 @@ export default function VideoImport() {
     </div>
   }
 
-  const start = async ({ mode, redraw } = {}) => {
+  const start = async ({ redraw } = {}) => {
     // After a reload the field is empty: the job itself knows which video it was.
     const link = (url || lastUrl.current || job?.source?.url || '').trim()
     if (!link) return
     setBusy(true)
     try {
-      const j = await startVideoImport(link, { mode: mode || (forceVideo ? 'video' : 'auto'), redraw })
+      const j = await startVideoImport(link, { redraw })
       lastUrl.current = link
       setRows(null); setJob(j); setJobId(j.id); remember(j.id)
     } catch (e) {
@@ -132,10 +131,6 @@ export default function VideoImport() {
           <TextField value={url} placeholder="https://www.youtube.com/watch?v=…" inputMode="url" autoCapitalize="none" autoCorrect="off"
             onChange={e => setUrl(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') start() }} />
         </div>
-        <label className="row" style={{ gap: 10, padding: '6px 12px 10px' }}>
-          <Check checked={forceVideo} onChange={setForceVideo} label={t('Read the video even if it has chapters')} />
-          <span className="small">{t('Read the video even if it has chapters')}</span>
-        </label>
       </Section>
       <Button variant="primary" icon="play" disabled={busy || !url.trim()} onClick={() => start()}>{t('Analyse video')}</Button>
     </>}
@@ -149,6 +144,7 @@ export default function VideoImport() {
           </>
         : <>
             <div className="small muted" style={{ marginBottom: 8 }}>{stageText(job?.stage || 'queued')}</div>
+            <div className="small muted" style={{ marginBottom: 8 }}>{t('A long video takes a few minutes.')}</div>
             <div className="vi-bar" role="progressbar" aria-valuenow={job?.pct || 0} aria-valuemin={0} aria-valuemax={100}><span style={{ width: (job?.pct || 0) + '%' }} /></div>
             <div className="row" style={{ justifyContent: 'space-between', marginTop: 10 }}>
               <span className="small muted">{(job?.pct || 0) + '%'}</span>
@@ -165,8 +161,7 @@ export default function VideoImport() {
 
     {rows && <Review rows={rows} setRows={setRows} result={job?.result} name={name} setName={setName} S={S}
       onSave={save} onReset={reset}
-      onReadVideo={() => start({ mode: 'video' })}
-      onRedraw={() => start({ mode: 'video', redraw: true })} />}
+      onRedraw={() => start({ redraw: true })} />}
   </div>
 }
 
@@ -264,7 +259,7 @@ function RoiStep({ job, onDone, onCancel, busy }) {
 
 /* ----------------------------------------------------------------- review */
 
-function Review({ rows, setRows, result, name, setName, S, onSave, onReset, onReadVideo, onRedraw }) {
+function Review({ rows, setRows, result, name, setName, S, onSave, onReset, onRedraw }) {
   const source = result?.source || {}
   const sections = result?.draft?.sections || []
   const patch = (rid, p) => setRows(rs => rs.map(r => (r.rid === rid ? { ...r, ...p } : r)))
@@ -280,9 +275,11 @@ function Review({ rows, setRows, result, name, setName, S, onSave, onReset, onRe
     if (g) g.rows.push(r); else groups.push({ idx: r.sectionIdx, kind: r.section, label: r.label, rows: [r] })
   }
   const methodText = result?.method === 'video' ? t('Read off the video') : t('Read from the video’s chapters')
+  // The frames held no names at all, so the chapters stand in: say so rather than let it pass for a reading.
+  const fallbackNote = result?.fallback === 'no-text' ? t('No names showed on screen, so this is the video’s own list of chapters.') : null
 
   return <>
-    <Section title={t('Routine')} footer={[source.channel, methodText].filter(Boolean).join(' · ')}>
+    <Section title={t('Routine')} footer={[[source.channel, methodText].filter(Boolean).join(' · '), fallbackNote].filter(Boolean).join('. ')}>
       <div style={{ padding: '8px 12px' }}>
         <TextField value={name} maxLength={80} placeholder={t('Routine name')} onChange={e => setName(e.target.value)} />
       </div>
@@ -310,7 +307,6 @@ function Review({ rows, setRows, result, name, setName, S, onSave, onReset, onRe
 
     <div className="row" style={{ gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
       <Button variant="primary" icon="check" disabled={!rows.length} onClick={onSave}>{t('Save routine')}</Button>
-      {result?.method && result.method !== 'video' && <Button onClick={onReadVideo}>{t('Read the video instead')}</Button>}
       {result?.method === 'video' && <Button onClick={onRedraw}>{t('Mark the boxes again')}</Button>}
       <Button variant="ghost" onClick={onReset}>{t('Start over')}</Button>
     </div>

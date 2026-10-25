@@ -2573,7 +2573,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Start importing a routine from a YouTube video</span>
   </summary>
   <div class="ep-body">
-<p>Queues a job and answers at once (202); the job is then polled through <code>GET /api/video-import/job</code>. With <code>mode: auto</code> a video whose chapters (or a timestamped list in its description) already name the exercises is read from that alone; otherwise, and always with <code>mode: video</code>, the worker downloads a ≤480p copy and reads the names and the timer off the frames. One import at a time per profile, and at most <code>VIDEO_IMPORT_PER_DAY</code> (12 unless set; 0 = no cap) started per profile per day.</p>
+<p>Queues a job and answers at once (202); the job is then polled through <code>GET /api/video-import/job</code>. The worker downloads a ≤480p copy and reads the names and the timer off the frames; the video's chapters only help (sections, a name for a move the screen leaves unnamed) and are the draft itself only when the frames hold no names at all (<code>result.method</code> is then <code>chapters</code> and <code>result.fallback</code> is <code>no-text</code>). One import at a time per profile, and at most <code>VIDEO_IMPORT_PER_DAY</code> (12 unless set; 0 = no cap) started per profile per day.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
@@ -2581,11 +2581,6 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">url<em class="p-req" title="required">required</em></span>
     <span class="p-type">string</span>
     <span class="p-desc">A YouTube video link (watch, youtu.be, shorts, live).</span>
-  </div>
-  <div class="prow">
-    <span class="p-name">mode</span>
-    <span class="p-type">&quot;auto&quot; | &quot;video&quot;</span>
-    <span class="p-desc"></span>
   </div>
   <div class="prow">
     <span class="p-name">redraw</span>
@@ -3686,7 +3681,12 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow">
     <span class="p-name">result.method</span>
     <span class="p-type">string</span>
-    <span class="p-desc"></span>
+    <span class="p-desc"><code>video</code> (read off the frames), or <code>chapters</code> / <code>description</code> when the frames held no names and the video's own timestamps stood in.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">result.fallback</span>
+    <span class="p-type">&quot;no-text&quot;</span>
+    <span class="p-desc">Set with <code>method</code> other than <code>video</code>.</span>
   </div>
   <div class="prow">
     <span class="p-name">result.roi</span>

@@ -64,7 +64,7 @@ test('starting an import sends only the canonical URL, the owner and the saved b
   const ok = await h.call('POST /api/video-import', { body: { url: 'https://youtu.be/dQw4w9WgXcQ?t=30&list=x', mode: 'video', owner: 'someone-else' } });
   assert.equal(ok.code, 202);
   assert.equal(ok.body.owner, undefined, 'the owner field stays between API and worker');
-  assert.deepEqual(h.calls[0].body, { url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', owner: 'u1', mode: 'video', rois: {} });
+  assert.deepEqual(h.calls[0].body, { url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', owner: 'u1', rois: {} }, 'the old mode is not passed on: a video is always read');
 });
 
 test('signed out is refused', async () => {

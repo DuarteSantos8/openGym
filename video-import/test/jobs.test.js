@@ -17,6 +17,8 @@ const settle = async (job, until = j => ['done', 'error', 'cancelled'].includes(
 const chapterInfo = { id: 'dQw4w9WgXcQ', title: 'HIIT', channel: 'Coach', channel_id: 'UC1', duration: 300,
   chapters: [['Burpees', 0, 40], ['Rest', 40, 60], ['Plank Jacks', 60, 100], ['Rest', 100, 120], ['Jump Squats', 120, 160], ['Rest', 160, 180], ['Burpees', 180, 220], ['Rest', 220, 240], ['Plank Jacks', 240, 280]]
     .map(([title, start_time, end_time]) => ({ title, start_time, end_time })) }
+// What a video read off the screen looks like to the job: one move with its name.
+const readOne = async () => ({ frames: [], blocks: [], stats: {}, draft: { sections: [{ kind: 'interval', rows: [{ id: 'v1', name: 'Burpees', key: 'burpees', conf: 0.9, occurrences: [{ start: 0, dur: 40 }] }] }] } })
 const noChapters = { id: 'dQw4w9WgXcQ', title: 'HIIT', channel: 'Coach', channel_id: 'UC1', duration: 300 }
 
 let downloads = 0, workDirs = []
@@ -37,25 +39,55 @@ beforeEach(() => {
   })
 })
 
-test('good chapters finish the job without downloading anything', async () => {
-  jobs._setDeps({ metadata: async () => chapterInfo, download: async () => { downloads++; throw new Error('no') } })
-  const job = await settle(jobs.create({ url: URL_OK, owner: 'u1' }))
-  assert.equal(job.status, 'done', job.error)
-  assert.equal(downloads, 0)
-  const v = jobs.view(job)
-  assert.equal(v.result.method, 'chapters')
-  assert.equal(v.result.source.channelId, 'UC1')
-  const iv = v.result.draft.sections.find(s => s.kind === 'interval')
-  assert.deepEqual(iv.rows.map(r => [r.key, r.rounds]), [['burpees', 2], ['plank jacks', 2], ['jump squats', 1]])
-  assert.equal(v.pct, 100)
-})
-
-test('mode "video" reads the frames even when chapters exist', async () => {
-  jobs._setDeps({ metadata: async () => chapterInfo })
-  const job = await settle(jobs.create({ url: URL_OK, owner: 'u1', mode: 'video', rois: { UC1: { name: { x: 0, y: 0.8, w: 0.5, h: 0.1 } } } }))
+test('a video with good chapters is still read frame by frame: the chapters are not the answer', async () => {
+  jobs._setDeps({ metadata: async () => chapterInfo, analyse: readOne })
+  const job = await settle(jobs.create({ url: URL_OK, owner: 'u1', rois: { UC1: { name: { x: 0, y: 0.8, w: 0.5, h: 0.1 } } } }))
   assert.equal(job.status, 'done', job.error)
   assert.equal(downloads, 1)
   assert.equal(job.result.method, 'video')
+  assert.ok(!job.result.fallback)
+})
+
+test('the old mode argument changes nothing: a video is always read', async () => {
+  jobs._setDeps({ metadata: async () => chapterInfo, analyse: readOne })
+  const job = await settle(jobs.create({ url: URL_OK, owner: 'u1', mode: 'auto', rois: { UC1: { name: { x: 0, y: 0.8, w: 0.5, h: 0.1 } } } }))
+  assert.equal(job.status, 'done', job.error)
+  assert.equal(downloads, 1)
+  assert.equal(job.result.method, 'video')
+})
+
+test('a video with no names on screen falls back to its chapters, and says so', async () => {
+  jobs._setDeps({ metadata: async () => chapterInfo })   // fakeAnalyse reads no rows at all
+  const job = await settle(jobs.create({ url: URL_OK, owner: 'u1', rois: { UC1: { name: { x: 0, y: 0.8, w: 0.5, h: 0.1 } } } }))
+  assert.equal(job.status, 'done', job.error)
+  assert.equal(downloads, 1, 'the video was read first')
+  const v = jobs.view(job)
+  assert.equal(v.result.method, 'chapters')
+  assert.equal(v.result.fallback, 'no-text')
+  const iv = v.result.draft.sections.find(s => s.kind === 'interval')
+  assert.deepEqual(iv.rows.map(r => [r.key, r.rounds]), [['burpees', 2], ['plank jacks', 2], ['jump squats', 1]])
+})
+
+test('without chapters, a video with no names on screen is an empty draft, not an error', async () => {
+  const job = await settle(jobs.create({ url: URL_OK, owner: 'u1', rois: { UC1: { name: { x: 0, y: 0.8, w: 0.5, h: 0.1 } } } }))
+  assert.equal(job.status, 'done', job.error)
+  assert.equal(job.result.method, 'video')
+})
+
+test('the chapters name the rows the screen left without a name', async () => {
+  jobs._setDeps({
+    metadata: async () => chapterInfo,
+    analyse: async () => ({ frames: [], blocks: [], stats: {},
+      draft: { sections: [{ kind: 'interval', rows: [
+        { id: 'v1', name: 'Burpees', key: 'burpees', conf: 0.9, occurrences: [{ start: 0, dur: 40 }] },
+        { id: 'v2', name: '', key: '', conf: 0, unnamed: true, occurrences: [{ start: 62, dur: 36 }] }] }] } })
+  })
+  const job = await settle(jobs.create({ url: URL_OK, owner: 'u1', rois: { UC1: { name: { x: 0, y: 0.8, w: 0.5, h: 0.1 } } } }))
+  assert.equal(job.status, 'done', job.error)
+  assert.equal(job.result.method, 'video')
+  const rows = job.result.draft.sections[0].rows
+  assert.deepEqual(rows.map(r => r.name), ['Burpees', 'Plank Jacks'])
+  assert.ok(rows[1].fromChapter && !rows[0].fromChapter)
 })
 
 test('no saved boxes: the job waits for them, then finishes and removes its files', async () => {

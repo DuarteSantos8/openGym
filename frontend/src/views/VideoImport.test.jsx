@@ -91,7 +91,7 @@ describe('import from a video', () => {
     await act(async () => { button('Analyse video').click() })
     await flush()
     expect(api).toHaveBeenCalledWith('/api/video-import', expect.objectContaining({ method: 'POST' }))
-    expect(JSON.parse(vi.mocked(api).mock.calls[0][1].body)).toMatchObject({ url: 'https://youtu.be/dQw4w9WgXcQ', mode: 'auto' })
+    expect(JSON.parse(vi.mocked(api).mock.calls[0][1].body)).toEqual({ url: 'https://youtu.be/dQw4w9WgXcQ' })
 
     // The server asks for the boxes; its suggestion is already drawn.
     await poll()

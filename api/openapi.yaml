@@ -3196,11 +3196,12 @@ paths:
       summary: Start importing a routine from a YouTube video
       description: |
         Queues a job and answers at once (202); the job is then polled through
-        `GET /api/video-import/job`. With `mode: auto` a video whose chapters (or a
-        timestamped list in its description) already name the exercises is read from that
-        alone; otherwise, and always with `mode: video`, the worker downloads a ≤480p copy
-        and reads the names and the timer off the frames. One import at a time per profile, and
-        at most `VIDEO_IMPORT_PER_DAY` (12 unless set; 0 = no cap) started per profile per day.
+        `GET /api/video-import/job`. The worker downloads a ≤480p copy and reads the names and the
+        timer off the frames; the video's chapters only help (sections, a name for a move the
+        screen leaves unnamed) and are the draft itself only when the frames hold no names at all
+        (`result.method` is then `chapters` and `result.fallback` is `no-text`). One import at a
+        time per profile, and at most `VIDEO_IMPORT_PER_DAY` (12 unless set; 0 = no cap) started
+        per profile per day.
       requestBody:
         required: true
         content:
@@ -3210,7 +3211,6 @@ paths:
               required: [url]
               properties:
                 url: { type: string, example: 'https://youtu.be/dQw4w9WgXcQ', description: 'A YouTube video link (watch, youtu.be, shorts, live).' }
-                mode: { type: string, enum: [auto, video], default: auto }
                 redraw:
                   type: boolean
                   description: Ignore the boxes saved for this video's channel and ask for new ones.
@@ -3555,7 +3555,10 @@ components:
           type: object
           description: Only when `done`.
           properties:
-            method: { type: string }
+            method:
+              type: string
+              description: "`video` (read off the frames), or `chapters` / `description` when the frames held no names and the video's own timestamps stood in."
+            fallback: { type: string, enum: [no-text], description: Set with `method` other than `video`. }
             roi:
               type: object
               properties:
