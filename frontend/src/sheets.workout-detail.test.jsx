@@ -179,3 +179,22 @@ describe('export as .fit', () => {
     expect(toast).toHaveBeenCalledWith('Could not create the file')
   })
 })
+
+describe('workout detail: time per exercise', () => {
+  const T0 = Date.UTC(2026, 8, 15, 17)
+  const at = min => T0 + min * 60000
+  it('shows how long each exercise took, from its ticks', () => {
+    workoutDetailSheet(workout([
+      { id: lifts[0], target: { mode: 'reps' }, sets: [done(100, 5, { at: at(4) }), done(100, 5, { at: at(8) })] },
+      { id: lifts[1], target: { mode: 'reps' }, sets: [done(60, 8, { at: at(20) })] },
+    ]))
+    const lines = [...mountTopSheet().querySelectorAll('.wd-ex .grow')].map(el => el.textContent)
+    expect(lines[0]).toContain('8 min')
+    expect(lines[1]).toContain('12 min')
+  })
+
+  it('shows none for a workout without tick times', () => {
+    workoutDetailSheet(workout([{ id: lifts[0], target: { mode: 'reps' }, sets: [done(100, 5)] }]))
+    expect(mountTopSheet().querySelector('.wd-ex .grow').textContent).not.toContain('min')
+  })
+})

@@ -2414,4 +2414,8 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'Su questo dispositivo c’è 1 allenamento che non è in questo backup. Sostituire lo elimina.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'Su questo dispositivo ci sono {0} allenamenti che non sono in questo backup. Sostituire li elimina.',
+  // --- stats: time per exercise ---
+  'Time per exercise': 'Tempo per esercizio',
+  'Average time a session, counted from when its sets were ticked.': 'Tempo medio per sessione, contato da quando sono state spuntate le serie.',
+  'No timed sets in this period.': 'Nessuna serie con tempo in questo periodo.',
 }

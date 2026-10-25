@@ -2469,4 +2469,8 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'على هذا الجهاز تمرين واحد ليس في هذه النسخة الاحتياطية. الاستبدال يحذفه.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'على هذا الجهاز {0} تمارين ليست في هذه النسخة الاحتياطية. الاستبدال يحذفها.',
+  // --- stats: time per exercise ---
+  'Time per exercise': 'الوقت لكل تمرين',
+  'Average time a session, counted from when its sets were ticked.': 'متوسط الوقت في الجلسة، محسوبًا من أوقات تسجيل مجموعاته.',
+  'No timed sets in this period.': 'لا توجد مجموعات مُوقّتة في هذه الفترة.',
 }

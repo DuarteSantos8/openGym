@@ -2414,4 +2414,8 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': '이 기기에 이 백업에 없는 운동이 1개 있습니다. 바꾸면 삭제됩니다.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': '이 기기에 이 백업에 없는 운동이 {0}개 있습니다. 바꾸면 삭제됩니다.',
+  // --- stats: time per exercise ---
+  'Time per exercise': '운동별 시간',
+  'Average time a session, counted from when its sets were ticked.': '세트를 체크한 시각으로 계산한 세션당 평균 시간입니다.',
+  'No timed sets in this period.': '이 기간에는 시간이 기록된 세트가 없어요.',
 }

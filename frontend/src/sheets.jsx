@@ -46,6 +46,7 @@ import { speedUnitOf, toSpeed, fromSpeed } from './lib/speed.js'
 import { buildCompletedWorkout, sessionEnd } from './lib/finish-workout.js'
 import { refillAfter } from './lib/rotation.js'
 import { isWarmupRow, hasCompletedWork } from './lib/workout-model.js'
+import { entryTimes } from './lib/exercise-time.js'
 import { saveSessionAsRoutine } from './lib/session-routines.js'
 import { repeatSessionEntries } from './lib/session-repeat.js'
 import { swapActiveExercise } from './lib/active-exercise-swap.js'
@@ -2639,6 +2640,8 @@ function WorkoutDetail({ w, close }) {
     })
   }, [])
   const nameOf = e => (EXIDX[e.id] ? exerciseNameFor(EXIDX[e.id]) : (e.n || e.id))
+  // How long each exercise took, from its ticks (lib/exercise-time.js); none for imported history.
+  const times = entryTimes(w)
   // Tapping an exercise opens its history (Discord 'Improvement ideas'): from one session to the
   // curve it sits on, which is the question a past workout raises most often.
   const entryRow = (e, i) => {
@@ -2647,6 +2650,9 @@ function WorkoutDetail({ w, close }) {
       {ex && <Thumb ex={ex} />}
       <div className="grow"><div className={`tt ${exerciseNameClass(ex)}`} style={{ fontWeight: 600 }}>{nameOf(e)} {w.prs && w.prs.includes(e.id) && <span className="pr"><Icon name="trophy" />PR</span>}</div>
         <div className="ss">{e.sets.filter(hasCompletedWork).map(s => setLabel(e.id, s, e.target, speedUnitOf(st)) + hrLabel(s)).join('  ·  ') || t('no sets')}</div>
+        {times[i] > 0 && <div className="small dim" style={{ marginTop: 3 }}>
+          <Icon name="timer" style={{ fontSize: 12, marginInlineEnd: 4, verticalAlign: '-1px' }} />{fmtDur(Math.max(times[i], 60000))}
+        </div>}
         {e.note && <div className="small dim" style={{ marginTop: 3 }}>
           {e.notePin && <Icon name="pin" style={{ fontSize: 12, marginInlineEnd: 4, verticalAlign: '-1px', color: 'var(--yellow)' }} />}{e.note}
         </div>}</div>

@@ -2425,4 +2425,8 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'อุปกรณ์นี้มีการออกกำลังกาย 1 รายการที่ไม่อยู่ในข้อมูลสำรองนี้ การแทนที่จะลบรายการนั้น',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'อุปกรณ์นี้มีการออกกำลังกาย {0} รายการที่ไม่อยู่ในข้อมูลสำรองนี้ การแทนที่จะลบรายการเหล่านั้น',
+  // --- stats: time per exercise ---
+  'Time per exercise': 'เวลาต่อท่า',
+  'Average time a session, counted from when its sets were ticked.': 'เวลาเฉลี่ยต่อครั้ง นับจากเวลาที่ติ๊กเซต',
+  'No timed sets in this period.': 'ไม่มีเซตที่มีเวลาในช่วงนี้',
 }
