@@ -330,6 +330,9 @@ enum SessionCore {
         return (all.filter { $0.done }.count, all.count)
     }
 
+    /// After the last exercise: the Overview's Finish is what is next.
+    static func atEnd(_ s: SessionState) -> Bool { s.workout.map { s.entryIndex >= $0.entries.count } ?? false }
+
     /// A routine's size for its row on the start screen: exercises and working sets (warm-ups are not counted).
     static func size(_ r: ReadySession) -> (exercises: Int, sets: Int) {
         (r.entries.count, r.entries.flatMap(\.sets).filter { !$0.warmup }.count)

@@ -13,6 +13,8 @@
 "Finish workout?" = "Завершить тренировку?";
 "Finish and save" = "Завершить и сохранить";
 "Discard workout" = "Отменить тренировку";
+"Discard workout?" = "Отменить тренировку?";
+"The sets you logged in this session will be lost." = "Подходы, записанные в этой сессии, будут потеряны.";
 "Continue workout" = "Продолжить тренировку";
 "Cancel" = "Отмена";
 "Rest’s over. Next set!" = "Отдых окончен. Следующий подход!";
@@ -66,3 +68,4 @@
 "Added weight" = "Доп. вес";
 "Your rest, your next set, or today's workout." = "Отдых, следующий подход или сегодняшняя тренировка.";
 "Opens openGym." = "Открывает openGym.";
+"Hold to finish" = "Удерживайте, чтобы завершить";

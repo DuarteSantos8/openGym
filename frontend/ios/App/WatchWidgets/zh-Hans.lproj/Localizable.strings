@@ -13,6 +13,8 @@
 "Finish workout?" = "结束训练？";
 "Finish and save" = "结束并保存";
 "Discard workout" = "放弃训练";
+"Discard workout?" = "放弃训练？";
+"The sets you logged in this session will be lost." = "本次记录的组数将丢失。";
 "Continue workout" = "继续训练";
 "Cancel" = "取消";
 "Rest’s over. Next set!" = "休息结束，下一组！";
@@ -66,3 +68,4 @@
 "Added weight" = "附加重量";
 "Your rest, your next set, or today's workout." = "你的休息、下一组或今天的训练。";
 "Opens openGym." = "打开 openGym。";
+"Hold to finish" = "长按结束";

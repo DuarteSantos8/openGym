@@ -13,6 +13,8 @@
 "Finish workout?" = "Terminar o treino?";
 "Finish and save" = "Terminar e salvar";
 "Discard workout" = "Descartar treino";
+"Discard workout?" = "Descartar treino?";
+"The sets you logged in this session will be lost." = "As séries registradas nesta sessão serão perdidas.";
 "Continue workout" = "Continuar treino";
 "Cancel" = "Cancelar";
 "Rest’s over. Next set!" = "Acabou o descanso. Próxima série!";
@@ -66,3 +68,4 @@
 "Added weight" = "Peso adicional";
 "Your rest, your next set, or today's workout." = "Seu descanso, a próxima série ou o treino de hoje.";
 "Opens openGym." = "Abre o openGym.";
+"Hold to finish" = "Segure para terminar";

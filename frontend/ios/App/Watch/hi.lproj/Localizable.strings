@@ -13,6 +13,8 @@
 "Finish workout?" = "वर्कआउट समाप्त करें?";
 "Finish and save" = "समाप्त करें और सहेजें";
 "Discard workout" = "वर्कआउट छोड़ें";
+"Discard workout?" = "वर्कआउट छोड़ें?";
+"The sets you logged in this session will be lost." = "इस सत्र में दर्ज किए सेट खो जाएँगे।";
 "Continue workout" = "वर्कआउट जारी रखें";
 "Cancel" = "रद्द करें";
 "Rest’s over. Next set!" = "आराम खत्म। अगला सेट!";
@@ -66,3 +68,4 @@
 "Added weight" = "अतिरिक्त वज़न";
 "Your rest, your next set, or today's workout." = "आपका आराम, अगला सेट, या आज का वर्कआउट।";
 "Opens openGym." = "openGym खोलता है।";
+"Hold to finish" = "समाप्त करने के लिए दबाए रखें";

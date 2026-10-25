@@ -29,7 +29,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         didSet {
             if !isDemo, state != oldValue { save() }
             // The page changed without a swipe (Done moved on, a snapshot): a moment without taps.
-            if state.entryIndex != oldValue.entryIndex { touchLock.lock(at: Date()) }
+            if state.entryIndex != oldValue.entryIndex {
+                touchLock.lock(at: Date())
+                if SessionCore.atEnd(state) { finishWanted = true }
+            }
             if state.workout?.id != oldValue.workout?.id { watchIdle() }
         }
     }
@@ -113,7 +116,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private var lastTick: Date?
     /// Taps ignored for a second after the watch turns the page by itself (WatchCore's TouchLock).
     private var touchLock = TouchLock()
-    private var touchAllowed: Bool { touchLock.allows(at: Date()) }
+    var touchAllowed: Bool { touchLock.allows(at: Date()) }
     /// When this watch first had the running workout (its start, for a phone that sends none).
     private var workoutSeenAt: Date?
     /// The rest running after a set, for that rest's heart rate once it is over.
@@ -265,6 +268,24 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         state.entryIndex = ei
         touchLock.unlock()          // swiped by hand: the page is the lifter's own choice
         loadTargets()
+    }
+
+    /// The workout is at its end (last set done, or "All done?"): the Overview comes up with Finish in view. The Overview clears it.
+    @Published var finishWanted = false
+
+    func showFinish() {
+        let end = workout?.entries.count ?? 0
+        if state.entryIndex != end { state.entryIndex = end }          // didSet raises finishWanted and locks
+        else { finishWanted = true; touchLock.lock(at: Date()) }
+    }
+
+    /// A row of the Overview: that exercise's set page comes up under the thumb that picked it, so its taps wait a second.
+    /// False when the tap lock refused it.
+    @discardableResult func choose(entry ei: Int) -> Bool {
+        guard touchAllowed else { return false }
+        show(entry: ei)                    // unlocks (a swipe by hand) ...
+        touchLock.lock(at: Date())         // ... so lock again: this arrival was a tap, not a swipe
+        return true
     }
 
     /// What the complications and the Smart Stack widget show (WidgetState), in the app's language.
@@ -964,6 +985,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// CI: as in Always On (wrist down), for what it costs to keep the screen up to date.
     static var demoAOD: Bool { ProcessInfo.processInfo.arguments.contains("-OpenGymWatchAOD") }
 
+    /// CI: the screens that open on the Overview.
+    static var demoOpensOverview: Bool { ["overview", "finish", "finish-hold", "finish-hold-full", "discard"].contains(demoScreen ?? "") }
+
     /// One screen of the demo workout (demoJSON: every kind of set), as CI photographs it.
     private func startDemo() {
         let screen = SessionStore.demoScreen ?? "set"
@@ -975,12 +999,15 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
         DispatchQueue.main.async {
             switch screen {
-            case "set", "weight", "rest", "offline", "edit-weight", "edit-reps": self.picked[0] = 2
+            case "set", "weight", "rest", "offline", "edit-weight", "edit-reps", "finish-auto": self.picked[0] = 2
             case "hold": self.state.entryIndex = 1
             case "bodyweight": self.state.entryIndex = 2
             case "side": self.state.entryIndex = 3
             case "superset": self.state.entryIndex = 4
-            case "finish": self.state.entryIndex = self.workout?.entries.count ?? 0
+            case "overview", "finish", "finish-hold", "finish-hold-full", "discard":
+                // The Pull-up done, so the Overview shows all three states.
+                for si in 0..<2 { self.state.workout?.entries[2].sets[si].done = true }
+                if screen != "overview" { self.state.entryIndex = self.workout?.entries.count ?? 0 }
             case "weighin":
                 self.bodyWeight = 81.4
                 self.weighInFor = ReadySession(routineIds: ["r1"], name: "Push day", entries: [])
@@ -999,6 +1026,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             if screen == "rest" { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
             if screen == "hold" { self.startHold() }
             if screen == "offline" { self.reachable = false; self.queued = 3 }
+            if screen == "finish-auto" { DispatchQueue.main.asyncAfter(deadline: .now() + 2) { self.showFinish() } }
             if screen == "summary" || screen == "summary-end" || screen == "ended" {
                 self.summary = WorkoutSummary(name: "Push day", unit: "kg", duration: 52 * 60 + 13, sets: 17, volume: 4320,
                                               prs: ["Bench Press", "Plank"], hrAvg: 118, hrMax: 156, calories: 312,

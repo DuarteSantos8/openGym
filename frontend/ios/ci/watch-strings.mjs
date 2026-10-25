@@ -34,6 +34,8 @@ const FROM_APP = {
   'Finish workout?': 'Finish workout?',
   'Finish and save': 'Finish and save',
   'Discard workout': 'Discard workout',
+  'Discard workout?': 'Discard workout?',
+  'The sets you logged in this session will be lost.': 'The sets you logged in this session will be lost.',
   'Continue workout': 'Continue workout',
   'Cancel': 'Cancel',
   'Rest’s over. Next set!': 'Rest’s over. Next set!',
@@ -203,6 +205,14 @@ const OWN = {
   },
   'Opens openGym.': {
     de: 'Öffnet openGym.', fr: 'Ouvre openGym.', es: 'Abre openGym.', it: 'Apre openGym.', 'pt-PT': 'Abre o openGym.', 'pt-BR': 'Abre o openGym.', pl: 'Otwiera openGym.', hu: 'Megnyitja az openGymet.', tr: 'openGym’i açar.', ru: 'Открывает openGym.', uk: 'Відкриває openGym.', ar: 'يفتح openGym.', hi: 'openGym खोलता है।', bn: 'openGym খোলে।', th: 'เปิด openGym', ko: 'openGym을 열어요.', 'zh-Hans': '打开 openGym。', 'zh-Hant': '打開 openGym。',
+  },
+  // Finish workout is a one-second hold: this is the line under it.
+  'Hold to finish': {
+    de: 'Zum Beenden gedrückt halten', fr: 'Maintiens pour terminer', es: 'Mantén pulsado para terminar', it: 'Tieni premuto per terminare',
+    'pt-PT': 'Mantém premido para terminar', 'pt-BR': 'Segure para terminar', pl: 'Przytrzymaj, aby zakończyć', hu: 'Tartsd lenyomva a befejezéshez',
+    tr: 'Bitirmek için basılı tut', ru: 'Удерживайте, чтобы завершить', uk: 'Утримуй, щоб завершити', ar: 'اضغط مطولًا للإنهاء',
+    hi: 'समाप्त करने के लिए दबाए रखें', bn: 'শেষ করতে চেপে ধরে রাখুন', th: 'กดค้างเพื่อจบ', ko: '길게 눌러 마치기',
+    'zh-Hans': '长按结束', 'zh-Hant': '長按結束',
   },
 }
 

@@ -13,6 +13,8 @@
 "Finish workout?" = "Finish workout?";
 "Finish and save" = "Finish and save";
 "Discard workout" = "Discard workout";
+"Discard workout?" = "Discard workout?";
+"The sets you logged in this session will be lost." = "The sets you logged in this session will be lost.";
 "Continue workout" = "Continue workout";
 "Cancel" = "Cancel";
 "Rest’s over. Next set!" = "Rest’s over. Next set!";
@@ -66,3 +68,4 @@
 "Added weight" = "Added weight";
 "Your rest, your next set, or today's workout." = "Your rest, your next set, or today's workout.";
 "Opens openGym." = "Opens openGym.";
+"Hold to finish" = "Hold to finish";

@@ -13,6 +13,8 @@
 "Finish workout?" = "Antrenman bitirilsin mi?";
 "Finish and save" = "Bitir ve kaydet";
 "Discard workout" = "Antrenmanı iptal et";
+"Discard workout?" = "Antrenman iptal edilsin mi?";
+"The sets you logged in this session will be lost." = "Bu oturumda kaydettiğin setler kaybolacak.";
 "Continue workout" = "Antrenmana devam et";
 "Cancel" = "İptal";
 "Rest’s over. Next set!" = "Dinlenme bitti. Sıradaki set!";
@@ -66,3 +68,4 @@
 "Added weight" = "Ek ağırlık";
 "Your rest, your next set, or today's workout." = "Dinlenmen, sıradaki setin ya da bugünkü antrenman.";
 "Opens openGym." = "openGym’i açar.";
+"Hold to finish" = "Bitirmek için basılı tut";
