@@ -2477,6 +2477,7 @@ export default {
   'Time (s)': '時間（秒）',
   'Timer': '計時器',
   'Too many imports are waiting on this server. Try again in a few minutes.': '此伺服器上排隊的匯入太多。請幾分鐘後再試。',
+  'You have started as many imports today as this server allows. Try again tomorrow.': '今天你已用完此伺服器允許的匯入次數，請明天再試。',
   'Video link': '影片連結',
   'Waiting for a free slot…': '正在等待空位…',
   'Waiting for you to mark the name and the timer': '正在等待你框出名稱和計時器',

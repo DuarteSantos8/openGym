@@ -35,6 +35,7 @@ export function videoImportError(code, fallback) {
     case 'bad-url': return t('That is not a link to a YouTube video.')
     case 'busy': return t('An import is already running. Wait for it to finish or cancel it.')
     case 'queue-full': return t('Too many imports are waiting on this server. Try again in a few minutes.')
+    case 'daily-limit': return t('You have started as many imports today as this server allows. Try again tomorrow.')
     case 'worker-down': return t('The video importer on this server is not running. Ask whoever runs the server.')
     case 'too-long': return t('This video is too long to import.')
     case 'unavailable': return t('This video is private, age-restricted or no longer available.')

@@ -2539,6 +2539,7 @@ export default {
   'Time (s)': 'الوقت (ث)',
   'Timer': 'المؤقّت',
   'Too many imports are waiting on this server. Try again in a few minutes.': 'هناك عدد كبير من عمليات الاستيراد في الانتظار على هذا الخادم. حاول مجددًا بعد بضع دقائق.',
+  'You have started as many imports today as this server allows. Try again tomorrow.': 'لقد بدأت اليوم أقصى عدد من عمليات الاستيراد يسمح به هذا الخادم. حاول مرة أخرى غدًا.',
   'Video link': 'رابط الفيديو',
   'Waiting for a free slot…': 'في انتظار مكان شاغر…',
   'Waiting for you to mark the name and the timer': 'في انتظار أن تحدّد الاسم والمؤقّت',

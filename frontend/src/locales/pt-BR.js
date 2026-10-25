@@ -1605,6 +1605,7 @@ export const PT_BR_OVERRIDES = {
   'Time (s)': 'Tempo (s)',
   'Timer': 'Timer',
   'Too many imports are waiting on this server. Try again in a few minutes.': 'Há importações demais na fila deste servidor. Tente de novo em alguns minutos.',
+  'You have started as many imports today as this server allows. Try again tomorrow.': 'Você já iniciou hoje todas as importações que este servidor permite. Tente novamente amanhã.',
   'Video link': 'Link do vídeo',
   'Waiting for a free slot…': 'Aguardando uma vaga livre…',
   'Waiting for you to mark the name and the timer': 'Aguardando você marcar o nome e o timer',

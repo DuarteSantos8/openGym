@@ -2495,6 +2495,7 @@ export default {
   'Time (s)': 'เวลา (วินาที)',
   'Timer': 'ตัวจับเวลา',
   'Too many imports are waiting on this server. Try again in a few minutes.': 'มีการนำเข้ารออยู่บนเซิร์ฟเวอร์นี้มากเกินไป ลองใหม่ในอีกสักครู่',
+  'You have started as many imports today as this server allows. Try again tomorrow.': 'วันนี้คุณนำเข้าครบตามจำนวนที่เซิร์ฟเวอร์นี้อนุญาตแล้ว ลองอีกครั้งพรุ่งนี้',
   'Video link': 'ลิงก์วิดีโอ',
   'Waiting for a free slot…': 'กำลังรอช่องว่าง…',
   'Waiting for you to mark the name and the timer': 'กำลังรอให้คุณทำเครื่องหมายชื่อและตัวจับเวลา',

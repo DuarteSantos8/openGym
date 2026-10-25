@@ -29,7 +29,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=28">
+<link rel="stylesheet" href="styles.css?v=27">
 <script>document.documentElement.className += ' js'</script>
 <!-- Umami web analytics for opengym.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
@@ -2573,7 +2573,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Start importing a routine from a YouTube video</span>
   </summary>
   <div class="ep-body">
-<p>Queues a job and answers at once (202); the job is then polled through <code>GET /api/video-import/job</code>. With <code>mode: auto</code> a video whose chapters (or a timestamped list in its description) already name the exercises is read from that alone; otherwise, and always with <code>mode: video</code>, the worker downloads a ≤480p copy and reads the names and the timer off the frames. One import at a time per profile.</p>
+<p>Queues a job and answers at once (202); the job is then polled through <code>GET /api/video-import/job</code>. With <code>mode: auto</code> a video whose chapters (or a timestamped list in its description) already name the exercises is read from that alone; otherwise, and always with <code>mode: video</code>, the worker downloads a ≤480p copy and reads the names and the timer off the frames. One import at a time per profile, and at most <code>VIDEO_IMPORT_PER_DAY</code> (12 unless set; 0 = no cap) started per profile per day.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
@@ -2613,7 +2613,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">429</span>
-    <span class="p-desc">Too many imports waiting on this instance.</span>
+    <span class="p-desc">Too many imports waiting on this instance (<code>queue-full</code>), or this profile has started as many imports today as <code>VIDEO_IMPORT_PER_DAY</code> allows (<code>daily-limit</code>; only imports the worker accepted count).<span class="r-sig"><code>{&quot;error&quot;:&quot;the daily limit of video imports for this profile is used up&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s5">503</span>
@@ -5708,7 +5708,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
 </div></footer>
 
-<script src="site.js?v=28" defer></script>
+<script src="site.js?v=27" defer></script>
 <script>
 /* Jumping to an anchor inside a collapsed card opens the card and re-aligns, since
    the browser scrolled to where the target was while it was still collapsed. */

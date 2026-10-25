@@ -2484,6 +2484,7 @@ export default {
   'Time (s)': 'Süre (sn)',
   'Timer': 'Zamanlayıcı',
   'Too many imports are waiting on this server. Try again in a few minutes.': 'Bu sunucuda çok fazla içe aktarma bekliyor. Birkaç dakika sonra tekrar dene.',
+  'You have started as many imports today as this server allows. Try again tomorrow.': 'Bugün bu sunucunun izin verdiği tüm içe aktarmaları başlattınız. Yarın tekrar deneyin.',
   'Video link': 'Video bağlantısı',
   'Waiting for a free slot…': 'Boş bir yer bekleniyor…',
   'Waiting for you to mark the name and the timer': 'Adı ve zamanlayıcıyı işaretlemen bekleniyor',

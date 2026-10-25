@@ -2563,6 +2563,7 @@ export default {
   'Time (s)': 'সময় (সে.)',
   'Timer': 'টাইমার',
   'Too many imports are waiting on this server. Try again in a few minutes.': 'এই সার্ভারে অনেক ইমপোর্ট অপেক্ষায় আছে। কয়েক মিনিট পরে আবার চেষ্টা করুন।',
+  'You have started as many imports today as this server allows. Try again tomorrow.': 'এই সার্ভার আজ যতগুলো ইমপোর্ট অনুমোদন করে, আপনি ততগুলো শুরু করে ফেলেছেন। কাল আবার চেষ্টা করুন।',
   'Video link': 'ভিডিওর লিংক',
   'Waiting for a free slot…': 'একটি ফাঁকা জায়গার জন্য অপেক্ষা করা হচ্ছে…',
   'Waiting for you to mark the name and the timer': 'আপনি নাম ও টাইমার চিহ্নিত করার জন্য অপেক্ষা করা হচ্ছে',

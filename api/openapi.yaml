@@ -3199,7 +3199,8 @@ paths:
         `GET /api/video-import/job`. With `mode: auto` a video whose chapters (or a
         timestamped list in its description) already name the exercises is read from that
         alone; otherwise, and always with `mode: video`, the worker downloads a ≤480p copy
-        and reads the names and the timer off the frames. One import at a time per profile.
+        and reads the names and the timer off the frames. One import at a time per profile, and
+        at most `VIDEO_IMPORT_PER_DAY` (12 unless set; 0 = no cap) started per profile per day.
       requestBody:
         required: true
         content:
@@ -3232,10 +3233,14 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
         '429':
-          description: Too many imports waiting on this instance.
+          description: |
+            Too many imports waiting on this instance (`queue-full`), or this profile has
+            started as many imports today as `VIDEO_IMPORT_PER_DAY` allows (`daily-limit`;
+            only imports the worker accepted count).
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "the daily limit of video imports for this profile is used up", code: daily-limit }
         '503':
           description: The worker is not reachable.
           content:

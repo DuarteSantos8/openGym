@@ -2484,6 +2484,7 @@ export default {
   'Time (s)': '시간(초)',
   'Timer': '타이머',
   'Too many imports are waiting on this server. Try again in a few minutes.': '이 서버에 대기 중인 가져오기가 너무 많아요. 몇 분 뒤에 다시 시도하세요.',
+  'You have started as many imports today as this server allows. Try again tomorrow.': '오늘 이 서버가 허용하는 가져오기 횟수를 모두 사용했습니다. 내일 다시 시도하세요.',
   'Video link': '영상 링크',
   'Waiting for a free slot…': '빈 자리를 기다리는 중…',
   'Waiting for you to mark the name and the timer': '이름과 타이머 표시를 기다리는 중',

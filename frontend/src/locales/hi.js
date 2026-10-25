@@ -2484,6 +2484,7 @@ export default {
   'Time (s)': 'समय (सेकंड)',
   'Timer': 'टाइमर',
   'Too many imports are waiting on this server. Try again in a few minutes.': 'इस सर्वर पर बहुत सारे इंपोर्ट इंतज़ार में हैं। कुछ मिनट बाद फिर कोशिश करें।',
+  'You have started as many imports today as this server allows. Try again tomorrow.': 'आपने आज इस सर्वर द्वारा अनुमत सभी इम्पोर्ट शुरू कर दिए हैं। कल फिर कोशिश करें।',
   'Video link': 'वीडियो लिंक',
   'Waiting for a free slot…': 'खाली जगह का इंतज़ार है…',
   'Waiting for you to mark the name and the timer': 'आपके नाम और टाइमर चिह्नित करने का इंतज़ार है',

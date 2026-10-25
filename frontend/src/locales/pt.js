@@ -2484,6 +2484,7 @@ export default {
   'Time (s)': 'Tempo (s)',
   'Timer': 'Temporizador',
   'Too many imports are waiting on this server. Try again in a few minutes.': 'Há demasiadas importações em espera neste servidor. Tenta novamente dentro de alguns minutos.',
+  'You have started as many imports today as this server allows. Try again tomorrow.': 'Já iniciou hoje todas as importações que este servidor permite. Tente novamente amanhã.',
   'Video link': 'Ligação do vídeo',
   'Waiting for a free slot…': 'A aguardar uma vaga livre…',
   'Waiting for you to mark the name and the timer': 'A aguardar que marques o nome e o temporizador',

@@ -2484,6 +2484,7 @@ export default {
   'Time (s)': '时间（秒）',
   'Timer': '计时器',
   'Too many imports are waiting on this server. Try again in a few minutes.': '此服务器上排队的导入太多。请几分钟后再试。',
+  'You have started as many imports today as this server allows. Try again tomorrow.': '今天你已用完此服务器允许的导入次数，请明天再试。',
   'Video link': '视频链接',
   'Waiting for a free slot…': '正在等待空位…',
   'Waiting for you to mark the name and the timer': '正在等待你框出名称和计时器',

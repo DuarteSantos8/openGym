@@ -15,10 +15,11 @@ const OTHER = 'b'.repeat(24);
 const dirs = [];
 after(() => { for (const d of dirs) fs.rmSync(d, { recursive: true, force: true }); });
 
-function harness({ user = { id: 'u1' }, jobs = {} } = {}) {
+function harness({ user = { id: 'u1' }, jobs = {}, perDay } = {}) {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gym-vi-'));
   dirs.push(dataDir);
   const calls = [];
+  const state = { user };
   const fetchImpl = async (url, init) => {
     const p = url.replace('http://worker:3100', '');
     const body = init.body ? JSON.parse(init.body) : null;
@@ -36,10 +37,10 @@ function harness({ user = { id: 'u1' }, jobs = {} } = {}) {
     return reply(404, { error: 'not found' });
   };
   const routes = videoImportRoutes({
-    dataDir, fetchImpl, workerUrl: 'http://worker:3100',
+    dataDir, fetchImpl, workerUrl: 'http://worker:3100', perDay,
     json: (res, code, obj) => { res.code = code; res.body = obj; },
     readBody: async req => req.body || {},
-    readSession: () => user,
+    readSession: () => state.user,
     atomicWrite: (file, content) => fs.writeFileSync(file, content)
   });
   const call = async (key, { body, url = '/api/x' } = {}) => {
@@ -47,7 +48,7 @@ function harness({ user = { id: 'u1' }, jobs = {} } = {}) {
     await routes[key]({ body, url }, res);
     return res;
   };
-  return { routes, call, calls, dataDir };
+  return { routes, call, calls, dataDir, state };
 }
 
 test('no worker configured: no routes at all', () => {
@@ -133,4 +134,36 @@ test('several name boxes are kept, cleaned, up to three', async () => {
   assert.deepEqual(cleanNames([b]), b);
   assert.equal(cleanNames([]), null);
   assert.equal(cleanNames([b, b, b, b, b]).length, 3);
+});
+
+test('a profile can start only so many imports a day, and only the ones the worker accepted count', async () => {
+  const { routes, calls } = harness({ perDay: 3 });
+  const post = async () => { const res = {}; await routes['POST /api/video-import']({ body: { url: 'https://youtu.be/dQw4w9WgXcQ' } }, res); return res; };
+  for (let i = 0; i < 3; i++) assert.equal((await post()).code, 202, 'within the budget');
+  const asked = calls.length;
+  const over = await post();
+  assert.equal(over.code, 429);
+  assert.equal(over.body.code, 'daily-limit');
+  assert.equal(calls.length, asked, 'the worker is not asked once the budget is spent');
+});
+
+test('a different profile has a budget of its own', async () => {
+  const h = harness({ perDay: 1, user: { id: 'u1' } });
+  const post = async () => { const res = {}; await h.routes['POST /api/video-import']({ body: { url: 'https://youtu.be/dQw4w9WgXcQ' } }, res); return res.code; };
+  assert.equal(await post(), 202);
+  assert.equal(await post(), 429);
+  h.state.user = { id: 'u2' };
+  assert.equal(await post(), 202, 'the second profile starts afresh');
+});
+
+test('a bad link or a start the worker refused does not spend the daily budget', async () => {
+  const { routes } = harness({ perDay: 1 });
+  for (let i = 0; i < 5; i++) {
+    const res = {};
+    await routes['POST /api/video-import']({ body: { url: 'https://example.com/x' } }, res);
+    assert.equal(res.code, 400);
+  }
+  const ok = {};
+  await routes['POST /api/video-import']({ body: { url: 'https://youtu.be/dQw4w9WgXcQ' } }, ok);
+  assert.equal(ok.code, 202);
 });

@@ -2487,6 +2487,7 @@ export default {
   'Time (s)': 'Idő (mp)',
   'Timer': 'Időzítő',
   'Too many imports are waiting on this server. Try again in a few minutes.': 'Túl sok importálás vár ezen a szerveren. Próbáld újra néhány perc múlva.',
+  'You have started as many imports today as this server allows. Try again tomorrow.': 'Ma már annyi importot indítottál, amennyit ez a szerver megenged. Próbáld újra holnap.',
   'Video link': 'Videó linkje',
   'Waiting for a free slot…': 'Várakozás egy szabad helyre…',
   'Waiting for you to mark the name and the timer': 'Várakozás, hogy kijelöld a nevet és az időzítőt',

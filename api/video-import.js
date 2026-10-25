@@ -77,7 +77,23 @@ export function cleanTimers(v) {
 const JOB_RE = /^[0-9a-f]{24}$/;
 const CHANNEL_RE = /^[A-Za-z0-9_@.-]{1,80}$/;
 
-export function videoImportRoutes({ json, readBody, readSession, dataDir, atomicWrite, fetchImpl = globalThis.fetch, workerUrl = VIDEO_IMPORT_URL }) {
+// How many imports a profile may start in a day (VIDEO_IMPORT_PER_DAY, 0 = no cap). One import
+// keeps a core busy for minutes and the queue is short, so on an instance with open signup one
+// profile could otherwise keep everyone else waiting.
+const RAW_PER_DAY = process.env.VIDEO_IMPORT_PER_DAY;
+const PER_DAY = RAW_PER_DAY === undefined || RAW_PER_DAY === '' || !Number.isFinite(+RAW_PER_DAY) ? 12 : Math.max(0, Math.floor(+RAW_PER_DAY));
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export function videoImportRoutes({ json, readBody, readSession, dataDir, atomicWrite, fetchImpl = globalThis.fetch, workerUrl = VIDEO_IMPORT_URL, perDay = PER_DAY }) {
+  // When each profile's accepted imports started, for the last day. Kept in memory: a restart
+  // forgets it, which only ever errs towards letting someone start one more.
+  const started = new Map();
+  const startedToday = uid => {
+    const since = Date.now() - DAY_MS;
+    const list = (started.get(uid) || []).filter(t => t > since);
+    if (list.length) started.set(uid, list); else started.delete(uid);
+    return list;
+  };
   const dir = path.join(dataDir, 'video-import');
   const safe = uid => String(uid).replace(/[^a-zA-Z0-9_-]/g, '');
   const fileOf = uid => path.join(dir, safe(uid) + '.json');
@@ -142,10 +158,14 @@ export function videoImportRoutes({ json, readBody, readSession, dataDir, atomic
       const b = await readBody(req);
       const yt = canonicalYouTube(b.url);
       if (!yt) return json(res, 400, { error: 'not a YouTube video link', code: 'bad-url' });
+      if (perDay && startedToday(user.id).length >= perDay) {
+        return json(res, 429, { error: 'the daily limit of video imports for this profile is used up', code: 'daily-limit' });
+      }
       const w = await worker('POST', '/jobs', {
         url: yt.url, owner: user.id, mode: b.mode === 'video' ? 'video' : 'auto',
         rois: b.redraw === true ? {} : readRois(user.id)
       });
+      if (w.status < 300) started.set(user.id, [...startedToday(user.id), Date.now()]);
       json(res, w.status, w.status < 300 ? publicJob(w.body) : w.body);
     },
 

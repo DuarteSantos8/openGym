@@ -2481,6 +2481,7 @@ export default {
   'Time (s)': 'Час (с)',
   'Timer': 'Таймер',
   'Too many imports are waiting on this server. Try again in a few minutes.': 'На цьому сервері забагато імпортів у черзі. Спробуй ще раз за кілька хвилин.',
+  'You have started as many imports today as this server allows. Try again tomorrow.': 'Сьогодні ви вже запустили всі імпорти, які дозволяє цей сервер. Спробуйте завтра.',
   'Video link': 'Посилання на відео',
   'Waiting for a free slot…': 'Очікування вільного місця…',
   'Waiting for you to mark the name and the timer': 'Очікування, поки ти позначиш назву й таймер',
