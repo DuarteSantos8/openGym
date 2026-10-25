@@ -670,6 +670,11 @@ export default {
   'Fetching routines… ({0}/{1})': '루틴 가져오는 중… ({0}/{1})',
   'Routines': '루틴',
   'Import weigh-ins': '체중 가져오기',
+  'Import body measurements': '신체 측정 가져오기',
+  'Workouts to link to their routine: {0}': '루틴에 연결할 운동: {0}',
+  'Workouts linked to their routine: {0}': '루틴에 연결된 운동: {0}',
+  'Body measurements imported: {0}': '가져온 신체 측정: {0}',
+  'Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.': 'Hevy 계정은 무게를 {0}(으)로, 이 앱은 {1}(으)로 표시합니다: {1}(으)로 가져옵니다.',
   '{0} new · {1} days already here': '새 {0}개 · 이미 있는 날 {1}개',
   'Hevy stores weights in kg, so they’ll be converted to {0}.': 'Hevy는 무게를 kg로 저장하므로 {0}(으)로 변환됩니다.',
   // --- mobile build ---

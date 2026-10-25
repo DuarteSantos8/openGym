@@ -10,12 +10,18 @@ import { uid } from './format.js'
 import { isWarmupRow } from './workout-model.js'
 import { HEVY_ID_MAP, HEVY_TITLE_MAP } from './hevy-id-map.js'
 import { daysBetween, importId, priorCustom, roundWeight } from './import-csv.js'
+import { normalizeRepRange } from './rep-range.js'
+import { normalizeMeasurementEntry, DEFAULT_MEASUREMENT_KEYS } from './measurements.js'
+import { stampWorkout } from './sync-merge.js'
 
 export { HEVY_ID_MAP, HEVY_TITLE_MAP }
 export const HEVY_API = 'https://api.hevyapp.com'
 export const HEVY_DEV_SETTINGS = 'https://hevy.com/settings?developer'
 
 const LB_TO_KG = 0.45359237
+const NOTE_MAX = 280              // an exercise's note, as the CSV import keeps it
+const text = v => (typeof v === 'string' ? v.trim() : '')
+const pos = v => { const n = Number(v); return Number.isFinite(n) && n > 0 ? n : null }
 
 /* --------------------------------------------------------------- auth/fetch -- */
 
@@ -97,7 +103,16 @@ export async function fetchHevyAccount(apiKey, { onProgress } = {}) {
     // Older keys / accounts may lack measurements — workouts still import.
     if (!(e instanceof HevyApiError) || e.message === 'auth') throw e
   }
-  return { templates, workouts, routines, bodyMeasurements }
+  // The account's weight unit. The API gives kg either way, so it only explains why the numbers
+  // look different from Hevy's own screen. Without it the import goes on.
+  let unit = null
+  try {
+    const u = (await hevyGet('/v1/user/info', key))?.data?.weight_unit
+    unit = u === 'lbs' || u === 'lb' ? 'lb' : u === 'kg' ? 'kg' : null
+  } catch (e) {
+    if (!(e instanceof HevyApiError)) throw e
+  }
+  return { templates, workouts, routines, bodyMeasurements, unit }
 }
 
 /* ---------------------------------------------------------- template → id -- */
@@ -153,6 +168,37 @@ export function localWhen(iso) {
   return { d: day, t }
 }
 
+// Hevy's muscle groups → the muscle map's (lib/muscles.js MUSCLES). Cardio, neck, full body and
+// other have no muscle there and are left out.
+const HEVY_MUSCLE = Object.assign(Object.create(null), {
+  abdominals: 'abs', shoulders: 'deltoids', biceps: 'biceps', triceps: 'triceps', forearms: 'forearm',
+  quadriceps: 'quadriceps', hamstrings: 'hamstring', calves: 'calves', glutes: 'gluteal',
+  abductors: 'gluteal', adductors: 'adductors', lats: 'upper-back', upper_back: 'upper-back',
+  traps: 'trapezius', lower_back: 'lower-back', chest: 'chest',
+})
+// Hevy's equipment → the library's. "other" is left as it is.
+const HEVY_EQUIPMENT = Object.assign(Object.create(null), {
+  none: 'body weight', barbell: 'barbell', dumbbell: 'dumbbell', kettlebell: 'kettlebell',
+  machine: 'leverage machine', plate: 'weight plate', resistance_band: 'resistance band', suspension: 'suspension trainer',
+})
+
+/**
+ * What a Hevy template says about its exercise, as a custom exercise stores it: `eq` (or none)
+ * and the muscles (`tg`, `primaries`, `secondaries`, `sm`, `muscleGroups`, or none).
+ */
+export function hevyTemplateInfo(t) {
+  const title = String(t?.title || '')
+  const out = {}
+  const eq = HEVY_EQUIPMENT[t?.equipment]
+  if (eq) out.eq = t.equipment === 'machine' && /\bcable\b/i.test(title) ? 'cable'
+    : t.equipment === 'machine' && /\bsmith\b/i.test(title) ? 'smith machine' : eq
+  const primaries = [HEVY_MUSCLE[t?.primary_muscle_group]].filter(Boolean)
+  const secondaries = [...new Set((Array.isArray(t?.secondary_muscle_groups) ? t.secondary_muscle_groups : [])
+    .map(g => HEVY_MUSCLE[g]).filter(m => m && !primaries.includes(m)))]
+  if (primaries.length) Object.assign(out, { tg: primaries[0], primaries, secondaries, sm: secondaries, muscleGroups: [...primaries, ...secondaries] })
+  return out
+}
+
 function bpOfTemplate(t) {
   const g = String(t?.primary_muscle_group || '').toLowerCase()
   return HEVY_BP[g] || 'upper legs'
@@ -187,6 +233,7 @@ function makeResolver(templates, customEx) {
         id: importId('im', 'Hevy|' + key), n: name, custom: true, eq: 'custom', tg: '', desc: '',
         bp: bpOfTemplate(t) || (t?.type === 'distance_duration' || t?.type === 'duration' ? 'cardio' : null)
           || 'upper legs',
+        ...hevyTemplateInfo(t),
       }
       created.set(key, c)
       titleOf.set(c.id, t?.title || fallbackTitle || name)
@@ -250,9 +297,13 @@ export function parseHevyWorkouts(workouts, templates, { unit = 'kg', customEx =
     const key = w.id != null ? 'id|' + w.id : start.d + '|' + start.t + '|' + title
     let day = byDate.get(key)
     if (!day) {
-      day = { d: start.d, ex: new Map(), name: title, start: start.t, end: end?.t ?? null }
+      day = { d: start.d, ex: new Map(), name: title, start: start.t, end: end?.t ?? null, note: '', notes: new Map(), routine: null }
       byDate.set(key, day)
     } else if (!day.name && title) day.name = title
+    // The description is the workout's note, as in Hevy's CSV; the routine it was started from is
+    // kept, so linkHevyRoutines can file it under that routine once the routine is here.
+    if (!day.note) day.note = text(w.description)
+    if (day.routine == null && w.routine_id != null && w.routine_id !== '') day.routine = String(w.routine_id)
     // Past midnight the end's clock restarts; count it from the start day's midnight instead.
     if (end?.t != null) day.end = end.t + daysBetween(start.d, end.d) * 86400000
 
@@ -264,6 +315,13 @@ export function parseHevyWorkouts(workouts, templates, { unit = 'kg', customEx =
       // Filed only once a set lands in it: an exercise whose sets all had nothing measured would
       // otherwise import as an entry with no sets, which nothing that reads a session back expects.
       const list = day.ex.get(id) || []
+      // The exercise's notes, one per entry as the app keeps it (the CSV import's way).
+      const note = text(ex.notes)
+      if (note) {
+        const notes = day.notes.get(id) || []
+        if (!notes.includes(note)) notes.push(note)
+        day.notes.set(id, notes)
+      }
 
       for (const s of ex.sets || []) {
         const warmup = /warm/i.test(String(s.type || ''))
@@ -304,7 +362,8 @@ export function parseHevyWorkouts(workouts, templates, { unit = 'kg', customEx =
     const d = day.d
     const entries = [...day.ex.entries()].map(([id, ss]) => {
       const mx = Math.max(0, ...ss.filter(s => !isWarmupRow(s)).map(s => s.w || 0))
-      return { id, sets: ss, topW: mx || null }
+      const note = (day.notes.get(id) || []).join(' · ').slice(0, NOTE_MAX)
+      return { id, sets: ss, topW: mx || null, ...(note ? { note } : {}) }
     })
     const base = new Date(d + 'T00:00:00').getTime()
     const startMs = base + (day.start ?? 18 * 3600000)
@@ -313,6 +372,8 @@ export function parseHevyWorkouts(workouts, templates, { unit = 'kg', customEx =
       // From what it is (importId), so the same import on two devices merges into one.
       id: importId('iw', JSON.stringify(['Hevy', d, startMs, day.name || '', entries.map(e => [e.id, e.sets])])), d, start: startMs, end: endMs > startMs ? endMs : startMs,
       routineId: null, name: day.name || 'Imported', entries, prs: [],
+      ...(day.note ? { note: day.note } : {}),
+      ...(day.routine ? { hevyRoutineId: day.routine } : {}),
     }
     // Work sets only, the number `workoutVolume` gives a workout finished in the app; it is stored for good.
     workout.vol = entries.reduce((a, e) => a + e.sets.reduce((b, s) => b + (isWarmupRow(s) ? 0 : (s.w || 0) * (s.r || 0)), 0), 0)
@@ -383,6 +444,15 @@ export function parseHevyRoutines(routines, templates, { unit = 'kg', customEx =
       }
       if (warm > 0) cfg.warmupSets = Math.min(5, warm)
       if (he.notes) cfg.note = String(he.notes).slice(0, 280)
+      // The exercise's rest, and a rep range ("8–12") as double progression over that range.
+      const rest = pos(he.rest_seconds)
+      if (rest) cfg.restSec = Math.round(rest)
+      const range = cfg.mode === 'reps' && work.map(s => s?.rep_range).find(x => pos(x?.start) && pos(x?.end))
+      if (range) {
+        const lo = Math.round(Math.min(range.start, range.end)), hi = Math.round(Math.max(range.start, range.end))
+        if (lo === hi) cfg.reps = hi
+        else Object.assign(cfg, normalizeRepRange(hi, lo), { prog: 'double' })
+      }
 
       if (he.superset_id != null && he.superset_id !== '') {
         const key = String(he.superset_id)
@@ -481,17 +551,129 @@ export function parseHevyBodyweight(measurements, { unit = 'kg' } = {}) {
   }
 }
 
+// Hevy's body measurement fields → the app's (lib/measurements.js, all cm). Hevy's unsuffixed
+// ones are cm too. Lean mass has no field here and is left out.
+const HEVY_MEASURE = {
+  neck_cm: 'neck', shoulder_cm: 'shoulders', chest_cm: 'chest',
+  left_bicep_cm: 'upperArmLeft', right_bicep_cm: 'upperArmRight',
+  left_forearm_cm: 'forearmLeft', right_forearm_cm: 'forearmRight',
+  abdomen: 'abdomen', waist: 'waist', hips: 'hips',
+  left_thigh: 'thighLeft', right_thigh: 'thighRight', left_calf: 'calfLeft', right_calf: 'calfRight',
+  fat_percent: 'bodyFat',
+}
+
+/** Body measurements from the Hevy API → measurement entries, one a day (the later row's values first), sorted. */
+export function parseHevyMeasurements(list) {
+  const byDay = new Map()
+  for (const m of list || []) {
+    const d = String(m?.date || '').slice(0, 10)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) continue
+    const e = byDay.get(d) || { d, t: new Date(d + 'T12:00:00').getTime() }
+    for (const [from, to] of Object.entries(HEVY_MEASURE)) {
+      const v = pos(m[from])
+      if (v != null && !(to === 'bodyFat' && v > 100)) e[to] = Math.round(v * 10) / 10
+    }
+    byDay.set(d, e)
+  }
+  const keys = Object.values(HEVY_MEASURE)
+  return [...byDay.values()].filter(e => keys.some(k => e[k] != null)).sort((a, b) => (a.d < b.d ? -1 : 1))
+}
+
+/** The measured days `S` does not have yet: a day that already has measurements is kept, as with weigh-ins. */
+export const freshHevyMeasurements = (S, entries) => {
+  const have = new Set((S?.measurements || []).map(e => e?.d))
+  return (entries || []).filter(e => !have.has(e.d))
+}
+
+/** Adds the fresh days to `S.measurements` and switches on a field that got a value. Returns how many. */
+export function mergeHevyMeasurements(S, entries) {
+  const fresh = freshHevyMeasurements(S, entries)
+  if (!fresh.length) return 0
+  const custom = S.customMeasurements || []
+  S.measurements = [...(S.measurements || []), ...fresh.map(e => normalizeMeasurementEntry(e, custom))]
+    .sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0))
+  const used = Object.values(HEVY_MEASURE).filter(k => fresh.some(e => e[k] != null))
+  const on = Array.isArray(S.measurementEnabled) ? S.measurementEnabled : DEFAULT_MEASUREMENT_KEYS
+  if (used.some(k => !on.includes(k))) S.measurementEnabled = [...on, ...used.filter(k => !on.includes(k))]
+  return fresh.length
+}
+
+// A custom exercise an earlier import made, and nobody has filled in since: the import made it
+// without muscles, and the custom-exercise form always stores some.
+const untouched = c => c && c.custom && (c.eq === 'custom' || !c.eq) && !c.tg && !(c.primaries?.length) && !(c.sm?.length)
+
+/** Gives an earlier import's custom exercises their template's muscles and equipment. Returns how many. */
+export function fillHevyCustoms(S, templates) {
+  let n = 0
+  const byId = new Map((S.customEx || []).map(c => [c?.id, c]))
+  for (const t of templates || []) {
+    const c = byId.get(importId('im', 'Hevy|' + t?.id))
+    if (!untouched(c)) continue
+    const info = hevyTemplateInfo(t)
+    if (!Object.keys(info).length) continue
+    Object.assign(c, info)
+    n++
+  }
+  return n
+}
+
+const LINK_MS = 2 * 60000      // an earlier import's workout starting this close to a Hevy one is that one
+
 /**
- * Fetch + parse. Returns `{ workouts, routines, bodyweight }` ready to merge,
- * or throws `HevyApiError`. The apiKey is only read here — never written.
+ * Files Hevy workouts under their routine. A workout already here that is the same session as a
+ * Hevy one (same day, a start within two minutes, no routine: an earlier CSV import) takes its
+ * Hevy routine id first; then every workout with a Hevy routine id and no routine gets the routine
+ * with that Hevy id, if it is here. A routine set in the app is never changed. Mutates `S`;
+ * returns how many it linked.
+ */
+export function linkHevyRoutines(S, parsedWorkouts, now = Date.now()) {
+  const list = S.workouts || []
+  const touched = new Set()
+  for (const p of parsedWorkouts || []) {
+    if (!p?.hevyRoutineId) continue
+    for (const w of list) {
+      if (w.d !== p.d || w.routineId || w.hevyRoutineId || !(Math.abs((w.start || 0) - (p.start || 0)) <= LINK_MS)) continue
+      w.hevyRoutineId = p.hevyRoutineId
+      touched.add(w)
+    }
+  }
+  const byHevy = new Map((S.routines || []).filter(r => r?.hevyId).map(r => [String(r.hevyId), r.id]))
+  let linked = 0
+  for (const w of list) {
+    if (!w?.hevyRoutineId || w.routineId) continue
+    const rid = byHevy.get(String(w.hevyRoutineId))
+    if (!rid) continue
+    w.routineId = rid
+    touched.add(w)
+    linked++
+  }
+  // Stamped as edits, so the link syncs to the other devices (sync-merge.js stampWorkout).
+  for (const w of touched) stampWorkout(w, now)
+  return linked
+}
+
+/** How many workouts `linkHevyRoutines` would link, without changing `S`. */
+export function linkableHevyWorkouts(S, parsedWorkouts) {
+  const copy = { workouts: (S?.workouts || []).map(w => ({ ...w })), routines: S?.routines || [] }
+  return linkHevyRoutines(copy, parsedWorkouts)
+}
+
+/**
+ * Fetch + parse. Returns `{ workouts, routines, bodyweight, measurements, templates, accountUnit }`
+ * ready to merge, or throws `HevyApiError`. The apiKey is only read here — never written.
  */
 export async function importHevyData(apiKey, { unit = 'kg', onProgress, customEx = [] } = {}) {
-  const { templates, workouts, routines, bodyMeasurements } = await fetchHevyAccount(apiKey, { onProgress })
+  const { templates, workouts, routines, bodyMeasurements, unit: accountUnit } = await fetchHevyAccount(apiKey, { onProgress })
   onProgress && onProgress({ stage: 'parse' })
   return {
     workouts: parseHevyWorkouts(workouts, templates, { unit, customEx }),
     routines: parseHevyRoutines(routines, templates, { unit, customEx }),
     bodyweight: parseHevyBodyweight(bodyMeasurements, { unit }),
+    measurements: parseHevyMeasurements(bodyMeasurements),
+    // For fillHevyCustoms after the merge: only what it reads.
+    templates: templates.filter(t => t?.id != null)
+      .map(({ id, title, equipment, primary_muscle_group, secondary_muscle_groups }) => ({ id, title, equipment, primary_muscle_group, secondary_muscle_groups })),
+    accountUnit,
     templateCount: templates.length,
   }
 }

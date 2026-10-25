@@ -6,7 +6,7 @@ Everything here lives in the app under **Settings → Data & backup**, except pl
 | You want to | Use |
 |---|---|
 | Bring your workout history from another app | **Import from another app** (CSV) |
-| Pull workouts, routines and weigh-ins from Hevy Pro | **Import from Hevy** (API key) |
+| Pull workouts, routines, weigh-ins and body measurements from Hevy Pro | **Import from Hevy** (API key) |
 | Bring body weight over from an iPhone | **Import from another app** with the Apple Health export |
 | Give someone your routines | **Plan → share button (top right) → Export plan file** |
 | Back up or move everything | **Export backup** / **Import backup** |
@@ -42,9 +42,26 @@ With **Hevy Pro** you can skip the CSV:
 1. In Hevy, open [Settings → Developer](https://hevy.com/settings?developer) and create an API key.
 2. In openGym, go to **Settings → Data & backup → Import from Hevy** and paste the key. It's used for this
    import only and isn't saved.
-3. Choose workouts, routines, weigh-ins or any mix, then confirm.
+3. Choose workouts, routines, weigh-ins, body measurements or any mix, then confirm.
 
 Routines always arrive as new plans; nothing you already have is overwritten.
+
+Besides the sets, the import brings:
+
+- **Notes:** a workout's description becomes its note, and an exercise's notes its note that day.
+- **Rest and rep ranges:** a routine exercise's rest, and a rep range such as 8–12 as double
+  progression over that range.
+- **Body measurements** (neck, shoulders, chest, arms, forearms, waist, abdomen, hips, thighs,
+  calves, body fat) into Measurements, in cm. Days that already have measurements are left alone.
+- **Routine links:** a workout done from a Hevy routine is filed under that routine once the
+  routine is here, so "last time" and the routine's history read it. A workout from an earlier CSV
+  import of the same session (same day, starting within two minutes) is linked too. A routine you
+  set on a workout yourself is never changed.
+- **Custom exercises' muscles and equipment** from Hevy's exercise, also for custom exercises an
+  earlier import made, until you edit them.
+
+Hevy's API gives weights in kg whatever your Hevy account shows; when it shows the other unit, the
+import says so.
 
 ## Body weight from Apple Health
 

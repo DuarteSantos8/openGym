@@ -34,7 +34,7 @@ import ExerciseViewToggle from './components/ExerciseViewToggle.jsx'
 import { sameMuscleFirst, swapMuscleOf } from './lib/similar-exercises.js'
 import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWeightsOf, muscleGroupsOf, hasExplicitMuscleMetadata, inMuscleOrder } from './lib/muscles.js'
 import { parseImport, mergeImport } from './lib/import-csv.js'
-import { importHevyData, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines, hevySummaryCounts } from './lib/import-hevy.js'
+import { importHevyData, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines, hevySummaryCounts, freshHevyMeasurements, mergeHevyMeasurements, fillHevyCustoms, linkHevyRoutines, linkableHevyWorkouts } from './lib/import-hevy.js'
 import { buildPlanBundle, parsePlan, mergePlan, printPlan, planPrintHTML } from './lib/plan-share.js'
 import { printOptions } from './lib/print-doc.js'
 import { printWorkout } from './lib/report-print.js'
@@ -572,6 +572,7 @@ function HevyImportSheet({ close }) {
   const [wantWorkouts, setWantWorkouts] = useState(true)
   const [wantRoutines, setWantRoutines] = useState(true)
   const [wantBody, setWantBody] = useState(true)
+  const [wantMeasures, setWantMeasures] = useState(true)
   const keyRef = useRef(null)
 
   // Drop the key from memory when the sheet goes away (unmount or successful import).
@@ -588,7 +589,7 @@ function HevyImportSheet({ close }) {
     try {
       const data = await importHevyData(key, { unit: st.unit, customEx: st.customEx, onProgress: setProgress })
       wipeKey()
-      const empty = !data.workouts.workouts.length && !data.routines.routines.length && !data.bodyweight.bodyweight.length
+      const empty = !data.workouts.workouts.length && !data.routines.routines.length && !data.bodyweight.bodyweight.length && !data.measurements.length
       if (empty) {
         toast(t('Nothing to import from Hevy'))
         return
@@ -596,6 +597,7 @@ function HevyImportSheet({ close }) {
       setWantWorkouts(!!data.workouts.workouts.length)
       setWantRoutines(!!data.routines.routines.length)
       setWantBody(!!data.bodyweight.bodyweight.length)
+      setWantMeasures(!!data.measurements.length)
       setPayload(data)
     } catch (e) {
       if (e instanceof HevyApiError && e.message === 'auth') toast(t('That Hevy API key was refused'))
@@ -611,7 +613,7 @@ function HevyImportSheet({ close }) {
   const doImport = () => {
     if (!payload) return
     const parts = []
-    let addedW = 0, addedR = 0, addedB = 0
+    let addedW = 0, addedR = 0, addedB = 0, addedM = 0, linked = 0
     update(s => {
       if (wantWorkouts && payload.workouts.workouts.length) {
         const res = mergeImport(s, payload.workouts)
@@ -628,9 +630,18 @@ function HevyImportSheet({ close }) {
         addedB = res.added
         parts.push(tn('{0} weigh-in imported', '{0} weigh-ins imported', res.added))
       }
+      if (wantMeasures && payload.measurements.length) {
+        addedM = mergeHevyMeasurements(s, payload.measurements)
+        if (addedM) parts.push(t('Body measurements imported: {0}', addedM))
+      }
+      // Whatever was switched on: an earlier import's custom exercises get their muscles, and the
+      // workouts here are filed under the routines here.
+      fillHevyCustoms(s, payload.templates)
+      linked = linkHevyRoutines(s, payload.workouts.workouts)
+      if (linked) parts.push(t('Workouts linked to their routine: {0}', linked))
     })
     close()
-    if (!addedW && !addedR && !addedB) toast(t('Nothing new to import'))
+    if (!addedW && !addedR && !addedB && !addedM && !linked) toast(t('Nothing new to import'))
     else toast(parts.join(' · '))
   }
 
@@ -674,7 +685,12 @@ function HevyImportSheet({ close }) {
   const freshB = b.bodyweight.length - haveB
   // Routines are always added as new copies (same as plan import).
   const freshR = r.routines.length
+  const freshM = freshHevyMeasurements(st, payload.measurements).length
+  const links = linkableHevyWorkouts(st, w.workouts)
   const canImport = (wantWorkouts && freshW > 0) || (wantRoutines && freshR > 0) || (wantBody && freshB > 0)
+    || (wantMeasures && freshM > 0) || links > 0
+  // Hevy's API gives kg whatever the account shows; when the account shows the other unit, say so.
+  const otherUnit = payload.accountUnit && payload.accountUnit !== st.unit
   const unmatched = [...new Set([
     ...(wantWorkouts ? w.unmatchedNames : []),
     ...(wantRoutines ? r.unmatchedNames : []),
@@ -709,16 +725,29 @@ function HevyImportSheet({ close }) {
       </div>
       <Switch checked={wantRoutines} onChange={setWantRoutines} />
     </div>}
-    {b.bodyweight.length > 0 && <div className="row between" style={{ padding: '10px 2px', borderTop: '1px solid var(--sep)', borderBottom: '1px solid var(--sep)', gap: 12, marginBottom: 8 }}>
+    {b.bodyweight.length > 0 && <div className="row between" style={{ padding: '10px 2px', borderTop: '1px solid var(--sep)', gap: 12 }}>
       <div>
         <div className="tt" style={{ fontSize: 15 }}>{t('Import weigh-ins')}</div>
         <div className="small dim">{t('{0} new · {1} days already here', freshB, haveB)}</div>
       </div>
       <Switch checked={wantBody} onChange={setWantBody} />
     </div>}
-    {!b.bodyweight.length && <div style={{ borderBottom: '1px solid var(--sep)', marginBottom: 8 }} />}
+    {payload.measurements.length > 0 && <div className="row between" style={{ padding: '10px 2px', borderTop: '1px solid var(--sep)', gap: 12 }}>
+      <div>
+        <div className="tt" style={{ fontSize: 15 }}>{t('Import body measurements')}</div>
+        <div className="small dim">{t('{0} new · {1} days already here', freshM, payload.measurements.length - freshM)}</div>
+      </div>
+      <Switch checked={wantMeasures} onChange={setWantMeasures} />
+    </div>}
+    {links > 0 && <div className="small dim" style={{ padding: '10px 2px', borderTop: '1px solid var(--sep)' }}>
+      {t('Workouts to link to their routine: {0}', links)}
+    </div>}
+    <div style={{ borderBottom: '1px solid var(--sep)', marginBottom: 8 }} />
 
-    {(w.converted || r.converted) && <div className="small" style={{ color: 'var(--yellow)', marginBottom: 10 }}>
+    {otherUnit && <div className="small" style={{ color: 'var(--yellow)', marginBottom: 10 }}>
+      {t('Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.', payload.accountUnit, st.unit)}
+    </div>}
+    {!otherUnit && (w.converted || r.converted) && <div className="small" style={{ color: 'var(--yellow)', marginBottom: 10 }}>
       {t('Hevy stores weights in kg, so they’ll be converted to {0}.', st.unit)}
     </div>}
     {wantWorkouts && (w.rirSets + w.rpeSets) > 0 && <div className="small dim" style={{ marginBottom: 10 }}>

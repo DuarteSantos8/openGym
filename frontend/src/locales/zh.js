@@ -670,6 +670,11 @@ export default {
   'Fetching routines… ({0}/{1})': '正在获取计划… ({0}/{1})',
   'Routines': '训练计划',
   'Import weigh-ins': '导入体重',
+  'Import body measurements': '导入身体围度',
+  'Workouts to link to their routine: {0}': '将关联到其训练日的训练：{0}',
+  'Workouts linked to their routine: {0}': '已关联到其训练日的训练：{0}',
+  'Body measurements imported: {0}': '已导入身体围度：{0}',
+  'Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.': '你的 Hevy 账户以 {0} 显示重量，本应用以 {1} 显示：导入后为 {1}。',
   '{0} new · {1} days already here': '{0} 条新记录 · {1} 天已有数据',
   'Hevy stores weights in kg, so they’ll be converted to {0}.': 'Hevy 以公斤存储重量，所以会换算为 {0}。',
   // --- mobile build ---
