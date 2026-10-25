@@ -35,6 +35,7 @@ beforeEach(() => {
     download: async (url, dir) => { downloads++; const f = path.join(dir, 'video.mp4'); fs.writeFileSync(f, 'x'); return f },
     probe: async () => ({ width: 640, height: 360, duration: 300 }),
     roiSetup: async () => ({ samples: [{ t: 150, src: 'data:image/jpeg;base64,AA' }], suggest: { name: null, timer: null }, width: 640, height: 360 }),
+    autoRoi: async () => null,
     analyse: fakeAnalyse
   })
 })
@@ -145,4 +146,84 @@ test('a failing tool ends the job with its message and still cleans up', async (
   assert.equal(job.status, 'error'); assert.equal(job.code, 'too-long')
   assert.match(job.error, /90 minutes/)
   assert.deepEqual(fs.readdirSync(TMP), [])
+})
+
+const AUTO = { name: { x: 0.05, y: 0.8, w: 0.4, h: 0.08 }, timer: { x: 0.85, y: 0.02, w: 0.12, h: 0.18 }, captions: 9 }
+
+test('boxes the program finds by itself skip the step where the user marks them', async () => {
+  let seen = null
+  jobs._setDeps({ autoRoi: async () => { await new Promise(r => setTimeout(r, 40)); return AUTO }, analyse: async (file, roi, o) => { seen = roi; return fakeAnalyse(file, roi, o) } })
+  const stages = []
+  const job = jobs.create({ url: URL_OK, owner: 'u1' })
+  const poll = setInterval(() => { if (stages[stages.length - 1] !== job.stage) stages.push(job.stage) }, 1)
+  await settle(job)
+  clearInterval(poll)
+  assert.equal(job.status, 'done', job.error)
+  assert.ok(!stages.includes('needs_roi'), 'the user was never asked: ' + stages.join(' > '))
+  assert.ok(stages.includes('detect'))
+  assert.deepEqual(seen, { name: AUTO.name, timer: AUTO.timer })
+  assert.equal(job.result.roiAuto, true)
+  assert.equal(job.result.roiSaved, false)
+})
+
+test('boxes the user drew for this channel are used, and nothing is detected', async () => {
+  let asked = 0
+  jobs._setDeps({ autoRoi: async () => { asked++; return AUTO } })
+  const saved = { name: { x: 0.1, y: 0.7, w: 0.5, h: 0.1 }, timer: null }
+  const job = await settle(jobs.create({ url: URL_OK, owner: 'u1', rois: { UC1: saved } }))
+  assert.equal(job.status, 'done', job.error)
+  assert.equal(asked, 0)
+  assert.equal(job.result.roiSaved, true)
+  assert.ok(!job.result.roiAuto)
+})
+
+test('when nothing is found the user is asked, as before', async () => {
+  jobs._setDeps({ autoRoi: async () => null })
+  const job = jobs.create({ url: URL_OK, owner: 'u1' })
+  await settle(job, j => j.status === 'needs_roi')
+  assert.equal(job.status, 'needs_roi')
+})
+
+test('"mark them myself" asks even when the program found boxes, and starts from what it found', async () => {
+  jobs._setDeps({ autoRoi: async () => AUTO })
+  const job = jobs.create({ url: URL_OK, owner: 'u1', manual: true })
+  await settle(job, j => j.status === 'needs_roi')
+  assert.equal(job.status, 'needs_roi')
+  const v = jobs.view(job)
+  assert.deepEqual(v.roiSetup.suggest.name, AUTO.name)
+  assert.deepEqual(v.roiSetup.suggest.timer, AUTO.timer)
+})
+
+test('a detection that fails does not fail the import: the user is asked', async () => {
+  jobs._setDeps({ autoRoi: async () => { throw new Error('tesseract exploded') } })
+  const job = jobs.create({ url: URL_OK, owner: 'u1' })
+  await settle(job, j => j.status === 'needs_roi')
+  assert.equal(job.status, 'needs_roi')
+})
+
+const rowsOf = (n, named) => ({ frames: [], blocks: [], stats: {}, quality: { timed: true, rows: n, namedShare: named, meanConf: named ? 0.8 : 0.2, runCover: 0.9 },
+  draft: { sections: [{ kind: 'interval', rows: [{ id: 'v1', name: 'Burpees', occurrences: [] }] }] } })
+
+test('a read the program is not sure of is not handed over: the user is asked, with its boxes, and the video is not downloaded again', async () => {
+  const reads = []
+  jobs._setDeps({ autoRoi: async () => AUTO, analyse: async (file, roi) => { reads.push(roi); return rowsOf(30, reads.length === 1 ? 0.3 : 0.9) } })
+  const job = jobs.create({ url: URL_OK, owner: 'u1' })
+  await settle(job, j => j.status === 'needs_roi')
+  assert.equal(job.status, 'needs_roi')
+  const v = jobs.view(job)
+  assert.equal(v.roiSetup.unsure, true)
+  assert.deepEqual(v.roiSetup.suggest.name, AUTO.name)
+  jobs.submitRoi(job.id, { name: { x: 0.1, y: 0.7, w: 0.5, h: 0.1 } })
+  await settle(job)
+  assert.equal(job.status, 'done', job.error)
+  assert.equal(downloads, 1)
+  assert.equal(reads.length, 2)
+  assert.ok(!job.result.roiAuto, 'the second read used the user\'s boxes')
+})
+
+test('a good automatic read is handed over without asking', async () => {
+  jobs._setDeps({ autoRoi: async () => AUTO, analyse: async () => rowsOf(30, 0.95) })
+  const job = await settle(jobs.create({ url: URL_OK, owner: 'u1' }))
+  assert.equal(job.status, 'done', job.error)
+  assert.equal(job.result.roiAuto, true)
 })

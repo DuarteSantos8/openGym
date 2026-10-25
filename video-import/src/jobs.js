@@ -1,9 +1,10 @@
 // Jobs: one import at a time per profile, a short queue, and nothing left on disk afterwards.
 //
 // A job walks these stages, each reported with a fraction for the progress bar:
-//   queued → metadata → download → [needs_roi] → frames → ocr → thumbs → done
+//   queued → metadata → download → detect → [needs_roi] → frames → ocr → thumbs → done
 // and can end in error or cancelled from any of them. `needs_roi` waits for the boxes the user
-// draws (or the ones the API sends for a channel it has seen before) for up to ROI_WAIT_MS.
+// draws for up to ROI_WAIT_MS. It is skipped when the boxes are known: the ones the API sends for a
+// channel the profile has set up before, or the ones the program found itself in `detect`.
 //
 // The video is always read: its chapters are hints (the sections, a name for a move the screen
 // never names) and, when the frames hold no names at all, the answer.
@@ -21,8 +22,9 @@ import { metadata, download, VideoError } from './youtube.js'
 import { metadataDraft, sourceOf } from './metadata.js'
 import { enrichFromChapters } from './chapter-names.js'
 import { classify } from './classify.js'
-import { analyse, roiSetup } from './pipeline.js'
+import { analyse, roiSetup, autoRois } from './pipeline.js'
 import { probe } from './frames.js'
+import { poorRead } from './gate.js'
 import { cleanBox, cleanNames, cleanTimers } from './roi-suggest.js'
 
 export const MAX_CONCURRENT = Math.max(1, +process.env.VIDEO_IMPORT_CONCURRENCY || 1)
@@ -64,7 +66,7 @@ function release() {
 const cancelledError = () => Object.assign(new Error('cancelled'), { cancelled: true })
 
 // The stages and how much of the bar each one fills, in order.
-const WEIGHTS = { queued: 0, metadata: 0.03, download: 0.25, needs_roi: 0.28, frames: 0.45, ocr: 0.9, thumbs: 0.98, done: 1 }
+const WEIGHTS = { queued: 0, metadata: 0.03, download: 0.25, detect: 0.28, needs_roi: 0.3, frames: 0.45, ocr: 0.9, thumbs: 0.98, done: 1 }
 const STAGES = Object.keys(WEIGHTS)
 
 function setStage(job, stage, frac = 0) {
@@ -97,7 +99,7 @@ export function get(id) {
  * worker can be thrown away and rebuilt without losing anyone's setup. (An old `mode` argument
  * is ignored: there is one way to import a video.)
  */
-export function create({ url, owner, rois = {} } = {}) {
+export function create({ url, owner, rois = {}, manual = false } = {}) {
   const yt = canonicalYouTube(url)
   if (!yt) throw new JobError(400, 'bad-url', 'not a YouTube video link')
   const who = String(owner || '').slice(0, 80)
@@ -108,7 +110,7 @@ export function create({ url, owner, rois = {} } = {}) {
   if ([...jobs.values()].filter(j => j.status === 'queued').length >= MAX_QUEUE) throw new JobError(429, 'queue-full', 'too many imports waiting, try again in a few minutes')
   const job = {
     id: crypto.randomBytes(12).toString('hex'), owner: who, url: yt.url, videoId: yt.id,
-    rois: rois && typeof rois === 'object' ? rois : {},
+    rois: rois && typeof rois === 'object' ? rois : {}, manual: manual === true,
     status: 'queued', stage: 'queued', pct: 0, created: Date.now(), updated: Date.now(),
     abort: new AbortController(), roiWaiter: null
   }
@@ -164,7 +166,7 @@ let toolDeps = {}
 export function _setDeps(d) { toolDeps = { ...toolDeps, ...d } }
 
 export async function execute(job) {
-  const d = { metadata, download, analyse, roiSetup, probe, ...toolDeps }
+  const d = { metadata, download, analyse, roiSetup, probe, autoRoi: autoRois, ...toolDeps }
   const signal = job.abort.signal
   let holding = false, workDir = null
   try {
@@ -182,19 +184,49 @@ export async function execute(job) {
     const dims = await d.probe(file, { signal })
     const saved = job.source.channelId && job.rois[job.source.channelId]
     let roi = saved ? { name: cleanNames(saved.name), timer: cleanTimers(saved.timer) } : null
+    // No boxes known: look for them. What the program finds is used as it is, unless the user asked
+    // to mark them (then it is only where they start); nothing found, or a detection that fails,
+    // is not a failed import but the old question.
+    let auto = null
     if (!roi?.name) {
-      job.roiSetup = await d.roiSetup(file, { workDir, signal, dims })
-      job.status = 'needs_roi'
-      setStage(job, 'needs_roi')
-      release(); holding = false
-      roi = await waitForRoi(job)
-      delete job.roiSetup
-      job.status = 'queued'
-      await acquire(job)
-      holding = true
-      job.status = 'running'
+      setStage(job, 'detect')
+      try { auto = await d.autoRoi(file, { workDir, signal, dims }) } catch (e) {
+        if (e.cancelled || signal.aborted) throw e
+        console.warn('job', job.id, 'finding the boxes failed:', e.message)
+      }
+      if (auto?.name && !job.manual) { roi = { name: auto.name, timer: auto.timer || null }; job.roiAuto = true }
     }
-    const out = await d.analyse(file, roi, { workDir, signal, dims, hints: meta.hints, parts: meta.parts, progress: (stage, f) => setStage(job, stage, f) })
+    let out
+    for (;;) {
+      if (!roi?.name) {
+        job.roiSetup = await d.roiSetup(file, { workDir, signal, dims })
+        if (auto?.name) {
+          const timers = [].concat(auto.timer || [])
+          job.roiSetup.suggest = { ...job.roiSetup.suggest, name: auto.name, names: [auto.name], timer: timers[0] || null, ...(timers.length > 1 ? { timers } : {}) }
+        }
+        // The program tried and was not sure: the screen says so, and the boxes it found are where to start.
+        if (job.unsure) job.roiSetup.unsure = true
+        job.status = 'needs_roi'
+        setStage(job, 'needs_roi')
+        release(); holding = false
+        roi = await waitForRoi(job)
+        delete job.roiSetup
+        job.status = 'queued'
+        await acquire(job)
+        holding = true
+        job.status = 'running'
+      }
+      out = await d.analyse(file, roi, { workDir, signal, dims, hints: meta.hints, parts: meta.parts, progress: (stage, f) => setStage(job, stage, f) })
+      // Boxes the program found itself and a read too thin to hand over: ask, with the video already here.
+      if (job.roiAuto && poorRead(out.quality) && !(meta.usable && !out.quality?.namedShare)) {
+        console.warn('job', job.id, 'the automatic read is poor, asking for the boxes:', JSON.stringify(out.quality))
+        job.roiAuto = false
+        job.unsure = true
+        roi = null
+        continue
+      }
+      break
+    }
     // Nothing on the screen named a single move, and the chapters name exercises: that is all there
     // is to go on, and the review screen says where it came from.
     const rows = (out.draft?.sections || []).flatMap(s => s.rows || [])
@@ -208,7 +240,7 @@ export async function execute(job) {
     enrichFromChapters(out.draft, meta.blocks)
     finish(job, 'done', {
       result: {
-        source: job.source, method: 'video', roi, roiSaved: !!saved,
+        source: job.source, method: 'video', roi, roiSaved: !!saved, roiAuto: !!job.roiAuto,
         draft: out.draft,
         // The raw timeline, small: what the review screen shows when a row needs explaining.
         blocks: out.blocks.map(b => ({ start: b.start, dur: b.dur, kind: b.kind, text: b.text, conf: b.conf })),

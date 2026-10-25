@@ -71,12 +71,35 @@ async function crops(file, from, { width, height, workDir, signal }) {
 }
 
 /**
+ * Where the digits were: the middle of the marks' boxes over the seconds that read (a ring on the
+ * floor drifts with the camera, so the union of them would be half the frame). Null with fewer than
+ * `min` such seconds.
+ */
+function digitBox(c, readings, min) {
+  const spots = []
+  c.masks.forEach((ms, i) => {
+    const m = ms[0]
+    if (!readings[i].length || !m) return
+    let x0 = c.ow, y0 = c.oh, x1 = -1, y1 = -1
+    for (let k = 0; k < m.length; k++) if (m[k] === 0) { const x = k % c.ow, y = (k - x) / c.ow; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y) }
+    if (x1 >= 0) spots.push([x0, y0, x1, y1])
+  })
+  if (spots.length < min) return null
+  const med = k => { const v = spots.map(q => q[k]).sort((a, b) => a - b); return v[v.length >> 1] }
+  const x0 = med(0), y0 = med(1), x1 = med(2), y1 = med(3)
+  return { x: c.box.x + c.box.w * x0 / c.ow, y: c.box.y + c.box.h * y0 / c.oh, w: c.box.w * (x1 - x0 + 1) / c.ow, h: c.box.h * (y1 - y0 + 1) / c.oh }
+}
+
+/**
  * Boxes where a countdown is drawn, best first: [{ x, y, w, h }] as fractions of the frame, at most
  * three (the pipeline reads up to three), none on top of another. Empty when nothing counts (no timer, or one nobody can read).
  */
 export async function suggestTimers(file, { workDir, dims, signal } = {}) {
   const { width, height, duration } = dims
   const found = []
+  // Evidence from windows too short to convince alone (a ring on the floor is read in bits): per
+  // grid cell, the windows that did count; a cell that counts in two of them is a timer too.
+  const weak = new Map()
   for (const at of AT) {
     const from = Math.max(0, Math.min(duration - SECONDS - 1, duration * at))
     const cands = await crops(file, from, { width, height, workDir, signal })
@@ -105,25 +128,25 @@ export async function suggestTimers(file, { workDir, dims, signal } = {}) {
       const readings = c.masks.map(() => [])
       paths.forEach((p, k) => { const v = parseTimer(read[k]?.text); if (v != null && v >= 0 && v <= 99) readings[p.i].push(v) })
       fs.rmSync(dir, { recursive: true, force: true })
-      const { pairs, share } = stepShare(readings)
+      const { pairs, steps, share } = stepShare(readings)
+      if (pairs >= 1 && share >= 0.5 && !(pairs >= 6 && share >= 0.55)) {
+        const key = `${c.box.x},${c.box.y}`
+        const w = weak.get(key) || { windows: [], pairs: 0, steps: 0 }
+        w.windows.push({ c, readings, pairs, share }); w.pairs += pairs; w.steps += steps
+        weak.set(key, w)
+      }
       if (pairs >= 6 && share >= 0.55) {
-        // Where the digits were: the middle of the marks' boxes over the seconds that read (a ring on
-        // the floor drifts with the camera, so the union of them would be half the frame), padded.
-        const spots = []
-        c.masks.forEach((ms, i) => {
-          const m = ms[0]
-          if (!readings[i].length || !m) return
-          let x0 = c.ow, y0 = c.oh, x1 = -1, y1 = -1
-          for (let k = 0; k < m.length; k++) if (m[k] === 0) { const x = k % c.ow, y = (k - x) / c.ow; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y) }
-          if (x1 >= 0) spots.push([x0, y0, x1, y1])
-        })
-        if (spots.length < 3) continue
-        const med = k => { const v = spots.map(q => q[k]).sort((a, b) => a - b); return v[v.length >> 1] }
-        const x0 = med(0), y0 = med(1), x1 = med(2), y1 = med(3)
-        const inner = { x: c.box.x + c.box.w * x0 / c.ow, y: c.box.y + c.box.h * y0 / c.oh, w: c.box.w * (x1 - x0 + 1) / c.ow, h: c.box.h * (y1 - y0 + 1) / c.oh }
+        const inner = digitBox(c, readings, 3)
+        if (!inner) continue
         found.push({ box: padBox(inner, 0.9), share, pairs })
       }
     }
+  }
+  for (const w of weak.values()) {
+    if (w.windows.length < 2 || w.pairs < 6 || w.steps / w.pairs < 0.55) continue
+    const best = w.windows.sort((a, b) => b.pairs - a.pairs)[0]
+    const inner = digitBox(best.c, best.readings, 2)
+    if (inner) found.push({ box: padBox(inner, 0.9), share: w.steps / w.pairs, pairs: w.pairs })
   }
   const picked = []
   for (const f of found.sort((a, b) => b.share * Math.min(b.pairs, 12) - a.share * Math.min(a.pairs, 12))) {

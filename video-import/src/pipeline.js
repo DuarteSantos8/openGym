@@ -8,6 +8,8 @@ import { readCrops } from './ocr.js'
 import { segment, timerPhases } from './segment.js'
 import { classify, cutsOf } from './classify.js'
 import { dominantLabel, stripLabel } from './text.js'
+import { autoNameBox } from './auto-roi.js'
+import { quality } from './gate.js'
 import { suggestRois } from './roi-suggest.js'
 import { suggestTimers } from './timer-suggest.js'
 import { run } from './proc.js'
@@ -51,6 +53,20 @@ export async function roiSetup(file, { workDir, signal, dims } = {}) {
     if (timers.length) Object.assign(suggest, { timer: timers[0], timers })
   } catch (e) { if (e.cancelled) throw e }
   return { samples, suggest, width: d.width, height: d.height }
+}
+
+/**
+ * The boxes of a video, found by the program: { name, timer, captions } or null when it could not
+ * tell where the names are. The timer is found by its counting (timer-suggest.js), the name by what
+ * it reads (auto-roi.js), with the timer's column left out.
+ */
+export async function autoRois(file, { workDir, signal, dims } = {}) {
+  const d = dims || await probe(file, { signal })
+  let timers = []
+  try { timers = await suggestTimers(file, { workDir, dims: d, signal }) } catch (e) { if (e.cancelled) throw e }
+  const found = await autoNameBox(file, { dims: d, workDir, signal, avoid: timers.slice(0, 1) })
+  if (!found) return null
+  return { name: found.boxes.length > 1 ? found.boxes : found.box, timer: timers.length > 1 ? timers.slice(0, 2) : timers[0] || null, captions: found.captions }
 }
 
 /**
@@ -107,7 +123,8 @@ export async function analyse(file, roi, { workDir, signal, hints = [], parts = 
   // countdowns over a good part of the video — not how clean every reading is: a timer shown
   // only during the work, or read in one of its four readings, still runs the show. The
   // captions alone otherwise.
-  const { blocks, draft } = draftFromFrames(frames, { hints, parts })
+  const { blocks, draft, timed } = draftFromFrames(frames, { hints, parts })
+  const signals = quality(frames, draft, timed, { expectTimed: [].concat(roi?.timer || []).length > 0 })
   progress('thumbs', 0)
   const rows = draft.sections.flatMap(s => s.rows)
   for (let i = 0; i < rows.length; i++) {
@@ -125,7 +142,7 @@ export async function analyse(file, roi, { workDir, signal, hints = [], parts = 
     progress('thumbs', (i + 1) / rows.length)
   }
   return {
-    frames, blocks, draft,
+    frames, blocks, draft, quality: signals,
     stats: { seconds: crops.seconds, uniqueName: names.reduce((t, n) => t + n.unique, 0), uniqueTimer: clocks.reduce((t, c) => t + c.unique, 0), readFrames: frames.filter(f => f.name).length }
   }
 }
