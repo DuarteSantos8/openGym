@@ -7,6 +7,7 @@ import { probe, extractCrops, still, stillDataUrl } from './frames.js'
 import { readCrops } from './ocr.js'
 import { segment, timerPhases } from './segment.js'
 import { classify, cutsOf } from './classify.js'
+import { dominantLabel, stripLabel } from './text.js'
 import { suggestRois } from './roi-suggest.js'
 import { suggestTimers } from './timer-suggest.js'
 import { run } from './proc.js'
@@ -58,6 +59,10 @@ export async function roiSetup(file, { workDir, signal, dims } = {}) {
  * what a real import would do with the same readings.
  */
 export function draftFromFrames(frames, { hints = [], parts = [] } = {}) {
+  // A video that opens every caption with the same word ("NOW: SQUAT") has a label, not a move:
+  // it goes, in every reading, as the OCR spelled it (NO, OW, W…).
+  const label = dominantLabel(frames.map(f => f.name))
+  if (label) frames = frames.map(f => (f.name ? { ...f, name: stripLabel(f.name, label) } : f))
   const phases = timerPhases(frames)
   const blocks = phases || segment(frames)
   const draft = classify(blocks, { hints, parts, cuts: cutsOf(frames.map(f => f.scene || 0)), timed: !!phases })

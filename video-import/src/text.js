@@ -217,6 +217,52 @@ export function sameName(a, b) {
 // "(R)", "(left)": a side in brackets, as the caption shows it or as segment.js spells it out.
 const SIDE_TOKEN = /^[([{]\s*(r|l|right|left)\s*[)\]}]/i
 
+/**
+ * The label word a video puts in front of every caption ("NOW: SQUAT"), or null: a word of three
+ * letters or more that opens at least half of the readings, and at least `minCount` of them.
+ * Not a word that means something to the rest of the reading (NEXT, REST…), and not one the
+ * exercises themselves use (PUSH UPS). `names` are the per-second readings, empty ones included.
+ */
+export function dominantLabel(names, { minShare = 0.5, minCount = 30 } = {}) {
+  const counts = new Map()
+  let total = 0
+  for (const n of names || []) {
+    const first = String(n || '').trim().split(/\s+/)[0] || ''
+    const word = first.split(/[:;|]+/)[0].replace(/[^\p{L}]/gu, '').toLowerCase()
+    if (!/\p{L}/u.test(String(n || ''))) continue
+    total++
+    if (word) counts.set(word, (counts.get(word) || 0) + 1)
+  }
+  let best = null
+  for (const [w, c] of counts) if (!best || c > best.c) best = { w, c }
+  if (!best || best.w.length < 3 || best.c < minCount || best.c / total < minShare) return null
+  if (PROTECTED.has(best.w) || FUNCTION_WORDS.has(best.w) || knownShare(best.w) > 0) return null
+  return best.w
+}
+
+/**
+ * A caption without its video's label, or as it was when nothing would be left of it. A label the
+ * OCR broke in two ("N W HIGH KNEES") goes whole: after the first word, bare fragments of the
+ * label go too.
+ */
+export function stripLabel(name, label) {
+  const raw = String(name || '')
+  if (!label) return raw
+  const once = (text, loose) => {
+    const [head, ...tail] = text.replace(/^[^\p{L}\p{N}]+/u, '').split(/\s+/)
+    const parts = String(head || '').split(/[:;|]+/)          // "NOW:IN" is a label and a word
+    const word = parts[0].replace(/[^\p{L}]/gu, '').toLowerCase()
+    const fragment = word && word.length < label.length && label.includes(word)
+    if (!word || !(fragment || (loose && (word === label || editDistance(word, label) <= 1)))) return null
+    const rest = [parts.slice(1).join(' '), ...tail].filter(Boolean).join(' ').replace(/^[^\p{L}\p{N}]+/u, '').trim()
+    return /\p{L}{2}/u.test(rest) ? rest : null
+  }
+  let out = once(raw, true)
+  if (out == null) return raw
+  for (let i = 0; i < 2; i++) { const more = once(out, false); if (more == null) break; out = more }
+  return out
+}
+
 export function cleanCaption(raw) {
   // A set count in front ("5 x PUSH UPS") is not part of the name.
   // A "NOW:" in front is the label of the move on screen, the counterpart of NEXT.
