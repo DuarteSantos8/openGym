@@ -9,6 +9,7 @@
     "quadriceps"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "Hold a squat while pressing out against a machine pad. It trains the outer hips and glutes.",
   "instructions": [
     "Set the machine pads against the outsides of your knees.",

@@ -9,6 +9,9 @@
     "glutes"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A leg curl lying on your front while holding a dumbbell between your feet. It targets the hamstrings.",
   "instructions": [
     "Lie face down on a bench.",

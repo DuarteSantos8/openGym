@@ -29,6 +29,8 @@ describe('buildWidgetSnapshot', () => {
     expect(today.exercises).toHaveLength(2)
     expect(today.exercises[0].line).toMatch(/3 × 8 · 60 kg/)
     expect(today.exercises[1].name).toBe('Cable thing')
+    // Title-cased like the app shows it, not the stored lower-case name.
+    expect(today.exercises[0].name).toBe('Barbell Bench Press')
     expect(typeof today.weekday).toBe('string')
     // A rest day is a day without a name; other days carry no exercise list.
     expect(thu).toMatchObject({ name: null, count: 0 })

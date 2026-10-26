@@ -9,7 +9,7 @@
 //
 // Logged weights stay the total on the bar (or the added load). Everything here is display.
 
-import { EXIDX } from './exercises.js'
+import { exerciseOf as exOf } from './exercises.js'
 import { usesBar, barTypeWeight } from './bar.js'
 import { isBw } from './history.js'
 import { weightIncrement } from './progression.js'
@@ -31,7 +31,6 @@ export const DEFAULT_PAIRS = 6
 /** Equipment that loads a single stack rather than two sides of a bar. */
 const SINGLE_EQ = new Set(['weighted', 'sled machine'])
 
-const exOf = exOrId => (typeof exOrId === 'string' ? EXIDX[exOrId] : exOrId)
 const num = v => (typeof v === 'number' && Number.isFinite(v) ? v : Number(v) || 0)
 const unitOf = S => (S?.unit === 'lb' ? 'lb' : 'kg')
 

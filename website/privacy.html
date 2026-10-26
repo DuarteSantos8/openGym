@@ -103,7 +103,7 @@
   <h1>Privacy</h1>
   <p class="lead">This page covers the openGym apps for Android and iPhone (the APK from this
      site and GitHub, the Google Play and App Store versions) and this website.
-     Last changed: 14 October 2026.</p>
+     Last changed: 15 October 2026.</p>
 
   <h2 id="short">The short version</h2>
   <ul>
@@ -113,7 +113,8 @@
     <li><b>Your training log stays on your phone.</b> Workouts, plans, body weight, photos and
         settings are stored in the app's own storage on your device. We never receive them.</li>
     <li><b>You decide what leaves the phone</b>, and only these things can: a backup you export,
-        a server you connect, the AI coach if you set it up, and Health Connect or Apple Health if you switch it on.</li>
+        a server you connect, the AI coach if you set it up, Health Connect or Apple Health if you
+        switch them on, and the address search of the gym reminder.</li>
   </ul>
 
   <h2 id="online">When the app goes online</h2>
@@ -133,12 +134,17 @@
         device for that provider only: switch providers and it asks again, and you can take it
         back anytime in the coach's menu under AI data sharing. A model running on your own
         network is not a third party, so nothing to ask there.</li>
-    <li><b>Health Connect</b> (Android). If you switch it on, the app writes finished workouts and
-        weigh-ins to Health Connect on your phone. It reads nothing from it.</li>
-    <li><b>Apple Health and Apple Watch</b> (iPhone). Off until you switch it on. Then the app
-        saves finished workouts and weigh-ins to Apple Health, and during a workout the Apple
-        Watch app reads your heart rate to show it next to each set. The watch talks to your
-        iPhone directly. Health data is never sent to us and never used for advertising.</li>
+    <li><b>Health Connect</b> (Android) and <b>Apple Health</b> (iPhone). Each part has its own
+        switch, all off until you turn them on. Writing puts finished workouts and weigh-ins into
+        the health store on your phone. Reading (since v1.4.3) takes two things back: the heart
+        rate your watch saved during a workout you logged (from the last day, while the app is
+        open) and weigh-ins other apps saved (from the last 30 days). They go into your own
+        workout log on the phone and never leave it, except inside that log when you sync it to
+        your own server. Nothing is read in the background, nothing else is read, and no health
+        data goes to us or to anyone else.</li>
+    <li><b>Apple Watch</b> (iPhone). During a workout the Apple Watch app reads your heart rate
+        to show it next to each set. The watch talks to your iPhone directly. Health data is never
+        sent to us and never used for advertising.</li>
     <li><b>Sharper animations</b> (store versions). A basic set of exercise animations comes
         with the app. Sharper sets are optional downloads under Settings → Animation quality,
         delivered by Google Play or Apple like the app itself (on Auto, only over Wi-Fi).</li>
@@ -154,6 +160,14 @@
      The camera is used only when you scan your gym membership code or take a photo or video of
      an exercise you add yourself; scanned images are read on the phone and never stored or
      sent. Notifications (workout reminder, end of a rest) are scheduled on the phone itself.</p>
+  <p><b>Gym reminder</b> (phone app, off until you switch it on). Where your gyms are stays on your
+     phone: not synced, not in backups, not sent to us or to your server. The phone itself notices
+     when you walk in (Android's location service or iOS region monitoring), so nobody, us
+     included, learns where you go. We don't want to know, honestly. Two things do go out: an
+     address you search for on the map goes to OpenStreetMap's Nominatim (just the text you
+     typed), and the map tiles come from OpenStreetMap. And if the phone is connected to your own
+     server, it asks that server "trained today already?" when you arrive, so a workout logged on
+     your laptop doesn't get you nagged. That question carries the date, not your location.</p>
   <p id="delete"><b>Deleting your data:</b> it's on your phone, so Settings → Reset or uninstalling the app
      removes it. A backup file you exported is yours to keep or delete. On a server you
      connected, Settings → Delete my account removes your profile there.</p>

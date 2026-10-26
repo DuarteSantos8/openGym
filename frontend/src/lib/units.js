@@ -97,6 +97,12 @@ export function convertStateUnit(S, to) {
   const out = { ...S, unit: to }
   if (Array.isArray(S.bodyweight)) out.bodyweight = S.bodyweight.map(b => ({ ...b, w: bw(b.w) }))
   if (S.targetW != null) out.targetW = bw(S.targetW)
+  // A weekly-rate corridor in the profile's unit (#759) moves with it, to the hundredth: 0.25 kg a
+  // week is 0.55 lb, and a tenth would make it 0.6. One in percent of body weight holds no weight.
+  if (S.rateGoal && S.rateGoal.by === 'w') {
+    const r = v => Math.round((to === 'lb' ? Number(v) * LB_PER_KG : Number(v) / LB_PER_KG) * 100) / 100
+    out.rateGoal = { ...S.rateGoal, lo: r(S.rateGoal.lo || 0), hi: r(S.rateGoal.hi || 0) }
+  }
   if (S.exWeights) out.exWeights = Object.fromEntries(Object.entries(S.exWeights).map(([k, v]) => [k, v && typeof v === 'object' ? { ...v, w: c(v.w) } : c(v)]))
   if (S.barWeights) out.barWeights = convBarWeights(S.barWeights, from, to, S.barDefaults)
   // The plate inventory (S.plates) is carried over as it is, not converted: it is kept per unit

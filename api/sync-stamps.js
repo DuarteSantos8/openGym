@@ -31,6 +31,9 @@
 //      device changed it loses to that change, one that sends no record of edits at all (it never
 //      read a copy from an updated app) still wins as before, and the older app shows its own
 //      value until it next reads the profile;
+//   2b. for a writer that does not stamp: the Coach's chat, log and Undo snapshots are joined with
+//      the stored ones (mergeCoach), since its whole `coach` is a copy from before the other
+//      device's messages (#779);
 //   3. for every writer: an entry the document holds while a removal on record says it was
 //      deleted after its last edit is kept, and marked as added back. An updated app never sends
 //      such a document, so this is an older app's merge (or its Coach undo, or a backup it
@@ -64,13 +67,13 @@ const capStamps = m => {
 const OWN_MERGE = new Set([
   '_ts', '_rev', '_wid', '_wids', '_unstamped', '_prior', 'active', 'unit', 'unitSet', 'resetAt', 'resetIds', 'deleted', 'edited', 'undone', 'routineOrder',
   'workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', 'bodyweight', 'measurements', 'favEx',
-  'exWeights', 'balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'dayNotes', 'dayPhotos',
+  'exWeights', 'balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'stackWeights', 'dayNotes', 'dayPhotos',
 ]);
-const PER_KEY = new Set(['week', 'dayPlan', 'exNotes', 'barWeights']);
+const PER_KEY = new Set(['week', 'dayPlan', 'exNotes', 'barWeights', 'exAliases']);
 // The maps whose every entry carries its own edit time (sync-merge.js STAMPED_MAPS): merged per
 // key by the app, so never stamped here as a whole setting. dayNotes is a note per day off,
 // dayPhotos a progress photo filed under a day (#557), one entry per photo.
-export const STAMPED_MAPS = ['balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'dayNotes', 'dayPhotos'];
+export const STAMPED_MAPS = ['balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'stackWeights', 'dayNotes', 'dayPhotos'];
 const ENTRY_META = new Set(['id', '_ts', '_f', '_u']);
 const ENTRY_LISTS = ['routines', 'customEx', 'equipProfiles', 'gymCards', 'workouts'];
 
@@ -333,6 +336,61 @@ function stampUnstamped(cur, next, sent, now, own = null) {
   }
 }
 
+// The Coach's chat, log and Undo snapshots (sync-merge.js mergeCoach): joined with the stored
+// ones rather than replaced, for a writer that does not stamp. It keeps `coach` as one value it read
+// earlier, so its push dropped every line another device had added since (#779). An Undo's log
+// entry names the snapshot it used, which then stays out.
+export const COACH_CAPS = { chat: 40, log: 50, snapshots: 3 };
+const COACH_NAMESPACE_MAX = 256 * 1024;
+export const snapshotKey = x => (isMap(x) ? (x.id != null ? String(x.id) : `${Number(x.at) || 0}|${x.proposalId ?? ''}`) : null);
+const coachKey = { chat: x => (isMap(x) && x.id != null ? String(x.id) : null), log: x => (isMap(x) && x.id != null ? String(x.id) : null), snapshots: snapshotKey };
+function unionInTime(xs, ys, key) {
+  const seen = new Set(), out = [];
+  let i = 0;
+  for (const [from, l] of [[0, list(xs)], [1, list(ys)]]) {
+    let at = 0;
+    for (const x of l) {
+      if (x == null) continue;
+      const k = key(x);
+      if (Number(x?.at) > 0) at = Number(x.at);
+      if (k == null) { if (!from) out.push({ x, at, from, i: i++ }); continue; }
+      if (seen.has(k)) continue;
+      seen.add(k);
+      out.push({ x, at, from, i: i++ });
+    }
+  }
+  out.sort((a, b) => a.at - b.at || a.from - b.from || a.i - b.i);
+  return out.map(e => e.x);
+}
+/** `win`'s Coach namespace with its chat, log and snapshots joined with `other`'s (sync-merge.js mergeCoach). */
+export function mergeCoach(win, other) {
+  if (!isMap(win) || !isMap(other)) return win === undefined ? win : clone(win);
+  const out = clone(win);
+  for (const f of ['chat', 'log', 'snapshots']) {
+    if (!Array.isArray(win[f]) && !Array.isArray(other[f])) continue;
+    out[f] = clone(unionInTime(win[f], other[f], coachKey[f]));
+  }
+  const used = new Set(), byProposal = [];
+  for (const e of list(out.log)) {
+    if (!isMap(e) || e.kind !== 'revert') continue;
+    if (e.snap != null) used.add(String(e.snap));
+    else if (e.proposalId != null) byProposal.push(e);
+  }
+  if (out.snapshots) {
+    out.snapshots = out.snapshots.filter(x => !used.has(snapshotKey(x)) &&
+      !byProposal.some(e => x?.proposalId === e.proposalId && (Number(x?.at) || 0) <= (Number(e.at) || 0)));
+  }
+  for (const [f, max] of Object.entries(COACH_CAPS)) if (Array.isArray(out[f]) && out[f].length > max) out[f] = out[f].slice(-max);
+  let guard = 0;
+  while (JSON.stringify(out).length > COACH_NAMESPACE_MAX && guard++ < 60) {
+    if (list(out.chat).length > 8) out.chat.shift();
+    else if (list(out.snapshots).length > 1) out.snapshots.shift();
+    else if (list(out.log).length > 1) out.log.shift();
+    else break;
+  }
+  return out;
+}
+
 const ORDER_KEY = 'routineOrder';
 /** Whether two lists hold the routines both have in a different order (sync-merge.js orderMoved). */
 export function orderMoved(a, b) {
@@ -506,6 +564,7 @@ export function stampPut(cur, next, { overRead = false, stamped = false, now = D
       const rec = ownRecord(next, NaN, prevOwn, prevOwn.fp);
       if (rec) next._unstamped = rec;
     }
+    if (!stamped && isMap(next.coach) && isMap(cur.coach)) next.coach = mergeCoach(next.coach, cur.coach);
     if (before != null && content(next) !== before) report.changed = true;
   }
   keepHeld(next, t);

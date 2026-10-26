@@ -17,6 +17,7 @@ import { t } from '../lib/i18n.js'
 import { MOBILE } from '../lib/mobile.js'
 import { CATEGORY_TEXT } from '../lib/coach.js'
 import { getApiKey, setApiKey, clearApiKey } from '../lib/coach-secrets.js'
+import { coachLimits, clampCoachLimit, COACH_LIMITS } from '../lib/coach-device.js'
 import { HTTP_PROVIDERS, HTTP_PROVIDER_IDS, baseUrlFor, validateBaseUrl } from '../../../api/coach/core/providers.js'
 import { DATA_CATEGORIES } from '../../../api/coach/core/categories.js'
 import { ConnectSheet } from './MobileOnboarding.jsx'
@@ -55,12 +56,24 @@ export default function CoachSetup() {
   const [models, setModels] = useState(null)
   const [step, setStep] = useState(-1)                     // -1 idle, 0..2 running, 3 done
   const [busy, setBusy] = useState(false)
+  // The three dials the server's admin card has and the phone never did (issue #527). Read from
+  // the device file as clamped, effective values; kept in local state so a number can be typed
+  // freely and is only clamped and saved when the field is left.
+  const [limits, setLimits] = useState(() => coachLimits(coachLocal))
 
   useEffect(() => { if (!MOBILE) nav('/settings', { replace: true }) }, [])
   useEffect(() => { getApiKey().then(k => setHasKey(!!k)) }, [])
   // Ask the paired server afresh: the admin may have switched the Coach on since this phone booted.
   useEffect(() => { if (user) refreshConfig() }, [user])
   useEffect(() => { setModels(null); setModel(coachLocal?.provider === provider ? (coachLocal?.model || '') : '') }, [provider])
+  useEffect(() => { setLimits(coachLimits(coachLocal)) }, [coachLocal])
+
+  const editLimit = (k, raw) => setLimits(l => ({ ...l, [k]: raw }))
+  const commitLimit = k => {
+    const clamped = clampCoachLimit(k, limits[k])
+    setLimits(l => ({ ...l, [k]: clamped }))
+    setCoachLocal({ limits: { ...limits, [k]: clamped } })
+  }
 
   const meta = HTTP_PROVIDERS[provider] || {}
   const host = hostOf(baseUrlFor(provider, { providerOptions: { [provider]: { baseUrl } } }))
@@ -138,7 +151,7 @@ export default function CoachSetup() {
   return <div className="narrow">
     <div className="hdr">
       <button className="iconbtn" data-back="/settings" onClick={() => nav('/settings')} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
-      <div style={{ flex: 1, marginInlineStart: 10 }}><h1>{t('AI Coach')}</h1></div>
+      <div style={{ flex: 1, marginInlineStart: 12 }}><h1>{t('AI Coach')}</h1></div>
     </div>
 
     <Section title={t('How should the Coach run?')} footer={current}>
@@ -203,6 +216,20 @@ export default function CoachSetup() {
         </div>
       </Section>}
 
+      {/* The server's admin card, for the person who owns this phone: in BYOK mode there is no
+          other profile, so the limits protect nobody but the account already holding the key. */}
+      <Section title={t('Advanced')}>
+        <LimitRow label={t('Max output tokens')} hint={t('The ceiling on one answer. Reasoning models count its hidden thinking against it, so raise it if a plan is cut off.')}
+          value={limits.maxOutputTokens} min={COACH_LIMITS.maxOutputTokens.min} max={COACH_LIMITS.maxOutputTokens.max}
+          onChange={v => editLimit('maxOutputTokens', v)} onCommit={() => commitLimit('maxOutputTokens')} />
+        <LimitRow label={t('Daily runs')} hint={t('Every Coach run is one request on your provider account. 0 means no limit.')}
+          value={limits.daily} min={COACH_LIMITS.daily.min} max={COACH_LIMITS.daily.max}
+          onChange={v => editLimit('daily', v)} onCommit={() => commitLimit('daily')} />
+        <LimitRow label={t('Max message length')} hint={t('How long a message, refinement or review note can be.')}
+          value={limits.maxMessageLen} min={COACH_LIMITS.maxMessageLen.min} max={COACH_LIMITS.maxMessageLen.max}
+          onChange={v => editLimit('maxMessageLen', v)} onCommit={() => commitLimit('maxMessageLen')} />
+      </Section>
+
       <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
         {!models
           ? <Button variant="primary" icon="sparkles" disabled={busy} onClick={prepare}>{t('List models')}</Button>
@@ -220,3 +247,19 @@ export default function CoachSetup() {
 }
 
 const hostOf = url => { try { return new URL(url).host } catch { return '' } }
+
+// One numeric dial of the Advanced section: a label and its hint on the left, a plain number
+// field on the right, clamped and saved when it is left rather than on every keystroke — a
+// floor applied mid-typing turns a just-typed "1" into "1024".
+function LimitRow({ label, hint, value, min, max, onChange, onCommit }) {
+  return <div className="row between" style={{ gap: 12, padding: '10px 12px', alignItems: 'flex-start' }}>
+    <div style={{ minWidth: 0 }}>
+      <div style={{ fontWeight: 500 }}>{label}</div>
+      <div className="muted small">{hint}</div>
+    </div>
+    <div style={{ width: 118, flex: 'none' }}>
+      <TextField type="number" inputMode="numeric" min={min} max={max} value={value}
+        onChange={e => onChange(e.target.value)} onBlur={onCommit} />
+    </div>
+  </div>
+}

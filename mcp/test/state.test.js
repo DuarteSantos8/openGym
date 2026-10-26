@@ -42,6 +42,19 @@ afterEach(() => { vi.unstubAllEnvs() })
 afterAll(() => { dirs.forEach(d => fs.rmSync(d, { recursive: true, force: true })) })
 
 describe('a read failure is not "you never signed in"', () => {
+  test('without a watcher, a state file that goes away stops being served from the cache (#653)', async () => {
+    const dir = mk({ 'db.json': DB, 'state-alex.json': JSON.stringify({ unit: 'lb' }) })
+    const watch = vi.spyOn(fs, 'watch').mockImplementation(() => { throw new Error('no fs.watch here') })
+    try {
+      const { getState } = await load(dir)
+      expect(getState().unit).toBe('lb')
+      fs.rmSync(path.join(dir, 'state-alex.json'))
+      expect(getState()).toBeNull()
+      fs.writeFileSync(path.join(dir, 'state-alex.json'), JSON.stringify({ unit: 'kg' }))
+      expect(getState().unit).toBe('kg')
+    } finally { watch.mockRestore() }
+  })
+
   test('no state file at all is still null — that account really has never synced', async () => {
     const { getState } = await load(mk({ 'db.json': DB }))
     expect(getState()).toBeNull()
