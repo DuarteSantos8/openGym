@@ -15,6 +15,12 @@ services:
       target: ${API_TARGET:-default}
     restart: unless-stopped
     env_file: .env
+    # healthcheck is disabled by default on the api service, 
+    # since there is no binary included in the image (security)
+    # api healthcheck is included in the web service healthcheck.
+    # this is explicitly set to prevent previous healthchecks to bork the checks. 
+    healthcheck:
+      disable: true
     environment:
       # The port the API listens on. web proxies to this same value, so the two
       # cannot drift — change it in .env and both follow.
@@ -43,6 +49,14 @@ services:
     depends_on:
       api:
         condition: service_started
+    # healthcheck expected result is like so:
+    # {"ok":true,"users":1,"writable":true}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-s", "http://localhost:$NGINX_PORT/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
     ports:
       - "${WEB_PORT:-8080}:${NGINX_PORT:-80}"
     # nginx renders its config at start-up from these (web/nginx.conf.template),
