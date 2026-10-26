@@ -1535,6 +1535,10 @@ export const PT_BR_OVERRIDES = {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'Este dispositivo tem 1 treino que não está neste backup. Substituir exclui esse treino.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'Este dispositivo tem {0} treinos que não estão neste backup. Substituir exclui esses treinos.',
+  'Tab bar': 'Barra de abas',
+  'Automatic': 'Automática',
+  'Bottom': 'Embaixo',
+  'Automatic: on the right when the screen is wider than it is tall, like a phone on its side.': 'Automática: à direita quando a tela é mais larga do que alta, como um celular na horizontal.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

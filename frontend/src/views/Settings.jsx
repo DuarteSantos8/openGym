@@ -804,6 +804,16 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             onChange={v => update(s => { s.exFigure = v })}
           />
         </Row>
+        {/* The tab bar at the bottom or in a column on the right edge (lib/tabbar-side.js). */}
+        <Row icon="phoneScreen" iconTint="var(--blue)" title={t('Tab bar')}
+          subtitle={t('Automatic: on the right when the screen is wider than it is tall, like a phone on its side.')}>
+          <Segmented
+            className="seg-inline"
+            options={[{ value: 'auto', label: t('Automatic') }, { value: 'bottom', label: t('Bottom') }, { value: 'right', label: t('Right') }]}
+            value={S.tabbarSide === 'bottom' || S.tabbarSide === 'right' ? S.tabbarSide : 'auto'}
+            onChange={v => update(s => { s.tabbarSide = v })}
+          />
+        </Row>
       </Section>
       <Section title={t('On Home')}>
         {/* Membership QR codes on Home (views/CheckIn.jsx); off = no Home card, no route. */}
