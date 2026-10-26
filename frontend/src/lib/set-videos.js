@@ -1,3 +1,4 @@
+import { legacyEntriesOf } from './prescription/index.js'
 // Your own form video of one set (v1.4.4): filmed with the phone's camera or picked from its
 // videos while the set is on screen, kept with that set, shown beside it, and lined up per
 // exercise so two dates can be watched side by side ("am I getting deeper in my squat?").
@@ -61,7 +62,7 @@ export const setVideoOf = set => setVideosOf(set)[0] || null
 export function workoutSetVideos(w) {
   const out = []
   if (!isObj(w)) return out
-  list(w.entries).forEach((e, ei) => {
+  legacyEntriesOf(w).forEach((e, ei) => {
     if (!isObj(e)) return
     list(e.sets).forEach((s, si) => {
       const m = setVideoOf(s)
@@ -151,8 +152,8 @@ export function removeSavedSetVideo(state, w, hash, now = Date.now()) {
   const rec = list(state?.workouts).find(x => isObj(x) && sameWorkout(x, w))
   if (!rec) return false
   let changed = false
-  for (const e of list(rec.entries)) {
-    for (const s of list(isObj(e) ? e.sets : null)) {
+  for (const e of list(rec.exposures || rec.entries)) {
+    for (const s of list(isObj(e) ? (e.performance?.sets || e.sets) : null)) {
       if (!isObj(s) || !Array.isArray(s.media)) continue
       const left = s.media.filter(x => !(isObj(x) && x.hash === hash))
       if (left.length === s.media.length) continue
@@ -176,7 +177,7 @@ export function formVideosFor(state, exId) {
     if (!isObj(w)) continue
     for (const v of workoutSetVideos(w)) {
       if (v.exId !== exId) continue
-      out.push({ key: (w.id ?? w.d) + ':' + v.entry + ':' + v.set, wid: w.id ?? null, w, d: w.d || '', start: Number(w.start) || 0, entry: v.entry, set: v.set, row: w.entries[v.entry].sets[v.set], m: v.m })
+      out.push({ key: (w.id ?? w.d) + ':' + v.entry + ':' + v.set, wid: w.id ?? null, w, d: w.d || '', start: Number(w.start) || 0, entry: v.entry, set: v.set, row: legacyEntriesOf(w)[v.entry].sets[v.set], m: v.m })
     }
   }
   return out.sort((a, b) => (b.d.localeCompare(a.d)) || (b.start - a.start) || (b.entry - a.entry) || (b.set - a.set))

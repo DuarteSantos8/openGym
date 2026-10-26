@@ -10,6 +10,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { MAX_SYNC_BODY } from '../migration/profile-size.js';
 import { boundPort } from './helpers.mjs';
 
 const API = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -101,9 +102,9 @@ const rawPut = (h, agent, body) => new Promise((resolve, reject) => {
   rq.end(body);
 });
 
-test('a body over the 5 MiB cap is a 413 that every client gets to read, and nothing is written', async t => {
+test('a body over the supported sync cap is a 413 that every client gets to read, and nothing is written', async t => {
   const h = await startServer(t);
-  const big = JSON.stringify({ state: { workouts: [], routines: [], pad: 'x'.repeat(6 * 1024 * 1024) }, baseRev: 0 });
+  const big = JSON.stringify({ state: { workouts: [], routines: [], pad: 'x'.repeat(MAX_SYNC_BODY + 1024) }, baseRev: 0 });
   let r = await status(h, 'PUT', '/api/data', authed, big);
   assert.equal(r.status, 413);
   assert.equal(r.body.error, 'body too large');

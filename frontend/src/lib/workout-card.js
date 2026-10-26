@@ -57,7 +57,7 @@ export function workoutCardModel(w, { unit, nameOf, prescriptions, warmups = fal
     // Imported history has no clock: an unknown duration is left out rather than shown as 0.
     stats: [
       ...(ms >= 60000 ? [{ label: t('Duration'), value: fmtDur(ms) }] : []),
-      { label: t('Volume'), value: fmtVol(warmups ? workoutVolume(w, { warmups }) : (w.vol ?? workoutVolume(w)), unit) },
+      { label: t('Volume'), value: fmtVol(warmups ? workoutVolume(null, w, { warmups }) : (w.vol ?? workoutVolume(null, w)), unit) },
       { label: t('Sets'), value: fmtNum(sets) },
       { label: t('PRs'), value: records.length ? '🏆 ' + fmtNum(records.length) : '–' },
     ],

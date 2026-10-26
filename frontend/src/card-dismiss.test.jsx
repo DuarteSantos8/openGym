@@ -10,6 +10,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRoot } from 'react-dom/client'
 import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
+import { migratedFixture } from './lib/test-fixtures.js'
 import { todayISO } from './lib/format.js'
 import { RecapHomeCard } from './components/Recap.jsx'
 import { exercisePicker, workoutDetailSheet, calendarSheet } from './sheets.jsx'
@@ -155,7 +156,7 @@ describe('exercise rows with a trailing button', () => {
     expect(nestedInteractive(host)).toEqual([])
   })
   it('a past workout: the picture opens the details, the row the history', () => {
-    const w = bench('2026-09-15')
+    const w = migratedFixture({ ...structuredClone(DEF), engineSchemaVersion: 1, workouts: [bench('2026-09-15')] }).workouts[0]
     useStore.setState(s => ({ S: { ...s.S, workouts: [w] } }))
     workoutDetailSheet(w)
     const host = renderTop()

@@ -36,6 +36,9 @@ function validateStructure(state) {
         if (o.rule.routineId != null && o.rule.routineId !== r.id) errors.push(`${oat}.rule.routineId does not match`);
       }
       if (!validateWarmup(o.warmup)) errors.push(`${oat}.warmup is invalid`);
+      if (o.warmup === 'own' && (!Array.isArray(o.warmupRows) || o.warmupRows.length < 1 || o.warmupRows.length > 5 || o.warmupRows.some(row =>
+        !isObj(row) || !Number.isInteger(row.r) || row.r < 1 || row.r > 30 || (row.wb !== true && !(Number.isFinite(row.wp) && row.wp >= 0 && row.wp <= 95))
+      ))) errors.push(`${oat}.warmupRows is invalid`);
     });
   });
   const prescriptions = isObj(state.prescriptions) ? state.prescriptions : {};

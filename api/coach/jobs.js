@@ -16,6 +16,7 @@ import { spawnSync } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { unpackProfile } from '../migration/profile-pack.js';
 import * as cfgStore from './config.js';
 import { adapterFor } from './adapters/index.js';
 import * as payloadLib from './core/payload.js';
@@ -102,7 +103,7 @@ export function setShare(uid, share) {
 }
 
 export function readState(uid) {
-  try { return JSON.parse(fs.readFileSync(path.join(DATA, 'state-' + safe(uid) + '.json'), 'utf8')); }
+  try { return unpackProfile(JSON.parse(fs.readFileSync(path.join(DATA, 'state-' + safe(uid) + '.json'), 'utf8'))); }
   catch { return null; }
 }
 

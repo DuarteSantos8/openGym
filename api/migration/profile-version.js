@@ -2,6 +2,9 @@
  * Dependency-free on purpose: the frontend checks every copy at startup with this and
  * loads the migration itself (and the exercise catalogue it needs) only when there is one to run. */
 export const ENGINE_SCHEMA = 2;
+// The request header a client announces its schema with (frontend lib/api.js); the server reads
+// it (engineGate) and must allow it in its CORS preflight, so the name lives in one place.
+export const ENGINE_SCHEMA_HEADER = 'X-OpenGym-Engine-Schema';
 
 const versionOf = state => (typeof state?.engineSchemaVersion === 'number' && Number.isFinite(state.engineSchemaVersion) ? state.engineSchemaVersion : 1);
 const count = v => (Array.isArray(v) ? v.filter(x => !!x && typeof x === 'object' && !Array.isArray(x)).length : 0);

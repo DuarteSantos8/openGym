@@ -1,5 +1,7 @@
 import { migrateProfileV1ToV2 } from '../../../api/migration/profile-migration.js'
 import { LIB_BY_ID } from '../../../api/coach/core/library.js'
+import { buildSessionExposures } from './session-start.js'
+import { entriesForExposures } from './session-ui-adapter.js'
 import { defaultPlanRule } from './prescription/index.js'
 
 /** A PlanRule occurrence for tests: `preset`'s template with `options` (its numbers) over the defaults. */
@@ -36,7 +38,14 @@ export function loggedExposure(exerciseId, rows, { mode = 'reps', exposureId = '
 }
 
 // Older fixtures enter through the same converter as real v1 profiles, so compatibility tests
-// exercise the canonical engine.
+// exercise the canonical engine instead of bringing the deleted progression module back.
 export function migratedFixture(state) {
   return migrateProfileV1ToV2(state, LIB_BY_ID).profile
+}
+
+export function startMigratedFixture(state, routine) {
+  const id = routine?.id || 'fixture-routine'
+  const profile = migratedFixture({ ...state, workouts: (state.workouts || []).map(w => ({ ...w, routineIds: w.routineIds || [id], entries: (w.entries || []).map(e => ({ ...e, rid: e.rid || id })) })), routines: [...(state.routines || []).filter(r => r.id !== id), { ...routine, id }] })
+  const exposures = buildSessionExposures(profile, profile.routines.find(r => r.id === id), { now: Date.parse('2026-10-09T12:00:00Z'), newId: s => s })
+  return { profile, exposures, entries: entriesForExposures(exposures, profile.prescriptions) }
 }

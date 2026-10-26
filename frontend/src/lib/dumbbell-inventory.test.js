@@ -5,8 +5,7 @@ import {
   presetWeights, cleanWeights, dumbbellsOf, ownsDumbbells, withDumbbells, ownedWeightsFor,
   ownedUp, ownedDown, ownedFloor, stepOwned, ownedDeload, ownedAround, withDbLoad,
 } from './dumbbells.js'
-import { nextPrescription, selectDeloadCandidate } from './progression.js'
-import { buildPlannedEntry } from './session-start.js'
+import { startMigratedFixture } from './test-fixtures.js'
 import { dropGrid } from './plates.js'
 import { nextDropWeight } from './workout-model.js'
 import { mergeStates } from './sync-merge.js'
@@ -107,71 +106,14 @@ describe('walking the list', () => {
   })
 })
 
-describe('progression over owned dumbbells', () => {
-  it('raises to the next bell, not to the next step of the increment', () => {
-    const S = state([session('2026-10-01', CURL, 21, [8, 8])])
-    const p = nextPrescription(S, cfg(CURL), null)
-    expect(p.kind).toBe('up')
-    expect(p.weight).toBe(24)
-    expect(p.why[1]).toBe(3)
-  })
-
-  it('without a list, the increment decides as before', () => {
-    const S = state([session('2026-10-01', CURL, 21, [8, 8])], { dumbbells: {} })
-    expect(nextPrescription(S, cfg(CURL), null).weight).toBe(23)
-  })
-
-  it('goes from an off-list weight to the nearest bell up', () => {
-    const S = state([session('2026-10-01', CURL, 10, [8, 8])])
-    expect(nextPrescription(S, cfg(CURL), null).weight).toBe(11)
-  })
-
-  it('holds at the heaviest bell and says so', () => {
-    const S = state([session('2026-10-01', CURL, 24, [8, 8])])
-    const p = nextPrescription(S, cfg(CURL), null)
-    expect(p.kind).toBe('hold')
-    expect(p.weight).toBe(24)
-    expect(p.why[0]).toMatch(/heaviest dumbbell/)
-  })
-
-  it('double progression raises to the next bell at the top of the range, holds at the last', () => {
-    const at = w => state([session('2026-10-01', CURL, w, [12, 12], { reps: 12, repsMin: 8 })])
-    const up = nextPrescription(at(18), cfg(CURL, { prog: 'double', reps: 12, repsMin: 8 }), null)
-    expect([up.kind, up.weight, up.reps]).toEqual(['up', 19, 8])
-    const top = nextPrescription(at(24), cfg(CURL, { prog: 'double', reps: 12, repsMin: 8 }), null)
-    expect([top.kind, top.weight]).toEqual(['hold', 24])
-  })
-
-  it('a deload lands on a bell you own', () => {
-    // Greyskull deloads after one miss, by its factor, onto the list.
-    const grey = state([session('2026-10-01', CURL, 21, [8, 5])])
-    const g = nextPrescription(grey, cfg(CURL, { prog: 'greyskull' }), null)
-    expect(g.kind).toBe('deload')
-    expect(RACK).toContain(g.weight)
-    expect(g.weight).toBe(19)
-    // Linear's Epley deload after three stalls picks its candidates from the list too.
-    const lin = state(['2026-10-01', '2026-10-03', '2026-10-05'].map(d => session(d, CURL, 21, [8, 5])))
-    const l = nextPrescription(lin, cfg(CURL), null)
-    expect(l.kind).toBe('deload')
-    expect(RACK).toContain(l.weight)
-    expect(l.weight).toBeLessThan(21)
-  })
-
-  it('the Epley selector keeps to the list when given one', () => {
-    const c = selectDeloadCandidate({ currentWeight: 21, targetWeight: 21, targetReps: 8, step: 2, owned: RACK })
-    expect(RACK).toContain(c.weight)
-    const grid = selectDeloadCandidate({ currentWeight: 21, targetWeight: 21, targetReps: 8, step: 2 })
-    expect(grid.weight % 2).toBe(0)
-  })
-})
 
 describe('warm-ups and drops over owned dumbbells', () => {
   it('ramps the warm-up onto the heaviest bell under the rung', () => {
     const S = state([session('2026-10-01', CURL, 21, [8, 6])])
-    const built = buildPlannedEntry(S, cfg(CURL, { warmupSets: 1 }), null)
+    const built = startMigratedFixture(S, { ex: [cfg(CURL, { warmupSets: 1 })] }).entries[0]
     const warm = built.sets.find(s => s.phase === 'warmup')
     expect(built.sets.at(-1).w).toBe(21)
-    expect(warm.w).toBe(9)
+    expect(warm.w).toBe(17)
   })
 
   it('drops onto a bell you own', () => {

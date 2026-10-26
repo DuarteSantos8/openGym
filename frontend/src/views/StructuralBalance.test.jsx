@@ -6,7 +6,7 @@ import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import StructuralBalance from './StructuralBalance.jsx'
 import Stats from './Stats.jsx'
-import { buildDemoState } from '../lib/demoSeed.js'
+import { buildDemoProfile } from '../lib/demoSeed.js'
 import { TEMPLATE_LIST } from '../lib/structuralBalanceTemplates.js'
 
 const navSpy = vi.fn()
@@ -220,7 +220,7 @@ describe('the way in from Stats', () => {
 // every template has to render against that profile, and score what it logs.
 describe('on the demo profile', () => {
   it('renders every template and scores the lifts the example history has', () => {
-    useStore.setState({ S: Object.assign(clone(DEF), buildDemoState()), user: null })
+    useStore.setState({ S: Object.assign(clone(DEF), buildDemoProfile()), user: null })
     const host = render()
     const scored = {}
     for (const tpl of TEMPLATE_LIST) {

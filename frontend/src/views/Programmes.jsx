@@ -12,7 +12,8 @@ import EmptyState from '../components/EmptyState.jsx'
 import { Button, NumberField, Row, Section, Stepper, Switch } from '../components/ui.jsx'
 import { effortOf, modeOf, isBw } from '../lib/history.js'
 import { exOr } from '../lib/exercises.js'
-import { weightIncrement } from '../lib/progression.js'
+import { planPhase, operatorFor } from '../lib/prescription/index.js'
+import { weightIncrement } from '../lib/exercises.js'
 import { REST } from '../lib/rotation.js'
 import { starterProgrammeOptions, buildStarterProgramme } from '../lib/starter.js'
 import { exView, viewTarget, exUnitOf } from '../lib/ex-unit.js'
@@ -158,7 +159,13 @@ function liftsOf(S, p) {
   const out = new Map()
   for (const r of S.routines || []) {
     if (!ids.includes(r.id)) continue
-    for (const cfg of r.ex || []) if (!out.has(cfg.id) && modeOf(cfg) === 'reps' && !isBw(cfg)) out.set(cfg.id, cfg)
+    for (const occurrence of r.ex || []) {
+      const id = occurrence.exerciseId || occurrence.id
+      const phase = occurrence.rule && planPhase(occurrence.rule)
+      const step = phase && operatorFor(phase, 'load')?.step
+      const cfg = { ...occurrence, id, ...(step?.type === 'absolute' ? { inc: step.value } : {}) }
+      if (!out.has(id) && !phase?.parameters.durationSeconds && modeOf(cfg) === 'reps' && !isBw(cfg)) out.set(id, cfg)
+    }
   }
   return [...out.values()]
 }

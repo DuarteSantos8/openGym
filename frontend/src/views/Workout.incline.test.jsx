@@ -19,11 +19,11 @@ let root, container
 function mount(id, sets, more = {}) {
   if (root) unmount()
   const S = JSON.parse(JSON.stringify(DEF))
-  S.active = {
+  const A = {
     id: 'incline-test', d: '2026-10-09', start: Date.now(), routineId: null, name: 'Cardio', bw: null, cur: 0, ...more,
     entries: [{ id, target: { sets: 1, min: 20, speed: 5 }, sets }],
   }
-  useStore.setState({ S, user: null })
+  useStore.setState({ S, A, user: null })
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
@@ -38,7 +38,7 @@ afterEach(() => { if (root) unmount() })
 
 const cells = () => container.querySelector('.setrow').querySelectorAll('.stp')
 const inclineCell = () => container.querySelector('.setrow .stp.inc')
-const stored = () => useStore.getState().S.active.entries[0].sets[0]
+const stored = () => useStore.getState().A.entries[0].sets[0]
 const heads = () => [...container.querySelectorAll('.sethead span')].map(s => s.textContent).filter(Boolean)
 function type(input, value) {
   act(() => {
@@ -81,7 +81,7 @@ describe('the incline column', () => {
     mount(TREADMILL, [{ min: 20, speed: 5, incline: 8, done: true }])
     const add = [...container.querySelectorAll('button')].find(b => /Add set/.test(b.textContent))
     act(() => add.click())
-    expect(useStore.getState().S.active.entries[0].sets[1]).toMatchObject({ min: 20, speed: 5, incline: 8, done: false })
+    expect(useStore.getState().A.entries[0].sets[1]).toMatchObject({ min: 20, speed: 5, incline: 8, done: false })
   })
 
   it('has its own stepper in the focus view', () => {

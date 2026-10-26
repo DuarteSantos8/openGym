@@ -1,3 +1,4 @@
+import { legacyEntriesOf } from './prescription/index.js'
 /* Photos and videos of custom exercises and of logged workouts between this device and its server.
  *
  * ONE mechanism for every move between modes, keyed by content hash and safe to repeat: ask the
@@ -28,6 +29,7 @@ import { MB, BG_UPLOAD_METERED_MAX_MB, LOCAL_CACHE_MAX_MB, LOCAL_GC_GRACE_MS, li
 import { MOBILE, nativeLoad } from './mobile.js'
 import { registerMediaRunner, publishMediaStatus, pendingRefCount, loadPending } from './media-owed.js'
 import { t } from './i18n-core.js'
+import { parseState } from './state-codec.js'
 
 const MIN = 60000
 const DEDUPE_MS = 10 * MIN
@@ -43,7 +45,7 @@ const RECENT_WORKOUT_POSTERS = 20
 const REJECTED = new Set(['media-too-large', 'media-type', 'media-invalid', 'media-too-long', 'proxy-too-large', 'hash-mismatch'])
 const PERSISTED_KEY = 'gym_state_v1'
 
-const hasSetMedia = w => Array.isArray(w?.entries) && w.entries.some(e => Array.isArray(e?.sets) && e.sets.some(s => Array.isArray(s?.media) && s.media.length))
+const hasSetMedia = w => legacyEntriesOf(w).some(e => Array.isArray(e?.sets) && e.sets.some(s => Array.isArray(s?.media) && s.media.length))
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 const isNetwork = e => !e || e.status == null || e.code === 'timeout' || e.code === 'network'
 
@@ -288,10 +290,10 @@ export function createMediaSync(deps = {}) {
     gcWaiting = false
     await withLock('opengym-media', async () => {
       const st = store.getState()
-      const live = keptHashes(st.S)
+      const live = keptHashes({ ...st.S, active: st.A })
       try {
         const raw = d.storage?.getItem(PERSISTED_KEY)
-        if (raw) for (const h of keptHashes(JSON.parse(raw))) live.add(h)
+        if (raw) for (const h of keptHashes(parseState(raw))) live.add(h)
       } catch { /* an unreadable copy keeps nothing extra */ }
       try {
         if (typeof st.stashedMediaHashes === 'function') for (const h of await st.stashedMediaHashes()) live.add(h)
@@ -362,10 +364,11 @@ export function createMediaSync(deps = {}) {
       } finally { busy = false }
     }
     const schedule = () => { clearTimeout(timer); timer = setTimeout(runPrefetch, delay) }
-    let seen = store.getState().S
+    let seen = store.getState().S, seenActive = store.getState().A
     const unsub = store.subscribe(s => {
-      if (s.S?.routines === seen?.routines && s.S?.active === seen?.active && s.S?.customEx === seen?.customEx && s.S?.workouts === seen?.workouts) return
+      if (s.S?.routines === seen?.routines && s.A === seenActive && s.S?.customEx === seen?.customEx && s.S?.workouts === seen?.workouts) return
       seen = s.S
+      seenActive = s.A
       schedule()
     })
     globalThis.addEventListener?.('online', schedule)
@@ -396,9 +399,9 @@ export function createMediaSync(deps = {}) {
     const scheduleGc = ms => { clearTimeout(gcTimer); gcTimer = setTimeout(() => { gcTimer = null; localMediaGc().catch(() => {}) }, ms) }
     const refsKey = S => [...keptHashes(S)].sort().join(',')
     let prev = store.getState()
-    let prevRefs = refsKey(prev.S)
+    let prevRefs = refsKey({ ...prev.S, active: prev.A })
     const unsub = store.subscribe(s => {
-      const refs = s.S === prev.S ? prevRefs : refsKey(s.S)
+      const refs = s.S === prev.S && s.A === prev.A ? prevRefs : refsKey({ ...s.S, active: s.A })
       const moved = refs !== prevRefs
       if (moved || s.sync?.lastSynced !== prev.sync?.lastSynced || s.user?.id !== prev.user?.id) schedule(2000)
       if (moved) scheduleGc(10000)

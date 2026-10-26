@@ -14,6 +14,7 @@
  * No clock is read: `now` is handed in (epoch ms), so the server, the phone and the tests agree.
  */
 import { LIB_BY_ID } from './library.js';
+import { legacyEntriesOf } from '../../engine/index.js';
 
 const DAY = 86400000;
 const iso = ms => new Date(ms).toISOString().slice(0, 10);
@@ -45,7 +46,7 @@ export function muscleLoad(S, now) {
   for (const w of list(S?.workouts)) {
     const d = typeof w?.d === 'string' ? w.d.slice(0, 10) : '';
     if (!d || d < from28 || d > today) continue;
-    for (const en of list(w.entries)) {
+    for (const en of legacyEntriesOf(w, S.prescriptions)) {
       const lib = LIB_BY_ID.get(en?.id);
       const muscle = lib?.tg || (typeof custom.get(en?.id)?.bp === 'string' ? custom.get(en.id).bp.slice(0, 40) : null);
       if (!muscle || lib?.bp === 'cardio') continue;

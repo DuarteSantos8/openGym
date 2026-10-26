@@ -12,6 +12,7 @@
  * app brings in hundreds of "new" workouts that are not news. The hub also skips anything older
  * than the connection itself. Pure, so the tests can feed it documents. */
 import { libraryName } from '../coach/core/library.js';
+import { legacyEntriesOf } from '../engine/index.js';
 
 export const EVENTS = ['workout.finished', 'workout.pr', 'weighin.logged'];
 export const RECENT_MS = 7 * 86400_000;
@@ -84,7 +85,7 @@ function setOut(s) {
 const done = s => (s?.sides ? s.sides.L?.done === true || s.sides.R?.done === true : s?.done === true);
 
 export function workoutPayload(w, doc) {
-  const exercises = list(w.entries).slice(0, MAX_EXERCISES).map(e => ({
+  const exercises = list(legacyEntriesOf(w, doc?.prescriptions)).slice(0, MAX_EXERCISES).map(e => ({
     id: String(e.id).slice(0, 40),
     name: exerciseName(e.id, doc),
     sets: list(e.sets).filter(done).slice(0, MAX_SETS).map(setOut),

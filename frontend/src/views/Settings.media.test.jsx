@@ -35,7 +35,7 @@ const mocks = vi.hoisted(() => {
     signOut: vi.fn(), signOutAll: vi.fn(), resetDemo: vi.fn(), disconnectServer: vi.fn(),
     syncNow: vi.fn(), unsyncedChanges: () => ({ owed: false, count: 0 }), keptChanges: state.keptChanges,
     stashedMediaHashes: async () => state.stashed,
-    importConflict: async () => state.conflict, importBackup: state.importBackup, resetEverything: state.resetEverything
+    importConflict: async () => state.conflict, importBackup: state.importBackup, importLegacyBackup: vi.fn(), resetEverything: state.resetEverything
   })
   return state
 })
@@ -77,7 +77,7 @@ const until = async (cond, ms = 4000) => {
 }
 const row = text => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes(text))
 const stateWithPhoto = () => ({
-  unit: 'kg', restSec: 90, restPauseSec: 15, sound: false, effort: 'none', gifSize: 'full', workouts: [], routines: [], exWeights: {},
+  engineSchemaVersion: 2, unit: 'kg', restSec: 90, restPauseSec: 15, sound: false, effort: 'none', gifSize: 'full', workouts: [], routines: [], exWeights: {},
   customEx: [{ id: 'c1', n: 'Sandbag carry', bp: 'back', custom: true, media: { kind: 'image', hash: HASH, mime: 'image/jpeg', size: PHOTO.length, width: 640, height: 480, at: 1 } }]
 })
 

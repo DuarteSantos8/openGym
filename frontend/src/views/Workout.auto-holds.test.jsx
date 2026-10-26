@@ -9,6 +9,9 @@ import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Workout from './Workout.jsx'
 import { DEF, useStore } from '../store/useStore.js'
+import { migratedFixture } from '../lib/test-fixtures.js'
+import { exposuresWithPerformance } from '../lib/session-ui-adapter.js'
+import { modeOf } from '../lib/history.js'
 import { useUI } from '../store/useUI.js'
 
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
@@ -27,13 +30,17 @@ function renderWorkout(entries, over = {}) {
   S.autoHolds = true
   Object.assign(S, over)
   S.active = { id: 'auto-test', d: '2026-10-27', start: Date.now(), routineId: null, name: 'Holds', bw: null, cur: 0, entries }
-  useStore.setState({ S, user: null })
+  const A = S.active
+  delete S.active
+  A.entries = A.entries.map((e, i) => ({ ...e, exposureId: 'x-' + i }))
+  A.exposures = exposuresWithPerformance(A.entries.map(e => ({ exposureId: e.exposureId, exerciseId: e.id, mode: modeOf({ ...e.target, id: e.id }) })), A.entries, S.unit)
+  useStore.setState({ S: migratedFixture({ ...S, engineSchemaVersion: 1 }), A, user: null })
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
   act(() => root.render(<MemoryRouter><Workout /></MemoryRouter>))
 }
-const entriesNow = () => useStore.getState().S.active.entries
+const entriesNow = () => useStore.getState().A.entries
 const doneOf = (idx = 0) => entriesNow()[idx].sets.map(s => s.done)
 const tapStart = () => act(() => container.querySelector('button[aria-label="Start set"]').click())
 const wait = ms => act(() => { vi.advanceTimersByTime(ms) })
@@ -110,7 +117,7 @@ describe('holds that start by themselves', () => {
     tapStart()
     wait(10_000 + REST * 1000)
     expect(useUI.getState().countIn).toMatchObject({ owner: { idx: 1, i: 0 } })
-    expect(useStore.getState().S.active.cur).toBe(1)
+    expect(useStore.getState().A.cur).toBe(1)
     wait(3000 + 8000)
     expect(doneOf(1)).toEqual([true])
     wait(REST * 1000)
@@ -124,7 +131,7 @@ describe('holds that start by themselves', () => {
     tapStart()
     wait(10_000)
     act(() => useUI.getState().stopAuto())
-    expect(useStore.getState().S.active.autoHoldsOff).toBe(true)
+    expect(useStore.getState().A.autoHoldsOff).toBe(true)
     wait(REST * 1000)
     expect(useUI.getState().timer).toMatchObject({ ready: true })
     expect(useUI.getState().countIn).toBeNull()

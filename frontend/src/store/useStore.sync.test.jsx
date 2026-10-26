@@ -4,9 +4,10 @@
    (409 with the current copy), the store merges and pushes again; a pull adopts, pushes or
    merges by comparing the server revision and its own marker; nothing pushes before boot has
    pulled; coming back to the tab pulls. */
+import { unpackProfile } from '../../../api/migration/profile-pack.js'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('../lib/api.js', () => ({ api: vi.fn() }))
+vi.mock('../lib/api.js', () => ({ setAccessHeaders: vi.fn(), api: vi.fn() }))
 const { toast } = vi.hoisted(() => ({ toast: vi.fn() }))
 vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast }) } }))
 
@@ -19,25 +20,27 @@ const routine = id => ({ id, name: id, ex: [] })
 const workout = (id, d = '2026-09-01') => ({ id, d, start: 1, entries: [] })
 const httpError = (status, data) => Object.assign(new Error(data?.error || 'HTTP ' + status), { status, data })
 const sync = () => JSON.parse(localStorage.getItem('gym_sync'))
-const puts = () => api.mock.calls.filter(([, o]) => o?.method === 'PUT').map(([, o]) => JSON.parse(o.body))
+// The body carries the compact wire form; the tests read the canonical profile.
+const puts = () => api.mock.calls.filter(([, o]) => o?.method === 'PUT').map(([, o]) => { const b = JSON.parse(o.body); return { ...b, state: unpackProfile(b.state) } })
 const gets = () => api.mock.calls.filter(([, o]) => !o)
 const signedIn = (S, extra = {}) => useStore.setState({ S, user: { id: 'user-1' }, ready: true, ...extra })
 
 beforeEach(() => {
   localStorage.clear()
   api.mockReset()
-  useStore.setState({ S: clone(DEF), user: null, ready: false })
+  useStore.setState({ S: clone(DEF), A: null, user: null, ready: false })
 })
 afterEach(() => {
   vi.useRealTimers()
   localStorage.clear()
-  useStore.setState({ S: clone(DEF), user: null, ready: false })
+  useStore.setState({ S: clone(DEF), A: null, user: null, ready: false })
 })
 
 describe('pull against a revisioned server', () => {
   it('adopts the server copy when only the server moved, and records its revision', async () => {
-    const local = { ...clone(DEF), _ts: 100, workouts: [workout('w1')], active: { id: 'running' } }
+    const local = { ...clone(DEF), _ts: 100, workouts: [workout('w1')] }
     signedIn(local)
+    useStore.getState().setActive({ id: 'running' })   // the in-progress session, entirely outside S/pullState
     localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
     api.mockResolvedValueOnce({ state: { ...clone(DEF), _ts: 200, workouts: [workout('w1'), workout('w2')], _rev: 2 }, rev: 2 })
 
@@ -46,7 +49,7 @@ describe('pull against a revisioned server', () => {
     expect(puts()).toHaveLength(0)
     expect(useStore.getState().S.workouts.map(w => w.id)).toEqual(['w1', 'w2'])
     expect(useStore.getState().S._ts).toBe(200)
-    expect(useStore.getState().S.active).toEqual({ id: 'running' })
+    expect(useStore.getState().A).toEqual({ id: 'running' })   // pullState never touches A
     expect(sync()).toEqual({ rev: 2, ts: 200 })
   })
 
@@ -214,6 +217,19 @@ describe('push against a revisioned server', () => {
     expect(sync().rev).toBe(2)
   })
 
+  it('pushes never carry the active session even while one is in progress', async () => {
+    signedIn({ ...clone(DEF), _ts: 100, workouts: [workout('w1')] })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
+    useStore.getState().setActive({ id: 'a1', d: '2026-09-22', start: 1, name: 'Push', cur: 0, entries: [] })
+    api.mockResolvedValueOnce({ ok: true, rev: 2 })
+
+    await useStore.getState().pushState()
+
+    expect(puts()).toHaveLength(1)
+    expect(puts()[0].state.active).toBeUndefined()
+    expect(JSON.stringify(puts()[0]).includes('"a1"')).toBe(false)
+  })
+
   it('a server without revisions drops the marker', async () => {
     signedIn({ ...clone(DEF), _ts: 100, routines: [routine('r')] })
     localStorage.setItem('gym_sync', JSON.stringify({ rev: 4, ts: 100 }))
@@ -332,12 +348,14 @@ describe('ordering', () => {
    of the edit, so the merge keeps it over the old version by id, whichever copy is newer as a
    whole (lib/sync-merge.js). */
 describe('an edited workout between devices', () => {
-  const lift = w => ({ id: 'sq', target: { mode: 'reps' }, sets: [{ w, r: 5, done: true }] })
-  const logged = (w = 40) => ({ ...workout('w1'), end: 2, entries: [lift(w)], prs: [] })
-  const weightsIn = state => state.workouts.map(x => [x.id, x.entries[0]?.sets[0]?.w])
+  const lift = w => ({ exposureId: 'x-sq', exerciseId: 'sq', mode: 'reps', performance: { sets: [{ role: 'work', status: 'completed', observations: [{ metric: 'repetitions', value: 5 }], resistance: { kind: 'external-load', value: w }, segments: [] }] } })
+  const logged = (w = 40) => ({ ...workout('w1'), end: 2, exposures: [lift(w)], prs: [] })
+  const weightsIn = state => state.workouts.map(x => [x.id, x.exposures[0]?.performance.sets[0]?.resistance.value])
+  // The editor opens on a draft in A, edited like any running session.
+  const open = () => useStore.getState().setActive(editCompletedSession({ ...useStore.getState().S, active: null }, 'w1'))
   const edit = w => {
-    useStore.getState().update(s => { editCompletedSession(s, 'w1') })
-    useStore.getState().update(s => { s.active.entries[0].sets[0].w = w })
+    open()
+    useStore.getState().updateActive(a => { a.entries[0].sets[0].w = w })
     return useStore.getState().saveHistoryEdit()
   }
 
@@ -350,11 +368,11 @@ describe('an edited workout between devices', () => {
     edit(50)
     await useStore.getState().pushState()
     expect(localStorage.getItem('gym_dirty')).toBe('1')
-    expect(useStore.getState().S.active).toBeNull()
+    expect(useStore.getState().A).toBeNull()
 
     // Meanwhile a phone logged another workout. Its copy is newer as a whole and still holds
     // the workout as it was before the edit.
-    const phone = { ...clone(DEF), _ts: Date.now() + 60000, workouts: [logged(), { ...workout('w2', '2026-09-02'), entries: [lift(45)] }], _rev: 2 }
+    const phone = { ...clone(DEF), _ts: Date.now() + 60000, workouts: [logged(), { ...workout('w2', '2026-09-02'), exposures: [lift(45)] }], _rev: 2 }
     api.mockRejectedValueOnce(httpError(409, { error: 'conflict', rev: 2, state: phone }))
     api.mockResolvedValueOnce({ ok: true, rev: 3 })
     await useStore.getState().pushState()
@@ -393,8 +411,8 @@ describe('an edited workout between devices', () => {
     signedIn({ ...clone(DEF), _ts: 100, workouts: [logged()] })
     localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
     api.mockResolvedValueOnce({ ok: true, rev: 2 })
-    useStore.getState().update(s => { editCompletedSession(s, 'w1') })
-    useStore.getState().update(s => { s.active.entries[0].sets[0].w = 50 })
+    open()
+    useStore.getState().updateActive(a => { a.entries[0].sets[0].w = 50 })
     await useStore.getState().pushState()   // the draft is where the server has it: nothing owed
 
     // The phone deletes the workout; this device learns of it while its editor is open.
@@ -403,10 +421,10 @@ describe('an edited workout between devices', () => {
     expect(useStore.getState().S.workouts).toEqual([])
 
     expect(() => useStore.getState().saveHistoryEdit()).toThrow('deleted on another device')
-    expect(useStore.getState().S.active.entries[0].sets[0].w).toBe(50)
+    expect(useStore.getState().A.entries[0].sets[0].w).toBe(50)
     expect(useStore.getState().S.workouts).toEqual([])
     useStore.getState().discardHistoryEdit()
-    expect(useStore.getState().S.active).toBeNull()
+    expect(useStore.getState().A).toBeNull()
   })
 
   it('an edit of a workout another device deleted: saved first, it comes back edited rather than lost', async () => {
