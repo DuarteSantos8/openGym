@@ -351,7 +351,31 @@ const PUSH_AGENT = new https.Agent({ lookup: guardedLookup, keepAlive: false });
 // Cheap pre-check so a bad endpoint is refused at subscribe time with a useful message, rather
 // than silently never delivering. For a hostname PUSH_AGENT is what actually enforces the address
 // rule; for a literal address this is the check, which is why sendPush runs it again.
+// Real push services hand out endpoints of a few hundred characters (FCM, Mozilla, Apple are all
+// well under 1 KB) and keys of 87 (p256dh, a 65-byte point) and 22 (auth, 16 bytes) base64url
+// characters. Everything here lands in db.json, which every save rewrites whole, so nothing bigger
+// is ever stored (GHSA-g65f-rj2m-6wj9).
+const MAX_PUSH_ENDPOINT = 2048;
+const MAX_PUSH_KEY = 256;
+const PUSH_KEY_RE = /^[A-Za-z0-9_\-+/]+={0,2}$/;
+function pushKeyError(v) {
+  if (typeof v !== 'string' || !v || v.length > MAX_PUSH_KEY || !PUSH_KEY_RE.test(v)) return 'invalid subscription keys';
+  return null;
+}
+
+// A db.json from before these limits may already carry an oversized row: drop it once at boot,
+// before the next save has to write it again.
+if (Array.isArray(db.subs)) {
+  const n = db.subs.length;
+  const tooBig = v => typeof v === 'string' && v.length > MAX_PUSH_KEY;
+  // Only size decides here: a row is never dropped for its format, just for being too big to keep.
+  db.subs = db.subs.filter(s => !(String(s?.endpoint ?? '').length > MAX_PUSH_ENDPOINT
+    || tooBig(s?.keys?.p256dh) || tooBig(s?.keys?.auth)));
+  if (db.subs.length !== n) { console.error(`push: dropped ${n - db.subs.length} oversized subscription(s)`); saveDb(); }
+}
+
 function pushEndpointError(raw) {
+  if (typeof raw !== 'string' || raw.length > MAX_PUSH_ENDPOINT) return 'endpoint is too long';
   let u;
   try { u = new URL(String(raw || '')); } catch { return 'endpoint is not a valid URL'; }
   if (u.protocol !== 'https:') return 'endpoint must be an https:// URL';
@@ -2575,7 +2599,7 @@ const routes = {
     const body = await readBody(req);
     const sub = body.subscription;
     if (!sub?.endpoint || !sub?.keys?.p256dh || !sub?.keys?.auth) return json(res, 400, { error: 'invalid subscription' });
-    const bad = pushEndpointError(sub.endpoint);
+    const bad = pushEndpointError(sub.endpoint) || pushKeyError(sub.keys.p256dh) || pushKeyError(sub.keys.auth);
     if (bad) return json(res, 400, { error: bad });
     // Only the two keys the push protocol needs are kept: `sub` is caller-supplied and would
     // otherwise put arbitrary fields into db.json, which every admin route reads back out.
