@@ -63,15 +63,23 @@ describe('plates for a weight', () => {
     }), RUNS)
   })
 
-  it('are the heaviest load you can make without going over, with the fewest plates', () => {
+  it('maximise load, preferring an exact heaviest-first stack, otherwise the fewest plates', () => {
     fc.assert(fc.property(weight, inventory('kg', 4, 3), (w, inv) => {
       const { plates } = plateStack(w, inv)
       const target = Math.floor(Math.max(0, w) * Q)
       const options = reachable(inv)
       const bestSum = Math.max(...[...options.keys()].filter(s => s <= target))
       expect(Math.round(sum(plates) * Q)).toBe(bestSum)
-      expect(plates.length).toBe(options.get(bestSum))
-    }), RUNS)
+      // Exact heaviest-first loads take precedence over the minimum plate count.
+      let left = target
+      const greedy = inv.flatMap(({ w, n }) => Array(n).fill(w)).filter(w => {
+        if (Math.round(w * Q) > left) return false
+        left -= Math.round(w * Q)
+        return true
+      })
+      if (left === 0) expect(plates).toEqual(greedy)
+      else expect(plates.length).toBe(options.get(bestSum))
+    }), { ...RUNS, examples: [[35, [{ w: 15, n: 2 }, { w: 10, n: 2 }, { w: 2.5, n: 2 }]]] })
   })
 
   it('never get worse when you own more plates', () => {
