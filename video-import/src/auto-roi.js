@@ -93,11 +93,11 @@ function linesOf(words) {
 }
 
 /** The line of a reading that is a caption, if one is: letters enough, most of them words an exercise is named with. */
-function captionLine(words, o) {
+export function captionLine(words, o, minKnown = 0.6) {
   let best = null
   for (const ln of linesOf(usable(words || [], o))) {
     const letters = (ln.text.match(/\p{L}/gu) || []).length
-    if (letters >= 6 && knownShare(ln.text) >= 0.6 && (!best || letters > best.letters)) best = { ...ln, letters, key: normName(ln.text) }
+    if (letters >= 6 && knownShare(ln.text) >= minKnown && (!best || letters > best.letters)) best = { ...ln, letters, key: normName(ln.text) }
   }
   return best
 }
@@ -181,6 +181,42 @@ async function readStrips(files, { workDir, signal }) {
   return mapBatches(batches, read, OCR_PROCS)
 }
 
+/** How a frame is cut into strips for reading: the strips, and the width a strip image has. */
+export function stripGeometry(dims) {
+  const outW = Math.round(dims.width * (OUT_H / (dims.height * STRIP_H)))
+  return { list: strips(), outW, scale: outW / dims.width }
+}
+
+/**
+ * The words read in every strip at every one of `times` (seconds): `out[s][p]` for strip `s` at
+ * `times[p]`, in the pixels of the strip image. A moment that could not be cut reads as nothing.
+ */
+export async function readMoments(file, times, { dims, workDir, signal, onProgress } = {}) {
+  const { list, outW } = stripGeometry(dims)
+  const files = []
+  for (let p = 0; p < times.length; p++) {
+    const split = `split=${list.length}${list.map((_, s) => `[a${s}]`).join('')}`
+    const parts = list.map((st, s) => `[a${s}]crop=${dims.width}:${Math.max(8, Math.round(dims.height * st.h))}:0:${Math.min(dims.height - 8, Math.round(dims.height * st.y))},scale=${outW}:${OUT_H}:flags=bicubic,format=gray[o${s}]`)
+    const args = ['-hide_banner', '-loglevel', 'error', '-nostdin', '-y', '-ss', String(times[p]), '-i', file, '-filter_complex', `[0:v]${split};${parts.join(';')}`]
+    list.forEach((_, s) => {
+      const out = path.join(workDir, `strip-${p}-${s}-${process.hrtime.bigint()}.png`)
+      args.push('-map', `[o${s}]`, '-frames:v', '1', out)
+      files.push(out)
+    })
+    try { await run('ffmpeg', args, { signal, timeoutMs: 60000 }) } catch (e) { if (e.cancelled) throw e }
+    onProgress?.((p + 1) / times.length)
+  }
+  // Frames that could not be cut are skipped (an unreadable moment is not a caption).
+  const present = files.map(f => fs.existsSync(f))
+  const existing = files.filter((_, i) => present[i])
+  let words = []
+  try { words = await readStrips(existing, { workDir, signal }) } finally { for (const f of files) fs.rmSync(f, { force: true }) }
+  const out = list.map(() => [])
+  let k = 0
+  files.forEach((_, i) => out[i % list.length].push(present[i] ? words[k++] || [] : []))
+  return out
+}
+
 /**
  * The name box of a video: { box, captions } or null when no strip reads like a caption. The
  * frame is cut into strips at PROBES moments with one ffmpeg run each, and the strips read. When
@@ -188,36 +224,10 @@ async function readStrips(files, { workDir, signal }) {
  * the rest, are missed by a few dozen) and judged together with the first.
  */
 export async function autoNameBox(file, { dims, workDir, signal, avoid = [], onProgress } = {}) {
-  const list = strips()
-  const outW = Math.round(dims.width * (OUT_H / (dims.height * STRIP_H)))
-  const scale = outW / dims.width
+  const { list, scale } = stripGeometry(dims)
   const moment = f => Math.round(dims.duration * (0.03 + 0.94 * f) * 10) / 10
-  const readMoments = async (times, progress) => {
-    const files = []
-    for (let p = 0; p < times.length; p++) {
-      const split = `split=${list.length}${list.map((_, s) => `[a${s}]`).join('')}`
-      const parts = list.map((st, s) => `[a${s}]crop=${dims.width}:${Math.max(8, Math.round(dims.height * st.h))}:0:${Math.min(dims.height - 8, Math.round(dims.height * st.y))},scale=${outW}:${OUT_H}:flags=bicubic,format=gray[o${s}]`)
-      const args = ['-hide_banner', '-loglevel', 'error', '-nostdin', '-y', '-ss', String(times[p]), '-i', file, '-filter_complex', `[0:v]${split};${parts.join(';')}`]
-      list.forEach((_, s) => {
-        const out = path.join(workDir, `strip-${times[p]}-${s}.png`)
-        args.push('-map', `[o${s}]`, '-frames:v', '1', out)
-        files.push(out)
-      })
-      try { await run('ffmpeg', args, { signal, timeoutMs: 60000 }) } catch (e) { if (e.cancelled) throw e }
-      progress((p + 1) / times.length)
-    }
-    // Frames that could not be cut are skipped (an unreadable moment is not a caption).
-    const present = files.map(f => fs.existsSync(f))
-    const existing = files.filter((_, i) => present[i])
-    let words = []
-    try { words = await readStrips(existing, { workDir, signal }) } finally { for (const f of files) fs.rmSync(f, { force: true }) }
-    const out = list.map(() => [])
-    let k = 0
-    files.forEach((_, i) => out[i % list.length].push(present[i] ? words[k++] || [] : []))
-    return out
-  }
   const first = Array.from({ length: PROBES }, (_, i) => moment(i / (PROBES - 1)))
-  const readings = await readMoments(first, f => onProgress?.(f * 0.4))
+  const readings = await readMoments(file, first, { dims, workDir, signal, onProgress: f => onProgress?.(f * 0.4) })
   const pick = () => pickNameBox(readings, list, { width: dims.width, scale, avoid })
   let found = pick()
   if (!found) {
@@ -225,7 +235,7 @@ export async function autoNameBox(file, { dims, workDir, signal, avoid = [], onP
     const step = 1 / (PROBES - 1)
     const more = []
     for (let i = 0; i < PROBES - 1 && more.length < EXTRA_PROBES; i++) for (const q of [1 / 3, 1 / 2, 2 / 3]) if (more.length < EXTRA_PROBES) more.push(moment((i + q) * step))
-    const extra = await readMoments(more, f => onProgress?.(0.4 + f * 0.6))
+    const extra = await readMoments(file, more, { dims, workDir, signal, onProgress: f => onProgress?.(0.4 + f * 0.6) })
     extra.forEach((r, s) => readings[s].push(...r))
     found = pick()
   }

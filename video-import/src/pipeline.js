@@ -10,6 +10,7 @@ import { classify, cutsOf } from './classify.js'
 import { dominantLabel, stripLabel } from './text.js'
 import { autoNameBox } from './auto-roi.js'
 import { quality } from './gate.js'
+import { nameGaps } from './gap-names.js'
 import { suggestRois } from './roi-suggest.js'
 import { suggestTimers } from './timer-suggest.js'
 import { run } from './proc.js'
@@ -123,7 +124,19 @@ export async function analyse(file, roi, { workDir, signal, hints = [], parts = 
   // countdowns over a good part of the video — not how clean every reading is: a timer shown
   // only during the work, or read in one of its four readings, still runs the show. The
   // captions alone otherwise.
-  const { blocks, draft, timed } = draftFromFrames(frames, { hints, parts })
+  let { blocks, draft, timed } = draftFromFrames(frames, { hints, parts })
+  // Runs of the countdown no caption named (a warm-up or stretch whose names show in the last
+  // seconds of the move before, away from the name box): read from the tail of the run before.
+  let gapNamed = 0
+  if (timed) {
+    let names = []
+    try { names = await nameGaps(file, blocks, { dims: d, workDir, signal, avoid: [].concat(roi?.timer || []) }) } catch (e) { if (e.cancelled || signal?.aborted) throw e }
+    for (const n of names) {
+      const b = blocks[n.index]
+      for (let t = b.start + 1; t < b.end - 1 && t < frames.length; t++) { frames[t].name = n.text; frames[t].nameConf = n.conf }
+    }
+    if (names.length) { ({ blocks, draft, timed } = draftFromFrames(frames, { hints, parts })); gapNamed = names.length }
+  }
   const signals = quality(frames, draft, timed, { expectTimed: [].concat(roi?.timer || []).length > 0 })
   progress('thumbs', 0)
   const rows = draft.sections.flatMap(s => s.rows)
@@ -143,6 +156,6 @@ export async function analyse(file, roi, { workDir, signal, hints = [], parts = 
   }
   return {
     frames, blocks, draft, quality: signals,
-    stats: { seconds: crops.seconds, uniqueName: names.reduce((t, n) => t + n.unique, 0), uniqueTimer: clocks.reduce((t, c) => t + c.unique, 0), readFrames: frames.filter(f => f.name).length }
+    stats: { seconds: crops.seconds, uniqueName: names.reduce((t, n) => t + n.unique, 0), uniqueTimer: clocks.reduce((t, c) => t + c.unique, 0), readFrames: frames.filter(f => f.name).length, gapNamed }
   }
 }
