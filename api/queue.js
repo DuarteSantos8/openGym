@@ -39,12 +39,41 @@ function nameParts(w) {
 // session, the routines once per weekday entry) held the event loop for minutes on a crafted
 // file, and every other user's requests and reminders waited behind it.
 //
+// The nudge (nudge.js) then asks these functions about up to fifteen days of one state, and each
+// answer worked the queue out again: a dedupe over every id in `S.queue.ids`, a Set of every
+// routine id, and doneIds' Sets of the same. Near the 5 MB limit that was seconds per nudge, and
+// GET /api/nudge-check runs one whenever a signed-in client asks. What they work out depends only
+// on the queue, the routines and the zone, so stateQueue does it once per state and keeps it while
+// those are the same objects. A state read from disk is never edited in place; the list lengths,
+// the week's dates and the zone are compared too, so a caller that adds to a list or moves the
+// week between questions gets fresh answers.
+const derived = new WeakMap();
+function stateQueue(S) {
+  const q = S.queue;
+  if (!q || typeof q !== 'object' || !Array.isArray(q.ids)) return null;
+  const routines = S.routines, tz = S.reminder?.tz;
+  const hit = derived.get(q);
+  if (hit && hit.routines === routines && hit.routineCount === (routines?.length ?? 0) && hit.ids === q.ids
+    && hit.idCount === q.ids.length && hit.rawStartsOn === q.startsOn && hit.since === q.since && hit.tz === tz) return hit;
+  const known = new Set((routines || []).map(r => r?.id));
+  const startsOn = typeof q.startsOn === 'string' ? q.startsOn : dayIn(q.since || 0, tz);
+  // First valid occurrence of each id — the same normalization as the frontend's queueOf.
+  const ids = [...new Set(q.ids)].filter(id => known.has(id));
+  const want = new Set(ids), names = new Map();
+  for (const r of routines || []) if (want.has(r?.id) && !names.has(r.id)) names.set(r.id, r.name);
+  const entry = {
+    routines, routineCount: routines?.length ?? 0, ids: q.ids, idCount: q.ids.length,
+    rawStartsOn: q.startsOn, since: q.since, tz, known,
+    queue: ids.length ? { ids, startsOn, want, names } : null,
+  };
+  derived.set(q, entry);
+  return entry;
+}
 // The sessions of `q` that count as done under the DONE RULE, in one pass over the workouts. A
 // session's name is that of the first routine with its id, as the rule reads it. The pass stops
 // once every session is done.
 function doneIds(S, q) {
-  const want = new Set(q.ids), names = new Map(), done = new Set();
-  for (const r of S.routines || []) if (want.has(r?.id) && !names.has(r.id)) names.set(r.id, r.name);
+  const { want, names } = q, done = new Set();
   for (const w of S.workouts || []) {
     if (done.size === want.size) break;
     const ids = routineIdsOf(w);
@@ -75,14 +104,7 @@ function dayIn(ms, tz) {
 // deleted is dropped from the week (the frontend's queue.js does the same — it could never be
 // started or logged).
 function queueOf(S) {
-  const q = S.queue;
-  if (!q || typeof q !== 'object' || !Array.isArray(q.ids)) return null;
-  const startsOn = typeof q.startsOn === 'string' ? q.startsOn : dayIn(q.since || 0, S.reminder?.tz);
-  // First valid occurrence of each id — the same normalization as the frontend's queueOf.
-  const known = new Set((S.routines || []).map(r => r?.id));
-  const ids = [...new Set(q.ids)].filter(id => known.has(id));
-  if (!ids.length) return null;
-  return { ids, startsOn };
+  return stateQueue(S)?.queue ?? null;
 }
 // The reminder tick only ever asks "what's next right now" — there is no separate "today" to
 // preview a different date against, so `today` in the spec's `next(iso, today)` is just `iso`.
@@ -132,8 +154,10 @@ export function effectiveRoutineId(S, iso) {
   const live = queueLiveOn(S, iso);
   const list = [].concat(S.week?.[wd] || []);
   if (!list.length) return null;
-  const known = new Set((S.routines || []).map(r => r?.id));
-  const queued = live ? new Set(S.queue.ids) : null;
+  const sq = stateQueue(S);
+  const known = sq ? sq.known : new Set((S.routines || []).map(r => r?.id));
+  // A live queue has its known ids in `want`, and only known ids are looked up in it.
+  const queued = live ? sq.queue.want : null;
   return list.find(id => known.has(id) && !(live && queued.has(id))) || null;
 }
 
