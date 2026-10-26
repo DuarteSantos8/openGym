@@ -2445,6 +2445,7 @@ export default {
   'Analyse video': 'Videó elemzése',
   'Downloading a small copy of the video…': 'A videó kis másolatának letöltése…',
   'Finding the names and the timer…': 'A nevek és az időzítő keresése…',
+  'We could not read this video reliably on our own. The boxes show where we looked; adjust them if they are off.': 'Nem sikerült megbízhatóan, magunktól beolvasni ezt a videót. A keretek mutatják, hol kerestünk; igazítsd őket, ha nem jók.',
   'Drag a box around where the exercise name appears, then switch to Timer and do the same for the countdown. Saved for this channel, so its next video skips this step.': 'Húzz egy keretet oda, ahol a gyakorlat neve megjelenik, majd válts az Időzítőre, és csináld meg ugyanezt a visszaszámlálásnál. Elmentjük ehhez a csatornához, így a következő videója kihagyja ezt a lépést.',
   'How sure the reading and the match are': 'Mennyire biztos az olvasás és az egyezés',
   'Import cancelled.': 'Importálás megszakítva.',

@@ -2442,6 +2442,7 @@ export default {
   'Analyse video': 'Videoyu analiz et',
   'Downloading a small copy of the video…': 'Videonun küçük bir kopyası indiriliyor…',
   'Finding the names and the timer…': 'Adlar ve zamanlayıcı aranıyor…',
+  'We could not read this video reliably on our own. The boxes show where we looked; adjust them if they are off.': 'Bu videoyu kendi başımıza güvenilir şekilde okuyamadık. Kutular nereye baktığımızı gösteriyor; yanlışsa ayarlayın.',
   'Drag a box around where the exercise name appears, then switch to Timer and do the same for the countdown. Saved for this channel, so its next video skips this step.': 'Egzersiz adının göründüğü yerin çevresine bir kutu çiz, sonra Zamanlayıcı’ya geç ve geri sayım için aynısını yap. Bu kanal için kaydedilir, böylece sonraki videosu bu adımı atlar.',
   'How sure the reading and the match are': 'Okumanın ve eşleşmenin ne kadar güvenilir olduğu',
   'Import cancelled.': 'İçe aktarma iptal edildi.',

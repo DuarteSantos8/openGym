@@ -2446,6 +2446,7 @@ export default {
   'Analyse video': 'Проанализировать видео',
   'Downloading a small copy of the video…': 'Загружается небольшая копия видео…',
   'Finding the names and the timer…': 'Ищем названия и таймер…',
+  'We could not read this video reliably on our own. The boxes show where we looked; adjust them if they are off.': 'Нам не удалось надёжно прочитать это видео самостоятельно. Рамки показывают, где мы искали; поправьте их, если они сдвинуты.',
   'Drag a box around where the exercise name appears, then switch to Timer and do the same for the countdown. Saved for this channel, so its next video skips this step.': 'Выделите рамкой место, где появляется название упражнения, затем переключитесь на Таймер и сделайте то же для обратного отсчёта. Это запоминается для канала, поэтому в следующем видео этот шаг пропустится.',
   'How sure the reading and the match are': 'Насколько надёжны распознавание и сопоставление',
   'Import cancelled.': 'Импорт отменён.',

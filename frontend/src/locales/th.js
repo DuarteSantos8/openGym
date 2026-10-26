@@ -2453,6 +2453,7 @@ export default {
   'Analyse video': 'วิเคราะห์วิดีโอ',
   'Downloading a small copy of the video…': 'กำลังดาวน์โหลดสำเนาขนาดเล็กของวิดีโอ…',
   'Finding the names and the timer…': 'กำลังหาชื่อและตัวจับเวลา…',
+  'We could not read this video reliably on our own. The boxes show where we looked; adjust them if they are off.': 'เราอ่านวิดีโอนี้ด้วยตัวเองได้ไม่แม่นยำ กรอบแสดงตำแหน่งที่เราค้นหา ปรับกรอบหากไม่ตรง',
   'Drag a box around where the exercise name appears, then switch to Timer and do the same for the countdown. Saved for this channel, so its next video skips this step.': 'ลากกรอบครอบตรงที่ชื่อท่าปรากฏ แล้วสลับไปที่ตัวจับเวลาและทำแบบเดียวกันกับการนับถอยหลัง ระบบจะจำไว้สำหรับช่องนี้ วิดีโอถัดไปของช่องจึงข้ามขั้นตอนนี้',
   'How sure the reading and the match are': 'การอ่านและการจับคู่มั่นใจแค่ไหน',
   'Import cancelled.': 'ยกเลิกการนำเข้าแล้ว',

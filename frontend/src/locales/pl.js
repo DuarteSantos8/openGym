@@ -2442,6 +2442,7 @@ export default {
   'Analyse video': 'Analizuj film',
   'Downloading a small copy of the video…': 'Pobieranie małej kopii filmu…',
   'Finding the names and the timer…': 'Szukam nazw i timera…',
+  'We could not read this video reliably on our own. The boxes show where we looked; adjust them if they are off.': 'Nie udało się rzetelnie odczytać tego filmu automatycznie. Ramki pokazują, gdzie szukaliśmy; popraw je, jeśli są nietrafione.',
   'Drag a box around where the exercise name appears, then switch to Timer and do the same for the countdown. Saved for this channel, so its next video skips this step.': 'Zaznacz ramką miejsce, gdzie pojawia się nazwa ćwiczenia, potem przełącz na Timer i zrób to samo dla odliczania. Zapamiętamy to dla tego kanału, więc następny film pominie ten krok.',
   'How sure the reading and the match are': 'Jak pewne jest odczytanie i dopasowanie',
   'Import cancelled.': 'Import anulowany.',

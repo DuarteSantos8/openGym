@@ -1563,6 +1563,7 @@ export const PT_BR_OVERRIDES = {
   'Analyse video': 'Analisar vídeo',
   'Downloading a small copy of the video…': 'Baixando uma cópia pequena do vídeo…',
   'Finding the names and the timer…': 'Procurando os nomes e o cronômetro…',
+  'We could not read this video reliably on our own. The boxes show where we looked; adjust them if they are off.': 'Não conseguimos ler este vídeo com confiança por conta própria. As caixas mostram onde procuramos; ajuste-as se estiverem erradas.',
   'Drag a box around where the exercise name appears, then switch to Timer and do the same for the countdown. Saved for this channel, so its next video skips this step.': 'Arraste uma caixa sobre o lugar onde o nome do exercício aparece, depois mude para Timer e faça o mesmo com a contagem regressiva. Fica salvo para este canal, então o próximo vídeo dele pula esta etapa.',
   'How sure the reading and the match are': 'Quão confiáveis são a leitura e a correspondência',
   'Import cancelled.': 'Importação cancelada.',

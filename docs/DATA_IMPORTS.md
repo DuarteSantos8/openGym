@@ -64,14 +64,19 @@ paste the link under **Plan → share icon → Import from a video**, check the 
    chapters (or a timestamped list in the description) become the draft, and the review screen
    says so.
 2. **Every second is read** twice for the timer, once for the name; see below for how.
-3. **The first time for a channel, you mark the boxes**: one around the exercise name and one
-   around the timer. You get three stills from the video, with a suggestion already drawn (labels
-   that never change, such as "NEXT", are not suggested; the timer is found by its counting: a
-   few seconds of the video are read in a grid of places, and a box whose numbers go down by one
-   is the timer, even in a ring on the floor). If the names appear in more than one
-   place, for example in a big preview during the workout and a small one in the warm-up, draw a
-   box around each one (up to three). The boxes are saved for that channel, so its next video skips
-   this step. If they turn out wrong, use *Mark the boxes again* on the review screen.
+3. **The boxes are found for you.** The program cuts the frame into strips and reads each at a few
+   dozen moments of the video. The strip that says a different exercise name every time, in words
+   an exercise is called by, is the name box (a label that never changes, such as "NEXT", is not).
+   The timer is found by its counting: a few seconds of the video are read in a grid of places, and a
+   box whose numbers go down by one is a timer, even in a ring on the floor (up to two, and up to two
+   places for the names). Nothing is asked of you when that works. It is asked when the program finds
+   nothing it can use, or when what it read comes out thin: names on fewer than 60% of the rows, a low
+   confidence, or a countdown it could not follow over most of the video. Then you get three stills
+   with the boxes it found already drawn and a note saying it could not read the video reliably on its
+   own. Move them, or draw your own (up to three of each: a big name preview in the workout and a
+   small one in the warm-up are two places). The boxes you draw are saved for that channel, so its
+   next video uses them and skips the search. If the boxes turn out wrong, use *Mark the boxes again*
+   on the review screen: it always asks, starting from the boxes that were used.
 4. **Reading.** The name and timer are cropped from every frame, thresholded, and read with
    Tesseract (or PaddleOCR, see below). The timer is read as digits only.
 5. **The countdown first.** When the video shows a timer the OCR can follow, every countdown to
@@ -120,6 +125,20 @@ paste the link under **Plan → share icon → Import from a video**, check the 
    stretch becomes one per-side hold. The routine keeps a link to the video, and importing the same
    video again replaces the routine instead of adding a second copy.
 
+### Warm-ups and stretches
+
+They are often another format than the workout: no rests, the moves follow one another, and the
+name of the next one shows in the last seconds of the one before it (a small "UP NEXT" preview,
+often away from the name box) or on a label while it is being done. For every countdown no caption
+named, the program reads the whole frame, in narrow pieces (a small card is lost in a full-width
+row), in the seconds before it and, if those say nothing, early in it; a caption that shows in at
+least two of those moments names it. What it does not take for a name: a screen between moves
+("Switch sides", "Block 1", "Link below"), a section title, the name of the move before (even
+garbled, or as a part of it), and a line in brackets alone (a subtitle). A caption read with a low
+confidence and words no one knows is asked again the same way. A move shown as *(R)*, followed by a
+countdown of the same length that no preview names, is that move on its *(L)* side. Moves no screen
+names at all arrive unnamed for you to name.
+
 The video and every frame are deleted as soon as the job ends, however it ends. The server keeps
 only the boxes per channel (`data/video-import/<profile>.json`); the draft lives in memory for an
 hour.
@@ -156,7 +175,7 @@ worker has no access to `./data` and no host port; only the api container talks 
 | `VIDEO_IMPORT_TARGET` | `default` | `paddle` builds the PaddleOCR image (~2 GB) instead of Tesseract (~500 MB) |
 | `PADDLE_THREADS` | all cores | CPU threads PaddleOCR may use (paddle image only) |
 
-A 33-minute video took about 5 minutes on a four-core laptop the first time (download, boxes, reading) and about 3 minutes once the boxes were remembered; the reading is Tesseract, one thread per process, up to four processes (`VIDEO_IMPORT_OCR_PROCS`). A busy or smaller server takes longer, and the progress bar says where it is.
+A 33-minute video took about 5 minutes on a four-core laptop the first time (download, finding the boxes, reading) and about 3 minutes once the boxes were remembered; finding the boxes and naming warm-up and stretch moves add a minute or two to a long video; the reading is Tesseract, one thread per process, up to four processes (`VIDEO_IMPORT_OCR_PROCS`). A busy or smaller server takes longer, and the progress bar says where it is.
 
 **Keep yt-dlp current.** YouTube changes often, and yt-dlp is what follows it. When imports start
 failing with "could not read the video", rebuild the worker:
@@ -178,8 +197,14 @@ the video: see `video-import/test/fixtures/README.md`.
 - **Moving captions.** The boxes are fixed per channel. A creator who moves the caption around
   between videos needs *Mark the boxes again*.
 - **Chapters that include the rest.** When each chapter is "Burpees" for the whole minute
-  (work and rest together), the draft shows 60 s of work and no rest. Fix it on the review screen,
-  or tick *Read the video even if it has chapters*.
+  (work and rest together), the draft shows 60 s of work and no rest. Fix it on the review screen.
+- **Small or thin captions.** A name drawn small, in a thin font, over a light wall is read in some
+  seconds and not in others. A move named only by such a card can stay unnamed (a warm-up of fifteen-second
+  moves, with the card on screen for four seconds, lost four names of ten in the recorded set), and a
+  caption with a note in brackets ("(alternate both sides)") can come out garbled. Rows with no name are
+  shown for you to name.
+- **The other side with no label.** A *(L)* side is inferred when the move before says *(R)* and nothing
+  else is announced; a video that shows neither, or shows the sides only in a tiny caption, has them unnamed.
 - **A timer OCR cannot read** (a stylised font, white digits over a white wall) gives no timing.
   The blocks then come from the captions alone, and a stretch with no captions arrives as one long
   row for you to split.

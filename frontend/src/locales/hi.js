@@ -2442,6 +2442,7 @@ export default {
   'Analyse video': 'वीडियो का विश्लेषण करें',
   'Downloading a small copy of the video…': 'वीडियो की एक छोटी कॉपी डाउनलोड हो रही है…',
   'Finding the names and the timer…': 'नाम और टाइमर खोजे जा रहे हैं…',
+  'We could not read this video reliably on our own. The boxes show where we looked; adjust them if they are off.': 'हम इस वीडियो को अपने आप भरोसेमंद ढंग से नहीं पढ़ पाए। बॉक्स दिखाते हैं कि हमने कहाँ देखा; गलत हों तो उन्हें ठीक करें।',
   'Drag a box around where the exercise name appears, then switch to Timer and do the same for the countdown. Saved for this channel, so its next video skips this step.': 'जहाँ व्यायाम का नाम दिखता है वहाँ एक बॉक्स खींचें, फिर टाइमर पर जाएँ और काउंटडाउन के लिए भी यही करें। यह इस चैनल के लिए सहेजा जाता है, इसलिए इसके अगले वीडियो में यह चरण छूट जाएगा।',
   'How sure the reading and the match are': 'पढ़ना और मिलान कितना पक्का है',
   'Import cancelled.': 'इंपोर्ट रद्द किया गया।',

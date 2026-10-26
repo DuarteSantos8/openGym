@@ -3553,6 +3553,9 @@ components:
                 name: { oneOf: [{ $ref: '#/components/schemas/VideoImportBox' }, { type: 'null' }] }
                 names: { type: array, items: { $ref: '#/components/schemas/VideoImportBox' }, description: Every place a name seems to appear, best first. }
                 timer: { oneOf: [{ $ref: '#/components/schemas/VideoImportBox' }, { type: 'null' }] }
+            unsure:
+              type: boolean
+              description: "Set when the worker looked for the boxes itself and the read it got was too thin to hand over (few names, low confidence, or a countdown it could not follow): `suggest` then holds the boxes it found, and the screen says so. Absent when nothing was found, or the caller asked to mark the boxes itself (`redraw`)."
             width: { type: integer }
             height: { type: integer }
         result:
@@ -3568,7 +3571,8 @@ components:
               properties:
                 name: { $ref: '#/components/schemas/VideoImportBox' }
                 timer: { oneOf: [{ $ref: '#/components/schemas/VideoImportBox' }, { type: 'null' }] }
-            roiSaved: { type: boolean }
+            roiSaved: { type: boolean, description: The boxes were the ones saved for this channel. }
+            roiAuto: { type: boolean, description: The worker found the boxes itself and its read was good enough to hand over without asking. }
             draft:
               type: object
               properties:

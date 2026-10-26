@@ -3664,6 +3664,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-desc"></span>
   </div>
   <div class="prow">
+    <span class="p-name">roiSetup.unsure</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">Set when the worker looked for the boxes itself and the read it got was too thin to hand over (few names, low confidence, or a countdown it could not follow): <code>suggest</code> then holds the boxes it found, and the screen says so. Absent when nothing was found, or the caller asked to mark the boxes itself (<code>redraw</code>).</span>
+  </div>
+  <div class="prow">
     <span class="p-name">roiSetup.width</span>
     <span class="p-type">integer</span>
     <span class="p-desc"></span>
@@ -3706,7 +3711,12 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow">
     <span class="p-name">result.roiSaved</span>
     <span class="p-type">boolean</span>
-    <span class="p-desc"></span>
+    <span class="p-desc">The boxes were the ones saved for this channel.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">result.roiAuto</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">The worker found the boxes itself and its read was good enough to hand over without asking.</span>
   </div>
   <div class="prow">
     <span class="p-name">result.draft</span>

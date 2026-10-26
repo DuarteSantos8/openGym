@@ -2442,6 +2442,7 @@ export default {
   'Analyse video': '分析视频',
   'Downloading a small copy of the video…': '正在下载视频的小体积副本…',
   'Finding the names and the timer…': '正在查找名称和计时器…',
+  'We could not read this video reliably on our own. The boxes show where we looked; adjust them if they are off.': '我们无法自行可靠地读取这个视频。方框显示我们查找过的位置；如果不准确，请调整。',
   'Drag a box around where the exercise name appears, then switch to Timer and do the same for the countdown. Saved for this channel, so its next video skips this step.': '在动作名称出现的位置拖出一个框，然后切换到计时器，对倒计时做同样的操作。会为该频道保存，它的下一个视频会跳过这一步。',
   'How sure the reading and the match are': '识别与匹配的把握有多大',
   'Import cancelled.': '导入已取消。',

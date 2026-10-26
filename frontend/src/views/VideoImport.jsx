@@ -222,6 +222,9 @@ function RoiStep({ job, onDone, onCancel, busy }) {
   const remove = (e, i) => { e.stopPropagation(); setNames(list => list.filter((_, k) => k !== i)) }
 
   return <>
+    {setup.unsure && <div className="card small" role="status" style={{ padding: '10px 12px', marginBottom: 10 }}>
+      {t('We could not read this video reliably on our own. The boxes show where we looked; adjust them if they are off.')}
+    </div>}
     <Section title={t('Mark the name and the timer')} footer={t('Drag a box around where the exercise name appears, then switch to Timer and do the same for the countdown. Saved for this channel, so its next video skips this step.')}>
       <div style={{ padding: '8px 12px' }}>
         <Segmented value={which} onChange={setWhich} options={[{ value: 'name', label: t('Exercise name') }, { value: 'timer', label: t('Timer') }]} />
