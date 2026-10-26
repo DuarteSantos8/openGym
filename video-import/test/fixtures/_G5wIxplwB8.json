@@ -29,7 +29,14 @@
   },
   "inputs": {
     "hints": [],
-    "parts": []
+    "parts": [],
+    "gapNames": [
+      {
+        "at": 286,
+        "text": "BODYWEIGHT SQUATS",
+        "conf": 92
+      }
+    ]
   },
   "notes": "30/30, no repeat: five sections of ten moves, 30 s work and 30 s REST, a minute between the sections; ten 30 s warm-up moves with no rests before and ten 30 s stretches after. Indoor gym: the move (or REST in red) in a panel top right under a percentage bar, the timer in a ring beside it. A few captions are two lines (OVERHEAD DUMBBELL / TRICEPS EXTENSION) and one has a note under it (DUMBBELL PRESS / 15 SEC UP / 15 SEC DOWN, 16:47). Expected derived from the countdown (30 s runs, each starts at its 29) and read off the captions by eye. 3499 is a REST read as nothing (the red label).",
   "expected": {

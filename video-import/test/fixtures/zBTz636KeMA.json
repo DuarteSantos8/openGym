@@ -29,7 +29,19 @@
   },
   "inputs": {
     "hints": [],
-    "parts": []
+    "parts": [],
+    "gapNames": [
+      {
+        "at": 312,
+        "text": "Lunge Combo &Dnve (left)",
+        "conf": 70
+      },
+      {
+        "at": 671,
+        "text": "Lunge Combo &Drnive (left)",
+        "conf": 70
+      }
+    ]
   },
   "notes": "Checked against the video. A 40/20 workout in two circuits of six moves, each done twice, with a 60 s rest between the circuits (951-1012 s). The move is named only on a big UP NEXT screen in the rest before it (the work itself shows nothing but the timer), so the name box reads the rest. The draft saw work in the 60 s rest. The warm-up (0-231 s) and the cool-down after 1712 s (stretches with no names or timer) are null, not scored.",
   "expected": {

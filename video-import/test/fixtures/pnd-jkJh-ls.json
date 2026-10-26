@@ -40,13 +40,65 @@
         "kind": "stretch"
       }
     ],
-    "parts": []
+    "parts": [],
+    "gapNames": [
+      {
+        "at": 60,
+        "text": "SQUAT ROTATION",
+        "conf": 96
+      },
+      {
+        "at": 79,
+        "text": "FORWARD LUNGE ROTATION",
+        "conf": 94
+      },
+      {
+        "at": 98,
+        "text": "LEG SWINGS (R)",
+        "conf": 94
+      },
+      {
+        "at": 136,
+        "text": "WINDSHIELD WIPERS",
+        "conf": 96
+      },
+      {
+        "at": 174,
+        "text": "GOOD MORNING",
+        "conf": 96
+      },
+      {
+        "at": 2064,
+        "text": "SEATED SIDE BEND (left)",
+        "conf": 70
+      }
+    ]
   },
   "notes": "Checked against the video, one sample every 10 s over the whole video (the label bottom left and the ring timer top right read together), the cool-down every 3 s. The bottom-left label is the move in work and UP NEXT: <move> in the last seconds of the work and in the rest before it, so the draft starts every work about 10 s early. Warm-up of ten moves (22-213 s) shows no names after the first, so it is null (not scored). Circuit 1 and 2 are four moves of 50 s work and 10 s rest, twice, with a 25-30 s rest between rounds; circuit 3 is nine moves of 60 s work and 10 s rest; then a 20 s cycle of stretches (5 s countdown, 15 s) and Savasana. The phone ad around 1240 s is null.",
   "expected": {
     "reviewed": true,
     "timeline": [
-      [null,213],
+      [null,22],
+      ["Squat To Side Reach",15],
+      ["rest",4],
+      ["Alt Hip Opener",15],
+      ["rest",4],
+      ["Squat + Rotation",15],
+      ["rest",4],
+      ["Forward Lunge + Rotation",15],
+      ["rest",4],
+      ["Leg Swings (R)",15],
+      ["rest",4],
+      ["Leg Swings (L)",15],
+      ["rest",4],
+      ["Windshield Wipers",15],
+      ["rest",4],
+      ["Frog Squats",15],
+      ["rest",4],
+      ["Good Morning",15],
+      ["rest",4],
+      ["Air Squats",15],
+      ["rest",5],
       ["rest",20],
       ["Hip Thrust",50],
       ["rest",10],

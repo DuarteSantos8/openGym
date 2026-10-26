@@ -40,13 +40,159 @@
         "kind": "stretch"
       }
     ],
-    "parts": []
+    "parts": [],
+    "gapNames": [
+      {
+        "at": 64,
+        "text": "ANKLE TAP to REACH",
+        "conf": 96
+      },
+      {
+        "at": 91,
+        "text": "SWAY REACHES",
+        "conf": 96
+      },
+      {
+        "at": 118,
+        "text": "PULL APARTS",
+        "conf": 93
+      },
+      {
+        "at": 145,
+        "text": "SWIMMER HOVERS",
+        "conf": 96
+      },
+      {
+        "at": 172,
+        "text": "SIDE STEP SQUATS",
+        "conf": 94
+      },
+      {
+        "at": 199,
+        "text": "REVERSE LUNGE TWIST",
+        "conf": 94
+      },
+      {
+        "at": 226,
+        "text": "HAMSTRING SWEEPS",
+        "conf": 96
+      },
+      {
+        "at": 253,
+        "text": "DEEP YOGI SQUATS",
+        "conf": 94
+      },
+      {
+        "at": 280,
+        "text": "DYNAMIC HIP FLEXOR",
+        "conf": 92
+      },
+      {
+        "at": 307,
+        "text": "UPWARD to DOWNWARD",
+        "conf": 96
+      },
+      {
+        "at": 334,
+        "text": "REACHES",
+        "conf": 71
+      },
+      {
+        "at": 3858,
+        "text": "side plank dips (left)",
+        "conf": 70
+      },
+      {
+        "at": 4158,
+        "text": "UPWARD DOG to CHILD:",
+        "conf": 94
+      },
+      {
+        "at": 4199,
+        "text": "SPINAL TWIST to OPEN",
+        "conf": 96
+      },
+      {
+        "at": 4239,
+        "text": "HIP FLEXOR (R)",
+        "conf": 93
+      },
+      {
+        "at": 4279,
+        "text": "HIP FLEXOR (L)",
+        "conf": 70
+      },
+      {
+        "at": 4319,
+        "text": "HALF CHILD'S POSE",
+        "conf": 94
+      },
+      {
+        "at": 4399,
+        "text": "KNEELING SPINAL TWIS",
+        "conf": 94
+      },
+      {
+        "at": 4479,
+        "text": "FROG LEG LIFTS",
+        "conf": 96
+      },
+      {
+        "at": 4519,
+        "text": "SHOULDER props",
+        "conf": 94
+      },
+      {
+        "at": 4559,
+        "text": "ALT SCORPION UG",
+        "conf": 96
+      },
+      {
+        "at": 4599,
+        "text": "LUMBAR ROTATION (R)",
+        "conf": 93
+      },
+      {
+        "at": 4639,
+        "text": "LUMBAR ROTATION (L)",
+        "conf": 70
+      },
+      {
+        "at": 4679,
+        "text": "SAVASANA",
+        "conf": 92
+      }
+    ]
   },
   "notes": "Timer in the top right, names along the bottom; \"SWITCH SIDES\" over the rest between the sides of a move; the next move named in a NEXT: bar in the rest before it. Scored: blocks 1 (6:34-14:53), 2 (14:49-35:05), 3 (36:05-44:20), 4 (44:19-1:00:38) and 5 (1:00:41-1:09:25), names as the screen shows them, moves and order checked against the creator's timestamps and by sampling every 10 s, times from the countdowns. Blocks 2 and 4 are supersets (R in round 1, L in round 2): works are 45 s whose first seconds the ring hides (the timer reads 44 from the second after a 5 s countdown), rests 15 s before a superset move and 25 s before the others, 45 s between the rounds. The ninth move of block 2 in each round shows no name on screen (null, not scored). Not scored yet: warm-up and cool-down.",
   "expected": {
     "reviewed": true,
     "timeline": [
-      [null,394],
+      [null,37],
+      ["Forward Backward 2X",20],
+      ["rest",7],
+      ["Ankle Tap to Reach",20],
+      ["rest",7],
+      ["Sway Reaches",20],
+      ["rest",7],
+      ["Pull Aparts",20],
+      ["rest",7],
+      ["Swimmer Hovers",20],
+      ["rest",7],
+      ["Side Step Squats",20],
+      ["rest",7],
+      ["Reverse Lunge Twist",20],
+      ["rest",7],
+      ["Hamstring Sweeps",20],
+      ["rest",7],
+      ["Deep Yogi Squats",20],
+      ["rest",7],
+      ["Dynamic Hip Flexor",20],
+      ["rest",7],
+      ["Upward to Downward Dog",20],
+      ["rest",7],
+      ["Alt Side to OH Reaches",20],
+      ["rest",40],
       ["Heel Elevated Squats",50],
       ["rest",30],
       ["Heel Elevated Squats",50],
@@ -75,7 +221,7 @@
       ["rest",25],
       ["Curtsey To Double Step Lunge",45],
       ["rest",25],
-      [null,45],
+      ["Curtsey To Double Step Lunge (L)",45],
       ["rest",45],
       ["Kickstand Squat (Right)",45],
       ["rest",15],
@@ -93,7 +239,7 @@
       ["rest",25],
       ["Curtsey To Double Step Lunge",45],
       ["rest",25],
-      [null,45],
+      ["Curtsey To Double Step Lunge (L)",45],
       ["rest",60],
       ["Alt Dead Stop Row",50],
       ["rest",30],
@@ -153,7 +299,34 @@
       ["rest",15],
       ["Plank Crunches",40],
       ["rest",40],
-      [null,611]
+      ["Upward Dog to Child's Pose",31],
+      ["rest",10],
+      ["Spinal Twist to Open",30],
+      ["rest",10],
+      ["Hip Flexor (R)",30],
+      ["rest",10],
+      ["Hip Flexor (L)",30],
+      ["rest",10],
+      ["Half Child's Pose (R)",30],
+      ["rest",10],
+      ["Half Child's Pose (L)",30],
+      ["rest",10],
+      ["Kneeling Spinal Twist (R)",30],
+      ["rest",10],
+      ["Kneeling Spinal Twist (L)",30],
+      ["rest",10],
+      ["Frog Leg Lifts",30],
+      ["rest",10],
+      ["Shoulder Drops",30],
+      ["rest",10],
+      ["Alt Scorpion",30],
+      ["rest",10],
+      ["Lumbar Rotation (R)",30],
+      ["rest",10],
+      ["Lumbar Rotation (L)",30],
+      ["rest",10],
+      ["Savasana",60],
+      [null,30]
     ]
   },
   "frames": [

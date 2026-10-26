@@ -61,6 +61,18 @@
         "end": 2368,
         "label": "Workout finisher"
       }
+    ],
+    "gapNames": [
+      {
+        "at": 1680,
+        "text": "SQUAT STANDING OVERHEAD REACH",
+        "conf": 95
+      },
+      {
+        "at": 1740,
+        "text": "PUSH-UP DOWNWARD PRESS:",
+        "conf": 88
+      }
     ]
   },
   "notes": "Checked against the video: every name read from the montage of the name box at each step, every long rest at its start, middle and end. A warm-up of ten 30 s moves from 60 s, a 59 s rest, five blocks of six 40 s moves with 20 s rests and 60 s rests between the blocks, then a stretch with the two sides as two steps. The draft missed Leg Raises (1520-1560 s), which sits between a 20 s and a 60 s rest. Two sides of one 40 s move (Single-Leg Hip Lift, Bulgarian Split Squat) are one step. The move is under a percent bar, a ring timer beside it. 0-60 s intro and the end after 2718 s are null.",

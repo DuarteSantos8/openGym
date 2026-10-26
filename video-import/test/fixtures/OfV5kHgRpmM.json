@@ -72,7 +72,15 @@
   "expected": {
     "reviewed": true,
     "timeline": [
-      [null,226],
+      [null,25],
+      ["rest",6],
+      ["Dynamic Shoulder Stretch",31],
+      ["Arm Circles",29],
+      ["Side To Side Bends",30],
+      ["Squat Pulse",31],
+      ["Knee Up Twist",30],
+      ["Front Bend",29],
+      ["rest",15],
       ["Alt Narrow Chest Press",40],
       ["rest",20],
       ["Push Ups",40],
@@ -160,7 +168,17 @@
       ["Bent Over Row",40],
       ["rest",20],
       ["Hammer Curl",40],
-      [null,333]
+      ["rest",30],
+      ["Cobra",30],
+      ["Child's Pose",30],
+      ["Cat/Cow",30],
+      ["Table Top Shoulder Stretch (R)",30],
+      ["Table Top Shoulder Stretch (L)",30],
+      ["Hamstring Stretch (R)",30],
+      ["Glute Stretch (R)",30],
+      ["Hamstring Stretch (L)",30],
+      ["Glute Stretch (L)",30],
+      [null,33]
     ],
     "sections": [
       {

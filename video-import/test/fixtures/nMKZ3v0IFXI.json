@@ -45,6 +45,13 @@
         "end": 1563,
         "label": "Dynamic burn finisher"
       }
+    ],
+    "gapNames": [
+      {
+        "at": 1652,
+        "text": "QUAD STRETCH (RIGHT)",
+        "conf": 96
+      }
     ]
   },
   "notes": "Checked against the video, one sample every 20 s over the whole video (name, percent bar and ring timer read together). A warm-up of ten 30 s moves from 60 s, a 60 s rest, three blocks of six 40 s moves every 60 s with a 60 s rest after each, then ten 30 s stretches (left and right as two steps). The move is under a percent bar top centre-right and a ring timer beside it. 0-60 s intro and the end after 1920 s are null.",

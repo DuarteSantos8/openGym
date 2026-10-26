@@ -71,6 +71,53 @@
         "end": 3448,
         "label": "Group 5: Core workout"
       }
+    ],
+    "gapNames": [
+      {
+        "at": 130,
+        "text": "SWING STEP",
+        "conf": 95
+      },
+      {
+        "at": 160,
+        "text": "TOE TOUCH REACH",
+        "conf": 96
+      },
+      {
+        "at": 190,
+        "text": "T-SPINE OPENER",
+        "conf": 93
+      },
+      {
+        "at": 220,
+        "text": "QUAD STRETCH",
+        "conf": 96
+      },
+      {
+        "at": 250,
+        "text": "JUMPING JACKS",
+        "conf": 96
+      },
+      {
+        "at": 3500,
+        "text": "ACTIVE HAMSTRING STRETCH",
+        "conf": 96
+      },
+      {
+        "at": 3530,
+        "text": "CROSSOVER HIP STRETCH",
+        "conf": 96
+      },
+      {
+        "at": 3560,
+        "text": "T-SPINE OPENER",
+        "conf": 93
+      },
+      {
+        "at": 3590,
+        "text": "CHILD'S POSE COBRA",
+        "conf": 96
+      }
     ]
   },
   "notes": "60 s grid: 40 s work + 20 s rest, 60 s after every tenth move (5 groups × 5 moves × 2 rounds). Timer in a dashed ring top left, counting down; the name only on the NEXT / UP FIRST screens (caption under the picture) in the rest before the move. Expected derived from the countdown: each move starts at its 39 (±1 s); names from those screens. Warm-up (Arm Circles + five moves, 30 s each) and cool-down (Snow Angels + four, 30 s each) have no names on screen: only Arm Circles and Snow Angels are labelled, the rest is null (not scored).",
@@ -80,7 +127,11 @@
       [null,80],
       ["rest",20],
       ["Arm Circles",30],
-      [null,150],
+      ["Swing & Step",30],
+      ["Toe Touch + Reach",30],
+      ["T-Spine Opener",30],
+      ["Quad Stretch",30],
+      ["Jumping Jacks",30],
       ["rest",22],
       ["Goblet Squat",40],
       ["rest",20],
@@ -183,7 +234,10 @@
       ["Plank",40],
       ["rest",29],
       ["Snow Angels",30],
-      [null,120],
+      ["Active Hamstring Stretch",30],
+      ["Crossover Hip Stretch",30],
+      ["T-Spine Opener",30],
+      ["Child's Pose + Cobra",30],
       [null,77]
     ],
     "sections": [

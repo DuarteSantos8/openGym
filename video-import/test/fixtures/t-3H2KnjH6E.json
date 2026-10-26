@@ -68,6 +68,13 @@
         "end": 2045,
         "label": "Level two exercises"
       }
+    ],
+    "gapNames": [
+      {
+        "at": 1525,
+        "text": "ALTERNATING CLEAN",
+        "conf": 82
+      }
     ]
   },
   "notes": "Two sets of 13 moves, 40 s work + 20 s rest, a 60 s rest between the sets (the second set starts at 1105). Work timer in a dashed ring on the floor, rest timer top left; the name only on the NEXT / UP FIRST screens (bottom centre, in a frame that is blurred mid-transition for part of the rest, small then). Warm-up (5 × 30 s) and cool-down (5 × 30 s) names sit in a small NEXT label: top left in the warm-up, bottom left in the cool-down. Expected derived from the countdown (each move starts at its 39 / 29, ±1 s) and read off the NEXT screens by eye.",

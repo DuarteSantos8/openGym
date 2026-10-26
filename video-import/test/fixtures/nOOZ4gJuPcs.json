@@ -45,6 +45,53 @@
         "end": 2744,
         "label": "Round 2 (repeat)"
       }
+    ],
+    "gapNames": [
+      {
+        "at": 337,
+        "text": "ALT SHOULDER PRESS",
+        "conf": 96
+      },
+      {
+        "at": 569,
+        "text": "RIGHT PRESS",
+        "conf": 96
+      },
+      {
+        "at": 589,
+        "text": "RIGHT PRESS (L)",
+        "conf": 70
+      },
+      {
+        "at": 819,
+        "text": "ALT SHOULDER PRESS",
+        "conf": 96
+      },
+      {
+        "at": 1066,
+        "text": "BOTH WITH SEC PAUSE",
+        "conf": 96
+      },
+      {
+        "at": 1336,
+        "text": "KNEELING SHOULDER PRESS",
+        "conf": 96
+      },
+      {
+        "at": 1568,
+        "text": "BOTH WITH SEC PAUSE",
+        "conf": 95
+      },
+      {
+        "at": 1828,
+        "text": "KNEELING SHOULDER PRESS",
+        "conf": 96
+      },
+      {
+        "at": 2762,
+        "text": "KNEELING ALT ARNOLD",
+        "conf": 96
+      }
     ]
   },
   "notes": "Checked against the video: every 10 s over the whole video (title and timer), start times worked out from the timer (first work at 27 s and 1006 s confirmed second by second). The exercise name is a big title card in the 20 s before each work (top of the screen); during the work nothing names it. Three blocks, each done twice: block 1 and 2 are mixed (40 s works, a demo card then three clustered 20/20/30 s sets named only by the demo card, 30 s works), block 3 is six 40 s moves with 20 s rests (round 2 with 20 s rests, round 1 with the title taking the rest). Water breaks (60 s) and ROUND 2 cards (45 s) are rest. Moves whose name is only in the demo card of the preceding rest and could not be read are null (not scored): the two 30 s works around 1336-1403 and 1828-1896, and the last two works at 2760-2847. 0-20 s intro and the outro after 2850 s are null. Timer-based boundaries are good to about 1-2 s. No sections.",
@@ -101,9 +148,9 @@
       ["rest",20],
       ["Dips Or Tricep Push Ups",40],
       ["rest",20],
-      [null,30],
+      ["Kneeling Shoulder Press (R)",30],
       ["rest",7],
-      [null,30],
+      ["Kneeling Shoulder Press (L)",30],
       ["rest",20],
       ["Dips Or Tricep Push Ups",40],
       ["rest",45],
@@ -119,9 +166,9 @@
       ["rest",20],
       ["Dips Or Tricep Push Ups",40],
       ["rest",20],
-      [null,30],
+      ["Kneeling Shoulder Press (R)",30],
       ["rest",8],
-      [null,30],
+      ["Kneeling Shoulder Press (L)",30],
       ["rest",20],
       ["Dips Or Tricep Push Ups",40],
       ["rest",59],
@@ -149,9 +196,9 @@
       ["rest",20],
       ["Reach Into Crunch (Ft Around Db)",40],
       ["rest",20],
-      [null,40],
+      ["Kneeling Alt Arnold",40],
       ["rest",7],
-      [null,40],
+      ["Curl Variation",40],
       ["rest",3],
       [null,40]
     ]

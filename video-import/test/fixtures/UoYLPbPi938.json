@@ -72,6 +72,33 @@
         "end": 3319,
         "label": "Set four"
       }
+    ],
+    "gapNames": [
+      {
+        "at": 3361,
+        "text": "ACTIVE HAM STRETCH",
+        "conf": 96
+      },
+      {
+        "at": 3399,
+        "text": "FOREARM/BICEP STRETCH",
+        "conf": 94
+      },
+      {
+        "at": 3429,
+        "text": "HIP/HAM STRETCH (R)",
+        "conf": 87
+      },
+      {
+        "at": 3459,
+        "text": "HIP/HAM STRETCH (L)",
+        "conf": 88
+      },
+      {
+        "at": 3489,
+        "text": "CHILD'S POSE COBRA",
+        "conf": 97
+      }
     ]
   },
   "notes": "4 sets of 12 moves, 40 s work + 20 s rest, a 60 s REST screen between sets. Work timer in a ring on the floor, rest timer in a ring top left; the name only on the NEXT / UP FIRST screens bottom centre, in the rest before the move (the caption is wider than the old box). Warm-up names sit in a small NEXT box bottom left during the move before. Expected derived from the countdown (each move starts at its 39, ±1 s). Cool-down: Snow Angels + five unnamed 30 s moves (null). The video spells FRENCH PRESS as FRNCH.",
@@ -184,7 +211,12 @@
       ["Bicycle",40],
       ["rest",29],
       ["Snow Angels",30],
-      [null,223]
+      ["Active Ham Stretch",30],
+      ["Forearm/Bicep Stretch",30],
+      ["Hip/Ham Stretch (R)",30],
+      ["Hip/Ham Stretch (L)",30],
+      ["Child's Pose + Cobra",30],
+      [null,73]
     ],
     "sections": [
       {

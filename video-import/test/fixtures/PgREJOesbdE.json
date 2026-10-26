@@ -29,7 +29,164 @@
   },
   "inputs": {
     "hints": [],
-    "parts": []
+    "parts": [],
+    "gapNames": [
+      {
+        "at": 60,
+        "text": "PULSES",
+        "conf": 77
+      },
+      {
+        "at": 90,
+        "text": "SWINGS",
+        "conf": 94
+      },
+      {
+        "at": 150,
+        "text": "CIRCLES",
+        "conf": 82
+      },
+      {
+        "at": 180,
+        "text": "WALKOUT JO",
+        "conf": 80
+      },
+      {
+        "at": 210,
+        "text": "WALKOUT TO PLANC",
+        "conf": 80
+      },
+      {
+        "at": 361,
+        "text": "JUMPING NG JA",
+        "conf": 93
+      },
+      {
+        "at": 420,
+        "text": "REGULAR PUSH=UP",
+        "conf": 81
+      },
+      {
+        "at": 630,
+        "text": "REVERSE TAPS",
+        "conf": 78
+      },
+      {
+        "at": 780,
+        "text": "SrIOULDER",
+        "conf": 71
+      },
+      {
+        "at": 841,
+        "text": "SUPERMAN SSEC FOLD",
+        "conf": 76
+      },
+      {
+        "at": 1260,
+        "text": "“PUSH-UP HOLD",
+        "conf": 91
+      },
+      {
+        "at": 1300,
+        "text": "PUSH-UP FOLD",
+        "conf": 80
+      },
+      {
+        "at": 1360,
+        "text": "BODYWEIGHT",
+        "conf": 91
+      },
+      {
+        "at": 1418,
+        "text": "ALTERNATING REVERSE:",
+        "conf": 75
+      },
+      {
+        "at": 1480,
+        "text": "ALTERNATING LATERAL",
+        "conf": 83
+      },
+      {
+        "at": 1660,
+        "text": "BULGARIAN SPLIT SQUAT(LEFT)",
+        "conf": 72
+      },
+      {
+        "at": 1780,
+        "text": "SINGLE-LEG GLUTE BRIDGE(RIGHT)",
+        "conf": 87
+      },
+      {
+        "at": 1900,
+        "text": "J](right)l e J IJ :-‘;J'r’ (L)",
+        "conf": 70
+      },
+      {
+        "at": 2019,
+        "text": "REVERS",
+        "conf": 86
+      },
+      {
+        "at": 2079,
+        "text": "RSE-LUNGE DRIVE",
+        "conf": 83
+      },
+      {
+        "at": 2239,
+        "text": "SQUAT FOLD",
+        "conf": 67
+      },
+      {
+        "at": 2300,
+        "text": "CRUNCH",
+        "conf": 67
+      },
+      {
+        "at": 2480,
+        "text": "RAISES)",
+        "conf": 65
+      },
+      {
+        "at": 2600,
+        "text": "TOE REACH CRUNCH",
+        "conf": 96
+      },
+      {
+        "at": 2780,
+        "text": "FLUTTER KICKS",
+        "conf": 83
+      },
+      {
+        "at": 2840,
+        "text": "HOLLOW",
+        "conf": 88
+      },
+      {
+        "at": 3120,
+        "text": "SIDE TOUCHDOWNS",
+        "conf": 74
+      },
+      {
+        "at": 3300,
+        "text": "PLANK JACKS:",
+        "conf": 85
+      },
+      {
+        "at": 3668,
+        "text": "THREAD THE NEEDLE",
+        "conf": 92
+      },
+      {
+        "at": 3728,
+        "text": "STRETCH (LEFT)",
+        "conf": 68
+      },
+      {
+        "at": 3848,
+        "text": "FIGURES STRETCH (RIGHT),",
+        "conf": 77
+      }
+    ]
   },
   "notes": "Checked against the video, one sample every 20 s over the whole video (name, percent bar and ring timer read together). WORKOUT STARTS IN: 3 at 56 s. A warm-up of ten 30 s moves from 60 s, a 60 s rest, then four blocks of 40 s moves every 60 s (15, 15, 10 and 10 moves) with a 60 s rest after each, then ten 30 s stretches (left and right as two steps). Thin light grey capitals about 9 px high over a bright sky: the draft reads them badly (see corpus.json). 0-60 s and 3878-3937 s are null.",
   "expected": {

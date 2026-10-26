@@ -1,7 +1,7 @@
 {
   "8jZvQT6LqTM": {
-    "frames": 0.953,
-    "sequence": 0.917,
+    "frames": 0.962,
+    "sequence": 0.933,
     "boundaries": 0.992,
     "startError": 0
   },
@@ -9,39 +9,39 @@
     "frames": 0.997,
     "sequence": 1,
     "boundaries": 1,
-    "startError": 0.115,
+    "startError": 0.098,
     "sections": 1
   },
   "IEJMnNGAGY4": {
-    "frames": 0.983,
-    "sequence": 0.98,
-    "boundaries": 0.931,
-    "startError": 0.106
+    "frames": 0.946,
+    "sequence": 0.911,
+    "boundaries": 0.955,
+    "startError": 0.067
   },
   "J3Wv3Els3fk": {
-    "frames": 0.744,
-    "sequence": 0.64,
+    "frames": 0.759,
+    "sequence": 0.66,
     "boundaries": 0.98,
     "startError": 0,
     "sections": 1
   },
   "OfV5kHgRpmM": {
-    "frames": 0.98,
-    "sequence": 0.978,
-    "boundaries": 0.989,
-    "startError": 0.614,
+    "frames": 0.973,
+    "sequence": 0.983,
+    "boundaries": 0.992,
+    "startError": 0.492,
     "sections": 1
   },
   "PgREJOesbdE": {
-    "frames": 0.459,
-    "sequence": 0.229,
-    "boundaries": 0.933,
-    "startError": 0.206,
-    "sections": 0.263
+    "frames": 0.557,
+    "sequence": 0.417,
+    "boundaries": 0.93,
+    "startError": 0.197,
+    "sections": 0.526
   },
   "ScInpT_5dIQ": {
-    "frames": 0.846,
-    "sequence": 0.8,
+    "frames": 0.877,
+    "sequence": 0.84,
     "boundaries": 0.98,
     "startError": 0
   },
@@ -54,9 +54,9 @@
   },
   "UoYLPbPi938": {
     "frames": 0.994,
-    "sequence": 0.982,
-    "boundaries": 0.991,
-    "startError": 0.055,
+    "sequence": 1,
+    "boundaries": 0.983,
+    "startError": 0.051,
     "sections": 1
   },
   "Y2eOW7XYWxc": {
@@ -66,43 +66,43 @@
     "startError": 0
   },
   "_41Sj0UWsj4": {
-    "frames": 0.938,
-    "sequence": 0.97,
+    "frames": 0.963,
+    "sequence": 1,
     "boundaries": 1,
     "startError": 0
   },
   "_G5wIxplwB8": {
-    "frames": 0.967,
-    "sequence": 0.957,
+    "frames": 0.975,
+    "sequence": 0.971,
     "boundaries": 1,
     "startError": 0.129,
     "sections": 1
   },
   "cDq-nFmD0rI": {
-    "frames": 0.981,
-    "sequence": 1,
+    "frames": 0.961,
+    "sequence": 0.962,
     "boundaries": 1,
     "startError": 0,
     "sections": 1
   },
   "nMKZ3v0IFXI": {
-    "frames": 0.838,
-    "sequence": 0.789,
+    "frames": 0.853,
+    "sequence": 0.816,
     "boundaries": 0.827,
     "startError": 0.839,
     "sections": 1
   },
   "nOOZ4gJuPcs": {
-    "frames": 0.779,
-    "sequence": 0.625,
-    "boundaries": 0.635,
-    "startError": 0.222
+    "frames": 0.784,
+    "sequence": 0.667,
+    "boundaries": 0.706,
+    "startError": 0.167
   },
   "pnd-jkJh-ls": {
-    "frames": 0.962,
-    "sequence": 0.944,
-    "boundaries": 0.958,
-    "startError": 0.441,
+    "frames": 0.935,
+    "sequence": 0.848,
+    "boundaries": 0.957,
+    "startError": 0.341,
     "sections": 0.333
   },
   "synthetic-30-30-bare-rest": {
