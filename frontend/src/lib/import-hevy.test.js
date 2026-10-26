@@ -4,7 +4,10 @@ import {
   parseHevyRoutines, mergeHevyRoutines, localWhen, importHevyData, HevyApiError, HEVY_ID_MAP, hevySummaryCounts,
 } from './import-hevy.js'
 import { EXIDX } from './exercises.js'
+import { modeOf } from './history.js'
 import { mergeImport } from './import-csv.js'
+import { canonicalProfile } from './test-fixtures.js'
+import { validatePlanRule } from './prescription/index.js'
 
 const TEMPLATES = [
   {
@@ -199,6 +202,20 @@ describe('mergeImport with Hevy payloads', () => {
     expect(second.added).toBe(0)
     expect(S.workouts).toHaveLength(1)
   })
+
+  it('logs imported exposures with roles: visible in history, excluded from progression (A50)', () => {
+    const parsed = parseHevyWorkouts([WORKOUT], TEMPLATES, { unit: 'kg' })
+    const S = canonicalProfile({ workouts: [] })
+    mergeImport(S, parsed)
+    const x = S.workouts.at(-1).exposures[0]
+    expect(x).not.toHaveProperty('prescriptionId')
+    expect(x).not.toHaveProperty('audit')
+    expect(x.trackId).toBe('import:' + x.exerciseId)
+    expect(x.mode).toBe(modeOf({ id: x.exerciseId }))
+    expect(x.performance.sets.every(r => r.role === 'warmup' || r.role === 'work')).toBe(true)
+    expect(x.excludedFromProgression).toBe(true)
+    expect(x.performance.sets.length).toBeGreaterThan(0)
+  })
 })
 
 describe('localWhen', () => {
@@ -295,6 +312,14 @@ describe('parseHevyRoutines', () => {
     expect(pull.sg).toBe(row.sg)
   })
 
+  it('mergeHevyRoutines writes rule occurrences bound to their routine', () => {
+    const S = { routines: [], customEx: [], unit: 'kg' }
+    mergeHevyRoutines(S, parseHevyRoutines([ROUTINE], TEMPLATES, { unit: 'kg' }))
+    const r = S.routines[0]
+    expect(r.ex.length).toBeGreaterThan(0)
+    for (const o of r.ex) expect(o.rule).toMatchObject({ id: o.occurrenceId, routineId: r.id, exerciseId: o.exerciseId })
+  })
+
   it('mergeHevyRoutines replaces a routine it imported before instead of duplicating it', () => {
     const parsed = parseHevyRoutines([ROUTINE], TEMPLATES, { unit: 'kg' })
     const S = { routines: [], customEx: [] }
@@ -314,6 +339,24 @@ describe('parseHevyRoutines', () => {
     const S = { routines: [], customEx: [] }
     mergeHevyRoutines(S, parsed); mergeHevyRoutines(S, parsed)
     expect(S.routines).toHaveLength(2)
+  })
+
+  // A cardio slot came in as "1 x 8 reps": its minutes and speed were dropped (#312 review). Both
+  // occurrences now read as the migration writes the same v1 plan.
+  it('mergeHevyRoutines keeps cardio and timed holds', () => {
+    const routine = { id: 'r2', title: 'Cardio and core', exercises: [
+      { title: 'Crosstrainer', exercise_template_id: '3303376C', sets: [{ type: 'normal', distance_meters: 3000, duration_seconds: 1200 }] },
+      { title: 'Plank', exercise_template_id: 'C6272009', sets: [1, 2, 3].map(() => ({ type: 'normal', duration_seconds: 45 })) },
+    ] }
+    const S = { routines: [], customEx: [], unit: 'kg' }
+    mergeHevyRoutines(S, parseHevyRoutines([routine], [...TEMPLATES, { id: 'C6272009', title: 'Plank', type: 'duration', is_custom: false }], { unit: 'kg' }))
+    const [cardio, hold] = S.routines[0].ex
+    const plan = o => o.rule.program.phases[0].parameters
+    expect(cardio).toMatchObject({ mode: 'cardio', cardio: { sets: 1, min: 20, speed: 9 } })
+    expect(plan(cardio)).toMatchObject({ sets: { min: 1 }, reps: { min: 1, max: 1 }, durationSeconds: { min: 1200, max: 1200 }, speed: 9 })
+    expect(hold.mode).toBe('time')
+    expect(plan(hold)).toMatchObject({ sets: { min: 3 }, reps: { min: 1, max: 1 }, durationSeconds: { min: 45, max: 45 } })
+    for (const o of [cardio, hold]) expect(validatePlanRule(o.rule)).toEqual({ ok: true, errors: [] })
   })
 })
 

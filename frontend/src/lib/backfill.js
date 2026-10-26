@@ -42,8 +42,7 @@ export function historyAsOf(S, { d, start = 0, replaceId = null, strict = false 
 // saved workout open in the editor is held against what came before it, without itself: read
 // from the whole log, its "Last time" line was itself, or a later session, and the Best chip
 // compared it with lifts made after it (QA 1.3.9).
-export const sessionHistory = S => {
-  const A = S?.active
+export const sessionHistory = (S, A = S?.active) => {
   if (A?.backfill) return historyAsOf(S, { d: A.d, start: A.start, replaceId: A.backfill.replaceId })
   if (A?.editingWorkoutId != null) return historyAsOf(S, { d: A.d, start: A.start, replaceId: A.editingWorkoutId, strict: true })
   return S

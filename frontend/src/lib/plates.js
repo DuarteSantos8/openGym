@@ -9,10 +9,9 @@
 //
 // Logged weights stay the total on the bar (or the added load). Everything here is display.
 
-import { exerciseOf as exOf } from './exercises.js'
+import { exerciseOf as exOf, weightIncrement } from './exercises.js'
 import { usesBar, barTypeWeight } from './bar.js'
 import { isBw } from './history.js'
-import { weightIncrement } from './progression.js'
 import { ownedWeightsFor, ownedFloor } from './dumbbells.js'
 
 /** The plate sizes the inventory editor lists, heaviest first, per unit. The kg list has the

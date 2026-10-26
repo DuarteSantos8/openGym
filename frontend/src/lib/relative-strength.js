@@ -9,7 +9,8 @@
  * The best is taken either as an estimated 1RM ('e1rm') or as the heaviest set ('top').
  * Pure, so the chart and the tests read the same thing. */
 import { isAssisted } from './exercises.js'
-import { entriesForExercise, metricRowsForEntry, workoutAt } from './history.js'
+import { metricRowsForEntry, workoutAt } from './history.js'
+import { legacyEntriesOf } from './prescription/index.js'
 import { onLifter } from './structuralBalance.js'
 import { isSideSet } from './workout-model.js'
 import { estimate1RM, formulaOf } from './onerm.js'
@@ -73,7 +74,7 @@ export function relativeSeries(S, exId, { basis = 'e1rm', formula = formulaOf(S)
     const bw = logged > 0 ? logged : bodyweightAt(S.bodyweight, t)
     if (!(bw > 0)) continue
     let best = 0, viaHelp = false
-    for (const entry of entriesForExercise(workoutAs(workout, exId, as), exId)) {
+    for (const entry of legacyEntriesOf(workoutAs(workout, exId, as), S.prescriptions).filter(e => e.id === exId)) {
       // The same reading as the structural balance (lib/structuralBalance.js onLifter): the entry's
       // own flag, else the exercise, and belt-and-vest pull-ups and dips, whose logged weight is
       // the plate on the belt, so body weight is part of the load there too.

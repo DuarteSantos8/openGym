@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { sessionNoProg, setSessionNoProg, setEntryNoProg, joinSessionNoProg } from './session-noprog.js'
-import { buildCompletedWorkout } from './finish-workout.js'
-import { entryExcluded, lastEntryFor } from './history.js'
+import { sessionNoProg, setSessionNoProg, setEntryNoProg, joinSessionNoProg, syncExposureExclusion } from './session-noprog.js'
 
 // "Don't count for progression" for the whole workout (Discord, asierlama: an injury day).
 const entry = (id, extra = {}) => ({ id, target: { sets: 1, reps: 5, weight: 60 }, sets: [{ w: 60, r: 5, done: true }], ...extra })
@@ -71,29 +69,16 @@ describe('joinSessionNoProg', () => {
   })
 })
 
-// The saved workout is built from the entries, so it reads exactly like one whose exercises were
-// each kept out by hand: the whole-workout mirror, every entry excluded, no session-only field.
-describe('a session kept out as a whole, saved', () => {
-  it('writes excludeFromProgression and noProg on every entry, and the history reads past it', () => {
-    const active = session([entry('0025', { rid: 'main' }), entry('0027', { rid: 'main' })])
+// The engine reads a session's exclusion from its exposures (finish-session.js), so the entries' marker is mirrored onto them.
+describe('a session kept out, on its exposures', () => {
+  it('mirrors every entry marker onto its exposure, and clears it when counted again', () => {
+    const active = session([entry('0025', { exposureId: 'a' }), entry('0027', { exposureId: 'b' })])
+    active.exposures = [{ exposureId: 'a', excludedFromProgression: false }, { exposureId: 'b', excludedFromProgression: false }]
     setSessionNoProg(active, true)
-    active.entries.push(joinSessionNoProg(active, entry('0043', { rid: 'main' })))
-    const saved = buildCompletedWorkout(active, { end: 1 })
-    expect(saved.excludeFromProgression).toBe(true)
-    expect(saved.entries.every(e => e.noProg === true && entryExcluded(saved, e))).toBe(true)
-    expect(saved).not.toHaveProperty('noProg')
-
-    const earlier = { id: 'w0', d: '2026-09-20', routineIds: ['main'], entries: [entry('0025', { rid: 'main', sets: [{ w: 100, r: 5, done: true }] })] }
-    const S = { workouts: [earlier, saved], routines: [], exWeights: {} }
-    expect(lastEntryFor(S, '0025', 'main').d).toBe('2026-09-20')
-  })
-
-  it('switched off again before the finish, it saves as an ordinary counting workout', () => {
-    const active = session([entry('0025'), entry('0027')])
-    setSessionNoProg(active, true)
-    setSessionNoProg(active, false)
-    const saved = buildCompletedWorkout(active, { end: 1 })
-    expect(saved).not.toHaveProperty('excludeFromProgression')
-    expect(saved.entries.some(e => 'noProg' in e)).toBe(false)
+    syncExposureExclusion(active)
+    expect(active.exposures.map(x => x.excludedFromProgression)).toEqual([true, true])
+    setEntryNoProg(active, 0, false)
+    syncExposureExclusion(active)
+    expect(active.exposures.map(x => x.excludedFromProgression)).toEqual([false, true])
   })
 })

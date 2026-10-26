@@ -10,12 +10,13 @@ import { exitWorkoutEdit, saveWorkoutEdits } from './sheets.jsx'
 import { setNav } from './lib/nav.js'
 import { EXDB } from './lib/exercises.js'
 import { editCompletedSession } from './lib/session-edit.js'
+import { exposuresWithPerformance } from './lib/session-ui-adapter.js'
 
 const mounted = []
 const [A] = EXDB.filter(e => e.bp !== 'cardio').slice(0, 1).map(e => e.id)
 const saved = () => ({
   id: 'w-old', d: '2026-09-10', start: 1, end: 2, name: 'Push', prs: [],
-  entries: [{ id: A, target: { mode: 'reps', reps: 8 }, sets: [{ w: 45, r: 8, done: true }] }],
+  exposures: exposuresWithPerformance([{ exposureId: 'x1', exerciseId: A }], [{ exposureId: 'x1', target: { mode: 'reps', reps: 8 }, sets: [{ w: 45, r: 8, done: true }] }], 'kg'),
 })
 
 function renderTop() {
@@ -36,8 +37,9 @@ describe('closing the saved-workout editor', () => {
     navigated = []
     setNav(to => { navigated.push(to) })
     useUI.setState({ sheets: [], toastMsg: '' })
-    useStore.setState(s => ({ S: { ...s.S, workouts: [saved()], routines: [], active: null } }))
-    useStore.getState().update(S => { editCompletedSession(S, 'w-old'); S.active.entries[0].sets[0].w = 50 })
+    useStore.setState(s => ({ S: { ...s.S, workouts: [saved()], routines: [] }, A: null }))
+    useStore.getState().setActive(editCompletedSession({ ...useStore.getState().S, active: null }, 'w-old'))
+    useStore.getState().updateActive(a => { a.entries[0].sets[0].w = 50 })
     document.body.innerHTML = ''
   })
   afterEach(() => { act(() => { mounted.splice(0).forEach(root => root.unmount()) }) })
@@ -48,8 +50,8 @@ describe('closing the saved-workout editor', () => {
     expect(useUI.getState().sheets.length).toBe(1)
     const host = renderTop()
     act(() => { button(host, 'Save changes').click() })
-    expect(useStore.getState().S.active).toBeNull()
-    expect(useStore.getState().S.workouts[0].entries[0].sets[0].w).toBe(50)
+    expect(useStore.getState().A).toBeNull()
+    expect(useStore.getState().S.workouts[0].exposures[0].performance.sets[0].resistance.value).toBe(50)
     expect(useUI.getState().toastMsg).toBe('Workout updated')
     expect(useUI.getState().sheets.length).toBe(0)
     expect(useStore.getState().S.workouts).toHaveLength(1)

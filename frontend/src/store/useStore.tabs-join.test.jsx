@@ -7,9 +7,13 @@
    wiped what the other tab owed. (QA 2026-10-06, also in v1.3.9.) Each "tab" is a fresh import of
    the store sharing one localStorage, as in the other tab tests. */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { migrateProfileV1ToV2, validateCanonicalProfile } from '../../../api/migration/profile-migration.js'
+import { LIB_BY_ID } from '../../../api/coach/core/library.js'
+import { parseState } from '../lib/state-codec.js'
+import { unpackProfile } from '../../../api/migration/profile-pack.js'
 
 const h = vi.hoisted(() => ({ api: null }))
-vi.mock('../lib/api.js', () => ({ api: (...a) => h.api(...a), setRemoteAuth: () => {} }))
+vi.mock('../lib/api.js', () => ({ setAccessHeaders: vi.fn(), api: (...a) => h.api(...a), setRemoteAuth: () => {} }))
 vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast: () => {}, stopRest: () => {}, abandonWork: () => {} }) } }))
 
 // The store's heavy imports (the 1 MB exercise table, the sync and mobile libraries) are
@@ -42,7 +46,11 @@ async function openTab(user = { id: OWNER }) {
   return m.useStore
 }
 // The browser telling the other tabs that this one saved (it never tells the tab that wrote).
-const announce = () => window.dispatchEvent(new StorageEvent('storage', { key: 'gym_state_wid', newValue: localStorage.getItem('gym_state_wid') }))
+const announce = () => {
+  window.dispatchEvent(new StorageEvent('storage', { key: 'gym_state_wid', newValue: localStorage.getItem('gym_state_wid') }))
+  window.dispatchEvent(new StorageEvent('storage', { key: 'gym_active_v1', newValue: localStorage.getItem('gym_active_v1') }))
+}
+const savedActive = () => JSON.parse(localStorage.getItem('gym_active_v1'))
 
 function server(doc) {
   const s = { doc: doc ? clone(doc) : null, log: [], offline: false }
@@ -82,6 +90,20 @@ beforeEach(async () => {
 afterEach(() => { for (const t of tabs) t.setState({ user: null, ready: false }); localStorage.clear() })
 
 describe('two tabs of one browser keep each other\'s changes', () => {
+  it('does not replace a running v2 session with an unreadable or legacy active copy', async () => {
+    server({ ...clone(DEF), _ts: 100, workouts: [], _rev: 1 })
+    const A = await openTab()
+    A.getState().setActive({ id: 'run', exposures: [], entries: [] })
+    for (const raw of ['{bad', JSON.stringify({ id: 'old', entries: [] })]) {
+      localStorage.setItem('gym_active_v1', raw)
+      announce()
+      expect(A.getState().A.id).toBe('run')
+    }
+    localStorage.removeItem('gym_active_v1')
+    announce()
+    expect(A.getState().A).toBeNull()
+  })
+
   it('offline: a workout finished in a tab that is then closed survives the other tab\'s next change, and reaches the server', async () => {
     const srv = server({ ...clone(DEF), _ts: 100, workouts: [w('w1')], _rev: 1 })
     savedCopy(srv.doc, 1)
@@ -117,12 +139,12 @@ describe('two tabs of one browser keep each other\'s changes', () => {
     savedCopy(srv.doc, 1)
     const A = await openTab()
     const B = await openTab()
-    A.getState().update(s => { s.active = { id: 'run1', start: Date.now(), entries: [{ id: 'bench', sets: [{ w: 60, r: 5, done: true }, { w: 60, r: 5, done: true }] }] } })
+    A.getState().setActive({ id: 'run1', exposures: [], start: Date.now(), entries: [{ id: 'bench', sets: [{ w: 60, r: 5, done: true }, { w: 60, r: 5, done: true }] }] })
     // another device writes; B (no change of its own) pulls and adopts the server's copy
     srv.doc = { ...clone(srv.doc), workouts: [w('w1'), w('wX', '2026-09-04')], _rev: 2, _ts: 300 }
     await B.getState().pullState()
-    expect(saved().active?.id).toBe('run1')
-    expect(saved().active.entries[0].sets).toHaveLength(2)
+    expect(savedActive()?.id).toBe('run1')
+    expect(savedActive().entries[0].sets).toHaveLength(2)
     expect(ids(saved())).toEqual(['w1', 'wX'])
   })
 
@@ -163,14 +185,14 @@ describe('two tabs of one browser keep each other\'s changes', () => {
     srv.offline = true
     B.getState().update(s => {
       s.bodyweight = [{ d: '2026-09-05', w: 66.6, t: Date.now() }]
-      s.active = { id: 'run2', start: Date.now(), entries: [{ id: 'bench', sets: [{ w: 60, r: 5, done: true }] }] }
     })
+    B.getState().setActive({ id: 'run2', exposures: [], start: Date.now(), entries: [{ id: 'bench', sets: [{ w: 60, r: 5, done: true }] }] })
     announce()
     expect(A.getState().S.bodyweight.map(e => e.w)).toEqual([66.6])
-    expect(A.getState().S.active?.id).toBe('run2')
+    expect(A.getState().A?.id).toBe('run2')
     A.getState().update(s => { s.restSec = 135 })
     expect(saved().bodyweight.map(e => e.w)).toEqual([66.6])
-    expect(saved().active?.id).toBe('run2')
+    expect(savedActive()?.id).toBe('run2')
     expect(saved().restSec).toBe(135)
   })
 
@@ -209,5 +231,60 @@ describe('two tabs of one browser keep each other\'s changes', () => {
     B.getState().update(s => { s.workouts.push(w('g2', '2026-09-02')) })   // A not told yet
     A.getState().setUser({ id: OWNER, name: 'Tess' }, { adopt: true })
     expect(JSON.parse(localStorage.getItem('gym_adopt')).pre.workouts.sort()).toEqual(['g1', 'g2'])
+  })
+})
+
+/* The saved copy is written packed (lib/state-codec.js) and read back canonical. The fixtures above
+   have no prescription and no exposure, which is exactly what packing rewrites, so a join that
+   read the packed form as if it were canonical passed every test above and corrupted a real
+   profile: renamed prescriptions, exposures with short keys, a document the server refuses. */
+describe('two tabs of one browser join the canonical profile, never its packed form', () => {
+  const V1 = {
+    unit: 'kg', _ts: 100,
+    routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60, prog: 'linear', warmupSets: 2 }] }],
+    workouts: [{ id: 'w1', d: '2026-01-05', start: 1, end: 2, routineIds: ['r1'], entries: [{ id: '0025', rid: 'r1', target: { sets: 3, reps: 5, weight: 60 }, sets: [{ r: 5, w: 60, done: true }] }] }]
+  }
+  const canonical = () => migrateProfileV1ToV2(clone(V1), LIB_BY_ID).profile
+  const prescriptionIds = st => Object.keys(st.prescriptions || {}).sort()
+
+  it('the other tab takes a saved change with every workout, exposure and prescription intact', async () => {
+    const P = canonical()
+    expect(prescriptionIds(P).length).toBeGreaterThan(0)
+    expect(P.workouts[0].exposures[0].exerciseId).toBe('0025')
+    const srv = server({ ...P, _rev: 1 })
+    savedCopy(srv.doc, 1)
+    const A = await openTab()
+    const B = await openTab()
+    B.getState().update(s => { s.restSec = 45 }, false)   // persist writes the copy packed
+    announce()
+    const S = A.getState().S
+    expect(validateCanonicalProfile(S)).toEqual({ ok: true, errors: [] })
+    expect(S.restSec).toBe(45)
+    expect(ids(S)).toEqual(['w1'])
+    expect(S.workouts[0].exposures[0].exerciseId).toBe('0025')
+    expect(prescriptionIds(S)).toEqual(prescriptionIds(P))
+    expect(S.packed).toBeUndefined()
+    // And what A saves next is a copy the server accepts, not the join of a packed one.
+    A.getState().update(s => { s.restSec = 50 }, false)
+    const stored = parseState(localStorage.getItem('gym_state_v1'))
+    expect(validateCanonicalProfile(stored)).toEqual({ ok: true, errors: [] })
+    expect(prescriptionIds(stored)).toEqual(prescriptionIds(P))
+  })
+
+  it('a workout finished in one tab reaches the other tab, and the server, in its canonical shape', async () => {
+    const P = canonical()
+    const srv = server({ ...P, workouts: [], prescriptions: {}, _rev: 1 })
+    savedCopy(srv.doc, 1)
+    const A = await openTab()
+    const B = await openTab()
+    B.getState().update(s => { s.workouts.push(clone(P.workouts[0])); s.prescriptions = clone(P.prescriptions) }, false)
+    announce()
+    expect(validateCanonicalProfile(A.getState().S)).toEqual({ ok: true, errors: [] })
+    expect(prescriptionIds(A.getState().S)).toEqual(prescriptionIds(P))
+    await A.getState().pushState()
+    const pushed = unpackProfile(srv.doc)   // the wire form is packed; the server stores and answers canonical
+    expect(validateCanonicalProfile(pushed)).toEqual({ ok: true, errors: [] })
+    expect(ids(pushed)).toEqual(['w1'])
+    expect(pushed.workouts[0].exposures[0].exerciseId).toBe('0025')
   })
 })

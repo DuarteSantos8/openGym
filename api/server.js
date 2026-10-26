@@ -37,6 +37,11 @@ import { effectiveRoutineId } from './queue.js';
 import { stampPut } from './sync-stamps.js';
 import { atomicWrite as durableWrite } from './durable.js';
 import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
+import { isLegacyProfile, migrateProfileV1ToV2, migrationStatus, validateCanonicalProfile } from './migration/profile-migration.js';
+import { ENGINE_SCHEMA_HEADER } from './migration/profile-version.js';
+import { MAX_SYNC_BODY, assertSyncSize } from './migration/profile-size.js';
+import { packProfile, unpackProfile } from './migration/profile-pack.js';
+import { LIB_BY_ID } from './coach/core/library.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -93,7 +98,7 @@ const TRUST_PROXY = /^(1|true|yes|on)$/i.test(process.env.TRUST_PROXY || '');
 // internet don't want the same number. Only affects cookies minted from now on — the expiry is
 // baked into each cookie when it's issued, so lowering this never cuts an existing session short.
 const SESSION_DAYS = Math.max(1, +(process.env.SESSION_DAYS || 90) || 90);
-const MAX_BODY = 5 * 1024 * 1024;
+const MAX_BODY = MAX_SYNC_BODY;
 // Secure cookies require HTTPS; over plain http://localhost the flag would drop the cookie
 const SECURE = /^https:/i.test(ORIGIN) ? ' Secure;' : '';
 
@@ -198,7 +203,7 @@ function notePull(user, now = Date.now()) {
 // The later of the last push and the last pull.
 const lastSyncOf = (u, S) => Math.max(S?._ts || 0, u?.lastPull || 0) || null;
 function readState(uid) {
-  try { return JSON.parse(fs.readFileSync(stateFile(uid), 'utf8')); } catch { return null; }
+  try { return unpackProfile(JSON.parse(fs.readFileSync(stateFile(uid), 'utf8'))); } catch { return null; }
 }
 // GET and PUT /api/data tell a profile with no state yet from one whose file cannot be read: the
 // second answers 503 instead of an empty profile, which a device would adopt, or a write would
@@ -501,24 +506,27 @@ const STATE_CACHE_MAX = 64;
 // (10 s), so nobody who is actually using the instance is ever evicted by age; the tests shorten
 // it, as they do REMINDER_TICK_MS.
 const STATE_CACHE_TTL_MS = Math.max(50, +(process.env.STATE_CACHE_TTL_MS || 600000) || 600000);
-const stateCache = new Map(); // uid -> { mtimeMs, size, hitAt, S }
-function readStateCached(uid) {
+const stateCache = new Map(); // uid -> { mtimeMs, size, ino, hitAt, S, source }
+// `source` is readStateSource's answer without the bytes, so engineGate costs a stat too.
+function stateCacheEntry(uid) {
   let st;
   try { st = fs.statSync(stateFile(uid)); } catch { stateCache.delete(uid); return null; }
   const now = Date.now();
   for (const [k, v] of stateCache) if (now - v.hitAt > STATE_CACHE_TTL_MS) stateCache.delete(k);
   const hit = stateCache.get(uid);
   stateCache.delete(uid);                       // re-inserted below, so the map stays in hit order
-  if (hit && hit.mtimeMs === st.mtimeMs && hit.size === st.size) {
+  if (hit && hit.mtimeMs === st.mtimeMs && hit.size === st.size && hit.ino === st.ino) {
     hit.hitAt = now;
     stateCache.set(uid, hit);
-    return hit.S;
+    return hit;
   }
-  const S = readState(uid);
-  stateCache.set(uid, { mtimeMs: st.mtimeMs, size: st.size, hitAt: now, S });
+  const { text: _bytes, ...source } = readStateSource(uid);
+  const entry = { mtimeMs: st.mtimeMs, size: st.size, ino: st.ino, hitAt: now, S: source.state || null, source };
+  stateCache.set(uid, entry);
   while (stateCache.size > STATE_CACHE_MAX) stateCache.delete(stateCache.keys().next().value);
-  return S;
+  return entry;
 }
+function readStateCached(uid) { return stateCacheEntry(uid)?.S ?? null; }
 // Missed-workout nudge (nudge.js): opt-in on top of the reminder, so it needs everything the
 // reminder does (a push subscription, the reminder on, a zone). Owed from 20:00 — or 2 h after the
 // reminder — until 21:30 on the user's clock, the same catch-up idea as the reminder's window: a
@@ -1380,6 +1388,11 @@ function removeAccount(u) {
   presence.delete(u.id);
   // The training history and any Coach credential of theirs, both outside db.json.
   try { fs.unlinkSync(stateFile(u.id)); } catch { /* already gone */ }
+  // And the engine migration's v1 backups (state-<uid>.pre-engine-v1[.r<rev>].json); an id has no dot.
+  const backups = path.basename(stateFile(u.id), '.json') + '.pre-engine-v1';
+  let kept = [];
+  try { kept = fs.readdirSync(DATA).filter(f => f.startsWith(backups) && f.endsWith('.json')); } catch { /* none kept */ }
+  for (const f of kept) try { fs.unlinkSync(path.join(DATA, f)); } catch (e) { console.error('could not remove', f, e.message); }
   try { coachConfig.clearProfileAuth(u.id); } catch { /* nothing stored */ }
   // Their photos and videos — the one place a profile's folder under uploads/ is removed.
   try { MEDIA.removeUser(u.id); } catch (e) { console.error('media: could not remove uploads of', u.id, e.message); }
@@ -2107,6 +2120,38 @@ function dataWritable() {
   return ok;
 }
 
+const MIN_ENGINE_SCHEMA = 2;
+
+// The bytes on disk and what they say. A migration works from exactly what it read; a file that
+// does not parse, or declares a schema newer than this server, is closed until an admin repairs it.
+function readStateSource(uid) {
+  let text;
+  try { text = fs.readFileSync(stateFile(uid), 'utf8'); } catch { return { state: null }; }
+  const failed = e => (e.message === 'unsupported-schema' ? 'unsupported-schema' : 'profile-unreadable');
+  let state;
+  try { state = unpackProfile(JSON.parse(text)); } catch (e) { return { error: failed(e) }; }
+  // A document with no status (a v1 list that is not a list) is still what readStateCached hands
+  // the reminder tick, as readState did; every gate checks `error` first.
+  try { return { text, state, status: migrationStatus(state, Buffer.byteLength(text)) }; } catch (e) { return { state, error: failed(e) }; }
+}
+
+// A canonical profile is closed to older clients: they would read v2 records as empty and push the
+// result back over real data. A v1 profile is the mirror image: an old client keeps working on it,
+// while an engine-aware client is sent to POST /api/data/migrate-engine-v2 — it must never read v1
+// as v2, nor replace it with a v2 document that skipped the conversion. This stays confined to the
+// /api/data routes; reminder, admin and Coach readers deliberately keep their own access.
+function engineGate(req, res, uid) {
+  const source = stateCacheEntry(uid)?.source || { state: null };
+  // A file that does not parse is a fault of the server's, not a conflict to merge: 503, and nothing is replaced.
+  if (source.error === 'profile-unreadable') { console.error('state file unreadable for', uid); json(res, 503, { error: 'state unreadable' }); return true; }
+  if (source.error) { json(res, 409, { error: source.error }); return true; }
+  if (!source.state) return false;   // no profile yet: whoever writes first creates it
+  const aware = Number(req.headers[ENGINE_SCHEMA_HEADER.toLowerCase()]) >= MIN_ENGINE_SCHEMA;
+  if (source.status.required ? !aware : aware) return false;
+  json(res, 409, source.status.required ? { error: 'migration-required' } : { error: 'upgrade-required', minEngineSchema: MIN_ENGINE_SCHEMA });
+  return true;
+}
+
 const routes = {
   // 503 rather than a flag in a 200: the container healthcheck is `wget --spider`, which reads
   // the status and nothing else, and an instance that cannot write its data directory is exactly
@@ -2428,10 +2473,11 @@ const routes = {
   'GET /api/data': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
+      if (engineGate(req, res, user.id)) return;
     const state = readStateStrict(user.id);
     if (state === UNREADABLE) { console.error('state file unreadable for', user.id); return json(res, 503, { error: 'state unreadable' }); }
     notePull(user);
-    json(res, 200, { state: forClient(state), rev: state?._rev || 0 });
+    json(res, 200, { state: packProfile(forClient(state)), rev: state?._rev || 0 });
   },
   // Just the revision: the client asks this every half minute while it is open and on every
   // return to the foreground, and fetches the document only when the number moved — a signed-in
@@ -2442,6 +2488,7 @@ const routes = {
   'GET /api/data/rev': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
+      if (engineGate(req, res, user.id)) return;
     const doc = readStateCached(user.id);
     json(res, 200, { rev: doc?._rev || 0, ...(doc?._wid ? { wid: doc._wid } : {}) });
   },
@@ -2469,11 +2516,76 @@ const routes = {
     json(res, 200, { date, done, nudge, rev: doc._rev || 0 });
   },
 
-  'PUT /api/data': async (req, res) => {
+  // Explicit, per-profile conversion to the v2 engine, run only after the
+  // owner pressed OK on the migration screen — never as a startup scan. Outside engineGate on
+  // purpose: these two routes are how a v1 profile stops being one.
+  'GET /api/data/migration-status': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const source = readStateSource(user.id);
+    if (source.error) return json(res, 409, { error: source.error });
+    if (!source.state) return json(res, 200, { required: false, schemaVersion: MIN_ENGINE_SCHEMA, revision: 0, summary: null });
+    json(res, 200, source.status);
+  },
+  'POST /api/data/migrate-engine-v2': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
     const body = await readBody(req);
+    if (!record(body) || Object.keys(body).sort().join() !== 'baseRev,confirmed' || body.confirmed !== true || !Number.isInteger(body.baseRev)) {
+      return json(res, 400, { error: 'invalid-migration-request' });
+    }
+    const fail = (status, reason) => {
+      audit(req, 'data.migrate.fail', { ok: false, user, msg: reason });
+      json(res, status, { error: status === 409 ? reason : 'migration-failed', reason });
+    };
+    // Synchronous from the read to the rename, like PUT /api/data: nothing else writes in between.
+    const source = readStateSource(user.id);
+    if (source.error) return fail(409, source.error);
+    if (!source.state) return json(res, 404, { error: 'no-profile' });
+    const { status } = source;
+    if (body.baseRev !== status.revision) return json(res, 409, { error: 'migration-state-changed', revision: status.revision });
+    if (!status.required) return json(res, 200, { migrated: false, revision: status.revision });
+    const file = stateFile(user.id);
+    let backup = file.replace(/\.json$/, '.pre-engine-v1.json');
+    let profile;
+    try {
+      // Converted and checked before any backup is written: a refusal leaves nothing behind.
+      ({ profile } = migrateProfileV1ToV2(source.state, LIB_BY_ID));
+      const check = validateCanonicalProfile(profile);
+      if (!check.ok) throw new Error('invalid-output: ' + check.errors[0]);
+      profile._rev = status.revision + 1;
+      assertSyncSize(profile);
+      // Written once, never replaced: an existing copy is an earlier attempt's evidence, and one
+      // that is not v1 means something is wrong enough to stop. A v1 write since that attempt
+      // (a higher _rev) keeps its own copy beside it, named by revision.
+      if (fs.existsSync(backup)) {
+        const saved = fs.readFileSync(backup, 'utf8');
+        const earlier = JSON.parse(saved);
+        if (!isLegacyProfile(earlier)) throw new Error('backup-not-v1');
+        if (saved !== source.text && status.revision > (Number(earlier._rev) || 0)) backup = backup.replace(/\.json$/, `.r${status.revision}.json`);
+      }
+      if (!fs.existsSync(backup)) atomicWrite(backup, source.text);
+      else if (fs.readFileSync(backup, 'utf8') !== source.text) throw new Error('backup-source-mismatch');
+      atomicWrite(file, JSON.stringify(packProfile(profile)));
+    } catch (e) {
+      console.error('engine migration failed for', user.id, e.message);
+      return fail(500, String(e.message).split(':')[0].slice(0, 60));
+    }
+    stateCache.delete(user.id);
+    const summary = { ...status.summary, needsReview: profile.migrationAudit.unsupported.length };
+    audit(req, 'data.migrate.ok', { user, msg: `v1->v2 ${summary.bytes}B ${summary.routines} routines ${summary.workouts} workouts` });
+    json(res, 200, { migrated: true, revision: profile._rev, summary });
+  },
+
+  'PUT /api/data': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    if (engineGate(req, res, user.id)) return;
+    const body = await readBody(req);
+    if (engineGate(req, res, user.id)) return;
     if (!body.state || typeof body.state !== 'object') return json(res, 400, { error: 'state required' });
+    // The wire form is compact; everything below works on the canonical profile.
+    try { body.state = unpackProfile(body.state); } catch { return json(res, 400, { error: 'invalid state' }); }
     // An object with nothing of the profile in it empties the document with the counter left
     // intact: what lands on disk is `{"_rev":n+1}`, every routine, workout and weigh-in gone, and
     // the next poll reports a revision the client accepts as its own. `_rev` and `_ts` do not
@@ -2496,7 +2608,8 @@ const routes = {
     // (`records` above), but nothing should be storing one. Dropped, not refused:
     // such an entry carries nothing worth keeping, whereas a 400 would strand a client whose own
     // copy is already malformed — it keeps re-sending the same document and never syncs again.
-    for (const k of ['workouts', 'routines']) if (Array.isArray(body.state[k])) body.state[k] = records(body.state[k]);
+    const canonical = body.state.engineSchemaVersion === 2 || Number(req.headers[ENGINE_SCHEMA_HEADER.toLowerCase()]) >= 2;
+    if (!canonical) for (const k of ['workouts', 'routines']) if (Array.isArray(body.state[k])) body.state[k] = records(body.state[k]);
     // Conditional write: a `baseRev` that is not the current revision means this client last
     // read an older document — another device has written since — and the copy it is about to
     // push would silently drop that write. The current document travels back with the 409, so
@@ -2514,9 +2627,13 @@ const routes = {
     // and a client reading a document can tell whether it descends from its own (useStore pullState).
     if ((body.baseRev != null && body.baseRev !== curRev) ||
         (body.baseRev != null && typeof body.baseWid === 'string' && cur?._wid && body.baseWid !== cur._wid)) {
-      return json(res, 409, { error: 'conflict', rev: curRev, state: forClient(cur) });
+      return json(res, 409, { error: 'conflict', rev: curRev, state: packProfile(forClient(cur)) });
     }
     delete body.state.active;              // in-progress workouts stay device-local
+    if (canonical) {
+      const check = validateCanonicalProfile(body.state);
+      if (!check.ok) return json(res, 400, { error: 'invalid state', details: check.errors });
+    }
     // "Reset everything" stamps the profile (`resetAt`, with `resetIds`: what it wiped). The stamp
     // only moves forward: a write without it, or with an older one — a client from before it, a
     // backup restored over the profile — keeps the stored stamp. Otherwise every device that saw
@@ -2548,7 +2665,7 @@ const routes = {
     // JSON.parse takes any nesting, JSON.stringify recurses and runs out of stack on a document
     // nested some thousands deep. No client builds one; it is a bad request, not a server error.
     let text;
-    try { text = JSON.stringify(body.state); }
+    try { text = JSON.stringify(packProfile(body.state)); }
     catch (e) { if (e instanceof RangeError) return json(res, 400, { error: 'invalid state' }); throw e; }
     atomicWrite(stateFile(user.id), text);
     // The stat cache cannot see this write on its own: mtime granularity is 4 ms here (ext4 on
@@ -2982,7 +3099,9 @@ const server = http.createServer(async (req, res) => {
       'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
       // The CF-Access-* pair: a phone's Cloudflare Access service token (frontend lib/cf-access.js),
       // for an Access application that passes OPTIONS through to the origin.
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, CF-Access-Client-Id, CF-Access-Client-Secret',
+      // And the engine schema the client announces on every request (frontend lib/api.js): left
+      // out, the WebView fails every preflighted request before the server sees it (#312 review).
+      'Access-Control-Allow-Headers': `Content-Type, Authorization, CF-Access-Client-Id, CF-Access-Client-Secret, ${ENGINE_SCHEMA_HEADER}`,
       'Access-Control-Max-Age': '86400',
       ...(pna ? { 'Access-Control-Allow-Private-Network': 'true' } : {})
     });

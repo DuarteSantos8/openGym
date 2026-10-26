@@ -13,6 +13,7 @@
 //
 //   hr      { avg, max, src, n }  src: 'watch' | 'hc' (Health Connect) | 'ah' (Apple Health),
 //                                 n: how many samples it was worked out from
+import { legacyEntriesOf } from './prescription/index.js'
 import { modeOf } from './history.js'
 import { isSideSet, dropsOf } from './workout-model.js'
 
@@ -68,7 +69,7 @@ const setLen = (row, mode) => {
 // (both sides of a per-side set, and the drops of a drop set, in it).
 function tickedSets(w) {
   const out = []
-  ;(w?.entries || []).forEach((entry, ei) => {
+  ;legacyEntriesOf(w).forEach((entry, ei) => {
     if (!entry) return
     const mode = modeOf({ ...(entry.target || {}), id: entry.id })
     ;(entry.sets || []).forEach((s, si) => {

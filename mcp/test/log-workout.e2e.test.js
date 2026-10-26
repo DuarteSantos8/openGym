@@ -9,6 +9,9 @@ import os from 'node:os'
 import path from 'node:path'
 import { spawn } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+import { migrateProfileV1ToV2 } from '../../api/migration/profile-migration.js'
+import { unpackProfile } from '../../api/migration/profile-pack.js'
+import { LIB_BY_ID } from '../../api/coach/core/library.js'
 
 const API = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'api')
 const HAVE_API = fs.existsSync(path.join(API, 'node_modules', '@simplewebauthn', 'server'))
@@ -23,7 +26,7 @@ const mint = uid => {
 const TOKEN = mint(UID)
 const at = (d, hh) => new Date(`${d}T${hh}:00`).getTime()
 // A document the way a device leaves it: settings, a routine, a workout, the records of edits.
-const DOC = {
+const V1 = {
   unit: 'kg', restSec: 120, effort: 'rir', targetW: 80,
   routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 100, mode: 'reps' }], _ts: 1000 }],
   week: { 1: ['r1'] },
@@ -34,9 +37,14 @@ const DOC = {
   _rev: 5, _wid: 'w-seed', _ts: 1000,
 }
 
+// The server only serves the engine schema to the MCP (X-OpenGym-Engine-Schema: 2): the same
+// profile as a migrated device holds it.
+const DOC = { ...migrateProfileV1ToV2(V1, LIB_BY_ID).profile, edited: V1.edited, deleted: {}, _rev: 5, _wid: 'w-seed', _ts: 1000 }
+
 let child, dataDir, base, log = ''
-const get = async p => (await fetch(base + p, { headers: { authorization: 'Bearer ' + TOKEN } })).json()
-const stored = () => JSON.parse(fs.readFileSync(path.join(dataDir, `state-${UID}.json`), 'utf8'))
+const get = async p => (await fetch(base + p, { headers: { authorization: 'Bearer ' + TOKEN, 'x-opengym-engine-schema': '2' } })).json()
+// The file keeps the packed form (api/migration/profile-pack.js); a device reads it unpacked.
+const stored = () => unpackProfile(JSON.parse(fs.readFileSync(path.join(dataDir, `state-${UID}.json`), 'utf8')))
 
 describe.skipIf(!HAVE_API)('log_workout against the real api', () => {
   let logWorkout, getState, TOOLS
@@ -95,7 +103,8 @@ describe.skipIf(!HAVE_API)('log_workout against the real api', () => {
     const extra = Object.keys(after).filter(k => !(k in DOC))
     expect(extra.filter(k => !k.startsWith('_'))).toEqual([])
     const w = after.workouts[1]
-    expect(w.entries[0]).toMatchObject({ id: '0294', sets: [{ w: 12, r: 12, done: true }, { w: 12, r: 12, done: true }, { w: 12, r: 10, done: true }] })
+    expect(w.exposures[0]).toMatchObject({ exerciseId: '0294' })
+    expect(w.exposures[0].performance.sets.map(r => [r.resistance.value, r.observations[0].value, r.status])).toEqual([[12, 12, 'completed'], [12, 12, 'completed'], [12, 10, 'completed']])
   })
 
   test('read back by the read tools, from the same directory, straight away', async () => {
@@ -135,7 +144,7 @@ describe.skipIf(!HAVE_API)('log_workout against the real api', () => {
       const cur = await get('/api/data')
       const next = { ...cur.state, restSec: 75 }
       const res = await fetch(base + '/api/data', {
-        method: 'PUT', headers: { authorization: 'Bearer ' + TOKEN, 'content-type': 'application/json' },
+        method: 'PUT', headers: { authorization: 'Bearer ' + TOKEN, 'x-opengym-engine-schema': '2', 'content-type': 'application/json' },
         body: JSON.stringify({ state: next, baseRev: cur.rev, baseWid: cur.state._wid }),
       })
       expect(res.status).toBe(200)

@@ -4,6 +4,7 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import Stats from './Stats.jsx'
+import { loggedExposure } from '../lib/test-fixtures.js'
 
 const mocks = vi.hoisted(() => ({ charts: [], S: null }))
 vi.mock('../store/useStore.js', () => ({ useStore: selector => selector({ S: mocks.S }) }))
@@ -25,14 +26,14 @@ const session = (ago, w, bw) => {
   return {
     id: 'w' + ago, d: new Date(start).toISOString().slice(0, 10), start, end: start + 3600000, name: 'Push',
     ...(bw ? { bw } : {}),
-    entries: [{ id: BENCH, target: { id: BENCH, sets: 2, reps: 5 }, sets: [{ w, r: 5, done: true }, { w, r: 4, done: true }] }],
+    exposures: [loggedExposure(BENCH, [{ w, r: 5 }, { w, r: 4 }])],
   }
 }
 let root, host
 afterEach(() => { act(() => root.unmount()); host.remove(); mocks.charts = [] })
 
 function mount(workouts) {
-  mocks.S = { body: 'male', effort: 'none', unit: 'kg', targetW: null, bodyweight: [], routines: [], exWeights: {}, workouts }
+  mocks.S = { engineSchemaVersion: 2, prescriptions: {}, progression: {}, oneRepMaxes: {}, body: 'male', effort: 'none', unit: 'kg', targetW: null, bodyweight: [], routines: [], exWeights: {}, workouts }
   host = document.createElement('div')
   document.body.appendChild(host)
   root = createRoot(host)
@@ -86,7 +87,7 @@ describe('Stats: Bodyweight view of exercise progress', () => {
   it('offers no Est. 1RM basis for an exercise assisted by its routine setting, and says heaviest set', () => {
     const assisted = (ago, help) => {
       const s = session(ago, help, 80)
-      s.entries[0].target = { ...s.entries[0].target, assisted: true }
+      s.exposures[0].assisted = true
       return s
     }
     mount([assisted(20, 30), assisted(10, 10)])
@@ -100,7 +101,7 @@ describe('Stats: Bodyweight view of exercise progress', () => {
   it('still offers Bodyweight for sets above the 1RM estimate cap, on the heaviest set', () => {
     const high = (ago, w) => {
       const s = session(ago, w, 80)
-      s.entries[0].sets = [{ w, r: 20, done: true }]
+      s.exposures[0] = loggedExposure(BENCH, [{ w, r: 20 }])
       return s
     }
     mount([high(20, 100), high(10, 120)])
