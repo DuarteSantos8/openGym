@@ -11,6 +11,9 @@
     "lower back"
   ],
   "category": "calisthenics",
+  "needs": [
+    "bench"
+  ],
   "description": "The lowering half of the dragon flag. You control a straight body down toward the bench, which builds serious core strength.",
   "instructions": [
     "Lie on a bench and grip the edge behind your head.",

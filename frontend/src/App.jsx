@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { hideBoot } from './lib/boot.js'
 import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation, useNavigationType } from 'react-router-dom'
 import { useStore } from './store/useStore.js'
@@ -6,15 +6,18 @@ import { useUI } from './store/useUI.js'
 import { bindUI } from './components/ui.jsx'
 import { setWeightDecimals } from './lib/format.js'
 import { accentValue, applyAccent } from './lib/accent.js'
+import { seasonAccent } from './lib/seasonal.js'
 import { setLang, useLang, baseLang } from './lib/i18n.js'
 import { effectiveLang } from './lib/default-lang.js'
 import { setPlayOnSilent, setVibrate, setAlarmBuzzer, setNativeBuzzer } from './lib/sound.js'
 import { buzzAsAlarm } from './lib/rest-alert.js'
 import { setNav, notePath, keyBefore, navToWorkout } from './lib/nav.js'
+import { onGymReminderOpen } from './lib/gym-reminder.js'
 import { workoutVolume } from './lib/history.js'
 import { setSystemBarsLight } from './lib/system-bars.js'
 import { initBackButton } from './lib/back.js'
 import { installEdgeSwipeBack, BACK_PREVIEW_EVENT } from './lib/edge-swipe-back.js'
+import { pageMotion } from './lib/page-motion.js'
 import { startWatchSync, bindWatchAppActions, patchSetIn } from './lib/watch-sync.js'
 import { stampWorkout } from './lib/sync-merge.js'
 import { logWeighIn } from './lib/bodyweight.js'
@@ -34,28 +37,55 @@ import Toast from './components/Toast.jsx'
 import SyncBanner from './components/SyncBanner.jsx'
 import RestTimer from './components/RestTimer.jsx'
 import TimerFlash from './components/TimerFlash.jsx'
+import { SeasonalLayer } from './components/Seasonal.jsx'
 import { openDeviceLinkRedeem } from './components/Passkeys.jsx'
 import { useAnimPacksBoot } from './components/Animations.jsx'
 import Login from './views/Login.jsx'
 import MobileOnboarding from './views/MobileOnboarding.jsx'
 import PermissionSteps from './views/PermissionSteps.jsx'
 import Home from './views/Home.jsx'
-import CheckIn from './views/CheckIn.jsx'
 import Plan from './views/Plan.jsx'
-import RoutineEdit from './views/RoutineEdit.jsx'
 import Workout from './views/Workout.jsx'
-import Stats from './views/Stats.jsx'
-import History from './views/History.jsx'
-import Library from './views/Library.jsx'
-import Muscles from './views/Muscles.jsx'
-import StructuralBalance from './views/StructuralBalance.jsx'
-import ProgressPhotos from './views/ProgressPhotos.jsx'
-import { SettingsRoute } from './views/Settings.jsx'
-import Admin from './views/Admin.jsx'
-import CoachChat from './views/CoachChat.jsx'
-import Measurements from './views/Measurements.jsx'
-import CoachIntake from './views/CoachIntake.jsx'
-import CoachSetup from './views/CoachSetup.jsx'
+
+// Screens most sessions never open (the Coach, the admin dashboard, photos, measurements, the
+// balance check) are their own chunks rather than part of the code every start parses: ~200 KB
+// of the main bundle. They are fetched once the app is idle after the start (the service worker
+// and the phone build hold them locally anyway), so by the time one is opened it renders at once,
+// in the same frame, as before; only a tap within the first moments can see one empty frame.
+const views = []
+function lazyView(load) {
+  let View = null
+  const fetchIt = () => load().then(m => { View = m.default; return m })
+  const Lazy = lazy(fetchIt)
+  views.push(fetchIt)
+  return function LazyView(props) {
+    return View ? <View {...props} /> : <Suspense fallback={null}><Lazy {...props} /></Suspense>
+  }
+}
+const Admin = lazyView(() => import('./views/Admin.jsx'))
+const CoachChat = lazyView(() => import('./views/CoachChat.jsx'))
+const Measurements = lazyView(() => import('./views/Measurements.jsx'))
+const CoachIntake = lazyView(() => import('./views/CoachIntake.jsx'))
+const CoachSetup = lazyView(() => import('./views/CoachSetup.jsx'))
+const StructuralBalance = lazyView(() => import('./views/StructuralBalance.jsx'))
+const ProgressPhotos = lazyView(() => import('./views/ProgressPhotos.jsx'))
+// The tabs and screens past Home (Stats, History, the Library, Settings, ...) as well: a start
+// only needs Home, and these are fetched right behind it the same way.
+const CheckIn = lazyView(() => import('./views/CheckIn.jsx'))
+const RoutineEdit = lazyView(() => import('./views/RoutineEdit.jsx'))
+const Stats = lazyView(() => import('./views/Stats.jsx'))
+const History = lazyView(() => import('./views/History.jsx'))
+const Library = lazyView(() => import('./views/Library.jsx'))
+const Muscles = lazyView(() => import('./views/Muscles.jsx'))
+const SettingsRoute = lazyView(() => import('./views/Settings.jsx').then(m => ({ default: m.SettingsRoute })))
+let viewsPrefetched = false
+const prefetchViews = () => {
+  if (viewsPrefetched) return
+  viewsPrefetched = true
+  const run = () => { for (const f of views) f().catch(() => {}) }
+  if (typeof globalThis.requestIdleCallback === 'function') globalThis.requestIdleCallback(run, { timeout: 4000 })
+  else setTimeout(run, 1500)
+}
 
 // last known scrollY per route, so back-navigation can put the page where it was
 const scrollPositions = new Map()
@@ -112,8 +142,10 @@ function Shell() {
     navigate('/workout', { replace: true })
     exitWorkoutEdit(() => navigate(destination, { replace: true }))
   }, [loc.pathname, loc.search, S.active?.editingWorkoutId, navigate])
-  // A preset key, or the user's own colour as '#rrggbb' (lib/accent.js), already checked.
-  const accent = accentValue(S)
+  // A preset key, or the user's own colour as '#rrggbb' (lib/accent.js), already checked. A
+  // seasonal theme's colours stand in for it while that theme shows, and only when chosen
+  // (Settings → Look & Home → Seasonal themes); the saved accent itself is never touched.
+  const accent = seasonAccent(S) || accentValue(S)
   useEffect(() => { applyPrefs(S.theme, accent) }, [S.theme, accent])
   // 'system' needs to react live if the OS theme flips while the app is open, not just on
   // the next mount — a fixed 'dark'/'light' choice never re-fires this since matchMedia
@@ -170,7 +202,7 @@ function Shell() {
   }, [])
   // The edge swipe back (lib/edge-swipe-back.js) asks for the page it goes back to underneath
   // while the finger moves (`preview`), and says where it is going as it lets go (`returning`):
-  // that page comes back where it was scrolled to, as the back button's push would not.
+  // that page comes back where it was scrolled to.
   const [preview, setPreview] = useState(null)
   const returning = useRef(null)
   useEffect(() => {
@@ -181,6 +213,18 @@ function Shell() {
     }
     window.addEventListener(BACK_PREVIEW_EVENT, on)
     return () => window.removeEventListener(BACK_PREVIEW_EVENT, on)
+  }, [])
+  // A tap on the page's own back button lands the same way. Its push used to open the page at the
+  // top, so Stats scrolled down, then Structural balance and back, started over, while the swipe,
+  // which presses this very button, came back to where it was. Capture phase, so this is known
+  // before the button's own handler navigates.
+  useEffect(() => {
+    const onClick = e => {
+      const to = e.target.closest?.('#app > .page:not(.under) [data-back]')?.getAttribute('data-back')
+      if (to) returning.current = to
+    }
+    document.addEventListener('click', onClick, true)
+    return () => document.removeEventListener('click', onClick, true)
   }, [])
   // Any navigation ends a preview: promoted (it is the page now) or not needed any more.
   useEffect(() => { setPreview(null) }, [loc.pathname])
@@ -203,7 +247,9 @@ function Shell() {
     // route — now, not a frame later: that frame landed on top of a scroll a view made on mount
     // (the superset card centring its row, views/Workout.jsx), and a smooth scroll cut off by a
     // scrollTo is simply gone.
-    if (navType !== 'POP' || first) { window.scrollTo(0, 0); return }
+    // Remembered as the top too. When the window is at the top already no scroll event comes, and
+    // a back to this page would land where an earlier visit had left it.
+    if (navType !== 'POP' || first) { window.scrollTo(0, 0); scrollPositions.set(loc.pathname, 0); return }
     // A POP that stays on the route we are on is not a back-navigation: it is the history
     // entry a sheet pushed (Modals.jsx, #63) being unwound as the sheet closes. Nothing new
     // mounted, Modals puts the page back where it was itself, and a view that scrolled on
@@ -281,7 +327,7 @@ function Shell() {
           lands it simply stays: same key, same parent, so React keeps it instead of mounting
           the route again. */}
       <div id="app">
-        <Page key={loc.pathname} loc={loc} render={view} />
+        <Page key={loc.pathname} loc={loc} render={view} motion={pageMotion(pathRef.current, loc.pathname, navType)} />
         {showPreview && <Page key={preview} loc={previewLoc(preview)} render={view} under scrollY={scrollPositions.get(preview) || 0} />}
       </div>
       {/* Outside #app: the view's fade-in animates a transform, and a fixed element inside it
@@ -293,6 +339,9 @@ function Shell() {
       <Modals />
       <Toast />
       <TimerFlash />
+      {/* Seasonal decoration (lib/seasonal.js): nothing, and nothing loaded, out of season. Never
+          over a running workout or the first-launch screens. */}
+      {authed && !needsMobileOnboarding && !permSteps && <SeasonalLayer hidden={inWorkout || loc.pathname === '/workout'} />}
     </>
   )
 }
@@ -306,16 +355,17 @@ const previewLoc = pathname => ({ pathname, search: '', hash: '', state: null, k
    only shows. When the swipe lands it becomes the page in place (same element, same state, no
    second mount, no fade): the styles the gesture painted on it go, and App puts the window back
    at that scroll position in the same frame. */
-function Page({ loc, render, under = false, scrollY = 0 }) {
+function Page({ loc, render, under = false, scrollY = 0, motion = 'fade' }) {
   const ref = useRef(null)
   const wasUnder = useRef(under)
+  const arrival = useRef(motion)
   const promoted = wasUnder.current && !under
   useLayoutEffect(() => {
     if (under || !wasUnder.current) return
     const el = ref.current
     if (el) { el.style.transform = ''; el.style.transition = ''; el.style.visibility = '' }
   }, [under])
-  return <div ref={ref} className={'page' + (under ? ' under' : wasUnder.current ? '' : ' vfade')}
+  return <div ref={ref} className={'page' + (under ? ' under' : wasUnder.current ? '' : arrival.current === 'push' ? ' vpush' : arrival.current === 'pop' ? ' vpop' : ' vfade')}
     data-path={loc.pathname} data-promoted={promoted ? '' : undefined}
     aria-hidden={under || undefined} inert={under || undefined}>
     <div className="page-in" style={under && scrollY ? { transform: `translateY(${-scrollY}px)` } : undefined}>
@@ -327,6 +377,7 @@ function Page({ loc, render, under = false, scrollY = 0 }) {
 export default function App() {
   const boot = useStore(s => s.boot)
   useEffect(() => { boot() }, [boot])
+  useEffect(() => { prefetchViews() }, [])
   // Android system back — sheet, then page, then press-again-to-exit (see lib/back.js)
   useEffect(() => {
     let stop = null, gone = false
@@ -367,6 +418,12 @@ export default function App() {
     startWidgetSync({ useStore }).then(keep).catch(() => {})
     startLiveActivitySync({ useStore, useUI }).then(keep).catch(() => {})
     return () => { gone.v = true; stops.forEach(fn => fn()) }
+  }, [])
+  // Phone app: a tap on the gym reminder (lib/gym-reminder.js) opens the Start screen, or the
+  // workout already running. Nothing on the web.
+  useEffect(() => {
+    if (!MOBILE) return
+    return onGymReminderOpen(() => { if (!String(window.location.hash || '').startsWith('#/workout')) navToWorkout() })
   }, [])
   return <HashRouter><Shell /></HashRouter>
 }

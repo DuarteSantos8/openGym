@@ -10,6 +10,7 @@
     "core"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "Wall sit with heels raised for a tougher quad hold.",
   "instructions": [
     "Stand with your heels on a low platform and your back on a wall.",

@@ -16,6 +16,20 @@
         android:textSize="22sp"
         android:textStyle="bold" />
 
+    <!-- Running: the system counts this down itself (no repost per second). The TextView
+         above shows the time only while paused. -->
+    <Chronometer
+        android:id="@+id/rest_chrono"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:countDown="true"
+        android:fontFeatureSettings="tnum"
+        android:minWidth="52dp"
+        android:textAppearance="@android:style/TextAppearance.Material.Notification.Title"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
     <ProgressBar
         android:id="@+id/rest_bar"
         style="?android:attr/progressBarStyleHorizontal"

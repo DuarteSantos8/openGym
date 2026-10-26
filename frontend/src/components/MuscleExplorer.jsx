@@ -13,7 +13,9 @@ import ExerciseViewToggle from './ExerciseViewToggle.jsx'
 import { Button } from './ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { useAutoMore } from '../lib/use-auto-more.js'
-import { isFav, sortFavouritesFirst } from '../lib/favourites.js'
+import { favIds, isFav, sortFavouritesFirst } from '../lib/favourites.js'
+
+const FAV = '☆'
 
 // One explorer for the Library and every catalogue picker. Supplying `onPick` turns
 // a result into a selection; without it the explorer behaves like the normal Library.
@@ -38,7 +40,10 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan, pickIcon = 'p
   ])), [catalog])
   const pick = muscle => { setSelected(muscle === selected ? null : muscle); setEq(''); setShown(40) }
   const targeted = selected ? catalog.filter(e => musclesOf(e)[selected]) : []
-  const base = searchExercises(targeted.filter(e => !bp || e.bp === bp), q)
+  // The picker's Favourites chip (#669), here for the chosen muscle: '☆' in place of a body part.
+  const favOn = bp === FAV
+  const favHere = targeted.filter(e => isFav(S, e.id)).length
+  const base = searchExercises(targeted.filter(e => favOn ? isFav(S, e.id) : (!bp || e.bp === bp)), q)
   const eqOpts = equipmentOf(base)
   const eqOn = eqOpts.includes(eq) ? eq : ''
   // Favourites float to the top of whatever the filters left (issue #6), the rest keeps its order.
@@ -82,6 +87,7 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan, pickIcon = 'p
           eqOn fallback above drops it only for this view if the new body part has nothing under
           it, without forgetting the choice. "All" clears it, since it spans every body part. */}
       <div className="chips" style={{ marginBottom: eqOpts.length > 1 ? 8 : 12 }}>
+        {favIds(S).length > 0 && <button className={'chip' + (favOn ? ' on' : '')} onClick={() => { setBp(FAV); setEq(''); setShown(40) }}><Icon name="starFill" className="fav-star" />{t('Favourites')} ({favHere})</button>}
         <button className={'chip nocap' + (!bp ? ' on' : '')} onClick={() => { setBp(''); setEq(''); setShown(40) }}>{t('All')}</button>
         {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} onClick={() => { setBp(b); setShown(40) }}>{t(b)}</button>)}
       </div>

@@ -11,6 +11,9 @@
     "core"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A pullover variation with straight arms that stretches and works the chest and lats through a long arc.",
   "instructions": [
     "Lie on a bench holding one dumbbell above your chest with straight arms.",

@@ -95,9 +95,15 @@
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Used to show your heart rate on your Apple Watch while you train, next to each set.</string>
+	<string>Used to show your heart rate on your Apple Watch while you train, and, when you switch it on, to add the heart rate your watch saved and weigh-ins from other apps to your log.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Used to save your finished workouts and weigh-ins to Apple Health, when you switch it on.</string>
+	<!-- Gym reminder (#614): off until switched on in Settings. Region monitoring needs Always,
+	     but no background location mode (UIBackgroundModes stays without "location"). -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Used to put a gym on the map where you are standing, for the gym reminder. Your location stays on this iPhone.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Lets the gym reminder notice when you arrive at a gym you added, even with openGym closed. iOS only watches those places, and your location never leaves this iPhone.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Used to make sure it’s really you before your account is deleted.</string>
 </dict>

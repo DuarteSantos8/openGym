@@ -5,6 +5,7 @@ import { REST_MAX } from '../lib/duration.js'
 import { durationSheet } from './DurationWheel.jsx'
 import { Button } from './ui.jsx'
 import Icon from './Icon.jsx'
+import { SeasonDeco } from './Seasonal.jsx'
 
 const clock = sec => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0')
 
@@ -90,10 +91,12 @@ export default function RestTimer() {
   }, [!!on])
   if (!on) return null
   const pct = Math.max(0, Math.min(100, (on.left / on.total) * 100))
+  // The bar shrinks by transform, not width: a width transition lays the page out again on every
+  // frame of every rest (~45 layouts a second), a scaled bar is the compositor's alone.
 
   if (work) return (
     <div id="timer" className="working">
-      <div className="bar" aria-hidden="true"><i style={{ width: pct + '%' }} /></div>
+      <div className="bar" aria-hidden="true"><i style={{ transform: `scaleX(${pct / 100})` }} /></div>
       <div className="tclock">
         <span className="t">{work.left <= 0 && work.overtime ? '+' + clock(-work.left) : clock(work.left)}</span>
         {work.label && <span className="lbl">{work.label}</span>}
@@ -114,7 +117,8 @@ export default function RestTimer() {
   const label = timer.kind === 'switch' ? t('Switch sides') : timer.paused ? t('Paused') : t('Rest')
   return (
     <div id="timer" className={'rest' + (timer.paused ? ' paused' : '') + (timer.kind === 'switch' ? ' switch' : '') + (timer.ready ? ' ready' : '')}>
-      <div className="bar" aria-hidden="true"><i style={{ width: pct + '%' }} /></div>
+      <div className="bar" aria-hidden="true"><i style={{ transform: `scaleX(${pct / 100})` }} /></div>
+      <SeasonDeco spot="rest-timer" workout />
       <button type="button" className="tclock" onClick={adjustRestSheet}
         aria-label={(timer.ready ? t('Ready') : clock(timer.left)) + '. ' + t('Change the time left')}>
         <span className="t" role={timer.ready ? 'status' : undefined} data-alt={timer.ready ? '0:00' : t('Ready')}>{timer.ready ? t('Ready') : clock(timer.left)}</span>

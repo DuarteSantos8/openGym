@@ -11,7 +11,7 @@
 // per unit too: a kg profile gets the 20 kg olympic bar, a lb profile the 45 lb bar its
 // gym actually racks — not a 44.1 lb conversion no bar is stamped with.
 
-import { EXIDX } from './exercises.js'
+import { exerciseOf as exOf } from './exercises.js'
 
 /** Equipment values (e.eq) that put a bar in your hands. */
 export const BAR_EQ = new Set(['barbell', 'olympic barbell', 'ez barbell', 'smith machine', 'trap bar'])
@@ -21,7 +21,6 @@ export const DEFAULT_BAR_KG = { barbell: 20, 'olympic barbell': 20, 'ez barbell'
 /** The same bars as a lb profile knows them — real markings, not converted kg. */
 export const DEFAULT_BAR_LB = { barbell: 45, 'olympic barbell': 45, 'ez barbell': 25, 'smith machine': 20, 'trap bar': 55 }
 
-const exOf = exOrId => (typeof exOrId === 'string' ? EXIDX[exOrId] : exOrId)
 
 /** Whether this exercise (object or id) is done with a bar. */
 export const usesBar = exOrId => BAR_EQ.has(exOf(exOrId)?.eq)

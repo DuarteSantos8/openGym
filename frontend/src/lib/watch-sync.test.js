@@ -28,8 +28,8 @@ describe('the snapshot', () => {
     expect(snap.active.entries).toHaveLength(2)
     const [a, b] = snap.active.entries
     expect(a).toMatchObject({ id: '0025', mode: 'reps', restSec: null, last: null })
-    expect(typeof a.name).toBe('string')
-    expect(a.name.length).toBeGreaterThan(0)
+    // Title-cased like the phone shows it, not the stored lower-case name.
+    expect(a.name).toBe('Barbell Bench Press')
     expect(a.sets).toEqual([{ w: 60, r: 8, sec: null, done: true, warmup: false }, { w: 60, r: 8, sec: null, done: false, warmup: false }])
     expect(b.restSec).toBe(120)
     expect(b.sets[0].warmup).toBe(true)
@@ -149,6 +149,27 @@ describe('starting and finishing on the watch', () => {
     const snap = buildSnapshot(S, { ready })
     expect(snap.active).toBeNull()
     expect(snap.ready.today.name).toBe('Push')
+  })
+
+  // #799: the watch's Apple Health workout used to be strength training whatever was planned.
+  it('tells the watch which Apple Health type each session is', () => {
+    const run = { id: 'r-run', name: 'Run', ex: [{ id: '0685', mode: 'cardio', min: 30, speed: 10 }] }
+    const S = { unit: 'kg', workouts: [], routines: [...routines, run], week: { 2: 'r-run' }, dayPlan: {} }
+    const ready = buildReady(S, '2026-10-13')
+    expect(ready.today.healthType).toBe('running')
+    expect(ready.others.map(o => o.healthType)).toEqual(['strength_training', 'strength_training'])
+    const active = { id: 'w1', name: 'Run', entries: [{ id: '0685', target: { mode: 'cardio', min: 30 }, sets: [{ min: 30, speed: 10 }] }] }
+    expect(buildSnapshot({ ...S, active }).active.healthType).toBe('running')
+  })
+
+  // The watch reads a snapshot whole or not at all: one odd routine must not cost it the others,
+  // and an id that came in as a number must still reach it as text.
+  it('one routine that cannot be built is left out, and every id goes as text', () => {
+    const odd = [{ id: 'r-odd', name: 'Odd' }, { id: 7, name: 'Imported', ex: [{ id: 25, sets: 1, reps: 5 }] }, ...routines]
+    const ready = buildReady({ unit: 'kg', workouts: [], routines: odd, week: { 2: 'r-push' }, dayPlan: {} }, '2026-10-13')
+    expect(ready.today).toMatchObject({ routineIds: ['r-push'] })
+    expect(ready.others.map(o => o.routineIds)).toEqual([['7'], ['r-pull']])
+    expect(ready.others[0].entries[0].id).toBe('25')
   })
 
   it('a start from the watch starts the session with the watch\'s id and time, once; the sets after it wait for the workout screen', () => {

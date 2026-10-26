@@ -422,6 +422,32 @@ describe('CoachIntake — the answers themselves', () => {
     expect(mocks.S.coach.profile).toMatchObject({ daysPerWeek: 5, preferredDays: [0, 1, 5] })
   })
 
+  // #620: Mon/Wed/Fri is the pre-selection for three. Left standing under a count of four, it
+  // saved a profile asking for four days that preferred three nobody had picked.
+  it('the pre-selected days follow the count while nobody has picked their own', () => {
+    mount(); walkTo('Schedule')
+    const wd = () => all('.ob-wd').filter(b => b.classList.contains('on')).map(b => b.textContent)
+    tap('.ob-day', '4')
+    expect(wd()).toEqual(['Mo', 'Tu', 'Th', 'Fr'])
+    tap('.ob-day', '2')
+    expect(wd()).toEqual(['Mo', 'Th'])
+    tap('.ob-day', '4')
+    walkTo('Almost there')
+    cont()
+    expect(mocks.S.coach.profile).toMatchObject({ daysPerWeek: 4, preferredDays: [1, 2, 4, 5] })
+  })
+
+  it('days picked by hand stay put when the count changes, even fewer than the count', () => {
+    mount(); walkTo('Schedule')
+    const wd = () => all('.ob-wd').filter(b => b.classList.contains('on')).map(b => b.textContent)
+    tap('.ob-wd', 'Fr')
+    tap('.ob-day', '4')
+    expect(wd()).toEqual(['Mo', 'We'])
+    walkTo('Almost there')
+    cont()
+    expect(mocks.S.coach.profile).toMatchObject({ daysPerWeek: 4, preferredDays: [1, 3] })
+  })
+
   it('equipment chips toggle and reach the profile', () => {
     mount(); walkTo('Equipment')
     const chips = all('.ob-chips .chip')
@@ -551,6 +577,13 @@ describe('CoachIntake — the editor behind ?edit=1', () => {
     expect(host.querySelector('.ob-field textarea').value).toBe('bad knee')
     walkTo('Almost there')
     expect(footBtn().textContent).toContain('Save')
+  })
+
+  it('keeps the saved weekdays when the count changes', () => {
+    editing(PROFILE)
+    mount(); walkTo('Schedule')
+    tap('.ob-day', '3')
+    expect(all('.ob-wd').filter(b => b.classList.contains('on')).map(b => b.textContent)).toEqual(['Tu', 'Th'])
   })
 
   it('skips consent even when none was ever given — the editor is not a second opt-in', () => {

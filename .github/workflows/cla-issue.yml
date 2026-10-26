@@ -18,8 +18,9 @@ jobs:
   record:
     if: github.event.issue.number == 554 && !github.event.issue.pull_request
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: cla-signatures
       - name: Add the signature
@@ -47,6 +48,6 @@ jobs:
           if ! git diff --quiet; then
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -qam "@${{ github.event.comment.user.login }} has signed the CLA in #554"
+            git commit -qam "@$LOGIN has signed the CLA in #554"
             git push
           fi

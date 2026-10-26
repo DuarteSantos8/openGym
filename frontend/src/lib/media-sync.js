@@ -422,6 +422,3 @@ export const syncMedia = opts => inst().syncMedia(opts)
 export const fetchToStore = (hash, expect, opts) => inst().fetchToStore(hash, expect, opts)
 export const mayFetch = hash => inst().mayFetch(hash)
 export const localMediaGc = () => inst().localMediaGc()
-export const settleMediaSync = () => inst().settle()
-/** Tests only. */
-export const _setSharedMediaSync = s => { shared = s }
