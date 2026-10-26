@@ -5,15 +5,12 @@
 name: iOS
 
 on:
+  # Pull requests: when they touch the iOS shell or what goes into it, or when someone puts the
+  # `ios` label on one (a change elsewhere that might still matter on the phone).
   pull_request:
-    paths:
-      - 'frontend/ios/**'
-      - 'frontend/package.json'
-      - 'frontend/package-lock.json'
-      - 'frontend/capacitor.config.json'
-      - '.github/workflows/ios.yml'
+    types: [opened, synchronize, reopened, labeled]
   push:
-    branches: [main, stores]
+    branches: [main, stores, watch]
     paths:
       - 'frontend/**'
       - '.github/workflows/ios.yml'
@@ -27,12 +24,57 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Whether a pull request is one for the Mac at all (macOS minutes are the slow queue).
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      run: ${{ steps.decide.outputs.run }}
+    steps:
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: f
+        if: github.event_name == 'pull_request'
+        with:
+          filters: |
+            ios:
+              - 'frontend/ios/**'
+              - 'frontend/package.json'
+              - 'frontend/package-lock.json'
+              - 'frontend/capacitor.config.json'
+              - 'frontend/src/lib/native*.js'
+              - 'frontend/src/lib/rest-alert.js'
+              - 'frontend/src/lib/watch-sync.js'
+              - 'frontend/src/lib/health-sync.js'
+              - 'frontend/src/lib/widgets.js'
+              - 'frontend/src/lib/live-activity.js'
+              - '.github/workflows/ios.yml'
+      - id: decide
+        env:
+          EVENT: ${{ github.event_name }}
+          ACTION: ${{ github.event.action }}
+          LABEL: ${{ github.event.label.name }}
+          HAS_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'ios') }}
+          IOS: ${{ steps.f.outputs.ios }}
+        run: |
+          run=true
+          if [ "$EVENT" = pull_request ]; then
+            # A label event runs only for the `ios` label itself; any other label is not a reason.
+            if [ "$ACTION" = labeled ]; then [ "$LABEL" = ios ] || run=false
+            else [ "$IOS" = true ] || [ "$HAS_LABEL" = true ] || run=false; fi
+          fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"; echo "iOS jobs: $run"
+
   simulator:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: macos-26
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
           cache: npm
@@ -51,6 +93,12 @@ jobs:
       # The watch's session logic and the animation codec, tested on the Mac (no simulator).
       - name: WatchCore tests
         working-directory: frontend/ios/App/WatchCore
+        run: |
+          set -o pipefail
+          swift test 2>&1 | tail -60
+      # The gym reminder's no-nag rule (#614), compiled into the iPhone app, tested on the Mac.
+      - name: GymReminderCore tests
+        working-directory: frontend/ios/App/GymReminderCore
         run: |
           set -o pipefail
           swift test 2>&1 | tail -60
@@ -79,16 +127,34 @@ jobs:
           xcrun simctl boot "$UDID"
           xcrun simctl bootstatus "$UDID" -b
           xcrun simctl install "$UDID" build/dd/Build/Products/Debug-iphonesimulator/App.app
-          # A busy runner can still be starting the simulator's own apps: give the page up to eight
-          # minutes to reach its plugins rather than a fixed wait.
-          xcrun simctl launch --console-pty "$UDID" ch.opengym.app > build/console.log 2>&1 &
-          for i in $(seq 96); do grep -q "RestAlert" build/console.log && break; sleep 5; done
+          # Up to three launches, four minutes each. The known flake (2026-10-13: "the page never
+          # reached the RestAlert plugin" with an empty console) is a first launch on a runner
+          # that is still busy starting the simulator's own apps: the app comes up but its page
+          # never loads. A relaunch, and on the last try a fresh simulator boot, gets past it,
+          # while a page that really cannot reach its plugins fails all three.
+          reached=""
+          for attempt in 1 2 3; do
+            if [ "$attempt" = 3 ]; then
+              echo "::warning::relaunching on a freshly booted simulator"
+              xcrun simctl shutdown "$UDID" || true
+              xcrun simctl boot "$UDID" && xcrun simctl bootstatus "$UDID" -b
+            fi
+            xcrun simctl terminate "$UDID" ch.opengym.app 2>/dev/null || true
+            xcrun simctl launch --console-pty "$UDID" ch.opengym.app > build/console.log 2>&1 &
+            LPID=$!
+            for i in $(seq 48); do grep -q "RestAlert" build/console.log && break; sleep 5; done
+            if grep -q "RestAlert" build/console.log; then reached=$attempt; break; fi
+            echo "::warning::launch $attempt: the page did not reach RestAlert in 4 minutes ($(wc -l < build/console.log) console lines)"
+            cp build/console.log "build/console-attempt-$attempt.log"
+            kill "$LPID" 2>/dev/null || true
+          done
           sleep 5
           xcrun simctl io "$UDID" screenshot build/first-screen.png || true
-          kill %1 || true
-          cat build/console.log | grep -v "^\s*$" | head -200
+          kill "$LPID" 2>/dev/null || true
+          grep -v "^\s*$" build/console.log | head -200
           if grep -q "not implemented on ios" build/console.log; then echo "::error::a plugin the page uses is missing on iOS"; exit 1; fi
-          grep -q "RestAlert" build/console.log || { echo "::error::the page never reached the RestAlert plugin"; exit 1; }
+          [ -n "$reached" ] || { echo "::error::the page never reached the RestAlert plugin (3 launches)"; exit 1; }
+          echo "simulator: the page reached its plugins on launch $reached" >> "$GITHUB_STEP_SUMMARY"
           echo "$UDID" > build/udid.txt
       # The widgets and the Live Activity as pictures, light and dark (App/WidgetPreview.swift draws
       # them with made-up data): nobody can put a widget on a simulator's Home Screen without a Mac.
@@ -110,6 +176,8 @@ jobs:
       # (SessionStore.demoJSON: text only, no exercise media), for a look at it.
       - name: Show the watch app
         continue-on-error: true
+        # Pictures only: a hung simulator here must not hold the job to its 60-minute limit.
+        timeout-minutes: 30
         working-directory: frontend/ios/App
         run: |
           APP=build/dd/Build/Products/Debug-watchsimulator/OpenGymWatch.app
@@ -181,6 +249,8 @@ jobs:
       # the synthetic clip or none (never exercise media).
       - name: Watch promo pictures
         continue-on-error: true
+        # Pictures only: a hung simulator here must not hold the job to its 60-minute limit.
+        timeout-minutes: 30
         working-directory: frontend/ios/App
         run: |
           APP=build/dd/Build/Products/Debug-watchsimulator/OpenGymWatch.app
@@ -223,13 +293,13 @@ jobs:
             xcrun simctl shutdown "$UDID" || true
           done
           find build/watch-promo -type f | sort
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         if: always()
         with:
           name: ios-simulator
           path: |
             frontend/ios/App/build/xcodebuild.log
-            frontend/ios/App/build/console.log
+            frontend/ios/App/build/console*.log
             frontend/ios/App/build/first-screen.png
             frontend/ios/App/build/watch
             frontend/ios/App/build/watch-promo
@@ -242,11 +312,13 @@ jobs:
   # through the -OpenGymUITestPending probe in MainViewController.swift).
   # The exercise media are left out of this build; the screenshots show placeholders.
   ui-tests:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: macos-26
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
           cache: npm
@@ -274,17 +346,28 @@ jobs:
           xcrun simctl boot "$UDID" && xcrun simctl bootstatus "$UDID" -b
           mkdir -p build
           set -o pipefail
+          # A failing test gets two more tries: XCUITest's "Timed out while evaluating UI query"
+          # on a loaded runner was most of this job's red runs (2026-10-13/14). A test that fails
+          # three times in a row is a real failure; one that needed a retry is listed in the
+          # summary below, so a flake stays visible instead of being silently absorbed.
           xcodebuild test -workspace App.xcworkspace -scheme AppUITests -destination "id=$UDID" \
+            -retry-tests-on-failure -test-iterations 3 \
             -resultBundlePath build/ui.xcresult CODE_SIGNING_ALLOWED=NO \
             | tee build/ui-tests.log | grep -E "error:|Test Case|passed|failed|TEST" || exit 1
       - name: Keep the screenshots
         if: always()
         working-directory: frontend/ios/App
         run: |
+          {
+            echo "### iOS UI tests"
+            grep -E "^Test Case .*(passed|failed)" build/ui-tests.log | sed -E "s/^Test Case '-\[[^ ]+ ([^]]+)\]' (passed|failed).*\(([0-9.]+) seconds\).*/- \1: \2 (\3 s)/" | sort | uniq -c | sed 's/^ *//' || true
+            echo
+            echo "A test listed as both failed and passed needed a retry: that is a flake to look at."
+          } >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
           mkdir -p build/shots
           xcrun xcresulttool export attachments --path build/ui.xcresult --output-path build/shots || true
           ls build/shots
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         if: always()
         with:
           name: ios-ui-tests
@@ -297,12 +380,13 @@ jobs:
   # animations in and sign (scripts/ios/finish-ipa.sh). Built for devices; its media are the
   # repo's 180 px ones.
   device-archive:
+    needs: gate
+    if: needs.gate.outputs.run == 'true' && github.event_name != 'pull_request'
     runs-on: macos-26
     timeout-minutes: 60
-    if: github.event_name != 'pull_request'
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
           cache: npm
@@ -333,7 +417,7 @@ jobs:
           mkdir -p ../../../Payload && cp -R App.app ../../../Payload/
           cd ../../.. && echo "$GITHUB_SHA" > ci-commit.txt && zip -qry App-unsigned.ipa Payload ci-commit.txt
           ls -la App-unsigned.ipa
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: ios-unsigned-ipa
           path: frontend/ios/App/build/App-unsigned.ipa

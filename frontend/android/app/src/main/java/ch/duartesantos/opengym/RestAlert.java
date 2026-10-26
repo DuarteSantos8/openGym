@@ -16,6 +16,8 @@ import android.media.AudioFormat;
 import android.media.AudioTrack;
 import android.os.Build;
 import android.os.PowerManager;
+import android.os.SystemClock;
+import android.view.View;
 import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
@@ -211,6 +213,15 @@ public final class RestAlert {
         Intent intent = new Intent(ctx, RestAlertReceiver.class);
         intent.setAction(ACTION);
         return intent;
+    }
+
+    /** Whether the rest-over alarm is exact (and wakes the phone on time, also in Doze). */
+    static boolean exactAllowed(Context ctx) {
+        try {
+            return canExact((AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE));
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private static boolean canExact(AlarmManager am) {
@@ -429,10 +440,14 @@ public final class RestAlert {
         String clock = clock(left);
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         ensureCountdownChannel(ctx, nm);
+        // Running: the system counts the clock down itself (Chronometer), so the card needs no
+        // repost per second for the time. Paused: a plain text, which cannot drift when the
+        // shade redraws the card later.
+        long base = paused ? 0 : RestCountdownPlan.chronometerBase(SystemClock.elapsedRealtime(), leftMs);
         RemoteViews compact = new RemoteViews(ctx.getPackageName(), R.layout.rest_countdown);
-        fillClock(compact, clock, max, left, accent);
+        fillClock(compact, clock, max, left, accent, paused, base);
         RemoteViews expanded = new RemoteViews(ctx.getPackageName(), R.layout.rest_countdown_big);
-        fillClock(expanded, clock, max, left, accent);
+        fillClock(expanded, clock, max, left, accent, paused, base);
         applyAccent(expanded, accent, ink);
         expanded.setTextViewText(R.id.rest_pause, paused ? resume : pause);
         expanded.setTextViewText(R.id.rest_minus, minus);
@@ -472,8 +487,17 @@ public final class RestAlert {
         return b.build();
     }
 
-    private static void fillClock(RemoteViews views, String clock, int max, int left, int accent) {
+    private static void fillClock(RemoteViews views, String clock, int max, int left, int accent,
+                                  boolean paused, long base) {
         views.setTextViewText(R.id.rest_clock, clock);
+        views.setViewVisibility(R.id.rest_clock, paused ? View.VISIBLE : View.GONE);
+        views.setViewVisibility(R.id.rest_chrono, paused ? View.GONE : View.VISIBLE);
+        if (!paused) {
+            views.setChronometer(R.id.rest_chrono, base, null, true);
+            views.setChronometerCountDown(R.id.rest_chrono, true);
+        } else {
+            views.setChronometer(R.id.rest_chrono, 0, null, false);
+        }
         views.setProgressBar(R.id.rest_bar, max, left, false);
         if (Build.VERSION.SDK_INT >= 31) {
             views.setColorStateList(R.id.rest_bar, "setProgressTintList", ColorStateList.valueOf(accent));
@@ -500,9 +524,13 @@ public final class RestAlert {
         return (sec / 60) + ":" + (sec % 60 < 10 ? "0" : "") + (sec % 60);
     }
 
+    // The countdown is posted again every second; asking the system for the channel each time was
+    // a binder call per tick. Once it is known to exist (the app never deletes it), it is not asked.
+    private static volatile boolean countdownChannelReady = false;
+
     private static void ensureCountdownChannel(Context ctx, NotificationManager nm) {
-        if (Build.VERSION.SDK_INT < 26) return;
-        if (nm.getNotificationChannel(COUNTDOWN_CHANNEL_ID) != null) return;
+        if (Build.VERSION.SDK_INT < 26 || countdownChannelReady) return;
+        if (nm.getNotificationChannel(COUNTDOWN_CHANNEL_ID) != null) { countdownChannelReady = true; return; }
         NotificationChannel channel = new NotificationChannel(
                 COUNTDOWN_CHANNEL_ID,
                 ctx.getString(R.string.rest_countdown_channel_name),
@@ -512,6 +540,7 @@ public final class RestAlert {
         channel.setSound(null, null);
         channel.enableVibration(false);
         nm.createNotificationChannel(channel);
+        countdownChannelReady = true;
     }
 
     /**

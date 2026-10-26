@@ -11,9 +11,9 @@ import { PAGES, PAGE_IDS, ROOT_GROUPS, SEARCH, pageVisible, searchSettings, page
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const mocks = vi.hoisted(() => {
-  const state = { S: null, user: null, sync: null, MOBILE: false, push: false, sheets: [], navs: [], toast: null }
+  const state = { S: null, user: null, sync: null, config: null, MOBILE: false, push: false, sheets: [], navs: [], toast: null }
   state.snapshot = () => ({
-    S: state.S, user: state.user, coachLocal: null, sync: state.sync, config: null,
+    S: state.S, user: state.user, coachLocal: null, sync: state.sync, config: state.config,
     update: mut => { const next = structuredClone(state.S); mut(next); state.S = next },
     replaceState: vi.fn(), setUser: vi.fn(), pullState: vi.fn(), pushState: vi.fn(), setUnit: vi.fn(),
     resetEverything: vi.fn(), resetDemo: vi.fn(), importBackup: vi.fn(), importConflict: vi.fn(),
@@ -55,6 +55,7 @@ beforeEach(() => {
   }
   mocks.user = null
   mocks.sync = null
+  mocks.config = null
   mocks.MOBILE = false
   mocks.push = false
   mocks.pushOn = false
@@ -81,6 +82,8 @@ const guestWeb = {
   user: null, mobile: false, android: false, demo: false, wakeOK: true, hasMedia: false, pwOn: false, webauthn: false,
   sound: true, playOnSilent: false, canVibrate: true, vibrate: true, profiles: true, nameLang: false,
   pushOK: false, reminderOn: false, nudge: false, autoBackup: false, synced: false, installTip: true, androidWeb: false,
+  // the test browser (happy-dom) is neither Android nor Apple, so the page shows the desktop install tip
+  desktopWeb: true,
 }
 
 describe('the root', () => {
@@ -147,6 +150,30 @@ describe('the root', () => {
     expect(mocks.navs).toEqual([['/settings/alerts'], ['/coach/setup'], ['/settings/account']])
   })
 
+  it('in a hosted app, an admin gets the Coach row too, straight to the Coach card of the admin dashboard', () => {
+    mocks.config = { coach: { enabled: true } }
+    mocks.user = { id: 'u1', name: 'Dana' }
+    mount()
+    expect(titles()).not.toContain('AI Coach')
+    mocks.user = { id: 'u1', name: 'Dana', admin: true }
+    mount()
+    expect(rowTitled('AI Coach').textContent).toContain('Admin')
+    act(() => rowTitled('AI Coach').click())
+    expect(mocks.navs).toEqual([['/admin', { state: { section: 'coach' } }]])
+  })
+
+  it('only while the server offers the Coach, so the row never leads to an admin page without it (#683)', () => {
+    mocks.user = { id: 'u1', name: 'Dana', admin: true }
+    mount()
+    expect(titles()).not.toContain('AI Coach')
+    mocks.config = { coach: null }
+    mount()
+    expect(titles()).not.toContain('AI Coach')
+    mocks.config = { coach: { enabled: true } }
+    mount()
+    expect(titles()).toContain('AI Coach')
+  })
+
   it('searches every setting and a hit goes to its page with the row to flash', () => {
     mount()
     const input = host.querySelector('.sp-search input')
@@ -206,10 +233,22 @@ describe('the search lands on a row', () => {
     expect(searchSettings('loop', web, tr).map(h => h.title)).toContain('How you train')
     expect(searchSettings('swipe', web, tr)[0].title).toBe('Swipe actions')
     expect(searchSettings('gesture', web, tr).map(h => h.title)).toEqual(['Swipe actions'])
-    expect(searchSettings('home screen', web, tr).map(h => h.title)).toEqual(['In Safari: Share → Add to Home Screen'])
-    expect(searchSettings('install', { ...web, androidWeb: true }, tr).map(h => h.title)).toEqual(['In Chrome: ⋮ menu → Add to Home screen'])
+    expect(searchSettings('home screen', { ...web, desktopWeb: false }, tr).map(h => h.title)).toEqual(['In Safari: Share → Add to Home Screen'])
+    expect(searchSettings('install', { ...web, androidWeb: true, desktopWeb: false }, tr).map(h => h.title)).toEqual(['In Chrome: ⋮ menu → Add to Home screen'])
+    // Windows and Linux are neither: Chrome's install icon, not an iPhone's Share menu (night QA 10-19).
+    expect(searchSettings('install', web, tr).map(h => h.title)).toEqual(['In Chrome or Edge: the install icon in the address bar'])
     expect(searchSettings('backup folder', { ...guestWeb, mobile: true, android: true, autoBackup: true }, tr).map(h => h.title)).toEqual(['Backup folder'])
     expect(searchSettings('backup folder', { ...guestWeb, mobile: true, android: true }, tr)).toEqual([])
+  })
+
+  // Checked in Chrome, signed in on the web: "gym" offered the Gym reminder page, a phone-only
+  // page whose tap only bounced back to Settings. Its parent (Reminders) is there on the web.
+  it('never offers a page this device does not have, even under a parent it has', () => {
+    const tr = s => s
+    const web = { ...guestWeb, user: { id: 'u' }, synced: true, pushOK: true }
+    expect(pageVisible('reminders', web)).toBe(true)
+    expect(searchSettings('gym reminder', web, tr).map(h => h.title)).not.toContain('Gym reminder')
+    expect(searchSettings('gym reminder', { ...web, mobile: true }, tr).map(h => h.title)).toContain('Gym reminder')
   })
 
   it('a web reminder row waits for push to answer, and flashes Push notifications when it stays off', async () => {
@@ -263,7 +302,7 @@ describe('the pages', () => {
   it('each search entry is a row on its page (guest in a browser)', () => {
     const byPage = {}
     for (const e of SEARCH) if (pageVisible(PAGES[e.page].parent || e.page, guestWeb) && (!e.when || e.when(guestWeb))) (byPage[e.page] ||= []).push(e.title)
-    expect(Object.keys(byPage).sort()).toEqual(['about', 'advanced', 'alerts', 'data', 'equipment', 'look', 'plan', 'units', 'workout'])
+    expect(Object.keys(byPage).sort()).toEqual(['about', 'advanced', 'alerts', 'data', 'equipment', 'look', 'plan', 'themes', 'units', 'workout'])
     for (const [page, want] of Object.entries(byPage)) {
       mount(page)
       const have = titles()
@@ -282,8 +321,8 @@ describe('the pages', () => {
     expect(rowTitled('Exercise animations').querySelector('.lrow-s')).toBeNull()
     expect([...host.querySelectorAll('.sect-f')].some(f => /screen stays on/.test(f.textContent))).toBe(false)
     mount('advanced')
-    expect(titles()).toEqual(['Planned sessions start from', 'Keep timing after target', 'Weight and reps buttons',
-      'Drop and burst shortcuts on every set', 'Swipe actions', 'Exercise chips at the top', 'Superset buttons in the exercise header', 'Move, swap and remove buttons below the exercise'])
+    expect(titles()).toEqual(['Planned sessions start from', 'Last time means', 'Keep timing after target', 'Weight and reps buttons',
+      'Drop and burst shortcuts on every set', 'Swipe actions', 'Exercise chips at the top', 'Muscle map at the top', 'Superset buttons in the exercise header', 'Move, swap and remove buttons below the exercise'])
   })
 
   it('Collapse completed exercises is saved for every session and drops a running session\'s own choice', () => {
@@ -305,6 +344,11 @@ describe('the pages', () => {
     expect(chips.getAttribute('aria-checked')).toBe('true')
     act(() => chips.click())
     expect(mocks.S.wc.exerciseChips).toBe(false)
+    // the header's muscle map (#670) is on by default too
+    const map = rowTitled('Muscle map at the top').querySelector('[role="switch"]')
+    expect(map.getAttribute('aria-checked')).toBe('true')
+    act(() => map.click())
+    expect(mocks.S.wc.muscleMap).toBe(false)
   })
 
   it('a sub-page names where back goes; Fine-tuning goes back to Workout', () => {

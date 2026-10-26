@@ -68,6 +68,16 @@ final class SessionCoreTests: XCTestCase {
         XCTAssertEqual(s.workout?.id, "p2", "the next workout does show")
     }
 
+    func testDiscardedOnTheWatchTellsThePhoneAndStaysGone() {
+        var s = SessionCore.applySnapshot(SessionState(), snap(workout("p1", sets: [row(60, 8)])))
+        let (d, event) = SessionCore.finish(s, at: 5000, id: "d1", discard: true)
+        s = d
+        XCTAssertEqual(event?["type"] as? String, "discard")
+        XCTAssertEqual(event?["wid"] as? String, "p1")
+        s = SessionCore.applySnapshot(s, snap(workout("p1", sets: [row(60, 8)])))
+        XCTAssertNil(s.workout, "a snapshot from before the phone dropped it does not bring it back")
+    }
+
     func testFinishedOnThePhoneEndsItHere() {
         var s = SessionCore.applySnapshot(SessionState(), snap(workout("p1", sets: [row(60, 8)])))
         s = SessionCore.applySnapshot(s, snap(nil))
@@ -88,6 +98,17 @@ final class SessionCoreTests: XCTestCase {
         s = SessionCore.applySnapshot(s, snap(workout("watch-1", sets: [row(60, 8), row(40, 8)])))
         XCTAssertNil(s.startedHere, "the phone runs it now")
         XCTAssertTrue(s.workout?.entries[0].sets[0].done ?? false, "with the tick made before it heard")
+    }
+
+    /// #799: a run planned on the phone is a run in Apple Health, also when the watch starts it.
+    func testTheWorkoutTypeComesWithTheSessionAndAnOlderPhoneSendsNone() throws {
+        var ready = ReadySession(routineIds: ["r1"], name: "Run", entries: [])
+        ready.healthType = "running"
+        XCTAssertEqual(SessionCore.start(SessionState(), ready, wid: "watch-1", at: 100, id: "s1").0.workout?.healthType, "running")
+        let old = try JSONDecoder().decode(Snapshot.self, from: Data(#"{"v":1,"active":{"id":"p1","name":"Push","unit":"kg","cur":0,"restSec":90,"entries":[]}}"#.utf8))
+        XCTAssertNil(old.active?.healthType)
+        let run = try JSONDecoder().decode(Snapshot.self, from: Data(#"{"v":1,"active":{"id":"p1","name":"Run","unit":"kg","cur":0,"restSec":90,"entries":[],"healthType":"running"}}"#.utf8))
+        XCTAssertEqual(SessionCore.applySnapshot(SessionState(), run).workout?.healthType, "running")
     }
 
     func testAnotherWorkoutOnThePhoneStartsClean() {
@@ -111,5 +132,41 @@ final class SessionCoreTests: XCTestCase {
         let json = #"{"v":1,"future":true,"active":{"id":"p1","name":"Push","unit":"kg","cur":0,"restSec":90,"entries":[{"id":"0025","name":"Bench","mode":"reps","sets":[{"w":60,"r":8,"done":false,"warmup":false,"hr":{"avg":1}}]}]}}"#
         let snap = try JSONDecoder().decode(Snapshot.self, from: Data(json.utf8))
         XCTAssertEqual(SessionCore.applySnapshot(SessionState(), snap).workout?.entries.first?.sets.count, 1)
+    }
+
+    // #776: a workout discarded on the phone is not saved to Apple Health; finished, or from an
+    // older phone that does not say, it is.
+    func testADiscardedWorkoutIsToldApartFromAFinishedOne() throws {
+        var gone = snap(nil)
+        XCTAssertFalse(SessionCore.discarded("p1", in: gone))
+        gone.discarded = ["p0", "p1"]
+        XCTAssertTrue(SessionCore.discarded("p1", in: gone))
+        XCTAssertFalse(SessionCore.discarded("p2", in: gone))
+        XCTAssertFalse(SessionCore.discarded(nil, in: gone))
+        let json = #"{"v":1,"active":null,"discarded":["p1"]}"#
+        XCTAssertTrue(SessionCore.discarded("p1", in: try JSONDecoder().decode(Snapshot.self, from: Data(json.utf8))))
+    }
+
+    // Discord fuckdv: a set ticked on the phone while the watch runs the session got no heart rate.
+    func testFindsTheSetsThePhoneTickedButNotTheWatchsOwn() {
+        var s = SessionCore.applySnapshot(SessionState(), snap(workout("p1", sets: [row(60, 8), row(60, 8), row(60, 8)])))
+        s = SessionCore.tick(s, entry: 0, set: 0, w: 60, r: 8, at: 1000, id: "e1").0
+        let before = s.workout
+        let phone = workout("p1", sets: [row(60, 8, done: true, at: 1000), row(60, 8, done: true, at: 3000), row(60, 8, done: true)])
+        s = SessionCore.applySnapshot(s, snap(phone))
+        let ticks = SessionCore.phoneTicks(before, s.workout)
+        XCTAssertEqual(ticks, [SessionCore.PhoneTick(exId: "0025", entryIdx: 0, setIdx: 1, at: 3000)],
+                       "the watch's own tick and a set without a time are left out")
+        XCTAssertEqual(SessionCore.phoneTicks(s.workout, s.workout), [])
+        XCTAssertEqual(SessionCore.phoneTicks(before, workout("p2", sets: [row(60, 8, done: true, at: 5)])), [], "another workout")
+    }
+
+    func testOneSideTickedOnThePhoneCounts() {
+        var w = workout("p1", sets: [row(20, 0)])
+        w.entries[0].sets[0].sides = Sides(L: SideRow(w: 20, r: 10, done: false), R: SideRow(w: 20, r: 10, done: false))
+        let before = SessionCore.applySnapshot(SessionState(), snap(w)).workout
+        var after = w
+        after.entries[0].sets[0] = SessionCore.markSide(w.entries[0].sets[0], "L", w: 20, r: 10, at: 2000)
+        XCTAssertEqual(SessionCore.phoneTicks(before, after).map(\.at), [2000])
     }
 }

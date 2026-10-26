@@ -10,6 +10,8 @@
 "Finish workout" = "Завершить тренировку";
 "Finish workout?" = "Завершить тренировку?";
 "Finish and save" = "Завершить и сохранить";
+"Discard workout" = "Отменить тренировку";
+"Continue workout" = "Продолжить тренировку";
 "Cancel" = "Отмена";
 "Rest’s over. Next set!" = "Отдых окончен. Следующий подход!";
 "Left" = "Левая";
@@ -28,8 +30,12 @@
 "Body weight" = "Вес тела";
 "Less" = "Меньше";
 "More" = "Больше";
+"Effort" = "Усилие";
+"None" = "Нет";
 "Last time: %@" = "В прошлый раз: %@";
 "No workout running" = "Тренировка не идёт";
+"Not synced yet" = "Ещё не синхронизировано";
+"Open openGym on your iPhone once and your routines show up here." = "Откройте openGym на iPhone один раз, и ваши программы появятся здесь.";
 "Start one on your iPhone and it shows up here." = "Начните её на iPhone, и она появится здесь.";
 "All sets done" = "Все подходы сделаны";
 "measuring" = "измеряю …";
@@ -45,6 +51,8 @@
 "Tap a dot to do a skipped set." = "Нажмите на точку, чтобы сделать пропущенный подход.";
 "Log this one on your iPhone." = "Это записывается на iPhone.";
 "Saved on the watch, syncs later" = "Сохранено на часах, синхронизируется позже";
+"All done?" = "Тренировка окончена?";
+"Lock" = "Блокировка";
 "Skip this set?" = "Пропустить этот подход?";
 "Turn the Digital Crown to change it." = "Поверните Digital Crown, чтобы изменить.";
 "%lld done" = "%lld сделано";

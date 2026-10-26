@@ -262,7 +262,8 @@ test('a flood from a shared address leaves passkey sign-in, registration and pai
   assert.equal(signedIn.status, 200, 'passkey sign-in');
   assert.ok(signedIn.cookie);
   assert.equal((await h.req('POST', '/api/register/options', { body: { name: 'Cleo', code: 'goodcode' } })).status, 200, 'passkey signup');
-  const { code } = (await h.req('POST', '/api/pair/create', { cookie: signedIn.cookie })).body;
+  const pairProof = (await h.req('POST', '/api/login/options', { body: {} })).body;
+  const { code } = (await h.req('POST', '/api/pair/create', { cookie: signedIn.cookie, body: { cid: pairProof.cid, credential: key.assertion(pairProof.options.challenge) } })).body;
   assert.equal((await h.req('POST', '/api/pair/redeem', { body: { code } })).status, 200, 'pairing');
   assert.equal(h.audit().some(e => e.ev === 'auth.throttled' && e.msg !== 'password'), false);
 

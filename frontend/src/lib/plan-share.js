@@ -17,12 +17,15 @@ import { isPyramid, normalizePyramid, normalizePyramidRest, normalizePyramidWeig
 import { isBackoff } from './backoff.js'
 import { dbLoadOf } from './dumbbells.js'
 import { MAX_TRIPLE_SETS } from './progression.js'
-import { uid, todayISO, DAYN, weekOrder, weekStartOf, exCount } from './format.js'
-import { t, exerciseNameFor, exerciseNameClass, getLang, RTL_LANGS } from './i18n-core.js'
+import { uid, todayISO, DAYN, weekOrder, weekStartOf, exCount, routineCount } from './format.js'
+import { t, exerciseNameFor, exerciseNameClass } from './i18n-core.js'
 import { convertWeight } from './units.js'
 import { fmtSpeed, speedUnitOf } from './speed.js'
+import { clampIncline, hasIncline } from './incline.js'
 import { MUSCLES, inMuscleOrder } from './muscles.js'
 import { SG_NAME_MAX } from './superset-meta.js'
+import { esc, printShell, printDocument, probeMarks } from './print-doc.js'
+import { normalizeAliases } from './exercise-aliases.js'
 
 const PLAN_FMT = 1
 const WEEK_DAYS = [1, 2, 3, 4, 5, 6, 0]   // every getDay() index; only the reader's own
@@ -73,8 +76,12 @@ function cleanEx(e) {
   const o = { id: e.id, sets: e.sets }
   const mode = modeOf(e)
   if (mode === 'cardio') {
+    // Written out for the same reason as 'time' below: swings set to cardio would otherwise
+    // arrive as reps with no target (#640).
+    o.mode = 'cardio'
     if (e.min != null) o.min = e.min
     if (e.speed != null) o.speed = e.speed
+    if (hasIncline(e)) o.incline = clampIncline(e.incline)
   } else if (mode === 'time') {
     // Written out even though 'reps' is the fallback for a non-cardio id: a plan file that
     // dropped the mode would turn a 45-second plank into a 45-rep one at the other end.
@@ -120,6 +127,7 @@ function cleanEx(e) {
   // only when set, so a plan that never asked for one leaves the recipient's own default
   // timer in charge. parsePlan and mergePlan carry it through by spread.
   if (e.restSec > 0) o.restSec = e.restSec
+  else if (e.restOff === true) o.restOff = true   // "No timer" for this exercise
   if (e.warmupRestSec > 0) o.warmupRestSec = e.warmupRestSec   // the ramp's own rest travels with the work rest
   // The warm-ups' "no timer" and the break between sides travel the same way, only when set.
   // Planned substitutes (lib/routine-backups.js): the catalogue's only, since the other end may
@@ -127,7 +135,8 @@ function cleanEx(e) {
   const subs = cleanBackups(e.subs, e.id, id => !!EXIDX[id] && !isCustomEx(EXIDX[id]))
   if (subs.length) o.subs = subs
   if (e.warmupRestOff === true) o.warmupRestOff = true
-  if (e.side && e.sideRestSec > 0) o.sideRestSec = e.sideRestSec
+  if (e.side && e.sideRestOff === true) o.sideRestOff = true
+  else if (e.side && e.sideRestSec > 0) o.sideRestSec = e.sideRestSec
   if (e.sg) {
     o.sg = e.sg
     // A superset's name and its rest between rounds (#292) ride on every member, so they travel
@@ -192,6 +201,8 @@ const muscleList = v => inMuscleOrder([...new Set((Array.isArray(v) ? v : []).fi
  *  that are empty stay absent, so a file written before this change reads the same as one after. */
 function cleanCustom(c) {
   const o = { id: c.id, n: c.n, bp: c.bp }
+  const aliases = normalizeAliases(c.aliases)
+  if (aliases.length) o.aliases = aliases
   if (c.desc) o.desc = c.desc
   // The link to a video or guide travels with a shared plan (#246), cleaned both ways like any
   // other field of someone else's file; the exercise's own photo or video never does — it is a
@@ -266,9 +277,12 @@ export function parsePlan(raw, destinationUnit = 'kg') {
       const warm = cleanWarmupSets(e.warmupSets)
       const intens = cleanIntensifier(e.intensifier)
       const rest = cleanRestSec(e.restSec)
+      const restOff = e.restOff === true
       const warmRest = cleanRestSec(e.warmupRestSec)
       const warmOff = e.warmupRestOff === true
       const sideRest = cleanRestSec(e.sideRestSec)
+      const sideOff = !!e.side && e.sideRestOff === true
+      const incline = clampIncline(e.incline)
       // Planned substitutes: the catalogue's only, as they are exported.
       const subs = cleanBackups(Array.isArray(e.subs) ? e.subs.map(x => (typeof x === 'string' ? canonicalExId(x) : x)) : [], known.has(e.id) ? e.id : canonicalExId(e.id), x => !known.has(x) && !!EXIDX[x] && !isCustomEx(EXIDX[x]))
       // Superset meta only means something on a member of a superset; on a lone exercise it is dropped.
@@ -277,9 +291,9 @@ export function parsePlan(raw, destinationUnit = 'kg') {
       const pyramid = normalizePyramid(e.pyramid)
       const pyramidRest = pyramid.length ? normalizePyramidRest(e.pyramidRest, pyramid.length) : []
       const pyramidWeight = pyramid.length ? normalizePyramidWeight(e.pyramidWeight, pyramid.length) : []
-      const { warmupSets, intensifier, restSec, warmupRestSec, warmupRestOff: _warmOff, sideRestSec: _sideRest, subs: _subs, pyramid: _pyramid, pyramidRest: _pyramidRest, pyramidWeight: _pyramidWeight, sgName: _sgName, sgRest: _sgRest, ...passthrough } = e
+      const { warmupSets, intensifier, restSec, restOff: _restOff, warmupRestSec, warmupRestOff: _warmOff, sideRestSec: _sideRest, sideRestOff: _sideOff, subs: _subs, pyramid: _pyramid, pyramidRest: _pyramidRest, pyramidWeight: _pyramidWeight, sgName: _sgName, sgRest: _sgRest, incline: _incline, ...passthrough } = e
       if (!known.has(passthrough.id)) passthrough.id = canonicalExId(passthrough.id)
-      return convertedExercise({ ...passthrough, ...(pyramid.length ? { pyramid } : {}), ...(pyramidRest.length ? { pyramidRest } : {}), ...(pyramidWeight.length ? { pyramidWeight } : {}), ...(warm ? { warmupSets: warm } : {}), ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : {}), ...(warmOff ? { warmupRestOff: true } : warmRest ? { warmupRestSec: warmRest } : {}), ...(sideRest ? { sideRestSec: sideRest } : {}), ...(subs.length ? { subs } : {}), ...(sgName ? { sgName } : {}), ...(sgRest ? { sgRest } : {}) }, sourceUnit || destination, destination)
+      return convertedExercise({ ...passthrough, ...(pyramid.length ? { pyramid } : {}), ...(pyramidRest.length ? { pyramidRest } : {}), ...(pyramidWeight.length ? { pyramidWeight } : {}), ...(warm ? { warmupSets: warm } : {}), ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : restOff ? { restOff: true } : {}), ...(warmOff ? { warmupRestOff: true } : warmRest ? { warmupRestSec: warmRest } : {}), ...(sideOff ? { sideRestOff: true } : sideRest ? { sideRestSec: sideRest } : {}), ...(subs.length ? { subs } : {}), ...(sgName ? { sgName } : {}), ...(sgRest ? { sgRest } : {}), ...(incline > 0 ? { incline } : {}) }, sourceUnit || destination, destination)
     })
   }))
   return {
@@ -345,29 +359,33 @@ export function mergePlan(s, bundle, { schedule } = {}) {
       if (ids.length) s.week[d] = ids
     })
   }
-  return { routines: source.routines.length }
+  // `ids`: the new routines' ids in the plan's order, for a caller that puts them in a rotation.
+  return { routines: source.routines.length, ids: source.routines.map(r => ridMap[r.id]) }
 }
 
 /* ------------------------------- printable PDF ------------------------------- */
-
-const esc = str => String(str == null ? '' : str)
-  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 // One exercise's scheme, e.g. "3 × 8–12 · 60 kg · drop-set 1× −20%", "3 × 0:45" or
 // "2 × 20 min @ 8 km/h" — the speed in the profile's unit (lib/speed.js), like the weight. The
 // reps half is exLine's, so a double-progression range prints as the range it is ("8–12", not
 // the top alone) and a per-side split reads "8/side" exactly as the routine editor shows it.
-function scheme(e, unit, speedUnit) {
+// As parts: the sets line, then what comes on top of it, each printed on a line of its own so the
+// sets line never wraps in the middle of "4 × 12 · 35 kg".
+function schemeParts(e, unit, speedUnit) {
   const sets = e.sets || 1
   const mode = modeOf(e)
   if (mode === 'cardio') {
     const body = `${e.min || 20} min @ ${fmtSpeed(e.speed || 8, speedUnit)}`
-    return sets > 1 ? `${sets} × ${body}` : body
+    return [sets > 1 ? `${sets} × ${body}` : body]
   }
   const line = exLine({ ...e, reps: e.reps ?? 10 }, unit, speedUnit)
   const extras = [intensifierLine(e.intensifier), e.lastToFailure === true ? t('Last set to failure') : ''].filter(Boolean)
-  return [line, ...extras].join(' · ')
+  return [line, ...extras]
 }
+// The extra lines keep their " · " in the text (hidden on paper), so copied text reads as one line.
+const schemeHTML = parts => parts.map((p, i) => i === 0
+  ? `<span class="s-main">${esc(p)}</span>`
+  : `<span class="s-x"><span class="sep"> · </span>${esc(p)}</span>`).join('')
 
 // A drop-set or rest-pause is how the exercise is prescribed, so the printout names it — the
 // sheet at the rack otherwise reads as plain straight sets.
@@ -390,142 +408,131 @@ function units(ex) {
   return out
 }
 
-// `bare` leaves out the routine's own heading, for a page that is this one routine and already
-// names it at the top.
-function routineHTML(r, unit, { bare = false, speedUnit } = {}) {
-  const rows = units(r.ex).map(u => {
-    const items = u.map(e => {
-      const ex = EXIDX[e.id]
-      const name = ex ? exerciseNameFor(ex) : t('Unknown exercise')
-      // Translated, and set apart by a real space: glued to the name, "capitalize" read the two as
-      // one word and printed "Curlupper Legs".
-      const part = ex && ex.bp && ex.bp !== 'cardio' ? ` <span class="part">${esc(t(ex.bp))}</span>` : ''
-      const note = e.note ? `<div class="ex-note">${esc(e.note)}</div>` : ''
-      return `<div class="ex"><div class="ex-row"><div class="ex-n ${ex ? exerciseNameClass(ex) : ''}">${esc(name)}${part}</div><div class="ex-s">${esc(scheme(e, unit, speedUnit))}</div></div>${note}</div>`
-    }).join('')
-    return u.length > 1
-      ? `<div class="ss"><div class="ss-tag">${esc(t('Superset'))}</div><div class="ss-items">${items}</div></div>`
-      : items
-  }).join('')
-  const count = exCount(r.ex.length)
-  return `<section class="routine">
-    ${bare ? '' : `<div class="r-head"><h2>${esc(r.name)}</h2><span class="r-count">${esc(count)}</span></div>`}
-    <div class="ex-list">${rows || `<div class="ex empty">${esc(t('No exercises yet.'))}</div>`}</div>
-  </section>`
+/**
+ * An exercise's printed name: the display name, and on a line of its own the English title the
+ * app adds in parentheses to a translated one ("Bankdrücken mit Langhantel (barbell bench press)"),
+ * so a long German name wraps once instead of three times. Shared with the workout printouts.
+ */
+export function printedName(ex, fallback) {
+  if (!ex) return { name: fallback || t('Unknown exercise'), en: '', cls: '' }
+  const full = exerciseNameFor(ex)
+  const suffix = ` (${ex.n})`
+  const split = ex.n && full !== ex.n && full.endsWith(suffix)
+  return { name: split ? full.slice(0, -suffix.length) : full, en: split ? ex.n : '', cls: exerciseNameClass(ex) }
 }
 
-function weekHTML(S) {
+// One exercise row. `n` is its number in the routine; `ticks` draws a box per set to tick off at
+// the gym (the single-routine sheet, which is the one you take with you).
+function exerciseHTML(e, n, unit, { speedUnit, ticks }) {
+  const ex = EXIDX[e.id]
+  const { name, en, cls } = printedName(ex)
+  // Translated, and set apart by a real space: glued to the name, "capitalize" read the two as
+  // one word and printed "Curlupper Legs".
+  const part = ex && ex.bp && ex.bp !== 'cardio' ? ` <span class="part">${esc(t(ex.bp))}</span>` : ''
+  const boxes = ticks ? `<div class="ticks">${'<i></i>'.repeat(Math.min(12, Math.max(1, e.sets || 1)))}</div>` : ''
+  return `<div class="ex"><div class="ex-num">${n}</div><div class="ex-main">`
+    + `<div class="ex-n ${ex ? cls : ''}">${esc(name)}${part}</div>`
+    + (en ? `<div class="ex-en">${esc(en)}</div>` : '')
+    + (e.note ? `<div class="ex-note">${esc(e.note)}</div>` : '')
+    + `</div><div class="ex-s">${schemeHTML(schemeParts(e, unit, speedUnit))}${boxes}</div></div>`
+}
+
+// A routine as a run of blocks that each stay whole on a page: one per exercise, one per superset.
+// The routine's heading (and, for the first routine, the section heading above it) travels inside
+// the first block, so it can never be stranded at the bottom of a page with its exercises overleaf.
+// The routine itself may run over a page: holding all of it together left whole pages blank.
+function routineHTML(r, unit, { bare = false, speedUnit, ticks = false, lead = '', m, key }) {
+  let n = 0
+  const list = units(r.ex)
+  const blocks = list.map((u, bi) => {
+    const items = u.map(e => exerciseHTML(e, ++n, unit, { speedUnit, ticks })).join('')
+    const body = u.length > 1
+      ? `<div class="ss"><div class="ss-tag">${esc(t('Superset'))}</div>${items}</div>`
+      : items
+    const id = `${key}-${bi}`
+    const head = bi === 0
+      ? lead + (bare ? '' : `${m.h(id)}<div class="r-head"><h2>${esc(r.name)}</h2><span class="r-count">${esc(exCount(r.ex.length))}</span></div>`)
+      : ''
+    return `<div class="keep">${m.s(id)}${head}${body}${m.e(id)}</div>`
+  })
+  if (!blocks.length) blocks.push(`<div class="keep">${lead}${bare ? '' : `<div class="r-head"><h2>${esc(r.name)}</h2></div>`}<div class="none">${esc(t('No exercises yet.'))}</div></div>`)
+  return `<section class="routine">${blocks.join('')}</section>`
+}
+
+function weekHTML(S, m) {
   // The printout is read by whoever exported it, so the week runs in their order.
   const rows = weekOrder(weekStartOf(S)).map(d => {
     const names = [].concat(S.week?.[d] || [])
       .map(id => S.routines.find(x => x.id === id)?.name)
       .filter(Boolean)
     const val = names.length ? esc(deriveSessionName(names)) : `<span class="rest">${esc(t('Rest'))}</span>`
-    return `<div class="w-row"><div class="w-day">${esc(t(DAYN[d]))}</div><div class="w-r">${val}</div></div>`
+    return `<tr><th scope="row">${esc(t(DAYN[d]))}</th><td>${val}</td></tr>`
   }).join('')
-  return `<div class="week">${rows}</div>`
+  return `<div class="keep">${m.s('week')}${m.h('week')}<h3 class="sec-h first">${esc(t('Week schedule'))}</h3><table class="week">${rows}</table>${m.e('week')}</div>`
 }
+
+const PLAN_CSS = `
+  .routine { margin-bottom: 8pt; }
+  .r-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10pt; margin: 14pt 0 2pt; padding-bottom: 4pt; border-bottom: 1.5px solid var(--ink); }
+  .r-head h2 { font-size: 13pt; letter-spacing: -.01em; margin: 0; overflow-wrap: anywhere; }
+  .r-count { font-size: 8pt; color: var(--muted); white-space: nowrap; }
+
+  .ex { display: flex; align-items: flex-start; gap: 8pt; padding: 6pt 0; border-bottom: 1px solid var(--rule-soft); }
+  .ex-num { flex: none; width: 14pt; height: 14pt; margin-top: 1pt; border-radius: 50%; background: var(--tint); color: var(--muted);
+    font-size: 7pt; font-weight: 700; line-height: 14pt; text-align: center; }
+  .ex-main { flex: 1 1 auto; min-width: 0; }
+  .ex-n { font-weight: 600; overflow-wrap: anywhere; }
+  .ex-n.capitalize { text-transform: capitalize; }
+  .ex-n .part { display: inline-block; text-transform: none; color: var(--faint); font-weight: 400; font-size: 8pt; margin-inline-start: 3pt; }
+  .ex-n .part::first-letter { text-transform: uppercase; }
+  .ex-en { color: var(--faint); font-size: 8pt; text-transform: capitalize; overflow-wrap: anywhere; }
+  .ex-note { color: var(--ink-2); font-size: 8.5pt; margin-top: 2pt; font-style: italic; }
+  .ex-s { flex: none; max-width: 46%; text-align: end; color: var(--ink-2); font-weight: 500; }
+  .ex-s .s-main { display: block; white-space: nowrap; }
+  .ex-s .s-x { display: block; font-size: 8pt; font-weight: 400; color: var(--muted); }
+  .ex-s .sep { display: none; }
+  .ticks { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 3pt; margin-top: 4pt; }
+  .ticks i { display: block; width: 9pt; height: 9pt; border: 1px solid #c4c9d2; border-radius: 2pt; }
+
+  .ss { border-inline-start: 2.5pt solid var(--lime); padding-inline-start: 8pt; margin: 4pt 0; }
+  .ss-tag { font-size: 7pt; letter-spacing: .1em; text-transform: uppercase; color: var(--lime-ink); font-weight: 700; padding-top: 5pt; }
+  .ss .ex:last-child { border-bottom: 0; }
+
+  table.week th { width: 32%; text-transform: none; letter-spacing: 0; font-size: 9pt; color: var(--ink); font-weight: 600; padding: 4pt 8pt 4pt 0; border-bottom: 1px solid var(--rule-soft); }
+  table.week td { padding: 4pt 0; }
+  table.week tr:last-child th, table.week tr:last-child td { border-bottom: 0; }
+  .rest { color: var(--faint); }
+`
 
 /**
  * Full self-contained HTML for the print/PDF view. With `routineId` it is that one routine on
  * its own page (#282) — the session you take to the gym, not the week around it — so the week
- * schedule is left out and the routine's name is the page title.
+ * schedule is left out and the routine's name is the page title. `probe` is for the layout check
+ * (lib/print-doc.js probeMarks), never set in the app.
  */
-export function planPrintHTML(S, owner, { routineId } = {}) {
+export function planPrintHTML(S, owner, { routineId, probe = false } = {}) {
+  const m = probeMarks(probe)
   const unit = S.unit || 'kg'
+  const speedUnit = speedUnitOf(S)
   const single = routineId ? (S.routines || []).find(r => r.id === routineId) || null : null
   const routines = routineId ? [single].filter(Boolean) : (S.routines || []).filter(r => r.ex && r.ex.length)
+  const lead = routineId ? '' : `<h3 class="sec-h">${esc(t('Routines'))}</h3>`
   const body = routines.length
-    ? routines.map(r => routineHTML(r, unit, { bare: !!single, speedUnit: speedUnitOf(S) })).join('')
+    ? routines.map((r, i) => routineHTML(r, unit, { bare: !!single, speedUnit, ticks: !!single, lead: i === 0 ? lead : '', m, key: 'r' + i })).join('')
     : `<p class="none">${esc(t('No routines yet.'))}</p>`
   const title = single ? single.name : t('Weekly Training Plan')
-  const sub = [single ? exCount(single.ex.length) : null, owner, todayISO()].filter(Boolean).map(esc).join(' · ')
-  const week = routineId ? '' : `<h3 class="block">${esc(t('Week schedule'))}</h3>
-  ${weekHTML(S)}
-  <h3 class="block">${esc(t('Routines'))}</h3>`
-  return `<!doctype html><html lang="${getLang()}" dir="${RTL_LANGS.has(getLang()) ? 'rtl' : 'ltr'}"><head><meta charset="utf-8">
-<title>${esc(title)}</title>
-<style>
-  @page { margin: 16mm 15mm; }
-  * { box-sizing: border-box; }
-  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  body {
-    margin: 0; color: #16181d; background: #fff;
-    font: 14px/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    font-variant-numeric: tabular-nums;
-  }
-  .doc { max-width: 720px; margin: 0 auto; }
-  header { border-bottom: 2px solid #16181d; padding-bottom: 12px; margin-bottom: 20px; }
-  header .kicker { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #6a7a3a; font-weight: 700; }
-  header h1 { font-size: 27px; letter-spacing: -.02em; margin: 3px 0 0; }
-  header .sub { color: #6b7180; font-size: 13px; margin-top: 4px; }
-
-  h3.block { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #8a90a0; margin: 0 0 8px; font-weight: 700; }
-
-  .week { border: 1px solid #e4e6ec; border-radius: 10px; overflow: hidden; margin-bottom: 26px; break-inside: avoid; page-break-inside: avoid; }
-  .w-row { display: flex; align-items: baseline; padding: 8px 14px; border-top: 1px solid #eef0f4; }
-  .w-row:first-child { border-top: 0; }
-  .w-day { width: 116px; font-weight: 600; color: #16181d; flex: none; }
-  .w-r { text-transform: capitalize; }
-  .rest, .w-r .rest { color: #a2a8b6; text-transform: none; }
-
-  .routine { break-inside: avoid; page-break-inside: avoid; margin-bottom: 20px; padding: 14px 16px; border: 1px solid #e4e6ec; border-radius: 12px; }
-  .r-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; border-bottom: 1px solid #eef0f4; padding-bottom: 8px; margin-bottom: 8px; break-after: avoid; page-break-after: avoid; }
-  .r-head h2 { font-size: 18px; letter-spacing: -.01em; margin: 0; text-transform: capitalize; }
-  .r-count { font-size: 12px; color: #8a90a0; white-space: nowrap; }
-
-  .ex-list { display: flex; flex-direction: column; }
-  .ex { display: flex; flex-direction: column; padding: 6px 0; break-inside: avoid; page-break-inside: avoid; }
-  .ex + .ex, .ss + .ex, .ex + .ss { border-top: 1px solid #f2f3f6; }
-  .ex-row { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
-  .ex-n { font-weight: 500; }
-  .ex-n.capitalize { text-transform: capitalize; }
-  .ex-n .part { display: inline-block; text-transform: none; color: #9aa0ae; font-weight: 400; font-size: 12px; margin-inline-start: 4px; }
-  .ex-n .part::first-letter { text-transform: uppercase; }
-  .ex-s { color: #3d424e; white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .ex-note { color: #6a7080; font-size: 12px; margin-top: 2px; }
-  .ex.empty, .none { color: #a2a8b6; }
-
-  .ss { break-inside: avoid; page-break-inside: avoid; border-inline-start: 3px solid #cfe08a; padding-inline-start: 12px; margin: 4px 0; }
-  .ss-tag { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: #6a7a3a; font-weight: 700; padding-top: 4px; }
-  .ss .ex:first-of-type { padding-top: 2px; }
-
-  footer { margin-top: 26px; padding-top: 10px; border-top: 1px solid #eef0f4; color: #a2a8b6; font-size: 11px; text-align: center; }
-</style></head>
-<body><div class="doc">
-  <header>
-    <div class="kicker">openGym</div>
-    <h1>${esc(title)}</h1>
-    ${sub ? `<div class="sub">${sub}</div>` : ''}
-  </header>
-  ${week}
-  ${body}
-  <footer>${esc(t('Made with openGym'))} · opengym.ch</footer>
-</div></body></html>`
+  const facts = single ? [exCount(single.ex.length)] : [routineCount(routines.length)]
+  return printShell({
+    title, kicker: single ? t('Routine') : t('Training plan'), facts, owner, date: todayISO(),
+    body: (routineId ? '' : weekHTML(S, m)) + body,
+    css: PLAN_CSS,
+  })
 }
 
 /**
- * Render the plan and open the browser's print dialog (→ Save as PDF).
- * Uses a hidden iframe so we never navigate away or trip a popup blocker.
+ * Print the plan: the browser's print dialog (→ Save as PDF) on the web.
  * `opts` is planPrintHTML's: `{ routineId }` prints a single routine.
  */
 export function printPlan(S, owner, opts) {
-  const ifr = document.createElement('iframe')
-  ifr.setAttribute('aria-hidden', 'true')
-  ifr.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0;'
-  document.body.appendChild(ifr)
-  const cleanup = () => { try { ifr.remove() } catch (e) { /* */ } }
-  const run = () => {
-    const w = ifr.contentWindow
-    if (!w) { cleanup(); return }
-    w.onafterprint = cleanup
-    setTimeout(cleanup, 60000)   // safety net if afterprint never fires
-    w.focus()
-    try { w.print() } catch (e) { cleanup() }
-  }
-  const doc = ifr.contentWindow.document
-  doc.open(); doc.write(planPrintHTML(S, owner, opts)); doc.close()
-  // Give the iframe a tick to lay out before printing.
-  if (doc.readyState === 'complete') setTimeout(run, 120)
-  else ifr.onload = () => setTimeout(run, 120)
+  return printDocument(planPrintHTML(S, owner, opts), opts?.routineId ? (S.routines || []).find(r => r.id === opts.routineId)?.name : t('Weekly Training Plan'))
 }

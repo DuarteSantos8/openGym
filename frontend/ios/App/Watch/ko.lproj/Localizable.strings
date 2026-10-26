@@ -10,6 +10,8 @@
 "Finish workout" = "운동 마치기";
 "Finish workout?" = "운동을 마칠까요?";
 "Finish and save" = "마치고 저장";
+"Discard workout" = "운동 버리기";
+"Continue workout" = "운동 계속하기";
 "Cancel" = "취소";
 "Rest’s over. Next set!" = "휴식 끝. 다음 세트!";
 "Left" = "왼쪽";
@@ -28,8 +30,12 @@
 "Body weight" = "체중";
 "Less" = "적음";
 "More" = "많음";
+"Effort" = "강도";
+"None" = "없음";
 "Last time: %@" = "지난번: %@";
 "No workout running" = "진행 중인 운동이 없어요";
+"Not synced yet" = "아직 동기화되지 않았어요";
+"Open openGym on your iPhone once and your routines show up here." = "iPhone에서 openGym을 한 번 열면 루틴이 여기에 나타나요.";
 "Start one on your iPhone and it shows up here." = "iPhone에서 시작하면 여기에 나타나요.";
 "All sets done" = "모든 세트 완료";
 "measuring" = "측정 중 …";
@@ -45,6 +51,8 @@
 "Tap a dot to do a skipped set." = "건너뛴 세트를 하려면 점을 탭하세요.";
 "Log this one on your iPhone." = "이건 iPhone에서 기록하세요.";
 "Saved on the watch, syncs later" = "워치에 저장됨, 나중에 동기화돼요";
+"All done?" = "다 끝났나요?";
+"Lock" = "잠금";
 "Skip this set?" = "이 세트를 건너뛸까요?";
 "Turn the Digital Crown to change it." = "바꾸려면 Digital Crown을 돌리세요.";
 "%lld done" = "%lld개 완료";

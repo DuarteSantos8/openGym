@@ -10,6 +10,9 @@
     "core"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "Pullover with slightly bent arms using a barbell for lats and chest.",
   "instructions": [
     "Lie on a bench holding a barbell above your chest.",

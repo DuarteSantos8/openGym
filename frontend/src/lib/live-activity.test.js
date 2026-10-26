@@ -34,13 +34,16 @@ describe('buildLiveActivity', () => {
 
   it('shows the set to do now, the few after it, and how far along the session is', () => {
     const live = L.buildLiveActivity(S(A))
-    expect(live.attributes).toMatchObject({ v: 1, wid: 'w1', start: 1000, accent: '#30d158' })
-    for (const k of ['done', 'rest', 'next', 'allDone', 'restOver']) expect(typeof live.attributes.labels[k], k).toBe('string')
+    expect(live.attributes).toMatchObject({ v: 2, wid: 'w1', start: 1000, accent: '#30d158' })
+    for (const k of ['done', 'rest', 'next', 'allDone', 'restOver', 'nextExercise', 'skipRest', 'openApp']) expect(typeof live.attributes.labels[k], k).toBe('string')
     expect(live.state.name).toBe('Push')
     expect(live.state.cur).toMatchObject({ exId: '0025', entryIdx: 0, setIdx: 1, setLine: 'Set 2 of 3', restAfter: 120 })
     expect(live.state.cur.target).toMatch(/62[.,]5/)
     expect(live.state.ahead.map(x => [x.entryIdx, x.setIdx])).toEqual([[0, 2], [1, 0]])
     expect(live.state.ahead[1].exName).toBe('Cable thing')
+    // Title-cased the way the workout screen shows it (CSS capitalize there), not the stored
+    // lower-case name (Discord: lower-case on the Lock Screen).
+    expect(live.state.cur.exName).toBe('Barbell Bench Press')
     expect(live.state).toMatchObject({ done: 1, total: 4, restEndsAt: null, restLeft: null })
   })
   it('carries the rest: its end while it runs, what is left while paused, nothing once over', () => {
@@ -51,6 +54,38 @@ describe('buildLiveActivity', () => {
   it('has no current set once everything is ticked', () => {
     const all = { ...A, entries: A.entries.map(e => ({ ...e, sets: e.sets.map(s => ({ ...s, done: true })) })) }
     expect(L.buildLiveActivity(S(all)).state).toMatchObject({ cur: null, ahead: [], done: 4, total: 4 })
+  })
+  it('says Log set, not Done, so it does not read like finishing the workout (Discord)', () => {
+    expect(L.buildLiveActivity(S(A)).attributes.labels.done).toBe('Log set')
+  })
+  it('tags each set with its exercise unit and carries the first open set of the next exercises', () => {
+    const W = { id: 'w2', cur: 1, entries: [
+      entry('0025', [set({ done: true }), set()]),
+      entry('0043', [set(), set()], { sg: 'g' }), entry('0001', [set(), set()], { sg: 'g' }),
+      entry('0100', [set({ done: true })]),
+      entry('0200', [set(), set()]),
+    ] }
+    const st = L.buildLiveActivity(S(W)).state
+    // the superset (entries 1 and 2) is one unit, named by its first entry
+    expect(st.cur).toMatchObject({ entryIdx: 1, setIdx: 0, unit: 1 })
+    expect(st.ahead[0]).toMatchObject({ entryIdx: 2, setIdx: 0, unit: 1 })
+    // entry 3 has nothing open; after the last one it wraps round to the first
+    expect(st.unitStarts.map(x => [x.unit, x.entryIdx, x.setIdx])).toEqual([[4, 4, 0], [0, 0, 1]])
+  })
+  it('carries no next exercise when the current one is the only one with sets open', () => {
+    const W = { id: 'w2', cur: 0, entries: [entry('0025', [set(), set()]), entry('0043', [set({ done: true })])] }
+    expect(L.buildLiveActivity(S(W)).state.unitStarts).toEqual([])
+  })
+  it('stays inside ActivityKit\'s 4 KB with long names, dropping the farthest sets first', () => {
+    const long = 'ท่าบริหารกล้ามเนื้อที่ยาวมากเป็นพิเศษ'.repeat(3)
+    const W = { id: 'w3', cur: 0, entries: Array.from({ length: 10 }, (_, k) => entry('x' + k, [set(), set(), set()], { target: { name: long + k, mode: 'reps' } })) }
+    const live = L.buildLiveActivity(S(W))
+    expect(new TextEncoder().encode(JSON.stringify(live)).length).toBeLessThanOrEqual(3600)
+    expect(live.state.cur).toBeTruthy()
+    expect(live.state.unitStarts.length).toBeGreaterThan(0)
+    const short = L.buildLiveActivity(S({ ...W, entries: W.entries.map(e => ({ ...e, target: { mode: 'reps' } })) }))
+    expect(short.state.ahead).toHaveLength(L.LIVE_AHEAD)
+    expect(short.state.unitStarts).toHaveLength(L.LIVE_UNITS)
   })
   it('is null without a running workout, and for a saved one being edited', () => {
     expect(L.buildLiveActivity(S(null))).toBeNull()
@@ -117,6 +152,76 @@ describe('the Done taps', () => {
     await L.drainLiveEvents()
     expect(calls).toHaveLength(1)
     expect(acked).toEqual(['e1'])
+  })
+})
+
+describe('Next exercise and Skip rest', () => {
+  let state, calls, timer
+  const A = () => ({ id: 'w1', cur: 0, entries: [entry('0025', [set(), set()]), entry('0043', [set({ done: true })]), entry('0001', [set()])] })
+  const getState = () => ({ S: state })
+  let unbind = null
+  const bind = () => {
+    unbind = L.bindLiveActions({
+      setDone: (idx, i) => { calls.push(['setDone', idx, i]); state.active.entries[idx].sets[i].done = true },
+      next: idx => { calls.push(['next', idx]); state.active.cur = idx },
+      restSkip: () => { calls.push(['restSkip']); timer = null },
+      timer: () => timer,
+    })
+  }
+  beforeEach(() => { localStorage.clear(); L._resetLiveActivity(); state = S(A()); calls = []; timer = null })
+  afterEach(() => { unbind?.(); unbind = null })
+
+  it('moves on to the next exercise with sets open, without ticking, and only once', () => {
+    bind()
+    const ev = { id: 'n1', type: 'next', wid: 'w1', fromEntryIdx: 0, at: 1 }
+    expect(L.applyLiveEvents([ev], getState)).toEqual(['n1'])
+    expect(L.applyLiveEvents([{ ...ev, id: 'n2' }], getState)).toEqual(['n2'])
+    // the second tap was from exercise 0, which the page already left: nothing happens
+    expect(calls).toEqual([['next', 2]])
+    expect(state.active.entries.flatMap(e => e.sets).filter(s => s.done)).toHaveLength(1)
+  })
+  it('ignores a Next for another workout, and one with nowhere to go', () => {
+    bind()
+    L.applyLiveEvents([{ id: 'n1', type: 'next', wid: 'old', fromEntryIdx: 0 }], getState)
+    state.active.entries[2].sets[0].done = true
+    L.applyLiveEvents([{ id: 'n2', type: 'next', wid: 'w1', fromEntryIdx: 0 }], getState)
+    expect(calls).toEqual([])
+  })
+  it('applies a Next after the Done taps before it, in order', () => {
+    bind()
+    L.applyLiveEvents([
+      { id: 'd1', type: 'setDone', wid: 'w1', exId: '0025', entryIdx: 0, setIdx: 0, at: 1 },
+      { id: 'n1', type: 'next', wid: 'w1', fromEntryIdx: 0, at: 2 },
+    ], getState)
+    expect(calls).toEqual([['setDone', 0, 0], ['next', 2]])
+  })
+  it('skips the rest the tap was about, not one that started after it', () => {
+    bind()
+    const now = 1_000_000
+    timer = { endsAt: now + 60_000, total: 90, left: 60 }   // started 30 s before now
+    L.applyLiveEvents([{ id: 's1', type: 'restSkip', wid: 'w1', at: now }], getState)
+    expect(calls).toEqual([['restSkip']])
+    timer = { endsAt: now + 90_000 + 20_000, total: 90, left: 90 }   // started 20 s after the tap
+    L.applyLiveEvents([{ id: 's2', type: 'restSkip', wid: 'w1', at: now }], getState)
+    L.applyLiveEvents([{ id: 's1', type: 'restSkip', wid: 'w1', at: now + 30_000 }], getState)
+    expect(calls).toHaveLength(1)
+    expect(timer).not.toBeNull()
+  })
+  it('leaves a side switch and another workout\'s rest alone, and has nothing to skip without a rest', () => {
+    bind()
+    timer = { endsAt: 5000, total: 5, left: 5, kind: 'switch' }
+    L.applyLiveEvents([{ id: 's1', type: 'restSkip', wid: 'w1', at: 9000 }], getState)
+    timer = { endsAt: 5000, total: 5, left: 5 }
+    L.applyLiveEvents([{ id: 's2', type: 'restSkip', wid: 'old', at: 9000 }], getState)
+    expect(calls).toEqual([])
+    expect(L.restSkipApplies(null, 1)).toBe(false)
+    expect(L.restSkipApplies({ left: 30, total: 90, paused: true }, 1)).toBe(true)
+  })
+  it('keeps them queued until the workout screen is there', () => {
+    const evs = [{ id: 'n1', type: 'next', wid: 'w1', fromEntryIdx: 0 }, { id: 's1', type: 'restSkip', wid: 'w1', at: 1 }]
+    expect(L.applyLiveEvents(evs, getState)).toEqual([])
+    bind()
+    expect(L.applyLiveEvents(evs, getState)).toEqual(['n1', 's1'])
   })
 })
 

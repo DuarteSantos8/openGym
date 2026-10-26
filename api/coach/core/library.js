@@ -25,6 +25,12 @@ export function equipmentAllows(equipment, id) {
   return !eq || eq === ALWAYS_AVAILABLE || wanted.includes(eq);
 }
 
+/* "I own no dumbbells", the app's switch under Settings → Equipment → Dumbbells (frontend
+   lib/dumbbells.js ownsNoDumbbells): kept in the synced dumbbell map under `none`. It holds
+   whatever the Coach's own equipment answer says, the switch being the more direct statement. */
+export const ownsNoDumbbells = S => S?.dumbbells?.none?.on === true;
+export const isDumbbellLift = id => (LIB_BY_ID.get(id)?.eq || '').toLowerCase() === 'dumbbell';
+
 /* ---------- the library slice the model gets to choose from ----------
    Bounded. The whole catalogue is 1,324 rows — 10k+ tokens on every job, which costs real money
    against a cloud API and does not fit a small local model's context at all; and a model does
@@ -80,7 +86,9 @@ export function librarySlice(S, equipment, { keep = [], max = MAX_LIBRARY } = {}
   // No equipment stated (or "everything") ⇒ the whole catalogue. Filtering to nothing would
   // leave the Coach unable to propose anything at all, which is a worse failure than a
   // slightly larger payload.
-  const filtered = wanted.length ? LIBRARY.filter(e => equipmentAllows(wanted, e.id)) : LIBRARY;
+  const noDumbbells = ownsNoDumbbells(S);
+  const filtered = (wanted.length ? LIBRARY.filter(e => equipmentAllows(wanted, e.id)) : LIBRARY)
+    .filter(e => !noDumbbells || !isDumbbellLift(e.id));
   const equipped = filtered.length ? filtered : LIBRARY;
   // Same reasoning as the equipment fallback: a filter that removed everything is not a filter
   // worth honouring. Someone whose only kit reaches nothing but stretches gets the stretches.

@@ -31,7 +31,7 @@
 <!-- Umami web analytics for opengym.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
 <script type="application/ld+json">
-{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is openGym really free?", "acceptedAnswer": {"@type": "Answer", "text": "Yes — free as in cost and as in freedom (AGPL-3.0). No pro tier, no locked features, no ads, and the license keeps every fork open source too."}}, {"@type": "Question", "name": "Is openGym on the App Store and Google Play?", "acceptedAnswer": {"@type": "Answer", "text": "The App Store: yes, since 23 October 2026, for iPhone and Apple Watch (https://apps.apple.com/app/id6822275400). Google Play is next; until then the signed Android APK is a direct download."}}, {"@type": "Question", "name": "Should I pick the mobile app or self-host?", "acceptedAnswer": {"@type": "Answer", "text": "To simply track your training: the mobile app. For data on your own hardware, synced across devices, with profiles for the people you train with: self-host with Docker. The backup file migrates everything between the two, or pair the app to your server."}}, {"@type": "Question", "name": "What's on the openGym roadmap?", "acceptedAnswer": {"@type": "Answer", "text": "A small, themed release roughly every two weeks: a session queue, programmes and phases, AMRAP/%1RM/5-3-1 progression, cardio intervals, then database storage (v1.4.0), better search, OIDC login and a trainer role. The full plan is in ROADMAP.md on GitHub."}}, {"@type": "Question", "name": "Was openGym written with AI?", "acceptedAnswer": {"@type": "Answer", "text": "openGym is developed with Claude Code, Anthropic's coding agent; a large share of the code, tests and docs is drafted that way, and every change is reviewed, tested and released by the maintainer. The app itself calls no AI service unless an admin switches on the optional AI coach."}}, {"@type": "Question", "name": "Where does the exercise database come from?", "acceptedAnswer": {"@type": "Answer", "text": "The exercise text lives in openGym's own catalogue in the repository, open to fixes and translations by pull request; the oldest entries came from ExerciseDB under MIT. The pictures and animations are licensed from Gym visual for use in openGym only and ship with it at 180 px. Reusing them anywhere else needs your own licence from gymvisual.com."}}, {"@type": "Question", "name": "What does the AGPL license mean for me?", "acceptedAnswer": {"@type": "Answer", "text": "You can self-host, use, modify and share openGym freely. Only if you run a modified version as a network service must you offer that version's source under the same license. Using or self-hosting it unmodified obliges you to nothing."}}]}
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is openGym really free?", "acceptedAnswer": {"@type": "Answer", "text": "Yes — free as in cost and as in freedom (AGPL-3.0). No pro tier, no locked features, no ads, and the license keeps every fork open source too."}}, {"@type": "Question", "name": "Is openGym in the App Store and on Google Play?", "acceptedAnswer": {"@type": "Answer", "text": "The App Store: yes, since 23 October 2026, for iPhone and Apple Watch (https://apps.apple.com/app/id6822275400). Google Play follows once a new developer account has finished its closed test. On Android the signed APK is a direct download in the meantime."}}, {"@type": "Question", "name": "Should I pick the mobile app or self-host?", "acceptedAnswer": {"@type": "Answer", "text": "To simply track your training: the mobile app. For data on your own hardware, synced across devices, with profiles for the people you train with: self-host with Docker. The backup file migrates everything between the two, or pair the app to your server."}}, {"@type": "Question", "name": "What's on the openGym roadmap?", "acceptedAnswer": {"@type": "Answer", "text": "A release roughly every one to two weeks. v1.4.3 (gym reminder, health data read back, watch upgrades) is in App Review, v1.4.4 brings programmes with %1RM and RPE targets and custom app icons, v1.4.5 remote MCP and Google Play. After that, in rough order: circuits and EMOM, a trainer role, OIDC sign-in, F-Droid, a free on-device Coach, Strava and Garmin, and database storage. The full plan is in ROADMAP.md on GitHub."}}, {"@type": "Question", "name": "Was openGym written with AI?", "acceptedAnswer": {"@type": "Answer", "text": "openGym is developed with Claude Code, Anthropic's coding agent; a large share of the code, tests and docs is drafted that way, and every change is reviewed, tested and released by the maintainer. The app itself calls no AI service unless an admin switches on the optional AI coach."}}, {"@type": "Question", "name": "Where does the exercise database come from?", "acceptedAnswer": {"@type": "Answer", "text": "The exercise text lives in openGym's own catalogue in the repository, open to fixes and translations by pull request; the oldest entries came from ExerciseDB under MIT. The pictures and animations are licensed from Gym visual for use in openGym only and ship with it at 180 px. Reusing them anywhere else needs your own licence from gymvisual.com."}}, {"@type": "Question", "name": "What does the AGPL license mean for me?", "acceptedAnswer": {"@type": "Answer", "text": "You can self-host, use, modify and share openGym freely. Only if you run a modified version as a network service must you offer that version's source under the same license. Using or self-hosting it unmodified obliges you to nothing."}}]}
 </script>
 </head>
 <body class="topnav dock">
@@ -118,6 +118,7 @@
       <a class="side-sub" href="#sh-https">HTTPS on your domain</a>
       <a class="side-sub" href="#sh-notify">Notifications</a>
       <a class="side-sub" href="#sh-stack">In an existing stack</a>
+      <a class="side-sub" href="#sh-nas">On a NAS</a>
       <a class="side-sub" href="#sh-update">Updating</a>
     </div>
   </div>
@@ -205,7 +206,7 @@
   <p>One codebase, three ways to run it. Everything below applies to all of them unless a
      section says otherwise.</p>
   <table class="cfg">
-    <tr><td><b>Mobile app</b></td><td>The <a href="https://apps.apple.com/app/id6822275400" rel="noopener">App Store app</a> for iPhone and Apple Watch, and a signed Android APK. No account, no server, no sync — the phone <i>is</i> the account, data lives in the app's private storage, workout-day reminders are native notifications. Install-and-done.</td></tr>
+    <tr><td><b>Mobile app</b></td><td>The <a href="https://apps.apple.com/app/id6822275400" rel="noopener">App Store app</a> for iPhone (with the Apple Watch app) and the Android APK. No account, no server, no sync unless you want one: the phone <i>is</i> the account, data lives in the app's private storage, reminders are native notifications. Install and done, or <a href="#mobile-server">connect it to your server</a> later.</td></tr>
     <tr><td><b>Self-hosted</b></td><td>Two Docker containers on your own machine. Adds passkey profiles, sync across devices, installable as a home-screen PWA, optional admin dashboard, web push notifications. The flavor for households and training groups.</td></tr>
     <tr><td><b>Demo</b></td><td><a href="/demo/">The in-browser demo</a> — the real app seeded with example data, storing everything in your browser only. Useful to try before installing, and as a free plan editor (see <a href="#import">Import</a>).</td></tr>
   </table>
@@ -248,18 +249,21 @@
      away, stays quiet. The missed-workout nudge, when switched on, is scheduled the same way.</p>
 
   <h2 id="iphone">Use on iPhone</h2>
-  <p><b>openGym is in the App Store</b>, for iPhone and Apple Watch, in every App Store country:
-     <a href="https://apps.apple.com/app/id6822275400" rel="noopener">get it here</a>. It works on the
-     phone alone, or <a href="#mobile-server">paired with your own server</a>. Other ways:</p>
+  <p>openGym has a native iPhone and iPad app, with an <b>Apple Watch</b> app, widgets, a Live
+     Activity and Apple Health. It is the same app as on Android: use it on its own or connect it
+     to your server.</p>
   <ul>
-    <li><b>Self-host + home screen:</b> open your own openGym instance in
-        Safari → <b>Share</b> → <b>Add to Home Screen</b>. You get a full-screen app with its
-        own icon, passkey sign-in and sync — no expiry, no fees.</li>
-    <li><b>Build it onto your own iPhone:</b> with a Mac and Xcode 15+, the native Capacitor
-        app runs on your device with a free Apple ID (Apple expires the signature after
-        7 days; re-run from Xcode to renew — <b>AltStore</b> can automate that re-signing over
-        Wi-Fi). See <a href="https://github.com/DuarteSantos8/openGym/blob/main/docs/MOBILE.md" rel="noopener">docs/MOBILE.md</a>.</li>
-    <li><b>Just looking?</b> Try the <a href="/demo/">in-browser demo</a> — the real app with
+    <li><b>The App Store:</b> <a href="https://apps.apple.com/app/id6822275400" rel="noopener">get it here</a>,
+        in every App Store country. To try the next version early, the
+        <a href="https://testflight.apple.com/join/RKATb61k" rel="noopener">public TestFlight beta</a>
+        is the same app.</li>
+    <li><b>Self-host + home screen:</b> open your own openGym instance in Safari &rarr;
+        <b>Share</b> &rarr; <b>Add to Home Screen</b>. A full-screen app with its own icon,
+        passkey sign-in and sync.</li>
+    <li><b>Build it yourself</b> (a fork, say): open <code>frontend/ios</code> in Xcode with a free
+        Apple ID and run it on your phone (Apple expires that signature after 7 days). See
+        <a href="https://github.com/DuarteSantos8/openGym/blob/main/docs/MOBILE.md" rel="noopener">docs/MOBILE.md</a>.</li>
+    <li><b>Just looking?</b> Try the <a href="/demo/">in-browser demo</a>: the real app with
         example data, no account and nothing to install.</li>
   </ul>
 
@@ -270,6 +274,10 @@
   <ul>
     <li><b>A routine per weekday.</b> The home screen knows what day it is, shows this week
         with what's done and what's planned, and starts today's session with one tap.</li>
+    <li><b>See what a session hits.</b> Today's session on Home and every routine on the Plan
+        page (the week, the rotation and the routine list) carry a tiny body, front and back,
+        with the muscles it works lit up. No more opening Leg Day to check that it is, in fact,
+        legs.</li>
     <li><b>Reschedule any day.</b> Sick, missed a session, fewer gym days this week? Move a
         workout to another date without touching the weekly plan itself — the override applies
         to that date only.</li>
@@ -467,6 +475,18 @@
         get one nudge that evening, in the tone you picked: <i>Friendly</i>, <i>Guilt trip</i>
         (&ldquo;I miss you&rdquo;) or <i>Drill sergeant</i>. Rest days stay quiet, and after
         three missed days in a row it stops until your next workout.</li>
+    <li><b>Gym reminder</b> (phone app, off by default): add your gyms in Settings &rarr;
+        Reminders &rarr; Gym reminder, from where you stand or as a pin on a map, each with its
+        own radius and text. Walk into one and the phone nudges you to hit Start: once a day at
+        most, never after you trained, never mid-workout, and only between the hours you pick if
+        you like. Your gyms stay on the phone (not on your server, not in backups). Android uses
+        the system's own proximity alerts, no Google services needed; it can be slow to notice
+        you arrived, so with openGym's battery use on <i>Unrestricted</i> a short GPS look near
+        the gym ("Quick arrival check") nudges you at the door instead. A workout you logged on
+        your laptop that the phone hasn't synced yet counts too: a paired phone asks your server
+        first.</li>
+    <li><b>Settings that slide:</b> a settings page slides in from the right and back out, like
+        the iPhone's own Settings. On the iPhone a swipe from the left edge goes back.</li>
     <li><b>Installable PWA</b> (self-hosted): add it to your home screen from any browser and
         it opens full-screen with its own icon.</li>
   </ul>
@@ -498,8 +518,11 @@ curl http://localhost:8080/api/health      # {"ok":true,...}</code></pre>
      <b>cannot</b> use <code>http://192.168.x.x:8080</code> — that's neither localhost nor
      HTTPS, and the passkey prompt won't appear. To use openGym from your phone you need a
      real HTTPS hostname (below). Until then, LAN devices can still use <b>guest mode</b>
-     (data stays in that browser) or the <a href="#mobile-server">mobile app's pairing
-     mode</a>.</p>
+     (data stays in that browser), <a href="#admin-signin">password sign-in</a>
+     (<code>PASSWORD_LOGIN=1</code>) or the <a href="#mobile-server">mobile app's pairing
+     mode</a>. No fingerprint reader on your laptop is a different story and needs none of
+     that: a passkey can sit on your phone (scan the browser's QR code), in a password manager
+     or on a security key.</p>
 
   <h3 id="sh-https">HTTPS on your own domain</h3>
   <p>Put anything that terminates TLS in front of the <code>web</code> container. Pick
@@ -510,6 +533,11 @@ curl http://localhost:8080/api/health      # {"ok":true,...}</code></pre>
     <li><b>Caddy</b> (automatic Let's Encrypt): <code>gym.example.com { reverse_proxy localhost:8080 }</code></li>
     <li><b>Traefik / nginx / Nginx Proxy Manager:</b> route the HTTPS hostname to
         <code>web:80</code> or <code>&lt;docker-host&gt;:8080</code>. Any proxy works.</li>
+    <li><b>Tailscale Serve</b> (no domain, nothing on the internet):
+        <code>tailscale serve --bg http://127.0.0.1:8080</code> gives the host a
+        <code>https://&lt;name&gt;.&lt;tailnet&gt;.ts.net</code> address with a real certificate;
+        use that name as <code>RP_ID</code>/<code>ORIGIN</code>. Phones need the Tailscale app.
+        Steps in <a href="https://github.com/DuarteSantos8/openGym/blob/main/docs/SELF_HOSTING.md#option-d--tailscale-serve-no-domain-nothing-on-the-internet" rel="noopener">SELF_HOSTING.md</a>.</li>
   </ul>
   <p>Then set the domain in <code>.env</code> and apply it:</p>
   <pre><code># .env
@@ -566,6 +594,44 @@ docker compose up -d   # restart alone does NOT re-read .env</code></pre>
      <code>.env</code> settings — <code>WEB_PORT</code>, <code>NGINX_PORT</code>,
      <code>BACKEND</code>, <code>PORT</code>. The web image renders its nginx config from
      these <i>at container start</i>, so they work on a prebuilt image, no rebuild.</p>
+  <p>Under a <b>subpath</b> such as <code>https://example.com/gym/</code>, with nginx passing
+     the prefix through:</p>
+  <pre><code>location = /gym { return 301 /gym/; }
+location /gym/ {
+    proxy_pass http://127.0.0.1:8080;   # no trailing slash
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    client_max_body_size 48m;
+    proxy_read_timeout 300s;
+}
+
+# .env
+BASE_PATH=/gym
+RP_ID=example.com
+ORIGIN=https://example.com          # no /gym here</code></pre>
+  <p>Prefer <code>proxy_pass http://127.0.0.1:8080/;</code> (trailing slash, prefix stripped)?
+     Then leave <code>BASE_PATH</code> empty and add <code>proxy_redirect / /gym/;</code>.
+     Stripping <i>and</i> setting <code>BASE_PATH</code> loads the page but 404s every API call.
+     And skip <code>proxy_cookie_path</code>: over https the session cookie is a
+     <code>__Host-</code> cookie, which browsers drop when its path isn't <code>/</code>, so you'd
+     sign up and still not be signed in. Both setups are in
+     <a href="https://github.com/DuarteSantos8/openGym/blob/main/docs/SELF_HOSTING.md#nginx-under-gym-both-ways" rel="noopener">SELF_HOSTING.md</a>.</p>
+
+  <h3 id="sh-nas">On a NAS (Synology, QNAP, Unraid, TrueNAS)</h3>
+  <p>Works like any Docker host, with four catches. <b>Run both services</b>: a stack with only
+     <code>web</code> loads, but sign-in never works and <b>Continue without account</b> quietly
+     makes you a guest whose data stays in that browser. <b>Use absolute paths</b> for the data
+     volume and <code>env_file</code> (for example <code>/share/Container/opengym/.env</code>), because
+     the NAS's compose UI keeps the file in a folder of its own. <b>Set <code>ORIGIN</code> to the
+     exact address you type</b>, port included (<code>ORIGIN=http://10.11.0.4:3030</code>,
+     <code>RP_ID=10.11.0.4</code>), then recreate the stack; otherwise every save is refused and the
+     API log's <code>refused cross-origin</code> line names the values to set. <b>Add HTTPS</b>
+     through the NAS's reverse proxy (Synology Login Portal, QNAP Reverse Proxy, Nginx Proxy
+     Manager or Caddy on Unraid and TrueNAS) for passkeys. The <code>api</code> container runs as
+     root and writes <code>data/</code>, so an NFS share with root squash needs a different owner.
+     The full walkthrough with a compose file to paste is in
+     <a href="https://github.com/DuarteSantos8/openGym/blob/main/docs/SELF_HOSTING.md#on-a-nas-synology-qnap-unraid-truenas" rel="noopener">SELF_HOSTING.md</a>.</p>
 
   <h3 id="sh-update">Updating</h3>
   <pre><code>git pull                  # picks up compose/config changes
@@ -592,7 +658,8 @@ docker compose up -d</code></pre>
     <tr><td><code>BACKEND</code></td><td>Name of the API service <code>/api</code> is proxied to — change it if yours isn't called <code>api</code>.</td></tr>
     <tr><td><code>PORT</code></td><td>Port the API listens on; the web container proxies to the same value. Default <code>3000</code>.</td></tr>
     <tr><td><code>SESSION_DAYS</code></td><td>How long a sign-in lasts, in days. Default <code>90</code>.</td></tr>
-    <tr><td><code>ADMIN_UIDS</code></td><td>Comma-separated user ids that get the <a href="#admin">admin dashboard</a>. Default: none — a fresh instance has no admin.</td></tr>
+    <tr><td><code>ADMIN_UIDS</code></td><td>Comma-separated user ids that get the <a href="#admin">admin dashboard</a> (your id: Settings → Account → Account ID). Default: none, so a fresh instance has no admin.</td></tr>
+    <tr><td><code>FIRST_USER_ADMIN</code></td><td>Set <code>1</code> and the first profile created on an instance with no profiles becomes its admin. Has no effect once profiles exist. Default: off.</td></tr>
     <tr><td><code>INVITE_ONLY</code></td><td>Set <code>1</code> and new profiles need an invite code you generate from the dashboard. Existing accounts keep working. Default: off.</td></tr>
     <tr><td><code>ALLOW_GUEST</code></td><td>Set <code>0</code> to remove <b>Continue without account</b>. Guest data isn't deleted — it stays in that browser and returns if you re-enable guests, or moves into a profile created on the same device. Default: on.</td></tr>
     <tr><td><code>AUDIT_LOG</code></td><td>Record sign-ins and admin actions to the <a href="#admin-log">activity log</a> — set <code>0</code> to record nothing. Default: on.</td></tr>
@@ -602,7 +669,7 @@ docker compose up -d</code></pre>
     <tr><td><code>PASSWORD_LOGIN</code></td><td>Set <code>1</code> to offer <a href="#admin-signin">name-and-password sign-in</a> next to passkeys. Default: off.</td></tr>
     <tr><td><code>TRUST_PROXY</code></td><td>Let the sign-in throttle read the visitor's address from proxy headers. <code>1</code> in <code>docker-compose.yml</code>, where the web container is the only way to the API; leave it off if you run the API without it.</td></tr>
     <tr><td><code>DEFAULT_LANG</code></td><td>Language of the sign-in screen and of new profiles, e.g. <code>de</code> or <code>pt-BR</code>. Default: the visitor's browser language.</td></tr>
-    <tr><td><code>BASE_PATH</code></td><td>Serve openGym under a subpath such as <code>/gym</code>, no trailing slash. Default: the site root.</td></tr>
+    <tr><td><code>BASE_PATH</code></td><td>Serve openGym under a subpath such as <code>/gym</code>, no trailing slash, when your proxy passes that prefix through. A proxy that strips it needs this empty. Default: the site root. See <a href="#sh-stack">existing stack</a>.</td></tr>
     <tr><td><code>MEDIA_UPLOADS</code></td><td>Set <code>0</code> to turn off photo and video uploads (custom-exercise pictures, workout photos); the link field stays. Default: on.</td></tr>
     <tr><td><code>MEDIA_QUOTA_MB</code></td><td>Upload space per profile in MB; <code>0</code> for no cap. Default <code>200</code>. Lower it on an instance with open signup.</td></tr>
     <tr><td><code>MEDIA_MIN_FREE_MB</code></td><td>Uploads are refused while the disk under <code>./data</code> has less free space than this. Default <code>512</code>. Size limits per file type are in <a href="https://github.com/DuarteSantos8/openGym/blob/main/docs/SELF_HOSTING.md#photos-and-videos-of-custom-exercises" rel="noopener">SELF_HOSTING.md</a>.</td></tr>
@@ -620,11 +687,17 @@ docker compose up -d</code></pre>
   <h2 id="admin">Multiple users, admin &amp; the activity log</h2>
   <p>Anyone who can reach the URL can create their own profile — each gets isolated data.
      That's the default: open signup, no admin. To control who gets in:</p>
-  <pre><code>ADMIN_UIDS=youruserid      # your id is in ./data/db.json under users[].id
+  <pre><code>FIRST_USER_ADMIN=1         # the first profile on an empty instance becomes admin
+ADMIN_UIDS=youruserid      # or name admins by id: Settings → Account → Account ID
 INVITE_ONLY=1              # new profiles need an invite code
 ALLOW_GUEST=0              # remove "Continue without account"</code></pre>
-  <p>Register your own passkey profile <i>first</i>, then put your id in
-     <code>ADMIN_UIDS</code>. You'll get an <b>Admin dashboard</b> link in Settings → Account: who's
+  <p>On a brand-new instance, set <code>FIRST_USER_ADMIN=1</code> before anyone signs up and
+     register your own profile first. Already registered? <code>FIRST_USER_ADMIN</code> only ever
+     applies to the very first profile, so copy your id from <b>Settings → Account → Account
+     ID</b> into <code>ADMIN_UIDS</code>, run <code>docker compose up -d</code> (a plain
+     <code>restart</code> keeps the old <code>.env</code>) and reload the app. You'll get an
+     <b>Admin dashboard</b> link in Settings → Account (it's also where the <a href="#coach">AI
+     Coach</a> is switched on): who's
      training right now, each user's workout history and body weight, disabling an account
      (signed out and locked out everywhere until re-enabled), and — with invite-only on —
      generating and revoking invite codes. Admin access rides on your passkey and is enforced
@@ -664,14 +737,16 @@ ALLOW_GUEST=0              # remove "Continue without account"</code></pre>
   <p>Passkeys can't work inside the app's WebView (it never runs at your real hostname), so
      the device is <b>paired</b> instead:</p>
   <ol>
-    <li>In a browser that's already signed in: Settings → Account → <b>Pair the mobile app</b> — shows
-        a one-time code, valid 5 minutes.</li>
+    <li>In a browser that's already signed in: Settings &rarr; Account &rarr; <b>Pair the mobile app</b>.
+        Confirm it's you (your passkey, or your password where password sign-in is on), and it
+        shows a one-time code, valid 5 minutes.</li>
     <li>In the app: enter your server's address and that code. Done.</li>
   </ol>
   <p>Worth knowing: the pairing exchanges the code for a bearer token that is the same signed
      value a session cookie carries — so <b>"sign out everywhere"</b> in the browser revokes
-     paired apps too. Use an <code>https://</code> address: the phone blocks a plain
-     <code>http://</code> server before anything is sent. Pairing fails while the browser works?
+     paired apps too. Use an <code>https://</code> address where you can. A plain
+     <code>http://</code> server on your home network works too if you type the address with
+     <code>http://</code> in front (the app reminds you it is not encrypted). Pairing fails while the browser works?
      A reverse proxy or a login page in front of <code>/api/</code> is answering instead of
      openGym; see <a href="https://github.com/DuarteSantos8/openGym/blob/main/docs/SELF_HOSTING.md#phone-app-and-cors" rel="noopener">Phone app and CORS</a>. A connected app keeps working without a network on the
      last copy it synced — it shows an "Offline" line under the header and pushes your changes
@@ -711,7 +786,9 @@ ALLOW_GUEST=0              # remove "Continue without account"</code></pre>
 
   <h3 id="coach-providers">Providers</h3>
   <p>It is <b>off by default</b>. An admin turns it on in <b>Settings → Account → Admin dashboard</b>,
-     on the <b>AI Coach</b> card, and picks who answers:</p>
+     on the <b>AI Coach</b> card, and picks who answers. No admin dashboard in your Settings?
+     Then nobody is admin yet, and that comes first: <a href="#admin">make yourself admin</a>.
+     There's no <code>.env</code> switch for the Coach itself.</p>
   <table class="cfg">
     <tr><td><b>Anthropic, OpenAI, Google&nbsp;Gemini</b></td><td>Paste an API key from the provider's console. Plain HTTPS from the api process — runs on the default image.</td></tr>
     <tr><td><b>OpenAI-compatible endpoint</b></td><td>Any server that speaks the Chat Completions API: <b>Ollama</b>, <b>LM Studio</b>, <b>vLLM</b>, <b>OpenRouter</b>, a gateway of your own. A key only if the endpoint wants one. Also the default image.</td></tr>
@@ -836,7 +913,7 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
      table lives in
      <a href="https://github.com/DuarteSantos8/openGym/blob/main/docs/DATA_IMPORTS.md" rel="noopener">docs/DATA_IMPORTS.md</a>.</p>
   <h3 id="imp-plans">Importing plans</h3>
-  <p>Routines travel as their own small JSON file (<b>Plan → Share your plan → Export plan file</b> exports every current
+  <p>Routines travel as their own small JSON file (<b>Plan → share button (top right) → Export plan file</b> exports every current
      routine; importing merges). Don't want to share everything? Edit the JSON, or use the
      <a href="/demo/">demo</a> as a free plan editor: import there, prune, export a fresh
      file. The demo stores everything in your browser — nothing is public or shared.</p>
@@ -879,8 +956,10 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
      back — lives in pure functions under <code>frontend/src/lib/</code> with tests next to
      them; the MCP server and the mobile app import the very same functions. Every pull
      request runs the full suites (frontend, api, mcp) on GitHub Actions and builds and boots the
-     api images. After the merge, CI on the GitLab mirror builds the amd64+arm64 images, signs the
-     APK and publishes the release &mdash; tagging <code>vX.Y.Z</code> is what ships everything.</p>
+     api images. A published release builds the amd64+arm64 images; the APKs and the iPhone app
+     are signed on the release machine, because the sharper animations inside them may never
+     sit in a CI run (licence). The GitLab mirror's CI builds images and SBOMs for its own
+     registry.</p>
   <p>openGym is developed with <a href="https://claude.com/claude-code" rel="noopener">Claude Code</a>,
      Anthropic's coding agent: a large share of the code, tests and documentation is drafted in
      Claude Code sessions. What goes in, every review and every release is the maintainer's call,
@@ -903,8 +982,9 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
         Gradle + <code>zipalign</code> + <code>apksigner</code> with your own keystore
         (keep it — updates must carry the same signature). Step-by-step:
         <a href="https://github.com/DuarteSantos8/openGym/blob/main/docs/MOBILE.md" rel="noopener">docs/MOBILE.md</a>.</li>
-    <li><b>iOS app:</b> the Capacitor project in <code>frontend/ios</code> — open in Xcode,
-        set your (free) team, run on your device. Same doc.</li>
+    <li><b>iOS app:</b> the Capacitor project in <code>frontend/ios</code>: open it in Xcode,
+        set your (free) team, run it on your device. Same doc; how the App Store build is made
+        is in <a href="https://github.com/DuarteSantos8/openGym/blob/main/docs/APP_STORES.md" rel="noopener">docs/APP_STORES.md</a>.</li>
     <li><b>Development:</b> Node 20+; <code>npm test</code> in <code>frontend/</code>,
         <code>api/</code> and <code>mcp/</code> runs the suites. Contributions welcome —
         <a href="https://github.com/DuarteSantos8/openGym/blob/main/CONTRIBUTING.md" rel="noopener">CONTRIBUTING.md</a>.</li>
@@ -934,6 +1014,8 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
   <h3 id="tr-rest">Everything else</h3>
   <table class="cfg">
     <tr><td>No passkey prompt on my phone</td><td>You're on <code>http://</code> or a bare IP. Passkeys need HTTPS or localhost — set up a domain, or use guest mode / the mobile app.</td></tr>
+    <tr><td>"This server only takes changes made at ..."</td><td><code>ORIGIN</code> isn't the address in your browser. <code>docker compose logs api</code> shows a <code>refused cross-origin</code> line naming the <code>ORIGIN=</code> and <code>RP_ID=</code> to set; then <code>docker compose up -d</code>.</td></tr>
+    <tr><td>Sign-in never works, only "Continue without account"</td><td>The <code>api</code> container isn't running or <code>web</code> can't reach it (<code>BACKEND</code>, <code>PORT</code>). As a guest nothing is saved on the server.</td></tr>
     <tr><td>"verification failed" on login</td><td><code>RP_ID</code>/<code>ORIGIN</code> don't match the address bar — see the checklist above, starting with what the server logged.</td></tr>
     <tr><td>Exercise pictures missing</td><td>You're on an image older than v1.4.0 or a custom build: <code>docker compose pull &amp;&amp; docker compose up -d</code>. A source build needs <code>catalogue/media/</code> checked out.</td></tr>
     <tr><td>Port 8080 already used</td><td><code>WEB_PORT=9090</code> in <code>.env</code> (and update <code>ORIGIN</code> for local testing).</td></tr>
@@ -954,7 +1036,8 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
   <ul>
     <li><b>The app collects nothing.</b> No telemetry, no analytics, no crash reporting, no
         accounts on anyone else's server. The exercise media are inside the mobile app.
-        It goes online only for what you set up (your server, the coach, Health Connect) and, in the
+        It goes online only for what you set up (your server, the coach, Health Connect, the gym
+        reminder's map and address search, which ask OpenStreetMap) and, in the
         APK from this site, for GitHub's public release list when you open Settings → About (the
         update check). The full policy: <a href="privacy.html">Privacy</a>. In the browser, a self-hosted instance talks only to your own server.</li>
     <li><b>Passkey private keys never leave your device</b> — the server stores only public
@@ -976,14 +1059,63 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
   <h3>Is it really free?</h3>
   <p>Yes — free as in cost <i>and</i> as in freedom (AGPL-3.0). No pro tier, no locked
      features, no ads, and the license keeps every fork open source too. If it replaced a
-     paid tracker for you, there's a <a href="https://buymeacoffee.com/duartesantos" rel="noopener">coffee button</a>
-     and a <a href="https://ko-fi.com/opengym" rel="noopener">Ko-fi page</a>,
-     though a star, a bug report or a pull request is worth just as much.</p>
-  <h3>Is it on the App Store and Google Play?</h3>
+     paid tracker for you, there's a <a href="https://buymeacoffee.com/duartesantos" rel="noopener">coffee button</a>,
+     a <a href="https://ko-fi.com/opengym" rel="noopener">Ko-fi page</a> and
+     <a href="https://github.com/sponsors/DuarteSantos8" rel="noopener">GitHub Sponsors</a>
+     (the app has all three under Settings &rarr; About &amp; updates), though a star, a bug report or a pull request is worth just as much.</p>
+  <h3>Is it in the App Store and on Google Play?</h3>
   <p>The App Store: yes, since 23 October 2026, for iPhone and Apple Watch
-     (<a href="https://apps.apple.com/app/id6822275400" rel="noopener">link</a>). Google Play is next;
-     until then the signed Android APK is a direct download, and it updates itself. The store apps are
-     the same AGPL code as everything else here.</p>
+     (<a href="https://apps.apple.com/app/id6822275400" rel="noopener">link</a>). Google Play comes
+     once a new developer account has run its closed test. On Android the
+     <a href="#android">signed APK</a> is the way in until then, and the same key signs both, so
+     moving to Play later keeps your data. The store apps are the same AGPL code, with nothing
+     collected and nothing to buy.</p>
+  <h3>How do I use it on my iPhone?</h3>
+  <p>The easy way is the <a href="https://apps.apple.com/app/id6822275400" rel="noopener">App Store app</a>,
+     on its own or connected to your server. Or as a web app: open your openGym address (it has to be
+     <code>https://</code>) in <b>Safari</b>, tap <b>Share → Add to Home Screen</b>, open the new icon
+     and create your profile; Face ID makes the passkey. It runs full screen, works offline and can
+     send notifications from there. Just curious? The <a href="/demo/">demo</a> works in Safari too.</p>
+  <h3>Passkeys don't work on plain http, or my laptop has no fingerprint reader.</h3>
+  <p>Browsers only do passkeys over HTTPS (and on <code>http://localhost</code>), so
+     <code>http://ip:port</code> never gets a passkey prompt, whatever you set. Put HTTPS in
+     front (<a href="#sh-https">see above</a>, Tailscale Serve included, or a LAN certificate via
+     <a href="https://github.com/DuarteSantos8/openGym/blob/main/docs/SELF_HOSTING_HTTPS.md" rel="noopener">SELF_HOSTING_HTTPS.md</a>).
+     A fingerprint reader is not required: any passkey works, from your phone via the browser's
+     QR code, a password manager, a security key or a Windows Hello PIN. Or switch on passwords
+     with <code>PASSWORD_LOGIN=1</code> in <code>.env</code> and <code>docker compose up -d</code>:
+     the sign-in screen then offers <b>Sign in with password</b> and new profiles can use one.</p>
+  <h3>Can I use a password instead of a passkey?</h3>
+  <p>Yes, if the instance allows it: <code>PASSWORD_LOGIN=1</code> in <code>.env</code>, then
+     <code>docker compose up -d</code>. Off by default. The sign-in screen gets <b>Sign in with
+     password</b> (profile name or sign-in e-mail), new profiles can use one, and a passkey profile
+     adds one under <b>Settings → Account → Password</b>. openGym never sends mail, so a forgotten
+     password is reset with a one-time code from the admin dashboard. Switching it off later locks
+     out profiles that only have a password. <a href="#admin-signin">More on signing in</a>.</p>
+  <h3>What is guest mode, and can I turn it off?</h3>
+  <p><b>Continue without account</b> keeps everything in that browser: no profile, no sync,
+     nothing on the server. Make a profile on the same device later and the data moves in. For an
+     instance meant for a known set of people, <code>ALLOW_GUEST=0</code> removes the button;
+     <code>INVITE_ONLY=1</code> decides who may create a profile. Stuck as a guest because sign-in
+     never works? The <code>api</code> container isn't reachable (<a href="#sh-nas">NAS notes</a>).</p>
+  <h3>The AI Coach doesn't show up on my server.</h3>
+  <p>Nothing in <code>.env</code> switches it on; an admin does, in the app. If Settings →
+     Account has no <b>Admin dashboard</b>, nobody is admin yet: copy <b>Settings → Account →
+     Account ID</b> into <code>ADMIN_UIDS</code>, <code>docker compose up -d</code>, reload.
+     Then <b>Admin dashboard → AI Coach → Set up the Coach</b>, connect a provider, test it, and
+     the Coach appears in the menu at the top right of <b>Plan</b>.
+     <a href="#coach-providers">More on providers</a>.</p>
+  <h3>How do I serve it under /gym with nginx?</h3>
+  <p>Either nginx passes <code>/gym/</code> through and <code>.env</code> has
+     <code>BASE_PATH=/gym</code>, or nginx strips it and <code>BASE_PATH</code> stays empty;
+     never both. <code>ORIGIN</code> has no path, and leave out <code>proxy_cookie_path</code>.
+     A working config is under <a href="#sh-stack">Fitting it into an existing stack</a>.</p>
+  <h3>Can I move my data from the phone app to my server?</h3>
+  <p>Yes. Easiest: pair the app with the server (<a href="#mobile-server">how</a>) and answer
+     <b>Add them</b> when it asks about this device's workouts. Or export a backup in the app
+     (<b>Settings → Data &amp; backup → Export backup</b>) and import it on the server, signed in,
+     under <b>Settings → Data &amp; backup → Import backup</b>; it asks before replacing anything
+     the server has that the file doesn't.</p>
   <h3>Mobile app or self-hosted — which one should I pick?</h3>
   <p>If you just want to track your training: the mobile app. If you want your data on your
      own hardware, synced across devices, with profiles for the people you train with:
@@ -991,10 +1123,13 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
      migrates everything, or <a href="#mobile-server">pair the app to your server</a> and
      keep using it.</p>
   <h3>What's on the roadmap?</h3>
-  <p>A small, themed release roughly every two weeks. Next up: a session queue beside the
-     fixed week, programmes and phases, a second round on the progression engine (AMRAP,
-     %1RM and 5/3/1-style waves), cardio intervals; then the move to a database (v1.4.0, the one
-     compatibility break), better search, OIDC login and a trainer role. The full plan with dates is in
+  <p>A release roughly every one to two weeks. v1.4.3 (the gym reminder, heart rate and
+     weigh-ins read back from Apple Health and Health Connect, a smarter Apple Watch) is in App
+     Review. v1.4.4 brings programmes with %1RM and RPE targets, your own app icon and kg or lb
+     per exercise; v1.4.5 remote MCP over HTTPS and Google Play. After that, in rough order and
+     with dates that are honest guesses: circuits and EMOM, a trainer role, OIDC sign-in,
+     F-Droid, a free Coach that runs on the phone, Strava and Garmin, and database storage.
+     The full plan is in
      <a href="https://github.com/DuarteSantos8/openGym/blob/main/ROADMAP.md" rel="noopener">ROADMAP.md</a>;
      ideas and pull requests welcome.</p>
   <h3>Was openGym written with AI?</h3>
