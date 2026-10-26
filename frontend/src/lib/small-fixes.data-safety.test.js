@@ -7,6 +7,7 @@ import { createMediaStore, memoryBackend } from './media-store.js'
 import { sha256Hex } from './sha256.js'
 import { png } from './media-samples.test-util.js'
 import { parsePlan, buildPlanBundle } from './plan-share.js'
+import { loggedExposure, ruleOccurrence } from './test-fixtures.js'
 
 /* DATA SAFETY for the v1.4.2 small fixes ("don't fry our DB"). The new data is optional only:
    warmupRestOff and sideRestSec on a routine entry (rest for warm-ups and between sides), subs on
@@ -20,14 +21,13 @@ const OLD = () => ({
   _ts: 1760000000000, unit: 'kg', body: 'female',
   customEx: [{ id: 'cu1', n: 'grip trainer', bp: 'lower arms', eq: 'custom', custom: true, media: photo(H(9)), _ts: 5 }],
   routines: [{ id: 'r1', name: 'Upper', _ts: 7, ex: [
-    { id: '0025', sets: 3, reps: 8, weight: 60, restSec: 150, warmupSets: 2, warmupRestSec: 45 },
-    { id: '0098', sets: 3, reps: 10, weight: 20, side: true, sg: 'sg1' },
-    { id: 'cu1', sets: 2, reps: 20, sg: 'sg1', note: 'slow' },
+    { ...ruleOccurrence('0025', { occurrenceId: 'o1' }), restSec: 150, warmup: { mode: 'smart', count: 2 }, warmupRestSec: 45 },
+    { ...ruleOccurrence('0098', { occurrenceId: 'o2' }), side: true, sg: 'sg1' },
+    { ...ruleOccurrence('cu1', { occurrenceId: 'o3' }), sg: 'sg1', note: 'slow' },
   ] }],
   week: { 1: ['r1'] },
-  workouts: [{ id: 'w1', d: '2026-10-01', start: 1, end: 2, name: 'Upper', routineId: 'r1', _ts: 8,
-    entries: [{ id: '0025', sets: [{ w: 40, r: 8, done: true, phase: 'warmup', warmup: true }, { w: 60, r: 8, done: true }] },
-      { id: '0098', sets: [{ w: 20, r: 10, done: true, sides: { L: { w: 20, r: 5, done: true }, R: { w: 20, r: 5, done: true } } }] }],
+  workouts: [{ id: 'w1', d: '2026-10-01', start: 1, end: 2, status: 'completed', name: 'Upper', routineIds: ['r1'], _ts: 8,
+    exposures: [loggedExposure('0025', [{ r: 8, w: 60 }], { exposureId: 'x1' }), loggedExposure('0098', [{ r: 10, w: 20 }], { exposureId: 'x2' })],
     media: [photo(H(1))] }],
   bodyweight: [{ d: '2026-10-01', w: 63.4, t: 9 }],
   dayNotes: { '2026-10-02': { tag: 'sick', _ts: 10 } },

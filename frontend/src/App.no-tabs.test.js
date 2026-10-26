@@ -10,6 +10,6 @@ describe('the tab bar', () => {
   it('stays away from the first-launch onboarding', () => {
     const cond = app.match(/const noTabs = ([^\n]+)/)?.[1] || ''
     expect(cond).toContain('needsMobileOnboarding')
-    expect(app).toMatch(/\{!noTabs && <TabBar /)
+    expect(app).toMatch(/\{!noTabs && !migration && <TabBar /)
   })
 })

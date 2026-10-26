@@ -4,21 +4,22 @@
 // i18n-core rather than i18n, like history.js: nothing here needs the React half.
 import { setLabel, sessionSections, workoutVolume } from './history.js'
 import { EXIDX } from './exercises.js'
+import { legacyEntriesOf } from './prescription/index.js'
 import { hasCompletedWork, isWarmupRow } from './workout-model.js'
 import { fmtDate, fmtNum, fmtVol, durPart, capWords } from './format.js'
 import { t, exerciseNameClass } from './i18n-core.js'
 
 /**
  * `unit` is the profile's, `nameOf(entry)` the exercise's display name, `speedUnit` the one cardio
- * is shown in (lib/speed.js; km/h when absent). Blocks are separated by a blank line: the heading,
+ * is shown in (lib/speed.js; km/h when absent), `prescriptions` the profile's, for a saved workout's targets. Blocks are separated by a blank line: the heading,
  * then each exercise (a superset's under one "Superset" line, its members together), then the
  * session note.
  */
-export function workoutText(w, { unit, nameOf, speedUnit, warmups = false }) {
+export function workoutText(w, { unit, nameOf, speedUnit, prescriptions, warmups = false }) {
   const facts = [
     ...durPart((w.end || 0) - (w.start || 0)),
     // `warmups`: the profile counts warm-ups in volume (#719); the set list below stays work sets.
-    fmtVol(warmups ? workoutVolume(w, { warmups }) : (w.vol ?? workoutVolume(w)), unit),
+    fmtVol(warmups ? workoutVolume(null, w, { warmups }) : (w.vol ?? workoutVolume(null, w)), unit),
     ...(w.bw ? [t('Body weight') + ' ' + fmtNum(w.bw) + ' ' + unit] : []),
   ]
   const blocks = [[[w.name, fmtDate(w.d, true, true)].filter(Boolean).join(' · '), facts.join(' · ')].join('\n')]
@@ -35,7 +36,8 @@ export function workoutText(w, { unit, nameOf, speedUnit, warmups = false }) {
   }
   // Grouped the way the detail sheet groups it (sessionSections): per routine first, so a
   // superset is only ever paired inside one routine's section, in the order the sheet lists them.
-  const entries = w.entries || []
+  // A saved workout holds exposures; the same rows, read the way the detail sheet shows them.
+  const entries = w.entries || legacyEntriesOf(w, prescriptions)
   for (const group of sessionSections(entries).flatMap(section => section.units)) {
     const members = group.map(i => lines(entries[i])).filter(Boolean)
     if (!members.length) continue

@@ -20,11 +20,11 @@ function mount(entry, over = {}) {
   const S = clone(DEF)
   S.unit = 'lb'
   Object.assign(S, over)
-  S.active = {
+  const A = {
     id: 'focus-test', d: '2026-09-28', start: Date.now(), routineId: null,
     name: 'Focus', bw: null, cur: 0, workoutView: 'focus', entries: [entry],
   }
-  useStore.setState({ S, user: null })
+  useStore.setState({ S, A, user: null })
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
@@ -97,7 +97,7 @@ describe('Focus workout view', () => {
     expect(item).toBeTruthy()
     act(() => item.click())
 
-    expect(useStore.getState().S.active.entries[0].noProg).toBe(true)
+    expect(useStore.getState().A.entries[0].noProg).toBe(true)
     const status = container.querySelector('.focus-prescription .focus-badge.warning')
     expect(status).toBeTruthy()
     expect(status.textContent).toContain('Not counted for progression')
@@ -115,7 +115,7 @@ describe('Focus workout view', () => {
       act(() => sheetRoot.unmount()); sheetContainer.remove(); sheetRoot = sheetContainer = null
     }
     pick('Add set')
-    const sets = () => useStore.getState().S.active.entries[0].sets
+    const sets = () => useStore.getState().A.entries[0].sets
     expect(sets()).toHaveLength(3)
     expect(sets()[2]).toMatchObject({ w: 95, r: 5, done: false })
     expect(container.querySelectorAll('.focus-dots button')).toHaveLength(3)
@@ -147,7 +147,7 @@ describe('Focus workout view', () => {
       .find(el => el.querySelector('.tt')?.textContent === 'Add burst')
     act(() => item.click())
 
-    expect(useStore.getState().S.active.entries[0].sets[0].clusters[0].restSec).toBe(7)
+    expect(useStore.getState().A.entries[0].sets[0].clusters[0].restSec).toBe(7)
   })
 })
 
@@ -157,7 +157,7 @@ describe('Focus view cardio speed', () => {
   const BIKE = '2138'   // stationary bike, cardio
   const bike = () => ({ id: BIKE, target: { sets: 1, min: 20, speed: 8 }, sets: [{ min: 20, speed: 8, done: false }] })
   const cell = () => container.querySelector('button[aria-label="Increase speed"]').closest('.stp-w')
-  const stored = () => useStore.getState().S.active.entries[0].sets[0].speed
+  const stored = () => useStore.getState().A.entries[0].sets[0].speed
   const type = value => {
     const input = cell().querySelector('input')
     act(() => {

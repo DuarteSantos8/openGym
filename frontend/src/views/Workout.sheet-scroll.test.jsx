@@ -49,11 +49,11 @@ beforeEach(() => {
   S.restSec = 90
   S.sound = false
   // Bench and squat as one superset card, then a row press on its own.
-  S.active = {
+  const A = {
     id: 'a', name: 'Test', start: Date.now(), cur: 0,
     entries: [entry('0025', 'g'), entry('0043', 'g'), entry('0001')],
   }
-  useStore.setState({ S, user: null })
+  useStore.setState({ S, A, user: null })
   useUI.setState({ sheets: [], timer: null, work: null, toastMsg: '' })
 
   host = document.createElement('div')
@@ -67,7 +67,7 @@ afterEach(() => {
   useUI.getState().stopRest()
   useUI.getState().stopWork()
   useUI.setState({ sheets: [] })
-  useStore.setState({ S: originalS })
+  useStore.setState({ S: originalS, A: null })
   document.body.style.position = ''
   vi.useRealTimers()
 })
@@ -100,8 +100,8 @@ describe('rating a superset set closes a sheet and moves the marker in one tap',
     // Pick a level: the sheet closes, the set is ticked and the marker moves to the partner.
     await click(document.querySelector('.effpick .item.menu-item'))
     expect(useUI.getState().sheets.length).toBe(0)
-    expect(useStore.getState().S.active.entries[0].sets[0].done).toBe(true)
-    expect(useStore.getState().S.active.cur).toBe(1)
+    expect(useStore.getState().A.entries[0].sets[0].done).toBe(true)
+    expect(useStore.getState().A.cur).toBe(1)
     expect(scrolls).toEqual(['scrollTo'])                    // the un-pin's restore, nothing else yet
 
     await runFrames()
@@ -125,7 +125,7 @@ describe('rating a superset set closes a sheet and moves the marker in one tap',
     await mount()
     scrolls.length = 0
     await click(host.querySelector('[role="checkbox"]'))
-    expect(useStore.getState().S.active.cur).toBe(1)
+    expect(useStore.getState().A.cur).toBe(1)
     expect(scrolls).toEqual([host.querySelectorAll('.setrow')[2]])
   })
 })

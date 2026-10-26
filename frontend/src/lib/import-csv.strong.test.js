@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parseWorkoutCSV, mergeImport } from './import-csv.js'
+import { legacyEntriesOf } from './prescription/index.js'
 
 // Rows from a real Strong export (QA sample). Strong writes the workout's length in Duration
 // ("1h 5m", "52m") on every row and a set's own time in Seconds; the session note is
@@ -130,5 +131,30 @@ describe('two sessions on one day', () => {
     expect(parsed.source).toBe('FitNotes')
     expect(parsed.workouts).toHaveLength(1)
     expect(parsed.workouts[0].entries).toHaveLength(2)
+  })
+})
+
+// What the merge writes is read back by legacyEntriesOf everywhere (history, Stats, the MCP tools,
+// "Save as routine"), which takes a duration observation in seconds and the effort on the row.
+describe('merged into a canonical profile', () => {
+  it('reads back every imported set as it was parsed: the hold in seconds, cardio in minutes, the RPE', () => {
+    const parsed = parseWorkoutCSV(STRONG, { unit: 'kg' })
+    const S = { workouts: [], customEx: [], exWeights: {}, bodyweight: [] }
+    expect(mergeImport(S, parsed)).toEqual({ added: 2, skipped: 0 })
+    // A typed RPE is saved with the RIR it implies (normalizeEffort), as the workout screen saves it.
+    const plain = ({ rir, ...row }) => { if (row.min != null && row.w === 0) delete row.w; return row.rpe != null ? row : { ...row, ...(rir != null ? { rir } : {}) } }
+    const back = S.workouts.map(w => legacyEntriesOf(w).map(e => e.sets.map(plain)))
+    expect(back).toEqual(parsed.workouts.map(w => w.entries.map(e => e.sets)))
+    expect(back[0].flat().some(s => s.rpe === 8)).toBe(true)
+    expect(back[0].flat().some(s => s.sec === 60)).toBe(true)
+    expect(back[1].flat()).toContainEqual({ min: 20, speed: 9, done: true })
+  })
+
+  it('reads back an RIR column as the set\'s RIR', () => {
+    const csv = STRONG.split('\n').slice(0, 2).join('\n').replace(/,RPE$/m, ',RIR').replace(/,8$/m, ',2')
+    const parsed = parseWorkoutCSV(csv, { unit: 'kg' })
+    const S = { workouts: [], customEx: [], exWeights: {}, bodyweight: [] }
+    mergeImport(S, parsed)
+    expect(legacyEntriesOf(S.workouts[0])[0].sets).toEqual([{ w: 60, r: 8, rir: 2, done: true }])
   })
 })

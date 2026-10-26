@@ -17,6 +17,9 @@ vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast: vi.fn() }) } }
 
 import { DEF, useStore } from './useStore.js'
 import { exportBackupZip, readBackupFile } from '../lib/backup-media.js'
+import { exposuresWithPerformance } from '../lib/session-ui-adapter.js'
+import { ruleOccurrence } from '../lib/test-fixtures.js'
+import { parseState } from '../lib/state-codec.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 const RUNS = { numRuns: Number(process.env.PROPERTY_RUNS) || 40 }
@@ -32,6 +35,8 @@ const set = fc.oneof(
   fc.record({ w: kg, r: fc.integer({ min: 1, max: 20 }), done: fc.constant(true), L: fc.record({ w: kg, r: fc.integer({ min: 1, max: 20 }) }), R: fc.record({ w: kg, r: fc.integer({ min: 1, max: 20 }) }) }),
   fc.record({ w: kg, r: fc.integer({ min: 1, max: 20 }), done: fc.constant(true), warm: fc.constant(true) }),
 )
+// The generated sets in the rows the workout screen saves.
+const rowOf = ({ L, R, warm, ...row }) => (L ? { ...row, sides: { L: { ...L, done: true }, R: { ...R, done: true } } } : warm ? { ...row, phase: 'warmup' } : row)
 const exId = fc.constantFrom('0025', '0043', '0032', '0027', '1460', 'c-own')
 const workout = fc.record({
   d: day, start: fc.integer({ min: 1.7e12, max: 1.8e12 }), dur: fc.integer({ min: 60, max: 3 * 3600 }),
@@ -47,8 +52,15 @@ const profile = fc.record({
   favEx: fc.uniqueArray(exId, { maxLength: 3 }),
 }).map(p => Object.assign(clone(DEF), {
   unit: p.unit, restSec: p.restSec, favEx: p.favEx, _ts: 1.79e12,
-  workouts: p.workouts.map((w, i) => ({ id: `w${i}`, d: w.d, start: w.start, end: w.start + w.dur * 1000, name: w.name, ...(w.note != null ? { note: w.note } : {}), entries: w.entries.map(e => ({ ...e, ...(e.note == null ? { note: undefined } : {}) })) })),
-  routines: p.routines.map((r, i) => ({ id: `r${i}`, ...r })),
+  workouts: p.workouts.map((w, i) => ({
+    id: `w${i}`, d: w.d, start: w.start, end: w.start + w.dur * 1000, name: w.name, status: 'completed', routineIds: [],
+    ...(w.note != null ? { note: w.note } : {}),
+    exposures: exposuresWithPerformance(
+      w.entries.map((e, k) => ({ exposureId: `x${i}-${k}`, exerciseId: e.id, mode: e.sets.some(s => s.sec != null) ? 'time' : 'reps', trackId: 'import:' + e.id, excludedFromProgression: true })),
+      w.entries.map((e, k) => ({ exposureId: `x${i}-${k}`, id: e.id, ...(e.note != null ? { note: e.note } : {}), sets: e.sets.map(rowOf) })),
+      p.unit),
+  })),
+  routines: p.routines.map((r, i) => ({ id: `r${i}`, name: r.name, ex: r.ex.map((e, k) => ruleOccurrence(e.id, { occurrenceId: `o${i}-${k}`, routineId: `r${i}` })) })),
   bodyweight: p.bodyweight.map((b, i) => ({ ...b, t: 1.7e12 + i })),
   customEx: [{ id: 'c-own', name: 'Own lift', custom: true, eq: 'barbell', bp: 'chest' }],
 }))
@@ -58,7 +70,7 @@ const strip = o => JSON.parse(JSON.stringify(o, (k, v) => (k === '_ts' || k === 
 const view = S => strip({ unit: S.unit, restSec: S.restSec, favEx: S.favEx, workouts: S.workouts, routines: S.routines, bodyweight: S.bodyweight, customEx: S.customEx })
 
 // Another device with its own, different history: the import must replace it, not mix it in.
-const otherDevice = () => Object.assign(clone(DEF), { unit: 'kg', _ts: 1.6e12, workouts: [{ id: 'old', d: '2024-01-01', start: 1, end: 2, entries: [] }] })
+const otherDevice = () => Object.assign(clone(DEF), { unit: 'kg', _ts: 1.6e12, workouts: [{ id: 'old', d: '2024-01-01', start: 1, end: 2, exposures: [] }] })
 
 beforeEach(() => { localStorage.clear(); useStore.setState({ S: otherDevice(), user: null, ready: true }) })
 afterEach(() => { localStorage.clear(); useStore.setState({ S: clone(DEF), user: null, ready: false }) })
@@ -68,7 +80,7 @@ const restore = async file => {
   useStore.getState().importBackup(state)
   return useStore.getState().S
 }
-const saved = () => JSON.parse(localStorage.getItem('gym_state_v1'))
+const saved = () => parseState(localStorage.getItem('gym_state_v1'))
 
 describe('a backup brings back everything it was made from', () => {
   it('as JSON (Export backup), and still after a restart', async () => {

@@ -28,8 +28,7 @@ beforeEach(() => {
   useStore.setState({ S: {
     ...originalS, restSec: 90, sound: false, vibrate: true, timerFlash: false, keepAwake: true,
     workoutView: 'cards', effort: 'none', gifSize: 'full',
-    active: { id: 'a', name: 'Push', start: Date.now(), cur: 0, entries: [], workoutView: 'list' },
-  } })
+  }, A: { id: 'a', name: 'Push', start: Date.now(), cur: 0, entries: [], workoutView: 'list' } })
   useUI.setState({ sheets: [] })
   sound.canVibrate = true; sound.iPhone = false
   close = vi.fn()
@@ -42,7 +41,7 @@ beforeEach(() => {
 afterEach(() => {
   act(() => root.render(null))
   useUI.setState({ sheets: [] })
-  useStore.setState({ S: originalS })
+  useStore.setState({ S: originalS, A: null })
   host.remove()
   navTo.mockReset()
 })
@@ -75,7 +74,7 @@ describe('the in-workout settings sheet', () => {
     expect(row('Layout').querySelector('button.on').textContent).toBe('List')
     act(() => [...row('Layout').querySelectorAll('button')].find(b => b.textContent === 'Compact').click())
     expect(S().workoutView).toBe('compact')
-    expect(S().active.workoutView).toBeUndefined()
+    expect(useStore.getState().A.workoutView).toBeUndefined()
   })
 
   it('sets the rest timer on the wheel, 0:00 being off', () => {

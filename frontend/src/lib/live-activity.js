@@ -206,7 +206,7 @@ export function applyLiveEvents (events, getState) {
   for (const ev of events) {
     if (!ev || typeof ev.id !== 'string') continue
     if (applied.includes(ev.id)) { done.push(ev.id); continue }
-    const A = getState()?.S?.active
+    const A = getState()?.A
     const ours = A && Array.isArray(A.entries) && !A.editingWorkoutId && (!ev.wid || ev.wid === String(A.id))
     if (ev.type === 'setDone' && ours) {
       if (!handlers) break
@@ -289,7 +289,9 @@ export async function startLiveActivitySync ({ useStore, useUI }) {
     // An empty, not yet restored copy would end the activity of a workout that is still running.
     if (!storeReady()) return
     try {
-      const live = buildLiveActivity(useStore.getState().S, useUI.getState().timer)
+      const st = useStore.getState()
+      // The running workout is the store's own `A`; the activity reads it as `S.active`.
+      const live = buildLiveActivity({ ...st.S, active: st.A }, useUI.getState().timer)
       const json = live ? JSON.stringify(live) : ''
       if (json === last) return
       if (live) await p.LiveActivity.update({ wid: live.attributes.wid, attributes: JSON.stringify(live.attributes), state: JSON.stringify(live.state) })
@@ -300,7 +302,7 @@ export async function startLiveActivitySync ({ useStore, useUI }) {
   const schedule = () => { if (!supported) return; clearTimeout(tm); tm = setTimeout(send, SEND_DEBOUNCE_MS) }
   const offStore = useStore.subscribe((s, prev) => {
     if (s.ready && !prev.ready) { drainLiveEvents(); schedule() }
-    else if (s.S !== prev.S) schedule()
+    else if (s.S !== prev.S || s.A !== prev.A) schedule()
   })
   const restOf = x => (x ? `${x.endsAt}|${!!x.paused}|${!!x.ready}|${x.left}|${x.kind || ''}` : '')
   const offUI = useUI.subscribe((s, prev) => {

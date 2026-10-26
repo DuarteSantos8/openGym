@@ -4,9 +4,10 @@
 // Imports nothing from history.js, which imports this module.
 import { t } from './i18n-core.js'
 import { isWarmupRow } from './workout-model.js'
+import { REPS_MAX, SET_REPS_MAX } from './prescription/index.js'
 
-export const PYRAMID_MAX = 'max'
-export const MAX_PYRAMID_SETS = 10
+export const PYRAMID_MAX = REPS_MAX
+export const MAX_PYRAMID_SETS = SET_REPS_MAX
 
 // One tap in the editor replaces the list with one of these.
 export const PYRAMID_PRESETS = [
@@ -86,26 +87,32 @@ export function pyramidWeightAt(cfg, i) {
   return Math.max(0, Number(pyramidTargetAt(cfg.pyramidWeight, i)) || 0)
 }
 
-/** The rest a ticked work row of a pyramid earns, or 0 to fall back to the exercise's rest.
- *  `i` indexes `rows`, warm-ups included; the pyramid counts work sets only. */
+/** The rest a ticked work row earns when its set has its own (a pyramid set, a back-off set), or 0
+ *  to fall back to the exercise's rest. `i` indexes `rows`, warm-ups included; work sets only count. */
 export function pyramidRestFor(target, rows, i) {
-  if (!isPyramid(target) || !Array.isArray(target.pyramidRest) || !target.pyramidRest.length) return 0
+  const list = Array.isArray(target?.setRest) && target.setRest.length ? target.setRest : isPyramid(target) ? target.pyramidRest : null
+  if (!Array.isArray(list) || !list.length) return 0
   const row = rows?.[i]
   if (!row || isWarmupRow(row)) return 0
   const k = rows.slice(0, i).filter(r => !isWarmupRow(r)).length
-  return Math.max(0, Number(pyramidTargetAt(target.pyramidRest, k)) || 0)
+  return Math.max(0, Number(pyramidTargetAt(list, k)) || 0)
 }
 
 // ---- Max sets read back from history ----
 
-// Every completed Max set of an exercise, oldest first: { w, r, d, t }.
+// Every completed Max set of an exercise, oldest first: { w, r, d, t }. A saved workout holds its
+// sets as performance rows, a Max one tagged `max`; a per-side set is a row per limb, each limb
+// reading as the set it was, so only the one with the most reps counts for the workout's set.
 function maxSetsOf(workouts, exId) {
   const out = []
   for (const w of workouts || []) {
-    for (const en of w.entries || []) {
-      if (en.id !== exId) continue
-      for (const s of en.sets || []) {
-        if (s.max && s.done && s.r > 0 && !isWarmupRow(s)) out.push({ w: Number(s.w) || 0, r: s.r, d: w.d, t: w.start })
+    for (const x of w.exposures || []) {
+      if (x.exerciseId !== exId) continue
+      for (const s of x.performance?.sets || []) {
+        const r = s.observations?.find(o => o.metric === 'repetitions')?.value
+        if (s.max && s.status === 'completed' && s.role !== 'warmup' && r > 0) {
+          out.push({ w: s.resistance?.kind === 'external-load' ? Number(s.resistance.value) || 0 : 0, r, d: w.d, t: w.start })
+        }
       }
     }
   }

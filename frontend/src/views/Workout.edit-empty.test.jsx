@@ -10,15 +10,18 @@ import Workout from './Workout.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { editCompletedSession } from '../lib/session-edit.js'
+import { exposuresWithPerformance } from '../lib/session-ui-adapter.js'
 
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})), appBase: () => '/' }))
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const clone = value => JSON.parse(JSON.stringify(value))
-const done = (id, w) => ({ id, target: { sets: 1, reps: 5, weight: w }, sets: [{ w, r: 5, done: true }] })
-const saved = { id: 'saved', d: '2026-09-22', start: 1000, end: 2000, routineIds: [], name: 'Push', entries: [done('0025', 80), done('0027', 60)], prs: [] }
-const other = { id: 'other', d: '2026-09-20', start: 0, end: 1, routineIds: [], name: 'Pull', entries: [done('0027', 55)], prs: [] }
+// Saved exposures, written by the live finish's own writer.
+const done = (...lifts) => exposuresWithPerformance(lifts.map(([id], i) => ({ exposureId: `${id}-${i}`, exerciseId: id })),
+  lifts.map(([id, w], i) => ({ exposureId: `${id}-${i}`, target: { mode: 'reps' }, sets: [{ w, r: 5, done: true }] })), 'kg')
+const saved = { id: 'saved', d: '2026-09-22', start: 1000, end: 2000, routineIds: [], name: 'Push', exposures: done(['0025', 80], ['0027', 60]), prs: [] }
+const other = { id: 'other', d: '2026-09-20', start: 0, end: 1, routineIds: [], name: 'Pull', exposures: done(['0027', 55]), prs: [] }
 
 let root
 let container
@@ -29,8 +32,8 @@ function renderEditor(extra = {}) {
   const S = clone(DEF)
   S.workouts = [clone(other), { ...clone(saved), ...extra }]
   S.workoutView = 'list'
-  editCompletedSession(S, 'saved')
-  useStore.setState({ S, user: null })
+  const A = editCompletedSession({ ...S, active: null }, 'saved')
+  useStore.setState({ S, A, user: null })
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
@@ -50,7 +53,8 @@ function renderTopSheet() {
 // Sheets render through nested act() calls, so they are opened before an act() that taps them.
 const button = (host, text) => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === text)
 const S = () => useStore.getState().S
-const untickAll = () => act(() => useStore.getState().update(s => { s.active.entries.forEach(e => e.sets.forEach(set => { set.done = false })) }))
+const A = () => useStore.getState().A
+const untickAll = () => act(() => useStore.getState().updateActive(a => { a.entries.forEach(e => e.sets.forEach(set => { set.done = false })) }))
 const tapSave = () => act(() => container.querySelector('button[aria-label="Save changes"]').click())
 
 beforeEach(() => {
@@ -83,8 +87,8 @@ describe('saving an edit that leaves no set', () => {
     act(() => button(dialog, 'Keep editing').click())
 
     expect(useUI.getState().sheets).toHaveLength(0)
-    expect(S().active.editingWorkoutId).toBe('saved')
-    expect(S().workouts.find(w => w.id === 'saved').entries).toHaveLength(2)
+    expect(A().editingWorkoutId).toBe('saved')
+    expect(S().workouts.find(w => w.id === 'saved').exposures).toHaveLength(2)
     expect(useUI.getState().toastMsg).toBe('')
   })
 
@@ -103,14 +107,14 @@ describe('saving an edit that leaves no set', () => {
     const remove = button(renderTopSheet(), 'Delete workout')
     act(() => remove.click())
 
-    expect(S().active).toBeNull()
+    expect(A()).toBeNull()
     expect(S().workouts.map(w => w.id)).toEqual(['other'])
     expect(useUI.getState().toastMsg).toBe('Workout deleted')
   })
 
   it('asks the same when every exercise was removed, and from the close button’s Save changes', () => {
     renderEditor()
-    act(() => useStore.getState().update(s => { s.active.entries = [] }))
+    act(() => useStore.getState().updateActive(a => { a.entries = [] }))
     act(() => container.querySelector('button[aria-label="Close editor"]').click())
     const save = button(renderTopSheet(), 'Save changes')
     act(() => save.click())
@@ -123,13 +127,14 @@ describe('saving an edit that leaves no set', () => {
 
   it('an edit with a set left saves as before, with no question', () => {
     renderEditor()
-    act(() => useStore.getState().update(s => { s.active.entries[1].sets[0].done = false }))
+    act(() => useStore.getState().updateActive(a => { a.entries[1].sets[0].done = false }))
     tapSave()
 
     expect(useUI.getState().sheets).toHaveLength(0)
-    expect(S().active).toBeNull()
+    expect(A()).toBeNull()
     const kept = S().workouts.find(w => w.id === 'saved')
-    expect(kept.entries.map(e => e.id)).toEqual(['0025'])
+    // The unticked exercise stays, its set skipped — as a live finish saves one.
+    expect(kept.exposures.map(x => [x.exerciseId, x.performance.sets[0].status])).toEqual([['0025', 'completed'], ['0027', 'skipped']])
     expect(useUI.getState().toastMsg).toBe('Workout updated')
   })
 })
