@@ -27,7 +27,7 @@ import { SG_NAME_MAX } from './lib/superset-meta.js'
 import { REST_MAX, fmtRest, restWheelValue } from './lib/duration.js'
 import Icon from './components/Icon.jsx'
 import { SeasonDeco } from './components/Seasonal.jsx'
-import { Button, Slider, Switch, Segmented, SelectRow, Row, TextField, NumberField, MultiSelectRow } from './components/ui.jsx'
+import { Button, Slider, Switch, Check, Segmented, SelectRow, Row, TextField, NumberField, MultiSelectRow } from './components/ui.jsx'
 import { glyphOf, GLYPH_GROUPS, DEFAULT_GLYPH } from './lib/glyphs.js'
 import BodyMap from './components/BodyMap.jsx'
 import MuscleExplorer from './components/MuscleExplorer.jsx'
@@ -35,6 +35,7 @@ import ExerciseViewToggle from './components/ExerciseViewToggle.jsx'
 import { sameMuscleFirst, swapMuscleOf } from './lib/similar-exercises.js'
 import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWeightsOf, muscleGroupsOf, hasExplicitMuscleMetadata, inMuscleOrder } from './lib/muscles.js'
 import { parseImport, mergeImport } from './lib/import-csv.js'
+import { importExercises, filterImport } from './lib/import-select.js'
 import { importHevyData, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines, hevySummaryCounts } from './lib/import-hevy.js'
 import { buildPlanBundle, parsePlan, mergePlan, printPlan, planPrintHTML } from './lib/plan-share.js'
 import { printOptions } from './lib/print-doc.js'
@@ -449,9 +450,20 @@ const effortLine = (effort, n, scale) => effort === 'none'
 // the one action where "just try it" is expensive — it's someone's entire training
 // history — so the numbers, the unit conversion and the exercises we couldn't recognise
 // are all on screen before the confirm button.
-function ImportSummary({ parsed, close }) {
+function ImportSummary({ parsed: file, close }) {
   const st = useStore(s => s.S)
-  const isBW = parsed.kind === 'bodyweight'
+  const isBW = file.kind === 'bodyweight'
+  // A workout history can be narrowed to some of its exercises (lib/import-select.js); everything
+  // below reads the narrowed result, so the counts follow the ticks.
+  const exercises = useMemo(() => (isBW ? [] : importExercises(file)), [file, isBW])
+  const [keep, setKeep] = useState(() => new Set(exercises.map(x => x.id)))
+  const parsed = useMemo(() => (isBW ? file : filterImport(file, keep)), [file, isBW, keep])
+  const toggle = id => setKeep(k => { const n = new Set(k); n.has(id) ? n.delete(id) : n.add(id); return n })
+  const allKept = keep.size === exercises.length
+  const exName = id => {
+    const ex = EXIDX[id] || file.customEx.find(c => c.id === id) || (st.customEx || []).find(c => c.id === id)
+    return ex ? exerciseNameText(ex) : exOr(id).n
+  }
   // Our own body CSV brings measurement check-ins along (#718); a day that has one keeps it.
   const checkIns = isBW ? parsed.measurements || [] : []
   const haveM = checkIns.filter(m => (st.measurements || []).some(x => x.d === m.d)).length
@@ -489,6 +501,25 @@ function ImportSummary({ parsed, close }) {
       </>}
     </div>
 
+    {exercises.length > 1 && <>
+      <div className="row between plan-sec-h">
+        <h4 className="sec">{t('Choose what to import')}</h4>
+        <button className="plan-textbtn" onClick={() => setKeep(new Set(allKept ? [] : exercises.map(x => x.id)))}>
+          {allKept ? t('Select none') : t('Select all')}
+        </button>
+      </div>
+      <div style={{ borderBottom: '1px solid var(--sep)', marginBottom: 12 }} data-import-exercises>
+        {exercises.map(x => <div key={x.id} className="row" data-import-ex={x.id} onClick={() => toggle(x.id)}
+          style={{ gap: 12, padding: '8px 2px', borderTop: '1px solid var(--sep)', cursor: 'pointer' }}>
+          <Check checked={keep.has(x.id)} label={exName(x.id)} onChange={() => {}} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="tt" style={{ fontSize: 15 }}>{exName(x.id)}{x.custom && <span className="tag" style={{ marginInlineStart: 8 }}>{t('New')}</span>}</div>
+            <div className="small dim">{tn('{0} set', '{0} sets', x.sets) + ' · ' + tn('{0} workout', '{0} workouts', x.workouts)}</div>
+          </div>
+        </div>)}
+      </div>
+    </>}
+
     {parsed.mixedUnits ? <div className="small" style={{ color: 'var(--yellow)', marginBottom: 10 }}>
       {t('The file mixes kg and lb, so each set is converted to {0}.', st.unit)}
     </div> : parsed.converted ? <div className="small" style={{ color: 'var(--yellow)', marginBottom: 10 }}>
@@ -519,7 +550,7 @@ function ImportSummary({ parsed, close }) {
     </>}
 
     <Button variant="primary" onClick={doImport} disabled={!fresh}>
-      {fresh ? t('Import') : t('Nothing new to import')}
+      {fresh ? t('Import') : !isBW && !keep.size ? t('Nothing selected') : t('Nothing new to import')}
     </Button>
     <div style={{ height: 8 }} />
     <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
