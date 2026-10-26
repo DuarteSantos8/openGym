@@ -2196,6 +2196,14 @@ body.tabbar-side.resting #toast{bottom:calc(100px + var(--sab))}
 @media (max-width:999px){
   body.tabbar-side #timer{left:12px;right:calc(var(--rail) + 12px)}
 }
+/* The right edge is the system's own column, the time and the battery at its top (the iPhone Duo
+   closed, body.tabbar-status from App.jsx): the bar is that column, as wide as it, with the tabs
+   below the status block instead of beside it, and the page gets the width back. */
+body.tabbar-side.tabbar-status{--rail:max(84px,var(--sar))}
+body.tabbar-side.tabbar-status #tabbar{
+  justify-content:flex-start;
+  padding:max(calc(var(--sat) + 8px),160px) 4px calc(var(--sab) + 8px) 4px;
+}
 /* A phone on its side is short: the icons alone, so every tab fits the height. */
 @media (max-height:480px){
   body.tabbar-side #tabbar{gap:0}
