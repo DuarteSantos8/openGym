@@ -167,12 +167,14 @@ describe('Plan — the loop', () => {
     expect(host.textContent).toContain('1 of 2 done this round.')
   })
 
-  it('adding a routine offers only the ones not in the loop, and saves the pass', () => {
+  it('adding offers a rest day and every routine, the ones in the loop already as a repeat (#536)', () => {
     mount({ queue: live({ rotationId: 'r1' }), rotation: saved })
     click(byLabel('Add routine to the rotation'))
     const items = menuSheet.mock.calls[0][0].items
-    expect(items.map(i => i.label)).toEqual(['C'])
-    act(() => items[0].onClick())
+    expect(items.map(i => i.label)).toEqual(['Rest day', 'A', 'B', 'C'])
+    expect(items[1].sub).toMatch(/adds it again/)
+    expect(items[3].sub).toBeUndefined()
+    act(() => items[3].onClick())
     expect(mocks.S.queue.ids).toEqual(['a', 'b', 'c'])
     expect(mocks.S.rotation.sequence).toEqual(['a', 'b', 'c'])
   })
@@ -356,5 +358,41 @@ describe('Plan — Schedule extras', () => {
     click(byLabel('Plan options'))
     const items = menuSheet.mock.calls.at(-1)[0].items.filter(Boolean)
     expect(items.map(i => i.label)).toEqual(['Export plan file', 'Print / Save as PDF', 'Import a plan file', 'Load starter plan'])
+  })
+})
+
+// #536: a loop with rest days and a routine more than once. The editor shows the whole saved loop;
+// the running segment carries the states, a rest is a row of its own.
+describe('Plan — rest days and repeats in the loop (#536)', () => {
+  it('a routine already in the loop goes in again, and the loop runs as segments', () => {
+    mount({ queue: live({ rotationId: 'r1' }), rotation: saved })
+    click(byLabel('Add routine to the rotation'))
+    act(() => menuSheet.mock.calls[0][0].items.find(i => i.label === 'A').onClick())
+    expect(mocks.S.rotation.sequence).toEqual(['a', 'b', 'a'])
+    expect(mocks.S.queue.ids).toEqual(['a', 'b'])
+    remount()
+    expect(names()).toEqual(['A', 'B', 'A'])
+  })
+
+  it('a rest day is a row of its own, and the running segment has the states', () => {
+    mount({ queue: live({ rotationId: 'r1' }), rotation: { ...saved, sequence: ['a', 'b', 'rest', 'c'], at: 0 } })
+    expect(names()).toEqual(['A', 'B', 'Rest day', 'C'])
+    const ss = rows().map(r => r.querySelector('.ss').textContent)
+    expect(ss[0]).toBe('Up next')
+    expect(ss[2]).toBe('A day off before the next one')
+    expect(rows()[2].className).toContain('is-rest')
+  })
+
+  it('taking out one of two places takes out only that one', () => {
+    mount({ queue: live({ rotationId: 'r1' }), rotation: { ...saved, sequence: ['a', 'b', 'a', 'rest'], at: 0 } })
+    click(byLabel('Edit'))
+    click(byLabel('Remove A'))   // the first one
+    expect(mocks.S.rotation.sequence).toEqual(['b', 'a', 'rest'])
+  })
+
+  it('while a rest runs, the loop says so', () => {
+    const tomorrow = isoOf(new Date(Date.now() + 86400000))
+    mount({ queue: live({ rotationId: 'r1', ids: ['c'], startsOn: tomorrow }), rotation: { ...saved, sequence: ['a', 'b', 'rest', 'c'], at: 3 } })
+    expect(host.textContent).toContain('Rest day. The loop goes on ' + fmtDate(tomorrow, true) + '.')
   })
 })

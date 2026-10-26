@@ -18,16 +18,17 @@ import { MOBILE, nativePlatform } from './mobile.js'
 import { EXIDX, gifSrc, figureOf, isAssisted } from './exercises.js'
 import { packId, packDrawingId } from './anim-quality.js'
 import { getState as animPacks } from './anim-packs.js'
-import { exerciseNameFor, getLang, baseLang, onLangChange } from './i18n.js'
-import { modeOf, setLabel, lastEntryFor, effectiveRoutineIds, isBw, isPerSide } from './history.js'
+import { getLang, baseLang, onLangChange } from './i18n.js'
+import { modeOf, setLabel, lastEntryFor, effectiveRoutineIds, isBw, isPerSide, EFFORT, effortOf } from './history.js'
 import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
 import { bestSetFor } from './exercise-history.js'
 import { weightIncrement } from './progression.js'
 import { sessionHistory } from './backfill.js'
 import { buildCombinedEntries, deriveSessionName } from './session-merge.js'
-import { todayISO } from './format.js'
+import { todayISO, exerciseNameText } from './format.js'
 import { sanitizeHr } from './heart-rate.js'
 import { readWatchPrefs, settingsForWatch, writeWatchStatus, onWatchPrefs } from './watch-settings.js'
+import { plannedType } from './health-connect.js'
 
 export const SNAPSHOT_VERSION = 1
 const APPLIED_KEY = 'gym_watch_applied'
@@ -42,7 +43,19 @@ const okBw = v => { const n = num(v); return n != null && n > 0 && n < 700 }
 // One side of a per-side set, from the watch: 'L', 'R', or none (the whole set).
 const sideOf = v => (v === 'L' || v === 'R' ? v : null)
 // What a tick of a hold (`sec`) or of one side carries besides the numbers; nothing for a plain set.
-const extraOf = ev => ({ ...(num(ev.sec) != null ? { sec: num(ev.sec) } : {}), ...(sideOf(ev.side) ? { side: sideOf(ev.side) } : {}) })
+const extraOf = ev => ({ ...(num(ev.sec) != null ? { sec: num(ev.sec) } : {}), ...(sideOf(ev.side) ? { side: sideOf(ev.side) } : {}), ...effortFrom(ev) })
+// The effort the watch logged on a set: { rpe } or { rir } on the half-point grid, inside the
+// phone's own scale (lib/history.js EFFORT); nothing for none, or for a number that does not hold up.
+export function effortFrom (ev) {
+  for (const k of ['rpe', 'rir']) {
+    const v = num(ev?.[k])
+    if (v == null) continue
+    const e = EFFORT[k]
+    const snapped = Math.round(v * 2) / 2
+    return snapped >= (k === 'rpe' ? 1 : e.min) && snapped <= e.max ? { [k]: snapped } : {}
+  }
+  return {}
+}
 
 /* ---------- the snapshot ---------- */
 
@@ -90,8 +103,11 @@ function watchEntry (e, H, S) {
   } catch { last = null }
   const best = S ? bestFor(S, e.id, mode) : null
   return {
-    id: e.id,
-    name: ex ? exerciseNameFor(ex) : String(target.name || e.name || e.id),
+    // A string always: the watch reads the whole snapshot or nothing (WatchCore Model.swift), and
+    // one id that came in as a number (an import) would leave it with nothing at all.
+    id: String(e.id),
+    // Title-cased as on the phone; the watch has no CSS to do it (lib/format.js exerciseNameText).
+    name: ex ? exerciseNameText(ex) : String(target.name || e.name || e.id),
     mode,
     restSec: num(target.restSec),
     last,
@@ -115,10 +131,20 @@ function watchEntry (e, H, S) {
 export function buildReady (S, today = todayISO()) {
   let H = null
   try { H = sessionHistory(S) } catch { H = null }
+  // One routine that cannot be built is left out, not the whole list with it.
   const session = ids => {
-    const { entries, routineIds, routines } = buildCombinedEntries(S, ids)
-    if (!routines.length) return null
-    return { routineIds, name: deriveSessionName(routines.map(r => r.name)) || '', entries: entries.map(e => watchEntry(e, H, S)) }
+    try {
+      const { entries, routineIds, routines } = buildCombinedEntries(S, ids)
+      if (!routines.length) return null
+      const healthType = plannedType(entries)
+      return {
+        routineIds: routineIds.map(String),
+        name: String(deriveSessionName(routines.map(r => r.name)) || ''),
+        entries: entries.filter(e => e && e.id != null).map(e => watchEntry(e, H, S)),
+        // Apple Health's workout type on the watch: a run is a run (#799)
+        ...(healthType ? { healthType } : {}),
+      }
+    } catch { return null }
   }
   let todayIds = []
   try { todayIds = effectiveRoutineIds({ ...S, routines: S.routines || [], week: S.week || {}, dayPlan: S.dayPlan || {} }, today, today) || [] } catch { todayIds = [] }
@@ -135,6 +161,7 @@ export function buildSnapshot(S, { timer = null, ready = null } = {}) {
   if (!A || !Array.isArray(A.entries)) return { v: SNAPSHOT_VERSION, unit, restSec, active: null, ready }
   let H = null
   try { H = sessionHistory(S) } catch { H = null }
+  const healthType = plannedType(A.entries)
   return {
     v: SNAPSHOT_VERSION,
     unit,
@@ -150,7 +177,9 @@ export function buildSnapshot(S, { timer = null, ready = null } = {}) {
       restSec: num(S.restSec) || 0,
       // a rest running on the phone, so the watch counts down the same one
       rest: timer && !timer.paused && !timer.ready && num(timer.endsAt) ? { endsAt: timer.endsAt } : null,
-      entries: A.entries.map(e => watchEntry(e, H, S)),
+      entries: A.entries.filter(e => e && e.id != null).map(e => watchEntry(e, H, S)),
+      // Apple Health's workout type on the watch: a run is a run (#799)
+      ...(healthType ? { healthType } : {}),
     },
   }
 }
@@ -187,7 +216,7 @@ export function clipsFor (S, packs = animPacks().packs || {}) {
 
 /* ---------- applying the watch's events ---------- */
 
-let handlers = null      // the workout screen's: setDone, finish
+let handlers = null      // the workout screen's: setDone, finish, discard
 let appHandlers = null   // the app's: start
 const readApplied = () => { try { return JSON.parse(localStorage.getItem(APPLIED_KEY)) || [] } catch { return [] } }
 const writeApplied = ids => { try { localStorage.setItem(APPLIED_KEY, JSON.stringify(ids.slice(-APPLIED_MAX))) } catch { /* the queue's ack is what counts */ } }
@@ -205,8 +234,9 @@ function entryIndexOf (A, ev) {
  * stay queued, in order, for the next drain.
  *
  *   start   { routineIds, wid, at }  the app starts that session with the watch's id and start
- *   setDone { wid, exId, entryIdx, setIdx, w, r, at }   the workout screen's own tick
+ *   setDone { wid, exId, entryIdx, setIdx, w, r, at, rpe?|rir? }   the workout screen's own tick
  *   finish  { wid, at }              the workout screen's own Finish and save
+ *   discard { wid, at }              the workout screen's own Discard (confirmed on the watch)
  *   setHr   { wid, exId, entryIdx, setIdx, hr?, restHr? }   heart rate on a set (lib/heart-rate.js)
  *
  * A tick for a workout already saved (finished on the phone while the watch was away) is written
@@ -236,7 +266,7 @@ export function applyEvents (events, getState) {
       // A workout already running on the phone is kept; one with the watch's id is this one.
     } else if (ev.type === 'setDone' && saved) {
       if (!appHandlers) break
-      const fields = { done: true, ...(num(ev.w) != null ? { w: num(ev.w) } : {}), ...(num(ev.r) != null ? { r: num(ev.r) } : {}), ...(num(ev.sec) != null ? { sec: num(ev.sec) } : {}), ...(num(ev.at) ? { at: num(ev.at) } : {}) }
+      const fields = { done: true, ...(num(ev.w) != null ? { w: num(ev.w) } : {}), ...(num(ev.r) != null ? { r: num(ev.r) } : {}), ...(num(ev.sec) != null ? { sec: num(ev.sec) } : {}), ...(num(ev.at) ? { at: num(ev.at) } : {}), ...effortFrom(ev) }
       const hr = sanitizeHr(ev.hr)
       if (hr) fields.hr = hr
       appHandlers.patchSet({ wid: ev.wid, exId: ev.exId, entryIdx: ev.entryIdx, setIdx: ev.setIdx, ...(sideOf(ev.side) ? { side: sideOf(ev.side) } : {}) }, fields, { ifNewer: num(ev.at) })
@@ -274,12 +304,13 @@ export function applyEvents (events, getState) {
         if (!appHandlers) break
         appHandlers.patchSet({ wid: ev.wid, exId: ev.exId, entryIdx: ev.entryIdx, setIdx: ev.setIdx }, fields)
       }
-    } else if (ev.type === 'finish' && ours) {
+    } else if ((ev.type === 'finish' || ev.type === 'discard') && ours) {
       if (!handlers) {
         if (appHandlers?.openWorkout) appHandlers.openWorkout()
         break
       }
-      handlers.finish()
+      if (ev.type === 'finish') handlers.finish()
+      else handlers.discard?.()
     }
     // Applied, or meaningless now (another workout, a set that is gone): either way it is done.
     applied.push(ev.id)
@@ -412,6 +443,30 @@ export function healthGoneFor (S, max = HEALTH_GONE_MAX) {
     .map(([id]) => 'opengym-w-' + id)
 }
 
+// Workouts discarded on the phone (#776), newest last: the snapshot names them for a while, so a
+// watch running one ends its Apple Health workout without saving it. Gone from the snapshot it
+// looks the same as a finished one. In localStorage, not S: a fact about this phone and its
+// watch, and it has to outlive the reload of "Discard the running workout" (ErrorBoundary).
+const DISCARDED_KEY = 'gym_watch_discarded'
+const DISCARDED_MAX = 5
+// Long enough for a watch out of range (or asleep in a bag) to hear it.
+export const DISCARDED_FOR_MS = 12 * 3600e3
+const readDiscarded = () => {
+  try { const v = JSON.parse(localStorage.getItem(DISCARDED_KEY)); return Array.isArray(v) ? v.filter(x => x && typeof x.id === 'string' && Number(x.at) > 0) : [] } catch { return [] }
+}
+
+/** The running workout `wid` is being discarded: call before it leaves S.active. */
+export function markDiscarded (wid, now = Date.now()) {
+  if (!wid || typeof wid !== 'string') return
+  const list = [...readDiscarded().filter(x => x.id !== wid), { id: wid, at: now }].slice(-DISCARDED_MAX)
+  try { localStorage.setItem(DISCARDED_KEY, JSON.stringify(list)) } catch { /* the watch then saves it, as before */ }
+}
+
+/** The ids of the workouts discarded here lately, oldest first. */
+export function discardedFor (now = Date.now()) {
+  return readDiscarded().filter(x => now - Number(x.at) < DISCARDED_FOR_MS).map(x => x.id)
+}
+
 /**
  * What the watch takes from the app beyond its own settings: the app's language (the watch shows
  * its words in it, whatever the watch itself is set to), and whether a workout starts with the
@@ -425,6 +480,8 @@ export function watchExtras (S) {
     lang,
     weighIn: S?.weighIn !== false,
     ...(bw && num(bw.w) ? { lastBw: num(bw.w) } : {}),
+    // the effort scale the profile logs ('rpe' or 'rir'): the watch's set page offers it then
+    ...(EFFORT[effortOf(S)] ? { effort: effortOf(S) } : {}),
   }
 }
 
@@ -447,7 +504,11 @@ export async function startWatchSync ({ useStore, useUI }) {
   // change. Without one nothing below runs at all: no snapshot, no clips, no bridge call per tick.
   let linked = false
   const checkLink = async () => {
+    const was = linked
     try { const st = await p.WatchBridge.status(); linked = !!(st && st.paired && st.installed) } catch { linked = false }
+    // A watch that is new here (the app just installed on it, or reinstalled): it has nothing yet,
+    // so the snapshot goes again even when it is the same as the last one sent.
+    if (linked && !was) lastSent = null
     return linked
   }
   await checkLink()
@@ -472,6 +533,9 @@ export async function startWatchSync ({ useStore, useUI }) {
       snap.settings = { ...settingsForWatch(prefs, healthOn), ...watchExtras(S) }
       // With Apple Health on: the deleted workouts, so the watch removes the copies it saved.
       if (healthOn) { const gone = healthGoneFor(S); if (gone.length) snap.healthGone = gone }
+      // Discarded here: the watch drops its Apple Health workout instead of saving it (#776).
+      const discarded = discardedFor()
+      if (discarded.length) snap.discarded = discarded
       const json = JSON.stringify(fitSnapshot(snap))
       if (json !== lastSent) {
         const r = await p.WatchBridge.sendSnapshot({ json })
@@ -497,7 +561,7 @@ export async function startWatchSync ({ useStore, useUI }) {
     if (s.S === prev.S) return
     schedule()
     // A workout started on the phone: the watch app opens with it (HealthKit's startWatchApp).
-    if (linked && shouldOpenOnWatch(prev.S?.active, s.S?.active)) Promise.resolve().then(() => p.WatchBridge.openOnWatch()).catch(() => {})
+    if (linked && shouldOpenOnWatch(prev.S?.active, s.S?.active)) Promise.resolve().then(() => p.WatchBridge.openOnWatch({ type: plannedType(s.S.active.entries) || undefined })).catch(() => {})
   })
   // The rest as the watch needs it changes when it starts, stops or is paused, not every second.
   const restOf = t => (t ? `${t.endsAt}|${!!t.paused}|${!!t.ready}` : '')
@@ -510,9 +574,14 @@ export async function startWatchSync ({ useStore, useUI }) {
   const sub = await p.WatchBridge.addListener('watchEvent', () => { drainWatchEvents() })
   // The link itself changed (the session finished activating after launch, a watch was paired, the
   // app was installed on it): asked again, and the snapshot sent when there is a watch now.
-  const subLink = await Promise.resolve(p.WatchBridge.addListener('watchState', () => { checkLink().then(() => schedule()) })).catch(() => null)
+  // Sent again even when unchanged: a reinstalled watch app starts with nothing.
+  const subLink = await Promise.resolve(p.WatchBridge.addListener('watchState', () => { checkLink().then(() => { lastSent = null; schedule() }) })).catch(() => null)
   const onVisible = () => { if (document.visibilityState === 'visible') { drainWatchEvents(); checkLink().then(() => schedule()) } }
   document.addEventListener('visibilitychange', onVisible)
+  // Asked once more now that the listeners are there: the link may have come up (watchState) while
+  // the first answer above was on its way, and that event had no one to hear it. Without this the
+  // watch heard nothing until the app went to the background and came back.
+  if (!linked) await checkLink()
   schedule()
   drainWatchEvents()
   return () => { offStore(); offUI(); offPrefs(); offHealth(); offLang(); sub?.remove?.(); subLink?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
@@ -533,11 +602,14 @@ export function patchSetIn (s, { wid, exId, entryIdx, setIdx, side = null }, fie
   // follow from both sides (lib/workout-model.js syncSideAggregate).
   const write = (set, f) => {
     if (side && isSideSet(set)) {
-      const { w, r, done, ...rest } = f
+      const { w, r, done, rpe, rir, ...rest } = f
       const one = { ...set.sides[side] }
       if (w != null) one.w = w
       if (r != null) one.r = r
       if (done) one.done = true
+      // a side's effort is that side's (the row's follows from both, as on the phone)
+      if (rpe != null) one.rpe = rpe
+      if (rir != null) one.rir = rir
       set.sides = { ...set.sides, [side]: one }
       const agg = syncSideAggregate(set)
       for (const k of Object.keys(set)) if (!(k in agg)) delete set[k]
@@ -564,6 +636,8 @@ export function patchSetIn (s, { wid, exId, entryIdx, setIdx, side = null }, fie
     f = {}
     if (fields.hr) f.hr = fields.hr
     if (fields.restHr) f.restHr = fields.restHr
+    // the watch's effort still lands on a set that has none
+    if (set.rpe == null && set.rir == null) Object.assign(f, effortFrom(fields))
     if (!Object.keys(f).length) return false
   }
   write(set, f)

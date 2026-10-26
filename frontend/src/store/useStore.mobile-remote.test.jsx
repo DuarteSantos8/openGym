@@ -11,7 +11,7 @@
    Real modules: store/useStore.js, lib/api.js, lib/remote.js, lib/mobile.js. Mocked: the
    Capacitor plugins (an in-memory Directory.Data), and fetch, which plays the self-hosted server
    at BASE and Capacitor's local server for any other URL. */
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { syncFingerprint } from '../lib/sync-changes.js'
 
 const h = vi.hoisted(() => {
@@ -96,13 +96,17 @@ function serverWith(doc) {
 const readFile = name => { const v = h.files.get('DATA/' + name); return v == null ? null : JSON.parse(v) }
 const serverCalls = () => h.calls.filter(c => c.url.startsWith(BASE))
 const localCalls = () => h.calls.filter(c => !c.url.startsWith(BASE))
-const sleep = ms => new Promise(r => setTimeout(r, ms))
+// The store's timers (the 800 ms file mirror, the push debounce, a request's timeout) run on a
+// fake clock, so "wait for the debounce" is a clock moved past it rather than real sleep a busy
+// machine can make late. Promises still settle for real between the steps.
+const sleep = ms => vi.advanceTimersByTimeAsync(ms)
 const ids = xs => (xs || []).map(x => x.id)
 
 // Server rev 5 holds w1 and the push-day routine at 10 reps; the phone is paired and in step.
 const SERVER_STATE = { _ts: 1000, _rev: 5, unit: 'kg', restSec: 90, workouts: [workout('w1', '2026-09-10')], routines: [routine('push', 10)], bodyweight: [] }
-let DEF
-beforeAll(async () => { DEF = (await import('./useStore.js')).DEF })
+// At collection, not in a hook: the cold transform of the store's imports (the 1 MB exercise
+// table among them) takes seconds, and under a parallel run it went past the hook's timeout.
+const { DEF } = await import('./useStore.js')
 // `synced`: it last agreed with the server under this version, so it knows what that copy was.
 function pairedPhone({ localStorage: withLocal = true, mirror, synced = true } = {}) {
   h.files.clear()
@@ -144,13 +148,14 @@ async function freshStore() {
   return useStore
 }
 
-beforeEach(() => { installFetch(); h.refuse.clear() })
+beforeEach(() => { vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] }); installFetch(); h.refuse.clear() })
 afterEach(async () => {
   window.dispatchEvent(new Event('pagehide'))
   await sleep(20)
   for (const s of stores) s.setState({ user: null, ready: false })
   stores = []
   localStorage.clear()
+  vi.useRealTimers()
 })
 
 describe('boot when the server refuses the pairing token', () => {
@@ -586,21 +591,18 @@ describe('a request that never answers', () => {
     const srv = serverWith(SERVER_STATE)
     const useStore = await freshStore()
     await useStore.getState().boot()
-    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
-    try {
-      h.server = () => new Promise(() => {})   // a black-holed connection: no answer, no error
-      useStore.getState().update(s => { s.workouts.push(workout('w2', '2026-09-15')) }, false)
-      const push = useStore.getState().pushState()
-      await vi.advanceTimersByTimeAsync(61000)
-      await push
-      expect(useStore.getState().sync).toMatchObject({ status: 'offline', pending: true, lastError: { status: 0, code: 'timeout' } })
-      expect(localStorage.getItem('gym_dirty')).toBe('1')
+    h.server = () => new Promise(() => {})   // a black-holed connection: no answer, no error
+    useStore.getState().update(s => { s.workouts.push(workout('w2', '2026-09-15')) }, false)
+    const push = useStore.getState().pushState()
+    await sleep(61000)
+    await push
+    expect(useStore.getState().sync).toMatchObject({ status: 'offline', pending: true, lastError: { status: 0, code: 'timeout' } })
+    expect(localStorage.getItem('gym_dirty')).toBe('1')
 
-      h.server = srv.handle
-      await useStore.getState().pushState()
-      expect(ids(srv.doc.workouts)).toEqual(['w1', 'w2'])
-      expect(useStore.getState().sync.status).toBe('ok')
-    } finally { vi.useRealTimers() }
+    h.server = srv.handle
+    await useStore.getState().pushState()
+    expect(ids(srv.doc.workouts)).toEqual(['w1', 'w2'])
+    expect(useStore.getState().sync.status).toBe('ok')
   })
 })
 

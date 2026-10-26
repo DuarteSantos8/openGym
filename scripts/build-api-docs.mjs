@@ -22,6 +22,12 @@ const outPath = path.join(root, 'website', 'api.html')
 const check = process.argv.includes('--check')
 const spec = yaml.load(fs.readFileSync(specPath, 'utf8'))
 
+// The cache-busting ?v= the website's pages share. index.html is the one place it is bumped;
+// a copy here drifted to an older number and turned --check red on every branch (#795).
+const indexHtml = fs.readFileSync(path.join(root, 'website', 'index.html'), 'utf8')
+const assetVersion = /styles\.css\?v=(\d+)/.exec(indexHtml)?.[1]
+if (!assetVersion) throw new Error('website/index.html has no styles.css?v=N to take the version from')
+
 /* ------------------------------------------------------------------ helpers */
 
 const esc = s => String(s)
@@ -495,7 +501,7 @@ const html = `<!DOCTYPE html>
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=27">
+<link rel="stylesheet" href="styles.css?v=${assetVersion}">
 <script>document.documentElement.className += ' js'</script>
 <!-- Umami web analytics for opengym.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
@@ -626,7 +632,7 @@ ${schemaCards}
   </div>
 </div></footer>
 
-<script src="site.js?v=27" defer></script>
+<script src="site.js?v=${assetVersion}" defer></script>
 <script>${js}</script>
 </body>
 </html>

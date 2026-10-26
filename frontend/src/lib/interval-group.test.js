@@ -28,9 +28,9 @@ it('carries the mode to new members and clears it when unpaired or switched back
   expect(ex[0].sgMode).toBeUndefined()
 })
 it('round trips group mode and rests through plan sharing', () => {
-  const ex = ['0025', '0007'].map(id => ({ id, mode: 'time', sec: 30, sets: 3, sg: 'g' }))
+  const ex = ['0025', '0007'].map(id => ({ id, mode: 'time', sec: 30, sets: 3, sg: 'g', restOff: true, side: true, sideRestOff: true }))
   setSupersetMeta(ex, 'g', { name: 'Finisher', mode: 'interval', intervalRest: 0, rest: 20, work: 40, prep: 10, roundRest: 0 })
   const bundle = buildPlanBundle({ routines: [{ id: 'r', name: 'Mixed', ex }], week: {}, customEx: [] }, 'Plan')
   const result = parsePlan(bundle).routines[0].ex
-  expect(result[0]).toMatchObject({ sgMode: 'interval', sgIntervalRest: 0, sgRest: 20, sgName: 'Finisher', sgWork: 40, sgPrep: 10, sgRoundRest: 0 })
+  expect(result[0]).toMatchObject({ sgMode: 'interval', sgIntervalRest: 0, sgRest: 20, sgName: 'Finisher', sgWork: 40, sgPrep: 10, sgRoundRest: 0, restOff: true, sideRestOff: true })
 })

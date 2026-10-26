@@ -35,3 +35,31 @@ test('an older app editing another workout leaves these alone', () => {
   const out = stampPut(clone(cur), next, { stamped: false, overRead: false, now: 20 });
   assert.deepEqual(out.workouts.find(w => w.id === 'w1').entries[0].sets, hrSets);
 });
+
+// v1.4.3: the heart rate read back from Health Connect / Apple Health adds the session's reading
+// (`w.hr` with its source) and marks weigh-ins read from there (`bodyweight[].src`). Both ride
+// along through every kind of writer, like the set fields above.
+const docHub = () => ({
+  _ts: 10, unit: 'kg',
+  workouts: [{ id: 'w1', d: '2026-10-15', _ts: 5, hr: { avg: 131, max: 162, src: 'hc', n: 601 }, entries: [{ id: '0025', sets: hrSets }] }],
+  bodyweight: [{ d: '2026-10-14', w: 81, t: 3 }, { d: '2026-10-15', w: 80.4, t: 4, src: 'hc' }],
+  routines: [],
+});
+
+test('the session heart rate and the imported weigh-in mark stay through every writer', () => {
+  const cur = docHub();
+  for (const stamped of [true, false]) {
+    const out = stampPut(clone(cur), clone(cur), { stamped, overRead: false, now: 20 });
+    assert.deepEqual(out.workouts[0].hr, cur.workouts[0].hr);
+    assert.deepEqual(out.bodyweight, cur.bodyweight);
+  }
+});
+
+test('an older app that drops the session heart rate on another edit gets it put back', () => {
+  const cur = docHub();
+  const next = clone(cur);
+  delete next.workouts[0].hr;
+  next.workouts[0].name = 'Push';
+  const out = stampPut(clone(cur), next, { stamped: false, overRead: false, now: 20 });
+  assert.deepEqual(out.workouts[0].hr, cur.workouts[0].hr);
+});

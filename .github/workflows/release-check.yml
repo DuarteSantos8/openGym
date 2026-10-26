@@ -1,0 +1,41 @@
+# Before anything is published for a version: every place that carries the version agrees with
+# the tag, and CHANGELOG.md has its section (scripts/ci/release-check.mjs). Runs on the tag push,
+# i.e. before the GitHub release is published from it, so a mismatch shows up while it is still
+# cheap to re-tag. docker-publish.yml runs the same check before it pushes release images.
+name: Release check
+
+on:
+  push:
+    tags: ['v*']
+    # Changes to the check itself, tried out on a CI branch (prints the table, checks nothing).
+    branches: ['ci-*']
+    paths: ['.github/workflows/release-check.yml', 'scripts/ci/release-check.mjs']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Version to check, e.g. v1.4.2 (empty: just print the versions)'
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  versions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Versions agree with the tag
+        env:
+          TAG: ${{ github.event.inputs.tag || (startsWith(github.ref, 'refs/tags/') && github.ref_name) || '' }}
+        run: node scripts/ci/release-check.mjs $TAG
+      # A release of a commit that is not on main would ship code main does not have
+      # (the store branches are merged into main before their release).
+      - name: The tagged commit is on main
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main \
+            || { echo "::error::$GITHUB_REF_NAME points at ${GITHUB_SHA::8}, which is not on main"; exit 1; }

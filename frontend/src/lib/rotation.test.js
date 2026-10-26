@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { scheduleModeOf, queueRecovery, rotationIds, startPass, saveRotation, startNewPass, stopPass, refillAfter, refillIfComplete, chooseRotation, chooseFixedWeek } from './rotation.js'
+import { scheduleModeOf, queueRecovery, rotationIds, startPass, saveRotation, startNewPass, stopPass, refillAfter, refillIfComplete, chooseRotation, chooseFixedWeek, segmentAt, sequenceOf, isSimpleSequence, REST } from './rotation.js'
 import { queueNext, queueRemaining, queueView } from './queue.js'
 import { effectiveRoutineIds } from './history.js'
 
@@ -403,5 +403,110 @@ describe('a complete managed pass left behind by a sync merge', () => {
     const planner = managed(['a', 'b', 'c'], [w('a', '2026-09-10'), w('b', '2026-09-11'), w('c', TODAY)], { queue: pass(['a', 'b', 'c']) })
     expect(refillIfComplete(planner, TODAY, NOW)).toBe(false)
     expect(refillIfComplete(S(), TODAY, NOW)).toBe(false)
+  })
+})
+
+// #536: a loop may hold a routine twice and rest days. It runs as segments, each a pass of the
+// queue as before (so queue.js and the reminders' api/queue.js are untouched); a rest pushes the
+// next segment's start back by a day.
+describe('rest days and repeats (#536)', () => {
+  const loop = (sequence, { rotation, ...over } = {}) => S({ scheduleMode: 'rotation', ...over, rotation: { id: 'r1', sequence, label: 'Loop', ...rotation } })
+
+  it('splits a loop at rests and at a routine already in the segment, wrapping round the end', () => {
+    const seq = ['a', 'b', 'c', REST, 'b', 'a', REST, REST]
+    expect(segmentAt(seq, 0)).toEqual({ start: 0, ids: ['a', 'b', 'c'], rest: 1, next: 4 })
+    expect(segmentAt(seq, 4)).toEqual({ start: 4, ids: ['b', 'a'], rest: 2, next: 0 })
+    expect(segmentAt(['a', 'b', 'c', 'b', 'a'], 0).ids).toEqual(['a', 'b', 'c'])
+    expect(segmentAt(['a', 'b', 'c', 'b', 'a'], 3)).toEqual({ start: 3, ids: ['b', 'a'], rest: 0, next: 0 })
+    expect(segmentAt([REST, 'a', 'b'], 0)).toEqual({ start: 1, ids: ['a', 'b'], rest: 1, next: 1 })
+    expect(segmentAt(['a', 'a'], 0)).toEqual({ start: 0, ids: ['a'], rest: 0, next: 1 })
+    expect(segmentAt([REST], 0)).toBeNull()
+  })
+
+  it('a loop without rests or repeats is simple, and runs exactly as before', () => {
+    expect(isSimpleSequence(['a', 'b', 'c'])).toBe(true)
+    expect(isSimpleSequence(['a', 'b', 'a'])).toBe(false)
+    expect(isSimpleSequence(['a', REST, 'b'])).toBe(false)
+  })
+
+  it('keeps repeats and rests of routines that exist, and drops deleted ones', () => {
+    expect(sequenceOf(loop(['a', 'gone', REST, 'a']))).toEqual(['a', REST, 'a'])
+    expect(sequenceOf(loop([REST, 'gone']))).toEqual([])
+  })
+
+  it('saving a loop with a repeat makes the first segment the pass, and keeps the whole loop', () => {
+    const s = S()
+    saveRotation(s, ['a', 'b', 'c', 'b'], '', TODAY, NOW)
+    expect(s.rotation.sequence).toEqual(['a', 'b', 'c', 'b'])
+    expect(s.rotation.at).toBe(0)
+    expect(s.queue).toMatchObject({ ids: ['a', 'b', 'c'], startsOn: TODAY, since: NOW, rotationId: s.rotation.id })
+    expect(queueNext(s, TODAY, TODAY)).toBe('a')
+  })
+
+  it('the second B is a session of its own: done in the next segment, not by the first B', () => {
+    const s = loop(['a', 'b', 'c', 'b', 'own'], { rotation: { at: 0 } })
+    startPass(s, '2026-09-10', NOW - 3 * 86400000)
+    const days = ['2026-09-10', '2026-09-11', '2026-09-12']
+    s.workouts = [w('a', days[0], NOW - 3 * 86400000 + 1000), w('b', days[1], NOW - 2 * 86400000), w('c', days[2], NOW - 1000)]
+    expect(refillAfter(s, s.workouts[2], TODAY, NOW)).toBe(true)
+    expect(s.rotation.at).toBe(3)
+    expect(s.queue).toMatchObject({ ids: ['b', 'own'], startsOn: '2026-09-13' })
+    expect(queueRemaining(s)).toEqual(['b', 'own'])
+    expect(queueNext(s, '2026-09-13', '2026-09-13')).toBe('b')
+  })
+
+  it('a rest day after a segment: the next one starts a day later, and the day in between has no session', () => {
+    const s = loop(['a', 'b', REST, 'c'], { rotation: { at: 0 } })
+    startPass(s, '2026-09-11', NOW - 2 * 86400000)
+    s.workouts = [w('a', '2026-09-11', NOW - 2 * 86400000 + 1000), w('b', TODAY)]
+    expect(refillAfter(s, s.workouts[1], TODAY, NOW)).toBe(true)
+    expect(s.queue).toMatchObject({ ids: ['c'], startsOn: '2026-09-14' })
+    expect(queueView(s, '2026-09-13').waiting).toBe(true)
+    expect(queueNext(s, '2026-09-13', '2026-09-13')).toBeNull()
+    expect(effectiveRoutineIds(s, '2026-09-13', '2026-09-13')).toEqual([])
+    expect(queueNext(s, '2026-09-14', '2026-09-14')).toBe('c')
+    // and round the end: the rest before 'c' was the only one, so 'a, b' follow 'c' straight away
+    s.workouts.push(w('c', '2026-09-14', NOW + 2 * 86400000))
+    expect(refillAfter(s, s.workouts.at(-1), '2026-09-14', NOW + 2 * 86400000)).toBe(true)
+    expect(s.queue).toMatchObject({ ids: ['a', 'b'], startsOn: '2026-09-15' })
+  })
+
+  it('two rest days in a row push it two days', () => {
+    const s = loop(['a', REST, REST, 'b'], { rotation: { at: 0 } })
+    startPass(s, TODAY, NOW - 1000)
+    s.workouts = [w('a', TODAY, NOW)]
+    expect(refillAfter(s, s.workouts[0], TODAY, NOW + 1)).toBe(true)
+    expect(s.queue).toMatchObject({ ids: ['b'], startsOn: '2026-09-15' })
+  })
+
+  it('an edit keeps the running segment and what was logged in it', () => {
+    const s = loop(['a', 'b', REST, 'c'], { rotation: { at: 0 } })
+    startPass(s, '2026-09-11', NOW - 86400000)
+    s.workouts = [w('a', '2026-09-11', NOW - 86400000 + 1000)]
+    saveRotation(s, ['a', 'b', 'own', REST, 'c', 'a'], 'Loop', TODAY, NOW)
+    expect(s.queue).toMatchObject({ ids: ['a', 'b', 'own'], startsOn: '2026-09-11', since: NOW - 86400000 })
+    expect(queueRemaining(s)).toEqual(['b', 'own'])
+    expect(s.rotation.sequence).toEqual(['a', 'b', 'own', REST, 'c', 'a'])
+  })
+
+  it('a refill only takes a pass that is the segment at `at`; a mismatch waits for the editor', () => {
+    const s = loop(['a', 'b', REST, 'c'], { rotation: { at: 0 }, queue: pass(['c'], { rotationId: 'r1', startsOn: TODAY, since: NOW - 1 }) })
+    s.workouts = [w('c', TODAY, NOW)]
+    expect(refillAfter(s, s.workouts[0], TODAY, NOW + 1)).toBe(false)
+  })
+
+  it('Start the loop over begins at the first segment, strict', () => {
+    const s = loop(['a', 'b', REST, 'c'], { rotation: { at: 3 } })
+    startPass(s, TODAY, NOW)
+    expect(s.queue.ids).toEqual(['c'])
+    startNewPass(s, TODAY, NOW + 5)
+    expect(s.rotation.at).toBe(0)
+    expect(s.queue).toMatchObject({ ids: ['a', 'b'], strict: true })
+  })
+
+  it('a loop of only rests and deleted routines starts nothing', () => {
+    const s = loop([REST, 'gone'])
+    expect(startPass(s, TODAY, NOW)).toBe(false)
+    expect(s.queue).toBeNull()
   })
 })

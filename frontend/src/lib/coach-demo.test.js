@@ -10,7 +10,7 @@
 // test here starts a job and then drains it. A test that leaves one running would 409 the next.
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {
-  demoStatus, demoPlan, demoReview, demoRefine, demoDebrief, demoResolve, demoCohort, demoDisclosure
+  demoStatus, demoPlan, demoReview, demoRefine, demoDebrief, demoAsk, demoResolve, demoCohort, demoDisclosure
 } from './coach-demo.js'
 import { EXDB, EXIDX } from './exercises.js'
 import { planHash, validateProposal, applyChangeSet } from './coach.js'
@@ -96,6 +96,18 @@ describe('coach-demo — the job machine', () => {
     expect(demoStatus().pending).toBeTruthy()
     expect(demoResolve()).toEqual({ ok: true })
     expect(demoStatus()).toEqual({ job: null, pending: null, cap: { used: 0, limit: 0 }, lastError: null })
+  })
+
+  it('a question gets a sample answer, and the review it was asked beside comes back once read (#660)', () => {
+    const S = state()
+    const review = think(() => demoReview(S))
+    const answer = think(() => demoAsk(S, 'why one set less?'))
+    expect(answer.kind).toBe('ask')
+    expect(answer.answer).toContain('why one set less?')
+    demoResolve()
+    expect(demoStatus().pending).toBe(review)
+    demoResolve()
+    expect(demoStatus().pending).toBeNull()
   })
 
   it('a builder that throws ends the job, records the failure, and does not refuse the next request', () => {

@@ -29,4 +29,3 @@ export async function selfUpdates() {
   return (await getChannel()) === 'sideload'
 }
 
-export function resetChannel() { channelP = null }

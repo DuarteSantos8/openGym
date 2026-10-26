@@ -1,0 +1,89 @@
+// @vitest-environment happy-dom
+// Settings → Units → "Count warm-ups in volume" (#719): off until switched on, and the switch
+// stores the choice and nothing else (saved workouts keep their work-set volume).
+import React, { act } from 'react'
+import { createRoot } from 'react-dom/client'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import Settings from './Settings.jsx'
+
+globalThis.IS_REACT_ACT_ENVIRONMENT = true
+
+const mocks = vi.hoisted(() => {
+  const state = { S: null }
+  state.snapshot = () => ({
+    S: state.S,
+    user: null,
+    update: mut => {
+      const next = structuredClone(state.S)
+      mut(next)
+      state.S = next
+    },
+    replaceState: vi.fn(), setUser: vi.fn(), pullState: vi.fn(), pushState: vi.fn(),
+    signOut: vi.fn(), signOutAll: vi.fn(), resetDemo: vi.fn(), disconnectServer: vi.fn(),
+  })
+  return state
+})
+vi.mock('../store/useStore.js', () => {
+  const useStore = selector => selector ? selector(mocks.snapshot()) : mocks.snapshot()
+  useStore.getState = mocks.snapshot
+  return { useStore, DEF: { reminder: { time: '17:30' } }, hasData: () => false }
+})
+vi.mock('../store/useUI.js', () => {
+  const snap = () => ({ toast: vi.fn(), openSheet: vi.fn() })
+  const useUI = selector => selector ? selector(snap()) : snap()
+  useUI.getState = snap
+  return { useUI }
+})
+vi.mock('react-router-dom', () => ({ useNavigate: () => () => {} }))
+vi.mock('../lib/api.js', () => ({
+  api: vi.fn(), webauthnOK: () => false, passkeyLogin: vi.fn(), passkeyRegister: vi.fn(), IS_ANDROID: false,
+}))
+vi.mock('../lib/push.js', () => ({ pushSupported: () => false, enablePush: vi.fn(), disablePush: vi.fn(), sendTestPush: vi.fn() }))
+vi.mock('../lib/wakelock.js', () => ({ wakeLockSupported: () => false }))
+vi.mock('../lib/mobile.js', () => ({ MOBILE: false, isAndroid: () => Promise.resolve(false), shareExport: vi.fn(), syncReminder: vi.fn() }))
+vi.mock('./MobileOnboarding.jsx', () => ({ ConnectSheet: () => null }))
+vi.mock('../sheets.jsx', () => ({
+  loadStarterPlan: vi.fn(), starterPlanSheet: vi.fn(), confirmSheet: vi.fn(), importFromApp: vi.fn(),
+  importFromHevy: vi.fn(), equipmentProfileSheet: vi.fn(),
+}))
+
+// The Settings view reads the build-time version constant at render time.
+globalThis.__APP_VERSION__ ??= 'test'
+
+let host, root
+beforeEach(() => {
+  mocks.S = {
+    unit: 'kg', restSec: 90, restPauseSec: 15, sound: false, effort: 'none',
+    gifSize: 'full', workouts: [], routines: [], exWeights: {},
+  }
+  host = document.createElement('div')
+  document.body.appendChild(host)
+  root = createRoot(host)
+})
+afterEach(() => {
+  act(() => root.unmount())
+  host.remove()
+})
+
+const mount = () => act(() => root.render(<Settings page="units" />))
+const toggle = () => host.querySelector('[aria-label="Count warm-ups in volume"]')
+
+describe('Settings: count warm-ups in volume', () => {
+  it('is off for a profile that never chose', () => {
+    mount()
+    expect(toggle()).not.toBeNull()
+    expect(toggle().getAttribute('aria-checked')).toBe('false')
+  })
+
+  it('stores the choice and leaves the workouts alone', () => {
+    mocks.S.workouts = [{ id: 'a', d: '2026-10-01', vol: 600, entries: [{ id: '0025', sets: [{ w: 20, r: 10, done: true, warmup: true, phase: 'warmup' }, { w: 60, r: 10, done: true }] }] }]
+    const before = structuredClone(mocks.S)
+    mount()
+    act(() => { toggle().click() })
+    expect(mocks.S.volumeWarmups).toBe(true)
+    expect({ ...mocks.S, volumeWarmups: undefined }).toEqual({ ...before, volumeWarmups: undefined })
+    mount()
+    act(() => { toggle().click() })
+    expect(mocks.S.volumeWarmups).toBe(false)
+  })
+})

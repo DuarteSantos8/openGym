@@ -10,6 +10,9 @@
     "core"
   ],
   "category": "calisthenics",
+  "needs": [
+    "pull-up bar"
+  ],
   "description": "A bodyweight row hanging under a bar with an underhand grip. Builds the back and biceps.",
   "instructions": [
     "Lie under a bar set at about waist height and grip it with palms facing you.",
