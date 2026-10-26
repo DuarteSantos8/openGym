@@ -2348,6 +2348,8 @@ export default {
   'All sets done': '모든 세트 완료',
   'Log set': '세트 기록',
   'Next exercise': '다음 운동',
+  'Same as above': '위와 같음',
+  'Same as {0}': '같은 소리: {0}',
   'Skip rest': '휴식 건너뛰기',
   'Open openGym for the next set': '다음 세트는 openGym을 열어 주세요',
   'On the watch': '워치에서',
@@ -2375,6 +2377,9 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': '이 기기에 이 백업에 없는 운동이 1개 있습니다. 바꾸면 삭제됩니다.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': '이 기기에 이 백업에 없는 운동이 {0}개 있습니다. 바꾸면 삭제됩니다.',
+  'A sound for each kind of rest': '휴식 종류마다 다른 소리',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': '화면을 보지 않아도 다음이 무엇인지 들을 수 있어요. 고르기 전까지는 각각 위의 소리가 나요. 버티기와 방향 바꾸기 휴식도 늘 그래요.',
+  'Next round': '다음 라운드',
   // --- PDF exports and the performance report ---
   'Page {0} of {1}': '{1}쪽 중 {0}쪽',
   'Training plan': '운동 계획',

@@ -2403,6 +2403,8 @@ export default {
   'All sets done': 'اكتملت كل المجموعات',
   'Log set': 'سجّل المجموعة',
   'Next exercise': 'التمرين التالي',
+  'Same as above': 'كما في الأعلى',
+  'Same as {0}': 'مثل {0}',
   'Skip rest': 'تخطَّ الراحة',
   'Open openGym for the next set': 'افتح openGym للمجموعة التالية',
   'On the watch': 'على الساعة',
@@ -2430,6 +2432,9 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'على هذا الجهاز تمرين واحد ليس في هذه النسخة الاحتياطية. الاستبدال يحذفه.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'على هذا الجهاز {0} تمارين ليست في هذه النسخة الاحتياطية. الاستبدال يحذفها.',
+  'A sound for each kind of rest': 'صوت لكل نوع من الراحة',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'اعرف ما التالي دون أن تنظر. إلى أن تختار صوتًا، يُشغّل كل نوع الصوت أعلاه، كما يفعل التثبيت واستراحة تبديل الجهة دائمًا.',
+  'Next round': 'الجولة التالية',
   // --- PDF exports and the performance report ---
   'Page {0} of {1}': 'الصفحة {0} من {1}',
   'Training plan': 'خطة التدريب',

@@ -2348,6 +2348,8 @@ export default {
   'All sets done': 'Tüm setler tamam',
   'Log set': 'Seti kaydet',
   'Next exercise': 'Sonraki egzersiz',
+  'Same as above': 'Yukarıdakiyle aynı',
+  'Same as {0}': '{0} ile aynı',
   'Skip rest': 'Dinlenmeyi atla',
   'Open openGym for the next set': 'Sonraki set için openGym’i aç',
   'On the watch': 'Saatte',
@@ -2375,6 +2377,9 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'Bu cihazda bu yedekte olmayan 1 antrenman var. Değiştirmek onu siler.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'Bu cihazda bu yedekte olmayan {0} antrenman var. Değiştirmek onları siler.',
+  'A sound for each kind of rest': 'Her dinlenme türüne ayrı ses',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'Bakmadan sırada ne olduğunu duy. Sen seçene kadar her biri yukarıdaki sesi çalar; tutuşlar ve taraf değiştirme molası da hep öyle yapar.',
+  'Next round': 'Sonraki tur',
   // --- PDF exports and the performance report ---
   'Page {0} of {1}': 'Sayfa {0}/{1}',
   'Training plan': 'Antrenman planı',

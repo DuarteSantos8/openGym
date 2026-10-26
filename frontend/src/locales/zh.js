@@ -2348,6 +2348,8 @@ export default {
   'All sets done': '所有组已完成',
   'Log set': '记录本组',
   'Next exercise': '下一个动作',
+  'Same as above': '同上',
+  'Same as {0}': '与{0}相同',
   'Skip rest': '跳过休息',
   'Open openGym for the next set': '打开 openGym 继续下一组',
   'On the watch': '手表上',
@@ -2375,6 +2377,9 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': '此设备上有 1 次训练不在此备份中。替换会删除它。',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': '此设备上有 {0} 次训练不在此备份中。替换会删除它们。',
+  'A sound for each kind of rest': '每种休息各有提示音',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': '不用看屏幕就知道接下来做什么。在你选择之前，每种都播放上方的声音，静力动作和换边的暂停也一直如此。',
+  'Next round': '下一轮',
   // --- PDF exports and the performance report ---
   'Page {0} of {1}': '第 {0} 页，共 {1} 页',
   'Training plan': '训练计划',

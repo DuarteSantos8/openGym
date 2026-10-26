@@ -2348,6 +2348,8 @@ export default {
   'All sets done': 'सारे सेट पूरे',
   'Log set': 'सेट दर्ज करें',
   'Next exercise': 'अगली एक्सरसाइज़',
+  'Same as above': 'ऊपर जैसा',
+  'Same as {0}': '{0} जैसा',
   'Skip rest': 'आराम छोड़ें',
   'Open openGym for the next set': 'अगले सेट के लिए openGym खोलें',
   'On the watch': 'वॉच पर',
@@ -2375,6 +2377,9 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'इस डिवाइस पर 1 वर्कआउट है जो इस बैकअप में नहीं है। बदलने से यह मिट जाएगा।',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'इस डिवाइस पर {0} वर्कआउट हैं जो इस बैकअप में नहीं हैं। बदलने से ये मिट जाएँगे।',
+  'A sound for each kind of rest': 'हर तरह के आराम के लिए अलग आवाज़',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'बिना देखे सुनकर जानें कि आगे क्या है। जब तक आप कोई न चुनें, हर एक ऊपर वाली आवाज़ बजाता है, जैसे होल्ड और साइड बदलने का ठहराव हमेशा बजाते हैं।',
+  'Next round': 'अगला राउंड',
   // --- PDF exports and the performance report ---
   'Page {0} of {1}': 'पेज {0} / {1}',
   'Training plan': 'ट्रेनिंग प्लान',
