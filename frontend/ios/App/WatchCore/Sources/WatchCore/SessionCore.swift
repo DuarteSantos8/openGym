@@ -510,3 +510,21 @@ enum WeighIn {
         return (whole.rounded() * 10 + t) / 10
     }
 }
+
+/// Sets logged here whose events are still queued for the phone, from the JSON strings
+/// SessionStore sends. A set sent twice (a retry, or changed after the tick) counts once.
+enum Unsent {
+    static func sets(in events: [String]) -> Int {
+        var seen = Set<String>()
+        for json in events {
+            guard let d = json.data(using: .utf8),
+                  let e = try? JSONSerialization.jsonObject(with: d) as? [String: Any],
+                  e["type"] as? String == "setDone",
+                  let ex = e["exId"] as? String, let si = e["setIdx"] as? Int else { continue }
+            let wid = e["wid"] as? String ?? ""
+            let ei = e["entryIdx"] as? Int ?? -1
+            seen.insert("\(wid)|\(ei)|" + SessionCore.key(ex, si, e["side"] as? String))
+        }
+        return seen.count
+    }
+}

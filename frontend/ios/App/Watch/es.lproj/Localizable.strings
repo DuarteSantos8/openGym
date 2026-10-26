@@ -32,6 +32,7 @@
 "More" = "Más";
 "Effort" = "Esfuerzo";
 "None" = "Ninguno";
+"Waiting to sync" = "Pendiente de sincronizar";
 "Last time: %@" = "La última vez: %@";
 "No workout running" = "Ningún entreno en curso";
 "Not synced yet" = "Aún sin sincronizar";

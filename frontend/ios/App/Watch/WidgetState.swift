@@ -21,6 +21,8 @@ struct WidgetState: Codable, Equatable {
     var total: Int = 0
     /// "2/4": the set up next, of its exercise's work sets.
     var setLabel: String = ""
+    /// Sets logged on the watch that the phone has not got yet (0 shows nothing).
+    var unsent: Int = 0
     var updatedAt: Date = .distantPast
     /// The app's language (the phone's), so the complications speak it too.
     var lang: String?
@@ -31,7 +33,7 @@ struct WidgetState: Codable, Equatable {
 
     static func == (a: WidgetState, b: WidgetState) -> Bool {
         a.mode == b.mode && a.title == b.title && a.detail == b.detail && a.restEndsAt == b.restEndsAt
-            && a.done == b.done && a.total == b.total && a.setLabel == b.setLabel && a.lang == b.lang
+            && a.done == b.done && a.total == b.total && a.setLabel == b.setLabel && a.unsent == b.unsent && a.lang == b.lang
     }
 
     /// The state as written, unless it is about a session the watch app has not touched for 45
@@ -40,8 +42,16 @@ struct WidgetState: Codable, Equatable {
     static func read() -> WidgetState {
         guard let d = UserDefaults(suiteName: groupId)?.data(forKey: key),
               let s = try? JSONDecoder().decode(WidgetState.self, from: d) else { return .idle }
-        if (s.mode == "set" || s.mode == "rest") && Date().timeIntervalSince(s.updatedAt) > 45 * 60 { return .idle }
+        if (s.mode == "set" || s.mode == "rest") && Date().timeIntervalSince(s.updatedAt) > 45 * 60 { return s.quiet }
         return s
+    }
+
+    /// Nothing to show but the app, keeping what must outlive a session that went quiet.
+    var quiet: WidgetState {
+        var i = WidgetState.idle
+        i.unsent = unsent
+        i.lang = lang
+        return i
     }
 
     func write() {

@@ -4,6 +4,7 @@ import UIKit
 import UserNotifications
 import WatchConnectivity
 import WatchKit
+import WidgetKit
 
 /*
  * The watch's side of a workout, around WatchCore's SessionCore (the session as plain data and
@@ -96,6 +97,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// Whether the phone is in reach now, and how many of this watch's events still wait for it.
     @Published private(set) var reachable = true
     @Published private(set) var queued = 0
+    /// Sets logged here whose events the phone has not got yet (Unsent), for the complications.
+    @Published private(set) var unsent = 0
     /// Whether a snapshot from the phone ever arrived on this watch. The phone sends only while
     /// openGym runs there, so until then the start screen says to open it once.
     @Published private(set) var heardFromPhone = UserDefaults.standard.bool(forKey: SessionStore.heardKey)
@@ -271,6 +274,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     var widgetState: WidgetState {
         var w = widgetStateWithoutLang
         w.lang = state.settings.lang
+        // Like `offline`: with the phone in reach the transfers finish in a second, no blink of 1.
+        w.unsent = reachable ? 0 : unsent
         return w
     }
 
@@ -847,6 +852,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let session = WCSession.default
         guard session.activationState == .activated else {
             outbox = Array((outbox + [json]).suffix(500))
+            updateLink()
             return
         }
         // Queued by the system and delivered, in order, even when the phone app is not running.
@@ -862,15 +868,26 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     }
 
     /// The phone in reach or not, and the events still on their way: the small "syncs later" sign.
-    private func updateLink() {
+    func updateLink() {
         guard WCSession.isSupported() else { return }
         let session = WCSession.default
         let r = session.activationState == .activated && session.isReachable
         let q = session.outstandingUserInfoTransfers.count
+        let u = Unsent.sets(in: outbox + session.outstandingUserInfoTransfers.compactMap { $0.userInfo["event"] as? String })
         DispatchQueue.main.async {
+            let before = self.reachable ? 0 : self.unsent // what the faces show
             if self.reachable != r { self.reachable = r }
             if self.queued != q { self.queued = q }
+            if self.unsent != u { self.unsent = u }
+            if before != (r ? 0 : u) { self.publishWidget() }
         }
+    }
+
+    /// Written here, not in a view: a transfer finishes when the app may not be on screen.
+    func publishWidget() {
+        guard !isDemo else { return }
+        widgetState.write()
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     func sessionReachabilityDidChange(_ session: WCSession) { updateLink() }
@@ -878,6 +895,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     func session(_ session: WCSession, didFinish userInfoTransfer: WCSessionUserInfoTransfer, error: Error?) {
         // A transfer that failed is not tried again by the system: sent again from here, a few
         // times (the phone applies each event once, by its id, so a second copy does no harm).
+        // lean: until the retry below is queued the set is in no list, so the count dips; after 3 tries it is dropped, uncounted.
         if error != nil, let json = userInfoTransfer.userInfo["event"] as? String {
             let tries = (userInfoTransfer.userInfo["tries"] as? Int) ?? 0
             if tries < 3 { DispatchQueue.main.asyncAfter(deadline: .now() + 5) { self.transfer(json, tries: tries + 1) } }

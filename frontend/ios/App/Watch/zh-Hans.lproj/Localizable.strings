@@ -32,6 +32,7 @@
 "More" = "更多";
 "Effort" = "强度";
 "None" = "无";
+"Waiting to sync" = "等待同步";
 "Last time: %@" = "上次: %@";
 "No workout running" = "没有进行中的训练";
 "Not synced yet" = "尚未同步";
