@@ -4,8 +4,8 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ ok: true })) }))
-const { chime } = vi.hoisted(() => ({ chime: vi.fn() }))
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime, vibrate: vi.fn(), alertBuzz: vi.fn() }))
+const { chime, countdown } = vi.hoisted(() => ({ chime: vi.fn(), countdown: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime, vibrate: vi.fn(), alertBuzz: vi.fn(), countdown, hush: vi.fn(), holdSession: vi.fn() }))
 
 import { api } from '../lib/api.js'
 import { useUI, restoreRest, REST_KEY } from './useUI.js'
@@ -75,12 +75,80 @@ describe('the rest timer across a reload', () => {
     expect(saved()).toBeNull()
   })
 
+  // The push booked before the reload survives it, so whether the server took it comes back too:
+  // a rest that then runs out on a hidden page leaves the alert to that push, or, when the server
+  // never took it, shows the local one in its place.
+  it('keeps whether the server took the push, and a hidden end after the reload alerts only when it did not', async () => {
+    const shown = vi.fn()
+    globalThis.Notification = { permission: 'granted' }
+    Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: { getRegistration: async () => ({ showNotification: shown, pushManager: { getSubscription: async () => ({ endpoint: 'https://push.example/x' }) } }) } })
+    const hide = hidden => { Object.defineProperty(document, 'hidden', { configurable: true, value: hidden }); document.dispatchEvent(new Event('visibilitychange')) }
+    const flush = async () => { for (let i = 0; i < 5; i++) await Promise.resolve() }
+    try {
+      useUI.getState().startRest(90, 2)
+      expect(saved().pushed).toBe(false)             // asked, not answered yet
+      await flush()
+      expect(saved().pushed).toBe(true)              // the server took it
+      for (const [pushed, alerts] of [[true, 0], [false, 1]]) {
+        useUI.getState().stopRest(); hide(false); shown.mockClear()
+        localStorage.setItem(REST_KEY, JSON.stringify({ endsAt: Date.now() + 40_000, total: 90, forIdx: 1, kind: null, paused: false, left: 50, pushed }))
+        expect(restoreRest()).toBe(true)
+        hide(true)
+        vi.advanceTimersByTime(41_000)
+        await flush()
+        expect(shown).toHaveBeenCalledTimes(alerts)
+      }
+    } finally {
+      hide(false)
+      delete globalThis.Notification
+      delete navigator.serviceWorker
+    }
+  })
+
+  it('queues the count-in again for the time that is left, and none for a paused one', () => {
+    localStorage.setItem(REST_KEY, JSON.stringify({ endsAt: Date.now() + 40_000, total: 90, forIdx: 1, kind: null, paused: false, left: 50 }))
+    countdown.mockClear()
+    expect(restoreRest()).toBe(true)
+    expect(countdown).toHaveBeenLastCalledWith(true, 40)
+    useUI.setState({ timer: null })
+    countdown.mockClear()
+    localStorage.setItem(REST_KEY, JSON.stringify({ endsAt: Date.now() - 5000, total: 90, forIdx: 0, kind: null, paused: true, left: 33 }))
+    expect(restoreRest()).toBe(true)
+    expect(countdown).not.toHaveBeenCalled()
+  })
+
   it('a paused rest comes back held', () => {
     localStorage.setItem(REST_KEY, JSON.stringify({ endsAt: Date.now() - 5000, total: 90, forIdx: 0, kind: null, paused: true, left: 33 }))
     expect(restoreRest()).toBe(true)
     expect(useUI.getState().timer).toMatchObject({ left: 33, total: 90, paused: true })
     vi.advanceTimersByTime(60_000)
     expect(useUI.getState().timer.left).toBe(33)
+  })
+
+  // The kind picks the sound the rest ends with (Settings → Sound), and with the phase the bar's
+  // word; the chain is the hold a timed exercise runs next. A reload keeps all three.
+  it('keeps what the rest leads into across a reload, and ends with that kind\'s sound', () => {
+    useStore.setState({ S: { ...useStore.getState().S, restSound: 'bell', restSoundByKind: { block: 'whistle' } } })
+    useUI.getState().startRest(90, 2, { kind: 'block', phase: 'work', chain: { id: 'plank', i: 1, n: 3, cur: 2 } })
+    expect(saved()).toMatchObject({ kind: 'block', phase: 'work', chain: { id: 'plank', i: 1, n: 3, cur: 2 } })
+    const kept = saved()
+    useUI.setState({ timer: null })
+    localStorage.setItem(REST_KEY, JSON.stringify(kept))
+    expect(restoreRest()).toBe(true)
+    expect(useUI.getState().timer).toMatchObject({ kind: 'block', phase: 'work', forIdx: 2, chain: { id: 'plank', i: 1, n: 3, cur: 2 } })
+    vi.advanceTimersByTime(91_000)
+    expect(chime).toHaveBeenCalledWith(true, 'whistle')
+  })
+
+  // A flow block's round rest: the block it carries into its next round (timer.flow) comes back too.
+  it('keeps the flow block a round\'s rest leads into across a reload', () => {
+    useUI.getState().startRest(15, 2, { kind: 'round', flow: 'sg-warmup', flowCur: 0 })
+    expect(saved()).toMatchObject({ kind: 'round', flow: 'sg-warmup', flowCur: 0 })
+    const kept = saved()
+    useUI.setState({ timer: null })
+    localStorage.setItem(REST_KEY, JSON.stringify(kept))
+    expect(restoreRest()).toBe(true)
+    expect(useUI.getState().timer).toMatchObject({ kind: 'round', forIdx: 2, flow: 'sg-warmup', flowCur: 0 })
   })
 
   it('a rest that ended meanwhile, or one with no session running, is dropped', () => {

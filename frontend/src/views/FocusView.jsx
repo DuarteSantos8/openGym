@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useStore } from '../store/useStore.js'
+import { useUI } from '../store/useUI.js'
 import { exOr } from '../lib/exercises.js'
 import { clampIncline, hasIncline, inclineFits, INCLINE_MAX, INCLINE_STEP } from '../lib/incline.js'
 import { exerciseNameClass, exerciseNameFor, t } from '../lib/i18n.js'
@@ -112,6 +113,7 @@ export default function FocusView({
   entryIdx, unit, onToggle, onToggleSide, onField, onMutateSet, onStartTimed,
   onAddSet, onAddWarmup, onRemoveSetAt, onProgressionSettings, onSwap, onRemoveExercise,
   onNoProg, busy, onSelectEntry, onAdvanceUnit, onPairPrev, onPairNext, onUnpair, pointerEpoch,
+  onBlockLayout, blockLayoutSub,
 }) {
   // In the exercise's own weight unit when it has one (#657); the parent stores every change back.
   const live = useStore(state => state.S)
@@ -127,7 +129,11 @@ export default function FocusView({
   const [pointerState, setPointerState] = useState(() => ({ epoch: pointerEpoch, pointers: new Map() }))
   const pointers = pointerState.epoch === pointerEpoch ? pointerState.pointers : new Map()
   const stored = pointers.get(entryIdx)
-  const setIdx = clampSet(entry, Number.isInteger(stored) ? stored : firstIncomplete(entry))
+  // A hold that started itself (a timed exercise runs itself: Workout.jsx chainHold) runs on a row
+  // this view's own pointer never moved to, so while it runs the view shows the set being held.
+  const work = useUI(state => state.work)
+  const heldRow = work?.owner && work.owner.idx === entryIdx && work.owner.id === entry.id ? work.owner.i : null
+  const setIdx = clampSet(entry, heldRow ?? (Number.isInteger(stored) ? stored : firstIncomplete(entry)))
   const set = entry.sets[setIdx]
   const firstOpenSet = firstIncomplete(entry)
   const locked = !set.done && setIdx > firstOpenSet
@@ -203,7 +209,9 @@ export default function FocusView({
     </section>
   }
 
-  const onProgress = ({ unitDone }) => {
+  // `i`: the set that was just completed. A hold that started itself (Workout.jsx chainHold)
+  // reports through the callback of the hold that began the chain, whose own setIdx is older.
+  const onProgress = ({ unitDone, i }) => {
     const active = useStore.getState().S.active
     if (!active) return
     if (unitDone) {
@@ -211,7 +219,7 @@ export default function FocusView({
       const nextEntryIdx = useStore.getState().S.active?.cur
       if (nextEntryIdx !== entryIdx) clearPointer(nextEntryIdx)
     }
-    else if (unit.length === 1) selectSet(setIdx + 1)
+    else if (unit.length === 1) selectSet((Number.isInteger(i) ? i : setIdx) + 1)
     else clearPointer(active.cur)
   }
 
@@ -242,6 +250,8 @@ export default function FocusView({
       mode === 'reps' && { icon: 'plate', label: t('Plate loading'), onClick: () => barWeightSheet(entry.id, { ...(entry.target || {}), id: entry.id }) },
       onPairPrev && { icon: 'link', label: t('Make superset with previous'), onClick: onPairPrev },
       onPairNext && { icon: 'link', label: t('Make superset with next'), onClick: onPairNext },
+      // A flow block put back into rows goes back to its card from here, as in the other layouts.
+      onBlockLayout && { icon: 'timer', label: t('Block layout'), sub: blockLayoutSub, onClick: onBlockLayout },
       { icon: 'shuffle', label: t('Swap exercise'), onClick: onSwap, disabled: busy },
       { icon: 'trash', label: t('Remove exercise'), onClick: onRemoveExercise, danger: true, disabled: busy },
     ],

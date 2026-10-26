@@ -1,7 +1,8 @@
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
-import { effortOf } from '../lib/history.js'
+import { effortOf, fmtSec } from '../lib/history.js'
+import { GET_READY_SEC, getReadyOf, runsFlows } from '../lib/blocks.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { unlock, vibrateSupported, appleTouchDevice } from '../lib/sound.js'
 import { wakeLockSupported } from '../lib/wakelock.js'
@@ -39,9 +40,23 @@ export function WorkoutSettings({ close }) {
           footer: t('Scroll to 0:00 to turn the rest timer off.'),
           onDone: v => update(s => { s.restSec = v }),
         })} />
+      {/* The count before each hold of a warm-up or cool-down that runs itself (Settings → Workout →
+          Fine-tuning, the same field). It is the one people reach for mid-workout, the first
+          time a stretch on the floor starts before they are down on the mat; a change here
+          applies from the next hold. Only in a live session: editing a saved workout or logging a
+          past one, no block runs itself (lib/blocks.js runsFlows), so there is nothing to
+          count in. */}
+      {runsFlows(S.active) && <Row icon="timer" iconTint="var(--orange)" title={t('Get ready before each hold')}
+        subtitle={t('Warm-ups and cool-downs that run themselves count down before each hold, so you can get into position.')}>
+        <Segmented className="seg-inline"
+          options={[{ value: 0, label: t('Off') }, ...GET_READY_SEC.map(n => ({ value: n, label: fmtSec(n) }))]}
+          value={getReadyOf(S)} onChange={v => update(s => { s.flowGetReady = v })} />
+      </Row>}
       <Row icon="speaker" iconTint="var(--pink)" title={t('Play a sound')}>
-        {/* A tap: unlock the audio now so a rest ending before the next tick can sound (iOS, #152). */}
-        <Switch checked={!!S.sound} onChange={v => { if (v) unlock(true); update(s => { s.sound = v }) }} />
+        {/* A tap: unlock the audio now so a rest ending before the next tick can sound (iOS, #152).
+            A rest or hold already running had its count-in queued when it started: queue it again,
+            or call it off (useUI.restartCountdown). */}
+        <Switch checked={!!S.sound} onChange={v => { if (v) unlock(true); update(s => { s.sound = v }); useUI.getState().restartCountdown() }} />
       </Row>
       <Row icon="vibrate" iconTint="var(--indigo)" title={t('Vibrate')} className={canVibrate ? '' : 'dis'}
         subtitle={canVibrate ? null : iPhone ? t('Not on iPhone') : t('Not supported in this browser.')}>

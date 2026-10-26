@@ -4,7 +4,7 @@ import SwipeRow from '../components/SwipeRow.jsx'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { workoutControls } from '../lib/workout-controls.js'
-import { useUI } from '../store/useUI.js'
+import { useUI, remapChain } from '../store/useUI.js'
 import { EXIDX, exOr, betterWeight, isAssisted } from '../lib/exercises.js'
 import { bestsFor, lastRowFor, oddValues } from '../lib/typo-check.js'
 import { usesBar } from '../lib/bar.js'
@@ -18,8 +18,10 @@ import { pinState } from '../lib/queue.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { api, beacon } from '../lib/api.js'
 import { pyramidRestFor, maxRecordAt, isPyramid, pyramidLabel } from '../lib/pyramid.js'
-import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, sideRestFor, ownSetRest, ownExerciseRest, stepUnitIndex, advanceAfterTimedRest } from '../lib/supersetFlow.js'
+import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, sideRestFor, ownSetRest, ownExerciseRest, stepUnitIndex, advanceAfterTimedRest, restKind, restSetPhase } from '../lib/supersetFlow.js'
+import { blockOf, flowProgress, flowUnitAt, isFlowUnit, unitKey, unitViewOf, getReadyOf, runsFlows } from '../lib/blocks.js'
 import Media from '../components/Media.jsx'
+import FlowBlock from '../components/FlowBlock.jsx'
 import WorkoutScrollAnchor from '../components/WorkoutScrollAnchor.jsx'
 import WorkoutChips from '../components/WorkoutChips.jsx'
 import { supersetMeta } from '../lib/superset-meta.js'
@@ -46,7 +48,7 @@ import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
 import { bindWatchActions, markDiscarded } from '../lib/watch-sync.js'
 import { bestSetFor } from '../lib/exercise-history.js'
 import { bindLiveActions } from '../lib/live-activity.js'
-import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited } from '../lib/workout-model.js'
+import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited, nextUndoneAfter } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry } from '../lib/active-workout-order.js'
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
@@ -111,7 +113,7 @@ const RTL_LETTER = /[֐-ࣿיִ-﷿ﹰ-﻿]/
 // enough to turn over, far shorter than the rest the set earns once both sides are held.
 const SWITCH_SIDES_SEC = 10
 
-function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSide, onField, onAddSet, onRemoveSet, onAddWarmup, onRemoveSetAt, onCopySetAt, onStartTimed, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onRest, onNoProg, routineUpdate, onSwap, onSwapBackup, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy }) {
+function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSide, onField, onAddSet, onRemoveSet, onAddWarmup, onRemoveSetAt, onCopySetAt, onStartTimed, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onRest, onNoProg, routineUpdate, onSwap, onSwapBackup, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy, onBlockLayout, blockLayoutSub }) {
   // The block reads the state as its exercise sees it (lib/ex-unit.js): in the exercise's own
   // weight unit when it has one (#657), so its rows, steppers, plates, owned weights, "last time"
   // and records all speak that unit. Every change goes through inEntryUnit or the parent's
@@ -453,6 +455,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
         onPairNext && { icon: 'link', label: t('Make superset with next'), onClick: onPairNext },
         onMoveUp && { icon: 'chevronUp', label: t('Move up'), onClick: onMoveUp, disabled: busy || !canMoveUp },
         onMoveDown && { icon: 'chevronDown', label: t('Move down'), onClick: onMoveDown, disabled: busy || !canMoveDown },
+        onBlockLayout && { icon: 'timer', label: t('Block layout'), sub: blockLayoutSub, onClick: onBlockLayout },
       ] },
       { items: [
         onRemoveExercise && { icon: 'trash', label: t('Remove exercise'), onClick: onRemoveExercise, danger: true, disabled: busy },
@@ -843,11 +846,20 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
 // the running hold (its callback writes the seconds to a row) and the rest a set started
 // (timer.forSet). Removing the set either one belongs to stops it first; Undo does not start it
 // again. Rows above or below just shift.
-let holdAt = null    // { owner, idx, i }: the row a running hold will write to (startTimed)
+let holdAt = null    // { owner, idx, i, cur }: the row a running hold will write to (startTimed)
 let flashSeq = 0
 // UI state written from here and from effects; a test that stubs the UI store without setState
 // simply does not see it.
 const setUI = patch => useUI.setState?.(patch)
+// An exercise added at `at` moves every exercise from there down by one, and a running hold's
+// row with them: in the List layout the hold can be on an exercise below where the new one goes
+// (after the current unit). Its saved owner moves in useUI.shiftRestOwner, called beside this.
+// The marker it remembers (holdAt.cur, for holdDone's `away`, a timed exercise's and a flow
+// block's) is kept on its exercise the same way.
+const shiftHoldExercise = (at, by) => {
+  if (holdAt && holdAt.idx >= at) holdAt = { ...holdAt, idx: holdAt.idx + by }
+  if (holdAt?.cur >= at) holdAt = { ...holdAt, cur: holdAt.cur + by }
+}
 const shiftRowRefs = (idx, from, by) => {
   if (holdAt && holdAt.idx === idx && holdAt.i >= from) holdAt = { ...holdAt, i: holdAt.i + by }
   // The hold's saved owner (useUI.work.owner, what a reload brings it back to) moves with it.
@@ -855,6 +867,14 @@ const shiftRowRefs = (idx, from, by) => {
   if (wk?.owner && wk.owner.idx === idx && wk.owner.i >= from) setUI({ work: { ...wk, owner: { ...wk.owner, i: wk.owner.i + by } } })
   const rest = useUI.getState().timer
   if (rest && rest.forIdx === idx && rest.forSet != null && rest.forSet >= from) setUI({ timer: { ...rest, forSet: rest.forSet + by } })
+  // And the hold a timed exercise's rest hands over to (timer.chain, same exercise): its row and
+  // the row count it expects move with the rows, and a removed row takes the chain with it.
+  const tc = useUI.getState().timer
+  if (tc?.chain && tc.forIdx === idx) {
+    const { chain, ...rest2 } = tc
+    const gone = by < 0 && chain.i >= from + by && chain.i < from
+    setUI({ timer: gone ? rest2 : { ...tc, chain: { ...chain, i: chain.i >= from ? chain.i + by : chain.i, n: chain.n + by } } })
+  }
 }
 /** The number a set row shows: counted per phase (warm-ups and work sets each from 1), and a
  *  timed per-side L/R pair as one set. */
@@ -931,6 +951,90 @@ export function copyActiveSet(idx, i) {
 }
 
 /* ---------- active workout ---------- */
+// The newest render's handlers, for callbacks that fire long after the render that made them: a
+// hold's end must judge the workout as it is then, not as it was when play was tapped (an
+// exercise added since has moved the rows), and if the view was left and re-entered in between,
+// the instance that is on screen now must answer.
+let latest = {}
+
+// A timed exercise runs itself once started: hold → rest → next hold, until its sets are done.
+// The rest carries where it leads (timer.chain: entry id, row, row count, and the marker as the
+// rest started), and useUI hands it back here when the rest is over on screen, with its owner index
+// as it is then. The workout may have changed meanwhile: the exercise must still be the same one,
+// still timed, still alone in its unit, with the same rows, that row still undone and no hold
+// running. And you must not have gone to another exercise: that takes this one off autopilot
+// (owner's call), so the next hold waits for a tap. The marker must be where it was when the rest
+// began (chain.cur, kept on the same exercise when the list changes shape: useUI.remapChain), or
+// on this exercise itself. In the List layout a hold runs wherever you tap play, not only where the
+// marker is; the other layouts show only the marker's unit, so there the marker must be on this
+// exercise, or the hold would start off screen. Nothing here moves the screen: a hold that starts
+// itself starts where it is. In the Focus view it reports its end the way the tapped hold that
+// began the chain did (chainFocus), so the view steps on as it does after a tapped hold.
+let chainFocus = null
+const chainHold = (chain, forIdx) => {
+  const S2 = useStore.getState().S
+  const active = S2.active
+  const view = active?.workoutView || S2.workoutView
+  const listMode = view === 'list' || view === 'compact'
+  if (!active || !(active.cur === forIdx || (listMode && active.cur === chain?.cur))) return
+  const e = forIdx != null ? active.entries[forIdx] : null
+  if (!chain || !e || e.id !== chain.id || modeOf({ ...(e.target || {}), id: e.id }) !== 'time') return
+  if (e.sets.length !== chain.n || !e.sets[chain.i] || e.sets[chain.i].done || useUI.getState().work) return
+  if (unitOf(supersetUnits(active.entries), forIdx).length !== 1) return
+  latest.startTimed?.(forIdx, chain.i, chainFocus)
+}
+// The same promise one block wider: a flow block (lib/blocks.js — a warm-up, a cool-down, any
+// superset of timed movements on a very short rest) runs itself from one tap. Each hold hands
+// over to the next movement with no rest at all, because a superset rests after the round and
+// not between its members; the round's own rest then carries into the round after it (its
+// timer.flow, below). Nothing is tapped in between, which is the whole point — a six-movement
+// warm-up done twice is thirty-odd taps in the card layout.
+//
+// Judged when it fires, like chainHold: a countdown outlives the render that armed it, and by the
+// time it lands the block may have been unpaired, had an exercise added to it, or been put back
+// into rows from the ⋯ — which is the handbrake, so an override that is not 'flow' stops the chain
+// where it stands. `sg` is what identifies the block across all of that; indices do not survive
+// an insert. Nothing here moves the screen: the block's next hold starts where the block is.
+const flowHold = (sg, at) => {
+  const S2 = useStore.getState().S
+  const active = S2.active
+  if (!active || at == null || !sg) return
+  const entries = active.entries
+  // The same question the timer bar asks to decide whether to show Pause: is this still a block
+  // that runs itself? Shape and override in one answer, so the two cannot disagree.
+  const u = flowUnitAt(active, at)
+  if (!u || entries[u[0]]?.sg !== sg) return
+  if (useUI.getState().work) return
+  const i = entries[at]?.sets.findIndex(x => !x.done) ?? -1
+  if (i < 0) return
+  latest.startTimed?.(at, i)
+}
+// The layout the session is shown in: this session's own choice, else the saved one.
+const viewIn = S2 => S2.active?.workoutView || S2.workoutView
+// What a rest hands over to once it is over (useUI.bindRest). Bound once, here, at load, rather
+// than by a mounted screen: the workout view unmounts on every tab switch, and a rest armed before
+// leaving the workout tab, or restored at boot (gym_rest), still has it. The hold itself is started
+// by the newest workout screen (latest), so a rest that ends before the workout screen has been
+// shown once since the app started just ends on Ready, like any rest.
+export function restHandOver(tm) {
+  chainHold(tm.chain, tm.forIdx)
+  // A flow block's rest between rounds hands over to the top of the block's next round: the first
+  // movement that still owes it (lib/blocks.js flowProgress), which is where the round's last tick
+  // already put the marker (supersetFlowStep). Read from the store as it is now. Kept with the rest
+  // (gym_rest), so a reload during the gap keeps the chain. A switch-sides pause inside the block
+  // hands over to the same movement: its other side is the next hold.
+  // As with a timed exercise's holds, it runs on only if the marker is where it stood as the gap
+  // began (timer.flowCur, kept on its exercise when the list changes shape) or on one of the
+  // block's own movements. Going to another exercise during the gap leaves the block waiting on its
+  // card's Resume, and the screen where you went.
+  const now = useStore.getState().S.active
+  const flowStayed = !!now && (now.cur === tm.flowCur || (!!tm.flow && now.entries[now.cur]?.sg === tm.flow))
+  if (tm.flow && flowStayed && tm.forIdx != null) {
+    const u = now.entries[tm.forIdx] ? unitOf(supersetUnits(now.entries), tm.forIdx) : null
+    if (u) flowHold(tm.flow, tm.kind === 'switch' ? tm.forIdx : flowProgress(now.entries, u).at)
+  }
+}
+useUI.getState().bindRest?.(restHandOver)
 export function removeActiveExercise(idx) {
   // Clear the work callback before indexes can shift. This also protects a confirmation sheet
   // that was opened first and confirmed after a timed hold started.
@@ -1019,6 +1123,16 @@ function ActiveWorkout() {
   const listMode = workoutView === 'list' || workoutView === 'compact'
   const focusMode = workoutView === 'focus'
   const dense = workoutView === 'compact'
+  // On top of the session's layout, each block may render in one of its own — a warm-up or a
+  // cool-down runs as a flow (lib/blocks.js: several timed movements on a rest of 20 s or less,
+  // read off the block's shape rather than a label stored with it), and the header ⋯ can put any
+  // block into any layout for the rest of the session. The override is keyed by the superset's
+  // id, which survives exercises being added, removed and moved around it. Every layout shows a
+  // flow block the same way, Focus included (lib/blocks.js unitViewOf). Editing a saved workout or
+  // logging a past one, nothing runs by itself (lib/blocks.js runsFlows): every block shows its
+  // rows, whatever its shape or the override says.
+  const flows = runsFlows(A)
+  const viewOf = ui => (flows ? unitViewOf(A.entries, units, ui, { workoutView, overrides: A.unitView }) : workoutView)
   // A superset's heading: its own name and rest between rounds when it has them (#292).
   const ssTitle = u => {
     const m = supersetMeta(A.entries, u, { onTarget: true })
@@ -1371,7 +1485,8 @@ function ActiveWorkout() {
       const rest = useUI.getState().timer
       if (rest && rest.forIdx != null) {
         const forIdx = moved.indices.indexOf(rest.forIdx)
-        if (forIdx >= 0) useUI.setState({ timer: { ...rest, forIdx } })
+        // So does where its chain remembers the marker (useUI.remapChain): a move is not a visit.
+        if (forIdx >= 0) useUI.setState({ timer: { ...rest, forIdx, ...(rest.chain ? { chain: remapChain(rest.chain, i => moved.indices.indexOf(i)) } : {}), ...(rest.flowCur != null ? { flowCur: moved.indices.indexOf(rest.flowCur) } : {}) } })
       }
     }, true)
   }
@@ -1450,6 +1565,18 @@ function ActiveWorkout() {
     canMoveUp: canMoveActiveWorkoutEntry(A, idx, -1),
     canMoveDown: canMoveActiveWorkoutEntry(A, idx, 1),
     onRemoveExercise: () => confirmRemoveExercise(idx),
+    // A block's layout belongs on the exercise's own menu for the same reason swap and remove do
+    // (the comment above): it must act on the block THIS exercise is in, not on whatever the
+    // marker points at. The header ⋯ offers the same thing for the block you are on, but the
+    // marker moves by itself as you train, and the moment it lands on a lone exercise that entry
+    // has no block to name and disappears — which would leave a block switched to rows with no way
+    // back to the flow at all, since the flow card's own button goes with the card.
+    // One source for "is there a block choice here" — the same list both menus render — so the
+    // row is absent wherever the sheet would have had nothing to offer.
+    onBlockLayout: blockLayoutItems(units.findIndex(u => u.includes(idx))).length
+      ? () => openBlockMenu(units.findIndex(u => u.includes(idx)))
+      : null,
+    blockLayoutSub: LAYOUT_LABEL[viewOf(units.findIndex(u => u.includes(idx)))] || LAYOUT_LABEL.cards,
     busy: working,
     onToggle: (i, onFocusProgress) => checkedToggle(idx, i, undefined, { onFocusProgress }),
     onToggleSide: (i, side, onFocusProgress) => checkedToggle(idx, i, side, { onFocusProgress }),
@@ -1505,24 +1632,26 @@ function ActiveWorkout() {
   // (Settings → During a workout → Workout view). It writes s.active.workoutView, which the
   // render above prefers over S.workoutView.
   const setWorkoutView = v => update(s => { if (s.active) s.active.workoutView = v })
+  // One block's own answer, for the rest of the session. Keyed by the superset's id
+  // (lib/blocks.js unitKey) so it survives exercises being added, removed and moved around it,
+  // and cleared rather than written when the answer is "whatever the block is shaped like" —
+  // that is the default, and it is the state worth being able to get back to.
+  const setUnitView = (key, v) => update(s => {
+    if (!s.active || !key) return
+    if (v) { s.active.unitView = { ...(s.active.unitView || {}), [key]: v }; return }
+    if (!s.active.unitView) return
+    const rest = { ...s.active.unitView }
+    delete rest[key]
+    if (Object.keys(rest).length) s.active.unitView = rest
+    else delete s.active.unitView
+  })
   const LAYOUT_LABEL = {
     cards: t('Cards'),
     list: t('List'),
     compact: t('Compact'),
     focus: t('Focus'),
+    flow: t('Flow'),
   }
-  const openLayoutMenu = () => menuSheet({
-    title: t('Layout'),
-    items: [
-      { icon: 'layout', label: t('Cards'), on: workoutView === 'cards', onClick: () => setWorkoutView('cards') },
-      { icon: 'list', label: t('List'), on: workoutView === 'list', onClick: () => setWorkoutView('list') },
-      { icon: 'compact', label: t('Compact'), on: workoutView === 'compact', onClick: () => setWorkoutView('compact') },
-      { icon: 'target', label: t('Focus'), on: workoutView === 'focus', onClick: () => setWorkoutView('focus') },
-      listMode && { icon: 'minimize', label: t('Collapse completed exercises'),
-        sub: t('Keep the current exercise open'), on: collapseOn,
-        onClick: () => update(s => { if (s.active) s.active.collapseCompleted = !collapseOn }) },
-    ],
-  })
   // Logging a past workout (#284): the sets were done days ago, so one tap ticks them all and
   // offers the finish, the same sheet the last set of a live session opens. What went
   // differently is still edited on the rows before finishing.
@@ -1533,6 +1662,59 @@ function ActiveWorkout() {
     // would count as new progress and replay the flow a first tick runs.
     if (fresh) progressHighWater.current = fresh.entries.map(e => e.sets.filter(s => s.done).length)
     workoutCompleteSheet()
+  }
+  // Two answers, not four: run this block as a flow or don't. Which layout "don't" means is the
+  // session's business, so a block taken off the flow screen still follows the session when that
+  // is switched afterwards. Only supersets have anything to decide — there is no flow to turn on
+  // for one exercise — so this is empty for everything else, and both menus below drop the group.
+  //
+  // Nor is there a flow to turn on for a block of counted sets: offering it there would put a Start
+  // on screen that hands a 10-rep set to a 45 second hold. isFlowUnit is the same test the screen
+  // and the timer bar make (lib/blocks.js), so the menu offers exactly what can run. `own`
+  // keeps the group reachable for a block already carrying a stale choice, so there is always a
+  // way back out of one; picking Automatic clears it and the group goes with it. A session that
+  // runs no block at all (runsFlows, above) has no choice to offer either.
+  const blockLayoutItems = ui => {
+    const u = units[ui]
+    const key = unitKey(A.entries, u)
+    if (!key || !flows) return []
+    const own = A.unitView?.[key] || null
+    if (!own && !isFlowUnit(A.entries, u)) return []
+    const shape = isFlowUnit(A.entries, u) ? t('Flow') : (LAYOUT_LABEL[workoutView] || LAYOUT_LABEL.cards)
+    return [
+      { icon: 'timer', label: t('Flow'), sub: t('One movement at a time, hands free'), on: own === 'flow', onClick: () => setUnitView(key, 'flow') },
+      { icon: 'list', label: t('Rows'), sub: t('Every set, the way the rest of the session looks'), on: own === 'rows', onClick: () => setUnitView(key, 'rows') },
+      { icon: 'reset', label: t('Automatic'), sub: t('However the block is shaped · {0}', shape), on: !own, onClick: () => setUnitView(key, null) },
+    ]
+  }
+  // One menu, because there is one question on screen: what am I looking at. Split in two
+  // — Cards/List/Compact under "Layout", and Flow a row further down under "This block" — the
+  // three that aren't Flow would read as the whole list of layouts. The block's own answer goes
+  // on top, in its own group: it decides what the screen is doing now, and
+  // it is the only place Flow can be, since a flow is a block running itself and a session is
+  // never one. A unit with nothing to choose gets the session's own rows alone, with no groups:
+  // v1.4.0's four layouts, and in the List and Compact its "Collapse completed exercises".
+  const openLayoutMenu = (ui = unitIdx) => {
+    const block = blockLayoutItems(ui)
+    const session = [
+      { icon: 'layout', label: t('Cards'), on: workoutView === 'cards', onClick: () => setWorkoutView('cards') },
+      { icon: 'list', label: t('List'), on: workoutView === 'list', onClick: () => setWorkoutView('list') },
+      { icon: 'compact', label: t('Compact'), on: workoutView === 'compact', onClick: () => setWorkoutView('compact') },
+      { icon: 'target', label: t('Focus'), on: workoutView === 'focus', onClick: () => setWorkoutView('focus') },
+      listMode && { icon: 'minimize', label: t('Collapse completed exercises'),
+        sub: t('Keep the current exercise open'), on: collapseOn,
+        onClick: () => update(s => { if (s.active) s.active.collapseCompleted = !collapseOn }) },
+    ]
+    menuSheet(block.length
+      ? { title: t('Layout'), sections: [{ title: t('This block'), items: block }, { title: t('Whole session'), items: session }] }
+      : { title: t('Layout'), items: session })
+  }
+  // The same three rows on their own, for the two places that already name the block they mean:
+  // an exercise's ⋯ (Block layout) and the flow screen's own button. The session's layout would
+  // be a second subject there.
+  const openBlockMenu = (ui = unitIdx) => {
+    const items = blockLayoutItems(ui)
+    if (items.length) menuSheet({ title: t('This block'), items })
   }
   // Adds an exercise after the current unit: the button under the session and the ⋯ menu's Add.
   const addExercise = () => exercisePicker((ex, quick) => {
@@ -1564,6 +1746,7 @@ function ActiveWorkout() {
         s.active.entries.splice(insertAt, 0, joinSessionNoProg(s.active, { id: ex.id, ...built, ...(curRid ? { rid: curRid, addedInSession: true } : {}), ...(noProg ? { noProg: true } : {}) }))
         s.active.cur = insertAt
         useUI.getState().shiftRestOwner(insertAt, 1)
+        shiftHoldExercise(insertAt, 1)
       })
     }
     // The "+" on a picker row reads as "add this now" — routed through the same detail
@@ -1604,7 +1787,9 @@ function ActiveWorkout() {
       { title: t('This workout'), items: [
         A.backfill && A.entries.length > 0 && { icon: 'checkCircle', label: t('Mark all sets done'), onClick: markAllDone },
         { icon: 'pencil', label: t('Rename workout'), onClick: renameWorkoutSheet },
-        { icon: 'layout', label: t('Layout'), sub: LAYOUT_LABEL[workoutView] || LAYOUT_LABEL.cards, onClick: openLayoutMenu },
+        // Its sub says what is on screen right now, which is the block's answer when the block has
+        // one — the same thing the first group in there is checked on.
+        { icon: 'layout', label: t('Layout'), sub: LAYOUT_LABEL[viewOf(unitIdx)] || LAYOUT_LABEL[workoutView] || LAYOUT_LABEL.cards, onClick: () => openLayoutMenu(unitIdx) },
         { icon: 'note', label: A.note ? t('Edit session note') : t('Add session note'), onClick: sessionNoteSheet },
         noProgSwitchable && { icon: 'chartLineSlash', label: t('Don’t count for progression'), sub: t('Every exercise in this workout'), on: sessionNoProg(A), onClick: toggleSessionNoProg },
       ] },
@@ -1735,12 +1920,15 @@ function ActiveWorkout() {
   // finish logs 0:38 of a 0:45 target rather than crediting the full prescription — and then
   // checks the set off through the normal path, so rest, supersets and the finish prompt all
   // behave exactly as they do for a reps set.
+  // Reads the store, not the render: a chained hold starts from a rest's hand-over, long after the
+  // render that armed it (see chainHold).
   const startTimed = (idx, i, onFocusProgress) => {
     if (editing) return
-    const e = A.entries[idx]
+    const e = useStore.getState().S.active?.entries[idx]
+    if (!e?.sets[i]) return
     // This tap may be the only one before the hold's countdown beeps (a timed first exercise):
     // get the audio context running while it still counts as a gesture (iOS, #152).
-    unlock(S.sound)
+    unlock(useStore.getState().S.sound)
     // How long to hold: the row's own seconds, unless it is carrying a plan from a hold that was
     // displaced before it finished. `sec` on a timed row is both the plan and the log, so writing
     // what a part-held set managed would otherwise become the next hold's target — 3 seconds of a
@@ -1748,20 +1936,35 @@ function ActiveWorkout() {
     // the row is held to the end, ticked, or given a duration you typed yourself, and it never
     // reaches S.workouts (lib/finish-workout.js).
     const plan = (!e.sets[i].done && e.sets[i].planSec) || e.sets[i].sec || 45
-    const owner = { idx, i }
-    useUI.getState().startWork(plan, exerciseNameText(exOr(e.id)), holdDone(owner, plan, onFocusProgress), { idx, i, id: e.id })
+    const owner = { idx, i, id: e.id }
+    // The Focus view's progress callback rides along with a chain this hold may start (chainHold).
+    chainFocus = onFocusProgress || null
+    // A block that runs itself moves on at each hold's target, overtime or not (useUI.startWork),
+    // and gives the get-ready count Settings asks for before each one (flowGetReady, seconds).
+    const S2 = useStore.getState().S
+    const inFlow = !!flowUnitAt(S2.active, idx)
+    const prep = inFlow ? getReadyOf(S2) : 0
+    useUI.getState().startWork(plan, exerciseNameText(exOr(e.id)), holdDone(owner, plan, onFocusProgress), { idx, i, id: e.id }, { noOvertime: inFlow, prep })
     // After startWork: a hold it displaced has already written its seconds to its own row.
-    holdAt = { owner, idx, i }
+    // `cur`: where the marker stands as the hold starts, so its end can tell whether you went to
+    // another exercise meanwhile (holdDone).
+    holdAt = { owner, idx, i, cur: useStore.getState().S.active?.cur }
   }
   // What a hold hands back to its row: on its end, its Done, or a rest displacing it. Also bound
   // again to a hold restored after a reload (useUI.bindWork, below).
-  const holdDone = (owner, plan, onFocusProgress) => (elapsed, { abandoned = false, chimed = false } = {}) => {
-    const { idx } = owner
-    // The row may have moved while the hold ran (a set copied or removed above it): write to
-    // where it is now. holdAt is that place (deleteActiveSet, copyActiveSet).
+  const holdDone = (owner, plan, onFocusProgress) => (elapsed, { abandoned = false, chimed = false, endedAt } = {}) => {
+    // The row may have moved while the hold ran (a set copied or removed above it, an exercise
+    // added above its own): write to where it is now. holdAt is that place (deleteActiveSet,
+    // copyActiveSet, shiftHoldExercise).
     const mine = holdAt?.owner === owner
+    const idx = mine ? holdAt.idx : owner.idx
     const i = mine ? holdAt.i : owner.i
+    const startCur = mine ? holdAt.cur : undefined
     if (mine) holdAt = null
+    // Checked by id: the list may have been edited while the hold ran, and a hold must never be
+    // written onto a different exercise.
+    const held = useStore.getState().S.active?.entries[idx]
+    if (!held || (owner.id != null && held.id !== owner.id) || !held.sets[i]) return
     // A hold a rest displaced (useUI.abandonWork: a set ticked on another row, or another
     // exercise) keeps its seconds and nothing else. It is not a finish: the row stays unticked
     // and starts no rest, because the rest that displaced the hold is already counting down —
@@ -1774,8 +1977,19 @@ function ActiveWorkout() {
       mutEntry(idx, en => { if (en.sets[i].planSec == null && !en.sets[i].done) en.sets[i].planSec = plan; en.sets[i].sec = elapsed })
       return
     }
+    if (held.sets[i].done) return
     mutEntry(idx, en => { en.sets[i].sec = elapsed; delete en.sets[i].planSec })
-    if (!useStore.getState().S.active.entries[idx].sets[i].done) toggle(idx, i, undefined, { quiet: chimed, onFocusProgress })
+    // `fromHold`: the hold ended by itself or by its Done, which is what lets it chain the next one.
+    // `away`: the marker went to another exercise while it ran (not where it stood as the hold
+    // began, not this exercise itself, and not another movement of its own block), which takes the
+    // exercise, or the flow block, off autopilot (toggle).
+    // `since`: it ran out while the page was hidden, and the rest it earned has been counting since.
+    // Whether anyone watched it end travels with the tick too (`endedAt` comes only with an end
+    // nobody saw): a flow block hands straight over to its next movement with no rest in between,
+    // so that hand-over is the one thing with nothing else to check the screen was on (flowHold).
+    const now = useStore.getState().S.active
+    const away = now.cur !== startCur && now.cur !== idx && !(held.sg && now.entries[now.cur]?.sg === held.sg)
+    if (!now.entries[idx].sets[i].done) latest.toggle(idx, i, undefined, { quiet: chimed, onFocusProgress, fromHold: true, away, since: endedAt, seenLive: endedAt == null })
   }
   // A hold that came back from a reload has no handler yet: this screen gives it its own.
   const holdDoneRef = useRef(holdDone)
@@ -1784,8 +1998,10 @@ function ActiveWorkout() {
     useUI.getState().bindWork?.(wk => {
       // From here on it is tracked like a hold started on this screen (holdAt), so a set copied or
       // removed above it moves it along.
-      const owner = { idx: wk.owner.idx, i: wk.owner.i }
-      holdAt = { owner, idx: owner.idx, i: owner.i }
+      // Where the marker stood as it began went with the reload: where it stands now is the
+      // nearest thing, since nobody can have gone anywhere on a screen that was not there.
+      const owner = { idx: wk.owner.idx, i: wk.owner.i, id: wk.owner.id }
+      holdAt = { owner, idx: owner.idx, i: owner.i, cur: useStore.getState().S.active?.cur }
       return (...a) => holdDoneRef.current(owner, wk.total)(...a)
     })
   }, [])
@@ -1793,12 +2009,26 @@ function ActiveWorkout() {
   // `quiet`: the hold that ticks this set has just ended with the chime and its buzz pattern
   // (store/useUI.js). The tick's own beep would sound over the chime's first note and clip it,
   // and its short buzz would cut the pattern off: a new vibrate call replaces the running one.
-  const toggle = (idx, i, side, { quiet = false, onFocusProgress } = {}) => {
+  // `since`: when the hold that ticks this set ended, if it ran out while the page was hidden: the
+  // rest it earned has been counting since then (useUI.startRest), not from this tick on the page
+  // coming back.
+  // `fromHold`: the hold ended by itself or by its Done, which is what lets it chain the next one.
+  // `away`: you went to another exercise while that hold ran (holdDone).
+  // `seenLive`: false when that hold ran out while nobody was looking (useUI.startWork's `endedAt`).
+  const toggle = (idx, i, side, { quiet = false, onFocusProgress, fromHold = false, away = false, since, seenLive = true } = {}) => {
     // Ticking a set ends the typing in that row: drop the keyboard before the rest timer, the
     // effort sheet or the next exercise moves in. WebKit keeps the input focused across the
     // button tap, and a focused input with its keyboard gone is what leaves the tab bar
     // mid-screen on iOS (lib/viewport-guard.js).
     if (typeof document !== 'undefined') { const a = document.activeElement; if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA')) a.blur?.() }
+    const held = useUI.getState().work
+    let heldElapsed = null
+    if (!side && held && holdAt && holdAt.idx === idx && holdAt.i === i) {
+      // Still in its get-ready count, nothing has been held: the tick is an ordinary one.
+      if (!held.prep) heldElapsed = Math.max(1, held.total - held.left)
+      holdAt = null
+      useUI.getState().stopWork()
+    }
     const m = modeAt(idx)
     const cardioEntry = m === 'cardio'
     let exJustDone = false, workoutDone = false, checked = false
@@ -1809,6 +2039,7 @@ function ActiveWorkout() {
       if (side) e.sets[i] = toggleSide(e.sets[i], side)
       else e.sets[i].done = !e.sets[i].done
       checked = e.sets[i].done
+      if (heldElapsed != null && checked) e.sets[i].sec = heldElapsed
       // When the work happened, for the session's end (lib/finish-workout.js sessionEnd).
       if (!editing && (side ? e.sets[i].sides[side].done : checked)) e.sets[i].at = Date.now()
       // A finished row has no use for a plan set aside by a hold that did not finish.
@@ -1817,10 +2048,12 @@ function ActiveWorkout() {
         if (!quiet) { beep(S.sound, 1040, 0.12); vibrate(30) }
         // The unit that owns the ticked set — not the marked one. Since !92 the marker no longer
         // follows a finished exercise, and in list mode any exercise can be worked on, so judging
-        // the marker's unit here declared the workout complete after one set elsewhere.
-        const ownUnit = unitOf(units, idx)
-        const unitDone = ownUnit.every(ui => (ui === idx ? e : A.entries[ui]).sets.every(x => x.done))
-        if (unitDone) workoutDone = !nextUnfinishedUnit(A.entries, supersetUnits(A.entries), idx)
+        // the marker's unit here declared the workout complete after one set elsewhere. Judged on
+        // the draft, not the render: a chained hold's end arrives long after the render that armed it.
+        const draft = s.active.entries
+        const draftUnits = supersetUnits(draft)
+        const unitDone = unitOf(draftUnits, idx).every(ui => draft[ui].sets.every(x => x.done))
+        if (unitDone) workoutDone = !nextUnfinishedUnit(draft, draftUnits, idx)
         if (e.sets.every(x => x.done)) {
           exJustDone = true
           // topW is captured now; exWeights only at the finish (doFinishWorkout), so a typo you
@@ -1870,6 +2103,43 @@ function ActiveWorkout() {
       // A set given its own rest in its menu (#609) keeps it, whatever the exercise would rest.
       const ownRest = ownSetRest(fresh.entries[idx].sets[setSpanAt(fresh.entries[idx].sets, i)[0]])
       const restAfter = ownRest ?? warmupRestSecFor(fresh.entries[idx], i, restSec, useStore.getState().S.warmupRestSec)
+      // What the rest leads into (the next set, round or exercise), which picks the sound it ends
+      // with when Settings → Sound gives that kind one of its own.
+      const kind = restKind({ unitDone: freshUnitDone, superset: (freshUnit?.length || 0) > 1 })
+      // A hold that ran out unseen hands its end to the rest it earned.
+      const late = since != null ? { since } : {}
+      // What the bar calls the rest, warm-up or not, read off the set it leads into.
+      const phase = restSetPhase(fresh.entries[idx], i)
+      // A hold that finished on its own hands its rest the next hold: same exercise only, since a
+      // superset's round order is not second-guessed and the tap that ticks a set is not a hold.
+      // Also on a re-check, so an unticked-and-redone hold keeps the exercise running itself.
+      // Unless you went to another exercise while the hold ran (owner's call): that takes it off
+      // autopilot, as going away during its rest does (chainHold). The rest it earned still runs,
+      // with nothing to hand over. `cur`: where the marker stands as the rest starts, so a move of
+      // yours during it stops the chain too; read from the store, like the rest of this.
+      const alone = !freshUnit || freshUnit.length <= 1
+      const rows = fresh.entries[idx].sets
+      const chainTo = at => (fromHold && alone && !away && at >= 0
+        ? { chain: { id: fresh.entries[idx].id, i: at, n: rows.length, cur: useStore.getState().S.active?.cur } }
+        : {})
+      const chain = chainTo(freshUnitDone ? -1 : nextUndoneAfter(rows, i))
+      // Whether this block may hand over to its next hold: shaped as a flow (flowHold makes the
+      // final call when the hold is due, the block's Rows override included). Only a
+      // hold hands over — a row ticked by hand is you taking the block off autopilot — and only one
+      // that ended on a screen someone was looking at, the same promise the rest's hand-over makes.
+      // Declining leaves the block waiting on its card's Resume, which is what an unlocked phone finds.
+      // Nor one that ended after you went to another exercise: the block parks, and
+      // the screen is not pulled back into it either (`parked`, below).
+      const flowSg = fromHold && seenLive !== false && !away && freshUnit && isFlowUnit(fresh.entries, freshUnit)
+        ? fresh.entries[freshUnit[0]]?.sg
+        : null
+      // A running block you went away from mid-hold: the marker stays where you went, with no move
+      // to its next movement.
+      const parked = away && !!flowUnitAt(fresh, idx)
+      // Where the marker stands as a flow rest starts, so its end can tell whether you went away
+      // meanwhile (restHandOver). Read from the store: a round's rest starts after the step below
+      // has moved the marker to the top of the block.
+      const flowRest = () => (flowSg ? { flow: flowSg, flowCur: useStore.getState().S.active?.cur } : {})
 
       // A re-check of finished work must not navigate or reopen a sheet, but it may still owe
       // you a rest — see restOnRecheck, and the other half of issue #3. A rest that already ran
@@ -1877,7 +2147,7 @@ function ActiveWorkout() {
       // still the rest you are in, held on purpose, and a re-check leaves it as it is.
       if (!progress.isNew) {
         const rest = useUI.getState().timer
-        if (!restBeforeWarmup && restOnRecheck({ timerRunning: !!(rest && !rest.ready), unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { forSet: i })
+        if (!restBeforeWarmup && restOnRecheck({ timerRunning: !!(rest && !rest.ready), unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { kind, phase, forSet: i, ...chain, ...late })
         return
       }
 
@@ -1893,14 +2163,22 @@ function ActiveWorkout() {
 
       // Between the two sides of one timed per-side set (a side plank's left, then its right):
       // a short "Switch sides" pause instead of the set's whole rest, which comes once both
-      // sides are held (owner's call). A rest switched Off stays off.
-      const rows = fresh.entries[idx].sets
+      // sides are held (owner's call). A rest switched Off stays off. When the exercise runs
+      // itself, the pause hands over to the other side's hold.
       const sideOf = r => r && !isWarmupRow(r) ? r.side : null
-      const partner = sideOf(rows[i]) === 'L' && sideOf(rows[i + 1]) === 'R' ? rows[i + 1]
-        : sideOf(rows[i]) === 'R' && sideOf(rows[i - 1]) === 'L' ? rows[i - 1] : null
-      if (m === 'time' && partner && !partner.done) {
+      const partnerAt = sideOf(rows[i]) === 'L' && sideOf(rows[i + 1]) === 'R' ? i + 1
+        : sideOf(rows[i]) === 'R' && sideOf(rows[i - 1]) === 'L' ? i - 1 : -1
+      // Inside a flow block the other side is the chain's next hold, whatever the block's shape
+      // around it (per-side holds run in a flow like any other). With a get-ready
+      // count set, that count is the turn-over: it goes in front of the other side's hold in place
+      // of the switch pause, rather than one more pause after it. Without one, the pause stays and
+      // hands over when it ends. Only while the block is running itself: one put back into rows
+      // (flowUnitAt reads the override) keeps its switch pause, as v1.4.0 has it.
+      if (m === 'time' && partnerAt >= 0 && !rows[partnerAt].done) {
+        const S2 = useStore.getState().S
+        if (restAfter > 0 && flowSg && flowUnitAt(fresh, idx) && getReadyOf(S2) > 0) { flowHold(flowSg, idx); return }
         const pause = sideRestFor(fresh.entries[idx].target, { timed: true, restAfter, switchSec: SWITCH_SIDES_SEC })
-        if (pause > 0) { startRest(pause, idx, { kind: 'switch', forSet: i }); return }
+        if (pause > 0) { startRest(pause, idx, { kind: 'switch', forSet: i, ...(flowSg ? flowRest() : chainTo(partnerAt)), ...late }); return }
         // "No timer" between sides: straight on to the other side, the set's rest still to come.
         if (fresh.entries[idx].target?.sideRestOff === true) { stopRest(); return }
       }
@@ -1909,21 +2187,33 @@ function ActiveWorkout() {
       // one unless the next unit has an unfinished warm-up, and never enter superset navigation.
       // stopRest() first so a rest that belongs after this set replaces the one that was running.
       if (freshUnitDone) stopRest()
-      if (!freshUnit || freshUnit.length <= 1) {
-        if (!restBeforeWarmup && restAfterSet({ unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { forSet: i })
-        onFocusProgress?.({ unitDone: freshUnitDone })
+      if (alone) {
+        if (!restBeforeWarmup && restAfterSet({ unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { kind, phase, forSet: i, ...chain, ...late })
+        onFocusProgress?.({ unitDone: freshUnitDone, i })
         return
       }
 
       const step = supersetFlowStep(fresh.entries, freshUnit, idx)
-      if (!step) { onFocusProgress?.({ unitDone: freshUnitDone }); return }
+      if (!step) { onFocusProgress?.({ unitDone: freshUnitDone, i }); return }
       if (step.unitDone) {
-        if (nextUnit?.length && !restBeforeWarmup) startRest(restAfter, idx, { forSet: i })
+        // A finished flow block hands over like any other, with no chain: the next block starts
+        // on a tap of its own, because a hold that begins while you are still walking to the mat
+        // is a hold you did not do.
+        if (nextUnit?.length && !restBeforeWarmup) startRest(restAfter, idx, { kind, phase, forSet: i, ...late })
+        // In the Focus view a finished flow block steps on to what is next, the way a finished
+        // exercise does there (FocusView's onProgress). The card started its holds, so no progress
+        // callback came with them. Not after you went to another exercise: you are already there.
+        if (!onFocusProgress && !away && nextUnit && viewIn(useStore.getState().S) === 'focus' && flowUnitAt(fresh, idx)) {
+          update(s => { if (s.active) s.active.cur = nextUnit[0] })
+        }
       } else {
-        if (step.nextIdx != null) update(s => { if (s.active) s.active.cur = step.nextIdx })
-        if (step.roundDone) startRest(restAfter, idx, { forSet: i })
+        if (step.nextIdx != null && !parked) update(s => { if (s.active) s.active.cur = step.nextIdx })
+        // A flow block's round rest carries the block into its next round (restHandOver); inside
+        // a round there is no rest to ride, and the next movement's hold starts now.
+        if (step.roundDone) startRest(restAfter, idx, { kind, phase, forSet: i, ...flowRest(), ...late })
+        else if (flowSg) flowHold(flowSg, step.nextIdx)
       }
-      onFocusProgress?.({ unitDone: freshUnitDone })
+      onFocusProgress?.({ unitDone: freshUnitDone, i })
     }
   }
   // A tap that ticks a set whose weight or reps look mistyped (300 for 30, 8 for 80; see
@@ -2024,6 +2314,35 @@ function ActiveWorkout() {
     timer: () => useUI.getState().timer,
   }), [])
 
+  latest = { toggle, startTimed }
+
+  // Pick the block back up. Pausing is the timer bar's job — it is the one control fixed on
+  // screen while a countdown runs (components/RestTimer.jsx) — and what is left here is the case
+  // with no countdown at all: the block has not been started, or a hold ran out while the phone
+  // was locked and parked it. Resume then means the movement that comes NEXT (lib/blocks.js
+  // flowProgress), not the first with work left; half way through a round those are different.
+  const resumeFlow = ui => {
+    // A hold already running — or frozen, which is still a hold — is the bar's business, and
+    // starting a second one over the top of it is the one thing this must never do. The card
+    // hides its button while the bar is up, so this is the guard behind that, not a second path.
+    if (useUI.getState().work) return
+    const active = useStore.getState().S.active
+    if (!active) return
+    const u = supersetUnits(active.entries)[ui]
+    const at = flowProgress(active.entries, u || []).at
+    if (at == null) return
+    const setIdx = active.entries[at].sets.findIndex(x => !x.done)
+    if (setIdx >= 0) startTimed(at, setIdx)
+  }
+  // A block that renders as one running screen instead of a stack of set rows (lib/blocks.js
+  // decides which). Two taps exist for the whole block — pause and resume — and everything in
+  // between is handed over by the hold and the round's rest (flowHold above). The third, Rows,
+  // is the way off this screen and writes the choice directly rather than opening the menu: the
+  // same 'rows' that menu's own row writes, so the ⋯ is still the way back.
+  const flowCard = ui => <FlowBlock entries={A.entries} unit={units[ui]} cur={cur}
+    block={blockOf(A.entries, units, ui) || 'flow'}
+    onResume={() => resumeFlow(ui)} onRows={() => setUnitView(unitKey(A.entries, units[ui]), 'rows')} />
+
   // After the finished exercise folded away (toggle, above): the new current one is the next thing
   // to do, so if it now sits under the header or low on the screen with little more than its title
   // showing, it glides up under the header. Where it is already in reach the page stays put. Run
@@ -2097,6 +2416,8 @@ function ActiveWorkout() {
     // hold has run past its first moments (HOLD_KEY_GRACE_MS).
     const work = useUI.getState().work
     if (work) {
+      // In a get-ready count the key is the bar's Start, paused or not: the hold begins now.
+      if (work.prep) { useUI.getState().finishWorkEarly(); return true }
       if (Date.now() - (work.endsAt - work.total * 1000) >= HOLD_KEY_GRACE_MS) useUI.getState().finishWorkEarly()
       return true
     }
@@ -2251,13 +2572,14 @@ function ActiveWorkout() {
             <div id={'workout-unit-' + u.join('-')}>
             {/* One line per exercise, and the line is the way back in: a tap opens the sets again
                 to fix a number, without making it the current exercise. */}
+            {/* A finished flow block folds away like any finished unit. */}
             {isCollapsed ? <button type="button" className="wl-summary" aria-expanded="false" title={t('Show the sets')}
               onClick={() => setUnitOpen(u.join('-'), true)}>
               {u.map(idx => <span key={idx} className="row between" style={{ gap: 8 }}>
                 <span style={{ fontWeight: 600, textTransform: 'capitalize' }}>{exerciseNameFor(exOr(A.entries[idx].id))}</span>
                 <span className="tag acc nocap"><Icon name="check" />{t('{0} sets', A.entries[idx].sets.length)}</span>
               </span>)}
-            </button> : multi ? (
+            </button> : viewOf(ui) === 'flow' ? flowCard(ui) : multi ? (
               <div className="ss-card">
                 <div className="ss-hd" style={{ justifyContent: 'space-between' }}>
                   <span className="row" style={{ gap: 5 }}><Icon name="link" />{ssTitle(u)}</span>
@@ -2294,9 +2616,15 @@ function ActiveWorkout() {
           // the moment it lands. It gets the card's own wiring for that — the preview is inert,
           // so none of it can be pressed. That includes a superset's header with its Unpair, and a
           // lone exercise's "Make superset" buttons when Settings shows them: without them the
-          // header's words moved over, or the card grew by a row, as it landed.
-          const adjacent = units[stepUnitIndex(A.entries, units, unitIdx, direction, skipDone)] || []
+          // header's words moved over, or the card grew by a row, as it landed. A block that lands
+          // as a flow slides in as one too, rather than as set rows that turn into the card as it
+          // snaps into place. viewOf decides both, so in the editor or a past workout it is what
+          // those show. The unit asked about is the one the swipe lands
+          // on, which is not the neighbour when finished exercises are skipped.
+          const adjIdx = stepUnitIndex(A.entries, units, unitIdx, direction, skipDone)
+          const adjacent = units[adjIdx] || []
           if (!adjacent.length) return null
+          if (viewOf(adjIdx) === 'flow') return flowCard(adjIdx)
           return adjacent.length > 1 ? (
             <div className="ss-card">
               <div className="ss-hd" style={{ justifyContent: 'space-between' }}>
@@ -2313,12 +2641,12 @@ function ActiveWorkout() {
             onPairNext={adjacent[0] < A.entries.length - 1 ? () => pairAt(adjacent[0], adjacent[0] + 1) : null}
             {...blockProps(adjacent[0])} />
         }}>
-      {focusMode ? (
+      {focusMode && viewOf(unitIdx) !== 'flow' ? (
         <FocusView entryIdx={cur} unit={unit}
           onSelectEntry={selectFocusEntry} onAdvanceUnit={advanceFocusUnit} pointerEpoch={focusPointerEpoch.current}
           onPairPrev={onPairPrev} onPairNext={onPairNext} onUnpair={() => unpairAt(cur)}
           {...blockProps(cur)} />
-      ) : isSuperset ? (
+      ) : viewOf(unitIdx) === 'flow' ? flowCard(unitIdx) : isSuperset ? (
         <div className="ss-card">
           <div className="ss-hd" style={{ justifyContent: 'space-between' }}>
             <span className="row" style={{ gap: 5 }}><Icon name="link" />{ssTitle(unit)}</span>
