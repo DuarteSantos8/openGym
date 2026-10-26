@@ -84,6 +84,8 @@ func formatNumber(_ v: Double) -> String {
 
 struct RootView: View {
     @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {
@@ -92,7 +94,7 @@ struct RootView: View {
             } else if let summary = store.summary {
                 SummaryView(summary: summary)
             } else if store.workout == nil, let from = store.countdownFrom {
-                CountdownView(from: from)
+                CountdownView(from: from).transition(reduceMotion || dimmed ? .opacity : .countdownExit)
             } else if store.workout == nil {
                 IdleView()
             } else if let end = store.holdEndsAt {
@@ -103,6 +105,8 @@ struct RootView: View {
                 ExercisePager()
             }
         }
+        // The 3-2-1 fades in and swells and blurs out into the workout (the transition has to sit at the call site, not in CountdownView); with the wrist down, cuts.
+        .animation(dimmed ? nil : .easeOut(duration: 0.3), value: store.countdownFrom == nil)
         // The app's language, as the phone sends it, not the watch's own (SwiftUI looks every
         // Text's words up by this locale).
         .environment(\.locale, store.locale)
@@ -225,6 +229,8 @@ struct LockButton: View {
 /// starts at once; the small button cancels (nothing starts, nothing is logged).
 struct CountdownView: View {
     @EnvironmentObject var store: SessionStore
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isLuminanceReduced) private var dimmed
     let from: Date
 
     var body: some View {
@@ -233,11 +239,15 @@ struct CountdownView: View {
                 let n = max(1, Countdown.number(at: ctx.date.timeIntervalSince(from)))
                 Button { store.startNow() } label: {
                     ZStack {
-                        CountdownRing(start: from, end: from.addingTimeInterval(Double(Countdown.seconds)))
+                        CountdownRing(start: from, end: from.addingTimeInterval(Double(Countdown.seconds)), gradient: true)
+                        // A new view each second: the last number leaves as the next one lands.
                         Text(verbatim: "\(n)")
                             .font(.system(size: 64, weight: .bold, design: .rounded).monospacedDigit())
                             .foregroundStyle(Theme.accent)
+                            .id(n)
+                            .transition(reduceMotion ? .opacity : .countdownDigit)
                     }
+                    .animation(dimmed ? nil : reduceMotion ? .easeOut(duration: 0.25) : .spring(response: 0.4, dampingFraction: 0.62), value: n)
                     .aspectRatio(1, contentMode: .fit)
                     .contentShape(Circle())
                 }
@@ -253,6 +263,21 @@ struct CountdownView: View {
         }
         .ignoresSafeArea(edges: .bottom)
     }
+}
+
+private struct Blurred: ViewModifier {
+    let radius: CGFloat
+    func body(content: Content) -> some View { content.blur(radius: radius) }
+}
+
+extension AnyTransition {
+    private static func countdownEdge(scale: CGFloat) -> AnyTransition {
+        .scale(scale: scale).combined(with: .opacity).combined(with: .modifier(active: Blurred(radius: 8), identity: Blurred(radius: 0)))
+    }
+    /// Lands from small and blurred; the last one swells past and blurs out.
+    static var countdownDigit: AnyTransition { .asymmetric(insertion: countdownEdge(scale: 0.5), removal: countdownEdge(scale: 1.6)) }
+    /// The workout starts (or Cancel): the 3-2-1 swells and dissolves into what comes next.
+    static var countdownExit: AnyTransition { .asymmetric(insertion: .opacity, removal: countdownEdge(scale: 1.4).animation(.easeIn(duration: 0.2))) }
 }
 
 /* ---------- no workout: start one ---------- */
@@ -953,27 +978,43 @@ struct FinishPage: View {
 
 /* ---------- the rest, and a hold: a ring counting down ---------- */
 
-/// A ring that empties from `start` to `end`. With the wrist down (Always On) it moves once a
-/// second, not four times: the screen is updated rarely then anyway, and each update costs.
+/// A ring that empties from `start` to `end`, drawn from the clock. It is redrawn every frame
+/// (`gradient`, the 3-2-1: about once per point it moves) or four times a second, and with the
+/// wrist down (Always On) once a second, on the second marks of `start`: the screen is updated
+/// rarely then anyway, each update costs, and the 3-2-1's number flips on those same marks.
+/// `gradient`: the lit part brightens towards the end that moves (only the 3-2-1: it costs a
+/// redraw several times what a flat ring does, which a ring on for minutes should not pay).
 struct CountdownRing: View {
     let start: Date
     let end: Date
     var color: Color = Theme.accent
+    var gradient = false
     @Environment(\.isLuminanceReduced) private var dimmed
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: dimmed ? 1 : 0.25)) { ctx in
-            let total = max(1, end.timeIntervalSince(start))
-            let left = max(0, end.timeIntervalSince(ctx.date))
-            ZStack {
-                Circle().stroke(Theme.dim, lineWidth: 7)
-                Circle()
-                    .trim(from: 0, to: CGFloat(left / total))
-                    .stroke(color.opacity(dimmed ? 0.6 : 1), style: StrokeStyle(lineWidth: 7, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
+        Group {
+            if dimmed {
+                TimelineView(.periodic(from: start, by: 1)) { ring(at: $0.date) }
+            } else {
+                TimelineView(.animation(minimumInterval: gradient ? 1.0 / 60 : 0.25)) { ring(at: $0.date) }
             }
         }
         .accessibilityHidden(true)
+    }
+
+    private func ring(at date: Date) -> some View {
+        let left = max(0, end.timeIntervalSince(date)) / max(1, end.timeIntervalSince(start))
+        let lit: AnyShapeStyle = dimmed ? AnyShapeStyle(color.opacity(0.6))
+            : !gradient ? AnyShapeStyle(color)
+            : AnyShapeStyle(AngularGradient(colors: [color.opacity(0.5), color], center: .center, startAngle: .zero, endAngle: .degrees(360 * max(left, 0.01))))
+        return ZStack {
+            Circle().stroke(Theme.dim, lineWidth: 7)
+            Circle()
+                .trim(from: 0, to: CGFloat(left))
+                .stroke(lit, style: StrokeStyle(lineWidth: 7, lineCap: .round))
+                .opacity(left > 0.02 ? 1 : 0)   // the last sliver is just the round cap: a dot
+                .rotationEffect(.degrees(-90))
+        }
     }
 }
 
