@@ -23,7 +23,7 @@ const PROBLEM = {
  * of the song; one that may pass (no answer) keeps the last song and tries again — or, before any
  * song came, says so, rather than leave an empty bar holding its place above the tab bar.
  */
-export default function MusicBar({ source }) {
+export default function MusicBar({ source, onBlocked, hideBlocked = false }) {
   const [track, setTrack] = useState(undefined)   // undefined: not asked yet; null: nothing plays
   const [problem, setProblem] = useState('')
   const timer = useRef(null)
@@ -62,10 +62,14 @@ export default function MusicBar({ source }) {
     ).finally(() => { clearTimeout(timer.current); timer.current = setTimeout(ask, REFRESH) })
   }
 
+  const blocked = problem === 'auth' || problem === 'denied'
+  // The dock (MusicDock) says nothing about a player not connected yet: it keeps asking, hidden,
+  // and shows once the player answers. The workout's own bar still says how to connect it.
+  useEffect(() => { onBlocked?.(blocked) }, [blocked])
   if (track === undefined && !problem) return null
+  if (blocked && hideBlocked) return null
   const playing = !!track?.playing
   const name = source === 'apple' ? 'Apple Music' : 'Spotify'
-  const blocked = problem === 'auth' || problem === 'denied'
   const line1 = blocked || track === undefined ? name : track?.title || (track ? name : t('Nothing playing'))
   const line2 = problem ? PROBLEM[problem]() : track ? track.artist : name
   return <div className="musicbar" role="group" aria-label={t('Music')}>

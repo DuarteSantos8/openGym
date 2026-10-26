@@ -6,10 +6,14 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const m = vi.hoisted(() => ({ S: {}, ui: { timer: null, work: null } }))
+const m = vi.hoisted(() => ({ S: {}, ui: { timer: null, work: null }, blocked: false }))
 vi.mock('../store/useStore.js', () => ({ useStore: sel => sel({ S: m.S }) }))
 vi.mock('../store/useUI.js', () => ({ useUI: sel => sel(m.ui) }))
-vi.mock('./MusicBar.jsx', () => ({ default: ({ source }) => <div className="musicbar">{source}</div> }))
+vi.mock('./MusicBar.jsx', async () => {
+  const { useEffect } = await import('react')
+  // The real bar tells the dock when its player is not connected (onBlocked).
+  return { default: ({ source, onBlocked }) => { useEffect(() => { onBlocked?.(m.blocked) }, []); return <div className="musicbar">{source}</div> } }
+})
 
 import MusicDock from './MusicDock.jsx'
 
@@ -44,5 +48,14 @@ describe('MusicDock', () => {
     m.S = { music: 'spotify' }
     act(() => root.render(<MusicDock key="2" />))
     expect(host.querySelector('.music-dock .musicbar').textContent).toBe('spotify')
+  })
+
+  it('a player not connected yet leaves no card on every page, and no room kept for one', () => {
+    m.S = { music: 'spotify' }; m.ui = { timer: null, work: null }; m.blocked = true
+    try {
+      act(() => root.render(<MusicDock />))
+      expect(host.querySelector('.music-dock').hidden).toBe(true)
+      expect(document.body.classList.contains('has-music-dock')).toBe(false)
+    } finally { m.blocked = false }
   })
 })

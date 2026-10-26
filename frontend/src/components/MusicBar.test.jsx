@@ -53,6 +53,15 @@ describe('MusicBar', () => {
     expect(btn('Next track')).toBe(null)
   })
 
+  it('docked on every page, a player not connected yet hides the bar and tells the dock', async () => {
+    music.nowPlaying.mockRejectedValue(Object.assign(new Error('x'), { code: 'auth' }))
+    const onBlocked = vi.fn()
+    await act(async () => { root.render(<MusicBar source="spotify" onBlocked={onBlocked} hideBlocked />) })
+    await flush()
+    expect(host.innerHTML).toBe('')
+    expect(onBlocked).toHaveBeenLastCalledWith(true)
+  })
+
   it('says the player did not answer rather than stand empty, and keeps a song it already had', async () => {
     music.nowPlaying.mockRejectedValue(Object.assign(new Error('x'), { code: 'failed' }))
     await mount()
