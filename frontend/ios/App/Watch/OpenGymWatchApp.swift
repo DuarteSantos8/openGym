@@ -1219,84 +1219,150 @@ struct HoldView: View {
 struct SummaryView: View {
     @EnvironmentObject var store: SessionStore
     @Environment(\.locale) private var locale
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.dynamicTypeSize) private var type
     let summary: WorkoutSummary
 
     var body: some View {
-        ScrollViewReader { reader in
-        ScrollView {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 6) {
-                    Image(systemName: summary.endedOnPhone ? "iphone" : "checkmark.circle.fill")
-                        .foregroundStyle(Theme.accent)
-                        .accessibilityHidden(true)
-                    Text(summary.endedOnPhone ? LocalizedStringKey("Ended on your iPhone") : LocalizedStringKey("Workout saved"))
-                        .font(.system(.headline, design: .rounded))
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                Text(verbatim: summary.name).font(.footnote).foregroundStyle(.secondary)
-                if let d = summary.duration { stat(Text("Time"), Text(verbatim: SummaryView.duration(d, locale: locale))) }
-                stat(Text("Sets"), Text(verbatim: "\(summary.sets)"))
-                if summary.volume > 0 {
-                    stat(Text("Volume"), Text(verbatim: "\(summary.volume.formatted(.number.precision(.fractionLength(0)))) \(summary.unit)"))
-                }
-                if let avg = summary.hrAvg, let top = summary.hrMax {
-                    stat(Text("Heart rate"), Text("\(Int(avg)) avg · \(Int(top)) max"), color: .red)
-                }
-                if let kcal = summary.calories {
-                    stat(Text("Calories"), Text(Measurement(value: kcal, unit: UnitEnergy.kilocalories),
-                                                format: .measurement(width: .abbreviated, usage: .asProvided,
-                                                                     numberFormatStyle: .number.precision(.fractionLength(0))).locale(locale)))
-                }
-                if !summary.prs.isEmpty {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Label { Text("Personal records") } icon: { Image(systemName: "trophy.fill").foregroundStyle(.yellow) }
-                            .font(.caption.weight(.semibold))
-                        ForEach(summary.prs, id: \.self) { name in
-                            Text(verbatim: name).font(.footnote)
+        // The stack keeps the clock row clear: the page starts under it, and what scrolls up fades out there.
+        // (The title is not in the toolbar: it would not fit beside the clock in every language.)
+        NavigationStack {
+            // A stack, not a bottom inset: the scroll view ends above Done, so nothing is ever covered by it.
+            VStack(spacing: 0) {
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 4) {
+                            VStack(alignment: .leading, spacing: 0) {
+                                status
+                                // Largest text: the title and the numbers keep the room.
+                                if !type.isAccessibilitySize {
+                                    Text(verbatim: summary.name).font(.footnote).foregroundStyle(.secondary).lineLimit(1)
+                                }
+                            }
+                            hero
+                            if let v = summary.volumeText(locale: locale) { row(Text("Volume"), Text(verbatim: v)) }
+                            if !summary.prs.isEmpty { records }
+                            // Heart rate and calories come last: Apple Health returns them a moment after the
+                            // rest, and nothing above them moves when they do.
+                            VStack(alignment: .leading, spacing: 8) {
+                                if let avg = summary.hrAvg, let top = summary.hrMax {
+                                    let hr = String(format: store.L("%lld avg · %lld max"), Int64(avg), Int64(top))
+                                    // Stacked, the two numbers split on the dot, never with it left at a line's end.
+                                    row(Text("Heart rate"), Text(verbatim: hr),
+                                        stacked: Text(verbatim: hr.replacingOccurrences(of: " · ", with: "\n")), color: .red)
+                                }
+                                if let kcal = summary.calories {
+                                    row(Text("Calories"), Text(Measurement(value: kcal, unit: UnitEnergy.kilocalories),
+                                                               format: .measurement(width: .abbreviated, usage: .asProvided,
+                                                                                    numberFormatStyle: .number.precision(.fractionLength(0))).locale(locale)))
+                                }
+                                if store.offline {
+                                    Label { Text("Saved on the watch, syncs later") } icon: { Image(systemName: "iphone.slash") }
+                                        .font(.footnote)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            .id("end")
                         }
+                        // Full width, so a bare summary (the sets alone) still starts at the left edge.
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, Theme.side)
+                        .padding(.bottom, 8)
+                        .id("top")
                     }
-                    .accessibilityElement(children: .combine)
-                    .padding(.top, 2)
-                }
-                if store.offline {
-                    Label { Text("Saved on the watch, syncs later") } icon: { Image(systemName: "iphone.slash") }
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                    .scrollBounceBehavior(.basedOnSize)
+                    // Wrist down shows the top again (never on a timer).
+                    .onChange(of: dimmed) { _, on in if on { proxy.scrollTo("top", anchor: .top) } }
+                    // CI: the end of the summary too (heart rate, calories, the not-synced line).
+                    .onAppear { if ["summary-end", "summary-offline"].contains(SessionStore.demoScreen) { proxy.scrollTo("end", anchor: .bottom) } }
                 }
                 Button { store.closeSummary() } label: {
-                    Text("Done").frame(maxWidth: .infinity, minHeight: Theme.tap)
+                    Text("Done").font(.headline.weight(.semibold)).padding(.vertical, 6)
                 }
-                .tint(Theme.accent)
-                .padding(.top, 4)
-                .id("done")
+                .buttonStyle(PrimaryButton())
+                // CI's Always On did not reach the button's style here (Done stayed solid); hand it on.
+                .environment(\.isLuminanceReduced, dimmed)
+                .dynamicTypeSize(...DynamicTypeSize.accessibility2)
+                .padding(.horizontal, Theme.side)
+                .padding(.top, 4).padding(.bottom, 6)
             }
-            .padding(.horizontal, 4)
-            // The title starts under the clock, not beside it (it ran into the time on 41 mm).
-            .padding(.top, 14)
-        }
-        // CI: the end of the summary too (heart rate, calories, records).
-        .onAppear { if SessionStore.demoScreen == "summary-end" { reader.scrollTo("done", anchor: .bottom) } }
+            .ignoresSafeArea(edges: .bottom)
+            // The stack's content gets the system's luminance, not the screenshots' (CI only).
+            .modifier(DemoEnvironment())
         }
     }
 
-    private func stat(_ label: Text, _ value: Text, color: Color = .white) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            label.font(.caption2).foregroundStyle(.secondary)
-            value.font(.system(.title3, design: .rounded).weight(.semibold).monospacedDigit()).foregroundStyle(color)
+    private var status: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            // White, not the accent: the accent is for what a tap does, and Done is the only such thing here.
+            Image(systemName: summary.endedOnPhone ? "iphone" : "checkmark.circle.fill")
+                .accessibilityHidden(true)
+            Text(summary.endedOnPhone ? LocalizedStringKey("Ended on your iPhone") : LocalizedStringKey("Workout saved"))
                 .fixedSize(horizontal: false, vertical: true)
+        }
+        .font(.headline.weight(.semibold))
+        .foregroundStyle(Theme.ink(.white, dimmed))
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isHeader)
+    }
+
+    /// The time (its unit word is its label) and the sets: side by side, a size down when a long time
+    /// needs it, or stacked. Without a time (no start known) the sets stand alone, bigger.
+    @ViewBuilder private var hero: some View {
+        if summary.durationText(locale: locale) == nil {
+            sets(.title2)
+        } else {
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) { time(.title2); Spacer(minLength: 6); sets(.headline) }
+                HStack(alignment: .firstTextBaseline, spacing: 6) { time(.title3); Spacer(minLength: 6); sets(.headline) }
+                VStack(alignment: .leading, spacing: 0) { time(.title3); sets(.headline) }
+            }
+        }
+    }
+
+    @ViewBuilder private func time(_ style: Font.TextStyle) -> some View {
+        if let t = summary.durationText(locale: locale) {
+            Text(verbatim: t)
+                .font(.system(style, design: .rounded).weight(.semibold).monospacedDigit())
+                .foregroundStyle(Theme.ink(.white, dimmed))
+                .lineLimit(1).minimumScaleFactor(0.7)
+                .accessibilityLabel(Text("Time")).accessibilityValue(Text(verbatim: t))
+        }
+    }
+
+    private func sets(_ style: Font.TextStyle) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 4) {
+            Text("Sets").font(.footnote).foregroundStyle(.secondary)
+            Text(verbatim: "\(summary.sets)").font(.system(style, design: .rounded).monospacedDigit())
+                .foregroundStyle(Theme.ink(.white, dimmed))
         }
         .accessibilityElement(children: .combine)
     }
 
-    /// "52 min", "1 h 5 min", in the watch's language.
-    static func duration(_ seconds: Double, locale: Locale = .current) -> String {
-        let f = DateComponentsFormatter()
-        var calendar = Calendar.current
-        calendar.locale = locale
-        f.calendar = calendar
-        f.allowedUnits = seconds >= 3600 ? [.hour, .minute] : [.minute]
-        f.unitsStyle = .short
-        return f.string(from: max(60, seconds)) ?? ""
+    private var records: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Label { Text("Personal records") } icon: { Image(systemName: "trophy.fill") }
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(Theme.ink(.yellow, dimmed))
+            ForEach(Array(summary.prs.enumerated()), id: \.offset) { _, name in
+                Text(verbatim: name).font(.footnote).foregroundStyle(Theme.ink(.white, dimmed)).lineLimit(2)
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    /// Label and value on one line, or the value under the label when they do not fit (`stacked`: the
+    /// value's wording for that case). Red stays red in Always On: dimmed it falls under 4.5:1.
+    private func row(_ label: Text, _ value: Text, stacked: Text? = nil, color: Color? = nil) -> some View {
+        let label = label.font(.footnote).foregroundStyle(.secondary)
+        let font = Font.system(.headline, design: .rounded).weight(.semibold).monospacedDigit()
+        let ink = color ?? Theme.ink(.white, dimmed)
+        return ViewThatFits(in: .horizontal) {
+            HStack(alignment: .firstTextBaseline, spacing: 0) { label; Spacer(minLength: 6); value.font(font).foregroundStyle(ink) }
+            VStack(alignment: .leading, spacing: 0) { label; value.font(font).foregroundStyle(ink).lineLimit(1) }
+            VStack(alignment: .leading, spacing: 0) { label; (stacked ?? value).font(font).foregroundStyle(ink).fixedSize(horizontal: false, vertical: true) }
+        }
+        .accessibilityElement(children: .combine)
     }
 }
 
