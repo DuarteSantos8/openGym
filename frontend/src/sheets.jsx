@@ -2938,7 +2938,7 @@ function ShareWorkoutImage({ w, nameOf, close }) {
   const update = useStore(s => s.update)
   const withMap = st.shareMap !== false
   const warmups = countsWarmups(st)
-  const model = useMemo(() => workoutCardModel(w, { unit: st.unit, nameOf, warmups }), [w, st.unit, warmups])
+  const model = useMemo(() => workoutCardModel(w, { unit: st.unit, nameOf, warmups, prescriptions: st.prescriptions }), [w, st.unit, warmups])
   // The last picture stays up while the next one is drawn, so the toggle never blanks the sheet.
   const [img, setImg] = useState(null)
   const [busy, setBusy] = useState(false)

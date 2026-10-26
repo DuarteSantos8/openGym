@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { workoutCardModel, layoutWorkoutCard, wrapText, parseColor, mixColor, mapColors, viewAspect, MAX_RECORDS, CARD_WIDTH } from './workout-card.js'
 import { fmtDate } from './format.js'
+import { canonicalProfile } from './test-fixtures.js'
 
 // #453: a finished workout shared as a picture. A fake measure stands in for the canvas — every
 // character is half its font size wide — so the layout can be checked without one.
@@ -27,6 +28,12 @@ describe('workoutCardModel', () => {
   }
 
   const stat = m => m.stats.map(s => s.label + ' ' + s.value)
+
+  it('counts the work sets of a migrated workout, which has exposures and no entries', () => {
+    const [cw] = canonicalProfile().workouts
+    const m = workoutCardModel({ ...cw, start: 0, end: 30 * 60000, vol: 300 }, { unit: 'kg', nameOf })
+    expect(stat(m)).toEqual(['Duration 30 min', 'Sets 1', 'Volume 300 kg'])
+  })
 
   it('says the name, the dated day, duration, work sets and volume', () => {
     const m = workoutCardModel(w, { unit: 'kg', nameOf })
