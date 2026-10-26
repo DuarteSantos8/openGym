@@ -36,6 +36,7 @@
 "More" = "많음";
 "Effort" = "강도";
 "None" = "없음";
+"Waiting to sync" = "동기화 대기 중";
 "Last time: %@" = "지난번: %@";
 "Exercises" = "운동";
 "No workout running" = "진행 중인 운동이 없어요";

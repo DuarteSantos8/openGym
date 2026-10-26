@@ -36,6 +36,7 @@
 "More" = "Більше";
 "Effort" = "Зусилля";
 "None" = "Немає";
+"Waiting to sync" = "Очікує синхронізації";
 "Last time: %@" = "Минулого разу: %@";
 "Exercises" = "Вправи";
 "No workout running" = "Тренування не триває";
