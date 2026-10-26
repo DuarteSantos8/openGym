@@ -36,6 +36,7 @@ const mocks = vi.hoisted(() => {
     swapActiveWorkoutToBackup: vi.fn(),
     menuSheet: vi.fn(),
     effortPickerSheet: vi.fn(),
+    setCoefficientSheet: vi.fn(),
     exerciseHistorySheet: vi.fn(),
     renameWorkoutSheet: vi.fn(),
     durationSheet: vi.fn(),
@@ -110,6 +111,7 @@ vi.mock('../sheets.jsx', () => ({
   sessionNoteSheet: vi.fn(),
   renameWorkoutSheet: mocks.renameWorkoutSheet,
   effortPickerSheet: mocks.effortPickerSheet,
+  setCoefficientSheet: mocks.setCoefficientSheet,
   exerciseHistorySheet: mocks.exerciseHistorySheet,
   addRoutineToSessionSheet: vi.fn(),
 }))
@@ -289,6 +291,22 @@ afterEach(async () => {
 })
 
 describe('Workout set completion flow', () => {
+  it('edits just one set coefficient from its menu without completing it', async () => {
+    await mount([exercise('0025', [false, false], {
+      target: { mode: 'reps', reps: 5, weight: 60, setCoefficient: 0.3 },
+    })])
+    await act(async () => buttonNamed('Set 1').dispatchEvent(new dom.Event('click', { bubbles: true })))
+    const item = menuItemsOf(mocks.menuSheet.mock.calls.at(-1)[0]).find(x => x.label === 'Set coefficient')
+    expect(item.sub).toBe('0.3')
+    await act(async () => item.onClick())
+    const [value, pick] = mocks.setCoefficientSheet.mock.calls.at(-1)
+    expect(value).toBe(0.3)
+    await act(async () => pick(1))
+    expect(mocks.S.active.entries[0].sets[0]).toMatchObject({ setCoefficient: 1, done: false })
+    expect(mocks.S.active.entries[0].sets[1].setCoefficient).toBeUndefined()
+    expect(mocks.startRest).not.toHaveBeenCalled()
+  })
+
   it('rests the exercise\'s warm-up rest between ramp sets, and its working rest after the last ramp set', async () => {
     await mount([exercise('ramped-squat', [false, false, false, false], {
       target: { mode: 'reps', reps: 6, weight: 125, bodyweight: false, restSec: 150, warmupRestSec: 45 },
@@ -2964,7 +2982,7 @@ describe('workout controls: the more menu and the set menu', () => {
   it('opens a per-set menu from the set number with drop, burst and remove', async () => {
     await mount([exercise('plain-bench', [false, false])])
     await act(async () => { container.querySelector('button[aria-label="Set 2"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
-    expect(menuItemsOf(lastMenu()).map(it => it.label)).toEqual(['Make it a warm-up set', 'Taken to failure', 'Rest after this set', 'Drop set', 'Rest-pause burst', 'Copy this set', 'Remove this set'])
+    expect(menuItemsOf(lastMenu()).map(it => it.label)).toEqual(['Make it a warm-up set', 'Taken to failure', 'Set coefficient', 'Rest after this set', 'Drop set', 'Rest-pause burst', 'Copy this set', 'Remove this set'])
     expect(item('Make it a warm-up set').icon).toBe('sunrise')
 
     await act(async () => { item('Drop set').onClick() })

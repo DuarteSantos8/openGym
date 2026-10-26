@@ -2588,4 +2588,6 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'Solo para este móvil. Algunas pantallas de inicio tardan un momento en enterarse.',
   'The icon could not be changed.': 'No se pudo cambiar el icono.',
   'Try the Halloween app icon': 'Prueba el icono de Halloween',
+  "Set coefficient": "Coeficiente de series",
+  "Each working set counts this much toward muscle volume in Stats. Default: 1.": "Cada serie de trabajo cuenta con este valor para el volumen muscular en Estadísticas. Predeterminado: 1.",
 }

@@ -33,7 +33,7 @@ import BodyMap from './components/BodyMap.jsx'
 import MuscleExplorer from './components/MuscleExplorer.jsx'
 import ExerciseViewToggle from './components/ExerciseViewToggle.jsx'
 import { sameMuscleFirst, swapMuscleOf } from './lib/similar-exercises.js'
-import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWeightsOf, muscleGroupsOf, hasExplicitMuscleMetadata, inMuscleOrder } from './lib/muscles.js'
+import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWeightsOf, muscleGroupsOf, hasExplicitMuscleMetadata, inMuscleOrder, setCoefficientOf } from './lib/muscles.js'
 import { parseImport, mergeImport } from './lib/import-csv.js'
 import { importHevyData, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines, hevySummaryCounts } from './lib/import-hevy.js'
 import { buildPlanBundle, parsePlan, mergePlan, printPlan, planPrintHTML } from './lib/plan-share.js'
@@ -1973,6 +1973,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     // Mode-independent, so it is spread in below rather than folded into `flags`.
     const note = (c.note || '').trim().slice(0, 500)
     const withNote = note ? { note } : {}
+    const withCoefficient = setCoefficientOf(c) !== 1 ? { setCoefficient: setCoefficientOf(c) } : {}
     // Only written when there are any, so a plan that never asked for warm-ups keeps the exact
     // shape it had — and reads back as 0 either way (buildSets).
     const warmupSets = Math.max(0, Math.min(MAX_PLANNED_WARMUPS, Math.round(c.warmupSets) || 0))
@@ -2002,8 +2003,8 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     }
     // The treadmill's grade, only when it has one, so a flat slot keeps the shape it had.
     const incline = clampIncline(c.incline)
-    if (cardio) onSave({ sets, min: Math.max(1, Math.round(c.min) || 20), speed: Math.max(0, c.speed || 8), ...(incline > 0 ? { incline } : {}), ...withNote, ...withRest, ...withSubs })
-    else if (mode === 'time') onSave({ sets, mode: 'time', sec: Math.max(1, Math.round(c.sec) || 45), weight: Math.max(0, c.weight || 0), ...flags, ...(perSide ? { side: true } : {}), ...prog, ...withNote, ...withWarmups, ...withRest, ...withSetRests, ...withMeant, ...withFailure, ...withSubs })
+    if (cardio) onSave({ sets, min: Math.max(1, Math.round(c.min) || 20), speed: Math.max(0, c.speed || 8), ...(incline > 0 ? { incline } : {}), ...withCoefficient, ...withNote, ...withRest, ...withSubs })
+    else if (mode === 'time') onSave({ sets, mode: 'time', sec: Math.max(1, Math.round(c.sec) || 45), weight: Math.max(0, c.weight || 0), ...flags, ...(perSide ? { side: true } : {}), ...prog, ...withNote, ...withWarmups, ...withRest, ...withSetRests, ...withMeant, ...withFailure, ...withSubs, ...withCoefficient })
     else {
       // A unilateral target is stored even: the split has to divide, and a typed 15 would
       // otherwise plan seven reps on one side and eight on the other, every session.
@@ -2015,7 +2016,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         range = normalizeRepRange(reps, c.repsMin, stride)
         reps = range.reps
       }
-      const out = { sets, mode: 'reps', reps, weight: Math.max(0, c.weight || 0), ...flags, ...(perSide ? { side: true } : {}), ...prog, ...withNote, ...withWarmups, ...withRest, ...withSetRests, ...withMeant, ...withSubs }
+      const out = { sets, mode: 'reps', reps, weight: Math.max(0, c.weight || 0), ...flags, ...(perSide ? { side: true } : {}), ...prog, ...withNote, ...withWarmups, ...withRest, ...withSetRests, ...withMeant, ...withSubs, ...withCoefficient }
       // The list is the prescription; sets and reps follow it, so everything that reads the
       // flat target (a config sheet reopened with the toggle off, older builds) still makes sense.
       const list = pyramid ? normalizePyramid(c.pyramid, stride) : []
@@ -2360,6 +2361,11 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     {pyramid
       ? <div className="small dim" style={{ marginBottom: 18 }}>{t('Weight is up to you: pyramid sets are not progressed automatically.')}</div>
       : <ProgressionFields ex={ex} mode={mode} c={c} setC={setC} routine={routine} unit={st.unit} perSide={perSide} bw={bw} />}
+    <div className="row cfgrow" style={{ marginBottom: 8 }}>
+      <Stepper label={t('Set coefficient')} ariaLabel={t('Set coefficient')} value={setCoefficientOf(c)} step={0.1}
+        onChange={v => setC(x => ({ ...x, setCoefficient: v }))} />
+    </div>
+    <div className="small dim" style={{ marginBottom: 18 }}>{t('Each working set counts this much toward muscle volume in Stats. Default: 1.')}</div>
     <textarea className="input" rows={3} maxLength={500} style={{ marginBottom: 18 }}
       placeholder={t('Note (optional): loading cues, "bar only, then +1 plate/side each set", anything worth remembering')}
       value={c.note || ''} onChange={e => setC(x => ({ ...x, note: e.target.value }))} />
@@ -2401,6 +2407,22 @@ export const glyphPicker = (current, onPick) => {
     <div style={{ height: 4 }} />
   </>)
 }
+
+/* ============================ set coefficient ============================ */
+function SetCoefficientPicker({ value, onPick, close }) {
+  const [coefficient, setCoefficient] = useState(value)
+  return <>
+    <h3>{t('Set coefficient')}</h3>
+    <div className="row cfgrow" style={{ marginBottom: 12 }}>
+      <Stepper ariaLabel={t('Set coefficient')} value={coefficient} step={0.1} onChange={setCoefficient} />
+    </div>
+    <p className="small dim">{t('Each working set counts this much toward muscle volume in Stats. Default: 1.')}</p>
+    <Button variant="primary" onClick={() => { onPick(setCoefficientOf({ setCoefficient: coefficient })); close() }}>{t('Save')}</Button>
+  </>
+}
+
+export const setCoefficientSheet = (value, onPick) =>
+  ui().openSheet(close => <SetCoefficientPicker value={value} onPick={onPick} close={close} />)
 
 /* ============================ effort quick picker (RIR / RPE) ============================ */
 // Rating a set used to mean walking a +/- stepper up the scale — eleven taps to log "5 reps

@@ -2643,4 +2643,6 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'لهذا الهاتف فقط. بعض الشاشات الرئيسية تحتاج لحظة لتلحق.',
   'The icon could not be changed.': 'تعذّر تغيير الأيقونة.',
   'Try the Halloween app icon': 'جرّب أيقونة التطبيق الخاصة بالهالوين',
+  "Set coefficient": "معامل المجموعة",
+  "Each working set counts this much toward muscle volume in Stats. Default: 1.": "تُحتسب كل مجموعة عمل بهذه القيمة ضمن حجم تدريب العضلات في الإحصاءات. الافتراضي: 1.",
 }

@@ -2588,4 +2588,6 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'Tylko na tym telefonie. Niektóre ekrany główne potrzebują chwili, żeby to załapać.',
   'The icon could not be changed.': 'Nie udało się zmienić ikony.',
   'Try the Halloween app icon': 'Wypróbuj halloweenową ikonę aplikacji',
+  "Set coefficient": "Współczynnik serii",
+  "Each working set counts this much toward muscle volume in Stats. Default: 1.": "Każda seria robocza liczy się z tą wartością do objętości mięśniowej w statystykach. Domyślnie: 1.",
 }

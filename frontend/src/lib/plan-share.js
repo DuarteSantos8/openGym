@@ -22,7 +22,7 @@ import { t, exerciseNameFor, exerciseNameClass } from './i18n-core.js'
 import { convertWeight } from './units.js'
 import { fmtSpeed, speedUnitOf } from './speed.js'
 import { clampIncline, hasIncline } from './incline.js'
-import { MUSCLES, inMuscleOrder } from './muscles.js'
+import { MUSCLES, inMuscleOrder, setCoefficientOf } from './muscles.js'
 import { SG_NAME_MAX } from './superset-meta.js'
 import { esc, printShell, printDocument, probeMarks } from './print-doc.js'
 import { normalizeAliases } from './exercise-aliases.js'
@@ -116,6 +116,7 @@ function cleanEx(e) {
   // Epley deload factor is a per-occurrence progression setting. Omit the default so older
   // exports remain compact and importing them preserves the default 90% behaviour.
   if (e.deloadFactor != null && Number(e.deloadFactor) !== 0.9) o.deloadFactor = e.deloadFactor
+  if (setCoefficientOf(e) !== 1) o.setCoefficient = setCoefficientOf(e)
   // What a dumbbell weight means in this slot (lib/dumbbells.js): without it "20 each" arrives
   // as a bare 20 and the other end counts half the volume.
   if (dbLoadOf(e.dbLoad)) o.dbLoad = dbLoadOf(e.dbLoad)

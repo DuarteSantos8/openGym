@@ -2585,4 +2585,6 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'Лише для цього телефона. Деяким домашнім екранам треба хвилинка, щоб помітити.',
   'The icon could not be changed.': 'Не вдалося змінити значок.',
   'Try the Halloween app icon': 'Спробуй гелловінський значок застосунку',
+  "Set coefficient": "Коефіцієнт підходу",
+  "Each working set counts this much toward muscle volume in Stats. Default: 1.": "Кожен робочий підхід враховується з цим коефіцієнтом в обсязі навантаження на м’язи у статистиці. Типово: 1.",
 }

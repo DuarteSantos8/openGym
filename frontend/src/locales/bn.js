@@ -2667,4 +2667,6 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'শুধু এই ফোনের জন্য। কিছু হোম স্ক্রিন বুঝতে একটু সময় নেয়।',
   'The icon could not be changed.': 'আইকন বদলানো গেল না।',
   'Try the Halloween app icon': 'হ্যালোইন অ্যাপ আইকন চেষ্টা করুন',
+  "Set coefficient": "সেটের সহগ",
+  "Each working set counts this much toward muscle volume in Stats. Default: 1.": "পরিসংখ্যানে পেশির প্রশিক্ষণের পরিমাণে প্রতিটি কার্যকর সেট এই পরিমাণে গণনা করা হয়। ডিফল্ট: 1।",
 }

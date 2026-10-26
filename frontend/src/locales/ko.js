@@ -2588,4 +2588,6 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': '이 휴대폰에만 적용돼요. 홈 화면에 따라 바뀌는 데 잠깐 걸릴 수 있어요.',
   'The icon could not be changed.': '아이콘을 바꾸지 못했어요.',
   'Try the Halloween app icon': '핼러윈 앱 아이콘 써 보기',
+  "Set coefficient": "세트 계수",
+  "Each working set counts this much toward muscle volume in Stats. Default: 1.": "통계의 근육별 운동량에서 각 본 세트를 이 값만큼 계산합니다. 기본값: 1.",
 }
