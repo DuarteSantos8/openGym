@@ -6,6 +6,7 @@ import { useUI } from './store/useUI.js'
 import { bindUI } from './components/ui.jsx'
 import { setWeightDecimals } from './lib/format.js'
 import { accentValue, applyAccent } from './lib/accent.js'
+import { tabbarOnSide, useWideScreen } from './lib/tabbar-side.js'
 import { setLang, useLang, baseLang } from './lib/i18n.js'
 import { effectiveLang } from './lib/default-lang.js'
 import { setPlayOnSilent, setVibrate, setAlarmBuzzer, setNativeBuzzer } from './lib/sound.js'
@@ -232,6 +233,14 @@ function Shell() {
   const noTabs = inWorkout || loc.pathname === '/coach' || needsMobileOnboarding || permSteps
 
   const authed = user || isGuest
+  // The tab bar in a column on the right edge (lib/tabbar-side.js): a class on the body, so the
+  // page, the rest bar and the toast make room for it there instead of at the bottom.
+  const wide = useWideScreen()
+  const sideTabs = !!authed && !noTabs && tabbarOnSide(S.tabbarSide, wide)
+  useEffect(() => {
+    document.body.classList.toggle('tabbar-side', sideTabs)
+    return () => document.body.classList.remove('tabbar-side')
+  }, [sideTabs])
   // The boot screen in index.html covers the start; it goes once there is something to show.
   useEffect(() => { if (ready || authed) hideBoot() }, [ready, authed])
   if (!ready && !authed) return (

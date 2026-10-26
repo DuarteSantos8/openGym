@@ -200,6 +200,9 @@ export const DEF = {
   // entries, Stats, imports and the separate pre-workout weigh-in flow keep working.
   // Defaults on; an older profile without the key reads as on (`!== false`).
   showWeightCard: true,
+  // Where the tab bar stands (Settings → Look & Home, lib/tabbar-side.js): 'auto' puts it on the
+  // right edge on a screen wider than it is tall, 'bottom' and 'right' keep it there.
+  tabbarSide: 'auto',
   // Whether Start opens the quick weigh-in first (sheets.jsx startFlow, issue #137). Off starts
   // the session straight away; weight can still be logged from Home/Stats. On here, so an
   // older profile without the key reads as on (`!== false`) and keeps the step it had; a profile
