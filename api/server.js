@@ -150,10 +150,10 @@ db.subs = db.subs || [];
 db.invites = db.invites || [];
 db.deviceLinks = db.deviceLinks || [];   // unused one-time device links, hashed (device-link.js)
 // Features an admin switched off for the whole instance, as { qr: false }: `qr` the exercise QR
-// codes.
+// codes, `bodyScale` the body-composition scales.
 // Absent means on, so an instance that never touched a switch answers exactly as before.
 db.features = db.features && typeof db.features === 'object' && !Array.isArray(db.features) ? db.features : {};
-const FEATURES = ['qr'];
+const FEATURES = ['qr', 'bodyScale'];
 const featuresOf = () => Object.fromEntries(FEATURES.map(k => [k, db.features[k] !== false]));
 const featuresOff = () => Object.fromEntries(FEATURES.filter(k => db.features[k] === false).map(k => [k, false]));
 const isAdmin = user => !!user && (user.admin === true || ADMIN_UIDS.includes(user.id));

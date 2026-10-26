@@ -271,6 +271,7 @@ paths:
                     type: object
                     properties:
                       qr: { type: boolean, const: false }
+                      bodyScale: { type: boolean, const: false }
                   coach:
                     description: >-
                       Present for a signed-in caller and absent otherwise; `null` when this
@@ -2619,7 +2620,8 @@ paths:
       summary: 'Admin: the instance features and whether each is on'
       description: >-
         Features an admin can switch off for the whole instance, each on its own: `qr` the
-        exercise QR codes (scanning the code on a machine, giving codes to exercises).
+        exercise QR codes (scanning the code on a machine, giving codes to exercises),
+        `bodyScale` the body-composition scales' codes.
       responses:
         '200':
           description: Every known feature, on or off.
@@ -2632,6 +2634,7 @@ paths:
                     type: object
                     properties:
                       qr: { type: boolean }
+                      bodyScale: { type: boolean }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
     post:
@@ -2649,6 +2652,7 @@ paths:
               type: object
               properties:
                 qr: { type: boolean }
+                bodyScale: { type: boolean }
       responses:
         '200':
           description: Saved; every known feature, on or off.
@@ -2661,6 +2665,7 @@ paths:
                     type: object
                     properties:
                       qr: { type: boolean }
+                      bodyScale: { type: boolean }
         '400':
           description: No known feature in the body.
           content:

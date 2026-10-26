@@ -6,3 +6,7 @@ export const featureOn = (config, key) => config?.features?.[key] !== false
 
 /** Exercise QR codes: the code on a machine jumps to its exercise, and exercises get codes. */
 export const qrScanOn = config => featureOn(config, 'qr')
+/** Body-composition scales: the code a scale shows after a measurement. */
+export const bodyScaleOn = config => featureOn(config, 'bodyScale')
+/** Whether a workout's scan button has anything left to read. */
+export const workoutScanOn = config => qrScanOn(config) || bodyScaleOn(config)

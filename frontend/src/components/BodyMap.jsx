@@ -55,22 +55,22 @@ function View({ view, levels, onMuscle, selected }) {
 }
 
 /**
- * <BodyMap load={{ chest: 12, … }} body="male" />
+ * <BodyMap load={{ chest: 12, … }} body="male" />  (`side` "front" or "back" draws one view only)
  * `load` is effective sets per muscle (see lib/muscles.js); shading is relative to
  * the hardest-worked muscle in that same load, so it always reads as a balance. Pass ordered
  * `{ at, level, exclusive? }` `thresholds` for a fixed absolute scale (recovery views use this
  * to keep their semantic bands stable); omitting it preserves the balance behavior. `levels`
  * hands over ready-made steps instead (the live session map, lib/muscles.js sessionLevels).
  */
-export default function BodyMap({ load = {}, thresholds, levels: given, body = 'male', onMuscle, selected, className = '' }) {
+export default function BodyMap({ load = {}, thresholds, levels: given, body = 'male', onMuscle, selected, className = '', side = 'both' }) {
   const paths = useBodyPaths()
   const levels = given || levelsOf(load, thresholds)
   const g = paths && (paths[body] || paths.male)
   return (
     <div className={'bodymap ' + className}>
       {g ? <>
-        <View view={g.front} levels={levels} onMuscle={onMuscle} selected={selected} />
-        <View view={g.back} levels={levels} onMuscle={onMuscle} selected={selected} />
+        {side !== 'back' && <View view={g.front} levels={levels} onMuscle={onMuscle} selected={selected} />}
+        {side !== 'front' && <View view={g.back} levels={levels} onMuscle={onMuscle} selected={selected} />}
       </> : <div className="bm-ph" aria-hidden="true" />}
     </div>
   )

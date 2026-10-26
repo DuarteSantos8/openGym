@@ -33,6 +33,8 @@ import { anchorsByWorkout, resolveSetRir } from '../lib/recovery.js'
 import { Button, Segmented, SelectRow } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { isWarmupRow } from '../lib/workout-model.js'
+import { BodyData } from './BodyScan.jsx'
+import { bodyScaleOn } from '../lib/features.js'
 
 // Set 1 to 5 on the per-set chart — system colours, so each line keeps its hue in dark mode.
 const SET_COLORS = ['var(--blue)', 'var(--green)', 'var(--orange)', 'var(--purple)', 'var(--pink)']
@@ -474,7 +476,11 @@ export function WeeklyPlanVolume({ S }) {
 export default function Stats() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
+  const config = useStore(s => s.config)
   const [range, setRange] = useState(90)
+  // Training or Body data (a body-composition scale's scans, views/BodyScan.jsx). /stats?tab=body
+  // opens on the second; the query sits in the hash, as with focus= below.
+  const [tab, setTab] = useState(() => (/[?&]tab=body\b/.test(window.location.hash || '') ? 'body' : 'training'))
   // Plan's "Weekly muscle volume" row lands here (/stats?focus=weekly-volume). The router is a
   // HashRouter, so the query sits in the hash; the scroll waits a frame for the page's own
   // scroll-to-top on navigation to have happened first.
@@ -720,12 +726,22 @@ export default function Stats() {
   if (showMax) exOpts.push({ value: 'max', label: t('Max reps') })
   if (showRel) exOpts.push({ value: 'bodyweight', label: t('Bodyweight') })
 
-  return <>
+  // With the body scales switched off (Admin → Features) the Body data tab only stays while there
+  // are scans to look at: there is no other way to get one.
+  const bodyTab = bodyScaleOn(config) || (S.measurements || []).some(e => e?.scan)
+  const head = <>
     <div className="hdr"><SeasonDeco spot="stats-hdr" /><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
       <div className="row" style={{ gap: 8 }}>
         <button className="iconbtn" onClick={reportSheet} aria-label={t('Performance report')} title={t('Performance report')}><Icon name="note" /></button>
         <button className="iconbtn" onClick={() => nav('/history')} aria-label={t('History')}><Icon name="history" /></button>
       </div></div>
+    {bodyTab && <div className="stats-tabs"><Segmented value={tab} onChange={setTab}
+      options={[{ value: 'training', label: t('Training') }, { value: 'body', label: t('Body data') }]} /></div>}
+  </>
+  if (bodyTab && tab === 'body') return <>{head}<BodyData S={S} onTrends={() => nav('/measurements')} /></>
+
+  return <>
+    {head}
 
     <div className="tiles">
       <div className="tile"><div className="l"><Icon name="dumbbell" />{t('Workouts')}</div><div className="v">{workouts.length}</div></div>

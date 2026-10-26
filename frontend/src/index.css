@@ -710,6 +710,22 @@ body.chips-dragging *{cursor:inherit}
 .measure-select{margin-bottom:10px;background:var(--surface-2)}
 .measure-preview{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:11px;padding-top:10px;border-top:1px solid var(--sep);font-size:12px;color:var(--label-2)}
 .measure-preview b{color:var(--label);font-weight:500}
+.bodyscan-tiles .tile .v{font-size:20px}
+.bodyscan-delta{font-size:12px;color:var(--label-2);margin-top:3px;font-variant-numeric:tabular-nums}
+.bodyseg{display:grid;grid-template-columns:1fr minmax(0,1.15fr) 1fr;gap:10px;margin-top:12px;padding:14px 12px;border-radius:var(--r-card);background:var(--surface-2);background:linear-gradient(160deg,color-mix(in srgb,var(--red) 34%,var(--surface)),color-mix(in srgb,var(--orange) 28%,var(--surface)))}
+.bodyseg .bodyseg-trunk{grid-column:1/-1;justify-self:center;min-width:min(60%,240px)}
+.bodyseg-side{display:flex;flex-direction:column;justify-content:space-around;gap:16px;min-width:0}
+.bodyseg-fig{display:flex;align-items:center;min-width:0}
+.bodyseg-fig .bodymap{width:100%}
+.bodyseg-fig .bm-v{max-height:300px}
+.bodyseg-box{background:var(--surface);background:color-mix(in srgb,var(--surface) 62%,transparent);border-radius:12px;padding:10px}
+.bodyseg-n{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bodyseg-v{font-size:17px;font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums}
+.bodyseg-v span{font-size:12px;font-weight:400;color:var(--label-2)}
+.bodyscan-seg{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:4px}
+.bodyscan-seg th,.bodyscan-seg td{padding:6px 4px;border-top:1px solid var(--sep);text-align:right;font-weight:400}
+.bodyscan-seg thead th{border-top:0;color:var(--label-2);font-size:12px}
+.bodyscan-seg tbody th{text-align:left;color:var(--label-2)}
 .exnote{
   background:var(--surface);border-radius:var(--r);padding:13px 15px;
   line-height:1.45;white-space:pre-wrap;font-size:15px;margin-bottom:10px;color:var(--label-2);
@@ -2341,3 +2357,4 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .gym-radius-row>:first-child{flex:1}
 .gym-radius-val{min-width:64px;text-align:end;font-variant-numeric:tabular-nums;color:var(--label-2)}
 .gym-actions{display:flex;flex-direction:column;gap:10px;margin:4px 0 30px}
+.stats-tabs{margin:0 0 14px}

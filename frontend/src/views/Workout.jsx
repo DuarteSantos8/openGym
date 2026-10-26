@@ -52,7 +52,9 @@ import { SeasonDeco } from '../components/Seasonal.jsx'
 import { entryDbLoad, bellsIn, ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
 import { scanOnce } from '../components/CameraScan.jsx'
 import { normalizeQr, resolveScan, scanTargetRoutineId, withExQr, currentExerciseFor, qrCodesFor } from '../lib/exercise-qr.js'
-import { qrScanOn } from '../lib/features.js'
+import { parseScaleQr } from '../lib/bodyscan.js'
+import { bodyScanImportSheet } from './BodyScan.jsx'
+import { qrScanOn, workoutScanOn, bodyScaleOn } from '../lib/features.js'
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
 // that bounces, or a double press, sends two presses a moment apart: the first starts the hold,
@@ -1575,9 +1577,21 @@ function ActiveWorkout() {
   // A QR code on a machine (lib/exercise-qr.js, set on the exercise's detail page): scanned here,
   // it shows that exercise. One the session does not hold is offered for the routine and this
   // workout, or this workout alone; a code no exercise has yet can be given to one on the spot.
+  // A body-composition scale's code is not a machine's: it opens the scan import instead of
+  // being offered to an exercise as its code.
+  // The header's scan: named for the exercise codes while those are on, plainly otherwise.
+  const scanLabel = () => (qrScanOn(useStore.getState().config) ? t('Scan exercise code') : t('Scan code'))
   const scanExercise = async () => {
     const code = normalizeQr((await scanOnce())?.value)
-    if (code) goToScanned(code)
+    if (!code) return
+    // Each kind of code has its own switch (Admin → Features); one switched off says so rather
+    // than being taken for an exercise's code.
+    const cfg = useStore.getState().config
+    const off = () => useUI.getState().toast(t('This kind of code is switched off on this server.'))
+    const scale = parseScaleQr(code)
+    if (scale) { if (bodyScaleOn(cfg)) bodyScanImportSheet(scale); else off(); return }
+    if (qrScanOn(cfg)) goToScanned(code)
+    else off()
   }
   const goToScanned = code => {
     const st = useStore.getState().S
@@ -1663,7 +1677,9 @@ function ActiveWorkout() {
       ] },
       { title: t('Add'), items: [
         { icon: 'plusCircle', label: t('Add exercise'), onClick: addExercise },
-        !editing && !A.backfill && qrScanOn(useStore.getState().config) && { icon: 'qr', label: t('Scan exercise code'), sub: t('Jump to the exercise on this machine'), onClick: scanExercise },
+        !editing && !A.backfill && workoutScanOn(useStore.getState().config) && (qrScanOn(useStore.getState().config)
+          ? { icon: 'qr', label: t('Scan exercise code'), sub: t('Jump to the exercise on this machine'), onClick: scanExercise }
+          : { icon: 'qr', label: t('Scan code'), onClick: scanExercise }),
         !editing && { icon: 'clipboard', label: t('Add routine'), sub: t('Bring another routine into this session'), onClick: addRoutineToSessionSheet },
       ] },
       { title: t('This workout'), items: [
@@ -2246,7 +2262,7 @@ function ActiveWorkout() {
         ? <button className="iconbtn" aria-label={t('Close editor')} title={t('Close editor')} onClick={() => exitWorkoutEdit()}><Icon name="xmark" /></button>
         : <button className="iconbtn" aria-label={t('Minimize')} title={t('Minimize')} onClick={() => nav('/home')}><Icon name="chevronDown" /></button>}
       <div className="whdr-mid"><div className="whdr-name">{A.name}</div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <Elapsed start={A.start} />} · {t('{0} sets', done + '/' + total)}</div></div>
-      {!editing && !A.backfill && qrScanOn(useStore.getState().config) && <button className="iconbtn" aria-label={t('Scan exercise code')} title={t('Scan exercise code')} onClick={scanExercise}><Icon name="qr" /></button>}
+      {!editing && !A.backfill && workoutScanOn(useStore.getState().config) && <button className="iconbtn" aria-label={scanLabel()} title={scanLabel()} onClick={scanExercise}><Icon name="qr" /></button>}
       {!chipRow && sessionMap}
       <button className="iconbtn" aria-label={t('Workout options')} title={t('Workout options')} onClick={openViewMenu}><Icon name="more" /></button>
       <button className="btn primary pill whdr-finish" aria-label={editing ? t('Save changes') : undefined}

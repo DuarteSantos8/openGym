@@ -45,6 +45,7 @@ const mocks = vi.hoisted(() => {
     addRest: vi.fn(),
     live: null,
     scanOnce: vi.fn(),
+    bodyScanImportSheet: vi.fn(),
   }
   state.stopRest = vi.fn(() => { state.timer = null })
   state.stopWork = vi.fn(() => { state.work = null })
@@ -117,6 +118,7 @@ vi.mock('../sheets.jsx', () => ({
 }))
 vi.mock('../components/Media.jsx', () => ({ default: () => null }))
 vi.mock('../components/CameraScan.jsx', () => ({ default: () => null, scanOnce: (...a) => mocks.scanOnce(...a) }))
+vi.mock('./BodyScan.jsx', () => ({ bodyScanImportSheet: (...a) => mocks.bodyScanImportSheet(...a) }))
 vi.mock('../components/WorkoutThumb.jsx', () => ({
   default: ({ onExpand }) => React.createElement('button', { className: 'wthumb', 'aria-label': 'Expand', onClick: onExpand }),
   hasWorkoutMedia: () => true,
@@ -2459,6 +2461,16 @@ describe('scanning an exercise code', () => {
     expect(mocks.confirmSheet).not.toHaveBeenCalled()
   })
 
+  it('a body scale’s code opens the scan import and is not offered to an exercise', async () => {
+    mocks.bodyScanImportSheet.mockReset()
+    await mount([routineEntry('0025', [false])], 0, withRoutine())
+    const values = Array.from({ length: 64 }, (_, i) => i + 1)
+    await scan('[' + values.join(',') + ']')
+    expect(mocks.bodyScanImportSheet).toHaveBeenCalledWith(values)
+    expect(mocks.menuSheet).not.toHaveBeenCalled()
+    expect(mocks.S.exQr || {}).toEqual({})
+  })
+
   it('asks whether an exercise the session lacks joins the routine too, and adds it to both', async () => {
     await mount([routineEntry('0025', [false])], 0, withRoutine({ exQr: { '0294': ['CURL'] } }))
     await scan('CURL')
@@ -3863,5 +3875,39 @@ describe('the Lock Screen\'s Done (Live Activity)', () => {
     await act(async () => { mocks.live.restSkip() })
     expect(mocks.stopRest.mock.calls.length).toBe(before + 1)
     expect(mocks.timer).toBeNull()
+  })
+})
+
+// Admin → Features: one switch per kind of code. The workout's scan stays while any is on, named
+// plainly once the exercise codes are off, and a code whose switch is off says so instead of
+// being taken for another kind.
+describe('the scan switches (Admin → Features)', () => {
+  const BIKE = '2138'
+  const resultCode = 'https://lfconnect.com/q?t=c&r=' + Buffer.from(JSON.stringify({ id: 'guid-9', t: 42, et: 1200, c: 200, d: { v: 8, u: 1 } })).toString('base64')
+  const scanWith = async (label, value) => {
+    mocks.scanOnce.mockResolvedValueOnce({ value, fmt: 'qrcode' })
+    await click(buttonNamed(label))
+    await act(async () => {})
+  }
+  beforeEach(() => {
+    mocks.scanOnce.mockReset()
+    mocks.menuSheet.mockReset()
+    mocks.toast.mockReset()
+  })
+  afterEach(async () => { mocks.config = null; await unmount() })
+
+  it('body scales off: a scale code is refused', async () => {
+    mocks.config = { features: { bodyScale: false } }
+    await mount([exercise('0025', [false])], 0)
+    await scanWith('Scan exercise code', '[' + Array.from({ length: 64 }, (_, i) => i + 1).join(',') + ']')
+    expect(mocks.bodyScanImportSheet).not.toHaveBeenCalled()
+    expect(mocks.toast).toHaveBeenLastCalledWith('This kind of code is switched off on this server.')
+  })
+
+  it('all off: no scan in the workout at all', async () => {
+    mocks.config = { features: { qr: false, bodyScale: false } }
+    await mount([exercise('0025', [false])], 0)
+    expect(buttonNamed('Scan exercise code')).toBeNull()
+    expect(buttonNamed('Scan code')).toBeNull()
   })
 })
