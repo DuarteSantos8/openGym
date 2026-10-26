@@ -29,3 +29,9 @@ export async function selfUpdates() {
   return (await getChannel()) === 'sideload'
 }
 
+
+// The watch link rides on Google Play services (the Wearable Data Layer), which only the Play build
+// carries: the sideloaded APK has no Play services code in it (see docs/WEAR.md).
+export async function hasWatchLink() {
+  return (await getChannel()) === 'play'
+}

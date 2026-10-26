@@ -1,6 +1,6 @@
 # The Wear OS watch app
 
-A companion for the Android app: pick a routine on the watch, log the sets with the crown, and the
+A companion for the Android app (the **Google Play build**, see [Constraints](#constraints-worth-knowing)): pick a routine on the watch, log the sets with the crown, and the
 finished workout lands in openGym on your phone. Built for a Pixel Watch 3; any Wear OS 3+ watch
 should do. It is a **recorder**, not a second copy of your log: the phone stays the only source of
 truth, finishes the workout the way the Finish button does (personal records, progression, sync to
@@ -91,10 +91,11 @@ cd frontend
 npm install
 npm run build:mobile               # the phone app's web bundle, and `cap sync`
 cd android
-./gradlew :app:assembleDebug :wear:assembleDebug
+./gradlew :app:assemblePlayDebug :wear:assembleDebug
 ```
 
-Install the phone APK on the phone as usual. For the watch, turn on *Developer options → ADB
+`assemblePlayDebug` is the phone build with the watch link; the default (`sideload`) flavour does not
+have it. Install the phone APK on the phone as usual. For the watch, turn on *Developer options → ADB
 debugging* and *Debug over Wi-Fi* on it (Settings → System → About → tap the build number), pair
 the debugging session, then:
 
@@ -115,8 +116,9 @@ the same signing key**. That shapes the build:
   machines and they do not: copy the keystore over.
 - Release APKs come out unsigned, as the phone's do. Sign the watch's with the **same key** as the
   phone's (`zipalign` then `apksigner`, [MOBILE.md](MOBILE.md#android--sideload-the-apk)). Nothing in
-  CI builds or signs the watch APK yet; `.gitlab-ci.yml` builds `:app` only, so adding this module
-  did not change the release pipeline.
+  CI builds or signs the watch APK yet; `.gitlab-ci.yml` builds the sideload phone APK only, so
+  adding this module did not change the release pipeline. The Play bundle (which carries the phone's
+  side of the link) and the watch app have to go to Play together, as the same app.
 
 Check what you installed with `aapt2 dump badging <apk> | grep package` and
 `apksigner verify --print-certs <apk>` on both.
@@ -154,11 +156,13 @@ and `/opengym/snapshot/<routineId>` (items, phone→watch). Capabilities: `openg
 
 ## Constraints worth knowing
 
-- **Google Play services are needed on both devices.** The Data Layer is part of them. It is
-  on-device traffic between your own phone and watch and nothing goes to Google by this route, but
-  a phone without Play services (GrapheneOS, some de-Googled ROMs) has no watch support: the
-  plugin's calls fail and the app carries on without it. The phone app now depends on
-  `play-services-wearable`, which the project did not use before.
+- **The watch link is in the Play build of the phone app only.** The Data Layer is part of Google
+  Play services, so `play-services-wearable` is a `playImplementation` dependency and
+  `WearBridgePlugin`, `WearBridgeService` and their manifest entry live in `app/src/play`. The
+  sideloaded APK (GitHub, opengym.ch) has none of it: no Play services code, no service, and the
+  page does not start the link (`lib/channel.js` `hasWatchLink`). Both devices need Play services.
+  The traffic is on-device between your own phone and watch and nothing goes to Google by this
+  route. A phone without Play services (GrapheneOS, some de-Googled ROMs) has no watch support.
 - A DataItem holds 100 KB; a routine snapshot is a few KB, and the plugin refuses over 95 KB.
 - The format is versioned (`v: 1`). A phone that gets a session from a newer watch app leaves it
   un-acked and says to update, rather than dropping it.

@@ -62,4 +62,34 @@ describe('install channel', () => {
     const play = readFileSync(new URL('src/play/java/ch/duartesantos/opengym/FlavorPlugins.java', app), 'utf8')
     expect(play).not.toContain('InstallPlugin')
   })
+
+  it('only the Play build has a watch link', async () => {
+    h.answer = { channel: 'play' }
+    let { hasWatchLink } = await import('./channel.js')
+    expect(await hasWatchLink()).toBe(true)
+    vi.resetModules()
+    h.answer = { channel: 'sideload' }
+    ;({ hasWatchLink } = await import('./channel.js'))
+    expect(await hasWatchLink()).toBe(false)
+    vi.resetModules()
+    h.fail = true
+    ;({ hasWatchLink } = await import('./channel.js'))
+    expect(await hasWatchLink()).toBe(false)
+  })
+
+  it('Play services are in the Play flavour only', async () => {
+    const { readFileSync, existsSync } = await import('node:fs')
+    const app = new URL('../../android/app/', import.meta.url)
+    const gradle = readFileSync(new URL('build.gradle', app), 'utf8')
+    expect(gradle).toMatch(/^\s*playImplementation "com\.google\.android\.gms:play-services-wearable/m)
+    expect(gradle).not.toMatch(/^\s*implementation "com\.google\.android\.gms/m)
+    const main = new URL('src/main/', app)
+    expect(readFileSync(new URL('AndroidManifest.xml', main), 'utf8')).not.toContain('WearBridge')
+    for (const f of ['WearBridgePlugin', 'WearBridgeService', 'WearPaths']) {
+      expect(existsSync(new URL(`java/ch/duartesantos/opengym/${f}.java`, main))).toBe(false)
+      expect(existsSync(new URL(`src/play/java/ch/duartesantos/opengym/${f}.java`, app))).toBe(true)
+    }
+    const side = readFileSync(new URL('src/sideload/java/ch/duartesantos/opengym/FlavorPlugins.java', app), 'utf8')
+    expect(side).not.toContain('Wear')
+  })
 })

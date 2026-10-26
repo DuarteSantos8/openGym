@@ -1,7 +1,9 @@
 // Starts the Wear OS link on the Android app: registers WearBridgePlugin's listeners and hands the
 // decisions to lib/wear-link.js. Everything here is wiring; what is decided is in lib/ and tested
-// there. The web build and iOS never get past the first line (MOBILE is a build-time flag).
+// there. The web build and iOS never get past the first line (MOBILE is a build-time flag), and
+// neither does the sideloaded APK: the watch link is in the Play build only.
 import { MOBILE, isAndroid, onAppActive } from './lib/mobile.js'
+import { hasWatchLink } from './lib/channel.js'
 import { createWearLink } from './lib/wear-link.js'
 import { t, exerciseNameFor } from './lib/i18n.js'
 import { EXIDX } from './lib/exercises.js'
@@ -45,7 +47,8 @@ export async function initWearLink() {
   if (!MOBILE || started) return
   started = true
   try {
-    if (!(await isAndroid())) return
+    // Android, and the build that carries Play services (the sideloaded APK has no watch link)
+    if (!(await isAndroid()) || !(await hasWatchLink())) return
     const { registerPlugin } = await import('@capacitor/core')
     // Wrapped in an object: a Capacitor plugin proxy answers `then`, so a promise resolved with
     // the bare proxy never settles (see lib/rest-alert.js).

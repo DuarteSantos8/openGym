@@ -2610,4 +2610,12 @@ export default {
   'Everything but dumbbells': 'Allt utom hantlar',
   'None, so dumbbell lifts stay hidden.': 'Inga, så hantelövningar förblir dolda.',
   'openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last year. Older workouts stay as they are.': 'openGym läser bara medan appen är öppen: puls för pass från det senaste dygnet, vägningar från det senaste året. Äldre pass förblir som de är.',
+  // --- Wear OS companion ---
+  'Workout from your watch saved: {0}': 'Passet från klockan sparades: {0}',
+  'Your watch has a workout': 'Din klocka har ett pass',
+  'You have a workout going on this phone. The one from your watch ({0}) has not been added yet.': 'Du har ett pass igång på den här telefonen. Det från din klocka ({0}) har inte lagts till än.',
+  'Save it as a separate workout': 'Spara det som ett eget pass',
+  'Decide later': 'Bestäm senare',
+  'Discard the watch workout': 'Släng passet från klockan',
+  'Update openGym on this phone to read the workout from your watch.': 'Uppdatera openGym på den här telefonen för att läsa passet från din klocka.',
 }
