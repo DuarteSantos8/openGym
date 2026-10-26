@@ -1,3 +1,4 @@
+import { legacyEntriesOf } from './prescription/index.js'
 // How long each exercise of a workout took, from the times its sets were ticked (`at`, stamped
 // for the session's end, lib/finish-workout.js). The time up to each tick goes to that set's
 // exercise: from the workout's start to the first tick, then from tick to tick, whatever exercise
@@ -7,7 +8,7 @@
 // began. A pause longer than the forgotten-session gap is a break, not the next exercise's; a tick
 // before the start or long past the end (the log caught up later, a workout logged into the past)
 // is left out. A workout with no tick times (imported, or logged before they were kept) has none.
-import { FORGOTTEN_GAP_MS } from './finish-workout.js'
+import { FORGOTTEN_GAP_MS } from './session-end.js'
 import { hasCompletedWork, isSideSet } from './workout-model.js'
 
 // A ticked row's own length, as sessionEnd reads it.
@@ -20,11 +21,11 @@ function rowLengthMs(set) {
 /** Each entry's time in ms, by its index (`undefined` for an entry with none); [] when none has. */
 export function entryTimes(w, gap = FORGOTTEN_GAP_MS) {
   const start = Number(w?.start)
-  if (!Number.isFinite(start) || !Array.isArray(w?.entries)) return []
+  if (!Number.isFinite(start)) return []
   const end = Number(w.end)
   const last = Number.isFinite(end) ? end + gap : Infinity
   const ticks = []
-  w.entries.forEach((e, idx) => (e?.sets || []).forEach(s => {
+  legacyEntriesOf(w).forEach((e, idx) => (e?.sets || []).forEach(s => {
     if (hasCompletedWork(s) && Number.isFinite(s.at) && s.at >= start && s.at <= last) ticks.push({ idx, at: s.at, len: rowLengthMs(s) })
   }))
   ticks.sort((a, b) => a.at - b.at)
@@ -55,7 +56,7 @@ export function exerciseTimeRows(workouts, since = 0) {
     const seen = new Set()
     times.forEach((ms, i) => {
       if (!(ms > 0)) return
-      const id = w.entries[i].id
+      const id = legacyEntriesOf(w)[i].id
       const row = by.get(id) || by.set(id, { id, sessions: 0, total: 0 }).get(id)
       if (!seen.has(id)) { seen.add(id); row.sessions++ }
       row.total += ms

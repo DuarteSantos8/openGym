@@ -1,3 +1,4 @@
+import { occurrenceFor } from '../lib/session-start.js'
 // The app tour and its tutorials: coach marks on the real screens (lib/tour.js has the steps and
 // the record). Its own chunk, loaded by App only while the tour or its question is open, so a
 // normal start pays nothing for it.
@@ -158,8 +159,8 @@ const profileOf = S => ({
 const sampleRoutine = S => ({
   id: SAMPLE_ROUTINE_ID, name: t('Practice run'), emoji: 'barbell',
   ex: [
-    { id: '0025', sets: 3, reps: 8, weight: S.unit === 'lb' ? 45 : 20 },
-    { id: '0043', sets: 3, reps: 8, weight: S.unit === 'lb' ? 95 : 40 },
+    occurrenceFor('0025', { sets: 3, reps: 8, weight: S.unit === 'lb' ? 45 : 20 }, { id: 'tour-bench', unit: S.unit, routineId: SAMPLE_ROUTINE_ID }),
+    occurrenceFor('0043', { sets: 3, reps: 8, weight: S.unit === 'lb' ? 95 : 40 }, { id: 'tour-squat', unit: S.unit, routineId: SAMPLE_ROUTINE_ID }),
   ],
 })
 // The data tutorial's pretend workout (today, so it heads History) and a weigh-in to go with it.
@@ -189,7 +190,7 @@ export function startPractice() {
   })
   beginWorkout([SAMPLE_ROUTINE_ID], null)
   const S = useStore.getState().S
-  if (S.active) useStore.getState().update(s => { if (s.active) s.active.tour = true })
+  if (useStore.getState().A) useStore.getState().updateActive(a => { a.tour = true })
 }
 export function endPractice() {
   if (!useStore.getState().tourSandbox) return
@@ -350,7 +351,7 @@ function Run({ at, flow = 'tour' }) {
 
   // What the stops' rules read (lib/tour.js until / lost / skip).
   const ctxNow = () => ({
-    S: useStore.getState().S, path: pathRef.current, sheets: useUI.getState().sheets.length,
+    S: { ...useStore.getState().S, active: useStore.getState().A }, path: pathRef.current, sheets: useUI.getState().sheets.length,
     made: madeRef.current, entry: entryRef.current, has: name => !!findAnchor(name),
   })
 

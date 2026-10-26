@@ -15,9 +15,8 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 vi.mock('../sheets.jsx', async () => {
   const { useStore } = await import('../store/useStore.js')
   return {
-    beginWorkout: vi.fn(ids => useStore.getState().update(s => {
-      s.active = { id: 'run-1', d: '2026-10-26', start: Date.now(), routineIds: ids, name: 'Practice run', cur: 0, entries: [] }
-    })),
+    beginWorkout: vi.fn(ids => useStore.getState().setActive( { id: 'run-1', d: '2026-10-26', start: Date.now(), routineIds: ids, name: 'Practice run', cur: 0, entries: [] }
+    )),
   }
 })
 
@@ -336,7 +335,7 @@ describe('the practice workout', () => {
     expect(beginWorkout).toHaveBeenCalledWith([SAMPLE_ROUTINE_ID], null)
     const st = useStore.getState()
     expect(st.tourSandbox).toBe(true)
-    expect(st.S.active.tour).toBe(true)
+    expect(st.A.tour).toBe(true)
     expect(st.S.routines.map(r => r.id)).toEqual(['mine', SAMPLE_ROUTINE_ID])
     expect(localStorage.getItem('gym_state_v1')).toBe(saved)
     // Back to the Library: the sample is thrown away
@@ -353,7 +352,7 @@ describe('the practice workout', () => {
     expect(step()).not.toBe('tick')
     await click(document.querySelector('.tour-skip'))
     expect(useStore.getState().tourSandbox).toBe(false)
-    expect(useStore.getState().S.active).toBeFalsy()
+    expect(useStore.getState().A).toBeFalsy()
     expect(where).toBe('/home')
   })
   it('the practice is over before the way to Stats, on Home', async () => {

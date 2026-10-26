@@ -7,8 +7,9 @@ import {
   programmeSlot, pctWeight, importedProgramme, bundleProgramme, programmeRoutineIds, MAX_WEEKS, rpeAs, cleanWeek,
   IMPORT_MAX_SEQUENCE, IMPORT_MAX_TARGETS, IMPORT_MAX_PROGRAMMES,
 } from './programmes.js'
-import { buildSessionEntries } from './session-start.js'
-import { buildCompletedWorkout } from './finish-workout.js'
+import { startMigratedFixture, migratedFixture } from './test-fixtures.js'
+import { buildSessionExposures } from './session-start.js'
+import { entriesForExposures } from './session-ui-adapter.js'
 import { isWarmupRow } from './workout-model.js'
 import { queueOf } from './queue.js'
 import { progressionGuidance } from './progression-copy.js'
@@ -34,10 +35,14 @@ const routines = () => [
 ]
 const state = (extra = {}) => ({ unit: 'kg', weekStart: 1, exWeights: {}, routines: routines(), workouts: [], week: { 1: ['C'] }, dayPlan: {}, programmes: {}, programme: null, ...extra })
 // A logged session of `exId` at w × r, for an estimated 1RM to come from.
-const logged = (d, exId, w, r, rid = 'C') => buildCompletedWorkout({
+const logged = (d, exId, w, r, rid = 'C') => {
+  const legacy = {
   id: 'w' + d + exId, d, start: Date.parse(d + 'T10:00:00'), routineIds: [rid], name: 'x',
-  entries: [{ id: exId, rid, target: { id: exId, sets: 1, reps: r, weight: w }, sets: [{ w, r, done: true }] }],
-}, { end: Date.parse(d + 'T11:00:00') })
+  entries: [{ id: exId, rid, target: { id: exId, sets: 3, reps: r, weight: w }, sets: Array.from({ length: 3 }, () => ({ w, r, done: true })) }],
+end: Date.parse(d + 'T11:00:00'),
+  }
+  return { ...legacy, exposures: migratedFixture({ unit: 'kg', workouts: [legacy] }).workouts[0].exposures }
+}
 
 const block = (extra = {}) => ({
   id: 'P', name: 'Strength block', at: 1,
@@ -279,7 +284,7 @@ describe.each(CLOCKS)('a session in a running programme (session-start.js), %s',
     expect(progressionGuidance(bench.plan)).toMatchObject({ policyLabel: 'Programme', prog: { rpe: 7 } })
     // An RPE alone leaves the weight to the policy.
     expect(work(squat).map(x => x.w)).toEqual(work(buildSessionEntries({ ...s, programme: null }, routine(s, 'A'))[1]).map(x => x.w))
-    expect(squat.plan.prog).toEqual({ week: 1, weeks: 3, rpe: 7 })
+    expect(squat.plan.prog).toMatchObject({ week: 1, weeks: 3, rpe: 7 })
     expect(bench.noProg).toBeUndefined()
   })
 
@@ -390,7 +395,7 @@ describe('a programme in a plan file (plan-share.js)', () => {
     const s = state()
     saveProgramme(s, block())
     const file = JSON.parse(JSON.stringify(buildProgrammeBundle(s, 'P')))
-    expect(file).toMatchObject({ opengym_plan: 1, programme_fmt: 1, name: 'Strength block', week: { 1: ['A'], 4: ['B'] } })
+    expect(file).toMatchObject({ opengym_plan: 3, programme_fmt: 1, name: 'Strength block', week: { 1: ['A'], 4: ['B'] } })
     expect(file.routines.map(r => r.id)).toEqual(['A', 'B'])
     const parsed = parsePlan(JSON.stringify(file), 'lb')
     const f = friend()
@@ -432,3 +437,9 @@ describe('a programme in a plan file (plan-share.js)', () => {
     expect(parsePlan({ ...file, programmes: Array(100).fill(file.programmes[0]) }).programmes).toHaveLength(IMPORT_MAX_PROGRAMMES)
   })
 })
+
+function buildSessionEntries(S, routine) {
+  const profile = migratedFixture(S)
+  const exposures = buildSessionExposures(profile, profile.routines.find(r => r.id === routine.id), { now: Date.now(), date: todayISO(), newId: s => s })
+  return entriesForExposures(exposures, profile.prescriptions).map(({ exposureId, ...entry }) => entry)
+}

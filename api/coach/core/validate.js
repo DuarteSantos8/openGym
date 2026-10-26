@@ -27,23 +27,15 @@ const OFF_EQUIPMENT = (where, id) => `${where} "${id}" needs equipment the user 
 import { glyphStr } from './glyphs.js';
 
 // The closed list (FR-23 / C3). Adding a member here is a deliberate act with an apply
-// implementation on the client to match; there is no default case anywhere.
-export const CHANGE_TYPES = [
-  'add-exercise', 'remove-exercise', 'swap-exercise',
-  'sets', 'reps', 'repsMin', 'repsMax', 'sec', 'cardio',
-  'reorder', 'superset',
-  'routine-prog', 'exercise-prog', 'inc',
-  'add-routine', 'remove-routine', 'rename-routine',
-  'week',
-  // v1.4.5: how an exercise warms up, and a multi-week programme (frontend lib/programmes.js).
-  'warmup', 'programme'
-];
+// implementation on the client to match; there is no default case anywhere. Lives in
+// vocabulary.js (a leaf module) so it can be drift-tested against the frontend's own copy without
+// pulling frontend/ into the API's Docker build context — see that file's header.
+import { CHANGE_TYPES, POLICIES, MODES } from './vocabulary.js';
+export { CHANGE_TYPES };
 export const WARMUP_MODES = ['auto', 'own', 'none'];
 const MAX_PROGRAMME_WEEKS = 16;
 const MAX_WEEK_TARGETS = 24;
 const halfStep = v => Math.round(v * 2) / 2;
-const POLICIES = ['off', 'linear', 'greyskull', 'double', 'triple', 'time'];
-const MODES = ['reps', 'time', 'cardio'];
 const MAX_INC = 50;
 // A prescription, not a world record. Anything past this is a model slip or a hostile answer,
 // and either way it reaches the plan, the progression engine and a printed line reading "∞ kg".

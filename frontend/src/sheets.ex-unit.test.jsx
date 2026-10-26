@@ -7,6 +7,8 @@ import { createRoot } from 'react-dom/client'
 import { useStore, DEF } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { exConfigSheet, barWeightSheet, dumbbellInventorySheet } from './sheets.jsx'
+import { occurrenceFor } from './lib/session-start.js'
+import { editPlan, planPhase } from './lib/prescription/index.js'
 import { withExUnit } from './lib/ex-unit.js'
 import { bindUI } from './components/ui.jsx'
 import { EXIDX } from './lib/exercises.js'
@@ -25,7 +27,7 @@ function mountTopSheet() {
 }
 const S = () => useStore.getState().S
 const button = (host, text) => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === text)
-const stepper = (host, label) => [...host.querySelectorAll('.stp-w')].find(w => w.querySelector('.stp-l')?.textContent === label)
+const stepper = (host, label) => label.startsWith('Weight (') ? host.querySelector('[data-field="Starting load"] .stp') : [...host.querySelectorAll('.stp-w')].find(w => w.querySelector('.stp-l')?.textContent === label)
 const valueOf = (host, label) => stepper(host, label)?.querySelector('input').value
 const tap = (host, label, dir) => act(() => stepper(host, label).querySelectorAll('button')[dir > 0 ? 1 : 0].click())
 const pickUnit = (host, label) => {
@@ -34,7 +36,8 @@ const pickUnit = (host, label) => {
   act(() => [...picker.querySelectorAll('button.lrow')].find(el => el.querySelector('.lrow-t')?.textContent === label).click())
 }
 
-const slot = { sets: 3, reps: 5, mode: 'reps', weight: 61.235 }
+const slot = occurrenceFor(BENCH, { sets: 3, reps: 5, weight: 61.235 }, { id: 'slot', unit: 'kg' })
+const withWeight = w => ({ ...slot, rule: editPlan(slot.rule, { load: { mode: 'absolute', value: w, unit: 'kg' } }) })
 
 describe('the exercise’s weight unit', () => {
   beforeEach(() => {
@@ -57,7 +60,7 @@ describe('the exercise’s weight unit', () => {
     const host = mountTopSheet()
     expect(valueOf(host, 'Weight (lb)')).toBe('135')
     act(() => button(host, 'Save').click())
-    expect(onSave.mock.calls[0][0].weight).toBe(61.235)
+    expect(planPhase(onSave.mock.calls[0][0].rule).parameters.load.value).toBe(61.235)
   })
 
   it('a step in lb is saved as the exact kg', () => {
@@ -65,17 +68,16 @@ describe('the exercise’s weight unit', () => {
     const onSave = vi.fn()
     act(() => exConfigSheet(EXIDX[BENCH], slot, onSave))
     const host = mountTopSheet()
-    // The weight stepper on this sheet steps 2.5 in the unit on screen.
-    tap(host, 'Weight (lb)', 1)
+    // The engine's default load step is 5 lb.
     tap(host, 'Weight (lb)', 1)
     expect(valueOf(host, 'Weight (lb)')).toBe('140')
     act(() => button(host, 'Save').click())
-    expect(onSave.mock.calls[0][0].weight).toBe(63.5029)
+    expect(planPhase(onSave.mock.calls[0][0].rule).parameters.load.value).toBe(63.5029)
   })
 
   it('the row pins the exercise, stamped, and the open sheet converts what it holds', () => {
     const onSave = vi.fn()
-    act(() => exConfigSheet(EXIDX[BENCH], { ...slot, weight: 20.4117 }, onSave))
+    act(() => exConfigSheet(EXIDX[BENCH], withWeight(20.4117), onSave))
     const host = mountTopSheet()
     // Stored to four places, shown clean in the profile's own unit.
     expect(valueOf(host, 'Weight (kg)')).toBe('20.41')
@@ -88,7 +90,7 @@ describe('the exercise’s weight unit', () => {
     pickUnit(host, 'lb')
     expect(valueOf(host, 'Weight (lb)')).toBe('45')
     act(() => button(host, 'Save').click())
-    expect(onSave.mock.calls[0][0].weight).toBe(20.4117)
+    expect(planPhase(onSave.mock.calls[0][0].rule).parameters.load.value).toBe(20.4117)
   })
 
   it('the bar of a pinned barbell is the 45 lb one, and one of its own is stored in kg', () => {
@@ -118,24 +120,24 @@ describe('the exercise’s weight unit', () => {
   it('after unpinning, the field shows 20.41 and an untouched save keeps the exact 20.4117', () => {
     useStore.setState({ S: { ...S(), exUnit: withExUnit({}, BENCH, null, 2) } })
     const onSave = vi.fn()
-    act(() => exConfigSheet(EXIDX[BENCH], { ...slot, weight: 20.4117 }, onSave))
+    act(() => exConfigSheet(EXIDX[BENCH], withWeight(20.4117), onSave))
     const host = mountTopSheet()
     expect(valueOf(host, 'Weight (kg)')).toBe('20.41')
     act(() => button(host, 'Save').click())
-    expect(onSave.mock.calls[0][0].weight).toBe(20.4117)
+    expect(planPhase(onSave.mock.calls[0][0].rule).parameters.load.value).toBe(20.4117)
   })
 
   it('after a CSV round trip (20.41 kg), a lb-pinned slot shows 45, keeps 20.41 untouched and steps from 45', () => {
     useStore.setState({ S: { ...S(), exUnit: withExUnit({}, BENCH, 'lb', 1) } })
     const onSave = vi.fn()
-    act(() => exConfigSheet(EXIDX[BENCH], { ...slot, weight: 20.41 }, onSave))
+    act(() => exConfigSheet(EXIDX[BENCH], withWeight(20.41), onSave))
     const host = mountTopSheet()
     expect(valueOf(host, 'Weight (lb)')).toBe('45')
     act(() => button(host, 'Save').click())
-    expect(onSave.mock.calls[0][0].weight).toBe(20.41)
-    act(() => exConfigSheet(EXIDX[BENCH], { ...slot, weight: 20.41 }, onSave))
+    expect(planPhase(onSave.mock.calls[0][0].rule).parameters.load.value).toBe(20.41)
+    act(() => exConfigSheet(EXIDX[BENCH], withWeight(20.41), onSave))
     const again = mountTopSheet()
     tap(again, 'Weight (lb)', 1)
-    expect(valueOf(again, 'Weight (lb)')).toBe('47.5')
+    expect(valueOf(again, 'Weight (lb)')).toBe('50')
   })
 })

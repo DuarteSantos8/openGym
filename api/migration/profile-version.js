@@ -2,6 +2,9 @@
  * Dependency-free on purpose: the frontend checks every copy at startup with this and
  * loads the migration itself (and the exercise catalogue it needs) only when there is one to run. */
 export const ENGINE_SCHEMA = 2;
+// The request header a client announces its schema with (frontend lib/api.js); the server reads
+// it (engineGate) and must allow it in its CORS preflight, so the name lives in one place.
+export const ENGINE_SCHEMA_HEADER = 'X-OpenGym-Engine-Schema';
 // The meaning of the records inside schema 2 (spec 16): 1 is programmes as engine definitions and
 // runs (programme-upgrade.js). A profile without the marker is 0; a capable client sends its own.
 export const ENGINE_CONTRACT = 1;

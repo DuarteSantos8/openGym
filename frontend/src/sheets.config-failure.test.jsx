@@ -6,6 +6,8 @@ import { EXDB } from './lib/exercises.js'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { exConfigSheet, setsLine } from './sheets.jsx'
+import { migratedFixture } from './lib/test-fixtures.js'
+import { planOptions } from './lib/prescription/index.js'
 import { bindUI } from './components/ui.jsx'
 
 // Sets to failure: "Last set to failure" on the exercise's settings, written only when on.
@@ -21,7 +23,7 @@ function render(sheet) {
   return host
 }
 const open = (cfg, onSave) => {
-  exConfigSheet(ex, { sets: 3, reps: 5, weight: 40, mode: 'reps', ...cfg }, onSave)
+  exConfigSheet(ex, migratedFixture({ unit: 'kg', routines: [{ id: 'r', ex: [{ id: ex.id, sets: 3, reps: 5, weight: 40, mode: 'reps', ...cfg }] }] }).routines[0].ex[0], onSave)
   return render(useUI.getState().sheets.at(-1))
 }
 const rowNamed = (host, title) => [...host.querySelectorAll('.lrow')].find(r => r.querySelector('.lrow-t')?.textContent === title)
@@ -57,12 +59,12 @@ describe('exercise settings: last set to failure', () => {
   it('comes on with Greyskull, whose last set is an AMRAP, unless it was already decided', () => {
     const onSave = vi.fn()
     const host = open({}, onSave)
-    act(() => rowNamed(host, 'Rule').click())
+    act(() => rowNamed(host, 'Progression').click())
     const picker = render(useUI.getState().sheets.at(-1))
     act(() => [...picker.querySelectorAll('button.lrow')].find(el => el.querySelector('.lrow-t')?.textContent === 'Greyskull LP').click())
     expect(rowNamed(host, 'Last set to failure').querySelector('[role="switch"]').getAttribute('aria-checked')).toBe('true')
     save(host)
-    expect(onSave.mock.calls[0][0]).toMatchObject({ prog: 'greyskull', lastToFailure: true })
+    expect(onSave.mock.calls[0][0]).toMatchObject({ rule: { preset: 'greyskull' }, lastToFailure: true })
   })
 
   it('is not offered on a pyramid, which has its own Max set', () => {

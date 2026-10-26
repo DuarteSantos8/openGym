@@ -1809,7 +1809,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .cfgrow{gap:8px}
 .cfgrow>div{flex:1;min-width:0}
 .cfgrow .stp button{width:30px}
-.cfgrow .stp-l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cfgrow .stp-l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
 /* The double-progression row holds four (Step / Reps from / Reps up to / Deload 1RM). Each stepper
    already spends 64px on its two buttons, so four abreast left the input 1px at 320 and 13px at
    368 — "1.25" showed as "1.2", "90" as "9(". Below 480px the row wraps into two pairs instead;
@@ -2989,6 +2989,15 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .intg-problem{color:var(--red-ink);font-size:var(--fs-footnote);line-height:var(--lh-small);padding-inline:4px}
 .intg-field .field[aria-invalid="true"]{box-shadow:inset 0 0 0 1.5px var(--red-ink)}
 @media (max-width:360px){.intg-open{gap:10px;padding-inline:12px}.intg-act{margin-inline-end:10px;padding-inline:8px}}
+
+/* --- exercise config: disclosure rows --- */
+.disc-body{padding:4px 16px 14px}
+.disc.open .lrow-c{transform:rotate(90deg)}
+
+/* range toggle: small button at the end of a from/to input row */
+.cfgrow>.rng-btn{flex:none;align-self:flex-end;width:36px;height:36px}
+.rng-btn[aria-pressed="true"]{color:var(--acc)}
+.cfgrow>.unit-btn{flex:none;align-self:flex-end;width:auto;min-width:36px;height:36px;padding:0 12px;border-radius:18px;font-size:13px;white-space:nowrap}
 
 /* ----------------------------------------------------------- RTL (Arabic) -- */
 /* Directional icons flip: back chevrons point right, trailing chevrons point left. */

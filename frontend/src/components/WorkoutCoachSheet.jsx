@@ -45,7 +45,9 @@ export function adaptTitle(c) {
 
 /** The proposal as tickable cards: in the sheet during the workout, and in the Coach's chat. */
 export function AdaptProposal({ p, onDone }) {
-  const S = useStore(s => s.S)
+  const profile = useStore(s => s.S)
+  const A = useStore(s => s.A)
+  const S = useMemo(() => ({ ...profile, active: A }), [profile, A])
   const update = useStore(s => s.update)
   const toast = useUI(s => s.toast)
   const live = adaptFor(S, p)
@@ -63,12 +65,17 @@ export function AdaptProposal({ p, onDone }) {
     const rest = ui.timer
     const owner = rest?.forIdx != null ? S.active?.entries?.[rest.forIdx]?.id : null
     let applied = []
+    let active = A
     update(s => {
-      applied = applyAdapt(s, p, ids).applied
+      const view = { ...s, active: JSON.parse(JSON.stringify(A)) }
+      applied = applyAdapt(view, p, ids).applied
+      s.prescriptions = view.prescriptions
+      active = view.active
       if (applied.length) appendLog(s, adaptLogEntry(p, applied))
     })
+    useStore.getState().setActive(active)
     if (owner) {
-      const at = (useStore.getState().S.active?.entries || []).findIndex(e => e.id === owner)
+      const at = (useStore.getState().A?.entries || []).findIndex(e => e.id === owner)
       if (at >= 0 && useUI.getState().timer) useUI.setState({ timer: { ...useUI.getState().timer, forIdx: at } })
     }
     resolvePending({ accepted: applied, rejected: marked.filter(c => !applied.includes(c.id)).map(c => c.id) }).catch(() => {})
@@ -108,7 +115,9 @@ export function AdaptProposal({ p, onDone }) {
 
 /** The sheet: the question, the wait, the answer. */
 export default function WorkoutCoachSheet({ entryIdx, close }) {
-  const S = useStore(s => s.S)
+  const profile = useStore(s => s.S)
+  const A = useStore(s => s.A)
+  const S = useMemo(() => ({ ...profile, active: A }), [profile, A])
   const entry = S.active?.entries?.[entryIdx]
   const { job, pending, last, lastError, refresh } = useCoachStatus(true)
   const [reason, setReason] = useState(null)

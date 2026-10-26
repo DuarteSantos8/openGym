@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { autoRungs, rungRows, warmupSource, warmupBlock, isCompoundEx, ownRowsFromSession, cleanOwnRow, ownRowsOf, withWarmupBlock, warmupAutoOf } from './warmup-ramp.js'
 import { snapDown, rungWeight } from './warmup-snap.js'
 import { liveReramp, rerampWarmups } from './history.js'
-import { buildPlannedEntry, buildSessionEntries, buildSessionEntry } from './session-start.js'
+import { startMigratedFixture } from './test-fixtures.js'
 import { isWarmupRow } from './workout-model.js'
 import { dropGrid } from './plates.js'
 
@@ -189,3 +189,11 @@ describe('saving today’s warm-ups as your own', () => {
     expect(warmupBlock(state(), cfg(BENCH, { weight: 0, warmup: 'own', warmupRows: [{ wp: 50, r: 5 }] }), [{ w: 0, r: 5 }], { grid: 2.5 })).toEqual([])
   })
 })
+
+function buildPlannedEntry(S, cfg, routine, { noProg = false } = {}) {
+  return startMigratedFixture(S, { ...(routine || {}), excludeFromProgression: noProg || routine?.excludeFromProgression, ex: [cfg] }).entries[0]
+}
+function buildSessionEntries(S, routine) { return startMigratedFixture(S, routine).entries }
+function buildSessionEntry(S, id, cfg, routine, slot) {
+  return buildPlannedEntry(S, { ...cfg, id }, routine, { noProg: slot?.noProg || routine?.excludeFromProgression })
+}

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
-import { todayISO, exerciseNameText } from '../lib/format.js'
+import { todayISO, exerciseNameText, uid } from '../lib/format.js'
 import { EXIDX } from '../lib/exercises.js'
 import { nav, navToWorkout } from '../lib/nav.js'
 import { platformNow } from '../lib/platform-now.js'
@@ -14,7 +14,8 @@ import { nfcSupport, writeTag, cancelWrite, onTagLink } from '../lib/nfc.js'
 import { autoGymHere } from '../lib/gym-auto.js'
 import { freestyleConfig, pickedExerciseConfig, supersetUnits } from '../lib/history.js'
 import { insertionIndexAfterCurrentUnit } from '../lib/supersetFlow.js'
-import { buildSessionEntry, builtOutOfProgression } from '../lib/session-start.js'
+import { buildSessionExposures, occurrenceFor } from '../lib/session-start.js'
+import { entriesForExposures } from '../lib/session-ui-adapter.js'
 import { joinSessionNoProg } from '../lib/session-noprog.js'
 import { sessionHistory } from '../lib/backfill.js'
 import { startFlow, confirmSheet, exerciseDetailSheet } from '../sheets.jsx'
@@ -115,17 +116,22 @@ export const nfcExerciseSheet = ex => ui().openSheet(close => <ExerciseSticker e
 export function addExerciseToSession(id) {
   let added = -1
   useStore.getState().update(s => {
-    const A = s.active
+    const A = JSON.parse(JSON.stringify(useStore.getState().A))
     if (!A || !Array.isArray(A.entries)) return
     const curEntry = A.entries[A.cur]
     const curRid = curEntry?.rid
     const routine = curRid ? (s.routines || []).find(r => r.id === curRid) : null
-    const noProg = !!routine && builtOutOfProgression(curEntry, routine)
+    const noProg = routine?.excludeFromProgression === true || curEntry?.noProg === true
     const cfg = routine ? pickedExerciseConfig(id) : freestyleConfig(sessionHistory(s), { id, ...pickedExerciseConfig(id) })
-    const built = buildSessionEntry(s, id, cfg, routine, curEntry)
+    const occurrence = occurrenceFor(id, cfg, { id: uid(), unit: s.unit, routineId: routine?.id })
+    const exposures = buildSessionExposures(s, { id: routine?.id || A.id, ex: [occurrence] }, { now: Date.now(), newId: () => uid() })
+    const [built] = entriesForExposures(exposures, s.prescriptions)
     const at = insertionIndexAfterCurrentUnit(supersetUnits(A.entries), A.cur, A.entries.length)
     A.entries.splice(at, 0, joinSessionNoProg(A, { id, ...built, ...(curRid ? { rid: curRid, addedInSession: true } : {}), ...(noProg ? { noProg: true } : {}) }))
+    A.exposures ||= []
+    A.exposures.splice(at, 0, ...exposures)
     A.cur = at
+    useStore.getState().setActive(A)
     added = at
   })
   if (added >= 0) ui().shiftRestOwner?.(added, 1)
@@ -146,7 +152,8 @@ export function handleTagLink(url, now = Date.now()) {
   const tag = parseTagUrl(url)
   if (!tag) return false
   if (now < quietUntil || !fresh(url, now)) return true
-  const S = useStore.getState().S
+  const state = useStore.getState()
+  const S = { ...state.S, active: state.A }
   const r = routeTag(S, tag, { today: todayISO(), hasExercise: id => !!EXIDX[id] })
   // A check-in sticker at a place linked to an equipment profile switches to that gym (#808). A
   // start sticker gets there through beginWorkout, which does the same.
@@ -160,16 +167,16 @@ export function handleTagLink(url, now = Date.now()) {
       nav('/checkin')
       break
     case 'jump':
-      useStore.getState().update(s => { if (s.active?.entries?.[r.idx]) s.active.cur = r.idx })
+      useStore.getState().updateActive(a => { if (a.entries?.[r.idx]) a.cur = r.idx })
       toWorkout()
-      ui().toast(nameOf(S.active.entries[r.idx]?.id))
+      ui().toast(nameOf(useStore.getState().A.entries[r.idx]?.id))
       break
     case 'offer-add': {
       toWorkout()
       const name = nameOf(r.id)
       confirmSheet({
         title: t('Add {0}?', name), message: t('It isn’t in this workout yet.'), confirmText: t('Add to this workout'),
-        onConfirm: () => { if (useStore.getState().S.active && addExerciseToSession(r.id) >= 0) ui().toast(t('“{0}” added', name)) },
+        onConfirm: () => { if (useStore.getState().A && addExerciseToSession(r.id) >= 0) ui().toast(t('“{0}” added', name)) },
       })
       break
     }

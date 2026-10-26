@@ -18,11 +18,11 @@ let root, container
 function mount(settings = {}) {
   if (root) unmount()
   const S = { ...JSON.parse(JSON.stringify(DEF)), ...settings }
-  S.active = {
+  const A = {
     id: 'speed-test', d: '2026-09-23', start: Date.now(), routineId: null, name: 'Cardio', bw: null, cur: 0,
     entries: [{ id: BIKE, target: { sets: 1, min: 20, speed: 8 }, sets: [{ min: 20, speed: 8, done: false }] }],
   }
-  useStore.setState({ S, user: null })
+  useStore.setState({ S, A, user: null })
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
@@ -39,7 +39,7 @@ afterEach(() => { if (root) unmount() })
 const speedCell = () => container.querySelector('.setrow').querySelectorAll('.stp')[1]
 const shown = () => speedCell().querySelector('input').value
 const header = () => container.querySelector('.sethead .r-sp').textContent
-const stored = () => useStore.getState().S.active.entries[0].sets[0].speed
+const stored = () => useStore.getState().A.entries[0].sets[0].speed
 const tap = label => act(() => speedCell().querySelector(`button[aria-label="${label}"]`).click())
 function type(value) {
   const input = speedCell().querySelector('input')
@@ -88,7 +88,7 @@ describe('cardio speed in the set row', () => {
 // it holds the last time or the best set (#173).
 describe('the reference line in mph', () => {
   const past = { id: 'w0', d: '2026-09-20', start: Date.now() - 3 * 86400000, end: Date.now() - 3 * 86400000 + 1800000, name: 'Cardio',
-    entries: [{ id: BIKE, target: { mode: 'cardio', sets: 1, min: 20, speed: 16.09344 }, sets: [{ min: 20, speed: 16.09344, done: true }] }] }
+    exposures: [{ exposureId: 'x0', exerciseId: BIKE, mode: 'cardio', performance: { sets: [{ role: 'work', status: 'completed', observations: [{ metric: 'duration', value: 1200 }, { metric: 'speed', value: 16.09344 }], resistance: { kind: 'none' }, segments: [] }] } }] }
   const refText = () => container.querySelector('.refline')?.textContent || ''
 
   it('shows last time and the best set in mph for a profile in pounds', () => {

@@ -161,6 +161,22 @@ describe('startMediaPrefetch', () => {
     stop()
   })
 
+  it('prefetches canonical routines and reacts to the device-local session', async () => {
+    vi.useFakeTimers()
+    const { store, cachesApi, nav, fetchImpl, win, listeners } = setup({ S: { routines: [{ ex: [{ occurrenceId: 'o', exerciseId: bench.id }] }] } })
+    store.state.A = null
+    const stop = startMediaPrefetch(store, { win, nav, cachesApi })
+    await vi.advanceTimersByTimeAsync(PREFETCH_DELAY_MS)
+    await flush()
+    expect(fetchImpl).toHaveBeenCalledTimes(2)
+    store.state = { ...store.state, A: { entries: [{ id: other.id }] } }
+    listeners.forEach(fn => fn(store.state))
+    await vi.advanceTimersByTimeAsync(PREFETCH_DELAY_MS)
+    await flush()
+    expect(fetchImpl.mock.calls.slice(2).map(c => c[0]).sort()).toEqual([abs(gifSrc(other)), abs(imgSrc(other))].sort())
+    stop()
+  })
+
   it('does nothing without a worker in charge of the page, or on a connection that costs', async () => {
     vi.useFakeTimers()
     const a = setup({ controller: null })

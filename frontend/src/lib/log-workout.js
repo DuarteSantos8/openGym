@@ -3,7 +3,7 @@
 // server's log_workout tool, which hands it a structured description an LLM read out of what the
 // user said, and kept here, pure and beside its test, because it decides what lands in the history.
 //
-// It follows the finish sheet (sheets.jsx finishWorkout) step for step, not the CSV importer: one
+// It follows the finish sheet (sheets.jsx doFinishWorkout) step for step, not the CSV importer: one
 // session someone just did is the app's own kind of workout, so a session logged for today gets
 // its PR badges and moves the confirmed weights the way Finish does, and one logged into the past
 // is a backfill — badges held against the history around it (rebuildPrHistory), confirmed weights
@@ -11,12 +11,12 @@
 // variant ("shoulder press" is the barbell one), and the reply says which; what it does not do is
 // pick between names the catalogue spells alike or invent an exercise: those come back as a
 // problem to put to the user instead of a workout filed under the wrong lift.
-import { EXIDX, canonicalExId, betterWeight, beatsWeight, isCardio } from './exercises.js'
+import { EXIDX, canonicalExId, beatsWeight, isCardio } from './exercises.js'
 import { exerciseCandidates, importId, bpFromName } from './import-csv.js'
-import { bestWeightFor, bestWeightForEntry, workoutVolume, EFFORT } from './history.js'
-import { buildCompletedWorkout } from './finish-workout.js'
-import { withMeaning, entryDbLoad } from './dumbbells.js'
-import { isWarmupRow } from './workout-model.js'
+import { workoutVolume, EFFORT } from './history.js'
+import { exposuresWithPerformance } from './session-ui-adapter.js'
+import { recordsOf, workLoadOf } from './finish-session.js'
+import { withMeaning } from './dumbbells.js'
 import { insertChronological, backfillStart } from './backfill.js'
 import { rebuildPrHistory } from './workout-date.js'
 import { stampWorkout } from './sync-merge.js'
@@ -245,18 +245,28 @@ export function buildLoggedWorkout(S, input, { now = Date.now(), unit: fallbackU
   // the exercise without ever having seen this workout would otherwise leave its sets crediting
   // no muscle at all.
   const customs = [...(S.customEx || []), ...customEx]
-  const workout = buildCompletedWorkout(
-    { id, d: date, start, name, bw: null, routineIds: [], note, entries },
-    { end, prs: [], snapshotFor: e => { const c = customs.find(x => x?.id === e.id); return c ? exerciseMuscleSnapshot(c) : null } },
-  )
-  // finish-workout's whitelist keeps `target`, which a timed hold and a dumbbell meaning need to
-  // read back; volume as Finish stores it (warm-ups out, "each" counted per bell).
-  workout.vol = workoutVolume(workout)
+  // Nothing was prescribed, so an exposure with no prescription and out of progression, as an
+  // import's (import-csv.js mergeImport); the rows go through the workout screen's own adapter.
+  const exposures = entries.map((e, i) => {
+    const c = customs.find(x => x?.id === e.id)
+    const snapshot = c ? exerciseMuscleSnapshot(c) : null
+    return {
+      exposureId: importId('mx', id + ':' + i), exerciseId: e.id, exerciseNameSnapshot: EXIDX[e.id]?.n || c?.n || e.id,
+      mode: e.target.mode === 'time' ? 'time' : 'reps', trackId: 'import:' + e.id, excludedFromProgression: true,
+      ...(snapshot ? { muscleSnapshot: snapshot } : {}),
+    }
+  })
+  const workout = {
+    id, d: date, start, end, status: 'completed', name, bw: null, routineIds: [], ...(note ? { note } : {}),
+    exposures: exposuresWithPerformance(exposures, entries.map((e, i) => ({ ...e, exposureId: exposures[i].exposureId })), profileUnit),
+  }
+  // Volume as Finish stores it (warm-ups out, "each" counted per bell).
+  workout.vol = workoutVolume(S, workout)
   return { workout, past, customEx, resolved }
 }
 
 const sameEntries = (a, b) =>
-  JSON.stringify((a || []).map(e => [e.id, e.sets])) === JSON.stringify((b || []).map(e => [e.id, e.sets]))
+  JSON.stringify((a || []).map(x => [x.exerciseId, x.performance?.sets])) === JSON.stringify((b || []).map(x => [x.exerciseId, x.performance?.sets]))
 
 /**
  * The workout already in `S` this one repeats: the same request (its id) first, else the same day
@@ -267,7 +277,7 @@ export function findDuplicate(S, workout) {
   const list = (S.workouts || []).filter(Boolean)
   const own = list.find(w => w.id === workout.id)
   if (own) return { workout: own, sameRequest: true }
-  const same = list.find(w => w.d === workout.d && sameEntries(w.entries, workout.entries))
+  const same = list.find(w => w.d === workout.d && sameEntries(w.exposures, workout.exposures))
   return same ? { workout: same, sameRequest: false } : null
 }
 
@@ -285,7 +295,7 @@ export function appendLoggedWorkout(S, built, { now = Date.now(), allowDuplicate
   const w = JSON.parse(JSON.stringify(built.workout))
   S.customEx = Array.isArray(S.customEx) ? S.customEx : []
   const known = new Set(S.customEx.map(c => c?.id))
-  for (const c of built.customEx || []) if (!known.has(c.id) && w.entries.some(e => e.id === c.id)) S.customEx.push({ ...c })
+  for (const c of built.customEx || []) if (!known.has(c.id) && w.exposures.some(x => x.exerciseId === c.id)) S.customEx.push({ ...c })
   S.workouts = Array.isArray(S.workouts) ? S.workouts : []
   // Filed before a session already logged — an earlier day, or this morning when tonight's is
   // already in — it is a backfill: a badge it leads with, and one it falsifies on a later session
@@ -293,19 +303,15 @@ export function appendLoggedWorkout(S, built, { now = Date.now(), allowDuplicate
   const later = S.workouts.some(x => x && (x.d > w.d || (x.d === w.d && (Number(x.start) || 0) > w.start)))
   if (built.past || later) {
     stampWorkout(w, now)
-    const touched = [...new Set(w.entries.map(e => e.id))]
+    const touched = [...new Set(w.exposures.map(x => x.exerciseId))]
     S.workouts = rebuildPrHistory(insertChronological(S.workouts, w), touched, w)
   } else {
-    w.prs = []
-    w.entries.forEach(e => {
-      const loads = e.sets.filter(s => s.done && !isWarmupRow(s)).map(s => s.w).filter(x => x > 0)
-      const mx = loads.length ? loads.reduce((a, b) => betterWeight(e.id, a, b)) : 0
-      if (beatsWeight(e.id, mx, bestWeightFor(S, e.id, entryDbLoad(e)))) w.prs.push(e.id)
-    })
+    const { prs } = recordsOf(S, w)
+    w.prs = prs
     S.exWeights = S.exWeights && typeof S.exWeights === 'object' ? S.exWeights : {}
-    w.entries.forEach(e => {
-      const mx = bestWeightForEntry(e)
-      if (mx > 0 && beatsWeight(e.id, mx, (S.exWeights[e.id] || {}).w || 0)) S.exWeights[e.id] = { w: mx, d: w.d }
+    w.exposures.forEach(x => {
+      const mx = workLoadOf(x)
+      if (mx > 0 && beatsWeight(x.exerciseId, mx, (S.exWeights[x.exerciseId] || {}).w || 0)) S.exWeights[x.exerciseId] = { w: mx, d: w.d }
     })
     S.workouts = insertChronological(S.workouts, w)
   }

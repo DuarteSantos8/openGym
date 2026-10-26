@@ -521,12 +521,13 @@ function keepKeys(old, x, place) {
 // (the sets of an exercise), by position only when the lists are as long as each other. Anything
 // else (a set taken out of the middle) is not guessed at.
 function pairItems(a, b) {
-  const ids = xs => xs.map(x => (isMap(x) ? x.id : undefined));
+  const key = x => (isMap(x) ? x.occurrenceId ?? x.id : undefined);
+  const ids = xs => xs.map(key);
   const ia = ids(a), ib = ids(b);
   const unique = xs => xs.every(k => k != null) && new Set(xs).size === xs.length;
   if (unique(ia) && unique(ib)) {
-    const by = new Map(a.map(x => [x.id, x]));
-    return b.filter(x => by.has(x.id)).map(x => [by.get(x.id), x]);
+    const by = new Map(a.map(x => [key(x), x]));
+    return b.filter(x => by.has(key(x))).map(x => [by.get(key(x)), x]);
   }
   if (ia.every(k => k != null) && ib.every(k => k != null) && a.length * b.length <= 40000) {
     const L = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));

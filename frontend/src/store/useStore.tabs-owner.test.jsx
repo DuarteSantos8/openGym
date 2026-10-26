@@ -10,7 +10,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const h = vi.hoisted(() => ({ api: null, toasts: [] }))
-vi.mock('../lib/api.js', () => ({ api: (...a) => h.api(...a), setRemoteAuth: () => {} }))
+vi.mock('../lib/api.js', () => ({ setAccessHeaders: vi.fn(), api: (...a) => h.api(...a), setRemoteAuth: () => {} }))
 vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast: m => h.toasts.push(m), stopRest: () => {}, abandonWork: () => {} }) } }))
 
 const clone = v => JSON.parse(JSON.stringify(v))
@@ -214,7 +214,7 @@ describe('a second tab while the first one changes owner', () => {
 // until that tab saved something, and one mid-workout jumped to the sign-in screen with its
 // workout gone from view (it had gone into the account) and nothing said.
 describe('a guest tab while the other tab signs in or creates a profile', () => {
-  const running = () => ({ id: 'act1', start: Date.now() - 600000, entries: [{ id: 'bench', sets: [{ w: 60, r: 5, done: true }] }] })
+  const running = () => ({ id: 'act1', start: Date.now() - 600000, exposures: [], entries: [{ id: 'bench', sets: [{ w: 60, r: 5, done: true }] }] })
   const guestCopy = active => ({ ...clone(DEF), _ts: Date.now(), workouts: [w('gW1', '2026-09-04')], active })
   // The tab shows the workout (HashRouter). RC verify 2026-10-07: the toast also came up in a tab
   // on another screen that never showed it, and told the workout tab to go elsewhere.
@@ -228,19 +228,19 @@ describe('a guest tab while the other tab signs in or creates a profile', () => 
     localStorage.setItem('gym_guest', '1')
     const A = await openTab(null)
     const B = await openTab(null)
-    expect(B.getState().S.active?.id).toBe('act1')
+    expect(B.getState().A?.id).toBe('act1')
     h.toasts = []
     // Register (views/Login.jsx): setUser without a question, then the push of this copy.
     await act(A, () => A.getState().setUser({ id: OWNER, name: 'Nova' }))
     expect(ids(B.getState().S)).toEqual(['gW1'])          // not blank
-    expect(B.getState().S.active?.id).toBe('act1')
+    expect(B.getState().A?.id).toBe('act1')
     await new Promise(r => setTimeout(r, 0))   // the toast comes through a lazy import
     expect(h.toasts).toContain('Signed in from another tab. Your workout came along, keep going here.')
     await act(A, () => A.getState().pushState())
     expect(ids(srv.doc)).toEqual(['gW1'])
     // B follows the sign-in once the copy is the account's and in step with the server.
     expect(B.getState().user?.id).toBe(OWNER)
-    expect(B.getState().S.active?.id).toBe('act1')
+    expect(B.getState().A?.id).toBe('act1')
   })
 
   it('a sign-in to an existing account: the guest tab gets the account, the running workout included, once it is answered', async () => {
@@ -257,9 +257,9 @@ describe('a guest tab while the other tab signs in or creates a profile', () => 
     expect(B.getState().user).toBe(null)                      // nothing taken while the question is open
     await act(A, () => A.getState().adoptProfile(async () => false))   // "Keep profile as is"
     expect(ids(srv.doc)).toEqual(['x1', 'x2', 'x3'])
-    expect(A.getState().S.active?.id).toBe('act1')
+    expect(A.getState().A?.id).toBe('act1')
     expect(ids(B.getState().S)).toEqual(['x1', 'x2', 'x3'])
-    expect(B.getState().S.active?.id).toBe('act1')
+    expect(B.getState().A?.id).toBe('act1')
     expect(B.getState().user?.id).toBe(OWNER)
   })
 
@@ -275,7 +275,7 @@ describe('a guest tab while the other tab signs in or creates a profile', () => 
     await act(A, () => A.getState().setUser({ id: OWNER, name: 'Nova' }))
     await new Promise(r => setTimeout(r, 0))
     expect(h.toasts.some(m => /another tab/.test(m))).toBe(false)
-    expect(B.getState().S.active?.id).toBe('act1')
+    expect(B.getState().A?.id).toBe('act1')
   })
 
   it('a new profile with nothing in it: the other tab takes it without waiting for a save', async () => {

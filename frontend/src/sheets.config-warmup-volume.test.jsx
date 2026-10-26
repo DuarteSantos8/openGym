@@ -6,6 +6,7 @@ import { EXDB } from './lib/exercises.js'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { exConfigSheet } from './sheets.jsx'
+import { ruleOccurrence } from './lib/test-fixtures.js'
 
 // The warm-up line under "Warm-up sets" promised they stay out of volume, which stopped being true
 // for a profile with Settings > Units > "Count warm-ups in volume" (#719) switched on.
@@ -22,8 +23,11 @@ function render(sheet) {
 }
 const open = volumeWarmups => {
   useStore.setState(s => ({ S: { ...s.S, unit: 'kg', volumeWarmups } }))
-  exConfigSheet(ex, { sets: 3, reps: 10, weight: 40, mode: 'reps', warmupSets: 2 }, () => {})
-  return render(useUI.getState().sheets.at(-1))
+  exConfigSheet(ex, { ...ruleOccurrence('0009'), warmup: { mode: 'smart', count: 2 } }, () => {})
+  const host = render(useUI.getState().sheets.at(-1))
+  // The warm-ups sit in a fold on the Options tab.
+  act(() => [...host.querySelectorAll('.lrow')].find(r => r.querySelector('.lrow-t')?.textContent === 'Warm-ups').click())
+  return host
 }
 
 describe('exercise settings: what the warm-up line says about volume', () => {

@@ -8,6 +8,8 @@
 import { EXIDX, canonicalExId } from './exercises.js'
 import { uid } from './format.js'
 import { isWarmupRow } from './workout-model.js'
+import { occurrenceFor } from './session-start.js'
+import { cardioParameters, editPlan } from './prescription/index.js'
 import { HEVY_ID_MAP, HEVY_TITLE_MAP } from './hevy-id-map.js'
 import { daysBetween, importId, priorCustom, roundWeight } from './import-csv.js'
 
@@ -437,8 +439,21 @@ export function mergeHevyRoutines(S, parsed) {
   // id is replaced in place (its exercises re-read from Hevy), everything else is appended.
   let added = 0, updated = 0
   for (const r of parsed.routines || []) {
-    const ex = (r.ex || []).map(e => ({ ...e, id: exIdMap[e.id] || e.id }))
     const existing = r.hevyId ? S.routines.find(x => x.hevyId === r.hevyId) : null
+    const routineId = existing ? existing.id : uid()
+    const ex = (r.ex || []).map(e => {
+      const cfg = { ...e, id: exIdMap[e.id] || e.id }
+      const occ = occurrenceFor(cfg.id, cfg, { id: uid(), unit: S.unit || 'kg', routineId })
+      // Cardio and a timed hold as the migration writes the same v1 plan: the minutes and speed on
+      // the rule and in the cardio block the sheet edits.
+      return {
+        ...(cfg.min > 0 ? { ...occ, mode: 'cardio', rule: editPlan(occ.rule, cardioParameters(cfg)), cardio: { sets: cfg.sets, min: cfg.min, ...(cfg.speed > 0 ? { speed: cfg.speed } : {}) } }
+          : cfg.sec > 0 ? { ...occ, mode: 'time' } : occ),
+        ...(cfg.sg ? { sg: cfg.sg } : {}),
+        ...(cfg.warmupSets ? { warmup: { mode: 'smart', count: Math.min(5, cfg.warmupSets) } } : {}),
+        ...(cfg.note ? { note: cfg.note } : {})
+      }
+    })
     if (existing) {
       existing.name = r.name
       existing.ex = ex
@@ -446,7 +461,7 @@ export function mergeHevyRoutines(S, parsed) {
       continue
     }
     S.routines.push({
-      id: uid(),
+      id: routineId,
       name: r.name,
       emoji: r.emoji || 'figureStrength',
       ...(r.hevyId ? { hevyId: r.hevyId } : {}),

@@ -1,4 +1,5 @@
 import { supersetUnits } from './history.js'
+import { syncActiveExposures } from './active-session.js'
 
 function moveTarget(active, index, direction) {
   if (!active || !Array.isArray(active.entries) || (direction !== -1 && direction !== 1)) return null
@@ -24,6 +25,9 @@ export function moveActiveWorkoutUnit(active, index, direction) {
   reorderedUnits[move.target] = sourceUnit
   const indices = reorderedUnits.flat()
   const reorderedEntries = indices.map(entryIndex => active.entries[entryIndex])
+
+  if (Array.isArray(active.exposures)
+    && !syncActiveExposures({ entries: reorderedEntries, exposures: active.exposures })) return null
 
   active.entries.splice(0, active.entries.length, ...reorderedEntries)
   active.cur = active.entries.indexOf(selected)

@@ -4,6 +4,7 @@ import {
   yearStats, wrappedYears, workoutsOfYear, seasonYear, homeCardYear, notificationPlan, withYear, wrappedOf,
   comparisonFor, personalityOf, longestStreak, biggestPr, bodyChange, daypartOf, wrappedNow, NOW_KEY, NOTIFY_HOUR,
 } from './wrapped.js'
+import { migratedFixture } from './test-fixtures.js'
 import { LB_KG } from './units.js'
 
 const BENCH = '0025'      // barbell bench press (chest)
@@ -277,4 +278,16 @@ describe('the phone’s December notification: once a year', () => {
   it('is taken back when switched off', () => {
     expect(notificationPlan({ ...st, wrappedNotify: false }, nov, { granted: true }).action).toBe('cancel')
   })
+})
+
+it('reads canonical yearly sets, favourite exercise and record gains', () => {
+  const input = S([
+    W('2025-12-02', '18:00', 45, [[BENCH, [set(50, 5)]]]),
+    W('2026-11-03', '18:00', 45, [[BENCH, [set(60, 5), set(60, 5)]]], { prs: [BENCH] })
+  ])
+  const canonical = migratedFixture(input)
+  const stats = yearStats(canonical, 2026)
+  expect(stats.sets).toBe(2)
+  expect(stats.topExercise).toMatchObject({ id: BENCH, sets: 2 })
+  expect(biggestPr(canonical, 2026)).toMatchObject({ id: BENCH, w: 60, gain: 10, prev: 50 })
 })

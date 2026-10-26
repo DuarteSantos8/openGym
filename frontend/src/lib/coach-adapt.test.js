@@ -1,3 +1,7 @@
+import { migrateProfileV1ToV2 } from '../../../api/migration/profile-migration.js'
+import { LIB_BY_ID } from '../../../api/coach/core/library.js'
+import { coachExOf } from '../../../api/coach/core/plan-view.js'
+import { entriesForExposures } from './session-ui-adapter.js'
 // "Ask the Coach" mid-workout: the changes the Coach proposes for the unfinished part of the
 // session, applied to S.active (lib/coach-adapt.js), and what a review may now do to a plan
 // (warm-ups, programmes) applied and undone with the ordinary engine (lib/coach.js).
@@ -10,7 +14,7 @@ import { programmeById, programmesOf } from './programmes.js'
 const BENCH = '0025', CURL = '0294', SQUAT = '0043', DBPRESS = '0289', ROW = '0027'
 const row = (w, r, done = false, extra = {}) => ({ w, r, done, ...extra })
 const warm = (w, r, done = false) => ({ w, r, done, phase: 'warmup', warmup: true })
-const session = () => ({
+const legacySession = () => ({
   unit: 'kg', exWeights: {}, workouts: [], week: {}, dayPlan: {},
   routines: [{ id: 'push', name: 'Push', ex: [{ id: BENCH, sets: 3, reps: 5, weight: 80 }, { id: CURL, sets: 3, reps: 10, weight: 14 }, { id: SQUAT, sets: 3, reps: 5, weight: 100 }] }],
   active: {
@@ -22,6 +26,12 @@ const session = () => ({
   },
   coach: { consent: { agreedAt: 1, version: 2 }, log: [], snapshots: [] },
 })
+const session = () => {
+  const legacy = legacySession()
+  const { profile, activeSession } = migrateProfileV1ToV2(legacy, LIB_BY_ID)
+  const entries = entriesForExposures(activeSession.exposures, profile.prescriptions).map((e, i) => ({ ...e, ...legacy.active.entries[i], exposureId: e.exposureId }))
+  return { ...profile, active: { ...activeSession, entries } }
+}
 const proposal = changes => ({ id: 'p1', kind: 'adapt', activeId: 'act-1', summary: 'For today.', changes: changes.map((c, i) => ({ id: 'a' + i, why: 'because', ...c })) })
 const ids = p => p.changes.map(c => c.id)
 
@@ -61,7 +71,7 @@ describe('applying the Coach’s changes to the workout in progress', () => {
     applyAdapt(S, p, ids(p))
     expect(S.active.entries[1].sets.map(r => r.r)).toEqual([8, 8, 8])
     expect(S.active.entries[2].target.restSec).toBe(180)
-    expect(S.routines[0].ex.map(e => e.reps)).toEqual([5, 10, 5])
+    expect(S.routines[0].ex.map(e => coachExOf(e, LIB_BY_ID[e.exerciseId]).reps)).toEqual([5, 10, 5])
     expect(S.routines[0].ex[2].restSec).toBeUndefined()
   })
 

@@ -1,6 +1,7 @@
 // A likely typo caught at the tick: 300 typed for 30, or 8 for 80. The weight or reps you tick
 // becomes last time's numbers, the progression's next target and possibly a PR, so a slip of one
 // digit is worth one question before it is logged. Pure: the workout screen asks, these decide.
+import { legacyEntriesOf } from './prescription/index.js'
 import { isWarmupRow, isSideSet } from './workout-model.js'
 
 // A per-side set is two rows of numbers, one per side; a timed row has no weight or reps to slip.
@@ -9,7 +10,7 @@ const rowsOf = s => (isSideSet(s) ? [s.sides?.L, s.sides?.R].filter(Boolean) : [
 /** The heaviest weight and the most reps ever logged for `exId`, over every set of every workout. */
 export function bestsFor(workouts, exId) {
   let w = 0, r = 0
-  for (const wk of workouts || []) for (const e of wk.entries || []) {
+  for (const wk of workouts || []) for (const e of legacyEntriesOf(wk)) {
     if (e.id !== exId) continue
     for (const s of e.sets || []) for (const x of rowsOf(s)) {
       w = Math.max(w, Number(x?.w) || 0)

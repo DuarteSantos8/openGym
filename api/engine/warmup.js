@@ -66,7 +66,7 @@ const stepOk = (s, decimals) => !!s && typeof s === 'object' && keys(s) === 'per
 
 /** Every trust boundary (editor save, plan import, shared-plan merge) runs this. Missing = off. */
 export function validateWarmup(w, decimals = 1) {
-  if (w === undefined) return true
+  if (w === undefined || ['auto', 'own', 'none'].includes(w)) return true
   if (!w || typeof w !== 'object' || Array.isArray(w)) return false
   if (w.mode === 'off') return keys(w) === 'mode'
   if (w.mode === 'smart') return keys(w) === 'count,mode' && int(w.count, 1, 5)

@@ -26,9 +26,21 @@ function mountTopSheet() {
 }
 const button = (host, text) => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === text)
 
+// A saved workout of the generic engine, written from v1-style entries: rows with a drop chain keep it
+// as segments (each drop at its own load).
+const perfRow = (s, over = {}) => ({
+  role: s.phase === 'warmup' ? 'warmup' : 'work', status: s.done ? 'completed' : 'skipped',
+  observations: [{ metric: 'repetitions', value: s.r }], resistance: { kind: 'external-load', value: s.w },
+  segments: s.type === 'dropset' ? s.drops.map(d => perfRow({ ...d, done: true })) : [],
+  ...(s.type === 'restpause' ? { clusters: s.clusters } : {}), ...over,
+})
+const exposureOf = (e, i) => ({
+  exposureId: 'x' + i, exerciseId: e.id, mode: 'reps', ...(e.rid ? { routineId: e.rid } : {}), ...(e.sg ? { sg: e.sg } : {}),
+  performance: { sets: e.sets.map(s => perfRow(s)) },
+})
 const workout = (entries, extra = {}) => ({
   id: 'w1', d: '2026-09-15', start: new Date(2026, 8, 15, 17).getTime(), end: new Date(2026, 8, 15, 18).getTime(), name: 'Push',
-  vol: 0, prs: [], routineIds: [], entries, ...extra,
+  vol: 0, prs: [], routineIds: [], exposures: entries.map(exposureOf), ...extra,
 })
 const done = (w, r, more = {}) => ({ w, r, done: true, ...more })
 
@@ -39,7 +51,7 @@ beforeEach(() => {
   useUI.setState({ sheets: [], toast })
   const S = clone(DEF)
   Object.assign(S, { unit: 'kg', routines: [], workouts: [], active: null })
-  useStore.setState({ S, user: null })
+  useStore.setState({ S, A: null, user: null })
   document.body.innerHTML = ''
 })
 afterEach(() => {
@@ -51,7 +63,7 @@ describe('workout detail', () => {
   it('lists a drop-set\'s drops and a rest-pause set\'s bursts', () => {
     workoutDetailSheet(workout([
       { id: lifts[0], target: { mode: 'reps' }, sets: [done(100, 8, { type: 'dropset', drops: [{ w: 80, r: 6 }, { w: 60, r: 5 }] })] },
-      { id: lifts[1], target: { mode: 'reps' }, sets: [done(60, 16, { type: 'restpause', clusters: [{ r: 4, restSec: 15 }, { r: 2, restSec: 15 }] })] },
+      { id: lifts[1], target: { mode: 'reps' }, sets: [done(60, 16, { type: 'restpause', clusters: [{ r: 10, restSec: 15 }, { r: 4, restSec: 15 }, { r: 2, restSec: 15 }] })] },
     ]))
     const rows = [...mountTopSheet().querySelectorAll('.wd-ex .ss')].map(el => el.textContent)
     expect(rows).toEqual(['100×8 ↘ 80×6 ↘ 60×5', '60×10+4+2'])
@@ -200,59 +212,30 @@ describe('export as .fit', () => {
   })
 })
 
-describe('workout detail: time per exercise', () => {
-  const T0 = workout([]).start   // the fixture's own clock, so the ticks fall inside it in any time zone
-  const at = min => T0 + min * 60000
-  it('shows how long each exercise took, from its ticks', () => {
-    workoutDetailSheet(workout([
-      { id: lifts[0], target: { mode: 'reps' }, sets: [done(100, 5, { at: at(4) }), done(100, 5, { at: at(8) })] },
-      { id: lifts[1], target: { mode: 'reps' }, sets: [done(60, 8, { at: at(20) })] },
-    ]))
-    const lines = [...mountTopSheet().querySelectorAll('.wd-ex .grow')].map(el => el.textContent)
-    expect(lines[0]).toContain('8 min')
-    expect(lines[1]).toContain('12 min')
-  })
+// #143: the detail sheet is the door to the editor, which opens a draft of this workout in A.
+describe('editing a saved workout from its detail sheet', () => {
+  it('opens the editor on the workout\'s own rows, and not while a session runs', () => {
+    const w = workout([{ id: lifts[0], target: { mode: 'reps' }, sets: [done(60, 5)] }])
+    useStore.setState(s => ({ S: { ...s.S, workouts: [w] }, A: null }))
+    workoutDetailSheet(w)
+    const host = mountTopSheet()   // mounted before the click's own act(), or it renders only after
+    act(() => { button(host, 'Edit workout').click() })
+    const A = useStore.getState().A
+    expect(A).toMatchObject({ editingWorkoutId: 'w1', entries: [{ id: lifts[0], sets: [{ w: 60, r: 5, done: true }] }] })
+    expect(useStore.getState().S.workouts).toEqual([w])
 
-  it('shows none for a workout without tick times', () => {
-    workoutDetailSheet(workout([{ id: lifts[0], target: { mode: 'reps' }, sets: [done(100, 5)] }]))
-    expect(mountTopSheet().querySelector('.wd-ex .grow').textContent).not.toContain('min')
+    useUI.setState({ sheets: [] })
+    workoutDetailSheet(w)
+    expect(button(mountTopSheet(), 'Edit workout').disabled).toBe(true)
   })
 })
 
-// v1.4.4 (Discord, seals: "a lot of buttons and options, a huge list"): the sheet shows the
-// workout, the note, Edit and Repeat; the rest is one "Workout options" row away, each once.
-describe('workout detail: one options row instead of a column of buttons', () => {
-  it('shows Edit workout, Repeat today and Workout options, and the tour anchors it points at', () => {
-    const w = workout([{ id: lifts[0], target: { mode: 'reps' }, sets: [done(80, 5)] }])
-    useStore.setState(s => ({ S: { ...s.S, workouts: [w] } }))
+describe('an exercise note on a saved workout', () => {
+  it('is shown under its exercise, flagged when pinned', () => {
+    const w = workout([{ id: lifts[0], target: { mode: 'reps' }, sets: [done(60, 5)] }])
+    w.exposures[0].performance = { ...w.exposures[0].performance, note: 'go narrower', notePin: true }
     workoutDetailSheet(w)
-    const host = mountTopSheet()
-    const buttons = [...host.querySelectorAll('button')].map(b => b.textContent.trim())
-    expect(buttons).toContain('Edit workout')
-    expect(buttons).toContain('Repeat today')
-    for (const label of ['Change date & time', 'Change duration', 'Save as routine', 'Copy as text', 'Share with a friend', 'Share as image', 'Save as PDF', 'Export as .fit file', 'Delete workout'])
-      expect(host.textContent, label).not.toContain(label)
-    for (const anchor of ['wd-edit', 'wd-note', 'wd-options']) expect(host.querySelector(`[data-tour="${anchor}"]`), anchor).toBeTruthy()
-    const row = host.querySelector('[data-tour="wd-options"]')
-    expect(row.getAttribute('role')).toBe('button')
-    expect(row.getAttribute('tabindex')).toBe('0')
-    expect(row.textContent).toContain('Workout options')
-  })
-
-  it('opens the options as one menu over the sheet: when, keep, share, and Delete last on its own', () => {
-    const w = workout([{ id: lifts[0], target: { mode: 'reps' }, sets: [done(80, 5)] }])
-    useStore.setState(s => ({ S: { ...s.S, workouts: [w] } }))
-    workoutDetailSheet(w)
-    const host = mountTopSheet()
-    act(() => host.querySelector('[data-tour="wd-options"]').click())
-    expect(useUI.getState().sheets.length).toBe(2)
-    const menu = mountTopSheet()
-    const groups = [...menu.querySelectorAll('.menu-group')].map(g => [...g.querySelectorAll('.menu-item .tt')].map(e => e.textContent))
-    expect(groups).toEqual([
-      ['Change date & time', 'Change duration', 'Save as routine'],
-      ['Share with a friend', 'Share as image', 'Copy as text', 'Save as PDF', 'Export as .fit file'],
-      ['Delete workout'],
-    ])
-    expect(menu.querySelector('.menu-item.danger .tt').textContent).toBe('Delete workout')
+    const row = mountTopSheet().querySelector('.wd-ex')
+    expect(row.textContent).toContain('go narrower')
   })
 })

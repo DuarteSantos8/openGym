@@ -152,8 +152,8 @@ describe('found in review', () => {
     const r = await call({ exercises: [{ exercise: '0025', sets: [{ reps: 5, weight: 100 }] }] })
     expect(r.logged).toBe(true)
     const [first, second] = api.puts.map(p => p.state.workouts[0])
-    expect(first.entries[0].sets[0].w).toBe(100)
-    expect(second.entries[0].sets[0].w).toBe(220.5)
+    expect(first.exposures[0].performance.sets[0].resistance.value).toBe(100)
+    expect(second.exposures[0].performance.sets[0].resistance.value).toBe(220.5)
     expect(second.id).toBe(first.id)
   })
 
@@ -183,7 +183,7 @@ describe('found in review', () => {
     const r = await call({ exercises: [{ exercise: '0289', sets: [{ reps: 10, weight: 20 }] }] })
     expect(r.logged).toBe(true)
     const [first, second] = api.puts.map(p => p.state.workouts[0])
-    expect(second.entries[0].target.dbLoad).toBe('each')
+    expect(second.exposures[0].dbLoad).toBe('each')
     expect(second.vol).toBe(first.vol)
     expect(api.doc.dbLoad['0289'].mode).toBe('total')   // the device's new default itself is kept
   })

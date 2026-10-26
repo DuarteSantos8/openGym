@@ -20,6 +20,10 @@ function legacySet(row, mode) {
   if (row.role === 'warmup') out.warmup = true
   if (row.side) out.side = row.side
   if (row.max) out.max = true
+  if (typeof row.note === 'string') out.note = row.note
+  for (const k of ['edited', 'wp', 'wb', 'at', 'restSec', 'restOff', 'hr', 'restHr']) if (row[k] != null) out[k] = row[k]
+  if (Array.isArray(row.media)) out.media = row.media
+  if (row.sides?.L && row.sides?.R) out.sides = { L: legacySet(row.sides.L, mode), R: legacySet(row.sides.R, mode) }
   // A drop chain is the row's segments: read back as the v1 row it was logged as.
   if (row.segments?.length) { out.type = 'dropset'; out.drops = row.segments.map(s => legacySet(s, mode)).map(({ w, r }) => ({ w, r })) }
   if (row.clusters?.length) { out.type = 'restpause'; out.clusters = row.clusters.map(c => ({ ...c })) }

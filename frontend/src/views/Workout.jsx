@@ -6,12 +6,12 @@ import { useStore } from '../store/useStore.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { useUI } from '../store/useUI.js'
 import { autoHoldsFor, forecastHolds, nextAutoHold } from '../lib/auto-holds.js'
-import { EXIDX, exOr, betterWeight, isAssisted } from '../lib/exercises.js'
+import { EXIDX, exOr, betterWeight, isAssisted, stepWeight } from '../lib/exercises.js'
 import { bestsFor, lastRowFor, oddValues } from '../lib/typo-check.js'
 import { usesBar } from '../lib/bar.js'
 import { loadKindFor, baseWeightFor, inventoryFor, rowLoad, sameLoad, plateDelta, dropGrid } from '../lib/plates.js'
-import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
-import { cleanNum, fmtNum, fmtPlate, fmtVol, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN } from '../lib/format.js'
+import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, defaultConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
+import { cleanNum, fmtNum, fmtPlate, fmtVol, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN, uid } from '../lib/format.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { clampIncline, hasIncline, inclineFits, inclineFrom, INCLINE_STEP } from '../lib/incline.js'
 import { beep, vibrate, unlock } from '../lib/sound.js'
@@ -19,7 +19,7 @@ import { pinState } from '../lib/queue.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { api, beacon } from '../lib/api.js'
 import { pyramidRestFor, maxRecordAt, isPyramid, pyramidLabel } from '../lib/pyramid.js'
-import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, sideRestFor, ownSetRest, ownExerciseRest, stepUnitIndex, advanceAfterTimedRest } from '../lib/supersetFlow.js'
+import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, ownExerciseRest, ownSetRest, sideRestFor, stepUnitIndex, advanceAfterTimedRest } from '../lib/supersetFlow.js'
 import Media from '../components/Media.jsx'
 import WorkoutScrollAnchor from '../components/WorkoutScrollAnchor.jsx'
 import WorkoutChips from '../components/WorkoutChips.jsx'
@@ -29,30 +29,29 @@ import { fmtClip } from '../lib/media-refs.js'
 import { supersetMeta } from '../lib/superset-meta.js'
 import WorkoutThumb, { hasWorkoutMedia } from '../components/WorkoutThumb.jsx'
 import { workoutSettingsSheet } from '../components/WorkoutSettingsSheet.jsx'
-import { SessionMapButton } from '../components/SessionMuscles.jsx'
 import { durationSheet } from '../components/DurationWheel.jsx'
 import { REST_MAX, fmtRest, restWheelValue } from '../lib/duration.js'
 import { youtubeSearchUrl } from '../lib/youtube.js'
 import { openExternal } from '../components/CustomMedia.jsx'
-import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, exitWorkoutEdit, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet, finishWorkoutSheet, finishWorkoutNow, swapActiveWorkoutToBackup, setNoteSheet } from '../sheets.jsx'
+import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, exitWorkoutEdit, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet, finishWorkoutSheet, finishWorkoutNow, quickOccurrence, swapActiveWorkoutToBackup, setNoteSheet } from '../sheets.jsx'
 import { afterScrollRestore, scrollRestorePending } from '../components/Modals.jsx'
 import { effortColor } from '../lib/effort.js'
 import Elapsed from '../components/Elapsed.jsx'
 import LiveHeartRate from '../components/LiveHeartRate.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
-import { defaultIncrement, weightIncrement, stepWeight } from '../lib/progression.js'
-import { progressionGuidance } from '../lib/progression-copy.js'
-import { rpeAs } from '../lib/programmes.js'
-import { buildPlannedEntry, buildSessionEntry, plannedConfigOf, builtOutOfProgression } from '../lib/session-start.js'
-import { routineChangesFromEntry, updateRoutineFromEntry, routineSlotIndex, ownWarmupsChange, keepOwnWarmups } from '../lib/routines.js'
+import { buildSessionExposures, occurrenceFor } from '../lib/session-start.js'
+import { legacyEntriesOf, missingReference, roundLoad, ruleOfPrescription } from '../lib/prescription/index.js'
+import { entriesForExposures, loadStepFor, planSummary, rowFindings } from '../lib/session-ui-adapter.js'
+import { ownWarmupsChange, keepOwnWarmups } from '../lib/routines.js'
 import { ownRowsLine } from '../lib/warmup-ramp.js'
 import { useCoachGate } from '../lib/use-coach-gate.js'
-// Opened in the same tick as the menu closes, like every other sheet from that menu: a sheet that
-// opened a moment later (after a dynamic import) took the menu's history entry with it on close.
 import { workoutCoachSheet } from '../components/WorkoutCoachSheet.jsx'
 import { hasConsent } from '../lib/coach.js'
-import { sessionNoProg, setSessionNoProg, setEntryNoProg, joinSessionNoProg } from '../lib/session-noprog.js'
+import { PRESET_LABEL } from '../components/RuleEditor.jsx'
+import { findingText } from '../lib/progression-copy.js'
+import { sessionNoProg, setSessionNoProg, setEntryNoProg, syncExposureExclusion } from '../lib/session-noprog.js'
+import { routineChangesFromEntry, updateRoutineFromEntry, routineSlotFor } from '../lib/routine-update.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
 import { bindWatchActions, markDiscarded } from '../lib/watch-sync.js'
@@ -60,10 +59,12 @@ import { bestSetFor } from '../lib/exercise-history.js'
 import { bindLiveActions } from '../lib/live-activity.js'
 import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry } from '../lib/active-workout-order.js'
+import { insertActiveOccurrence, replaceActiveOccurrence, syncActiveExposures } from '../lib/active-session.js'
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import FocusView from './FocusView.jsx'
 import { SeasonDeco } from '../components/Seasonal.jsx'
+import { SessionMapButton } from '../components/SessionMuscles.jsx'
 import { entryDbLoad, bellsIn, ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
 import { sessionGymView, gymsOf, activeGym, gymLabel, switchGym, reRoundOpenSets } from '../lib/gym-inventory.js'
 import { exView, viewEntry, inEntryUnit } from '../lib/ex-unit.js'
@@ -145,8 +146,11 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // and records all speak that unit. Every change goes through inEntryUnit or the parent's
   // onField (mutEntry), which store it back in the profile's unit.
   const live = useStore(s => s.S)
-  const S = exView(sessionGymView(live), live.active.entries[entryIdx]?.id)
+  const active = useStore(s => s.A)
+  const S = exView(sessionGymView({ ...live, active }), active.entries[entryIdx]?.id)
+  const A = S.active
   const update = useStore(s => s.update)
+  const updateActive = useStore(s => s.updateActive)
   const working = useUI(s => s.work)
   const restEnds = useUI(s => s.timer?.endsAt)
   const swipeHint = useUI(s => (s.swipeHint?.idx === entryIdx ? s.swipeHint : null))
@@ -161,35 +165,35 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // Drops/bursts mutate the row in place — same card, not a new set with its own long rest.
   // A planned exercise (see the exercise's "Intensifier" config) arrives with these already
   // filled in by applyIntensifierPlan; these only add/edit/remove entries live from here on.
-  const mutSet = (i, fn) => update(s => inEntryUnit(s, entryIdx, e => { e.sets[i] = fn(e.sets[i]) }), true)
+  const mutSet = (i, fn) => updateActive(a => inEntryUnit({ ...useStore.getState().S, active: a }, entryIdx, e => { e.sets[i] = fn(e.sets[i]) }))
   // A row as it is now in the store (not the render's copy), in the exercise's unit.
-  const liveRow = i => { const st = useStore.getState().S; return viewEntry(st, st.active?.entries[entryIdx])?.sets[i] }
+  const liveRow = i => { const st = useStore.getState(); return viewEntry(st.S, st.A?.entries[entryIdx])?.sets[i] }
   // Warm-up or work is the row's phase; switching it moves the row to the edge of the warm-ups.
-  const setPhaseAt = (i, warm) => update(s => {
-    const e = s.active.entries[entryIdx]
+  const setPhaseAt = (i, warm) => updateActive(A => {
+    const e = A.entries[entryIdx]
     e.sets = warm ? makeWarmupAt(e.sets, i) : makeWorkAt(e.sets, i)
-  }, true)
-  const toggleFailureAt = i => update(s => {
-    const e = s.active.entries[entryIdx]
-    const [start, count] = setSpanAt(e.sets, i)
-    const on = !isFailureSet(e.sets[i])
-    for (let j = start; j < start + count; j++) if (isFailureSet(e.sets[j]) !== on) e.sets[j] = toggleFailure(e.sets[j])
-  }, true)
+  })
   // One set's own rest for this session (#609): null takes it away, 0 is "No timer". It sits on
   // the set's first row, the one the rest flow reads (ownSetRest). The wheel may outlive the
   // set it was opened for, so a Done after the rows moved or the workout changed does nothing.
   const setRestAt = (i, sec) => {
-    const at = useStore.getState().S.active
+    const at = useStore.getState().A
     const ref = { id: at?.id, entryId: at?.entries?.[entryIdx]?.id, rows: at?.entries?.[entryIdx]?.sets?.length }
-    return () => update(s => {
-      const e = s.active?.entries?.[entryIdx]
-      if (!e || s.active.id !== ref.id || e.id !== ref.entryId || e.sets.length !== ref.rows) return
+    return () => updateActive(a => {
+      const e = a?.entries?.[entryIdx]
+      if (!e || a.id !== ref.id || e.id !== ref.entryId || e.sets.length !== ref.rows) return
       const row = e.sets[setSpanAt(e.sets, i)[0]]
       if (!row) return
       if (sec == null) delete row.restSec
       else row.restSec = Math.max(0, Math.min(REST_MAX, Math.round(sec)))
     }, true)
   }
+  const toggleFailureAt = i => updateActive(A => {
+    const e = A.entries[entryIdx]
+    const [start, count] = setSpanAt(e.sets, i)
+    const on = !isFailureSet(e.sets[i])
+    for (let j = start; j < start + count; j++) if (isFailureSet(e.sets[j]) !== on) e.sets[j] = toggleFailure(e.sets[j])
+  })
   const addDropRow = i => mutSet(i, row => {
     // A unilateral set drops per side (issue #60): addSideDrop seeds each side from its own weight.
     if (isSideSet(row)) {
@@ -219,13 +223,13 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // still fires the rest timer / auto-advance / workout-complete flow.
   const setSide = (i, side, field, v) => {
     if (field !== 'w') return mutSet(i, row => markWarmupEdited(setSideField(row, side, field, v), field))
-    update(s => inEntryUnit(s, entryIdx, e => {
+    updateActive(a => inEntryUnit({ ...useStore.getState().S, active: a }, entryIdx, e => {
       const row = setSideField(e.sets[i], side, field, v)
       row.sides[side].weightOrigin = WEIGHT_ORIGIN_MANUAL
       e.sets[i] = markWarmupEdited(row, field)
       e.sets = cascadeWeight(e.sets, i, v, side, e.target?.backoffStep)
-      rerampOpen(s, e, i)
-    }), true)
+      rerampOpen(S, e, i)
+    }))
   }
   // Drop/burst edits accept an optional `side` ('L'|'R'): present for a per-side row (edits that
   // one limb's drop/burst), absent for a straight row (edits the row's own).
@@ -249,7 +253,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   const timed = mode === 'time'
   // The history the rows were built from: before the session's day when it is logged into the
   // past (sessionHistory), so "last time", the best set and the Best chip are not from later on.
-  const H = sessionHistory(S)
+  const H = sessionHistory(S, A)
   // The routine's own last session of this exercise (or any, for a routine that has none), the
   // same one the rows and the progression line were built from (#216).
   const last = lastEntryFor(H, entry.id, entry.rid)
@@ -264,7 +268,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   const standingNote = exNoteFor(S, entry.id)
   // Only worth surfacing while there is still work left: once the exercise is finished, a note
   // telling you what to do in it is behind you, and the block is already long.
-  const pinnedNote = entry.sets.some(s => !s.done) ? pinnedNoteFor(S, entry.id) : null
+  const pinnedNote = entry.sets.some(s => !s.done) ? pinnedNoteFor(S, entry.id, A.editingWorkoutId) : null
   // The number is the heaviest logged set, or the working weight you kept.
   // On an assistance machine the best is the least help, and a 0 on either side means "nothing
   // logged" rather than a record (issue #232).
@@ -275,33 +279,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   const bestKept = (H.exWeights[entry.id] || {}).w || 0
   const best = cardio ? 0
     : bestHist > 0 && bestKept > 0 ? betterWeight(entry.id, bestHist, bestKept) : Math.max(bestHist, bestKept)
-  // What the progression policy decided for this session, and why (issue #17). Computed when
-  // the session was built so the reason matches the numbers already in the rows.
-  const plan = entry.plan
-  const guidance = progressionGuidance(plan)
-  // The plan this exercise was built from (issue #275), on one quiet line in every view — the
-  // routine's "2 × 10" is the thing the rows are measured against. When today's rows open
-  // somewhere else, the same line says so: progression moved the sets or reps (a bodyweight
-  // climb, a deload, an added set), or they carry last session's reps ("Your last session").
-  // An entry built before plans were stamped, and a freestyle one, has no plan to show.
-  const planned = entry.planned && mode !== 'cardio' ? entry.planned : null
-  const planLine = (() => {
-    if (!planned) return null
-    const today = entry.target || {}
-    // A pyramid reads as its targets, as on the routine row: "12 · 8 · 6 · Max · 12", never the
-    // set count times the first target (#367). Its rows are the plan; nothing moves them.
-    if (isPyramid(today)) return <div className="small dim planline" style={{ marginBottom: 4 }}>{t('Plan: {0}', pyramidLabel(today.pyramid))}</div>
-    const todaySets = today.sets || planned.sets || 1
-    const inPlan = timed
-      ? today.sec == null || today.sec === planned.sec
-      : today.reps == null || (planned.repsMin > 0 ? today.reps >= planned.repsMin && today.reps <= planned.reps : today.reps === planned.reps)
-    const note = todaySets !== (planned.sets || 1) || !inPlan
-      ? t('today {0}', setsRepsOf({ mode, sets: todaySets, reps: today.reps, sec: today.sec }))
-      : entry.carried ? t('reps from your last session') : null
-    return <div className="small dim planline" style={{ marginBottom: 4 }}>
-      {t('Plan: {0}', setsRepsOf({ ...planned, mode }))}{note ? ' · ' + note : ''}
-    </div>
-  })()
+  const exposure = A.exposures?.find(x => x.exposureId === entry.exposureId)
+  const prescription = S.prescriptions?.[exposure?.prescriptionId]
   // What the rows are held against (#173): the last time in this routine (#216), or the best set
   // of the exercise ever logged — after a bad day, "last time" puts the bad day on the screen as
   // the number to beat. Tapping the line switches between the two, and the choice is the
@@ -315,7 +294,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // workout logged into the past is not told its last time was "today". The date itself stays
   // in the hover title and in what a screen reader hears.
   const refLabel = refBest ? t('Best set') : t('Last time')
-  const refAgo = ref ? fmtDaysAgo(ref.d, S.active.d || todayISO()) : ''
+  const refAgo = ref ? fmtDaysAgo(ref.d, A.d || todayISO()) : ''
   const refSets = ref ? (refBest ? [ref.set] : ref.sets).map(s => setLabel(entry.id, s, ref.target, speedUnitOf(S))) : []
   const refText = ref ? `${refLabel} (${refAgo}, ${fmtDate(ref.d, true, true)}): ` + refSets.join(', ') : refBest && last ? t('Best set: nothing logged this way yet') : null
   const refAction = refBest ? t('Show last time instead') : t('Show your best set instead')
@@ -337,7 +316,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // A unilateral exercise logs each side on its own (issue #60): work rows render as an L and an
   // R sub-row, each with its own weight/reps/effort and done tick. Warm-ups stay single.
   const perSide = mode === 'reps' && isPerSide(cfg)
-  const loadStep = mode === 'reps' ? weightIncrement(cfg, S.unit) : 2.5
+  const loadStep = mode === 'reps' ? loadStepFor(prescription, S.unit) : 2.5
   // With the dumbbells you own listed (issue #376), + and − walk from bell to bell — 9, 11, 13 —
   // instead of along the increment's grid; an off-list weight goes to the nearest bell that way.
   // A machine's own stack (#688) is walked the same way: 5, 11.3, 18.1.
@@ -374,6 +353,10 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   const inclineCol = cardio && (inclineFits(ex) || entry.sets.some(hasIncline))
     ? { f: 'incline', step: INCLINE_STEP, dec: true, opt: true, hd: t('Incline (%)'), store: clampIncline } : null
   const col3 = cardio ? inclineCol : mode === 'reps' && eff ? { f: eff.f, eff: kind, hd: t(eff.hd) } : null
+  const trackState = S.progression?.[exposure?.trackId] || null
+  const findings = prescription ? rowFindings(prescription, entry, S.unit, trackState) : new Map()
+  const rir = prescription?.parameters.rir
+  const effortText = rir && kind === 'rir' ? ` · RIR ${rir.min}–${rir.max}` : rir && kind === 'rpe' ? ` · RPE ${10 - rir.max}–${10 - rir.min}` : ''
   // The effort column walks its own scale — see stepEffort. Weight and reps step up from 0
   // with no ceiling, as they always did.
   const bump = (s, i, col, dir) => {
@@ -499,7 +482,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       ] },
       { more: [
         { title: t('Exercise'), items: [
-          onProgressionSettings && { icon: 'slider', label: t('Exercise settings'), sub: guidance ? t(guidance.policyLabel) : t('Sets, reps, rest, progression'), onClick: onProgressionSettings },
+          onProgressionSettings && { icon: 'slider', label: t('Exercise settings'), sub: prescription ? t(PRESET_LABEL[prescription.preset]) : t('Sets, reps, rest, progression'), onClick: onProgressionSettings },
           plateLoading && { icon: 'plate', label: t('Plate loading'), sub: loadSummary, onClick: () => barWeightSheet(entry.id, cfg) },
           { icon: 'info', label: t('How to do it'), onClick: () => exerciseDetailSheet(ex) },
           youtubeSearchUrl(ex) && { icon: 'play', label: t('Watch on YouTube'), sub: t('Opens a search for good form'), onClick: () => openExternal(youtubeSearchUrl(ex)) },
@@ -533,7 +516,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // What a set rests without a rest of its own, as the flow works it out (restSecFor,
   // warmupRestSecFor), so the set menu can name it.
   const setRestDefault = i => {
-    const all = S.active?.entries || []
+    const all = A.entries || []
     const unit = supersetUnits(all).find(u => u.includes(entryIdx)) || [entryIdx]
     const work = restSecFor(all, unit, S.restSec, { idx: entryIdx, sec: pyramidRestFor(entry.target, entry.sets, i) })
     return warmupRestSecFor(entry, i, work, S.warmupRestSec)
@@ -619,7 +602,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     const pickEffort = nv => {
       onField(i, col.f, nv)
       if (nv == null) return
-      const fresh = useStore.getState().S.active?.entries[entryIdx]?.sets[i]
+      const fresh = useStore.getState().A?.entries[entryIdx]?.sets[i]
       if (fresh && !fresh.done) onToggle(i)
     }
     const open = () => effortPickerSheet(col.eff, v, pickEffort)
@@ -663,7 +646,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     const color = effortColor(rir)
     const open = () => effortPickerSheet(col.eff, v, nv => {
       setSide(i, side, col.f, nv)
-      const fresh = useStore.getState().S.active?.entries[entryIdx]?.sets[i]?.sides?.[side]
+      const fresh = useStore.getState().A?.entries[entryIdx]?.sets[i]?.sides?.[side]
       if (nv != null && fresh && !fresh.done) onToggleSide(i, side)
     })
     if (v == null) return <button className="effcell is-empty" aria-label={col.hd} onClick={open}>{col.hd}</button>
@@ -761,7 +744,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       onDelete={() => onRemoveSetAt(i)} onCopy={() => onCopySetAt(i)}
       onBlocked={() => useUI.getState().toast(t('Keep at least one set, champ'))}
       onStart={dismissHint}
-      closeKey={[entry.sets.length, s.done ? 1 : 0, count === 2 && entry.sets[from + 1]?.done ? 1 : 0, s.sides?.L?.done ? 1 : 0, s.sides?.R?.done ? 1 : 0, restEnds || 0, working?.endsAt || 0, S.active.cur].join('|')}
+      closeKey={[entry.sets.length, s.done ? 1 : 0, count === 2 && entry.sets[from + 1]?.done ? 1 : 0, s.sides?.L?.done ? 1 : 0, s.sides?.R?.done ? 1 : 0, restEnds || 0, working?.endsAt || 0, A.cur].join('|')}
       flash={setFlash && mine(setFlash.i) ? setFlash.id : 0}
       peek={swipeHint && mine(swipeHint.i) ? swipeHint.id : 0}>
       {row}
@@ -788,7 +771,6 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       {onNoProg && <button type="button" className="chip" onClick={() => onNoProg(false)}>{t('Undo')}</button>}
     </div>}
     {/* compact view keeps the plan line: it is what the rows are measured against */}
-    {dense && planLine}
     {wc.pairButtons && !compact && !dense && (onPairPrev || onPairNext) && <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
       {onPairPrev && <Button size="xs" variant="tinted" icon="link" title={t('Make superset with previous')} onClick={onPairPrev}>{t('Make superset with previous')}</Button>}
       {onPairNext && <Button size="xs" variant="tinted" icon="link" title={t('Make superset with next')} onClick={onPairNext}>{t('Make superset with next')}</Button>}
@@ -818,14 +800,18 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       {t('From {0}:', fmtDate(pinnedNote.d, true))} {pinnedNote.note}
     </div>}
     {entry.note && <div className="exnote">{entry.note}</div>}
-    {planLine}
     {refLine}
-    {guidance && onProgressionSettings && <button type="button" className={'progline' + (plan.kind === 'deload' ? ' warn' : '')}
-      aria-label={t('Open exercise settings')} onClick={onProgressionSettings}>
-      <Icon name={plan.kind === 'up' ? 'arrowUp' : plan.kind === 'deload' || plan.prog?.deload ? 'arrowDown' : plan.kind === 'programme' ? 'calendar' : 'lightbulb'} />
-      <span><strong>{t(guidance.policyLabel)}</strong> · {t(...guidance.why)}{guidance.prog?.rpe != null && <> · {t('aim for {0}', (r => `${r.k} ${fmtNum(r.v)}`)(rpeAs(guidance.prog.rpe, effortOf(S))))}</>}</span>
-    </button>}
     </>}
+    {prescription && <div className="small" style={{ margin: '6px 0', display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+      <span className="dim">{t('Plan')}: {planSummary(prescription, fmtNum)} · {t('Rest {0} s', prescription.parameters.restSeconds)}{effortText}</span>
+      {prescription.statusAtGeneration === 'completed' && <span className="tag acc">{t('Progression completed')}</span>}
+      {findings.size > 0 && <span className="tag" style={{ color: 'var(--yellow)' }}>{t('Out of plan')}</span>}
+    </div>}
+    {prescription && missingReference(prescription) && <div className="small dim" style={{ marginBottom: 6 }}>{t('No 1RM on file — enter the weight you lift.')}</div>}
+    {prescription?.provenance.derivedFromOutOfPlan && <div className="small dim" style={{ marginBottom: 6 }}>{t('Suggested from a session logged out of plan.')}</div>}
+    {prescription?.provenance.deload && <div className="small dim" style={{ marginBottom: 6 }}>{t('Backed off after {0} sessions short of the plan: {1} → {2} {3}.',
+      prescription.provenance.deload.stalls, fmtNum(prescription.provenance.deload.from), fmtNum(prescription.provenance.deload.to),
+      prescription.provenance.deload.method === 'seconds' ? 's' : prescription.parameters.load.expression.mode === 'percent_1rm' ? '%' : S.unit)}</div>}
     <div className="card" style={{ marginTop: 10, marginBottom: 0 }}>
       {/* the header carries the same eff3/timed sizing as the rows, or the labels drift off their
           columns; over L/R rows it also has to skip the side badge that sits in front of the weight cell */}
@@ -872,6 +858,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
             </button>
           </div>}
           {loadLine(String(i))}
+          {findings.has(i) && <div className="small" role="status" style={{ color: 'var(--yellow)', margin: '2px 0 4px 34px' }}>{findings.get(i).map(findingText).join(' · ')}</div>}
           {/* The set's own note (lib/set-notes.js): a quiet line under the row, a tap edits it. */}
           {!pairTail && setNoteOf(s) && <button type="button" className="setnote-line" aria-label={t('Edit note') + ': ' + setNoteOf(s)}
             onClick={() => setNoteSheet(entryIdx, i, isWarmupRow(s) ? t('Warm-up') : t('Set {0}', setNumOf(s, i)))}>
@@ -953,7 +940,7 @@ export function setNumberAt(sets, i) {
 /** Removes set `i` of active entry `idx`, with an Undo on the toast. In a live session one set
  *  always stays (removeRowAt); the editor of a saved workout may take them all. */
 export function deleteActiveSet(idx, i, { editing = false } = {}) {
-  const A = useStore.getState().S.active
+  const A = useStore.getState().A
   const e = A?.entries?.[idx]
   const row = e?.sets?.[i]
   if (!row) return false
@@ -971,12 +958,13 @@ export function deleteActiveSet(idx, i, { editing = false } = {}) {
   const n = setNumberAt(e.sets, i)
   const warm = isWarmupRow(row)
   const token = { activeId: A.id, idx, entryId: e.id, i: start, rows: structuredClone(e.sets.slice(start, start + count)) }
-  useStore.getState().update(s => {
-    const en = s.active?.entries?.[idx]
+  useStore.getState().updateActive(A => {
+    const en = A.entries?.[idx]
     if (!en) return
     if (editing) en.sets.splice(start, count)
     else en.sets = removeRowAt(en.sets, i)
-  }, true)
+    if (Array.isArray(A.exposures)) syncActiveExposures(A)
+  })
   const msg = warm ? t('Warm-up gone.') : stopped ? t('Set {0} gone. Its timer stopped too.', n) : t('Set {0} gone.', n)
   ui.toast(msg, { action: t('Undo'), onAction: () => undoDeleteSet(token) })
   return true
@@ -985,7 +973,7 @@ export function deleteActiveSet(idx, i, { editing = false } = {}) {
  *  exercise moved, it is found by its id; if it is gone, or the workout is, there is nothing to
  *  put it back into. */
 export function undoDeleteSet(token) {
-  const A = useStore.getState().S.active
+  const A = useStore.getState().A
   const ui = useUI.getState()
   const at = !A || A.id !== token.activeId ? -1
     : A.entries[token.idx]?.id === token.entryId ? token.idx
@@ -994,23 +982,25 @@ export function undoDeleteSet(token) {
   const rows = token.rows || [token.row]
   const i = Math.min(token.i, A.entries[at].sets.length)
   shiftRowRefs(at, i, rows.length)
-  useStore.getState().update(s => {
-    const en = s.active.entries[at]
+  useStore.getState().updateActive(A => {
+    const en = A.entries[at]
     en.sets = rows.reduce((acc, r, k) => insertRowAt(acc, i + k, r), en.sets)
-  }, true)
+    if (Array.isArray(A.exposures)) syncActiveExposures(A)
+  })
   setUI({ setFlash: { idx: at, i, id: ++flashSeq } })
   return true
 }
 /** "One more like this one": a copy of set `i` right below it (lib/history.js copyRowAt). */
 export function copyActiveSet(idx, i) {
-  const e = useStore.getState().S.active?.entries?.[idx]
+  const e = useStore.getState().A?.entries?.[idx]
   if (!e?.sets?.[i]) return false
   const { start, end } = copySpanAt(e.sets, i)
   shiftRowRefs(idx, end + 1, end - start + 1)
-  useStore.getState().update(s => {
-    const en = s.active?.entries?.[idx]
+  useStore.getState().updateActive(A => {
+    const en = A.entries?.[idx]
     if (en) en.sets = copyRowAt(en.sets, i)
-  }, true)
+    if (Array.isArray(A.exposures)) syncActiveExposures(A)
+  })
   setUI({ setFlash: { idx, i: end + 1, id: ++flashSeq } })
   useUI.getState().toast(t('Copied. One more like that one.'))
   return true
@@ -1028,14 +1018,15 @@ export function removeActiveExercise(idx) {
   const rest = useUI.getState().timer
   if (rest && rest.forIdx === idx) useUI.getState().stopRest()
   else useUI.getState().shiftRestOwner(idx + 1, -1)
-  useStore.getState().update(s => {
-    if (!s.active || !Array.isArray(s.active.entries)) return
-    if (idx < 0 || idx >= s.active.entries.length) return
-    s.active.entries.splice(idx, 1)
-    cleanupSg(s.active.entries)
-    if (idx < s.active.cur) s.active.cur--
-    if (s.active.cur >= s.active.entries.length) s.active.cur = Math.max(0, s.active.entries.length - 1)
-  }, true)
+  useStore.getState().updateActive(A => {
+    if (!Array.isArray(A.entries)) return
+    if (idx < 0 || idx >= A.entries.length) return
+    A.entries.splice(idx, 1)
+    cleanupSg(A.entries)
+    if (Array.isArray(A.exposures)) syncActiveExposures(A)
+    if (idx < A.cur) A.cur--
+    if (A.cur >= A.entries.length) A.cur = Math.max(0, A.entries.length - 1)
+  })
 }
 
 // Whether a set row sits wholly between the fixed bars at the top and at the bottom: the status bar
@@ -1071,6 +1062,7 @@ function ActiveWorkout() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
+  const updateActive = useStore(s => s.updateActive)
   // Whether "Ask the Coach" is on the exercise menu (lib/use-coach-gate.js).
   const coachGate = useCoachGate()
   // Only what this screen shows of the two timers: the whole UI store here re-rendered every card
@@ -1082,7 +1074,9 @@ function ActiveWorkout() {
   const workKey = useUI(s => s.work?.endsAt)
   const timerKey = useUI(s => s.timer && `${s.timer.endsAt}:${s.timer.forIdx ?? ''}`)
   const readyRestEnds = useUI(s => (s.timer?.ready ? s.timer.endsAt : undefined))
-  const A = S.active
+  const A = useStore(s => s.A)
+  // A saved workout open in the editor (#143, lib/session-edit.js): the same screen, correcting
+  // what was logged — no rest, no timers, no live feedback.
   const editing = !!A.editingWorkoutId
   // A past workout has no rest to time — the sets were done days ago. The work timer for
   // timed sets stays, since counting a hold is how its duration gets entered.
@@ -1096,7 +1090,7 @@ function ActiveWorkout() {
   const isSuperset = unit.length > 1
   // Cards show one unit at a time with Prev/Next + swipe; list and compact stack every unit so
   // the whole session is visible and scrollable (Settings → During a workout → Workout view,
-  // seeded onto s.active and overridable for this session from the header ⋮). compact is list
+  // seeded onto A and overridable for this session from the header ⋮). compact is list
   // with the per-exercise media, tag chips, note lines, "last time" and progression line
   // stripped — just names, the one-line plan and set rows. Every set handler below is already entry-index
   // parameterised, so these only change what is rendered — completion, rest, top-weight and
@@ -1126,11 +1120,11 @@ function ActiveWorkout() {
   useEffect(() => {
     const readyRest = useUI.getState().timer
     if (readyRestEnds === undefined || !readyRest?.ready || listMode || editing) return
-    const live = useStore.getState().S.active
+    const live = useStore.getState().A
     if (!live) return
     const timed = idx => modeOf({ ...(live.entries[idx]?.target || {}), id: live.entries[idx]?.id }) === 'time'
     const to = advanceAfterTimedRest(live.entries, supersetUnits(live.entries), readyRest.forIdx, live.cur, timed)
-    if (to != null) update(s => { if (s.active && s.active.cur === live.cur) s.active.cur = to })
+    if (to != null) useStore.getState().updateActive(a => { if (a.cur === live.cur) a.cur = to })
   }, [readyRestEnds])
   // A finished unit you tapped open again to look at or fix (Discord: "minimize completed exercises
   // so I view only what I have yet to do"). This screen's own memory: a reload folds it back.
@@ -1209,7 +1203,7 @@ function ActiveWorkout() {
       show()
     }
     const show = () => {
-      const A2 = useStore.getState().S.active
+      const A2 = useStore.getState().A
       if (!A2 || useStore.getState().S.hints?.swipeSets) return
       const c = Math.min(Math.max(A2.cur || 0, 0), A2.entries.length - 1)
       const shownUnit = unitOf(supersetUnits(A2.entries), c)
@@ -1220,7 +1214,7 @@ function ActiveWorkout() {
         if (j >= 0) { at = { idx: k, i: j }; break }
       }
       if (!at) return
-      update(s => { s.hints = { ...(s.hints || {}), swipeSets: true } })
+      useStore.getState().update(s => { s.hints = { ...(s.hints || {}), swipeSets: true } })
       const id = Date.now()
       setUI({ swipeHint: { ...at, id } })
       clearTimeout(hintTm.current)
@@ -1370,18 +1364,20 @@ function ActiveWorkout() {
 
   // An exercise with a unit of its own (#657) is changed in that unit, as it is shown and typed:
   // a weight from its row, a cascade, an added set or warm-up, the watch's numbers.
-  const mutEntry = (idx, fn) => update(s => { inEntryUnit(s, idx, fn) }, true)
+  const mutEntry = (idx, fn) => updateActive(a => { inEntryUnit({ ...useStore.getState().S, active: a }, idx, fn) })
   // Clearing an optional field drops the key rather than storing null, so a set only carries
   // what was actually logged — in the session, in history and in a backup.
   const setField = (idx, i, field, v) => mutEntry(idx, e => {
+    const before = e.sets[i].w
     if (v == null) delete e.sets[i][field]; else e.sets[i][field] = v
     // Typing a duration IS the new plan, the same way ticking the row ends it: a plan a displaced
     // hold put aside must not outrank what you just typed, or the field would read 45 and the ▶
     // would still hold the 30 the row was asking for before.
     if (field === 'sec') delete e.sets[i].planSec
-    // Changing a work set's weight cascades to the following inherited work sets, so a correction
-    // carries through without retyping every row while explicit manual exceptions stay put. A
-    // warm-up edit stays on its own row, and the later rungs keep their ramp loads.
+    // A hand-edited warm-up is the athlete's own: no work-weight edit re-aims it again.
+    if ((field === 'w' || field === 'r') && isWarmupRow(e.sets[i])) delete e.sets[i].autoWarmup
+    // Changing a weight cascades to the following sets of the same phase, so a
+    // heavier bar carries through the set instead of retyping every row.
     if (field === 'w') {
       e.sets[i].weightOrigin = WEIGHT_ORIGIN_MANUAL
       e.sets = cascadeWeight(e.sets, i, v, undefined, e.target?.backoffStep)
@@ -1420,7 +1416,7 @@ function ActiveWorkout() {
     const m = modeOf({ ...(e.target || {}), id: e.id })
     const V = exView(S, e.id)
     // A warm-up of a dumbbell lift lands on a bell you own when the profile lists them (#376).
-    const ramp = (m === 'reps' && ownedWeightsFor(V, { ...(e.target || {}), id: e.id })) || defaultIncrement(e.id, V.unit)
+    const ramp = (m === 'reps' && ownedWeightsFor(V, { ...(e.target || {}), id: e.id })) || loadStepFor(S.prescriptions?.[A.exposures?.find(x => x.exposureId === e.exposureId)?.prescriptionId], V.unit)
     const at = e.sets.findIndex(x => !isWarmupRow(x))
     e.sets = insertWarmupRow(e.sets, m, { ...(e.target || {}), id: e.id }, ramp, barFloor(V, e.id))
     // A warm-up added by hand is part of your setup, so the block keeps its length next time.
@@ -1429,13 +1425,15 @@ function ActiveWorkout() {
   })
   // The set-number menu's Remove and the swipe both go through deleteActiveSet, Undo and all.
   const removeSetAt = (idx, i) => deleteActiveSet(idx, i, { editing })
-  const pairAt = (first, second) => update(s => {
+  const pairAt = (first, second) => updateActive(A => {
     if (focusMode) focusPointerEpoch.current++
-    s.active.entries = pairAdjacent(s.active.entries, first, second)
+    A.entries = pairAdjacent(A.entries, first, second)
+    if (Array.isArray(A.exposures)) syncActiveExposures(A)
   })
-  const unpairAt = idx => update(s => {
+  const unpairAt = idx => updateActive(A => {
     if (focusMode) focusPointerEpoch.current++
-    s.active.entries = unpairSuperset(s.active.entries, idx)
+    A.entries = unpairSuperset(A.entries, idx)
+    if (Array.isArray(A.exposures)) syncActiveExposures(A)
   })
   const onPairPrev = !isSuperset && cur > 0 ? () => pairAt(cur - 1, cur) : null
   const onPairNext = !isSuperset && cur < A.entries.length - 1 ? () => pairAt(cur, cur + 1) : null
@@ -1444,25 +1442,25 @@ function ActiveWorkout() {
   // whole unit. Both return the same index permutation, so everything below remaps the same way.
   const moveUnitAt = (at, direction, member = false) => {
     const ui = useUI.getState()
-    const active = useStore.getState().S.active
+    const active = useStore.getState().A
     const canMove = member ? canMoveActiveWorkoutEntry : canMoveActiveWorkoutUnit
     if (ui.work || !canMove(active, at, direction)) return
     // Invalidate an old timed callback before indexes shift. A running rest is not cancelled:
     // it belongs to an exercise (timer.forIdx), and that exercise only changes position.
     ui.stopWork()
     focusPointerEpoch.current++
-    update(s => {
-      const moved = (member ? moveActiveWorkoutEntry : moveActiveWorkoutUnit)(s.active, at, direction)
+    updateActive(A => {
+      const moved = (member ? moveActiveWorkoutEntry : moveActiveWorkoutUnit)(A, at, direction)
       if (!moved) return
       // The marker follows its unit: the superset card's scroll must not read that as a move.
-      lastCur.current = s.active.cur
+      lastCur.current = A.cur
       progressHighWater.current = moved.indices.map(index => progressHighWater.current[index])
       const rest = useUI.getState().timer
       if (rest && rest.forIdx != null) {
         const forIdx = moved.indices.indexOf(rest.forIdx)
         if (forIdx >= 0) useUI.setState({ timer: { ...rest, forIdx } })
       }
-    }, true)
+    })
   }
 
   const moveCurrentUnit = direction => moveUnitAt(cur, direction)
@@ -1474,7 +1472,7 @@ function ActiveWorkout() {
   // Unlike a deload's, its rows keep the prescription through any rebuild (builtOutOfProgression),
   // so switching it off again leaves the numbers this session should count at. Counting one
   // exercise again also ends "the whole workout" from the header ⋮ (lib/session-noprog.js).
-  const setNoProg = (idx, on) => update(s => setEntryNoProg(s.active, idx, on))
+  const setNoProg = (idx, on) => updateActive(A => { setEntryNoProg(A, idx, on); syncExposureExclusion(A) })
   // A deload or rehab routine keeps its own exercises out (RoutineEdit). That is the routine's
   // setting, so its entries get the marker but no switch.
   const routineKeepsOut = e => !!e?.rid && S.routines.some(r => r.id === e.rid && r.excludeFromProgression === true)
@@ -1483,20 +1481,21 @@ function ActiveWorkout() {
   // Absent when a deload or rehab routine already keeps every exercise out, since nothing is left
   // for the switch to change. Off counts them all again, apart from those.
   const noProgSwitchable = !A.entries.length || A.entries.some(e => !routineKeepsOut(e))
-  const toggleSessionNoProg = () => update(s => setSessionNoProg(s.active, !sessionNoProg(s.active), routineKeepsOut))
+  const toggleSessionNoProg = () => updateActive(A => { setSessionNoProg(A, !sessionNoProg(A), routineKeepsOut); syncExposureExclusion(A) })
   // Warm-ups added in the session, and the rest or note edited on the exercise's settings sheet
   // from inside it, belong to this session only: the routine is the plan, and finishing never
-  // edits it (lib/session-routines.js). This is the explicit way to keep them — an item in the
-  // exercise's ⋯ menu, there only while the routine's slot says something else than the session
-  // did. Sets, reps and weight are not part of it (routineChangesFromEntry).
+  // edits it. This is the explicit way to keep them — an item in the exercise's ⋯ menu, there
+  // only while the routine's slot says something else than the session did. Sets, reps and weight
+  // are not part of it (lib/routine-update.js).
   const restWord = v => (Number(v) > 0 ? fmtRest(v) : Number(v) < 0 ? t('No timer') : t('Default ({0})', fmtRest(S.restSec)))
   const routineUpdateFor = idx => {
     const entry = A.entries[idx]
+    const exposure = A.exposures?.find(x => x.exposureId === entry?.exposureId)
     const routine = !editing && entry?.rid ? S.routines.find(r => r.id === entry.rid) : null
-    const found = routine ? routineChangesFromEntry(routine, A.entries, idx, barFloor(S, entry.id)) : null
+    const found = routine ? routineChangesFromEntry(routine, exposure, entry, S.restSec) : null
     if (!found) return null
     const activeId = A.id
-    const entryId = entry.id
+    const exposureId = exposure.exposureId
     return {
       // A rest reads as the wheel shows it: "3:00", and 0 (no rest of its own) as the default.
       sub: found.changes.map(c => c.key === 'note' ? t('Note')
@@ -1509,12 +1508,14 @@ function ActiveWorkout() {
         confirmText: t('Update routine'),
         onConfirm: () => {
           let applied = null
-          update(s => {
-            // The sheet can outlive the workout, or the exercise at this index: fail closed.
-            const target = s.routines.find(r => r.id === routine.id)
-            if (!target || s.active?.id !== activeId || s.active.entries?.[idx]?.id !== entryId) return
-            applied = updateRoutineFromEntry(target, s.active.entries, idx, barFloor(s, entryId))
-          })
+          // The sheet can outlive the workout, or the exercise at this index: fail closed, and
+          // read what the routine and the session say now, not when the sheet was opened.
+          const now = useStore.getState()
+          const live = now.A?.id === activeId ? now.A.entries?.[idx] : null
+          if (!live || live.exposureId !== exposureId) return
+          const fresh = routineChangesFromEntry(now.S.routines.find(r => r.id === routine.id), now.A.exposures?.find(x => x.exposureId === exposureId), live, now.S.restSec)
+          if (!fresh) return
+          now.update(s => { applied = updateRoutineFromEntry(s.routines.find(r => r.id === routine.id), fresh) })
           if (applied) useUI.getState().toast(t('Routine updated'))
         },
       }),
@@ -1527,17 +1528,19 @@ function ActiveWorkout() {
     const entry = A.entries[idx]
     const routine = !editing && entry?.rid ? S.routines.find(r => r.id === entry.rid) : null
     if (!routine || !(entry.sets || []).some(isWarmupRow)) return null
-    const at = routineSlotIndex(routine, A.entries, idx)
-    if (at < 0) return null
-    const rows = ownWarmupsChange(routine.ex[at], entry, barFloor(S, entry.id), { force: true })
+    const exposure = A.exposures?.find(x => x.exposureId === entry.exposureId)
+    const currentSlot = routineSlotFor(routine, exposure)
+    if (!currentSlot) return null
+    const rows = ownWarmupsChange(currentSlot, entry, barFloor(S, entry.id), { force: true })
     if (!rows) return null
     const activeId = A.id, entryId = entry.id
     return () => {
       let kept = false
       update(s => {
         const target = s.routines.find(r => r.id === routine.id)
-        if (!target || s.active?.id !== activeId || s.active.entries?.[idx]?.id !== entryId) return
-        const slot = target.ex[routineSlotIndex(target, s.active.entries, idx)]
+        const live = useStore.getState().A
+        if (!target || live?.id !== activeId || live.entries?.[idx]?.exposureId !== exposure?.exposureId) return
+        const slot = routineSlotFor(target, live.exposures?.find(x => x.exposureId === exposure.exposureId))
         if (!slot) return
         keepOwnWarmups(slot, rows)
         kept = true
@@ -1582,14 +1585,13 @@ function ActiveWorkout() {
     onStartTimed: (i, onFocusProgress) => startTimed(idx, i, onFocusProgress),
     onProgressionSettings: editing ? null : () => openProgressionSettings(idx),
     onRest: editing ? null : () => openExerciseRest(idx),
-    onNoProg: routineKeepsOut(A.entries[idx]) ? null : on => setNoProg(idx, on),
     routineUpdate: routineUpdateFor(idx),
+    onNoProg: routineKeepsOut(A.entries[idx]) ? null : on => setNoProg(idx, on),
   })
-  const selectFocusEntry = idx => update(s => { if (s.active) s.active.cur = idx })
-  const advanceFocusUnit = () => update(s => {
-    if (!s.active) return
-    const next = nextUnfinishedUnit(s.active.entries, supersetUnits(s.active.entries), s.active.cur)
-    if (next) s.active.cur = next[0]
+  const selectFocusEntry = idx => updateActive(A => { A.cur = idx })
+  const advanceFocusUnit = () => updateActive(A => {
+    const next = nextUnfinishedUnit(A.entries, supersetUnits(A.entries), A.cur)
+    if (next) A.cur = next[0]
   })
   const navigateUnit = direction => {
     const targetFor = active => {
@@ -1600,10 +1602,10 @@ function ActiveWorkout() {
       // Cards and Focus may jump over finished exercises (Settings, "Skip completed exercises").
       return freshUnitIdx < 0 ? null : freshUnits[stepUnitIndex(active.entries, freshUnits, freshUnitIdx, direction, skipDone)]?.[0] ?? null
     }
-    if (targetFor(useStore.getState().S.active) == null) return
-    update(s => {
-      const target = targetFor(s.active)
-      if (target != null) s.active.cur = target
+    if (targetFor(useStore.getState().A) == null) return
+    updateActive(A => {
+      const target = targetFor(A)
+      if (target != null) A.cur = target
     })
   }
   // List mode shows every unit at once, so the "current" exercise is chosen by tapping
@@ -1615,15 +1617,14 @@ function ActiveWorkout() {
   // stays in the list when the list is the saved default, which is a choice to keep, and when
   // the exercise buttons are on, because then the tap also picks what Move/Swap/Remove below
   // act on and the list is where you use them.
-  const focusUnit = firstIdx => update(s => {
-    if (!s.active) return
-    s.active.cur = firstIdx
-    if (!workoutControls(s).exerciseButtons && (s.workoutView || 'cards') === 'cards') s.active.workoutView = 'cards'
+  const focusUnit = firstIdx => updateActive(A => {
+    A.cur = firstIdx
+    if (!workoutControls(useStore.getState().S).exerciseButtons && (useStore.getState().S.workoutView || 'cards') === 'cards') A.workoutView = 'cards'
   })
   // The header ⋮ re-lays-out the running session without touching the saved default
-  // (Settings → During a workout → Workout view). It writes s.active.workoutView, which the
+  // (Settings → During a workout → Workout view). It writes A.workoutView, which the
   // render above prefers over S.workoutView.
-  const setWorkoutView = v => update(s => { if (s.active) s.active.workoutView = v })
+  const setWorkoutView = v => updateActive(A => { A.workoutView = v })
   const LAYOUT_LABEL = {
     cards: t('Cards'),
     list: t('List'),
@@ -1639,15 +1640,15 @@ function ActiveWorkout() {
       { icon: 'target', label: t('Focus'), on: workoutView === 'focus', onClick: () => setWorkoutView('focus') },
       listMode && { icon: 'minimize', label: t('Collapse completed exercises'),
         sub: t('Keep the current exercise open'), on: collapseOn,
-        onClick: () => update(s => { if (s.active) s.active.collapseCompleted = !collapseOn }) },
+        onClick: () => updateActive(A => { A.collapseCompleted = !collapseOn }) },
     ],
   })
   // Logging a past workout (#284): the sets were done days ago, so one tap ticks them all and
   // offers the finish, the same sheet the last set of a live session opens. What went
   // differently is still edited on the rows before finishing.
   const markAllDone = () => {
-    update(s => { if (s.active) s.active.entries = markAllSetsDone(s.active.entries) }, true)
-    const fresh = useStore.getState().S.active
+    updateActive(A => { A.entries = markAllSetsDone(A.entries) })
+    const fresh = useStore.getState().A
     // Ticked here rather than row by row: without this, unticking and reticking one of them
     // would count as new progress and replay the flow a first tick runs.
     if (fresh) progressHighWater.current = fresh.entries.map(e => e.sets.filter(s => s.done).length)
@@ -1667,21 +1668,33 @@ function ActiveWorkout() {
     const curRid = curEntry?.rid
     const routine = curRid ? S.routines.find(r => r.id === curRid) : null
     const freestyle = !routine
-    const noProg = !freestyle && builtOutOfProgression(curEntry, routine)
+    const noProg = !freestyle && routine?.excludeFromProgression === true
     // Freestyle has no routine prescription to apply: show the last target in the config
     // sheet and carry its completed rows forward. A planned session uses its configured
     // target when progression is off, while progression-enabled sessions keep their path.
-    const seed = freestyle ? freestyleConfig(sessionHistory(S), { id: ex.id, ...pickedExerciseConfig(ex.id) }) : null
-    const commit = cfg => {
+    const seed = freestyle ? freestyleConfig(S, { id: ex.id, ...defaultConfig(ex.id) }) : null
+    // The profile (workout history, unit) only feeds the progression calculation here — it is
+    // read once from S, not written, so this stays off the updateActive path except for the
+    // entries splice/cur that actually belong to the session.
+    const commit = occurrence => {
+      let exposure = null
+      if (freestyle) occurrence = { ...occurrence, repeatLast: true }
+      const scratchRoutine = { ...(routine || { id: 'freestyle' }), ex: [occurrence] }
+      useStore.getState().update(s => {
+        exposure = buildSessionExposures(s, scratchRoutine, { now: Date.now(), newId: uid, unit: s.unit })[0]
+      })
+      if (!exposure) return
+      if (freestyle) delete exposure.routineId
+      // A session kept out as a whole (the header ⋮) takes the new exercise with it.
+      if (sessionNoProg(useStore.getState().A)) exposure.excludedFromProgression = true
+      const entry = entriesForExposures([exposure], useStore.getState().S.prescriptions)[0]
+      // `addedInSession`: the finish summary offers to keep it in the routine (#592).
+      if (routine) { exposure.addedInSession = true; entry.addedInSession = true }
       if (focusMode) focusPointerEpoch.current++
-      update(s => {
-        // A planned session builds the exercise the way its routine would (prescription, reps
-        // source, target); freestyle reproduces what you did last time (buildSessionEntry).
-        const built = buildSessionEntry(s, ex.id, cfg, routine, curEntry)
-        const insertAt = insertionIndexAfterCurrentUnit(supersetUnits(s.active.entries), s.active.cur, s.active.entries.length)
-        // `addedInSession`: the finish summary offers to keep it in the routine (#592).
-        s.active.entries.splice(insertAt, 0, joinSessionNoProg(s.active, { id: ex.id, ...built, ...(curRid ? { rid: curRid, addedInSession: true } : {}), ...(noProg ? { noProg: true } : {}) }))
-        s.active.cur = insertAt
+      updateActive(A => {
+        const insertAt = insertionIndexAfterCurrentUnit(supersetUnits(A.entries), A.cur, A.entries.length)
+        if (!insertActiveOccurrence(A, insertAt, { exposure, entry })) return
+        A.cur = insertAt
         useUI.getState().shiftRestOwner(insertAt, 1)
       })
     }
@@ -1690,16 +1703,18 @@ function ActiveWorkout() {
     // button. Quick-add commits with the same default (or, freestyle, last-session) config
     // the sheet would have opened with; tapping the row still opens that sheet for anyone
     // who wants to set sets/reps first.
-    if (quick) { commit(seed || pickedExerciseConfig(ex.id)); useUI.getState().toast(t('“{0}” added to {1}', exerciseNameText(ex), routine ? routine.name : t('Freestyle'))) }
+    if (quick) {
+      const target = seed || defaultConfig(ex.id)
+      commit(routine ? quickOccurrence(ex, routine) : occurrenceFor(ex.id, target, { id: uid(), unit: S.unit }))
+      useUI.getState().toast(t('“{0}” added to {1}', exerciseNameText(ex), routine ? routine.name : t('Freestyle')))
+    }
     // The confirm names what it changes: this workout, never the routine behind it.
     else exConfigSheet(ex, null, commit, null, routine, seed, null, t('Add to this workout'), { freestyle: freestyle ? 'add' : false })
   })
-  // Ending the session without saving it, from the Finish sheet only. It used to end the header ⋯
-  // as a red trash too, right where the exercise ⋯ keeps Remove exercise, and after a hard session
-  // the two got mixed up (#751).
-  // Named for the watch first: gone from its snapshot it would look finished, and be saved to Apple Health (#776).
-  // The watch's own Discard (confirmed there) runs this too.
-  const discardNow = () => { markDiscarded(useStore.getState().S.active?.id); update(s => { s.active = null }); stopRest(); stopWork(); nav('/home') }
+  // Ending the session without saving it. The ⋯ menu's last item since the header's ✕ became the
+  // ⌄ that only leaves the screen (v1.3.11).
+  // The watch hears it was discarded, not finished (#776).
+  const discardNow = () => { markDiscarded(useStore.getState().A?.id); useStore.getState().clearActive(); stopRest(); stopWork(); nav('/home') }
   const discardWorkout = () => confirmSheet({
     title: t('Discard workout?'), message: t('The sets you logged in this session will be lost.'), confirmText: t('Discard'), danger: true,
     onConfirm: discardNow,
@@ -1755,18 +1770,19 @@ function ActiveWorkout() {
       ] }] },
     ],
   })
-  // An exercise's own rest, from its ⋯ menu: the default, no timer, or a time of its own, as on
-  // its settings sheet. Like everything edited on the exercise from inside the session it is this
-  // session's; the menu's Update routine offers to keep it.
+  // An exercise's own rest, from its ⋯ menu: the same wheel as the default rest timer, where 0:00
+  // means "no rest of its own", so the default applies. Like everything edited on the exercise
+  // from inside the session it is this session's; the menu's Update routine offers to keep it.
   const openExerciseRest = idx => {
     const state = useStore.getState().S
-    const entry = state.active?.entries?.[idx]
+    const active = useStore.getState().A
+    const entry = active?.entries?.[idx]
     if (!entry) return
-    const activeId = state.active.id
+    const activeId = active.id
     const entryId = entry.id
     const own = ownExerciseRest(entry.target)
-    const setRest = sec => update(s => {
-      const e = s.active?.id === activeId ? s.active.entries?.[idx] : null
+    const setRest = sec => updateActive(a => {
+      const e = a?.id === activeId ? a.entries?.[idx] : null
       if (!e || e.id !== entryId) return
       const { restSec: _sec, restOff: _off, ...target } = e.target || {}
       e.target = sec == null ? target : sec > 0 ? { ...target, restSec: sec } : { ...target, restOff: true }
@@ -1785,63 +1801,72 @@ function ActiveWorkout() {
     })
   }
   const openProgressionSettings = idx => {
-    const state = useStore.getState().S
-    const entry = state.active?.entries?.[idx]
-    if (!entry) return
-    const activeId = state.active.id
+    const activeState = useStore.getState().A
+    const entry = activeState?.entries?.[idx]
+    const currentExposure = activeState?.exposures?.find(x => x.exposureId === entry?.exposureId)
+    if (!entry || !currentExposure) return
+    const activeId = activeState.id
     const entryId = entry.id
-    const entryCount = state.active.entries.length
+    const exposureId = currentExposure.exposureId
+    const entryCount = activeState.entries.length
     // A combined session's entries each carry a `rid`; progression settings read from that
     // entry's own routine, not a session-wide one.
-    const routine = state.routines.find(r => r.id === entry.rid)
-    // The sheet opens at the plan's sets and reps rather than today's prescription (see
-    // plannedConfigOf), so saving it unchanged rebuilds the rows the entry already has.
-    const opened = plannedConfigOf(entry)
-    exConfigSheet(exOr(entryId), opened, cfg => {
+    const routine = useStore.getState().S.routines.find(r => r.id === entry.rid)
+    const prescription = useStore.getState().S.prescriptions?.[currentExposure.prescriptionId]
+    const savedOccurrence = routine?.ex?.find(x => x.occurrenceId === currentExposure.occurrenceId)
+    const editable = savedOccurrence || (prescription && {
+      occurrenceId: currentExposure.occurrenceId,
+      exerciseId: entryId,
+      rule: ruleOfPrescription(prescription, routine?.id ?? null),
+    })
+    if (!editable) return
+    exConfigSheet(exOr(entryId), editable, cfg => {
       // Store updates clone the state tree. If this exact object is no longer at the captured
       // index, the list changed while the sheet was open; an id check alone cannot distinguish
       // duplicate occurrences of the same exercise, so fail closed before cloning again.
       // Every store write clones the tree (the bar-weight stepper inside this very sheet does
       // one), so object identity is useless here. Same workout, same list length and the same
       // exercise at the captured index is what "nothing shifted" means.
-      const current = useStore.getState().S
-      if (current.active?.id !== activeId || current.active.entries?.length !== entryCount || current.active.entries?.[idx]?.id !== entryId) return
-      update(s => {
-        const activeEntry = s.active?.id === activeId ? s.active.entries?.[idx] : null
+      const current = useStore.getState().A
+      if (current?.id !== activeId || current.entries?.length !== entryCount || current.entries?.[idx]?.exposureId !== exposureId) return
+      // The sheet hands back an occurrence with a validated rule. Re-generate the live rows
+      // through `buildSessionExposures`, wrapped as a scratch one-occurrence routine, so the
+      // prescription comes from the same engine path as session start.
+      const activeRoutine = useStore.getState().S.routines.find(r => r.id === current.entries[idx].rid)
+      const occurrence = { occurrenceId: cfg.occurrenceId || entryId, ...cfg, exerciseId: entryId }
+      const scratchRoutine = { ...(activeRoutine || { id: 'freestyle' }), ex: [occurrence] }
+      let exposure = null
+      try {
+        useStore.getState().update(s => {
+          exposure = buildSessionExposures(s, scratchRoutine, { now: Date.now(), newId: uid, unit: s.unit })[0]
+        })
+      } catch { return }
+      if (!exposure) return
+      const nextExposure = { ...exposure, exposureId: currentExposure.exposureId, ...(currentExposure.sg ? { sg: currentExposure.sg } : {}) }
+      const nextEntry = entriesForExposures([nextExposure], useStore.getState().S.prescriptions)[0]
+      if (!nextEntry) return
+      const isFreshWarmup = isWarmupRow
+      updateActive(A => {
+        const activeEntry = A?.id === activeId ? A.entries?.[idx] : null
         // The sheet may outlive its workout or entry. Never apply its result to whatever later
         // happens to occupy the same index.
-        if (!activeEntry || activeEntry.id !== entryId) return
-        const full = { ...cfg, id: activeEntry.id }
-        // The weight the sheet showed is today's. Left as it was, it is not an edit of the plan's:
-        // stamped as the plan, a later edit of the reps would restart from today's load as though
-        // it had been typed in (nextPrescription), so the plan keeps its own.
-        if ((cfg.weight || 0) === (opened.weight || 0) && activeEntry.planned?.weight != null) full.weight = activeEntry.planned.weight
-        const activeRoutine = s.routines.find(r => r.id === activeEntry.rid)
-        // A config without a set count keeps the rows the session already has.
-        if (!(full.sets > 0)) full.sets = activeEntry.sets.filter(x => !isWarmupRow(x)).length || 1
-        // The sheet edits sets, reps, weight and warm-ups as well as the rule — so the rows are
-        // rebuilt from the new config exactly the way the session start builds them (same reps
-        // source, same prescription, same stamped target, and in a workout logged into the past the
-        // same history from before its day), and only what you already logged is
-        // kept in place (done warm-ups first, then done work sets, then the fresh remainder).
-        // Without a prescription only in a routine kept out of progression: an exercise kept out
-        // by hand keeps its prescription, so its Undo leaves the numbers it should count at.
-        // A freestyle exercise (no routine) follows only a rule picked on it: without one it is
-        // rebuilt at the numbers the sheet was saved with, never at a linear step nobody picked (#910).
-        const built = buildPlannedEntry(sessionHistory(s), full, activeRoutine, { noProg: (!activeRoutine && !full.prog) || builtOutOfProgression(activeEntry, activeRoutine) })
-        const fresh = built.sets
+        if (!activeEntry || activeEntry.exposureId !== exposureId) return
+        // The sheet edits sets, reps, weight and every other axis as well as the rule — so the
+        // rows are rebuilt from the new prescription, and only what you already logged is kept
+        // in place (done warm-ups first, then done work sets, then the fresh remainder).
+        const fresh = nextEntry.sets
         // A per-side set with one side ticked is logged work too, not a row to rebuild.
         const logged = x => x.done || x.sides?.L?.done || x.sides?.R?.done
         const doneWarm = activeEntry.sets.filter(x => logged(x) && isWarmupRow(x))
         const doneWork = activeEntry.sets.filter(x => logged(x) && !isWarmupRow(x))
-        const freshWarm = fresh.filter(isWarmupRow)
-        const freshWork = fresh.filter(x => !isWarmupRow(x))
-        activeEntry.target = built.target
-        activeEntry.plan = built.plan
-        activeEntry.planned = built.planned
-        if (built.carried) activeEntry.carried = true
-        else delete activeEntry.carried
-        activeEntry.sets = [...doneWarm, ...freshWarm.slice(doneWarm.length), ...doneWork, ...freshWork.slice(doneWork.length)]
+        const freshWarm = fresh.filter(isFreshWarmup)
+        const freshWork = fresh.filter(x => !isFreshWarmup(x))
+        nextEntry.sets = [...doneWarm, ...freshWarm.slice(doneWarm.length), ...doneWork, ...freshWork.slice(doneWork.length)]
+        if (activeEntry.sg) nextEntry.sg = activeEntry.sg
+        if (activeEntry.note) nextEntry.note = activeEntry.note
+        // What the routine planned stays the routine's, whatever the sheet changed for this session.
+        if (activeEntry.routineWarmups != null) nextEntry.routineWarmups = activeEntry.routineWarmups
+        replaceActiveOccurrence(A, idx, { exposure: nextExposure, entry: nextEntry })
       })
     }, null, routine, null, null, undefined, { freestyle: routine ? false : 'edit' })
   }
@@ -1899,7 +1924,7 @@ function ActiveWorkout() {
     const owner = { idx, i }
     // A hold of an exercise whose holds run themselves gets the chain's controls on its bar, also
     // when it was started by hand: after it the chain carries on by itself.
-    const auto = autoHoldsFor(useStore.getState().S, e.target)
+    const auto = autoHoldsFor({ ...useStore.getState().S, active: useStore.getState().A }, e.target)
     useUI.getState().startWork(plan, exerciseNameText(exOr(e.id)), holdDone(owner, plan, onFocusProgress), { idx, i, id: e.id }, { startedAt, auto })
     // After startWork: a hold it displaced has already written its seconds to its own row.
     holdAt = { owner, idx, i }
@@ -1927,7 +1952,7 @@ function ActiveWorkout() {
     }
     mutEntry(idx, en => { en.sets[i].sec = elapsed; delete en.sets[i].planSec })
     const restBefore = useUI.getState().timer
-    if (!useStore.getState().S.active.entries[idx].sets[i].done) toggle(idx, i, undefined, { quiet: chimed, onFocusProgress })
+    if (!useStore.getState().A.entries[idx].sets[i].done) toggle(idx, i, undefined, { quiet: chimed, onFocusProgress })
     // Holds that run themselves (lib/auto-holds.js). A hold that ran out while the phone was locked
     // is heard of late: its set is logged at the time it ended and its rest started then, so the
     // rest is as far along as it would have been. With no rest after it, the next hold counts in.
@@ -1940,13 +1965,13 @@ function ActiveWorkout() {
   // What the chain needs from this screen (store/useUI.js bindAuto): the next hold that starts by
   // itself, the move to its exercise, its start, and the holds after it for the locked phone.
   const timedAt = idx => {
-    const live = useStore.getState().S.active
+    const live = useStore.getState().A
     const en = live?.entries?.[idx]
     return !!en && modeOf({ ...(en.target || {}), id: en.id }) === 'time'
   }
   const autoStartRef = useRef(null)
   autoStartRef.current = (owner, startedAt) => {
-    const live = useStore.getState().S.active
+    const live = useStore.getState().A
     const en = live?.entries?.[owner.idx]
     // Only the set it counted in for, while it is still that one and still open.
     if (!en || en.id !== owner.id || !en.sets?.[owner.i] || en.sets[owner.i].done || useUI.getState().work) return
@@ -1955,13 +1980,13 @@ function ActiveWorkout() {
   useEffect(() => useUI.getState().bindAuto?.({
     peek: () => {
       const live = useStore.getState().S
-      const next = nextAutoHold(live, timedAt)
+      const next = nextAutoHold({ ...live, active: useStore.getState().A }, timedAt)
       return next && { ...next, label: exerciseNameText(exOr(next.id)) }
     },
-    focus: owner => { if (!owner.current) update(s => { if (s.active && s.active.entries?.[owner.idx]?.id === owner.id) s.active.cur = owner.idx }) },
+    focus: owner => { if (!owner.current) updateActive(a => { if (a.entries?.[owner.idx]?.id === owner.id) a.cur = owner.idx }) },
     startHold: (owner, startedAt) => autoStartRef.current?.(owner, startedAt),
-    forecast: owner => forecastHolds(useStore.getState().S, owner, { isTimed: timedAt, switchSec: SWITCH_SIDES_SEC }),
-    stop: () => update(s => { if (s.active) s.active.autoHoldsOff = true }),
+    forecast: owner => forecastHolds({ ...useStore.getState().S, active: useStore.getState().A }, owner, { isTimed: timedAt, switchSec: SWITCH_SIDES_SEC }),
+    stop: () => updateActive(a => { a.autoHoldsOff = true }),
   }), [])
   // A hold that came back from a reload has no handler yet: this screen gives it its own.
   const holdDoneRef = useRef(holdDone)
@@ -1988,8 +2013,8 @@ function ActiveWorkout() {
     const m = modeAt(idx)
     const cardioEntry = m === 'cardio'
     let exJustDone = false, workoutDone = false, checked = false
-    update(s => {
-      const e = s.active.entries[idx]
+    updateActive(A => {
+      const e = A.entries[idx]
       // A per-side tick flips just that side; the row's own `done` (both sides) is then
       // recomputed by toggleSide, so every completion check below still reads a single boolean.
       if (side) e.sets[i] = toggleSide(e.sets[i], side)
@@ -2014,7 +2039,7 @@ function ActiveWorkout() {
           e.topW = bestWeightForEntry(e) || null
         }
       }
-    }, true)
+    })
     if (editing) return
     if (workoutDone) workoutCompleteSheet()
     else if (exJustDone && cardioEntry) useUI.getState().toast(t('Cardio logged'))
@@ -2024,18 +2049,18 @@ function ActiveWorkout() {
     // has one ("Rest after this set", #853), else the exercise's break between sides
     // (sideRestFor); none otherwise, as before.
     if (side && !checked) {
-      const sets = useStore.getState().S.active?.entries[idx]?.sets
+      const sets = useStore.getState().A?.entries[idx]?.sets
       const row = sets?.[i]
       const other = side === 'L' ? 'R' : 'L'
       if (row?.sides?.[side]?.done && !row.sides[other]?.done) {
         const ownSec = ownSetRest(sets[setSpanAt(sets, i)[0]])
-        const pause = sideRestFor(useStore.getState().S.active.entries[idx].target, { timed: false, ownSec })
+        const pause = sideRestFor(useStore.getState().A.entries[idx].target, { timed: false, ownSec })
         if (pause > 0) startRest(pause, idx, { kind: 'switch', forSet: i })
       }
     }
     // Only progress beyond this exercise's high-water mark may navigate or change rest. This
     // prevents an uncheck/re-check of finished work from replaying the flow side effects.
-    const fresh = useStore.getState().S.active
+    const fresh = useStore.getState().A
     if (fresh && checked && fresh.entries[idx]) {
       const progress = setProgressHighWater(fresh.entries[idx], progressHighWater.current[idx] || 0)
       progressHighWater.current[idx] = progress.highWater
@@ -2074,7 +2099,7 @@ function ActiveWorkout() {
       // progress, never on a re-tick, and never in the other layouts, where the marker stays put.
       if (collapseOn && freshUnitDone && nextUnit && freshUnit?.includes(fresh.cur)) {
         revealCur.current = true
-        update(s => { if (s.active) s.active.cur = nextUnit[0] })
+        updateActive(A => { A.cur = nextUnit[0] })
       }
 
       // Between the two sides of one timed per-side set (a side plank's left, then its right):
@@ -2107,8 +2132,8 @@ function ActiveWorkout() {
       if (step.unitDone) {
         if (nextUnit?.length) startRest(restAfter, idx, { forSet: i })
       } else {
-        if (step.nextIdx != null) update(s => { if (s.active) s.active.cur = step.nextIdx })
-        if (step.roundDone) startRest(restAfter, idx, { forSet: i })
+          if (step.nextIdx != null) updateActive(A => { A.cur = step.nextIdx })
+          if (step.roundDone) startRest(restAfter, idx, { forSet: i })
       }
       onFocusProgress?.({ unitDone: freshUnitDone })
     }
@@ -2120,12 +2145,12 @@ function ActiveWorkout() {
   const checkedToggle = (idx, i, side, opts) => {
     // Held against the exercise's own numbers, in its own unit (#657).
     const live = useStore.getState().S
-    const st = exView(live, live.active?.entries?.[idx]?.id)
+    const st = exView({ ...live, active: useStore.getState().A }, useStore.getState().A?.entries?.[idx]?.id)
     const e = st.active?.entries?.[idx]
     const row = side ? e?.sets?.[i]?.sides?.[side] : e?.sets?.[i]
     if (editing || !row || row.done || modeAt(idx) !== 'reps') return toggle(idx, i, side, opts)
     const last = lastEntryFor(st, e.id, e.rid)
-    const odd = oddValues(row, bestsFor(st.workouts, e.id), {
+    const odd = oddValues(row, bestsFor(st.workouts.map(w => ({ ...w, entries: legacyEntriesOf(w, st.prescriptions) })), e.id), {
       unit: st.unit, assisted: isAssisted(e.id), last: lastRowFor(last?.sets, e.sets, i, side),
     })
     if (!odd.length) return toggle(idx, i, side, opts)
@@ -2150,8 +2175,8 @@ function ActiveWorkout() {
   // sessionEnd reads the sets' times). The watch's Finish runs the phone's Finish and save.
   useEffect(() => bindWatchActions({
     setDone: (idx, i, { w, r, sec, side, at, hr, rpe, rir }) => {
-      if (useStore.getState().S.active?.editingWorkoutId) return   // a saved workout being edited is not the session
-      const now = useStore.getState().S.active?.entries?.[idx]?.sets?.[i]
+      if (useStore.getState().A?.editingWorkoutId) return   // a saved workout being edited is not the session
+      const now = useStore.getState().A?.entries?.[idx]?.sets?.[i]
       // One side of a per-side set (a unilateral exercise): that side's numbers and its own tick.
       const oneSide = side && isSideSet(now) ? side : null
       const wasDone = oneSide ? now.sides[oneSide].done : now?.done
@@ -2181,8 +2206,8 @@ function ActiveWorkout() {
       if (!wasDone) toggleRef.current(idx, i, oneSide || undefined)
       if (at || hr) mutEntry(idx, en => { const set = en.sets[i]; if (!(oneSide ? set?.sides?.[oneSide]?.done : set?.done)) return; if (at) set.at = at; if (hr) set.hr = hr })
     },
-    finish: () => { if (!useStore.getState().S.active?.editingWorkoutId) finishWorkoutNow() },
-    discard: () => { if (!useStore.getState().S.active?.editingWorkoutId) discardNow() },
+    finish: () => { if (!useStore.getState().A?.editingWorkoutId) finishWorkoutNow() },
+    discard: () => { if (!useStore.getState().A?.editingWorkoutId) discardNow() },
     // The watch ended the workout as forgotten while it was being logged here (#904): kept running.
     idleKept: () => useUI.getState().toast(t('Your watch thought this workout was forgotten. It keeps going here.')),
   }), [])
@@ -2195,7 +2220,7 @@ function ActiveWorkout() {
   liveToggleRef.current = toggle
   useEffect(() => bindLiveActions({
     setDone: (idx, i, { at }) => {
-      const A = useStore.getState().S.active
+      const A = useStore.getState().A
       if (!A || A.editingWorkoutId || A.entries?.[idx]?.sets?.[i]?.done) return
       const restBefore = useUI.getState().timer
       // Log set on a hold that is running: the hold ends there, with what was held up to the tap.
@@ -2211,7 +2236,7 @@ function ActiveWorkout() {
       if (late > 1 && rest && rest !== restBefore && !rest.ready && !rest.paused) useUI.getState().addRest(-late)
     },
     // Next exercise and Skip rest: what this screen's own Next and the rest bar's Skip do.
-    next: idx => update(s => { if (s.active && !s.active.editingWorkoutId && s.active.entries?.[idx]) s.active.cur = idx }),
+    next: idx => updateActive(a => { if (!a.editingWorkoutId && a.entries?.[idx]) a.cur = idx }),
     restSkip: () => (useUI.getState().skipRest || useUI.getState().stopRest)(),
     // Stop auto on the Lock Screen: the chain ends, as with the bar's own button.
     autoStop: () => useUI.getState().stopAuto?.(),
@@ -2262,7 +2287,7 @@ function ActiveWorkout() {
       return
     }
     if (chip.unit.includes(cur)) return
-    update(s => { if (s.active) s.active.cur = chip.unit[0] })
+    updateActive(A => { A.cur = chip.unit[0] })
   }
   // What the session hits so far (#670). It rides at the end of the chip row, which is taller
   // than it and scrolls sideways anyway, so it costs no height; the header bar has no width to
@@ -2294,7 +2319,7 @@ function ActiveWorkout() {
       if (Date.now() - (work.endsAt - work.total * 1000) >= HOLD_KEY_GRACE_MS) useUI.getState().finishWorkEarly()
       return true
     }
-    const fresh = useStore.getState().S.active
+    const fresh = useStore.getState().A
     const next = nextOpenSet(fresh?.entries, fresh?.cur)
     if (!next) return true
     // The exercise on screen is finished: this press brings up the next one, and the one after
@@ -2342,7 +2367,7 @@ function ActiveWorkout() {
     if (!useStore.getState().user || editing || useStore.getState().tourSandbox) return
     let stopped = false
     const ping = active => {
-      const A2 = useStore.getState().S.active
+      const A2 = useStore.getState().A
       if (!A2) return
       const u = supersetUnits(A2.entries)
       const c = Math.min(A2.cur, Math.max(0, A2.entries.length - 1))
@@ -2601,6 +2626,6 @@ if (typeof document !== 'undefined') document.addEventListener('pointerdown', ()
 export function _resetHintQuiet() { lastTouchAt = 0 }
 
 export default function Workout() {
-  const active = useStore(s => s.S.active)
+  const active = useStore(s => s.A)
   return active ? <ActiveWorkout /> : <StartChooser />
 }

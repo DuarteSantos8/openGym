@@ -1,16 +1,19 @@
 // The performance report's numbers (lib/report.js): every figure the PDF prints is counted here.
 import { describe, it, expect } from 'vitest'
 import { reportRange, reportData, totalsOf, bucketsOf, calendarOf, topLiftsOf, prsOf, inRange, workSetsOf } from './report.js'
+import { migratedFixture } from './test-fixtures.js'
 import { reportPrintHTML, workoutPrintHTML, barChartSVG, lineChartSVG } from './report-print.js'
 
 const at = (iso, h = 18) => new Date(iso + `T${String(h).padStart(2, '0')}:00:00`).getTime()
 const workout = (d, entries, extra = {}) => ({ id: 'w' + d, d, start: at(d), end: at(d) + 60 * 60000, name: 'Push', entries, ...extra })
 const bench = (w, reps = [5, 5, 5], warm = true) => ({
   id: '0025',
-  sets: [...(warm ? [{ w: w / 2, r: 8, done: true, warmup: true }] : []), ...reps.map(r => ({ w, r, done: true }))],
+  sets: [...(warm ? [{ w: w / 2, r: 8, done: true, phase: 'warmup' }] : []), ...reps.map(r => ({ w, r, done: true }))],
 })
 
-function state() {
+// Written as v1 workouts and converted the way a real profile is.
+const state = () => migratedFixture(legacyState())
+function legacyState() {
   return {
     unit: 'kg', weekStart: 1, routines: [], week: {},
     workouts: [

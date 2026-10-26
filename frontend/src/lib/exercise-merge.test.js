@@ -1,3 +1,6 @@
+import { migratedFixture } from './test-fixtures.js'
+import { validateCanonicalProfile } from '../../../api/migration/profile-validation.js'
+import { contentHash } from './prescription/index.js'
 import { describe, expect, test } from 'vitest'
 import { mergeExercise, undoMerge, mergePreview, mergeBlocked, mergedInto, mergedAway, applyExerciseMerges } from './exercise-merge.js'
 import { mergeStates, stampChange } from './sync-merge.js'
@@ -149,4 +152,17 @@ describe('a merge on one device, a workout on another', () => {
     expect(applyExerciseMerges(S)).toBe(0)
     expect(S).toEqual(state())
   })
+})
+
+ test('merges canonical exposures with new frozen snapshots and can undo', () => {
+  const S = migratedFixture(state())
+  const before = JSON.parse(JSON.stringify(S.prescriptions))
+  const { undo } = mergeExercise(S, CUSTOM, BENCH, { now: 10000 })
+  expect(validateCanonicalProfile(S).ok).toBe(true)
+  expect(S.workouts[0].exposures[0].exerciseId).toBe(BENCH)
+  for (const [id, p] of Object.entries(before)) expect(S.prescriptions[id]).toEqual(p)
+  for (const p of Object.values(S.prescriptions)) { const { contentHash: hash, ...body } = p; expect(hash).toBe(contentHash(body)) }
+  undoMerge(S, undo, { now: 10001 })
+  expect(S.workouts[0].exposures[0].exerciseId).toBe(CUSTOM)
+  expect(validateCanonicalProfile(S).ok).toBe(true)
 })

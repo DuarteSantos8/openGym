@@ -8,7 +8,7 @@
    What the lib will not guess at — a name the library spells twice, an exercise the user has not
    made yet — comes back as `problems` with candidates, for the LLM to put to the user. */
 import { z } from 'zod'
-import { isoDate, entryView, withCustomsIndexed } from './tools.js'
+import { isoDate, exposureView, withCustomsIndexed } from './tools.js'
 import { localUid, invalidate } from './state.js'
 import { apiConfig, apiFetch } from './api-client.js'
 import { buildLoggedWorkout, appendLoggedWorkout, findDuplicate, BODY_PARTS, LOG_LIMITS } from '../../frontend/src/lib/log-workout.js'
@@ -63,27 +63,30 @@ function viewOf(w, S, resolved) {
     volume: w.vol,
     ...(w.note ? { note: w.note } : {}),
     prs: (w.prs || []).map(id => resolved.resolved.find(r => r.id === id)?.name || id),
-    exercises: w.entries.map(e => {
-      const v = entryView(e, withCustoms)
-      const r = resolved.resolved.find(x => x.id === e.id)
+    exercises: w.exposures.map(x => {
+      const v = exposureView(withCustoms, x)
+      const r = resolved.resolved.find(y => y.id === x.exerciseId)
       return {
-        id: e.id,
+        id: x.exerciseId,
         name: v.name,
         ...(r?.input !== undefined && r.input !== v.name ? { you_said: r.input } : {}),
         ...(r?.created ? { new_custom_exercise: true } : {}),
         ...(r?.weightMeans ? { weight_means: r.weightMeans === 'each' ? 'per dumbbell' : 'both dumbbells together' } : {}),
         // The numbers spelled out next to the app's own label ("12×10 F": 12 kg, 10 reps, to
         // failure), so reading it back to the user cannot swap the weight and the reps.
-        sets: e.sets.map((row, i) => ({
-          label: v.sets[i].label,
-          weight: Number(row.w) || 0,
-          ...(row.sec != null ? { seconds: row.sec } : { reps: row.r }),
-          ...(row.phase === 'warmup' ? { warmup: true } : {}),
-          ...(row.failure ? { failure: true } : {}),
-          ...(row.rir != null ? { rir: row.rir } : {}),
-          ...(row.rpe != null ? { rpe: row.rpe } : {}),
-        })),
-        ...(e.note ? { note: e.note } : {}),
+        sets: x.performance.sets.map((row, i) => {
+          const o = v.sets[i].observed
+          return {
+            label: v.sets[i].label,
+            weight: o.w,
+            ...(v.mode === 'time' ? { seconds: o.sec } : { reps: o.r }),
+            ...(row.role === 'warmup' ? { warmup: true } : {}),
+            ...(row.failure ? { failure: true } : {}),
+            ...(row.rir != null && !(row.failure && row.rir === 0) ? { rir: row.rir } : {}),
+            ...(row.rpeEntered != null ? { rpe: row.rpeEntered } : {}),
+          }
+        }),
+        ...(x.performance.note ? { note: x.performance.note } : {}),
       }
     }),
   }
@@ -169,7 +172,7 @@ export const logWorkout = {
         return { logged: false, problems: built.problems, next: 'Nothing was saved. Settle these with the user (pick a candidate id, fix a set) and call again.' }
       }
       // What each dumbbell weight meant on the first read stays what it means on a retry.
-      meanings = meanings || Object.fromEntries(built.workout.entries.map(e => [e.id, e.target?.dbLoad || 'as']))
+      meanings = meanings || Object.fromEntries(built.workout.exposures.map(x => [x.exerciseId, x.dbLoad || 'as']))
       const preview = viewOf(built.workout, S, built)
       if (params.dry_run) {
         const dup = findDuplicate(S, built.workout)
@@ -186,8 +189,8 @@ export const logWorkout = {
         saves.push(now)
         // The operator's trail (stderr, as the profile guard's): which workout went in, for what
         // day and at which revision. Never the token, and nothing the model sees.
-        const sets = added.workout.entries.reduce((n, e) => n + e.sets.length, 0)
-        console.error(`[opengym-mcp] log_workout saved ${added.workout.id} for ${added.workout.d} (${added.workout.entries.length} exercises, ${sets} sets), rev ${put.body?.rev ?? '?'}`)
+        const sets = added.workout.exposures.reduce((n, x) => n + x.performance.sets.length, 0)
+        console.error(`[opengym-mcp] log_workout saved ${added.workout.id} for ${added.workout.d} (${added.workout.exposures.length} exercises, ${sets} sets), rev ${put.body?.rev ?? '?'}`)
         return { logged: true, ...viewOf(added.workout, S, built), revision: put.body?.rev ?? null }
       }
       // Another device wrote in between: the server sent its current document back with the 409,
