@@ -37,6 +37,7 @@
 "Effort" = "強度表現";
 "None" = "無";
 "Planned" = "已排定";
+"Up next" = "接下來";
 "Last time: %@" = "上次: %@";
 "Exercises" = "動作";
 "No workout running" = "沒有進行中的訓練";
@@ -45,7 +46,6 @@
 "Start one on your iPhone and it shows up here." = "在 iPhone 上開始，它就會出現在這裡。";
 "All sets done" = "所有組已完成";
 "measuring" = "測量中 …";
-"Next: %@, set %lld" = "下一個：%@，第 %lld 組";
 "%@, set %lld" = "%@，第 %lld 組";
 "Calories" = "卡路里";
 "Heart rate" = "心率";

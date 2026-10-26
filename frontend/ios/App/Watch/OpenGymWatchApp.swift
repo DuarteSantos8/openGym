@@ -14,7 +14,7 @@ import WidgetKit
  *           "Set 2 of 4" with its tags, last time, weight and reps as two boxes (a tap opens the
  *           value on the crown), what is planned, a Done pill (RPE or RIR in a small disc beside
  *           it, when the profile rates effort) and the set dots; the crown pages the exercises
- *   rest    a full-screen ring around a huge countdown, +15 s and Skip as small round buttons
+ *   rest    the time left beside the clock, a bar draining under it, −15 s · Skip · +15 s, what is next
  *   hold    a timed set: the seconds on the crown, Start, then a ring counting down, Stop
  *   summary the workout at its end: time, sets, volume, heart rate, calories, records; Done
  * Overview ← the exercises: swipe right from a set for every exercise with its sets done (tap one to
@@ -25,7 +25,7 @@ import WidgetKit
  * shows the reps (and added weight, when there is some), a superset says so and goes in turns.
  *
  * Battery: nothing ticks while nothing runs (no timers at the start screen), the animation and the
- * rest ring slow down or stop with the wrist down (Always On), the heart rate redraws at most every
+ * rest bar slow down or stop with the wrist down (Always On), the heart rate redraws at most every
  * few seconds (WorkoutManager), and each animation is decoded once when it arrives.
  */
 @main
@@ -234,14 +234,17 @@ struct EdgeButton: View {
     let systemImage: String
     let label: Text
     let action: () -> Void
+    @Environment(\.isLuminanceReduced) private var dimmed
 
     var body: some View {
         Button(action: action) {
             Image(systemName: systemImage)
                 .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(Theme.ink(.white, dimmed))
                 .frame(width: Theme.tap, height: Theme.tap)
-                .background(Circle().fill(Theme.dim))
+                // Always On: an outline, no lit fill.
+                .background(Circle().fill(dimmed ? Color.clear : Theme.dim))
+                .overlay(Circle().stroke(Theme.outline, lineWidth: dimmed ? 1 : 0))
         }
         .buttonStyle(.plain)
         .accessibilityLabel(label)
@@ -253,10 +256,11 @@ struct EdgeButton: View {
 /// watchOS allows it only while a workout session runs, so without Apple Health there is none.
 struct LockButton: View {
     @ObservedObject var health: WorkoutManager
+    @EnvironmentObject var store: SessionStore
 
     var body: some View {
         if health.running {
-            EdgeButton(systemImage: "drop.fill", label: Text("Lock")) { WKInterfaceDevice.current().enableWaterLock() }
+            EdgeButton(systemImage: "drop.fill", label: Text("Lock")) { if store.touchAllowed { WKInterfaceDevice.current().enableWaterLock() } }
         }
     }
 }
@@ -1441,7 +1445,7 @@ struct FinishFlood: View {
     }
 }
 
-/* ---------- the rest, and a hold: a ring counting down ---------- */
+/* ---------- a hold: a ring counting down (the rest has its own bar, below) ---------- */
 
 /// A ring that empties from `start` to `end`. With the wrist down (Always On) it moves once a
 /// second, not four times: the screen is updated rarely then anyway, and each update costs.
@@ -1467,65 +1471,178 @@ struct CountdownRing: View {
     }
 }
 
+/// A bar that drains from `start` to `end`, a step on each second the digits change. It never animates
+/// (Reduce Motion or not). Wrist down the screen updates about once a minute, so a fill would stand at a
+/// stale fraction: only the outline stays, the digits are the truth.
+struct RestBar: View {
+    let start: Date
+    let end: Date
+    @Environment(\.isLuminanceReduced) private var dimmed
+
+    var body: some View {
+        Group {
+            if dimmed {
+                Capsule().strokeBorder(Theme.outline, lineWidth: 1)
+            } else {
+                TimelineView(.periodic(from: end, by: 1)) { ctx in
+                    let full = Rest.progress(left: end.timeIntervalSince(ctx.date), total: end.timeIntervalSince(start))
+                    Capsule().fill(Theme.dim)
+                        .overlay(alignment: .leading) {
+                            GeometryReader { g in Capsule().fill(Theme.accent).frame(width: g.size.width * full) }
+                        }
+                }
+            }
+        }
+        .frame(height: 6)
+        .accessibilityHidden(true)
+    }
+}
+
+/// The rest over the set: the time left beside the clock, a bar draining under it, −15 · Skip · +15, and what
+/// comes next (read-only). The Crown does here what it did: nothing on this layer.
 struct RestView: View {
     @EnvironmentObject var store: SessionStore
     let end: Date
     @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.locale) private var locale
     @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 42
 
     var body: some View {
-        // The ring and the countdown in it take the space above the two corner buttons, so nothing
-        // overlaps on any size (it did on 46 mm when the ring filled the whole screen).
-        VStack(spacing: 2) {
-            ZStack {
-                if store.show.restRing {
-                    CountdownRing(start: store.restStartedAt ?? end.addingTimeInterval(-90), end: end)
-                }
-                VStack(spacing: 1) {
-                    Text("Rest").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
-                    Text(timerInterval: Date()...end, countsDown: true)
-                        .font(.system(size: store.show.restRing ? countdownSize : countdownSize * 1.35, weight: .semibold, design: .rounded).monospacedDigit())
-                        .minimumScaleFactor(0.5)
+        GeometryReader { g in
+            let inset = g.safeAreaInsets
+            let width = g.size.width + inset.leading + inset.trailing
+            let up = upNext
+            VStack(spacing: 0) {
+                HStack(spacing: 6) {
+                    Text(timerInterval: min(Date(), end)...end, countsDown: true)
+                        // With no Next block below, the time left takes the room.
+                        .font(.system(size: up == nil ? min(countdownSize * 1.35, 64) : min(countdownSize, 52), weight: .semibold, design: .rounded).monospacedDigit())
+                        .foregroundStyle(Theme.ink(.white, dimmed))
                         .lineLimit(1)
-                        .multilineTextAlignment(.center)
-                    if store.show.showNext, let e = store.entry, let si = store.setIndex {
-                        Group {
-                            if let side = store.sideUp {
-                                Text("Next: \(e.name), set \(si + 1)") + Text(verbatim: " · ") + Text(side == "L" ? LocalizedStringKey("Left") : LocalizedStringKey("Right"))
-                            } else {
-                                Text("Next: \(e.name), set \(si + 1)")
-                            }
-                        }
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.7)
-                        .multilineTextAlignment(.center)
-                    }
-                    if store.offline {
-                        Text("Saved on the watch, syncs later")
-                            .font(.system(size: 10))
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.6)
-                    }
+                        .minimumScaleFactor(0.5)
+                        .accessibilityLabel(Text("\(Text("Rest")) \(Text(timerInterval: min(Date(), end)...end, countsDown: true))"))
+                    OfflineSign()
+                    Spacer(minLength: 0)
                 }
-                .padding(.horizontal, 18)
+                .frame(minHeight: 42)
+                .padding(.top, 2)
+                // The clock's 30 % of the screen is the system's, as on the set page.
+                .padding(.trailing, width * 0.3 - Theme.side)
+                .padding(.horizontal, Theme.side)
+                if store.show.restRing {
+                    RestBar(start: store.restStartedAt ?? end.addingTimeInterval(-90), end: end)
+                        .padding(.horizontal, Theme.side)
+                        .padding(.top, 4)
+                }
+                // The system's page dots sit at the trailing edge; the row stops short of them.
+                controls.padding(.leading, 5).padding(.trailing, 11).padding(.top, 8)
+                // Takes what is left, so the Next block is offered that much height (ViewThatFits).
+                HStack(alignment: .bottom, spacing: 8) {
+                    next(up)
+                    LockButton(health: store.health)
+                }
+                .padding(.horizontal, Theme.side)
+                .padding(.top, 8)
+                .frame(maxHeight: .infinity, alignment: .bottom)
             }
-            .aspectRatio(1, contentMode: .fit)
-            .padding(.horizontal, 6)
-            // Always On: the countdown stays, the buttons go (nothing to tap with the wrist down).
-            HStack {
-                EdgeButton(systemImage: "goforward.15", label: Text("+15s")) { store.addRest(15) }
-                Spacer()
-                LockButton(health: store.health)
-                Spacer()
-                EdgeButton(systemImage: "forward.end.fill", label: Text("Skip")) { store.skipRest() }
-            }
-            .opacity(dimmed ? 0 : 1)
+            .padding(.bottom, 12)
+            .frame(width: width, height: g.size.height + inset.top + inset.bottom, alignment: .top)
+            .offset(x: -inset.leading, y: -inset.top)
         }
-        .ignoresSafeArea(edges: .bottom)
-        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
+        .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+        .modifier(DemoEnvironment())        // CI's Always On reaches a layer over the pager only this way
+    }
+
+    /// −15 s, Skip, +15 s: 44 pt high, 8 pt apart. Skip is the wide one, with a word (a symbol where the word
+    /// does not fit), so a thumb aimed at an adjust does not end the rest.
+    private var controls: some View {
+        HStack(spacing: 8) {
+            step(-Rest.step)
+            Button { if store.touchAllowed { store.skipRest(lock: true) } } label: {
+                ViewThatFits(in: .horizontal) {
+                    Text("Skip")
+                    Image(systemName: "forward.end.fill")
+                }
+                .font(.headline)
+                .lineLimit(1)
+                .foregroundStyle(Theme.ink(.white, dimmed))
+                .frame(maxWidth: .infinity, minHeight: Theme.tap)
+            }
+            .buttonStyle(SecondaryButton())
+            .accessibilityLabel(Text("Skip"))
+            step(Rest.step)
+        }
+    }
+
+    private func step(_ seconds: TimeInterval) -> some View {
+        Button { if store.touchAllowed { store.addRest(seconds) } } label: {
+            Text(verbatim: "\(seconds < 0 ? "−" : "+")\(Int(Rest.step))s")
+                .font(.system(.subheadline, design: .rounded).weight(.semibold).monospacedDigit())
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .foregroundStyle(Theme.ink(.white, dimmed))
+                .padding(.horizontal, 4)
+                .frame(minWidth: Theme.tap, minHeight: Theme.tap)
+        }
+        .buttonStyle(SecondaryButton())
+        .accessibilityLabel(Text(seconds < 0 ? "Less" : "More"))
+        .accessibilityValue(Text(Measurement(value: Rest.step, unit: UnitDuration.seconds),
+                                 format: .measurement(width: .wide, usage: .asProvided,
+                                                      numberFormatStyle: .number.precision(.fractionLength(0))).locale(locale)))
+    }
+
+    private var upNext: Rest.Next? {
+        guard store.show.showNext, let e = store.entry, let si = store.setIndex else { return nil }
+        return Rest.next(e, set: si, unit: e.weightUnit(store.unit))
+    }
+
+    /// "Up next", the exercise, then its place, side and load, each on a line of its own. Short of room the
+    /// label goes, then the place, then the name shrinks to one line: a line is dropped, never cut in half.
+    @ViewBuilder private func next(_ n: Rest.Next?) -> some View {
+        if let n {
+            ViewThatFits(in: .vertical) {
+                nextLines(n, label: true, nameLines: 2, place: true)
+                nextLines(n, label: false, nameLines: 2, place: true)
+                nextLines(n, label: false, nameLines: 2, place: false)
+                nextLines(n, label: false, nameLines: 1, place: false)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            // Whichever lines fit, VoiceOver gets all of them.
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(verbatim: ([store.L("Up next"), n.name, place(n), side(n), load(n)] as [String?]).compactMap { $0 }.joined(separator: ", ")))
+        } else {
+            Spacer(minLength: 0)
+        }
+    }
+
+    private func nextLines(_ n: Rest.Next, label: Bool, nameLines: Int, place showsPlace: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if label { Text("Up next").font(.footnote.weight(.semibold)).foregroundStyle(.secondary) }
+            Text(verbatim: n.name)
+                .font(.headline)
+                .foregroundStyle(Theme.ink(.white, dimmed))
+                .lineLimit(nameLines)
+                .minimumScaleFactor(nameLines == 1 ? 0.75 : 1)      // the last resort: smaller, before cut off
+            if showsPlace { detail(place(n), lines: 1) }
+            if let s = side(n) { detail(s, lines: 1) }
+            if let l = load(n) { detail(l, lines: 2) }
+        }
+        .multilineTextAlignment(.leading)
+    }
+
+    private func detail(_ text: String, lines: Int) -> some View {
+        Text(verbatim: text).font(.footnote).foregroundStyle(.secondary).lineLimit(lines)
+    }
+
+    private func place(_ n: Rest.Next) -> String {
+        n.position.number.map { String(format: store.L("Set %lld of %lld"), Int64($0), Int64(n.position.total)) } ?? store.L("Warm-up")
+    }
+
+    private func side(_ n: Rest.Next) -> String? { n.side.map { store.L($0 == "L" ? "Left" : "Right") } }
+
+    /// A line breaks after a word, never inside the load ("62.5 kg × 8" stays whole).
+    private func load(_ n: Rest.Next) -> String? {
+        n.load.map { (n.bodyweight ? store.L("Bodyweight") + " " : "") + $0.replacingOccurrences(of: " ", with: "\u{00A0}") }
     }
 }
 

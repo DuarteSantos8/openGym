@@ -37,6 +37,7 @@
 "Effort" = "Zorluk";
 "None" = "Yok";
 "Planned" = "Planlandı";
+"Up next" = "Sıradaki";
 "Last time: %@" = "Geçen sefer: %@";
 "Exercises" = "Egzersizler";
 "No workout running" = "Devam eden antrenman yok";
@@ -45,7 +46,6 @@
 "Start one on your iPhone and it shows up here." = "iPhone’unda bir tane başlat, burada görünür.";
 "All sets done" = "Tüm setler tamam";
 "measuring" = "ölçülüyor …";
-"Next: %@, set %lld" = "Sıradaki: %@, set %lld";
 "%@, set %lld" = "%@, set %lld";
 "Calories" = "Kalori";
 "Heart rate" = "Nabız";

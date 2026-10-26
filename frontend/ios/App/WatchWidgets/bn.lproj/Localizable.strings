@@ -37,6 +37,7 @@
 "Effort" = "পরিশ্রম";
 "None" = "কিছু না";
 "Planned" = "পরিকল্পিত";
+"Up next" = "এরপর";
 "Last time: %@" = "গতবার: %@";
 "Exercises" = "ব্যায়াম";
 "No workout running" = "কোনো ওয়ার্কআউট চলছে না";
@@ -45,7 +46,6 @@
 "Start one on your iPhone and it shows up here." = "iPhone-এ একটি শুরু করুন, এখানে দেখা যাবে।";
 "All sets done" = "সব সেট শেষ";
 "measuring" = "মাপা হচ্ছে …";
-"Next: %@, set %lld" = "এরপর: %@, সেট %lld";
 "%@, set %lld" = "%@, সেট %lld";
 "Calories" = "ক্যালোরি";
 "Heart rate" = "হার্ট রেট";

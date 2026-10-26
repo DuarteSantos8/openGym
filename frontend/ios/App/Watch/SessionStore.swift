@@ -122,6 +122,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The rest running after a set, for that rest's heart rate once it is over.
     private var restAfter: (exId: String, entryIdx: Int, setIdx: Int, wid: String, from: Date)?
     private var restTimer: Timer?
+    /// The end of the rest the phone last reported: only a new one is followed, so a ±15 or a Skip here
+    /// is not undone by the next snapshot, which repeats the phone's.
+    private var phoneRestEnd: Date?
+    /// The running rest was moved by ±15 here: the phone's end (it may reach us late) does not take it back.
+    private var restAdjusted = false
     private var holdTimer: Timer?
     /// The rest-over taps again once if nobody reacts to the first ones within a few seconds.
     private var restOverRepeat: DispatchWorkItem?
@@ -381,12 +386,17 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             }
             if next.workout != nil && next.workout != before.workout { self.noteActivity() }
             // Sets ticked on the phone: their heart rate from this watch's readings (Discord fuckdv).
-            for tick in SessionCore.phoneTicks(before.workout, next.workout) {
+            let ticks = SessionCore.phoneTicks(before.workout, next.workout)
+            for tick in ticks {
                 self.phoneTicked(tick, wid: next.workout?.id ?? "", resting: snap.active?.rest != nil)
             }
             if let rest = snap.active?.rest, next.workout?.id == snap.active?.id {
                 let end = Date(timeIntervalSince1970: rest.endsAt / 1000)
-                if end != self.restEndsAt { self.startRest(until: end, notify: true) }
+                let follow = Rest.follows(end, known: self.phoneRestEnd, adjusted: self.restAdjusted && self.restEndsAt != nil, phoneTicked: !ticks.isEmpty)
+                self.phoneRestEnd = end
+                if follow { self.startRest(until: end, notify: true) }
+            } else {
+                self.phoneRestEnd = nil
             }
             self.health.syncSetting(next.settings.health)
             self.removeDeletedFromHealth(snap.healthGone)
@@ -468,6 +478,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let restFor = e.restSec ?? w.restSec
         if rest && restFor > 0 && to < (workout?.entries.count ?? 0) {
             startRest(until: now.addingTimeInterval(restFor), notify: true)
+            touchLock.lock(at: now)         // the thumb that hit Done is still over the rest's buttons
             restAfter = (e.id, ei, si, w.id ?? "", now)
         }
         if to != ei { state.entryIndex = to }
@@ -771,7 +782,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         Haptics.discarded()
     }
 
-    func skipRest() {
+    /// `lock`: the Skip button, whose thumb is still there when the set page comes back under it.
+    func skipRest(lock: Bool = false) {
+        if lock { touchLock.lock(at: Date()) }
         ackRestOver()
         closeRest(at: Date())
         restTimer?.invalidate()
@@ -780,12 +793,17 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [SessionStore.restNotificationId])
     }
 
+    /// ±15 s on the rest, here only (the phone's rest goes on). Taken to 0 it is a Skip.
     func addRest(_ seconds: TimeInterval) {
         guard let end = restEndsAt else { return }
+        let now = Date()
+        let left = Rest.adjusted(left: end.timeIntervalSince(now), by: seconds)
+        guard left > 0 else { skipRest(lock: true); return }
         ackRestOver()
         let start = restStartedAt
-        startRest(until: end.addingTimeInterval(seconds), notify: true)
+        startRest(until: now.addingTimeInterval(left), notify: true)
         restStartedAt = start
+        restAdjusted = true
     }
 
     /// The rest as a timer here (with the app in front: the haptic pattern) and as a notification
@@ -793,6 +811,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// skip takes the old one back.
     private func startRest(until end: Date, notify: Bool) {
         restTimer?.invalidate()
+        restAdjusted = false
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [SessionStore.restNotificationId])
         guard end > Date() else { restEndsAt = nil; restStartedAt = nil; return }
@@ -999,11 +1018,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
         DispatchQueue.main.async {
             switch screen {
-            case "set", "weight", "rest", "offline", "edit-weight", "edit-reps", "finish-auto": self.picked[0] = 2
-            case "hold", "hold-set": self.state.entryIndex = 1
+            case "set", "weight", "rest", "rest-low", "rest-offline", "offline", "edit-weight", "edit-reps", "finish-auto": self.picked[0] = 2
+            case "hold", "hold-set", "rest-hold": self.state.entryIndex = 1
             case "all-done": for si in self.state.workout?.entries[0].sets.indices ?? 0..<0 { self.state.workout?.entries[0].sets[si].done = true }
-            case "bodyweight": self.state.entryIndex = 2
-            case "side": self.state.entryIndex = 3
+            case "bodyweight", "rest-bodyweight": self.state.entryIndex = 2
+            case "side", "rest-side": self.state.entryIndex = 3
             case "superset": self.state.entryIndex = 4
             case "overview", "finish", "finish-hold", "finish-hold-full", "discard":
                 // The Pull-up done, so the Overview shows all three states.
@@ -1023,12 +1042,19 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 // "all": every optional thing on, for a look at the fullest screen.
                 if show == "all" { self.state.settings.show = WatchShow(clip: true, hr: true, last: true, elapsed: true, kcal: true, next: true, rest: "ring") }
                 if show == "plain" { self.state.settings.show = WatchShow(rest: "plain") }
+                if show == "nonext" { self.state.settings.show = WatchShow(next: false) }
+                if show == "plainnonext" { self.state.settings.show = WatchShow(next: false, rest: "plain") }
                 if show == "noclip" { self.state.settings.show = WatchShow(clip: false) }
             }
             self.loadTargets()
-            if screen == "rest" { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
+            if ["rest", "rest-side", "rest-offline", "rest-hold", "rest-bodyweight"].contains(screen) { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
+            // 20 s left of 80 (a few seconds of that pass before the picture): the bar nearly empty.
+            if screen == "rest-low" {
+                self.startRest(until: Date().addingTimeInterval(20), notify: false)
+                self.restStartedAt = Date().addingTimeInterval(-60)
+            }
             if screen == "hold" { self.startHold() }
-            if screen == "offline" { self.reachable = false; self.queued = 3 }
+            if screen == "offline" || screen == "rest-offline" { self.reachable = false; self.queued = 3 }
             if screen == "finish-auto" { DispatchQueue.main.asyncAfter(deadline: .now() + 2) { self.showFinish() } }
             if screen == "summary" || screen == "summary-end" || screen == "ended" {
                 self.summary = WorkoutSummary(name: "Push day", unit: "kg", duration: 52 * 60 + 13, sets: 17, volume: 4320,

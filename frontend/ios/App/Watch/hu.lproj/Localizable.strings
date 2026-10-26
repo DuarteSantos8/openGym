@@ -37,6 +37,7 @@
 "Effort" = "Megerőltetés";
 "None" = "Nincs";
 "Planned" = "Tervezett";
+"Up next" = "Következő";
 "Last time: %@" = "Legutóbb: %@";
 "Exercises" = "Gyakorlatok";
 "No workout running" = "Nincs folyamatban edzés";
@@ -45,7 +46,6 @@
 "Start one on your iPhone and it shows up here." = "Indíts egyet az iPhone-on, és itt megjelenik.";
 "All sets done" = "Minden sorozat kész";
 "measuring" = "mérés …";
-"Next: %@, set %lld" = "Következik: %@, %lld. sorozat";
 "%@, set %lld" = "%@, %lld. sorozat";
 "Calories" = "Kalória";
 "Heart rate" = "Pulzus";

@@ -37,6 +37,7 @@
 "Effort" = "Зусилля";
 "None" = "Немає";
 "Planned" = "Заплановано";
+"Up next" = "Далі";
 "Last time: %@" = "Минулого разу: %@";
 "Exercises" = "Вправи";
 "No workout running" = "Тренування не триває";
@@ -45,7 +46,6 @@
 "Start one on your iPhone and it shows up here." = "Почни його на iPhone, і воно з’явиться тут.";
 "All sets done" = "Усі підходи зроблено";
 "measuring" = "вимірюю …";
-"Next: %@, set %lld" = "Далі: %@, підхід %lld";
 "%@, set %lld" = "%@, підхід %lld";
 "Calories" = "Калорії";
 "Heart rate" = "Пульс";

@@ -37,6 +37,7 @@
 "Effort" = "ความหนัก";
 "None" = "ไม่มี";
 "Planned" = "วางแผนไว้";
+"Up next" = "ถัดไป";
 "Last time: %@" = "ครั้งก่อน: %@";
 "Exercises" = "ท่าออกกำลังกาย";
 "No workout running" = "ไม่มีการฝึกที่กำลังทำอยู่";
@@ -45,7 +46,6 @@
 "Start one on your iPhone and it shows up here." = "เริ่มบน iPhone แล้วจะแสดงที่นี่";
 "All sets done" = "ครบทุกเซ็ตแล้ว";
 "measuring" = "กำลังวัด …";
-"Next: %@, set %lld" = "ถัดไป: %@ เซ็ต %lld";
 "%@, set %lld" = "%@ เซ็ต %lld";
 "Calories" = "แคลอรี";
 "Heart rate" = "ชีพจร";

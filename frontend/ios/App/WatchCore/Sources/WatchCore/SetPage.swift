@@ -62,7 +62,7 @@ enum SetPage {
     }
 
     /// A per-side set plans by its side up next (as the boxes show it).
-    private static func plan(_ r: SetRow) -> (w: Double, r: Double) {
+    static func plan(_ r: SetRow) -> (w: Double, r: Double) {
         let one = r.sideUp.flatMap { r.sides?[$0] } ?? r.sides?.L
         return (one?.w ?? r.w ?? 0, one?.r ?? r.r ?? 0)
     }

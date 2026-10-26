@@ -37,6 +37,7 @@
 "Effort" = "Effort";
 "None" = "None";
 "Planned" = "Planned";
+"Up next" = "Up next";
 "Last time: %@" = "Last time: %@";
 "Exercises" = "Exercises";
 "No workout running" = "No workout running";
@@ -45,7 +46,6 @@
 "Start one on your iPhone and it shows up here." = "Start one on your iPhone and it shows up here.";
 "All sets done" = "All sets done";
 "measuring" = "measuring";
-"Next: %@, set %lld" = "Next: %@, set %lld";
 "%@, set %lld" = "%@, set %lld";
 "Calories" = "Calories";
 "Heart rate" = "Heart rate";
