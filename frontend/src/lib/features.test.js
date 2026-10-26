@@ -1,12 +1,21 @@
 import { describe, expect, it } from 'vitest'
-import { qrScanOn } from './features.js'
+import { featureOn, lifeFitnessOn, qrScanOn, workoutScanOn } from './features.js'
 
 describe('instance features', () => {
-  it('QR scanning is on unless the server says it is off', () => {
-    expect(qrScanOn(null)).toBe(true)
-    expect(qrScanOn({})).toBe(true)
-    expect(qrScanOn({ features: {} })).toBe(true)
-    expect(qrScanOn({ features: { qr: true } })).toBe(true)
+  it('each is on unless the server says it is off', () => {
+    for (const config of [null, {}, { features: {} }]) {
+      expect(qrScanOn(config)).toBe(true)
+      expect(lifeFitnessOn(config)).toBe(true)
+    }
+    expect(featureOn({ features: { qr: true } }, 'qr')).toBe(true)
     expect(qrScanOn({ features: { qr: false } })).toBe(false)
+  })
+
+  it('switch independently, and the workout scan stays while any is on', () => {
+    const config = { features: { qr: false } }
+    expect(qrScanOn(config)).toBe(false)
+    expect(lifeFitnessOn(config)).toBe(true)
+    expect(workoutScanOn(config)).toBe(true)
+    expect(workoutScanOn({ features: { qr: false, lifeFitness: false } })).toBe(false)
   })
 })

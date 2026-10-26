@@ -2643,4 +2643,21 @@ export default {
   'openGym code': 'openGym-kód',
   '{0} no longer has it': '{0} már nem fogja tartalmazni',
   '“{0}” isn’t in this workout': '„{0}” nincs ebben az edzésben',
+  // --- Life Fitness cardio consoles ---
+  'Live connection not available': 'Az élő kapcsolat nem érhető el',
+  'The live connection to the machine isn’t available here. Just keep training: at the end, the machine shows a QR code. Scan it here and your workout data comes across.': 'Az élő kapcsolat a géppel itt nem érhető el. Edz tovább nyugodtan: a végén a gép QR-kódot mutat. Olvasd be itt, és az edzés adatai átkerülnek.',
+  'OK': 'OK',
+  'This Life Fitness code isn’t one openGym can use.': 'Ezt a Life Fitness-kódot az openGym nem tudja használni.',
+  'That Life Fitness code could not be read.': 'Ezt a Life Fitness-kódot nem sikerült beolvasni.',
+  'Level {0}': '{0}. szint',
+  'This result is already in this workout.': 'Ez az eredmény már szerepel ebben az edzésben.',
+  'This result was already saved on {0}.': 'Ezt az eredményt már elmentetted: {0}.',
+  'Which exercise was this?': 'Melyik gyakorlat volt ez?',
+  'Life Fitness result added to {0}': 'Life Fitness-eredmény hozzáadva: {0}',
+  'Life Fitness result': 'Life Fitness-eredmény',
+  'Already in this workout': 'Már szerepel ebben az edzésben',
+  'Add “{0}” to this workout?': 'Hozzáadod a(z) „{0}” gyakorlatot ehhez az edzéshez?',
+  'Add and take the data': 'Hozzáadás és az adatok átvétele',
+  // --- Admin → Features: one switch per kind of code ---
+  'This kind of code is switched off on this server.': 'Ez a kódtípus ki van kapcsolva ezen a szerveren.',
 }

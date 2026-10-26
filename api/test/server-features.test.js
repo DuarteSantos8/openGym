@@ -46,6 +46,9 @@ function dataDir(t) {
   return dir;
 }
 
+// Every switch this server knows, all on; each one is switched on its own.
+const ALL_ON = { qr: true, lifeFitness: true };
+
 const as = uid => ({ Cookie: `gymsid=${mint(uid)}`, 'Content-Type': 'application/json' });
 
 test('QR switch: off shows in /api/config, on answers as before, admins only, kept on restart', async t => {
@@ -55,7 +58,7 @@ test('QR switch: off shows in /api/config, on answers as before, admins only, ke
   const set = (uid, body) => fetch(`${h.api}/api/admin/features`, { method: 'POST', headers: as(uid), body: JSON.stringify(body) });
 
   assert.equal((await config()).features, undefined, 'nothing switched off: no block at all');
-  assert.deepEqual(await fetch(`${h.api}/api/admin/features`, { headers: as(ADMIN) }).then(r => r.json()), { features: { qr: true } });
+  assert.deepEqual(await fetch(`${h.api}/api/admin/features`, { headers: as(ADMIN) }).then(r => r.json()), { features: ALL_ON });
 
   assert.equal((await set(USER, { qr: false })).status, 403, 'not an admin');
   assert.equal((await config()).features, undefined);
@@ -63,13 +66,16 @@ test('QR switch: off shows in /api/config, on answers as before, admins only, ke
 
   const off = await set(ADMIN, { qr: false });
   assert.equal(off.status, 200);
-  assert.deepEqual(await off.json(), { features: { qr: false } });
+  assert.deepEqual(await off.json(), { features: { ...ALL_ON, qr: false } });
   assert.deepEqual((await config()).features, { qr: false });
 
   h.child.kill('SIGKILL');
   h = await startServer(t, dir);
   assert.deepEqual((await config()).features, { qr: false }, 'kept in db.json');
 
-  assert.equal((await set(ADMIN, { qr: true })).status, 200);
+  assert.equal((await set(ADMIN, { lifeFitness: false })).status, 200);
+  assert.deepEqual((await config()).features, { qr: false, lifeFitness: false }, 'each switch on its own');
+
+  assert.equal((await set(ADMIN, { qr: true, lifeFitness: true })).status, 200);
   assert.equal((await config()).features, undefined, 'back on: the config is as before');
 });

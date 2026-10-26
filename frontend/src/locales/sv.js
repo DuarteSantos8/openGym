@@ -2687,4 +2687,21 @@ export default {
   'openGym code': 'openGym-kod',
   '{0} no longer has it': '{0} har den inte längre',
   '“{0}” isn’t in this workout': '”{0}” finns inte i det här passet',
+  // --- fork: QR codes, Life Fitness, body scale, import overwrite ---
+  'Live connection not available': 'Liveanslutning är inte tillgänglig',
+  'The live connection to the machine isn’t available here. Just keep training: at the end, the machine shows a QR code. Scan it here and your workout data comes across.': 'Liveanslutningen till maskinen är inte tillgänglig här. Fortsätt bara träna: i slutet visar maskinen en QR-kod. Skanna den här så följer passets data med.',
+  'OK': 'OK',
+  'This Life Fitness code isn’t one openGym can use.': 'Den här Life Fitness-koden kan openGym inte använda.',
+  'That Life Fitness code could not be read.': 'Life Fitness-koden kunde inte läsas.',
+  'Level {0}': 'Nivå {0}',
+  'This result is already in this workout.': 'Det här resultatet finns redan i det här passet.',
+  'This result was already saved on {0}.': 'Det här resultatet sparades redan {0}.',
+  'Which exercise was this?': 'Vilken övning var det här?',
+  'Life Fitness result added to {0}': 'Life Fitness-resultat tillagt på {0}',
+  'Life Fitness result': 'Life Fitness-resultat',
+  'Already in this workout': 'Finns redan i det här passet',
+  'Add “{0}” to this workout?': 'Lägga till ”{0}” i det här passet?',
+  'Add and take the data': 'Lägg till och ta med datan',
+  // --- Admin → Features: one switch per kind of code ---
+  'This kind of code is switched off on this server.': 'Den här typen av kod är avstängd på den här servern.',
 }

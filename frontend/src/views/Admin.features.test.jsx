@@ -8,7 +8,7 @@ import Admin from './Admin.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
-const mocks = vi.hoisted(() => ({ features: { qr: true }, posts: [], refreshConfig: null }))
+const mocks = vi.hoisted(() => ({ features: null, posts: [], refreshConfig: null }))
 vi.mock('../lib/api.js', () => ({
   api: (path, opts) => {
     const key = path.split('?')[0]
@@ -44,7 +44,7 @@ vi.mock('./AdminCoach.jsx', () => ({ default: () => null }))
 
 let root, host
 beforeEach(() => {
-  mocks.features = { qr: true }
+  mocks.features = { qr: true, lifeFitness: true }
   mocks.posts.length = 0
   mocks.refreshConfig = vi.fn(async () => null)
   host = document.createElement('div')
@@ -53,9 +53,22 @@ beforeEach(() => {
 })
 afterEach(() => { act(() => root.unmount()); host.remove() })
 const settle = () => act(() => new Promise(r => setTimeout(r, 0)))
-const qrSwitch = () => host.querySelector('.adm-features [role="switch"][aria-label="Exercise QR codes"]')
+const switchFor = label => host.querySelector(`.adm-features [role="switch"][aria-label="${label}"]`)
+const qrSwitch = () => switchFor('Exercise QR codes')
 
 describe('Admin features', () => {
+  it('one switch per feature, each saved on its own', async () => {
+    act(() => root.render(<Admin />))
+    await settle()
+    expect([...host.querySelectorAll('.adm-features [role="switch"]')].map(s => s.getAttribute('aria-label')))
+      .toEqual(['Exercise QR codes', 'Life Fitness consoles'])
+    await act(async () => { switchFor('Life Fitness consoles').click() })
+    await settle()
+    expect(mocks.posts).toEqual([{ lifeFitness: false }])
+    expect(switchFor('Exercise QR codes').getAttribute('aria-checked')).toBe('true')
+    expect(switchFor('Life Fitness consoles').getAttribute('aria-checked')).toBe('false')
+  })
+
   it('shows the QR switch on, and switching it off saves and refreshes the config', async () => {
     act(() => root.render(<Admin />))
     await settle()

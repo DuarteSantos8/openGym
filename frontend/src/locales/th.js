@@ -2651,4 +2651,21 @@ export default {
   'openGym code': 'โค้ด openGym',
   '{0} no longer has it': '{0} จะไม่มีโค้ดนี้อีก',
   '“{0}” isn’t in this workout': '“{0}” ไม่อยู่ในการฝึกนี้',
+  // --- Life Fitness cardio consoles ---
+  'Live connection not available': 'ไม่สามารถเชื่อมต่อแบบสดได้',
+  'The live connection to the machine isn’t available here. Just keep training: at the end, the machine shows a QR code. Scan it here and your workout data comes across.': 'ที่นี่ไม่สามารถเชื่อมต่อแบบสดกับเครื่องได้ ออกกำลังกายต่อได้เลย เมื่อจบ เครื่องจะแสดงคิวอาร์โค้ด สแกนที่นี่แล้วข้อมูลการออกกำลังกายจะถูกโอนมา',
+  'OK': 'ตกลง',
+  'This Life Fitness code isn’t one openGym can use.': 'openGym ใช้โค้ด Life Fitness นี้ไม่ได้',
+  'That Life Fitness code could not be read.': 'อ่านโค้ด Life Fitness นี้ไม่ได้',
+  'Level {0}': 'ระดับ {0}',
+  'This result is already in this workout.': 'ผลนี้อยู่ในการออกกำลังกายนี้แล้ว',
+  'This result was already saved on {0}.': 'ผลนี้ถูกบันทึกไว้แล้วเมื่อ {0}',
+  'Which exercise was this?': 'นี่คือท่าไหน?',
+  'Life Fitness result added to {0}': 'เพิ่มผล Life Fitness ไปที่ {0} แล้ว',
+  'Life Fitness result': 'ผล Life Fitness',
+  'Already in this workout': 'อยู่ในการออกกำลังกายนี้แล้ว',
+  'Add “{0}” to this workout?': 'เพิ่ม “{0}” ในการออกกำลังกายนี้?',
+  'Add and take the data': 'เพิ่มและนำข้อมูลมาใช้',
+  // --- Admin → Features: one switch per kind of code ---
+  'This kind of code is switched off on this server.': 'โค้ดประเภทนี้ถูกปิดไว้บนเซิร์ฟเวอร์นี้',
 }

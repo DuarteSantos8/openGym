@@ -3865,3 +3865,143 @@ describe('the Lock Screen\'s Done (Live Activity)', () => {
     expect(mocks.timer).toBeNull()
   })
 })
+
+// A Life Fitness console's codes (lib/lfopen): the end-of-workout code becomes a cardio set on the
+// machine's exercise, the connect code explains why there is no live link here.
+describe('scanning a Life Fitness code', () => {
+  const BIKE = '2138' // the catalogue's stand-in for an upright bike (lib/lfopen/devices.js)
+  const summary = (extra = {}) => ({ id: 'guid-1', t: 42, et: 1800, c: 312, d: { v: 12.5, u: 1 }, ahr: 142, ...extra })
+  const resultCode = extra => 'https://lfconnect.com/q?t=c&r=' + Buffer.from(JSON.stringify(summary(extra))).toString('base64')
+  const scan = async value => {
+    mocks.scanOnce.mockResolvedValueOnce({ value, fmt: 'qrcode' })
+    await click(buttonNamed('Scan exercise code'))
+    await act(async () => {})
+  }
+  const lastMenu = () => mocks.menuSheet.mock.calls.at(-1)[0]
+  const lfSet = () => mocks.S.active.entries.flatMap(e => e.sets.map(s => [e.id, s])).find(([, s]) => s.lf)
+
+  beforeEach(() => {
+    mocks.scanOnce.mockReset()
+    mocks.menuSheet.mockReset()
+    mocks.exercisePicker.mockReset()
+    mocks.toast.mockReset()
+  })
+  afterEach(unmount)
+
+  it('on the machine’s exercise: the set is filled without a question, with Undo', async () => {
+    await mount([exercise('0025', [true]), exercise(BIKE, [false])], 1)
+    await scan(resultCode())
+    expect(mocks.menuSheet).not.toHaveBeenCalled()
+    const [id, set] = lfSet()
+    expect(id).toBe(BIKE)
+    expect(set).toMatchObject({ min: 30, speed: 25, done: true, lf: 'guid-1' })
+    expect(set.note).toContain('312 kcal')
+    expect(mocks.S.active.entries[1].sets).toHaveLength(1)
+    const [msg, opts] = mocks.toast.mock.calls.at(-1)
+    expect(msg).toMatch(/^Life Fitness result added to /)
+    await act(async () => { opts.onAction() })
+    expect(lfSet()).toBeUndefined()
+  })
+
+  it('the same code twice: already there', async () => {
+    await mount([exercise(BIKE, [false])], 0)
+    await scan(resultCode())
+    await scan(resultCode())
+    expect(mocks.toast).toHaveBeenLastCalledWith('This result is already in this workout.')
+    expect(mocks.S.active.entries[0].sets.filter(s => s.lf)).toHaveLength(1)
+  })
+
+  it('the exercise further down the session: asked, then filled there', async () => {
+    await mount([exercise('0025', [false]), exercise(BIKE, [false])], 0)
+    await scan(resultCode())
+    expect(lastMenu().title).toBe('Life Fitness result')
+    expect(lastMenu().subtitle).toContain('30 min')
+    expect(lfSet()).toBeUndefined()
+    await act(async () => { lastMenu().items[0].onClick() })
+    expect(lfSet()[0]).toBe(BIKE)
+    expect(mocks.S.active.cur).toBe(1)
+  })
+
+  it('not in the session: offered, added and filled', async () => {
+    await mount([exercise('0025', [false])], 0, { active: { routineIds: [] } })
+    await scan(resultCode())
+    expect(lastMenu().title).toMatch(/^Add “.+” to this workout\?$/)
+    await act(async () => { lastMenu().items[0].onClick() })
+    expect(mocks.S.active.entries.map(e => e.id)).toEqual(['0025', BIKE])
+    expect(lfSet()).toEqual([BIKE, expect.objectContaining({ lf: 'guid-1', done: true })])
+  })
+
+  it('the connect code: no live link here, nothing changes', async () => {
+    await mount([exercise(BIKE, [false])], 0)
+    const before = structuredClone(mocks.S)
+    await scan('https://lfconnect.com/q?t=c&a=7F3A&u=9c1e&l=SN1&x=2')
+    expect(lastMenu().title).toBe('Live connection not available')
+    expect(lastMenu().items.map(it => it.label)).toEqual(['OK'])
+    expect(mocks.S).toEqual(before)
+  })
+
+  it('a broken result code says so', async () => {
+    await mount([exercise(BIKE, [false])], 0)
+    await scan('https://lfconnect.com/q?t=c&r=bm90IGpzb24=')
+    expect(mocks.toast).toHaveBeenLastCalledWith('That Life Fitness code could not be read.')
+  })
+
+  it('a console the model table does not know: you pick the exercise', async () => {
+    await mount([exercise('0025', [false])], 0)
+    await scan(resultCode({ t: 9999 }))
+    expect(mocks.exercisePicker).toHaveBeenCalled()
+    expect(mocks.exercisePicker.mock.calls.at(-1)[1]).toEqual({ title: 'Which exercise was this?' })
+  })
+
+  it('an exercise sticker still works as before', async () => {
+    await mount([exercise('0025', [false]), exercise('0043', [false])], 0, { exQr: { '0043': ['RACK-2'] } })
+    await scan('RACK-2')
+    expect(mocks.S.active.cur).toBe(1)
+  })
+})
+
+// Admin → Features: one switch per kind of code. The workout's scan stays while any is on, named
+// plainly once the exercise codes are off, and a code whose switch is off says so instead of
+// being taken for another kind.
+describe('the scan switches (Admin → Features)', () => {
+  const BIKE = '2138'
+  const resultCode = 'https://lfconnect.com/q?t=c&r=' + Buffer.from(JSON.stringify({ id: 'guid-9', t: 42, et: 1200, c: 200, d: { v: 8, u: 1 } })).toString('base64')
+  const scanWith = async (label, value) => {
+    mocks.scanOnce.mockResolvedValueOnce({ value, fmt: 'qrcode' })
+    await click(buttonNamed(label))
+    await act(async () => {})
+  }
+  beforeEach(() => {
+    mocks.scanOnce.mockReset()
+    mocks.menuSheet.mockReset()
+    mocks.toast.mockReset()
+  })
+  afterEach(async () => { mocks.config = null; await unmount() })
+
+  it('exercise codes off, Life Fitness on: “Scan code” still reads a console, a sticker is refused', async () => {
+    mocks.config = { features: { qr: false } }
+    await mount([exercise(BIKE, [false]), exercise('0043', [false])], 0, { exQr: { '0043': ['RACK-2'] } })
+    expect(buttonNamed('Scan exercise code')).toBeNull()
+    await scanWith('Scan code', resultCode)
+    expect(mocks.S.active.entries[0].sets.some(s => s.lf === 'guid-9')).toBe(true)
+    await scanWith('Scan code', 'RACK-2')
+    expect(mocks.S.active.cur).toBe(0)
+    expect(mocks.toast).toHaveBeenLastCalledWith('This kind of code is switched off on this server.')
+  })
+
+  it('Life Fitness off: its code is refused, not offered to an exercise', async () => {
+    mocks.config = { features: { lifeFitness: false } }
+    await mount([exercise(BIKE, [false])], 0)
+    await scanWith('Scan exercise code', resultCode)
+    expect(mocks.S.active.entries[0].sets.some(s => s.lf)).toBe(false)
+    expect(mocks.menuSheet).not.toHaveBeenCalled()
+    expect(mocks.toast).toHaveBeenLastCalledWith('This kind of code is switched off on this server.')
+  })
+
+  it('all off: no scan in the workout at all', async () => {
+    mocks.config = { features: { qr: false, lifeFitness: false } }
+    await mount([exercise('0025', [false])], 0)
+    expect(buttonNamed('Scan exercise code')).toBeNull()
+    expect(buttonNamed('Scan code')).toBeNull()
+  })
+})

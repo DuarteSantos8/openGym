@@ -2637,4 +2637,21 @@ export default {
   'openGym code': 'Код openGym',
   '{0} no longer has it': 'У {0} його більше не буде',
   '“{0}” isn’t in this workout': '«{0}» немає в цьому тренуванні',
+  // --- Life Fitness cardio consoles ---
+  'Live connection not available': 'Живе підключення недоступне',
+  'The live connection to the machine isn’t available here. Just keep training: at the end, the machine shows a QR code. Scan it here and your workout data comes across.': 'Живе підключення до тренажера тут недоступне. Просто тренуйтеся далі: наприкінці тренажер покаже QR-код. Відскануйте його тут, і дані тренування буде перенесено.',
+  'OK': 'OK',
+  'This Life Fitness code isn’t one openGym can use.': 'openGym не може використати цей код Life Fitness.',
+  'That Life Fitness code could not be read.': 'Не вдалося прочитати цей код Life Fitness.',
+  'Level {0}': 'Рівень {0}',
+  'This result is already in this workout.': 'Цей результат уже є в цьому тренуванні.',
+  'This result was already saved on {0}.': 'Цей результат уже збережено {0}.',
+  'Which exercise was this?': 'Яка це була вправа?',
+  'Life Fitness result added to {0}': 'Результат Life Fitness додано до {0}',
+  'Life Fitness result': 'Результат Life Fitness',
+  'Already in this workout': 'Уже в цьому тренуванні',
+  'Add “{0}” to this workout?': 'Додати «{0}» до цього тренування?',
+  'Add and take the data': 'Додати й перенести дані',
+  // --- Admin → Features: one switch per kind of code ---
+  'This kind of code is switched off on this server.': 'Цей тип коду вимкнено на цьому сервері.',
 }

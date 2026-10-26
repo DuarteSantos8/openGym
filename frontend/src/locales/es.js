@@ -2640,4 +2640,21 @@ export default {
   'openGym code': 'Código de openGym',
   '{0} no longer has it': '{0} ya no lo tendrá',
   '“{0}” isn’t in this workout': '«{0}» no está en este entrenamiento',
+  // --- Life Fitness cardio consoles ---
+  'Live connection not available': 'Conexión en directo no disponible',
+  'The live connection to the machine isn’t available here. Just keep training: at the end, the machine shows a QR code. Scan it here and your workout data comes across.': 'La conexión en directo con la máquina no está disponible aquí. Sigue entrenando: al final, la máquina muestra un código QR. Escanéalo aquí y se transfieren los datos del entrenamiento.',
+  'OK': 'OK',
+  'This Life Fitness code isn’t one openGym can use.': 'openGym no puede usar este código de Life Fitness.',
+  'That Life Fitness code could not be read.': 'No se ha podido leer ese código de Life Fitness.',
+  'Level {0}': 'Nivel {0}',
+  'This result is already in this workout.': 'Este resultado ya está en este entrenamiento.',
+  'This result was already saved on {0}.': 'Este resultado ya se guardó el {0}.',
+  'Which exercise was this?': '¿Qué ejercicio era?',
+  'Life Fitness result added to {0}': 'Resultado de Life Fitness añadido a {0}',
+  'Life Fitness result': 'Resultado de Life Fitness',
+  'Already in this workout': 'Ya está en este entrenamiento',
+  'Add “{0}” to this workout?': '¿Añadir «{0}» a este entrenamiento?',
+  'Add and take the data': 'Añadir y usar los datos',
+  // --- Admin → Features: one switch per kind of code ---
+  'This kind of code is switched off on this server.': 'Este tipo de código está desactivado en este servidor.',
 }

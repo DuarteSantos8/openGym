@@ -2633,4 +2633,21 @@ export default {
   'openGym code': 'openGym 代碼',
   '{0} no longer has it': '{0} 將不再關聯它',
   '“{0}” isn’t in this workout': '「{0}」不在本次訓練中',
+  // --- Life Fitness cardio consoles ---
+  'Live connection not available': '即時連線無法使用',
+  'The live connection to the machine isn’t available here. Just keep training: at the end, the machine shows a QR code. Scan it here and your workout data comes across.': '這裡無法與器材即時連線。繼續訓練就好：結束時器材會顯示一個 QR 碼。在這裡掃描它，訓練資料就會傳過來。',
+  'OK': '好',
+  'This Life Fitness code isn’t one openGym can use.': 'openGym 無法使用此 Life Fitness 代碼。',
+  'That Life Fitness code could not be read.': '無法讀取此 Life Fitness 代碼。',
+  'Level {0}': '等級 {0}',
+  'This result is already in this workout.': '此結果已在本次訓練中。',
+  'This result was already saved on {0}.': '此結果已於 {0} 儲存。',
+  'Which exercise was this?': '這是哪個動作？',
+  'Life Fitness result added to {0}': '已將 Life Fitness 結果加入 {0}',
+  'Life Fitness result': 'Life Fitness 結果',
+  'Already in this workout': '已在本次訓練中',
+  'Add “{0}” to this workout?': '將「{0}」加入本次訓練？',
+  'Add and take the data': '加入並匯入資料',
+  // --- Admin → Features: one switch per kind of code ---
+  'This kind of code is switched off on this server.': '此伺服器已關閉這類代碼。',
 }

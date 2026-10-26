@@ -212,6 +212,7 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
 // What each switch is about, for the rows below; the server says which ones exist.
 const FEATURE_TEXT = {
   qr: ['Exercise QR codes', 'Scan the code on a machine to jump to its exercise, and give codes to exercises.'],
+  lifeFitness: ['Life Fitness consoles', 'Read the codes of Life Fitness cardio machines into a cardio set, whatever the exercise codes are set to.'],
 }
 
 function FeaturesCard() {

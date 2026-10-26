@@ -3061,7 +3061,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">The instance features and whether each is on</span>
   </summary>
   <div class="ep-body">
-<p>Features an admin can switch off for the whole instance, each on its own: <code>qr</code> the exercise QR codes (scanning the code on a machine, giving codes to exercises).</p>
+<p>Features an admin can switch off for the whole instance, each on its own: <code>qr</code> the exercise QR codes (scanning the code on a machine, giving codes to exercises), <code>lifeFitness</code> the Life Fitness cardio consoles' codes.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
 
 
@@ -3097,6 +3097,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
   <div class="prow">
     <span class="p-name">qr</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">lifeFitness</span>
     <span class="p-type">boolean</span>
     <span class="p-desc"></span>
   </div>

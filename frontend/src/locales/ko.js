@@ -2640,4 +2640,21 @@ export default {
   'openGym code': 'openGym 코드',
   '{0} no longer has it': '{0}에서 빠집니다',
   '“{0}” isn’t in this workout': '"{0}"은(는) 이번 운동에 없습니다',
+  // --- Life Fitness cardio consoles ---
+  'Live connection not available': '실시간 연결을 사용할 수 없음',
+  'The live connection to the machine isn’t available here. Just keep training: at the end, the machine shows a QR code. Scan it here and your workout data comes across.': '여기서는 기구와의 실시간 연결을 사용할 수 없습니다. 그냥 계속 운동하세요. 끝나면 기구에 QR 코드가 표시됩니다. 여기서 스캔하면 운동 데이터가 옮겨집니다.',
+  'OK': '확인',
+  'This Life Fitness code isn’t one openGym can use.': 'openGym에서 사용할 수 없는 Life Fitness 코드입니다.',
+  'That Life Fitness code could not be read.': 'Life Fitness 코드를 읽을 수 없습니다.',
+  'Level {0}': '레벨 {0}',
+  'This result is already in this workout.': '이 결과는 이미 이 운동에 있습니다.',
+  'This result was already saved on {0}.': '이 결과는 이미 {0}에 저장되었습니다.',
+  'Which exercise was this?': '어떤 운동이었나요?',
+  'Life Fitness result added to {0}': 'Life Fitness 결과를 {0}에 추가했습니다',
+  'Life Fitness result': 'Life Fitness 결과',
+  'Already in this workout': '이미 이 운동에 있음',
+  'Add “{0}” to this workout?': '“{0}”을(를) 이 운동에 추가할까요?',
+  'Add and take the data': '추가하고 데이터 가져오기',
+  // --- Admin → Features: one switch per kind of code ---
+  'This kind of code is switched off on this server.': '이 서버에서는 이 종류의 코드가 꺼져 있습니다.',
 }

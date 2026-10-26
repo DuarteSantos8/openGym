@@ -2640,4 +2640,21 @@ export default {
   'openGym code': 'openGym kodu',
   '{0} no longer has it': '{0} artık buna sahip olmaz',
   '“{0}” isn’t in this workout': '“{0}” bu antrenmanda yok',
+  // --- Life Fitness cardio consoles ---
+  'Live connection not available': 'Canlı bağlantı kullanılamıyor',
+  'The live connection to the machine isn’t available here. Just keep training: at the end, the machine shows a QR code. Scan it here and your workout data comes across.': 'Makineyle canlı bağlantı burada kullanılamıyor. Antrenmana devam et: sonunda makine bir QR kod gösterir. Onu burada tara, antrenman verilerin aktarılır.',
+  'OK': 'Tamam',
+  'This Life Fitness code isn’t one openGym can use.': 'openGym bu Life Fitness kodunu kullanamıyor.',
+  'That Life Fitness code could not be read.': 'Bu Life Fitness kodu okunamadı.',
+  'Level {0}': 'Seviye {0}',
+  'This result is already in this workout.': 'Bu sonuç zaten bu antrenmanda.',
+  'This result was already saved on {0}.': 'Bu sonuç zaten {0} tarihinde kaydedildi.',
+  'Which exercise was this?': 'Bu hangi egzersizdi?',
+  'Life Fitness result added to {0}': 'Life Fitness sonucu {0} egzersizine eklendi',
+  'Life Fitness result': 'Life Fitness sonucu',
+  'Already in this workout': 'Zaten bu antrenmanda',
+  'Add “{0}” to this workout?': '“{0}” bu antrenmana eklensin mi?',
+  'Add and take the data': 'Ekle ve verileri al',
+  // --- Admin → Features: one switch per kind of code ---
+  'This kind of code is switched off on this server.': 'Bu kod türü bu sunucuda kapalı.',
 }

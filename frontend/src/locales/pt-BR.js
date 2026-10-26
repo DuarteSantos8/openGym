@@ -1689,6 +1689,23 @@ export const PT_BR_OVERRIDES = {
   'Which exercise is this code for?': 'Para qual exercício é este código?',
   'Which exercise?': 'Qual exercício?',
   '{0} no longer has it': '{0} deixa de tê-lo',
+  // --- Life Fitness cardio consoles ---
+  'Live connection not available': 'Conexão ao vivo indisponível',
+  'The live connection to the machine isn’t available here. Just keep training: at the end, the machine shows a QR code. Scan it here and your workout data comes across.': 'A conexão ao vivo com a máquina não está disponível aqui. Continue treinando: no final, a máquina mostra um código QR. Escaneie aqui e os dados do treino são transferidos.',
+  'OK': 'OK',
+  'This Life Fitness code isn’t one openGym can use.': 'O openGym não consegue usar este código Life Fitness.',
+  'That Life Fitness code could not be read.': 'Não foi possível ler este código Life Fitness.',
+  'Level {0}': 'Nível {0}',
+  'This result is already in this workout.': 'Este resultado já está neste treino.',
+  'This result was already saved on {0}.': 'Este resultado já foi salvo em {0}.',
+  'Which exercise was this?': 'Qual exercício era?',
+  'Life Fitness result added to {0}': 'Resultado Life Fitness adicionado a {0}',
+  'Life Fitness result': 'Resultado Life Fitness',
+  'Already in this workout': 'Já está neste treino',
+  'Add “{0}” to this workout?': 'Adicionar “{0}” a este treino?',
+  'Add and take the data': 'Adicionar e usar os dados',
+  // --- Admin → Features: one switch per kind of code ---
+  'This kind of code is switched off on this server.': 'Esse tipo de código está desativado neste servidor.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
