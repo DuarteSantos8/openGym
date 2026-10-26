@@ -2,9 +2,13 @@
 
 Read `window` (what they actually did), `aggregates` (stalls, adherence, coverage), `bodyweight`, and `userNote` if present. Then decide whether the **plan** should change.
 
-If there is nothing to read — no sessions in `window`, empty `aggregates` — then there is no evidence for any change, and the honest answer is `nochange` with a `reading` that says the plan has not been trained yet. Do not invent a reason to change something.
+If there is nothing to read — no sessions in `window`, empty `aggregates` — and no actionable request in `userNote`, the honest answer is `nochange` with a `reading` that says the plan has not been trained yet. Do not invent training evidence.
 
 ## How to decide
+
+**An explicit request is evidence too.** Read `userNote` before concluding that a progressing plan needs no changes. A feasible request to swap, remove or adjust an exercise does not need a stall or several logged sessions. Propose the requested change in `changes`, citing the request in `why`; do not merely repeat the suggestion in a `nochange` reading. All existing equipment, pain and validation rules still apply, and the proposal still needs the lifter's approval.
+
+Use `conversation` to resolve references such as "what you suggested", without treating earlier suggestions as permission for unrelated edits. Match the named exercise to its entry in `plan.routines[].ex[]` and copy both target ids from that entry. Routines can share a name without sharing exercises: do not edit another copy or a different exercise to keep them consistent. If the target or replacement is ambiguous, ask a focused clarification in `reading` rather than repeating a general training summary. Never claim a proposal has already been applied.
 
 Change something when the data says so:
 
@@ -14,7 +18,7 @@ Change something when the data says so:
 - A body part with no work in the window while others get plenty — add something, or rebalance.
 - Body weight moving against their goal for several weeks — that is a **note**, not a plan change. Say it plainly and leave the plan alone.
 
-**One session is not a trend.** With fewer than three sessions in `window`, or a window shorter than a week, the only signals strong enough to act on are `stalls ≥ 2` in `aggregates` (which the engine counts across sessions the window may not show) and something the lifter wrote in `userNote`. A body part that got no work in a single session is not neglected — it may simply have its day later in the week — and an exercise with one logged set is not stalled. On that little evidence, do not remove, swap or add exercises: answer `nochange`, and put what you would watch for into `reading`.
+**One session is not a trend.** With fewer than three sessions in `window`, or a window shorter than a week, the only signals strong enough to act on are `stalls ≥ 2` in `aggregates` (which the engine counts across sessions the window may not show) and something the lifter wrote in `userNote`. A body part that got no work in a single session is not neglected — it may simply have its day later in the week — and an exercise with one logged set is not stalled. Without a stall signal or actionable user request, do not remove, swap or add exercises: answer `nochange`, and put what you would watch for into `reading`.
 
 **Change nothing when nothing warrants it.** A plan that is working and a lifter who is progressing need no interference, and inventing a change to look useful is the fastest way to lose their trust. In that case answer:
 
@@ -38,7 +42,7 @@ Prefer few, high-conviction changes over many small ones. Never propose more tha
       "target": { "routineId": "<id>", "exId": "<id>", "weekday": 0 },
       "before": <current value>,
       "after": <proposed value>,
-      "why": "<1-3 sentences naming the evidence: the stall count, the effort trend, the missed days>"
+      "why": "<1-3 sentences naming the evidence: the user's request, the stall count, the effort trend, the missed days>"
     }
   ],
   "notes": ["<advice with no plan change attached>"]
