@@ -206,13 +206,15 @@ body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
 #app > .page.vfade{animation:viewfade var(--med) var(--ease)}
 /* Drilling into a settings page and back (App.jsx pageMotion): the iPhone's own push and pop.
    The page slides, the window never scrolls sideways while it does. */
-@keyframes viewpush{from{transform:translateX(100%)}to{transform:none}}
+@keyframes viewpush{from{transform:translateX(100%);box-shadow:-12px 0 28px rgba(0,0,0,.18)}to{transform:none;box-shadow:-12px 0 28px transparent}}
 @keyframes viewpop{from{transform:translateX(-28%);opacity:.7}to{transform:none;opacity:1}}
-#app > .page.vpush{animation:viewpush .38s cubic-bezier(.32,.72,0,1);background:var(--bg);box-shadow:-12px 0 28px rgba(0,0,0,.18)}
+/* The shadow along its leading edge only while it slides: kept on the page, it framed every
+   settings page in grey on the light theme. */
+#app > .page.vpush{animation:viewpush .38s cubic-bezier(.32,.72,0,1);background:var(--bg)}
 #app > .page.vpop{animation:viewpop .34s cubic-bezier(.32,.72,0,1)}
-[dir="rtl"] #app > .page.vpush{animation-name:viewpush-rtl;box-shadow:12px 0 28px rgba(0,0,0,.18)}
+[dir="rtl"] #app > .page.vpush{animation-name:viewpush-rtl}
 [dir="rtl"] #app > .page.vpop{animation-name:viewpop-rtl}
-@keyframes viewpush-rtl{from{transform:translateX(-100%)}to{transform:none}}
+@keyframes viewpush-rtl{from{transform:translateX(-100%);box-shadow:12px 0 28px rgba(0,0,0,.18)}to{transform:none;box-shadow:12px 0 28px transparent}}
 @keyframes viewpop-rtl{from{transform:translateX(28%);opacity:.7}to{transform:none;opacity:1}}
 #app:has(> .page.vpush),#app:has(> .page.vpop){overflow-x:clip}
 /* The page an edge swipe back returns to (App.jsx Page `under`, lib/edge-swipe-back.js): laid
