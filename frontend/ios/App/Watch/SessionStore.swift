@@ -1000,7 +1000,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         DispatchQueue.main.async {
             switch screen {
             case "set", "weight", "rest", "offline", "edit-weight", "edit-reps", "finish-auto": self.picked[0] = 2
-            case "hold": self.state.entryIndex = 1
+            case "hold", "hold-set": self.state.entryIndex = 1
+            case "all-done": for si in self.state.workout?.entries[0].sets.indices ?? 0..<0 { self.state.workout?.entries[0].sets[si].done = true }
             case "bodyweight": self.state.entryIndex = 2
             case "side": self.state.entryIndex = 3
             case "superset": self.state.entryIndex = 4
@@ -1016,6 +1017,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             }
             // CI: the watch in another language than its own (the app's, as the phone sends it).
             if let lang = SessionStore.argument("-OpenGymWatchLang") { self.state.settings.lang = lang }
+            // CI: the profile rates effort ("rpe" or "rir"), so the disc beside Done shows.
+            if let effort = SessionStore.argument("-OpenGymWatchEffort") { self.state.settings.effort = effort }
             if let show = SessionStore.argument("-OpenGymWatchShow") {
                 // "all": every optional thing on, for a look at the fullest screen.
                 if show == "all" { self.state.settings.show = WatchShow(clip: true, hr: true, last: true, elapsed: true, kcal: true, next: true, rest: "ring") }
@@ -1032,8 +1035,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                                               prs: ["Bench Press", "Plank"], hrAvg: 118, hrMax: 156, calories: 312,
                                               endedOnPhone: screen == "ended")
             }
+            // The widest band: 1:02:34 on the clock and a heart rate and calories (CI shows no sensor).
+            self.workoutSeenAt = Date(timeIntervalSinceNow: -3754)
+            self.health.demoReadings(hr: 142, kcal: 187)
             if let path = SessionStore.demoClip, let frames = SessionStore.frames(of: URL(fileURLWithPath: path)) {
                 self.clips["0025"] = frames
+                self.clips["split"] = frames        // a two-line name with the animation before it
                 self.log("demo clip: \(frames.images.count) frames")
             }
         }

@@ -5,14 +5,15 @@ import WidgetKit
 
 /*
  * openGym on the Apple Watch, laid out like the watch's own apps: one primary action per screen
- * as a big round button in the middle, secondary actions small at the edges, the Digital Crown as
+ * as a big button, secondary actions small at the edges, the Digital Crown as
  * the obvious value control, black background, the accent colour only on the primary action.
  *
  *   start   today's workout as one big Start, the other routines in a short list below
  *   3-2-1   with Apple Health on, a countdown before it starts (the heart-rate sensor warms up)
- *   set     weight × reps in big rounded numerals, the round Done, the set dots; the crown turns
- *           the reps (or the weight, after a tap on it), marked by the crown symbol under it
- *           and, when the profile rates effort, RPE or RIR in a small disc beside Done
+ *   set     laid out like Apple's Workout: a band with the time and heart rate, the exercise's name,
+ *           "Set 2 of 4" with its tags, last time, weight and reps as two boxes (a tap opens the
+ *           value on the crown), what is planned, a Done pill (RPE or RIR in a small disc beside
+ *           it, when the profile rates effort) and the set dots; the crown pages the exercises
  *   rest    a full-screen ring around a huge countdown, +15 s and Skip as small round buttons
  *   hold    a timed set: the seconds on the crown, Start, then a ring counting down, Stop
  *   summary the workout at its end: time, sets, volume, heart rate, calories, records; Done
@@ -142,8 +143,11 @@ struct SecondaryButton: ButtonStyle {
     }
 }
 
-func formatNumber(_ v: Double) -> String {
-    v.rounded() == v ? String(Int(v)) : String(format: "%.1f", v)
+/// A button that draws itself and only answers a touch with the app's press (the boxes, the effort disc).
+private struct PressStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label.modifier(Press(on: configuration.isPressed))
+    }
 }
 
 struct RootView: View {
@@ -194,17 +198,20 @@ struct RootView: View {
 struct Tag: View {
     let text: Text
     let color: Color
+    @Environment(\.isLuminanceReduced) private var dimmed
 
     var body: some View {
         text
             .font(.system(.caption2, design: .rounded).weight(.bold))
             .textCase(.uppercase)
-            .foregroundStyle(color)
+            .foregroundStyle(Theme.ink(color, dimmed))
             .lineLimit(1)
             .minimumScaleFactor(0.7)
             .padding(.horizontal, 6)
             .padding(.vertical, 1)
-            .background(Capsule().fill(color.opacity(0.18)))
+            // Always On: an outline, no lit fill.
+            .background(Capsule().fill(dimmed ? Color.clear : color.opacity(0.18)))
+            .overlay(Capsule().stroke(Theme.outline, lineWidth: dimmed ? 1 : 0))
     }
 }
 
@@ -218,35 +225,6 @@ struct OfflineSign: View {
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(.secondary)
                 .accessibilityLabel(Text("Saved on the watch, syncs later"))
-        }
-    }
-}
-
-/* ---------- a big round primary button ---------- */
-
-struct RoundButton: View {
-    let systemImage: String
-    let label: Text
-    var size: CGFloat = 76
-    /// The label under the button, said in words (on by default: "Done" under the check).
-    var caption = true
-    let action: () -> Void
-    @Environment(\.isLuminanceReduced) private var dimmed
-
-    var body: some View {
-        VStack(spacing: 3) {
-            Button(action: action) {
-                Image(systemName: systemImage)
-                    .font(.system(size: size * 0.44, weight: .heavy))
-                    .foregroundStyle(dimmed ? Theme.accent : Color.black)
-                    .frame(width: size, height: size)
-                    .background(Circle().fill(dimmed ? Color.clear : Theme.accent))
-                    .overlay(Circle().stroke(Theme.accent, lineWidth: dimmed ? 2 : 0))
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(label)
-            // The word under it in the accent too, so Done reads as the one thing to press.
-            if caption { label.font(.caption2.weight(.bold)).foregroundStyle(dimmed ? Color.secondary : Theme.accent).lineLimit(1) }
         }
     }
 }
@@ -517,7 +495,7 @@ struct ExercisePager: View {
     let covered: Bool
 
     var body: some View {
-        // Vertical pages, swiped; the crown belongs to the numbers on the page (like a volume).
+        // Vertical pages, swiped; the crown pages them too (as in Apple's Workout).
         let n = store.workout?.entries.count ?? 0
         TabView(selection: Binding(get: { min(store.entryIndex, max(0, n - 1)) }, set: { store.show(entry: $0) })) {
             ForEach(Array((store.workout?.entries ?? []).enumerated()), id: \.offset) { pair in
@@ -535,7 +513,7 @@ enum EditField: String, Identifiable {
 }
 
 /*
- * One exercise, one set up next. The numbers are two big tiles (weight, reps); a tap on one opens
+ * One exercise, one set up next. The numbers are two big boxes (weight, reps); a tap on one opens
  * it on a screen of its own, where the Digital Crown turns only that value, in the exercise's own
  * steps with a tap of the crown at each, and − and + do the same by hand. On this page the crown
  * belongs to the pages (the next exercise), as in Apple's Workout app.
@@ -547,175 +525,273 @@ struct ExercisePage: View {
     @State private var editing: EditField?
     @State private var confirmSkip = false
     @Environment(\.dynamicTypeSize) private var typeSize
-    @ScaledMetric(relativeTo: .title) private var doneSizeScaled: CGFloat = 58
-    /// Large enough to hit, small enough to leave room for the numbers at the largest text sizes.
-    private var doneSize: CGFloat { min(doneSizeScaled, typeSize.isAccessibilitySize ? 56 : 66) }
+    @Environment(\.isLuminanceReduced) private var dimmed
+
+    /// How many of the two extra lines (last time, planned) a layout carries; the page takes the first that fits.
+    private enum Lines { case both, one, none }
 
     var body: some View {
         if let w = store.workout, w.entries.indices.contains(index) {
             let entry = w.entries[index]
             let si = store.setIndex(in: index)
             let current = index == store.entryIndex
-            VStack(spacing: 0) {
-                header(entry)
-                Spacer(minLength: 2)
-                if let si = si {
-                    let row = entry.sets[si]
-                    tags(entry, row)
-                    if entry.isCardio {
-                        Text("Log this one on your iPhone.")
+            GeometryReader { g in
+                let inset = g.safeAreaInsets
+                VStack(spacing: 0) {
+                    band(inset: inset.top, width: g.size.width + inset.leading + inset.trailing)
+                    if let si = si {
+                        // The lines drop first when the screen is small (41 mm: one line, or none at a two-line name),
+                        // then the name goes to one line (40 mm).
+                        ViewThatFits(in: .vertical) {
+                            VStack(spacing: 0) { nameRow(entry, lines: 2); setBlock(entry, si, unit: entry.weightUnit(w.unit), current: current, lines: .both) }
+                            VStack(spacing: 0) { nameRow(entry, lines: 2); setBlock(entry, si, unit: entry.weightUnit(w.unit), current: current, lines: .one) }
+                            VStack(spacing: 0) { nameRow(entry, lines: 2); setBlock(entry, si, unit: entry.weightUnit(w.unit), current: current, lines: .none) }
+                            VStack(spacing: 0) { nameRow(entry, lines: 1); setBlock(entry, si, unit: entry.weightUnit(w.unit), current: current, lines: .none) }
+                        }
+                        .frame(maxHeight: .infinity, alignment: .top)
+                    } else {
+                        nameRow(entry, lines: 2)
+                        let left = entry.sets.contains { !$0.done }
+                        Spacer(minLength: 2)
+                        Image(systemName: left ? "forward.circle" : "checkmark.circle.fill")
+                            .font(.system(size: 40))
+                            .foregroundStyle(.secondary)
+                            .accessibilityHidden(true)
+                        Text(left ? LocalizedStringKey("Tap a dot to do a skipped set.") : LocalizedStringKey("All sets done"))
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                             .minimumScaleFactor(0.7)
-                    } else if entry.isTimed {
-                        ValueTile(value: formatNumber(current ? store.seconds : (row.sec ?? 0)), unit: "s", label: Text("Hold"),
-                                  tint: .white, large: true) { if current { editing = .seconds } }
-                    } else {
-                        numbers(entry, row, unit: entry.weightUnit(w.unit), current: current)
+                        Spacer(minLength: 4)
+                        SetDots(entry: entry, current: nil, skipped: { store.isSkipped(entry.id, $0) }) { store.pick(set: $0, in: index) }
                     }
-                    if store.show.showLast, let last = entry.last, !last.isEmpty {
-                        Text("Last time: \(last)")
-                            .font(.system(size: 11))
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.7)
-                            .padding(.top, 1)
-                            .dynamicTypeSize(...DynamicTypeSize.large)
-                    }
-                    Spacer(minLength: 2)
-                    primaryButton(entry, current: current)
-                    Spacer(minLength: 3)
-                    SetDots(entry: entry, current: si, skipped: { store.isSkipped(entry.id, $0) }) { store.pick(set: $0, in: index) }
-                } else {
-                    let left = entry.sets.contains { !$0.done }
-                    Image(systemName: left ? "forward.circle" : "checkmark.circle.fill")
-                        .font(.system(size: 40))
-                        .foregroundStyle(.secondary)
-                        .accessibilityHidden(true)
-                    Text(left ? LocalizedStringKey("Tap a dot to do a skipped set.") : LocalizedStringKey("All sets done"))
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .minimumScaleFactor(0.7)
-                    Spacer(minLength: 4)
-                    SetDots(entry: entry, current: nil, skipped: { store.isSkipped(entry.id, $0) }) { store.pick(set: $0, in: index) }
                 }
-            }
-            .padding(.horizontal, 4)
-            .padding(.bottom, 8)        // the horizontal page dots sit about 6 pt from the bottom edge
-            // The set's layout is fixed (numbers, Done, dots on one screen): text grows up to a size
-            // that still fits on 41 mm; the start screen and the summary scroll and grow all the way.
-            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
-            .onAppear {
-                if current, SessionStore.demoScreen == "edit-weight" { editing = .weight }
-                if current, SessionStore.demoScreen == "edit-reps" { editing = .reps }
-            }
-            .sheet(item: $editing) { field in
-                ValueEditor(field: field, entry: entry, unit: entry.weightUnit(w.unit))
-            }
-            .confirmationDialog(Text("Skip this set?"), isPresented: $confirmSkip) {
-                Button("Skip set") { store.skipSet() }
-                Button("Cancel", role: .cancel) {}
+                .padding(.horizontal, Theme.side)
+                .padding(.bottom, 8)        // the horizontal page dots sit about 6 pt from the bottom edge
+                // Outside the candidates above, so only one animation runs; level with the name's first line.
+                .overlay(alignment: .topLeading) {
+                    if hasClip(entry), let clip = store.clips[entry.id] {
+                        ClipView(clip: clip, animating: index == store.entryIndex && !covered)
+                            .frame(width: 22, height: 22)
+                            .padding(.leading, Theme.side + 4)
+                            .padding(.top, bandHeight(inset.top))
+                    }
+                }
+                // The whole screen, not what the system leaves: the band sits beside the clock, not under it.
+                .frame(width: g.size.width + inset.leading + inset.trailing, height: g.size.height + inset.top + inset.bottom, alignment: .top)
+                .offset(x: -inset.leading, y: -inset.top)
+                // The set's layout is fixed (numbers, Done, dots on one screen): text grows up to a size
+                // that still fits on 41 mm; the start screen and the summary scroll and grow all the way.
+                .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+                .modifier(DemoEnvironment())        // CI's Always On reaches a pager page only this way
+                .onAppear {
+                    if current, SessionStore.demoScreen == "edit-weight" { editing = .weight }
+                    if current, SessionStore.demoScreen == "edit-reps" { editing = .reps }
+                }
+                .sheet(item: $editing) { field in
+                    ValueEditor(field: field, entry: entry, unit: entry.weightUnit(w.unit))
+                }
+                .confirmationDialog(Text("Skip this set?"), isPresented: $confirmSkip) {
+                    Button("Skip set") { store.skipSet() }
+                    Button("Cancel", role: .cancel) {}
+                }
             }
         }
     }
 
-    /// Weight × reps as two tiles; a bodyweight set: the reps big, the added weight small.
-    @ViewBuilder private func numbers(_ entry: Entry, _ row: SetRow, unit: String, current: Bool) -> some View {
+    /// The top band: the time and heart rate, then the offline sign. It is as high as the clock (the system's
+    /// inset less 17 pt: 29 pt on 41 mm) and its right 30 % of the screen (52 pt on 41 mm) is the clock's, so
+    /// nothing is ever under it; what does not fit is left out (calories first, then the time). The 17 pt and
+    /// the 30 % were measured on 41 and 49 mm.
+    private func band(inset: CGFloat, width: CGFloat) -> some View {
+        ViewThatFits(in: .horizontal) {
+            bandItems(elapsed: true, kcal: true)
+            bandItems(elapsed: true, kcal: false)
+            bandItems(elapsed: false, kcal: false)
+        }
+        .lineLimit(1)
+        .dynamicTypeSize(...DynamicTypeSize.xLarge)
+        .padding(.top, 7)
+        .padding(.leading, 4)
+        .padding(.trailing, width * 0.3 - Theme.side)
+        .frame(maxWidth: .infinity, minHeight: bandHeight(inset), alignment: .leading)
+    }
+
+    private func bandHeight(_ inset: CGFloat) -> CGFloat { max(29, inset - 17) }
+
+    private func bandItems(elapsed: Bool, kcal: Bool) -> some View {
+        HStack(spacing: 6) {
+            if elapsed { WorkoutExtras(kcal: kcal) }
+            if store.show.showHr { HeartRateBadge(health: store.health) }
+            OfflineSign()
+        }
+    }
+
+    private func hasClip(_ entry: Entry) -> Bool { store.show.showClip && store.clips[entry.id] != nil }
+
+    /// The exercise's name under the band, two lines when it needs them (the animation, drawn over the page, sits before it).
+    private func nameRow(_ entry: Entry, lines: Int) -> some View {
+        Text(entry.name)
+            .font(.headline)
+            .foregroundStyle(Theme.ink(.white, dimmed))
+            .lineLimit(lines)
+            .minimumScaleFactor(lines == 1 ? 0.75 : 0.8)
+            .fixedSize(horizontal: false, vertical: true)
+            // As high as the animation, so a shrunk one-line name does not leave it over the row below.
+            .frame(maxWidth: .infinity, minHeight: lines == 1 && hasClip(entry) ? 22 : nil, alignment: .leading)
+            .padding(.leading, hasClip(entry) ? 32 : 4)        // the 22 pt animation, 6 pt, the 4 pt margin
+            .dynamicTypeSize(...DynamicTypeSize.xLarge)
+            .accessibilityAddTraits(.isHeader)
+    }
+
+    /// Everything under the name for the set up next: its place, the lines, the boxes, Done, the dots.
+    @ViewBuilder private func setBlock(_ entry: Entry, _ si: Int, unit: String, current: Bool, lines: Lines) -> some View {
+        let row = entry.sets[si]
+        let pos = SetPage.position(entry, set: si)
+        let last = store.show.showLast ? SetPage.lastTime(entry.last, pos) : nil
+        let plan = SetPage.planned(entry, set: si, unit: unit) { store.isSkipped(entry.id, $0) }
+        VStack(spacing: 0) {
+            positionRow(entry, row, pos)
+            Spacer(minLength: 1)
+            if lines != .none, let last { lastLine(last) }
+            boxes(entry, row, unit: unit, current: current)
+            if let plan, lines == .both || (lines == .one && last == nil) { plannedLine(plan) }
+            Spacer(minLength: 1)
+            primaryRow(entry, current: current)
+            Spacer(minLength: 1)
+            SetDots(entry: entry, current: si, skipped: { store.isSkipped(entry.id, $0) }) { store.pick(set: $0, in: index) }
+        }
+        .frame(maxHeight: .infinity)        // the spare room goes between the rows
+    }
+
+    /// "Set 2 of 4", or Warm-up, then Left / Right and Superset. Short of room, Superset is a link glyph,
+    /// then the place is "2/4" (long words: ru has "Подход 2 из 4" beside "ПРАВАЯ"). VoiceOver says it in full.
+    private func positionRow(_ entry: Entry, _ row: SetRow, _ pos: SetPage.Position) -> some View {
+        ViewThatFits(in: .horizontal) {
+            positionItems(entry, row, pos, glyph: false, short: false)
+            positionItems(entry, row, pos, glyph: true, short: false)
+            positionItems(entry, row, pos, glyph: true, short: true)
+        }
+        .frame(maxWidth: .infinity, minHeight: 16, alignment: .leading)
+        .padding(.leading, 4)
+        .dynamicTypeSize(...DynamicTypeSize.xLarge)
+    }
+
+    private func positionItems(_ entry: Entry, _ row: SetRow, _ pos: SetPage.Position, glyph: Bool, short: Bool) -> some View {
+        let side = row.sideUp
+        return HStack(spacing: 4) {
+            if let n = pos.number {
+                (short ? Text(verbatim: "\(n)/\(pos.total)") : Text("Set \(n) of \(pos.total)"))
+                    .font(.footnote.weight(.semibold).monospacedDigit())
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .accessibilityLabel(Text("Set \(n) of \(pos.total)"))
+            } else {
+                Tag(text: Text("Warm-up"), color: Theme.warmup)
+            }
+            if side == "L" { Tag(text: Text("Left"), color: .cyan) }
+            if side == "R" { Tag(text: Text("Right"), color: .cyan) }
+            if entry.group != nil {
+                if glyph { Tag(text: Text(Image(systemName: "link")), color: .purple).accessibilityLabel(Text("Superset")) }
+                else { Tag(text: Text("Superset"), color: .purple) }
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    /// What was lifted in this place last time; a symbol for the label where the words do not fit.
+    private func lastLine(_ piece: String) -> some View {
+        ViewThatFits(in: .horizontal) {
+            Text("Last time: \(piece)")
+            Label { Text(verbatim: piece) } icon: { Image(systemName: "clock.arrow.circlepath") }
+        }
+        .font(.footnote)
+        .foregroundStyle(.secondary)
+        .lineLimit(1)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, 1)
+        .padding(.leading, 4)
+        .dynamicTypeSize(...DynamicTypeSize.large)
+        .accessibilityLabel(Text("Last time: \(piece)"))
+    }
+
+    /// The plan still ahead: "62.5 kg × 8-8-7", the reps of this set in bold.
+    private func plannedLine(_ p: SetPage.Planned) -> some View {
+        let ladder = Text("\(Text(verbatim: p.head))\(Text(verbatim: p.now).bold().foregroundStyle(Theme.ink(.white, dimmed)))\(Text(verbatim: p.tail))")
+        return ViewThatFits(in: .horizontal) {
+            HStack(spacing: 4) { Text("Planned"); ladder }
+            Label { ladder } icon: { Image(systemName: "target") }
+        }
+        .font(.footnote)
+        .foregroundStyle(.secondary)
+        .lineLimit(1)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, 1)
+        .padding(.leading, 4)
+        .dynamicTypeSize(...DynamicTypeSize.large)
+        .accessibilityLabel(Text("\(Text("Planned")) \(Text(verbatim: p.spoken))"))
+    }
+
+    /// Weight and reps as two boxes (a hold: the seconds in one wide box); a tap opens it for editing.
+    @ViewBuilder private func boxes(_ entry: Entry, _ row: SetRow, unit: String, current: Bool) -> some View {
+        if entry.isCardio {
+            Text("Log this one on your iPhone.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .minimumScaleFactor(0.7)
+                .frame(maxWidth: .infinity, minHeight: 50)
+        } else if entry.isTimed {
+            ValueTile(value: formatNumber(current ? store.seconds : (row.sec ?? 0)), unit: "s", label: Text("Hold"),
+                      tint: .white) { if current { editing = .seconds } }
+        } else {
+            numbers(entry, row, unit: unit, current: current)
+        }
+    }
+
+    /// Weight × reps; a bodyweight set shows its added weight (or Bodyweight) in the weight box.
+    private func numbers(_ entry: Entry, _ row: SetRow, unit: String, current: Bool) -> some View {
         let side = row.sideUp.flatMap { row.sides?[$0] }
         let weight = current ? store.weight : (side?.w ?? row.w ?? 0)
         let reps = current ? store.reps : (side?.r ?? row.r ?? 0)
         let tint = row.warmup ? Theme.warmup : Color.white
-        if entry.isBodyweight {
-            VStack(spacing: 3) {
-                ValueTile(value: formatNumber(reps), unit: nil, label: Text("Reps"), tint: tint, large: true) { if current { editing = .reps } }
-                Button { if current { editing = .weight } } label: {
-                    Group {
-                        if weight > 0 { Text(verbatim: "+\(formatNumber(weight)) \(unit)") } else { Text("Bodyweight") }
-                    }
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 8)
-                    .frame(minHeight: 22)
-                    .background(Capsule().fill(Theme.dim))
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(weight > 0 ? Text(verbatim: "+\(formatNumber(weight)) \(unit)") : Text("Bodyweight"))
-                .accessibilityHint(Text("Tap to change it."))
-            }
-        } else {
-            HStack(spacing: 6) {
+        return HStack(spacing: 6) {
+            if entry.isBodyweight {
+                ValueTile(value: weight > 0 ? "+\(formatNumber(weight))" : "0", unit: unit,
+                          label: weight > 0 ? Text("Added weight") : Text("Bodyweight"), short: Text("Weight"), tint: tint) { if current { editing = .weight } }
+            } else {
                 ValueTile(value: formatNumber(weight), unit: unit, label: Text("Weight"), tint: tint) { if current { editing = .weight } }
-                ValueTile(value: formatNumber(reps), unit: nil, label: Text("Reps"), tint: tint) { if current { editing = .reps } }
             }
+            ValueTile(value: formatNumber(reps), unit: nil, label: Text("Reps"), tint: tint) { if current { editing = .reps } }
+                .frame(width: 62)
         }
     }
 
-    @ViewBuilder private func header(_ entry: Entry) -> some View {
-        HStack(alignment: .top, spacing: 6) {
-            if store.show.showClip, let clip = store.clips[entry.id] {
-                ClipView(clip: clip, animating: index == store.entryIndex && !covered).frame(width: 30, height: 30)
-            }
-            VStack(alignment: .leading, spacing: 0) {
-                Text(entry.name)
-                    .font(.system(.footnote, design: .rounded).weight(.semibold))
-                    // One line at the large sizes (shrunk to fit): two would push the page up into the clock.
-                    .lineLimit(typeSize.isAccessibilitySize ? 1 : 2)
-                    .minimumScaleFactor(typeSize.isAccessibilitySize ? 0.6 : 0.8)
-                    .fixedSize(horizontal: false, vertical: true)
-                WorkoutExtras()
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            OfflineSign()
-            if store.show.showHr { HeartRateBadge(health: store.health) }
-        }
-        // The top row sits just under the clock: it grows less than the numbers do.
-        .dynamicTypeSize(...DynamicTypeSize.xLarge)
-    }
-
-    /// Warm-up, the side up next, superset: what kind of set this is, above the numbers.
-    @ViewBuilder private func tags(_ entry: Entry, _ row: SetRow) -> some View {
-        let side = row.sideUp
-        if row.warmup || side != nil || entry.group != nil {
-            HStack(spacing: 4) {
-                if row.warmup { Tag(text: Text("Warm-up"), color: Theme.warmup) }
-                if side == "L" { Tag(text: Text("Left"), color: .cyan) }
-                if side == "R" { Tag(text: Text("Right"), color: .cyan) }
-                if entry.group != nil { Tag(text: Text("Superset"), color: .purple) }
-            }
-            .padding(.bottom, 2)
-            .dynamicTypeSize(...DynamicTypeSize.xLarge)
-        }
-    }
-
-    /// Done in the middle; with a profile that rates effort, the RPE / RIR button at its left (the
-    /// same room again on the right keeps Done centred under the numbers).
-    @ViewBuilder private func primaryButton(_ entry: Entry, current: Bool) -> some View {
-        if let kind = store.effortKind, !entry.isCardio, let si = store.setIndex(in: index), !entry.sets[si].warmup {
-            HStack(spacing: 6) {
+    /// With a profile that rates effort, the RPE / RIR disc, then the Done pill (a hold: Start hold).
+    @ViewBuilder private func primaryRow(_ entry: Entry, current: Bool) -> some View {
+        HStack(spacing: 6) {
+            if let kind = store.effortKind, !entry.isCardio, let si = store.setIndex(in: index), !entry.sets[si].warmup {
                 EffortButton(kind: kind, value: current ? store.effort : nil) { if current { editing = .effort } }
                     .disabled(!current)
-                doneButton(entry, current: current)
-                Color.clear.frame(width: Theme.tap, height: Theme.tap).accessibilityHidden(true)
             }
-        } else {
             doneButton(entry, current: current)
         }
     }
 
     @ViewBuilder private func doneButton(_ entry: Entry, current: Bool) -> some View {
-        Group {
-            if entry.isTimed {
-                RoundButton(systemImage: "play.fill", label: Text("Start hold"), size: doneSize,
-                            caption: !typeSize.isAccessibilitySize) { store.startHold() }
-            } else {
-                // At the accessibility sizes the word under the check goes (VoiceOver still says it):
-                // the room it takes is what pushed the page up into the clock on 41 mm.
-                RoundButton(systemImage: "checkmark", label: Text("Done"), size: doneSize,
-                            caption: !typeSize.isAccessibilitySize) { store.completeSet() }
+        let timed = entry.isTimed
+        Button { if timed { store.startHold() } else { store.completeSet() } } label: {
+            // At the accessibility sizes the glyph goes and the word stands alone.
+            HStack(spacing: 6) {
+                if !typeSize.isAccessibilitySize { Image(systemName: timed ? "play.fill" : "checkmark").accessibilityHidden(true) }
+                if timed { Text("Start hold") } else { Text("Done") }
             }
+            .font(.headline.weight(.semibold))
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .dynamicTypeSize(...DynamicTypeSize.xLarge)
         }
+        .buttonStyle(PrimaryButton(minHeight: Theme.tap))
         .disabled(!current)
         // A long press: skip this set instead (VoiceOver: an action of its own).
         .simultaneousGesture(LongPressGesture(minimumDuration: 0.8).onEnded { _ in if current { confirmSkip = true } })
@@ -723,22 +799,24 @@ struct ExercisePage: View {
     }
 }
 
-/// The time so far and the calories, under the exercise's name, when the phone says to show them.
+/// The time so far and the calories, when the phone says to show them (`kcal: false`: the time alone).
 struct WorkoutExtras: View {
     @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var dimmed
+    var kcal = true
 
     var body: some View {
         let show = store.show
-        if show.showElapsed || show.showKcal {
+        if show.showElapsed || (kcal && show.showKcal) {
             HStack(spacing: 6) {
                 if show.showElapsed, let start = store.workoutStart {
                     Text(timerInterval: start...Date.distantFuture, countsDown: false)
                         .monospacedDigit()
                 }
-                if show.showKcal { CaloriesText(health: store.health) }
+                if kcal && show.showKcal { CaloriesText(health: store.health) }
             }
-            .font(.system(size: 11, weight: .medium, design: .rounded))
-            .foregroundStyle(Theme.warmup)
+            .font(.system(.footnote, design: .rounded).weight(.medium))
+            .foregroundStyle(Theme.ink(Theme.warmup, dimmed))
             .lineLimit(1)
         }
     }
@@ -750,23 +828,25 @@ struct EffortButton: View {
     let kind: String
     let value: Double?
     let tap: () -> Void
+    @Environment(\.isLuminanceReduced) private var dimmed
 
     var body: some View {
         let color = value.map { Effort.color(kind, $0) } ?? Color.white
         Button(action: tap) {
-            VStack(spacing: -1) {
-                Text(verbatim: Effort.name(kind)).font(.system(size: 9, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+            VStack(spacing: -2) {
+                Text(verbatim: Effort.name(kind)).font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
                 Text(verbatim: value.map(formatNumber) ?? "–")
                     .font(.system(size: 16, weight: .semibold, design: .rounded).monospacedDigit())
-                    .foregroundStyle(color)
+                    .foregroundStyle(Theme.ink(color, dimmed))
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
             }
             .frame(width: Theme.tap, height: Theme.tap)
-            .background(Circle().fill(value == nil ? Theme.dim : color.opacity(0.22)))
-            .overlay(Circle().stroke(color.opacity(value == nil ? 0 : 0.9), lineWidth: 1.5))
+            // Always On: the outline only.
+            .background(Circle().fill(dimmed ? Color.clear : (value == nil ? Theme.dim : color.opacity(0.22))))
+            .overlay(Circle().stroke(value == nil ? Theme.outline : Theme.ink(color, dimmed).opacity(0.9), lineWidth: value == nil ? (dimmed ? 1 : 0) : 1.5))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressStyle())
         .dynamicTypeSize(...DynamicTypeSize.large)
         .accessibilityLabel(Text("Effort"))
         .accessibilityValue(value.map { Text(verbatim: "\(Effort.name(kind)) \(formatNumber($0))") } ?? Text("None"))
@@ -796,12 +876,12 @@ struct ValueTile: View {
     let value: String
     let unit: String?
     let label: Text
+    /// A shorter caption for where the label does not fit (ru, pl: "Bodyweight").
+    var short: Text? = nil
     var tint: Color = .white
-    var large = false
     let tap: () -> Void
-    // The numbers are what a glance between sets is for: as big as the tile lets them be.
-    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 34
-    @ScaledMetric(relativeTo: .largeTitle) private var largeSize: CGFloat = 42
+    // The numbers are what a glance between sets is for: as big as the box lets them be.
+    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 30
     @Environment(\.isLuminanceReduced) private var dimmed
 
     var body: some View {
@@ -809,24 +889,27 @@ struct ValueTile: View {
             VStack(spacing: 0) {
                 HStack(alignment: .firstTextBaseline, spacing: 2) {
                     Text(verbatim: value)
-                        .font(.system(size: large ? largeSize : size, weight: .semibold, design: .rounded).monospacedDigit())
+                        .font(.system(size: min(size, 32), weight: .semibold, design: .rounded).monospacedDigit())
                     if let u = unit {
                         Text(verbatim: u).font(.system(size: 12, weight: .medium, design: .rounded)).foregroundStyle(.secondary)
                     }
                 }
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
-                label.font(.system(size: 10, weight: .medium)).foregroundStyle(.secondary).lineLimit(1)
-                    .dynamicTypeSize(...DynamicTypeSize.large)
+                ViewThatFits(in: .horizontal) {
+                    label
+                    short ?? label
+                }
+                .font(.system(size: 12, weight: .medium)).foregroundStyle(.secondary).lineLimit(1)
+                .dynamicTypeSize(...DynamicTypeSize.large)
             }
-            .foregroundStyle(tint.opacity(dimmed ? 0.7 : 1))
-            .frame(maxWidth: .infinity, minHeight: Theme.tap)
-            .padding(.vertical, 3)
+            .foregroundStyle(tint.opacity(dimmed ? Theme.aod : 1))
+            .frame(maxWidth: .infinity, minHeight: 50)
             // Always On: no lit tiles, only their outline (less light, the numbers still read).
-            .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(dimmed ? Color.clear : Theme.dim))
-            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Theme.dim, lineWidth: dimmed ? 1 : 0))
+            .background(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).fill(dimmed ? Color.clear : Theme.dim))
+            .overlay(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).stroke(Theme.outline, lineWidth: dimmed ? 1 : 0))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressStyle())
         // VoiceOver: "Weight, 62.5 kg, button: tap to change it".
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(label)
@@ -1076,6 +1159,7 @@ struct SetDots: View {
     @Environment(\.isLuminanceReduced) private var dimmed
 
     var body: some View {
+        let position = SetPage.position(entry, set: current ?? -1)
         HStack(spacing: 4) {
             ForEach(Array(entry.sets.enumerated()), id: \.offset) { pair in
                 let s = pair.element
@@ -1093,10 +1177,10 @@ struct SetDots: View {
             }
         }
         .opacity(dimmed ? 0.6 : 1)
-        // VoiceOver: "Set 2 of 4, 1 done", swipe up or down to pick another set.
+        // VoiceOver: "Set 2 of 4, 1 done" (a warm-up: "Warm-up"), swipe up or down to pick another set.
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("Set \((current ?? 0) + 1) of \(entry.sets.count)"))
-        .accessibilityValue(Text("\(entry.sets.filter { $0.done }.count) done"))
+        .accessibilityLabel(current == nil ? Text("Sets") : position.number.map { Text("Set \($0) of \(position.total)") } ?? Text("Warm-up"))
+        .accessibilityValue(Text("\(position.done) done"))
         .accessibilityAdjustableAction { direction in
             let open = entry.sets.indices.filter { !entry.sets[$0].done }
             guard let cur = current, let at = open.firstIndex(of: cur) else { return }
@@ -1162,6 +1246,13 @@ struct OverviewPage: View {
         }
     }
 
+    private func headerExtras(kcal: Bool) -> some View {
+        HStack(spacing: 6) {
+            WorkoutExtras(kcal: kcal)
+            if store.show.showHr { HeartRateBadge(health: store.health) }
+        }
+    }
+
     private var header: some View {
         let p = store.progress
         return VStack(alignment: .leading, spacing: 2) {
@@ -1170,9 +1261,10 @@ struct OverviewPage: View {
                 .lineLimit(2)
                 .foregroundStyle(Theme.ink(.white, dimmed))
                 .accessibilityAddTraits(.isHeader)
-            HStack(spacing: 6) {
-                WorkoutExtras()
-                if store.show.showHr { HeartRateBadge(health: store.health) }
+            // The calories go first when the three do not fit side by side (41 mm).
+            ViewThatFits(in: .horizontal) {
+                headerExtras(kcal: true)
+                headerExtras(kcal: false)
             }
             if p.total > 0 {
                 Text("\(p.done) of \(p.total) sets").font(.footnote.monospacedDigit()).foregroundStyle(.secondary)
@@ -1583,6 +1675,8 @@ struct ClipView: View {
                 }
             }
         }
+        // Always On: a dimmer still frame.
+        .opacity(dimmed || SessionStore.demoAOD ? 0.5 : 1)
         .accessibilityHidden(true)
     }
 
@@ -1599,6 +1693,7 @@ struct ClipView: View {
 /// "♥ 128" while the workout session measures it; nothing otherwise.
 struct HeartRateBadge: View {
     @ObservedObject var health: WorkoutManager
+    @Environment(\.isLuminanceReduced) private var dimmed
 
     var body: some View {
         if let hr = health.heartRate {
@@ -1606,7 +1701,7 @@ struct HeartRateBadge: View {
                 Image(systemName: "heart.fill").font(.system(size: 9))
                 Text(verbatim: "\(Int(hr.rounded()))").font(.caption2.monospacedDigit())
             }
-            .foregroundStyle(.red)
+            .foregroundStyle(Theme.ink(.red, dimmed))
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(Text("Heart rate"))
             .accessibilityValue(Text(verbatim: "\(Int(hr.rounded()))"))
