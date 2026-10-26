@@ -21,6 +21,7 @@ export const EXTRA_PROBES = 84    // more of them when those found no caption (n
 const STRIP_H = 0.12              // a strip's height, as a share of the frame
 const STEP = 0.05                 // how far apart the strips start
 const OUT_H = 96                  // a strip is read at this height in pixels
+export const SIDE_TOKEN = /^[(\[]?[RL][)\]]?$/   // "(R)", "(L)": the side of a move, one letter
 const MAX_WORD_H = 0.8 * OUT_H    // a "word" as tall as the strip is an edge or a bar, not text
 const MIN_CONF = 45               // a word Tesseract is less sure of than this is not read
 const BATCH = 60
@@ -53,8 +54,8 @@ export function strips() {
 }
 
 /** The words of one reading that count: sure enough, with letters, outside what is to be avoided. */
-function usable(words, { width, avoid }) {
-  return words.filter(w => w.conf >= MIN_CONF && w.h <= MAX_WORD_H && /\p{L}{2}/u.test(w.text) &&
+function usable(words, { width, avoid, keepSides, maxH = MAX_WORD_H }) {
+  return words.filter(w => w.conf >= MIN_CONF && w.h <= maxH && (/\p{L}{2}/u.test(w.text) || (keepSides && SIDE_TOKEN.test(w.text))) &&
     !avoid.some(a => {
       const cx = (w.x + w.w / 2) / width
       return cx >= a.x && cx <= a.x + a.w
@@ -65,7 +66,7 @@ const percentile = (list, p) => { const s = [...list].sort((a, b) => a - b); ret
 const round = v => Math.round(v * 1000) / 1000
 
 /** Words → lines of text: words whose middles are within half a line's height of each other. */
-function linesOf(words) {
+function linesOf(words, gapK = 1.2) {
   const sorted = [...words].sort((a, b) => (a.y + a.h / 2) - (b.y + b.h / 2))
   const lines = []
   for (const w of sorted) {
@@ -85,7 +86,7 @@ function linesOf(words) {
     let cur = [ws[0]]
     for (const w of ws.slice(1)) {
       const prev = cur[cur.length - 1]
-      if (w.x - (prev.x + prev.w) > 1.2 * l.h) { pieces.push(cur); cur = [w] } else cur.push(w)
+      if (w.x - (prev.x + prev.w) > gapK * l.h) { pieces.push(cur); cur = [w] } else cur.push(w)
     }
     pieces.push(cur)
   }
@@ -93,9 +94,9 @@ function linesOf(words) {
 }
 
 /** The line of a reading that is a caption, if one is: letters enough, most of them words an exercise is named with. */
-export function captionLine(words, o, minKnown = 0.6) {
+export function captionLine(words, o, minKnown = 0.6, gapK = 1.2) {
   let best = null
-  for (const ln of linesOf(usable(words || [], o))) {
+  for (const ln of linesOf(usable(words || [], o), gapK)) {
     const letters = (ln.text.match(/\p{L}/gu) || []).length
     if (letters >= 6 && knownShare(ln.text) >= minKnown && (!best || letters > best.letters)) best = { ...ln, letters, key: normName(ln.text) }
   }
@@ -182,8 +183,8 @@ async function readStrips(files, { workDir, signal }) {
 }
 
 /** How a frame is cut into strips for reading: the strips, and the width a strip image has. */
-export function stripGeometry(dims) {
-  const outW = Math.round(dims.width * (OUT_H / (dims.height * STRIP_H)))
+export function stripGeometry(dims, outH = OUT_H) {
+  const outW = Math.round(dims.width * (outH / (dims.height * STRIP_H)))
   return { list: strips(), outW, scale: outW / dims.width }
 }
 
@@ -191,12 +192,19 @@ export function stripGeometry(dims) {
  * The words read in every strip at every one of `times` (seconds): `out[s][p]` for strip `s` at
  * `times[p]`, in the pixels of the strip image. A moment that could not be cut reads as nothing.
  */
-export async function readMoments(file, times, { dims, workDir, signal, onProgress } = {}) {
-  const { list, outW } = stripGeometry(dims)
+export async function readMoments(file, times, { dims, workDir, signal, onProgress, outH = OUT_H, regions } = {}) {
+  // Full-width strips by default; `regions` ([{ x, y, w, h }], fractions of the frame) read narrower
+  // pieces instead, which Tesseract reads small captions out of better than out of a whole row.
+  const list = regions || stripGeometry(dims, outH).list
+  const crop = r => {
+    const w = regions ? Math.max(8, Math.round(dims.width * r.w)) : dims.width
+    const x = regions ? Math.min(dims.width - 8, Math.round(dims.width * r.x)) : 0
+    return `crop=${w}:${Math.max(8, Math.round(dims.height * r.h))}:${x}:${Math.min(dims.height - 8, Math.round(dims.height * r.y))},scale=${regions ? '-2' : stripGeometry(dims, outH).outW}:${outH}:flags=bicubic,format=gray`
+  }
   const files = []
   for (let p = 0; p < times.length; p++) {
     const split = `split=${list.length}${list.map((_, s) => `[a${s}]`).join('')}`
-    const parts = list.map((st, s) => `[a${s}]crop=${dims.width}:${Math.max(8, Math.round(dims.height * st.h))}:0:${Math.min(dims.height - 8, Math.round(dims.height * st.y))},scale=${outW}:${OUT_H}:flags=bicubic,format=gray[o${s}]`)
+    const parts = list.map((st, s) => `[a${s}]${crop(st)}[o${s}]`)
     const args = ['-hide_banner', '-loglevel', 'error', '-nostdin', '-y', '-ss', String(times[p]), '-i', file, '-filter_complex', `[0:v]${split};${parts.join(';')}`]
     list.forEach((_, s) => {
       const out = path.join(workDir, `strip-${p}-${s}-${process.hrtime.bigint()}.png`)
@@ -215,6 +223,14 @@ export async function readMoments(file, times, { dims, workDir, signal, onProgre
   let k = 0
   files.forEach((_, i) => out[i % list.length].push(present[i] ? words[k++] || [] : []))
   return out
+}
+
+/** Narrow pieces of the frame (three columns of rows), for reading small captions: [{ x, y, w, h }]. */
+export function columnRegions({ rowH = 0.14, step = 0.06, colW = 0.42 } = {}) {
+  const ys = []
+  for (let y = 0; y + rowH < 1 + 1e-9; y += step) ys.push(Math.round(y * 1000) / 1000)
+  if (ys[ys.length - 1] + rowH < 1 - 1e-6) ys.push(Math.round((1 - rowH) * 1000) / 1000)
+  return ys.flatMap(y => [0, (1 - colW) / 2, 1 - colW].map(x => ({ x: Math.round(x * 1000) / 1000, y, w: colW, h: rowH })))
 }
 
 /**

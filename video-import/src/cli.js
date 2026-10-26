@@ -82,7 +82,7 @@ try {
         version: 1,
         source: { videoId: yt.id, url: yt.url, title: source.title, channel: source.channel, channelId: source.channelId, duration: source.duration },
         capture: { engine: ENGINE, engineVersion: ver, roi, date: new Date().toISOString().slice(0, 10) },
-        inputs: { hints: meta.hints || [], parts: meta.parts || [] },
+        inputs: { hints: meta.hints || [], parts: meta.parts || [], ...(res.gapNames?.length ? { gapNames: res.gapNames } : {}) },
         expected: kept?.expected || { reviewed: false, timeline: timelineOf(res.draft, res.frames.length), sections: sectionsOf(res.draft) },
         notes: kept?.notes || '',
         frames: res.frames

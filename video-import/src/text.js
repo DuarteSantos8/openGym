@@ -52,7 +52,7 @@ const REST_WORDS = [
 const REST_RE = new RegExp('(^|\\s)(' + REST_WORDS.join('|') + ')(\\s|$)')
 // "next: burpees", "up next burpees", "next up - burpees", "nastepne: …", "als nachstes …"
 // A styled NEXT often loses its E to the OCR: "NXT", "NXTI", "NXTH", "NXTT".
-const NEXT_RE = /(?:^|\s)(?:up next|next up|next|i?nxt[a-z|1]?|coming up|nastepne|nastepnie|dalej|als nachstes|naechste|siguiente|suivant|prossimo|a seguir)\s+(.+)$/
+const NEXT_RE = /(?:^|\s)(?:up next|next up|next|last one|final one|i?nxt[a-z|1]?|coming up|nastepne|nastepnie|dalej|als nachstes|naechste|siguiente|suivant|prossimo|a seguir)\s+(.+)$/
 
 /** { rest: boolean, next: string|null } for one normalised caption. */
 export function restOf(key) {

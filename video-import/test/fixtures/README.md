@@ -47,12 +47,14 @@ again with `record.mjs --again <id>`: a reviewed `expected` and its notes are ke
 |---|---|
 | `source` | `videoId`, `url`, `title`, `channel`, `channelId`, `duration` |
 | `capture` | `engine` (`tesseract`/`paddle`), `engineVersion`, `roi`, `date`. Readings depend on these; re-record when the OCR changes |
-| `inputs` | `hints` and `parts` from the video's metadata, as the worker passed them to `classify` |
+| `inputs` | `hints` and `parts` from the video's metadata, as the worker passed them to `classify`; `gapNames` (`[{ at, text, conf }]`, `at` the second a timed run starts): names read from the move before it for runs no caption named, which need the video and so are recorded here (`src/gap-names.js`) |
 | `frames` | One reading per second, `t` = 0, 1, 2… with no gaps: `{ t, name, nameConf, timer, timers, scene }` |
 | `expected.reviewed` | `true` once a person has checked it against the video |
 | `expected.timeline` | `[label, seconds]` from t = 0, adding up to `frames.length`. Label = exercise name, `"rest"`, or `null` (intro, talk, outro, ads; not scored) |
 | `expected.sections` | Optional. Per section: `kind`, and for intervals `rounds`, `work`, `rest`. Omitted fields aren't scored |
 | `notes` | Free text |
+
+A warm-up or stretch has no rests: the moves follow one another, and the name of the next one shows in the last seconds of the one before it (often in a small preview), or on a label while it is being done. Write those moves out too, with their sides (`Hip flexor (R)`, `Hip flexor (L)`); `null` is for what is not an exercise (intro, talk, ads, a water break, an outro) and for moves a video never names.
 
 Labels are matched like the worker matches names (`sameName`, left/right removed), so spelling
 doesn't have to be exact. Two left/right sides are written as two steps:

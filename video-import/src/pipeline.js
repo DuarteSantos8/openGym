@@ -7,7 +7,7 @@ import { probe, extractCrops, still, stillDataUrl } from './frames.js'
 import { readCrops } from './ocr.js'
 import { segment, timerPhases } from './segment.js'
 import { classify, cutsOf } from './classify.js'
-import { dominantLabel, stripLabel } from './text.js'
+import { dominantLabel, stripLabel, normName } from './text.js'
 import { autoNameBox } from './auto-roi.js'
 import { quality } from './gate.js'
 import { nameGaps } from './gap-names.js'
@@ -74,14 +74,27 @@ export async function autoRois(file, { workDir, signal, dims } = {}) {
  * The per-second readings → blocks and the draft. Pure: no files, no OCR, no video. The worker
  * and the regression fixtures (test/fixtures) both go through here, so a fixture tests exactly
  * what a real import would do with the same readings.
+ *
+ * `gapNames` ([{ at, text, conf }], `at` the second a timed run starts) are names read from the
+ * move before it (gap-names.js): the run that starts there becomes that move.
  */
-export function draftFromFrames(frames, { hints = [], parts = [] } = {}) {
+export function draftFromFrames(frames, { hints = [], parts = [], gapNames = [] } = {}) {
   // A video that opens every caption with the same word ("NOW: SQUAT") has a label, not a move:
   // it goes, in every reading, as the OCR spelled it (NO, OW, W…).
   const label = dominantLabel(frames.map(f => f.name))
   if (label) frames = frames.map(f => (f.name ? { ...f, name: stripLabel(f.name, label) } : f))
   const phases = timerPhases(frames)
-  const blocks = phases || segment(frames)
+  let blocks = phases || segment(frames)
+  // Names read from the move before (gap-names.js) go straight onto the runs they name, not into the
+  // readings: a caption put into one run of several alike would be taken for a rest announcing the next.
+  if (phases && gapNames.length) {
+    blocks = blocks.map(b => {
+      const n = gapNames.find(x => x.at === b.start)
+      if (!n || (b.kind !== 'gap' && b.kind !== 'work')) return b
+      const key = normName(n.text)
+      return { ...b, kind: 'work', key, text: n.text, conf: Math.round(n.conf) / 100, variants: { [key]: 1 }, timed: undefined }
+    })
+  }
   const draft = classify(blocks, { hints, parts, cuts: cutsOf(frames.map(f => f.scene || 0)), timed: !!phases })
   return { blocks, draft, timed: !!phases }
 }
@@ -127,15 +140,13 @@ export async function analyse(file, roi, { workDir, signal, hints = [], parts = 
   let { blocks, draft, timed } = draftFromFrames(frames, { hints, parts })
   // Runs of the countdown no caption named (a warm-up or stretch whose names show in the last
   // seconds of the move before, away from the name box): read from the tail of the run before.
-  let gapNamed = 0
+  let gapNames = []
   if (timed) {
-    let names = []
-    try { names = await nameGaps(file, blocks, { dims: d, workDir, signal, avoid: [].concat(roi?.timer || []) }) } catch (e) { if (e.cancelled || signal?.aborted) throw e }
-    for (const n of names) {
-      const b = blocks[n.index]
-      for (let t = b.start + 1; t < b.end - 1 && t < frames.length; t++) { frames[t].name = n.text; frames[t].nameConf = n.conf }
-    }
-    if (names.length) { ({ blocks, draft, timed } = draftFromFrames(frames, { hints, parts })); gapNamed = names.length }
+    try {
+      const found = await nameGaps(file, blocks, { dims: d, workDir, signal })
+      gapNames = found.map(n => ({ at: blocks[n.index].start, text: n.text, conf: n.conf }))
+    } catch (e) { if (e.cancelled || signal?.aborted) throw e }
+    if (gapNames.length) ({ blocks, draft, timed } = draftFromFrames(frames, { hints, parts, gapNames }))
   }
   const signals = quality(frames, draft, timed, { expectTimed: [].concat(roi?.timer || []).length > 0 })
   progress('thumbs', 0)
@@ -155,7 +166,7 @@ export async function analyse(file, roi, { workDir, signal, hints = [], parts = 
     progress('thumbs', (i + 1) / rows.length)
   }
   return {
-    frames, blocks, draft, quality: signals,
-    stats: { seconds: crops.seconds, uniqueName: names.reduce((t, n) => t + n.unique, 0), uniqueTimer: clocks.reduce((t, c) => t + c.unique, 0), readFrames: frames.filter(f => f.name).length, gapNamed }
+    frames, blocks, draft, gapNames, quality: signals,
+    stats: { seconds: crops.seconds, uniqueName: names.reduce((t, n) => t + n.unique, 0), uniqueTimer: clocks.reduce((t, c) => t + c.unique, 0), readFrames: frames.filter(f => f.name).length, gapNamed: gapNames.length }
   }
 }
