@@ -3317,7 +3317,7 @@ function ShareWorkoutImage({ w, close }) {
   const withMap = st.shareMap !== false
   const warmups = countsWarmups(st)
   const day = workoutDay(w) || todayISO()
-  const model = useMemo(() => workoutCardModel(w, { unit: st.unit, nameOf: shareNameOf, warmups, streak: streakInfo(st, day).current }), [w, st.unit, warmups, st.workouts, st.weekStart, day]) // eslint-disable-line react-hooks/exhaustive-deps
+  const model = useMemo(() => workoutCardModel(w, { unit: st.unit, nameOf: shareNameOf, warmups, prescriptions: st.prescriptions, streak: streakInfo(st, day).current }), [w, st.unit, warmups, st.workouts, st.weekStart, st.prescriptions, day]) // eslint-disable-line react-hooks/exhaustive-deps
   return <ShareCardSheet title={t('Share workout')} close={close} toast={toast}
     name={'opengym-workout-' + day + '.png'} shareTitle={w.name || 'openGym'}
     deps={[model, withMap, st.body]}
