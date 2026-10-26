@@ -10,7 +10,9 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { boundPort } from './helpers.mjs';
+import { boundPort, softPasskey } from './helpers.mjs';
+
+const KEY = softPasskey();
 
 const API = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SECRET = crypto.randomBytes(32).toString('hex');
@@ -25,7 +27,7 @@ async function startServer(t) {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gym-flood-'));
   fs.writeFileSync(path.join(dataDir, 'secret'), SECRET, { mode: 0o600 });
   fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({
-    users: [{ id: 'u_test_1', name: 'One', created: new Date().toISOString() }], creds: [], subs: [], invites: []
+    users: [{ id: 'u_test_1', name: 'One', created: new Date().toISOString() }], creds: [KEY.row('u_test_1')], subs: [], invites: []
   }));
   const child = spawn(process.execPath, ['server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
@@ -74,7 +76,12 @@ test('junk passkey sign-ins and sign-ups are answered but not each written to th
 
 test('minting a pairing code retires the profile\'s previous one', async t => {
   const h = await startServer(t);
-  const mint = async () => (await (await h.post('/api/pair/create', {}, { ...cookie, Origin: 'http://localhost:8080' })).json()).code;
+  // Each code asks the owner proof: a passkey assertion made for that request.
+  const mint = async () => {
+    const { cid, options } = await (await h.post('/api/login/options')).json();
+    const body = { cid, credential: KEY.assertion(options.challenge) };
+    return (await (await h.post('/api/pair/create', body, { ...cookie, Origin: 'http://localhost:8080' })).json()).code;
+  };
   const first = await mint();
   const second = await mint();
   assert.notEqual(first, second);

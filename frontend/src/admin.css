@@ -15,9 +15,9 @@
   background:var(--surface-2);color:var(--label-2)
 }
 .adm-pill::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
-.adm-pill.ok{background:color-mix(in srgb,var(--green) 16%,transparent);color:var(--green)}
-.adm-pill.warn{background:color-mix(in srgb,var(--yellow) 18%,transparent);color:var(--yellow)}
-.adm-pill.bad{background:color-mix(in srgb,var(--red) 16%,transparent);color:var(--red)}
+.adm-pill.ok{background:rgba(48,209,88,0.16);background:color-mix(in srgb,var(--green) 16%,transparent);color:var(--green)}
+.adm-pill.warn{background:rgba(255,214,10,0.18);background:color-mix(in srgb,var(--yellow) 18%,transparent);color:var(--yellow)}
+.adm-pill.bad{background:rgba(255,69,58,0.16);background:color-mix(in srgb,var(--red) 16%,transparent);color:var(--red)}
 .adm-pill.acc{background:var(--acc-soft);color:var(--acc)}
 
 /* the one-line "what state is this in" under the card title */
@@ -82,8 +82,8 @@
   margin-top:10px;padding:10px 12px;border-radius:var(--r);font-size:13.5px;line-height:1.45;
   background:var(--surface-2);color:var(--label)
 }
-.adm-result.ok{background:color-mix(in srgb,var(--green) 14%,transparent)}
-.adm-result.bad{background:color-mix(in srgb,var(--red) 14%,transparent)}
+.adm-result.ok{background:rgba(48,209,88,0.14);background:color-mix(in srgb,var(--green) 14%,transparent)}
+.adm-result.bad{background:rgba(255,69,58,0.14);background:color-mix(in srgb,var(--red) 14%,transparent)}
 .adm-result b{display:block;margin-bottom:2px}
 
 /* advanced / activity folds */
@@ -127,8 +127,8 @@
 .adm-hero{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:6px 2px 2px}
 .adm-hero-av{
   width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:26px;
-  background:linear-gradient(135deg,var(--acc),color-mix(in srgb,var(--acc) 55%,var(--teal)));
-  color:var(--on-acc);margin-bottom:8px;box-shadow:0 8px 24px -8px color-mix(in srgb,var(--acc) 55%,transparent)
+  background:linear-gradient(135deg,var(--acc),var(--acc));background:linear-gradient(135deg,var(--acc),color-mix(in srgb,var(--acc) 55%,var(--teal)));
+  color:var(--on-acc);margin-bottom:8px;box-shadow:0 8px 24px -8px var(--acc);box-shadow:0 8px 24px -8px color-mix(in srgb,var(--acc) 55%,transparent)
 }
 .adm-hero h2{margin:0 0 4px;font-size:22px;letter-spacing:-.022em}
 .adm-hero p{margin:0 0 14px;font-size:14px;line-height:1.5;color:var(--label-2)}

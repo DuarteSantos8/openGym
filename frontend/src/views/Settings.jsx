@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, forwardRef, useSyncExternalStore } from 'react'
 import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
-import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange } from '../lib/health-sync.js'
+import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange, enableRead, disableRead } from '../lib/health-sync.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { formulaOf, FORMULA_NAMES } from '../lib/onerm.js'
@@ -10,7 +10,7 @@ import { useUI } from '../store/useUI.js'
 import { ACCENTS, ACCENT_NAMES, todayISO, localTZ, weekStartOf, MONDAY, SUNDAY, fmtPlate } from '../lib/format.js'
 import { inventoryFor, ownsPlates } from '../lib/plates.js'
 import { BAR_TYPES, ownBarDefault } from '../lib/bar.js'
-import { dumbbellsOf } from '../lib/dumbbells.js'
+import { dumbbellsOf, ownsNoDumbbells } from '../lib/dumbbells.js'
 import { effortOf } from '../lib/history.js'
 import { figureOf } from '../lib/exercises.js'
 import { unlock, chime, playOnSilentSupported, vibrateSupported, appleTouchDevice } from '../lib/sound.js'
@@ -32,25 +32,34 @@ import { getMediaStatus, subscribeMediaStatus, pendingRefCount } from '../lib/me
 import { limitsFrom, fmtMB, MB } from '../lib/media-limits.js'
 import { setRestAccent } from '../lib/rest-alert.js'
 import { CUSTOM, accentKey, adjustedIn, applyAccent, cleanHex, inkOn, isGrey } from '../lib/accent.js'
-import { checkForUpdate, downloadAndInstall, fetchChecksum, RELEASES_PAGE } from '../lib/update.js'
+import { checkForUpdate, downloadAndInstall, fetchChecksum, forgetDownloadedUpdate, RELEASES_PAGE } from '../lib/update.js'
+import { APK_VARIANT, VARIANT_NAMES } from '../lib/apk-variant.js'
+import { BUILTIN_PX } from '../lib/anim-quality.js'
 import { selfUpdates } from '../lib/channel.js'
 import { forgetCoach } from '../lib/coach-api.js'
+import { coachAvailable } from '../lib/coach.js'
 import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration } from '../lib/duration.js'
 import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, plateInventorySheet, dumbbellInventorySheet, barDefaultsSheet, menuSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { durationSheet } from '../components/DurationWheel.jsx'
 import { showsConnection, showsLocalLine } from '../components/SyncBanner.jsx'
 import BackupFolderRow, { useBackupFolder, autoBackupSubtitle } from '../components/BackupFolderRow.jsx'
+import AppIconRow from '../components/AppIconRow.jsx'
 import { AnimationQualityRow } from '../components/Animations.jsx'
 import { ServerSyncSection, KeptChangesRows, leaveServer, connectServer, passkeySignIn } from '../components/ServerSync.jsx'
 import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } from '../components/PasswordAuth.jsx'
-import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem } from '../components/Passkeys.jsx'
+import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem, PairSheet } from '../components/Passkeys.jsx'
 import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
 import { PAGES, ROOT_GROUPS, pageVisible, searchSettings, pageTrail } from './settings-pages.js'
 import { platformNow } from '../lib/platform-now.js'
 import { pathBefore } from '../lib/nav.js'
 import WatchSettingsPage from './WatchSettings.jsx'
+import { reportSheet } from '../components/ReportSheet.jsx'
+import { csvExportSheet } from '../components/CsvExportSheet.jsx'
+import GymReminderPage, { GymEditPage } from './GymReminder.jsx'
+import { readGymConfig } from '../lib/gym-reminder.js'
+import { THEMES, inSeason, seasonChoice, activeSeason } from '../lib/seasonal.js'
 
 /* Settings (v1.3.11). The root is one screen: an account card, eleven rows that each open a page
    (/settings/<page>), and a search over every row. Rare things live one level further down
@@ -73,7 +82,7 @@ export function SettingsRoute() {
   // that did not know yet sent every visit to it straight back to the root.
   // (Unknown counts as yes inside the phone app: the page itself then says there is no watch.)
   const ctx = { user: useStore(s => s.user), mobile: MOBILE, ios: MOBILE && platformNow() !== 'android' }
-  if (page && (!PAGES[page] || !pageVisible(PAGES[page].parent || page, ctx))) return <Navigate to="/settings" replace />
+  if (page && (!PAGES[page] || !pageVisible(PAGES[page].parent || page, ctx) || !pageVisible(page, ctx))) return <Navigate to="/settings" replace />
   if (page === 'coach') return <Navigate to="/coach/setup" replace />
   return <Settings key={page || 'root'} page={page || null} find={loc.state?.find || null} via={loc.state?.via || null} entryKey={loc.key} />
 }
@@ -87,6 +96,10 @@ const shortWeekday = day => {
 const standalone = () => {
   try { return !!(window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true) } catch { return false }
 }
+
+// Apple devices, the iPad included (it says Macintosh): the install tip's Safari wording. Read here
+// rather than from lib/api.js, whose test mocks across the Settings suites only carry IS_ANDROID.
+const APPLE_UA = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)
 
 export default function Settings({ page = null, find = null, via = null, entryKey = null }) {
   const nav = useNavigate()
@@ -112,6 +125,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   const importRef = useRef(null)
   const body = useRef(null)
   const wakeOK = wakeLockSupported()
+  // The gym reminder's switch lives on its own page and on this device only (lib/gym-reminder.js).
+  const gymOn = MOBILE && readGymConfig().on
 
   // A planner's own queue (no rotationId, or one that doesn't match the saved rotation here) is
   // not this app's to switch off or overwrite. The Scheduling row goes read-only for it.
@@ -181,7 +196,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       setIos(!ok)
       const own = ok && await selfUpdates()
       setSelfUpdate(own)
-      if (own && page === 'about') checkForUpdate().then(setUpdateInfo).catch(() => {})
+      // Nothing newer: an update APK still in the cache is the one already installed.
+      if (own && page === 'about') checkForUpdate().then(info => { setUpdateInfo(info); if (!info?.hasUpdate) forgetDownloadedUpdate() }).catch(() => {})
     })
   }, [page])
 
@@ -225,7 +241,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     try {
       const info = await checkForUpdate()
       setUpdateInfo(info)
-      if (!info.hasUpdate) toast(t('You have the latest version.'))
+      if (!info.hasUpdate) { toast(t('You have the latest version.')); forgetDownloadedUpdate() }
     } catch {
       toast(t('Couldn’t check for updates. Are you online?'))
     }
@@ -413,11 +429,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   /* ---------------- what the pages and the search need to know about this device ---------------- */
   const canVibrate = vibrateSupported()
   const ctx = {
-    user, mobile: MOBILE, android, ios: MOBILE && ios, demo: DEMO, wakeOK, hasMedia, pwOn, webauthn: webauthnOK(),
+    user, mobile: MOBILE, android, ios: MOBILE && ios, appIcons: MOBILE && platformNow() === 'ios', demo: DEMO, wakeOK, hasMedia, pwOn, webauthn: webauthnOK(),
     sound: !!S.sound, playOnSilent: playOnSilentSupported(), canVibrate, vibrate: S.vibrate !== false,
     profiles: (S.equipProfiles || []).length > 0, nameLang: EXERCISE_NAME_LANGS.includes(baseLang(lang)),
     pushOK: !MOBILE && pushSupported(), reminderOn: !!S.reminder?.on, nudge: !!S.reminder?.nudge,
-    autoBackup: !!S.autoBackup, synced: !!sync, installTip: !MOBILE && !standalone(), androidWeb: IS_ANDROID,
+    autoBackup: !!S.autoBackup, synced: !!sync, installTip: !MOBILE && !standalone(), androidWeb: IS_ANDROID, desktopWeb: !IS_ANDROID && !APPLE_UA,
   }
   const mode = scheduleModeOf(S)
   const layout = ['list', 'compact', 'focus'].includes(S.workoutView) ? S.workoutView : 'cards'
@@ -431,7 +447,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     reminders: () => (S.reminder?.on ? (S.reminder.time || DEF.reminder?.time || '') : t('Off')),
     plan: () => (mode === 'rotation' ? t('Rotation') : t('Fixed Week')) + ' · ' + shortWeekday(weekStartOf(S) === SUNDAY ? 0 : 1),
     units: () => (S.unit || 'kg') + ' · ' + (LANGS[lang] || lang),
-    equipment: () => (S.equipFilterOn && activeProfile ? activeProfile.name : t('Everything')),
+    equipment: () => (S.equipFilterOn && activeProfile ? activeProfile.name : ownsNoDumbbells(S) ? t('Everything but dumbbells') : t('Everything')),
     look: () => themeLabel + ' · ' + accentLabel(S),
     coach: () => (coachLocal?.mode === 'server' ? t('Your server') : coachLocal?.mode === 'byok' ? t('Your API key') : t('Off')),
     data: () => '',
@@ -490,6 +506,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
 
   const pages = {
     watch: () => <WatchSettingsPage />,
+    gym: () => <GymReminderPage />,
+    'gym-edit': () => <GymEditPage />,
     workout: () => <>
       <Section title={t('Rest')} footer={t('Each exercise can have its own rest too. Set it in the exercise settings of a routine.')}>
         {restRow}
@@ -577,13 +595,23 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         <Section title={t('Sessions and timed sets')}>
           {/* Whose reps a planned session opens with (lib/session-start.js). The plan's by default:
               the routine is what you said you would do, and history and progression decide the
-              weight. The other choice is the old behaviour, reps carried over from last time.
-              Absent (an older profile) reads as the plan. */}
+              weight. The other choice is the old behaviour, reps carried over from last time, and
+              the weight too for an exercise with progression off. Absent (an older profile) reads
+              as the plan. */}
           <SelectRow icon="clipboard" iconTint="var(--green)" title={t('Planned sessions start from')}
             value={S.startFrom === 'last' ? 'last' : 'plan'} onChange={v => update(s => { s.startFrom = v })}
             options={[
               { value: 'plan', label: t('Your plan'), subtitle: t('The routine’s sets and reps. Your history decides the weight.') },
-              { value: 'last', label: t('Your last session'), subtitle: t('The reps you logged last time in that routine, carried over.') },
+              { value: 'last', label: t('Your last session'), subtitle: t('The reps you logged last time in that routine, carried over. With progression off, the weight too.') },
+            ]} />
+          {/* Where "last time" is read from (lib/history.js lastAcrossRoutines, #770): the routine's
+              own last session by default (#216), so a heavy and a light day keep their numbers.
+              'any' reads the exercise's newest session wherever it was. Absent reads as the routine. */}
+          <SelectRow icon="history" iconTint="var(--indigo)" title={t('Last time means')}
+            value={S.lastFrom === 'any' ? 'any' : 'routine'} onChange={v => update(s => { s.lastFrom = v })}
+            options={[
+              { value: 'routine', label: t('This routine'), subtitle: t('Your last session of the exercise in the same routine. Heavy day and light day stay apart.') },
+              { value: 'any', label: t('Any workout'), subtitle: t('The last time you did the exercise, whichever routine it was in.') },
             ]} />
           <Row icon="stopwatch" iconTint="var(--orange)" title={t('Keep timing after target')}
             subtitle={t('Timed sets continue up to 15 extra minutes. Tap Done to log the actual duration.')}>
@@ -609,6 +637,10 @@ export default function Settings({ page = null, find = null, via = null, entryKe
               what the workout screen shows. On by default, it is about one line tall. */}
           <Row icon="more" iconTint="var(--mint)" title={t('Exercise chips at the top')} subtitle={t('A numbered dot per exercise, filled as you go. Tap one to jump there.')}>
             <Switch aria-label={t('Exercise chips at the top')} checked={wc.exerciseChips} onChange={v => setWc('exerciseChips', v)} />
+          </Row>
+          {/* The live session's body (#670): at the end of the chip row, or in the header without it. */}
+          <Row icon="figureStrength" iconTint="var(--orange)" title={t('Muscle map at the top')} subtitle={t('A tiny body that lights up as you tick sets. Tap it for the details.')}>
+            <Switch aria-label={t('Muscle map at the top')} checked={wc.muscleMap} onChange={v => setWc('muscleMap', v)} />
           </Row>
           <Row icon="link" iconTint="var(--blue)" title={t('Superset buttons in the exercise header')}>
             <Switch checked={wc.pairButtons} onChange={v => setWc('pairButtons', v)} />
@@ -669,7 +701,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       </>
     },
 
-    reminders: () => <NotificationsCard S={S} update={update} toast={toast} />,
+    reminders: () => <>
+      <NotificationsCard S={S} update={update} toast={toast} />
+      {MOBILE && <Section footer={t('A nudge when you walk into your gym.')}>
+        <Row icon="mapPin" iconTint="var(--green)" title={t('Gym reminder')} value={gymOn ? t('On') : t('Off')} accessory="chevron" onClick={() => nav('/settings/gym')} />
+      </Section>}
+    </>,
 
     plan: () => <>
       <Section>
@@ -758,6 +795,14 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             { value: 'lander', label: 'Lander' },
             { value: 'weighted', label: t('Blend of all'), subtitle: t('Averages seven formulas and reads your RIR when you log it.') },
           ]} />
+        {/* Gross volume for people comparing with other apps (#719). Off is the app's own rule,
+            work sets only; on, every screen that shows a volume counts done warm-ups too
+            (lib/history.js sessionVolume). Records and progression never read warm-ups. */}
+        <Row icon="sunrise" iconTint="var(--teal)" title={t('Count warm-ups in volume')}
+          subtitle={t('Handy when you compare with another app. Records ignore warm-ups either way.')}>
+          <Switch aria-label={t('Count warm-ups in volume')} checked={S.volumeWarmups === true}
+            onChange={v => update(s => { s.volumeWarmups = v })} />
+        </Row>
       </Section>
     </>,
 
@@ -783,6 +828,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <span className="lrow-v">{accentLabel(S)}</span>
           <AccentSwatches S={S} update={update} />
         </div>
+        {/* The home-screen icon: the phone's own, not synced. iPhone only in 1.4.3 (Android follows). */}
+        {MOBILE && platformNow() === 'ios' && <AppIconRow />}
         {/* How the muscle map is drawn. The exercise drawings follow it until they are set below. */}
         <Row icon="figureStrength" iconTint="var(--teal)" title={t('Body diagram')}>
           <Segmented
@@ -805,6 +852,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           />
         </Row>
       </Section>
+      {/* Halloween and whatever comes after it (lib/seasonal.js), on a page of their own. */}
+      <Section>
+        <Row icon="pumpkin" iconTint="var(--orange)" title={t('Seasonal themes')} subtitle={t('Little extras for the time of year.')}
+          value={activeSeasonTitle(S)} accessory="chevron" onClick={() => open('themes')} />
+      </Section>
       <Section title={t('On Home')}>
         {/* Membership QR codes on Home (views/CheckIn.jsx); off = no Home card, no route. */}
         <Row icon="qr" iconTint="var(--blue)" title={t('Gym check-in')}
@@ -826,10 +878,46 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       </Section>
     </>,
 
+    // One section per seasonal theme (lib/seasonal.js). Auto shows it in its weeks; On keeps it
+    // all year, Off never. Synced like the rest of Look; once-a-day surprises stay per device.
+    themes: () => <>
+      {THEMES.map(th => {
+        const choice = seasonChoice(S, th.id)
+        const set = (k, v) => update(s => { s.seasonal = { ...(s.seasonal || {}), [k]: v } })
+        const note = choice === 'on' ? t('On all year round. Bold choice.')
+          : choice === 'off' ? t('Off, even in season. Fair enough.')
+          : inSeason(th) ? t(th.during) : t(th.back)
+        return <Section key={th.id} footer={note}>
+          <Row icon={th.icon} iconTint={th.tint} title={t(th.title)}>
+            <Segmented className="seg-inline"
+              options={[{ value: 'auto', label: t('Auto') }, { value: 'on', label: t('On') }, { value: 'off', label: t('Off') }]}
+              value={choice} onChange={v => set(th.id, v)} />
+          </Row>
+          {th.colors && <Row icon="palette" iconTint="var(--purple)" title={t(th.colorsTitle)} subtitle={t(th.colorsNote)}>
+            <Switch aria-label={t(th.colorsTitle)} checked={S.seasonal?.[th.id + 'Colors'] === true}
+              onChange={v => set(th.id + 'Colors', v)} />
+          </Row>}
+          {/* On by default while the theme shows; nothing there is ever in the way of a set. */}
+          {th.workoutTitle && <Row icon="play" iconTint="var(--green)" title={t(th.workoutTitle)} subtitle={t(th.workoutNote)}>
+            <Switch aria-label={t(th.workoutTitle)} checked={S.seasonal?.[th.id + 'Workout'] !== false}
+              onChange={v => set(th.id + 'Workout', v)} />
+          </Row>}
+        </Section>
+      })}
+      {/* While Halloween shows, a way to the matching icon in Look & Home (it is there all year). */}
+      {MOBILE && platformNow() === 'ios' && activeSeason(S) === 'halloween' && <Section>
+        <Row icon="pumpkin" iconTint="var(--orange)" title={t('Try the Halloween app icon')} accessory="chevron"
+          onClick={() => nav('/settings/look', { state: { find: 'App icon' } })} />
+      </Section>}
+    </>,
+
     data: () => <>
       <Section title={t('Back up')}>
         <Row icon="share" iconTint="var(--blue)" title={t('Export backup (JSON)')} subtitle={hasMedia ? t('Without photos and videos') : undefined} accessory="chevron" onClick={doExport} />
         {hasMedia && <Row icon="share" iconTint="var(--blue)" title={t('Export with photos & videos (.zip)')} accessory="chevron" onClick={doExportZip} />}
+        <Row icon="note" iconTint="var(--green)" title={t('Performance report (PDF)')} subtitle={t('Charts, totals and every workout of the last days or weeks.')} accessory="chevron" onClick={reportSheet} />
+        {/* One row per set for spreadsheets and other apps (#647); our own importer reads it back. */}
+        <Row icon="share" iconTint="var(--green)" title={t('Export as spreadsheet (CSV)')} subtitle={t('Workouts, body weight and measurements')} accessory="chevron" onClick={csvExportSheet} />
         {/* 14 is AUTO_BACKUP_KEEP in lib/mobile.js, written out because the Settings tests mock
             that module wholesale; mobile.autobackup.test.js pins the two together. */}
         {MOBILE && <Row icon="folder" iconTint="var(--blue)" title={t('Auto-backup on changes')}
@@ -843,7 +931,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       <Section title={t('Bring data in')}>
         <Row icon="download" iconTint="var(--teal)" title={t('Import backup')} accessory="chevron" onClick={() => fileRef.current.click()} />
         <Row icon="download" iconTint="var(--teal)" title={t('Import from another app')}
-          subtitle={t('FitNotes, Strong, Hevy, or body weight from Apple Health')}
+          subtitle={t('FitNotes, Strong, Hevy, GymMane, openGym CSV, or body weight from Apple Health')}
           accessory="chevron" onClick={() => importRef.current.click()} />
         <Row icon="key" iconTint="var(--teal)" title={t('Import from Hevy')}
           subtitle={t('Pull your history with a Hevy Pro API key')}
@@ -865,7 +953,10 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           with its server, so the row points at the APK for the phone instead. iOS and the Google
           Play build are updated by their store. */}
       <Section footer={MOBILE ? (selfUpdate ? t('Releases are checked on GitHub. The download is verified against its checksum before the installer opens.') : null) : t('The web app updates together with your server. The Android app installs its own updates from here.')}>
-        <Row icon="info" iconTint="var(--grey)" title={t('Version')} value={'v' + __APP_VERSION__} />
+        {/* The sideloaded APK comes in three kinds that differ only in the animations built in
+            (lib/apk-variant.js): which one this is, so nobody has to guess from the file size. */}
+        <Row icon="info" iconTint="var(--grey)" title={t('Version')} value={'v' + __APP_VERSION__}
+          subtitle={MOBILE && selfUpdate ? t('{0} APK, animations at {1} px', VARIANT_NAMES[APK_VARIANT], BUILTIN_PX) : undefined} />
         {MOBILE
           ? selfUpdate && <Row icon="download" iconTint="var(--green)"
               title={updateInfo?.hasUpdate ? t('Update to openGym v{0}', updateInfo.latestVersion) : t('Check for updates')}
@@ -876,10 +967,24 @@ export default function Settings({ page = null, find = null, via = null, entryKe
               subtitle={t('Download the APK from opengym.ch')} accessory="chevron"
               onClick={() => window.open('https://opengym.ch/#download', '_blank', 'noopener')} />}
       </Section>
-      {/* "Add to Home screen": not inside the phone app, and not once it is installed. */}
+      {/* Support: the project's own donation pages, and on the iPhone a straight line to writing a
+          review. Plain links, no pop-up asking for anything (App Store 5.6.1). */}
+      <Section title={t('Support openGym')} footer={t('openGym is free: no ads, no subscriptions, no tracking. A coffee keeps it that way.')}>
+        {MOBILE && ios && <Row icon="star" iconTint="var(--orange)" title={t('Rate openGym on the App Store')} accessory="chevron"
+          onClick={() => window.open('https://apps.apple.com/app/id6822275400?action=write-review', '_blank', 'noopener')} />}
+        <Row icon="heart" iconTint="var(--pink)" title={t('Buy me a coffee')} subtitle="Buy Me a Coffee" accessory="chevron"
+          onClick={() => window.open('https://buymeacoffee.com/duartesantos', '_blank', 'noopener')} />
+        <Row icon="heart" iconTint="var(--blue)" title="Ko-fi" accessory="chevron"
+          onClick={() => window.open('https://ko-fi.com/opengym', '_blank', 'noopener')} />
+        <Row icon="heart" iconTint="var(--purple)" title="GitHub Sponsors" accessory="chevron"
+          onClick={() => window.open('https://github.com/sponsors/DuarteSantos8', '_blank', 'noopener')} />
+      </Section>
+      {/* "Add to Home screen": not inside the phone app, and not once it is installed. Safari's
+          Share menu only on Apple (an iPad says Macintosh too); Windows and Linux get Chrome's
+          install icon instead of an iPhone tip. */}
       {!MOBILE && !standalone() && <Section title={t('Tip')}>
         <Row icon="share" iconTint="var(--blue)"
-          title={IS_ANDROID ? t('In Chrome: ⋮ menu → Add to Home screen') : t('In Safari: Share → Add to Home Screen')}
+          title={IS_ANDROID ? t('In Chrome: ⋮ menu → Add to Home screen') : APPLE_UA ? t('In Safari: Share → Add to Home Screen') : t('In Chrome or Edge: the install icon in the address bar')}
           subtitle={t('to install openGym as a full-screen app.') + ' ' + (user ? t('Your data syncs with your profile. Sign in anywhere and it’s there.') : t('Guest data stays on this device, so export a backup now and then!'))} />
       </Section>}
       {/* The version, where the support template tells people to look for it. On the phone
@@ -908,7 +1013,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       </ServerSyncSection>}
 
       {/* account (demo and mobile builds have nothing to sign in to) */}
-      {!(MOBILE && user) && <Section title={MOBILE ? t('Your data') : DEMO ? t('Demo') : t('Account')}>
+      {/* A local-only phone has no account to hand another device a code for (#551). */}
+      {!(MOBILE && user) && <Section title={MOBILE ? t('Your data') : DEMO ? t('Demo') : t('Account')}
+        footer={MOBILE ? t('Signing in on your computer too needs your own server. Connect this phone to it, and Add another device then gives the computer a code.') : null}>
         {MOBILE ? <>
           <Row icon="lock" iconTint="var(--acc)" title={t('All data stays on this phone')} subtitle={t('No account, no cloud. Back it up anytime in Data & backup.')} />
           <Row icon="cloud" iconTint="var(--indigo)" title={t('Connect to my server')} subtitle={t('Sync this device to your own self-hosted openGym instead.')} accessory="chevron"
@@ -999,6 +1106,11 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
     : MOBILE ? { title: t('This phone'), sub: t('All data stays on this phone') }
     : { title: t('Guest'), sub: t('Your data lives on this device. Sign in to sync.') }
   const initial = user && !DEMO ? String(user.name || '?').trim().charAt(0).toUpperCase() : null
+  const nav = useNavigate()
+  // Only while the server offers the Coach (the flag every Coach screen reads): on a box without
+  // it the admin dashboard has no Coach card to land on.
+  const config = useStore(s => s.config)
+  const adminCoach = !MOBILE && !DEMO && !!user?.admin && coachAvailable(config, user)
   return <div className="narrow">
     <div className="sp-nav">
       <button className="sp-back" data-back="/home" onClick={home} aria-label={t('Home')}><Icon name="chevronLeft" /><span>{t('Home')}</span></button>
@@ -1024,6 +1136,11 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
         <Section key={g[0]}>
           {g.map(id => <Row key={id} icon={PAGES[id].icon} iconTint={PAGES[id].tint} title={t(PAGES[id].title)}
             value={preview[id]?.() || null} accessory="chevron" onClick={() => open(id)} className="sp-root-row" />)}
+          {/* The phone app sets up its own Coach on the Coach page beside Look; in a hosted app the
+              Coach is the server's, set up by an admin on the admin dashboard. Its admins get the
+              same row, in the same place, straight to that card; nobody else has anything to set. */}
+          {g[0] === 'look' && adminCoach && <Row icon={PAGES.coach.icon} iconTint={PAGES.coach.tint} title={t(PAGES.coach.title)}
+            value={t('Admin')} accessory="chevron" onClick={() => nav('/admin', { state: { section: 'coach' } })} className="sp-root-row" />}
         </Section>
       ))}
       <div className="dim small sp-version">openGym v{__APP_VERSION__}</div>
@@ -1261,6 +1378,13 @@ function PushCard({ S, update, toast }) {
 // the Library, exercise picker, and flags routine entries that need something outside it
 // (see lib/equipment.js). Purely local/synced state — no server changes needed.
 // What the chosen accent is called: a preset's colour name, or the user's own.
+// The theme showing right now, by name, for the row that opens them.
+function activeSeasonTitle(S) {
+  const id = activeSeason(S)
+  const th = id && THEMES.find(x => x.id === id)
+  return th ? t(th.title) : null
+}
+
 function accentLabel(S) {
   const k = accentKey(S)
   return k === CUSTOM ? t('Your own color') : t(ACCENT_NAMES[k] || 'Green')
@@ -1367,9 +1491,9 @@ function EquipmentCard({ S, update }) {
     : t('Standard set. Tap to count the pairs you own.')
   // The dumbbells you own, per unit (lib/dumbbells.js): what dumbbell lifts step and progress over.
   const bells = dumbbellsOf(S)
-  const dumbbellSummary = bells.length
-    ? bells.map(fmtPlate).join(' · ')
-    : t('Any weight. Tap to list the ones you own.')
+  const dumbbellSummary = ownsNoDumbbells(S) ? t('None, so dumbbell lifts stay hidden.')
+    : bells.length ? bells.map(fmtPlate).join(' · ')
+      : t('Any weight. Tap to list the ones you own.')
   // Your bars (lib/bar.js ownBarDefault): the types you set a weight for, in the profile unit.
   const unit = S.unit === 'lb' ? 'lb' : 'kg'
   const ownBars = BAR_TYPES.filter(eq => ownBarDefault(S, eq) !== null)
@@ -1452,28 +1576,6 @@ function AccountIdRow({ id }) {
   return <Row icon="personCircle" iconTint="var(--grey)" title={t('Account ID')} subtitle={<span className="acct-id">{id}</span>} onClick={copy} />
 }
 
-// Lets the mobile app's "connect to my server" mode (lib/remote.js) authenticate without a
-// WebAuthn ceremony of its own — the code is minted here, from an already signed-in session,
-// and redeemed by the app for a bearer token. See /api/pair/create in api/server.js.
-function PairSheet({ close }) {
-  const [code, setCode] = useState(null)
-  const [err, setErr] = useState(null)
-  useEffect(() => { api('/api/pair/create', { method: 'POST', body: '{}' }).then(r => setCode(r.code)).catch(e => setErr(e.message || t('Could not generate a code'))) }, [])
-  return <>
-    <h3>{t('Pair the mobile app')}</h3>
-    <div className="muted small" style={{ marginBottom: 14 }}>
-      {t('On the openGym app, choose “Connect to my server”, then enter this address and the code below. It expires in 5 minutes.')}
-    </div>
-    {err ? <div className="dim small">{err}</div> : (
-      <div className="card" style={{ textAlign: 'center', fontSize: 30, fontWeight: 700, letterSpacing: '.16em', padding: '18px 0' }}>
-        {code || '········'}
-      </div>
-    )}
-    <div style={{ height: 12 }} />
-    <Button onClick={close}>{t('Done')}</Button>
-  </>
-}
-
 // The same registration as the sign-in screen's, reached from Settings instead. It asks for
 // the invite code on the same terms: an invite-only instance rejects a registration without
 // one, so a form that cannot collect it is a form that cannot succeed.
@@ -1515,7 +1617,7 @@ function RegisterInline({ close, setUser, pushState, pullState, toast }) {
 const HEALTH_COPY = {
   android: () => ({
     section: t('Health Connect'), write: t('Write to Health Connect'), open: t('Open Health Connect'),
-    footer: t('Workouts and weigh-ins go to Health Connect when you finish or change them. openGym reads nothing back.'),
+    footer: t('Workouts and weigh-ins go to Health Connect when you finish or change them.'),
     on: t('Writing to Health Connect'), denied: t('Health Connect permission not granted'), failed: t('Could not write to Health Connect'),
     removeFailed: t('Could not remove it from Health Connect'), stop: t('Stop writing to Health Connect?'),
     stopSub: t('What openGym already wrote can stay in Health Connect as your data, or be removed from it.'),
@@ -1530,6 +1632,7 @@ const HEALTH_COPY = {
 }
 
 function HealthConnectCard({ S, toast, android }) {
+  const getState = () => useStore.getState().S
   const [st, setSt] = useState(null)
   const [h, setH] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -1570,6 +1673,21 @@ function HealthConnectCard({ S, toast, android }) {
     catch { toast(c.removeFailed) }
     setBusy(false)
   }
+  // Reading back (v1.4.3): heart rate during workouts and weigh-ins from other apps, each its own
+  // switch and its own permission. Turning one off keeps what it already brought in.
+  const toggleRead = kind => async v => {
+    setBusy(true)
+    try {
+      if (v) {
+        const r = await enableRead(kind, getState)
+        setH(r.health || await loadHealth())
+        if (!r.ok) toast(r.reason === 'denied' ? c.denied : c.failed)
+      } else setH(await disableRead(kind))
+    } catch { toast(c.failed) }
+    setBusy(false)
+  }
+  const reading = h.readHr || h.readWeight
+
   // Off can mean two things for what is already there, so it asks; closing the sheet keeps it on.
   const askOff = () => menuSheet({
     title: c.stop,
@@ -1582,14 +1700,25 @@ function HealthConnectCard({ S, toast, android }) {
 
   return (
     <Section title={c.section}
-      footer={h.on ? c.footer : null}>
+      footer={[h.on && c.footer, reading && (h.readWeight && h.wHistory ? t('openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last year. Older workouts stay as they are.') : t('openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last 30 days. Older workouts stay as they are.'))].filter(Boolean).join(' ') || null}>
       <Row icon="heart" iconTint="var(--red)" title={c.write}
         subtitle={t('Finished workouts and weigh-ins, from this phone only.')}>
         <Switch checked={!!h.on} disabled={busy} onChange={v => (v ? turnOn() : askOff())} />
       </Row>
       {h.on && h.error === 'permission' && <Row icon="warning" iconTint="var(--orange)"
         title={t('Permission withdrawn. Tap to allow again')} accessory="chevron" onClick={turnOn} />}
-      {h.on && <Row icon="list" iconTint="var(--blue)" title={c.open}
+      <Row icon="heart" iconTint="var(--red)" title={t('Heart rate from your watch')}
+        subtitle={t('After a workout, each set gets the heart rate your watch saved. Garmin, Fitbit, Galaxy Watch and friends welcome.')}>
+        <Switch checked={!!h.readHr} disabled={busy} onChange={toggleRead('hr')} />
+      </Row>
+      <Row icon="scale" iconTint="var(--teal)" title={t('Weigh-ins from other apps')}
+        subtitle={t('Your smart scale’s weigh-ins land here. One you type in yourself always wins.')}>
+        <Switch checked={!!h.readWeight} disabled={busy} onChange={toggleRead('weight')} />
+      </Row>
+      {reading && h.readError === 'permission' && <Row icon="warning" iconTint="var(--orange)"
+        title={t('Permission withdrawn. Tap to allow again')} accessory="chevron"
+        onClick={() => toggleRead(h.readHr ? 'hr' : 'weight')(true)} />}
+      {(h.on || reading) && <Row icon="list" iconTint="var(--blue)" title={c.open}
         accessory="chevron" onClick={() => openHealthConnect().catch(() => {})} />}
     </Section>
   )

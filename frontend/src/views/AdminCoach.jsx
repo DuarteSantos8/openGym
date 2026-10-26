@@ -159,7 +159,7 @@ export default function AdminCoach() {
   let n = 1
   let idx = 0
   const num = () => n++
-  const stepAt = () => { const i = idx++; return { open: i === (firstTodo === -1 ? -1 : firstTodo), key: i + ':' + (i === firstTodo) } }
+  const stepAt = () => { const i = idx++; return { open: i === (firstTodo === -1 ? -1 : firstTodo), stepKey: i + ':' + (i === firstTodo) } }
 
   // Off = a quiet, optional feature: one clean pitch and one button, no half-dimmed controls.
   if (!d.enabled) return <div className="card">
@@ -243,7 +243,7 @@ export default function AdminCoach() {
             {/* The key is encrypted at rest and never shown again, so this is the one action on the
                 card that cannot be walked back. Every other irreversible action in the app asks first;
                 until 2026-09-22 this one did not. */}
-            <Button size="sm" danger disabled={busy} onClick={() => confirmSheet({
+            <Button size="sm" variant="danger" disabled={busy} onClick={() => confirmSheet({
               title: 'Remove this credential?',
               message: 'The Coach stops working for everyone on this instance until a new key is added. The stored key cannot be recovered.',
               confirmText: 'Remove', danger: true, onConfirm: disconnect,
@@ -390,9 +390,10 @@ export default function AdminCoach() {
 
 /* ---------------------------------- pieces ---------------------------------- */
 
-function Step({ n, title, hint, done, open, forceOpen, children }) {
-  // `key` remounts the <details> when the wizard advances, so the next step unfolds itself.
-  return <details className={'adm-step ' + (done ? 'done' : 'todo')} open={open || forceOpen}>
+function Step({ n, title, hint, done, open, forceOpen, stepKey, children }) {
+  // `stepKey` remounts the <details> when the wizard advances, so the next step unfolds itself.
+  // On the element itself: React wants a key written out, not spread in with the other props.
+  return <details key={stepKey} className={'adm-step ' + (done ? 'done' : 'todo')} open={open || forceOpen}>
     <summary>
       <span className="adm-num">{done ? <Icon name="check" /> : n}</span>
       <span className="adm-step-t"><b>{title}</b><span>{hint}</span></span>

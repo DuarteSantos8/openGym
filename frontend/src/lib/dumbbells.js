@@ -26,12 +26,15 @@
 // deloads, warm-ups, drops and stepper land on bells you have instead of on the increment's grid;
 // without one nothing changes.
 //
+// A machine's own weight stack (issue #688) works the same way, per exercise: the weights a
+// LifeFitness fly really has (5, 11.3, 18.1 …), as S.stackWeights[exId] = { unit, weights, _ts }.
+// It wins over the rack on that one exercise, since it is what that machine really has.
+//
 // Only lib/exercises.js is imported, so history.js, progression.js and plates.js can all use
 // this file without a cycle.
 
-import { EXIDX, isBodyweightEq } from './exercises.js'
+import { exerciseOf as exOf, isBodyweightEq, isAssisted } from './exercises.js'
 
-const exOf = exOrId => (typeof exOrId === 'string' ? EXIDX[exOrId] : exOrId)
 const unitOf = S => (S?.unit === 'lb' ? 'lb' : 'kg')
 const isMap = v => !!v && typeof v === 'object' && !Array.isArray(v)
 const tidy = w => Math.round(w * 1000) / 1000
@@ -194,6 +197,17 @@ export const ownsDumbbells = S => dumbbellsOf(S).length > 0
 export const withDumbbells = (S, weights, now = Date.now()) =>
   ({ ...(isMap(S?.dumbbells) ? S.dumbbells : {}), [unitOf(S)]: { weights: cleanWeights(weights), _ts: now } })
 
+// "I own no dumbbells" (Discord, deamondo): an empty list means any weight, so owning none is a
+// switch of its own. It sits in the same stamped map under `none` ({ on, _ts }), not under a unit,
+// since no bells is no bells in kg and lb alike; the map's per-key merge keeps the last flip.
+// lib/equipment.js then keeps dumbbell lifts out like missing equipment, and the Coach's library
+// (api/coach/core/library.js) reads the same key.
+/** Whether this profile said it owns no dumbbells at all. */
+export const ownsNoDumbbells = S => S?.dumbbells?.none?.on === true
+/** S.dumbbells with the "none" switch set, stamped. Off is kept as a stamped false, so it wins a sync. */
+export const withNoDumbbells = (S, on, now = Date.now()) =>
+  ({ ...(isMap(S?.dumbbells) ? S.dumbbells : {}), none: { on: !!on, _ts: now } })
+
 /**
  * The loads this exercise can be done at with the bells you own, lightest first, in the unit and
  * meaning the sets are logged in; null when the inventory does not apply and the increment's grid
@@ -202,13 +216,66 @@ export const withDumbbells = (S, weights, now = Date.now()) =>
  * moves in pairs (2 × each weight); every other meaning moves one bell at a time.
  */
 export function ownedWeightsFor(S, cfg) {
-  const ex = exOf(cfg?.id)
-  if (ex?.eq !== 'dumbbell') return null
   const bw = cfg?.bodyweight != null ? !!cfg.bodyweight : isBodyweightEq(cfg?.id)
   if (bw) return null
+  // An assistance machine's stack is help, not load, and its progression runs the other way.
+  const stack = isAssisted({ ...(cfg || {}) }) ? [] : stackOf(S, cfg?.id)
+  if (stack.length) return stack
+  const ex = exOf(cfg?.id)
+  if (ex?.eq !== 'dumbbell') return null
   const ws = dumbbellsOf(S)
   if (!ws.length) return null
   return dbLoadFor(S, cfg) === 'total' && bellsIn(cfg) === 2 ? ws.map(w => tidy(w * 2)) : ws
+}
+
+/** Which list ownedWeightsFor answers from: 'stack', 'dumbbells', or null for the increment. */
+export function ownedKindFor(S, cfg) {
+  if (!ownedWeightsFor(S, cfg)) return null
+  return stackOf(S, cfg?.id).length ? 'stack' : 'dumbbells'
+}
+
+// ---- a machine's own weight stack (issue #688) -------------------------------------------------
+
+/** Equipment with a pin-selected stack of its own. Your own exercises can have one too. */
+export const STACK_EQ = new Set(['leverage machine', 'cable', 'sled machine'])
+/** Whether the exercise (object or id) gets the stack editor: a machine or cable, not assistance. */
+export function canHaveStack(exOrId) {
+  const ex = typeof exOrId === 'string' ? exOf(exOrId) : exOrId
+  if (!ex || isAssisted(ex)) return false
+  return STACK_EQ.has(ex.eq) || ex.custom === true
+}
+
+/**
+ * The weights this exercise's machine has, lightest first, in the profile's unit; [] when none
+ * are listed. Kept in the unit they were typed in, so a stack entered in kg and read by a profile
+ * now in lb is converted (to the tenth), not reinterpreted: the plates on the machine stay put.
+ */
+export function stackOf(S, exId) {
+  const e = isMap(S?.stackWeights) ? S.stackWeights[exId] : null
+  if (!isMap(e)) return []
+  const ws = cleanWeights(e.weights)
+  const from = e.unit === 'lb' ? 'lb' : 'kg', to = unitOf(S)
+  if (from === to) return ws
+  return cleanWeights(ws.map(w => Math.round((to === 'lb' ? w / LB_KG : w * LB_KG) * 10) / 10))
+}
+const LB_KG = 0.45359237
+
+/**
+ * S.stackWeights with this exercise's list set to `weights` in the profile's unit, stamped. An
+ * empty list is "no stack" again, kept as a stamped entry so the clear wins a sync too.
+ */
+export function withStack(S, exId, weights, now = Date.now()) {
+  const ws = cleanWeights(weights)
+  return { ...(isMap(S?.stackWeights) ? S.stackWeights : {}), [exId]: ws.length ? { unit: unitOf(S), weights: ws, _ts: now } : { _ts: now } }
+}
+
+/** An even stack for the quick fill: `count` weights from `first` (or `step` when 0) up by `step`. */
+export function stackFromStep(first, step, count) {
+  const a = Number(first) || 0, d = Number(step) || 0, n = Math.min(100, Math.max(0, Math.floor(Number(count) || 0)))
+  if (!(d > 0)) return []
+  const out = []
+  for (let i = 0; i < n; i++) out.push(tidy((a > 0 ? a : d) + d * i))
+  return cleanWeights(out)
 }
 
 const EPS = 1e-6

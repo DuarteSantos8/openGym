@@ -6,7 +6,6 @@ import { api } from './api.js'
 // worker and `navigator.serviceWorker.ready` never settles — the toggle looked usable and hung.
 const secureOrigin = () => typeof location === 'undefined' || location.protocol === 'https:'
 export const pushSupported = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && secureOrigin()
-export const pushPermission = () => (pushSupported() ? Notification.permission : 'unsupported')
 
 const urlBase64ToUint8Array = b64 => {
   const padded = (b64 + '='.repeat((4 - b64.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/')

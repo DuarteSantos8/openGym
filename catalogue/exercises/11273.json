@@ -9,6 +9,9 @@
     "shoulders"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A lying cable fly that stretches and squeezes the chest. The cables keep tension on at the top.",
   "instructions": [
     "Lie on a bench between two low pulleys and hold a handle in each hand over your chest.",

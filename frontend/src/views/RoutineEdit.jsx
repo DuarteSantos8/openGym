@@ -8,7 +8,7 @@ import { exOr } from '../lib/exercises.js'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { uid, exerciseNameText } from '../lib/format.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
-import { supersetUnits, moveRoutineEntry, cleanupSg, exLine, defaultConfig } from '../lib/history.js'
+import { supersetUnits, moveRoutineEntry, cleanupSg, exLine, pickedExerciseConfig } from '../lib/history.js'
 import { Thumb } from '../components/Media.jsx'
 import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet, supersetSheet } from '../sheets.jsx'
 import { supersetMeta, setSupersetMeta } from '../lib/superset-meta.js'
@@ -20,6 +20,7 @@ import SwipeRow from '../components/SwipeRow.jsx'
 import { workoutControls } from '../lib/workout-controls.js'
 import { copyRoutine, deleteRoutine, replaceSlotExercise } from '../lib/routines.js'
 import { planPrintHTML, printPlan } from '../lib/plan-share.js'
+import { printOptions } from '../lib/print-doc.js'
 import { markEntryUndone } from '../lib/sync-merge.js'
 import { MOBILE, printHtml } from '../lib/mobile.js'
 import { speedUnitOf } from '../lib/speed.js'
@@ -454,7 +455,7 @@ export default function RoutineEdit() {
     const owner = useStore.getState().user?.name || ''
     // Android's print manager refuses a job without a name. The editor never leaves a name blank,
     // but a routine that arrived from an import or another client may have none.
-    if (MOBILE) printHtml(planPrintHTML(S, owner, { routineId: id }), r.name || t('Routine')).catch(() => { /* dismissed */ })
+    if (MOBILE) printHtml(planPrintHTML(S, owner, { routineId: id }), r.name || t('Routine'), printOptions()).catch(() => { /* dismissed */ })
     else printPlan(S, owner, { routineId: id })
   }
   const toggleLink = i => edit(ex => {
@@ -498,7 +499,7 @@ export default function RoutineEdit() {
       return true
     }
     if (quick) {
-      if (commit(defaultConfig(ex.id))) toast(t('“{0}” added to {1}', exerciseNameFor(ex), sectionId ? sectionLabel(r.sections.find(s => s.id === sectionId), t) : r.name))
+      if (commit(pickedExerciseConfig(ex.id))) toast(t('“{0}” added to {1}', exerciseNameFor(ex), sectionId ? sectionLabel(r.sections.find(s => s.id === sectionId), t) : r.name))
     } else exConfigSheet(ex, null, commit, null, r, null, null, undefined, { backups: true })
   }, sectionId ? t('Add exercise to {0}', sectionLabel(r.sections.find(s => s.id === sectionId), t)) : undefined)
   const removeExercise = entry => confirmSheet({

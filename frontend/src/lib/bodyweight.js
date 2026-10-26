@@ -48,7 +48,68 @@ export function logWeighIn(s, w, at = Date.now()) {
   if (!Array.isArray(s.bodyweight)) s.bodyweight = []
   const d = isoOf(new Date(at))
   const ex = s.bodyweight.find(b => b.d === d)
-  if (ex) { ex.w = n; ex.t = at } else s.bodyweight.push({ d, w: n, t: at })
+  if (ex) { ex.w = n; ex.t = at; delete ex.src } else s.bodyweight.push({ d, w: n, t: at })
   s.bodyweight.sort((a, b) => (a.d < b.d ? -1 : 1))
   return true
+}
+
+// ---- Weekly rate (#759) ----------------------------------------------------------------------
+// How fast the weight moves, for steering a cut or a bulk. Not this week's mean against last
+// week's: water and salt swing a morning by more than a lean bulk moves in a week. A straight
+// line through every weigh-in of the last three weeks (least squares) lets no one morning flip
+// it, and it needs enough of them, spread far enough apart, to say anything at all.
+export const RATE_WINDOW_DAYS = 21
+export const RATE_MIN_WEIGHINS = 6
+export const RATE_MIN_SPAN_DAYS = 10
+const DAY = 86400000
+
+/**
+ * The trend of the weigh-ins in the `days` up to `now`, in the weigh-ins' own unit per week and
+ * in percent of the window's mean weight per week. `{ enough: false, n }` when there are fewer
+ * than RATE_MIN_WEIGHINS, or they span less than RATE_MIN_SPAN_DAYS. Each weigh-in sits at noon
+ * of its day, so a correction typed later does not move it along the line.
+ */
+export function weightRate(bodyweight, { now = Date.now(), days = RATE_WINDOW_DAYS } = {}) {
+  const from = isoOf(new Date(now - (days - 1) * DAY)), to = isoOf(new Date(now))
+  const pts = (Array.isArray(bodyweight) ? bodyweight : [])
+    .filter(b => b?.d && b.d >= from && b.d <= to && Number(b.w) > 0)
+    .map(b => ({ x: new Date(b.d + 'T12:00:00').getTime() / DAY, y: Number(b.w) }))
+  const n = pts.length
+  const span = n ? Math.max(...pts.map(p => p.x)) - Math.min(...pts.map(p => p.x)) : 0
+  if (n < RATE_MIN_WEIGHINS || span < RATE_MIN_SPAN_DAYS - 0.5) return { enough: false, n }
+  const mx = pts.reduce((s, p) => s + p.x, 0) / n, my = pts.reduce((s, p) => s + p.y, 0) / n
+  const slope = pts.reduce((s, p) => s + (p.x - mx) * (p.y - my), 0) / pts.reduce((s, p) => s + (p.x - mx) ** 2, 0)
+  const perWeek = slope * 7
+  return { enough: true, n, perWeek, pct: perWeek / my * 100, mean: my }
+}
+
+/**
+ * The corridor a profile aims its rate at (S.rateGoal): `dir` lose, gain or hold, `by` '%' (of
+ * body weight) or 'w' (the profile's unit), and `lo`/`hi` as sizes, never signed: "lose 0.5 to 1
+ * a week" is { dir: 'lose', lo: 0.5, hi: 1 }. Hold keeps within ±hi. Null when it makes no sense.
+ */
+export function rateCorridor(goal) {
+  if (!goal || !['lose', 'gain', 'hold'].includes(goal.dir)) return null
+  const lo = Math.abs(Number(goal.lo) || 0), hi = Math.abs(Number(goal.hi) || 0)
+  const [a, b] = lo <= hi ? [lo, hi] : [hi, lo]
+  if (!(b > 0)) return null
+  const by = goal.by === 'w' ? 'w' : '%'
+  if (goal.dir === 'hold') return { dir: 'hold', by, min: -b, max: b }
+  return goal.dir === 'lose' ? { dir: 'lose', by, min: -b, max: -a } : { dir: 'gain', by, min: a, max: b }
+}
+
+/**
+ * Where a rate sits against the corridor: 'in', 'fast' (losing or gaining harder than planned),
+ * 'slow', or for hold 'off' (drifting out either way). Null without a rate or a corridor.
+ */
+export function rateStatus(rate, goal) {
+  const c = rateCorridor(goal)
+  if (!c || !rate?.enough) return null
+  const v = c.by === 'w' ? rate.perWeek : rate.pct
+  // What the card shows is rounded to two decimals; the verdict goes by the same number.
+  const r = Math.round(v * 100) / 100
+  if (r >= c.min && r <= c.max) return 'in'
+  if (c.dir === 'hold') return 'off'
+  if (c.dir === 'lose') return r < c.min ? 'fast' : 'slow'
+  return r > c.max ? 'fast' : 'slow'
 }

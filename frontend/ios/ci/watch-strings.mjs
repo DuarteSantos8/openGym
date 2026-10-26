@@ -31,6 +31,8 @@ const FROM_APP = {
   'Finish workout': 'Finish workout',
   'Finish workout?': 'Finish workout?',
   'Finish and save': 'Finish and save',
+  'Discard workout': 'Discard workout',
+  'Continue workout': 'Continue workout',
   'Cancel': 'Cancel',
   'Rest’s over. Next set!': 'Rest’s over. Next set!',
   'Left': 'Left',
@@ -49,6 +51,8 @@ const FROM_APP = {
   'Body weight': 'Body weight',
   'Less': 'Less',
   'More': 'More',
+  'Effort': 'Effort',
+  'None': 'None',
 }
 // Built from an app word: "Last time: %@".
 const COMPOSED = { 'Last time: %@': ['Last time', w => `${w}: %@`] }
@@ -61,6 +65,34 @@ const OWN = {
     tr: 'Devam eden antrenman yok', ru: 'Тренировка не идёт', uk: 'Тренування не триває', ar: 'لا يوجد تمرين جارٍ',
     hi: 'कोई वर्कआउट नहीं चल रहा', bn: 'কোনো ওয়ার্কআউট চলছে না', th: 'ไม่มีการฝึกที่กำลังทำอยู่', ko: '진행 중인 운동이 없어요',
     'zh-Hans': '没有进行中的训练', 'zh-Hant': '沒有進行中的訓練',
+  },
+  // The start screen before anything came from the phone (it sends only while openGym runs there).
+  'Not synced yet': {
+    de: 'Noch nicht synchronisiert', fr: 'Pas encore synchronisé', es: 'Aún sin sincronizar', it: 'Non ancora sincronizzato',
+    'pt-PT': 'Ainda não sincronizado', 'pt-BR': 'Ainda não sincronizado', pl: 'Jeszcze nie zsynchronizowano', hu: 'Még nincs szinkronizálva',
+    tr: 'Henüz eşitlenmedi', ru: 'Ещё не синхронизировано', uk: 'Ще не синхронізовано', ar: 'لم تتم المزامنة بعد',
+    hi: 'अभी सिंक नहीं हुआ', bn: 'এখনো সিঙ্ক হয়নি', th: 'ยังไม่ได้ซิงค์', ko: '아직 동기화되지 않았어요',
+    'zh-Hans': '尚未同步', 'zh-Hant': '尚未同步',
+  },
+  'Open openGym on your iPhone once and your routines show up here.': {
+    de: 'Öffne openGym einmal auf dem iPhone, dann tauchen deine Routinen hier auf.',
+    fr: 'Ouvre openGym une fois sur ton iPhone et tes routines apparaissent ici.',
+    es: 'Abre openGym una vez en tu iPhone y tus rutinas aparecerán aquí.',
+    it: 'Apri openGym una volta sull’iPhone e le tue routine compariranno qui.',
+    'pt-PT': 'Abre o openGym uma vez no iPhone e as tuas rotinas aparecem aqui.',
+    'pt-BR': 'Abra o openGym uma vez no iPhone e suas rotinas aparecem aqui.',
+    pl: 'Otwórz raz openGym na iPhonie, a twoje plany pojawią się tutaj.',
+    hu: 'Nyisd meg egyszer az openGymet az iPhone-on, és itt lesznek a rutinjaid.',
+    tr: 'openGym’i iPhone’unda bir kez aç, rutinlerin burada görünür.',
+    ru: 'Откройте openGym на iPhone один раз, и ваши программы появятся здесь.',
+    uk: 'Відкрий openGym на iPhone один раз, і твої програми з’являться тут.',
+    ar: 'افتح openGym على iPhone مرة واحدة وستظهر تمارينك الروتينية هنا.',
+    hi: 'iPhone पर openGym एक बार खोलें, आपके रूटीन यहाँ दिखेंगे।',
+    bn: 'iPhone-এ openGym একবার খুলুন, আপনার রুটিন এখানে দেখা যাবে।',
+    th: 'เปิด openGym บน iPhone สักครั้ง แล้วรูทีนของคุณจะแสดงที่นี่',
+    ko: 'iPhone에서 openGym을 한 번 열면 루틴이 여기에 나타나요.',
+    'zh-Hans': '在 iPhone 上打开一次 openGym，你的训练计划就会出现在这里。',
+    'zh-Hant': '在 iPhone 上打開一次 openGym，你的訓練計畫就會出現在這裡。',
   },
   'Start one on your iPhone and it shows up here.': {
     de: 'Starte eins auf dem iPhone, dann taucht es hier auf.', fr: 'Lance-en une sur ton iPhone et elle apparaît ici.',
@@ -125,6 +157,13 @@ const OWN = {
   },
   'Saved on the watch, syncs later': {
     de: 'Auf der Watch gespeichert, synct später', fr: 'Gardé sur la montre, synchro plus tard', es: 'Guardado en el reloj, se sincroniza luego', it: 'Salvato sull’orologio, si sincronizza dopo', 'pt-PT': 'Guardado no relógio, sincroniza depois', 'pt-BR': 'Salvo no relógio, sincroniza depois', pl: 'Zapisano na zegarku, zsynchronizuje się później', hu: 'Az órán mentve, később szinkronizál', tr: 'Saatte kaydedildi, sonra eşitlenir', ru: 'Сохранено на часах, синхронизируется позже', uk: 'Збережено на годиннику, синхронізується пізніше', ar: 'حُفظ على الساعة، تتم المزامنة لاحقًا', hi: 'वॉच पर सहेजा, बाद में सिंक होगा', bn: 'ঘড়িতে সেভ হয়েছে, পরে সিঙ্ক হবে', th: 'บันทึกบนนาฬิกาแล้ว จะซิงค์ทีหลัง', ko: '워치에 저장됨, 나중에 동기화돼요', 'zh-Hans': '已存在手表上，稍后同步', 'zh-Hant': '已存在手錶上，稍後同步',
+  },
+  'All done?': {
+    de: 'Alles erledigt?', fr: 'Terminé ?', es: '¿Has terminado?', it: 'Hai finito?', 'pt-PT': 'Terminaste?', 'pt-BR': 'Terminou?', pl: 'Koniec treningu?', hu: 'Végeztél?', tr: 'Bitirdin mi?', ru: 'Тренировка окончена?', uk: 'Тренування завершено?', ar: 'هل انتهيت؟', hi: 'हो गया?', bn: 'শেষ হয়েছে?', th: 'เสร็จแล้วหรือยัง', ko: '다 끝났나요?', 'zh-Hans': '练完了吗？', 'zh-Hant': '練完了嗎？',
+  },
+  // Water Lock (the screen and the crown's press off until the crown is turned), as in Apple's Workout.
+  'Lock': {
+    de: 'Sperren', fr: 'Verrouiller', es: 'Bloquear', it: 'Blocca', 'pt-PT': 'Bloquear', 'pt-BR': 'Bloquear', pl: 'Zablokuj', hu: 'Zárolás', tr: 'Kilitle', ru: 'Блокировка', uk: 'Блокування', ar: 'قفل', hi: 'लॉक करें', bn: 'লক করুন', th: 'ล็อก', ko: '잠금', 'zh-Hans': '锁定', 'zh-Hant': '鎖定',
   },
   'Skip this set?': {
     de: 'Diesen Satz überspringen?', fr: 'Sauter cette série ?', es: '¿Saltar esta serie?', it: 'Saltare questa serie?', 'pt-PT': 'Saltar esta série?', 'pt-BR': 'Pular esta série?', pl: 'Pominąć tę serię?', hu: 'Kihagyod ezt a sorozatot?', tr: 'Bu set atlansın mı?', ru: 'Пропустить этот подход?', uk: 'Пропустити цей підхід?', ar: 'تخطي هذه المجموعة؟', hi: 'यह सेट छोड़ें?', bn: 'এই সেটটি বাদ দেবেন?', th: 'ข้ามเซ็ตนี้ไหม', ko: '이 세트를 건너뛸까요?', 'zh-Hans': '跳过这一组？', 'zh-Hant': '跳過這一組？',

@@ -100,6 +100,42 @@ describe('workout keys (issue #133)', () => {
     expect(doneOf(0).concat(doneOf(1), doneOf(2))).toEqual([false, false, false])
   })
 
+  it.each(['compact', 'list', 'cards', 'focus'])('chip selection moves the highlight without logging sets in %s', workoutView => {
+    renderWorkout([entry('1001', [false]), entry('1002', [false], { sg: 'pair' }), entry('1003', [false], { sg: 'pair' })], 0, { workoutView })
+    const chips = () => [...container.querySelectorAll('.wchip')]
+    expect(chips()[0].getAttribute('aria-current')).toBe('step')
+    act(() => chips()[1].click())
+    // Cards and Focus show the tapped unit, so it becomes Current; the list scrolls to it and
+    // lights its chip, and Current stays where it was (#323).
+    const listy = workoutView === 'compact' || workoutView === 'list'
+    expect(active().cur).toBe(listy ? 0 : 1)
+    expect(chips()[1].getAttribute('aria-current')).toBe('step')
+    expect(chips()[0].hasAttribute('aria-current')).toBe(false)
+    act(() => chips()[0].click())
+    expect(active().cur).toBe(0)
+    expect(chips()[0].classList.contains('cur')).toBe(true)
+    expect(doneOf(0).concat(doneOf(1), doneOf(2))).toEqual([false, false, false])
+  })
+
+  it.each(['compact', 'list'])('scrolling follows the visible exercise without changing workout progress in %s', workoutView => {
+    renderWorkout([entry('1001', [false]), entry('1002', [false]), entry('1003', [false])], 0, { workoutView })
+    const rows = [...container.querySelectorAll('.wl-unit')]
+    const rect = (top, bottom) => ({ top, bottom, height: bottom - top })
+    container.querySelector('.whdr').getBoundingClientRect = () => rect(0, 100)
+    let tops = [-200, 110, 450]
+    rows.forEach((row, i) => { row.getBoundingClientRect = () => rect(tops[i], tops[i] + 300) })
+    act(() => { window.dispatchEvent(new Event('scroll')); vi.advanceTimersByTime(50) })
+    expect(container.querySelector('.wchip[aria-current]').dataset.unitKey).toBe('1')
+    tops = [-550, -240, 110]
+    act(() => { window.dispatchEvent(new Event('scroll')); vi.advanceTimersByTime(50) })
+    expect(container.querySelector('.wchip[aria-current]').dataset.unitKey).toBe('2')
+    expect(active().cur).toBe(0)
+    expect(doneOf(0).concat(doneOf(1), doneOf(2))).toEqual([false, false, false])
+    tops = [110, 450, 790]
+    act(() => { window.dispatchEvent(new Event('scroll')); vi.advanceTimersByTime(50) })
+    expect(container.querySelector('.wchip[aria-current]').dataset.unitKey).toBe('0')
+  })
+
   it('in the list, an arrow that moves the current exercise brings it into view', () => {
     const scrolled = []
     const original = Element.prototype.scrollIntoView

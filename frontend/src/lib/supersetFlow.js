@@ -108,9 +108,22 @@ export function restSecFor(entries, unit, defaultRestSec, setRest = null) {
   return idxs.reduce((longest, idx) => {
     // `setRest` is the ticked set's own rest ({ idx, sec }, a pyramid set): it stands in for
     // that member's exercise rest, and a superset still takes the longest of the group.
-    const own = setRest && setRest.idx === idx && setRest.sec > 0 ? setRest.sec : entries?.[idx]?.target?.restSec
-    return Math.max(longest, own > 0 ? own : fallback)
+    const own = setRest && setRest.idx === idx && setRest.sec > 0 ? setRest.sec : ownExerciseRest(entries?.[idx]?.target)
+    return Math.max(longest, own ?? fallback)
   }, 0)
+}
+
+/**
+ * An exercise's own rest after its work sets: its `restSec`, 0 when it is set to "No timer"
+ * (`restOff`, Discord: a 0:00 rest used to mean "the default", so there was no way to say none),
+ * or null when it has none of its own and the default applies. Older apps don't know `restOff`
+ * and read such an exercise as following the default, which is what it did before. A time picked
+ * on one of them next to a restOff it kept wins: it is the newer choice.
+ */
+export function ownExerciseRest(target) {
+  const v = Math.round(Number(target?.restSec)) || 0
+  if (v > 0) return v
+  return target?.restOff === true ? 0 : null
 }
 
 /**
@@ -141,12 +154,23 @@ export function warmupRestSecFor(entry, setIdx, workRestSec, profileSec) {
 }
 
 /**
+ * One set's own rest, picked from its set menu for this session (#609), or null for none.
+ * 0 is a real choice ("No timer"), so only a missing or broken field means "as the exercise".
+ */
+export function ownSetRest(row) {
+  const v = row?.restSec
+  return typeof v === 'number' && Number.isFinite(v) && v >= 0 ? Math.round(v) : null
+}
+
+/**
  * The break between the two sides of one per-side set, or null for none. An exercise may set its
  * own `sideRestSec` (optional, Discord "set-specific rest timers"). Without it nothing changes:
  * a timed hold pauses `switchSec` (capped at the set's rest, and none with the rest switched off),
- * and a reps set has no break between its sides, as before the field existed.
+ * and a reps set has no break between its sides, as before the field existed. `sideRestOff`
+ * is "no timer" for a hold that wants its switch pause gone but keeps its set rest (#636).
  */
 export function sideRestFor(target, { timed, restAfter, switchSec }) {
+  if (target?.sideRestOff === true) return null
   const own = Math.round(Number(target?.sideRestSec)) || 0
   if (own > 0) return own
   if (timed && restAfter > 0) return Math.min(switchSec, restAfter)

@@ -9,6 +9,9 @@
     "shoulders"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A close grip press lying down with a cable, putting emphasis on the triceps.",
   "instructions": [
     "Lie on a bench with the cable behind your head and hold the handle with a narrow grip.",

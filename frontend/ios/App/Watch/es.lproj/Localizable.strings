@@ -10,6 +10,8 @@
 "Finish workout" = "Terminar entrenamiento";
 "Finish workout?" = "¿Terminar entrenamiento?";
 "Finish and save" = "Terminar y guardar";
+"Discard workout" = "Descartar entrenamiento";
+"Continue workout" = "Continuar entrenamiento";
 "Cancel" = "Cancelar";
 "Rest’s over. Next set!" = "Se acabó el descanso. ¡Siguiente serie!";
 "Left" = "Izquierda";
@@ -28,8 +30,12 @@
 "Body weight" = "Peso corporal";
 "Less" = "Menos";
 "More" = "Más";
+"Effort" = "Esfuerzo";
+"None" = "Ninguno";
 "Last time: %@" = "La última vez: %@";
 "No workout running" = "Ningún entreno en curso";
+"Not synced yet" = "Aún sin sincronizar";
+"Open openGym on your iPhone once and your routines show up here." = "Abre openGym una vez en tu iPhone y tus rutinas aparecerán aquí.";
 "Start one on your iPhone and it shows up here." = "Empieza uno en tu iPhone y aparecerá aquí.";
 "All sets done" = "Todas las series hechas";
 "measuring" = "midiendo …";
@@ -45,6 +51,8 @@
 "Tap a dot to do a skipped set." = "Toca un punto para hacer una serie saltada.";
 "Log this one on your iPhone." = "Este se registra en tu iPhone.";
 "Saved on the watch, syncs later" = "Guardado en el reloj, se sincroniza luego";
+"All done?" = "¿Has terminado?";
+"Lock" = "Bloquear";
 "Skip this set?" = "¿Saltar esta serie?";
 "Turn the Digital Crown to change it." = "Gira la Digital Crown para cambiarlo.";
 "%lld done" = "%lld hechas";

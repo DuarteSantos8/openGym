@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { goneIds, healthRecords, planSync, recordKey, sessionRecord, sessionType, SESSION_TYPES, TEXT_MAX, weightRecord, writtenIds } from './health-connect.js'
+import { readFileSync } from 'node:fs'
+import { EXIDX } from './exercises.js'
+import { exerciseType, goneIds, healthRecords, planSync, plannedType, recordKey, sessionRecord, sessionType, SESSION_TYPES, TEXT_MAX, weightRecord, writtenIds } from './health-connect.js'
 
 // #200: what the Android app writes to Health Connect, worked out from the state alone.
 const nameOf = e => ({ '0025': 'barbell bench press', '3666': 'walking on incline treadmill', '2138': 'stationary bike run v. 3' })[e.id] || e.id
@@ -17,18 +19,84 @@ describe('sessionType', () => {
     expect(sessionType(workout([treadmill]))).toBe('walking')
     expect(sessionType(workout([bike]))).toBe('biking_stationary')
   })
-  it('is "other" for cardio on two machines, or on one the catalogue does not place', () => {
-    expect(sessionType(workout([treadmill, bike]))).toBe('other_workout')
+  it('is mixed cardio for cardio on two machines, "other" for one the catalogue does not place', () => {
+    expect(sessionType(workout([treadmill, bike]))).toBe('mixed_cardio')
     expect(sessionType(workout([{ ...treadmill, id: 'custom-rower' }]))).toBe('other_workout')
+    expect(sessionType(workout([treadmill, { ...treadmill, id: 'custom-rower' }]))).toBe('other_workout')
   })
   it('ignores exercises with no set done', () => {
     const skipped = { ...strength, sets: [{ w: 60, r: 8, done: false }] }
     expect(sessionType(workout([treadmill, skipped]))).toBe('walking')
   })
+  // #799: a running-only session went to Apple Health as strength training.
+  const cardio = (id, extra = {}) => ({ id, target: { mode: 'cardio' }, sets: [{ min: 20, speed: 8, done: true }], ...extra })
+  const reps = id => ({ id, target: { mode: 'reps' }, sets: [{ r: 20, done: true }] })
+  it.each([
+    ['5216', 'running'],            // sprint
+    ['4004', 'running'],            // place jog
+    ['2197', 'running'],            // run on treadmill (filed with the stationary bike)
+    ['2259', 'walking'],            // walking on treadmill
+    ['2258', 'walking'],
+    ['1161', 'rowing'],             // rowing (with rowing machine)
+    ['3893', 'biking_stationary'],  // assault bike run
+    ['5214', 'biking'],             // riding outdoor bicycle
+    ['2192', 'elliptical'],
+    ['2612', 'jump_rope'],
+    ['6100', 'jump_rope'],          // bodyweight skipping
+    ['3384', 'hiit'],               // battling ropes power slam
+    ['3037', 'mixed_cardio'],       // butt kicks: cardio, no machine, no name to go by
+  ])('files cardio %s as %s', (id, type) => {
+    expect(sessionType(workout([cardio(id)]))).toBe(type)
+  })
+  it('counts burpees and jacks as HIIT also when they are logged as reps', () => {
+    expect(sessionType(workout([reps('1160'), reps('3094')]))).toBe('hiit')
+    expect(exerciseType(reps('0630'))).toBe('hiit') // mountain climber
+  })
+  it('keeps a strength move named like cardio strength (bent over row)', () => {
+    expect(exerciseType(reps('0027'))).toBe('strength_training')
+    expect(sessionType(workout([reps('0027'), cardio('0685')]))).toBe('strength_training')
+  })
+  it('files yoga and stretching, and leaves a run with a stretch after it a run', () => {
+    const yoga = Object.values(EXIDX).find(e => e.cat === 'yoga').id
+    const stretch = Object.values(EXIDX).find(e => e.cat === 'stretching').id
+    expect(sessionType(workout([reps(yoga)]))).toBe('yoga')
+    expect(sessionType(workout([reps(stretch)]))).toBe('flexibility')
+    expect(sessionType(workout([reps(stretch), reps(yoga)]))).toBe('yoga')
+    expect(sessionType(workout([cardio('0685'), reps(stretch)]))).toBe('running')
+    expect(sessionType(workout([strength, reps(stretch)]))).toBe('strength_training')
+  })
+  it('still files a strength move logged as minutes as "other"', () => {
+    expect(sessionType(workout([cardio('0025')]))).toBe('other_workout')
+  })
   it('only ever answers a type the native side knows', () => {
     for (const w of [workout([]), workout([strength]), workout([treadmill]), workout([bike, treadmill])]) {
       expect(SESSION_TYPES).toContain(sessionType(w))
     }
+  })
+})
+
+// Each name has its own type on the native side; a name it does not know is filed as "other".
+describe('the native tables', () => {
+  const src = f => readFileSync(new URL(f, import.meta.url), 'utf8')
+  it.each([['../../ios/App/App/AppleHealthPlugin.swift'], ['../../ios/App/Watch/WorkoutManager.swift']])('%s knows every type', f => {
+    const s = src(f)
+    for (const name of SESSION_TYPES) expect(s).toContain(`"${name}": .`)
+  })
+  it('Health Connect knows every type it has a constant for', () => {
+    const s = src('../../android/app/src/main/java/ch/duartesantos/opengym/HealthConnectPlugin.java')
+    for (const name of SESSION_TYPES.filter(n => !['jump_rope', 'mixed_cardio', 'other_workout'].includes(n))) {
+      expect(s).toContain(`case "${name}": return`)
+    }
+  })
+})
+
+describe('plannedType', () => {
+  it('types a planned session before any set is done, for the watch (#799)', () => {
+    const plan = id => ({ id, target: { mode: 'cardio', min: 30 }, sets: [{ min: 30, speed: 10, done: false }] })
+    expect(plannedType([plan('0685')])).toBe('running')
+    expect(plannedType([plan('0685'), { id: '0025', target: { mode: 'reps' }, sets: [{ w: 60, r: 8 }] }])).toBe('strength_training')
+    expect(plannedType([])).toBeNull()
+    expect(plannedType(undefined)).toBeNull()
   })
 })
 
