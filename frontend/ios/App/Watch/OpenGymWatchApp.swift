@@ -22,7 +22,7 @@ import WidgetKit
  * The exercises are vertical pages (swipe, the crown pages them), with the system's page indicator;
  * the rest comes up over them, so the exercises never leave. Each kind of set has its
  * own look: a warm-up is orange and says so, a per-side set says Left or Right, a bodyweight set
- * shows the reps (and added weight, when there is some), a superset says so and goes in turns.
+ * shows the reps (and added weight, when there is some), a superset names its partner and goes in turns.
  *
  * Battery: nothing ticks while nothing runs (no timers at the start screen), the animation and the
  * rest ring slow down or stop with the wrist down (Always On), the heart rate redraws at most every
@@ -76,6 +76,8 @@ enum Theme {
     static let accent = Color(red: 0x30 / 255, green: 0xd1 / 255, blue: 0x58 / 255)
     /// Warm-up sets (the app's --orange).
     static let warmup = Color(red: 1, green: 0x9f / 255, blue: 0x0a / 255)
+    /// Superset partner (the app's --yellow).
+    static let yellow = Color(red: 1, green: 0xd6 / 255, blue: 0x0a / 255)
     static let dim = Color.white.opacity(0.14)
     /// The smallest a thing a finger has to hit may be.
     static let tap: CGFloat = 44
@@ -194,7 +196,7 @@ struct RootView: View {
     }
 }
 
-/// A word in a small capsule: "Warm-up", "Left", "Superset".
+/// A word in a small capsule: "Warm-up", "Left".
 struct Tag: View {
     let text: Text
     let color: Color
@@ -212,6 +214,24 @@ struct Tag: View {
             // Always On: an outline, no lit fill.
             .background(Capsule().fill(dimmed ? Color.clear : color.opacity(0.18)))
             .overlay(Capsule().stroke(Theme.outline, lineWidth: dimmed ? 1 : 0))
+    }
+}
+
+/// The superset partner a Done turns the page to: a link glyph and its name, one line. Not a button.
+struct PartnerLine: View {
+    let name: String
+    @Environment(\.isLuminanceReduced) private var dimmed
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "link")
+            Text(verbatim: name).lineLimit(1).truncationMode(.tail)
+        }
+        .font(.footnote)        // a hint, not a headline: the green Done stays the loudest
+        .foregroundStyle(Theme.ink(Theme.yellow, dimmed))
+        .dynamicTypeSize(...DynamicTypeSize.xLarge)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("\(Text("Superset")), \(Text(verbatim: name))"))
     }
 }
 
@@ -535,18 +555,25 @@ struct ExercisePage: View {
             let entry = w.entries[index]
             let si = store.setIndex(in: index)
             let current = index == store.entryIndex
+            let unit = entry.weightUnit(w.unit)
+            let partner = store.partner(of: index)
             GeometryReader { g in
                 let inset = g.safeAreaInsets
                 VStack(spacing: 0) {
                     band(inset: inset.top, width: g.size.width + inset.leading + inset.trailing)
                     if let si = si {
                         // The lines drop first when the screen is small (41 mm: one line, or none at a two-line name),
-                        // then the name goes to one line (40 mm).
+                        // then the name goes to one line (40 mm). A superset's partner has a row of its own and keeps
+                        // its whole name: "Planned" goes before the partner is cut. Only a two-line name, without a
+                        // Left / Right tag, puts the partner beside the position ("1/2") instead. It always stays.
                         ViewThatFits(in: .vertical) {
-                            VStack(spacing: 0) { nameRow(entry, lines: 2); setBlock(entry, si, unit: entry.weightUnit(w.unit), current: current, lines: .both) }
-                            VStack(spacing: 0) { nameRow(entry, lines: 2); setBlock(entry, si, unit: entry.weightUnit(w.unit), current: current, lines: .one) }
-                            VStack(spacing: 0) { nameRow(entry, lines: 2); setBlock(entry, si, unit: entry.weightUnit(w.unit), current: current, lines: .none) }
-                            VStack(spacing: 0) { nameRow(entry, lines: 1); setBlock(entry, si, unit: entry.weightUnit(w.unit), current: current, lines: .none) }
+                            VStack(spacing: 0) { nameRow(entry, lines: 2); setBlock(entry, si, unit: unit, current: current, lines: .both, partner: partner) }
+                            VStack(spacing: 0) { nameRow(entry, lines: 2); setBlock(entry, si, unit: unit, current: current, lines: .one, partner: partner) }
+                            VStack(spacing: 0) { nameRow(entry, lines: 2); setBlock(entry, si, unit: unit, current: current, lines: .none, partner: partner) }
+                            if partner != nil && entry.sets[si].sideUp == nil {
+                                VStack(spacing: 0) { nameRow(entry, lines: 2); setBlock(entry, si, unit: unit, current: current, lines: .none, partner: partner, inline: true) }
+                            }
+                            VStack(spacing: 0) { nameRow(entry, lines: 1); setBlock(entry, si, unit: unit, current: current, lines: .none, partner: partner) }
                         }
                         .frame(maxHeight: .infinity, alignment: .top)
                     } else {
@@ -589,7 +616,7 @@ struct ExercisePage: View {
                     if current, SessionStore.demoScreen == "edit-reps" { editing = .reps }
                 }
                 .sheet(item: $editing) { field in
-                    ValueEditor(field: field, entry: entry, unit: entry.weightUnit(w.unit))
+                    ValueEditor(field: field, entry: entry, unit: unit)
                 }
                 .confirmationDialog(Text("Skip this set?"), isPresented: $confirmSkip) {
                     Button("Skip set") { store.skipSet() }
@@ -645,13 +672,19 @@ struct ExercisePage: View {
     }
 
     /// Everything under the name for the set up next: its place, the lines, the boxes, Done, the dots.
-    @ViewBuilder private func setBlock(_ entry: Entry, _ si: Int, unit: String, current: Bool, lines: Lines) -> some View {
+    /// A superset's partner sits under the position, or `inline` beside it when the page is short of height.
+    @ViewBuilder private func setBlock(_ entry: Entry, _ si: Int, unit: String, current: Bool, lines: Lines, partner: String?, inline: Bool = false) -> some View {
         let row = entry.sets[si]
         let pos = SetPage.position(entry, set: si)
         let last = store.show.showLast ? SetPage.lastTime(entry.last, pos) : nil
         let plan = SetPage.planned(entry, set: si, unit: unit) { store.isSkipped(entry.id, $0) }
         VStack(spacing: 0) {
-            positionRow(entry, row, pos)
+            positionRow(row, pos, partner: inline ? partner : nil)
+            if let partner, !inline {
+                PartnerLine(name: partner)
+                    .frame(maxWidth: .infinity, minHeight: 16, alignment: .leading)
+                    .padding(.leading, 4)
+            }
             Spacer(minLength: 1)
             if lines != .none, let last { lastLine(last) }
             boxes(entry, row, unit: unit, current: current)
@@ -664,39 +697,40 @@ struct ExercisePage: View {
         .frame(maxHeight: .infinity)        // the spare room goes between the rows
     }
 
-    /// "Set 2 of 4", or Warm-up, then Left / Right and Superset. Short of room, Superset is a link glyph,
-    /// then the place is "2/4" (long words: ru has "Подход 2 из 4" beside "ПРАВАЯ"). VoiceOver says it in full.
-    private func positionRow(_ entry: Entry, _ row: SetRow, _ pos: SetPage.Position) -> some View {
+    /// "Set 2 of 4", or Warm-up, then Left / Right and, when `partner` is given, the partner. Short of room
+    /// the place is "2/4" (long words: ru has "Подход 2 из 4" beside "ПРАВАЯ"), then only the name is cut.
+    /// VoiceOver says the place in full.
+    private func positionRow(_ row: SetRow, _ pos: SetPage.Position, partner: String?) -> some View {
         ViewThatFits(in: .horizontal) {
-            positionItems(entry, row, pos, glyph: false, short: false)
-            positionItems(entry, row, pos, glyph: true, short: false)
-            positionItems(entry, row, pos, glyph: true, short: true)
+            positionItems(row, pos, short: false, partner: partner)
+            positionItems(row, pos, short: true, partner: partner)
         }
         .frame(maxWidth: .infinity, minHeight: 16, alignment: .leading)
         .padding(.leading, 4)
         .dynamicTypeSize(...DynamicTypeSize.xLarge)
     }
 
-    private func positionItems(_ entry: Entry, _ row: SetRow, _ pos: SetPage.Position, glyph: Bool, short: Bool) -> some View {
+    private func positionItems(_ row: SetRow, _ pos: SetPage.Position, short: Bool, partner: String?) -> some View {
         let side = row.sideUp
         return HStack(spacing: 4) {
-            if let n = pos.number {
-                (short ? Text(verbatim: "\(n)/\(pos.total)") : Text("Set \(n) of \(pos.total)"))
-                    .font(.footnote.weight(.semibold).monospacedDigit())
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .accessibilityLabel(Text("Set \(n) of \(pos.total)"))
-            } else {
-                Tag(text: Text("Warm-up"), color: Theme.warmup)
+            HStack(spacing: 4) {
+                if let n = pos.number {
+                    (short ? Text(verbatim: "\(n)/\(pos.total)") : Text("Set \(n) of \(pos.total)"))
+                        .font(.footnote.weight(.semibold).monospacedDigit())
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .accessibilityLabel(Text("Set \(n) of \(pos.total)"))
+                } else {
+                    Tag(text: Text("Warm-up"), color: Theme.warmup)
+                }
+                if side == "L" { Tag(text: Text("Left"), color: .cyan) }
+                if side == "R" { Tag(text: Text("Right"), color: .cyan) }
             }
-            if side == "L" { Tag(text: Text("Left"), color: .cyan) }
-            if side == "R" { Tag(text: Text("Right"), color: .cyan) }
-            if entry.group != nil {
-                if glyph { Tag(text: Text(Image(systemName: "link")), color: .purple).accessibilityLabel(Text("Superset")) }
-                else { Tag(text: Text("Superset"), color: .purple) }
-            }
+            .accessibilityElement(children: .combine)
+            .fixedSize(horizontal: true, vertical: false)
+            .layoutPriority(1)
+            if let partner { PartnerLine(name: partner) }
         }
-        .accessibilityElement(children: .combine)
     }
 
     /// What was lifted in this place last time; a symbol for the label where the words do not fit.
@@ -1209,8 +1243,24 @@ struct OverviewPage: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 6) {
                     header
-                    ForEach(Overview.rows(store.state)) { row in
-                        OverviewRow(row: row, onPick: onPick)
+                    ForEach(Overview.blocks(store.state)) { block in
+                        if block.isSuperset {
+                            // Grouped by proximity and the yellow header: no bar, no card.
+                            VStack(alignment: .leading, spacing: 2) {
+                                Label("Superset", systemImage: "link")
+                                    .font(.footnote.weight(.bold))
+                                    .foregroundStyle(Theme.ink(Theme.yellow, dimmed))
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
+                                    .padding(.leading, 10).padding(.top, 4)
+                                    .accessibilityAddTraits(.isHeader)
+                                ForEach(block.rows) { OverviewRow(row: $0, onPick: onPick) }
+                            }
+                            .padding(.bottom, 6)        // the gap under the group is wider than inside it: the next row is not a member
+                            .id("group-\(block.id)")
+                        } else {
+                            OverviewRow(row: block.rows[0], onPick: onPick)
+                        }
                     }
                     FinishHoldButton(cover: $cover).id("finish")
                     Color.clear.frame(height: 18).accessibilityHidden(true)    // Finish and Discard stay 24 pt apart
@@ -1236,7 +1286,12 @@ struct OverviewPage: View {
                 withAnimation { proxy.scrollTo("finish", anchor: .bottom) }
                 store.finishWanted = false
             }
-            .onAppear { if ["finish", "finish-hold", "finish-hold-full", "discard"].contains(SessionStore.demoScreen) { proxy.scrollTo("finish", anchor: .bottom) } }
+            .onAppear {
+                if ["finish", "finish-hold", "finish-hold-full", "discard"].contains(SessionStore.demoScreen) { proxy.scrollTo("finish", anchor: .bottom) }
+                if ["overview-three", "overview-after"].contains(SessionStore.demoScreen), let g = Overview.blocks(store.state).first(where: \.isSuperset) {
+                    proxy.scrollTo("group-\(g.id)", anchor: .top)        // the group, not the top
+                }
+            }
         }
         .confirmationDialog(Text("Discard workout?"), isPresented: $confirmDiscard, titleVisibility: .visible) {
             Button("Continue workout", role: .cancel) {}
@@ -1299,7 +1354,6 @@ struct OverviewRow: View {
                             .font(.footnote.monospacedDigit())
                             .foregroundStyle(row.state == .current ? AnyShapeStyle(Theme.ink(Theme.accent, dimmed)) : AnyShapeStyle(.secondary))
                     }
-                    if row.superset { Text("Superset").font(.footnote).foregroundStyle(Theme.ink(.purple, dimmed)) }
                 }
                 Spacer(minLength: 0)
             }

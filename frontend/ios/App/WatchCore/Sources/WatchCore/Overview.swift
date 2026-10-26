@@ -12,7 +12,6 @@ enum Overview {
         var done: Int
         var total: Int
         var state: State
-        var superset: Bool
         var id: Int { index }
     }
 
@@ -24,8 +23,20 @@ enum Overview {
             // An exercise of only warm-ups is done when they are.
             let finished = work.isEmpty ? (!e.sets.isEmpty && e.sets.allSatisfy(\.done)) : done == work.count
             return Row(index: i, name: e.name, done: done, total: work.count,
-                       state: finished ? .done : (i == s.entryIndex ? .current : .todo),
-                       superset: e.group != nil)
+                       state: finished ? .done : (i == s.entryIndex ? .current : .todo))
         }
+    }
+
+    /// A superset's members together; every other exercise is a block of its own.
+    struct Block: Equatable, Identifiable {
+        var rows: [Row]
+        var isSuperset: Bool { rows.count > 1 }
+        var id: Int { rows[0].index }
+    }
+
+    static func blocks(_ s: SessionState) -> [Block] {
+        guard let w = s.workout else { return [] }
+        let all = rows(s)
+        return Superset.runs(w.entries).map { Block(rows: Array(all[$0])) }
     }
 }

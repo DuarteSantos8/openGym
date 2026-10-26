@@ -215,7 +215,7 @@ jobs:
               sleep 6
               xcrun simctl io "$UDID" screenshot "build/watch/$size-$file.png" >/dev/null
             }
-            for screen in idle idle-rest empty empty-heard set warmup edit-weight edit-reps weighin rest hold hold-set bodyweight side superset all-done offline finish overview finish-auto finish-hold finish-hold-full discard summary summary-end ended; do
+            for screen in idle idle-rest empty empty-heard set warmup edit-weight edit-reps weighin rest hold hold-set bodyweight side superset superset-b superset-warmup superset-long superset-side overview-three overview-after all-done offline finish overview finish-auto finish-hold finish-hold-full discard summary summary-end ended; do
               shot "$screen" "$screen"
             done
             # The app's language, not the watch's (the phone in German here); every optional thing
@@ -231,16 +231,23 @@ jobs:
             shot "lang-ru-idle" idle -OpenGymWatchLang ru
             # The Overview and Finish in the longest language (ru), and the discard question in German.
             shot "lang-ru-overview" overview -OpenGymWatchLang ru
+            shot "lang-ru-superset-side" superset-side -OpenGymWatchLang ru
+            shot "lang-ru-superset-warmup" superset-warmup -OpenGymWatchLang ru
+            shot "lang-ru-overview-three" overview-three -OpenGymWatchLang ru
+            shot "lang-de-overview-three" overview-three -OpenGymWatchLang de
             shot "lang-ru-finish" finish -OpenGymWatchLang ru
             shot "lang-de-discard" discard -OpenGymWatchLang de
             shot "aod-idle" idle -OpenGymWatchAOD
             shot "aod-idle-rest" idle-rest -OpenGymWatchAOD
             shot "aod-overview" overview -OpenGymWatchAOD
+            shot "aod-overview-three" overview-three -OpenGymWatchAOD
             shot "aod-finish" finish -OpenGymWatchAOD
             shot "aod-rest" rest -OpenGymWatchAOD
             # The set page in Always On: the same layout, outlines only (a short name and a two-line one).
             shot "aod-set" set -OpenGymWatchAOD
             shot "aod-side" side -OpenGymWatchAOD
+            shot "aod-superset" superset -OpenGymWatchAOD
+            shot "aod-superset-side" superset-side -OpenGymWatchAOD
             shot "aod-side-rir" side -OpenGymWatchAOD -OpenGymWatchEffort rir
             shot "aod-empty" empty -OpenGymWatchAOD
             # The start screen scrolled to its end: the last row against the screen's rounded corners.
@@ -250,7 +257,7 @@ jobs:
             shot "set-rpe" set -OpenGymWatchEffort rpe
             shot "rest-plain" rest -OpenGymWatchShow plain
             # The largest text size (accessibility XXXL) on the screens with the most on them.
-            for screen in idle idle-end idle-rest empty empty-heard set side superset hold-set edit-weight weighin rest hold overview finish discard summary summary-end; do
+            for screen in idle idle-end idle-rest empty empty-heard set side superset superset-long superset-side overview-three hold-set edit-weight weighin rest hold overview finish discard summary summary-end; do
               shot "ax-$screen" "$screen" -OpenGymWatchAX
             done
             # What each screen costs: the app's CPU time over 20 s once it is up (the simulator's

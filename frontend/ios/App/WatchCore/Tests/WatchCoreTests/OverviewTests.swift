@@ -49,9 +49,26 @@ final class OverviewTests: XCTestCase {
         XCTAssertTrue(SessionCore.atEnd(s))
     }
 
-    func testSupersetMembersAreFlagged() {
-        let es = [entry("a", [row()]), entry("b", [row()], group: "s1"), entry("c", [row()], group: "s1")]
-        XCTAssertEqual(Overview.rows(state(es)).map(\.superset), [false, true, true])
+    func testBlocksGroupSupersetMembers() {
+        let es = [entry("a", [row()]), entry("b", [row()], group: "s1"), entry("c", [row()], group: "s1"), entry("d", [row()])]
+        let b = Overview.blocks(state(es))
+        XCTAssertEqual(b.map { $0.rows.map(\.index) }, [[0], [1, 2], [3]])
+        XCTAssertEqual(b.map(\.isSuperset), [false, true, false])
+        XCTAssertEqual(b.map(\.id), [0, 1, 3])
+    }
+
+    func testALoneGroupMemberIsNotABlock() {
+        let es = [entry("a", [row()], group: "s1"), entry("b", [row()])]
+        XCTAssertEqual(Overview.blocks(state(es)).map(\.isSuperset), [false, false])
+    }
+
+    func testBlocksKeepEachRowsState() {
+        let es = [entry("a", [row(done: true)], group: "s1"), entry("b", [row()], group: "s1"), entry("c", [row()], group: "s1")]
+        XCTAssertEqual(Overview.blocks(state(es, at: 1))[0].rows.map(\.state), [.done, .current, .todo])
+    }
+
+    func testNoWorkoutNoBlocks() {
+        XCTAssertEqual(Overview.blocks(SessionState()), [])
     }
 
     func testTheLastSetDoneFlipsTheRow() {

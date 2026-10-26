@@ -236,6 +236,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     var setIndex: Int? { setIndex(in: entryIndex) }
     func setIndex(in ei: Int) -> Int? { SessionCore.setIndex(state, entry: ei, picked: picked[ei]) }
 
+    /// The superset partner a Done on exercise `ei` turns the page to, by name; nil when there is none.
+    func partner(of ei: Int) -> String? {
+        Superset.partner(state, entry: ei).flatMap { state.workout?.entries[$0].name }
+    }
+
     var progress: (done: Int, total: Int) { SessionCore.progress(state) }
 
     /// When the running workout started: the phone's start, else when this watch first had it.
@@ -986,7 +991,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     static var demoAOD: Bool { ProcessInfo.processInfo.arguments.contains("-OpenGymWatchAOD") }
 
     /// CI: the screens that open on the Overview.
-    static var demoOpensOverview: Bool { ["overview", "finish", "finish-hold", "finish-hold-full", "discard"].contains(demoScreen ?? "") }
+    static var demoOpensOverview: Bool { ["overview", "overview-three", "overview-after", "finish", "finish-hold", "finish-hold-full", "discard"].contains(demoScreen ?? "") }
 
     /// One screen of the demo workout (demoJSON: every kind of set), as CI photographs it.
     private func startDemo() {
@@ -1005,10 +1010,29 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             case "bodyweight": self.state.entryIndex = 2
             case "side": self.state.entryIndex = 3
             case "superset": self.state.entryIndex = 4
-            case "overview", "finish", "finish-hold", "finish-hold-full", "discard":
+            case "superset-b": self.state.entryIndex = 5
+            case "superset-warmup":
+                // A warm-up set has no "Set n of m" and its orange tag: the partner shares the row.
+                self.state.workout?.entries[4].sets[0].warmup = true
+                self.state.entryIndex = 4
+            case "superset-long":
+                // Two-line names: the partner goes beside the position and its name is cut; the name stays whole.
+                self.state.entryIndex = 4
+                self.state.workout?.entries[4].name = "Incline Dumbbell Hammer Curl"
+                self.state.workout?.entries[5].name = "Overhead Triceps Rope Extension"
+            case "superset-side":
+                // A run of three, on a per-side set: Left, 1/2 and the partner at once.
+                self.state.workout?.entries[3].group = "s1"
+                self.state.entryIndex = 3
+            case "overview", "overview-three", "overview-after", "finish", "finish-hold", "finish-hold-full", "discard":
                 // The Pull-up done, so the Overview shows all three states.
                 for si in 0..<2 { self.state.workout?.entries[2].sets[si].done = true }
-                if screen != "overview" { self.state.entryIndex = self.workout?.entries.count ?? 0 }
+                if screen == "overview-three" { self.state.workout?.entries[3].group = "s1" }
+                if screen == "overview-after" {        // a group of two with an exercise right below it
+                    self.state.workout?.entries[3].group = "s1"
+                    self.state.workout?.entries[5].group = nil
+                }
+                if !screen.hasPrefix("overview") { self.state.entryIndex = self.workout?.entries.count ?? 0 }
             case "weighin":
                 self.bodyWeight = 81.4
                 self.weighInFor = ReadySession(routineIds: ["r1"], name: "Push day", entries: [])
