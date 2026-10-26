@@ -29,10 +29,20 @@ describe('Android backup rules', () => {
     // An <include> would turn either list into an allowlist and drop everything else.
     expect(legacy).not.toMatch(/<include/)
     expect(modern).not.toMatch(/<include/)
-    // Device transfer takes everything but the pairing.
+    // Device transfer takes everything but the pairing and the gym reminder's places.
     const transfer = modern.match(/<device-transfer>([\s\S]*?)<\/device-transfer>/)?.[1] || ''
     expect(transfer).not.toMatch(EXCLUDE)
-    expect(transfer.match(/<exclude/g)).toHaveLength(1)
+    expect(transfer.match(/<exclude/g)).toHaveLength(2)
+  })
+
+  it('the gym reminder\'s places (#614) never leave the phone: out of every backup and transfer', () => {
+    const GYMS = /<exclude\s+domain="sharedpref"\s+path="opengym_gym_reminder\.xml"\s*\/>/
+    expect(legacy).toMatch(GYMS)
+    expect(modern.match(/<cloud-backup>([\s\S]*?)<\/cloud-backup>/)?.[1]).toMatch(GYMS)
+    expect(modern.match(/<device-transfer>([\s\S]*?)<\/device-transfer>/)?.[1]).toMatch(GYMS)
+    // the file name the native side writes
+    const java = readFileSync(new URL('../../android/app/src/main/java/ch/duartesantos/opengym/GymReminder.java', import.meta.url), 'utf8')
+    expect(java).toMatch(/PREFS = "opengym_gym_reminder"/)
   })
 
   it('the pairing token is left out of every backup and transfer', () => {
@@ -45,5 +55,21 @@ describe('Android backup rules', () => {
     for (const xml of [legacy, modern, manifest]) {
       for (const c of xml.match(/<!--([\s\S]*?)-->/g) || []) expect(c.slice(4, -3)).not.toContain('--')
     }
+  })
+})
+
+// The backup-folder plugin deletes and writes only the app's own dated copies (#161): the native
+// rule has to be the same one lib/mobile.js names them by, or a prune would miss its own files.
+describe('BackupFolderPlugin', () => {
+  const src = readFileSync(new URL('../../android/app/src/main/java/ch/duartesantos/opengym/BackupFolderPlugin.java', import.meta.url), 'utf8')
+  it('names the same backup files as lib/mobile.js, and checks the folder grant before writing or pruning', () => {
+    const java = /BACKUP_NAME = Pattern\.compile\("(.+)"\);/.exec(src)[1].replace(/\\\\/g, '\\')
+    const js = /const AUTO_BACKUP_NAME = \/(.+)\//.exec(readFileSync(new URL('./mobile.js', import.meta.url), 'utf8'))[1]
+    expect('^' + java + '$').toBe(js)
+    for (const m of ['write', 'prune']) {
+      const body = src.slice(src.indexOf(`public void ${m}(`), src.indexOf('io.execute', src.indexOf(`public void ${m}(`)))
+      expect(body, m).toContain('held(tree)')
+    }
+    expect(src).not.toMatch(/Pattern\.compile\(pattern\)/)
   })
 })

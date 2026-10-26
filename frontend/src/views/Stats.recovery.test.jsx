@@ -5,7 +5,7 @@ import { Window } from 'happy-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { EXIDX } from '../lib/exercises.js'
 import { MUSCLES, levelsOf } from '../lib/muscles.js'
-import { FATIGUE_STATES, STRENGTH_FLOOR, fatigueHalfLifeOf, FATIGUE_SETS_PER_UNIT } from '../lib/recovery.js'
+import { FATIGUE_STATES, STRENGTH_FLOOR, fatigueHalfLifeOf, FATIGUE_SETS_PER_UNIT, resolveSetRir } from '../lib/recovery.js'
 import { fatigueStateOf } from '../lib/recovery-view.js'
 import Stats from './Stats.jsx'
 import Modals from '../components/Modals.jsx'
@@ -27,6 +27,12 @@ const mocks = vi.hoisted(() => ({
     bodyweight: [], routines: [], workouts: [],
   },
 }))
+
+// Passed through untouched; the spy only counts how often the Effort card reads a set.
+vi.mock('../lib/recovery.js', async importOriginal => {
+  const actual = await importOriginal()
+  return { ...actual, resolveSetRir: vi.fn(actual.resolveSetRir) }
+})
 
 vi.mock('../store/useStore.js', () => ({
   useStore: selector => selector({ S: mocks.S }),
@@ -104,13 +110,13 @@ function lifecycleWorkouts(now = BASE_NOW) {
   ]
 }
 
-function allFatiguedWorkout(now = BASE_NOW) {
+function allFatiguedWorkout(now = BASE_NOW, wid = 'all-fatigued') {
   const ids = [
     '1018', '1012', '1167', '1013', '3011', '1413', '1399', '1016', '1005',
     '1010', '1003', '1001', '1511', '1494', '1002', '1000', '1396',
   ]
   return workout(
-    'all-fatigued',
+    wid,
     now,
     ids.map(id => entry(id, Array.from({ length: 12 }, () => set(true)))),
   )
@@ -279,6 +285,30 @@ describe('Stats muscle recovery view runtime', () => {
     expect(lastMap().load.chest).toBe(6)
   })
 
+  it('shows the selected muscle fatigue as a labelled zone bar with a value marker', async () => {
+    await mountStats()
+    await click(viewButton('Fatigue'))
+    await click(muscleCard().querySelector('[data-muscle="chest"]'))
+    const value = lastMap().load.chest
+    expect(value).toBeGreaterThan(0.5)
+    const pct = Math.round(value * 100)
+    const card = muscleCard()
+    const bar = card.querySelector('.fbar')
+    expect(bar).toBeTruthy()
+    // The bar carries the band, reads the same state the map does, and marks the value.
+    expect(bar.getAttribute('aria-label')).toBe(`Fatigue: ${pct}% · Fatigued`)
+    expect(bar.querySelector('.zone.fatigued')).toBeTruthy()
+    expect(card.querySelector('.knob').getAttribute('style')).toContain(`${pct}%`)
+    // The value rides above the marker; the scale runs 0–100 with each zone named.
+    expect(card.querySelector('.fval').textContent).toBe(`${pct}%`)
+    const ends = [...card.querySelectorAll('.fends span')].map(el => el.textContent)
+    expect(ends).toEqual(['0%', '100%'])
+    const zones = [...card.querySelectorAll('.fzones .z')].map(el => el.textContent)
+    expect(zones).toEqual(['Ready', 'Recovering', 'Fatigued'])
+    expect(card.textContent).toContain('Recovering in')
+    expect(card.textContent).toContain('Ready in')
+  })
+
   it('derives a pound-profile bodyweight in kg and passes it into the rendered Fatigue map', async () => {
     const bodyweightWorkout = workout('bodyweight', BASE_NOW, [
       entry('0001', [{ done: true, w: 0, r: 10 }]),
@@ -300,7 +330,7 @@ describe('Stats muscle recovery view runtime', () => {
   it('renders fixed absolute bands through the actual Fatigue and Strength views', async () => {
     // Two back-to-back full sessions: even 0.4-weighted secondary movers accumulate
     // 2 x 12 x 0.4 / 8 = 1.2 raw units, clearing the top band everywhere.
-    resetFixture([allFatiguedWorkout(), allFatiguedWorkout()])
+    resetFixture([allFatiguedWorkout(), allFatiguedWorkout(BASE_NOW, 'all-fatigued-2')])
     await mountStats()
     await click(viewButton('Fatigue'))
     const fatigueMap = lastMap()
@@ -355,6 +385,19 @@ describe('Stats estimated effort', () => {
     // Six self-anchored sets estimate RIR 0: a real average with an honest badge.
     expect(head.textContent).toContain('estimated')
     expect(container.textContent).toContain('0 rated')
+  })
+
+  // The summary, the weekly curve and the histogram share one reading per set.
+  it('reads each set once for the whole card', async () => {
+    resetFixture([workout('unrated', BASE_NOW, [
+      entry('0025', Array.from({ length: 6 }, () => set(true, { w: 80, r: 8 }))),
+    ])])
+    resolveSetRir.mockClear()
+    await mountStats()
+    expect(effortHead().textContent).toContain('estimated')
+    const sets = resolveSetRir.mock.calls.map(c => c[0])
+    expect(sets.length).toBeGreaterThan(0)
+    expect(new Set(sets).size).toBe(sets.length)
   })
 
   it('keeps the logged view badge-free on rated history', async () => {

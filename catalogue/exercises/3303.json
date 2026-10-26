@@ -9,6 +9,7 @@
     "shoulders"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A gymnastics hold where you grip a vertical pole and hold your body out to the side. It trains the obliques, shoulders and lats.",
   "instructions": [
     "Start by gripping a vertical pole with both hands, palms facing each other, and arms fully extended.",

@@ -7,16 +7,16 @@
 # QEMU — and QEMU-emulated npm installs are known to corrupt esbuild/rollup's platform-
 # specific native binaries, which is what breaks `vite build` with unrelated-looking
 # module-resolution errors.
-FROM --platform=$BUILDPLATFORM node:22-alpine AS build
+FROM --platform=$BUILDPLATFORM node:22.23.4-alpine AS build
 # The frontend sits at /app/frontend, not /app: the Coach's runtime-neutral core lives in
 # api/coach/core and is imported from frontend/src as ../../../api/coach/core/*, so the two
 # have to keep the same relative position they have in the repository. Copying frontend/ alone
 # is exactly what made the v1.2.15 web image fail to build.
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json* ./
-# --ignore-scripts: the web image only needs `vite build`; the one heavy postinstall in this tree
-# (@capacitor/assets -> sharp, a libvips download from GitHub) is for drawing app icons and has
-# timed out on the shared runners — a lockfile-ignoring `npm install` fallback is no answer to that.
+# --ignore-scripts: the web image only needs `vite build`, and no postinstall should be able to
+# break it (@capacitor/assets' sharp download once timed out on the shared runners; the icon
+# tool is now run with npx, docs/MOBILE.md, and not installed here).
 RUN npm ci --ignore-scripts
 COPY api/coach/core/ /app/api/coach/core/
 COPY frontend/ ./
@@ -26,7 +26,7 @@ COPY frontend/ ./
 ARG APP_BUILD=""
 RUN APP_BUILD="$APP_BUILD" npm run build
 
-FROM nginxinc/nginx-unprivileged:alpine
+FROM nginxinc/nginx-unprivileged:1.30.6-alpine
 # Same reason as in api/Dockerfile: alpine fixes land faster than the nginx image is rebuilt.
 # The base's last instruction is USER 101, and apk then exits 99 — it cannot open its log as
 # that user. Upgrade as root, then switch back. 101 has to be the last USER in this file so
@@ -58,12 +58,12 @@ ARG VERSION=dev
 ARG VCS_REF=dev
 ARG BUILD_DATE=unknown
 
-LABEL maintainer="Duarte Santos https://gitlab.com/DuarteSantos8" \
+LABEL maintainer="Duarte Santos https://github.com/DuarteSantos8" \
     org.opencontainers.image.title="opengym-web" \
     org.opencontainers.image.description="Frontend for Self-hosted gym & body-weight tracker — plan routines, log workouts (supersets & cardio too), track your weight and progress, passkey login. Your data, your server." \
-    org.opencontainers.image.source="https://gitlab.com/DuarteSantos8/opengym" \
-    org.opencontainers.image.url="https://gitlab.com/DuarteSantos8/opengym/container_registry" \
-    org.opencontainers.image.documentation="https://gitlab.com/DuarteSantos8/opengym#readme" \
+    org.opencontainers.image.source="https://github.com/DuarteSantos8/openGym" \
+    org.opencontainers.image.url="https://opengym.ch" \
+    org.opencontainers.image.documentation="https://github.com/DuarteSantos8/openGym#readme" \
     org.opencontainers.image.licenses="AGPL-3.0-or-later" \
     org.opencontainers.image.version=$VERSION \
     org.opencontainers.image.revision=$VCS_REF \
@@ -107,7 +107,7 @@ ENV MEDIA_UPLOAD_MAX=48m
 # chose, an Ollama on their LAN included, and the update check asks GitHub. Behind a proxy that
 # injects a script of its own (analytics), set this to a policy that allows it, or to
 # "frame-ancestors 'none'" for the old header.
-ENV CONTENT_SECURITY_POLICY="default-src 'self'; script-src 'self' 'sha256-z/iOLe5i8fD4VNlIXz/4hEayGLTQzoTc52dIY51OjYc='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https: http:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+ENV CONTENT_SECURITY_POLICY="default-src 'self'; script-src 'self' 'sha256-xUZtZS1nWJaAyUqA7ZKgkLhjdEisnY0MiRmax16aGFg='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https: http:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 
 # Probe the port nginx was actually told to listen on (NGINX_PORT is configurable, so a
 # hardcoded http://localhost/ breaks on any instance that changed it), and address it as

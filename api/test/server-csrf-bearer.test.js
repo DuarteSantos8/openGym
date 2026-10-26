@@ -54,7 +54,7 @@ test('a Bearer header that authenticates nothing does not switch the origin chec
   // With the victim's cookie beside it, this used to be a 200 acting as the victim.
   const r = await activity(api, { ...evil, ...victimCookie, ...bogus });
   assert.equal(r.status, 403);
-  assert.deepEqual(await r.json(), { error: 'cross-origin request refused' });
+  assert.deepEqual(await r.json(), { error: 'cross-origin request refused', code: 'origin-mismatch', expected: 'https://gym.test' });
   // With no cookie, nothing ambient is in play: that caller is not signed in, and is told so
   // with the 401 the paired app acts on, before any handler runs. login/options answers anybody
   // with a 200, so the 401 there is the proof the handler was never reached.

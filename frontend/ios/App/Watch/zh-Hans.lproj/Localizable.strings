@@ -10,6 +10,8 @@
 "Finish workout" = "结束训练";
 "Finish workout?" = "结束训练？";
 "Finish and save" = "结束并保存";
+"Discard workout" = "放弃训练";
+"Continue workout" = "继续训练";
 "Cancel" = "取消";
 "Rest’s over. Next set!" = "休息结束，下一组！";
 "Left" = "左侧";
@@ -28,8 +30,12 @@
 "Body weight" = "体重";
 "Less" = "更少";
 "More" = "更多";
+"Effort" = "强度";
+"None" = "无";
 "Last time: %@" = "上次: %@";
 "No workout running" = "没有进行中的训练";
+"Not synced yet" = "尚未同步";
+"Open openGym on your iPhone once and your routines show up here." = "在 iPhone 上打开一次 openGym，你的训练计划就会出现在这里。";
 "Start one on your iPhone and it shows up here." = "在 iPhone 上开始，它就会出现在这里。";
 "All sets done" = "所有组已完成";
 "measuring" = "测量中 …";
@@ -45,6 +51,8 @@
 "Tap a dot to do a skipped set." = "轻点圆点来做跳过的组。";
 "Log this one on your iPhone." = "这个请在 iPhone 上记录。";
 "Saved on the watch, syncs later" = "已存在手表上，稍后同步";
+"All done?" = "练完了吗？";
+"Lock" = "锁定";
 "Skip this set?" = "跳过这一组？";
 "Turn the Digital Crown to change it." = "转动数码表冠来更改。";
 "%lld done" = "已完成 %lld";

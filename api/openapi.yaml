@@ -6,7 +6,7 @@ openapi: 3.1.0
 
 info:
   title: openGym API
-  version: 1.4.2
+  version: 1.4.3
   summary: Passkey (WebAuthn) auth + per-user state storage for openGym
   description: |
     The backend of [openGym](https://opengym.ch), a free, open-source
@@ -59,7 +59,7 @@ info:
     ### CSRF
     State-changing browser requests must come from the app's own origin. The server
     checks `Sec-Fetch-Site` (falling back to `Origin` vs the configured `ORIGIN`);
-    a mismatch is refused with `403 {"error":"cross-origin request refused"}` on any
+    a mismatch is refused with `403 {"error":"cross-origin request refused","code":"origin-mismatch","expected":ORIGIN}` on any
     non-GET route, the passkey routes included. Exempt: `pair/redeem`, which the mobile
     app calls from its own origin (the code in the body is the credential, and the token
     comes back in the body, never as a cookie), and any request a Bearer token
@@ -650,7 +650,15 @@ paths:
         Called from an already signed-in browser tab (Settings → "Pair the mobile
         app"). Returns an 8-character code (alphabet without 0/O/1/I) the phone
         redeems within 5 minutes via /api/pair/redeem. One-shot. One live code per
-        profile: minting a new one retires the previous one.
+        profile: minting a new one retires the previous one. Same proof as a device
+        link (a passkey assertion made for this request, or the current password while
+        password sign-in is on), since the phone token a code turns into is renewed for
+        as long as it is used. Audited as `auth.pair.create`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OwnerProof' }
       responses:
         '200':
           description: A fresh pairing code.
@@ -664,6 +672,9 @@ paths:
                     description: 8 chars from ABCDEFGHJKLMNPQRSTUVWXYZ23456789.
               example: { code: "K7WQ2MZP" }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/ProofRefused' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Busy' }
 
   /api/pair/redeem:
     post:
@@ -1112,6 +1123,67 @@ paths:
         '429': { $ref: '#/components/responses/TooManyRequests' }
         '503': { $ref: '#/components/responses/Busy' }
 
+  /api/admin/user/recovery:
+    post:
+      tags: [admin, passkeys]
+      operationId: adminRecoveryCode
+      summary: 'Admin: make a one-time recovery code (#584)'
+      description: |
+        For someone who lost every way in, on any instance (with or without
+        `PASSWORD_LOGIN`). Returns a code (12 characters from the pairing alphabet, 60 bits),
+        shown once, stored only as a SHA-256, valid for 24 h. The person redeems it like a
+        device link (`POST /api/device-link/options` and `/verify`): the device they use gets a
+        new passkey for the profile and is signed in. Making it bumps the profile's session
+        version (every session, pending pairing code and device link ends); passkeys and the
+        password stay. A newer code replaces an older one.
+
+        Any admin may make one for a profile that is not an admin; only the owner for an
+        admin; nobody for the owner (403 `owner`: the owner uses the server command
+        `node recover.js <name>`), for oneself (400 `self`) or for a disabled profile (400
+        `disabled`). Audited as `admin.recovery.create`; a refusal for an admin as
+        `admin.denied`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id: { type: string, description: The user id. }
+      responses:
+        '200':
+          description: The code, once.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  name: { type: string }
+                  code: { type: string }
+                  expires: { type: number, description: Expiry (ms). }
+              example: { ok: true, name: "Ada", code: "K7WQ-2MZP-4HXA", expires: 1790000000000 }
+        '400':
+          description: Oneself, or a disabled profile.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "enable the account first", code: disabled }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not an admin; an admin who is not the owner asking for an admin; or the target is the owner.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "the owner recovers with the server command (recover.js)", code: owner }
+        '404':
+          description: No user with that id.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "no such user" }
+
   /api/admin/user/password-reset:
     post:
       tags: [admin, password]
@@ -1429,6 +1501,7 @@ paths:
                   options: { $ref: '#/components/schemas/WebAuthnRegistrationOptions' }
                   id: { type: string, description: "The profile's id (also the options' user handle). Names are not unique; this is what tells two profiles apart." }
                   name: { type: string, description: The profile this device is being added to. }
+                  recovery: { type: boolean, description: 'Present (true) when the code is a recovery code (POST /api/admin/user/recovery, recover.js).' }
         '400': { $ref: '#/components/responses/LinkInvalid' }
         '409': { $ref: '#/components/responses/PasskeyLimit' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
@@ -1442,8 +1515,10 @@ paths:
         Verifies the attestation against the challenge from step 1 (which must have been
         made for this very code), stores the passkey on the code's profile, burns the code
         and sets the session cookie; the passkey just made is what signs the device in.
-        Of two requests racing with one code, one wins. Audited as `auth.link.ok`, and every
-        refusal as `auth.link.fail`. **Not** CSRF-exempt.
+        Of two requests racing with one code, one wins. Audited as `auth.link.ok` (a recovery
+        code as `auth.recovery.ok`), and every refusal as `auth.link.fail`. A recovery code
+        also works on a profile at the passkey limit: the passkey used longest ago is removed
+        to make room. **Not** CSRF-exempt.
       security: []
       requestBody:
         required: true
@@ -1803,7 +1878,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "cross-origin request refused" }
+              example: { error: "cross-origin request refused", code: "origin-mismatch", expected: "https://gym.example.com" }
         '408':
           description: No bytes arrived for 60 seconds (`timeout`). The connection is closed.
           content:
@@ -1898,7 +1973,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "cross-origin request refused" }
+              example: { error: "cross-origin request refused", code: "origin-mismatch", expected: "https://gym.example.com" }
 
   /api/media/sweep:
     post:
@@ -1937,7 +2012,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "cross-origin request refused" }
+              example: { error: "cross-origin request refused", code: "origin-mismatch", expected: "https://gym.example.com" }
         '429':
           description: More than 10 sweeps this hour (`locked`).
           headers:
@@ -2778,6 +2853,45 @@ paths:
                     language tag, the profile's stored `lang` is used.
       responses:
         '202': { $ref: '#/components/responses/CoachJobQueued' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/CoachRefused' }
+        '409': { $ref: '#/components/responses/CoachRefused' }
+        '429': { $ref: '#/components/responses/CoachRefused' }
+        '503': { $ref: '#/components/responses/CoachOff' }
+
+  /api/coach/ask:
+    post:
+      tags: [coach]
+      operationId: postCoachAsk
+      summary: Ask the Coach a question
+      description: |
+        Queues an `ask` job: a question from the chat, answered in plain text. It changes
+        nothing; the answer arrives as a pending proposal of kind `ask` with an `answer`
+        string, which the client writes into the chat and resolves. The running session,
+        which the server never holds, may ride along as `today`; the payload builder bounds
+        it like a logged workout.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  description: The question. Cut at the instance's message length.
+                today:
+                  type: object
+                  description: The session running on the device (`entries` with their sets), or absent.
+                lang:
+                  type: string
+                  pattern: '^[A-Za-z]{2,3}([-_][A-Za-z0-9]{2,8})?$'
+                  description: The language the app is showing, which the Coach answers in.
+      responses:
+        '202': { $ref: '#/components/responses/CoachJobQueued' }
+        '400':
+          description: No question in the body (`code` is `invalid`).
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/CoachRefused' }
         '409': { $ref: '#/components/responses/CoachRefused' }
@@ -3833,6 +3947,9 @@ components:
             resetUntil:
               oneOf: [{ type: number }, { type: 'null' }]
               description: PASSWORD_LOGIN instances only. Expiry (ms) of an unused reset code.
+            recoveryUntil:
+              oneOf: [{ type: number }, { type: 'null' }]
+              description: Expiry (ms) of an unused recovery code (POST /api/admin/user/recovery, recover.js).
         unit: { type: string, enum: [kg, lb] }
         lastSync: { oneOf: [{ type: number }, { type: 'null' }] }
         routines:
@@ -3954,6 +4071,7 @@ components:
                   oneOf: [{ type: string }, { type: 'null' }]
                   description: e.g. `provider`, `unusable`, `restart`, `forgotten`, `consent`, `noworkout`.
                 at: { type: integer, description: Epoch ms. }
+                trigger: { type: string, enum: [scheduled], description: Present when it was an automatic review. }
                 reading: { type: string, description: "Present on `nochange`: why there was nothing to change." }
             - type: 'null'
 
@@ -3971,6 +4089,7 @@ components:
         expiresAt: { type: integer, description: Epoch ms. }
         planHash: { type: string, description: The plan this was written against. A later edit makes it stale. }
         iteration: { type: integer, description: "1, or higher after a refine." }
+        trigger: { type: string, enum: [scheduled], description: "Present when an automatic review made it, which nobody was watching for." }
         summary: { type: string, maxLength: 1200 }
         changes:
           type: array

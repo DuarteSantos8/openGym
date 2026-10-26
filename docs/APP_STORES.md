@@ -32,8 +32,10 @@ ever sees the repo's 180 px media.
   (`ios/App/App/PrivacyInfo.xcprivacy`): no tracking, no data collected. No non-exempt
   encryption (`ITSAppUsesNonExemptEncryption = NO`, HTTPS only). The Coach asks before anything
   is sent to an AI provider and names it (App Review Guideline 5.1.2(i), November 2025).
-- **Both:** no account, no ads, no analytics in the app. Donations are only linked from the
-  website, never from inside the app: both stores require their own payment system for that.
+- **Both:** no account, no ads, no analytics in the app, and nothing to buy. Settings → About &
+  updates links to Buy Me a Coffee, Ko-fi and GitHub Sponsors: plain links that open in the
+  browser, unlock nothing, and never pop up on their own. On the iPhone the same section has a
+  link to writing an App Store review (no review prompt, App Review 5.6.1).
 
 ## Every release
 
@@ -179,10 +181,14 @@ on the phone (Settings → Reset, or uninstall).
 4. App Privacy: "Data Not Collected". Age rating: 4+. Category: Health & Fitness.
 5. Review notes: no sign-in needed ("Use on this device"). The Coach is optional and needs the
    user's own AI provider key; give the reviewer a key with a small spending limit, or say so.
+6. What review sent back on v1.4.2, so it doesn't happen twice: no "free" in the subtitle (price
+   words belong to the price field), and no "Not now" on a screen in front of a system permission
+   dialog. The first-start permission screens have a single Continue that opens the iOS dialog,
+   where the no belongs (Guideline 5.1.1(iv), `views/PermissionSteps.jsx`).
 
 ## Licensing
 
 The repository's `NOTICE.md` carries an app-store exception to the AGPL (an additional
-permission under AGPL §7, since July 2026). The Contributor License Agreement in preparation
-covers the rest: it lets the project keep publishing and updating the store apps long term,
-contributions included.
+permission under AGPL §7, since July 2026). The [Contributor License Agreement](../CLA.md)
+(live since October 2026) covers the rest: it lets the project keep publishing and updating the
+store apps long term, contributions included.

@@ -9,6 +9,9 @@
     "shoulders"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A one-arm dumbbell press on a flat bench. Working one side at a time shows up any imbalance.",
   "instructions": [
     "Lie flat on a bench with a dumbbell in one hand and your feet flat on the ground.",

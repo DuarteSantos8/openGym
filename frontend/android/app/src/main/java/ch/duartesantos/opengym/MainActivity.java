@@ -1,5 +1,7 @@
 package ch.duartesantos.opengym;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -33,8 +35,32 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(DeviceAuthPlugin.class);
         registerPlugin(AnimationPacksPlugin.class);
         registerPlugin(NudgeCheckPlugin.class);
+        registerPlugin(GymReminderPlugin.class);
         super.onCreate(savedInstanceState);
         passSystemBarsToPage();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        showHealthPrivacy(intent);
+    }
+
+    // Health Connect's "why does this app ask?" link (the two activity-aliases in the manifest)
+    // must show the privacy policy, the same one the Play listing names: opened in the browser.
+    static final String PRIVACY_URL = "https://opengym.ch/privacy";
+    static boolean isHealthRationale(String action) {
+        return "androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE".equals(action)
+                || "android.intent.action.VIEW_PERMISSION_USAGE".equals(action);
+    }
+
+    private void showHealthPrivacy(Intent intent) {
+        if (intent == null || !isHealthRationale(intent.getAction())) return;
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(PRIVACY_URL)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        } catch (Exception e) {
+            // No browser: the app itself opens, as before.
+        }
     }
 
     /** For FlavorPlugins: registerPlugin is protected in BridgeActivity. */

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { api } from '../lib/api.js'
@@ -44,7 +44,21 @@ function ResetCodeSheet({ name, email, code, expires, close }) {
   </>
 }
 
+// The one time a recovery code (#584) is visible. Locked like the reset code's sheet.
+function RecoveryCodeSheet({ name, code, expires, close }) {
+  const toast = useUI(s => s.toast)
+  const copy = () => { navigator.clipboard?.writeText(code).catch(() => {}); toast('Copied') }
+  return <>
+    <h3>Recovery code for {name}</h3>
+    <div className="adm-lead">Give them this code. On the sign-in screen they tap “Lost access?” → “I have a code” (or “Use a code from your other device”) and enter it; the device they use gets a new passkey for <b>{name}</b> and is signed in. In the phone app they do this in a browser first, then pair the app again. It works once, until {new Date(expires).toLocaleString()}, and will not be shown again.</div>
+    <button className="adm-code" style={{ fontSize: 22, width: '100%', padding: '14px 0' }} onClick={copy} aria-label="copy code">{code}</button>
+    <div style={{ height: 12 }} />
+    <Button variant="primary" onClick={close}>Done</Button>
+  </>
+}
+
 function UserDetail({ id, viewerOwner, onChanged, close }) {
+  const me = useStore(s => s.user)
   const [d, setD] = useState(null)
   const toast = useUI(s => s.toast)
   const openSheet = useUI(s => s.openSheet)
@@ -100,6 +114,18 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
       .then(r => { onChanged(); close(); openSheet(done => <ResetCodeSheet name={r.name} email={u.email} code={r.code} expires={r.expires} close={done} />, { locked: true }) })
       .catch(e => toast(e.message)),
   })
+  // A recovery code (#584): any admin for a profile that is not an admin, the owner for an admin;
+  // the owner's own comes from the server command (recover.js). Not for oneself.
+  const canRecover = !u.owner && !u.disabled && u.id !== me?.id && (!u.admin || viewerOwner)
+  const makeRecovery = () => confirmSheet({
+    title: 'Recovery code for ' + u.name + '?',
+    message: 'For someone who lost every way in: their devices and passkey are gone, and they have no password. You get a one-time code to hand them; the device they enter it on gets a new passkey. They are signed out everywhere now. Their passkeys and password stay. It is shown once and is valid for 24 hours.',
+    confirmText: 'Create recovery code',
+    danger: true,
+    onConfirm: () => api('/api/admin/user/recovery', { method: 'POST', body: JSON.stringify({ id: u.id }) })
+      .then(r => { onChanged(); close(); openSheet(done => <RecoveryCodeSheet name={r.name} code={r.code} expires={r.expires} close={done} />, { locked: true }) })
+      .catch(e => toast(e.message)),
+  })
   return <>
     <h3 className="capitalize">{u.name}</h3>
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '8px 0 12px' }}>
@@ -110,6 +136,7 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
       {/* The sign-in e-mail (password instances only): shown to admins and nobody else. */}
       {u.email && <span className="adm-pill" title="sign-in e-mail">{u.email}</span>}
       {u.resetUntil && <span className="adm-pill acc">reset code until {new Date(u.resetUntil).toLocaleString()}</span>}
+      {u.recoveryUntil && <span className="adm-pill acc">recovery code until {new Date(u.recoveryUntil).toLocaleString()}</span>}
       <span className="adm-pill">joined {u.created ? fmtDate(u.created.slice(0, 10)) : '–'}</span>
     </div>
     <div className="tiles" style={{ textAlign: 'start' }}>
@@ -163,6 +190,11 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
           : 'No password yet. A one-time code lets them set one. That’s the way back in after losing their only passkey.'}</div>
       </>}
     </>}
+    {canRecover && <>
+      <button className="btn" style={{ margin: '14px 0 4px' }} onClick={makeRecovery}>Recovery code</button>
+      <div className="adm-hint">Lost every device and passkey? A one-time code gives a new device a passkey for this profile. Works with or without password sign-in.</div>
+    </>}
+    {u.owner && u.id !== me?.id && <div className="adm-hint" style={{ marginTop: 14 }}>A locked-out owner gets a recovery code from the server itself: <code>docker compose exec api node recover.js "{u.name}"</code></div>}
     <h4 className="sec">Workout history</h4>
     {workouts.length ? <div className="list" style={{ gap: 0 }}>
       {workouts.slice(0, 60).map(w => <div key={w.id} className="row between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)' }}>
@@ -278,6 +310,15 @@ function AuditCard({ tick, owner }) {
 
 export default function Admin() {
   const nav = useNavigate()
+  // Opened from Settings → AI Coach (the hosted app's way to the Coach, which is the server's):
+  // straight to the Coach card rather than the top of the page.
+  const toCoach = useLocation().state?.section === 'coach'
+  const coachRef = useRef(null)
+  useEffect(() => {
+    if (!toCoach) return
+    const tm = setTimeout(() => coachRef.current?.scrollIntoView({ block: 'start' }), 50)
+    return () => clearTimeout(tm)
+  }, [toCoach])
   const user = useStore(s => s.user)
   const openSheet = useUI(s => s.openSheet)
   const [users, setUsers] = useState(null)
@@ -311,7 +352,7 @@ export default function Admin() {
   return <div className="narrow">
     <div className="hdr">
       <button className="iconbtn" data-back="/settings/account" onClick={() => nav('/settings/account')} aria-label="Back"><Icon name="chevronLeft" /></button>
-      <div style={{ flex: 1, marginInlineStart: 8 }}><h1 style={{ margin: 0 }}>Admin</h1>
+      <div style={{ flex: 1, marginInlineStart: 12 }}><h1 style={{ margin: 0 }}>Admin</h1>
         <div className="sub">{users ? users.length + ' users · ' + activeCount + ' active this week' : usersErr ? 'Could not load' : 'Loading…'}</div></div>
       <button className="iconbtn" onClick={() => { loadUsers(); loadInvites(); setTick(n => n + 1) }} aria-label="refresh">↻</button>
     </div>
@@ -346,7 +387,7 @@ export default function Admin() {
 
     {/* The Coach setup. Renders nothing at all unless the instance offers the Coach, so an admin
         page on a box that never enabled it is byte-for-byte the page it was before. */}
-    <AdminCoach />
+    <div ref={coachRef} className="adm-coach-anchor"><AdminCoach /></div>
 
     <InvitesCard invites={invites} reload={loadInvites} inviteOnly={inviteOnly} />
 

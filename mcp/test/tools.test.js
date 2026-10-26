@@ -39,8 +39,10 @@ function freshState() {
 
 // Pin "today" before building state so dayPlan/week alignment matches the assertions below.
 // `toFake: ['Date']` only — keeps fs.watch and the rest of the event loop real.
+// Local noon, not UTC noon: the demo seed's evening check reads local hours, and UTC noon is
+// already evening east of UTC+6 (#732).
 beforeAll(() => {
-  vi.useFakeTimers({ now: new Date(FAKE_TODAY_ISO + 'T12:00:00Z'), toFake: ['Date'] })
+  vi.useFakeTimers({ now: new Date(FAKE_TODAY_ISO + 'T12:00:00'), toFake: ['Date'] })
   S = freshState()
   _seedStateForTests(S)
 })
@@ -267,7 +269,7 @@ describe('get_week_plan', () => {
     expect(after.today_routine_id).toBeNull()
     expect(after.today_routine_name).toBeNull()
     // The override is surfaced on the matching weekday entry.
-    const todayWd = new Date(FAKE_TODAY_ISO + 'T12:00:00Z').getDay()
+    const todayWd = new Date(FAKE_TODAY_ISO + 'T12:00:00').getDay()
     expect(after.weekdays.find(d => d.weekday === todayWd).override_for_today_or_null).toBe('rest')
   })
 
@@ -421,6 +423,27 @@ describe('list_workouts', () => {
       expect(typeof w.volume).toBe('number')
       expect(w.sets_ratio).toMatch(/^\d+\/\d+$/)
     })
+  })
+
+  // A unilateral set is one row carrying both sides, and setsDone() counts each side that was
+  // done, so the planned count has to count sides too — the app pairs it with setUnitsTotal().
+  // Counting rows read a fully done per-side session as twice the plan (#691).
+  test('a per-side session counts planned sets in the same units as done ones', () => {
+    const CURL = '0294'
+    const side = rDone => ({
+      w: 20, r: 16, done: rDone,
+      sides: { L: { w: 20, r: 8, done: true }, R: { w: 20, r: 8, done: rDone } }
+    })
+    S.workouts = [{
+      id: 'w1', d: '2026-07-06', start: Date.parse('2026-07-06T10:00:00'), end: Date.parse('2026-07-06T11:00:00'), name: 'S',
+      entries: [{ id: CURL, target: { sets: 3, reps: 8, weight: 20, perSide: true }, sets: [side(true), side(true), side(false)] }]
+    }]
+    _seedStateForTests(S)
+    const listed = call('list_workouts').workouts[0]
+    expect(listed.sets_done).toBe(5)
+    expect(listed.sets_planned).toBe(6)
+    expect(listed.sets_ratio).toBe('5/6')
+    expect(call('get_workout', { workout_id: 'w1' }).sets_planned).toBe(6)
   })
 
   test('date range filter narrows results (closed interval, both endpoints inclusive)', () => {
@@ -892,7 +915,7 @@ describe('muscle_balance', () => {
   describe('the reported cutoff is a local date, like every other date in this API', () => {
     const TZ = process.env.TZ
     beforeAll(() => { process.env.TZ = 'Asia/Tokyo'; vi.setSystemTime(new Date('2026-07-27T08:00:00')) })
-    afterAll(() => { process.env.TZ = TZ; vi.setSystemTime(new Date(FAKE_TODAY_ISO + 'T12:00:00Z')) })
+    afterAll(() => { process.env.TZ = TZ; vi.setSystemTime(new Date(FAKE_TODAY_ISO + 'T12:00:00')) })
 
     // Workouts imported without a clock (no w.start) fall back to their date at local noon, so
     // they are the probe for which calendar dates the window really accepts.
@@ -961,7 +984,7 @@ describe('shared: no-state fallback', () => {
 // beats the confirmed working weight, which beats the routine's own number — because getting
 // it backwards is how a coach ends up telling someone to squat a weight the app never shows.
 describe('preview_session', () => {
-  const WD = new Date(FAKE_TODAY_ISO + 'T12:00:00Z').getDay()
+  const WD = new Date(FAKE_TODAY_ISO + 'T12:00:00').getDay()
 
   // One routine, one exercise, scheduled for the pinned "today". Nothing from the demo seed,
   // so the arithmetic below is checkable by hand.
@@ -1162,6 +1185,28 @@ describe('preview_session', () => {
     expect(e.reps_source).toBe('routine_plan')
     expect(e.differs_from_plan).toBe(false)
     expect(out.overridden_count).toBe(0)
+  })
+
+  test('progression off under "start from your last session" reports last time as the source (#217)', () => {
+    only({ id: '0025', sets: 2, reps: 8, weight: 50 }, {
+      prog: 'off',
+      workouts: [{
+        id: 'w1', d: '2026-07-20', routineId: 'r-preview', name: 'Preview',
+        entries: [{ id: '0025', target: { id: '0025', sets: 2, reps: 8, weight: 50 }, sets: [{ w: 60, r: 6, done: true }, { w: 60, r: 6, done: true }] }]
+      }]
+    })
+    S.startFrom = 'last'
+    _seedStateForTests(S)
+    try {
+      const e = call('preview_session').exercises[0]
+      expect(e.prescription.kind).toBe('off')
+      expect(e.opening_sets.map(s => [s.w, s.r])).toEqual([[60, 6], [60, 6]])
+      expect(e.weight_source).toBe('last_session')
+      expect(e.reps_source).toBe('last_session')
+    } finally {
+      delete S.startFrom
+      _seedStateForTests(S)
+    }
   })
 
   test('a deload routine (excludeFromProgression) opens its own numbers even under a policy', () => {

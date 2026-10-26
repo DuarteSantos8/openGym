@@ -9,6 +9,9 @@
     "glutes"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "Lying face down, you curl a dumbbell held between your feet toward your glutes. A simple way to train the back of the thighs without a machine.",
   "instructions": [
     "Lie face down on a bench and grip the edge for support.",

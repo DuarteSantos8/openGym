@@ -68,6 +68,23 @@ describe('a set ticked on the watch', () => {
     expect(S.workouts.at(-1)).toMatchObject({ id: 'w-watch' })
     expect(S.workouts.at(-1).entries[0].sets[0]).toMatchObject({ w: 60, r: 8, done: true, at })
   })
+
+  it('the watch\'s RPE goes on the set it ticked, and a later phone rating is not overwritten', () => {
+    act(() => { applyEvents([{ id: 'r1', type: 'setDone', wid: 'w-watch', exId: '0025', entryIdx: 0, setIdx: 0, w: 60, r: 8, at: Date.now(), rpe: 8.5 }], () => useStore.getState()) })
+    expect(useStore.getState().S.active.entries[0].sets[0]).toMatchObject({ done: true, rpe: 8.5 })
+    expect(useStore.getState().S.active.entries[0].sets[0].rir).toBeUndefined()
+    act(() => { useStore.getState().update(s => { Object.assign(s.active.entries[0].sets[1], { done: true, at: 9e12, rpe: 7 }) }) })
+    act(() => { applyEvents([{ id: 'r2', type: 'setDone', wid: 'w-watch', exId: '0025', entryIdx: 0, setIdx: 1, w: 60, r: 8, at: 1000, rpe: 10 }], () => useStore.getState()) })
+    expect(useStore.getState().S.active.entries[0].sets[1].rpe).toBe(7)
+  })
+
+  it('the watch\'s Discard drops the workout without saving it', () => {
+    const before = useStore.getState().S.workouts.length
+    act(() => { applyEvents([{ id: 'x1', type: 'discard', wid: 'w-watch', at: Date.now() }], () => useStore.getState()) })
+    const S = useStore.getState().S
+    expect(S.active).toBeNull()
+    expect(S.workouts.length).toBe(before)
+  })
 })
 
 describe('the same set on both sides', () => {
