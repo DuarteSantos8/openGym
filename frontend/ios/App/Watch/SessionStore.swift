@@ -333,13 +333,20 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             let before = self.state
             let next = SessionCore.applySnapshot(before, snap)
             self.state = next
+            // Discarded there (#776): nothing of it is saved, and there is nothing to sum up. Also
+            // when the phone already runs the next workout (no snapshot without one in between):
+            // the session ends unsaved instead of carrying on as the next one. Remembered as run
+            // here, so its sync id stays on the list of copies to take out of Apple Health should
+            // one turn up after all (the phone names discarded workouts in healthGone).
+            let droppedThere = before.workout.map { $0.id != next.workout?.id && SessionCore.discarded($0.id, in: snap) } ?? false
+            if droppedThere {
+                self.health.end(save: false)
+                self.ran(before.workout?.id)
+            }
             if let ended = before.workout, next.workout == nil {
                 // Ended on the phone: the session here ends too. Finished there, it is saved to Apple
                 // Health and the watch says so instead of quietly going back to the start screen.
-                // Discarded there (#776), nothing of it is saved, and there is nothing to sum up.
-                if SessionCore.discarded(ended.id, in: snap) {
-                    self.health.end(save: false)
-                } else {
+                if !droppedThere {
                     if !self.isDemo {
                         self.summary = SessionCore.summary(ended, end: Date().timeIntervalSince1970 * 1000,
                                                            startedAt: self.workoutSeenAt.map { $0.timeIntervalSince1970 * 1000 }, endedOnPhone: true)
