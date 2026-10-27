@@ -215,7 +215,7 @@ jobs:
               sleep 6
               xcrun simctl io "$UDID" screenshot "build/watch/$size-$file.png" >/dev/null
             }
-            for screen in idle idle-rest empty empty-heard set warmup edit-weight edit-reps weighin rest hold bodyweight side superset offline finish summary summary-end ended; do
+            for screen in idle idle-rest empty empty-heard set warmup edit-weight edit-reps weighin weighin-tenth weighin-lb rest hold bodyweight side superset offline finish summary summary-end ended; do
               shot "$screen" "$screen"
             done
             # The app's language, not the watch's (the phone in German here); every optional thing
@@ -224,6 +224,11 @@ jobs:
             shot "lang-de-rest" rest -OpenGymWatchLang de
             # The start screen: the longest labels (ru), and Always On (wrist down: outlines, no fills).
             shot "lang-ru-idle" idle -OpenGymWatchLang ru
+            shot "lang-ru-weighin" weighin -OpenGymWatchLang ru
+            shot "lang-de-weighin" weighin -OpenGymWatchLang de
+            shot "lang-es-weighin" weighin -OpenGymWatchLang es
+            shot "aod-weighin" weighin -OpenGymWatchAOD
+            shot "aod-weighin-tenth" weighin-tenth -OpenGymWatchAOD
             shot "aod-idle" idle -OpenGymWatchAOD
             shot "aod-idle-rest" idle-rest -OpenGymWatchAOD
             shot "aod-empty" empty -OpenGymWatchAOD
@@ -232,7 +237,7 @@ jobs:
             shot "show-all" set -OpenGymWatchShow all
             shot "rest-plain" rest -OpenGymWatchShow plain
             # The largest text size (accessibility XXXL) on the screens with the most on them.
-            for screen in idle idle-end idle-rest empty empty-heard set side edit-weight weighin rest hold summary summary-end; do
+            for screen in idle idle-end idle-rest empty empty-heard set side edit-weight weighin weighin-lb rest hold summary summary-end; do
               shot "ax-$screen" "$screen" -OpenGymWatchAX
             done
             # What each screen costs: the app's CPU time over 20 s once it is up (the simulator's

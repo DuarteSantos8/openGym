@@ -940,79 +940,177 @@ struct ValueEditor: View {
 /// start without. One crown in tenths ran a whole kilo away in a flick.
 struct WeighInView: View {
     @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var type
     enum Part: Hashable { case whole, tenth }
     @FocusState private var part: Part?
-    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 40
+    @ScaledMetric(relativeTo: .largeTitle) private var scaled: CGFloat = 36
+    /// Which way the last digit went: the new one comes in from the side it is heading to.
+    @State private var rising = true
+    @State private var settled = false
+
+    private var size: CGFloat { min(scaled, 52) }
+    /// Wrist down and Reduce Motion: no settle, no slide.
+    private var motion: Bool { !reduceMotion && !dimmed }
 
     private var whole: Binding<Double> {
         Binding(get: { WeighIn.parts(store.bodyWeight).whole },
-                set: { store.bodyWeight = WeighIn.join(whole: $0, tenth: WeighIn.parts(store.bodyWeight).tenth) })
+                set: {
+                    rising = $0 > WeighIn.parts(store.bodyWeight).whole
+                    store.bodyWeight = WeighIn.join(whole: $0, tenth: WeighIn.parts(store.bodyWeight).tenth)
+                })
     }
     private var tenth: Binding<Double> {
         Binding(get: { WeighIn.parts(store.bodyWeight).tenth },
-                set: { store.bodyWeight = WeighIn.join(whole: WeighIn.parts(store.bodyWeight).whole, tenth: $0) })
+                set: {
+                    rising = $0 > WeighIn.parts(store.bodyWeight).tenth
+                    store.bodyWeight = WeighIn.join(whole: WeighIn.parts(store.bodyWeight).whole, tenth: $0)
+                })
     }
 
     var body: some View {
-        let p = WeighIn.parts(store.bodyWeight)
-        ScrollView {
-            VStack(spacing: 6) {
-                Text("Quick check-in").font(.system(.headline, design: .rounded))
-                HStack(alignment: .firstTextBaseline, spacing: 0) {
-                    digits(String(Int(p.whole)), .whole, whole, 20...(store.unit == "lb" ? 700 : 320))
-                    Text(verbatim: ".").font(.system(size: size, weight: .semibold, design: .rounded)).foregroundStyle(.secondary)
-                    digits(String(Int(p.tenth)), .tenth, tenth, 0...9)
-                    Text(verbatim: " " + store.unit).font(.system(size: 13, weight: .medium, design: .rounded)).foregroundStyle(.secondary)
+        NavigationStack {
+            GeometryReader { geo in
+                ScrollView {
+                    content.frame(minHeight: geo.size.height)
                 }
-                .lineLimit(1)
-                .minimumScaleFactor(0.5)
-                .frame(maxWidth: .infinity, minHeight: Theme.tap)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(Text("Body weight"))
-                .accessibilityValue(Text(verbatim: String(format: "%.1f %@", store.bodyWeight, store.unit)))
-                .accessibilityHint(Text("Turn the Digital Crown to change it."))
-                .accessibilityAdjustableAction { d in
-                    let v = store.bodyWeight + (d == .increment ? 0.1 : -0.1)
-                    let q = WeighIn.parts(v)
-                    store.bodyWeight = WeighIn.join(whole: q.whole, tenth: q.tenth)
+                .scrollBounceBehavior(.basedOnSize)
+                .onAppear {
+                    part = .whole
+                    // CI: the tenth, for its shot; the focus only takes a moment after the screen is up.
+                    if SessionStore.demoScreen == "weighin-tenth" {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { part = .tenth }
+                    }
+                    if motion { withAnimation(.timingCurve(0.16, 1, 0.3, 1, duration: 0.35)) { settled = true } } else { settled = true }
                 }
-                Button { store.finishWeighIn(save: true) } label: {
-                    Text("Save & start workout").font(.body.weight(.semibold)).frame(maxWidth: .infinity, minHeight: Theme.tap)
-                }
-                .tint(Theme.accent)
-                Button { store.finishWeighIn(save: false) } label: {
-                    Text("Start without weighing in").font(.footnote).frame(maxWidth: .infinity, minHeight: Theme.tap)
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
-                Button(role: .cancel) { store.cancelWeighIn() } label: {
-                    Text("Cancel").font(.footnote).frame(maxWidth: .infinity, minHeight: 32)
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
+                // The stack's content gets the system's luminance, not the screenshots' (CI only).
+                .modifier(DemoEnvironment())
             }
-            .padding(.horizontal, 4)
+            // The scroll view reaches the screen's bottom edge, so it only scrolls when the content really is taller.
+            .ignoresSafeArea(edges: .bottom)
         }
-        .onAppear { part = .whole }
     }
 
-    /// One part of the number: the one the crown turns is in the accent colour on a soft tile,
-    /// a tap on the other one hands the crown to it.
+    private var content: some View {
+        VStack(spacing: 0) {
+            Spacer(minLength: 0)
+            valueBox
+                .accessibilitySortPriority(4)
+            Spacer(minLength: 6)
+            Button { store.finishWeighIn(save: true) } label: {
+                Text("Save & start workout")
+                    .font(.subheadline.weight(.semibold)).multilineTextAlignment(.center)
+                    .lineLimit(type.isAccessibilitySize ? nil : 2).minimumScaleFactor(0.85)
+                    .padding(.horizontal, 8)
+            }
+            .buttonStyle(PrimaryButton())
+            .padding(.bottom, 4)
+            .accessibilitySortPriority(3)
+            bottomRow
+        }
+        .padding(.horizontal, Theme.side)
+        .padding(.bottom, 8)
+        // No title in the clock row (it does not fit beside the clock on 40 mm or in de, es, ru): VoiceOver gets the name here.
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Text("Quick check-in"))
+    }
+
+    /// The row is 40 pt, not 44: on a 40 mm screen the 44 pt one did not fit under Save.
+    private let rowHeight: CGFloat = 40
+
+    /// Cancel is the glyph beside Skip; at large text both are words, one over the other.
+    @ViewBuilder private var bottomRow: some View {
+        let skip = Button { store.finishWeighIn(save: false) } label: {
+            Text("Skip").font(.subheadline.weight(.semibold))
+                .lineLimit(type.isAccessibilitySize ? nil : 1).minimumScaleFactor(0.7)
+                .foregroundStyle(Theme.ink(.white, dimmed))
+                .padding(.horizontal, 4) // de "Überspringen" needs the room on 40 mm
+                .frame(maxWidth: .infinity, minHeight: rowHeight)
+        }
+        .buttonStyle(SecondaryButton())
+        .accessibilityHint(Text("Start without weighing in"))
+        .accessibilitySortPriority(2)
+        if type.isAccessibilitySize {
+            VStack(spacing: 6) { skip; cancel(word: true) }
+        } else {
+            HStack(spacing: 8) { cancel(word: false); skip }
+        }
+    }
+
+    private func cancel(word: Bool) -> some View {
+        Button(role: .cancel) { store.cancelWeighIn() } label: {
+            Group {
+                if word { Text("Cancel").font(.subheadline.weight(.semibold)).frame(maxWidth: .infinity) }
+                else { Image(systemName: "xmark").font(.subheadline.weight(.semibold)).frame(width: Theme.tap) }
+            }
+            .foregroundStyle(Theme.ink(.white, dimmed))
+            .frame(minHeight: rowHeight)
+        }
+        .buttonStyle(SecondaryButton())
+        .accessibilityLabel(Text("Cancel"))
+        .accessibilitySortPriority(1)
+    }
+
+    /// The number, ringed in the accent because the crown is always live on it. One element for VoiceOver.
+    private var valueBox: some View {
+        let p = WeighIn.parts(store.bodyWeight)
+        let shape = RoundedRectangle(cornerRadius: Theme.radius, style: .continuous)
+        return HStack(alignment: .firstTextBaseline, spacing: 0) {
+            digits(String(Int(p.whole)), .whole, whole, WeighIn.wholes(unit: store.unit))
+            Text(verbatim: ".").font(.system(size: size, weight: .semibold, design: .rounded)).foregroundStyle(.secondary)
+            digits(String(Int(p.tenth)), .tenth, tenth, 0...9)
+            Text(verbatim: store.unit).font(.system(size: 15, weight: .medium, design: .rounded)).foregroundStyle(.secondary)
+                .padding(.leading, 4)
+                .fixedSize() // the unit stays at 15 pt; only the digits give way
+        }
+        .lineLimit(1)
+        .minimumScaleFactor(0.6)
+        .padding(.horizontal, 10)
+        .frame(maxWidth: .infinity, minHeight: 46)
+        .background(shape.fill(dimmed ? Color.clear : Theme.dim))
+        .overlay(shape.strokeBorder(Theme.ink(Theme.accent, dimmed), lineWidth: 2))
+        .scaleEffect(motion && !settled ? 0.94 : 1)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("Body weight"))
+        .accessibilityValue(Text(verbatim: String(format: "%.1f %@", store.bodyWeight, store.unit)))
+        .accessibilityHint(Text("Turn the Digital Crown to change it."))
+        .accessibilityAdjustableAction { d in
+            store.bodyWeight = WeighIn.nudged(store.bodyWeight, up: d == .increment, unit: store.unit)
+        }
+    }
+
+    /// One part of the number: the one the crown turns is in the accent colour with a bar under it,
+    /// a tap on the other one hands the crown to it. The digit slides in from the side it is heading to.
     private func digits(_ text: String, _ which: Part, _ value: Binding<Double>, _ range: ClosedRange<Double>) -> some View {
         let on = part == which
-        return Text(verbatim: text)
-            .font(.system(size: which == .whole ? size : size * 0.8, weight: .semibold, design: .rounded).monospacedDigit())
-            .foregroundStyle(on ? Theme.accent : Color.white)
-            .contentTransition(.numericText())
-            .padding(.horizontal, 4)
-            .frame(minWidth: Theme.tap * 0.7, minHeight: Theme.tap)
-            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(on ? Theme.dim : Color.clear))
-            .contentShape(Rectangle())
-            .focusable()
-            .focused($part, equals: which)
-            .digitalCrownRotation(value, from: range.lowerBound, through: range.upperBound, by: 1,
-                                  sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
-            .onTapGesture { part = which }
+        return ZStack {
+            Text(verbatim: text)
+                .font(.system(size: size, weight: .semibold, design: .rounded).monospacedDigit())
+                .foregroundStyle(Theme.ink(on ? Theme.accent : Color.white, dimmed))
+                // Only the text changes identity, never the view that holds the crown and the focus.
+                .id(text)
+                .transition(motion ? .push(from: rising ? .bottom : .top) : .identity)
+        }
+        .padding(.horizontal, 2)
+        .animation(motion ? .easeOut(duration: 0.15) : nil, value: text)
+        .clipped()
+        // The bar hugs the digit; the 44 pt box around it is only for the thumb. The point sits between the two.
+        .overlay(alignment: .bottom) {
+            Capsule().fill(Theme.ink(Theme.accent, dimmed)).frame(height: 3)
+                .padding(.horizontal, 6).padding(.bottom, 2)
+                .opacity(on ? 1 : 0)
+                .animation(dimmed ? nil : .easeOut(duration: 0.2), value: on)
+                .allowsHitTesting(false)
+        }
+        .frame(minWidth: Theme.tap, minHeight: max(Theme.tap, size * 1.2), alignment: which == .whole ? .trailing : .leading)
+        .contentShape(Rectangle())
+        .focusable()
+        .focused($part, equals: which)
+        .focusEffectDisabled()
+        .digitalCrownRotation(value, from: range.lowerBound, through: range.upperBound, by: 1,
+                              sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
+        .onTapGesture { part = which }
     }
 }
 

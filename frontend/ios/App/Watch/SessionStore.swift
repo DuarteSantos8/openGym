@@ -588,6 +588,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         if state.settings.weighIn != false && !isDemo {
             bodyWeight = state.settings.lastBw ?? (unit == "lb" ? 160 : 70)
             weighInFor = session
+            touchLock.lock(at: Date())  // the thumb that hit Start is still over Save & start
             return
         }
         countIn(session, bw: nil)
@@ -596,7 +597,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The weigh-in answered: saved (a weigh-in for the phone, and the session's body weight) or
     /// skipped; the workout starts either way. `nil` session: cancelled, nothing starts.
     func finishWeighIn(save: Bool) {
-        guard let session = weighInFor else { return }
+        guard touchAllowed, let session = weighInFor else { return }
         weighInFor = nil
         var bw: Double? = nil
         if save, let ev = SessionCore.weighIn(bodyWeight, at: Date().timeIntervalSince1970 * 1000, id: UUID().uuidString) {
@@ -969,7 +970,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let screen = SessionStore.demoScreen ?? "set"
         switch screen {
         case "empty", "empty-heard": break
-        case "idle", "idle-end": apply(json: SessionStore.demoReadyJSON)
+        case "idle", "idle-end", "weighin", "weighin-tenth", "weighin-lb": apply(json: SessionStore.demoReadyJSON)
         case "idle-rest": apply(json: SessionStore.demoReadyRestJSON)
         default: apply(json: SessionStore.demoJSON)
         }
@@ -981,8 +982,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             case "side": self.state.entryIndex = 3
             case "superset": self.state.entryIndex = 4
             case "finish": self.state.entryIndex = self.workout?.entries.count ?? 0
-            case "weighin":
-                self.bodyWeight = 81.4
+            case "weighin", "weighin-tenth", "weighin-lb":
+                self.bodyWeight = screen == "weighin-lb" ? 176.4 : 81.4
+                if screen == "weighin-lb" { self.state.unit = "lb" }
                 self.weighInFor = ReadySession(routineIds: ["r1"], name: "Push day", entries: [])
             case "empty-heard": self.heardFromPhone = true
             default: break
