@@ -2441,6 +2441,18 @@ export const PT_BR_OVERRIDES = {
   "Your watch stops getting workouts while Watch is off. It stays paired.": "Seu relógio para de receber treinos enquanto “Relógio” estiver desligado. Continua pareado.",
   "Your webhooks stop sending while Integrations is off. They stay set up.": "Seus webhooks param de enviar enquanto “Integrações” estiver desligado. Continuam configurados.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} para de sincronizar enquanto “Saúde” estiver desligado. Nada fica desconectado, e ele se atualiza quando “Saúde” voltar.",
+  "Account created": "Conta criada",
+  "Add a passkey on this device": "Adicionar uma chave de acesso neste dispositivo",
+  "Cloud sync (passkey)": "Sincronização em nuvem (chave de acesso)",
+  "Create account with passkey": "Criar conta com chave de acesso",
+  "Sign in with {0}, no password. First time here, create the account with your first passkey.": "Entre com {0}, sem senha. Se é sua primeira vez aqui, crie a conta com sua primeira chave de acesso.",
+  "Signed in as {0}.": "Conectado como {0}.",
+  "Signed in as {0}. Your plan, workouts and weigh-ins sync across your devices.": "Conectado como {0}. Seu plano, seus treinos e suas pesagens sincronizam em todos os seus dispositivos.",
+  "Signed out": "Desconectado",
+  "Username": "Nome de usuário",
+  "Welcome back": "Bem-vindo de volta",
+  "Your workouts. Your weights. Every device.": "Seus treinos. Seus pesos. Em cada dispositivo.",
+  "you": "você",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
