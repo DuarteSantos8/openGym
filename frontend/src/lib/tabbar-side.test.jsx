@@ -2,7 +2,7 @@
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it } from 'vitest'
-import { WIDE_QUERY, useWideScreen } from './tabbar-side.js'
+import { WIDE_QUERY, tabbarOnSide, useWideScreen } from './tabbar-side.js'
 
 // A screen that turns: matchMedia answers for WIDE_QUERY and tells its listeners when it changes.
 function screen(wide) {
@@ -43,5 +43,19 @@ describe('where the tab bar stands', () => {
     const m = mount()
     expect(m.last()).toBe(false)
     m.unmount()
+  })
+})
+
+describe('Settings → Look & Home → Tab bar', () => {
+  it('automatic (the default, and an older profile without the key): on the right only on a wide screen', () => {
+    for (const pref of ['auto', undefined, null]) {
+      expect(tabbarOnSide(pref, true)).toBe(true)
+      expect(tabbarOnSide(pref, false)).toBe(false)
+    }
+  })
+
+  it('bottom and right are kept whatever the screen', () => {
+    expect(tabbarOnSide('bottom', true)).toBe(false)
+    expect(tabbarOnSide('right', false)).toBe(true)
   })
 })

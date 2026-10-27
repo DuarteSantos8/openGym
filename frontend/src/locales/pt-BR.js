@@ -1670,6 +1670,10 @@ export const PT_BR_OVERRIDES = {
   'App icon': 'Ícone do app',
   'Just for this phone. Some home screens take a moment to catch up.': 'Só para este celular. Algumas telas iniciais demoram um pouco para perceber.',
   'Try the Halloween app icon': 'Experimente o ícone de Halloween do app',
+  'Tab bar': 'Barra de abas',
+  'Automatic': 'Automática',
+  'Bottom': 'Embaixo',
+  'Automatic: on the right when the screen is wider than it is tall, like a phone on its side.': 'Automática: à direita quando a tela é mais larga do que alta, como um celular na horizontal.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
