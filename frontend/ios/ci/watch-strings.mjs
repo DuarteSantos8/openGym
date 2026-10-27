@@ -57,6 +57,11 @@ const FROM_APP = {
   'More': 'More',
   'Effort': 'Effort',
   'None': 'None',
+  'How hard was that set?': 'How hard was that set?',
+  'Nothing left, went to failure': 'Nothing left, went to failure',
+  'One more rep in the tank': 'One more rep in the tank',
+  'Two more reps': 'Two more reps',
+  'Three more reps': 'Three more reps',
   'Planned': 'Planned',
   'Up next': 'Up next',
 }

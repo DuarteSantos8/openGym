@@ -771,10 +771,12 @@ struct ExercisePage: View {
         }
     }
 
-    /// With a profile that rates effort, the RPE / RIR disc, then the Done pill (a hold: Start hold).
+    /// With a profile that rates effort, the RPE / RIR disc, then the Done pill (a hold: Start hold). A set
+    /// that gets a rest is rated in it instead (RestView's chips), so Done has the row to itself.
     @ViewBuilder private func primaryRow(_ entry: Entry, current: Bool) -> some View {
         HStack(spacing: 6) {
-            if let kind = store.effortKind, !entry.isCardio, let si = store.setIndex(in: index), !entry.sets[si].warmup {
+            if let kind = store.effortKind, !entry.isCardio, let si = store.setIndex(in: index), !entry.sets[si].warmup,
+               Effort.ratesBeforeDone(store.state, entry: index, set: si) {
                 EffortButton(kind: kind, value: current ? store.effort : nil) { if current { editing = .effort } }
                     .disabled(!current)
             }
@@ -858,10 +860,86 @@ struct EffortButton: View {
     }
 }
 
+/// The four chips of the rest, hardest first, in the phone's bands. Four columns of 40 pt are the touch areas;
+/// the chips inside are 36 × 38. The chosen one is solid with a black digit; Always On draws outlines only.
+struct EffortChips: View {
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var dimmed
+    let kind: String
+    let chosen: Double?
+    let pick: (Double) -> Void
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(0..<4, id: \.self) { i in chip(i, Effort.chips(kind)?[i] ?? 0) }
+        }
+        // As the controls above: clear of the system's page dots.
+        .padding(.leading, 5).padding(.trailing, 11)
+        .dynamicTypeSize(...DynamicTypeSize.large)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Text("How hard was that set?"))
+    }
+
+    private func chip(_ i: Int, _ v: Double) -> some View {
+        let color = Effort.color(kind, v)
+        let on = chosen == v
+        let shape = RoundedRectangle(cornerRadius: Theme.radius, style: .continuous)
+        return Button { pick(v) } label: {
+            Text(verbatim: Effort.chipLabel(kind, i))
+                .font(.system(size: 17, weight: .semibold, design: .rounded).monospacedDigit())
+                .foregroundStyle(dimmed ? Theme.ink(on ? color : .white, true) : (on ? Color.black : color))
+                .frame(width: 36, height: 38)
+                .background(shape.fill(dimmed ? Color.clear : (on ? color : color.opacity(0.22))))
+                .overlay(shape.stroke(on ? Theme.ink(color, dimmed) : Theme.outline, lineWidth: dimmed ? (on ? 2 : 1) : 0))
+                .frame(maxWidth: .infinity, minHeight: 38)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(PressStyle())
+        .accessibilityLabel(Text(verbatim: "\(Effort.name(kind)) \(formatNumber(v))"))
+        .accessibilityHint(Text(verbatim: store.L(Effort.feel(i))))
+        .accessibilityAddTraits(on ? .isSelected : [])
+    }
+}
+
+/// The rating just given, "RIR 2", in its band colour; a tap opens the chips again.
+struct RatedEffort: View {
+    let kind: String
+    let value: Double
+    let tap: () -> Void
+    @Environment(\.isLuminanceReduced) private var dimmed
+
+    var body: some View {
+        let color = Theme.ink(Effort.color(kind, value), dimmed)
+        Button(action: tap) {
+            HStack(spacing: 6) {
+                Text(verbatim: "\(Effort.name(kind)) \(formatNumber(value))")
+                    .font(.system(size: 15, weight: .semibold, design: .rounded).monospacedDigit())
+                Image(systemName: "pencil").font(.system(size: 11, weight: .semibold))
+            }
+            .foregroundStyle(color)
+            .lineLimit(1)
+            .padding(.horizontal, 12)
+            .frame(height: 32)
+            .background(Capsule().fill(dimmed ? Color.clear : color.opacity(0.22)))
+            .overlay(Capsule().stroke(color, lineWidth: dimmed ? 1 : 0))
+            // The look stays 32 high; the touch area is 44 (the padding is taken back outside).
+            .padding(.vertical, 6)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(PressStyle())
+        .padding(.vertical, -6)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .dynamicTypeSize(...DynamicTypeSize.large)
+        .accessibilityLabel(Text("Effort"))
+        .accessibilityValue(Text(verbatim: "\(Effort.name(kind)) \(formatNumber(value))"))
+        .accessibilityHint(Text("Tap to change it."))
+    }
+}
+
 extension Effort {
-    /// The phone's band colours (index.css --purple … --green, then the accent's soft tone).
+    /// The phone's band colours (index.css --purple … --green, then a soft tone).
     static func color(_ kind: String, _ value: Double) -> Color {
-        [Color.purple, .red, .orange, .yellow, Theme.accent, .teal][band(kind, value)]
+        [Color.purple, .red, .orange, .yellow, .green, .teal][band(kind, value)]
     }
 }
 
@@ -1505,18 +1583,22 @@ struct RestView: View {
     let end: Date
     @Environment(\.isLuminanceReduced) private var dimmed
     @Environment(\.locale) private var locale
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 42
+    /// The chips are open on a set that already has a rating (the capsule was tapped).
+    @State private var changing = SessionStore.demoScreen == "rest-effort-change"
 
     var body: some View {
         GeometryReader { g in
             let inset = g.safeAreaInsets
             let width = g.size.width + inset.leading + inset.trailing
             let up = upNext
+            let rating = store.effortKind.flatMap { k in store.rating.map { (kind: k, target: $0) } }
             VStack(spacing: 0) {
                 HStack(spacing: 6) {
                     Text(timerInterval: min(Date(), end)...end, countsDown: true)
                         // With no Next block below, the time left takes the room.
-                        .font(.system(size: up == nil ? min(countdownSize * 1.35, 64) : min(countdownSize, 52), weight: .semibold, design: .rounded).monospacedDigit())
+                        .font(.system(size: up == nil && rating == nil ? min(countdownSize * 1.35, 64) : min(countdownSize, 52), weight: .semibold, design: .rounded).monospacedDigit())
                         .foregroundStyle(Theme.ink(.white, dimmed))
                         .lineLimit(1)
                         .minimumScaleFactor(0.5)
@@ -1537,13 +1619,17 @@ struct RestView: View {
                 // The system's page dots sit at the trailing edge; the row stops short of them.
                 controls.padding(.leading, 5).padding(.trailing, 11).padding(.top, 8)
                 // Takes what is left, so the Next block is offered that much height (ViewThatFits).
-                HStack(alignment: .bottom, spacing: 8) {
-                    next(up)
-                    LockButton(health: store.health)
+                if let rating {
+                    effort(rating.kind, rating.target, up)
+                } else {
+                    HStack(alignment: .bottom, spacing: 8) {
+                        next(up)
+                        LockButton(health: store.health)
+                    }
+                    .padding(.horizontal, Theme.side)
+                    .padding(.top, 8)
+                    .frame(maxHeight: .infinity, alignment: .bottom)
                 }
-                .padding(.horizontal, Theme.side)
-                .padding(.top, 8)
-                .frame(maxHeight: .infinity, alignment: .bottom)
             }
             .padding(.bottom, 12)
             .frame(width: width, height: g.size.height + inset.top + inset.bottom, alignment: .top)
@@ -1591,6 +1677,73 @@ struct RestView: View {
                                                       numberFormatStyle: .number.precision(.fractionLength(0))).locale(locale)))
     }
 
+    /// The set just done, rated in the rest: the chips asking, or the rating with Up next above it. They swap in
+    /// one container with a cross-fade (instantly under Reduce Motion or in Always On). The Lock sits at the
+    /// same y in both, 3 pt under the controls: at 41 mm that is what lets it stay while the chips are open.
+    private func effort(_ kind: String, _ t: Effort.Target, _ up: Rest.Next?) -> some View {
+        let asking = t.value == nil || changing
+        return ZStack(alignment: .top) {
+            if asking {
+                // Short of room: the Lock goes, then the prompt shrinks to a line, then it goes too.
+                ViewThatFits(in: .vertical) {
+                    prompt(kind, t, lock: true, lines: 3).padding(.top, 3)
+                    prompt(kind, t, lock: false, lines: 2).padding(.top, 8)
+                    prompt(kind, t, lock: false, lines: 1).padding(.top, 8)
+                    EffortChips(kind: kind, chosen: t.value, pick: pick(kind, t)).padding(.top, 12)
+                }
+                .transition(.opacity)
+            } else {
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(alignment: .top, spacing: 8) {
+                        next(up)
+                        LockButton(health: store.health)
+                    }
+                    .frame(maxHeight: .infinity, alignment: .top)
+                    RatedEffort(kind: kind, value: t.value ?? 0) { changing = true }
+                }
+                .padding(.horizontal, Theme.side)
+                .padding(.top, 3)
+                .transition(.opacity)
+            }
+        }
+        .frame(maxHeight: .infinity, alignment: .top)
+        .animation(reduceMotion || dimmed ? nil : .easeInOut(duration: 0.2), value: asking)
+    }
+
+    /// "How hard was that set?" with the Lock, then the four chips under it.
+    private func prompt(_ kind: String, _ t: Effort.Target, lock: Bool, lines: Int) -> some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 8) {
+                Text("How hard was that set?")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(lines)
+                    .minimumScaleFactor(lines == 1 ? 0.7 : 1)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .dynamicTypeSize(...DynamicTypeSize.large)
+                if lock { LockButton(health: store.health) }
+            }
+            .padding(.horizontal, Theme.side)
+            .frame(minHeight: lock ? Theme.tap : nil)
+            Spacer(minLength: lock ? 2 : 6)
+            EffortChips(kind: kind, chosen: t.value, pick: pick(kind, t))
+        }
+    }
+
+    /// A chip: a new rating is sent; the chosen one again only closes the chips.
+    private func pick(_ kind: String, _ t: Effort.Target) -> (Double) -> Void {
+        { v in
+            if v != t.value {
+                store.rateDone(v)
+                // The chips go and focus with them: say what was saved.
+                if store.rating?.value == v { AccessibilityNotification.Announcement("\(Effort.name(kind)) \(formatNumber(v))").post() }
+            }
+            changing = false
+        }
+    }
+
     private var upNext: Rest.Next? {
         guard store.show.showNext, let e = store.entry, let si = store.setIndex else { return nil }
         return Rest.next(e, set: si, unit: e.weightUnit(store.unit))
@@ -1605,6 +1758,7 @@ struct RestView: View {
                 nextLines(n, label: false, nameLines: 2, place: true)
                 nextLines(n, label: false, nameLines: 2, place: false)
                 nextLines(n, label: false, nameLines: 1, place: false)
+                nextLines(n, label: false, nameLines: 1, place: false, details: false)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             // Whichever lines fit, VoiceOver gets all of them.
@@ -1615,7 +1769,7 @@ struct RestView: View {
         }
     }
 
-    private func nextLines(_ n: Rest.Next, label: Bool, nameLines: Int, place showsPlace: Bool) -> some View {
+    private func nextLines(_ n: Rest.Next, label: Bool, nameLines: Int, place showsPlace: Bool, details: Bool = true) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             if label { Text("Up next").font(.footnote.weight(.semibold)).foregroundStyle(.secondary) }
             Text(verbatim: n.name)
@@ -1624,8 +1778,8 @@ struct RestView: View {
                 .lineLimit(nameLines)
                 .minimumScaleFactor(nameLines == 1 ? 0.75 : 1)      // the last resort: smaller, before cut off
             if showsPlace { detail(place(n), lines: 1) }
-            if let s = side(n) { detail(s, lines: 1) }
-            if let l = load(n) { detail(l, lines: 2) }
+            if details, let s = side(n) { detail(s, lines: 1) }
+            if details, let l = load(n) { detail(l, lines: 2) }
         }
         .multilineTextAlignment(.leading)
     }

@@ -36,6 +36,11 @@
 "More" = "أكثر";
 "Effort" = "الجهد";
 "None" = "بدون";
+"How hard was that set?" = "ما مدى صعوبة تلك المجموعة؟";
+"Nothing left, went to failure" = "لا شيء متبقٍ، وصلت إلى الفشل";
+"One more rep in the tank" = "تكرار واحد في الاحتياط";
+"Two more reps" = "تكراران في الاحتياط";
+"Three more reps" = "ثلاثة تكرارات في الاحتياط";
 "Planned" = "مُخطط";
 "Up next" = "التالي";
 "Last time: %@" = "المرة السابقة: %@";

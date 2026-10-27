@@ -36,6 +36,11 @@
 "More" = "Több";
 "Effort" = "Megerőltetés";
 "None" = "Nincs";
+"How hard was that set?" = "Mennyire volt nehéz ez a sorozat?";
+"Nothing left, went to failure" = "Nem maradt semmi, kimerülésig ment";
+"One more rep in the tank" = "Egy ismétlés még belefért volna";
+"Two more reps" = "Két ismétlés még belefért volna";
+"Three more reps" = "Három ismétlés még belefért volna";
 "Planned" = "Tervezett";
 "Up next" = "Következő";
 "Last time: %@" = "Legutóbb: %@";

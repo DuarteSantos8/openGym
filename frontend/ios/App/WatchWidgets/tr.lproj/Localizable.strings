@@ -36,6 +36,11 @@
 "More" = "Çok";
 "Effort" = "Zorluk";
 "None" = "Yok";
+"How hard was that set?" = "O set ne kadar zordu?";
+"Nothing left, went to failure" = "Hiç kalmadı, tükenmeye kadar";
+"One more rep in the tank" = "Bir tekrar daha vardı";
+"Two more reps" = "İki tekrar daha vardı";
+"Three more reps" = "Üç tekrar daha vardı";
 "Planned" = "Planlandı";
 "Up next" = "Sıradaki";
 "Last time: %@" = "Geçen sefer: %@";

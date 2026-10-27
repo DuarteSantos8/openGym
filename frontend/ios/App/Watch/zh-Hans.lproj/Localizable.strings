@@ -36,6 +36,11 @@
 "More" = "更多";
 "Effort" = "强度";
 "None" = "无";
+"How hard was that set?" = "这组有多吃力？";
+"Nothing left, went to failure" = "一点不剩，做到力竭";
+"One more rep in the tank" = "还能再做一次";
+"Two more reps" = "还能再做两次";
+"Three more reps" = "还能再做三次";
 "Planned" = "已计划";
 "Up next" = "下一个";
 "Last time: %@" = "上次: %@";

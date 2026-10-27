@@ -89,6 +89,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// It belongs to that one set: another set coming up starts empty again (loadTargets).
     @Published private(set) var effort: Double?
     private var effortFor: String?
+    /// The set just done here, which the rest's chips rate until the rest is over (Effort.target).
+    @Published private(set) var rating: Effort.Target?
     /// The scale the phone's profile logs, when it logs one ("rpe" / "rir"): the set page offers it.
     var effortKind: String? { Effort.notches(state.settings.effort) != nil ? state.settings.effort : nil }
     /// A hold running: when it ends, and when it started.
@@ -417,6 +419,19 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         effortFor = v == nil ? nil : setKey
     }
 
+    /// A chip of the rest: the set just done is rated by re-sending its setDone (Effort.rate).
+    func rateDone(_ v: Double) {
+        // touchAllowed: the thumb that hit Done is still over the chips for a second, as over the rest's buttons.
+        guard let t = rating, let k = effortKind, touchAllowed else { return }
+        let (next, events) = Effort.rate(t, v, kind: k, in: state) { UUID().uuidString }
+        guard !events.isEmpty else { return }
+        ackRestOver()
+        noteActivity()
+        events.forEach { send(event: $0) }
+        rating = next
+        Haptics.rated()
+    }
+
     /// The weight and reps the crown starts from: the set's own target.
     func loadTargets() {
         // A rating stays with its set through snapshots; another set starts unrated.
@@ -475,11 +490,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         } else {
             Haptics.done()
         }
-        let restFor = e.restSec ?? w.restSec
-        if rest && restFor > 0 && to < (workout?.entries.count ?? 0) {
+        if let restFor = SessionCore.restSeconds(after: state, entry: ei, set: si) {
             startRest(until: now.addingTimeInterval(restFor), notify: true)
             touchLock.lock(at: now)         // the thumb that hit Done is still over the rest's buttons
             restAfter = (e.id, ei, si, w.id ?? "", now)
+            rating = Effort.target(state, entry: ei, set: si, kind: effortKind)
         }
         if to != ei { state.entryIndex = to }
         loadTargets()
@@ -842,6 +857,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The rest after a set is over (it ran out, was skipped, or the next set is done): its heart
     /// rate goes to that set, and the next set starts counting from here.
     private func closeRest(at end: Date) {
+        rating = nil
         guard let r = restAfter else { return }
         restAfter = nil
         setStartedAt = end
@@ -1018,11 +1034,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
         DispatchQueue.main.async {
             switch screen {
-            case "set", "weight", "rest", "rest-low", "rest-offline", "offline", "edit-weight", "edit-reps", "finish-auto": self.picked[0] = 2
+            case "set", "weight", "rest", "rest-low", "rest-offline", "offline", "edit-weight", "edit-reps", "finish-auto",
+                 "rest-effort", "rest-effort-rated", "rest-effort-change": self.picked[0] = 2
             case "hold", "hold-set", "rest-hold": self.state.entryIndex = 1
             case "all-done": for si in self.state.workout?.entries[0].sets.indices ?? 0..<0 { self.state.workout?.entries[0].sets[si].done = true }
             case "bodyweight", "rest-bodyweight": self.state.entryIndex = 2
-            case "side", "rest-side": self.state.entryIndex = 3
+            case "side", "rest-side", "rest-effort-side": self.state.entryIndex = 3
             case "superset": self.state.entryIndex = 4
             case "overview", "finish", "finish-hold", "finish-hold-full", "discard":
                 // The Pull-up done, so the Overview shows all three states.
@@ -1047,7 +1064,14 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 if show == "noclip" { self.state.settings.show = WatchShow(clip: false) }
             }
             self.loadTargets()
-            if ["rest", "rest-side", "rest-offline", "rest-hold", "rest-bodyweight"].contains(screen) { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
+            // CI: the chips of the rest rate the set just done (the Bench Press' second, or the split squat's first).
+            if screen.hasPrefix("rest-effort") {
+                let side = screen == "rest-effort-side"
+                if side { self.state = SessionCore.tick(self.state, entry: 3, set: 0, side: "R", w: 20, r: 8, at: 2, id: "demo").0 }
+                self.rating = Effort.target(self.state, entry: side ? 3 : 0, set: side ? 0 : 1, kind: self.effortKind)
+                if screen == "rest-effort-rated" || screen == "rest-effort-change" { self.rating?.value = self.effortKind.flatMap { Effort.chips($0)?[2] } }
+            }
+            if ["rest", "rest-side", "rest-offline", "rest-hold", "rest-bodyweight", "rest-effort", "rest-effort-rated", "rest-effort-change", "rest-effort-side"].contains(screen) { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
             // 20 s left of 80 (a few seconds of that pass before the picture): the bar nearly empty.
             if screen == "rest-low" {
                 self.startRest(until: Date().addingTimeInterval(20), notify: false)
@@ -1128,6 +1152,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
  * The watch's taps, one pattern per meaning, so the wrist alone says what happened:
  *   done       one firm tap (a set logged)
  *   side       a light click (one side of a per-side set: the other one now)
+ *   rated      the same click: an effort chip tapped (nothing else shares the rest screen)
  *   restOver   an alarm: two strong taps and a rising one (again after 5 s if not noticed)
  *   start      the system's start
  *   finished   stop, then two successes: the workout is saved
@@ -1145,6 +1170,7 @@ enum Haptics {
     }
     static func done() { play([(0, .success)]) }
     static func side() { play([(0, .click)]) }
+    static func rated() { play([(0, .click)]) }
     static func restOver() { play([(0, .notification), (0.45, .notification), (0.9, .directionUp)]) }
     static func start() { play([(0, .start)]) }
     static func finished() { play([(0, .stop), (0.5, .success), (0.9, .success)]) }

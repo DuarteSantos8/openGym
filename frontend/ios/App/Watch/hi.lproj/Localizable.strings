@@ -36,6 +36,11 @@
 "More" = "अधिक";
 "Effort" = "मेहनत";
 "None" = "कोई नहीं";
+"How hard was that set?" = "वह सेट कितना मुश्किल था?";
+"Nothing left, went to failure" = "कुछ नहीं बचा, फ़ेल्योर तक";
+"One more rep in the tank" = "एक रेप और बाकी था";
+"Two more reps" = "दो रेप और बाकी";
+"Three more reps" = "तीन रेप और बाकी";
 "Planned" = "नियोजित";
 "Up next" = "अगला";
 "Last time: %@" = "पिछली बार: %@";

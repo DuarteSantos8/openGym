@@ -244,16 +244,37 @@ jobs:
             # The set page in Always On: the same layout, outlines only (a short name and a two-line one).
             shot "aod-set" set -OpenGymWatchAOD
             shot "aod-side" side -OpenGymWatchAOD
-            shot "aod-side-rir" side -OpenGymWatchAOD -OpenGymWatchEffort rir
+            shot "aod-superset-rir" superset -OpenGymWatchAOD -OpenGymWatchEffort rir
             shot "aod-empty" empty -OpenGymWatchAOD
             # The start screen scrolled to its end: the last row against the screen's rounded corners.
             shot "idle-end" idle-end
             shot "show-all" set -OpenGymWatchShow all
             shot "overview-all" overview -OpenGymWatchShow all
-            shot "set-rpe" set -OpenGymWatchEffort rpe
+            # The effort disc stays only on a set with no rest after it (a superset's first member); a set
+            # with a rest has Done full width and the chips in the rest.
+            shot "superset-rpe" superset -OpenGymWatchEffort rpe
+            shot "set-rir-nodisc" set -OpenGymWatchEffort rir
             shot "rest-plain" rest -OpenGymWatchShow plain
             shot "rest-nonext" rest -OpenGymWatchShow nonext
             shot "rest-plain-nonext" rest -OpenGymWatchShow plainnonext
+            # Rating the set in the rest: the chips, one chosen, changing it, a per-side set, no effort.
+            shot "rest-effort-rir" rest-effort -OpenGymWatchEffort rir
+            shot "rest-effort-rpe" rest-effort -OpenGymWatchEffort rpe
+            shot "rest-effort-rated" rest-effort-rated -OpenGymWatchEffort rir
+            shot "rest-effort-change" rest-effort-change -OpenGymWatchEffort rpe
+            shot "rest-effort-side" rest-effort-side -OpenGymWatchEffort rir
+            shot "rest-effort-none" rest-effort
+            shot "rest-effort-plain" rest-effort -OpenGymWatchShow plain -OpenGymWatchEffort rir
+            shot "rest-effort-rated-nonext" rest-effort-rated -OpenGymWatchShow nonext -OpenGymWatchEffort rir
+            shot "lang-de-rest-effort" rest-effort -OpenGymWatchLang de -OpenGymWatchEffort rir
+            shot "lang-fr-rest-effort" rest-effort -OpenGymWatchLang fr -OpenGymWatchEffort rir
+            shot "lang-ru-rest-effort" rest-effort -OpenGymWatchLang ru -OpenGymWatchEffort rpe
+            shot "lang-ru-rest-effort-rated" rest-effort-rated -OpenGymWatchLang ru -OpenGymWatchEffort rpe
+            shot "lang-ar-rest-effort" rest-effort -OpenGymWatchLang ar -OpenGymWatchEffort rpe
+            shot "aod-rest-effort" rest-effort -OpenGymWatchAOD -OpenGymWatchEffort rir
+            shot "aod-rest-effort-rated" rest-effort-rated -OpenGymWatchAOD -OpenGymWatchEffort rpe
+            shot "ax-rest-effort" rest-effort -OpenGymWatchAX -OpenGymWatchEffort rir
+            shot "ax-rest-effort-rated" rest-effort-rated -OpenGymWatchAX -OpenGymWatchEffort rir
             # The largest text size (accessibility XXXL) on the screens with the most on them.
             for screen in idle idle-end idle-rest empty empty-heard set side superset hold-set edit-weight weighin rest rest-side hold overview finish discard summary summary-end; do
               shot "ax-$screen" "$screen" -OpenGymWatchAX

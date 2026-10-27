@@ -36,6 +36,11 @@
 "More" = "มาก";
 "Effort" = "ความหนัก";
 "None" = "ไม่มี";
+"How hard was that set?" = "เซ็ตนั้นหนักแค่ไหน?";
+"Nothing left, went to failure" = "หมดแรงแล้ว ทำจนสุด";
+"One more rep in the tank" = "ยังเหลืออีกหนึ่งครั้งถ้าจะฝืน";
+"Two more reps" = "ยังเหลืออีกสองครั้ง";
+"Three more reps" = "ยังเหลืออีกสามครั้ง";
 "Planned" = "วางแผนไว้";
 "Up next" = "ถัดไป";
 "Last time: %@" = "ครั้งก่อน: %@";

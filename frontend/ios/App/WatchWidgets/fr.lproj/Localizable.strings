@@ -36,6 +36,11 @@
 "More" = "Plus";
 "Effort" = "Effort";
 "None" = "Aucun";
+"How hard was that set?" = "Cette série, c’était dur comment ?";
+"Nothing left, went to failure" = "Plus rien dans le réservoir, jusqu’à l’échec";
+"One more rep in the tank" = "Encore une répétition en réserve";
+"Two more reps" = "Encore deux répétitions";
+"Three more reps" = "Encore trois répétitions";
 "Planned" = "Prévu";
 "Up next" = "À suivre";
 "Last time: %@" = "La dernière fois: %@";

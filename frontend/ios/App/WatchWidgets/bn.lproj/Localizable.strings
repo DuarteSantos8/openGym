@@ -36,6 +36,11 @@
 "More" = "বেশি";
 "Effort" = "পরিশ্রম";
 "None" = "কিছু না";
+"How hard was that set?" = "সেটটি কতটা কঠিন ছিল?";
+"Nothing left, went to failure" = "আর কিছু বাকি নেই, ফেইলিউর পর্যন্ত গেছি";
+"One more rep in the tank" = "আরও একটি রেপ বাকি ছিল";
+"Two more reps" = "আরও দুটি রেপ";
+"Three more reps" = "আরও তিনটি রেপ";
 "Planned" = "পরিকল্পিত";
 "Up next" = "এরপর";
 "Last time: %@" = "গতবার: %@";

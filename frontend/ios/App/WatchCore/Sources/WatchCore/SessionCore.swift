@@ -224,6 +224,15 @@ enum SessionCore {
         return (count, true)
     }
 
+    /// The rest that follows a set of exercise `ei` once it is done (the state with it done): its length in
+    /// seconds, or nil when none is due (a side still to go, the partner's turn, the last set, a rest of 0).
+    static func restSeconds(after s: SessionState, entry ei: Int, set si: Int) -> Double? {
+        guard let w = s.workout, w.entries.indices.contains(ei) else { return nil }
+        let (to, rest) = next(after: s, entry: ei, set: si)
+        let secs = w.entries[ei].restSec ?? w.restSec
+        return rest && secs > 0 && to < w.entries.count ? secs : nil
+    }
+
     /// Whether workout `wid`, gone from this snapshot, was discarded on the phone (not finished):
     /// then nothing of it is saved to Apple Health (#776). An older phone never says: saved, as before.
     static func discarded(_ wid: String?, in snap: Snapshot) -> Bool {

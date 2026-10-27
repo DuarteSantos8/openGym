@@ -36,6 +36,11 @@
 "More" = "많음";
 "Effort" = "강도";
 "None" = "없음";
+"How hard was that set?" = "이 세트는 얼마나 힘들었나요?";
+"Nothing left, went to failure" = "남은 게 없음, 실패 지점까지";
+"One more rep in the tank" = "한 개 더 남았음";
+"Two more reps" = "두 개 더 남았음";
+"Three more reps" = "세 개 더 남았음";
 "Planned" = "예정됨";
 "Up next" = "다음";
 "Last time: %@" = "지난번: %@";
