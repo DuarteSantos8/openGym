@@ -58,14 +58,16 @@ tab does it, like on the iPhone. Long pages (Exercises, History and friends) als
 arrow button once you're a few screens down: one tap and you're back at the top. It stays out of
 your workout, and with Reduce Motion on it jumps instead of gliding.
 
-**The gym reminder's map, redrawn** (#614). It looked like a map someone bolted on, so now it looks
-like openGym: your gyms are cards with their address, radius and a switch each (swipe or ⋯ to
-rename or remove, with Undo), and adding one opens a big map with a search on top that puts gyms
-first, a radius circle in your accent colour you can drag bigger or smaller, and a big "I'm here
-right now" button. On the iPhone it's Apple Maps, the one you already know. On Android it's
-OpenStreetMap, now dark in dark mode, with an "Open in Google Maps" button for a second opinion.
-Your gyms still never leave the phone; a search goes to Apple or OpenStreetMap, and the app says so
-right under the search field.
+**Adding your gym works like a maps app now** (#614). Tap Add a gym and you get a search, the
+same field as everywhere else in openGym: start typing and gyms show up as you go, with their
+address (and how far away they are, when the phone knows), or tap Current location if you're
+standing in it. Pick one and a small map opens with the pin in the middle: drag the map, not the
+pin, to nudge it onto the door, and pick Small, Medium or Large for the circle around it. Name,
+notification text and an on/off switch are plain rows like the rest of Settings, with Remove at the
+bottom. Your gyms are a simple list again. On the iPhone the search is Apple Maps, the one you
+already know; on Android it's OpenStreetMap, dark in dark mode, with "Open in Google Maps" for a
+second opinion. Your gyms still never leave the phone; only what you type goes to Apple or
+OpenStreetMap, and the app says so right under the search field.
 
 **AI Coach works with picky OpenAI-compatible gateways** (#804). Some endpoints answer the Coach
 with a plain 400 "please check the request parameters" and no hint why. The Coach now tries a

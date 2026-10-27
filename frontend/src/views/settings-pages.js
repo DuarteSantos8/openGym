@@ -22,8 +22,10 @@ export const PAGES = {
   about: { title: 'About & updates', icon: 'info', tint: 'var(--grey)' },
   account: { title: 'Account', icon: 'personCircle', tint: 'var(--grey)' },
   advanced: { title: 'Fine-tuning', icon: 'wrench', tint: 'var(--grey)', parent: 'workout' },
-  // Phone app only (#614): the gyms that get you a nudge when you arrive, and one of them.
+  // Phone app only (#614): the gyms that get you a nudge when you arrive, the search that adds one
+  // and the editor for one of them.
   gym: { title: 'Gym reminder', icon: 'mapPin', tint: 'var(--green)', parent: 'reminders' },
+  'gym-find': { title: 'Add a gym', icon: 'plusCircle', tint: 'var(--green)', parent: 'gym' },
   'gym-edit': { title: 'Your gym', icon: 'mapPin', tint: 'var(--orange)', parent: 'gym' },
   // Seasonal themes (lib/seasonal.js), one section per theme.
   themes: { title: 'Seasonal themes', icon: 'pumpkin', tint: 'var(--orange)', parent: 'look' },
@@ -44,7 +46,7 @@ export function pageVisible(page, ctx) {
   // The iPhone app only: the watch app ships inside it.
   if (page === 'watch') return !!ctx.ios
   // The phone app only: a browser cannot watch where you are with the page closed.
-  if (page === 'gym' || page === 'gym-edit') return !!ctx.mobile
+  if (page === 'gym' || page === 'gym-find' || page === 'gym-edit') return !!ctx.mobile
   return page in PAGES
 }
 

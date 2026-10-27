@@ -19,6 +19,9 @@ import { remoteAuth } from './api.js'
 
 export const GYM_KEY = 'gym_reminder_v1'
 export const RADIUS = Object.freeze({ min: 50, max: 500, def: 100, step: 10 })
+// The editor's three sizes (1.4.4). A gym saved with another radius keeps it and shows it as a
+// fourth choice; a new gym starts at Medium.
+export const RADIUS_PRESETS = Object.freeze({ small: 75, medium: 120, large: 200 })
 // iOS watches at most 20 regions per app; Android has no such cap, but one rule for both.
 export const MAX_GYMS = 20
 export const DEFAULT_WINDOW = Object.freeze({ from: '06:00', to: '22:00' })
