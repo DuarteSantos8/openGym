@@ -118,9 +118,12 @@ paste the link under **Plan → share icon → Import from a video**, check the 
    at all is not saved until you pick its exercise or delete it. The percentage on a matched row is
    how sure the reading and the match are.
 8. **The routine** keeps the video's order: A B C D E, then A B C D E again. Each round is its
-   own row on the review screen and its own entry in the routine (one timed set with its rest), so
-   the second round of a squat can carry a different weight than the first. Picking an exercise for
-   one round picks it for the other rounds of the same caption too. The warm-up and the
+   own row on the review screen. A block that repeats whole, with the same exercises, times and
+   rests every round, is saved as one circuit: a named superset of A to E whose exercises each
+   have a timed set per round (with its rest), so the app walks it as the video does and round two
+   of a squat still has its own weight on the day. A block that does not repeat that way (a round
+   you changed, one cut short) stays as separate entries, one timed set each. Picking an exercise
+   for one round picks it for the other rounds of the same caption too. The warm-up and the
    stretch each become a named group of single timed holds, done straight through. A left/right
    stretch becomes one per-side hold. The routine keeps a link to the video, and importing the same
    video again replaces the routine instead of adding a second copy.

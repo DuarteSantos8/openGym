@@ -8,10 +8,11 @@
 //                                 routine it made the first time, it never adds a second copy
 //
 // How a block becomes a routine (the owner's call, not a modelling accident): the video's own
-// order, A B C D E, then A B C D E again. Each time an exercise is done is its own entry, one timed
-// set of `sec` with its rest after it, so the second round of a squat can carry a different weight
-// than the first. A warm-up and a stretch are continuous, so each is one named group of single
-// timed sets, done straight through.
+// order, A B C D E, then A B C D E again. A block that repeats whole is one circuit: a superset of
+// A to E whose exercises each have a timed set per round (with its rest after it), so round two of a
+// squat still has its own weight on the day. Intervals that do not repeat that way stay separate
+// entries, one timed set each. A warm-up and a stretch are continuous, so each is one named group
+// of single timed sets, done straight through.
 
 import { CATALOGUE, EXIDX, canonicalExId, normalizeStr } from './exercises.js'
 import { bpFromName, importId, matchExercise as matchImported } from './import-csv.js'
@@ -314,9 +315,28 @@ const MAX_SEC = 3600
  * The labels are the group names in the reader's language; the caller passes them through t().
  */
 /**
- * The routine, in the video's order: every row is one entry (draftRows already gives each round
- * its own row), so the same exercise appears as many times as the video does it. A row whose
- * `rounds` the user raised becomes that many timed sets.
+ * The entries of one interval section when they are one block done again and again: A B C D E, A B
+ * C D E (period 5, two rounds), or A A A (period 1, three rounds). Every round must be the same
+ * exercise with the same time and rest, one set each. Anything else (a round the user changed, a
+ * block cut short) is not a circuit and stays as separate entries, as the video showed it.
+ * { len, rounds } or null.
+ */
+export function circuitOf(entries) {
+  const n = entries.length
+  if (n < 2 || entries.some(e => e.sets !== 1)) return null
+  const same = (a, b) => a.id === b.id && a.sec === b.sec && (a.restSec || 0) === (b.restSec || 0)
+  for (let len = 1; len <= n / 2; len++) {
+    if (n % len) continue
+    if (entries.every((e, i) => same(e, entries[i % len]))) return { len, rounds: n / len }
+  }
+  return null
+}
+
+/**
+ * The routine, in the video's order. Each row is one time the video does an exercise (draftRows
+ * gives every round its own row). An interval block that repeats whole becomes a circuit: one
+ * superset, each exercise with a timed set per round. Warm-up and stretch are one group of single
+ * sets each. A row whose `rounds` the user raised becomes that many timed sets.
  */
 export function buildVideoRoutine(rows, { name, source = {}, labels = {}, customEx = [] } = {}) {
   const created = []
@@ -337,25 +357,45 @@ export function buildVideoRoutine(rows, { name, source = {}, labels = {}, custom
   // exercise, round after round.
   const ordered = rows.slice().sort((a, b) => a.sectionIdx - b.sectionIdx || a.start - b.start)
   const groups = new Map()
-  for (const row of ordered) {
-    const id = idFor(row)
-    if (!id) continue
-    const sec = Math.min(MAX_SEC, Math.max(1, Math.round(row.sec) || 1))
-    const cfg = { id, mode: 'time', sec, weight: 0 }
-    if (row.section === 'interval') {
-      cfg.sets = Math.min(MAX_SETS, Math.max(1, Math.round(row.rounds) || 1))
-      const rest = Math.round(row.rest) || 0
-      if (rest > 0) cfg.restSec = rest
-    } else {
-      cfg.sets = 1
+  let circuits = 0
+  for (let i = 0; i < ordered.length;) {
+    let j = i
+    while (j < ordered.length && ordered[j].sectionIdx === ordered[i].sectionIdx) j++
+    const part = ordered.slice(i, j)
+    i = j
+    if (part[0].section === 'interval') {
+      const entries = part.map(row => {
+        const id = idFor(row)
+        if (!id) return null
+        const cfg = { id, mode: 'time', sec: Math.min(MAX_SEC, Math.max(1, Math.round(row.sec) || 1)), weight: 0 }
+        cfg.sets = Math.min(MAX_SETS, Math.max(1, Math.round(row.rounds) || 1))
+        const rest = Math.round(row.rest) || 0
+        if (rest > 0) cfg.restSec = rest
+        return cfg
+      }).filter(Boolean)
+      const cycle = circuitOf(entries)
+      if (!cycle) { ex.push(...entries); continue }
+      // A circuit is one superset whose exercises each have a set per round, so the app walks it
+      // the way the video does: A B C D E, then A B C D E again.
+      const sg = cycle.len > 1 ? 'vs' + uid() : null
+      const name = sg ? `${labels.circuit || 'Circuit'} ${++circuits}` : ''
+      for (const cfg of entries.slice(0, cycle.len)) {
+        ex.push({ ...cfg, sets: Math.min(MAX_SETS, cycle.rounds), ...(sg ? { sg, sgName: name } : {}) })
+      }
+      continue
+    }
+    for (const row of part) {
+      const id = idFor(row)
+      if (!id) continue
+      const cfg = { id, mode: 'time', sec: Math.min(MAX_SEC, Math.max(1, Math.round(row.sec) || 1)), weight: 0, sets: 1 }
       if (row.side) cfg.side = true
       const key = row.section + ':' + row.sectionIdx
       if (!groups.has(key)) groups.set(key, { sg: 'vs' + uid(), name: labels[row.section] || '' })
       const g = groups.get(key)
       cfg.sg = g.sg
       if (g.name) cfg.sgName = g.name
+      ex.push(cfg)
     }
-    ex.push(cfg)
   }
   // A group of one is just an exercise: no superset around a lone stretch.
   ex.forEach((e, i) => {

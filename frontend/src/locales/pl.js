@@ -2670,4 +2670,5 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'Tylko na tym telefonie. Niektóre ekrany główne potrzebują chwili, żeby to załapać.',
   'The icon could not be changed.': 'Nie udało się zmienić ikony.',
   'Try the Halloween app icon': 'Wypróbuj halloweenową ikonę aplikacji',
+  'Circuit': 'Obwód',
 }

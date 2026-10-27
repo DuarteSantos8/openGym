@@ -2718,4 +2718,5 @@ export default {
   '{0} rounds': '{0} varv',
   '{0} work': '{0} arbete',
   'Imported from a video': 'Importerad från en video',
+  'Circuit': 'Cirkel',
 }

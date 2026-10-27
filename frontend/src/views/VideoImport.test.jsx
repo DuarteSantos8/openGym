@@ -114,7 +114,7 @@ describe('import from a video', () => {
     expect(r).toBeTruthy()
     expect(r.name).toBe('Quick HIIT')
     expect(r.sourceUrl).toBe(SOURCE.url)
-    expect(r.ex.map(e => [e.mode, e.sets, e.sec, e.restSec])).toEqual(Array(6).fill(['time', 1, 40, 20]))
+    expect(r.ex.map(e => [e.mode, e.sets, e.sec, e.restSec])).toEqual(Array(2).fill(['time', 3, 40, 20]))   // one circuit, a set per round
     expect(S.customEx.some(c => c.n === 'turbo frog shuffle' && c.custom)).toBe(true)
   })
 
@@ -130,16 +130,18 @@ describe('import from a video', () => {
     expect(r.ex).toHaveLength(5)
   })
 
-  it('saves each round in turn, as in the video: the same exercise once per round', async () => {
+  it('saves a block that repeats whole as one circuit: one superset, a set per round', async () => {
     jobAnswer = DONE
     sessionStorage.setItem('gym_video_import_job', JOB)
     render()
     await flush()
     await act(async () => { button('Save routine').click() })
     const r = useStore.getState().S.routines.find(x => x.videoId === 'dQw4w9WgXcQ')
-    expect(r.ex).toHaveLength(6)
-    expect(r.ex.every(e => e.sets === 1 && e.sec === 40 && e.restSec === 20)).toBe(true)
-    expect(r.ex[0].id).toBe(r.ex[2].id)
+    expect(r.ex).toHaveLength(2)
+    expect(r.ex.every(e => e.sets === 3 && e.sec === 40 && e.restSec === 20)).toBe(true)
+    expect(r.ex[0].sg).toBeTruthy()
+    expect(r.ex[0].sg).toBe(r.ex[1].sg)
+    expect(r.ex[0].sgName).toBe('Circuit 1')
   })
 
   it('a row with no name and no exercise stops the save and says why', async () => {

@@ -2749,4 +2749,5 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'শুধু এই ফোনের জন্য। কিছু হোম স্ক্রিন বুঝতে একটু সময় নেয়।',
   'The icon could not be changed.': 'আইকন বদলানো গেল না।',
   'Try the Halloween app icon': 'হ্যালোইন অ্যাপ আইকন চেষ্টা করুন',
+  'Circuit': 'সার্কিট',
 }

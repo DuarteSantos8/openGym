@@ -284,6 +284,22 @@ describe('the review screen’s tools', async () => {
       ['1160', 1, 40, 20], ['3930', 1, 40, 20], ['0514', 1, 40, 20], ['1160', 1, 40, 20], ['3930', 1, 40, 20]
     ])
   })
+  it('a block that repeats whole is one circuit: a superset with a set per round', () => {
+    const rowsOf = ids => ids.map(([id, name, starts]) => ({ id, name, conf: 0.9, sec: 40, rest: 20, rounds: starts.length, occurrences: starts.map(start => ({ start, dur: 40 })) }))
+    const iv = { draft: { sections: [{ kind: 'interval', rows: rowsOf([['a', 'Burpees', [0, 180]], ['b', 'Plank Jacks', [60, 240]], ['c', 'Jump Squat', [120, 300]]]) },
+      { kind: 'interval', rows: rowsOf([['d', 'Push Ups', [400, 460, 520]]]) },
+      { kind: 'interval', rows: rowsOf([['e', 'Burpees', [600, 720]], ['f', 'Plank Jacks', [660]]]) }] } }
+    const v = buildVideoRoutine(draftRows(iv), { labels: { circuit: 'Circuit' } }).routine.ex
+    // block one: three exercises × two rounds, one group; block two: one exercise × three sets, no group
+    expect(v.slice(0, 3).map(e => [e.id, e.sets, e.sec, e.restSec, e.sgName])).toEqual([
+      ['1160', 2, 40, 20, 'Circuit 1'], ['3930', 2, 40, 20, 'Circuit 1'], ['0514', 2, 40, 20, 'Circuit 1']
+    ])
+    expect(new Set(v.slice(0, 3).map(e => e.sg)).size).toBe(1)
+    expect(supersetUnits(v).map(u => u.length)).toEqual([3, ...Array(v.length - 3).fill(1)])
+    expect(v[3]).toMatchObject({ sets: 3 }); expect(v[3].sg).toBeUndefined()
+    // a block cut short (A B A) is not a circuit: separate entries, as the video showed it
+    expect(v.slice(4).map(e => [e.sets, e.sg])).toEqual([[1, undefined], [1, undefined], [1, undefined]])
+  })
   it('a pick for one round goes to the other rounds of the same caption', async () => {
     const { applyToRounds } = await import('./import-video.js')
     const r = draftRows(RESULT)

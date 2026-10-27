@@ -110,7 +110,7 @@ export default function VideoImport() {
     const missing = rowsMissingName(rows).length
     if (missing) return toast(tn('{0} row has no exercise yet. Pick one or delete the row.', '{0} rows have no exercise yet. Pick one or delete the rows.', missing))
     const source = job?.result?.source || {}
-    const labels = { warmup: t('Warm-up'), stretch: t('Stretching'), other: t('Exercises') }
+    const labels = { warmup: t('Warm-up'), stretch: t('Stretching'), other: t('Exercises'), circuit: t('Circuit') }
     let out
     update(s => {
       const built = buildVideoRoutine(rows, { name, source, labels, customEx: s.customEx || [] })

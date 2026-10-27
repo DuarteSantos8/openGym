@@ -2670,4 +2670,5 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': '仅限这部手机。有些主屏幕要过一会儿才会跟上。',
   'The icon could not be changed.': '无法更换图标。',
   'Try the Halloween app icon': '试试万圣节应用图标',
+  'Circuit': '循环训练',
 }

@@ -4,6 +4,7 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  'Circuit': 'Circuito',
   'The search finds it by these too. Separate them with commas.': 'A busca também encontra o exercício por estes. Separe com vírgulas.',
   'Save names': 'Salvar nomes',
   'Handy when you compare with another app. Records ignore warm-ups either way.': 'Ajuda quando você compara com outro app. Os recordes ignoram o aquecimento de qualquer jeito.',

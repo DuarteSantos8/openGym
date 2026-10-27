@@ -2667,4 +2667,5 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'Лише для цього телефона. Деяким домашнім екранам треба хвилинка, щоб помітити.',
   'The icon could not be changed.': 'Не вдалося змінити значок.',
   'Try the Halloween app icon': 'Спробуй гелловінський значок застосунку',
+  'Circuit': 'Коло',
 }

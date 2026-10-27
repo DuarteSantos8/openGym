@@ -2670,4 +2670,5 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'सिर्फ़ इस फ़ोन के लिए। कुछ होम स्क्रीन को समझने में थोड़ा समय लगता है।',
   'The icon could not be changed.': 'आइकन बदला नहीं जा सका।',
   'Try the Halloween app icon': 'हैलोवीन ऐप आइकन आज़माएँ',
+  'Circuit': 'सर्किट',
 }

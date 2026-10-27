@@ -2725,4 +2725,5 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'لهذا الهاتف فقط. بعض الشاشات الرئيسية تحتاج لحظة لتلحق.',
   'The icon could not be changed.': 'تعذّر تغيير الأيقونة.',
   'Try the Halloween app icon': 'جرّب أيقونة التطبيق الخاصة بالهالوين',
+  'Circuit': 'دائرة تدريبية',
 }

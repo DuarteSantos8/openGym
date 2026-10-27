@@ -2670,4 +2670,5 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': '이 휴대폰에만 적용돼요. 홈 화면에 따라 바뀌는 데 잠깐 걸릴 수 있어요.',
   'The icon could not be changed.': '아이콘을 바꾸지 못했어요.',
   'Try the Halloween app icon': '핼러윈 앱 아이콘 써 보기',
+  'Circuit': '서킷',
 }

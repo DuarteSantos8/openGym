@@ -2681,4 +2681,5 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'เฉพาะโทรศัพท์เครื่องนี้ หน้าจอโฮมบางแบบต้องใช้เวลาสักครู่ถึงจะเปลี่ยน',
   'The icon could not be changed.': 'เปลี่ยนไอคอนไม่ได้',
   'Try the Halloween app icon': 'ลองไอคอนแอปฮาโลวีน',
+  'Circuit': 'เซอร์กิต',
 }

@@ -2663,4 +2663,5 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': '只限這支手機。有些主畫面要過一下才會跟上。',
   'The icon could not be changed.': '無法更換圖示。',
   'Try the Halloween app icon': '試試萬聖節 App 圖示',
+  'Circuit': '循環訓練',
 }
