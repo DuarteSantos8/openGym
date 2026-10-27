@@ -245,7 +245,58 @@ describe('the session with the workout', () => {
     await flush()
     S.setState({ S: { active: null, workouts: [] } })
     await flush()
-    expect(p.end).toHaveBeenCalledWith({ wid: 'w1', save: false })
+    expect(p.end).toHaveBeenCalledWith({ wid: 'w1', save: false, discarded: true })
+    expect(p.end.mock.calls.some(([a]) => a.save)).toBe(false)
+    stop()
+  })
+
+  // TestFlight 1.4.4: a workout discarded on the phone still turned up in Apple Health.
+  it('discarded before its session had even started: dropped once it has', async () => {
+    let started
+    p.start.mockImplementation(({ wid }) => new Promise(res => { started = () => res({ ok: true, wid, start: now }) }))
+    await begin()
+    S.setState({ S: { active: { id: 'w1', start: now, entries: [] }, workouts: [] } })
+    await flush()
+    S.setState({ S: { active: null, workouts: [] } })
+    await flush()
+    started()
+    await flush()
+    expect(p.end).toHaveBeenCalledWith({ wid: 'w1', save: false, discarded: true })
+    expect(p.end.mock.calls.some(([a]) => a.save)).toBe(false)
+    stop()
+  })
+
+  it('a session iOS handed back for a workout discarded meanwhile: dropped, never saved', async () => {
+    p = fakePlugin({ recovered: { wid: 'w1', start: now - 60e3 } })
+    _setPhonePluginForTest(p)
+    S = store({ ready: true, S: { active: null, workouts: [] } })
+    await begin()
+    expect(p.end).toHaveBeenCalledWith({ wid: 'w1', save: false, discarded: true })
+    expect(p.end.mock.calls.some(([a]) => a.save)).toBe(false)
+    stop()
+  })
+
+  it('discarded with the next workout started straight away: the old one dropped, the new one measured', async () => {
+    await begin()
+    S.setState({ S: { active: { id: 'w1', start: now, entries: [] }, workouts: [] } })
+    await flush()
+    S.setState({ S: { active: { id: 'w2', start: now, entries: [] }, workouts: [] } })
+    await flush()
+    expect(p.end).toHaveBeenCalledWith({ wid: 'w1', save: false, discarded: true })
+    expect(p.start.mock.calls.at(-1)[0].wid).toBe('w2')
+    stop()
+  })
+
+  it('the watch taking it is no discard: the workout goes on, nothing taken out', async () => {
+    let claimed = false, onClaim = null
+    watch = { ...watch, claimed: () => claimed, onClaim: fn => { onClaim = fn; return () => {} } }
+    await begin()
+    S.setState({ S: { active: { id: 'w1', start: now, entries: [] }, workouts: [] } })
+    await flush()
+    claimed = true
+    onClaim('w1')
+    await flush()
+    expect(p.end.mock.calls.map(([a]) => a)).toEqual([{ wid: 'w1', save: false }])
     stop()
   })
 
