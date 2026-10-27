@@ -223,3 +223,25 @@ So `r` is the total, `clusters` its breakdown, and every reader that already han
 `isClusterSet(set)` tells the two apart for the labels ("Mini-set 2", "+ Mini-set"). Unlike
 rest-pause it does not replace the set list: warm-ups, sets, back-off and progression stay as they
 were, only each set is done in pieces.
+## Lengthened partials
+
+Extra reps in the stretched half of the range, done straight after the last full rep of a failure
+set, with no rest. They are part of that set, not a set of their own: `lp: <count>` on the row,
+written only when above zero, like `drops` and `clusters`.
+
+- Never planned. Added live, from the set menu or the "+ Partials" chip under a done set
+  (`PartialsPicker`, `withPartials`). In the app a set must already be a failure set (F, or rated
+  RIR 0 / RPE 10) and not rated short of it (`partialsAllowed`); otherwise the chip is greyed out
+  and says why. The MCP is the exception: partials on an unrated set mark it as failure.
+- `partialsOf(set)` reads 0 for a set that is not allowed them, so every reader (label, engine,
+  MCP, coach) ignores leftovers. `settlePartials` drops `lp` when an edit ends the failure (a
+  rating above RIR 0, the F switched off).
+- `w`/`r` stay the full-ROM work: volume, records, 1RM and progression never see `lp`. Only the
+  recovery engine adds them back (`partialSetsOf`: 0.2 of a rep each against the set's reps, at
+  most one extra set, `recovery.js sessionEffSets`).
+- Shown as `F+N` on the set number, the focus card and in `setLabel` (history, export, MCP labels).
+- MCP: `log_workout` takes `lengthened_partials` per set; `get_workout` returns it.
+- Coach: `lp` is passed through on a set (`coach-context.js`, `api/coach/core/payload.js`).
+- Not yet: a column in the CSV export or an equivalent in the Hevy import, and a settings tick to
+  count partials in volume (0.2 of a rep).
+

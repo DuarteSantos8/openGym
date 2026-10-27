@@ -2506,6 +2506,7 @@ export default {
   "Nothing left in the tank": "Intet tilbage i tanken",
   "Last set to failure": "Sidste sæt til failure",
   "The last set goes until nothing is left, and counts as all-out effort unless you rate it.": "Det sidste sæt kører, til der intet er tilbage, og tæller som maksimal indsats, medmindre du vurderer det.",
+  "Keep the last exercise open": "Hold sidste øvelse åben",
   "Plan the final set as an all-out one.": "Planlæg det sidste sæt som et all-out-sæt.",
   "Triple progression": "Tredobbelt progression",
   "Reps climb to the top of the range, then a set is added, up to your most sets. All of them at the top and the weight goes up, back to your first sets and reps.": "Gentagelserne stiger til toppen af intervallet, så lægges et sæt til, op til dit højeste antal sæt. Er alle i toppen, går vægten op, og du starter forfra med dine første sæt og gentagelser.",
