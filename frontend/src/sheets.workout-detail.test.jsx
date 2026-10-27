@@ -229,7 +229,7 @@ describe('workout detail: one options row instead of a column of buttons', () =>
     const buttons = [...host.querySelectorAll('button')].map(b => b.textContent.trim())
     expect(buttons).toContain('Edit workout')
     expect(buttons).toContain('Repeat today')
-    for (const label of ['Change date & time', 'Change duration', 'Save as routine', 'Copy as text', 'Share as image', 'Save as PDF', 'Export as .fit file', 'Delete workout'])
+    for (const label of ['Change date & time', 'Change duration', 'Save as routine', 'Copy as text', 'Share with a friend', 'Share as image', 'Save as PDF', 'Export as .fit file', 'Delete workout'])
       expect(host.textContent, label).not.toContain(label)
     for (const anchor of ['wd-edit', 'wd-note', 'wd-options']) expect(host.querySelector(`[data-tour="${anchor}"]`), anchor).toBeTruthy()
     const row = host.querySelector('[data-tour="wd-options"]')
@@ -249,7 +249,7 @@ describe('workout detail: one options row instead of a column of buttons', () =>
     const groups = [...menu.querySelectorAll('.menu-group')].map(g => [...g.querySelectorAll('.menu-item .tt')].map(e => e.textContent))
     expect(groups).toEqual([
       ['Change date & time', 'Change duration', 'Save as routine'],
-      ['Share as image', 'Copy as text', 'Save as PDF', 'Export as .fit file'],
+      ['Share with a friend', 'Share as image', 'Copy as text', 'Save as PDF', 'Export as .fit file'],
       ['Delete workout'],
     ])
     expect(menu.querySelector('.menu-item.danger .tt').textContent).toBe('Delete workout')

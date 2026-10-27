@@ -14,6 +14,7 @@ import { fmtRest } from '../lib/duration.js'
 import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
 import { Button, Row, SelectRow, Switch } from '../components/ui.jsx'
+import { shareRoutineSheet } from '../components/RoutineShare.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
 import { workoutControls } from '../lib/workout-controls.js'
 import { copyRoutine, deleteRoutine, replaceSlotExercise } from '../lib/routines.js'
@@ -582,6 +583,9 @@ export default function RoutineEdit() {
       update(s => { s.routines.push(copy) })
       nav('/plan/r/' + copy.id)
     }}>{t('Copy routine')}</Button>
+    <div style={{ height: 10 }} />
+    {/* A link a friend taps to add this routine to their own openGym (components/RoutineShare.jsx). */}
+    <Button icon="share" disabled={!r.ex.length} onClick={() => shareRoutineSheet(r)}>{t('Share with a friend')}</Button>
     <div style={{ height: 10 }} />
     <Button disabled={!r.ex.length} onClick={printRoutine}>{t('Print / Save as PDF')}</Button>
     <div style={{ height: 10 }} />

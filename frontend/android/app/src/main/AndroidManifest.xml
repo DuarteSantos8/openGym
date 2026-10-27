@@ -31,7 +31,18 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:scheme="https" android:host="opengym.ch" android:pathPrefix="/nfc" />
             </intent-filter>
-            <!-- opengym://nfc?... from opengym.ch/nfc, the page a sticker opens in a browser. -->
+            <!-- A friend's routine link, https://opengym.ch/r#<routine> (components/RoutineShare.jsx):
+                 straight into the app instead of the page. Verified once opengym.ch serves
+                 /.well-known/assetlinks.json for this app; until then Android may ask which app. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="opengym.ch" android:path="/r" />
+                <data android:scheme="https" android:host="opengym.ch" android:path="/r/" />
+            </intent-filter>
+            <!-- opengym://nfc?... from opengym.ch/nfc, the page a sticker opens in a browser, and
+                 opengym://r#<routine> from opengym.ch/r. -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />

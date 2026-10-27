@@ -6,6 +6,20 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+**Share a routine with a friend.** A routine's page and a past workout's options now have Share
+with a friend: one link through your phone's share sheet ("Here's my Push Day on openGym 💪"). Your
+friend taps it, sees the exercises and sets, and Add to my routines puts it next to theirs, never
+over one they already have. A workout goes as a routine, so "do what I just did" is one tap. Your
+weights and your name only go along if you switch them on. The routine rides inside the link
+itself (the part after the #), so no server, not even opengym.ch, ever sees it. No openGym yet? The
+link opens a page that shows the routine and where to get the app, or opens it in your own web app
+or the demo. A really long routine goes as a plan file instead.
+
+**Watch on YouTube, for every exercise.** An exercise's details (and the More group of its ⋯ in a
+workout) have a quiet Watch on YouTube button that searches for the exercise plus "form" in the
+YouTube app or your browser. Nothing goes to YouTube before you tap it, and a video link of your
+own still comes first.
+
 **Tidier menus** (thanks seals). An exercise's ⋯ now opens with the five things you reach for
 mid-workout: note, swap, warm-up set, rest and history. Settings, plate loading, the how-to, moving
 and supersets wait under one More row, Remove is still last. The set menu and the workout's ⋯ got

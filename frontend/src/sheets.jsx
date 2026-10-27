@@ -60,7 +60,10 @@ import { refillAfter } from './lib/rotation.js'
 import { isWarmupRow, hasCompletedWork } from './lib/workout-model.js'
 import { ownExerciseRest } from './lib/supersetFlow.js'
 import { entryTimes } from './lib/exercise-time.js'
-import { saveSessionAsRoutine, routineAdditions, addToRoutine } from './lib/session-routines.js'
+import { saveSessionAsRoutine, routineFromSession, routineAdditions, addToRoutine } from './lib/session-routines.js'
+import { shareRoutineSheet } from './components/RoutineShare.jsx'
+import { youtubeSearchUrl } from './lib/youtube.js'
+import { openExternal } from './components/CustomMedia.jsx'
 import { repeatSessionEntries } from './lib/session-repeat.js'
 import { swapActiveExercise } from './lib/active-exercise-swap.js'
 import { useSheetKeyboard, useRevealActiveChip, tappable } from './lib/use-sheet-keyboard.js'
@@ -1277,6 +1280,9 @@ function ExerciseDetail({ ex, close }) {
         stronger (issue #232). Cardio has none for the same kind of reason. */}
     {!isCardio(ex) && !isAssisted(ex) && <OneRM ex={ex} />}
     {instrFor(ex).length > 0 &&<><h4 className="sec">{t('How to')}{getLang() !== 'en' && !instrTranslated(ex) && <span className="dim" style={{ textTransform: 'none', letterSpacing: 0 }}> · {t('instructions in English')}</span>}</h4><ol className="steps-list">{instrFor(ex).map((s, i) => <li key={i}>{s}</li>)}</ol></>}
+    {/* A YouTube search for the exercise, opened after the tap and only then (lib/youtube.js). A
+        video link of the exercise's own stays first, in the media above. */}
+    {youtubeSearchUrl(ex) && <Button variant="ghost" icon="play" style={{ marginTop: 6 }} onClick={() => openExternal(youtubeSearchUrl(ex))}>{t('Watch on YouTube')}</Button>}
     {/* The catalogue is community-edited (catalogue/README.md): a wrong muscle, a clumsy step or a
         missing translation is one tap from an issue that already names the exercise. */}
     {!isCustomEx(ex) && !ex.missing && <a className="small dim exfix-link" target="_blank" rel="noopener"
@@ -3049,6 +3055,13 @@ function WorkoutDetail({ w, close }) {
       nav('/plan/r/' + id)
     }
   })
+  // "Do the workout I just did": the session as a routine (the one Save as routine makes, never
+  // saved here) behind a link (components/RoutineShare.jsx).
+  const shareWithFriend = () => {
+    let routine
+    try { routine = routineFromSession(w, w.name, st.routines) } catch { toast(t('Nothing to share in this one.')); return }
+    shareRoutineSheet(routine)
+  }
   // Matched the way the edits above are, not by id: a workout from before ids has none, and
   // filtering on `x.id !== undefined` took every other one of them with it.
   const deleteWorkout = () => confirmSheet({ title: t('Delete workout?'), message: t('This removes it from your history for good.') + mediaGoesToo(S().workouts.find(x => sameWorkout(x, w))), confirmText: t('Delete'), danger: true, onConfirm: () => { update(s => { s.workouts = s.workouts.filter(x => !sameWorkout(x, w)) }); close(); toast(t('Workout deleted')) } })
@@ -3066,6 +3079,7 @@ function WorkoutDetail({ w, close }) {
           { icon: 'plus', label: t('Save as routine'), onClick: saveAsRoutine },
         ] },
         { title: t('Share'), items: [
+          { icon: 'person', label: t('Share with a friend'), sub: t('As a routine they can do too'), onClick: shareWithFriend },
           { icon: 'share', label: t('Share as image'), onClick: shareAsImage },
           { icon: 'copy', label: t('Copy as text'), onClick: copyAsText },
           { icon: 'note', label: t('Save as PDF'), onClick: saveAsPdf },

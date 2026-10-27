@@ -484,6 +484,32 @@ then the phone walks in at 1.4 m/s and the time from crossing the radius to the 
 measured; then the server check against a fake paired server on the host (trained elsewhere:
 quiet; a black-holed server: posts after the 3 s bound; no server: posts).
 
+### Routine links: "Share with a friend" (v1.4.4)
+
+A routine (Plan → a routine → **Share with a friend**) or a past workout (History → the workout →
+Workout options → **Share with a friend**, sent as the routine Save as routine would make) goes out
+as `https://opengym.ch/r#<payload>` through the share sheet (`components/RoutineShare.jsx`,
+`src/lib/routine-link.js`). The payload is `1.d.<base64url>`: link format 1, a plan file holding
+that one routine (same `opengym_plan` version, read by the same `parsePlan`/`mergePlan` as an
+imported file), deflate-raw through `CompressionStream` (`j` = plain JSON where there is none).
+It sits in the URL **fragment**, which browsers never send, so opengym.ch only serves the page. The
+sender's weights ride along only with **Include my weights**, their name only with **Your name**
+(both off by default). Over 2000 characters the share falls back to a plan file of that routine.
+
+Opening one shows a preview with **Add to my routines**: always a new routine, never over one
+already there ("Push Day (from Alex)", "Push Day 2" when the name is taken), custom exercises
+created like a plan file's. A newer link format than the app reads asks for an update.
+
+| Where | Link | |
+| --- | --- | --- |
+| Website | `https://opengym.ch/r#P` | `website/r/index.html` (served at /r/): the routine by name and sets, Open in openGym, Get the app, Open in the web app (your server or the demo) |
+| Android | same link | VIEW filter on `MainActivity` (https, opengym.ch, path `/r` and `/r/`, `autoVerify`), so it opens the app directly once opengym.ch serves `/.well-known/assetlinks.json` with the app's signing certificates (Play and sideload). Until then Android may show the page or ask |
+| App | `opengym://r#P` | the website's Open in openGym; the `opengym` scheme is already registered (CFBundleURLTypes, the VIEW filter for `opengym:`). Read through `@capacitor/app`'s `appUrlOpen` and `getLaunchUrl` (`useRoutineLinks`, waits until the app is set up) |
+| Web app | `<server>/#/r/P` | read before the router sends the unknown route to /home, then the address goes back to `#/plan` |
+
+iPhone: without associated domains the https link opens the page in Safari, one more tap to the
+app. Adding `applinks:opengym.ch` (see the NFC notes below) would cover `/r*` too.
+
 ### NFC stickers (v1.4.4)
 
 Settings → Look & Home → **Set up an NFC sticker** writes a blank NTAG sticker (NTAG213 or bigger;
