@@ -637,7 +637,12 @@ export default {
   'Shins': 'Tibiais',
   // --- import from another app ---
   'Import from another app': 'Importar de outra app',
-  'FitNotes, Strong, Hevy, GymMane, openGym CSV, or body weight from Apple Health': 'FitNotes, Strong, Hevy, GymMane, openGym CSV, ou o peso da Apple Saúde',
+  'Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT and more, or body weight from Apple Health': 'Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT e outras, ou o peso da Apple Saúde',
+  'Liftoscript progressions come along as notes on the exercises. openGym doesn’t run them.': 'As progressões do Liftoscript chegam como notas nos exercícios. O openGym não as executa.',
+  '{0} routine is already here and will be left alone.': '{0} rotina já existe e fica como está.',
+  '{0} routines are already here and will be left alone.': '{0} rotinas já existem e ficam como estão.',
+  'This looks like a {0} export, but we couldn’t read it. Nothing was imported.': 'Parece uma exportação do {0}, mas não conseguimos lê-la. Nada foi importado.',
+  'That’s an openGym backup or plan file. Use Import backup, or import it on the Plan screen.': 'É uma cópia de segurança ou um ficheiro de plano do openGym. Usa Importar cópia, ou importa-o no ecrã Plano.',
   'Import from {0}': 'Importar de {0}',
   'Import history': 'Importar histórico',
   'Weigh-ins': 'Pesagens',

@@ -637,7 +637,12 @@ export default {
   'Shins': 'पिंडली की हड्डी',
   // --- import from another app ---
   'Import from another app': 'दूसरे ऐप से आयात करें',
-  'FitNotes, Strong, Hevy, GymMane, openGym CSV, or body weight from Apple Health': 'FitNotes, Strong, Hevy, GymMane, openGym CSV, या Apple Health से शरीर का वज़न',
+  'Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT and more, or body weight from Apple Health': 'Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT और भी, या Apple Health से शरीर का वज़न',
+  'Liftoscript progressions come along as notes on the exercises. openGym doesn’t run them.': 'Liftoscript प्रोग्रेशन एक्सरसाइज़ पर नोट बनकर आते हैं। openGym उन्हें नहीं चलाता।',
+  '{0} routine is already here and will be left alone.': '{0} रूटीन पहले से यहाँ है और जैसा है वैसा ही रहेगा।',
+  '{0} routines are already here and will be left alone.': '{0} रूटीन पहले से यहाँ हैं और जैसे हैं वैसे ही रहेंगे।',
+  'This looks like a {0} export, but we couldn’t read it. Nothing was imported.': 'यह {0} का एक्सपोर्ट लगता है, पर हम इसे पढ़ नहीं पाए। कुछ भी आयात नहीं हुआ।',
+  'That’s an openGym backup or plan file. Use Import backup, or import it on the Plan screen.': 'यह openGym का बैकअप या योजना फ़ाइल है। बैकअप आयात करें इस्तेमाल करें, या इसे योजना स्क्रीन पर आयात करें।',
   'Import from {0}': '{0} से आयात करें',
   'Import history': 'इतिहास आयात करें',
   'Weigh-ins': 'वज़न मापन',

@@ -1889,6 +1889,7 @@ export const PT_BR_OVERRIDES = {
   "Your real data is exactly as you left it.": "Seus dados reais estão exatamente como você deixou.",
   "Your routines live behind this tab. Tap Plan.": "Suas rotinas ficam atrás dessa aba. Toque em Plano.",
   "Your sets, weigh-ins and measurements as CSV. Our importer reads it back too.": "Suas séries, pesagens e medidas em CSV. Nosso importador também lê de volta.",
+  "That’s an openGym backup or plan file. Use Import backup, or import it on the Plan screen.": "É um backup ou um arquivo de plano do openGym. Use Importar backup, ou importe-o na tela Plano.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

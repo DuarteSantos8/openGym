@@ -637,7 +637,12 @@ export default {
   'Shins': '정강이',
   // --- import from another app ---
   'Import from another app': '다른 앱에서 가져오기',
-  'FitNotes, Strong, Hevy, GymMane, openGym CSV, or body weight from Apple Health': 'FitNotes, Strong, Hevy, GymMane, openGym CSV 또는 Apple 건강의 체중',
+  'Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT and more, or body weight from Apple Health': 'Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT 등 또는 Apple 건강의 체중',
+  'Liftoscript progressions come along as notes on the exercises. openGym doesn’t run them.': 'Liftoscript 진행 규칙은 운동 메모로 가져와요. openGym은 이를 실행하지 않아요.',
+  '{0} routine is already here and will be left alone.': '루틴 {0}개는 이미 있어서 그대로 둡니다.',
+  '{0} routines are already here and will be left alone.': '루틴 {0}개는 이미 있어서 그대로 둡니다.',
+  'This looks like a {0} export, but we couldn’t read it. Nothing was imported.': '{0} 내보내기 파일 같지만 읽을 수 없었어요. 아무것도 가져오지 않았습니다.',
+  'That’s an openGym backup or plan file. Use Import backup, or import it on the Plan screen.': 'openGym 백업 또는 계획 파일입니다. 백업 가져오기를 사용하거나 계획 화면에서 가져오세요.',
   'Import from {0}': '{0}에서 가져오기',
   'Import history': '기록 가져오기',
   'Weigh-ins': '체중 기록',
