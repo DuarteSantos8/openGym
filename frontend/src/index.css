@@ -136,6 +136,10 @@ a{color:var(--acc);text-decoration:none}
 :focus-visible{outline:2.5px solid var(--acc);outline-offset:2px;border-radius:6px}
 button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp button,.sld
 {-webkit-user-select:none;user-select:none}
+/* A text field anywhere, one inside those included (RENPHO's e-mail and password), takes its text again:
+   iOS WebKit carries -webkit-user-select:none down to the field, which then never gets the
+   keyboard or a paste. */
+input,textarea{-webkit-user-select:text;user-select:text}
 
 /* icons inherit colour and optical size from their context */
 .icn{
