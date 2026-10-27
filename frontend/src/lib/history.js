@@ -1157,7 +1157,7 @@ export function setSpanAt(rows, i) {
 // above it like any inherited row) and the drop/burst sub-rows, which belong to the set that was
 // actually done. Weight, reps, time, speed, effort, the warm-up phase, a pyramid's Max and the
 // side layout all come along.
-const NOT_COPIED = ['done', 'at', 'planSec', 'weightOrigin', 'type', 'drops', 'clusters']
+const NOT_COPIED = ['done', 'at', 'planSec', 'weightOrigin', 'type', 'drops', 'clusters', 'lp']
 const bare = src => {
   const out = { ...src }
   for (const k of NOT_COPIED) delete out[k]

@@ -628,6 +628,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Row icon="bolt" iconTint="var(--orange)" title={t('Drop and burst shortcuts on every set')}>
             <Switch checked={wc.setShortcuts} onChange={v => setWc('setShortcuts', v)} />
           </Row>
+          <Row icon="minimize" iconTint="var(--teal)" title={t('Keep the last exercise open')} subtitle={t('With folding on, the exercise you just finished stays open until you move on again. Handy for adding partials.')}>
+            <Switch aria-label={t('Keep the last exercise open')} checked={wc.keepLastOpen} onChange={v => setWc('keepLastOpen', v)} />
+          </Row>
           {/* Swipe actions (v1.3.11): not a button, but the same question of what a set row does. The
               one switch covers Plan's lists too; the stored key keeps its old name, swipeSets. */}
           <Row icon="swap" iconTint="var(--indigo)" title={t('Swipe actions')} subtitle={t('Sets, routines and the loop: left removes, right copies')}>

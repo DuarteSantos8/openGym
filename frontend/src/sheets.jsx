@@ -2478,6 +2478,34 @@ function EffortPicker({ kind, value, onPick, close, cardio = false }) {
 export const effortPickerSheet = (kind, value, onPick, { cardio = false } = {}) =>
   ui().openSheet(close => <EffortPicker kind={kind} value={value} onPick={onPick} close={close} cardio={cardio} />)
 
+// Lengthened partials: the reps done in the stretched half of the range straight after the last
+// full rep. `value` is the count on the set (0 = none); onPick receives the new count (0 clears).
+// The caller marks the set as failure for a positive count (workout-model withPartials).
+function PartialsPicker({ value, onPick, close }) {
+  const [v, setV] = useState(value || 0)
+  const commit = n => { close(); onPick(Math.max(0, Math.min(99, Math.floor(Number(n) || 0)))) }
+  return <>
+    <h3 style={{ marginBottom: 2 }}>{t('Lengthened partials')}</h3>
+    <div className="muted small" style={{ marginBottom: 10 }}>{t('Only after the last full rep, with no rest. The set is marked as taken to failure. Counted as a fifth of a rep each, and not as volume.')}</div>
+    <div className="list menu-list effpick">
+      <div className="item menu-item effpick-free">
+        <div className="grow"><div className="tt">{t('Partial reps')}</div></div>
+        <div className="stp effcell-stp">
+          <button aria-label={t('Decrease')} onClick={() => setV(x => Math.max(0, (x || 0) - 1))}><Icon name="minus" /></button>
+          <span className="val"><NumberField value={v || ''} placeholder="0" onChange={nv => setV(Math.max(0, Math.floor(Number(nv) || 0)))} /></span>
+          <button aria-label={t('Increase')} onClick={() => setV(x => Math.min(99, (x || 0) + 1))}><Icon name="plus" /></button>
+        </div>
+      </div>
+    </div>
+    <div style={{ height: 10 }} />
+    {v !== (value || 0) && <Button icon="check" onClick={() => commit(v)}>{t('Done')}</Button>}
+    {(value || 0) > 0 && <Button variant="ghost" className="dim" icon="xmark" onClick={() => commit(0)}>{t('Remove partials')}</Button>}
+    <div style={{ height: 4 }} />
+  </>
+}
+export const partialsPickerSheet = (value, onPick) =>
+  ui().openSheet(close => <PartialsPicker value={value} onPick={onPick} close={close} />)
+
 /* ============================ share / print / import a plan ============================ */
 // What the Plan menu does with a plan: export it, print it, import a friend's.
 export const planHasRoutines = st => (st.routines || []).some(r => r.ex && r.ex.length)

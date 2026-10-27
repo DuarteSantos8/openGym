@@ -45,7 +45,7 @@ const inputOf = p => ({
     createCustom: ex.create_custom,
     bodyPart: ex.body_part,
     note: ex.note,
-    sets: (ex.sets || []).map(s => ({ reps: s.reps, seconds: s.seconds, weight: s.weight, warmup: s.warmup, failure: s.failure, rir: s.rir, rpe: s.rpe })),
+    sets: (ex.sets || []).map(s => ({ reps: s.reps, seconds: s.seconds, weight: s.weight, warmup: s.warmup, failure: s.failure, rir: s.rir, rpe: s.rpe, lengthenedPartials: s.lengthened_partials })),
   })),
 })
 
@@ -82,6 +82,7 @@ function viewOf(w, S, resolved) {
           ...(row.failure ? { failure: true } : {}),
           ...(row.rir != null ? { rir: row.rir } : {}),
           ...(row.rpe != null ? { rpe: row.rpe } : {}),
+          ...(row.lp ? { lengthened_partials: row.lp } : {}),
         })),
         ...(e.note ? { note: e.note } : {}),
       }
@@ -97,6 +98,7 @@ const setSchema = z.object({
   failure: z.boolean().optional().describe('Taken to failure.'),
   rir: z.number().min(0).max(10).optional().describe('Reps in reserve, if the user said it. Not with rpe.'),
   rpe: z.number().min(6).max(10).optional().describe('RPE, if the user said it. Not with rir.'),
+  lengthened_partials: z.number().int().min(1).max(LOG_LIMITS.maxReps).optional().describe('Lengthened partial reps (extra reps in the stretched half of the range) done right after the last full rep, with no rest. Only for a set taken to failure: it is marked as failure automatically, and a rir above 0 or rpe below 10 is refused. Count only the partials, not the full reps. They add a little effort but are not counted as volume. Not for warm-ups or timed sets.'),
 })
 
 export const logWorkout = {
@@ -108,6 +110,7 @@ export const logWorkout = {
     'Exercises are matched against the user\'s library by name or id. A common name resolves to the library\'s default variant ("shoulder press" is the barbell one): when the reply\'s `name` differs from `you_said` and the variant matters (dumbbell vs barbell, machine vs cable), confirm with the user, or pass an id. If a name matches several exercises, or none, nothing is saved and `problems` lists candidates: ask the user which one, then call again with its id.',
     'Only set create_custom for an exercise the user confirms is not in the library.',
     'Call with dry_run: true first when you had to interpret anything, show the user the preview, and log it once they agree.',
+    'Lengthened partials only happen after a set has been taken to failure; if the user mentions partials, log them on that set with lengthened_partials (the set is marked as failure for them).',
     'Calling again with the same description does not log it twice. Cardio (time and speed) and supersets are not supported here.',
   ].join(' '),
   schema: {
