@@ -160,10 +160,12 @@ export function buzzAsAlarm(pattern) {
 // The end tone through the native side, which ducks music for it (a page cannot). Resolves true
 // once it was handed over, false anywhere it cannot (the web, a failed call) for the caller
 // to play the page's own chime instead. Never resolves with the plugin itself — see restPlugin.
-export function toneNative(kind) {
+// `onSilent` is Settings → "Play even on silent": the iPhone then plays the tone through the
+// ring/silent switch, still mixing with the music and only turning it down (RestAlertPlugin.swift).
+export function toneNative(kind, { onSilent = false } = {}) {
   if (!MOBILE) return Promise.resolve(false)
   return restPlugin()
-    .then(plugin => (plugin ? plugin.RestAlert.tone({ kind: String(kind || 'chime') }).then(() => true) : false))
+    .then(plugin => (plugin ? plugin.RestAlert.tone({ kind: String(kind || 'chime'), onSilent: onSilent === true }).then(() => true) : false))
     .catch(() => false)
 }
 

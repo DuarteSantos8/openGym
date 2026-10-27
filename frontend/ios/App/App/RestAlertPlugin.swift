@@ -52,6 +52,15 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin {
         nc.addObserver(self, selector: #selector(restSkipped), name: LiveActivityQueue.restSkipped, object: nil)
         // Written ahead, off the main thread: the first rest then finds its sound file there.
         DispatchQueue.global(qos: .utility).async { RestTone.kinds.forEach { _ = RestTone.soundFile($0) } }
+        // An app's session starts as .soloAmbient, which stops the music the moment anything in
+        // the app makes a sound (Discord: "the app pauses my music"). .ambient mixes with it and
+        // keeps to the ring/silent switch; not activated here, only the kind it will be.
+        RestAlertPlugin.mixWithMusic()
+    }
+
+    /** The app's resting audio session: mixes with other audio, never interrupts it. */
+    static func mixWithMusic() {
+        try? AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default, options: [])
     }
 
     deinit {
@@ -124,6 +133,9 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin {
 
     @objc func tone(_ call: CAPPluginCall) {
         let kind = RestTone.normalised(call.getString("kind"))
+        // Settings → "Play even on silent": .playback rings through the switch, and mixing plus
+        // ducking keeps it from stopping the music, which only turns down for the tone.
+        let onSilent = call.getBool("onSilent") ?? false
         DispatchQueue.global(qos: .userInitiated).async {
             guard let url = RestTone.soundFile(kind) else {
                 call.reject("no sound file")
@@ -132,16 +144,24 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin {
             DispatchQueue.main.async {
                 do {
                     let session = AVAudioSession.sharedInstance()
-                    // Plays over the user's music, which ducks for it, and respects the ring/silent
-                    // switch like any other sound the app makes.
-                    try session.setCategory(.ambient, mode: .default, options: [.duckOthers])
+                    // Plays over the user's music, which ducks for it and never stops, and respects
+                    // the ring/silent switch like any other sound the app makes unless the person
+                    // asked for it to ring on silent.
+                    if onSilent {
+                        try session.setCategory(.playback, mode: .default, options: [.mixWithOthers, .duckOthers])
+                    } else {
+                        try session.setCategory(.ambient, mode: .default, options: [.duckOthers])
+                    }
                     try session.setActive(true)
                     let p = try AVAudioPlayer(contentsOf: url)
                     self.player = p
                     p.play()
                     DispatchQueue.main.asyncAfter(deadline: .now() + p.duration + 0.1) {
-                        if self.player === p { self.player = nil }
+                        guard self.player === p else { return }   // a newer tone owns the session now
+                        self.player = nil
+                        // Music back up, and the session back to the mixing kind for the page's beeps.
                         try? session.setActive(false, options: [.notifyOthersOnDeactivation])
+                        RestAlertPlugin.mixWithMusic()
                     }
                     call.resolve()
                 } catch {

@@ -458,6 +458,7 @@ export default {
   'Asks for your body weight when a workout starts. Off starts the session straight away.': 'Antrenman başlarken kilonu sorar. Kapalıyken seans hemen başlar.',
   'No weigh-ins yet. Log your weight to start the curve.': 'Henüz tartı kaydı yok. Eğriyi başlatmak için kilonu gir.',
   'Music playing on this phone stops during a workout and does not resume by itself.': 'Bu telefonda çalan müzik antrenman sırasında durur ve kendiliğinden devam etmez.',
+  'The end of a rest rings through silent. Music turns down for it and keeps playing.': 'Dinlenmenin sonu sessiz modda da çalar. Müzik bir anlığına kısılır ve çalmaya devam eder.',
   'The quieter three-beep sound from before 1.3.9, instead of the louder chime.': '1.3.9 öncesindeki daha sessiz üçlü bip sesi, daha yüksek çalan sesi yerine.',
   'Export backup (JSON)': 'Yedeği dışa aktar (JSON)',
   'Import backup': 'Yedeği içe aktar',

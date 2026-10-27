@@ -680,11 +680,13 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           {S.sound && <Row icon="speaker" iconTint="var(--pink)" title={t('Sound')} value={t(REST_SOUND_LABEL[restSoundOf(S)])}
             accessory="chevron" onClick={restSoundSheet} />}
           {/* iOS only (WebKit's audio-session API, iOS 17+): with it off the ring/silent switch
-              mutes the timer. On, the phone treats the timer like a music player (exclusive, and
-              the music app is not told it may resume), so it is a choice, off by default. */}
+              mutes the timer. On, in Safari the phone treats the timer like a music player
+              (exclusive, and the music app is not told it may resume), so it is a choice, off by
+              default. In the iPhone app only the native end tone rings through, and music keeps
+              playing (lib/sound.js setPlayOnSilent). */}
           {S.sound && playOnSilentSupported() && (
             <Row icon="speaker" iconTint="var(--orange)" title={t('Play even on silent')}
-              subtitle={<>{t('Music playing on this phone stops during a workout and does not resume by itself.')}<br />{t('iPhone only')}</>}>
+              subtitle={<>{MOBILE ? t('The end of a rest rings through silent. Music turns down for it and keeps playing.') : t('Music playing on this phone stops during a workout and does not resume by itself.')}<br />{t('iPhone only')}</>}>
               <Switch checked={!!S.soundOnSilent} onChange={v => update(s => { s.soundOnSilent = v })} />
             </Row>
           )}

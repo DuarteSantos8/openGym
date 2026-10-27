@@ -176,6 +176,7 @@ export const PT_BR_OVERRIDES = {
   'Asks for your body weight when a workout starts. Off starts the session straight away.': 'Pede seu peso ao iniciar um treino. Desligado, a sessão começa na hora.',
   'No weigh-ins yet. Log your weight to start the curve.': 'Nenhuma pesagem ainda. Registre seu peso para começar a curva.',
   'Music playing on this phone stops during a workout and does not resume by itself.': 'A música que estiver tocando neste celular para durante o treino e não volta sozinha.',
+  'The end of a rest rings through silent. Music turns down for it and keeps playing.': 'O fim do descanso toca mesmo no silencioso. A música abaixa por um instante e continua tocando.',
   'Export backup (JSON)': 'Exportar backup (JSON)',
   'Import backup': 'Importar backup',
   'Reset everything?': 'Redefinir tudo?',

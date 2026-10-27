@@ -1268,6 +1268,7 @@ export default {
   'Asks for your body weight when a workout starts. Off starts the session straight away.': 'يطلب وزن جسمك عند بدء التمرين. عند الإيقاف تبدأ الجلسة مباشرة.',
   'No weigh-ins yet. Log your weight to start the curve.': 'لا توجد أوزان مسجّلة بعد. سجّل وزنك لتبدأ المنحنى.',
   'Music playing on this phone stops during a workout and does not resume by itself.': 'الموسيقى التي تعمل على هذا الهاتف تتوقف أثناء التمرين ولا تستأنف من تلقاء نفسها.',
+  'The end of a rest rings through silent. Music turns down for it and keeps playing.': 'تُسمع نهاية الراحة حتى في الوضع الصامت. تنخفض الموسيقى لحظة وتستمر في التشغيل.',
   'The quieter three-beep sound from before 1.3.9, instead of the louder chime.': 'الصوت الأكثر هدوءًا المكوّن من ثلاث نغمات من قبل الإصدار 1.3.9، بدلاً من الرنين الأعلى صوتًا.',
   'Add this device\'s workouts to your profile?': 'إضافة تدريبات هذا الجهاز إلى ملفك؟',
   '{0} workouts and {1} weigh-ins were logged on this device while signed out. Add them to your profile, or keep the profile exactly as it is on the server.': 'سُجلت {0} تدريبات و{1} قياسات وزن على هذا الجهاز أثناء تسجيل الخروج. أضفها إلى ملفك، أو أبقِ الملف كما هو على الخادم.',

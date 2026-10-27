@@ -448,6 +448,7 @@ export default {
   'Asks for your body weight when a workout starts. Off starts the session straight away.': 'Спрашивает ваш вес при начале тренировки. Если выключено, сессия начинается сразу.',
   'No weigh-ins yet. Log your weight to start the curve.': 'Взвешиваний пока нет. Внесите вес, и кривая начнётся.',
   'Music playing on this phone stops during a workout and does not resume by itself.': 'Музыка, играющая на этом телефоне, останавливается во время тренировки и сама не возобновляется.',
+  'The end of a rest rings through silent. Music turns down for it and keeps playing.': 'Конец отдыха звучит даже в беззвучном режиме. Музыка ненадолго становится тише и продолжает играть.',
   'The quieter three-beep sound from before 1.3.9, instead of the louder chime.': 'Более тихий звук из трёх сигналов, как до версии 1.3.9, вместо более громкого перезвона.',
   'Export backup (JSON)': 'Экспорт резервной копии (JSON)',
   'Import backup': 'Импорт резервной копии',

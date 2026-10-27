@@ -458,6 +458,7 @@ export default {
   'Asks for your body weight when a workout starts. Off starts the session straight away.': '开始训练时询问体重。关闭后直接进入训练。',
   'No weigh-ins yet. Log your weight to start the curve.': '还没有称重记录。记一下体重，曲线就开始了。',
   'Music playing on this phone stops during a workout and does not resume by itself.': '锻炼期间，这部手机正在播放的音乐会停止，且不会自动恢复。',
+  'The end of a rest rings through silent. Music turns down for it and keeps playing.': '即使在静音模式下，休息结束也会响铃。音乐会暂时调低，然后继续播放。',
   'The quieter three-beep sound from before 1.3.9, instead of the louder chime.': '使用 1.3.9 版本之前更轻柔的三声提示音，而不是更响亮的铃声。',
   'Export backup (JSON)': '导出备份（JSON）',
   'Import backup': '导入备份',
