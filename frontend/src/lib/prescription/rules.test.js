@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { PRESETS, PRESET_IDS, defaultPlanRule, editPlan, isTemplateRule, needsOneRm, planOptions, planPhase, policyOfPreset, presetForPolicy, pyramidDirection, rptOffsets, supports, validateIntensifier, validatePlanRule, withRest } from '../../../../api/engine/rules.js'
+import { PRESETS, PRESET_IDS, defaultPlanRule, editPlan, isTemplateRule, needsOneRm, planOptions, planPhase, policyOfPreset, presetForPolicy, pyramidDirection, rptOffsets, rungsOf, supports, validateIntensifier, validatePlanRule, withRest } from '../../../../api/engine/rules.js'
+import { planFingerprint } from '../../../../api/engine/context.js'
+import { operatorFor } from '../../../../api/engine/program.js'
 
 const rule = (preset, options = {}) => defaultPlanRule(preset, { id: 'r1', exerciseId: 'ex1', unit: 'kg', ...options })
 const errorsOf = r => validatePlanRule(r).errors
@@ -263,5 +265,33 @@ describe('rptOffsets', () => {
     expect(rptOffsets(3, 6)).toEqual([{ percentOfAnchor: 100 }, { percentOfAnchor: 90, reps: 8 }, { percentOfAnchor: 80, reps: 10 }])
     expect(rptOffsets(8).map(o => o.percentOfAnchor)).toEqual([100, 90, 80, 70, 60, 50, 50, 50])
     for (const n of [1, 3, 5]) expect(errorsOf(rule('pyramid', { offsets: rptOffsets(n), sets: { min: n, max: n } }))).toEqual([])
+  })
+})
+
+describe('object rungs', () => {
+  const chain = [{ name: 'Tuck', exerciseId: 'a' }, 'Advanced tuck', { name: 'Full', exerciseId: 'b' }]
+  it('accepts string and object rungs', () => expect(errorsOf(rule('bodyweight_ladder', { rungs: chain }))).toEqual([]))
+  it('rejects an empty name and a non-string exerciseId', () => {
+    expect(errorsOf(rule('bodyweight_ladder', { rungs: [{ name: ' ' }, 'x'] })).join()).toMatch(/rungs must be non-empty names/)
+    expect(errorsOf(rule('bodyweight_ladder', { rungs: [{ name: 'a', exerciseId: 3 }, 'x'] })).join()).toMatch(/rungs must be non-empty names/)
+  })
+  // The template drops rungs once weight is added, so only a hand-built two-phase program can carry them.
+  it('rejects rung exercises on a ladder with a loaded phase', () => {
+    const rung = operatorFor(planPhase(rule('bodyweight_ladder', { rungs: chain })), 'difficulty')
+    const loaded = withPhase(rule('bodyweight_ladder', { loadedPreset: 'double' }), ph => ({ progression: [...ph.progression, rung] }))
+    expect(errorsOf(loaded)).toContain('rung exercises need a single-phase ladder')
+    expect(errorsOf(withPhase(loaded, ph => ({ progression: [...ph.progression.slice(0, -1), { ...rung, rungs: ['a', 'b', 'c'] }] })))).not.toContain('rung exercises need a single-phase ladder')
+  })
+  it('keeps object rungs through planOptions and editPlan', () => {
+    const r = rule('bodyweight_ladder', { rungs: chain })
+    expect(planOptions(r).rungs).toEqual(chain)
+    expect(isTemplateRule(r)).toBe(true)
+    expect(planOptions(editPlan(r, { sets: { min: 2, max: 4 } })).rungs).toEqual(chain)
+  })
+  it('planFingerprint ignores rung exercises', () =>
+    expect(planFingerprint(rule('bodyweight_ladder', { rungs: chain }))).toBe(planFingerprint(rule('bodyweight_ladder', { rungs: ['x', 'y', 'z'] }))))
+  it('rungsOf normalises both forms', () => {
+    expect(rungsOf(operatorFor(planPhase(rule('bodyweight_ladder', { rungs: chain })), 'difficulty'))).toEqual([{ name: 'Tuck', exerciseId: 'a' }, { name: 'Advanced tuck' }, { name: 'Full', exerciseId: 'b' }])
+    expect(rungsOf(null)).toEqual([])
   })
 })
